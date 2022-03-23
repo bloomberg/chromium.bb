@@ -133,7 +133,8 @@ g.test('render_pass_resolve')
         // will be white and the bottom right half will be black.
         renderPassColorAttachments.push({
           view: colorAttachment.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: t.params.storeOperation,
           resolveTarget: resolveTarget.createView({
             baseMipLevel: t.params.resolveTargetBaseMipLevel,
@@ -145,7 +146,8 @@ g.test('render_pass_resolve')
       } else {
         renderPassColorAttachments.push({
           view: colorAttachment.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: t.params.storeOperation,
         });
       }
@@ -158,7 +160,7 @@ g.test('render_pass_resolve')
     });
     pass.setPipeline(pipeline);
     pass.draw(3);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     // Verify the resolve targets contain the correct values.

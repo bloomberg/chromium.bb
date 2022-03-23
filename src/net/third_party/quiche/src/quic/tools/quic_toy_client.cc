@@ -60,7 +60,6 @@
 #include "quic/platform/api/quic_default_proof_providers.h"
 #include "quic/platform/api/quic_ip_address.h"
 #include "quic/platform/api/quic_socket_address.h"
-#include "quic/platform/api/quic_system_event_loop.h"
 #include "quic/tools/fake_proof_verifier.h"
 #include "quic/tools/quic_url.h"
 #include "common/platform/api/quiche_command_line_flags.h"
@@ -216,7 +215,7 @@ std::unique_ptr<ClientProofSource> CreateTestClientProofSource(
   auto proof_source = std::make_unique<DefaultClientProofSource>();
   proof_source->AddCertAndKey(
       {"*"},
-      QuicReferenceCountedPointer<ClientProofSource::Chain>(
+      quiche::QuicheReferenceCountedPointer<ClientProofSource::Chain>(
           new ClientProofSource::Chain(certs)),
       std::move(*private_key));
 

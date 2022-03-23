@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
@@ -75,9 +76,7 @@ bool IsValidRequestInitiator(const network::ResourceRequest& request,
                                           request.request_initiator);
   switch (initiator_lock_compatibility) {
     case network::InitiatorLockCompatibility::kBrowserProcess:
-    case network::InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin:
-      // kBrowserProcess and kAllowedRequestInitiatorForPlugin cannot happen
-      // outside of NetworkService.
+      // kBrowserProcess cannot happen outside of NetworkService.
       NOTREACHED();
       return false;
 
@@ -556,6 +555,7 @@ class PrefetchedNavigationLoaderInterceptor
         request.url, request.trusted_params->isolation_info.site_for_cookies(),
         *request.trusted_params->isolation_info.top_frame_origin(),
         std::move(match_options),
+        /*partitioned_cookies_runtime_feature_enabled=*/false,
         base::BindOnce(&PrefetchedNavigationLoaderInterceptor::OnGetCookies,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        std::move(fallback_callback)));

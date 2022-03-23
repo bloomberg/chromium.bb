@@ -48,7 +48,9 @@ VIZ_COMMON_EXPORT extern const base::Feature kWebViewVulkanIntermediateBuffer;
 VIZ_COMMON_EXPORT extern const base::Feature kUsePlatformDelegatedInk;
 #if BUILDFLAG(IS_ANDROID)
 VIZ_COMMON_EXPORT extern const base::Feature kUseSurfaceLayerForVideoDefault;
+VIZ_COMMON_EXPORT extern const base::Feature kWebViewNewInvalidateHeuristic;
 #endif
+VIZ_COMMON_EXPORT extern const base::Feature kSurfaceSyncThrottling;
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForDraw;
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForClients;
 #if BUILDFLAG(IS_MAC)
@@ -92,6 +94,7 @@ VIZ_COMMON_EXPORT bool ShouldUsePlatformDelegatedInk();
 VIZ_COMMON_EXPORT bool UseSurfaceLayerForVideo();
 VIZ_COMMON_EXPORT bool UseRealVideoColorSpaceForDisplay();
 #endif
+VIZ_COMMON_EXPORT bool IsSurfaceSyncThrottling();
 VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForDraw();
 VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForClients();
 VIZ_COMMON_EXPORT int MaxOverlaysConsidered();

@@ -1671,6 +1671,17 @@ void StyleBuilderConverter::CountSystemColorComputeToSelfUsage(
   }
 }
 
+AtomicString StyleBuilderConverter::ConvertPageTransitionTag(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value))
+    return AtomicString(custom_ident_value->Value());
+  DCHECK(DynamicTo<CSSIdentifierValue>(value));
+  DCHECK_EQ(DynamicTo<CSSIdentifierValue>(value)->GetValueID(),
+            CSSValueID::kNone);
+  return AtomicString();
+}
+
 StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
                                                     const CSSValue& value,
                                                     bool for_visited_link) {
@@ -2268,6 +2279,7 @@ ScrollbarGutter StyleBuilderConverter::ConvertScrollbarGutter(
 Vector<AtomicString> StyleBuilderConverter::ConvertContainerName(
     StyleResolverState& state,
     const CSSValue& value) {
+  HashSet<AtomicString> seen;
   Vector<AtomicString> names;
 
   if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
@@ -2275,8 +2287,12 @@ Vector<AtomicString> StyleBuilderConverter::ConvertContainerName(
     return names;
   }
 
-  for (const auto& item : To<CSSValueList>(value))
-    names.push_back(To<CSSCustomIdentValue>(item.Get())->Value());
+  for (const auto& item : To<CSSValueList>(value)) {
+    const AtomicString& value = To<CSSCustomIdentValue>(item.Get())->Value();
+    if (!seen.insert(value).is_new_entry)
+      continue;
+    names.push_back(value);
+  }
 
   return names;
 }

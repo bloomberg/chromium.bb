@@ -4,7 +4,8 @@
 
 #include "chrome/common/pref_names.h"
 
-#include "base/cxx17_backports.h"
+#include <iterator>
+
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -262,7 +263,7 @@ const char* const kWebKitScriptsForFontFamilyMaps[] = {
 };
 
 const size_t kWebKitScriptsForFontFamilyMapsLength =
-    base::size(kWebKitScriptsForFontFamilyMaps);
+    std::size(kWebKitScriptsForFontFamilyMaps);
 
 // Strings for WebKit font family preferences. If these change, the pref prefix
 // in pref_names_util.cc and the pref format in font_settings_api.cc must also
@@ -1407,8 +1408,10 @@ const char kPrintingBackgroundGraphicsDefault[] =
 // A pref holding the default paper size.
 const char kPrintingPaperSizeDefault[] = "printing.paper_size_default";
 
+#if BUILDFLAG(ENABLE_PRINTING)
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 // Boolean controlling whether print preview is disabled.
 const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
@@ -1722,10 +1725,6 @@ const char kProfileAttributes[] = "profile.info_cache";
 // not happen if the browser crashes, so we remove the profile on next start.
 const char kProfilesDeleted[] = "profiles.profiles_deleted";
 
-// This is the location of a list of dictionaries of plugin stability stats.
-const char kStabilityPluginStats[] =
-    "user_experience_metrics.stability.plugin_stats2";
-
 // On Chrome OS, total number of non-Chrome user process crashes
 // since the last report.
 const char kStabilityOtherUserCrashCount[] =
@@ -1739,11 +1738,6 @@ const char kStabilityKernelCrashCount[] =
 // last report.
 const char kStabilitySystemUncleanShutdownCount[] =
     "user_experience_metrics.stability.system_unclean_shutdowns";
-
-// The keys below are used for the dictionaries in the
-// kStabilityPluginStats list.
-const char kStabilityPluginName[] = "name";
-const char kStabilityPluginCrashes[] = "crashes";
 
 // String containing the version of Chrome for which Chrome will not prompt the
 // user about setting Chrome as the default browser.
@@ -1778,6 +1772,9 @@ const char kDownloadDefaultDirectory[] = "download.default_directory";
 // Boolean that records if the download directory was changed by an
 // upgrade a unsafe location to a safe location.
 const char kDownloadDirUpgraded[] = "download.directory_upgrade";
+
+// base::Time value indicating the last timestamp when a download is completed.
+const char kDownloadLastCompleteTime[] = "download.last_complete_time";
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_MAC)
@@ -3079,6 +3076,12 @@ const char kTabStatsWindowCountMax[] = "tab_stats.window_count_max";
 //  Timestamp of the last time the tab stats daily metrics have been reported.
 const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
 
+// Discards/Reloads since last daily report.
+const char kTabStatsDiscardsExternal[] = "tab_stats.discards_external";
+const char kTabStatsDiscardsUrgent[] = "tab_stats.discards_urgent";
+const char kTabStatsReloadsExternal[] = "tab_stats.reloads_external";
+const char kTabStatsReloadsUrgent[] = "tab_stats.reloads_urgent";
+
 // A list of origins (URLs) to treat as "secure origins" for debugging purposes.
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely_treat_insecure_origin_as_secure";
@@ -3323,6 +3326,31 @@ const char kCartDiscountLastFetchedTime[] = "cart_discount_last_fetched_time";
 // Boolean pref indicating whether the consent for discount has ever shown or
 // not.
 const char kCartDiscountConsentShown[] = "cart_discount_consent_shown";
+// Integer pref indicating in which variation the user has made their decision,
+// accept or reject the consent.
+const char kDiscountConsentDecisionMadeIn[] =
+    "discount_consent_decision_made_in";
+// Integer pref indicating in which variation the user has dismissed the
+// consent. Only the Inline and Dialog variation applies.
+const char kDiscountConsentDismissedIn[] = "discount_consent_dismissed_in";
+// A time pref indicating the timestamp of when user last explicitly dismissed
+// the discount consent.
+const char kDiscountConsentLastDimissedTime[] =
+    "discount_consent_last_dimissed_time";
+// Integer pref indicating the last consent was shown in which variation.
+const char kDiscountConsentLastShownInVariation[] =
+    "discount_consent_last_shown_in";
+// An integer pref that keeps track of how many times user has explicitly
+// dismissed the disount consent.
+const char kDiscountConsentPastDismissedCount[] =
+    "discount_consent_dismissed_count";
+// Boolean pref indicating whether the user has shown interest in the consent,
+// e.g. if the use has clicked the 'continue' button.
+const char kDiscountConsentShowInterest[] = "discount_consent_show_interest";
+// Integer pref indicating in which variation the user has shown interest to the
+// consent, they has clicked the 'continue' button.
+const char kDiscountConsentShowInterestIn[] =
+    "discount_consent_show_interest_in";
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3389,5 +3417,10 @@ const char kCorsNonWildcardRequestHeadersSupport[] =
 // used by default.
 const char kOriginAgentClusterDefaultEnabled[] =
     "origin_agent_cluster_default_enabled";
+
+// An integer count of how many SCT Auditing hashdance reports have ever been
+// sent by this client, across all profiles.
+const char kSCTAuditingHashdanceReportCount[] =
+    "sct_auditing.hashdance_report_count";
 
 }  // namespace prefs

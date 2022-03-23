@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
     runOnWorkerAndWaitForResult(`
       let root = await navigator.storage.getDirectory();
       let fh = await root.getFileHandle('test_closing', {create: false});
-      let ah = await fh.createSyncAccessHandle();
+      let ah = await fh.createSyncAccessHandle({mode: 'in-place'});
       await ah.truncate(100);
       await ah.truncate(10);
       await ah.close();
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
     runOnWorkerAndWaitForResult(`
       let root = await navigator.storage.getDirectory();
       let fh = await root.getFileHandle('test_existing', {create: true});
-      let ah =  await fh.createSyncAccessHandle();
+      let ah =  await fh.createSyncAccessHandle({mode: 'in-place'});
       await ah.truncate(100);
       await ah.close();
       return true;
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
     runOnWorkerAndWaitForResult(`
       let root = await navigator.storage.getDirectory();
       let fh = await root.getFileHandle('test_existing', {create: false});
-      let ah = await fh.createSyncAccessHandle();
+      let ah = await fh.createSyncAccessHandle({mode: 'in-place'});
       await ah.truncate(0);
       await ah.close();
       return true;
@@ -158,8 +158,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
   EXPECT_EQ(usage_before_operation, usage_after_operation + 100);
 }
 
+// TODO(crbug.com/1304977): Failing on Mac builders.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_QuotaUsageOverallocation DISABLED_QuotaUsageOverallocation
+#else
+#define MAYBE_QuotaUsageOverallocation QuotaUsageOverallocation
+#endif
 IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
-                       QuotaUsageOverallocation) {
+                       MAYBE_QuotaUsageOverallocation) {
   // TODO(https://crbug.com/1240056): Implement a more sophisticated test suite
   // for this feature.
   const GURL& test_url =
@@ -179,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
     runOnWorkerAndWaitForResult(`
       let root = await navigator.storage.getDirectory();
       let fh = await root.getFileHandle('test_file_small', {create: true});
-      let ah =  await fh.createSyncAccessHandle();
+      let ah =  await fh.createSyncAccessHandle({mode: 'in-place'});
       let storage_manager = await navigator.storage.estimate();
       let usage_before_operation = storage_manager.usageDetails.fileSystem;
       await ah.truncate(100);
@@ -195,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemAccessCapacityAllocationHostImplBrowserTest,
     runOnWorkerAndWaitForResult(`
       let root = await navigator.storage.getDirectory();
       let fh = await root.getFileHandle('test_file_medium', {create: true});
-      let ah =  await fh.createSyncAccessHandle();
+      let ah =  await fh.createSyncAccessHandle({mode: 'in-place'});
       let storage_manager = await navigator.storage.estimate();
       let usage_before_operation = storage_manager.usageDetails.fileSystem;
       let new_file_size = 3*1024*1024;

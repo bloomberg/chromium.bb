@@ -28,11 +28,10 @@
 #include "api/video/video_timing.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
-#include "system_wrappers/include/field_trial.h"
-#include "test/field_trial.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/run_loop.h"
+#include "test/scoped_key_value_config.h"
 #include "test/time_controller/simulated_time_controller.h"
 #include "video/decode_synchronizer.h"
 
@@ -198,6 +197,12 @@ class VCMReceiveStatisticsCallbackMock : public VCMReceiveStatisticsCallback {
               (const TimingFrameInfo& info),
               (override));
 };
+
+bool IsFrameBuffer2Enabled(const WebRtcKeyValueConfig& field_trials) {
+  return field_trials.Lookup("WebRTC-FrameBuffer3").find("arm:FrameBuffer2") !=
+         std::string::npos;
+}
+
 }  // namespace
 
 constexpr auto kMaxWaitForKeyframe = TimeDelta::Millis(500);
@@ -225,9 +230,10 @@ class FrameBufferProxyFixture
                                                       this,
                                                       kMaxWaitForKeyframe,
                                                       kMaxWaitForFrame,
-                                                      &decode_sync_)) {
+                                                      &decode_sync_,
+                                                      field_trials_)) {
     // Avoid starting with negative render times.
-    timing_.set_min_playout_delay(10);
+    timing_.set_min_playout_delay(TimeDelta::Millis(10));
 
     ON_CALL(stats_callback_, OnDroppedFrames)
         .WillByDefault(
@@ -296,7 +302,7 @@ class FrameBufferProxyFixture
   int dropped_frames() const { return dropped_frames_; }
 
  protected:
-  test::ScopedFieldTrials field_trials_;
+  test::ScopedKeyValueConfig field_trials_;
   GlobalSimulatedTimeController time_controller_;
   Clock* const clock_;
   test::RunLoop run_loop_;
@@ -625,12 +631,69 @@ TEST_P(FrameBufferProxyTest, TestStatsCallback) {
   EXPECT_CALL(stats_callback_, OnFrameBufferTimingsUpdated);
 
   // Fake timing having received decoded frame.
-  timing_.StopDecodeTimer(clock_->TimeInMicroseconds() + 1,
-                          clock_->TimeInMilliseconds());
+  timing_.StopDecodeTimer(TimeDelta::Millis(1), clock_->CurrentTime());
   StartNextDecodeForceKeyframe();
   proxy_->InsertFrame(Builder().Id(0).Time(0).AsLast().Build());
   EXPECT_THAT(WaitForFrameOrTimeout(TimeDelta::Zero()), Frame(WithId(0)));
 
+  // Flush stats posted on the decode queue.
+  time_controller_.AdvanceTime(TimeDelta::Zero());
+}
+
+TEST_P(FrameBufferProxyTest, FrameCompleteCalledOnceForDuplicateFrame) {
+  EXPECT_CALL(stats_callback_,
+              OnCompleteFrame(true, kFrameSize, VideoContentType::UNSPECIFIED))
+      .Times(1);
+
+  StartNextDecodeForceKeyframe();
+  proxy_->InsertFrame(Builder().Id(0).Time(0).AsLast().Build());
+  proxy_->InsertFrame(Builder().Id(0).Time(0).AsLast().Build());
+  // Flush stats posted on the decode queue.
+  time_controller_.AdvanceTime(TimeDelta::Zero());
+}
+
+TEST_P(FrameBufferProxyTest, FrameCompleteCalledOnceForSingleTemporalUnit) {
+  StartNextDecodeForceKeyframe();
+
+  // `OnCompleteFrame` should not be called for the first two frames since they
+  // do not complete the temporal layer.
+  EXPECT_CALL(stats_callback_, OnCompleteFrame(_, _, _)).Times(0);
+  proxy_->InsertFrame(Builder().Id(0).Time(0).Build());
+  proxy_->InsertFrame(Builder().Id(1).Time(0).Refs({0}).Build());
+  time_controller_.AdvanceTime(TimeDelta::Zero());
+  // Flush stats posted on the decode queue.
+  ::testing::Mock::VerifyAndClearExpectations(&stats_callback_);
+
+  // Note that this frame is not marked as a keyframe since the last spatial
+  // layer has dependencies.
+  EXPECT_CALL(stats_callback_,
+              OnCompleteFrame(false, kFrameSize, VideoContentType::UNSPECIFIED))
+      .Times(1);
+  proxy_->InsertFrame(Builder().Id(2).Time(0).Refs({0, 1}).AsLast().Build());
+  // Flush stats posted on the decode queue.
+  time_controller_.AdvanceTime(TimeDelta::Zero());
+}
+
+TEST_P(FrameBufferProxyTest, FrameCompleteCalledOnceForCompleteTemporalUnit) {
+  // FrameBuffer2 logs the complete frame on the arrival of the last layer.
+  if (IsFrameBuffer2Enabled(field_trials_))
+    return;
+  StartNextDecodeForceKeyframe();
+
+  // `OnCompleteFrame` should not be called for the first two frames since they
+  // do not complete the temporal layer. Frame 1 arrives later, at which time
+  // this frame can finally be considered complete.
+  EXPECT_CALL(stats_callback_, OnCompleteFrame(_, _, _)).Times(0);
+  proxy_->InsertFrame(Builder().Id(0).Time(0).Build());
+  proxy_->InsertFrame(Builder().Id(2).Time(0).Refs({0, 1}).AsLast().Build());
+  time_controller_.AdvanceTime(TimeDelta::Zero());
+  // Flush stats posted on the decode queue.
+  ::testing::Mock::VerifyAndClearExpectations(&stats_callback_);
+
+  EXPECT_CALL(stats_callback_,
+              OnCompleteFrame(false, kFrameSize, VideoContentType::UNSPECIFIED))
+      .Times(1);
+  proxy_->InsertFrame(Builder().Id(1).Time(0).Refs({0}).Build());
   // Flush stats posted on the decode queue.
   time_controller_.AdvanceTime(TimeDelta::Zero());
 }
@@ -690,8 +753,7 @@ TEST_P(FrameBufferProxyTest, NextFrameWithOldTimestamp) {
                           .AsLast()
                           .Build());
   // FrameBuffer2 drops the frame, while FrameBuffer3 will continue the stream.
-  if (field_trial::FindFullName("WebRTC-FrameBuffer3")
-          .find("arm:FrameBuffer2") == std::string::npos) {
+  if (!IsFrameBuffer2Enabled(field_trials_)) {
     EXPECT_THAT(WaitForFrameOrTimeout(kFps30Delay), Frame(WithId(2)));
   } else {
     EXPECT_THAT(WaitForFrameOrTimeout(kMaxWaitForFrame), TimedOut());
@@ -712,8 +774,8 @@ TEST_P(LowLatencyFrameBufferProxyTest,
        FramesDecodedInstantlyWithLowLatencyRendering) {
   // Initial keyframe.
   StartNextDecodeForceKeyframe();
-  timing_.set_min_playout_delay(0);
-  timing_.set_max_playout_delay(10);
+  timing_.set_min_playout_delay(TimeDelta::Zero());
+  timing_.set_max_playout_delay(TimeDelta::Millis(10));
   auto frame = Builder().Id(0).Time(0).AsLast().Build();
   // Playout delay of 0 implies low-latency rendering.
   frame->SetPlayoutDelay({0, 10});
@@ -735,8 +797,8 @@ TEST_P(LowLatencyFrameBufferProxyTest,
 TEST_P(LowLatencyFrameBufferProxyTest, ZeroPlayoutDelayFullQueue) {
   // Initial keyframe.
   StartNextDecodeForceKeyframe();
-  timing_.set_min_playout_delay(0);
-  timing_.set_max_playout_delay(10);
+  timing_.set_min_playout_delay(TimeDelta::Zero());
+  timing_.set_max_playout_delay(TimeDelta::Millis(10));
   auto frame = Builder().Id(0).Time(0).AsLast().Build();
   // Playout delay of 0 implies low-latency rendering.
   frame->SetPlayoutDelay({0, 10});
@@ -759,8 +821,8 @@ TEST_P(LowLatencyFrameBufferProxyTest, ZeroPlayoutDelayFullQueue) {
 TEST_P(LowLatencyFrameBufferProxyTest, MinMaxDelayZeroLowLatencyMode) {
   // Initial keyframe.
   StartNextDecodeForceKeyframe();
-  timing_.set_min_playout_delay(0);
-  timing_.set_max_playout_delay(0);
+  timing_.set_min_playout_delay(TimeDelta::Zero());
+  timing_.set_max_playout_delay(TimeDelta::Zero());
   auto frame = Builder().Id(0).Time(0).AsLast().Build();
   // Playout delay of 0 implies low-latency rendering.
   frame->SetPlayoutDelay({0, 0});

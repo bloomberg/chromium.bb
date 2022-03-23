@@ -390,7 +390,7 @@ void Generate_JSEntryVariant(MacroAssembler* masm, StackFrame::Type type,
     // a0: root_register_value
 
     // Save callee saved registers on the stack.
-    __ MultiPush(kCalleeSaved | ra.bit());
+    __ MultiPush(kCalleeSaved | ra);
     pushed_stack_space +=
         kNumCalleeSaved * kPointerSize + kPointerSize /* ra */;
 
@@ -524,7 +524,7 @@ void Generate_JSEntryVariant(MacroAssembler* masm, StackFrame::Type type,
   __ MultiPopFPU(kCalleeSavedFPU);
 
   // Restore callee saved registers from the stack.
-  __ MultiPop(kCalleeSaved | ra.bit());
+  __ MultiPop(kCalleeSaved | ra);
   // Return.
   __ Jump(ra);
 }
@@ -1052,7 +1052,7 @@ static void MaybeOptimizeCodeOrTailCallOptimizedCodeSlot(
 // static
 void Builtins::Generate_BaselineOutOfLinePrologue(MacroAssembler* masm) {
   UseScratchRegisterScope temps(masm);
-  temps.Include(s1.bit() | s2.bit());
+  temps.Include({s1, s2});
   auto descriptor =
       Builtins::CallInterfaceDescriptorFor(Builtin::kBaselineOutOfLinePrologue);
   Register closure = descriptor.GetRegisterParameter(
@@ -1193,7 +1193,7 @@ void Builtins::Generate_BaselineOutOfLinePrologue(MacroAssembler* masm) {
     __ Pop(kJavaScriptCallNewTargetRegister);
   }
   __ Ret();
-  temps.Exclude(kScratchReg.bit() | kScratchReg2.bit());
+  temps.Exclude({kScratchReg, kScratchReg2});
 }
 
 // Generate code for entering a JS function with the interpreter.
@@ -2388,6 +2388,12 @@ void Builtins::Generate_Call(MacroAssembler* masm, ConvertReceiverMode mode) {
   __ Jump(BUILTIN_CODE(masm->isolate(), CallProxy), RelocInfo::CODE_TARGET, eq,
           instance_type, Operand(JS_PROXY_TYPE));
 
+  // Check if target is a wrapped function and call CallWrappedFunction external
+  // builtin
+  __ Jump(BUILTIN_CODE(masm->isolate(), CallWrappedFunction),
+          RelocInfo::CODE_TARGET, eq, instance_type,
+          Operand(JS_WRAPPED_FUNCTION_TYPE));
+
   // ES6 section 9.2.1 [[Call]] ( thisArgument, argumentsList)
   // Check that the function is not a "classConstructor".
   __ Branch(&class_constructor, eq, instance_type,
@@ -2602,22 +2608,22 @@ void Builtins::Generate_WasmCompileLazy(MacroAssembler* masm) {
     // Save all parameter registers (see wasm-linkage.h). They might be
     // overwritten in the runtime call below. We don't have any callee-saved
     // registers in wasm, so no need to store anything else.
-    RegList gp_regs = 0;
+    RegList gp_regs;
     for (Register gp_param_reg : wasm::kGpParamRegisters) {
-      gp_regs |= gp_param_reg.bit();
+      gp_regs.set(gp_param_reg);
     }
 
-    RegList fp_regs = 0;
+    DoubleRegList fp_regs;
     for (DoubleRegister fp_param_reg : wasm::kFpParamRegisters) {
-      fp_regs |= fp_param_reg.bit();
+      fp_regs.set(fp_param_reg);
     }
 
-    CHECK_EQ(NumRegs(gp_regs), arraysize(wasm::kGpParamRegisters));
-    CHECK_EQ(NumRegs(fp_regs), arraysize(wasm::kFpParamRegisters));
+    CHECK_EQ(gp_regs.Count(), arraysize(wasm::kGpParamRegisters));
+    CHECK_EQ(fp_regs.Count(), arraysize(wasm::kFpParamRegisters));
     CHECK_EQ(WasmCompileLazyFrameConstants::kNumberOfSavedGpParamRegs,
-             NumRegs(gp_regs));
+             gp_regs.Count());
     CHECK_EQ(WasmCompileLazyFrameConstants::kNumberOfSavedFpParamRegs,
-             NumRegs(fp_regs));
+             fp_regs.Count());
 
     __ MultiPush(gp_regs);
     __ MultiPushFPU(fp_regs);
@@ -3815,7 +3821,7 @@ void Generate_DeoptimizationEntry(MacroAssembler* masm,
   static constexpr int kNumberOfRegisters = Register::kNumRegisters;
 
   RegList restored_regs = kJSCallerSaved | kCalleeSaved;
-  RegList saved_regs = restored_regs | sp.bit() | ra.bit();
+  RegList saved_regs = restored_regs | sp | ra;
 
   static constexpr int kDoubleRegsSize =
       kDoubleSize * DoubleRegister::kNumRegisters;
@@ -3834,7 +3840,7 @@ void Generate_DeoptimizationEntry(MacroAssembler* masm,
   // Leave gaps for other registers.
   __ Subu(sp, sp, kNumberOfRegisters * kPointerSize);
   for (int16_t i = kNumberOfRegisters - 1; i >= 0; i--) {
-    if ((saved_regs & (1 << i)) != 0) {
+    if ((saved_regs.bits() & (1 << i)) != 0) {
       __ sw(ToRegister(i), MemOperand(sp, kPointerSize * i));
     }
   }
@@ -3885,7 +3891,7 @@ void Generate_DeoptimizationEntry(MacroAssembler* masm,
   DCHECK_EQ(Register::kNumRegisters, kNumberOfRegisters);
   for (int i = 0; i < kNumberOfRegisters; i++) {
     int offset = (i * kPointerSize) + FrameDescription::registers_offset();
-    if ((saved_regs & (1 << i)) != 0) {
+    if ((saved_regs.bits() & (1 << i)) != 0) {
       __ lw(a2, MemOperand(sp, i * kPointerSize));
       __ sw(a2, MemOperand(a1, offset));
     } else if (FLAG_debug_code) {
@@ -3981,12 +3987,12 @@ void Generate_DeoptimizationEntry(MacroAssembler* masm,
 
   // Technically restoring 'at' should work unless zero_reg is also restored
   // but it's safer to check for this.
-  DCHECK(!(at.bit() & restored_regs));
+  DCHECK(!(restored_regs.has(at)));
   // Restore the registers from the last output frame.
   __ mov(at, a2);
   for (int i = kNumberOfRegisters - 1; i >= 0; i--) {
     int offset = (i * kPointerSize) + FrameDescription::registers_offset();
-    if ((restored_regs & (1 << i)) != 0) {
+    if ((restored_regs.bits() & (1 << i)) != 0) {
       __ lw(ToRegister(i), MemOperand(at, offset));
     }
   }

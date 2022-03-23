@@ -21,9 +21,8 @@
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_export.h"
-#include "quic/platform/api/quic_iovec.h"
-#include "quic/platform/api/quic_mem_slice.h"
 #include "quic/platform/api/quic_socket_address.h"
+#include "common/platform/api/quiche_mem_slice.h"
 
 namespace quic {
 
@@ -71,18 +70,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   static AddressChangeType DetermineAddressChangeType(
       const QuicSocketAddress& old_address,
       const QuicSocketAddress& new_address);
-
-  // Copies |buffer_length| bytes from iov starting at offset |iov_offset| into
-  // buffer. |iov| must be at least iov_offset+length total length and buffer
-  // must be at least |length| long.
-  static void CopyToBuffer(const struct iovec* iov,
-                           int iov_count,
-                           size_t iov_offset,
-                           size_t buffer_length,
-                           char* buffer);
-
-  // Creates an iovec pointing to the same data as |data|.
-  static struct iovec MakeIovec(absl::string_view data);
 
   // Returns the opposite Perspective of the |perspective| passed in.
   static constexpr Perspective InvertPerspective(Perspective perspective) {
@@ -254,7 +241,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
 bool IsValidWebTransportSessionId(WebTransportSessionId id,
                                   ParsedQuicVersion transport_version);
 
-QuicByteCount MemSliceSpanTotalSize(absl::Span<QuicMemSlice> span);
+QuicByteCount MemSliceSpanTotalSize(absl::Span<quiche::QuicheMemSlice> span);
 
 // Computes a SHA-256 hash and returns the raw bytes of the hash.
 QUIC_EXPORT_PRIVATE std::string RawSha256(absl::string_view input);

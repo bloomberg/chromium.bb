@@ -11,7 +11,7 @@
 // declarations instead of including more headers. If that is infeasible, adjust
 // the limit. For more info, see
 // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
-#pragma clang max_tokens_here 850000
+#pragma clang max_tokens_here 880000
 
 #include <utility>
 
@@ -319,7 +319,7 @@ bool ContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
   return false;
 }
 
-bool ContentBrowserClient::AreDirectSocketsAllowedByPolicy(
+bool ContentBrowserClient::IsIsolatedAppsDeveloperModeAllowed(
     BrowserContext* context) {
   return true;
 }
@@ -478,6 +478,11 @@ bool ContentBrowserClient::IsConversionMeasurementOperationAllowed(
   return true;
 }
 
+bool ContentBrowserClient::CanSendSCTAuditingReport(
+    BrowserContext* browser_context) {
+  return false;
+}
+
 scoped_refptr<QuotaPermissionContext>
 ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
@@ -614,6 +619,10 @@ base::FilePath ContentBrowserClient::GetGrShaderDiskCacheDirectory() {
 }
 
 base::FilePath ContentBrowserClient::GetNetLogDefaultDirectory() {
+  return base::FilePath();
+}
+
+base::FilePath ContentBrowserClient::GetFirstPartySetsDirectory() {
   return base::FilePath();
 }
 
@@ -921,6 +930,10 @@ bool ContentBrowserClient::
     ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport() {
   return false;
 }
+
+bool ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync() {
+  return true;
+}
 #endif
 
 bool ContentBrowserClient::AllowRenderingMhtmlOverHttp(
@@ -1012,10 +1025,10 @@ std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
 bool ContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
     WebContents::Getter web_contents_getter,
-    int child_id,
     int frame_tree_node_id,
     NavigationUIData* navigation_data,
-    bool is_main_frame,
+    bool is_primary_main_frame,
+    bool is_in_fenced_frame_tree,
     network::mojom::WebSandboxFlags sandbox_flags,
     ui::PageTransition page_transition,
     bool has_user_gesture,

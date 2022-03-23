@@ -16,8 +16,7 @@ source from within a Chromium checkout on Mac and Linux by running, for example,
 ninja -C out/Release minidump_stackwalk dump_syms. To build these tools from
 source in a Breakpad checkout, check out the source from
 <http://code.google.com/p/google-breakpad/> and follow the included
-instructions. Prebuilt binaries from thestig@ are [available for
-download](https://drive.google.com/folderview?id=0B5yuieQYffwPfmYwNktxYUVxb2tobHlkS2hqcjlHMUplMTdndkVaMlU0QXlaa3cwSE9xZm8&usp=sharing).
+instructions.
 
 ### Get the crash dump
 

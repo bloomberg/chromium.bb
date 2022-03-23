@@ -1,6 +1,6 @@
 project('harfbuzz', 'c', 'cpp',
   meson_version: '>= 0.55.0',
-  version: '3.2.0',
+  version: '4.0.1',
   default_options: [
     'cpp_rtti=false',       # Just to support msvc, we are passing -fno-exceptions also anyway
     'cpp_std=c++11',
@@ -57,6 +57,12 @@ if host_machine.cpu_family() == 'arm' and cpp.alignment('struct { char c; }') !=
   endif
 endif
 
+if host_machine.system() == 'windows'
+  add_project_arguments(cpp.get_supported_arguments([
+    '-Wa,-mbig-obj'
+  ]), language : 'cpp')
+endif
+
 check_headers = [
   ['unistd.h'],
   ['sys/mman.h'],
@@ -77,52 +83,31 @@ check_funcs = [
 
 m_dep = cpp.find_library('m', required: false)
 
-freetype_dep = null_dep
-if not get_option('freetype').disabled()
-  freetype_dep = dependency('freetype2', required: false)
+# https://github.com/harfbuzz/harfbuzz/pull/2498
+freetype_dep = dependency(cpp.get_argument_syntax() == 'msvc' ? 'freetype' : 'freetype2',
+                          required: get_option('freetype'),
+                          default_options: ['harfbuzz=disabled'])
 
-  if (not freetype_dep.found() and
-      cpp.get_id() == 'msvc' and
-      cpp.has_header('ft2build.h'))
-    freetype_dep = cpp.find_library('freetype', required: false)
-  endif
-
-  if not freetype_dep.found()
-    # https://github.com/harfbuzz/harfbuzz/pull/2498
-    freetype_dep = dependency('freetype2', required: get_option('freetype'),
-                              fallback: ['freetype2', 'freetype_dep'],
-                              default_options: ['harfbuzz=disabled'])
-  endif
-endif
-
-glib_dep = dependency('glib-2.0', required: get_option('glib'),
-                      fallback: ['glib', 'libglib_dep'])
-gobject_dep = dependency('gobject-2.0', required: get_option('gobject'),
-                         fallback: ['glib', 'libgobject_dep'])
+glib_dep = dependency('glib-2.0', required: get_option('glib'))
+gobject_dep = dependency('gobject-2.0', required: get_option('gobject'))
 graphite2_dep = dependency('graphite2', required: get_option('graphite2'))
 graphite_dep = dependency('graphite2', required: get_option('graphite'))
 
-icu_dep = null_dep
-if not get_option('icu').disabled()
-  icu_dep = dependency('icu-uc', required: false)
+if cpp.get_argument_syntax() == 'msvc'
+  icu_dep = dependency('ICU',
+                       required: get_option('icu'),
+                       components: 'uc',
+                       method: 'cmake')
+else
+  icu_dep = dependency('icu-uc',
+                       required: get_option('icu'),
+                       method: 'pkg-config')
+endif
 
-  if (not icu_dep.found() and
-      cpp.get_id() == 'msvc' and
-      cpp.has_header('unicode/uchar.h') and
-      cpp.has_header('unicode/unorm2.h') and
-      cpp.has_header('unicode/ustring.h') and
-      cpp.has_header('unicode/utf16.h') and
-      cpp.has_header('unicode/uversion.h') and
-      cpp.has_header('unicode/uscript.h'))
-    if get_option('buildtype') == 'debug'
-      icu_dep = cpp.find_library('icuucd', required: false)
-    else
-      icu_dep = cpp.find_library('icuuc', required: false)
-    endif
-  endif
-
-  if not icu_dep.found()
-    icu_dep = dependency('icu-uc', required: get_option('icu'))
+if icu_dep.found() and icu_dep.type_name() == 'pkgconfig'
+  icu_defs = icu_dep.get_variable(pkgconfig: 'DEFS', default_value: '').split()
+  if icu_defs.length() > 0
+    add_project_arguments(icu_defs, language: ['c', 'cpp'])
   endif
 endif
 
@@ -148,8 +133,8 @@ if not get_option('cairo').disabled()
     # dependency cycle here because we have configured freetype2 above with
     # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
     # it will be forced to use that one.
-    cairo_dep = dependency('cairo', fallback: 'cairo', required: get_option('cairo'))
-    cairo_ft_dep = dependency('cairo-ft', fallback: 'cairo', required: get_option('cairo'))
+    cairo_dep = dependency('cairo', required: get_option('cairo'))
+    cairo_ft_dep = dependency('cairo-ft', required: get_option('cairo'))
   endif
 endif
 
@@ -176,6 +161,11 @@ endif
 
 if cairo_dep.found()
   conf.set('HAVE_CAIRO', 1)
+  if cairo_dep.type_name() == 'internal'
+    conf.set('HAVE_CAIRO_USER_FONT_FACE_SET_RENDER_COLOR_GLYPH_FUNC', 1)
+  else
+    check_funcs += [['cairo_user_font_face_set_render_color_glyph_func', {'deps': cairo_dep}]]
+  endif
 endif
 
 if cairo_ft_dep.found()

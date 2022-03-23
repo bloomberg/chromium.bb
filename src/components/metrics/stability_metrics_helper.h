@@ -33,7 +33,7 @@ enum class StabilityEventType {
   kLaunch = 15,
   kBrowserCrash = 16,
   // kIncompleteShutdown = 17,  // Removed due to disuse and correctness issues.
-  kPluginCrash = 22,
+  // kPluginCrash = 22,  // Removed due to plugin deprecation.
   kRendererFailedLaunch = 24,
   kExtensionRendererFailedLaunch = 25,
   kRendererLaunch = 26,
@@ -84,10 +84,12 @@ class StabilityMetricsHelper {
   // Logs the initiation of a page load.
   void LogLoadStarted();
 
+#if !BUILDFLAG(IS_ANDROID)
   // Records a renderer process crash.
   void LogRendererCrash(bool was_extension_process,
                         base::TerminationStatus status,
                         int exit_code);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Records that a new renderer process was successfully launched.
   void LogRendererLaunched(bool was_extension_process);

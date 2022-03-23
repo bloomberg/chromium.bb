@@ -435,9 +435,6 @@ def main():
       'lld': [
       ],
   }
-  if sys.platform.startswith('linux'):
-    reclient_inputs['clang'].append('lib/libstdc++.so.6')
-    reclient_inputs['lld'].append('lib/libstdc++.so.6')
 
   # Check that all non-glob wanted files exist on disk.
   want = [w.replace('$V', RELEASE_VERSION) for w in want]
@@ -569,6 +566,15 @@ def main():
   PackageInArchive(clang_tidy_dir, clang_tidy_dir + '.tgz')
   MaybeUpload(args.upload, clang_tidy_dir + '.tgz', gcs_platform)
 
+  # Zip up clang-format so we can update it (separately from the clang roll).
+  clang_format_dir = 'clang-format-' + stamp
+  shutil.rmtree(clang_format_dir, ignore_errors=True)
+  os.makedirs(os.path.join(clang_format_dir, 'bin'))
+  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'clang-format' + exe_ext),
+              os.path.join(clang_format_dir, 'bin'))
+  PackageInArchive(clang_format_dir, clang_format_dir + '.tgz')
+  MaybeUpload(args.upload, clang_format_dir + '.tgz', gcs_platform)
+
   # Zip up clang-libs for users who opt into it. We want Clang and LLVM headers
   # and libs, as well as a couple binaries. The LLVM parts are needed by the
   # Rust build.
@@ -583,19 +589,25 @@ def main():
 
   # Copy LLVM includes. The llvm source and build directory includes must be
   # merged. llvm-c for C bindings is also included.
+  #
+  # Headers and libs are copied from LLVM_BOOTSTRAP_DIR, not LLVM_RELEASE_DIR,
+  # because the release libs have LTO so they contain LLVM bitcode while the
+  # bootstrap libs do not. The Rust build consumes these,the first stage of
+  # which cannot handle newer LLVM bitcode. The stage 0 rustc is linked against
+  # an older LLVM.
   shutil.copytree(os.path.join(LLVM_DIR, 'llvm', 'include', 'llvm'),
                   os.path.join(clang_libs_dir, 'include', 'llvm'))
   shutil.copytree(os.path.join(LLVM_DIR, 'llvm', 'include', 'llvm-c'),
                   os.path.join(clang_libs_dir, 'include', 'llvm-c'))
-  shutil.copytree(os.path.join(LLVM_RELEASE_DIR, 'include', 'llvm'),
+  shutil.copytree(os.path.join(LLVM_BOOTSTRAP_DIR, 'include', 'llvm'),
                   os.path.join(clang_libs_dir, 'include', 'llvm'),
                   dirs_exist_ok=True)
 
   # Copy llvm-config and FileCheck which the Rust build needs
   os.makedirs(os.path.join(clang_libs_dir, 'bin'))
-  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-config' + exe_ext),
+  shutil.copy(os.path.join(LLVM_BOOTSTRAP_DIR, 'bin', 'llvm-config' + exe_ext),
               os.path.join(clang_libs_dir, 'bin'))
-  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'FileCheck' + exe_ext),
+  shutil.copy(os.path.join(LLVM_BOOTSTRAP_DIR, 'bin', 'FileCheck' + exe_ext),
               os.path.join(clang_libs_dir, 'bin'))
 
   os.makedirs(os.path.join(clang_libs_dir, 'lib'))
@@ -607,10 +619,10 @@ def main():
     clang_libs_want = [
         '*.a',
     ]
-  for lib_path in os.listdir(os.path.join(LLVM_RELEASE_DIR, 'lib')):
+  for lib_path in os.listdir(os.path.join(LLVM_BOOTSTRAP_DIR, 'lib')):
     for lib_want in clang_libs_want:
       if fnmatch.fnmatch(lib_path, lib_want):
-        shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'lib', lib_path),
+        shutil.copy(os.path.join(LLVM_BOOTSTRAP_DIR, 'lib', lib_path),
                     os.path.join(clang_libs_dir, 'lib'))
   PackageInArchive(clang_libs_dir, clang_libs_dir + '.tgz')
   MaybeUpload(args.upload, clang_libs_dir + '.tgz', gcs_platform)

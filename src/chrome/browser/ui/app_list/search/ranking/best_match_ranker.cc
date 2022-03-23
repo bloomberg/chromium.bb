@@ -45,11 +45,18 @@ bool ShouldIgnoreProvider(ProviderType type) {
 }
 
 bool ShouldIgnoreResult(const ChromeSearchResult* result) {
+  // Ignore:
+  // - answer results: ANSWER and CALCULATOR.
+  // - 'magnifying glass' results: WEB_QUERY, SEARCH_SUGGEST,
+  //   SEARCH_SUGGEST_PERSONALIZED.
+  //
   // TODO(crbug.com/1258415): We should have a more robust way of determining
   // omnibox subtypes than using the metrics type.
-  return result->metrics_type() == ash::OMNIBOX_WEB_QUERY ||
-         result->metrics_type() == ash::OMNIBOX_ANSWER ||
-         result->metrics_type() == ash::OMNIBOX_CALCULATOR;
+  return result->metrics_type() == ash::OMNIBOX_ANSWER ||
+         result->metrics_type() == ash::OMNIBOX_CALCULATOR ||
+         result->metrics_type() == ash::OMNIBOX_WEB_QUERY ||
+         result->metrics_type() == ash::OMNIBOX_SEARCH_SUGGEST ||
+         result->metrics_type() == ash::OMNIBOX_SUGGEST_PERSONALIZED;
 }
 
 }  // namespace
@@ -108,7 +115,7 @@ void BestMatchRanker::UpdateResultRanks(ResultsMap& results,
       continue;
     }
     Scoring& scoring = result->scoring();
-    if (scoring.normalized_relevance >= kBestMatchThreshold) {
+    if (scoring.BestMatchScore() >= kBestMatchThreshold) {
       best_matches_.push_back(result->GetWeakPtr());
     }
   }
@@ -123,8 +130,8 @@ void BestMatchRanker::UpdateResultRanks(ResultsMap& results,
     // first time, simply sort by relevance.
     std::sort(best_matches_.begin(), best_matches_.end(),
               [](const auto& a, const auto& b) {
-                return a->scoring().normalized_relevance >
-                       b->scoring().normalized_relevance;
+                return a->scoring().BestMatchScore() >
+                       b->scoring().BestMatchScore();
               });
   } else {
     // Post-burn-in, where best matches exist from previous provider returns,

@@ -19,6 +19,7 @@
 #include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #endif // SK_SUPPORT_GPU
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkColorFilter.h"
 #include "include/core/SkMaskFilter.h"
 #include "include/core/SkPathEffect.h"
@@ -123,7 +124,7 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
                                     || (stroking && !hairline);
             if (!needsExactCTM) {
                 for (auto [variant, pos] : fAccepted.accepted()) {
-                    const SkPath* path = variant.path();
+                    const SkPath* path = variant.glyph()->path();
                     SkMatrix m;
                     SkPoint translate = drawOrigin + pos;
                     m.setScaleTranslate(strikeToSourceScale, strikeToSourceScale,
@@ -134,7 +135,7 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
                 }
             } else {
                for (auto [variant, pos] : fAccepted.accepted()) {
-                    const SkPath* path = variant.path();
+                    const SkPath* path = variant.glyph()->path();
                     SkMatrix m;
                     SkPoint translate = drawOrigin + pos;
                     m.setScaleTranslate(strikeToSourceScale, strikeToSourceScale,
@@ -153,7 +154,7 @@ void SkGlyphRunListPainter::drawForBitmapDevice(
                 fRejected.flipRejectsToSource();
 
                 for (auto [variant, pos] : fAccepted.accepted()) {
-                    SkDrawable* drawable = variant.drawable();
+                    SkDrawable* drawable = variant.glyph()->drawable();
                     SkMatrix m;
                     SkPoint translate = drawOrigin + pos;
                     m.setScaleTranslate(strikeToSourceScale, strikeToSourceScale,
@@ -392,7 +393,10 @@ void SkGlyphRunListPainter::processGlyphRun(SkGlyphRunPainterInterface* process,
             if (process && !fAccepted.empty()) {
                 // processSourceDrawables must be called even if there are no glyphs to make sure
                 // runs are set correctly.
-                process->processSourceDrawables(fAccepted.accepted(), runFont, strikeToSourceScale);
+                process->processSourceDrawables(fAccepted.accepted(),
+                                                runFont,
+                                                strikeSpec.descriptor(),
+                                                strikeToSourceScale);
             }
         }
     }
@@ -420,7 +424,10 @@ void SkGlyphRunListPainter::processGlyphRun(SkGlyphRunPainterInterface* process,
             if (process && !fAccepted.empty()) {
                 // processSourcePaths must be called even if there are no glyphs to make sure
                 // runs are set correctly.
-                process->processSourcePaths(fAccepted.accepted(), runFont, strikeToSourceScale);
+                process->processSourcePaths(fAccepted.accepted(),
+                                            runFont,
+                                            strikeSpec.descriptor(),
+                                            strikeToSourceScale);
             }
         }
     }
@@ -490,11 +497,11 @@ SkVector SkGlyphPositionRoundingSpec::HalfAxisSampleFreq(
         return {SK_ScalarHalf, SK_ScalarHalf};
     } else {
         switch (axisAlignment) {
-            case kX_SkAxisAlignment:
+            case SkAxisAlignment::kX:
                 return {SkPackedGlyphID::kSubpixelRound, SK_ScalarHalf};
-            case kY_SkAxisAlignment:
+            case SkAxisAlignment::kY:
                 return {SK_ScalarHalf, SkPackedGlyphID::kSubpixelRound};
-            case kNone_SkAxisAlignment:
+            case SkAxisAlignment::kNone:
                 return {SkPackedGlyphID::kSubpixelRound, SkPackedGlyphID::kSubpixelRound};
         }
     }
@@ -505,8 +512,8 @@ SkVector SkGlyphPositionRoundingSpec::HalfAxisSampleFreq(
 
 SkIPoint SkGlyphPositionRoundingSpec::IgnorePositionMask(
         bool isSubpixel, SkAxisAlignment axisAlignment) {
-    return SkIPoint::Make((!isSubpixel || axisAlignment == kY_SkAxisAlignment) ? 0 : ~0,
-                          (!isSubpixel || axisAlignment == kX_SkAxisAlignment) ? 0 : ~0);
+    return SkIPoint::Make((!isSubpixel || axisAlignment == SkAxisAlignment::kY) ? 0 : ~0,
+                          (!isSubpixel || axisAlignment == SkAxisAlignment::kX) ? 0 : ~0);
 }
 
 SkIPoint SkGlyphPositionRoundingSpec::IgnorePositionFieldMask(bool isSubpixel,

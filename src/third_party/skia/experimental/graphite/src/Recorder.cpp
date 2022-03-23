@@ -15,10 +15,10 @@
 #include "experimental/graphite/src/DrawBufferManager.h"
 #include "experimental/graphite/src/GlobalCache.h"
 #include "experimental/graphite/src/Gpu.h"
+#include "experimental/graphite/src/PipelineDataCache.h"
 #include "experimental/graphite/src/ResourceProvider.h"
 #include "experimental/graphite/src/TaskGraph.h"
-#include "experimental/graphite/src/UniformCache.h"
-#include "src/core/SkUniformData.h"
+#include "src/core/SkPipelineData.h"
 
 namespace skgpu {
 
@@ -27,7 +27,7 @@ namespace skgpu {
 Recorder::Recorder(sk_sp<Gpu> gpu, sk_sp<GlobalCache> globalCache)
         : fGpu(std::move(gpu))
         , fGraph(new TaskGraph)
-        , fUniformCache(new UniformCache) {
+        , fPipelineDataCache(new PipelineDataCache) {
 
     fResourceProvider = fGpu->makeResourceProvider(std::move(globalCache), this->singleOwner());
     fDrawBufferManager.reset(new DrawBufferManager(fResourceProvider.get(),
@@ -74,6 +74,7 @@ void Recorder::deregisterDevice(const Device* device) {
 
 #if GR_TEST_UTILS
 bool Recorder::deviceIsRegistered(Device* device) {
+    ASSERT_SINGLE_OWNER
     for (auto& currentDevice : fTrackedDevices) {
         if (device == currentDevice) {
             return true;

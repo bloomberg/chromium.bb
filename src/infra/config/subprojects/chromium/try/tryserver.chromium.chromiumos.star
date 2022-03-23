@@ -74,6 +74,13 @@ try_.builder(
 )
 
 try_.builder(
+    name = "chromeos-arm64-generic-rel",
+    branch_selector = branches.CROS_LTS_MILESTONE,
+    mirrors = ["ci/chromeos-arm64-generic-rel"],
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+try_.builder(
     name = "lacros-amd64-generic-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
@@ -176,6 +183,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-dbg",
+    # The CI builder that this mirrors is enabled on branches, so this will
+    # allow testing changes that would break it before submitting
+    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 try_.builder(
@@ -217,6 +227,6 @@ try_.builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(
-        experiment_percentage = 1,
+        experiment_percentage = 5,
     ),
 )

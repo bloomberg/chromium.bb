@@ -6,7 +6,8 @@
 #define QUICHE_QUIC_PLATFORM_API_QUIC_CLIENT_STATS_H_
 
 #include <string>
-#include "net/quic/platform/impl/quic_client_stats_impl.h"
+
+#include "common/platform/api/quiche_client_stats.h"
 
 namespace quic {
 
@@ -29,7 +30,7 @@ namespace quic {
 // Note: The value in |sample| must be strictly less than |enum_size|.
 
 #define QUIC_CLIENT_HISTOGRAM_ENUM(name, sample, enum_size, docstring) \
-  QUIC_CLIENT_HISTOGRAM_ENUM_IMPL(name, sample, enum_size, docstring)
+  QUICHE_CLIENT_HISTOGRAM_ENUM(name, sample, enum_size, docstring)
 
 //------------------------------------------------------------------------------
 // Histogram for boolean values.
@@ -38,7 +39,7 @@ namespace quic {
 //   QUIC_CLIENT_HISTOGRAM_BOOL("My.Boolean", bool,
 //   "Number of times $foo is true or false");
 #define QUIC_CLIENT_HISTOGRAM_BOOL(name, sample, docstring) \
-  QUIC_CLIENT_HISTOGRAM_BOOL_IMPL(name, sample, docstring)
+  QUICHE_CLIENT_HISTOGRAM_BOOL(name, sample, docstring)
 
 //------------------------------------------------------------------------------
 // Timing histograms. These are used for collecting timing data (generally
@@ -54,8 +55,7 @@ namespace quic {
 //       24), 100, "Time spent in doing operation.");
 #define QUIC_CLIENT_HISTOGRAM_TIMES(name, sample, min, max, bucket_count, \
                                     docstring)                            \
-  QUIC_CLIENT_HISTOGRAM_TIMES_IMPL(name, sample, min, max, bucket_count,  \
-                                   docstring)
+  QUICHE_CLIENT_HISTOGRAM_TIMES(name, sample, min, max, bucket_count, docstring)
 
 //------------------------------------------------------------------------------
 // Count histograms. These are used for collecting numeric data.
@@ -75,11 +75,11 @@ namespace quic {
 
 #define QUIC_CLIENT_HISTOGRAM_COUNTS(name, sample, min, max, bucket_count, \
                                      docstring)                            \
-  QUIC_CLIENT_HISTOGRAM_COUNTS_IMPL(name, sample, min, max, bucket_count,  \
-                                    docstring)
+  QUICHE_CLIENT_HISTOGRAM_COUNTS(name, sample, min, max, bucket_count,     \
+                                 docstring)
 
 inline void QuicClientSparseHistogram(const std::string& name, int sample) {
-  QuicClientSparseHistogramImpl(name, sample);
+  quiche::QuicheClientSparseHistogram(name, sample);
 }
 
 }  // namespace quic

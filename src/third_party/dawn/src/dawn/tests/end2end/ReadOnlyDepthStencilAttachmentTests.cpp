@@ -149,11 +149,13 @@ class ReadOnlyDepthStencilAttachmentTests
         // Note that we must encompass all aspects for texture view used in attachment.
         wgpu::TextureView depthStencilViewInAttachment = depthStencilTexture.CreateView();
         utils::ComboRenderPassDescriptor passDescriptorInit({}, depthStencilViewInAttachment);
+        passDescriptorInit.UnsetDepthStencilLoadStoreOpsForFormat(format);
         if (aspect == wgpu::TextureAspect::DepthOnly) {
-            passDescriptorInit.cDepthStencilAttachmentInfo.clearDepth = values->depthInitValue;
+            passDescriptorInit.cDepthStencilAttachmentInfo.depthClearValue = values->depthInitValue;
         } else {
             ASSERT(aspect == wgpu::TextureAspect::StencilOnly);
-            passDescriptorInit.cDepthStencilAttachmentInfo.clearStencil = values->stencilInitValue;
+            passDescriptorInit.cDepthStencilAttachmentInfo.stencilClearValue =
+                values->stencilInitValue;
         }
         wgpu::RenderPassEncoder passInit = commandEncoder.BeginRenderPass(&passDescriptorInit);
         passInit.End();

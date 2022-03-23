@@ -21,7 +21,7 @@ namespace {
 // approximately 33 pts between the plus button and the done button.
 const int kIconButtonAdditionalSpace = 20;
 const int kSelectionModeButtonSize = 17;
-const int kSearchBarTrailingSpace = 40;
+const int kSearchBarTrailingSpace = 24;
 }
 
 @interface TabGridTopToolbar () <UIToolbarDelegate>
@@ -72,6 +72,13 @@ const int kSearchBarTrailingSpace = 40;
   // Reset the Select All button to its default title.
   [self configureSelectAllButtonTitle];
   [self setItemsForTraitCollection:self.traitCollection];
+  if (mode == TabGridModeSearch) {
+    // Focus the search bar, and make it a first responder once the user enter
+    // to search mode. Doing that here instead in |setItemsForTraitCollection|
+    // makes sure it's only called once and allows the voicOver to transition
+    // smoothly and to say that there is a search field opened.
+    [_searchBar becomeFirstResponder];
+  }
 }
 
 - (void)setSelectedTabsCount:(int)count {
@@ -232,8 +239,11 @@ const int kSearchBarTrailingSpace = 40;
   if (![self shouldUseCompactLayout:traitCollection])
     widthModifier = kTabGridSearchBarNonCompactWidthRatioModifier;
 
-  CGFloat cancelWidth =
-      [_cancelSearchButton.title sizeWithAttributes:nil].width;
+  CGFloat cancelWidth = [_cancelSearchButton.title sizeWithAttributes:@{
+                          NSFontAttributeName : [UIFont
+                              preferredFontForTextStyle:UIFontTextStyleBody]
+                        }]
+                            .width;
   CGFloat barWidth =
       (self.bounds.size.width - kSearchBarTrailingSpace - cancelWidth) *
       kTabGridSearchBarWidthRatio * widthModifier;
@@ -243,7 +253,6 @@ const int kSearchBarTrailingSpace = 40;
   [self setNeedsLayout];
   [self setItems:@[ _searchBarItem, _spaceItem, _cancelSearchButton ]
         animated:YES];
-  [_searchBar becomeFirstResponder];
 }
 
 - (void)setItemsForTraitCollection:(UITraitCollection*)traitCollection {
@@ -285,16 +294,6 @@ const int kSearchBarTrailingSpace = 40;
   else
     _leadingButton = _closeAllOrUndoButton;
 
-  if (ShowThumbStripInTraitCollection(traitCollection)) {
-    // The new tab button is only used if the thumb strip is enabled. In other
-    // cases, there is a floating new tab button on the bottom.
-    [self setItems:@[
-      _leadingButton, _spaceItem, centralItem, _spaceItem, _newTabButton,
-      _iconButtonAdditionalSpaceItem, trailingButton
-    ]];
-    return;
-  }
-
   if (_mode == TabGridModeSelection) {
     // In the selection mode, Done button is much smaller than SelectAll
     // we need to calculate the difference on the width and use it as a
@@ -304,18 +303,34 @@ const int kSearchBarTrailingSpace = 40;
     _leadingButton = _selectAllButton;
   }
 
+  // Build item list based on priority: tab search takes precedence over thumb
+  // strip.
+
+  BOOL animated = NO;
+  NSMutableArray* items = [[NSMutableArray alloc] init];
+
+  [items addObject:_leadingButton];
+
   if (IsTabsSearchEnabled() && _mode == TabGridModeNormal) {
-    [self setItems:@[
-      _leadingButton, _iconButtonAdditionalSpaceItem, _searchButton, _spaceItem,
-      centralItem, _spaceItem, trailingButton
-    ]];
-    return;
+    animated = YES;
+    [items
+        addObjectsFromArray:@[ _iconButtonAdditionalSpaceItem, _searchButton ]];
   }
 
-  [self setItems:@[
-    _leadingButton, _spaceItem, centralItem, _spaceItem,
-    _selectionModeFixedSpace, trailingButton
-  ]];
+  [items addObjectsFromArray:@[ _spaceItem, centralItem, _spaceItem ]];
+
+  if (ShowThumbStripInTraitCollection(traitCollection)) {
+    // The new tab button is only used if the thumb strip is enabled. In other
+    // cases, there is a floating new tab button on the bottom.
+    [items
+        addObjectsFromArray:@[ _newTabButton, _iconButtonAdditionalSpaceItem ]];
+  } else if (!IsTabsSearchEnabled() || _mode != TabGridModeNormal) {
+    [items addObject:_selectionModeFixedSpace];
+  }
+
+  [items addObject:trailingButton];
+
+  [self setItems:items animated:animated];
 }
 
 // Calculates the space width to use for selection mode.
@@ -402,7 +417,7 @@ const int kSearchBarTrailingSpace = 40;
     // create a custom cancel button.
     _searchBar.showsCancelButton = NO;
     _cancelSearchButton = [[UIBarButtonItem alloc] init];
-    _cancelSearchButton.style = UIBarButtonItemStyleDone;
+    _cancelSearchButton.style = UIBarButtonItemStylePlain;
     _cancelSearchButton.tintColor =
         UIColorFromRGB(kTabGridToolbarTextButtonColor);
     _cancelSearchButton.accessibilityIdentifier =

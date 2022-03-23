@@ -53,6 +53,13 @@
 #include <future>
 #endif
 #endif
+#if __cplusplus > 201703L
+// libstdc++ 9's <memory> indirectly uses max() via <bit>.
+// libstdc++ 10's <memory> indirectly uses max() via ranges headers.
+#include <memory>
+// libstdc++ 11's <thread> indirectly uses max() via semaphore headers.
+#include <thread>
+#endif
 
 // Configure GPU.
 #if defined(EIGEN_USE_HIP)

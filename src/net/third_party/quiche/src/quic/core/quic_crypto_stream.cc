@@ -140,11 +140,9 @@ void QuicCryptoStream::WriteCryptoData(EncryptionLevel level,
   }
   const bool had_buffered_data = HasBufferedCryptoFrames();
   // Append |data| to the send buffer for this encryption level.
-  struct iovec iov(QuicUtils::MakeIovec(data));
   QuicStreamSendBuffer* send_buffer = &substreams_[level].send_buffer;
   QuicStreamOffset offset = send_buffer->stream_offset();
-  send_buffer->SaveStreamData(&iov, /*iov_count=*/1, /*iov_offset=*/0,
-                              data.length());
+  send_buffer->SaveStreamData(data);
   if (kMaxStreamLength - offset < data.length()) {
     QUIC_BUG(quic_bug_10322_2) << "Writing too much crypto handshake data";
     // TODO(nharper): Switch this to an IETF QUIC error code, possibly
@@ -378,7 +376,7 @@ void QuicCryptoStream::OnCryptoFrameLost(QuicCryptoFrame* crypto_frame) {
       crypto_frame->offset, crypto_frame->data_length);
 }
 
-void QuicCryptoStream::RetransmitData(QuicCryptoFrame* crypto_frame,
+bool QuicCryptoStream::RetransmitData(QuicCryptoFrame* crypto_frame,
                                       TransmissionType type) {
   QUIC_BUG_IF(quic_bug_12573_6,
               !QuicVersionUsesCryptoFrames(session()->transport_version()))
@@ -389,7 +387,7 @@ void QuicCryptoStream::RetransmitData(QuicCryptoFrame* crypto_frame,
       &substreams_[crypto_frame->level].send_buffer;
   retransmission.Difference(send_buffer->bytes_acked());
   if (retransmission.Empty()) {
-    return;
+    return true;
   }
   for (const auto& interval : retransmission) {
     size_t retransmission_offset = interval.min();
@@ -400,9 +398,10 @@ void QuicCryptoStream::RetransmitData(QuicCryptoFrame* crypto_frame,
     send_buffer->OnStreamDataRetransmitted(retransmission_offset,
                                            bytes_consumed);
     if (bytes_consumed < retransmission_length) {
-      break;
+      return false;
     }
   }
+  return true;
 }
 
 void QuicCryptoStream::WriteBufferedCryptoFrames() {

@@ -8,5 +8,5 @@ int main()
    Eigen::VectorXf b = Eigen::VectorXf::Random(3);
    std::cout << "Here is the right hand side b:\n" << b << std::endl;
    std::cout << "The least-squares solution is:\n"
-        << A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b) << std::endl;
+        << A.template bdcSvd<Eigen::ComputeThinU | Eigen::ComputeThinV>().solve(b) << std::endl;
 }

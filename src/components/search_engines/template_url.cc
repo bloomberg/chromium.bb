@@ -19,6 +19,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -37,6 +38,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "net/base/url_util.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
@@ -728,6 +730,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_PREFETCH_SOURCE, start));
   } else if (parameter == "google:RLZ") {
     replacements->push_back(Replacement(GOOGLE_RLZ, start));
+  } else if (parameter == "google:searchboxStats") {
+    replacements->push_back(Replacement(GOOGLE_SEARCHBOX_STATS, start));
   } else if (parameter == "google:searchClient") {
     replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
   } else if (parameter == "google:searchFieldtrialParameter") {
@@ -1049,20 +1053,63 @@ std::string TemplateURLRef::HandleReplacements(
       case GOOGLE_ASSISTED_QUERY_STATS:
         DCHECK(!replacement.is_post_param);
         if (!search_terms_args.assisted_query_stats.empty()) {
-          // Get the base URL without substituting AQS to avoid infinite
-          // recursion.  We need the URL to find out if it meets all
-          // AQS requirements (e.g. HTTPS protocol check).
-          // See TemplateURLRef::SearchTermsArgs for more details.
-          SearchTermsArgs search_terms_args_without_aqs(search_terms_args);
-          search_terms_args_without_aqs.assisted_query_stats.clear();
-          GURL base_url(ReplaceSearchTerms(search_terms_args_without_aqs,
+          // Get the base URL without substituting AQS and gs_lcrp to avoid
+          // infinite recursion and unwanted replacement respectively. We need
+          // the URL to find out if it meets all AQS requirements (e.g. HTTPS
+          // protocol check). See TemplateURLRef::SearchTermsArgs for more
+          // details.
+          SearchTermsArgs sanitized_search_terms_args(search_terms_args);
+          sanitized_search_terms_args.assisted_query_stats.clear();
+          // Clear the proto. Its empty state has a serialized size of zero.
+          sanitized_search_terms_args.searchbox_stats.Clear();
+          GURL base_url(ReplaceSearchTerms(sanitized_search_terms_args,
                                            search_terms_data, nullptr));
-          if (base_url.SchemeIsCryptographic()) {
+          if (base_url.SchemeIsCryptographic() &&
+              base::FeatureList::IsEnabled(
+                  omnibox::kReportAssistedQueryStats)) {
             HandleReplacement("aqs", search_terms_args.assisted_query_stats,
                               replacement, &url);
+            base::UmaHistogramCounts1000(
+                "Omnibox.AssistedQueryStats.Length",
+                static_cast<int>(
+                    search_terms_args.assisted_query_stats.length()));
           }
         }
         break;
+
+      case GOOGLE_SEARCHBOX_STATS: {
+        DCHECK(!replacement.is_post_param);
+        if (search_terms_args.searchbox_stats.ByteSizeLong() > 0) {
+          // Get the base URL without substituting gs_lcrp and AQS to avoid
+          // infinite recursion and unwanted replacement respectively. We need
+          // the URL to find out if it meets all gs_lcrp requirements (e.g.
+          // HTTPS protocol check). See TemplateURLRef::SearchTermsArgs for more
+          // details.
+          SearchTermsArgs sanitized_search_terms_args(search_terms_args);
+          sanitized_search_terms_args.assisted_query_stats.clear();
+          // Clear the proto. Its empty state has a serialized size of zero.
+          sanitized_search_terms_args.searchbox_stats.Clear();
+          GURL base_url(ReplaceSearchTerms(sanitized_search_terms_args,
+                                           search_terms_data, nullptr));
+          if (base_url.SchemeIsCryptographic() &&
+              base::FeatureList::IsEnabled(omnibox::kReportSearchboxStats)) {
+            std::string serialized_searchbox_stats;
+            search_terms_args.searchbox_stats.SerializeToString(
+                &serialized_searchbox_stats);
+            if (!serialized_searchbox_stats.empty()) {
+              std::string encoded_searchbox_stats;
+              base::Base64Encode(serialized_searchbox_stats,
+                                 &encoded_searchbox_stats);
+              HandleReplacement("gs_lcrp", encoded_searchbox_stats, replacement,
+                                &url);
+              base::UmaHistogramCounts1000(
+                  "Omnibox.SearchboxStats.Length",
+                  static_cast<int>(encoded_searchbox_stats.length()));
+            }
+          }
+        }
+        break;
+      }
 
       case GOOGLE_BASE_URL:
         DCHECK(!replacement.is_post_param);
@@ -1626,6 +1673,19 @@ GURL TemplateURL::GenerateSearchURL(
   return GURL(url_ref().ReplaceSearchTerms(
       TemplateURLRef::SearchTermsArgs(u"blah.blah.blah.blah.blah"),
       search_terms_data, nullptr));
+}
+
+bool TemplateURL::IsSideSearchSupported() const {
+  return !side_search_param().empty();
+}
+
+GURL TemplateURL::GenerateSideSearchURL(
+    const GURL& search_url,
+    const std::string& version,
+    const SearchTermsData& search_terms_data) const {
+  DCHECK(IsSideSearchSupported());
+  DCHECK(IsSearchURL(search_url, search_terms_data));
+  return net::AppendQueryParameter(search_url, side_search_param(), version);
 }
 
 void TemplateURL::CopyFrom(const TemplateURL& other) {

@@ -21,7 +21,7 @@ class QuicCryptoServerStream::ProcessClientHelloCallback
  public:
   ProcessClientHelloCallback(
       QuicCryptoServerStream* parent,
-      const QuicReferenceCountedPointer<
+      const quiche::QuicheReferenceCountedPointer<
           ValidateClientHelloResultCallback::Result>& result)
       : parent_(parent), result_(result) {}
 
@@ -44,7 +44,8 @@ class QuicCryptoServerStream::ProcessClientHelloCallback
 
  private:
   QuicCryptoServerStream* parent_;
-  QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+  quiche::QuicheReferenceCountedPointer<
+      ValidateClientHelloResultCallback::Result>
       result_;
 };
 
@@ -137,7 +138,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 }
 
 void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
-    QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+    quiche::QuicheReferenceCountedPointer<
+        ValidateClientHelloResultCallback::Result>
         result,
     std::unique_ptr<ProofSource::Details> details) {
   // Clear the callback that got us here.
@@ -168,16 +170,12 @@ void QuicCryptoServerStream::
   AdjustTestValue("quic::QuicCryptoServerStream::after_process_client_hello",
                   session());
 
-  if (noop_if_disconnected_after_process_chlo_) {
-    QUIC_RELOADABLE_FLAG_COUNT(
-        quic_crypto_noop_if_disconnected_after_process_chlo);
-    if (!session()->connection()->connected()) {
-      QUIC_CODE_COUNT(quic_crypto_disconnected_after_process_client_hello);
-      QUIC_LOG_FIRST_N(INFO, 10)
-          << "After processing CHLO, QUIC connection has been closed with code "
-          << session()->error() << ", details: " << session()->error_details();
-      return;
-    }
+  if (!session()->connection()->connected()) {
+    QUIC_CODE_COUNT(quic_crypto_disconnected_after_process_client_hello);
+    QUIC_LOG_FIRST_N(INFO, 10)
+        << "After processing CHLO, QUIC connection has been closed with code "
+        << session()->error() << ", details: " << session()->error_details();
+    return;
   }
 
   const CryptoHandshakeMessage& message = result.client_hello;
@@ -309,6 +307,11 @@ void QuicCryptoServerStream::FinishSendServerConfigUpdate(
   ++num_server_config_update_messages_sent_;
 }
 
+bool QuicCryptoServerStream::DisableResumption() {
+  QUICHE_DCHECK(false) << "Not supported for QUIC crypto.";
+  return false;
+}
+
 bool QuicCryptoServerStream::IsZeroRtt() const {
   return num_handshake_messages_ == 1 &&
          num_handshake_messages_with_server_nonces_ == 0;
@@ -329,6 +332,11 @@ QuicCryptoServerStream::PreviousCachedNetworkParams() const {
 }
 
 bool QuicCryptoServerStream::ResumptionAttempted() const {
+  return zero_rtt_attempted_;
+}
+
+bool QuicCryptoServerStream::EarlyDataAttempted() const {
+  QUICHE_DCHECK(false) << "Not supported for QUIC crypto.";
   return zero_rtt_attempted_;
 }
 
@@ -450,7 +458,8 @@ QuicCryptoServerStream::CreateCurrentOneRttEncrypter() {
 }
 
 void QuicCryptoServerStream::ProcessClientHello(
-    QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+    quiche::QuicheReferenceCountedPointer<
+        ValidateClientHelloResultCallback::Result>
         result,
     std::unique_ptr<ProofSource::Details> proof_source_details,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) {
@@ -512,7 +521,7 @@ void QuicCryptoServerStream::ValidateCallback::Cancel() {
 }
 
 void QuicCryptoServerStream::ValidateCallback::Run(
-    QuicReferenceCountedPointer<Result> result,
+    quiche::QuicheReferenceCountedPointer<Result> result,
     std::unique_ptr<ProofSource::Details> details) {
   if (parent_ != nullptr) {
     parent_->FinishProcessingHandshakeMessage(std::move(result),

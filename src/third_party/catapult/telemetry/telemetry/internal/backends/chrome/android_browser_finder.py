@@ -285,6 +285,10 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     startup_args.append('--enable-remote-debugging')
     startup_args.append('--disable-fre')
     startup_args.append('--disable-external-intent-requests')
+    # TODO(crbug.com/1296097): Remove
+    # --danger-disable-safebrowsing-for-benchmarking in M104 or earlier after
+    # achieving lower latency of SafeBrowsing on Stable.
+    startup_args.append('--danger-disable-safebrowsing-for-benchmarking')
 
     # Need to specify the user profile directory for
     # --ignore-certificate-errors-spki-list to work.
@@ -342,7 +346,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
         self._platform_backend.device.RunShellCommand(
             ['cmd', 'package', 'compile', '-m', self._compile_apk, '-f',
              package_name],
-            check_return=True)
+            check_return=True,
+            timeout=120)
 
     sdk_version = self._platform_backend.device.build_version_sdk
     # Bundles are in the ../bin directory, so it's safer to just check the

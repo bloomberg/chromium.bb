@@ -10,10 +10,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "quic/core/quic_buffer_allocator.h"
-#include "quic/core/quic_simple_buffer_allocator.h"
 #include "quic/core/web_transport_interface.h"
-#include "quic/platform/api/quic_mem_slice.h"
 #include "quic/test_tools/web_transport_resets_backend.h"
 #include "quic/tools/web_transport_test_visitors.h"
 

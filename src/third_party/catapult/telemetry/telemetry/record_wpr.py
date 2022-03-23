@@ -127,17 +127,19 @@ def _PrintPairs(pairs, output_stream, prefix=''):
 
 class WprRecorder(object):
 
-  def __init__(self, environment, target, args=None):
+  def __init__(self, environment, target, args=None, parse_flags=True):
     self._base_dir = environment.top_level_dir
     self._output_dir = tempfile.mkdtemp()
     try:
       self._options = self._CreateOptions()
       self._benchmark = _MaybeGetInstanceOfClass(target, self._base_dir,
                                                  benchmark.Benchmark)
-      self._parser = self._options.CreateParser(usage='See %prog --help')
-      self._AddCommandLineArgs()
-      self._ParseArgs(args)
-      self._ProcessCommandLineArgs(environment)
+      if parse_flags:
+        self._parser = self._options.CreateParser(usage='See %prog --help')
+        self._AddCommandLineArgs()
+        self._ParseArgs(args)
+        self._ProcessCommandLineArgs(environment)
+        self._SetExtraBrowserOptions()
       page_test = None
       if self._benchmark is not None:
         test = self._benchmark.CreatePageTest(self.options)
@@ -146,8 +148,11 @@ class WprRecorder(object):
           page_test = test
 
       self._record_page_test = RecorderPageTest(page_test)
+      options = self._options
       self._page_set_base_dir = (
-          self._options.page_set_base_dir if self._options.page_set_base_dir
+          self._options.page_set_base_dir if
+          (hasattr('options', 'page_set_base_dir') and
+           options.page_set_base_dir)
           else self._base_dir)
       self._story_set = self._GetStorySet(target)
     except:
@@ -163,6 +168,10 @@ class WprRecorder(object):
   @property
   def options(self):
     return self._options
+
+  @property
+  def story_set(self):
+    return self._story_set
 
   def _CreateOptions(self):
     options = browser_options.BrowserFinderOptions()
@@ -193,7 +202,6 @@ class WprRecorder(object):
     story_runner.AddCommandLineArgs(self._parser)
     if self._benchmark is not None:
       self._benchmark.AddCommandLineArgs(self._parser)
-      self._benchmark.SetExtraBrowserOptions(self._options)
       self._benchmark.SetArgumentDefaults(self._parser)
     self._parser.add_option('--upload', action='store_true')
     self._parser.add_option('--use-local-wpr', action='store_true',
@@ -217,6 +225,10 @@ class WprRecorder(object):
 
     if self._benchmark is not None:
       self._benchmark.ProcessCommandLineArgs(self._parser, self._options)
+
+  def _SetExtraBrowserOptions(self):
+    if self._benchmark is not None:
+      self._benchmark.SetExtraBrowserOptions(self._options)
 
   def _GetStorySet(self, target):
     if self._benchmark is not None:
@@ -285,8 +297,9 @@ def Main(environment, **log_config_kwargs):
   parser = argparse.ArgumentParser(
       usage='Record a benchmark or a story (page set).')
   parser.add_argument(
-      'benchmark',
-      help=('benchmark name. This argument is optional. If both benchmark name '
+      'benchmark_or_story_set', # Note, positional.
+      help=('benchmark or story set name. This argument might be optional. '
+            'If both benchmark name '
             'and story name are specified, this takes precedence as the '
             'target of the recording.'),
       nargs='?')
@@ -307,7 +320,7 @@ def Main(environment, **log_config_kwargs):
       _PrintAllStories(environment.top_level_dir, sys.stderr)
     return 0
 
-  target = args.benchmark or args.story
+  target = args.benchmark_or_story_set or args.story
 
   if not target:
     sys.stderr.write('Please specify target (benchmark or story). Please refer '

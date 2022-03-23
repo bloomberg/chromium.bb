@@ -11,15 +11,19 @@ import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {DomIf, DomRepeat, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MerchantCart} from '../../chrome_cart.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../i18n_setup.js';
 import {recordOccurence} from '../../metrics_utils.js';
+import {InfoDialogElement} from '../info_dialog.js';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
 import {ChromeCartProxy} from './chrome_cart_proxy.js';
+import {DiscountConsentVariation} from './discount_consent_card.js';
 import {getTemplate} from './module.html.js';
 
 export interface ChromeCartModuleElement {
@@ -34,6 +38,7 @@ export interface ChromeCartModuleElement {
     dismissCartToast: CrToastElement,
     dismissCartToastMessage: HTMLElement,
     hideCartButton: HTMLElement,
+    infoDialogRender: CrLazyRenderElement<InfoDialogElement>,
     removeCartButton: HTMLElement,
     undoDismissCartButton: HTMLElement,
   };
@@ -76,6 +81,14 @@ export class ChromeCartModuleElement extends I18nMixin
       },
 
       confirmDiscountConsentString_: String,
+      discountConsentHasTwoSteps_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getInteger('modulesCartDiscountConsentVariation') >
+            DiscountConsentVariation.StringChange
+      },
+      firstThreeCartItems_:
+          {type: Array, computed: 'computeFirstThreeCartItems_(cartItems)'}
     };
   }
 
@@ -94,8 +107,11 @@ export class ChromeCartModuleElement extends I18nMixin
 
   private intersectionObserver_: IntersectionObserver|null = null;
   private currentMenuIndex_: number = 0;
+  private discountConsentHasTwoSteps_: boolean;
+  private firstThreeCartItems_: MerchantCart[];
+  private eventTracker_: EventTracker = new EventTracker();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     const leftProbe = this.$.cartCarousel.querySelector('#leftProbe');
     const rightProbe = this.$.cartCarousel.querySelector('#rightProbe');
@@ -121,11 +137,31 @@ export class ChromeCartModuleElement extends I18nMixin
     }, {root: this.$.cartCarousel});
     this.shadowRoot!.querySelectorAll('.probe').forEach(
         el => this.intersectionObserver_!.observe(el));
+
+    this.eventTracker_.add(
+        this, 'discount-consent-accepted',
+        () => this.onDiscountConsentAccepted_());
+    this.eventTracker_.add(
+        this, 'discount-consent-rejected',
+        () => this.onDiscountConsentRejected_());
+    this.eventTracker_.add(
+        this, 'discount-consent-dismissed',
+        () => this.onDiscountConsentDismissed_());
+    this.eventTracker_.add(
+        this, 'discount-consent-continued',
+        () => this.onDiscountConsentContinued_());
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.intersectionObserver_!.disconnect();
+
+    this.eventTracker_.removeAll();
+  }
+
+  private computeFirstThreeCartItems_(cartItems: MerchantCart[]):
+      MerchantCart[] {
+    return cartItems.slice(0, 3);
   }
 
   private getFaviconUrl_(url: string): string {
@@ -231,6 +267,10 @@ export class ChromeCartModuleElement extends I18nMixin
     return isModuleVisible;
   }
 
+  private onInfoButtonClick_() {
+    this.$.infoDialogRender.get().showModal();
+  }
+
   private onDismissButtonClick_() {
     ChromeCartProxy.getHandler().hideCartModule();
     this.dispatchEvent(new CustomEvent('dismiss-module', {
@@ -315,7 +355,8 @@ export class ChromeCartModuleElement extends I18nMixin
     // TODO(crbug.com/1198632): This could make a left scroll jump over cart
     // items.
     if (index === 0) {
-      const consentCard = this.shadowRoot!.getElementById('consentCard');
+      const consentCard = this.shadowRoot!.getElementById(
+          this.discountConsentHasTwoSteps_ ? 'consentCardV2' : 'consentCard');
       if (consentCard) {
         leftPosition -= consentCard.offsetWidth;
       }
@@ -364,7 +405,7 @@ export class ChromeCartModuleElement extends I18nMixin
     chrome.metricsPrivate.recordSmallCount('NewTabPage.Carts.ClickCart', index);
   }
 
-  private onDisallowDiscount_() {
+  private onDiscountConsentRejected_() {
     this.showDiscountConsent = false;
     this.confirmDiscountConsentString_ =
         loadTimeData.getString('modulesCartDiscountConsentRejectConfirmation');
@@ -374,7 +415,7 @@ export class ChromeCartModuleElement extends I18nMixin
         'NewTabPage.Carts.RejectDiscountConsent');
   }
 
-  private onAllowDiscount_() {
+  private onDiscountConsentAccepted_() {
     this.showDiscountConsent = false;
     this.confirmDiscountConsentString_ =
         loadTimeData.getString('modulesCartDiscountConsentAcceptConfirmation');
@@ -382,6 +423,17 @@ export class ChromeCartModuleElement extends I18nMixin
     ChromeCartProxy.getHandler().onDiscountConsentAcknowledged(true);
     chrome.metricsPrivate.recordUserAction(
         'NewTabPage.Carts.AcceptDiscountConsent');
+  }
+
+  private onDiscountConsentDismissed_() {
+    this.showDiscountConsent = false;
+    ChromeCartProxy.getHandler().onDiscountConsentDismissed();
+    chrome.metricsPrivate.recordUserAction(
+        'NewTabPage.Carts.DismissDiscountConsent');
+  }
+
+  private onDiscountConsentContinued_() {
+    ChromeCartProxy.getHandler().onDiscountConsentContinued();
   }
 
   private onConfirmDiscountConsentClick_() {
@@ -437,7 +489,7 @@ async function createCartElement(): Promise<HTMLElement|null> {
 
   const element = new ChromeCartModuleElement();
   if (welcomeVisible) {
-    element.headerChipText = loadTimeData.getString('modulesCartHeaderNew');
+    element.headerChipText = loadTimeData.getString('modulesNewTagLabel');
     element.headerDescriptionText =
         loadTimeData.getString('modulesCartWarmWelcome');
   }

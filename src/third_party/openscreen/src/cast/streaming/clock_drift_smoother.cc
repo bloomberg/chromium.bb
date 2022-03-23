@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "util/chrono_helpers.h"
 #include "util/osp_logging.h"
 #include "util/saturate_cast.h"
 
@@ -58,6 +59,17 @@ void ClockDriftSmoother::Update(Clock::time_point now,
     estimated_tick_offset_ =
         weight * static_cast<double>(measured_offset.count()) +
         (1.0 - weight) * estimated_tick_offset_;
+
+    // If after calculation the current offset is lower than the weighted
+    // average, we can simply use it and eliminate some of the error due to
+    // transmission time.
+    if (measured_offset < Current()) {
+      Reset(now, measured_offset);
+    }
+
+    OSP_VLOG << "Local clock is ahead of the remote clock by: measured = "
+             << to_microseconds(measured_offset).count() << "μs, "
+             << "filtered = " << to_microseconds(Current()).count() << "μs.";
   }
 }
 

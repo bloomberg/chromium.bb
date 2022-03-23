@@ -15,7 +15,6 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -62,89 +61,6 @@ namespace {
 // This should not conflict with ids from RenderWidgetHostImpl or WindowService.
 constexpr uint32_t kDefaultClientId = std::numeric_limits<uint32_t>::max() / 2;
 
-// An OutputSurface implementation that directly draws and swaps to an actual
-// GL surface.
-class DirectOutputSurface : public viz::OutputSurface {
- public:
-  explicit DirectOutputSurface(
-      scoped_refptr<InProcessContextProvider> context_provider)
-      : viz::OutputSurface(context_provider) {
-    capabilities_.output_surface_origin =
-        context_provider->ContextCapabilities().surface_origin;
-  }
-
-  DirectOutputSurface(const DirectOutputSurface&) = delete;
-  DirectOutputSurface& operator=(const DirectOutputSurface&) = delete;
-
-  ~DirectOutputSurface() override {}
-
-  // viz::OutputSurface implementation.
-  void BindToClient(viz::OutputSurfaceClient* client) override {
-    client_ = client;
-  }
-  void EnsureBackbuffer() override {}
-  void DiscardBackbuffer() override {}
-  void BindFramebuffer() override {
-    context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  }
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               gfx::BufferFormat format,
-               bool use_stencil) override {
-    context_provider()->ContextGL()->ResizeCHROMIUM(
-        size.width(), size.height(), device_scale_factor,
-        color_space.AsGLColorSpace(), gfx::AlphaBitsForBufferFormat(format));
-  }
-  void SwapBuffers(viz::OutputSurfaceFrame frame) override {
-    DCHECK(context_provider_.get());
-    if (frame.sub_buffer_rect) {
-      context_provider_->ContextSupport()->PartialSwapBuffers(
-          *frame.sub_buffer_rect, 0 /* flags */, base::DoNothing(),
-          base::DoNothing());
-    } else {
-      context_provider_->ContextSupport()->Swap(
-          0 /* flags */, base::DoNothing(), base::DoNothing());
-    }
-    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-    gpu::SyncToken sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-
-    context_provider_->ContextSupport()->SignalSyncToken(
-        sync_token, base::BindOnce(&DirectOutputSurface::OnSwapBuffersComplete,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  }
-  uint32_t GetFramebufferCopyTextureFormat() override {
-    auto* gl = static_cast<InProcessContextProvider*>(context_provider());
-    return gl->GetCopyTextureInternalFormat();
-  }
-  bool IsDisplayedAsOverlayPlane() const override { return false; }
-  unsigned GetOverlayTextureId() const override { return 0; }
-  bool HasExternalStencilTest() const override { return false; }
-  void ApplyExternalStencil() override {}
-  unsigned UpdateGpuFence() override { return 0; }
-  void SetUpdateVSyncParametersCallback(
-      viz::UpdateVSyncParametersCallback callback) override {}
-  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
-  gfx::OverlayTransform GetDisplayTransform() override {
-    return gfx::OVERLAY_TRANSFORM_NONE;
-  }
-
- private:
-  void OnSwapBuffersComplete() {
-    // Metrics tracking in OutputSurfaceClient expects non-null SwapTimings
-    // so we provide dummy values here.
-    base::TimeTicks now = base::TimeTicks::Now();
-    gfx::SwapTimings timings = {now, now};
-    client_->DidReceiveSwapBuffersAck(timings,
-                                      /*release_fence=*/gfx::GpuFenceHandle());
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
-  }
-
-  raw_ptr<viz::OutputSurfaceClient> client_ = nullptr;
-  base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_{this};
-};
-
 }  // namespace
 
 // TODO(rivr): This class is managed heavily by InProcessTransportFactory.
@@ -168,7 +84,7 @@ class InProcessContextFactory::PerCompositorData
   }
 #endif
   void SetDisplayColorMatrix(const gfx::Transform& matrix) override {
-    output_color_matrix_ = matrix.matrix();
+    output_color_matrix_ = matrix.GetMatrixAsSkM44();
   }
   void SetDisplayColorSpaces(
       const gfx::DisplayColorSpaces& color_spaces) override {
@@ -210,7 +126,7 @@ class InProcessContextFactory::PerCompositorData
   }
 
   void ResetDisplayOutputParameters() {
-    output_color_matrix_.setIdentity();
+    output_color_matrix_ = SkM44();
     display_color_spaces_ = gfx::DisplayColorSpaces();
     vsync_timebase_ = base::TimeTicks();
     vsync_interval_ = base::TimeDelta();
@@ -222,7 +138,7 @@ class InProcessContextFactory::PerCompositorData
   }
   viz::Display* display() { return display_.get(); }
 
-  skia::Matrix44 output_color_matrix() { return output_color_matrix_; }
+  SkM44 output_color_matrix() { return output_color_matrix_; }
   gfx::DisplayColorSpaces display_color_spaces() {
     return display_color_spaces_;
   }
@@ -234,7 +150,7 @@ class InProcessContextFactory::PerCompositorData
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
 
-  skia::Matrix44 output_color_matrix_;
+  SkM44 output_color_matrix_;
   gfx::DisplayColorSpaces display_color_spaces_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
@@ -243,16 +159,7 @@ class InProcessContextFactory::PerCompositorData
 InProcessContextFactory::InProcessContextFactory(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     viz::FrameSinkManagerImpl* frame_sink_manager)
-    : InProcessContextFactory(host_frame_sink_manager,
-                              frame_sink_manager,
-                              features::IsUsingSkiaRenderer()) {}
-
-InProcessContextFactory::InProcessContextFactory(
-    viz::HostFrameSinkManager* host_frame_sink_manager,
-    viz::FrameSinkManagerImpl* frame_sink_manager,
-    bool use_skia_renderer)
     : frame_sink_id_allocator_(kDefaultClientId),
-      use_test_surface_(true),
       disable_vsync_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableVsyncForTests)),
       host_frame_sink_manager_(host_frame_sink_manager),
@@ -261,8 +168,6 @@ InProcessContextFactory::InProcessContextFactory(
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
-  if (use_skia_renderer)
-    renderer_settings_.use_skia_renderer = true;
 #if BUILDFLAG(IS_APPLE)
   renderer_settings_.release_overlay_resources_after_gpu_query = true;
   // Ensure that tests don't wait for frames that will never come.
@@ -302,60 +207,15 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   if (!data)
     data = CreatePerCompositorData(compositor.get());
 
-  scoped_refptr<InProcessContextProvider> context_provider;
-  if (renderer_settings_.use_skia_renderer) {
-    // SkiaRenderer doesn't need a ContextProvider per ui::Compositor so just
-    // use the shared main thread context.
-    SharedMainThreadContextProvider();
-    DCHECK(shared_main_thread_contexts_);
-    context_provider = shared_main_thread_contexts_;
-  } else {
-    gpu::ContextCreationAttribs attribs;
-    attribs.alpha_size = 8;
-    attribs.blue_size = 8;
-    attribs.green_size = 8;
-    attribs.red_size = 8;
-    attribs.depth_size = 0;
-    attribs.stencil_size = 0;
-    attribs.samples = 0;
-    attribs.sample_buffers = 0;
-    attribs.fail_if_major_perf_caveat = false;
-    attribs.bind_generates_resource = false;
-
-    constexpr bool support_locking = false;
-    context_provider = InProcessContextProvider::Create(
-        attribs, &gpu_memory_buffer_manager_, &image_factory_,
-        data->surface_handle(), "UICompositor", support_locking);
-
-    auto context_result = context_provider->BindToCurrentThread();
-    DCHECK_EQ(context_result, gpu::ContextResult::kSuccess);
-  }
-
-  std::unique_ptr<viz::OutputSurface> display_output_surface;
-  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
-      display_dependency;
-
-  if (renderer_settings_.use_skia_renderer) {
-    auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
-        viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-        gpu::kNullSurfaceHandle);
-    display_dependency =
-        std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
-            std::move(skia_deps));
-    display_output_surface = viz::SkiaOutputSurfaceImpl::Create(
-        display_dependency.get(), renderer_settings_, &debug_settings_);
-  } else if (use_test_surface_) {
-    // The |context_provider| will contain an InProcessCommandBuffer, which will
-    // make a gpu::GpuTaskSchedulerHelper if one is not provided.
-    gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
-    display_output_surface = std::make_unique<cc::PixelTestOutputSurface>(
-        context_provider, surface_origin);
-  } else {
-    // The |context_provider| will contain an InProcessCommandBuffer, which will
-    // make a gpu::GpuTaskSchedulerHelper if one is not provided.
-    display_output_surface =
-        std::make_unique<DirectOutputSurface>(context_provider);
-  }
+  auto skia_deps = std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+      viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
+      gpu::kNullSurfaceHandle);
+  auto display_dependency =
+      std::make_unique<viz::DisplayCompositorMemoryAndTaskController>(
+          std::move(skia_deps));
+  std::unique_ptr<viz::OutputSurface> output_surface =
+      viz::SkiaOutputSurfaceImpl::Create(display_dependency.get(),
+                                         renderer_settings_, &debug_settings_);
 
   auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
 
@@ -375,13 +235,13 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   }
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),
-      display_output_surface->capabilities().pending_swap_params,
+      output_surface->capabilities().pending_swap_params,
       /*hint_session_factory=*/nullptr);
 
   data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, &debug_settings_,
       compositor->frame_sink_id(), std::move(display_dependency),
-      std::move(display_output_surface), std::move(overlay_processor),
+      std::move(output_surface), std::move(overlay_processor),
       std::move(scheduler), compositor->task_runner()));
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),
                                                 compositor->frame_sink_id());
@@ -391,7 +251,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
 
   auto layer_tree_frame_sink = std::make_unique<DirectLayerTreeFrameSink>(
       compositor->frame_sink_id(), frame_sink_manager_, data->display(),
-      context_provider, shared_worker_context_provider_,
+      SharedMainThreadContextProvider(), shared_worker_context_provider_,
       compositor->task_runner(), &gpu_memory_buffer_manager_);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink), data);
 
@@ -457,11 +317,11 @@ viz::HostFrameSinkManager* InProcessContextFactory::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
 }
 
-skia::Matrix44 InProcessContextFactory::GetOutputColorMatrix(
+SkM44 InProcessContextFactory::GetOutputColorMatrix(
     Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
-    return skia::Matrix44(skia::Matrix44::kIdentity_Constructor);
+    return SkM44();
 
   return iter->second->output_color_matrix();
 }

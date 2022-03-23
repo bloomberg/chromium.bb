@@ -10,7 +10,7 @@ import '//resources/cr_elements/cr_toast/cr_toast.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../os_settings_icons_css.m.js';
+import '../os_settings_icons_css.js';
 import '../../prefs/prefs.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
@@ -38,7 +38,7 @@ import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.j
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
 import {routes} from '../os_route.m.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
@@ -298,9 +298,7 @@ Polymer({
 
   /** @override */
   attached() {
-    this.networkConfig_.getGlobalPolicy().then(response => {
-      this.globalPolicy_ = response.result;
-    });
+    this.onPoliciesApplied(/*userhash=*/ '');
     this.onVpnProvidersChanged();
     this.onNetworkStateListChanged();
   },
@@ -372,6 +370,8 @@ Polymer({
       const type = queryParams.get('type');
       if (type) {
         this.knownNetworksType_ = OncMojo.getNetworkTypeFromString(type);
+      } else {
+        this.knownNetworksType_ = mojom.NetworkType.kWiFi;
       }
     } else if (route === routes.INTERNET) {
       // Show deep links for the internet page.
@@ -421,31 +421,18 @@ Polymer({
     this.updateIsConnectedToNonCellularNetwork_();
   },
 
-  /** NetworkListenerBehavior override */
-  onNetworkStateChanged(network) {
-    if (!network) {
-      return;
-    }
-    // Only WiFi or Cellular network state can be changed by global policy
-    // update.
-    const mojom = chromeos.networkConfig.mojom;
-    if (network.type !== mojom.NetworkType.kWiFi &&
-        network.type !== mojom.NetworkType.kCellular) {
-      return;
-    }
-
-    // TODO(b/218871322): we should refresh the global policy once the
-    // OnPolicyChanged() is added to CrosNetworkConfigObserver
-    this.networkConfig_.getGlobalPolicy().then(response => {
-      this.globalPolicy_ = response.result;
-    });
-  },
-
   onVpnProvidersChanged() {
     this.networkConfig_.getVpnProviders().then(response => {
       const providers = response.providers;
       providers.sort(this.compareVpnProviders_);
       this.vpnProviders_ = providers;
+    });
+  },
+
+  /** @param {string} userhash */
+  onPoliciesApplied(userhash) {
+    this.networkConfig_.getGlobalPolicy().then(response => {
+      this.globalPolicy_ = response.result;
     });
   },
 

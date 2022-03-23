@@ -48,6 +48,24 @@ unsigned int aom_avg_8x8_c(const uint8_t *s, int p) {
   return (sum + 32) >> 6;
 }
 
+void aom_avg_8x8_quad_c(const uint8_t *s, int p, int x16_idx, int y16_idx,
+                        int *avg) {
+  const uint8_t *s_tmp = s;
+  for (int k = 0; k < 4; k++) {
+    int sum = 0;
+    const int x8_idx = x16_idx + ((k & 1) << 3);
+    const int y8_idx = y16_idx + ((k >> 1) << 3);
+    s_tmp = (s + y8_idx * p + x8_idx);
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        sum += s_tmp[j];
+      }
+      s_tmp += p;
+    }
+    avg[k] = (sum + 32) >> 6;
+  }
+}
+
 #if CONFIG_AV1_HIGHBITDEPTH
 unsigned int aom_highbd_avg_8x8_c(const uint8_t *s8, int p) {
   int i, j;
@@ -87,6 +105,14 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
   }
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
+
+void aom_pixel_scale_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                       int16_t *coeff, int log_scale, int h8, int w8) {
+  for (int idy = 0; idy < h8 * 8; ++idy)
+    for (int idx = 0; idx < w8 * 8; ++idx)
+      coeff[idy * (h8 * 8) + idx] = src_diff[idy * src_stride + idx]
+                                    << log_scale;
+}
 
 static void hadamard_col4(const int16_t *src_diff, ptrdiff_t src_stride,
                           int16_t *coeff) {

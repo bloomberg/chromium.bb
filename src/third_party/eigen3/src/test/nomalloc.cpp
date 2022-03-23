@@ -152,7 +152,7 @@ void ctms_decompositions()
   x = fpQR.solve(b);
 
   // SVD module
-  Eigen::JacobiSVD<Matrix> jSVD; jSVD.compute(A, ComputeFullU | ComputeFullV);
+  Eigen::JacobiSVD<Matrix, ComputeFullU | ComputeFullV> jSVD; jSVD.compute(A);
 }
 
 void test_zerosized() {

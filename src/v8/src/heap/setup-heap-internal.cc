@@ -151,7 +151,7 @@ AllocationResult Heap::AllocateMap(InstanceType instance_type,
                                   SKIP_WRITE_BARRIER);
   Map map = isolate()->factory()->InitializeMap(
       Map::cast(result), instance_type, instance_size, elements_kind,
-      inobject_properties);
+      inobject_properties, this);
 
   return AllocationResult::FromObject(map);
 }
@@ -477,6 +477,7 @@ bool Heap::CreateInitialMaps() {
                          simple_number_dictionary)
     ALLOCATE_VARSIZE_MAP(NAME_TO_INDEX_HASH_TABLE_TYPE,
                          name_to_index_hash_table)
+    ALLOCATE_VARSIZE_MAP(REGISTERED_SYMBOL_TABLE_TYPE, registered_symbol_table)
 
     ALLOCATE_VARSIZE_MAP(EMBEDDER_DATA_ARRAY_TYPE, embedder_data_array)
     ALLOCATE_VARSIZE_MAP(EPHEMERON_HASH_TABLE_TYPE, ephemeron_hash_table)
@@ -526,7 +527,7 @@ bool Heap::CreateInitialMaps() {
 
     ALLOCATE_MAP(JS_MESSAGE_OBJECT_TYPE, JSMessageObject::kHeaderSize,
                  message_object)
-    ALLOCATE_MAP(JS_OBJECT_TYPE, JSObject::kHeaderSize + kEmbedderDataSlotSize,
+    ALLOCATE_MAP(JS_EXTERNAL_OBJECT_TYPE, JSExternalObject::kHeaderSize,
                  external)
     external_map().set_is_extensible(false);
 #undef ALLOCATE_PRIMITIVE_MAP
@@ -796,9 +797,12 @@ void Heap::CreateInitialObjects() {
 
   set_empty_property_dictionary(*empty_property_dictionary);
 
-  set_public_symbol_table(*empty_property_dictionary);
-  set_api_symbol_table(*empty_property_dictionary);
-  set_api_private_symbol_table(*empty_property_dictionary);
+  Handle<RegisteredSymbolTable> empty_symbol_table = RegisteredSymbolTable::New(
+      isolate(), 1, AllocationType::kReadOnly, USE_CUSTOM_MINIMUM_CAPACITY);
+  DCHECK(!empty_symbol_table->HasSufficientCapacityToAdd(1));
+  set_public_symbol_table(*empty_symbol_table);
+  set_api_symbol_table(*empty_symbol_table);
+  set_api_private_symbol_table(*empty_symbol_table);
 
   set_number_string_cache(*factory->NewFixedArray(
       kInitialNumberStringCacheSize * 2, AllocationType::kOld));

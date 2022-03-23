@@ -1422,6 +1422,39 @@ class FromSavedModelTest(lite_v2_test_util.ModelTest):
         interpreter.get_tensor(output_details[0]['index']))
 
   @test_util.run_v2_only
+  def testPreserveAssert(self):
+    """Test preserving AssertOp in a TF Lite model."""
+    saved_model_dir = os.path.join(self.get_temp_dir(), 'simple_savedmodel')
+    with tf.Graph().as_default():
+      with tf.compat.v1.Session() as sess:
+        in_tensor = tf.compat.v1.placeholder(
+            shape=[10, 10], dtype=tf.float32, name='input')
+        constant = tf.constant(value=1, dtype=tf.float32, shape=[10, 10])
+        assert_op = tf.Assert(tf.less_equal(in_tensor, constant), [in_tensor])
+        with tf.control_dependencies([assert_op]):
+          out_tensor = in_tensor + constant
+        inputs = {'x': in_tensor}
+        outputs = {'y': out_tensor}
+        saved_model.simple_save(sess, saved_model_dir, inputs, outputs)
+
+    # Convert model and ensure model is not None.
+    converter = lite.TFLiteConverterV2.from_saved_model(saved_model_dir)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS
+    ]
+    converter._experimental_preserve_assert_op = True
+    tflite_model = converter.convert()
+    self.assertTrue(tflite_model)
+
+    model = util._convert_model_from_bytearray_to_object(tflite_model)
+    has_assert = False
+    for op_code in model.operatorCodes:
+      if op_code.customCode == b'FlexAssert':
+        has_assert = True
+        break
+    self.assertTrue(has_assert)
+
+  @test_util.run_v2_only
   def testTF1HubFormattedModel(self):
     """Test a TF1 hub formatted model."""
     saved_model_dir = self._createV1SavedModel(shape=[1, 16, 16, 3])
@@ -2345,7 +2378,7 @@ class FromSavedModelTest(lite_v2_test_util.ModelTest):
     converter = tf.lite.TFLiteConverter.from_saved_model(
         saved_model_dir.full_path)
     converter.optimizations = [lite.Optimize.DEFAULT]
-    converter._experimental_new_dynamic_range_quantizer = (
+    converter.experimental_new_dynamic_range_quantizer = (
         enable_new_dynamic_range_quantizer)
     converter._experimental_disable_per_channel = disable_per_channel
     if enable_float16_quant:
@@ -2554,7 +2587,7 @@ class FromKerasModelTest(lite_v2_test_util.ModelTest):
 
     converter = lite.TFLiteConverterV2.from_keras_model(model)
     converter.optimizations = [lite.Optimize.DEFAULT]
-    converter._experimental_new_dynamic_range_quantizer = (
+    converter.experimental_new_dynamic_range_quantizer = (
         enable_new_dynamic_range_quantizer)
     converter._experimental_disable_per_channel = disable_per_channel
     if enable_float16_quant:
@@ -2878,6 +2911,46 @@ class ControlFlowTest(lite_v2_test_util.ModelTest):
     actual_value = self._evaluateTFLiteModel(
         tflite_model, [input_data['x'], input_data['b']])[0]
     self.assertAllClose(expected_value, actual_value)
+
+  @test_util.run_v2_only
+  def testCondWithFullIntegerQuantization(self):
+    weights = tf.Variable([[0.1, 0.2], [0.3, 0.4]], dtype=tf.float32)
+
+    def true_fn(x):
+      return tf.matmul(x, weights)
+
+    def false_fn(x):
+      return tf.add(x, weights)
+
+    @tf.function(input_signature=[
+        tf.TensorSpec(shape=[1, 2], dtype=tf.float32),
+        tf.TensorSpec(shape=(), dtype=tf.bool)
+    ])
+    def model(x, b):
+      return tf.cond(
+          b, true_fn=lambda: true_fn(x), false_fn=lambda: false_fn(x))
+
+    def calibration_gen():
+      for _ in range(5):
+        yield [
+            np.random.uniform(-1, 1, size=(1, 2)).astype(np.float32),
+            tf.constant(True)
+        ]
+      for _ in range(5):
+        yield [
+            np.random.uniform(-1, 1, size=(1, 2)).astype(np.float32),
+            tf.constant(False)
+        ]
+
+    concrete_func = model.get_concrete_function()
+
+    # Convert model.
+    converter = lite.TFLiteConverterV2.from_concrete_functions([concrete_func],
+                                                               model)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.representative_dataset = calibration_gen
+    tflite_model = converter.convert()
+    self.assertIsNotNone(tflite_model)
 
   @test_util.run_v2_only
   def testConverterErrorOnControlFlowV1Ops(self):

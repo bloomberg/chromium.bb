@@ -11,7 +11,9 @@
 #ifndef EIGEN_MATRIX_PRODUCT_MMA_ALTIVEC_H
 #define EIGEN_MATRIX_PRODUCT_MMA_ALTIVEC_H
 
+#if !EIGEN_COMP_LLVM
 #pragma GCC target("cpu=power10,htm")
+#endif
 
 #ifdef __has_builtin
 #if !__has_builtin(__builtin_vsx_assemble_pair)
@@ -80,7 +82,7 @@ EIGEN_ALWAYS_INLINE void pgerMMA(__vector_quad* acc, const RhsPacket& a, const L
 template<typename LhsPacket, typename RhsPacket, bool NegativeAccumulate>
 EIGEN_ALWAYS_INLINE void pgerMMA(__vector_quad* acc, const PacketBlock<Packet2d,2>& a, const Packet2d& b)
 {
-  __vector_pair* a0 = (__vector_pair *)(&a.packet[0]);
+  __vector_pair* a0 = reinterpret_cast<__vector_pair *>(const_cast<Packet2d *>(&a.packet[0]));
   if(NegativeAccumulate)
   {
     __builtin_mma_xvf64gernp(acc, *a0, (__vector unsigned char)b);
@@ -133,8 +135,8 @@ EIGEN_ALWAYS_INLINE void ploadRhsMMA(const Scalar* rhs, Packet& rhsV)
 template<>
 EIGEN_ALWAYS_INLINE void ploadRhsMMA<double, PacketBlock<Packet2d, 2> >(const double* rhs, PacketBlock<Packet2d, 2>& rhsV)
 {
-  rhsV.packet[0] = ploadRhs<double, Packet2d>((const double *)((Packet2d *)rhs      ));
-  rhsV.packet[1] = ploadRhs<double, Packet2d>((const double *)(((Packet2d *)rhs) + 1));
+  rhsV.packet[0] = ploadRhs<double, Packet2d>(rhs);
+  rhsV.packet[1] = ploadRhs<double, Packet2d>(rhs + (sizeof(Packet2d) / sizeof(double)));
 }
 
 template<>
@@ -142,8 +144,8 @@ EIGEN_ALWAYS_INLINE void ploadRhsMMA<double, __vector_pair>(const double* rhs, _
 {
 #if EIGEN_COMP_LLVM
   __builtin_vsx_assemble_pair(&rhsV,
-    (__vector unsigned char)(ploadRhs<double, Packet2d>((const double *)(((Packet2d *)rhs) + 1))),
-    (__vector unsigned char)(ploadRhs<double, Packet2d>((const double *)((Packet2d *)rhs      ))));
+    reinterpret_cast<__vector unsigned char>(ploadRhs<double, Packet2d>(rhs + (sizeof(Packet2d) / sizeof(double)))),
+    reinterpret_cast<__vector unsigned char>(ploadRhs<double, Packet2d>(rhs)));
 #else
   __asm__ ("lxvp %x0,%1" : "=wa" (rhsV) : "Y" (*rhs));
 #endif
@@ -360,7 +362,7 @@ void gemmMMA(const DataMapper& res, const Scalar* blockA, const Scalar* blockB, 
       if( strideB == -1 ) strideB = depth;
 
       const Packet pAlpha = pset1<Packet>(alpha);
-      const Packet pMask  = bmask<Packet>((const int)(remaining_rows));
+      const Packet pMask  = bmask<Packet>(remaining_rows);
 
       Index col = 0;
       for(; col + accRows <= cols; col += accRows)
@@ -595,7 +597,7 @@ void gemm_complexMMA(const DataMapper& res, const LhsScalar* blockAc, const RhsS
 
       const Packet pAlphaReal = pset1<Packet>(alpha.real());
       const Packet pAlphaImag = pset1<Packet>(alpha.imag());
-      const Packet pMask = bmask<Packet>((const int)(remaining_rows));
+      const Packet pMask = bmask<Packet>(remaining_rows);
 
       const Scalar* blockA = (Scalar *) blockAc;
       const Scalar* blockB = (Scalar *) blockBc;
@@ -613,7 +615,9 @@ void gemm_complexMMA(const DataMapper& res, const LhsScalar* blockAc, const RhsS
 #undef advanceRows
 #undef advanceCols
 
+#if !EIGEN_COMP_LLVM
 #pragma GCC reset_options
+#endif
 } // end namespace internal
 
 } // end namespace Eigen

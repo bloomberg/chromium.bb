@@ -45,6 +45,7 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
+using ::testing::UnorderedElementsAre;
 using ::testing::WithArg;
 using ::webrtc::rtcp::Bye;
 using ::webrtc::rtcp::CompoundPacket;
@@ -69,7 +70,21 @@ class MockMediaReceiverRtcpObserver : public MediaReceiverRtcpObserver {
 
 class MockRtpStreamRtcpHandler : public RtpStreamRtcpHandler {
  public:
+  MockRtpStreamRtcpHandler() {
+    // With each next call increase number of sent packets and bytes to simulate
+    // active RTP sender.
+    ON_CALL(*this, SentStats).WillByDefault([this] {
+      RtpStats stats;
+      stats.set_num_sent_packets(++num_calls_);
+      stats.set_num_sent_bytes(1'000 * num_calls_);
+      return stats;
+    });
+  }
+
   MOCK_METHOD(RtpStats, SentStats, (), (override));
+
+ private:
+  int num_calls_ = 0;
 };
 
 class MockNetworkLinkRtcpObserver : public NetworkLinkRtcpObserver {
@@ -96,7 +111,7 @@ class MockNetworkLinkRtcpObserver : public NetworkLinkRtcpObserver {
 // Since some tests will need to wait for this period, make it small to avoid
 // slowing tests too much. As long as there are test bots with high scheduler
 // granularity, small period should be ok.
-constexpr int kReportPeriodMs = 10;
+constexpr TimeDelta kReportPeriod = TimeDelta::Millis(10);
 // On some systems task queue might be slow, instead of guessing right
 // grace period, use very large timeout, 100x larger expected wait time.
 // Use finite timeout to fail tests rather than hang them.
@@ -161,8 +176,8 @@ RtcpTransceiverConfig DefaultTestConfig() {
   config.clock = &null_clock;
   config.outgoing_transport = &null_transport;
   config.schedule_periodic_compound_packets = false;
-  config.initial_report_delay_ms = 10;
-  config.report_period_ms = kReportPeriodMs;
+  config.initial_report_delay = TimeDelta::Millis(10);
+  config.report_period = kReportPeriod;
   return config;
 }
 
@@ -231,7 +246,7 @@ TEST(RtcpTransceiverImplTest, DelaysSendingFirstCompondPacket) {
   RtcpTransceiverConfig config;
   config.clock = &clock;
   config.outgoing_transport = &transport;
-  config.initial_report_delay_ms = 10;
+  config.initial_report_delay = TimeDelta::Millis(10);
   config.task_queue = queue.Get();
   absl::optional<RtcpTransceiverImpl> rtcp_transceiver;
 
@@ -239,7 +254,7 @@ TEST(RtcpTransceiverImplTest, DelaysSendingFirstCompondPacket) {
   queue.PostTask([&] { rtcp_transceiver.emplace(config); });
   EXPECT_TRUE(transport.WaitPacket());
 
-  EXPECT_GE(rtc::TimeMillis() - started_ms, config.initial_report_delay_ms);
+  EXPECT_GE(rtc::TimeMillis() - started_ms, config.initial_report_delay.ms());
 
   // Cleanup.
   rtc::Event done;
@@ -258,8 +273,8 @@ TEST(RtcpTransceiverImplTest, PeriodicallySendsPackets) {
   RtcpTransceiverConfig config;
   config.clock = &clock;
   config.outgoing_transport = &transport;
-  config.initial_report_delay_ms = 0;
-  config.report_period_ms = kReportPeriodMs;
+  config.initial_report_delay = TimeDelta::Zero();
+  config.report_period = kReportPeriod;
   config.task_queue = queue.Get();
   absl::optional<RtcpTransceiverImpl> rtcp_transceiver;
   int64_t time_just_before_1st_packet_ms = 0;
@@ -275,7 +290,7 @@ TEST(RtcpTransceiverImplTest, PeriodicallySendsPackets) {
   int64_t time_just_after_2nd_packet_ms = rtc::TimeMillis();
 
   EXPECT_GE(time_just_after_2nd_packet_ms - time_just_before_1st_packet_ms,
-            config.report_period_ms - 1);
+            config.report_period.ms() - 1);
 
   // Cleanup.
   rtc::Event done;
@@ -294,8 +309,8 @@ TEST(RtcpTransceiverImplTest, SendCompoundPacketDelaysPeriodicSendPackets) {
   RtcpTransceiverConfig config;
   config.clock = &clock;
   config.outgoing_transport = &transport;
-  config.initial_report_delay_ms = 0;
-  config.report_period_ms = kReportPeriodMs;
+  config.initial_report_delay = TimeDelta::Zero();
+  config.report_period = kReportPeriod;
   config.task_queue = queue.Get();
   absl::optional<RtcpTransceiverImpl> rtcp_transceiver;
   queue.PostTask([&] { rtcp_transceiver.emplace(config); });
@@ -311,7 +326,7 @@ TEST(RtcpTransceiverImplTest, SendCompoundPacketDelaysPeriodicSendPackets) {
         rtcp_transceiver->SendCompoundPacket();
         non_periodic.Set();
       },
-      config.report_period_ms / 2);
+      (config.report_period / 2).ms());
   // Though non-periodic packet is scheduled just in between periodic, due to
   // small period and task queue flakiness it migth end-up 1ms after next
   // periodic packet. To be sure duration after non-periodic packet is tested
@@ -323,7 +338,7 @@ TEST(RtcpTransceiverImplTest, SendCompoundPacketDelaysPeriodicSendPackets) {
   int64_t time_of_last_periodic_packet_ms = rtc::TimeMillis();
 
   EXPECT_GE(time_of_last_periodic_packet_ms - time_of_non_periodic_packet_ms,
-            config.report_period_ms - 1);
+            config.report_period.ms() - 1);
 
   // Cleanup.
   rtc::Event done;
@@ -1194,6 +1209,43 @@ TEST(RtcpTransceiverImplTest, SendsXrRrtrWhenEnabled) {
   EXPECT_EQ(rtcp_parser.xr()->rrtr()->ntp(), ntp_time_now);
 }
 
+TEST(RtcpTransceiverImplTest, RepliesToRrtrWhenEnabled) {
+  static constexpr uint32_t kSenderSsrc[] = {4321, 9876};
+  SimulatedClock clock(0);
+  RtcpTransceiverConfig config = DefaultTestConfig();
+  config.clock = &clock;
+  config.reply_to_non_sender_rtt_measurement = true;
+  RtcpPacketParser rtcp_parser;
+  RtcpParserTransport transport(&rtcp_parser);
+  config.outgoing_transport = &transport;
+  RtcpTransceiverImpl rtcp_transceiver(config);
+
+  rtcp::ExtendedReports xr;
+  rtcp::Rrtr rrtr;
+  rrtr.SetNtp(NtpTime(uint64_t{0x1111'2222'3333'4444}));
+  xr.SetRrtr(rrtr);
+  xr.SetSenderSsrc(kSenderSsrc[0]);
+  rtcp_transceiver.ReceivePacket(xr.Build(), clock.CurrentTime());
+  clock.AdvanceTime(TimeDelta::Millis(1'500));
+
+  rrtr.SetNtp(NtpTime(uint64_t{0x4444'5555'6666'7777}));
+  xr.SetRrtr(rrtr);
+  xr.SetSenderSsrc(kSenderSsrc[1]);
+  rtcp_transceiver.ReceivePacket(xr.Build(), clock.CurrentTime());
+  clock.AdvanceTime(TimeDelta::Millis(500));
+
+  rtcp_transceiver.SendCompoundPacket();
+
+  EXPECT_EQ(rtcp_parser.xr()->num_packets(), 1);
+  static constexpr uint32_t kComactNtpOneSecond = 0x0001'0000;
+  EXPECT_THAT(rtcp_parser.xr()->dlrr().sub_blocks(),
+              UnorderedElementsAre(
+                  rtcp::ReceiveTimeInfo(kSenderSsrc[0], 0x2222'3333,
+                                        /*delay=*/2 * kComactNtpOneSecond),
+                  rtcp::ReceiveTimeInfo(kSenderSsrc[1], 0x5555'6666,
+                                        /*delay=*/kComactNtpOneSecond / 2)));
+}
+
 TEST(RtcpTransceiverImplTest, SendsNoXrRrtrWhenDisabled) {
   SimulatedClock clock(0);
   RtcpTransceiverConfig config;
@@ -1470,6 +1522,57 @@ TEST(RtcpTransceiverImplTest, RotatesSendersWhenAllSenderReportDoNotFit) {
     SCOPED_TRACE(i);
     rtcp_transceiver.SendCompoundPacket();
   }
+}
+
+TEST(RtcpTransceiverImplTest, SkipsSenderReportForInactiveSender) {
+  static constexpr uint32_t kSenderSsrc[] = {12345, 23456};
+  RtcpTransceiverConfig config = DefaultTestConfig();
+  RtcpPacketParser rtcp_parser;
+  RtcpParserTransport transport(&rtcp_parser);
+  config.outgoing_transport = &transport;
+  RtcpTransceiverImpl rtcp_transceiver(config);
+
+  RtpStreamRtcpHandler::RtpStats sender_stats[2];
+  NiceMock<MockRtpStreamRtcpHandler> sender[2];
+  ON_CALL(sender[0], SentStats).WillByDefault([&] { return sender_stats[0]; });
+  ON_CALL(sender[1], SentStats).WillByDefault([&] { return sender_stats[1]; });
+  rtcp_transceiver.AddMediaSender(kSenderSsrc[0], &sender[0]);
+  rtcp_transceiver.AddMediaSender(kSenderSsrc[1], &sender[1]);
+
+  // Start with both senders beeing active.
+  sender_stats[0].set_num_sent_packets(10);
+  sender_stats[0].set_num_sent_bytes(1'000);
+  sender_stats[1].set_num_sent_packets(5);
+  sender_stats[1].set_num_sent_bytes(2'000);
+  rtcp_transceiver.SendCompoundPacket();
+  EXPECT_EQ(transport.num_packets(), 1);
+  EXPECT_EQ(rtcp_parser.sender_report()->num_packets(), 2);
+
+  // Keep 1st sender active, but make 2nd second look inactive by returning the
+  // same RtpStats.
+  sender_stats[0].set_num_sent_packets(15);
+  sender_stats[0].set_num_sent_bytes(2'000);
+  rtcp_transceiver.SendCompoundPacket();
+  EXPECT_EQ(transport.num_packets(), 2);
+  EXPECT_EQ(rtcp_parser.sender_report()->num_packets(), 3);
+  EXPECT_EQ(rtcp_parser.sender_report()->sender_ssrc(), kSenderSsrc[0]);
+
+  // Swap active sender.
+  sender_stats[1].set_num_sent_packets(20);
+  sender_stats[1].set_num_sent_bytes(3'000);
+  rtcp_transceiver.SendCompoundPacket();
+  EXPECT_EQ(transport.num_packets(), 3);
+  EXPECT_EQ(rtcp_parser.sender_report()->num_packets(), 4);
+  EXPECT_EQ(rtcp_parser.sender_report()->sender_ssrc(), kSenderSsrc[1]);
+
+  // Activate both senders again.
+  sender_stats[0].set_num_sent_packets(20);
+  sender_stats[0].set_num_sent_bytes(3'000);
+  sender_stats[1].set_num_sent_packets(25);
+  sender_stats[1].set_num_sent_bytes(3'500);
+  rtcp_transceiver.SendCompoundPacket();
+  EXPECT_EQ(transport.num_packets(), 4);
+  EXPECT_EQ(rtcp_parser.sender_report()->num_packets(), 6);
 }
 
 }  // namespace

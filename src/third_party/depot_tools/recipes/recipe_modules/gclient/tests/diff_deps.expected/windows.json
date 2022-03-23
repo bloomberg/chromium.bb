@@ -27,11 +27,11 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]\\gclient.py",
       "recurse",
-      "python3",
+      "python",
       "RECIPE_MODULE[depot_tools::gclient]\\resources\\diff_deps.py"
     ],
     "cwd": "[CACHE]",

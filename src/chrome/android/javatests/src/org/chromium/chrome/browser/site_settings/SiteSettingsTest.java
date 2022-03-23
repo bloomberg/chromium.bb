@@ -21,7 +21,9 @@ import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +36,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
@@ -107,6 +108,12 @@ public class SiteSettingsTest {
 
     private PermissionUpdateWaiter mPermissionUpdateWaiter;
 
+    @Before
+    public void setUp() throws TimeoutException {
+        // Clean up cookies and permissions to ensure tests run in a clean environment.
+        cleanUpCookiesAndPermissions();
+    }
+
     @After
     public void tearDown() throws TimeoutException {
         if (mPermissionUpdateWaiter != null) {
@@ -130,15 +137,11 @@ public class SiteSettingsTest {
         LocationProviderOverrider.setLocationProviderImpl(null);
         NfcSystemLevelSetting.resetNfcForTesting();
         IncognitoUtils.setEnabledForTesting(null);
+    }
 
-        // Clean up cookies and permissions.
-        CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowsingDataBridge.getInstance().clearBrowsingData(helper::notifyCalled,
-                    new int[] {BrowsingDataType.COOKIES, BrowsingDataType.SITE_SETTINGS},
-                    TimePeriod.ALL_TIME);
-        });
-        helper.waitForCallback(0);
+    @AfterClass
+    public static void tearDownAfterClass() throws TimeoutException {
+        cleanUpCookiesAndPermissions();
     }
 
     private static BrowserContextHandle getBrowserContextHandle() {
@@ -173,13 +176,22 @@ public class SiteSettingsTest {
                 () -> mPermissionRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 
+    private static void cleanUpCookiesAndPermissions() throws TimeoutException {
+        CallbackHelper helper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowsingDataBridge.getInstance().clearBrowsingData(helper::notifyCalled,
+                    new int[] {BrowsingDataType.COOKIES, BrowsingDataType.SITE_SETTINGS},
+                    TimePeriod.ALL_TIME);
+        });
+        helper.waitForCallback(0);
+    }
+
     /**
      * Sets Allow Location Enabled to be true and make sure it is set correctly.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisableIf.Build(supported_abis_includes = "arm", message = "https://crbug.com/1270293")
     public void testSetAllowLocationEnabled() throws Exception {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
@@ -205,7 +217,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisableIf.Build(supported_abis_includes = "arm", message = "https://crbug.com/1270293")
     public void testSetAllowLocationNotEnabled() throws Exception {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
@@ -513,7 +524,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @FlakyTest(message = "https://crbug.com/1112409")
     public void testClearDomainCookies() throws Exception {
         final String url = mPermissionRule.getURLWithHostName(
                 "test.example.com", "/chrome/test/data/android/cookie.html");
@@ -769,13 +779,14 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testPopupsBlocked() {
+    public void testPopupsBlocked() throws TimeoutException {
         new TwoStatePermissionTestCase(
                 "Popups", SiteSettingsCategory.Type.POPUPS, ContentSettingsType.POPUPS, false)
                 .run();
 
         // Test that the popup doesn't open.
         mPermissionRule.setUpUrl("/chrome/test/data/android/popup.html");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("openPopup();");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         Assert.assertEquals(1, getTabCount());
@@ -787,13 +798,14 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testPopupsNotBlocked() {
+    public void testPopupsNotBlocked() throws TimeoutException {
         new TwoStatePermissionTestCase(
                 "Popups", SiteSettingsCategory.Type.POPUPS, ContentSettingsType.POPUPS, true)
                 .run();
 
         // Test that a popup opens.
         mPermissionRule.setUpUrl("/chrome/test/data/android/popup.html");
+        mPermissionRule.runJavaScriptCodeInCurrentTab("openPopup();");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         Assert.assertEquals(2, getTabCount());
@@ -1268,6 +1280,26 @@ public class SiteSettingsTest {
         new TwoStatePermissionTestCase("RequestDesktopSite",
                 SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
                 ContentSettingsType.REQUEST_DESKTOP_SITE, false)
+                .run();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowFederatedIdentityApi() {
+        new TwoStatePermissionTestCase("FederatedIdentityApi",
+                SiteSettingsCategory.Type.FEDERATED_IDENTITY_API,
+                ContentSettingsType.FEDERATED_IDENTITY_API, true)
+                .run();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockFederatedIdentityApi() {
+        new TwoStatePermissionTestCase("FederatedIdentityApi",
+                SiteSettingsCategory.Type.FEDERATED_IDENTITY_API,
+                ContentSettingsType.FEDERATED_IDENTITY_API, false)
                 .run();
     }
 

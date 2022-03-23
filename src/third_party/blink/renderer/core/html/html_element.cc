@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/html/html_element.h"
 
-#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_stringtreatnullasemptystring_trustedscript.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
@@ -57,7 +56,6 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -737,7 +735,7 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
   DEFINE_STATIC_LOCAL(AttributeToTriggerIndexMap,
                       attribute_to_trigger_index_map, ());
   if (!attribute_to_trigger_index_map.size()) {
-    for (uint32_t i = 0; i < base::size(attribute_triggers); ++i)
+    for (uint32_t i = 0; i < std::size(attribute_triggers); ++i)
       attribute_to_trigger_index_map.insert(attribute_triggers[i].attribute, i);
   }
 
@@ -1080,6 +1078,65 @@ void HTMLElement::setContentEditable(const String& enabled,
                                       "The value provided ('" + enabled +
                                           "') is not one of 'true', 'false', "
                                           "'plaintext-only', or 'inherit'.");
+}
+
+V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull* HTMLElement::hidden() const {
+  const AtomicString& attribute = FastGetAttribute(html_names::kHiddenAttr);
+
+  if (!RuntimeEnabledFeatures::BeforeMatchEventEnabled(GetExecutionContext())) {
+    return MakeGarbageCollected<
+        V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull>(attribute !=
+                                                          g_null_atom);
+  }
+
+  if (attribute == g_null_atom) {
+    return MakeGarbageCollected<
+        V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull>(false);
+  }
+  if (attribute == "until-found") {
+    return MakeGarbageCollected<
+        V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull>(
+        String("until-found"));
+  }
+  return MakeGarbageCollected<V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull>(
+      true);
+}
+
+void HTMLElement::setHidden(
+    const V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull* value) {
+  switch (value->GetContentType()) {
+    case V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull::ContentType::
+        kBoolean:
+      if (value->GetAsBoolean()) {
+        setAttribute(html_names::kHiddenAttr, "");
+      } else {
+        removeAttribute(html_names::kHiddenAttr);
+      }
+      break;
+    case V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull::ContentType::kString:
+      if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
+              GetExecutionContext()) &&
+          EqualIgnoringASCIICase(value->GetAsString(), "until-found")) {
+        setAttribute(html_names::kHiddenAttr, "until-found");
+      } else if (value->GetAsString() == "") {
+        removeAttribute(html_names::kHiddenAttr);
+      } else {
+        setAttribute(html_names::kHiddenAttr, "");
+      }
+      break;
+    case V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull::ContentType::kNull:
+      removeAttribute(html_names::kHiddenAttr);
+      break;
+    case V8UnionBooleanOrStringOrUnrestrictedDoubleOrNull::ContentType::
+        kUnrestrictedDouble:
+      double double_value = value->GetAsUnrestrictedDouble();
+      if (double_value && !std::isnan(double_value)) {
+        setAttribute(html_names::kHiddenAttr, "");
+      } else {
+        removeAttribute(html_names::kHiddenAttr);
+      }
+      break;
+  }
 }
 
 const AtomicString& HTMLElement::autocapitalize() const {
@@ -1730,11 +1787,11 @@ int HTMLElement::offsetLeftForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
-  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-               LayoutUnit(layout_object->PixelSnappedOffsetLeft(offset_parent)),
-               layout_object->StyleRef())
-        .Round();
+  if (const auto* layout_object = GetLayoutBoxModelObject()) {
+    return AdjustForAbsoluteZoom::AdjustInt(
+        layout_object->PixelSnappedOffsetLeft(offset_parent),
+        layout_object->StyleRef());
+  }
   return 0;
 }
 
@@ -1742,11 +1799,11 @@ int HTMLElement::offsetTopForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
-  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-               LayoutUnit(layout_object->PixelSnappedOffsetTop(offset_parent)),
-               layout_object->StyleRef())
-        .Round();
+  if (const auto* layout_object = GetLayoutBoxModelObject()) {
+    return AdjustForAbsoluteZoom::AdjustInt(
+        layout_object->PixelSnappedOffsetTop(offset_parent),
+        layout_object->StyleRef());
+  }
   return 0;
 }
 
@@ -1755,12 +1812,10 @@ int HTMLElement::offsetWidthForBinding() {
       this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
   int result = 0;
-  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject()) {
-    result =
-        AdjustForAbsoluteZoom::AdjustLayoutUnit(
-            LayoutUnit(layout_object->PixelSnappedOffsetWidth(offset_parent)),
-            layout_object->StyleRef())
-            .Round();
+  if (const auto* layout_object = GetLayoutBoxModelObject()) {
+    result = AdjustForAbsoluteZoom::AdjustInt(
+        layout_object->PixelSnappedOffsetWidth(offset_parent),
+        layout_object->StyleRef());
     RecordScrollbarSizeForStudy(result, /* isWidth= */ true,
                                 /* is_offset= */ true);
   }
@@ -1773,12 +1828,10 @@ int HTMLElement::offsetHeightForBinding() {
       this, DocumentUpdateReason::kJavaScript);
   Element* offset_parent = unclosedOffsetParent();
   int result = 0;
-  if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject()) {
-    result =
-        AdjustForAbsoluteZoom::AdjustLayoutUnit(
-            LayoutUnit(layout_object->PixelSnappedOffsetHeight(offset_parent)),
-            layout_object->StyleRef())
-            .Round();
+  if (const auto* layout_object = GetLayoutBoxModelObject()) {
+    result = AdjustForAbsoluteZoom::AdjustInt(
+        layout_object->PixelSnappedOffsetHeight(offset_parent),
+        layout_object->StyleRef());
     RecordScrollbarSizeForStudy(result, /* is_width= */ false,
                                 /* is_offset= */ true);
   }

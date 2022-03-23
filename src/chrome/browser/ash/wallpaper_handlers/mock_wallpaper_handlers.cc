@@ -32,12 +32,17 @@ MockGooglePhotosAlbumsFetcher::MockGooglePhotosAlbumsFetcher(Profile* profile)
           });
 
   ON_CALL(*this, ParseResponse)
-      .WillByDefault([this](absl::optional<base::Value> value) {
-        return GooglePhotosAlbumsFetcher::ParseResponse(std::move(value));
+      .WillByDefault([this](const base::Value::Dict* response) {
+        return GooglePhotosAlbumsFetcher::ParseResponse(response);
       });
 }
 
 MockGooglePhotosAlbumsFetcher::~MockGooglePhotosAlbumsFetcher() = default;
+
+absl::optional<size_t> MockGooglePhotosAlbumsFetcher::GetResultCount(
+    const GooglePhotosAlbumsCbkArgs& result) {
+  return GooglePhotosAlbumsFetcher::GetResultCount(result);
+}
 
 MockGooglePhotosCountFetcher::MockGooglePhotosCountFetcher(Profile* profile)
     : GooglePhotosCountFetcher(profile) {
@@ -48,12 +53,41 @@ MockGooglePhotosCountFetcher::MockGooglePhotosCountFetcher(Profile* profile)
       });
 
   ON_CALL(*this, ParseResponse)
-      .WillByDefault([this](absl::optional<base::Value> value) {
-        return GooglePhotosCountFetcher::ParseResponse(std::move(value));
+      .WillByDefault([this](const base::Value::Dict* response) {
+        return GooglePhotosCountFetcher::ParseResponse(response);
       });
 }
 
 MockGooglePhotosCountFetcher::~MockGooglePhotosCountFetcher() = default;
+
+absl::optional<size_t> MockGooglePhotosCountFetcher::GetResultCount(
+    const int& result) {
+  return GooglePhotosCountFetcher::GetResultCount(result);
+}
+
+MockGooglePhotosEnabledFetcher::MockGooglePhotosEnabledFetcher(Profile* profile)
+    : GooglePhotosEnabledFetcher(profile) {
+  ON_CALL(*this, AddRequestAndStartIfNecessary)
+      .WillByDefault(
+          [](base::OnceCallback<void(GooglePhotosEnablementState)> callback) {
+            base::SequencedTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE,
+                base::BindOnce(std::move(callback),
+                               GooglePhotosEnablementState::kEnabled));
+          });
+
+  ON_CALL(*this, ParseResponse)
+      .WillByDefault([this](const base::Value::Dict* response) {
+        return GooglePhotosEnabledFetcher::ParseResponse(response);
+      });
+}
+
+MockGooglePhotosEnabledFetcher::~MockGooglePhotosEnabledFetcher() = default;
+
+absl::optional<size_t> MockGooglePhotosEnabledFetcher::GetResultCount(
+    const GooglePhotosEnablementState& result) {
+  return GooglePhotosEnabledFetcher::GetResultCount(result);
+}
 
 MockGooglePhotosPhotosFetcher::MockGooglePhotosPhotosFetcher(Profile* profile)
     : GooglePhotosPhotosFetcher(profile) {
@@ -74,11 +108,16 @@ MockGooglePhotosPhotosFetcher::MockGooglePhotosPhotosFetcher(Profile* profile)
           });
 
   ON_CALL(*this, ParseResponse)
-      .WillByDefault([this](absl::optional<base::Value> value) {
-        return GooglePhotosPhotosFetcher::ParseResponse(std::move(value));
+      .WillByDefault([this](const base::Value::Dict* response) {
+        return GooglePhotosPhotosFetcher::ParseResponse(response);
       });
 }
 
 MockGooglePhotosPhotosFetcher::~MockGooglePhotosPhotosFetcher() = default;
+
+absl::optional<size_t> MockGooglePhotosPhotosFetcher::GetResultCount(
+    const GooglePhotosPhotosCbkArgs& result) {
+  return GooglePhotosPhotosFetcher::GetResultCount(result);
+}
 
 }  // namespace wallpaper_handlers

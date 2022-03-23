@@ -1,5 +1,5 @@
 export const description = `
-copyImageBitmapToTexture from ImageBitmaps created from various sources.
+copyExternalImageToTexture from ImageBitmaps created from various sources.
 
 TODO: Test ImageBitmap generated from all possible ImageBitmapSource, relevant ImageBitmapOptions
     (https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#images-2)
@@ -17,7 +17,7 @@ import {
   kTextureFormatInfo,
   kValidTextureFormatsForCopyE2T,
 } from '../../capability_info.js';
-import { CopyToTextureUtils, isFp16Format } from '../../util/copy_to_texture.js';
+import { CopyToTextureUtils } from '../../util/copy_to_texture.js';
 import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
 
 enum Color {
@@ -227,7 +227,7 @@ g.test('from_ImageData')
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
       dstBytesPerPixel,
       expectedPixels,
-      isFp16Format(dstColorFormat)
+      dstColorFormat
     );
   });
 
@@ -319,7 +319,9 @@ g.test('from_canvas')
     // Use putImageData to prevent color space conversion.
     imageCanvasContext.putImageData(imageData, 0, 0);
 
-    const imageBitmap = await createImageBitmap(imageCanvas, {
+    // MAINTENANCE_TODO: Workaround for @types/offscreencanvas missing an overload of
+    // `createImageBitmap` that takes `ImageBitmapOptions`.
+    const imageBitmap = await createImageBitmap(imageCanvas as HTMLCanvasElement, {
       premultiplyAlpha: 'premultiply',
       imageOrientation: orientation,
     });
@@ -368,6 +370,6 @@ g.test('from_canvas')
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
       dstBytesPerPixel,
       expectedPixels,
-      isFp16Format(dstColorFormat)
+      dstColorFormat
     );
   });

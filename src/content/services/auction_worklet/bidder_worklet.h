@@ -79,6 +79,11 @@ class BidderWorklet : public mojom::BidderWorklet {
   ~BidderWorklet() override;
   BidderWorklet& operator=(const BidderWorklet&) = delete;
 
+  // Returns true if `bid` is a valid bid value. Bids of "0" and other values
+  // that mean no bid was offered are considered invalid, for the purposes of
+  // this method.
+  static bool IsValidBid(double bid);
+
   // Sets the callback to be invoked on errors which require closing the pipe.
   // Callback will also immediately delete `this`. Not an argument to
   // constructor because the Mojo ReceiverId needs to be bound to the callback,
@@ -96,21 +101,24 @@ class BidderWorklet : public mojom::BidderWorklet {
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
-      const url::Origin& seller_origin,
+      const url::Origin& browser_signal_seller_origin,
+      const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
       mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
       base::Time auction_start_time,
       GenerateBidCallback generate_bid_callback) override;
   void SendPendingSignalsRequests() override;
-  void ReportWin(const std::string& interest_group_name,
-                 const absl::optional<std::string>& auction_signals_json,
-                 const absl::optional<std::string>& per_buyer_signals_json,
-                 const std::string& seller_signals_json,
-                 const GURL& browser_signal_render_url,
-                 double browser_signal_bid,
-                 const url::Origin& browser_signal_seller_origin,
-                 uint32_t bidding_signals_data_version,
-                 bool has_bidding_signals_data_version,
-                 ReportWinCallback report_win_callback) override;
+  void ReportWin(
+      const std::string& interest_group_name,
+      const absl::optional<std::string>& auction_signals_json,
+      const absl::optional<std::string>& per_buyer_signals_json,
+      const std::string& seller_signals_json,
+      const GURL& browser_signal_render_url,
+      double browser_signal_bid,
+      const url::Origin& browser_signal_seller_origin,
+      const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
+      uint32_t bidding_signals_data_version,
+      bool has_bidding_signals_data_version,
+      ReportWinCallback report_win_callback) override;
   void ConnectDevToolsAgent(
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
       override;
@@ -124,7 +132,8 @@ class BidderWorklet : public mojom::BidderWorklet {
     absl::optional<std::string> auction_signals_json;
     absl::optional<std::string> per_buyer_signals_json;
     absl::optional<base::TimeDelta> per_buyer_timeout;
-    url::Origin seller_origin;
+    url::Origin browser_signal_seller_origin;
+    absl::optional<url::Origin> browser_signal_top_level_seller_origin;
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals;
     base::Time auction_start_time;
 
@@ -154,6 +163,7 @@ class BidderWorklet : public mojom::BidderWorklet {
     GURL browser_signal_render_url;
     double browser_signal_bid;
     url::Origin browser_signal_seller_origin;
+    absl::optional<url::Origin> browser_signal_top_level_seller_origin;
     absl::optional<uint32_t> bidding_signals_data_version;
 
     ReportWinCallback callback;
@@ -194,6 +204,8 @@ class BidderWorklet : public mojom::BidderWorklet {
                    const GURL& browser_signal_render_url,
                    double browser_signal_bid,
                    const url::Origin& browser_signal_seller_origin,
+                   const absl::optional<url::Origin>&
+                       browser_signal_top_level_seller_origin,
                    const absl::optional<uint32_t>& bidding_signals_data_version,
                    ReportWinCallbackInternal callback);
 
@@ -203,6 +215,8 @@ class BidderWorklet : public mojom::BidderWorklet {
         const absl::optional<std::string>& per_buyer_signals_json,
         const absl::optional<base::TimeDelta> per_buyer_timeout,
         const url::Origin& browser_signal_seller_origin,
+        const absl::optional<url::Origin>&
+            browser_signal_top_level_seller_origin,
         mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
         base::Time auction_start_time,
         scoped_refptr<TrustedSignals::Result> trusted_bidding_signals_result,

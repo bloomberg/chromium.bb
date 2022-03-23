@@ -35,6 +35,10 @@ How to update the performance tests:
             --path . --port 8091 (you must use that port number, it appears in
             the test Python scripts.)
 3.  Build Linux Release Chromium
+
+[The update_wpr tool](https://source.chromium.org/chromium/chromium/src/+/main:tools/perf/recording_benchmarks.md)
+automates the following steps for you:
+
 4.  tools/perf/record_wpr --browser=release
             --extra-browser-args='--enable-experimental-web-platform-features'
             service_worker_page_set

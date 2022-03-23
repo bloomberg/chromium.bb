@@ -24,6 +24,7 @@
 #include "envoy/config/route/v3/route_components.upb.h"
 #include "envoy/extensions/filters/http/rbac/v3/rbac.upb.h"
 #include "envoy/extensions/filters/http/rbac/v3/rbac.upbdefs.h"
+#include "envoy/type/matcher/v3/metadata.upb.h"
 #include "envoy/type/matcher/v3/path.upb.h"
 #include "envoy/type/matcher/v3/regex.upb.h"
 #include "envoy/type/matcher/v3/string.upb.h"
@@ -181,6 +182,17 @@ Json ParseCidrRangeToJson(const envoy_config_core_v3_CidrRange* range) {
   return json;
 }
 
+Json ParseMetadataMatcherToJson(
+    const envoy_type_matcher_v3_MetadataMatcher* metadata_matcher) {
+  Json::Object json;
+  // The fields "filter", "path" and "value" are irrelevant to gRPC as per
+  // https://github.com/grpc/proposal/blob/master/A41-xds-rbac.md and are not
+  // being parsed.
+  json.emplace("invert",
+               envoy_type_matcher_v3_MetadataMatcher_invert(metadata_matcher));
+  return json;
+}
+
 absl::StatusOr<Json> ParsePermissionToJson(
     const envoy_config_rbac_v3_Permission* permission) {
   Json::Object permission_json;
@@ -251,9 +263,9 @@ absl::StatusOr<Json> ParsePermissionToJson(
         "destinationPort",
         envoy_config_rbac_v3_Permission_destination_port(permission));
   } else if (envoy_config_rbac_v3_Permission_has_metadata(permission)) {
-    // Not parsing metadata even if its present since it is not relevant to
-    // gRPC.
-    permission_json.emplace("metadata", Json::Object());
+    permission_json.emplace(
+        "metadata", ParseMetadataMatcherToJson(
+                        envoy_config_rbac_v3_Permission_metadata(permission)));
   } else if (envoy_config_rbac_v3_Permission_has_not_rule(permission)) {
     auto not_rule_json = ParsePermissionToJson(
         envoy_config_rbac_v3_Permission_not_rule(permission));
@@ -365,9 +377,9 @@ absl::StatusOr<Json> ParsePrincipalToJson(
     }
     principal_json.emplace("urlPath", std::move(*url_path_json));
   } else if (envoy_config_rbac_v3_Principal_has_metadata(principal)) {
-    // Not parsing metadata even if its present since it is not relevant to
-    // gRPC.
-    principal_json.emplace("metadata", Json::Object());
+    principal_json.emplace(
+        "metadata", ParseMetadataMatcherToJson(
+                        envoy_config_rbac_v3_Principal_metadata(principal)));
   } else if (envoy_config_rbac_v3_Principal_has_not_id(principal)) {
     auto not_id_json =
         ParsePrincipalToJson(envoy_config_rbac_v3_Principal_not_id(principal));
@@ -441,7 +453,7 @@ absl::StatusOr<Json> ParseHttpRbacToJson(
     inner_rbac_json.emplace("action", envoy_config_rbac_v3_RBAC_action(rules));
     if (envoy_config_rbac_v3_RBAC_has_policies(rules)) {
       Json::Object policies_object;
-      size_t iter = UPB_MAP_BEGIN;
+      size_t iter = kUpb_Map_Begin;
       while (true) {
         auto* entry = envoy_config_rbac_v3_RBAC_policies_next(rules, &iter);
         if (entry == nullptr) {
@@ -478,13 +490,13 @@ absl::StatusOr<Json> ParseHttpRbacToJson(
 
 }  // namespace
 
-void XdsHttpRbacFilter::PopulateSymtab(upb_symtab* symtab) const {
+void XdsHttpRbacFilter::PopulateSymtab(upb_DefPool* symtab) const {
   envoy_extensions_filters_http_rbac_v3_RBAC_getmsgdef(symtab);
 }
 
 absl::StatusOr<XdsHttpFilterImpl::FilterConfig>
-XdsHttpRbacFilter::GenerateFilterConfig(upb_strview serialized_filter_config,
-                                        upb_arena* arena) const {
+XdsHttpRbacFilter::GenerateFilterConfig(upb_StringView serialized_filter_config,
+                                        upb_Arena* arena) const {
   absl::StatusOr<Json> rbac_json;
   auto* rbac = envoy_extensions_filters_http_rbac_v3_RBAC_parse(
       serialized_filter_config.data, serialized_filter_config.size, arena);
@@ -501,7 +513,7 @@ XdsHttpRbacFilter::GenerateFilterConfig(upb_strview serialized_filter_config,
 
 absl::StatusOr<XdsHttpFilterImpl::FilterConfig>
 XdsHttpRbacFilter::GenerateFilterConfigOverride(
-    upb_strview serialized_filter_config, upb_arena* arena) const {
+    upb_StringView serialized_filter_config, upb_Arena* arena) const {
   auto* rbac_per_route =
       envoy_extensions_filters_http_rbac_v3_RBACPerRoute_parse(
           serialized_filter_config.data, serialized_filter_config.size, arena);

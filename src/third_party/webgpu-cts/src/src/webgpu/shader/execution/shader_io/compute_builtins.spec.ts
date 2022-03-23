@@ -195,7 +195,7 @@ g.test('inputs')
         break;
       }
     }
-    pass.endPass();
+    pass.end();
     t.queue.submit([encoder.finish()]);
 
     type vec3 = { x: number; y: number; z: number };

@@ -28,7 +28,6 @@ class Layer;
 
 namespace views {
 class Separator;
-class AnimationAbortHandle;
 }  // namespace views
 
 namespace ash {
@@ -167,10 +166,11 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   // `aborted` indicates whether the fade in animation is aborted.
   void OnAppsGridViewFadeInAnimationEnded(bool aborted);
 
-  // Called when the animation to fade in the reorder undo toast is completed.
-  // `aborted` is true if the animation is aborted; `clean_layer` is true if the
-  // undo toast's layer should be cleaned after animation.
-  void OnReorderUndoToastFadeInAnimationEnded(bool aborted, bool clean_layer);
+  // Called at the end of the reorder animation. In detail, it is executed in
+  // the following scenarios:
+  // (1) At the end of the fade out animation when the fade out is aborted, or
+  // (2) At the end of the fade in animation.
+  void OnReorderAnimationEnded();
 
   // Animates `view` using a layer animation. Creates the layer if needed. The
   // layer is pushed down by `vertical_offset` at the start of the animation and
@@ -190,9 +190,6 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
 
   // Adds fade in/out gradients to `scroll_view_`.
   std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;
-
-  // The handle to abort the undo toast fade in animation.
-  std::unique_ptr<views::AnimationAbortHandle> toast_fade_in_abort_handle_;
 
   // A closure to update item positions. It should run at the end of the fade
   // out animation when items are reordered.

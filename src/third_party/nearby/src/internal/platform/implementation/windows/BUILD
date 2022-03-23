@@ -110,6 +110,7 @@ cc_library(
     copts = ["-Ithird_party/nearby/internal/platform/implementation/windows/generated"],
     defines = ["_SILENCE_CLANG_COROUTINE_MESSAGE"],
     visibility = [
+        "//location/nearby/cpp/sharing:__subpackages__",
         "//connections/clients/windows:__subpackages__",
     ],
     deps = [
@@ -119,7 +120,6 @@ cc_library(
         "//internal/platform:types",
         "//internal/platform/implementation:comm",
         "//internal/platform/implementation:platform",
-        "//internal/platform/implementation:types",
         "//internal/platform/implementation/shared:count_down_latch",
         "//internal/platform/implementation/shared:file",
         "//internal/platform/implementation/windows/generated:types",
@@ -152,6 +152,7 @@ cc_test(
         "count_down_latch_test.cc",
         "crypto_test.cc",
         "executor_test.cc",
+        "platform_test.cc",
         "scheduled_executor_test.cc",
         "submittable_executor_test.cc",
     ],

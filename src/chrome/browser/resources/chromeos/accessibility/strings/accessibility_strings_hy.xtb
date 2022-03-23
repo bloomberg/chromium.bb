@@ -536,7 +536,7 @@
 <translation id="4601367666219428522">աղսկ <ph name="TABLENAME" />․ <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Անտեսվում է հաջորդ ստեղնի սեղմումը</translation>
 <translation id="4623097797855662355">Հիշատակարան</translation>
-<translation id="463135993322337640">ChromeVox-ի նորություններին ծանոթանալու համար՝ սեղմեք ChromeVox + O + N ստեղնները:</translation>
+<translation id="463135993322337640">ChromeVox-ի նորություններին ծանոթանալու համար՝ սեղմեք ChromeVox + O + N ստեղները:</translation>
 <translation id="4649220074413114917">Երկու մատով էկրանին հպելով կարող եք անջատել տեքստի հնչեցումը, հատկապես, եթե չեք ցանկանում, որ ChromeVox-ը որևէ տեքստ հնչեցնի։ Շարունակելու համար երկու մատով հպեք էկրանին։</translation>
 <translation id="4660783501463101648">Classic տարբերակը հեռացվել է։ ChromeVox Classic տարբերակին վերադառնալու ստեղնների համակցությունը հեռացվել է։</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -618,7 +618,6 @@
 <translation id="5170206230005240598">Բրայլի գրատիպով ենթագրերը միացված են</translation>
 <translation id="5183440668879371625">Նախորդ տողը</translation>
 <translation id="5189244881767082992">Տող</translation>
-<translation id="5234747236692380506">մուտքագրել «<ph name="TEXT" />»</translation>
 <translation id="5263034204789987535">Մետաքսագույն</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Վերջ</translation>
@@ -794,6 +793,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{միջակետ}one{# միջակետ}other{# միջակետ}}</translation>
 <translation id="6444046323172968959">Ծանուցման երկխոսություն</translation>
 <translation id="6452403590345320472">Բովանդակություն</translation>
+<translation id="6457542714329819968">մուտքագրել</translation>
 <translation id="6468049171101508116">Հաջորդ կոճակը</translation>
 <translation id="646954774886932461">Այբբենական ցանկ</translation>
 <translation id="6475604559827479857">Բառերի գունանշման գույն՝</translation>

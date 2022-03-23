@@ -50,10 +50,6 @@ div {
     display: block
 }
 
-layer {
-    display: block
-}
-
 article, aside, footer, header, hgroup, main, nav, section {
     display: block
 }
@@ -665,10 +661,10 @@ button {
     text-align: center;
     cursor: default;
     padding: 1px 6px;
-    border: 2px outset -internal-light-dark(#767676, #858585);
+    border: 2px outset ButtonBorder;
     box-sizing: border-box;
     background-color: -internal-light-dark(#efefef, #3B3B3B);
-    color: -internal-light-dark(black, white);
+    color: ButtonText;
 }
 
 input[type="checkbox" i]:disabled,
@@ -804,7 +800,7 @@ input[type="color" i] {
     width: 50px;
     height: 27px;
     /* Same as native_theme_base. */
-    border: 1px solid -internal-light-dark(#767676, #858585);
+    border: 1px solid ButtonBorder;
     padding: 1px 2px;
     cursor: default;
     box-sizing: border-box;
@@ -1159,6 +1155,10 @@ nobr {
 
 /* states */
 
+:-internal-selector-fragment-anchor {
+    outline: Highlight 3px solid;
+}
+
 :-internal-spatial-navigation-interest {
     outline: auto 1px -webkit-focus-ring-color !important;
     box-shadow: none !important
@@ -1388,6 +1388,7 @@ dialog:-internal-modal {
     /* 6px + 2em = border + padding, as by default box-sizing is content-box. */
     max-width: calc(100% - 6px - 2em);
     max-height: calc(100% - 6px - 2em);
+    user-select: text;
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the

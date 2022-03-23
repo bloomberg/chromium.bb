@@ -44,6 +44,10 @@
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#include "base/trace_event/address_space_dump_provider.h"
+#endif
+
 namespace base {
 namespace trace_event {
 
@@ -131,6 +135,11 @@ void MemoryDumpManager::Initialize(
 // Enable the core dump providers.
 #if defined(MALLOC_MEMORY_TRACING_SUPPORTED)
   RegisterDumpProvider(MallocDumpProvider::GetInstance(), "Malloc", nullptr);
+#endif
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  RegisterDumpProvider(AddressSpaceDumpProvider::GetInstance(),
+                       "PartitionAlloc.AddressSpace", nullptr);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -287,7 +296,7 @@ MemoryDumpManager::GetOrCreateBgTaskRunnerLocked() {
 void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
                                           ProcessMemoryDumpCallback callback) {
   char guid_str[20];
-  snprintf(guid_str, base::size(guid_str), "0x%" PRIx64, args.dump_guid);
+  snprintf(guid_str, std::size(guid_str), "0x%" PRIx64, args.dump_guid);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTraceCategory, "ProcessMemoryDump",
                                     TRACE_ID_LOCAL(args.dump_guid), "dump_guid",
                                     TRACE_STR_COPY(guid_str));

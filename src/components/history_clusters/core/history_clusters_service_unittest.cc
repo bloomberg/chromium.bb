@@ -25,6 +25,7 @@
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history_clusters/core/clustering_backend.h"
+#include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_service_test_api.h"
 #include "components/history_clusters/core/history_clusters_types.h"
@@ -38,10 +39,9 @@ namespace {
 // Trivial backend to allow us to specifically test just the service behavior.
 class TestClusteringBackend : public ClusteringBackend {
  public:
-  void GetClusters(
-      ClusteringRequestSource clustering_request_source,
-      ClustersCallback callback,
-      const std::vector<history::AnnotatedVisit>& visits) override {
+  void GetClusters(ClusteringRequestSource clustering_request_source,
+                   ClustersCallback callback,
+                   std::vector<history::AnnotatedVisit> visits) override {
     callback_ = std::move(callback);
     last_clustered_visits_ = visits;
 
@@ -178,15 +178,13 @@ class HistoryClustersServiceTestBase : public testing::Test {
   }
 
   // Verifies that the hardcoded visits were passed to the clustering backend.
-  void AwaitAndVerifyTestClusteringBackendRequest(bool for_keywords = false) {
+  void AwaitAndVerifyTestClusteringBackendRequest() {
     test_clustering_backend_->WaitForGetClustersCall();
 
     std::vector<history::AnnotatedVisit> visits =
         test_clustering_backend_->LastClusteredVisits();
 
-    // Keyword requests should not fetch visits older than 30 days; cluster
-    // requests should fetch all visits.
-    ASSERT_EQ(visits.size(), for_keywords ? 2u : 3u);
+    ASSERT_EQ(visits.size(), 3u);
 
     auto& visit = visits[0];
     EXPECT_EQ(visit.visit_row.visit_id, 2);
@@ -204,10 +202,8 @@ class HistoryClustersServiceTestBase : public testing::Test {
     EXPECT_EQ(visit.url_row.url(), "https://google.com/");
     EXPECT_EQ(visit.context_annotations.page_end_reason, 3);
 
-    if (!for_keywords) {
-      visit = visits[2];
-      EXPECT_EQ(visit.visit_row.visit_id, 4);
-    }
+    visit = visits[2];
+    EXPECT_EQ(visit.visit_row.visit_id, 4);
 
     // TODO(tommycli): Add back visit.referring_visit_id() check after updating
     //  the HistoryService test methods to support that field.
@@ -249,9 +245,10 @@ class HistoryClustersServiceTest : public HistoryClustersServiceTestBase {
 };
 
 TEST_F(HistoryClustersServiceTest, HardCapOnVisitsFetchedFromHistory) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      internal::kJourneys, {{"JourneysMaxVisitsToCluster", "20"}});
+  Config config;
+  config.is_journeys_enabled_no_locale_check = true;
+  config.max_visits_to_cluster = 20;
+  SetConfigForTesting(config);
 
   history::ContextID context_id = reinterpret_cast<history::ContextID>(1);
   auto visit = GetHardcodedTestVisits()[0];
@@ -531,7 +528,7 @@ class HistoryClustersServiceJourneysDisabledTest
         /*enabled_features=*/{},
         /*disabled_features=*/{
             internal::kJourneys,
-            kPersistContextAnnotationsInHistoryDb,
+            internal::kPersistContextAnnotationsInHistoryDb,
         });
   }
 };
@@ -574,9 +571,8 @@ TEST_F(HistoryClustersServiceTest, DoesQueryMatchAnyCluster) {
   EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
 
   // Providing the response and running the task loop should populate the cache.
-  // This will also verify that visits older than 30 days are not included for
-  // keyword requests.
-  AwaitAndVerifyTestClusteringBackendRequest(true);
+  // This also verifies that visits older than 30 days are also included.
+  AwaitAndVerifyTestClusteringBackendRequest();
 
   std::vector<history::Cluster> clusters;
   clusters.push_back(
@@ -700,11 +696,13 @@ class HistoryClustersServiceMaxKeywordsTest
  public:
   HistoryClustersServiceMaxKeywordsTest() {
     // Set the max keyword phrases to 5.
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        internal::kJourneys, {
-                                 {kMaxKeywordPhrases.name, "5"},
-                             });
+    config_.is_journeys_enabled_no_locale_check = true;
+    config_.max_keyword_phrases = 5;
+    SetConfigForTesting(config_);
   }
+
+ private:
+  Config config_;
 };
 TEST_F(HistoryClustersServiceMaxKeywordsTest,
        DoesQueryMatchAnyClusterMaxKeywordPhrases) {

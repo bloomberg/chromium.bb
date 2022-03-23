@@ -12,7 +12,9 @@ import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.StyleRes;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatButton;
 
 import org.chromium.ui.R;
@@ -67,6 +69,10 @@ public class ButtonCompat extends AppCompatButton {
                 a.getResourceId(R.styleable.ButtonCompat_buttonColor, R.color.blue_when_enabled);
         int rippleColorId = a.getResourceId(
                 R.styleable.ButtonCompat_rippleColor, R.color.filled_button_ripple_color);
+        int borderColorId =
+                a.getResourceId(R.styleable.ButtonCompat_borderColor, android.R.color.transparent);
+        int borderWidthId = a.getResourceId(R.styleable.ButtonCompat_borderWidth,
+                R.dimen.default_ripple_background_border_size);
         boolean buttonRaised = a.getBoolean(R.styleable.ButtonCompat_buttonRaised, true);
         int verticalInset = a.getDimensionPixelSize(R.styleable.ButtonCompat_verticalInset,
                 getResources().getDimensionPixelSize(R.dimen.button_bg_vertical_inset));
@@ -82,6 +88,15 @@ public class ButtonCompat extends AppCompatButton {
         final int bottomEndRippleRadius = a.getDimensionPixelSize(
                 R.styleable.ButtonCompat_rippleCornerRadiusBottomEnd, defaultRadius);
 
+        // If this attribute is not set, the text will keep the color set by android:textAppearance.
+        // This would have been handled in #super().
+        final @ColorRes int textColorRes =
+                a.getResourceId(R.styleable.ButtonCompat_buttonTextColor, -1);
+
+        if (textColorRes != -1) {
+            setTextColor(AppCompatResources.getColorStateList(getContext(), textColorRes));
+        }
+
         float[] radii;
         if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
             radii = new float[] {topEndRippleRadius, topEndRippleRadius, topStartRippleRadius,
@@ -94,8 +109,8 @@ public class ButtonCompat extends AppCompatButton {
         }
 
         a.recycle();
-        mRippleBackgroundHelper = new RippleBackgroundHelper(
-                this, buttonColorId, rippleColorId, radii, verticalInset);
+        mRippleBackgroundHelper = new RippleBackgroundHelper(this, buttonColorId, rippleColorId,
+                radii, borderColorId, borderWidthId, verticalInset);
         setRaised(buttonRaised);
     }
 

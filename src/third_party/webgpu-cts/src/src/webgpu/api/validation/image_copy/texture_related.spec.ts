@@ -10,6 +10,7 @@ import {
   textureDimensionAndFormatCompatible,
 } from '../../../capability_info.js';
 import { GPUConst } from '../../../constants.js';
+import { kResourceStates } from '../../../gpu_test.js';
 import { align } from '../../../util/math.js';
 import { virtualMipSize } from '../../../util/texture/base.js';
 import { kImageCopyTypes } from '../../../util/texture/layout.js';
@@ -35,7 +36,7 @@ Test that the texture must be valid and not destroyed.
   .params(u =>
     u //
       .combine('method', kImageCopyTypes)
-      .combine('textureState', ['valid', 'destroyed', 'error'])
+      .combine('textureState', kResourceStates)
       .combineWithParams([
         { dimension: '1d', size: [4, 1, 1] },
         { dimension: '2d', size: [4, 4, 1] },
@@ -46,27 +47,15 @@ Test that the texture must be valid and not destroyed.
   .fn(async t => {
     const { method, textureState, size, dimension } = t.params;
 
-    // A valid texture.
-    let texture = t.device.createTexture({
+    const texture = t.createTextureWithState(textureState, {
       size,
       dimension,
       format: 'rgba8unorm',
       usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
     });
 
-    switch (textureState) {
-      case 'destroyed': {
-        texture.destroy();
-        break;
-      }
-      case 'error': {
-        texture = t.getErrorTexture();
-        break;
-      }
-    }
-
     const success = textureState === 'valid';
-    const submit = textureState === 'destroyed';
+    const submit = textureState !== 'invalid';
 
     t.testRun(
       { texture },

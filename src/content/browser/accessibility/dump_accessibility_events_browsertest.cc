@@ -296,6 +296,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaPressedChangesButtonRole) {
+  RunEventTest(FILE_PATH_LITERAL("aria-pressed-changes-button-role.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaReadonlyChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-readonly-changed.html"));
 }
@@ -446,18 +451,40 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("add-child-of-body.html"));
 }
 
+// TODO(crbug.com/1299885): Flaky on Win7.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_AccessibilityEventsAddDialog DISABLED_AccessibilityEventsAddDialog
+#else
+#define MAYBE_AccessibilityEventsAddDialog AccessibilityEventsAddDialog
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAddDialog) {
+                       MAYBE_AccessibilityEventsAddDialog) {
   RunEventTest(FILE_PATH_LITERAL("add-dialog.html"));
 }
 
+// TODO(crbug.com/1299885): Flaky on Win7.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_AccessibilityEventsAddDialogDescribedBy \
+  DISABLED_AccessibilityEventsAddDialogDescribedBy
+#else
+#define MAYBE_AccessibilityEventsAddDialogDescribedBy \
+  AccessibilityEventsAddDialogDescribedBy
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAddDialogDescribedBy) {
+                       MAYBE_AccessibilityEventsAddDialogDescribedBy) {
   RunEventTest(FILE_PATH_LITERAL("add-dialog-described-by.html"));
 }
 
+// TODO(crbug.com/1299885): Flaky on Win7.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_AccessibilityEventsAddDialogNoInfo \
+  DISABLED_AccessibilityEventsAddDialogNoInfo
+#else
+#define MAYBE_AccessibilityEventsAddDialogNoInfo \
+  AccessibilityEventsAddDialogNoInfo
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAddDialogNoInfo) {
+                       MAYBE_AccessibilityEventsAddDialogNoInfo) {
   RunEventTest(FILE_PATH_LITERAL("add-dialog-no-info.html"));
 }
 
@@ -661,8 +688,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("focus-listbox-multiselect.html"));
 }
 
+// TODO(crbug.com/1298770): Flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_AccessibilityEventsIframeSrcChanged \
+  DISABLED_AccessibilityEventsIframeSrcChanged
+#else
+#define MAYBE_AccessibilityEventsIframeSrcChanged \
+  AccessibilityEventsIframeSrcChanged
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsIframeSrcChanged) {
+                       MAYBE_AccessibilityEventsIframeSrcChanged) {
   RunEventTest(FILE_PATH_LITERAL("iframe-src-changed.html"));
 }
 
@@ -890,6 +925,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsSubtreeReparentedViaAriaOwns) {
   RunEventTest(FILE_PATH_LITERAL("subtree-reparented-via-aria-owns.html"));
 }
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsSubtreeReparentedViaAriaOwns2) {
+  RunEventTest(FILE_PATH_LITERAL("subtree-reparented-via-aria-owns-2.html"));
+}
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsTabindexAddedOnPlainDiv) {
@@ -1047,11 +1086,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, ValueValueChanged) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsMenuOpenedClosed) {
   RunEventTest(FILE_PATH_LITERAL("menu-opened-closed.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsMenuOpenedClosedViaInnerText) {
-  RunEventTest(FILE_PATH_LITERAL("menu-opened-closed-via-inner-text.html"));
 }
 
 #if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)

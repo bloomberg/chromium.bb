@@ -35,8 +35,7 @@ class DiagnosticsAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   DiagnosticsAppIntegrationTest() {
     scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kDiagnosticsApp,
-         ash::features::kDiagnosticsAppNavigation,
+        {ash::features::kDiagnosticsAppNavigation,
          ash::features::kEnableNetworkingInDiagnosticsApp},
         {});
   }
@@ -161,6 +160,35 @@ IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest,
       "ChromeOS.DiagnosticsUi.System.OpenDuration", 1);
   histogram_tester_.ExpectTotalCount(
       "ChromeOS.DiagnosticsUi.Connectivity.OpenDuration", 1);
+}
+
+IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest,
+                       DiagnosticsAppIgnoresInvalidRecordNavigationCall) {
+  content::WebContents* web_contents = LaunchDiagnosticsApp();
+
+  histogram_tester_.ExpectUniqueSample("ChromeOS.DiagnosticsUi.InitialScreen",
+                                       0, 1);
+
+  // Simulate sending invalid navigation view value.
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents, "chrome.send('recordNavigation', [1000, -550]);"));
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents, "chrome.send('recordNavigation', ['1000', '-550']);"));
+  EXPECT_TRUE(
+      content::ExecuteScript(web_contents, "chrome.send('recordNavigation');"));
+  EXPECT_TRUE(content::ExecuteScript(web_contents,
+                                     "chrome.send('recordNavigation', []);"));
+  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+
+  chrome::CloseAllBrowsers();
+  web_app::FlushSystemWebAppLaunchesForTesting(profile());
+
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.DiagnosticsUi.System.OpenDuration", 1);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.DiagnosticsUi.Connectivity.OpenDuration", 0);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.DiagnosticsUi.Input.OpenDuration", 0);
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(

@@ -1807,6 +1807,22 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
       WriteBarrierMode barrier_mode = UPDATE_WRITE_BARRIER,
       int additional_offset = 0);
 
+  void StoreJSSharedStructInObjectField(TNode<HeapObject> object,
+                                        TNode<IntPtrT> offset,
+                                        TNode<Object> value);
+
+  void StoreJSSharedStructPropertyArrayElement(TNode<PropertyArray> array,
+                                               TNode<IntPtrT> index,
+                                               TNode<Object> value) {
+    // JSSharedStructs are allocated in the shared old space, which is currently
+    // collected by stopping the world, so the incremental write barrier is not
+    // needed. They can only store Smis and other HeapObjects in the shared old
+    // space, so the generational write barrier is also not needed.
+    // TODO(v8:12547): Add a safer, shared variant of SKIP_WRITE_BARRIER.
+    StoreFixedArrayOrPropertyArrayElement(array, index, value,
+                                          UNSAFE_SKIP_WRITE_BARRIER);
+  }
+
   // EnsureArrayPushable verifies that receiver with this map is:
   //   1. Is not a prototype.
   //   2. Is not a dictionary.
@@ -2011,6 +2027,9 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   TNode<NativeContext> GetCreationContext(TNode<JSReceiver> receiver,
                                           Label* if_bailout);
+  TNode<NativeContext> GetFunctionRealm(TNode<Context> context,
+                                        TNode<JSReceiver> receiver,
+                                        Label* if_bailout);
   TNode<Object> GetConstructor(TNode<Map> map);
 
   TNode<Map> GetInstanceTypeMap(InstanceType instance_type);
@@ -2427,6 +2446,11 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
                                    TVariable<Numeric>* var_numeric,
                                    TVariable<Smi>* var_feedback);
 
+  // Ensures that {var_shared_value} is shareable across Isolates, and throws if
+  // not.
+  void SharedValueBarrier(TNode<Context> context,
+                          TVariable<Object>* var_shared_value);
+
   TNode<WordT> TimesSystemPointerSize(TNode<WordT> value);
   TNode<IntPtrT> TimesSystemPointerSize(TNode<IntPtrT> value) {
     return Signed(TimesSystemPointerSize(implicit_cast<TNode<WordT>>(value)));
@@ -2570,6 +2594,11 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<BoolT> IsJSPrimitiveWrapperInstanceType(TNode<Int32T> instance_type);
   TNode<BoolT> IsJSPrimitiveWrapperMap(TNode<Map> map);
   TNode<BoolT> IsJSPrimitiveWrapper(TNode<HeapObject> object);
+  TNode<BoolT> IsJSSharedStructInstanceType(TNode<Int32T> instance_type);
+  TNode<BoolT> IsJSSharedStructMap(TNode<Map> map);
+  TNode<BoolT> IsJSSharedStruct(TNode<HeapObject> object);
+  TNode<BoolT> IsJSSharedStruct(TNode<Object> object);
+  TNode<BoolT> IsJSWrappedFunction(TNode<HeapObject> object);
   TNode<BoolT> IsMap(TNode<HeapObject> object);
   TNode<BoolT> IsName(TNode<HeapObject> object);
   TNode<BoolT> IsNameInstanceType(TNode<Int32T> instance_type);
@@ -2609,6 +2638,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   TNode<BoolT> IsSymbolInstanceType(TNode<Int32T> instance_type);
   TNode<BoolT> IsInternalizedStringInstanceType(TNode<Int32T> instance_type);
+  TNode<BoolT> IsSharedStringInstanceType(TNode<Int32T> instance_type);
   TNode<BoolT> IsTemporalInstantInstanceType(TNode<Int32T> instance_type);
   TNode<BoolT> IsUniqueName(TNode<HeapObject> object);
   TNode<BoolT> IsUniqueNameNoIndex(TNode<HeapObject> object);
@@ -2625,6 +2655,8 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<BoolT> IsRegExpSpeciesProtectorCellInvalid();
   TNode<BoolT> IsPromiseSpeciesProtectorCellInvalid();
 
+  TNode<IntPtrT> LoadBasicMemoryChunkFlags(TNode<HeapObject> object);
+
   TNode<BoolT> LoadRuntimeFlag(ExternalReference address_of_flag) {
     TNode<Word32T> flag_value = UncheckedCast<Word32T>(
         Load(MachineType::Uint8(), ExternalConstant(address_of_flag)));
@@ -2640,6 +2672,11 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<BoolT> HasBuiltinSubclassingFlag() {
     return LoadRuntimeFlag(
         ExternalReference::address_of_builtin_subclassing_flag());
+  }
+
+  TNode<BoolT> HasSharedStringTableFlag() {
+    return LoadRuntimeFlag(
+        ExternalReference::address_of_shared_string_table_flag());
   }
 
   // True iff |object| is a Smi or a HeapNumber or a BigInt.
@@ -3144,8 +3181,21 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
                          Label* if_bailout);
 
   // Operating mode for TryGetOwnProperty and CallGetterIfAccessor
-  // kReturnAccessorPair is used when we're only getting the property descriptor
-  enum GetOwnPropertyMode { kCallJSGetter, kReturnAccessorPair };
+  enum GetOwnPropertyMode {
+    // kCallJSGetterDontUseCachedName is used when we want to get the result of
+    // the getter call, and don't use cached_name_property when the getter is
+    // the function template and it has cached_property_name, which would just
+    // bailout for the IC system to create a named property handler
+    kCallJSGetterDontUseCachedName,
+    // kCallJSGetterUseCachedName is used when we want to get the result of
+    // the getter call, and use cached_name_property when the getter is
+    // the function template and it has cached_property_name, which would call
+    // GetProperty rather than bailout for Generic/NoFeedback load
+    kCallJSGetterUseCachedName,
+    // kReturnAccessorPair is used when we're only getting the property
+    // descriptor
+    kReturnAccessorPair
+  };
   // Tries to get {object}'s own {unique_name} property value. If the property
   // is an accessor then it also calls a getter. If the property is a double
   // field it re-wraps value in an immutable heap number. {unique_name} must be
@@ -3965,7 +4015,8 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<Object> CallGetterIfAccessor(
       TNode<Object> value, TNode<HeapObject> holder, TNode<Uint32T> details,
       TNode<Context> context, TNode<Object> receiver, TNode<Object> name,
-      Label* if_bailout, GetOwnPropertyMode mode = kCallJSGetter);
+      Label* if_bailout,
+      GetOwnPropertyMode mode = kCallJSGetterDontUseCachedName);
 
   TNode<IntPtrT> TryToIntptr(TNode<Object> key, Label* if_not_intptr,
                              TVariable<Int32T>* var_instance_type = nullptr);

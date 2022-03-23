@@ -161,6 +161,14 @@ public:
     }
 #endif // !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
 
+    static const char* Filename() {
+        return Instance().fFilename;
+    }
+
+    static void SetFilename(const char* filename) {
+        Instance().fFilename = filename;
+    }
+
     /**
      * Returns the ErrorReporter associated with the current thread. This object will be notified
      * when any DSL errors occur.
@@ -175,12 +183,12 @@ public:
      * Notifies the current ErrorReporter that an error has occurred. The default error handler
      * prints the message to stderr and aborts.
      */
-    static void ReportError(std::string_view msg, PositionInfo info = PositionInfo::Capture());
+    static void ReportError(std::string_view msg, Position pos = Position::Capture());
 
     /**
      * Forwards any pending errors to the DSL ErrorReporter.
      */
-    static void ReportErrors(PositionInfo pos);
+    static void ReportErrors(Position pos);
 
     static ThreadContext& Instance();
 
@@ -188,7 +196,7 @@ public:
 
 private:
     class DefaultErrorReporter : public ErrorReporter {
-        void handleError(std::string_view msg, PositionInfo pos) override;
+        void handleError(std::string_view msg, Position pos) override;
     };
 
     void setupSymbolTable();
@@ -207,6 +215,8 @@ private:
     Mangler fMangler;
     RTAdjustData fRTAdjust;
     Program::Inputs fInputs;
+    // for DSL error reporting purposes
+    const char* fFilename = "";
 
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
     struct StackFrame {

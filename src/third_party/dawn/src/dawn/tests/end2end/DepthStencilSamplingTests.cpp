@@ -264,9 +264,11 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
 
     void UpdateInputDepth(wgpu::CommandEncoder commandEncoder,
                           wgpu::Texture texture,
+                          wgpu::TextureFormat format,
                           float depthValue) {
         utils::ComboRenderPassDescriptor passDescriptor({}, texture.CreateView());
-        passDescriptor.cDepthStencilAttachmentInfo.clearDepth = depthValue;
+        passDescriptor.UnsetDepthStencilLoadStoreOpsForFormat(format);
+        passDescriptor.cDepthStencilAttachmentInfo.depthClearValue = depthValue;
 
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&passDescriptor);
         pass.End();
@@ -274,9 +276,11 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
 
     void UpdateInputStencil(wgpu::CommandEncoder commandEncoder,
                             wgpu::Texture texture,
+                            wgpu::TextureFormat format,
                             uint8_t stencilValue) {
         utils::ComboRenderPassDescriptor passDescriptor({}, texture.CreateView());
-        passDescriptor.cDepthStencilAttachmentInfo.clearStencil = stencilValue;
+        passDescriptor.UnsetDepthStencilLoadStoreOpsForFormat(format);
+        passDescriptor.cDepthStencilAttachmentInfo.stencilClearValue = stencilValue;
 
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&passDescriptor);
         pass.End();
@@ -311,10 +315,10 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
             wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
             switch (aspect) {
                 case TestAspect::Depth:
-                    UpdateInputDepth(commandEncoder, inputTexture, textureValues[i]);
+                    UpdateInputDepth(commandEncoder, inputTexture, format, textureValues[i]);
                     break;
                 case TestAspect::Stencil:
-                    UpdateInputStencil(commandEncoder, inputTexture, textureValues[i]);
+                    UpdateInputStencil(commandEncoder, inputTexture, format, textureValues[i]);
                     break;
             }
 
@@ -366,10 +370,10 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
             wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
             switch (aspect) {
                 case TestAspect::Depth:
-                    UpdateInputDepth(commandEncoder, inputTexture, textureValues[i]);
+                    UpdateInputDepth(commandEncoder, inputTexture, format, textureValues[i]);
                     break;
                 case TestAspect::Stencil:
-                    UpdateInputStencil(commandEncoder, inputTexture, textureValues[i]);
+                    UpdateInputStencil(commandEncoder, inputTexture, format, textureValues[i]);
                     break;
             }
 
@@ -522,7 +526,7 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
         for (float textureValue : textureValues) {
             // Set the input depth texture to the provided texture value
             wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-            UpdateInputDepth(commandEncoder, inputTexture, textureValue);
+            UpdateInputDepth(commandEncoder, inputTexture, format, textureValue);
 
             // Render into the output texture
             {
@@ -569,7 +573,7 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
         for (float textureValue : textureValues) {
             // Set the input depth texture to the provided texture value
             wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-            UpdateInputDepth(commandEncoder, inputTexture, textureValue);
+            UpdateInputDepth(commandEncoder, inputTexture, format, textureValue);
 
             // Sample into the output buffer
             {
@@ -657,8 +661,8 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
 
         // Initialize both depth and stencil aspects.
         utils::ComboRenderPassDescriptor passDescriptor({}, inputTexture.CreateView());
-        passDescriptor.cDepthStencilAttachmentInfo.clearDepth = 0.43f;
-        passDescriptor.cDepthStencilAttachmentInfo.clearStencil = 31;
+        passDescriptor.cDepthStencilAttachmentInfo.depthClearValue = 0.43f;
+        passDescriptor.cDepthStencilAttachmentInfo.stencilClearValue = 31;
 
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&passDescriptor);
         pass.End();
@@ -679,13 +683,13 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
         queue.Submit(1, &commands);
 
         float expectedDepth = 0.0f;
-        memcpy(&expectedDepth, &passDescriptor.cDepthStencilAttachmentInfo.clearDepth,
+        memcpy(&expectedDepth, &passDescriptor.cDepthStencilAttachmentInfo.depthClearValue,
                sizeof(float));
         EXPECT_BUFFER(depthOutput, 0, sizeof(float),
                       new ::detail::ExpectEq<float>(expectedDepth, tolerance));
 
         uint8_t expectedStencil = 0;
-        memcpy(&expectedStencil, &passDescriptor.cDepthStencilAttachmentInfo.clearStencil,
+        memcpy(&expectedStencil, &passDescriptor.cDepthStencilAttachmentInfo.stencilClearValue,
                sizeof(uint8_t));
         EXPECT_BUFFER_U32_EQ(expectedStencil, stencilOutput, 0);
     }
@@ -708,8 +712,8 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
         wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
         // Initialize both depth and stencil aspects.
         utils::ComboRenderPassDescriptor passDescriptor({}, inputTexture.CreateView());
-        passDescriptor.cDepthStencilAttachmentInfo.clearDepth = 0.43f;
-        passDescriptor.cDepthStencilAttachmentInfo.clearStencil = 31;
+        passDescriptor.cDepthStencilAttachmentInfo.depthClearValue = 0.43f;
+        passDescriptor.cDepthStencilAttachmentInfo.stencilClearValue = 31;
 
         wgpu::RenderPassEncoder pass = commandEncoder.BeginRenderPass(&passDescriptor);
         pass.End();
@@ -727,13 +731,13 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
         queue.Submit(1, &commands);
 
         float expectedDepth = 0.0f;
-        memcpy(&expectedDepth, &passDescriptor.cDepthStencilAttachmentInfo.clearDepth,
+        memcpy(&expectedDepth, &passDescriptor.cDepthStencilAttachmentInfo.depthClearValue,
                sizeof(float));
         EXPECT_BUFFER(depthOutput, 0, sizeof(float),
                       new ::detail::ExpectEq<float>(expectedDepth, tolerance));
 
         uint8_t expectedStencil = 0;
-        memcpy(&expectedStencil, &passDescriptor.cDepthStencilAttachmentInfo.clearStencil,
+        memcpy(&expectedStencil, &passDescriptor.cDepthStencilAttachmentInfo.stencilClearValue,
                sizeof(uint8_t));
         EXPECT_BUFFER_U32_EQ(expectedStencil, stencilOutput, 0);
     }

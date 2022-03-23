@@ -17,6 +17,7 @@ import "mojo/public/mojom/base/values.mojom";
 import "sandbox/policy/mojom/sandbox.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_raw_headers.mojom";
+import "services/network/public/mojom/key_pinning.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
@@ -134,6 +135,34 @@ struct LoggingSettings {
   handle<platform> log_file_descriptor;
 };
 
+// Configuration settings for SCT Auditing.
+[EnableIf=is_ct_supported]
+struct SCTAuditingConfiguration {
+  // The sampling rate for SCT auditing reports.
+  double sampling_rate;
+
+  // How long Chrome will wait before assuming a new SCT has been ingested by
+  // the log.
+  mojo_base.mojom.TimeDelta log_expected_ingestion_delay;
+
+  // The maximum random delay that may be added to
+  // |log_expected_ingestion_delay|.
+  mojo_base.mojom.TimeDelta log_max_ingestion_random_delay;
+
+  // The URL where reports should be sent.
+  url.mojom.Url report_uri;
+
+  // An annotated URL template for hashdance lookup queries. $1 should be in
+  // place of the "length" parameter, and $2 in place of the "prefix" parameter.
+  url.mojom.Url hashdance_lookup_uri;
+
+  // Traffic annotation for the report request.
+  MutableNetworkTrafficAnnotationTag traffic_annotation;
+
+  // Traffic annotation for the hashdance lookup query.
+  MutableNetworkTrafficAnnotationTag hashdance_traffic_annotation;
+};
+
 // Implemented by the network service. The browser process sends messages to
 // the network service over this interface.
 //
@@ -160,7 +189,7 @@ interface NetworkService {
   // the key "clientInfo".
   StartNetLog(mojo_base.mojom.File file,
               NetLogCaptureMode capture_mode,
-              mojo_base.mojom.DictionaryValue constants);
+              mojo_base.mojom.DeprecatedDictionaryValue constants);
 
   // Attaches an external source of NetLog events. Control events will be sent
   // to the |proxy_source| pipe indicating when netlogging is active, the
@@ -272,19 +301,6 @@ interface NetworkService {
   // Send the encryption key to the network service to use for AES encryption.
   SetEncryptionKey(mojo_base.mojom.ByteString encryption_key);
 
-  // Notifies |request_initiator_origin_lock| enforcement code that |process_id|
-  // is proxying requests on behalf of a plugin from
-  // |allowed_request_initiator| origin.
-  //
-  // TODO(lukasza, kmoon): https://crbug.com/702993: Remove the code here once
-  // PDF support doesn't depend on PPAPI anymore.
-  AddAllowedRequestInitiatorForPlugin(
-      int32 process_id,
-      url.mojom.Origin allowed_request_initiator);
-
-  // Reverts AddAllowedRequestInitiatorForPlugin.
-  RemoveSecurityExceptionsForPlugin(int32 process_id);
-
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 
@@ -313,19 +329,8 @@ interface NetworkService {
   ClearSCTAuditingCache();
 
   // Configures SCT auditing.
-  // This allows the embedder to specify what sampling rate to use on SCT
-  // auditing reports, how long to wait before assuming an SCT is ingested,
-  // where reports and lookup queries should be sent, and the traffic annotation
-  // to use.
   [EnableIf=is_ct_supported]
-  ConfigureSCTAuditing(
-      double sampling_rate,
-      mojo_base.mojom.TimeDelta log_expected_ingestion_delay,
-      mojo_base.mojom.TimeDelta log_max_ingestion_random_delay,
-      url.mojom.Url report_uri,
-      url.mojom.Url hashdance_lookup_uri,
-      MutableNetworkTrafficAnnotationTag traffic_annotation,
-      MutableNetworkTrafficAnnotationTag hashdance_traffic_annotation);
+  ConfigureSCTAuditing(SCTAuditingConfiguration configuration);
 
   // Updates the log list used for CT verification. `update_time` should
   // contain the timestamp that the log list was considered fresh/current, in
@@ -341,6 +346,11 @@ interface NetworkService {
   // Disables or enables CT Enforcement.
   [EnableIf=is_ct_supported]
   SetCtEnforcementEnabled(bool enabled);
+
+  // Updates the key pinnning pin list. `update_time` should contain the
+  // timestamp that the pins list was considered fresh/current, in order to
+  // ensure that key pinning is not enforced if the list is too out of date.
+  UpdateKeyPinsList(PinList pin_list, mojo_base.mojom.Time update_time);
 
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer

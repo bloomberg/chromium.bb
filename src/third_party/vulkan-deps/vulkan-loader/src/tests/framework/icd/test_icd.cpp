@@ -209,73 +209,25 @@ VKAPI_ATTR VkResult VKAPI_CALL test_vkEnumeratePhysicalDevices(VkInstance instan
 // VK_SUCCESS,VK_INCOMPLETE, VK_ERROR_INITIALIZATION_FAILED
 VKAPI_ATTR VkResult VKAPI_CALL test_vkEnumeratePhysicalDeviceGroups(
     VkInstance instance, uint32_t* pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties) {
-    VkResult result = VK_SUCCESS;
-
     if (pPhysicalDeviceGroupProperties == nullptr) {
-        if (0 == icd.physical_device_groups.size()) {
-            *pPhysicalDeviceGroupCount = static_cast<uint32_t>(icd.physical_devices.size());
-        } else {
-            *pPhysicalDeviceGroupCount = static_cast<uint32_t>(icd.physical_device_groups.size());
-        }
+        *pPhysicalDeviceGroupCount = static_cast<uint32_t>(icd.physical_device_groups.size());
     } else {
-        // NOTE: This is a fake struct to make sure the pNext chain is properly passed down to the ICD
-        //       vkEnumeratePhysicalDeviceGroups.
-        //       The two versions must match:
-        //           "FakePNext" test in loader_regresion_tests.cpp
-        //           "test_vkEnumeratePhysicalDeviceGroups" in test_icd.cpp
-        struct FakePnextSharedWithICD {
-            VkStructureType sType;
-            void* pNext;
-            uint32_t value;
-        };
-
-        uint32_t group_count = 0;
-        if (0 == icd.physical_device_groups.size()) {
-            group_count = static_cast<uint32_t>(icd.physical_devices.size());
-            for (size_t device_group = 0; device_group < icd.physical_devices.size(); device_group++) {
-                if (device_group >= *pPhysicalDeviceGroupCount) {
-                    group_count = *pPhysicalDeviceGroupCount;
-                    result = VK_INCOMPLETE;
-                    break;
-                }
-                pPhysicalDeviceGroupProperties[device_group].subsetAllocation = false;
-                pPhysicalDeviceGroupProperties[device_group].physicalDeviceCount = 1;
-                pPhysicalDeviceGroupProperties[device_group].physicalDevices[0] =
-                    icd.physical_devices[device_group].vk_physical_device.handle;
+        for (size_t device_group = 0; device_group < icd.physical_device_groups.size(); device_group++) {
+            if (device_group >= *pPhysicalDeviceGroupCount) {
+                return VK_INCOMPLETE;
             }
-        } else {
-            group_count = static_cast<uint32_t>(icd.physical_device_groups.size());
-            for (size_t device_group = 0; device_group < icd.physical_device_groups.size(); device_group++) {
-                if (device_group >= *pPhysicalDeviceGroupCount) {
-                    group_count = *pPhysicalDeviceGroupCount;
-                    result = VK_INCOMPLETE;
-                    break;
-                }
-                pPhysicalDeviceGroupProperties[device_group].subsetAllocation =
-                    icd.physical_device_groups[device_group].subset_allocation;
-                uint32_t handles_written = 0;
-                for (size_t i = 0; i < icd.physical_device_groups[device_group].physical_device_handles.size(); i++) {
-                    handles_written++;
-                    pPhysicalDeviceGroupProperties[device_group].physicalDevices[i] =
-                        icd.physical_device_groups[device_group].physical_device_handles[i]->vk_physical_device.handle;
-                }
-                pPhysicalDeviceGroupProperties[device_group].physicalDeviceCount = handles_written;
+            pPhysicalDeviceGroupProperties[device_group].subsetAllocation =
+                icd.physical_device_groups[device_group].subset_allocation;
+            uint32_t handles_written = 0;
+            for (size_t i = 0; i < icd.physical_device_groups[device_group].physical_device_handles.size(); i++) {
+                handles_written++;
+                pPhysicalDeviceGroupProperties[device_group].physicalDevices[i] =
+                    icd.physical_device_groups[device_group].physical_device_handles[i]->vk_physical_device.handle;
             }
+            pPhysicalDeviceGroupProperties[device_group].physicalDeviceCount = handles_written;
         }
-        // NOTE: The following code is purely to test pNext passing in vkEnumeratePhysicalDevice groups
-        //       and includes normally invalid information.
-        for (size_t device_group = 0; device_group < group_count; device_group++) {
-            if (nullptr != pPhysicalDeviceGroupProperties[device_group].pNext) {
-                VkBaseInStructure* base = reinterpret_cast<VkBaseInStructure*>(pPhysicalDeviceGroupProperties[device_group].pNext);
-                if (base->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT) {
-                    FakePnextSharedWithICD* fake = reinterpret_cast<FakePnextSharedWithICD*>(base);
-                    fake->value = 0xDECAFBAD;
-                }
-            }
-        }
-        *pPhysicalDeviceGroupCount = static_cast<uint32_t>(group_count);
     }
-    return result;
+    return VK_SUCCESS;
 }
 
 VKAPI_ATTR VkResult VKAPI_CALL test_vkCreateDebugUtilsMessengerEXT(VkInstance instance,
@@ -1010,9 +962,6 @@ PFN_vkVoidFunction get_instance_func_ver_1_1(VkInstance instance, const char* pN
         if (string_eq(pName, "test_vkEnumerateInstanceVersion")) {
             return to_vkVoidFunction(test_vkEnumerateInstanceVersion);
         }
-        if (string_eq(pName, "vkEnumeratePhysicalDeviceGroups")) {
-            return to_vkVoidFunction(test_vkEnumeratePhysicalDeviceGroups);
-        }
     }
     return nullptr;
 }
@@ -1276,10 +1225,8 @@ PFN_vkVoidFunction get_instance_func(VkInstance instance, const char* pName) {
     if (string_eq(pName, "vkCreateInstance")) return to_vkVoidFunction(test_vkCreateInstance);
     if (string_eq(pName, "vkDestroyInstance")) return to_vkVoidFunction(test_vkDestroyInstance);
     if (string_eq(pName, "vkEnumeratePhysicalDevices")) return to_vkVoidFunction(test_vkEnumeratePhysicalDevices);
-
-    if (IsInstanceExtensionEnabled(VK_KHR_DEVICE_GROUP_CREATION_EXTENSION_NAME)) {
-        if (string_eq(pName, "vkEnumeratePhysicalDeviceGroupsKHR")) return to_vkVoidFunction(test_vkEnumeratePhysicalDeviceGroups);
-    }
+    if (string_eq(pName, "vkEnumeratePhysicalDeviceGroups") || string_eq(pName, "vkEnumeratePhysicalDeviceGroupsKHR"))
+        return to_vkVoidFunction(test_vkEnumeratePhysicalDeviceGroups);
 
     PFN_vkVoidFunction ret_phys_dev = get_physical_device_func(instance, pName);
     if (ret_phys_dev != nullptr) return ret_phys_dev;
@@ -1434,21 +1381,9 @@ FRAMEWORK_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vk_icdEnumerateAdapterPhysicalDe
                                                                                       uint32_t* pPhysicalDeviceCount,
                                                                                       VkPhysicalDevice* pPhysicalDevices) {
     icd.called_enumerate_adapter_physical_devices = CalledEnumerateAdapterPhysicalDevices::called;
-    VkResult res = test_vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices);
-    // For this testing, flip order intentaionlly
-    if (nullptr != pPhysicalDevices) {
-        for (uint32_t lower = 0; lower < *pPhysicalDeviceCount; ++lower) {
-            uint32_t upper = *pPhysicalDeviceCount - lower - 1;
-            // In case of odd numbered list we don't want to waste resources flipping itself
-            if (upper == lower) {
-                break;
-            }
-            VkPhysicalDevice temp = pPhysicalDevices[lower];
-            pPhysicalDevices[lower] = pPhysicalDevices[upper];
-            pPhysicalDevices[upper] = temp;
-        }
-    }
-    return res;
+    return test_vkEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices);
+
+    return VK_SUCCESS;
 }
 #endif  // defined(WIN32)
 #endif  // TEST_ICD_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES

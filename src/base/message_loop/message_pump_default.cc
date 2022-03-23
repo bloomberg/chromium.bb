@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_APPLE)
@@ -71,7 +72,7 @@ void MessagePumpDefault::ScheduleWork() {
 }
 
 void MessagePumpDefault::ScheduleDelayedWork(
-    const TimeTicks& delayed_work_time) {
+    const Delegate::NextWorkInfo& next_work_info) {
   // Since this is always called from the same thread as Run(), there is nothing
   // to do as the loop is already running. It will wait in Run() with the
   // correct timeout when it's out of immediate tasks.

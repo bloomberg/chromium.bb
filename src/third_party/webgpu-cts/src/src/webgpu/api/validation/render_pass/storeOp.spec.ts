@@ -13,7 +13,7 @@ Test Coverage:
 
   - Tests that depthReadOnly and stencilReadOnly default to false.
 
-TODO: test interactions with depthLoadValue too
+TODO: test interactions with depthClearValue too
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
@@ -59,15 +59,15 @@ g.test('store_op_and_read_only')
       colorAttachments: [],
       depthStencilAttachment: {
         view: depthAttachmentView,
-        depthLoadValue: 'load',
+        depthLoadOp: 'load',
         depthStoreOp,
         depthReadOnly,
-        stencilLoadValue: 'load',
+        stencilLoadOp: 'load',
         stencilStoreOp,
         stencilReadOnly,
       },
     });
-    pass.endPass();
+    pass.end();
 
     t.expectValidationError(() => {
       encoder.finish();

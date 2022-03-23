@@ -12,6 +12,7 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "base/callback_forward.h"
 #include "base/scoped_observation.h"
+#include "base/values.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
@@ -23,10 +24,6 @@ namespace backdrop {
 class Collection;
 class Image;
 }  // namespace backdrop
-
-namespace base {
-class Value;
-}  // namespace base
 
 namespace net {
 struct NetworkTrafficAnnotationTag;
@@ -174,15 +171,21 @@ class GooglePhotosFetcher : public signin::IdentityManager::Observer {
   // was an error in sending the request, receiving the response, or parsing the
   // response; otherwise, it will hold a response in the API's specified
   // structure.
-  virtual T ParseResponse(absl::optional<base::Value> response) = 0;
+  virtual T ParseResponse(const base::Value::Dict* response) = 0;
+
+  // Returns the count of results contained within the specified `result`.
+  virtual absl::optional<size_t> GetResultCount(const T& result) = 0;
 
  private:
   void OnTokenReceived(const GURL& service_url,
+                       base::TimeTicks start_time,
                        GoogleServiceAuthError error,
                        signin::AccessTokenInfo token_info);
   void OnJsonReceived(const GURL& service_url,
+                      base::TimeTicks start_time,
                       std::unique_ptr<std::string> response_body);
   void OnResponseReady(const GURL& service_url,
+                       base::TimeTicks start_time,
                        absl::optional<base::Value> response);
 
   // Profile associated with the Google Photos account that will be queried.
@@ -235,7 +238,9 @@ class GooglePhotosAlbumsFetcher
  protected:
   // GooglePhotosFetcher:
   GooglePhotosAlbumsCbkArgs ParseResponse(
-      absl::optional<base::Value> response) override;
+      const base::Value::Dict* response) override;
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosAlbumsCbkArgs& result) override;
 };
 
 // Downloads the number of photos in a user's Google Photos library.
@@ -253,7 +258,32 @@ class GooglePhotosCountFetcher : public GooglePhotosFetcher<int> {
 
  protected:
   // GooglePhotosFetcher:
-  int ParseResponse(absl::optional<base::Value> response) override;
+  int ParseResponse(const base::Value::Dict* response) override;
+  absl::optional<size_t> GetResultCount(const int& result) override;
+};
+
+using ash::personalization_app::mojom::GooglePhotosEnablementState;
+// Downloads whether the user is allowed to access Google Photos data.
+class GooglePhotosEnabledFetcher
+    : public GooglePhotosFetcher<GooglePhotosEnablementState> {
+ public:
+  explicit GooglePhotosEnabledFetcher(Profile* profile);
+
+  GooglePhotosEnabledFetcher(const GooglePhotosEnabledFetcher&) = delete;
+  GooglePhotosEnabledFetcher& operator=(const GooglePhotosEnabledFetcher&) =
+      delete;
+
+  ~GooglePhotosEnabledFetcher() override;
+
+  virtual void AddRequestAndStartIfNecessary(
+      base::OnceCallback<void(GooglePhotosEnablementState)> callback);
+
+ protected:
+  // GooglePhotosFetcher:
+  GooglePhotosEnablementState ParseResponse(
+      const base::Value::Dict* response) override;
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosEnablementState& result) override;
 };
 
 using GooglePhotosPhotosCbkArgs =
@@ -279,7 +309,9 @@ class GooglePhotosPhotosFetcher
  protected:
   // GooglePhotosFetcher:
   GooglePhotosPhotosCbkArgs ParseResponse(
-      absl::optional<base::Value> response) override;
+      const base::Value::Dict* response) override;
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosPhotosCbkArgs& result) override;
 };
 
 }  // namespace wallpaper_handlers

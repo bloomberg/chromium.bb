@@ -14,9 +14,9 @@ import '../../settings_page/settings_section.js';
 import '../../settings_page/settings_subpage.js';
 import '../../settings_page_css.js';
 import '../../settings_shared_css.js';
-import '../os_icons.m.js';
+import '../os_icons.js';
 import '../os_reset_page/os_powerwash_dialog.js';
-import '//resources/cr_components/chromeos/localized_link/localized_link.js';
+import '//resources/cr_components/localized_link/localized_link.js';
 import './detailed_build_info.js';
 import './update_warning_dialog.js';
 import '//resources/cr_elements/cr_button/cr_button.m.js';
@@ -35,7 +35,7 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 import {loadTimeData} from '../../i18n_setup.js';
 import {LifetimeBrowserProxyImpl} from '../../lifetime_browser_proxy.js';
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
 import {routes} from '../os_route.m.js';
 import {MainPageBehavior} from '../os_settings_page/main_page_behavior.js';
@@ -169,14 +169,6 @@ Polymer({
       type: Boolean,
       computed: 'computeShowCheckUpdates_(' +
           'currentUpdateStatusEvent_, hasCheckedForUpdates_, hasEndOfLife_)',
-    },
-
-    /** @private */
-    showDiagnosticsApp_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('diagnosticsAppEnabled');
-      }
     },
 
     /** @protected */
@@ -367,7 +359,6 @@ Polymer({
 
   /** @private */
   onDiagnosticsClick_() {
-    assert(this.showDiagnosticsApp_);
     this.aboutBrowserProxy_.openDiagnostics();
     recordSettingChange(chromeos.settings.mojom.Setting.kDiagnostics);
   },

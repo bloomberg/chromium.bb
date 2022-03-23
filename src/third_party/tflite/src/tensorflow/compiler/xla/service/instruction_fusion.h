@@ -249,13 +249,11 @@ class InstructionFusion : public HloModulePass {
 
   // Whether multi-output fusion would introduce a cycle into the HLO graph.
   bool MultiOutputFusionCreatesCycle(HloInstruction* producer,
-                                     HloInstruction* consumer);
+                                     HloInstruction* consumer,
+                                     const HloReachabilityMap& reachability);
 
   // Current HloComputation instance the loop fuser is traversing.
   HloComputation* computation_;
-  HloModule* module_;
-  // Reachability information for the current computation.
-  std::unique_ptr<HloReachabilityMap> reachability_;
 
   FusionConfigCollection config_collection_mode() {
     return config_collection_mode_;
@@ -272,9 +270,23 @@ class InstructionFusion : public HloModulePass {
   // Computes the set of nodes that we do not want to fuse into any of their
   // consumers based on a global analysis of the HLO graph.
   virtual HloInstructionSet ComputeGloballyUnfusible(
-      absl::Span<HloInstruction* const> post_order);
+      absl::Span<HloInstruction* const> post_order,
+      const HloReachabilityMap& reachability);
 
  private:
+  // Returns the reused operands of `instruction` from reused_fusion_operands_,
+  // computing them if they have not previously been computed for that
+  // instruction.
+  // The returned value has pointer stability, assuming entries are not deleted
+  // from reused_fusion_operands_.
+  absl::flat_hash_set<const HloInstruction*>& ReusedOperandsOf(
+      const HloInstruction* instruction);
+
+  // Updates reused_fusion_operands_ for a fusion when we are about to fuse
+  // `producer` into `fusion_instruction`.
+  void UpdateReusedOperandsForFusion(HloInstruction* producer,
+                                     HloInstruction* fusion_instruction);
+
   HloInstruction* AddFusionInstruction(HloInstruction* producer,
                                        HloInstruction* consumer);
 
@@ -287,6 +299,7 @@ class InstructionFusion : public HloModulePass {
   bool CanFuseOnAllPaths(
       HloInstruction* producer, HloInstruction* consumer,
       const HloInstructionSet& do_not_fuse,
+      const HloReachabilityMap& reachability,
       absl::flat_hash_map<std::pair<HloInstruction*, HloInstruction*>, bool>*
           result_cache);
 
@@ -301,8 +314,9 @@ class InstructionFusion : public HloModulePass {
   FusionConfigCollection config_collection_mode_;
 
   // Caches which operands are reused inside fusion computations.
-  absl::flat_hash_map<const HloInstruction*,
-                      absl::flat_hash_set<const HloInstruction*>>
+  absl::flat_hash_map<
+      const HloInstruction*,
+      std::unique_ptr<absl::flat_hash_set<const HloInstruction*>>>
       reused_fusion_operands_;
 
   InstructionFusion(const InstructionFusion&) = delete;

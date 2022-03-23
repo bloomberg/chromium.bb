@@ -30,6 +30,10 @@
 #include "tools/ToolUtils.h"
 #include "tools/fonts/TestEmptyTypeface.h"
 
+// Since SkRemoteGlyphCache is not re-entrant, we can't use it while drawing slugs to simulate
+// text blobs in the GPU stack.
+#if !defined(SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG_STRIKE_SERIALIZE)
+
 class DiscardableManager : public SkStrikeServer::DiscardableHandleManager,
                            public SkStrikeClient::DiscardableHandleManager {
 public:
@@ -208,10 +212,10 @@ SkBitmap RasterSlug(sk_sp<GrSlug> slug, int width, int height, const SkPaint& pa
                     GrRecordingContext* rContext, const SkMatrix* matrix = nullptr,
                     SkScalar x = 0) {
     auto surface = MakeSurface(width, height, rContext);
-    if (matrix) {
-        surface->getCanvas()->concat(*matrix);
-    }
     auto canvas = surface->getCanvas();
+    if (matrix) {
+        canvas->concat(*matrix);
+    }
     slug->draw(canvas);
     SkBitmap bitmap;
     bitmap.allocN32Pixels(width, height);
@@ -336,15 +340,8 @@ DEF_GPUTEST_FOR_CONTEXTS(SkRemoteGlyphCache_SlugSerialization,
             10, 10, props, nullptr, dContext->supportsDistanceFieldText());
 
     // Generate strike updates.
-    auto srcSlug = GrSlug::ConvertBlob(analysisCanvas.get(), *serverBlob, {0, 0}, paint);
-    SkBinaryWriteBuffer writeBuffer;
-    srcSlug->flatten(writeBuffer);
-
-    auto data = writeBuffer.snapshotAsData();
-    SkReadBuffer readBuffer(data->data(), data->size());
-
-    auto dstSlug = client.makeSlugFromBuffer(readBuffer);
-    REPORTER_ASSERT(reporter, dstSlug != nullptr);
+    auto srcSlug = GrSlug::ConvertBlob(analysisCanvas.get(), *serverBlob, {0.3f, 0}, paint);
+    auto dstSlugData = srcSlug->serialize();
 
     std::vector<uint8_t> serverStrikeData;
     server.writeStrikeData(&serverStrikeData);
@@ -354,6 +351,8 @@ DEF_GPUTEST_FOR_CONTEXTS(SkRemoteGlyphCache_SlugSerialization,
                     client.readStrikeData(serverStrikeData.data(), serverStrikeData.size()));
 
     SkBitmap expected = RasterSlug(srcSlug, 10, 10, paint, dContext);
+    auto dstSlug = client.deserializeSlug(dstSlugData->data(), dstSlugData->size());
+    REPORTER_ASSERT(reporter, dstSlug != nullptr);
     SkBitmap actual = RasterSlug(dstSlug, 10, 10, paint, dContext);
     compare_blobs(expected, actual, reporter);
     REPORTER_ASSERT(reporter, !discardableManager->hasCacheMiss());
@@ -1085,3 +1084,4 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkRemoteGlyphCache_TypefaceWithPaths_PathThen
     // Must unlock everything on termination, otherwise valgrind complains about memory leaks.
     discardableManager->unlockAndDeleteAll();
 }
+#endif

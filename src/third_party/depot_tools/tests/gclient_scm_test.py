@@ -1358,6 +1358,39 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     self.assertNotEqual(self.githash('repo_1', 4),
                         self.gitrevparse(self.root_dir))
 
+  @mock.patch('gerrit_util.GetChange', return_value={'topic': 'test_topic'})
+  @mock.patch('gerrit_util.QueryChanges', return_value=[
+      {'_number': 1234},
+      {'_number': 1235, 'current_revision': 'abc',
+       'revisions': {'abc': {'ref': 'refs/changes/35/1235/1'}}}])
+  def testDownloadTopics(self, query_changes_mock, get_change_mock):
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    self.options.revision = 'refs/changes/34/1234/1'
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
+
+    # pylint: disable=attribute-defined-outside-init
+    self.options.download_topics = True
+    scm.url = 'https://test-repo.googlesource.com/repo_1.git'
+    scm.apply_patch_ref(
+        self.url, 'refs/changes/34/1234/1', 'refs/heads/main', self.options,
+        file_list)
+
+    get_change_mock.assert_called_once_with(
+        mock.ANY, '1234')
+    query_changes_mock.assert_called_once_with(
+        mock.ANY,
+        [('topic', 'test_topic'), ('status', 'open'), ('repo', 'repo_1')],
+        o_params=['ALL_REVISIONS'])
+
+    self.assertCommits([1, 2, 3, 5, 6])
+    # The commit hash after the two cherry-picks is not known, but it must be
+    # different from what the repo was synced at before patching.
+    self.assertNotEqual(self.githash('repo_1', 4),
+                        self.gitrevparse(self.root_dir))
+
   def testRecoversAfterPatchFailure(self):
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
     file_list = []

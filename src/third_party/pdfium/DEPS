@@ -19,6 +19,9 @@ vars = {
 
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
 
+  # By default, download the fuchsia sdk from the fuchsia GCS bucket.
+  'fuchsia_sdk_bucket': 'fuchsia',
+
   'chromium_git': 'https://chromium.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
@@ -26,7 +29,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling abseil
   # and whatever else without interference from each other.
-  'abseil_revision': '9ffdb583473a319b3920c752badde40f91ffd609',
+  'abseil_revision': 'a13888fac08a45c938255c7d9d59b1640f1940e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_ndk
   # and whatever else without interference from each other.
@@ -34,15 +37,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build
   # and whatever else without interference from each other.
-  'build_revision': '893ac785aa454dcf84dcc26af1a410095c1d4fa2',
+  'build_revision': 'ee10d9605d3bc45e72defd25ce97562e80693655',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling buildtools
   # and whatever else without interference from each other.
-  'buildtools_revision': '8ccda4f4eb749ece6207087268d978404b6d6bc7',
+  'buildtools_revision': '893aa038dd17d05f3c5ff5af98daebabc294a948',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '56a84f9f66bd05fff0b6aecf95359b5d16521d8c',
+  'catapult_revision': 'b718bf93ff62e1ccbdd971ee5e5d91b9511826fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
@@ -50,7 +53,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang
   # and whatever else without interference from each other.
-  'clang_revision': 'a8ca8222301c8133135774b395955504c3313319',
+  'clang_revision': '3a67a5003bc582d62effd4dce12166a1260228f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang_dsymutil
   # and whatever else without interference from each other.
@@ -58,15 +61,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': 'dd85397301ba8942b4fa22d798ef9aa9a58631d0',
+  'code_coverage_revision': 'd4ce325ddf3ef43cd62a4b3d8d2c83d9a453dfc8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
-  'depot_tools_revision': 'df01c5ad5be408cd157b879a1cce983f90762765',
+  'depot_tools_revision': 'c9a747c5ed646001df33e798c62bbac0d27c8d08',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'dd8676b2779a5c2130d6265a4e966515ff0509f6',
+  'freetype_revision': '034e5dbf92ea3a7ea7c9322e47a3a50ff23f7b55',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling GN CIPD package version
   # and whatever else without interference from each other.
@@ -74,11 +77,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling gtest
   # and whatever else without interference from each other.
-  'gtest_revision': '25ad42aabeaba6227f37795cdd2752e128e83827',
+  'gtest_revision': 'c9461a9b55ba954df0489bab6420eb297bed846b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling icu
   # and whatever else without interference from each other.
-  'icu_revision': '2e0f2989441ec2f55abec30f48e89981dbac2c34',
+  'icu_revision': '1fa4e3959ec6637182b7318ac1d382799454806d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
@@ -100,11 +103,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
-  'libcxxabi_revision': '5b0a8cf88eddfb448ca5903128d3328db76e4001',
+  'libcxxabi_revision': '738dc100c61890744f9e78cac27c71d0a2190781',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
-  'libunwind_revision': '659c7d91af58bfeada9f3ed5bf1a192059b68b86',
+  'libunwind_revision': '2ea265b95a08e4a98fab16b327119788b8e50a69',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling markupsafe
   # and whatever else without interference from each other.
@@ -120,7 +123,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
-  'skia_revision': '8b618c3e16870cf92ad3c153f888c7ceb0cdd40c',
+  'skia_revision': 'd5c24c72dc4027823f1a11baefebb6a2ebe24341',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling test_fonts
   # and whatever else without interference from each other.
@@ -128,7 +131,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling tools_memory
   # and whatever else without interference from each other.
-  'tools_memory_revision': '5b5485d9df586b17d0a25d668989b2fb0174f334',
+  'tools_memory_revision': '3c34a54fcdfc90398f4a561c9b2b10aa03ebe4aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling trace_event
   # and whatever else without interference from each other.
@@ -136,11 +139,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
-  'v8_revision': 'ef9b5c3a6d0ca76cb2a034abbe40da7caa33c84a',
+  'v8_revision': '49d1fa9a2ba1f55c58324d4dae08f96e01e557af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.
-  'zlib_revision': 'fc5cfd78a357d5bb7735a58f383634faaafe706a',
+  'zlib_revision': '5de432790d674b036289085ff6199bede1d6b795',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -309,31 +312,18 @@ deps = {
     'packages': [
       {
         'package': 'skia/tools/goldctl/linux-amd64',
-        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
+        'version': 'eZ3k373CYgRxlu4JKph6e-_7xkP02swy_jePFFMiyIQC',
       }
     ],
     'dep_type': 'cipd',
     'condition': 'checkout_linux',
   },
 
-  # TODO(crbug.com/pdfium/1650, crbug.com/1280002): Remove this entry once there
-  # is an autoroller has been updated to roll the mac_amd64 version.
-  'tools/skia_goldctl/mac': {
-    'packages': [
-      {
-        'package': 'skia/tools/goldctl/mac-amd64',
-        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
-      }
-    ],
-    'dep_type': 'cipd',
-    'condition': 'checkout_mac',
-  },
-
   'tools/skia_goldctl/mac_amd64': {
     'packages': [
       {
         'package': 'skia/tools/goldctl/mac-amd64',
-        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
+        'version': 'nHUjLIViYsLxRjv-zDdmzqT8p1R3VoyHq5gdGkKeMYwC',
       }
     ],
     'dep_type': 'cipd',
@@ -344,7 +334,7 @@ deps = {
     'packages': [
       {
         'package': 'skia/tools/goldctl/mac-arm64',
-        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
+        'version': '-mc865SGfJAqreLZM6fkn8tgCJ7u5QLk5zm7r-ZRJ9gC',
       }
     ],
     'dep_type': 'cipd',
@@ -355,7 +345,7 @@ deps = {
     'packages': [
       {
         'package': 'skia/tools/goldctl/windows-amd64',
-        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
+        'version': 'iEqqRADI7znrc6pG-MVnc5pBZwD25koILREPC6x2AFAC',
       }
     ],
     'dep_type': 'cipd',
@@ -429,6 +419,17 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_mac',
     'action': ['python3', 'build/mac_toolchain.py'],
+  },
+  {
+    # Update the Fuchsia SDK if necessary.
+    'name': 'Download Fuchsia SDK',
+    'pattern': '.',
+    'condition': 'checkout_fuchsia',
+    'action': [
+      'python3',
+      'build/fuchsia/update_sdk.py',
+      '--default-bucket={fuchsia_sdk_bucket}',
+    ],
   },
   # Pull clang-format binaries using checked-in hashes.
   {

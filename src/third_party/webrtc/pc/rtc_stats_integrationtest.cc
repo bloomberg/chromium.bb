@@ -11,7 +11,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -19,8 +18,6 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/match.h"
-#include "api/audio_codecs/audio_decoder_factory.h"
-#include "api/audio_codecs/audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_options.h"
@@ -524,6 +521,7 @@ class RTCStatsReportVerifier {
         candidate_pair.consent_requests_sent);
     verifier.TestMemberIsUndefined(candidate_pair.consent_responses_received);
     verifier.TestMemberIsUndefined(candidate_pair.consent_responses_sent);
+
     return verifier.ExpectAllMembersSuccessfullyTested();
   }
 
@@ -534,8 +532,12 @@ class RTCStatsReportVerifier {
     verifier.TestMemberIsDefined(candidate.is_remote);
     if (*candidate.is_remote) {
       verifier.TestMemberIsUndefined(candidate.network_type);
+      verifier.TestMemberIsUndefined(candidate.network_adapter_type);
+      verifier.TestMemberIsUndefined(candidate.vpn);
     } else {
       verifier.TestMemberIsDefined(candidate.network_type);
+      verifier.TestMemberIsDefined(candidate.network_adapter_type);
+      verifier.TestMemberIsDefined(candidate.vpn);
     }
     verifier.TestMemberIsDefined(candidate.ip);
     verifier.TestMemberIsDefined(candidate.address);

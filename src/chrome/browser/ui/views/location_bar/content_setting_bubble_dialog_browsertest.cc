@@ -159,8 +159,9 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
     }
     case ContentSettingsType::PROTOCOL_HANDLERS:
       chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents)
-          ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
-              "mailto", GURL("https://example.com/")));
+          ->set_pending_protocol_handler(
+              custom_handlers::ProtocolHandler::CreateProtocolHandler(
+                  "mailto", GURL("https://example.com/")));
       break;
 
     default:
@@ -222,7 +223,7 @@ void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
     else if (name == "notifications_quiet_abusive_content")
       reason = QuietUiReason::kTriggeredDueToAbusiveContent;
     else if (name == "notifications_quiet_predicted_very_unlikely")
-      reason = QuietUiReason::kPredictedVeryUnlikelyGrant;
+      reason = QuietUiReason::kServicePredictedVeryUnlikelyGrant;
     TriggerQuietNotificationPermissionRequest(reason);
     ShowDialogBubble(ImageType::NOTIFICATIONS_QUIET_PROMPT);
     return;

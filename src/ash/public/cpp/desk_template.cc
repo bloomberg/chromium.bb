@@ -25,8 +25,8 @@ DeskTemplate::~DeskTemplate() = default;
 
 // static
 bool DeskTemplate::IsAppTypeSupported(aura::Window* window) {
-  // For now we'll crostini and lacros windows in desk template. We'll also
-  // ignore ARC apps unless the flag is turned on.
+  // For now we'll ignore crostini and lacros windows in desk template. We'll
+  // also ignore ARC apps unless the flag is turned on.
   const AppType app_type =
       static_cast<AppType>(window->GetProperty(aura::client::kAppType));
   switch (app_type) {
@@ -62,12 +62,18 @@ std::unique_ptr<DeskTemplate> DeskTemplate::Clone() const {
     desk_template->set_updated_time(updated_time_);
   if (desk_restore_data_)
     desk_template->set_desk_restore_data(desk_restore_data_->Clone());
+  desk_template->set_launch_id(launch_id_);
   return desk_template;
+}
+
+void DeskTemplate::SetDeskIndex(int desk_index) {
+  DCHECK(desk_restore_data_);
+  desk_restore_data_->SetDeskIndex(desk_index);
 }
 
 std::string DeskTemplate::ToString() const {
   std::string result =
-      "Template name: " + base::UTF16ToASCII(template_name_) + "\n";
+      "Template name: " + base::UTF16ToUTF8(template_name_) + "\n";
   result += "Source: ";
   switch (source_) {
     case DeskTemplateSource::kUnknownSource:

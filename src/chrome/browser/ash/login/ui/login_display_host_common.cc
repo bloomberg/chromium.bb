@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -342,6 +341,13 @@ void LoginDisplayHostCommon::SetDisplayAndGivenName(
                                                         given_name);
 }
 
+void LoginDisplayHostCommon::ShowAllowlistCheckFailedError() {
+  StartWizard(GaiaView::kScreenId);
+
+  GaiaScreen* gaia_screen = GetWizardController()->GetScreen<GaiaScreen>();
+  gaia_screen->ShowAllowlistCheckFailedError();
+}
+
 void LoginDisplayHostCommon::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClientImpl::Get()->ShowUserWallpaper(account_id);
 }
@@ -379,15 +385,11 @@ bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
   if (action == LoginAcceleratorAction::kShowFeedback) {
     login_feedback_ = std::make_unique<LoginFeedback>(
         ProfileHelper::Get()->GetSigninProfile());
-    login_feedback_->Request(
-        std::string(),
-        base::BindOnce(&LoginDisplayHostCommon::OnFeedbackFinished,
-                       weak_factory_.GetWeakPtr()));
+    login_feedback_->Request(std::string());
     return true;
   }
 
-  if (action == LoginAcceleratorAction::kLaunchDiagnostics &&
-      base::FeatureList::IsEnabled(features::kDiagnosticsApp)) {
+  if (action == LoginAcceleratorAction::kLaunchDiagnostics) {
     // Don't handle this action if device is disabled.
     if (system::DeviceDisablingManager::
             IsDeviceDisabledDuringNormalOperation()) {
@@ -603,10 +605,6 @@ void LoginDisplayHostCommon::Cleanup() {
   ProfileHelper::Get()->ClearSigninProfile(base::DoNothing());
   registrar_.RemoveAll();
   BrowserList::RemoveObserver(this);
-}
-
-void LoginDisplayHostCommon::OnFeedbackFinished() {
-  login_feedback_.reset();
 }
 
 }  // namespace ash

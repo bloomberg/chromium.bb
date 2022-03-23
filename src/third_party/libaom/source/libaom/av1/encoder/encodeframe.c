@@ -479,8 +479,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
   if (sf->rt_sf.source_metrics_sb_nonrd &&
       cpi->svc.number_spatial_layers <= 1 &&
       cm->current_frame.frame_type != KEY_FRAME) {
-    int offset = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
-    av1_source_content_sb(cpi, x, offset);
+    av1_source_content_sb(cpi, x, mi_row, mi_col);
   }
 #if CONFIG_RT_ML_PARTITIONING
   if (sf->part_sf.partition_search_type == ML_BASED_PARTITION) {
@@ -599,10 +598,6 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   (void)mi_col;
   (void)gather_tpl_data;
 #endif
-
-  if (cpi->oxcf.mode == ALLINTRA) {
-    x->intra_sb_rdmult_modifier = 128;
-  }
 
   reset_mb_rd_record(x->txfm_search_info.mb_rd_record);
   av1_zero(x->picked_ref_frames_mask);
@@ -856,6 +851,11 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     x->content_state_sb.source_sad = kMedSad;
     x->content_state_sb.lighting_change = 0;
     x->content_state_sb.low_sumdiff = 0;
+    x->force_zeromv_skip = 0;
+
+    if (cpi->oxcf.mode == ALLINTRA) {
+      x->intra_sb_rdmult_modifier = 128;
+    }
 
     xd->cur_frame_force_integer_mv = cm->features.cur_frame_force_integer_mv;
     x->source_variance = UINT_MAX;
@@ -1578,6 +1578,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   enc_row_mt->sync_read_ptr = av1_row_mt_sync_read_dummy;
   enc_row_mt->sync_write_ptr = av1_row_mt_sync_write_dummy;
   mt_info->row_mt_enabled = 0;
+  mt_info->pack_bs_mt_enabled = AOMMIN(mt_info->num_mod_workers[MOD_PACK_BS],
+                                       cm->tiles.cols * cm->tiles.rows) > 1;
 
   if (oxcf->row_mt && (mt_info->num_workers > 1)) {
     mt_info->row_mt_enabled = 1;

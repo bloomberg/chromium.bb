@@ -275,11 +275,6 @@ template<typename Derived> class DenseBase
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Derived& operator=(const DenseBase& other);
 
-#if EIGEN_COMP_HAS_P0848R3
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE DenseBase& operator=(
-        const DenseBase& other) requires internal::has_trivially_copyable_storage<Derived>::value = default;
-#endif
-
     template<typename OtherDerived>
     EIGEN_DEVICE_FUNC
     Derived& operator=(const EigenBase<OtherDerived> &other);

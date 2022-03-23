@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr;
 
+import android.os.Build;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -27,6 +28,8 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -55,11 +58,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * which can then grab the results and pass/fail the instrumentation test.
  */
 public abstract class XrTestFramework {
+    public static final HashSet<String> OLD_DEVICE_BOARDS = new HashSet(Arrays.asList("marlin"));
     public static final int PAGE_LOAD_TIMEOUT_S = 10;
     public static final int POLL_CHECK_INTERVAL_SHORT_MS = 50;
     public static final int POLL_CHECK_INTERVAL_LONG_MS = 100;
-    public static final int POLL_TIMEOUT_SHORT_MS = 1000;
-    public static final int POLL_TIMEOUT_LONG_MS = 10000;
+    public static final int POLL_TIMEOUT_SHORT_MS = getShortPollTimeout();
+    public static final int POLL_TIMEOUT_LONG_MS = getLongPollTimeout();
     public static final boolean DEBUG_LOGS = false;
 
     // We need to make sure the port is constant, otherwise the URL changes between test runs, which
@@ -88,6 +92,22 @@ public abstract class XrTestFramework {
     }
 
     private ChromeActivityTestRule mRule;
+
+    static final int getShortPollTimeout() {
+        return getPollTimeout(1000);
+    }
+
+    static final int getLongPollTimeout() {
+        return getPollTimeout(10000);
+    }
+
+    static final int getPollTimeout(int baseTimeout) {
+        // Increase the timeouts on older devices, as the tests can be rather slow on them.
+        if (OLD_DEVICE_BOARDS.contains(Build.BOARD)) {
+            baseTimeout *= 2;
+        }
+        return baseTimeout;
+    }
 
     /**
      * Gets the file:// URL to the test file.
@@ -444,7 +464,8 @@ public abstract class XrTestFramework {
 
     /**
      * Loads the given file on an embedded server with the given timeout then
-     * waits for JavaScript to signal that it's ready for testing.
+     * waits for JavaScript to signal that it's ready for testing. Throws an
+     * assertion error if an improper page load is detected.
      *
      * @param file The name of the page to load.
      * @param timeoutSec The timeout of the page load in seconds.
@@ -452,9 +473,20 @@ public abstract class XrTestFramework {
      */
     public int loadFileAndAwaitInitialization(String url, int timeoutSec) {
         int result = mRule.loadUrl(getUrlForFile(url), timeoutSec);
-        Assert.assertTrue("Timed out waiting for JavaScript test initialization",
-                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
-                        mRule.getWebContents()));
+        Assert.assertEquals(
+                "Page did not load correctly. Load result enum: " + String.valueOf(result), result,
+                Tab.TabLoadStatus.DEFAULT_PAGE_LOAD);
+        if (!pollJavaScriptBoolean(
+                    "isInitializationComplete()", POLL_TIMEOUT_LONG_MS, mRule.getWebContents())) {
+            Log.e(TAG,
+                    "Timed out waiting for JavaScript test initialization, attempting to get "
+                            + "additional debug information");
+            String initSteps = runJavaScriptOrFail(
+                    "initializationSteps", POLL_TIMEOUT_SHORT_MS, mRule.getWebContents());
+            Assert.fail(
+                    "Timed out waiting for JavaScript test initialization. Initialization steps "
+                    + "object: " + initSteps);
+        }
         return result;
     }
 
@@ -597,7 +629,7 @@ public abstract class XrTestFramework {
     public void simulateRendererKilled() {
         final Tab tab = getRule().getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> ChromeTabUtils.simulateRendererKilledForTesting(tab, true));
+                () -> ChromeTabUtils.simulateRendererKilledForTesting(tab));
 
         CriteriaHelper.pollUiThread(
                 () -> SadTab.isShowing(tab), "Renderer killed, but sad tab not shown");

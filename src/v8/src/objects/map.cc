@@ -130,6 +130,7 @@ VisitorId Map::GetVisitorId(Map map) {
 
     case OBJECT_BOILERPLATE_DESCRIPTION_TYPE:
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
+    case REGISTERED_SYMBOL_TABLE_TYPE:
     case CLOSURE_FEEDBACK_CELL_ARRAY_TYPE:
     case HASH_TABLE_TYPE:
     case ORDERED_HASH_MAP_TYPE:
@@ -205,6 +206,9 @@ VisitorId Map::GetVisitorId(Map map) {
     case JS_DATA_VIEW_TYPE:
       return kVisitJSDataView;
 
+    case JS_EXTERNAL_OBJECT_TYPE:
+      return kVisitJSExternalObject;
+
     case JS_FUNCTION_TYPE:
     case JS_CLASS_CONSTRUCTOR_TYPE:
     case JS_PROMISE_CONSTRUCTOR_TYPE:
@@ -273,6 +277,7 @@ VisitorId Map::GetVisitorId(Map map) {
     case JS_SET_TYPE:
     case JS_SET_VALUE_ITERATOR_TYPE:
     case JS_SHADOW_REALM_TYPE:
+    case JS_SHARED_STRUCT_TYPE:
     case JS_STRING_ITERATOR_PROTOTYPE_TYPE:
     case JS_STRING_ITERATOR_TYPE:
     case JS_TEMPORAL_CALENDAR_TYPE:
@@ -308,7 +313,8 @@ VisitorId Map::GetVisitorId(Map map) {
     case WASM_TABLE_OBJECT_TYPE:
     case WASM_VALUE_OBJECT_TYPE:
 #endif  // V8_ENABLE_WEBASSEMBLY
-    case JS_BOUND_FUNCTION_TYPE: {
+    case JS_BOUND_FUNCTION_TYPE:
+    case JS_WRAPPED_FUNCTION_TYPE: {
       const bool has_raw_data_fields =
           COMPRESS_POINTERS_BOOL && JSObject::GetEmbedderFieldCount(map) > 0;
       return has_raw_data_fields ? kVisitJSObject : kVisitJSObjectFast;
@@ -924,6 +930,7 @@ Map Map::FindElementsKindTransitionedMap(Isolate* isolate,
 static Map FindClosestElementsTransition(Isolate* isolate, Map map,
                                          ElementsKind to_kind,
                                          ConcurrencyMode cmode) {
+  DisallowGarbageCollection no_gc;
   // Ensure we are requested to search elements kind transition "near the root".
   DCHECK_EQ(map.FindRootMap(isolate).NumberOfOwnDescriptors(),
             map.NumberOfOwnDescriptors());
@@ -1129,29 +1136,38 @@ bool Map::MayHaveReadOnlyElementsInPrototypeChain(Isolate* isolate) {
   return false;
 }
 
-Handle<Map> Map::RawCopy(Isolate* isolate, Handle<Map> map, int instance_size,
-                         int inobject_properties) {
+Handle<Map> Map::RawCopy(Isolate* isolate, Handle<Map> src_handle,
+                         int instance_size, int inobject_properties) {
   Handle<Map> result = isolate->factory()->NewMap(
-      map->instance_type(), instance_size, TERMINAL_FAST_ELEMENTS_KIND,
+      src_handle->instance_type(), instance_size, TERMINAL_FAST_ELEMENTS_KIND,
       inobject_properties);
-  Handle<HeapObject> prototype(map->prototype(), isolate);
-  Map::SetPrototype(isolate, result, prototype);
-  result->set_constructor_or_back_pointer(map->GetConstructor());
-  result->set_bit_field(map->bit_field());
-  result->set_bit_field2(map->bit_field2());
-  int new_bit_field3 = map->bit_field3();
-  new_bit_field3 = Bits3::OwnsDescriptorsBit::update(new_bit_field3, true);
-  new_bit_field3 = Bits3::NumberOfOwnDescriptorsBits::update(new_bit_field3, 0);
-  new_bit_field3 =
-      Bits3::EnumLengthBits::update(new_bit_field3, kInvalidEnumCacheSentinel);
-  new_bit_field3 = Bits3::IsDeprecatedBit::update(new_bit_field3, false);
-  new_bit_field3 = Bits3::IsInRetainedMapListBit::update(new_bit_field3, false);
-  if (!map->is_dictionary_map()) {
-    new_bit_field3 = Bits3::IsUnstableBit::update(new_bit_field3, false);
+  // We have to set the bitfields before any potential GCs could happen because
+  // heap verification might fail otherwise.
+  {
+    DisallowGarbageCollection no_gc;
+    Map src = *src_handle;
+    Map raw = *result;
+    raw.set_constructor_or_back_pointer(src.GetConstructor());
+    raw.set_bit_field(src.bit_field());
+    raw.set_bit_field2(src.bit_field2());
+    int new_bit_field3 = src.bit_field3();
+    new_bit_field3 = Bits3::OwnsDescriptorsBit::update(new_bit_field3, true);
+    new_bit_field3 =
+        Bits3::NumberOfOwnDescriptorsBits::update(new_bit_field3, 0);
+    new_bit_field3 = Bits3::EnumLengthBits::update(new_bit_field3,
+                                                   kInvalidEnumCacheSentinel);
+    new_bit_field3 = Bits3::IsDeprecatedBit::update(new_bit_field3, false);
+    new_bit_field3 =
+        Bits3::IsInRetainedMapListBit::update(new_bit_field3, false);
+    if (!src.is_dictionary_map()) {
+      new_bit_field3 = Bits3::IsUnstableBit::update(new_bit_field3, false);
+    }
+    // Same as bit_field comment above.
+    raw.set_bit_field3(new_bit_field3);
+    raw.clear_padding();
   }
-  // Same as bit_field comment above.
-  result->set_bit_field3(new_bit_field3);
-  result->clear_padding();
+  Handle<HeapObject> prototype(src_handle->prototype(), isolate);
+  Map::SetPrototype(isolate, result, prototype);
   return result;
 }
 
@@ -1242,13 +1258,17 @@ Handle<Map> Map::CopyNormalized(Isolate* isolate, Handle<Map> map,
   Handle<Map> result = RawCopy(
       isolate, map, new_instance_size,
       mode == CLEAR_INOBJECT_PROPERTIES ? 0 : map->GetInObjectProperties());
-  // Clear the unused_property_fields explicitly as this field should not
-  // be accessed for normalized maps.
-  result->SetInObjectUnusedPropertyFields(0);
-  result->set_is_dictionary_map(true);
-  result->set_is_migration_target(false);
-  result->set_may_have_interesting_symbols(true);
-  result->set_construction_counter(kNoSlackTracking);
+  {
+    DisallowGarbageCollection no_gc;
+    Map raw = *result;
+    // Clear the unused_property_fields explicitly as this field should not
+    // be accessed for normalized maps.
+    raw.SetInObjectUnusedPropertyFields(0);
+    raw.set_is_dictionary_map(true);
+    raw.set_is_migration_target(false);
+    raw.set_may_have_interesting_symbols(true);
+    raw.set_construction_counter(kNoSlackTracking);
+  }
 
 #ifdef VERIFY_HEAP
   if (FLAG_verify_heap) result->DictionaryMapVerify(isolate);
@@ -1635,9 +1655,11 @@ Handle<Map> Map::Copy(Isolate* isolate, Handle<Map> map, const char* reason) {
 }
 
 Handle<Map> Map::Create(Isolate* isolate, int inobject_properties) {
-  Handle<Map> copy =
+  Handle<Map> copy_handle =
       Copy(isolate, handle(isolate->object_function()->initial_map(), isolate),
            "MapCreate");
+  DisallowGarbageCollection no_gc;
+  Map copy = *copy_handle;
 
   // Check that we do not overflow the instance size when adding the extra
   // inobject properties. If the instance size overflows, we allocate as many
@@ -1650,12 +1672,13 @@ Handle<Map> Map::Create(Isolate* isolate, int inobject_properties) {
       JSObject::kHeaderSize + kTaggedSize * inobject_properties;
 
   // Adjust the map with the extra inobject properties.
-  copy->set_instance_size(new_instance_size);
-  copy->SetInObjectPropertiesStartInWords(JSObject::kHeaderSize / kTaggedSize);
-  DCHECK_EQ(copy->GetInObjectProperties(), inobject_properties);
-  copy->SetInObjectUnusedPropertyFields(inobject_properties);
-  copy->set_visitor_id(Map::GetVisitorId(*copy));
-  return copy;
+  copy.set_instance_size(new_instance_size);
+  copy.SetInObjectPropertiesStartInWords(JSObject::kHeaderSize / kTaggedSize);
+  DCHECK_EQ(copy.GetInObjectProperties(), inobject_properties);
+  copy.SetInObjectUnusedPropertyFields(inobject_properties);
+  copy.set_visitor_id(Map::GetVisitorId(copy));
+
+  return copy_handle;
 }
 
 Handle<Map> Map::CopyForPreventExtensions(

@@ -81,12 +81,14 @@ suite('Personalization app controller', () => {
               name: 'begin_load_google_photos_photos',
             },
             {
-              name: 'set_google_photos_albums',
+              name: 'append_google_photos_albums',
               albums: expectedAlbums,
+              resumeToken: null,
             },
             {
-              name: 'set_google_photos_photos',
+              name: 'append_google_photos_photos',
               photos: expectedPhotos,
+              resumeToken: null,
             },
           ],
           personalizationStore.actions);
@@ -106,6 +108,7 @@ suite('Personalization app controller', () => {
                 albums: undefined,
                 photos: undefined,
                 photosByAlbumId: {},
+                resumeTokens: {albums: null, photos: null},
               },
             },
             // SET_GOOGLE_PHOTOS_COUNT.
@@ -121,6 +124,7 @@ suite('Personalization app controller', () => {
                 albums: undefined,
                 photos: undefined,
                 photosByAlbumId: {},
+                resumeTokens: {albums: null, photos: null},
               },
             },
             // BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS.
@@ -136,6 +140,7 @@ suite('Personalization app controller', () => {
                 albums: undefined,
                 photos: undefined,
                 photosByAlbumId: {},
+                resumeTokens: {albums: null, photos: null},
               },
             },
             // BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS.
@@ -151,9 +156,10 @@ suite('Personalization app controller', () => {
                 albums: undefined,
                 photos: undefined,
                 photosByAlbumId: {},
+                resumeTokens: {albums: null, photos: null},
               },
             },
-            // SET_GOOGLE_PHOTOS_ALBUMS.
+            // APPEND_GOOGLE_PHOTOS_ALBUMS.
             {
               'wallpaper.loading.googlePhotos': {
                 count: false,
@@ -166,9 +172,10 @@ suite('Personalization app controller', () => {
                 albums: expectedAlbums,
                 photos: undefined,
                 photosByAlbumId: {},
+                resumeTokens: {albums: null, photos: null},
               },
             },
-            // SET_GOOGLE_PHOTOS_PHOTOS.
+            // APPEND_GOOGLE_PHOTOS_PHOTOS.
             {
               'wallpaper.loading.googlePhotos': {
                 count: false,
@@ -181,6 +188,7 @@ suite('Personalization app controller', () => {
                 albums: expectedAlbums,
                 photos: expectedPhotos,
                 photosByAlbumId: {},
+                resumeTokens: {albums: null, photos: null},
               },
             },
           ],
@@ -209,11 +217,15 @@ suite('Personalization app controller', () => {
     personalizationStore.dispatch(
         wallpaperAction.beginLoadGooglePhotosAlbumsAction());
     personalizationStore.dispatch(
-        wallpaperAction.setGooglePhotosAlbumsAction([album]));
+        wallpaperAction.appendGooglePhotosAlbumsAction(
+            [album], /*resumeToken=*/ null));
     personalizationStore.reset(personalizationStore.data);
 
     await fetchGooglePhotosAlbum(
         wallpaperProvider, personalizationStore, album.id);
+
+    // The wallpaper controller is expected to impose max resolution.
+    photos.forEach(photo => photo.url.url += '=s512');
 
     assertDeepEquals(
         [
@@ -250,6 +262,7 @@ suite('Personalization app controller', () => {
               ],
               photos: undefined,
               photosByAlbumId: {},
+              resumeTokens: {albums: null, photos: null},
             },
           },
           // SET_GOOGLE_PHOTOS_ALBUM
@@ -273,6 +286,7 @@ suite('Personalization app controller', () => {
               photosByAlbumId: {
                 [album.id]: photos,
               },
+              resumeTokens: {albums: null, photos: null},
             },
           },
         ],

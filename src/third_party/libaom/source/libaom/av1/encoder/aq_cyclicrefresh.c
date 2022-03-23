@@ -598,3 +598,13 @@ void av1_cyclic_refresh_reset_resize(AV1_COMP *const cpi) {
   cr->apply_cyclic_refresh = 0;
   cr->counter_encode_maxq_scene_change = 0;
 }
+
+int av1_cyclic_refresh_disable_lf_cdef(AV1_COMP *const cpi) {
+  CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
+  // TODO(marpan): Tune these conditons, add QP dependence.
+  if (cpi->rc.frames_since_key > 30 && cr->percent_refresh > 0 &&
+      cr->counter_encode_maxq_scene_change > 300 / cr->percent_refresh &&
+      cpi->rc.frame_source_sad < 1000)
+    return 1;
+  return 0;
+}

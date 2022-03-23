@@ -59,16 +59,22 @@ config("compiler_cpu_abi") {
     cflags += [ "-m32" ]
     ldflags += [ "-m32" ]
   } else if (current_cpu == "arm") {
+    assert(is_linux, "current_cpu == 'arm' only supported for Linux")
     cflags += [
-      "--target=arm-linux-gnueabihf",
       "-march=$arm_arch",
       "-mfloat-abi=$arm_float_abi",
       "-mtune=$arm_tune",
+      "--target=arm-linux-gnueabihf",
     ]
     ldflags += [ "--target=arm-linux-gnueabihf" ]
   } else if (current_cpu == "arm64") {
-    cflags += [ "--target=aarch64-linux-gnu" ]
-    ldflags += [ "--target=aarch64-linux-gnu" ]
+    if (is_linux) {
+      cflags += [ "--target=aarch64-linux-gnu" ]
+      ldflags += [ "--target=aarch64-linux-gnu" ]
+    } else {
+      cflags += [ "-m64" ]
+      ldflags += [ "-m64" ]
+    }
   }
 }
 

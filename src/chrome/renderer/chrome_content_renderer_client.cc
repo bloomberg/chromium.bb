@@ -48,6 +48,7 @@
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
+#include "chrome/renderer/media/chrome_key_systems.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "chrome/renderer/net/net_error_helper.h"
@@ -81,7 +82,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/feed/buildflags.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/history_clusters/core/features.h"
+#include "components/history_clusters/core/config.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/no_state_prefetch/common/prerender_url_loader_throttle.h"
 #include "components/no_state_prefetch/renderer/no_state_prefetch_client.h"
@@ -219,11 +220,6 @@
 #include "printing/metafile_agent.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/renderer/pepper/chrome_pdf_print_client.h"
-#include "components/pdf/renderer/pepper_pdf_host.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
 #include "components/paint_preview/renderer/paint_preview_recorder_impl.h"  // nogncheck
 #endif
@@ -340,7 +336,7 @@ void MaybeEnableWebShare() {
 #if BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS) && \
     BUILDFLAG(IS_CHROMEOS_ASH)
 bool IsTerminalSystemWebAppNaClPage(GURL url) {
-  url::Replacements<char> replacements;
+  GURL::Replacements replacements;
   replacements.ClearQuery();
   replacements.ClearRef();
   url = url.ReplaceComponents(replacements);
@@ -478,11 +474,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_search_scheme);
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  pdf_print_client_ = std::make_unique<ChromePDFPrintClient>();
-  pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
-#endif
-
   for (auto& scheme :
        secure_origin_allowlist::GetSchemesBypassingSecureContextCheck()) {
     WebSecurityPolicy::AddSchemeToSecureContextSafelist(
@@ -583,12 +574,16 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(IS_ANDROID)
   const bool search_result_extractor_enabled =
+      render_frame->IsMainFrame() &&
       base::FeatureList::IsEnabled(features::kContinuousSearch);
 #else
   const bool search_result_extractor_enabled =
-      history_clusters::IsJourneysEnabled(RenderThread::Get()->GetLocale());
+      render_frame->IsMainFrame() &&
+      history_clusters::GetConfig().is_journeys_enabled_no_locale_check &&
+      history_clusters::IsApplicationLocaleSupportedByJourneys(
+          RenderThread::Get()->GetLocale());
 #endif
-  if (render_frame->IsMainFrame() && search_result_extractor_enabled) {
+  if (search_result_extractor_enabled) {
     continuous_search::SearchResultExtractorImpl::Create(render_frame);
   }
 
@@ -686,9 +681,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new SearchBox(render_frame);
   }
 
-  // We should create CommerceHintAgent only for a primary main frame. A fenced
-  // frame is the main frame as well, so we should check if |render_frame|
-  // is the primary main frame.
+  // We should create CommerceHintAgent only for a main frame except a fenced
+  // frame that is the main frame as well, so we should check if |render_frame|
+  // is the fenced frame.
   if (base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule) &&
       render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree()) {
     new cart::CommerceHintAgent(render_frame);
@@ -764,8 +759,7 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
     return false;
   }
 #if BUILDFLAG(ENABLE_PDF)
-  if (plugin_info->actual_mime_type == pdf::kInternalPluginMimeType &&
-      pdf::IsInternalPluginExternallyHandled()) {
+  if (plugin_info->actual_mime_type == pdf::kInternalPluginMimeType) {
     // Only actually treat the internal PDF plugin as externally handled if
     // used within an origin allowed to create the internal PDF plugin;
     // otherwise, let Blink try to create the in-process PDF plugin.
@@ -1062,7 +1056,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (info.name ==
             ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
           return pdf::CreateInternalPlugin(
-              info, std::move(params), render_frame,
+              std::move(params), render_frame,
               std::make_unique<ChromePdfInternalPluginDelegate>());
         }
 #endif  // BUILDFLAG(ENABLE_PDF)
@@ -1478,11 +1472,7 @@ ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
 
 void ChromeContentRendererClient::GetSupportedKeySystems(
     media::GetSupportedKeySystemsCB cb) {
-  key_systems_provider_.GetSupportedKeySystems(std::move(cb));
-}
-
-bool ChromeContentRendererClient::IsKeySystemsUpdateNeeded() {
-  return key_systems_provider_.IsKeySystemsUpdateNeeded();
+  GetChromeKeySystems(std::move(cb));
 }
 
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(

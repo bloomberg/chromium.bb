@@ -15,6 +15,8 @@
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/dbus/hermes/hermes_clients.h"
 #include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/cellular_connection_handler.h"
 #include "chromeos/network/cellular_esim_installer.h"
 #include "chromeos/network/cellular_inhibitor.h"
@@ -137,7 +139,7 @@ class CellularPolicyHandlerTest : public testing::Test {
     cellular_policy_handler_ = std::make_unique<CellularPolicyHandler>();
     cellular_policy_handler_->Init(
         cellular_esim_profile_handler_.get(), cellular_esim_installer_.get(),
-        network_profile_handler_.get(),
+        network_profile_handler_.get(), network_state_handler_.get(),
         managed_network_configuration_handler_.get());
   }
 
@@ -270,6 +272,31 @@ TEST_F(CellularPolicyHandlerTest, InstallProfileSuccess) {
       /*expected_count=*/0);
 }
 
+TEST_F(CellularPolicyHandlerTest, InstallWaitForDeviceState) {
+  SetupEuicc();
+  ShillManagerClient::Get()->GetTestInterface()->ClearDevices();
+  base::RunLoop().RunUntilIdle();
+
+  const std::string policy =
+      GenerateCellularPolicy(HermesEuiccClient::Get()
+                                 ->GetTestInterface()
+                                 ->GenerateFakeActivationCode());
+  // Verify the configuration is created automatically after device state
+  // becomes available.
+  InstallESimPolicy(policy,
+                    HermesEuiccClient::Get()
+                        ->GetTestInterface()
+                        ->GenerateFakeActivationCode(),
+                    /*expect_install_success=*/false);
+  CheckShillConfiguration(/*is_installed=*/false);
+
+  ShillDeviceClient::Get()->GetTestInterface()->AddDevice(
+      "/device/cellular1", shill::kTypeCellular, "TestCellular");
+  FastForwardProfileRefreshDelay();
+  base::RunLoop().RunUntilIdle();
+  CheckShillConfiguration(/*is_installed=*/true);
+}
+
 TEST_F(CellularPolicyHandlerTest, InstallWaitForEuicc) {
   HermesManagerClient::Get()->GetTestInterface()->ClearEuiccs();
   const std::string policy =
@@ -285,6 +312,8 @@ TEST_F(CellularPolicyHandlerTest, InstallWaitForEuicc) {
                     /*expect_install_success=*/false);
   CheckShillConfiguration(/*is_installed=*/false);
   SetupEuicc();
+  FastForwardProfileRefreshDelay();
+  base::RunLoop().RunUntilIdle();
   CheckShillConfiguration(/*is_installed=*/true);
 }
 

@@ -41,6 +41,7 @@ from blinkpy.web_tests.port.android import (
 
 from devil.android import apk_helper
 from devil.android import device_utils
+from devil.android.device_errors import CommandFailedError
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
 
@@ -87,6 +88,32 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     else:
       return 'wpt_reports_%s.json' % self.options.product
 
+  def get_version_provider_package_name(self):
+    """Get the name of a package containing the product's version.
+
+    Some Android products are broken up into multiple packages with decoupled
+    "versionName"s. This method should return None to use wpt's best guess of
+    the product version or a valid package name to override wpt.
+
+    See also:
+      https://github.com/web-platform-tests/wpt/blob/merge_pr_33203/tools/wpt/browser.py#L850-L864
+    """
+    return None
+
+  def get_version(self):
+    """Get the product version, if available."""
+    version_provider = self.get_version_provider_package_name()
+    if self._devices and version_provider:
+      # Assume emulated devices are identically provisioned.
+      device = self._devices[0]
+      try:
+        version = device.GetApplicationVersion(version_provider)
+        logger.info('Version of %s is %s', version_provider, version)
+        return version
+      except CommandFailedError:
+        logger.warning('Failed to retrieve version of %s', version_provider)
+    return None
+
   @property
   def rest_args(self):
     rest_args = super(WPTAndroidAdapter, self).rest_args
@@ -130,6 +157,7 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       '--binary-arg=--force-fieldtrials=DownloadServiceStudy/Enabled',
       '--binary-arg=--force-fieldtrial-params=DownloadServiceStudy.Enabled:'
       'start_up_delay_ms/0',
+      '--repeat=' + str(self.options.repeat),
     ])
 
     for device in self._devices:
@@ -154,6 +182,17 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
                                     self._wpt_report())
       rest_args.extend(['--log-wptreport',
                         self.wptreport])
+
+    version = self.get_version()
+    if version:
+      rest_args.extend(['--browser-version', version])
+
+    if self.options.test_filter:
+      for pattern in self.options.test_filter.split(':'):
+        rest_args.extend([
+          '--include',
+          wpt_common.strip_wpt_root_prefix(pattern),
+        ])
 
     rest_args.extend(self.pass_through_wpt_args)
 
@@ -238,9 +277,15 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
                         help='Ignore browser specific expectation files.')
     parser.add_argument('--verbose', '-v', action='count', default=0,
                         help='Verbosity level.')
-    parser.add_argument('--repeat',
-                        action=WPTPassThroughArgs, type=int,
+    parser.add_argument('--repeat', '--gtest_repeat', type=int, default=1,
                         help='Number of times to run the tests.')
+    parser.add_argument('--test-filter', '--gtest_filter',
+                        help='Colon-separated list of test names '
+                             '(URL prefixes)')
+    # TODO(crbug/1306222): wptrunner currently cannot rerun individual failed
+    # tests, so this flag is unused.
+    parser.add_argument('--test-launcher-retry-limit', type=int, default=0,
+                        help='Maximum number of times to rerun a failed test')
     parser.add_argument('--include', metavar='TEST_OR_DIR',
                         action=WPTPassThroughArgs,
                         help='Test(s) to run, defaults to run all tests.')
@@ -315,10 +360,16 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
     parser.add_argument('--webview-provider',
                         help='Webview provider apk to install.')
 
+  def get_version_provider_package_name(self):
+    if self.options.webview_provider:
+      return apk_helper.GetPackageName(self.options.webview_provider)
+    return self.WEBLAYER_SUPPORT_PKG
+
   @property
   def rest_args(self):
     args = super(WPTWeblayerAdapter, self).rest_args
     args.append('--test-type=testharness')
+    args.extend(['--package-name', self.WEBLAYER_SHELL_PKG])
     args.append(ANDROID_WEBLAYER)
     return args
 
@@ -333,13 +384,24 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
     else:
       self.system_webview_shell_pkg = 'org.chromium.webview_shell'
 
+  def _install_webview_from_release(self, serial, channel):
+    path = os.path.join(SRC_DIR, 'clank', 'bin', 'install_webview.py')
+    command = [sys.executable, path, '-s', serial, '--channel', channel]
+    return common.run_command(command)
+
   @contextlib.contextmanager
   def _install_apks(self):
-    install_shell_as_needed = _maybe_install_user_apk(
-        self._devices, self.options.system_webview_shell,
-        self.system_webview_shell_pkg)
-    install_webview_provider_as_needed = _maybe_install_webview_provider(
-        self._devices, self.options.webview_provider)
+    if self.options.release_channel:
+      self._install_webview_from_release(self._device.serial,
+                                         self.options.release_channel)
+      install_shell_as_needed = _no_op()
+      install_webview_provider_as_needed = _no_op()
+    else:
+      install_shell_as_needed = _maybe_install_user_apk(
+          self._devices, self.options.system_webview_shell,
+          self.system_webview_shell_pkg)
+      install_webview_provider_as_needed = _maybe_install_webview_provider(
+          self._devices, self.options.webview_provider)
     with install_shell_as_needed, install_webview_provider_as_needed:
       yield
 
@@ -355,6 +417,14 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
                               'will be used.'))
     parser.add_argument('--webview-provider',
                         help='Webview provider APK to install.')
+    parser.add_argument('--release-channel',
+                        default=None,
+                        help='Using WebView from release channel.')
+
+  def get_version_provider_package_name(self):
+    if self.options.webview_provider:
+      return apk_helper.GetPackageName(self.options.webview_provider)
+    return None
 
   @property
   def rest_args(self):

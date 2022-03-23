@@ -109,7 +109,7 @@ g.test('two_draws_in_the_same_render_pass')
         passEncoder.executeBundles([(renderEncoder as GPURenderBundleEncoder).finish()]);
     }
 
-    passEncoder.endPass();
+    passEncoder.end();
     t.device.queue.submit([encoder.finish()]);
     t.verifyDataTwoValidValues(buffer, 1, 2);
   });
@@ -137,7 +137,7 @@ g.test('two_draws_in_the_same_render_bundle')
     }
 
     passEncoder.executeBundles([renderEncoder.finish()]);
-    passEncoder.endPass();
+    passEncoder.end();
     t.device.queue.submit([encoder.finish()]);
     t.verifyDataTwoValidValues(buffer, 1, 2);
   });
@@ -161,7 +161,7 @@ g.test('two_dispatches_in_the_same_compute_pass')
       pass.dispatch(1);
     }
 
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.verifyData(buffer, 2);
   });

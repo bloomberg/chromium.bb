@@ -437,8 +437,8 @@ generated_cc_atom(
     hdrs = ["SkPatchUtils.h"],
     visibility = ["//:__subpackages__"],
     deps = [
-        "//include/core:SkMatrix_hdr",
-        "//include/private:SkColorData_hdr",
+        "//include/core:SkColor_hdr",
+        "//include/core:SkRefCnt_hdr",
     ],
 )
 
@@ -659,4 +659,24 @@ generated_cc_atom(
         ":SkVMVisualizer_hdr",
         "//src/core:SkStreamPriv_hdr",
     ],
+)
+
+generated_cc_atom(
+    name = "SkBlitterTraceCommon_hdr",
+    hdrs = ["SkBlitterTraceCommon.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [":SkCycles_hdr"],
+)
+
+generated_cc_atom(
+    name = "SkBlitterTrace_hdr",
+    hdrs = ["SkBlitterTrace.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [":SkBlitterTraceCommon_hdr"],
+)
+
+generated_cc_atom(
+    name = "SkCycles_hdr",
+    hdrs = ["SkCycles.h"],
+    visibility = ["//:__subpackages__"],
 )

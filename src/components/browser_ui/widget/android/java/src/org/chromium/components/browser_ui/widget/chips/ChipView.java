@@ -138,6 +138,9 @@ public class ChipView extends LinearLayout {
         int verticalInset = a.getDimensionPixelSize(R.styleable.ChipView_verticalInset,
                 getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset));
         boolean allowMultipleLines = a.getBoolean(R.styleable.ChipView_allowMultipleLines, false);
+        int minMultilineVerticalTextPadding = a.getDimensionPixelSize(
+                R.styleable.ChipView_multiLineVerticalPadding,
+                getResources().getDimensionPixelSize(R.dimen.chip_text_multiline_vertical_padding));
         boolean textAlignStart = a.getBoolean(R.styleable.ChipView_textAlignStart, false);
         boolean reduceTextStartPadding =
                 a.getBoolean(R.styleable.ChipView_reduceTextStartPadding, false);
@@ -157,8 +160,8 @@ public class ChipView extends LinearLayout {
         int loadingViewWidthPadding = (iconWidth - loadingViewSize) / 2;
         mLoadingView = new LoadingView(getContext());
         mLoadingView.setVisibility(GONE);
-        mLoadingView.setIndeterminateTintList(ColorStateList.valueOf(ApiCompatibilityUtils.getColor(
-                getResources(), R.color.default_icon_color_accent1_baseline)));
+        mLoadingView.setIndeterminateTintList(ColorStateList.valueOf(
+                getContext().getColor(R.color.default_icon_color_accent1_baseline)));
         mLoadingView.setPaddingRelative(loadingViewWidthPadding, loadingViewHeightPadding,
                 loadingViewWidthPadding, loadingViewHeightPadding);
         addView(mLoadingView, new LayoutParams(iconWidth, iconHeight));
@@ -175,10 +178,6 @@ public class ChipView extends LinearLayout {
         // If false fall back to single line defined in XML styles.
         if (allowMultipleLines) {
             mPrimaryText.setMaxLines(MAX_LINES);
-            // Vertical padding must be explicitly defined for the text view to create space if text
-            // wrapping causes the chip to increase in size vertically.
-            int minMultilineVerticalTextPadding = getResources().getDimensionPixelSize(
-                    R.dimen.chip_text_multiline_vertical_padding);
             // TODO(benwgold): Test for non multiline chips to see if 4dp vertical padding can be
             // safely applied to all chips without affecting styling.
             mPrimaryText.setPaddingRelative(mPrimaryText.getPaddingStart(),

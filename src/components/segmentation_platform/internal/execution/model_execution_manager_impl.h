@@ -15,12 +15,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
-#include "components/optimization_guide/core/model_executor.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager.h"
-#include "components/segmentation_platform/internal/execution/segmentation_model_handler.h"
 #include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -30,6 +28,8 @@ class Clock;
 
 namespace segmentation_platform {
 class FeatureListQueryProcessor;
+class ModelProvider;
+class ModelProviderFactory;
 class SignalDatabase;
 
 namespace proto {
@@ -51,14 +51,9 @@ class SegmentInfo;
 // so the SegmentationModelHandler instances can be created early.
 class ModelExecutionManagerImpl : public ModelExecutionManager {
  public:
-  using ModelHandlerCreator =
-      base::RepeatingCallback<std::unique_ptr<SegmentationModelHandler>(
-          optimization_guide::proto::OptimizationTarget,
-          const SegmentationModelHandler::ModelUpdatedCallback&)>;
-
-  explicit ModelExecutionManagerImpl(
+  ModelExecutionManagerImpl(
       const base::flat_set<OptimizationTarget>& segment_ids,
-      ModelHandlerCreator model_handler_creator,
+      std::unique_ptr<ModelProviderFactory> model_provider_factory,
       base::Clock* clock,
       SegmentInfoDatabase* segment_database,
       SignalDatabase* signal_database,
@@ -72,12 +67,12 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
       delete;
 
   // ModelExecutionManager overrides.
-  void ExecuteModel(optimization_guide::proto::OptimizationTarget segment_id,
+  void ExecuteModel(const proto::SegmentInfo& segment_info,
                     ModelExecutionCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SegmentationPlatformServiceImplTest,
-                           InitializationFlow);
+  friend class SegmentationPlatformServiceImplTest;
+
   struct ExecutionState;
   struct ModelExecutionTraceEvent;
 
@@ -115,7 +110,8 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
   // model, this will be called at least once per session.
   void OnSegmentationModelUpdated(
       optimization_guide::proto::OptimizationTarget segment_id,
-      proto::SegmentationModelMetadata metadata);
+      proto::SegmentationModelMetadata metadata,
+      int64_t model_version);
 
   // Callback after fetching the current SegmentInfo from the
   // SegmentInfoDatabase. This is part of the flow for informing the
@@ -125,6 +121,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
   void OnSegmentInfoFetchedForModelUpdate(
       optimization_guide::proto::OptimizationTarget segment_id,
       proto::SegmentationModelMetadata metadata,
+      int64_t model_version,
       absl::optional<proto::SegmentInfo> segment_info);
 
   // Callback after storing the updated version of the SegmentInfo.
@@ -133,8 +130,8 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
                                   bool success);
 
   // All the relevant handlers for each of the segments.
-  std::map<OptimizationTarget, std::unique_ptr<SegmentationModelHandler>>
-      model_handlers_;
+  // TODO(ssid): Move the ownership of providers outside this class.
+  std::map<OptimizationTarget, std::unique_ptr<ModelProvider>> model_providers_;
 
   // Used to access the current time.
   raw_ptr<base::Clock> clock_;

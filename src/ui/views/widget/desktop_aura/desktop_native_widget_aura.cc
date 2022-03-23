@@ -52,7 +52,6 @@
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
-#include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/focus_manager_event_handler.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/root_view.h"
@@ -422,7 +421,7 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   // activation change event. This is needed since the activation client may
   // check whether this widget can receive activation when deciding which window
   // should receive activation next.
-  base::AutoReset<bool> resetter(&should_activate_, active);
+  base::AutoReset<absl::optional<bool>> resetter(&should_activate_, active);
 
   if (active) {
     // TODO(nektar): We need to harmonize the firing of accessibility
@@ -976,7 +975,10 @@ void DesktopNativeWidgetAura::Restore() {
 }
 
 void DesktopNativeWidgetAura::SetFullscreen(bool fullscreen,
-                                            const base::TimeDelta& delay) {
+                                            const base::TimeDelta& delay,
+                                            int64_t target_display_id) {
+  // The `target_display_id` argument is unsupported in Aura.
+  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
   if (content_window_)
     desktop_window_tree_host_->SetFullscreen(fullscreen);
 }
@@ -1269,7 +1271,8 @@ base::StringPiece DesktopNativeWidgetAura::GetLogContext() const {
 // DesktopNativeWidgetAura, wm::ActivationDelegate implementation:
 
 bool DesktopNativeWidgetAura::ShouldActivate() const {
-  return should_activate_ && native_widget_delegate_->CanActivate();
+  return (!should_activate_.has_value() || should_activate_.value()) &&
+         native_widget_delegate_->CanActivate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1298,17 +1301,23 @@ void DesktopNativeWidgetAura::OnWindowActivated(
   // content window are active. When the window tree host gains and looses
   // activation, the window tree host calls into HandleActivationChanged() which
   // notifies delegates of the activation change.
-  // However the widget's content window can still be deactivated while the
-  // window tree host remains active. This is the case if a chid widget is
-  // spawned (e.g. a bubble) and the child's content window is activated. This
-  // is a valid state since the window tree host should remain active while
-  // the child is active.
-  // In this case this widget would no longer be considered active but since the
-  // window tree host has not deactivated delegates are not notified in
-  // HandleActivationChanged(). To ensure activation updates are propagated
-  // correctly we must notify delegates here.
+  // However the widget's content window can still be deactivated and activated
+  // while the window tree host remains active. For e.g. if a child widget is
+  // spawned (e.g. a bubble) the child's content window is activated and the
+  // root content window is deactivated. This is a valid state since the window
+  // tree host should remain active while the child is active. The child bubble
+  // can then be closed and activation returns to the root content window - all
+  // without the window tree host's activation state changing.
+  // As the activation state of the content window changes we must ensure that
+  // we notify this widget's delegate. Do this here for cases where we are not
+  // handling an activation change in HandleActivationChanged() since delegates
+  // will be notified of the change there directly.
   const bool content_window_activated = content_window_ == gained_active;
-  if (desktop_window_tree_host_->IsActive() && !content_window_activated) {
+  const bool tree_host_active = desktop_window_tree_host_->IsActive();
+  // TODO(crbug.com/1300567): Update focus rules to avoid focusing the desktop
+  // widget's content window if its window tree host is not active.
+  if (!should_activate_.has_value() &&
+      (tree_host_active || !content_window_activated)) {
     native_widget_delegate_->OnNativeWidgetActivationChanged(
         content_window_activated);
   }
@@ -1354,24 +1363,14 @@ void DesktopNativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-ui::mojom::DragOperation DesktopNativeWidgetAura::OnPerformDrop(
-    const ui::DropTargetEvent& event,
-    std::unique_ptr<ui::OSExchangeData> data) {
-  DCHECK(drop_helper_.get() != nullptr);
-  if (ShouldActivate())
-    Activate();
-  return drop_helper_->OnDrop(event.data(), event.location(),
-                              last_drop_operation_);
-}
-
 aura::client::DragDropDelegate::DropCallback
 DesktopNativeWidgetAura::GetDropCallback(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_);
-  if (ShouldActivate())
-    Activate();
-
-  return drop_helper_->GetDropCallback(event.data(), event.location(),
-                                       last_drop_operation_);
+  auto drop_helper_cb = drop_helper_->GetDropCallback(
+      event.data(), event.location(), last_drop_operation_);
+  return base::BindOnce(&DesktopNativeWidgetAura::PerformDrop,
+                        weak_ptr_factory_.GetWeakPtr(),
+                        std::move(drop_helper_cb));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1419,6 +1418,17 @@ void DesktopNativeWidgetAura::RootWindowDestroyed() {
     native_cursor_manager_ = nullptr;
     cursor_manager_ = nullptr;
   }
+}
+
+void DesktopNativeWidgetAura::PerformDrop(
+    views::DropHelper::DropCallback drop_cb,
+    std::unique_ptr<ui::OSExchangeData> data,
+    ui::mojom::DragOperation& output_drag_op) {
+  if (ShouldActivate())
+    Activate();
+
+  if (drop_cb)
+    std::move(drop_cb).Run(std::move(data), output_drag_op);
 }
 
 }  // namespace views

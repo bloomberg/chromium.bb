@@ -7,6 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as CM from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
+import * as Icon from '../icon_button/icon_button.js';
 
 import {editorTheme} from './theme.js';
 
@@ -82,7 +83,22 @@ export const sourcesAutocompletion = DynamicSetting.bool('textEditorAutocompleti
 
 export const bracketMatching = DynamicSetting.bool('textEditorBracketMatching', CM.bracketMatching());
 
-export const codeFolding = DynamicSetting.bool('textEditorCodeFolding', [CM.foldGutter(), CM.keymap.of(CM.foldKeymap)]);
+export const codeFolding = DynamicSetting.bool('textEditorCodeFolding', [
+  CM.foldGutter({
+    markerDOM(open: boolean): HTMLElement {
+      const iconName = open ? 'triangle-expanded' : 'triangle-collapsed';
+      const icon = new Icon.Icon.Icon();
+      icon.data = {
+        iconName,
+        color: 'var(--color-text-secondary)',
+        width: '12px',
+        height: '12px',
+      };
+      return icon;
+    },
+  }),
+  CM.keymap.of(CM.foldKeymap),
+]);
 
 export function guessIndent(doc: CM.Text): string {
   const values: {[indent: string]: number} = Object.create(null);
@@ -224,12 +240,14 @@ export function baseConfiguration(text: string): CM.Extension {
   return [
     theme(),
     CM.highlightSpecialChars(),
+    CM.highlightSelectionMatches(),
     CM.history(),
     CM.drawSelection(),
     CM.EditorState.allowMultipleSelections.of(true),
     CM.indentOnInput(),
     CodeHighlighter.CodeHighlighter.highlightStyle,
     baseKeymap,
+    CM.EditorView.clickAddsSelectionRange.of(mouseEvent => mouseEvent.altKey || mouseEvent.ctrlKey),
     tabMovesFocus.instance(),
     bracketMatching.instance(),
     indentUnit.instance(),

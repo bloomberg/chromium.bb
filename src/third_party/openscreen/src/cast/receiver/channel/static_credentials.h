@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
 #include "platform/base/error.h"
 #include "platform/base/tls_credentials.h"

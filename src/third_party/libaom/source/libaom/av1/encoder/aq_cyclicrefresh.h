@@ -311,6 +311,8 @@ int av1_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr);
 
 void av1_cyclic_refresh_reset_resize(struct AV1_COMP *const cpi);
 
+int av1_cyclic_refresh_disable_lf_cdef(struct AV1_COMP *const cpi);
+
 static INLINE int cyclic_refresh_segment_id_boosted(int segment_id) {
   return segment_id == CR_SEGMENT_ID_BOOST1 ||
          segment_id == CR_SEGMENT_ID_BOOST2;

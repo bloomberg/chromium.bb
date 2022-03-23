@@ -40,7 +40,6 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
-#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -2124,6 +2123,22 @@ AccessibilityOrientation AXNodeObject::Orientation() const {
   }
 }
 
+// According to the standard, the figcaption should only be the first or
+// last child: https://html.spec.whatwg.org/#the-figcaption-element
+AXObject* AXNodeObject::GetChildFigcaption() const {
+  AXObject* child = FirstChildIncludingIgnored();
+  if (!child)
+    return nullptr;
+  if (child->RoleValue() == ax::mojom::blink::Role::kFigcaption)
+    return child;
+
+  child = LastChildIncludingIgnored();
+  if (child->RoleValue() == ax::mojom::blink::Role::kFigcaption)
+    return child;
+
+  return nullptr;
+}
+
 AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   AXObjectVector radio_buttons;
   if (!node_ || RoleValue() != ax::mojom::blink::Role::kRadioButton)
@@ -2142,9 +2157,9 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
 
   // If the immediate parent is a radio group, return all its children that are
   // radio buttons.
-  AXObject* parent = ParentObject();
+  AXObject* parent = ParentObjectUnignored();
   if (parent && parent->RoleValue() == ax::mojom::blink::Role::kRadioGroup) {
-    for (AXObject* child : parent->ChildrenIncludingIgnored()) {
+    for (AXObject* child : parent->UnignoredChildren()) {
       DCHECK(child);
       if (child->RoleValue() == ax::mojom::blink::Role::kRadioButton &&
           child->AccessibilityIsIncludedInTree()) {
@@ -2355,36 +2370,34 @@ float AXNodeObject::GetTextIndent() const {
   return text_indent / kCssPixelsPerMillimeter;
 }
 
-// Tries to extract a bitmap from an Image, a Canvas, or a Video element.
-// If |max_size| is not empty, the bitmap's size is capped at |max_size|.
-// Returns a boolean indicating whether the operation has succeeded.
-bool GetBitmapFromMediaSource(Node& node,
-                              const gfx::Size& max_size,
-                              SkBitmap& out_bitmap) {
+String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
+  Node* node = GetNode();
+  if (!node)
+    return String();
+
   ImageBitmapOptions* options = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap = nullptr;
-  // TODO(https://crbug.com/1285202): Consider covering OffscreenCanvas.
-  if (auto* image = DynamicTo<HTMLImageElement>(&node)) {
-    image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        image, /* crop_rect */ absl::nullopt, options);
-  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(&node)) {
-    image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        canvas, /* crop_rect */ absl::nullopt, options);
-  } else if (auto* video = DynamicTo<HTMLVideoElement>(&node)) {
-    image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        video, /*crop_rect=*/absl::nullopt, options);
+  if (auto* image = DynamicTo<HTMLImageElement>(node)) {
+    image_bitmap =
+        MakeGarbageCollected<ImageBitmap>(image, absl::nullopt, options);
+  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
+    image_bitmap =
+        MakeGarbageCollected<ImageBitmap>(canvas, absl::nullopt, options);
+  } else if (auto* video = DynamicTo<HTMLVideoElement>(node)) {
+    image_bitmap =
+        MakeGarbageCollected<ImageBitmap>(video, absl::nullopt, options);
   }
   if (!image_bitmap)
-    return false;
+    return String();
 
   scoped_refptr<StaticBitmapImage> bitmap_image = image_bitmap->BitmapImage();
   if (!bitmap_image)
-    return false;
+    return String();
 
   sk_sp<SkImage> image =
       bitmap_image->PaintImageForCurrentFrame().GetSwSkImage();
   if (!image || image->width() <= 0 || image->height() <= 0)
-    return false;
+    return String();
 
   // Determine the width and height of the output image, using a proportional
   // scale factor such that it's no larger than |maxSize|, if |maxSize| is not
@@ -2401,33 +2414,23 @@ bool GetBitmapFromMediaSource(Node& node,
   int height = std::round(image->height() * scale);
 
   // Draw the image into a bitmap in native format.
-  out_bitmap.allocPixels(
-      SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
-  SkCanvas canvas(out_bitmap, SkSurfaceProps{});
-  canvas.clear(SK_ColorTRANSPARENT);
-  canvas.drawImageRect(image, SkRect::MakeIWH(width, height),
-                       SkSamplingOptions());
-  return true;
-}
-
-String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
-  Node* node = GetNode();
-  if (!node)
-    return String();
-
   SkBitmap bitmap;
-  if (!GetBitmapFromMediaSource(*node, max_size, bitmap) &&
-      !DataTransfer::CreateBitmapFromNode(&DocumentFrameView()->GetFrame(),
-                                          node, max_size, bitmap)) {
-    return String();
+  SkPixmap unscaled_pixmap;
+  if (scale == 1.0 && image->peekPixels(&unscaled_pixmap)) {
+    bitmap.installPixels(unscaled_pixmap);
+  } else {
+    bitmap.allocPixels(
+        SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
+    SkCanvas canvas(bitmap, SkSurfaceProps{});
+    canvas.clear(SK_ColorTRANSPARENT);
+    canvas.drawImageRect(image, SkRect::MakeIWH(width, height),
+                         SkSamplingOptions());
   }
 
   // Copy the bits into a buffer in RGBA_8888 unpremultiplied format
   // for encoding.
-  SkImageInfo info =
-      SkImageInfo::Make(bitmap.width(), bitmap.height(), kRGBA_8888_SkColorType,
-                        kUnpremul_SkAlphaType);
-
+  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                                       kUnpremul_SkAlphaType);
   size_t row_bytes = info.minRowBytes();
   Vector<char> pixel_storage(
       SafeCast<wtf_size_t>(info.computeByteSize(row_bytes)));
@@ -4585,7 +4588,13 @@ void AXNodeObject::ChildrenChangedWithCleanLayout() {
   // now layout is clean.
   SetNeedsToUpdateChildren();
 
-  // If this object is not included in the tree, then our parent needs to
+  // The caller, AXObjectCacheImpl::ChildrenChangedWithCleanLayout(), is only
+  // Between the time that AXObjectCacheImpl::ChildrenChanged() determines
+  // which included parent to use and now, it's possible that the parent will
+  // no longer be ignored. This is rare, but is covered by this test:
+  // external/wpt/accessibility/crashtests/delayed-ignored-change.html/
+  //
+  // If this object is no longer included in the tree, then our parent needs to
   // recompute its included-in-the-tree children vector. (And if our parent
   // isn't included in the tree either, it will recursively update its parent
   // and so on.)
@@ -4747,22 +4756,6 @@ AXObject* AXNodeObject::ErrorMessage() const {
     return nullptr;
 
   return AXObjectCache().ValidationMessageObjectIfInvalid(true);
-}
-
-// According to the standard, the figcaption should only be the first or
-// last child: https://html.spec.whatwg.org/#the-figcaption-element
-static Element* GetChildFigcaption(const Node& node) {
-  Element* element = ElementTraversal::FirstChild(node);
-  if (!element)
-    return nullptr;
-  if (element->HasTagName(html_names::kFigcaptionTag))
-    return element;
-
-  element = ElementTraversal::LastChild(node);
-  if (element->HasTagName(html_names::kFigcaptionTag))
-    return element;
-
-  return nullptr;
 }
 
 // Based on
@@ -5028,43 +5021,6 @@ String AXNodeObject::NativeTextAlternative(
       }
     }
 
-    return text_alternative;
-  }
-
-  // 5.7 figure and figcaption Elements
-  if (GetNode()->HasTagName(html_names::kFigureTag)) {
-    // figcaption
-    name_from = ax::mojom::blink::NameFrom::kRelatedElement;
-    if (name_sources) {
-      name_sources->push_back(NameSource(*found_text_alternative));
-      name_sources->back().type = name_from;
-      name_sources->back().native_source = kAXTextFromNativeHTMLFigcaption;
-    }
-    Element* figcaption = GetChildFigcaption(*(GetNode()));
-    if (figcaption) {
-      AXObject* figcaption_ax_object = AXObjectCache().GetOrCreate(figcaption);
-      if (figcaption_ax_object) {
-        text_alternative =
-            RecursiveTextAlternative(*figcaption_ax_object, nullptr, visited);
-
-        if (related_objects) {
-          local_related_objects.push_back(
-              MakeGarbageCollected<NameSourceRelatedObject>(
-                  figcaption_ax_object, text_alternative));
-          *related_objects = local_related_objects;
-          local_related_objects.clear();
-        }
-
-        if (name_sources) {
-          NameSource& source = name_sources->back();
-          source.related_objects = *related_objects;
-          source.text = text_alternative;
-          *found_text_alternative = true;
-        } else {
-          return text_alternative;
-        }
-      }
-    }
     return text_alternative;
   }
 

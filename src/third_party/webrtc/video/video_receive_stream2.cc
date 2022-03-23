@@ -62,7 +62,6 @@
 #include "rtc_base/time_utils.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/field_trial.h"
 #include "video/call_stats2.h"
 #include "video/frame_decode_scheduler.h"
 #include "video/frame_dumping_decoder.h"
@@ -131,12 +130,12 @@ class WebRtcRecordableEncodedFrame : public RecordableEncodedFrame {
   absl::optional<webrtc::ColorSpace> color_space_;
 };
 
-RenderResolution InitialDecoderResolution() {
+RenderResolution InitialDecoderResolution(
+    const WebRtcKeyValueConfig& field_trials) {
   FieldTrialOptional<int> width("w");
   FieldTrialOptional<int> height("h");
-  ParseFieldTrial(
-      {&width, &height},
-      field_trial::FindFullName("WebRTC-Video-InitialDecoderResolution"));
+  ParseFieldTrial({&width, &height},
+                  field_trials.Lookup("WebRTC-Video-InitialDecoderResolution"));
   if (width && height) {
     return RenderResolution(width.Value(), height.Value());
   }
@@ -221,7 +220,10 @@ VideoReceiveStream2::VideoReceiveStream2(
       clock_(clock),
       call_stats_(call_stats),
       source_tracker_(clock_),
-      stats_proxy_(config_.rtp.remote_ssrc, clock_, call->worker_thread()),
+      stats_proxy_(config_.rtp.remote_ssrc,
+                   clock_,
+                   call->worker_thread(),
+                   call->trials()),
       rtp_receive_statistics_(ReceiveStatistics::Create(clock_)),
       timing_(timing),
       video_receiver_(clock_, timing_.get()),
@@ -239,7 +241,8 @@ VideoReceiveStream2::VideoReceiveStream2(
                                  nullptr,  // Use default KeyFrameRequestSender
                                  this,     // OnCompleteFrameCallback
                                  std::move(config_.frame_decryptor),
-                                 std::move(config_.frame_transformer)),
+                                 std::move(config_.frame_transformer),
+                                 call->trials()),
       rtp_stream_sync_(call->worker_thread(), this),
       max_wait_for_keyframe_ms_(DetermineMaxWaitForFrame(config_, true)),
       max_wait_for_frame_ms_(DetermineMaxWaitForFrame(config_, false)),
@@ -269,12 +272,12 @@ VideoReceiveStream2::VideoReceiveStream2(
     decoder_payload_types.insert(decoder.payload_type);
   }
 
-  timing_->set_render_delay(config_.render_delay_ms);
+  timing_->set_render_delay(TimeDelta::Millis(config_.render_delay_ms));
 
   frame_buffer_ = FrameBufferProxy::CreateFromFieldTrial(
       clock_, call_->worker_thread(), timing_.get(), &stats_proxy_,
       &decode_queue_, this, TimeDelta::Millis(max_wait_for_keyframe_ms_),
-      TimeDelta::Millis(max_wait_for_frame_ms_), decode_sync_);
+      TimeDelta::Millis(max_wait_for_frame_ms_), decode_sync_, call_->trials());
 
   if (config_.rtp.rtx_ssrc) {
     rtx_receive_stream_ = std::make_unique<RtxReceiveStream>(
@@ -287,12 +290,12 @@ VideoReceiveStream2::VideoReceiveStream2(
 
   ParseFieldTrial({&low_latency_renderer_enabled_,
                    &low_latency_renderer_include_predecode_buffer_},
-                  field_trial::FindFullName("WebRTC-LowLatencyRenderer"));
+                  call_->trials().Lookup("WebRTC-LowLatencyRenderer"));
   ParseFieldTrial(
       {
           &maximum_pre_stream_decoders_,
       },
-      field_trial::FindFullName("WebRTC-PreStreamDecoders"));
+      call_->trials().Lookup("WebRTC-PreStreamDecoders"));
 }
 
 VideoReceiveStream2::~VideoReceiveStream2() {
@@ -388,7 +391,8 @@ void VideoReceiveStream2::Start() {
     VideoDecoder::Settings settings;
     settings.set_codec_type(
         PayloadStringToCodecType(decoder.video_format.name));
-    settings.set_max_render_resolution(InitialDecoderResolution());
+    settings.set_max_render_resolution(
+        InitialDecoderResolution(call_->trials()));
     settings.set_number_of_cores(num_cpu_cores_);
 
     const bool raw_payload =
@@ -504,7 +508,7 @@ void VideoReceiveStream2::CreateAndRegisterExternalDecoder(
   }
 
   std::string decoded_output_file =
-      field_trial::FindFullName("WebRTC-DecoderDataDumpDirectory");
+      call_->trials().Lookup("WebRTC-DecoderDataDumpDirectory");
   // Because '/' can't be used inside a field trial parameter, we use ';'
   // instead.
   // This is only relevant to WebRTC-DecoderDataDumpDirectory
@@ -692,6 +696,7 @@ void VideoReceiveStream2::OnCompleteFrame(std::unique_ptr<EncodedFrame> frame) {
 
 void VideoReceiveStream2::OnRttUpdate(int64_t avg_rtt_ms, int64_t max_rtt_ms) {
   RTC_DCHECK_RUN_ON(&worker_sequence_checker_);
+  // TODO(bugs.webrtc.org/13757): Replace with TimeDelta.
   frame_buffer_->UpdateRtt(max_rtt_ms);
   rtp_video_stream_receiver_.UpdateRtt(max_rtt_ms);
   stats_proxy_.OnRttUpdate(avg_rtt_ms);
@@ -710,7 +715,7 @@ absl::optional<Syncable::Info> VideoReceiveStream2::GetInfo() const {
   if (!info)
     return absl::nullopt;
 
-  info->current_delay_ms = timing_->TargetVideoDelay();
+  info->current_delay_ms = timing_->TargetVideoDelay().ms();
   return info;
 }
 
@@ -970,7 +975,7 @@ void VideoReceiveStream2::UpdatePlayoutDelays() const {
       std::max({frame_minimum_playout_delay_ms_, base_minimum_playout_delay_ms_,
                 syncable_minimum_playout_delay_ms_});
   if (minimum_delay_ms >= 0) {
-    timing_->set_min_playout_delay(minimum_delay_ms);
+    timing_->set_min_playout_delay(TimeDelta::Millis(minimum_delay_ms));
     if (frame_minimum_playout_delay_ms_ == 0 &&
         frame_maximum_playout_delay_ms_ > 0 && low_latency_renderer_enabled_) {
       // TODO(kron): Estimate frame rate from video stream.
@@ -991,7 +996,7 @@ void VideoReceiveStream2::UpdatePlayoutDelays() const {
 
   const int maximum_delay_ms = frame_maximum_playout_delay_ms_;
   if (maximum_delay_ms >= 0) {
-    timing_->set_max_playout_delay(maximum_delay_ms);
+    timing_->set_max_playout_delay(TimeDelta::Millis(maximum_delay_ms));
   }
 }
 

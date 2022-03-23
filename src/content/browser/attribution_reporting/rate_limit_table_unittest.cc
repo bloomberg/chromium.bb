@@ -20,8 +20,9 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -34,7 +35,6 @@ namespace content {
 
 namespace {
 
-using RateLimitResult = ::content::RateLimitTable::Result;
 using RateLimitScope = ::content::RateLimitTable::Scope;
 
 using ::testing::_;
@@ -130,7 +130,7 @@ class RateLimitTableTest : public testing::Test {
     std::vector<std::pair<int64_t, RateLimitRow>> rows;
 
     static constexpr char kSelectSql[] =
-        "SELECT rate_limit_id,scope,impression_origin,conversion_origin,"
+        "SELECT id,scope,source_origin,destination_origin,"
         "reporting_origin,time FROM rate_limits";
     sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
 
@@ -281,15 +281,14 @@ TEST_F(RateLimitTableTest,
   const auto navigation_attribution =
       AttributionInfoBuilder(
           SourceBuilder()
-              .SetSourceType(CommonSourceInfo::SourceType::kNavigation)
+              .SetSourceType(AttributionSourceType::kNavigation)
               .BuildStored())
           .Build();
 
   const auto event_attribution =
-      AttributionInfoBuilder(
-          SourceBuilder()
-              .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-              .BuildStored())
+      AttributionInfoBuilder(SourceBuilder()
+                                 .SetSourceType(AttributionSourceType::kEvent)
+                                 .BuildStored())
           .Build();
 
   ASSERT_EQ(RateLimitResult::kAllowed,

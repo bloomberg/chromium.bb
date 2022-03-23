@@ -11,7 +11,6 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_metric_collector.h"
-#include "chrome/browser/cart/cart_features.h"
 #include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -23,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_heuristics_data.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -62,9 +62,8 @@ std::string eTLDPlusOne(const GURL& url) {
 
 std::string GetKeyForURL(const GURL& url) {
   std::string domain = eTLDPlusOne(url);
-  return cart_features::IsFakeDataEnabled()
-             ? std::string(kFakeDataPrefix) + domain
-             : domain;
+  return commerce::IsFakeDataEnabled() ? std::string(kFakeDataPrefix) + domain
+                                       : domain;
 }
 
 bool CompareTimeStampForProtoPair(const CartDB::KeyAndValue pair1,
@@ -128,7 +127,7 @@ CartService::CartService(Profile* profile)
   history_service_observation_.Observe(HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS));
   coupon_service_->MaybeFeatureStatusChanged(IsCartAndDiscountEnabled());
-  if (cart_features::IsFakeDataEnabled()) {
+  if (commerce::IsFakeDataEnabled()) {
     AddCartsWithFakeData();
   } else {
     // In case last deconstruction is interrupted and fake data is not deleted.
@@ -163,11 +162,19 @@ void CartService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kCartUsedDiscounts);
   registry->RegisterTimePref(prefs::kCartDiscountLastFetchedTime, base::Time());
   registry->RegisterBooleanPref(prefs::kCartDiscountConsentShown, false);
+  registry->RegisterTimePref(prefs::kDiscountConsentLastDimissedTime,
+                             base::Time());
+  registry->RegisterIntegerPref(prefs::kDiscountConsentPastDismissedCount, 0);
+  registry->RegisterIntegerPref(prefs::kDiscountConsentDecisionMadeIn, 0);
+  registry->RegisterIntegerPref(prefs::kDiscountConsentDismissedIn, 0);
+  registry->RegisterIntegerPref(prefs::kDiscountConsentLastShownInVariation, 0);
+  registry->RegisterBooleanPref(prefs::kDiscountConsentShowInterest, false);
+  registry->RegisterIntegerPref(prefs::kDiscountConsentShowInterestIn, 0);
 }
 
 GURL CartService::AppendUTM(const GURL& base_url, bool is_discount_enabled) {
   DCHECK(base_url.is_valid() &&
-         cart_features::IsRuleDiscountPartnerMerchant(base_url));
+         commerce::IsRuleDiscountPartnerMerchant(base_url));
 
   if (kRbdUtmParam.Get()) {
     return net::AppendOrReplaceQueryParameter(
@@ -271,21 +278,49 @@ bool CartService::ShouldShowWelcomeSurface() {
 }
 
 void CartService::AcknowledgeDiscountConsent(bool should_enable) {
-  if (cart_features::IsFakeDataEnabled()) {
+  if (commerce::IsFakeDataEnabled()) {
     return;
   }
   profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountAcknowledged, true);
   profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, should_enable);
+  profile_->GetPrefs()->SetInteger(
+      prefs::kDiscountConsentDecisionMadeIn,
+      commerce::kNtpChromeCartModuleDiscountConsentNtpVariation.Get());
 
-  if (should_enable && cart_features::IsCartDiscountFeatureEnabled()) {
+  if (should_enable && commerce::IsCartDiscountFeatureEnabled()) {
     StartGettingDiscount();
   }
+}
+
+void CartService::DismissedDiscountConsent() {
+  if (commerce::IsFakeDataEnabled()) {
+    return;
+  }
+  profile_->GetPrefs()->SetTime(prefs::kDiscountConsentLastDimissedTime,
+                                base::Time::Now());
+  int past_dimissed_count = profile_->GetPrefs()->GetInteger(
+      prefs::kDiscountConsentPastDismissedCount);
+  profile_->GetPrefs()->SetInteger(prefs::kDiscountConsentPastDismissedCount,
+                                   past_dimissed_count + 1);
+  profile_->GetPrefs()->SetInteger(
+      prefs::kDiscountConsentDismissedIn,
+      commerce::kNtpChromeCartModuleDiscountConsentNtpVariation.Get());
+}
+
+void CartService::InterestedInDiscountConsent() {
+  if (commerce::IsFakeDataEnabled()) {
+    return;
+  }
+  profile_->GetPrefs()->SetBoolean(prefs::kDiscountConsentShowInterest, true);
+  profile_->GetPrefs()->SetInteger(
+      prefs::kDiscountConsentShowInterestIn,
+      commerce::kNtpChromeCartModuleDiscountConsentNtpVariation.Get());
 }
 
 void CartService::ShouldShowDiscountConsent(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (cart_features::IsFakeDataEnabled()) {
+  if (commerce::IsFakeDataEnabled()) {
     content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
         ->PostTask(FROM_HERE, base::BindOnce(
                                   [](base::OnceCallback<void(bool)> callback) {
@@ -299,53 +334,132 @@ void CartService::ShouldShowDiscountConsent(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CartService::ShouldShowDiscountConsentCallback(
-    base::OnceCallback<void(bool)> callback,
-    bool success,
-    std::vector<CartDB::KeyAndValue> proto_pairs) {
-  if (proto_pairs.size() == 0 || ShouldShowWelcomeSurface() ||
-      !cart_features::IsCartDiscountFeatureEnabled()) {
-    std::move(callback).Run(false);
-    return;
-  }
+void CartService::RecordDiscountConsentStatusAtLoad(bool should_show_consent) {
   if (profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountAcknowledged)) {
     CartDiscountMetricCollector::RecordDiscountConsentStatus(
         profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled)
             ? CartDiscountMetricCollector::DiscountConsentStatus::ACCEPTED
             : CartDiscountMetricCollector::DiscountConsentStatus::DECLINED);
+
+    commerce::DiscountConsentNtpVariation decision_made_in_variation =
+        static_cast<commerce::DiscountConsentNtpVariation>(
+            profile_->GetPrefs()->GetInteger(
+                prefs::kDiscountConsentDecisionMadeIn));
+    if (profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled)) {
+      CartDiscountMetricCollector::RecordDiscountConsentStatusAcceptedIn(
+          decision_made_in_variation);
+    } else {
+      CartDiscountMetricCollector::RecordDiscountConsentStatusRejectedIn(
+          decision_made_in_variation);
+    }
+    CartDiscountMetricCollector::
+        RecordDiscountConsentStatusNoShowAfterDecidedIn(
+            decision_made_in_variation);
+  } else {
+    if (profile_->GetPrefs()->GetInteger(
+            prefs::kDiscountConsentPastDismissedCount) > 0) {
+      CartDiscountMetricCollector::RecordDiscountConsentStatusDismissedIn(
+          static_cast<commerce::DiscountConsentNtpVariation>(
+              profile_->GetPrefs()->GetInteger(
+                  prefs::kDiscountConsentDismissedIn)));
+    }
+
+    if (profile_->GetPrefs()->GetBoolean(prefs::kDiscountConsentShowInterest)) {
+      CartDiscountMetricCollector::RecordDiscountConsentStatusShowInterestIn(
+          static_cast<commerce::DiscountConsentNtpVariation>(
+              profile_->GetPrefs()->GetInteger(
+                  prefs::kDiscountConsentShowInterestIn)));
+    }
+
+    commerce::DiscountConsentNtpVariation last_shown_in_variation =
+        static_cast<commerce::DiscountConsentNtpVariation>(
+            profile_->GetPrefs()->GetInteger(
+                prefs::kDiscountConsentLastShownInVariation));
+    commerce::DiscountConsentNtpVariation current_variation =
+        static_cast<commerce::DiscountConsentNtpVariation>(
+            commerce::kNtpChromeCartModuleDiscountConsentNtpVariation.Get());
+    if (!should_show_consent) {
+      CartDiscountMetricCollector::RecordDiscountConsentStatus(
+          profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountConsentShown)
+              ? CartDiscountMetricCollector::DiscountConsentStatus::NO_SHOW
+              : CartDiscountMetricCollector::DiscountConsentStatus::
+                    NEVER_SHOWN);
+
+      if (current_variation != last_shown_in_variation) {
+        CartDiscountMetricCollector::RecordDiscountConsentStatusNeverShowIn(
+            current_variation);
+      } else if (profile_->GetPrefs()->GetBoolean(
+                     prefs::kCartDiscountConsentShown)) {
+        CartDiscountMetricCollector::RecordDiscountConsentStatusNoShowIn(
+            current_variation);
+      }
+
+    } else {
+      profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountConsentShown, true);
+      CartDiscountMetricCollector::RecordDiscountConsentStatus(
+          CartDiscountMetricCollector::DiscountConsentStatus::IGNORED);
+
+      CartDiscountMetricCollector::RecordDiscountConsentStatusIgnoredIn(
+          last_shown_in_variation);
+      CartDiscountMetricCollector::RecordDiscountConsentStatusShownIn(
+          current_variation);
+      profile_->GetPrefs()->SetInteger(
+          prefs::kDiscountConsentLastShownInVariation,
+          static_cast<int>(current_variation));
+    }
+  }
+}
+
+void CartService::ShouldShowDiscountConsentCallback(
+    base::OnceCallback<void(bool)> callback,
+    bool success,
+    std::vector<CartDB::KeyAndValue> proto_pairs) {
+  if (proto_pairs.size() == 0 || ShouldShowWelcomeSurface() ||
+      !commerce::IsCartDiscountFeatureEnabled()) {
     std::move(callback).Run(false);
     return;
   }
 
-  // Only show discount consent when there is abandoned cart(s) from partner
-  // merchants.
   bool should_show = false;
-  for (auto proto_pair : proto_pairs) {
-    should_show |= cart_features::IsPartnerMerchant(
-        GURL(proto_pair.second.merchant_cart_url()));
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountAcknowledged)) {
+    // Only show discount consent when there is abandoned cart(s) from partner
+    // merchants.
+    for (auto proto_pair : proto_pairs) {
+      should_show |= commerce::IsPartnerMerchant(
+          GURL(proto_pair.second.merchant_cart_url()));
+    }
+
+    if (base::FeatureList::IsEnabled(commerce::kDiscountConsentV2)) {
+      base::Time last_dismissed_time = profile_->GetPrefs()->GetTime(
+          prefs::kDiscountConsentLastDimissedTime);
+      base::TimeDelta reshow_time_delta =
+          commerce::kNtpChromeCartModuleDiscountConsentReshowTime.Get() -
+          (base::Time::Now() - last_dismissed_time);
+      int last_dismissed_count = profile_->GetPrefs()->GetInteger(
+          prefs::kDiscountConsentPastDismissedCount);
+      should_show &=
+          (last_dismissed_time == base::Time() ||
+           reshow_time_delta.is_negative()) &&
+          last_dismissed_count <
+              commerce::kNtpChromeCartModuleDiscountConsentMaxDismissalCount
+                  .Get();
+    }
   }
-  if (!should_show) {
-    CartDiscountMetricCollector::RecordDiscountConsentStatus(
-        profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountConsentShown)
-            ? CartDiscountMetricCollector::DiscountConsentStatus::NO_SHOW
-            : CartDiscountMetricCollector::DiscountConsentStatus::NEVER_SHOWN);
-  } else {
-    profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountConsentShown, true);
-    CartDiscountMetricCollector::RecordDiscountConsentStatus(
-        CartDiscountMetricCollector::DiscountConsentStatus::IGNORED);
-  }
+
+  RecordDiscountConsentStatusAtLoad(should_show);
+
   std::move(callback).Run(should_show);
 }
 
 bool CartService::IsCartDiscountEnabled() {
-  if (!cart_features::IsCartDiscountFeatureEnabled()) {
+  if (!commerce::IsCartDiscountFeatureEnabled()) {
     return false;
   }
   return profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled);
 }
 
 void CartService::SetCartDiscountEnabled(bool enabled) {
-  DCHECK(cart_features::IsCartDiscountFeatureEnabled());
+  DCHECK(commerce::IsCartDiscountFeatureEnabled());
   profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, enabled);
 
   if (enabled) {
@@ -361,11 +475,11 @@ void CartService::GetDiscountURL(
     const GURL& cart_url,
     base::OnceCallback<void(const ::GURL&)> callback) {
   auto url = cart_url;
-  if (cart_features::IsRuleDiscountPartnerMerchant(cart_url)) {
+  if (commerce::IsRuleDiscountPartnerMerchant(cart_url)) {
     url = AppendUTM(cart_url, IsCartDiscountEnabled());
   }
 
-  if (!cart_features::IsRuleDiscountPartnerMerchant(cart_url) ||
+  if (!commerce::IsRuleDiscountPartnerMerchant(cart_url) ||
       !IsCartDiscountEnabled()) {
     std::move(callback).Run(url);
     CartDiscountMetricCollector::RecordClickedOnDiscount(false);
@@ -425,8 +539,7 @@ void CartService::OnDiscountURLFetched(
 void CartService::PrepareForNavigation(const GURL& cart_url,
                                        bool is_navigating) {
   metrics_tracker_->PrepareToRecordUKM(cart_url);
-  if (is_navigating ||
-      !cart_features::IsRuleDiscountPartnerMerchant(cart_url) ||
+  if (is_navigating || !commerce::IsRuleDiscountPartnerMerchant(cart_url) ||
       !IsCartDiscountEnabled()) {
     return;
   }
@@ -457,7 +570,7 @@ void CartService::OnOperationFinishedWithCallback(
 
 void CartService::Shutdown() {
   history_service_observation_.Reset();
-  if (cart_features::IsFakeDataEnabled()) {
+  if (commerce::IsFakeDataEnabled()) {
     DeleteCartsWithFakeData();
   }
   // Delete content of all carts that are removed.
@@ -679,7 +792,7 @@ bool CartService::ShouldSkip(const GURL& url) {
 void CartService::OnLoadCarts(CartDB::LoadCallback callback,
                               bool success,
                               std::vector<CartDB::KeyAndValue> proto_pairs) {
-  if (cart_features::IsFakeDataEnabled()) {
+  if (commerce::IsFakeDataEnabled()) {
     std::sort(proto_pairs.begin(), proto_pairs.end(),
               CompareTimeStampForProtoPair);
     std::move(callback).Run(success, std::move(proto_pairs));
@@ -769,16 +882,34 @@ void CartService::OnAddCart(const std::string& domain,
   }
   // Restore module visibility anytime a cart-related action happens.
   RestoreHidden();
-  std::string* merchant_name = domain_name_mapping_->FindStringKey(domain);
-  if (merchant_name) {
-    proto.set_merchant(*merchant_name);
+  absl::optional<std::string> merchant_name_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetMerchantName(domain);
+  std::string* merchant_name_from_resource =
+      domain_name_mapping_->FindStringKey(domain);
+  if (merchant_name_from_component.has_value()) {
+    proto.set_merchant(*merchant_name_from_component);
+  } else if (merchant_name_from_resource) {
+    proto.set_merchant(*merchant_name_from_resource);
+    // TODO(crbug.com/1300332): Add UMA here to track when component failed to
+    // feed heuristics. It's going to be a enum of {from component, from
+    // resource, missing}.
   }
   if (cart_url) {
     proto.set_merchant_cart_url(cart_url->spec());
   } else {
-    std::string* fallback_url = domain_cart_url_mapping_->FindStringKey(domain);
-    if (fallback_url) {
-      proto.set_merchant_cart_url(*fallback_url);
+    absl::optional<std::string> fallback_url_from_component =
+        commerce_heuristics::CommerceHeuristicsData::GetInstance()
+            .GetMerchantCartURL(domain);
+    std::string* fallback_url_from_resource =
+        domain_cart_url_mapping_->FindStringKey(domain);
+    if (fallback_url_from_component.has_value()) {
+      proto.set_merchant_cart_url(*fallback_url_from_component);
+    } else if (fallback_url_from_resource) {
+      proto.set_merchant_cart_url(*fallback_url_from_resource);
+      // TODO(crbug.com/1300332): Add UMA here to track when component failed to
+      // feed heuristics. It's going to be a enum of {from component, from
+      // resource, missing}.
     }
   }
 
@@ -899,7 +1030,7 @@ void CartService::StartGettingDiscount() {
 
   base::Time last_fetched_time =
       profile_->GetPrefs()->GetTime(prefs::kCartDiscountLastFetchedTime);
-  base::TimeDelta fetch_delay = cart_features::kDiscountFetchDelayParam.Get() -
+  base::TimeDelta fetch_delay = commerce::kDiscountFetchDelayParam.Get() -
                                 (base::Time::Now() - last_fetched_time);
   if (last_fetched_time == base::Time() || fetch_delay.is_negative() ||
       kBypassDisocuntFetchingThreshold.Get()) {

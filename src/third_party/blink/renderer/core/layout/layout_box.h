@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 
 namespace blink {
 
@@ -2142,8 +2143,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const Length& logical_height_length,
       LayoutUnit intrinsic_content_height,
       LayoutUnit border_and_padding) const;
-
-  LayoutObject* SplitAnonymousBoxesAroundChild(LayoutObject* before_child);
 
   virtual bool HitTestChildren(HitTestResult&,
                                const HitTestLocation&,

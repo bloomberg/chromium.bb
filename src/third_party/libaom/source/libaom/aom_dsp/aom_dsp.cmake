@@ -134,6 +134,11 @@ list(APPEND AOM_DSP_COMMON_INTRIN_NEON
             "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c"
             "${AOM_ROOT}/aom_dsp/arm/blend_a64_mask_neon.c")
 
+if(CONFIG_AV1_HIGHBITDEPTH)
+  list(APPEND AOM_DSP_COMMON_INTRIN_NEON
+              "${AOM_ROOT}/aom_dsp/arm/highbd_loopfilter_neon.c")
+endif()
+
 list(APPEND AOM_DSP_COMMON_INTRIN_DSPR2
             "${AOM_ROOT}/aom_dsp/mips/aom_convolve_copy_dspr2.c"
             "${AOM_ROOT}/aom_dsp/mips/common_dspr2.c"

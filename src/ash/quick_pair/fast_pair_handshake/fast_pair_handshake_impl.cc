@@ -31,9 +31,19 @@ FastPairHandshakeImpl::FastPairHandshakeImpl(
                         std::move(on_complete),
                         nullptr,
                         nullptr) {
+  device::BluetoothDevice* bluetooth_device =
+      adapter_->GetDevice(device_->ble_address);
+
+  if (!bluetooth_device) {
+    QP_LOG(INFO) << __func__ << ": Lost device before starting handshake.";
+    std::move(on_complete_callback_)
+        .Run(device_, PairFailure::kPairingDeviceLost);
+    return;
+  }
+
   fast_pair_gatt_service_client_ =
       FastPairGattServiceClientImpl::Factory::Create(
-          adapter_->GetDevice(device_->ble_address), adapter_,
+          bluetooth_device, adapter_,
           base::BindRepeating(
               &FastPairHandshakeImpl::OnGattClientInitializedCallback,
               weak_ptr_factory_.GetWeakPtr()));
@@ -50,7 +60,6 @@ void FastPairHandshakeImpl::OnGattClientInitializedCallback(
     std::move(on_complete_callback_).Run(device_, failure.value());
     RecordHandshakeResult(/*success=*/false);
     RecordHandshakeFailureReason(HandshakeFailureReason::kFailedGattInit);
-    fast_pair_gatt_service_client_.reset();
     return;
   }
 
@@ -58,11 +67,6 @@ void FastPairHandshakeImpl::OnGattClientInitializedCallback(
       device_,
       base::BindOnce(&FastPairHandshakeImpl::OnDataEncryptorCreateAsync,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
-}
-
-bool FastPairHandshakeImpl::IsConnected() {
-  return fast_pair_gatt_service_client_ &&
-         fast_pair_gatt_service_client_->IsConnected();
 }
 
 void FastPairHandshakeImpl::OnDataEncryptorCreateAsync(
@@ -79,7 +83,6 @@ void FastPairHandshakeImpl::OnDataEncryptorCreateAsync(
     RecordHandshakeResult(/*success=*/false);
     RecordHandshakeFailureReason(
         HandshakeFailureReason::kFailedCreateEncryptor);
-    fast_pair_gatt_service_client_.reset();
     return;
   }
 
@@ -113,7 +116,6 @@ void FastPairHandshakeImpl::OnWriteResponse(
     RecordHandshakeResult(/*success=*/false);
     RecordHandshakeFailureReason(HandshakeFailureReason::kFailedWriteResponse);
     std::move(on_complete_callback_).Run(device_, failure.value());
-    fast_pair_gatt_service_client_.reset();
     return;
   }
 
@@ -128,9 +130,6 @@ void FastPairHandshakeImpl::OnWriteResponse(
 void FastPairHandshakeImpl::OnParseDecryptedResponse(
     base::TimeTicks decrypt_start_time,
     const absl::optional<DecryptedResponse>& response) {
-  // We finished with the gatt service now.
-  fast_pair_gatt_service_client_.reset();
-
   if (!response) {
     QP_LOG(WARNING) << __func__ << ": Missing decrypted response from parse.";
     std::move(on_complete_callback_)

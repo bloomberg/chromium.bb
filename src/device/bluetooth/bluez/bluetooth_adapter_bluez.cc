@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1262,14 +1263,6 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
   }
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
-  DCHECK(IsPresent());
-  std::string alias = ash::GetDeviceBluetoothName(GetAddress());
-  SetName(alias, base::DoNothing(), base::DoNothing());
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 void BluetoothAdapterBlueZ::RemoveAdapter() {
   DCHECK(IsPresent());
   BLUETOOTH_LOG(EVENT) << object_path_.value() << ": adapter removed.";
@@ -1666,6 +1659,14 @@ BluetoothAdapterBlueZ::GetLowEnergyScanSessionHardwareOffloadingStatus() {
              : LowEnergyScanSessionHardwareOffloadingStatus::kNotSupported;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
+  DCHECK(IsPresent());
+  std::string alias = ash::GetDeviceBluetoothName(GetAddress());
+  SetName(alias, base::DoNothing(), base::DoNothing());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 dbus::ObjectPath BluetoothAdapterBlueZ::GetApplicationObjectPath() const {
   return dbus::ObjectPath(object_path_.value() + kGattApplicationObjectPath);

@@ -22,6 +22,7 @@
 #include "http2/core/priority_write_scheduler.h"
 #include "common/platform/api/quiche_bug_tracker.h"
 #include "common/platform/api/quiche_export.h"
+#include "common/quiche_linked_hash_map.h"
 #include "spdy/core/http2_frame_decoder_adapter.h"
 #include "spdy/core/no_op_headers_handler.h"
 #include "spdy/core/spdy_framer.h"
@@ -38,6 +39,11 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
       public spdy::ExtensionVisitorInterface {
  public:
   struct QUICHE_EXPORT_PRIVATE Options {
+    // Returns whether to send a WINDOW_UPDATE based on the window limit, window
+    // size, and delta that would be sent in the WINDOW_UPDATE.
+    WindowManager::ShouldWindowUpdateFn should_window_update_fn =
+        DeltaAtLeastHalfLimit;
+    // The perspective of this session.
     Perspective perspective = Perspective::kClient;
     // The maximum HPACK table size to use.
     absl::optional<size_t> max_hpack_encoding_table_capacity = absl::nullopt;
@@ -213,8 +219,11 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
   struct QUICHE_EXPORT_PRIVATE StreamState {
     StreamState(int32_t stream_receive_window, int32_t stream_send_window,
-                WindowManager::WindowUpdateListener listener)
-        : window_manager(stream_receive_window, std::move(listener)),
+                WindowManager::WindowUpdateListener listener,
+                WindowManager::ShouldWindowUpdateFn should_window_update_fn)
+        : window_manager(stream_receive_window, std::move(listener),
+                         std::move(should_window_update_fn),
+                         /*update_window_on_notify=*/false),
           send_window(stream_send_window) {}
 
     WindowManager window_manager;
@@ -234,7 +243,6 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   using StreamStateMap = absl::flat_hash_map<Http2StreamId, StreamState>;
 
   struct QUICHE_EXPORT_PRIVATE PendingStreamState {
-    Http2StreamId stream_id;
     spdy::SpdyHeaderBlock headers;
     std::unique_ptr<DataFrameSource> data_source;
     void* user_data = nullptr;
@@ -288,8 +296,10 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
   struct QUICHE_EXPORT_PRIVATE ProcessBytesResultVisitor;
 
-  // Queues the connection preface, if not already done.
-  void MaybeSetupPreface();
+  // Queues the connection preface, if not already done. If not
+  // `sending_outbound_settings` and the preface has not yet been queued, this
+  // method will generate and enqueue initial SETTINGS.
+  void MaybeSetupPreface(bool sending_outbound_settings);
 
   // Gets the settings to be sent in the initial SETTINGS frame sent as part of
   // the connection preface.
@@ -375,6 +385,9 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
                     std::unique_ptr<DataFrameSource> data_source,
                     void* user_data);
 
+  // Sends headers for pending streams as long as the stream limit allows.
+  void StartPendingStreams();
+
   // Closes the given `stream_id` with the given `error_code`.
   void CloseStream(Http2StreamId stream_id, Http2ErrorCode error_code);
 
@@ -401,7 +414,16 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
   void HandleContentLengthError(Http2StreamId stream_id);
 
-  void UpdateInitialWindowSize(uint32_t new_value);
+  // Invoked when sending a flow control window update to the peer.
+  void UpdateReceiveWindow(Http2StreamId stream_id, int32_t delta);
+
+  // Updates stream send window accounting to respect the peer's advertised
+  // initial window setting.
+  void UpdateStreamSendWindowSizes(uint32_t new_value);
+
+  // Updates stream receive window managers to use the newly advertised stream
+  // initial window.
+  void UpdateStreamReceiveWindowSizes(uint32_t new_value);
 
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
@@ -426,7 +448,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // Maintains the state of pending streams known to this session. A pending
   // stream is kept in this list until it can be created while complying with
   // `max_outbound_concurrent_streams_`.
-  std::list<PendingStreamState> pending_streams_;
+  quiche::QuicheLinkedHashMap<Http2StreamId, PendingStreamState>
+      pending_streams_;
 
   // The queue of outbound frames.
   std::list<std::unique_ptr<spdy::SpdyFrameIR>> frames_;

@@ -71,6 +71,8 @@
 -EncryptionMigrationTest.*
 -EnrollmentLocalPolicyServerBase.*
 -EnrollmentRecoveryTest.*
+-EnrollmentScreenChromadMigrationTest.*
+-EnrollmentScreenHandsOffTest.*
 -EnrollmentScreenTest.*
 -EnterpriseEnrollmentTest.*
 -EnterpriseEnrollmentTestBase.*
@@ -88,9 +90,9 @@
 -InitialEnrollmentTest.*
 -InterruptedAutoStartEnrollmentTest.*
 -InvalidPendingScreenTest.*
+-KioskConsumerTest.*
 -KioskEnrollmentTest.*
 -KioskEnterpriseTest.*
--KioskHiddenWebUITest.*
 -KioskTest.*
 -KioskUpdateTest.*
 -KioskVirtualKeyboardTest.*
@@ -162,10 +164,13 @@
 -WebviewClientCertsLoginTest.*
 -WebviewClientCertsLoginTestBase.*
 -WebviewClientCertsTokenLoadingLoginTest.*
+-WebviewDeviceOwnedLoginTest.*
 -WebviewLoginTest.*
 -WebviewProxyAuthLoginTest.*
 -WelcomeScreenBrowserTest.*
+-WelcomeScreenChromadMigrationBrowserTest.*
 -WelcomeScreenChromeVoxHintTest.*
+-WelcomeScreenHandsOffBrowserTest.*
 -WelcomeScreenInternationalChromeVoxHintTest.*
 -WelcomeScreenSystemDevModeBrowserTest.*
 -WelcomeScreenTimezone.*
@@ -181,6 +186,7 @@
 -WizardControllerKioskFlowTest.*
 -WizardControllerOnboardingResumeTest.*
 -WizardControllerOobeConfigurationTest.*
+-WizardControllerOobeSwitchTest.*
 -WizardControllerOobeResumeTest.*
 -WizardControllerProxyAuthOnSigninTest.*
 -WizardControllerRollbackFlowTest.*

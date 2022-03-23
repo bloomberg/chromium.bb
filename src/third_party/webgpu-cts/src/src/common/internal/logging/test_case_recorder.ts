@@ -111,7 +111,7 @@ export class TestCaseRecorder {
     this.logImpl(LogSeverity.ValidationFailed, 'VALIDATION FAILED', ex);
   }
 
-  threw(ex: Error): void {
+  threw(ex: unknown): void {
     if (ex instanceof SkipTestCase) {
       this.skipped(ex);
       return;
@@ -119,7 +119,8 @@ export class TestCaseRecorder {
     this.logImpl(LogSeverity.ThrewException, 'EXCEPTION', ex);
   }
 
-  private logImpl(level: LogSeverity, name: string, baseException: Error): void {
+  private logImpl(level: LogSeverity, name: string, baseException: unknown): void {
+    assert(baseException instanceof Error, 'test threw a non-Error object');
     const logMessage = new LogMessageWithStack(name, baseException);
 
     // Final case status should be the "worst" of all log entries.

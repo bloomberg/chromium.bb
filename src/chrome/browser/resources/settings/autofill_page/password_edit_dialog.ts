@@ -25,6 +25,8 @@ import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from '../i18n_setup.js';
+
 // <if expr="chromeos_ash or chromeos_lacros">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
@@ -51,13 +53,27 @@ export interface PasswordEditDialogElement {
 const PasswordEditDialogElementBase = I18nMixin(PolymerElement);
 
 /**
+ * When user enters more than or equal to 900 characters in the note field, a
+ * footer will be displayed below the note to warn the user.
+ */
+const PASSWORD_NOTE_WARNING_CHARACTER_COUNT = 900;
+
+/**
+ * When user enters more than 1000 characters, the note will become invalid and
+ * save button will be disabled.
+ */
+const PASSWORD_NOTE_MAX_CHARACTER_COUNT = 1000;
+
+/**
  * Contains the possible modes for 'password-edit-dialog'.
- * VIEW: entry is an existing federation credential
- * EDIT: entry is an existing password
+ * FEDERATED_VIEW: entry is an existing federated credential
+ * PASSWORD_VIEW: entry is an existing password and in view mode
+ * EDIT: entry is an existing password and in edit mode
  * ADD: no existing entry
  */
-enum PasswordDialogMode {
-  VIEW = 'view',
+export enum PasswordDialogMode {
+  FEDERATED_VIEW = 'federated_view',
+  PASSWORD_VIEW = 'password_view',
   EDIT = 'edit',
   ADD = 'add',
 }
@@ -100,7 +116,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   static get properties() {
     return {
       /**
-       * Has value for dialog in VIEW and EDIT modes.
+       * Has value for dialog in FEDERATED_VIEW, PASSWORD_VIEW and EDIT modes.
        */
       existingEntry: {type: Object, value: null},
 
@@ -128,17 +144,37 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       tokenRequestManager: {type: Object, value: null},
       // </if>
 
-      dialogMode_: {
+      requestedDialogMode: {type: Object, value: null},
+
+      dialogMode: {
         type: String,
-        computed: 'computeDialogMode_(existingEntry)',
+        computed: 'computeDialogMode_(existingEntry, requestedDialogMode)',
+        reflectToAttribute: true,
+      },
+
+      /**
+       * True if existing entry is opened in password view mode.
+       */
+      isInPasswordViewMode_: {
+        type: Boolean,
+        computed: 'computeIsInPasswordViewMode_(dialogMode)',
       },
 
       /**
        * True if existing entry is a federated credential.
        */
+      isInFederatedViewMode_: {
+        type: Boolean,
+        computed: 'computeIsInFederatedViewMode_(dialogMode)',
+      },
+
+      /**
+       * True if existing entry is only for viewing in the current dialog.
+       */
       isInViewMode_: {
         type: Boolean,
-        computed: 'computeIsInViewMode_(dialogMode_)',
+        computed:
+            'computeIsInViewMode_(isInPasswordViewMode_, isInFederatedViewMode_)',
       },
 
       /**
@@ -170,6 +206,39 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       username_: {type: String, value: ''},
 
       /**
+       * Current value in note field.
+       */
+      note_: {type: String, value: ''},
+
+      /**
+       * Password note can be at most PASSWORD_NOTE_MAX_CHARACTER_COUNT
+       * characters long. Warns users when they start having more than or equal
+       * to PASSWORD_NOTE_WARNING_CHARACTER_COUNT characters.
+       */
+      noteFirstFooter_: {
+        type: String,
+        computed: 'computeNoteFirstFooter_(dialogMode, note_)',
+      },
+
+      /**
+       * Informs the user about the note's character count and the character
+       * limit.
+       */
+      noteSecondFooter_: {
+        type: String,
+        computed: 'computeNoteSecondFooter_(dialogMode, note_)',
+      },
+
+      /**
+       * Whether the note is longer than PASSWORD_NOTE_MAX_CHARACTER_COUNT
+       * characters.
+       */
+      noteInvalid_: {
+        type: Boolean,
+        computed: 'computeNoteInvalid_(dialogMode, note_)',
+      },
+
+      /**
        * Whether the username input is invalid.
        */
       usernameInputInvalid_: {
@@ -191,8 +260,18 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         type: Boolean,
         computed:
             'computeIsSaveButtonDisabled_(websiteUrls_, websiteInputInvalid_, ' +
-            'usernameInputInvalid_, password_)'
-      }
+            'usernameInputInvalid_, password_, noteInvalid_, ' +
+            'isPasswordNotesEnabled_)',
+      },
+      /**
+       * Whether the flag notes feature for passwords is enabled.
+       */
+      isPasswordNotesEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enablePasswordNotes');
+        }
+      },
     };
   }
 
@@ -206,18 +285,26 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   tokenRequestManager: BlockingRequestManager|null;
   // </if>
   private usernamesByOrigin_: Map<string, Set<string>>|null = null;
-  private dialogMode_: PasswordDialogMode;
+  requestedDialogMode: PasswordDialogMode|null;
+  dialogMode: PasswordDialogMode;
+  private isInPasswordViewMode_: boolean;
+  private isInFederatedViewMode_: boolean;
   private isInViewMode_: boolean;
   private isPasswordVisible_: boolean;
   private websiteUrls_: chrome.passwordsPrivate.UrlCollection|null;
   private websiteInputInvalid_: boolean;
   private websiteInputErrorMessage_: string|null;
   private username_: string;
+  private note_: string;
+  private noteFirstFooter_: string;
+  private noteSecondFooter_: string;
+  private noteInvalid_: boolean;
   private usernameInputInvalid_: boolean;
   private password_: string;
   private isSaveButtonDisabled_: boolean;
+  private isPasswordNotesEnabled_: boolean;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.initDialog_();
   }
@@ -226,9 +313,10 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     if (this.existingEntry) {
       this.websiteUrls_ = this.existingEntry.urls;
       this.username_ = this.existingEntry.username;
+      this.note_ = this.existingEntry.note;
     }
     this.password_ = this.getPassword_();
-    if (!this.isInViewMode_) {
+    if (!this.isInFederatedViewMode_) {
       this.usernamesByOrigin_ = this.getUsernamesByOrigin_();
     }
     if (this.shouldShowStorePicker_()) {
@@ -239,7 +327,8 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
                 this.storeOptionDeviceValue;
           });
     }
-    this.isPasswordVisible_ = false;
+    this.isPasswordVisible_ =
+        this.dialogMode === PasswordDialogMode.PASSWORD_VIEW;
   }
 
   /** Closes the dialog. */
@@ -248,21 +337,68 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   }
 
   private computeDialogMode_(): PasswordDialogMode {
+    if (this.isPasswordNotesEnabled_ && this.requestedDialogMode) {
+      return this.requestedDialogMode;
+    }
     if (this.existingEntry) {
-      return this.existingEntry.federationText ? PasswordDialogMode.VIEW :
-                                                 PasswordDialogMode.EDIT;
+      return this.existingEntry.federationText ?
+          PasswordDialogMode.FEDERATED_VIEW :
+          PasswordDialogMode.EDIT;
     }
 
     return PasswordDialogMode.ADD;
   }
 
+  private computeIsInPasswordViewMode_(): boolean {
+    return this.dialogMode === PasswordDialogMode.PASSWORD_VIEW;
+  }
+
+  private computeIsInFederatedViewMode_(): boolean {
+    return this.dialogMode === PasswordDialogMode.FEDERATED_VIEW;
+  }
+
   private computeIsInViewMode_(): boolean {
-    return this.dialogMode_ === PasswordDialogMode.VIEW;
+    return this.isInFederatedViewMode_ || this.isInPasswordViewMode_;
   }
 
   private computeIsSaveButtonDisabled_(): boolean {
     return !this.websiteUrls_ || this.websiteInputInvalid_ ||
-        this.usernameInputInvalid_ || !this.password_.length;
+        this.usernameInputInvalid_ || !this.password_.length ||
+        (this.isPasswordNotesEnabled_ && this.noteInvalid_);
+  }
+
+  private shouldShowNote_(): boolean {
+    return this.isPasswordNotesEnabled_ &&
+        (this.dialogMode === PasswordDialogMode.PASSWORD_VIEW ||
+         this.dialogMode === PasswordDialogMode.EDIT);
+  }
+
+  private isNoteLongerThanOrEqualTo_(characterCount: number): boolean {
+    return this.dialogMode === PasswordDialogMode.EDIT &&
+        this.note_.length >= characterCount;
+  }
+
+  private computeNoteFirstFooter_(): string {
+    return this.isNoteLongerThanOrEqualTo_(
+               PASSWORD_NOTE_WARNING_CHARACTER_COUNT) ?
+        this.i18n(
+            'passwordNoteCharacterCountWarning',
+            PASSWORD_NOTE_MAX_CHARACTER_COUNT) :
+        '';
+  }
+
+  private computeNoteSecondFooter_(): string {
+    return this.isNoteLongerThanOrEqualTo_(
+               PASSWORD_NOTE_WARNING_CHARACTER_COUNT) ?
+        this.i18n(
+            'passwordNoteCharacterCount', this.note_.length,
+            PASSWORD_NOTE_MAX_CHARACTER_COUNT) :
+        '';
+  }
+
+  private computeNoteInvalid_(): boolean {
+    return this.isNoteLongerThanOrEqualTo_(
+        PASSWORD_NOTE_MAX_CHARACTER_COUNT + 1);
   }
 
   /**
@@ -278,8 +414,8 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * the content (federation text) is always visible.
    */
   private getPasswordInputType_(): string {
-    // VIEW mode implies |existingEntry| is a federated credential.
-    if (this.isInViewMode_) {
+    // FEDERATED_VIEW mode implies |existingEntry| is a federated credential.
+    if (this.isInFederatedViewMode_) {
       return 'text';
     }
 
@@ -290,7 +426,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Gets the title text for the show/hide icon.
    */
   private showPasswordTitle_(): string {
-    assert(!this.isInViewMode_);
+    assert(!this.isInFederatedViewMode_);
     return this.isPasswordVisible_ ? this.i18n('hidePassword') :
                                      this.i18n('showPassword');
   }
@@ -299,7 +435,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Get the right icon to display when hiding/showing a password.
    */
   private getIconClass_(): string {
-    assert(!this.isInViewMode_);
+    assert(!this.isInFederatedViewMode_);
     return this.isPasswordVisible_ ? 'icon-visibility-off' : 'icon-visibility';
   }
 
@@ -307,22 +443,24 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Gets the initial text to show in the website input.
    */
   private getWebsite_(): string {
-    return this.dialogMode_ === PasswordDialogMode.ADD ?
+    return this.dialogMode === PasswordDialogMode.ADD ?
         '' :
         this.existingEntry!.urls.link;
   }
 
   /**
    * Gets the initial text to show in the password input: the password for a
-   * regular credential, the federation text for a federated credential or empty
+   * regular credential, the federated text for a federated credential or empty
    * string in the ADD mode.
    */
   private getPassword_(): string {
-    switch (this.dialogMode_) {
-      case PasswordDialogMode.VIEW:
-        // VIEW mode implies |existingEntry| is a federated credential.
+    switch (this.dialogMode) {
+      case PasswordDialogMode.FEDERATED_VIEW:
+        // FEDERATED_VIEW mode implies |existingEntry| is a federated
+        // credential.
         return this.existingEntry!.federationText!;
       case PasswordDialogMode.EDIT:
+      case PasswordDialogMode.PASSWORD_VIEW:
         return this.existingEntry!.password;
       case PasswordDialogMode.ADD:
         return '';
@@ -336,18 +474,19 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Handler for tapping the show/hide button.
    */
   private onShowPasswordButtonClick_() {
-    assert(!this.isInViewMode_);
+    assert(!this.isInFederatedViewMode_);
     this.isPasswordVisible_ = !this.isPasswordVisible_;
   }
 
   /**
-   * Handler for tapping the 'done' or 'save' button depending on |dialogMode_|.
+   * Handler for tapping the 'done' or 'save' button depending on |dialogMode|.
    * For 'save' button it should save new password. After pressing action button
    * the edit dialog should be closed.
    */
   private onActionButtonClick_() {
-    switch (this.dialogMode_) {
-      case PasswordDialogMode.VIEW:
+    switch (this.dialogMode) {
+      case PasswordDialogMode.FEDERATED_VIEW:
+      case PasswordDialogMode.PASSWORD_VIEW:
         this.close();
         return;
       case PasswordDialogMode.EDIT:
@@ -359,6 +498,29 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
       default:
         assertNotReached();
     }
+  }
+  /**
+   * Handler to switch into edit mode from password view mode.
+   */
+  private onSwitchToEditButtonClick_() {
+    assert(this.isInPasswordViewMode_);
+    this.requestedDialogMode = PasswordDialogMode.EDIT;
+    this.$.dialog.focus();
+  }
+
+  /**
+   * Handler to copy the username from the username field.
+   */
+  private onCopyUsernameButtonClick_() {
+    navigator.clipboard.writeText(this.username_);
+  }
+
+  /**
+   * Handler to copy the password from the password field.
+   */
+  private onCopyPasswordButtonClick_() {
+    assert(!this.isInFederatedViewMode_);
+    navigator.clipboard.writeText(this.password_);
   }
 
   private addPassword_() {
@@ -392,9 +554,16 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
     if (deviceId !== null) {
       idsToChange.push(deviceId);
     }
+    const params: chrome.passwordsPrivate.ChangeSavedPasswordParams = {
+      username: this.username_,
+      password: this.password_,
+    };
+    if (this.isPasswordNotesEnabled_) {
+      params.note = this.note_;
+    }
 
     PasswordManagerImpl.getInstance()
-        .changeSavedPassword(idsToChange, this.username_, this.password_)
+        .changeSavedPassword(idsToChange, params)
         .finally(() => {
           this.close();
         });
@@ -422,7 +591,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * is stored.
    */
   private getStorageDetailsMessage_(): string {
-    if (this.dialogMode_ === PasswordDialogMode.ADD) {
+    if (this.dialogMode === PasswordDialogMode.ADD) {
       // Storage message is not shown in the ADD mode.
       return '';
     }
@@ -436,7 +605,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   }
 
   private getStoreOptionAccountText_(): string {
-    if (this.dialogMode_ !== PasswordDialogMode.ADD) {
+    if (this.dialogMode !== PasswordDialogMode.ADD) {
       // Store picker is only shown in the ADD mode.
       return '';
     }
@@ -445,13 +614,15 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   }
 
   private getTitle_(): string {
-    switch (this.dialogMode_) {
+    switch (this.dialogMode) {
       case PasswordDialogMode.ADD:
         return this.i18n('addPasswordTitle');
       case PasswordDialogMode.EDIT:
         return this.i18n('editPasswordTitle');
-      case PasswordDialogMode.VIEW:
+      case PasswordDialogMode.FEDERATED_VIEW:
         return this.i18n('passwordDetailsTitle');
+      case PasswordDialogMode.PASSWORD_VIEW:
+        return this.existingEntry!.urls.shown;
       default:
         assertNotReached();
         return '';
@@ -459,21 +630,21 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   }
 
   private shouldShowStorageDetails_(): boolean {
-    return this.dialogMode_ !== PasswordDialogMode.ADD &&
+    return this.dialogMode !== PasswordDialogMode.ADD &&
         this.isAccountStoreUser;
   }
 
   private shouldShowStorePicker_(): boolean {
-    return this.dialogMode_ === PasswordDialogMode.ADD &&
+    return this.dialogMode === PasswordDialogMode.ADD &&
         this.isAccountStoreUser;
   }
 
   private isWebsiteEditable_(): boolean {
-    return this.dialogMode_ === PasswordDialogMode.ADD;
+    return this.dialogMode === PasswordDialogMode.ADD;
   }
 
   private shouldAutofocusWebsiteInput_(): boolean {
-    return this.dialogMode_ === PasswordDialogMode.ADD &&
+    return this.dialogMode === PasswordDialogMode.ADD &&
         !this.isAccountStoreUser;
   }
 
@@ -481,9 +652,16 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * @return The text to be displayed as the dialog's footnote.
    */
   private getFootnote_(): string {
-    return this.dialogMode_ === PasswordDialogMode.ADD ?
-        this.i18n('addPasswordFootnote') :
-        this.i18n('editPasswordFootnote', this.existingEntry!.urls.shown);
+    switch (this.dialogMode) {
+      case PasswordDialogMode.ADD:
+        return this.i18n('addPasswordFootnote');
+      case PasswordDialogMode.EDIT:
+      case PasswordDialogMode.FEDERATED_VIEW:
+        return this.i18n(
+            'editPasswordFootnote', this.existingEntry!.urls.shown);
+      default:
+        return '';
+    }
   }
 
   private getClassForWebsiteInput_(): string {
@@ -496,7 +674,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Helper function that checks whether the entered url is valid.
    */
   private validateWebsite_() {
-    assert(this.dialogMode_ === PasswordDialogMode.ADD);
+    assert(this.dialogMode === PasswordDialogMode.ADD);
     if (!this.$.websiteInput.value.length) {
       this.websiteUrls_ = null;
       this.websiteInputErrorMessage_ = null;
@@ -573,10 +751,11 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Checks whether edited username is not used for the same website.
    */
   private computeUsernameInputInvalid_(): boolean {
-    if (this.isInViewMode_ || !this.websiteUrls_ || !this.usernamesByOrigin_) {
+    if (this.isInFederatedViewMode_ || !this.websiteUrls_ ||
+        !this.usernamesByOrigin_) {
       return false;
     }
-    if (this.dialogMode_ === PasswordDialogMode.EDIT &&
+    if (this.dialogMode === PasswordDialogMode.EDIT &&
         this.username_ === this.existingEntry!.username) {
       // The value hasn't changed.
       return false;
@@ -586,7 +765,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
         this.usernamesByOrigin_.get(this.websiteUrls_.origin)!.has(
             this.username_);
 
-    if (isDuplicate && this.dialogMode_ === PasswordDialogMode.ADD) {
+    if (isDuplicate && this.dialogMode === PasswordDialogMode.ADD) {
       chrome.metricsPrivate.recordEnumerationValue(
           'PasswordManager.AddCredentialFromSettings.UserAction',
           AddCredentialFromSettingsUserInteractions
@@ -601,8 +780,8 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
    * Used for the fast check whether edited username is already used.
    */
   private getUsernamesByOrigin_(): Map<string, Set<string>> {
-    assert(!this.isInViewMode_);
-    const relevantPasswords = this.dialogMode_ === PasswordDialogMode.EDIT ?
+    assert(!this.isInFederatedViewMode_);
+    const relevantPasswords = this.dialogMode === PasswordDialogMode.EDIT ?
         // In EDIT mode entries considered duplicates only if in the same store.
         this.savedPasswords.filter(item => {
           return item.isPresentOnDevice() ===

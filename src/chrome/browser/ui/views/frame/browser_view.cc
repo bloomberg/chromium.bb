@@ -116,9 +116,11 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
@@ -227,6 +229,7 @@
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -457,12 +460,8 @@ class ContentsSeparator : public views::View {
  private:
   // views::View:
   void OnThemeChanged() override {
-    const ui::ThemeProvider* const theme_provider = GetThemeProvider();
-    SetBackground(
-        views::CreateSolidBackground(color_utils::GetResultingPaintColor(
-            theme_provider->GetColor(
-                ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-            theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))));
+    SetBackground(views::CreateSolidBackground(GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR)));
     View::OnThemeChanged();
   }
 };
@@ -470,11 +469,12 @@ class ContentsSeparator : public views::View {
 BEGIN_METADATA(ContentsSeparator, views::View)
 END_METADATA
 
-bool ShouldShowWindowIcon(const Browser* browser) {
+bool ShouldShowWindowIcon(const Browser* browser,
+                          bool app_uses_window_controls_overlay) {
 #if BUILDFLAG(IS_CHROMEOS)
   // For Chrome OS only, trusted windows (apps and settings) do not show a
   // window icon, crbug.com/119411. Child windows (i.e. popups) do show an icon.
-  if (browser->is_trusted_source())
+  if (browser->is_trusted_source() || app_uses_window_controls_overlay)
     return false;
 #endif
   return browser->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
@@ -694,7 +694,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       browser_(std::move(browser)),
       accessibility_mode_observer_(
           std::make_unique<AccessibilityModeObserver>(this)) {
-  SetShowIcon(::ShouldShowWindowIcon(browser_.get()));
+  SetShowIcon(
+      ::ShouldShowWindowIcon(browser_.get(), AppUsesWindowControlsOverlay()));
 
   // In forced app mode, all size controls are always disabled. Otherwise, use
   // `create_params` to enable/disable specific size controls.
@@ -794,10 +795,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if ((base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
-       lens::features::kEnableSidePanelForLensImageSearch.Get()) ||
-      (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch) &&
-       lens::features::kEnableSidePanelForLensRegionSearch.Get())) {
+  if (lens::features::IsLensSidePanelEnabled()) {
     lens_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     // If the separator was not already created, create one.
     if (!right_aligned_side_panel_separator_)
@@ -808,12 +806,12 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
   if (browser_->is_type_normal() && IsSideSearchEnabled(browser_->profile())) {
-    left_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
+    side_search_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     left_aligned_side_panel_separator_ =
         AddChildView(std::make_unique<ContentsSeparator>());
 
     side_search_controller_ = std::make_unique<SideSearchBrowserController>(
-        left_aligned_side_panel_, this);
+        side_search_side_panel_, this);
   }
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
@@ -885,7 +883,7 @@ BrowserView::~BrowserView() {
 }
 
 // static
-const BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
+BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
     content::WebContents* web_contents) {
   // Check first to see if the we can find a top level widget for the
   // `web_contents`. This covers the case of searching for the browser window
@@ -1460,6 +1458,18 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
     infobar_container_->ChangeInfoBarManager(nullptr);
     app_banner_manager_observation_.Reset();
     UpdateDevToolsForContents(nullptr, true);
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+    // We must ensure that we propagate an update to the side search controller
+    // so that it removes the now detached tab WebContents from the side panel's
+    // WebView. This is necessary as BrowserView::OnActiveTabChanged() will fire
+    // for the destination window before the source window is destroyed during a
+    // tab dragging operation which could lead to the dragged WebContents being
+    // added to the destination panel's WebView before it is removed from the
+    // source panel's WebView. Failing to so so can lead to visual artifacts
+    // (see crbug.com/1306793).
+    if (side_search_controller_)
+      side_search_controller_->UpdateSidePanelForContents(contents, nullptr);
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
   }
 }
 
@@ -2171,18 +2181,10 @@ BrowserView::ShowQRCodeGeneratorBubble(
     qrcode_generator::QRCodeGeneratorBubbleController* controller,
     const GURL& url,
     bool show_back_button) {
-  base::OnceClosure on_closing = base::BindOnce(
-      &qrcode_generator::QRCodeGeneratorBubbleController::OnBubbleClosed,
-      // Unretained is safe: controller is a WebContentsUserData, owned by
-      // WebContents, and the bubble can't outlive the WebContents.
-      base::Unretained(controller));
+  base::OnceClosure on_closing = controller->GetOnBubbleClosedCallback();
   base::OnceClosure on_back_button_pressed;
   if (show_back_button) {
-    on_back_button_pressed = base::BindOnce(
-        &qrcode_generator::QRCodeGeneratorBubbleController::OnBackButtonPressed,
-        // Unretained is safe: controller is a WebContentsUserData, owned by
-        // WebContents, and the bubble can't outlive the WebContents.
-        base::Unretained(controller));
+    on_back_button_pressed = controller->GetOnBackButtonPressedCallback();
   }
 
   PageActionIconType icon_type =
@@ -2885,7 +2887,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 #if BUILDFLAG(IS_CHROMEOS)
   // For Chrome OS only, trusted windows (apps and settings) do not show a
   // title, crbug.com/119411. Child windows (i.e. popups) do show a title.
-  if (browser_->is_trusted_source())
+  if (browser_->is_trusted_source() || AppUsesWindowControlsOverlay())
     return false;
 #elif BUILDFLAG(IS_WIN)
   // On Windows in touch mode we display a window title.
@@ -3156,6 +3158,37 @@ void BrowserView::CloseTabSearchBubble() {
     tab_search_host->CloseTabSearchBubble();
 }
 
+bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_lens,
+                                                 bool exclude_side_search) {
+  // Hide Chrome side panel (Reading List/Bookmarks) if enabled and showing.
+  if (toolbar()->side_panel_button() &&
+      right_aligned_side_panel()->GetVisible()) {
+    toolbar()->side_panel_button()->HideSidePanel();
+    return true;
+  }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Hide the Lens side panel if it's showing instead.
+  if (!exclude_lens && lens_side_panel_controller_ &&
+      lens_side_panel_controller_->IsShowing()) {
+    lens_side_panel_controller_->Close();
+    return true;
+  }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  // Hide side search panel if it's right aligned.
+  if (!exclude_side_search &&
+      base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
+      side_search_side_panel_->GetVisible()) {
+    side_search_controller_->CloseSidePanel();
+    return true;
+  }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+
+  return false;
+}
+
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
 bool BrowserView::IsSideSearchPanelVisible() const {
   if (side_search_controller_)
@@ -3394,6 +3427,12 @@ void BrowserView::AddedToWidget() {
       panels.push_back(lens_side_panel_);
     if (right_aligned_side_panel_)
       panels.push_back(right_aligned_side_panel_);
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+    if (base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
+        side_search_side_panel_) {
+      panels.push_back(side_search_side_panel_);
+    }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
     side_panel_button_highlighter_ =
         std::make_unique<SidePanelButtonHighlighter>(
             toolbar_->side_panel_button(), panels);
@@ -3425,7 +3464,7 @@ void BrowserView::AddedToWidget() {
       std::make_unique<BrowserViewLayoutDelegateImpl>(this),
       GetWidget()->GetNativeView(), this, top_container_,
       tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
-      contents_container_, left_aligned_side_panel_,
+      contents_container_, side_search_side_panel_,
       left_aligned_side_panel_separator_, right_aligned_side_panel_,
       right_aligned_side_panel_separator_, lens_side_panel_,
       immersive_mode_controller_.get(), contents_separator_));
@@ -3759,9 +3798,14 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // TODO(crbug.com/1034783): Implement at lower layers to avoid transitions.
 #if BUILDFLAG(IS_MAC)
   bool entering_cross_screen_fullscreen = false;
+  const bool fullscreen_controller_mac_enabled =
+      base::FeatureList::IsEnabled(views::features::kFullscreenControllerMac);
+#else   // BUILDFLAG(IS_MAC)
+  const bool fullscreen_controller_mac_enabled = false;
 #endif  // BUILDFLAG(IS_MAC)
   bool swapping_screens_during_fullscreen = false;
-  if (fullscreen && display_id != display::kInvalidDisplayId) {
+  if (fullscreen && display_id != display::kInvalidDisplayId &&
+      !fullscreen_controller_mac_enabled) {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display;
     display::Display current_display =
@@ -3826,7 +3870,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     delay = base::Milliseconds(1000);
   else if (entering_cross_screen_fullscreen)
     delay = base::Milliseconds(1);
-  frame_->SetFullscreen(fullscreen, delay);
+  frame_->SetFullscreen(fullscreen, delay,
+                        fullscreen_controller_mac_enabled
+                            ? display_id
+                            : display::kInvalidDisplayId);
 #else   // BUILDFLAG(IS_MAC)
   frame_->SetFullscreen(fullscreen);
   // On Mac, the pre-fullscreen bounds must be restored after an asynchronous

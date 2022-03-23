@@ -1,4 +1,20 @@
 <style include="cr-shared-style cr-hidden-style">
+  /* Dropdown colors are based on md-select colors to align with styling of
+     select elements. */
+  :host {
+    --dropdown-bg-color: var(--google-grey-100);
+    --dropdown-focus-shadow-color: rgba(var(--google-blue-600-rgb), .4);
+    --dropdown-option-bg-color: white;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :host {
+      --dropdown-bg-color: rgba(0, 0, 0, 0.3);
+      --dropdown-focus-shadow-color: rgba(var(--google-blue-300-rgb), .4);
+      --dropdown-option-bg-color: var(--google-grey-900-white-4-percent);
+    }
+  }
+
   #destinationDropdown {
     outline: none;
     position: relative;
@@ -6,7 +22,7 @@
 
   #destinationDropdown:focus {
     border-radius: 4px;
-    box-shadow: 0 0 0 2px rgba(var(--cros-focus-ring-color-rgb), .4);
+    box-shadow: 0 0 0 2px var(--dropdown-focus-shadow-color);
   }
 
   #destinationDropdown,
@@ -15,13 +31,13 @@
   }
 
   iron-dropdown {
-    border: none;
+    border: 0.5px solid rgba(0, 0, 0, 0.5);
     max-height: 270px;
   }
 
   iron-dropdown [slot='dropdown-content'] {
-    background-color: var(--cros-bg-color-elevation-2);
-    box-shadow: var(--cros-elevation-2-shadow);
+    background-color: var(--dropdown-option-bg-color);
+    box-shadow: var(--cr-menu-shadow);
     padding: 8px 0;
   }
 
@@ -66,16 +82,17 @@
     outline: none;
   }
 
-  /* Highlight colors align with highlight in other dropdowns. */
   .list-item.highlighted {
-    background-color: rgb(203, 228, 250);
+    /* Highlight background color used is Google blue closest to system default
+       highlight color. */
+    background-color: var(--google-blue-100);
   }
 
   @media (prefers-color-scheme: dark) {
     .list-item.highlighted {
       --iron-icon-fill-color: currentColor;
-      background-color: rgb(153, 200, 254);
-      color: var(--cros-color-primary-inverted);
+      background-color: var(--google-blue-200);
+      color: var(--google-grey-900);
     }
   }
 
@@ -86,7 +103,7 @@
 
   #destination-display-container {
     align-items: center;
-    background-color: var(--cros-textfield-background-color);
+    background-color: var(--dropdown-bg-color);
     border-radius: 4px;
     cursor: pointer;
     display: flex;

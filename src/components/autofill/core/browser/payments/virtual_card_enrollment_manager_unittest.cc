@@ -4,7 +4,10 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -16,11 +19,16 @@
 #include "components/autofill/core/browser/payments/test_virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
+
+using testing::_;
 
 namespace autofill {
 
@@ -238,7 +246,13 @@ TEST_F(VirtualCardEnrollmentManagerTest,
       VirtualCardEnrollmentSource::kSettingsPage;
 
   virtual_card_enrollment_manager_->SetAutofillClient(nullptr);
-
+  base::MockCallback<TestVirtualCardEnrollmentManager::
+                         VirtualCardEnrollmentFieldsLoadedCallback>
+      virtual_card_enrollment_fields_loadaed_callback;
+  virtual_card_enrollment_manager_
+      ->SetVirtualCardEnrollmentFieldsLoadedCallback(
+          virtual_card_enrollment_fields_loadaed_callback.Get());
+  EXPECT_CALL(virtual_card_enrollment_fields_loadaed_callback, Run(_));
   virtual_card_enrollment_manager_->OnDidGetDetailsForEnrollResponse(
       AutofillClient::PaymentsRpcResult::kSuccess, response);
 
@@ -417,6 +431,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, Unenroll) {
       /*succeeded=*/false, 1);
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(VirtualCardEnrollmentManagerTest, UpstreamAnimationSync_AnimationFirst) {
   personal_data_manager_->ClearCreditCardArtImages();
   SetUpCard();
@@ -454,6 +469,10 @@ TEST_F(VirtualCardEnrollmentManagerTest, UpstreamAnimationSync_AnimationFirst) {
 }
 
 TEST_F(VirtualCardEnrollmentManagerTest, UpstreamAnimationSync_ResponseFirst) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kAutofillEnableToolbarStatusChip,
+                                 features::kAutofillCreditCardUploadFeedback},
+                                {});
   personal_data_manager_->ClearCreditCardArtImages();
   SetUpCard();
   SetValidCardArtImageForCard(*card_);
@@ -484,6 +503,23 @@ TEST_F(VirtualCardEnrollmentManagerTest, UpstreamAnimationSync_ResponseFirst) {
   // Update avatar animation complete boolean.
   virtual_card_enrollment_manager_->OnCardSavedAnimationComplete();
   EXPECT_TRUE(virtual_card_enrollment_manager_->GetAvatarAnimationComplete());
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+TEST_F(VirtualCardEnrollmentManagerTest, Metrics_LatencySinceUpstream) {
+  base::HistogramTester histogram_tester;
+  TestAutofillClock test_autofill_clock;
+  test_autofill_clock.SetNow(AutofillClock::Now());
+  virtual_card_enrollment_manager_->SetSaveCardBubbleAcceptedTimestamp(
+      AutofillClock::Now());
+  virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState()
+      ->virtual_card_enrollment_fields.virtual_card_enrollment_source =
+      VirtualCardEnrollmentSource::kUpstream;
+  test_autofill_clock.Advance(base::Minutes(1));
+  virtual_card_enrollment_manager_->ShowVirtualCardEnrollBubble();
+  histogram_tester.ExpectTimeBucketCount(
+      "Autofill.VirtualCardEnrollBubble.LatencySinceUpstream", base::Minutes(1),
+      1);
 }
 
 }  // namespace autofill

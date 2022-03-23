@@ -29,6 +29,7 @@ hb_base_sources = files(
   'hb-blob.cc',
   'hb-blob.hh',
   'hb-buffer-serialize.cc',
+  'hb-buffer-verify.cc',
   'hb-buffer.cc',
   'hb-buffer.hh',
   'hb-cache.hh',
@@ -54,7 +55,6 @@ hb_base_sources = files(
   'hb-map.cc',
   'hb-map.hh',
   'hb-meta.hh',
-  'hb-ms-feature-ranges.cc',
   'hb-ms-feature-ranges.hh',
   'hb-mutex.hh',
   'hb-null.hh',
@@ -276,11 +276,15 @@ hb_subset_sources = files(
   'hb-subset-input.hh',
   'hb-subset-plan.cc',
   'hb-subset-plan.hh',
+  'hb-subset-repacker.cc',
   'hb-subset.cc',
   'hb-subset.hh',
 )
 
-hb_subset_headers = files('hb-subset.h')
+hb_subset_headers = files(
+  'hb-subset.h',
+  'hb-subset-repacker.h'
+)
 
 hb_gobject_sources = files(
   'hb-gobject-structs.cc'
@@ -486,13 +490,15 @@ if get_option('tests').enabled()
   compiled_tests = {
     'test-algs': ['test-algs.cc', 'hb-static.cc'],
     'test-array': ['test-array.cc'],
-    'test-repacker': ['test-repacker.cc', 'hb-static.cc'],
-    'test-priority-queue': ['test-priority-queue.cc', 'hb-static.cc'],
     'test-iter': ['test-iter.cc', 'hb-static.cc'],
+    'test-machinery': ['test-machinery.cc', 'hb-static.cc'],
     'test-map': ['test-map.cc', 'hb-static.cc'],
     'test-number': ['test-number.cc', 'hb-number.cc'],
     'test-ot-tag': ['hb-ot-tag.cc'],
+    'test-priority-queue': ['test-priority-queue.cc', 'hb-static.cc'],
+    'test-repacker': ['test-repacker.cc', 'hb-static.cc'],
     'test-set': ['test-set.cc', 'hb-static.cc'],
+    'test-serialize': ['test-serialize.cc', 'hb-static.cc'],
     'test-unicode-ranges': ['test-unicode-ranges.cc'],
     'test-vector': ['test-vector.cc', 'hb-static.cc'],
     'test-bimap': ['test-bimap.cc', 'hb-static.cc'],

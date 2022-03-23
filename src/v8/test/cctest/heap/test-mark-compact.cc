@@ -84,7 +84,7 @@ AllocationResult HeapTester::AllocateMapForTest(Isolate* isolate) {
                                SKIP_WRITE_BARRIER);
   return AllocationResult::FromObject(isolate->factory()->InitializeMap(
       Map::cast(obj), JS_OBJECT_TYPE, JSObject::kHeaderSize,
-      TERMINAL_FAST_ELEMENTS_KIND, 0));
+      TERMINAL_FAST_ELEMENTS_KIND, 0, heap));
 }
 
 // This is the same as Factory::NewFixedArray, except it doesn't retry
@@ -205,7 +205,8 @@ HEAP_TEST(DoNotEvacuatePinnedPages) {
   page->SetFlag(MemoryChunk::PINNED);
 
   CcTest::CollectAllGarbage();
-  heap->mark_compact_collector()->EnsureSweepingCompleted();
+  heap->mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
   // The pinned flag should prevent the page from moving.
   for (Handle<FixedArray> object : handles) {
@@ -215,7 +216,8 @@ HEAP_TEST(DoNotEvacuatePinnedPages) {
   page->ClearFlag(MemoryChunk::PINNED);
 
   CcTest::CollectAllGarbage();
-  heap->mark_compact_collector()->EnsureSweepingCompleted();
+  heap->mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
   // `compact_on_every_full_gc` ensures that this page is an evacuation
   // candidate, so with the pin flag cleared compaction should now move it.
@@ -410,7 +412,8 @@ TEST(Regress5829) {
   i::MarkCompactCollector* collector = heap->mark_compact_collector();
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (collector->sweeping_in_progress()) {
-    collector->EnsureSweepingCompleted();
+    collector->EnsureSweepingCompleted(
+        MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
   CHECK(marking->IsMarking() || marking->IsStopped());
   if (marking->IsStopped()) {

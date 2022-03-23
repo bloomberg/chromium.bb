@@ -62,7 +62,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                    bool shared,
                    const mojom::Capabilities& capabilities,
                    const mojom::FolderFeature& folder_feature,
-                   const std::string& doc_id);
+                   const std::string& doc_id,
+                   const std::string& alternate_url);
 
   void DisplayConfirmDialog(
       drivefs::mojom::DialogReasonPtr reason,
@@ -144,6 +145,18 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void GetQuotaUsage(
       drivefs::mojom::DriveFs::GetQuotaUsageCallback callback) override;
 
+  void ToggleMirroring(
+      bool enabled,
+      drivefs::mojom::DriveFs::ToggleMirroringCallback callback) override;
+
+  void ToggleSyncForPath(
+      const base::FilePath& path,
+      drivefs::mojom::MirrorPathStatus status,
+      drivefs::mojom::DriveFs::ToggleSyncForPathCallback callback) override;
+
+  void GetSyncingPaths(
+      drivefs::mojom::DriveFs::GetSyncingPathsCallback callback) override;
+
   const base::FilePath mount_path_;
   int64_t next_stable_id_ = 1;
 
@@ -154,6 +167,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   mojo::Receiver<drivefs::mojom::DriveFsBootstrap> bootstrap_receiver_{this};
   mojo::PendingReceiver<drivefs::mojom::DriveFsDelegate>
       pending_delegate_receiver_;
+
+  std::vector<base::FilePath> syncing_paths_;
 
   base::WeakPtrFactory<FakeDriveFs> weak_factory_{this};
 };

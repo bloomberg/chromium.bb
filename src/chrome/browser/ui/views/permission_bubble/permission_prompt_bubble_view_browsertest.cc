@@ -159,8 +159,9 @@ class PermissionPromptBubbleViewBrowserTest
 
   permissions::PermissionRequest* MakeRegisterProtocolHandlerRequest() {
     std::string protocol = "mailto";
-    ProtocolHandler handler =
-        ProtocolHandler::CreateProtocolHandler(protocol, GetTestUrl());
+    custom_handlers::ProtocolHandler handler =
+        custom_handlers::ProtocolHandler::CreateProtocolHandler(protocol,
+                                                                GetTestUrl());
     custom_handlers::ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(
             browser()->profile());
@@ -775,11 +776,11 @@ IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleViewQuietUiBrowserTest,
       static_cast<int>(permissions::PermissionAction::GRANTED), 1);
 }
 
-// For `QuietUiReason::kPredictedVeryUnlikelyGrant` reputation we show an
+// For `QuietUiReason::kServicePredictedVeryUnlikelyGrant` reputation we show an
 // animated quiet UI icon.
 IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleViewQuietUiBrowserTest,
                        DispositionPredictedVeryUnlikelyGrantTest) {
-  SetCannedUiDecision(QuietUiReason::kPredictedVeryUnlikelyGrant,
+  SetCannedUiDecision(QuietUiReason::kServicePredictedVeryUnlikelyGrant,
                       absl::nullopt);
 
   ShowUi("geolocation");

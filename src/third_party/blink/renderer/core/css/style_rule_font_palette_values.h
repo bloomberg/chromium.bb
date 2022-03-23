@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_FONT_PALETTE_VALUES_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_FONT_PALETTE_VALUES_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptors.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 
@@ -23,6 +24,10 @@ class CORE_EXPORT StyleRuleFontPaletteValues : public StyleRuleBase {
   const CSSValue* GetFontFamily() const { return font_family_; }
   const CSSValue* GetBasePalette() const { return base_palette_; }
   const CSSValue* GetOverrideColors() const { return override_colors_; }
+
+  AtomicString GetFontFamilyAsString() const;
+  FontPalette::BasePaletteValue GetBasePaletteIndex() const;
+  Vector<FontPalette::FontPaletteOverride> GetOverrideColorsAsVector() const;
 
   StyleRuleFontPaletteValues* Copy() const {
     return MakeGarbageCollected<StyleRuleFontPaletteValues>(*this);

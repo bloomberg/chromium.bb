@@ -4,6 +4,7 @@
 """Definitions of builders in the tryserver.chromium.linux builder group."""
 
 load("//lib/branches.star", "branches")
+load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -204,15 +205,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-blink-heap-concurrent-marking-tsan-rel",
-)
-
-try_.builder(
     name = "linux-blink-heap-verification-try",
-)
-
-try_.builder(
-    name = "linux-blink-v8-oilpan",
 )
 
 try_.builder(
@@ -434,6 +427,11 @@ try_.builder(
 try_.builder(
     name = "linux_chromium_compile_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = ["ci/Linux Builder (dbg)"],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     builderless = not settings.is_main,
     caches = [
         swarming.cache(
@@ -453,6 +451,10 @@ try_.builder(
 try_.builder(
     name = "linux_chromium_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder (dbg)",
+        "Linux Tests (dbg)(1)",
+    ],
     caches = [
         swarming.cache(
             name = "builder",
@@ -522,6 +524,11 @@ try_.builder(
     cores = 32,
     executable = "recipe:chromium_upload_clang",
     goma_backend = None,
+    # This builder produces the clang binaries used on all builders. Since it
+    # uses the system's sysroot when compiling, the builder needs to run on the
+    # OS version that's the oldest used on any bot.
+    # TODO(crbug.com/1199405): Move this to bionic once _all_ builders have
+    # migrated.
     os = os.LINUX_TRUSTY,
 )
 

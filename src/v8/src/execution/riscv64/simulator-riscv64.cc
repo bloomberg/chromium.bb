@@ -128,6 +128,164 @@ static inline bool is_overlapped_widen(const int astart, int asize,
 #define require_align(val, pos) CHECK_EQ(is_aligned(val, pos), true)
 #endif
 
+// RVV
+// The following code about RVV was based from:
+//   https://github.com/riscv/riscv-isa-sim
+// Copyright (c) 2010-2017, The Regents of the University of California
+// (Regents).  All Rights Reserved.
+
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+// 3. Neither the name of the Regents nor the
+//    names of its contributors may be used to endorse or promote products
+//    derived from this software without specific prior written permission.
+
+// IN NO EVENT SHALL REGENTS BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,
+// SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF
+// REGENTS HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+// HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE
+// MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+template <uint64_t N>
+struct type_usew_t;
+template <>
+struct type_usew_t<8> {
+  using type = uint8_t;
+};
+
+template <>
+struct type_usew_t<16> {
+  using type = uint16_t;
+};
+
+template <>
+struct type_usew_t<32> {
+  using type = uint32_t;
+};
+
+template <>
+struct type_usew_t<64> {
+  using type = uint64_t;
+};
+
+template <>
+struct type_usew_t<128> {
+  using type = __uint128_t;
+};
+template <uint64_t N>
+struct type_sew_t;
+
+template <>
+struct type_sew_t<8> {
+  using type = int8_t;
+};
+
+template <>
+struct type_sew_t<16> {
+  using type = int16_t;
+};
+
+template <>
+struct type_sew_t<32> {
+  using type = int32_t;
+};
+
+template <>
+struct type_sew_t<64> {
+  using type = int64_t;
+};
+
+template <>
+struct type_sew_t<128> {
+  using type = __int128_t;
+};
+
+#define VV_PARAMS(x)                                                       \
+  type_sew_t<x>::type& vd =                                                \
+      Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true);                  \
+  type_sew_t<x>::type vs1 = Rvvelt<type_sew_t<x>::type>(rvv_vs1_reg(), i); \
+  type_sew_t<x>::type vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VV_UPARAMS(x)                                                        \
+  type_usew_t<x>::type& vd =                                                 \
+      Rvvelt<type_usew_t<x>::type>(rvv_vd_reg(), i, true);                   \
+  type_usew_t<x>::type vs1 = Rvvelt<type_usew_t<x>::type>(rvv_vs1_reg(), i); \
+  type_usew_t<x>::type vs2 = Rvvelt<type_usew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VX_PARAMS(x)                                                        \
+  type_sew_t<x>::type& vd =                                                 \
+      Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true);                   \
+  type_sew_t<x>::type rs1 = (type_sew_t<x>::type)(get_register(rs1_reg())); \
+  type_sew_t<x>::type vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VX_UPARAMS(x)                                                         \
+  type_usew_t<x>::type& vd =                                                  \
+      Rvvelt<type_usew_t<x>::type>(rvv_vd_reg(), i, true);                    \
+  type_usew_t<x>::type rs1 = (type_usew_t<x>::type)(get_register(rs1_reg())); \
+  type_usew_t<x>::type vs2 = Rvvelt<type_usew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VI_PARAMS(x)                                                    \
+  type_sew_t<x>::type& vd =                                             \
+      Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true);               \
+  type_sew_t<x>::type simm5 = (type_sew_t<x>::type)(instr_.RvvSimm5()); \
+  type_sew_t<x>::type vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VI_UPARAMS(x)                                                     \
+  type_usew_t<x>::type& vd =                                              \
+      Rvvelt<type_usew_t<x>::type>(rvv_vd_reg(), i, true);                \
+  type_usew_t<x>::type uimm5 = (type_usew_t<x>::type)(instr_.RvvUimm5()); \
+  type_usew_t<x>::type vs2 = Rvvelt<type_usew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VN_PARAMS(x)                                                    \
+  constexpr int half_x = x >> 1;                                        \
+  type_sew_t<half_x>::type& vd =                                        \
+      Rvvelt<type_sew_t<half_x>::type>(rvv_vd_reg(), i, true);          \
+  type_sew_t<x>::type uimm5 = (type_sew_t<x>::type)(instr_.RvvUimm5()); \
+  type_sew_t<x>::type vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VN_UPARAMS(x)                                                     \
+  constexpr int half_x = x >> 1;                                          \
+  type_usew_t<half_x>::type& vd =                                         \
+      Rvvelt<type_usew_t<half_x>::type>(rvv_vd_reg(), i, true);           \
+  type_usew_t<x>::type uimm5 = (type_usew_t<x>::type)(instr_.RvvUimm5()); \
+  type_sew_t<x>::type vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i);
+
+#define VXI_PARAMS(x)                                                       \
+  type_sew_t<x>::type& vd =                                                 \
+      Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true);                   \
+  type_sew_t<x>::type vs1 = Rvvelt<type_sew_t<x>::type>(rvv_vs1_reg(), i);  \
+  type_sew_t<x>::type vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i);  \
+  type_sew_t<x>::type rs1 = (type_sew_t<x>::type)(get_register(rs1_reg())); \
+  type_sew_t<x>::type simm5 = (type_sew_t<x>::type)(instr_.RvvSimm5());
+
+#define VI_XI_SLIDEDOWN_PARAMS(x, off)                           \
+  auto& vd = Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true); \
+  auto vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i + off);
+
+#define VI_XI_SLIDEUP_PARAMS(x, offset)                          \
+  auto& vd = Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true); \
+  auto vs2 = Rvvelt<type_sew_t<x>::type>(rvv_vs2_reg(), i - offset);
+
+/* Vector Integer Extension */
+#define VI_VIE_PARAMS(x, scale)                                  \
+  if ((x / scale) < 8) UNREACHABLE();                            \
+  auto& vd = Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true); \
+  auto vs2 = Rvvelt<type_sew_t<x / scale>::type>(rvv_vs2_reg(), i);
+
+#define VI_VIE_UPARAMS(x, scale)                                 \
+  if ((x / scale) < 8) UNREACHABLE();                            \
+  auto& vd = Rvvelt<type_sew_t<x>::type>(rvv_vd_reg(), i, true); \
+  auto vs2 = Rvvelt<type_usew_t<x / scale>::type>(rvv_vs2_reg(), i);
+
 #define require_noover(astart, asize, bstart, bsize) \
   CHECK_EQ(!is_overlapped(astart, asize, bstart, bsize), true)
 #define require_noover_widen(astart, asize, bstart, bsize) \
@@ -685,6 +843,94 @@ static inline bool is_overlapped_widen(const int astart, int asize,
   }                                                       \
   RVV_VI_VFP_LOOP_END                                     \
   rvv_trace_vd();
+
+#define RVV_VI_VFP_VF_LOOP_WIDEN(BODY32, vs2_is_widen)                         \
+  RVV_VI_VFP_LOOP_BASE                                                         \
+  switch (rvv_vsew()) {                                                        \
+    case E16:                                                                  \
+    case E64: {                                                                \
+      UNIMPLEMENTED();                                                         \
+      break;                                                                   \
+    }                                                                          \
+    case E32: {                                                                \
+      double& vd = Rvvelt<double>(rvv_vd_reg(), i, true);                      \
+      double fs1 = static_cast<double>(get_fpu_register_float(rs1_reg()));     \
+      double vs2 = vs2_is_widen                                                \
+                       ? Rvvelt<double>(rvv_vs2_reg(), i)                      \
+                       : static_cast<double>(Rvvelt<float>(rvv_vs2_reg(), i)); \
+      double vs3 = static_cast<double>(Rvvelt<float>(rvv_vd_reg(), i));        \
+      BODY32;                                                                  \
+      break;                                                                   \
+    }                                                                          \
+    default:                                                                   \
+      UNREACHABLE();                                                           \
+      break;                                                                   \
+  }                                                                            \
+  RVV_VI_VFP_LOOP_END                                                          \
+  rvv_trace_vd();
+
+#define RVV_VI_VFP_VV_LOOP_WIDEN(BODY32, vs2_is_widen)                         \
+  RVV_VI_VFP_LOOP_BASE                                                         \
+  switch (rvv_vsew()) {                                                        \
+    case E16:                                                                  \
+    case E64: {                                                                \
+      UNIMPLEMENTED();                                                         \
+      break;                                                                   \
+    }                                                                          \
+    case E32: {                                                                \
+      double& vd = Rvvelt<double>(rvv_vd_reg(), i, true);                      \
+      double vs2 = vs2_is_widen                                                \
+                       ? static_cast<double>(Rvvelt<double>(rvv_vs2_reg(), i)) \
+                       : static_cast<double>(Rvvelt<float>(rvv_vs2_reg(), i)); \
+      double vs1 = static_cast<double>(Rvvelt<float>(rvv_vs1_reg(), i));       \
+      double vs3 = static_cast<double>(Rvvelt<float>(rvv_vd_reg(), i));        \
+      BODY32;                                                                  \
+      break;                                                                   \
+    }                                                                          \
+    default:                                                                   \
+      require(0);                                                              \
+      break;                                                                   \
+  }                                                                            \
+  RVV_VI_VFP_LOOP_END                                                          \
+  rvv_trace_vd();
+
+#define RVV_VI_VFP_VV_ARITH_CHECK_COMPUTE(type, check_fn, op)      \
+  auto fn = [this](type frs1, type frs2) {                         \
+    if (check_fn(frs1, frs2)) {                                    \
+      this->set_fflags(kInvalidOperation);                         \
+      return std::numeric_limits<type>::quiet_NaN();               \
+    } else {                                                       \
+      return frs2 op frs1;                                         \
+    }                                                              \
+  };                                                               \
+  auto alu_out = fn(vs1, vs2);                                     \
+  /** if any input or result is NaN, the result is quiet_NaN*/     \
+  if (std::isnan(alu_out) || std::isnan(vs1) || std::isnan(vs2)) { \
+    /** signaling_nan sets kInvalidOperation bit*/                 \
+    if (isSnan(alu_out) || isSnan(vs1) || isSnan(vs2))             \
+      set_fflags(kInvalidOperation);                               \
+    alu_out = std::numeric_limits<type>::quiet_NaN();              \
+  }                                                                \
+  vd = alu_out;
+
+#define RVV_VI_VFP_VF_ARITH_CHECK_COMPUTE(type, check_fn, op)      \
+  auto fn = [this](type frs1, type frs2) {                         \
+    if (check_fn(frs1, frs2)) {                                    \
+      this->set_fflags(kInvalidOperation);                         \
+      return std::numeric_limits<type>::quiet_NaN();               \
+    } else {                                                       \
+      return frs2 op frs1;                                         \
+    }                                                              \
+  };                                                               \
+  auto alu_out = fn(fs1, vs2);                                     \
+  /** if any input or result is NaN, the result is quiet_NaN*/     \
+  if (std::isnan(alu_out) || std::isnan(fs1) || std::isnan(vs2)) { \
+    /** signaling_nan sets kInvalidOperation bit*/                 \
+    if (isSnan(alu_out) || isSnan(fs1) || isSnan(vs2))             \
+      set_fflags(kInvalidOperation);                               \
+    alu_out = std::numeric_limits<type>::quiet_NaN();              \
+  }                                                                \
+  vd = alu_out;
 
 #define RVV_VI_VFP_FMA(type, _f1, _f2, _a)                                \
   auto fn = [](type f1, type f2, type a) { return std::fma(f1, f2, a); }; \
@@ -6225,6 +6471,87 @@ void Simulator::DecodeRvvFVV() {
             vd = alu_out;
           })
       break;
+    case RO_V_VFWADD_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VV_ARITH_CHECK_COMPUTE(double, is_invalid_fadd, +);
+            USE(vs3);
+          },
+          false)
+      break;
+    case RO_V_VFWSUB_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VV_ARITH_CHECK_COMPUTE(double, is_invalid_fsub, -);
+            USE(vs3);
+          },
+          false)
+      break;
+    case RO_V_VFWADD_W_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VV_ARITH_CHECK_COMPUTE(double, is_invalid_fadd, +);
+            USE(vs3);
+          },
+          true)
+      break;
+    case RO_V_VFWSUB_W_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VV_ARITH_CHECK_COMPUTE(double, is_invalid_fsub, -);
+            USE(vs3);
+          },
+          true)
+      break;
+    case RO_V_VFWMUL_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VV_ARITH_CHECK_COMPUTE(double, is_invalid_fmul, *);
+            USE(vs3);
+          },
+          false)
+      break;
+    case RO_V_VFWREDUSUM_VV:
+    case RO_V_VFWREDOSUM_VV:
+      RVV_VI_CHECK_DSS(true);
+      switch (rvv_vsew()) {
+        case E16:
+        case E64: {
+          UNIMPLEMENTED();
+        }
+        case E32: {
+          double& vd = Rvvelt<double>(rvv_vd_reg(), 0, true);
+          float vs1 = Rvvelt<float>(rvv_vs1_reg(), 0);
+          double alu_out = vs1;
+          for (uint64_t i = rvv_vstart(); i < rvv_vl(); ++i) {
+            double vs2 = static_cast<double>(Rvvelt<float>(rvv_vs2_reg(), i));
+            if (is_invalid_fadd(alu_out, vs2)) {
+              set_fflags(kInvalidOperation);
+              alu_out = std::numeric_limits<float>::quiet_NaN();
+              break;
+            }
+            alu_out = alu_out + vs2;
+            if (std::isnan(alu_out) || std::isnan(vs2)) {
+              // signaling_nan sets kInvalidOperation bit
+              if (isSnan(alu_out) || isSnan(vs2)) set_fflags(kInvalidOperation);
+              alu_out = std::numeric_limits<float>::quiet_NaN();
+              break;
+            }
+          }
+          vd = alu_out;
+          break;
+        }
+        default:
+          require(false);
+          break;
+      }
+
+      break;
     case RO_V_VFMADD_VV:
       RVV_VI_VFP_FMA_VV_LOOP({RVV_VI_VFP_FMA(float, vd, vs1, vs2)},
                              {RVV_VI_VFP_FMA(double, vd, vs1, vs2)})
@@ -6256,6 +6583,22 @@ void Simulator::DecodeRvvFVV() {
     case RO_V_VFNMSAC_VV:
       RVV_VI_VFP_FMA_VV_LOOP({RVV_VI_VFP_FMA(float, -vs2, vs1, +vd)},
                              {RVV_VI_VFP_FMA(double, -vs2, vs1, +vd)})
+      break;
+    case RO_V_VFWMACC_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN({RVV_VI_VFP_FMA(float, vs2, vs1, vs3)}, false)
+      break;
+    case RO_V_VFWNMACC_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN({RVV_VI_VFP_FMA(float, -vs2, vs1, -vs3)}, false)
+      break;
+    case RO_V_VFWMSAC_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN({RVV_VI_VFP_FMA(float, vs2, vs1, -vs3)}, false)
+      break;
+    case RO_V_VFWNMSAC_VV:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VV_LOOP_WIDEN({RVV_VI_VFP_FMA(float, -vs2, vs1, +vs3)}, false)
       break;
     case RO_V_VFMV_FS:
       switch (rvv_vsew()) {
@@ -6314,6 +6657,51 @@ void Simulator::DecodeRvvFVF() {
             USE(vs2);
           })
       break;
+    case RO_V_VFWADD_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VF_ARITH_CHECK_COMPUTE(double, is_invalid_fadd, +);
+            USE(vs3);
+          },
+          false)
+      break;
+    case RO_V_VFWSUB_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VF_ARITH_CHECK_COMPUTE(double, is_invalid_fsub, -);
+            USE(vs3);
+          },
+          false)
+      break;
+    case RO_V_VFWADD_W_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VF_ARITH_CHECK_COMPUTE(double, is_invalid_fadd, +);
+            USE(vs3);
+          },
+          true)
+      break;
+    case RO_V_VFWSUB_W_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VF_ARITH_CHECK_COMPUTE(double, is_invalid_fsub, -);
+            USE(vs3);
+          },
+          true)
+      break;
+    case RO_V_VFWMUL_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN(
+          {
+            RVV_VI_VFP_VF_ARITH_CHECK_COMPUTE(double, is_invalid_fmul, *);
+            USE(vs3);
+          },
+          false)
+      break;
     case RO_V_VFMADD_VF:
       RVV_VI_VFP_FMA_VF_LOOP({RVV_VI_VFP_FMA(float, vd, fs1, vs2)},
                              {RVV_VI_VFP_FMA(double, vd, fs1, vs2)})
@@ -6345,6 +6733,22 @@ void Simulator::DecodeRvvFVF() {
     case RO_V_VFNMSAC_VF:
       RVV_VI_VFP_FMA_VF_LOOP({RVV_VI_VFP_FMA(float, -vs2, fs1, vd)},
                              {RVV_VI_VFP_FMA(double, -vs2, fs1, vd)})
+      break;
+    case RO_V_VFWMACC_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN({RVV_VI_VFP_FMA(float, vs2, fs1, vs3)}, false)
+      break;
+    case RO_V_VFWNMACC_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN({RVV_VI_VFP_FMA(float, -vs2, fs1, -vs3)}, false)
+      break;
+    case RO_V_VFWMSAC_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN({RVV_VI_VFP_FMA(float, vs2, fs1, -vs3)}, false)
+      break;
+    case RO_V_VFWNMSAC_VF:
+      RVV_VI_CHECK_DSS(true);
+      RVV_VI_VFP_VF_LOOP_WIDEN({RVV_VI_VFP_FMA(float, -vs2, fs1, vs3)}, false)
       break;
     default:
       UNSUPPORTED_RISCV();

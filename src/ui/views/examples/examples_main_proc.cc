@@ -114,7 +114,7 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
-  gl::init::InitializeGLOneOff();
+  gl::init::InitializeGLOneOff(/*system_device_id=*/0);
 
   // Viz depends on the task environment to correctly tear down.
   base::test::TaskEnvironment task_environment(
@@ -123,7 +123,6 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   // The ContextFactory must exist before any Compositors are created.
   auto context_factories =
       std::make_unique<ui::TestContextFactories>(under_test);
-  context_factories->SetUseTestSurface(false);
 
   base::i18n::InitializeICU();
 

@@ -722,15 +722,16 @@ void OS::Initialize(bool hard_abort, const char* const gc_fake_mmap) {
   g_hard_abort = hard_abort;
 }
 
-typedef PVOID (*VirtualAlloc2_t)(HANDLE, PVOID, SIZE_T, ULONG, ULONG,
-                                 MEM_EXTENDED_PARAMETER*, ULONG);
+typedef PVOID(__stdcall* VirtualAlloc2_t)(HANDLE, PVOID, SIZE_T, ULONG, ULONG,
+                                          MEM_EXTENDED_PARAMETER*, ULONG);
 VirtualAlloc2_t VirtualAlloc2 = nullptr;
 
-typedef PVOID (*MapViewOfFile3_t)(HANDLE, HANDLE, PVOID, ULONG64, SIZE_T, ULONG,
-                                  ULONG, MEM_EXTENDED_PARAMETER*, ULONG);
+typedef PVOID(__stdcall* MapViewOfFile3_t)(HANDLE, HANDLE, PVOID, ULONG64,
+                                           SIZE_T, ULONG, ULONG,
+                                           MEM_EXTENDED_PARAMETER*, ULONG);
 MapViewOfFile3_t MapViewOfFile3 = nullptr;
 
-typedef PVOID (*UnmapViewOfFile2_t)(HANDLE, PVOID, ULONG);
+typedef PVOID(__stdcall* UnmapViewOfFile2_t)(HANDLE, PVOID, ULONG);
 UnmapViewOfFile2_t UnmapViewOfFile2 = nullptr;
 
 void OS::EnsureWin32MemoryAPILoaded() {
@@ -926,11 +927,11 @@ void* OS::Allocate(void* hint, size_t size, size_t alignment,
 }
 
 // static
-bool OS::Free(void* address, size_t size) {
+void OS::Free(void* address, size_t size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % AllocatePageSize());
   DCHECK_EQ(0, size % AllocatePageSize());
   USE(size);
-  return VirtualFree(address, 0, MEM_RELEASE) != 0;
+  CHECK_NE(0, VirtualFree(address, 0, MEM_RELEASE));
 }
 
 // static
@@ -957,15 +958,15 @@ void* OS::AllocateShared(void* hint, size_t size, MemoryPermission permission,
 }
 
 // static
-bool OS::FreeShared(void* address, size_t size) {
-  return UnmapViewOfFile(address);
+void OS::FreeShared(void* address, size_t size) {
+  CHECK(UnmapViewOfFile(address));
 }
 
 // static
-bool OS::Release(void* address, size_t size) {
+void OS::Release(void* address, size_t size) {
   DCHECK_EQ(0, reinterpret_cast<uintptr_t>(address) % CommitPageSize());
   DCHECK_EQ(0, size % CommitPageSize());
-  return VirtualFree(address, size, MEM_DECOMMIT) != 0;
+  CHECK_NE(0, VirtualFree(address, size, MEM_DECOMMIT));
 }
 
 // static
@@ -1049,8 +1050,8 @@ Optional<AddressSpaceReservation> OS::CreateAddressSpaceReservation(
 }
 
 // static
-bool OS::FreeAddressSpaceReservation(AddressSpaceReservation reservation) {
-  return OS::Free(reservation.base(), reservation.size());
+void OS::FreeAddressSpaceReservation(AddressSpaceReservation reservation) {
+  OS::Free(reservation.base(), reservation.size());
 }
 
 // static

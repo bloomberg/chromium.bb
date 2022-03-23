@@ -10,9 +10,11 @@
 
 #include "pc/audio_rtp_receiver.h"
 
-#include "media/base/media_channel.h"
+#include <atomic>
+
 #include "pc/test/mock_voice_media_channel.h"
 #include "rtc_base/gunit.h"
+#include "rtc_base/ref_counted_object.h"
 #include "rtc_base/thread.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
@@ -24,6 +26,7 @@ using ::testing::Mock;
 static const int kTimeOut = 100;
 static const double kDefaultVolume = 1;
 static const double kVolume = 3.7;
+static const double kVolumeMuted = 0.0;
 static const uint32_t kSsrc = 3;
 
 namespace webrtc {
@@ -42,8 +45,8 @@ class AudioRtpReceiverTest : public ::testing::Test {
   }
 
   ~AudioRtpReceiverTest() {
+    EXPECT_CALL(media_channel_, SetOutputVolume(kSsrc, kVolumeMuted));
     receiver_->SetMediaChannel(nullptr);
-    receiver_->Stop();
   }
 
   rtc::Thread* worker_;

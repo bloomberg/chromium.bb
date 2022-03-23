@@ -98,22 +98,20 @@ const TimeDelta PacingController::kMinSleepTime = TimeDelta::Millis(1);
 PacingController::PacingController(Clock* clock,
                                    PacketSender* packet_sender,
                                    RtcEventLog* event_log,
-                                   const WebRtcKeyValueConfig* field_trials,
+                                   const WebRtcKeyValueConfig& field_trials,
                                    ProcessMode mode)
     : mode_(mode),
       clock_(clock),
       packet_sender_(packet_sender),
-      fallback_field_trials_(
-          !field_trials ? std::make_unique<FieldTrialBasedConfig>() : nullptr),
-      field_trials_(field_trials ? field_trials : fallback_field_trials_.get()),
+      field_trials_(field_trials),
       drain_large_queues_(
-          !IsDisabled(*field_trials_, "WebRTC-Pacer-DrainQueue")),
+          !IsDisabled(field_trials_, "WebRTC-Pacer-DrainQueue")),
       send_padding_if_silent_(
-          IsEnabled(*field_trials_, "WebRTC-Pacer-PadInSilence")),
-      pace_audio_(IsEnabled(*field_trials_, "WebRTC-Pacer-BlockAudio")),
+          IsEnabled(field_trials_, "WebRTC-Pacer-PadInSilence")),
+      pace_audio_(IsEnabled(field_trials_, "WebRTC-Pacer-BlockAudio")),
       ignore_transport_overhead_(
-          IsEnabled(*field_trials_, "WebRTC-Pacer-IgnoreTransportOverhead")),
-      padding_target_duration_(GetDynamicPaddingTarget(*field_trials_)),
+          IsEnabled(field_trials_, "WebRTC-Pacer-IgnoreTransportOverhead")),
+      padding_target_duration_(GetDynamicPaddingTarget(field_trials_)),
       min_packet_limit_(kDefaultMinPacketLimit),
       transport_overhead_per_packet_(DataSize::Zero()),
       last_timestamp_(clock_->CurrentTime()),
@@ -124,15 +122,14 @@ PacingController::PacingController(Clock* clock,
       padding_debt_(DataSize::Zero()),
       media_rate_(DataRate::Zero()),
       padding_rate_(DataRate::Zero()),
-      prober_(*field_trials_),
+      prober_(field_trials_),
       probing_send_failure_(false),
       pacing_bitrate_(DataRate::Zero()),
       last_process_time_(clock->CurrentTime()),
       last_send_time_(last_process_time_),
-      packet_queue_(last_process_time_, field_trials_),
+      packet_queue_(last_process_time_),
       packet_counter_(0),
-      congestion_window_size_(DataSize::PlusInfinity()),
-      outstanding_data_(DataSize::Zero()),
+      congested_(false),
       queue_time_limit(kMaxExpectedQueueLength),
       account_for_audio_(false),
       include_overhead_(false) {
@@ -142,7 +139,7 @@ PacingController::PacingController(Clock* clock,
   }
   FieldTrialParameter<int> min_packet_limit_ms("", min_packet_limit_.ms());
   ParseFieldTrial({&min_packet_limit_ms},
-                  field_trials_->Lookup("WebRTC-Pacer-MinPacketLimitMs"));
+                  field_trials_.Lookup("WebRTC-Pacer-MinPacketLimitMs"));
   min_packet_limit_ = TimeDelta::Millis(min_packet_limit_ms.Get());
   UpdateBudgetWithElapsedTime(min_packet_limit_);
 }
@@ -171,29 +168,11 @@ bool PacingController::IsPaused() const {
   return paused_;
 }
 
-void PacingController::SetCongestionWindow(DataSize congestion_window_size) {
-  const bool was_congested = Congested();
-  congestion_window_size_ = congestion_window_size;
-  if (was_congested && !Congested()) {
-    TimeDelta elapsed_time = UpdateTimeAndGetElapsed(CurrentTime());
-    UpdateBudgetWithElapsedTime(elapsed_time);
+void PacingController::SetCongested(bool congested) {
+  if (congested_ && !congested) {
+    UpdateBudgetWithElapsedTime(UpdateTimeAndGetElapsed(CurrentTime()));
   }
-}
-
-void PacingController::UpdateOutstandingData(DataSize outstanding_data) {
-  const bool was_congested = Congested();
-  outstanding_data_ = outstanding_data;
-  if (was_congested && !Congested()) {
-    TimeDelta elapsed_time = UpdateTimeAndGetElapsed(CurrentTime());
-    UpdateBudgetWithElapsedTime(elapsed_time);
-  }
-}
-
-bool PacingController::Congested() const {
-  if (congestion_window_size_.IsFinite()) {
-    return outstanding_data_ >= congestion_window_size_;
-  }
-  return false;
+  congested_ = congested;
 }
 
 bool PacingController::IsProbing() const {
@@ -329,7 +308,7 @@ TimeDelta PacingController::UpdateTimeAndGetElapsed(Timestamp now) {
 }
 
 bool PacingController::ShouldSendKeepalive(Timestamp now) const {
-  if (send_padding_if_silent_ || paused_ || Congested() ||
+  if (send_padding_if_silent_ || paused_ || congested_ ||
       packet_counter_ == 0) {
     // We send a padding packet every 500 ms to ensure we won't get stuck in
     // congested state due to no feedback being received.
@@ -375,7 +354,7 @@ Timestamp PacingController::NextSendTime() const {
     }
   }
 
-  if (Congested() || packet_counter_ == 0) {
+  if (congested_ || packet_counter_ == 0) {
     // We need to at least send keep-alive packets with some interval.
     return last_send_time_ + kCongestedPacketInterval;
   }
@@ -625,7 +604,7 @@ DataSize PacingController::PaddingToAdd(DataSize recommended_probe_size,
     return DataSize::Zero();
   }
 
-  if (Congested()) {
+  if (congested_) {
     // Don't add padding if congested, even if requested for probing.
     return DataSize::Zero();
   }
@@ -667,7 +646,7 @@ std::unique_ptr<RtpPacketToSend> PacingController::GetPendingPacket(
       !pace_audio_ && packet_queue_.LeadingAudioPacketEnqueueTime().has_value();
   bool is_probe = pacing_info.probe_cluster_id != PacedPacketInfo::kNotAProbe;
   if (!unpaced_audio_packet && !is_probe) {
-    if (Congested()) {
+    if (congested_) {
       // Don't send anything if congested.
       return nullptr;
     }
@@ -730,7 +709,6 @@ void PacingController::UpdateBudgetWithElapsedTime(TimeDelta delta) {
 }
 
 void PacingController::UpdateBudgetWithSentData(DataSize size) {
-  outstanding_data_ += size;
   if (mode_ == ProcessMode::kPeriodic) {
     media_budget_.UseBudget(size.bytes());
     padding_budget_.UseBudget(size.bytes());

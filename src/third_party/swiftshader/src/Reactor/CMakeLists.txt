@@ -34,6 +34,7 @@ set(REACTOR_SRC_FILES
     ReactorDebugInfo.cpp
     ReactorDebugInfo.hpp
     Routine.hpp
+    Swizzle.hpp
 )
 
 set(SUBZERO_SRC_FILES
@@ -143,5 +144,42 @@ target_compile_options(ReactorLLVM
 target_link_libraries(ReactorLLVM
     PRIVATE
         llvm
+        ${REACTOR_PRIVATE_LINK_LIBRARIES}
+)
+
+# ReactorLLVMSubmodule library
+
+add_library(ReactorLLVMSubmodule STATIC EXCLUDE_FROM_ALL
+    ${REACTOR_SRC_FILES}
+    ${LLVM_SRC_FILES}
+)
+
+set_target_properties(ReactorLLVMSubmodule PROPERTIES
+    POSITION_INDEPENDENT_CODE 1
+    FOLDER "Reactor"
+)
+
+target_include_directories(ReactorLLVMSubmodule
+    PUBLIC
+        .
+        "${THIRD_PARTY_DIR}/llvm-project/llvm/include"
+        "${CMAKE_BINARY_DIR}/third_party/llvm-project/llvm/include"
+)
+
+target_compile_definitions(ReactorLLVMSubmodule
+    PUBLIC
+        ${REACTOR_PUBLIC_COMPILE_DEFINITIONS}
+    PRIVATE
+        ${REACTOR_PRIVATE_COMPILE_DEFINITIONS}
+)
+
+target_compile_options(ReactorLLVMSubmodule
+    PRIVATE
+        ${ROOT_PROJECT_COMPILE_OPTIONS}
+)
+
+target_link_libraries(ReactorLLVMSubmodule
+    PRIVATE
+        ${llvm_libs}
         ${REACTOR_PRIVATE_LINK_LIBRARIES}
 )

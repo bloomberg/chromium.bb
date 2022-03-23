@@ -29,6 +29,7 @@
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -166,6 +167,11 @@ namespace {
 // How long to wait for newly loaded content to send a compositor frame
 // before clearing previously displayed graphics.
 constexpr base::TimeDelta kNewContentRenderingDelay = base::Seconds(4);
+
+constexpr gfx::Rect kInvalidScreenRect(std::numeric_limits<int>::max(),
+                                       std::numeric_limits<int>::max(),
+                                       0,
+                                       0);
 
 bool g_check_for_pending_visual_properties_ack = true;
 
@@ -430,6 +436,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       agent_scheduling_group_(agent_scheduling_group),
       routing_id_(routing_id),
       is_hidden_(hidden),
+      last_view_screen_rect_(kInvalidScreenRect),
+      last_window_screen_rect_(kInvalidScreenRect),
       latency_tracker_(delegate_),
       hung_renderer_delay_(kHungRendererDelay),
       new_content_rendering_delay_(kNewContentRenderingDelay),
@@ -646,6 +654,11 @@ void RenderWidgetHostImpl::SendScreenRects() {
   if (is_hidden_) {
     // On GTK, this comes in for backgrounded tabs. Ignore, to match what
     // happens on Win & Mac, and when the view is shown it'll call this again.
+    return;
+  }
+
+  if (last_view_screen_rect_ == view_->GetViewBounds() &&
+      last_window_screen_rect_ == view_->GetBoundsInRootWindow()) {
     return;
   }
 
@@ -2252,6 +2265,7 @@ void RenderWidgetHostImpl::ResetStateForCreatedRenderWidget(
   // When the RenderWidget was destroyed, the ack may never come back. Don't
   // let that prevent us from speaking to the next RenderWidget.
   waiting_for_screen_rects_ack_ = false;
+  last_view_screen_rect_ = last_window_screen_rect_ = kInvalidScreenRect;
 
   visual_properties_ack_pending_ =
       DoesVisualPropertiesNeedAck(nullptr, initial_props);
@@ -2839,11 +2853,15 @@ void RenderWidgetHostImpl::StartDragging(
   float scale = GetScaleFactorForView(GetView());
   gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
   gfx::Vector2d offset = bitmap_offset_in_dip;
+#if !BUILDFLAG(IS_MAC)
   // Scale the offset by device scale factor, otherwise the drag
   // image location doesn't line up with the drop location (drag destination).
-  gfx::Vector2dF scaled_offset = gfx::Vector2dF(offset);
+  // (TODO: crbug.com/1298831) Remove !BUILDFLAG(IS_MAC) after fixing the drag
+  // icon position.
+  gfx::Vector2dF scaled_offset = static_cast<gfx::Vector2dF>(offset);
   scaled_offset.Scale(scale);
   offset = gfx::ToRoundedVector2d(scaled_offset);
+#endif
   view->StartDragging(filtered_data, drag_operations_mask, image, offset,
                       *event_info, this);
 }

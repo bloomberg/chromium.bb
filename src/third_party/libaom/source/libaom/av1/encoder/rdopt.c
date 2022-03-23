@@ -1656,6 +1656,7 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
 
     av1_subtract_plane(x, plane_bsize, plane);
     int64_t sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh) << 4;
+    sse >>= ((cpi->frame_info.bit_depth - 8) * 2);
     total_sse += sse;
   }
   const int skip_mode_ctx = av1_get_skip_mode_context(xd);
@@ -4097,6 +4098,34 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   }
 }
 
+static AOM_INLINE void init_single_inter_mode_search_state(
+    InterModeSearchState *search_state) {
+  for (int dir = 0; dir < 2; ++dir) {
+    for (int mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
+      for (int ref_frame = 0; ref_frame < FWD_REFS; ++ref_frame) {
+        SingleInterModeState *state;
+
+        state = &search_state->single_state[dir][mode][ref_frame];
+        state->ref_frame = NONE_FRAME;
+        state->rd = INT64_MAX;
+
+        state = &search_state->single_state_modelled[dir][mode][ref_frame];
+        state->ref_frame = NONE_FRAME;
+        state->rd = INT64_MAX;
+
+        search_state->single_rd_order[dir][mode][ref_frame] = NONE_FRAME;
+      }
+    }
+  }
+
+  for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
+    search_state->best_single_rd[ref_frame] = INT64_MAX;
+    search_state->best_single_mode[ref_frame] = PRED_MODE_INVALID;
+  }
+  av1_zero(search_state->single_state_cnt);
+  av1_zero(search_state->single_state_modelled_cnt);
+}
+
 static AOM_INLINE void init_inter_mode_search_state(
     InterModeSearchState *search_state, const AV1_COMP *cpi,
     const MACROBLOCK *x, BLOCK_SIZE bsize, int64_t best_rd_so_far) {
@@ -4131,7 +4160,7 @@ static AOM_INLINE void init_inter_mode_search_state(
   for (int i = 0; i <= LAST_NEW_MV_INDEX; ++i)
     search_state->mode_threshold[i] = 0;
   const int *const rd_threshes = cpi->rd.threshes[segment_id][bsize];
-  for (int i = LAST_NEW_MV_INDEX + 1; i < MAX_MODES; ++i)
+  for (int i = LAST_NEW_MV_INDEX + 1; i < SINGLE_REF_MODE_END; ++i)
     search_state->mode_threshold[i] =
         ((int64_t)rd_threshes[i] * x->thresh_freq_fact[bsize][i]) >>
         RD_THRESH_FAC_FRAC_BITS;
@@ -4143,7 +4172,7 @@ static AOM_INLINE void init_inter_mode_search_state(
   av1_zero(search_state->single_newmv);
   av1_zero(search_state->single_newmv_rate);
   av1_zero(search_state->single_newmv_valid);
-  for (int i = 0; i < MB_MODE_COUNT; ++i) {
+  for (int i = SINGLE_INTER_MODE_START; i < SINGLE_INTER_MODE_END; ++i) {
     for (int j = 0; j < MAX_REF_MV_SEARCH; ++j) {
       for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
         search_state->modelled_rd[i][j][ref_frame] = INT64_MAX;
@@ -4152,37 +4181,26 @@ static AOM_INLINE void init_inter_mode_search_state(
     }
   }
 
-  for (int dir = 0; dir < 2; ++dir) {
-    for (int mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-      for (int ref_frame = 0; ref_frame < FWD_REFS; ++ref_frame) {
-        SingleInterModeState *state;
-
-        state = &search_state->single_state[dir][mode][ref_frame];
-        state->ref_frame = NONE_FRAME;
-        state->rd = INT64_MAX;
-
-        state = &search_state->single_state_modelled[dir][mode][ref_frame];
-        state->ref_frame = NONE_FRAME;
-        state->rd = INT64_MAX;
-      }
-    }
-  }
-  for (int dir = 0; dir < 2; ++dir) {
-    for (int mode = 0; mode < SINGLE_INTER_MODE_NUM; ++mode) {
-      for (int ref_frame = 0; ref_frame < FWD_REFS; ++ref_frame) {
-        search_state->single_rd_order[dir][mode][ref_frame] = NONE_FRAME;
-      }
-    }
-  }
-  for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
-    search_state->best_single_rd[ref_frame] = INT64_MAX;
-    search_state->best_single_mode[ref_frame] = MB_MODE_COUNT;
-  }
-  av1_zero(search_state->single_state_cnt);
-  av1_zero(search_state->single_state_modelled_cnt);
-
   for (int i = 0; i < REFERENCE_MODES; ++i) {
     search_state->best_pred_rd[i] = INT64_MAX;
+  }
+
+  if (cpi->common.current_frame.reference_mode != SINGLE_REFERENCE) {
+    for (int i = SINGLE_REF_MODE_END; i < THR_INTER_MODE_END; ++i)
+      search_state->mode_threshold[i] =
+          ((int64_t)rd_threshes[i] * x->thresh_freq_fact[bsize][i]) >>
+          RD_THRESH_FAC_FRAC_BITS;
+
+    for (int i = COMP_INTER_MODE_START; i < COMP_INTER_MODE_END; ++i) {
+      for (int j = 0; j < MAX_REF_MV_SEARCH; ++j) {
+        for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
+          search_state->modelled_rd[i][j][ref_frame] = INT64_MAX;
+          search_state->simple_rd[i][j][ref_frame] = INT64_MAX;
+        }
+      }
+    }
+
+    init_single_inter_mode_search_state(search_state);
   }
 }
 
@@ -4268,7 +4286,8 @@ static int inter_mode_search_order_independent_skip(
   }
 
   const int ref_type = av1_ref_frame_type(ref_frame);
-  if (prune_ref_frame(cpi, x, ref_type)) return 1;
+  if (!cpi->sf.rt_sf.use_real_time_ref_set)
+    if (prune_ref_frame(cpi, x, ref_type)) return 1;
 
   // This is only used in motion vector unit test.
   if (cpi->oxcf.unit_test_cfg.motion_vector_unit_test &&
@@ -5932,14 +5951,16 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, handle_inter_mode_time);
 #endif
-    if (sf->inter_sf.prune_comp_search_by_single_result > 0 &&
-        is_inter_singleref_mode(this_mode)) {
-      collect_single_states(x, &search_state, mbmi);
-    }
+    if (current_frame->reference_mode != SINGLE_REFERENCE) {
+      if (sf->inter_sf.prune_comp_search_by_single_result > 0 &&
+          is_inter_singleref_mode(this_mode)) {
+        collect_single_states(x, &search_state, mbmi);
+      }
 
-    if (sf->inter_sf.prune_comp_using_best_single_mode_ref > 0 &&
-        is_inter_singleref_mode(this_mode))
-      update_best_single_mode(&search_state, this_mode, ref_frame, this_rd);
+      if (sf->inter_sf.prune_comp_using_best_single_mode_ref > 0 &&
+          is_inter_singleref_mode(this_mode))
+        update_best_single_mode(&search_state, this_mode, ref_frame, this_rd);
+    }
 
     if (this_rd == INT64_MAX) continue;
 

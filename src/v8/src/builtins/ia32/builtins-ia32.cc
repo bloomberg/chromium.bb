@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "src/codegen/register-arch.h"
+#include "src/codegen/register.h"
 #if V8_TARGET_ARCH_IA32
 
 #include "src/api/api-arguments.h"
@@ -2600,7 +2600,7 @@ void Builtins::Generate_Call(MacroAssembler* masm, ConvertReceiverMode mode) {
   StackArgumentsAccessor args(argc);
 
   Label non_callable, non_smi, non_callable_jsfunction, non_jsboundfunction,
-      non_proxy, class_constructor;
+      non_proxy, non_wrapped_function, class_constructor;
   __ JumpIfSmi(target, &non_callable);
   __ bind(&non_smi);
   __ LoadMap(map, target);
@@ -2629,9 +2629,17 @@ void Builtins::Generate_Call(MacroAssembler* masm, ConvertReceiverMode mode) {
   __ j(not_equal, &non_proxy);
   __ Jump(BUILTIN_CODE(masm->isolate(), CallProxy), RelocInfo::CODE_TARGET);
 
+  // Check if target is a wrapped function and call CallWrappedFunction external
+  // builtin
+  __ bind(&non_proxy);
+  __ cmpw(instance_type, Immediate(JS_WRAPPED_FUNCTION_TYPE));
+  __ j(not_equal, &non_wrapped_function);
+  __ Jump(BUILTIN_CODE(masm->isolate(), CallWrappedFunction),
+          RelocInfo::CODE_TARGET);
+
   // ES6 section 9.2.1 [[Call]] ( thisArgument, argumentsList)
   // Check that the function is not a "classConstructor".
-  __ bind(&non_proxy);
+  __ bind(&non_wrapped_function);
   __ cmpw(instance_type, Immediate(JS_CLASS_CONSTRUCTOR_TYPE));
   __ j(equal, &class_constructor);
 
@@ -2915,19 +2923,19 @@ void Builtins::Generate_WasmDebugBreak(MacroAssembler* masm) {
 
     // Save all parameter registers. They might hold live values, we restore
     // them after the runtime call.
-    for (int reg_code : base::bits::IterateBitsBackwards(
-             WasmDebugBreakFrameConstants::kPushedGpRegs)) {
-      __ Push(Register::from_code(reg_code));
+    for (Register reg :
+         base::Reversed(WasmDebugBreakFrameConstants::kPushedGpRegs)) {
+      __ Push(reg);
     }
 
     constexpr int kFpStackSize =
         kSimd128Size * WasmDebugBreakFrameConstants::kNumPushedFpRegisters;
     __ AllocateStackSpace(kFpStackSize);
     int offset = kFpStackSize;
-    for (int reg_code : base::bits::IterateBitsBackwards(
-             WasmDebugBreakFrameConstants::kPushedFpRegs)) {
+    for (DoubleRegister reg :
+         base::Reversed(WasmDebugBreakFrameConstants::kPushedFpRegs)) {
       offset -= kSimd128Size;
-      __ movdqu(Operand(esp, offset), DoubleRegister::from_code(reg_code));
+      __ movdqu(Operand(esp, offset), reg);
     }
 
     // Initialize the JavaScript context with 0. CEntry will use it to
@@ -2936,15 +2944,13 @@ void Builtins::Generate_WasmDebugBreak(MacroAssembler* masm) {
     __ CallRuntime(Runtime::kWasmDebugBreak, 0);
 
     // Restore registers.
-    for (int reg_code :
-         base::bits::IterateBits(WasmDebugBreakFrameConstants::kPushedFpRegs)) {
-      __ movdqu(DoubleRegister::from_code(reg_code), Operand(esp, offset));
+    for (DoubleRegister reg : WasmDebugBreakFrameConstants::kPushedFpRegs) {
+      __ movdqu(reg, Operand(esp, offset));
       offset += kSimd128Size;
     }
     __ add(esp, Immediate(kFpStackSize));
-    for (int reg_code :
-         base::bits::IterateBits(WasmDebugBreakFrameConstants::kPushedGpRegs)) {
-      __ Pop(Register::from_code(reg_code));
+    for (Register reg : WasmDebugBreakFrameConstants::kPushedGpRegs) {
+      __ Pop(reg);
     }
   }
 

@@ -194,7 +194,8 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
     // We first schedule a delayed task far in the future with maximum timer
     // slack.
     message_pump_->SetTimerSlack(TIMER_SLACK_MAXIMUM);
-    message_pump_->ScheduleDelayedWork(TimeTicks::Now() + Hours(1));
+    const TimeTicks now = TimeTicks::Now();
+    message_pump_->ScheduleDelayedWork({now + Hours(1), now});
 
     // Since we have no other work pending, the pump will initially be idle.
     action_.store(NONE);
@@ -320,32 +321,5 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(MessagePumpType::DEFAULT,
                                            MessagePumpType::UI,
                                            MessagePumpType::IO));
-
-#if BUILDFLAG(IS_WIN)
-
-TEST(MessagePumpTestWin, WmQuitIsNotIgnoredWithEnableWmQuit) {
-  SingleThreadTaskExecutor task_executor(
-      MessagePumpType::UI_WITH_WM_QUIT_SUPPORT);
-
-  // Post a WM_QUIT message to the current thread.
-  ::PostQuitMessage(0);
-
-  // Post a task to the current thread, with a small delay to make it less
-  // likely that we process the posted task before looking for WM_* messages.
-  RunLoop run_loop;
-  task_executor.task_runner()->PostDelayedTask(FROM_HERE,
-                                               BindOnce(
-                                                   [](OnceClosure closure) {
-                                                     ADD_FAILURE();
-                                                     std::move(closure).Run();
-                                                   },
-                                                   run_loop.QuitClosure()),
-                                               TestTimeouts::tiny_timeout());
-
-  // Run the loop. It should not result in ADD_FAILURE() getting called.
-  run_loop.Run();
-}
-
-#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace base

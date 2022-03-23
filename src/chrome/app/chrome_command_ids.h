@@ -84,6 +84,7 @@
 // Terminal system app commands
 #define IDC_TERMINAL_LINUX   34070
 #define IDC_TERMINAL_SSH     34071
+#define IDC_TERMINAL_HOME    34072
 
 // Move window to other user commands
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_2 34080
@@ -444,6 +445,11 @@
 // Quick Answers context menu items.
 #define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER 52413
 #define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY 52414
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+// Screen AI
+#define IDC_RUN_SCREEN_AI 52420
 #endif
 
 // Tab Search

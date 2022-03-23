@@ -139,46 +139,50 @@ export class GPUTest extends Fixture {
     await super.finalize();
 
     if (this.provider) {
-      let threw: undefined | Error;
+      let threw = false;
+      let thrownValue: unknown;
       {
         const provider = this.provider;
         this.provider = undefined;
         try {
           await devicePool.release(provider);
         } catch (ex) {
-          threw = ex;
+          threw = true;
+          thrownValue = ex;
         }
       }
       // The GPUDevice and GPUQueue should now have no outstanding references.
 
       if (threw) {
-        if (threw instanceof TestOOMedShouldAttemptGC) {
+        if (thrownValue instanceof TestOOMedShouldAttemptGC) {
           // Try to clean up, in case there are stray GPU resources in need of collection.
           await attemptGarbageCollection();
         }
-        throw threw;
+        throw thrownValue;
       }
     }
 
     if (this.mismatchedProvider) {
       // MAINTENANCE_TODO(kainino0x): Deduplicate this with code in GPUTest.finalize
-      let threw: undefined | Error;
+      let threw = false;
+      let thrownValue: unknown;
       {
         const provider = this.mismatchedProvider;
         this.mismatchedProvider = undefined;
         try {
           await mismatchedDevicePool.release(provider);
         } catch (ex) {
-          threw = ex;
+          threw = true;
+          thrownValue = ex;
         }
       }
 
       if (threw) {
-        if (threw instanceof TestOOMedShouldAttemptGC) {
+        if (thrownValue instanceof TestOOMedShouldAttemptGC) {
           // Try to clean up, in case there are stray GPU resources in need of collection.
           await attemptGarbageCollection();
         }
-        throw threw;
+        throw thrownValue;
       }
     }
   }
@@ -525,7 +529,7 @@ export class GPUTest extends Fixture {
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.dispatch(numRows);
-    pass.endPass();
+    pass.end();
     this.device.queue.submit([commandEncoder.finish()]);
 
     const expectedResults = new Array(numRows).fill(1);
@@ -929,7 +933,7 @@ export class GPUTest extends Fixture {
         const encoder = commandEncoder.beginComputePass();
 
         return new CommandBufferMaker(this, encoder, (shouldSucceed: boolean) => {
-          encoder.endPass();
+          encoder.end();
           return this.expectGPUError('validation', () => commandEncoder.finish(), !shouldSucceed);
         });
       }
@@ -944,29 +948,37 @@ export class GPUTest extends Fixture {
             })
           ).createView();
 
+        let depthStencilAttachment: GPURenderPassDepthStencilAttachment | undefined = undefined;
+        if (fullAttachmentInfo.depthStencilFormat !== undefined) {
+          depthStencilAttachment = {
+            view: makeAttachmentView(fullAttachmentInfo.depthStencilFormat),
+          };
+          if (kTextureFormatInfo[fullAttachmentInfo.depthStencilFormat].depth) {
+            depthStencilAttachment.depthClearValue = 0;
+            depthStencilAttachment.depthLoadOp = 'clear';
+            depthStencilAttachment.depthStoreOp = 'discard';
+          }
+          if (kTextureFormatInfo[fullAttachmentInfo.depthStencilFormat].stencil) {
+            depthStencilAttachment.stencilClearValue = 1;
+            depthStencilAttachment.stencilLoadOp = 'clear';
+            depthStencilAttachment.stencilStoreOp = 'discard';
+          }
+        }
         const passDesc: GPURenderPassDescriptor = {
           colorAttachments: Array.from(fullAttachmentInfo.colorFormats, format => ({
             view: makeAttachmentView(format),
-            loadValue: [0, 0, 0, 0],
+            clearValue: [0, 0, 0, 0],
+            loadOp: 'clear',
             storeOp: 'store',
           })),
-          depthStencilAttachment:
-            fullAttachmentInfo.depthStencilFormat !== undefined
-              ? {
-                  view: makeAttachmentView(fullAttachmentInfo.depthStencilFormat),
-                  depthLoadValue: 0,
-                  depthStoreOp: 'discard',
-                  stencilLoadValue: 1,
-                  stencilStoreOp: 'discard',
-                }
-              : undefined,
+          depthStencilAttachment,
           occlusionQuerySet,
         };
 
         const commandEncoder = this.device.createCommandEncoder();
         const encoder = commandEncoder.beginRenderPass(passDesc);
         return new CommandBufferMaker(this, encoder, (shouldSucceed: boolean) => {
-          encoder.endPass();
+          encoder.end();
           return this.expectGPUError('validation', () => commandEncoder.finish(), !shouldSucceed);
         });
       }

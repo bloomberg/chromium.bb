@@ -30,6 +30,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/secure_dns_mode.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -39,6 +40,7 @@
 #include "services/network/network_quality_estimator_manager.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/key_pinning.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
@@ -107,7 +109,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // changes that occur while tests run.
   void ReplaceSystemDnsConfigForTesting();
 
-  void SetTestDohConfigForTesting(const net::DnsOverHttpsConfig& doh_config);
+  void SetTestDohConfigForTesting(net::SecureDnsMode secure_dns_mode,
+                                  const net::DnsOverHttpsConfig& doh_config);
 
   // Creates a NetworkService instance on the current thread.
   static std::unique_ptr<NetworkService> Create(
@@ -173,10 +176,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::NetworkService::UpdateCRLSetCallback callback) override;
   void OnCertDBChanged() override;
   void SetEncryptionKey(const std::string& encryption_key) override;
-  void AddAllowedRequestInitiatorForPlugin(
-      int32_t process_id,
-      const url::Origin& allowed_request_initiator) override;
-  void RemoveSecurityExceptionsForPlugin(int32_t process_id) override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
@@ -193,20 +192,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void ClearSCTAuditingCache() override;
   void ConfigureSCTAuditing(
-      double sampling_rate,
-      base::TimeDelta log_expected_ingestion_delay,
-      base::TimeDelta log_max_ingestion_random_delay,
-      const GURL& reporting_uri,
-      const GURL& hashdance_lookup_uri,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      const net::MutableNetworkTrafficAnnotationTag&
-          hashdance_traffic_annotation) override;
+      mojom::SCTAuditingConfigurationPtr configuration) override;
   void UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
                        base::Time update_time) override;
   void UpdateCtKnownPopularSCTs(
       const std::vector<std::vector<uint8_t>>& sct_hashes) override;
   void SetCtEnforcementEnabled(bool enabled) override;
 #endif
+
+  void UpdateKeyPinsList(mojom::PinListPtr pin_list,
+                         base::Time update_time) override;
 
 #if BUILDFLAG(IS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
@@ -226,9 +221,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(int32_t process_id, const GURL& resource_url) const;
-
-  bool IsInitiatorAllowedForPlugin(int process_id,
-                                   const url::Origin& request_initiator);
 
   net::NetworkQualityEstimator* network_quality_estimator() {
     return network_quality_estimator_manager_->GetNetworkQualityEstimator();
@@ -285,6 +277,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return ct_log_list_update_time_;
   }
 #endif
+
+  bool pins_list_updated() const { return pins_list_updated_; }
+
+  const std::vector<net::TransportSecurityState::PinSet>& pinsets() const {
+    return pinsets_;
+  }
+
+  const std::vector<net::TransportSecurityState::PinSetInfo>& host_pins()
+      const {
+    return host_pins_;
+  }
+
+  base::Time pins_list_update_time() const { return pins_list_update_time_; }
 
   mojom::URLLoaderNetworkServiceObserver*
   GetDefaultURLLoaderNetworkServiceObserver();
@@ -408,10 +413,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   base::Time ct_log_list_update_time_;
 #endif
 
-  // Map from a renderer process id, to the set of plugin origins embedded by
-  // that renderer process (the renderer will proxy requests from PPAPI - such
-  // requests should have their initiator origin within the set stored here).
-  std::map<int, std::set<url::Origin>> plugin_origins_;
+  bool pins_list_updated_ = false;
+
+  std::vector<net::TransportSecurityState::PinSet> pinsets_;
+
+  std::vector<net::TransportSecurityState::PinSetInfo> host_pins_;
+
+  base::Time pins_list_update_time_;
 
   // This is used only in tests. It avoids leaky SystemDnsConfigChangeNotifiers
   // leaking stale listeners between tests.

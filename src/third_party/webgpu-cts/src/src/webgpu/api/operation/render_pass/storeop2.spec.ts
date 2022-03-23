@@ -64,13 +64,14 @@ TODO: needs review and rename
         {
           view: renderTexture.createView(),
           storeOp: t.params.storeOp,
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
         },
       ],
     });
     pass.setPipeline(renderPipeline);
     pass.draw(3);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     // expect the buffer to be clear

@@ -16,6 +16,7 @@
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
+<translation id="1409426117486808224">نمای ساده‌شده برای برگه‌های باز</translation>
 <translation id="1415402041810619267">نشانی وب کوتاه‌شده</translation>
 <translation id="1446450296470737166">‏اجازه کنترل کامل دستگاه‌های MIDI</translation>
 <translation id="1620510694547887537">دوربین</translation>
@@ -52,8 +53,10 @@
 <translation id="2253414712144136228">برداشتن <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">وقتی سایتی می‌خواهد دستگا‌ه‌های بلوتوث اطراف را پیدا کند، سؤال شود (توصیه می‌شود)</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
+<translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
 <translation id="2359808026110333948">ادامه</translation>
-<translation id="2379925928934107488">‏استفاده از طرح زمینه تیره برای سایت‌ها وقتی Chrome از طرح زمینه تیره استفاده می‌کند (هرگاه ممکن باشد)</translation>
+<translation id="2379925928934107488">‏استفاده از طرح‌زمینه تیره برای سایت‌ها وقتی Chrome از طرح‌زمینه تیره استفاده می‌کند (هرگاه ممکن باشد)</translation>
+<translation id="2387895666653383613">مقیاس‌گذاری نوشتار</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> مگابایت</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مجاز هستند}one{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مجاز هستند}other{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مجاز هستند}}</translation>
 <translation id="2434158240863470628">بارگیری کامل شد <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -67,13 +70,14 @@
 <translation id="2570922361219980984">‏دسترسی به مکان برای این دستگاه نیز خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
 <translation id="2586657967955657006">بریده‌دان</translation>
-<translation id="2597457036804169544">طرح زمینه تیره برای سایت‌ها استفاده نشود</translation>
+<translation id="2597457036804169544">طرح‌زمینه تیره برای سایت‌ها استفاده نشود</translation>
 <translation id="2621115761605608342">جاوااسکریپت را برای سایتی خاص مجاز کنید.</translation>
 <translation id="2653659639078652383">ارسال</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2687403674020088961">مسدود کردن همه کوکی‌ها (توصیه نمی‌شود)</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2717722538473713889">آدرس‌های ایمیل</translation>
+<translation id="2750481671343847896">سایت‌ها می‌توانند پیام‌واره‌های ورود به سیستم سرویس‌های تعیین هویت را نشان دهند.</translation>
 <translation id="2785051990912111074">این گزینه کوکی‌ها را برای <ph name="WEBSITE" /> پاک خواهد کرد</translation>
 <translation id="2822354292072154809">مطمئن‌اید می‌خواهید همه مجوزهای سایت مربوط به <ph name="CHOSEN_OBJECT_NAME" /> را بازنشانی کنید؟</translation>
 <translation id="2870560284913253234">سایت</translation>
@@ -107,11 +111,13 @@
 <translation id="3600792891314830896">سایت‌هایی که صدا پخش می‌کنند بی‌صدا شوند</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3763247130972274048">در سمت راست یا چپ ویدیو دو ضربه سریع بزنید تا ۱۰ ثانیه رد شود</translation>
-<translation id="3797520601150691162">طرح زمینه تیره برای سایت خاصی استفاده نشود</translation>
+<translation id="3797520601150691162">طرح‌زمینه تیره برای سایت خاصی استفاده نشود</translation>
 <translation id="381841723434055211">شماره‌های تلفن</translation>
+<translation id="3826050100957962900">ورود به سیستم شخص ثالث</translation>
 <translation id="3835233591525155343">استفاده از دستگاه</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3859306556332390985">جستجو به جلو</translation>
+<translation id="3895926599014793903">فعال کردن اجباری بزرگ‌نمایی</translation>
 <translation id="3955193568934677022">به سایت‌ها اجازه داده شود محتوای محافظت‌شده پخش کنند (توصیه می‌شود)</translation>
 <translation id="3967822245660637423">بارگیری کامل شد</translation>
 <translation id="3987993985790029246">کپی پیوند</translation>
@@ -119,6 +125,7 @@
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
+<translation id="4149994727733219643">نمای ساده‌شده برای صفحه‌های وب</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4194328954146351878">‏قبل‌از اینکه به سایت‌ها اجازه داده شود اطلاعات دستگاه‌های NFC را ببینند و تغییر دهند سؤال شود (توصیه می‌شود)</translation>
 <translation id="4200726100658658164">باز کردن «تنظیمات مکان»</translation>
@@ -171,6 +178,7 @@
 <translation id="5354152178998424783">با این کار <ph name="DATASIZE" /> از داده‌ها و کوکی‌هایی که سایت ذخیره کرده است پاک خواهد شد.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ ۱ مورد دیگر)}one{(+ # مورد دیگر)}other{(+ # مورد دیگر)}}</translation>
 <translation id="5403592356182871684">نام‌ها</translation>
+<translation id="5412236728747081950">‏این سایت علایقتان را از Chrome می‌گیرد تا آگهی‌های مرتبط‌تری به شما نشان دهد</translation>
 <translation id="5438097262470833822">این گزینه همه اجازه‌های <ph name="WEBSITE" /> را بازنشانی خواهد کرد</translation>
 <translation id="5489227211564503167">زمان سپری‌شده: <ph name="ELAPSED_TIME" /> از <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
@@ -182,6 +190,7 @@
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5649053991847567735">بارگیری‌های خودکار</translation>
+<translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5689516760719285838">مکان</translation>
 <translation id="5690795753582697420">‏«دوربین» در تنظیمات Android خاموش است</translation>
@@ -228,6 +237,7 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6689172468748959065">عکس‌های نمایه</translation>
 <translation id="6697925417670533197">بارگیری‌های فعال</translation>
+<translation id="6722828510648505498">پیام‌واره‌های ورود به سیستم سرویس‌های تعیین هویت مسدود می‌شود.</translation>
 <translation id="6746124502594467657">انتقال به پایین</translation>
 <translation id="6749077623962119521">اجازه‌ها بازنشانی شوند؟</translation>
 <translation id="6766622839693428701">برای بستن، تند به‌پایین بکشید.</translation>
@@ -237,14 +247,17 @@
 <translation id="6912998170423641340">سایت‌ها از خواندن نوشتار و تصاویر بریده‌دان منع شوند</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6965382102122355670">قبول</translation>
+<translation id="6981982820502123353">دسترس‌پذیری</translation>
 <translation id="6992289844737586249">قبل از اجازه به سایت‌ها برای استفاده از میکروفون ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="7000754031042624318">‏در تنظیمات Android غیرفعال شده است</translation>
 <translation id="7016516562562142042">برای موتور جستجوی فعلی مجاز است</translation>
+<translation id="702463548815491781">‏توصیه در زمانی‌که TalkBack یا «دسترسی کلیدی» روشن است</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> مورد انتخاب شد.  گزینه‌ها در نزدیکی بالای صفحه دردسترس است</translation>
 <translation id="7141896414559753902">مسدود کردن نمایش پنجره‌های بازشو و هدایت‌ها در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> کیلوبایت</translation>
+<translation id="7180611975245234373">بازخوانی</translation>
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
@@ -252,7 +265,7 @@
 <translation id="7302486331832100261">معمولاً اعلان‌ها را مسدود می‌کنید. برای مجاز کردن، روی «جزئیات» ضربه بزنید.</translation>
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
-<translation id="7425915948813553151">طرح زمینه تیره برای سایت‌ها</translation>
+<translation id="7425915948813553151">طرح‌زمینه تیره برای سایت‌ها</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7554752735887601236">سایتی درحال استفاده از میکروفونتان است</translation>
 <translation id="7561196759112975576">همیشه</translation>
@@ -290,6 +303,7 @@
 <translation id="8211406090763984747">اتصال امن است</translation>
 <translation id="8249310407154411074">انتقال به بالا</translation>
 <translation id="8261506727792406068">حذف</translation>
+<translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="8300705686683892304">مدیریت‌شده توسط برنامه</translation>
 <translation id="8324158725704657629">دوباره سؤال نشود</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
@@ -297,7 +311,9 @@
 <translation id="83792324527827022">سایتی درحال استفاده از دوربین و میکروفونتان است</translation>
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
+<translation id="8409345997656833551">هرزمان که بتوان مقاله را در نمای ساده‌شده نشان داد، اعلان دریافت می‌کنید</translation>
 <translation id="8425213833346101688">تغییر</translation>
+<translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8441146129660941386">جستجو به عقب</translation>
 <translation id="8444433999583714703">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید به مکانتان دسترسی پیدا کند، مکان را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>

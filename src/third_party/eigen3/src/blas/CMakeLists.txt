@@ -1,6 +1,7 @@
 
 project(EigenBlas CXX)
 
+if(EIGEN_BUILD_BLAS)
 include(CheckLanguage)
 check_language(Fortran)
 if(CMAKE_Fortran_COMPILER)
@@ -59,4 +60,4 @@ if(EIGEN_BUILD_TESTING)
 endif()
 
 endif()
-
+endif()

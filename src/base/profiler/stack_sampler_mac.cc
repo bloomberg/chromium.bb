@@ -6,10 +6,11 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/profiler/native_unwinder_mac.h"
+#include "base/profiler/native_unwinder.h"
 #include "base/profiler/stack_copier_suspend.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/suspendable_thread_delegate_mac.h"
+#include "base/profiler/unwinder.h"
 
 namespace base {
 
@@ -18,7 +19,7 @@ namespace {
 std::vector<std::unique_ptr<Unwinder>> CreateUnwinders(
     ModuleCache* module_cache) {
   std::vector<std::unique_ptr<Unwinder>> unwinders;
-  unwinders.push_back(std::make_unique<NativeUnwinderMac>(module_cache));
+  unwinders.push_back(CreateNativeUnwinder(module_cache));
   return unwinders;
 }
 

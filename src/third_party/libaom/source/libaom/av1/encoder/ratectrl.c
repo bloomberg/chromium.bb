@@ -210,16 +210,16 @@ int av1_rc_clamp_pframe_target_size(const AV1_COMP *const cpi, int target,
   return target;
 }
 
-int av1_rc_clamp_iframe_target_size(const AV1_COMP *const cpi, int target) {
+int av1_rc_clamp_iframe_target_size(const AV1_COMP *const cpi, int64_t target) {
   const RATE_CONTROL *rc = &cpi->rc;
   const RateControlCfg *const rc_cfg = &cpi->oxcf.rc_cfg;
   if (rc_cfg->max_intra_bitrate_pct) {
-    const int max_rate =
-        rc->avg_frame_bandwidth * rc_cfg->max_intra_bitrate_pct / 100;
+    const int64_t max_rate =
+        (int64_t)rc->avg_frame_bandwidth * rc_cfg->max_intra_bitrate_pct / 100;
     target = AOMMIN(target, max_rate);
   }
   if (target > rc->max_frame_bandwidth) target = rc->max_frame_bandwidth;
-  return target;
+  return (int)target;
 }
 
 // Update the buffer level for higher temporal layers, given the encoded current
@@ -2381,7 +2381,7 @@ int av1_calc_pframe_target_size_one_pass_vbr(
 int av1_calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
   static const int kf_ratio = 25;
   const RATE_CONTROL *rc = &cpi->rc;
-  const int target = rc->avg_frame_bandwidth * kf_ratio;
+  const int64_t target = (int64_t)rc->avg_frame_bandwidth * kf_ratio;
   return av1_rc_clamp_iframe_target_size(cpi, target);
 }
 
@@ -2443,7 +2443,7 @@ int av1_calc_pframe_target_size_one_pass_cbr(
 int av1_calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
   const RATE_CONTROL *rc = &cpi->rc;
   const PRIMARY_RATE_CONTROL *p_rc = &cpi->ppi->p_rc;
-  int target;
+  int64_t target;
   if (cpi->common.current_frame.frame_number == 0) {
     target = ((p_rc->starting_buffer_level / 2) > INT_MAX)
                  ? INT_MAX
@@ -2627,7 +2627,8 @@ void av1_set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   // Refresh this slot, which will become LAST on next frame.
   svc->refresh[last_idx_refresh] = 1;
   // Update GOLDEN on period for fixed slot case.
-  if (gld_fixed_slot && gf_update) {
+  if (gld_fixed_slot && gf_update &&
+      cm->current_frame.frame_type != KEY_FRAME) {
     ext_refresh_frame_flags->golden_frame = 1;
     svc->refresh[gld_idx] = 1;
   }

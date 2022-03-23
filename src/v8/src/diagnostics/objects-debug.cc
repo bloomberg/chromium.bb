@@ -61,6 +61,7 @@
 #include "src/objects/js-segmenter-inl.h"
 #include "src/objects/js-segments-inl.h"
 #endif  // V8_INTL_SUPPORT
+#include "src/objects/js-struct-inl.h"
 #include "src/objects/js-temporal-objects-inl.h"
 #include "src/objects/js-weak-refs-inl.h"
 #include "src/objects/literal-objects-inl.h"
@@ -98,7 +99,7 @@ namespace internal {
 //   every encountered tagged pointer.
 // - Verification should be pushed down to the specific instance type if its
 //   integrity is independent of an outer object.
-// - In cases where the InstanceType is too genernic (e.g. FixedArray) the
+// - In cases where the InstanceType is too generic (e.g. FixedArray) the
 //   XXXVerify of the outer method has to do recursive verification.
 // - If the corresponding objects have inheritence the parent's Verify method
 //   is called as well.
@@ -204,6 +205,7 @@ void HeapObject::HeapObjectVerify(Isolate* isolate) {
     case ORDERED_HASH_SET_TYPE:
     case ORDERED_NAME_DICTIONARY_TYPE:
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
+    case REGISTERED_SYMBOL_TABLE_TYPE:
     case NAME_DICTIONARY_TYPE:
     case GLOBAL_DICTIONARY_TYPE:
     case NUMBER_DICTIONARY_TYPE:
@@ -525,8 +527,19 @@ void Map::MapVerify(Isolate* isolate) {
       TransitionsAccessor(isolate, *this).IsConsistentWithBackPointers());
   // Only JSFunction maps have has_prototype_slot() bit set and constructible
   // JSFunction objects must have prototype slot.
-  CHECK_IMPLIES(has_prototype_slot(),
-                InstanceTypeChecker::IsJSFunction(instance_type()));
+  CHECK_IMPLIES(has_prototype_slot(), IsJSFunctionMap());
+
+  if (IsJSObjectMap()) {
+    int header_end_offset = JSObject::GetHeaderSize(*this);
+    int inobject_fields_start_offset = GetInObjectPropertyOffset(0);
+    // Ensure that embedder fields are located exactly between header and
+    // inobject properties.
+    CHECK_EQ(header_end_offset, JSObject::GetEmbedderFieldsStartOffset(*this));
+    CHECK_EQ(header_end_offset +
+                 JSObject::GetEmbedderFieldCount(*this) * kEmbedderDataSlotSize,
+             inobject_fields_start_offset);
+  }
+
   if (!may_have_interesting_symbols()) {
     CHECK(!has_named_interceptor());
     CHECK(!is_dictionary_map());
@@ -866,7 +879,7 @@ void JSFunction::JSFunctionVerify(Isolate* isolate) {
   STATIC_ASSERT(JSFunction::TorqueGeneratedClass::kHeaderSize ==
                 8 * kTaggedSize);
 
-  JSFunctionOrBoundFunctionVerify(isolate);
+  JSFunctionOrBoundFunctionOrWrappedFunctionVerify(isolate);
   CHECK(IsJSFunction());
   VerifyPointer(isolate, shared(isolate));
   CHECK(shared(isolate).IsSharedFunctionInfo());
@@ -1181,6 +1194,34 @@ void JSMapIterator::JSMapIteratorVerify(Isolate* isolate) {
 }
 
 USE_TORQUE_VERIFIER(JSShadowRealm)
+USE_TORQUE_VERIFIER(JSWrappedFunction)
+
+void JSSharedStruct::JSSharedStructVerify(Isolate* isolate) {
+  CHECK(IsJSSharedStruct());
+  JSObjectVerify(isolate);
+  CHECK(HasFastProperties());
+  // Shared structs can only point to primitives or other shared HeapObjects,
+  // even internally.
+  // TODO(v8:12547): Generalize shared -> shared pointer verification.
+  Map struct_map = map();
+  CHECK(struct_map.InSharedHeap());
+  CHECK(struct_map.GetBackPointer().IsUndefined(isolate));
+  Object maybe_cell = struct_map.prototype_validity_cell();
+  if (maybe_cell.IsCell()) CHECK(maybe_cell.InSharedHeap());
+  CHECK(!struct_map.is_extensible());
+  CHECK(!struct_map.is_prototype_map());
+  CHECK(property_array().InSharedHeap());
+  DescriptorArray descriptors = struct_map.instance_descriptors(isolate);
+  CHECK(descriptors.InSharedHeap());
+  for (InternalIndex i : struct_map.IterateOwnDescriptors()) {
+    PropertyDetails details = descriptors.GetDetails(i);
+    CHECK_EQ(PropertyKind::kData, details.kind());
+    CHECK_EQ(PropertyLocation::kField, details.location());
+    CHECK(details.representation().IsTagged());
+    CHECK(
+        RawFastPropertyAt(FieldIndex::ForDescriptor(struct_map, i)).IsShared());
+  }
+}
 
 void WeakCell::WeakCellVerify(Isolate* isolate) {
   CHECK(IsWeakCell());

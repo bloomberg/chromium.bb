@@ -20,24 +20,21 @@ SimpleDataProducer::SimpleDataProducer() {}
 SimpleDataProducer::~SimpleDataProducer() {}
 
 void SimpleDataProducer::SaveStreamData(QuicStreamId id,
-                                        const struct iovec* iov,
-                                        int iov_count,
-                                        size_t iov_offset,
-                                        QuicByteCount data_length) {
-  if (data_length == 0) {
+                                        absl::string_view data) {
+  if (data.empty()) {
     return;
   }
   if (!send_buffer_map_.contains(id)) {
     send_buffer_map_[id] = std::make_unique<QuicStreamSendBuffer>(&allocator_);
   }
-  send_buffer_map_[id]->SaveStreamData(iov, iov_count, iov_offset, data_length);
+  send_buffer_map_[id]->SaveStreamData(data);
 }
 
 void SimpleDataProducer::SaveCryptoData(EncryptionLevel level,
                                         QuicStreamOffset offset,
                                         absl::string_view data) {
   auto key = std::make_pair(level, offset);
-  crypto_buffer_map_[key] = data;
+  crypto_buffer_map_[key] = std::string(data);
 }
 
 WriteStreamDataResult SimpleDataProducer::WriteStreamData(

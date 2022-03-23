@@ -29,7 +29,7 @@ namespace internal {
 
    If the preconditions are satisfied, which they are for for the _*_rcp_ps
    instructions on x86, the result has a maximum relative error of 2 ulps,
-   and correctly handles reciprocals of zero and infinity.
+   and correctly handles reciprocals of zero, infinity, and NaN.
 */
 template <typename Packet, int Steps>
 struct generic_reciprocal_newton_step {
@@ -53,8 +53,100 @@ struct generic_reciprocal_newton_step {
 template<typename Packet>
 struct generic_reciprocal_newton_step<Packet, 0> {
    EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE Packet
-   run(const Packet& /*unused*/, const Packet& approx_a_recip) {
-    return approx_a_recip;
+   run(const Packet& /*unused*/, const Packet& approx_rsqrt) {
+    return approx_rsqrt;
+  }
+};
+
+
+/** \internal Fast reciprocal sqrt using Newton-Raphson's method.
+
+ Preconditions:
+   1. The starting guess provided in approx_a_recip must have at least half
+      the leading mantissa bits in the correct result, such that a single
+      Newton-Raphson step is sufficient to get within 1-2 ulps of the currect
+      result.
+   2. If a is zero, approx_a_recip must be infinite with the same sign as a.
+   3. If a is infinite, approx_a_recip must be zero with the same sign as a.
+
+   If the preconditions are satisfied, which they are for for the _*_rcp_ps
+   instructions on x86, the result has a maximum relative error of 2 ulps,
+   and correctly handles zero, infinity, and NaN. Positive denormals are
+   treated as zero.
+*/
+template <typename Packet, int Steps>
+struct generic_rsqrt_newton_step {
+  static_assert(Steps > 0, "Steps must be at least 1.");
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE  Packet
+  run(const Packet& a, const Packet& approx_rsqrt) {
+    using Scalar = typename unpacket_traits<Packet>::type;
+    const Packet one_point_five = pset1<Packet>(Scalar(1.5));
+    const Packet minus_half = pset1<Packet>(Scalar(-0.5));
+    
+    // Refine the approximation using one Newton-Raphson step:
+    //   x_{n+1} = x_n * (1.5 + (-0.5 * x_n) * (a * x_n)).
+    // The approximation is expressed this way to avoid over/under-flows.  
+    Packet x_newton  = pmul(approx_rsqrt, pmadd(pmul(minus_half, approx_rsqrt), pmul(a, approx_rsqrt), one_point_five));
+    for (int step = 1; step < Steps; ++step) {
+      x_newton  = pmul(x_newton, pmadd(pmul(minus_half, x_newton), pmul(a, x_newton), one_point_five));
+    }
+    
+    // If approx_rsqrt is 0 or +/-inf, we should return it as is.  Note:
+    // on intel, approx_rsqrt can be inf for small denormal values.
+    const Packet return_approx = por(pcmp_eq(approx_rsqrt, pzero(a)),
+                                     pcmp_eq(pabs(approx_rsqrt), pset1<Packet>(NumTraits<Scalar>::infinity())));
+    return pselect(return_approx, approx_rsqrt, x_newton);
+  }
+};
+
+template<typename Packet>
+struct generic_rsqrt_newton_step<Packet, 0> {
+   EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE Packet
+   run(const Packet& /*unused*/, const Packet& approx_rsqrt) {
+    return approx_rsqrt;
+  }
+};
+
+
+/** \internal Fast sqrt using Newton-Raphson's method.
+
+ Preconditions:
+   1. The starting guess for the reciprocal sqrt provided in approx_rsqrt must
+      have at least half the leading mantissa bits in the correct result, such
+      that a single Newton-Raphson step is sufficient to get within 1-2 ulps of
+      the currect result.
+   2. If a is zero, approx_rsqrt must be infinite.
+   3. If a is infinite, approx_rsqrt must be zero.
+
+   If the preconditions are satisfied, which they are for for the _*_rsqrt_ps
+   instructions on x86, the result has a maximum relative error of 2 ulps,
+   and correctly handles zero and infinity, and NaN. Positive denormal inputs
+   are treated as zero.
+*/
+template <typename Packet, int Steps=1>
+struct generic_sqrt_newton_step {
+  static_assert(Steps > 0, "Steps must be at least 1.");
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE  Packet
+  run(const Packet& a, const Packet& approx_rsqrt) {
+    using Scalar = typename unpacket_traits<Packet>::type;
+    const Packet one_point_five = pset1<Packet>(Scalar(1.5));
+    const Packet minus_half = pset1<Packet>(Scalar(-0.5));
+    // If a is inf or zero, return a directly.
+    const Packet inf_mask = pcmp_eq(a, pset1<Packet>(NumTraits<Scalar>::infinity()));
+    const Packet return_a = por(pcmp_eq(a, pzero(a)), inf_mask);
+    // Do a single step of Newton's iteration for reciprocal square root:
+    //   x_{n+1} = x_n * (1.5 + (-0.5 * x_n) * (a * x_n))).
+    // The Newton's step is computed this way to avoid over/under-flows.
+    Packet rsqrt = pmul(approx_rsqrt, pmadd(pmul(minus_half, approx_rsqrt), pmul(a, approx_rsqrt), one_point_five));
+    for (int step = 1; step < Steps; ++step) {
+      rsqrt = pmul(rsqrt, pmadd(pmul(minus_half, rsqrt), pmul(a, rsqrt), one_point_five));
+    }
+
+    // Return sqrt(x) = x * rsqrt(x) for non-zero finite positive arguments.
+    // Return a itself for 0 or +inf, NaN for negative arguments.
+    return pselect(return_a, a, pmul(a, rsqrt));
   }
 };
 

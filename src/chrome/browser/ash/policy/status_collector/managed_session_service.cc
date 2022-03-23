@@ -5,7 +5,9 @@
 #include "chrome/browser/ash/policy/status_collector/managed_session_service.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 
@@ -14,6 +16,11 @@ namespace policy {
 namespace {
 
 constexpr base::TimeDelta kMinimumSuspendDuration = base::Minutes(1);
+
+ash::KioskLaunchController* GetKioskLaunchController() {
+  auto* host = ash::LoginDisplayHost::default_host();
+  return host ? host->GetKioskLaunchController() : nullptr;
+}
 
 }  // namespace
 
@@ -40,6 +47,10 @@ ManagedSessionService::~ManagedSessionService() {
         ->RemoveLoginStatusConsumer(this);
   }
 
+  if (GetKioskLaunchController()) {
+    GetKioskLaunchController()->RemoveKioskProfileLoadFailedObserver(this);
+  }
+
   if (ash::SessionTerminationManager::Get()) {
     ash::SessionTerminationManager::Get()->RemoveObserver(this);
   }
@@ -48,14 +59,10 @@ ManagedSessionService::~ManagedSessionService() {
 void ManagedSessionService::AddObserver(
     ManagedSessionService::Observer* observer) {
   observers_.AddObserver(observer);
-  if (is_logged_in_) {
-    if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
-      observer->OnGuestLogin();
-    } else {
-      auto* const profile = ash::ProfileHelper::Get()->GetProfileByUser(
-          user_manager::UserManager::Get()->GetPrimaryUser());
-      observer->OnLogin(profile);
-    }
+  if (is_logged_in_observed_) {
+    auto* const profile = ash::ProfileHelper::Get()->GetProfileByUser(
+        user_manager::UserManager::Get()->GetPrimaryUser());
+    observer->OnLogin(profile);
   }
 }
 
@@ -87,7 +94,7 @@ void ManagedSessionService::OnUserProfileLoaded(const AccountId& account_id) {
       ash::ProfileHelper::Get()->GetProfileByAccountId(account_id);
   bool is_primary_profile =
       ash::ProfileHelper::Get()->IsPrimaryProfile(profile);
-  if (is_logged_in_ && is_primary_profile) {
+  if (is_logged_in_observed_ && is_primary_profile) {
     return;
   } else if (!is_primary_profile) {
     profile_observations_.AddObservation(profile);
@@ -149,6 +156,14 @@ void ManagedSessionService::OnAuthAttemptStarted() {
     ash::ExistingUserController::current_controller()->AddLoginStatusConsumer(
         this);
   }
+
+  if (GetKioskLaunchController()) {
+    // Remove observer first in case the auth attempt is because of a retry, and
+    // the observation was added, if it was not added removing the observer will
+    // be a no-op.
+    GetKioskLaunchController()->RemoveKioskProfileLoadFailedObserver(this);
+    GetKioskLaunchController()->AddKioskProfileLoadFailedObserver(this);
+  }
 }
 
 void ManagedSessionService::OnAuthFailure(const ash::AuthFailure& error) {
@@ -157,25 +172,35 @@ void ManagedSessionService::OnAuthFailure(const ash::AuthFailure& error) {
   }
 }
 
+void ManagedSessionService::OnKioskProfileLoadFailed() {
+  for (auto& observer : observers_) {
+    observer.OnKioskLoginFailure();
+  }
+}
+
 void ManagedSessionService::SetLoginStatus() {
-  if (is_logged_in_) {
+  if (is_logged_in_observed_ || !user_manager::UserManager::Get() ||
+      !user_manager::UserManager::Get()->IsUserLoggedIn()) {
     return;
   }
 
-  if (user_manager::UserManager::Get() &&
-      user_manager::UserManager::Get()->IsUserLoggedIn() &&
-      user_manager::UserManager::Get()->GetPrimaryUser()) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* const primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!primary_user || !primary_user->is_profile_created()) {
+    return;
+  }
 
-    is_logged_in_ = true;
-    if (!user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
-      auto* const profile = ash::ProfileHelper::Get()->GetProfileByUser(
-          user_manager::UserManager::Get()->GetPrimaryUser());
-      profile_observations_.AddObservation(profile);
-    }
-    if (ash::SessionTerminationManager::Get()) {
-      ash::SessionTerminationManager::Get()->AddObserver(this);
-    }
+  auto* const profile =
+      ash::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  if (!profile) {
+    // Profile is not fully initialized yet.
+    return;
+  }
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_logged_in_observed_ = true;
+  profile_observations_.AddObservation(profile);
+  if (ash::SessionTerminationManager::Get()) {
+    ash::SessionTerminationManager::Get()->AddObserver(this);
   }
 }
 }  // namespace policy

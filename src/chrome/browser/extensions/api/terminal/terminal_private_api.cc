@@ -15,7 +15,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
@@ -35,8 +37,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
@@ -65,6 +70,8 @@ namespace SendInput = extensions::api::terminal_private::SendInput;
 namespace AckOutput = extensions::api::terminal_private::AckOutput;
 namespace SetSettings = extensions::api::terminal_private::SetSettings;
 namespace OpenWindow = extensions::api::terminal_private::OpenWindow;
+namespace GetPrefs = extensions::api::terminal_private::GetPrefs;
+namespace SetPrefs = extensions::api::terminal_private::SetPrefs;
 
 using crostini::mojom::InstallerState;
 
@@ -176,7 +183,8 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
   std::vector<base::Value> args;
   args.push_back(base::Value(terminal_id));
   args.push_back(base::Value(output_type));
-  args.push_back(base::Value(output));
+  args.push_back(base::Value(base::make_span(
+      reinterpret_cast<const uint8_t*>(&output[0]), output.size())));
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(browser_context);
@@ -188,10 +196,26 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
   }
 }
 
+void PrefChanged(Profile* profile, const std::string& pref_name) {
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+  if (!event_router) {
+    return;
+  }
+  std::vector<base::Value> args;
+  base::Value prefs(base::Value::Type::DICTIONARY);
+  prefs.SetKey(pref_name, profile->GetPrefs()->Get(pref_name)->Clone());
+  args.push_back(std::move(prefs));
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::TERMINAL_PRIVATE_ON_PREF_CHANGED,
+      terminal_private::OnPrefChanged::kEventName, std::move(args));
+  event_router->BroadcastEvent(std::move(event));
+}
+
 void PreferenceChanged(Profile* profile,
                        const std::string& pref_name,
                        extensions::events::HistogramValue histogram,
                        const char* eventName) {
+  PrefChanged(profile, pref_name);
   std::vector<base::Value> args;
   args.push_back(profile->GetPrefs()->Get(pref_name)->Clone());
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
@@ -211,6 +235,9 @@ TerminalPrivateAPI::TerminalPrivateAPI(content::BrowserContext* context)
       pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
   Profile* profile = Profile::FromBrowserContext(context);
   pref_change_registrar_->Init(profile->GetPrefs());
+  // TODO(b/223076712): onPrefChanged() will replace
+  // on{Settings,A11yStatus}Changed(). Introduced in M101/nassh0.45.  Old
+  // functions can be removed once JS client code is updated to use new code.
   pref_change_registrar_->Add(
       crostini::prefs::kCrostiniTerminalSettings,
       base::BindRepeating(
@@ -225,6 +252,10 @@ TerminalPrivateAPI::TerminalPrivateAPI(content::BrowserContext* context)
           ash::prefs::kAccessibilitySpokenFeedbackEnabled,
           extensions::events::TERMINAL_PRIVATE_ON_A11Y_STATUS_CHANGED,
           terminal_private::OnA11yStatusChanged::kEventName));
+  pref_change_registrar_->Add(crostini::prefs::kCrostiniContainers,
+                              base::BindRepeating(&PrefChanged, profile));
+  pref_change_registrar_->Add(crostini::prefs::kCrostiniEnabled,
+                              base::BindRepeating(&PrefChanged, profile));
 }
 
 TerminalPrivateAPI::~TerminalPrivateAPI() = default;
@@ -666,6 +697,18 @@ TerminalPrivateOpenOptionsPageFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+TerminalPrivateOpenSettingsSubpageFunction::
+    ~TerminalPrivateOpenSettingsSubpageFunction() = default;
+
+ExtensionFunction::ResponseAction
+TerminalPrivateOpenSettingsSubpageFunction::Run() {
+  // Ignore params->subpage for now, and always open crostini.
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kCrostiniSectionPath);
+  return RespondNow(NoArguments());
+}
+
 TerminalPrivateGetOSInfoFunction::~TerminalPrivateGetOSInfoFunction() = default;
 
 ExtensionFunction::ResponseAction TerminalPrivateGetOSInfoFunction::Run() {
@@ -674,6 +717,69 @@ ExtensionFunction::ResponseAction TerminalPrivateGetOSInfoFunction::Run() {
                   base::FeatureList::IsEnabled(
                       chromeos::features::kTerminalTmuxIntegration));
   return RespondNow(OneArgument(std::move(info)));
+}
+
+// TODO(b/223076712): {get,set}Prefs() will replace
+// {get,set}{Settings,A11yStatus}(). Introduced in M101/nassh0.45.  Old
+// functions can be removed once JS client code is updated to use new code.
+TerminalPrivateGetPrefsFunction::~TerminalPrivateGetPrefsFunction() = default;
+
+ExtensionFunction::ResponseAction TerminalPrivateGetPrefsFunction::Run() {
+  std::unique_ptr<GetPrefs::Params> params(GetPrefs::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  PrefService* service =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  base::Value result(base::Value::Type::DICT);
+
+  static const base::NoDestructor<std::vector<std::string>> kAllowList{{
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled,
+      crostini::prefs::kCrostiniContainers,
+      crostini::prefs::kCrostiniEnabled,
+      crostini::prefs::kCrostiniTerminalSettings,
+  }};
+
+  for (const auto& path : params->paths) {
+    // Ignore non-allowed paths.
+    if (!base::Contains(*kAllowList, path)) {
+      LOG(WARNING) << "Ignoring non-allowed GetPrefs path=" << path;
+      continue;
+    }
+    if (path == crostini::prefs::kCrostiniTerminalSettings) {
+      crostini::RecordTerminalSettingsChangesUMAs(
+          Profile::FromBrowserContext(browser_context()));
+    }
+    result.SetKey(path, service->Get(path)->Clone());
+  }
+  return RespondNow(OneArgument(std::move(result)));
+}
+
+TerminalPrivateSetPrefsFunction::~TerminalPrivateSetPrefsFunction() = default;
+
+ExtensionFunction::ResponseAction TerminalPrivateSetPrefsFunction::Run() {
+  std::unique_ptr<SetPrefs::Params> params(SetPrefs::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  PrefService* service =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+
+  static const base::NoDestructor<
+      base::flat_map<std::string, base::Value::Type>>
+      kAllowList{{{crostini::prefs::kCrostiniTerminalSettings,
+                   base::Value::Type::DICTIONARY}}};
+
+  for (base::DictionaryValue::Iterator it(params->prefs.additional_properties);
+       !it.IsAtEnd(); it.Advance()) {
+    // Write prefs if they are allowed, and match expected type, else ignore.
+    auto allow_it = kAllowList->find(it.key());
+    if (allow_it == kAllowList->end() ||
+        allow_it->second != it.value().type()) {
+      LOG(WARNING) << "Ignoring non-allowed SetPrefs path=" << it.key()
+                   << ", type=" << it.value().type();
+      continue;
+    }
+    service->Set(it.key(), it.value());
+  }
+  return RespondNow(NoArguments());
 }
 
 TerminalPrivateGetSettingsFunction::~TerminalPrivateGetSettingsFunction() =

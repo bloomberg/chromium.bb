@@ -290,12 +290,13 @@ g.test('sampleCount,valid_sampleCount_with_other_parameter_varies')
       .combine('usage', kTextureUsages)
       // Filter out incompatible dimension type and format combinations.
       .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
-      .unless(({ usage, format, mipLevelCount, dimension }) => {
+      .unless(({ sampleCount, usage, format, mipLevelCount, dimension }) => {
         const info = kTextureFormatInfo[format];
         return (
           ((usage & GPUConst.TextureUsage.RENDER_ATTACHMENT) !== 0 && !info.renderable) ||
           ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage) ||
-          (mipLevelCount !== 1 && dimension === '1d')
+          (mipLevelCount !== 1 && dimension === '1d') ||
+          (sampleCount > 1 && !info.multisample)
         );
       })
   )

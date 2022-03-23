@@ -42,14 +42,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.RemoteHungProcessTerminateReason"
-    enum="RemoteHungProcessTerminateReason" expires_after="2022-07-03">
+    enum="RemoteHungProcessTerminateReason" expires_after="2022-09-11">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>The reason of remote hang processes termination.</summary>
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.RemoteProcessInteractionResult"
-    enum="RemoteProcessInteractionResult" expires_after="2022-07-03">
+    enum="RemoteProcessInteractionResult" expires_after="2022-09-11">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -69,7 +69,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessErrorCode.Windows"
-    enum="WinGetLastError" expires_after="2022-07-03">
+    enum="WinGetLastError" expires_after="2022-09-11">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -79,7 +79,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -89,7 +89,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminationWaitErrorCode.Windows"
-    enum="WinGetLastError" expires_after="2022-07-03">
+    enum="WinGetLastError" expires_after="2022-09-11">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -98,7 +98,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToCreate" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -108,7 +108,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToFailure" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -119,13 +119,52 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToNotify" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     Time it takes to find the process singleton owner and notify it. Reported
     once per successful rendez-vous. This does not include time spent in the
     fast notification path (chrome_exe_main_win.cc).
+  </summary>
+</histogram>
+
+<histogram
+    name="Chrome.SystemNetworkContextManager.NetworkSandboxLaunchFailed.ErrorCode"
+    enum="LaunchErrorCodes" expires_after="2022-12-31">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The platform-specific error code returned from a failed attempt to launch
+    the network service process sandboxed. This is recorded if an attempt is
+    made to launch a sandboxed network service process, and the launch fails.
+    See also ChildProcess.LaunchFailed.UtilityProcessErrorCode.
+  </summary>
+</histogram>
+
+<histogram
+    name="Chrome.SystemNetworkContextManager.NetworkSandboxLaunchFailed.WinLastError"
+    enum="WinGetLastError" expires_after="2022-12-31">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The Windows last error obtained from a call to GetLastError after a failed
+    attempt to launch the network service process sandboxed. This is recorded if
+    an attempt is made to launch a sandboxed network service process on Windows,
+    and the launch fails. See also ChildProcess.LaunchFailed.WinLastError.
+  </summary>
+</histogram>
+
+<histogram name="Chrome.SystemNetworkContextManager.NetworkSandboxState"
+    enum="NetworkSandboxState" expires_after="2022-12-31">
+  <owner>wfh@chromium.org</owner>
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    The operational state of the network sandbox. This is recorded each time the
+    browser attempts to launch the network service process. This might be
+    recorded multiple times from the same client if the network service process
+    crashes or does not launch correctly. This is not recorded if the network
+    service is running in-process.
   </summary>
 </histogram>
 

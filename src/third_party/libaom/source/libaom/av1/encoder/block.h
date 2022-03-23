@@ -894,7 +894,7 @@ typedef struct macroblock {
    */
   int rdmult;
 
-  // Intra only, per sb rd adjustment.
+  //! Intra only, per sb rd adjustment.
   int intra_sb_rdmult_modifier;
 
   //! Superblock level distortion propagation factor.
@@ -957,6 +957,10 @@ typedef struct macroblock {
   /*!\brief Number of zero motion vectors
    */
   int cnt_zeromv;
+
+  /*!\brief Flag to force zeromv-skip block, for nonrd path.
+   */
+  int force_zeromv_skip;
   /**@}*/
 
   /*****************************************************************************
@@ -1211,9 +1215,7 @@ typedef struct macroblock {
    *
    *  Pointer to the array of structures to store source variance information of
    *  each 4x4 sub-block in a superblock. Block4x4VarInfo structure is used to
-   *  store source variance and log of source variance of each 4x4 sub-block
-   *  which is retrieved in subsequent calls to log_sub_block_var() and
-   *  intra_rd_variance_factor() functions.
+   *  store source variance and log of source variance of each 4x4 sub-block.
    */
   Block4x4VarInfo *src_var_info_of_4x4_sub_blocks;
 } MACROBLOCK;

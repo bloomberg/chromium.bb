@@ -7,7 +7,6 @@ import * as dom from '../dom.js';
 import {reportError} from '../error.js';
 import {FaceOverlay} from '../face.js';
 import {Point} from '../geometry.js';
-import * as loadTimeData from '../models/load_time_data.js';
 import {DeviceOperator, parseMetadata} from '../mojo/device_operator.js';
 import {
   AndroidControlAeAntibandingMode,
@@ -80,9 +79,12 @@ export class Preview {
    */
   private focusMarker: symbol|null = null;
 
-  private facing = Facing.NOT_SET;
+  private facing: Facing|null = null;
+
   private deviceId: string|null = null;
+
   private vidPid: string|null = null;
+
   private isSupportPTZInternal = false;
 
   /**
@@ -92,14 +94,13 @@ export class Preview {
       new Map<string, MediaTrackConstraintSet>();
 
   private constraints: StreamConstraints|null = null;
+
   private onPreviewExpired: WaitableEvent|null = null;
 
   /**
    * @param onNewStreamNeeded Callback to request new stream.
    */
-  constructor(
-      private readonly getLastScreenOnTime: () => number,
-      private readonly onNewStreamNeeded: () => Promise<void>) {
+  constructor(private readonly onNewStreamNeeded: () => Promise<void>) {
     window.addEventListener('resize', () => this.onWindowStatusChanged());
 
     windowController.addListener(() => this.onWindowStatusChanged());
@@ -132,7 +133,7 @@ export class Preview {
   }
 
   getFacing(): Facing {
-    return this.facing;
+    return util.assertEnumVariant(Facing, this.facing);
   }
 
   getDeviceId(): string|null {
@@ -141,6 +142,7 @@ export class Preview {
 
   /**
    * USB camera vid:pid identifier of the opened stream.
+   *
    * @return Identifier formatted as "vid:pid" or null for non-USB camera.
    */
   getVidPid(): string|null {
@@ -153,15 +155,7 @@ export class Preview {
   }
 
   private async updateFacing() {
-    if (!(await DeviceOperator.isSupported())) {
-      this.facing = Facing.NOT_SET;
-      return;
-    }
     const {facingMode} = this.getVideoTrack().getSettings();
-    if (facingMode === undefined) {
-      this.facing = Facing.EXTERNAL;
-      return;
-    }
     switch (facingMode) {
       case 'user':
         this.facing = Facing.USER;
@@ -170,7 +164,8 @@ export class Preview {
         this.facing = Facing.ENVIRONMENT;
         return;
       default:
-        throw new Error('Unknown facing: ' + facingMode);
+        this.facing = Facing.EXTERNAL;
+        return;
     }
   }
 
@@ -263,6 +258,7 @@ export class Preview {
 
   /**
    * Sets video element's source.
+   *
    * @param stream Stream to be the source.
    * @return Promise for the operation.
    */
@@ -270,10 +266,10 @@ export class Preview {
     const tpl = util.instantiateTemplate('#preview-video-template');
     const video = dom.getFrom(tpl, 'video', HTMLVideoElement);
     await new Promise<void>((resolve) => {
-      const handler = () => {
+      function handler() {
         video.removeEventListener('canplay', handler);
         resolve();
-      };
+      }
       video.addEventListener('canplay', handler);
       video.srcObject = stream;
     });
@@ -289,24 +285,26 @@ export class Preview {
     return this.onIntrinsicSizeChanged();
   }
 
+  private isStreamAlive(): boolean {
+    assert(this.streamInternal !== null);
+    return this.streamInternal.getVideoTracks().length !== 0 &&
+        this.streamInternal.getVideoTracks()[0].readyState !== 'ended';
+  }
+
+  private clearWatchdog() {
+    if (this.watchdog !== null) {
+      clearInterval(this.watchdog);
+      this.watchdog = null;
+    }
+  }
+
   /**
    * Opens preview stream.
+   *
    * @param constraints Constraints of preview stream.
    * @return Promise resolved to opened preview stream.
    */
   async open(constraints: StreamConstraints): Promise<MediaStream> {
-    // Sets 2500 ms delay between screen resumed and open camera
-    // preview.
-    // TODO(b/173679752): Removes this workaround after fix delay on
-    // kernel side.
-    if (loadTimeData.getBoard() === 'zork') {
-      const screenOnTime = performance.now() - this.getLastScreenOnTime();
-      const delay = 2500 - screenOnTime;
-      if (delay > 0) {
-        await util.sleep(delay);
-      }
-    }
-
     this.constraints = constraints;
     this.streamInternal = await navigator.mediaDevices.getUserMedia(
         toMediaStreamConstraints(constraints));
@@ -315,15 +313,8 @@ export class Preview {
       // Use a watchdog since the stream.onended event is unreliable in the
       // recent version of Chrome. As of 55, the event is still broken.
       this.watchdog = setInterval(() => {
-        assert(this.streamInternal !== null);
-        // Check if video stream is ended (audio stream may still be live).
-        if (this.streamInternal.getVideoTracks().length === 0 ||
-            this.streamInternal.getVideoTracks()[0].readyState === 'ended') {
-          if (this.watchdog !== null) {
-            clearInterval(this.watchdog);
-            this.watchdog = null;
-          }
-          this.streamInternal = null;
+        if (!this.isStreamAlive()) {
+          this.clearWatchdog();
           this.onNewStreamNeeded();
         }
       }, 100);
@@ -348,6 +339,7 @@ export class Preview {
         this.vidPid = await deviceOperator.getVidPid(deviceId);
       }
 
+      assert(this.onPreviewExpired === null);
       this.onPreviewExpired = new WaitableEvent();
       state.set(state.State.STREAMING, true);
     } catch (e) {
@@ -361,14 +353,11 @@ export class Preview {
    * Closes the preview.
    */
   async close(): Promise<void> {
-    if (this.watchdog !== null) {
-      clearInterval(this.watchdog);
-      this.watchdog = null;
-    }
+    this.clearWatchdog();
     // Pause video element to avoid black frames during transition.
     this.video.pause();
     this.disableShowMetadata();
-    if (this.streamInternal !== null) {
+    if (this.streamInternal !== null && this.isStreamAlive()) {
       const track = this.getVideoTrack();
       const {deviceId} = getVideoTrackSettings(track);
       track.stop();
@@ -377,9 +366,12 @@ export class Preview {
         deviceOperator.dropConnection(deviceId);
       }
       assert(this.onPreviewExpired !== null);
+    }
+    this.streamInternal = null;
+
+    if (this.onPreviewExpired !== null) {
       this.onPreviewExpired.signal();
       this.onPreviewExpired = null;
-      this.streamInternal = null;
     }
     state.set(state.State.STREAMING, false);
   }
@@ -397,6 +389,7 @@ export class Preview {
 
   /**
    * Creates an image blob of the current frame.
+   *
    * @return Promise for the result.
    */
   toImage(): Promise<Blob> {
@@ -408,6 +401,7 @@ export class Preview {
 
   /**
    * Displays preview metadata on preview screen.
+   *
    * @return Promise for the operation.
    */
   private async enableShowMetadata(): Promise<void> {
@@ -415,42 +409,41 @@ export class Preview {
       return;
     }
 
-    dom.getAll('.metadata.value', HTMLElement).forEach((element) => {
+    for (const element of dom.getAll('.metadata.value', HTMLElement)) {
       element.style.display = 'none';
-    });
+    }
 
-    const displayCategory = (selector: string, enabled: boolean) => {
+    function displayCategory(selector: string, enabled: boolean) {
       dom.get(selector, HTMLElement).classList.toggle('mode-on', enabled);
-    };
+    }
 
-    const showValue = (selector: string, val: string) => {
+    function showValue(selector: string, val: string) {
       const element = dom.get(selector, HTMLElement);
       element.style.display = '';
       element.textContent = val;
-    };
+    }
 
-    const buildInverseLookupFunction =
-        (obj: Record<string, number>,
-         prefix: string): (key: number) => string => {
-          const map = new Map<number, string>();
-          for (const [key, val] of Object.entries(obj)) {
-            if (!key.startsWith(prefix)) {
-              continue;
-            }
-            if (map.has(val)) {
-              reportError(
-                  ErrorType.METADATA_MAPPING_FAILURE, ErrorLevel.ERROR,
-                  new Error(`Duplicated value: ${val}`));
-              continue;
-            }
-            map.set(val, key.slice(prefix.length));
-          }
-          return (key: number) => {
-            const val = map.get(key);
-            assert(val !== undefined);
-            return val;
-          };
-        };
+    function buildInverseLookupFunction(
+        obj: Record<string, number>, prefix: string): (key: number) => string {
+      const map = new Map<number, string>();
+      for (const [key, val] of Object.entries(obj)) {
+        if (!key.startsWith(prefix)) {
+          continue;
+        }
+        if (map.has(val)) {
+          reportError(
+              ErrorType.METADATA_MAPPING_FAILURE, ErrorLevel.ERROR,
+              new Error(`Duplicated value: ${val}`));
+          continue;
+        }
+        map.set(val, key.slice(prefix.length));
+      }
+      return (key: number) => {
+        const val = map.get(key);
+        assert(val !== undefined);
+        return val;
+      };
+    }
 
     const afStateNameLookup = buildInverseLookupFunction(
         AndroidControlAfState, 'ANDROID_CONTROL_AF_STATE_');
@@ -464,12 +457,12 @@ export class Preview {
 
     let sensorSensitivity: number|null = null;
     let sensorSensitivityBoost = 100;
-    const getSensitivity = () => {
+    function getSensitivity() {
       if (sensorSensitivity === null) {
         return 'N/A';
       }
       return sensorSensitivity * sensorSensitivityBoost / 100;
-    };
+    }
 
     const tag = CameraMetadataTag;
     const metadataEntryHandlers: Record<string, (values: number[]) => void> = {
@@ -602,7 +595,7 @@ export class Preview {
                          .ANDROID_STATISTICS_FACE_DETECT_MODE_OFF;
       let faceRects: number[] = [];
 
-      const tryParseFaceEntry = (entry: CameraMetadataEntry) => {
+      function tryParseFaceEntry(entry: CameraMetadataEntry) {
         switch (entry.tag) {
           case tag.ANDROID_STATISTICS_FACE_DETECT_MODE: {
             const data = parseMetadata(entry);
@@ -614,9 +607,10 @@ export class Preview {
             faceRects = parseMetadata(entry);
             return true;
           }
+          default:
+            return false;
         }
-        return false;
-      };
+      }
 
       assert(metadata.entries !== undefined);
       for (const entry of metadata.entries) {
@@ -644,6 +638,7 @@ export class Preview {
 
   /**
    * Hide display preview metadata on preview screen.
+   *
    * @return Promise for the operation.
    */
   private async disableShowMetadata(): Promise<void> {
@@ -684,6 +679,7 @@ export class Preview {
 
   /**
    * Apply point of interest to the stream.
+   *
    * @param point The point in normalize coordidate system, which means both
    *     |x| and |y| are in range [0, 1).
    */
@@ -697,6 +693,7 @@ export class Preview {
 
   /**
    * Handles clicking for focus.
+   *
    * @param event Click event.
    */
   private onFocusClicked(event: MouseEvent) {

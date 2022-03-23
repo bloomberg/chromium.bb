@@ -57,6 +57,7 @@
     <!-- Modern List Item V2 dimensions -->
     <dimen name="list_item_v2_margin">8dp</dimen>
     <dimen name="list_item_v2_start_icon_width">96dp</dimen>
+    <dimen name="list_item_v2_start_icon_width_compact">70dp</dimen>
     <dimen name="list_item_v2_start_icon_corner_radius">16dp</dimen>
 
     <!-- SelectableListLayout dimensions -->
@@ -136,7 +137,6 @@
     <dimen name="tile_view_offline_badge_margin_end_modern_condensed">7dp</dimen>
     <dimen name="tile_view_padding">4dp</dimen>
     <dimen name="tile_view_padding_edge_portrait">12dp</dimen>
-    <dimen name="tile_view_padding_portrait">8dp</dimen>
     <dimen name="tile_view_padding_landscape">16dp</dimen>
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
 
@@ -190,4 +190,7 @@
     <!-- Surface color elevations -->
     <dimen name="menu_bg_color_elev">@dimen/default_elevation_0</dimen>
     <dimen name="dialog_elevation">@dimen/default_elevation_0</dimen>
+
+    <!-- Vertical divider dimens -->
+    <dimen name="horizontal_divider_vertical_margin">8dp</dimen>
 </resources>

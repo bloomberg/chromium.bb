@@ -21,6 +21,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
@@ -2224,8 +2225,6 @@ void RTCPeerConnectionHandler::Close() {
     peer_connection_tracker_->TrackClose(this);
 
   native_peer_connection_->Close();
-  DCHECK(dependency_factory_);
-  dependency_factory_->OnPeerConnectionClosed();
 
   // This object may no longer forward call backs to blink.
   is_closed_ = true;

@@ -91,7 +91,9 @@ export enum TrackKindPriority {
   'MAIN_THREAD' = 0,
   'RENDER_THREAD' = 1,
   'GPU_COMPLETION' = 2,
-  'ORDINARY' = 3
+  'CHROME_IO_THREAD' = 3,
+  'CHROME_COMPOSITOR' = 4,
+  'ORDINARY' = 5
 }
 
 export type FlamegraphStateViewingOption =
@@ -335,6 +337,7 @@ export interface PivotTableState {
 // correctly. Generated together with the text of query and passed without the
 // change to the query response.
 export interface PivotTableReduxQueryMetadata {
+  tableName: string;
   pivotColumns: string[];
   aggregationColumns: string[];
 }
@@ -449,6 +452,7 @@ export interface State {
   highlightedSliceId: number;
   focusedFlowIdLeft: number;
   focusedFlowIdRight: number;
+  pendingScrollId?: number;
 
   searchIndex: number;
   currentTab?: string;
@@ -511,7 +515,8 @@ export function isAdbTarget(target: RecordingTarget):
 }
 
 export function hasActiveProbes(config: RecordConfig) {
-  const fieldsWithEmptyResult = new Set<string>(['hpBlockClient']);
+  const fieldsWithEmptyResult =
+      new Set<string>(['hpBlockClient', 'allAtraceApps']);
   let key: keyof RecordConfig;
   for (key in config) {
     if (typeof (config[key]) === 'boolean' && config[key] === true &&

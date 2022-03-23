@@ -29,6 +29,7 @@
 #include "rtc_base/network.h"
 #include "rtc_base/network_monitor_factory.h"
 #include "rtc_base/rtc_certificate_generator.h"
+#include "rtc_base/socket_factory.h"
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
 
@@ -111,6 +112,10 @@ class ConnectionContext final
   rtc::Thread* const network_thread_;
   rtc::Thread* const worker_thread_;
   rtc::Thread* const signaling_thread_;
+
+  // Accessed both on signaling thread and worker thread.
+  std::unique_ptr<WebRtcKeyValueConfig> const trials_;
+
   // channel_manager is accessed both on signaling thread and worker thread.
   std::unique_ptr<cricket::ChannelManager> channel_manager_;
   std::unique_ptr<rtc::NetworkMonitorFactory> const network_monitor_factory_
@@ -123,8 +128,6 @@ class ConnectionContext final
   std::unique_ptr<rtc::BasicPacketSocketFactory> default_socket_factory_
       RTC_GUARDED_BY(signaling_thread_);
   std::unique_ptr<SctpTransportFactoryInterface> const sctp_factory_;
-  // Accessed both on signaling thread and worker thread.
-  std::unique_ptr<WebRtcKeyValueConfig> const trials_;
 };
 
 }  // namespace webrtc

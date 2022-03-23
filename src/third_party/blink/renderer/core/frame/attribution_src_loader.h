@@ -5,14 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ATTRIBUTION_SRC_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ATTRIBUTION_SRC_LOADER_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
-#include "third_party/blink/public/platform/web_impression.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
-#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -20,55 +21,89 @@ class HTMLElement;
 class HTMLImageElement;
 class KURL;
 class LocalFrame;
+class ResourceRequest;
+class ResourceResponse;
+struct WebImpression;
 
 class CORE_EXPORT AttributionSrcLoader
-    : public GarbageCollected<AttributionSrcLoader>,
-      private RawResourceClient {
+    : public GarbageCollected<AttributionSrcLoader> {
  public:
+  enum class RegisterResult {
+    kSuccess,
+    kInvalidProtocol,
+    kNotAllowed,
+    kInsecureContext,
+    kUntrustworthyOrigin,
+  };
+
   explicit AttributionSrcLoader(LocalFrame* frame);
   AttributionSrcLoader(const AttributionSrcLoader&) = delete;
   AttributionSrcLoader& operator=(const AttributionSrcLoader&) = delete;
   AttributionSrcLoader(AttributionSrcLoader&& other) = delete;
   AttributionSrcLoader& operator=(AttributionSrcLoader&& other) = delete;
-  ~AttributionSrcLoader() override;
+  ~AttributionSrcLoader();
 
-  // Registers an attribution_src. This method handles fetching the attribution
-  // src and notifying the browser process to begin tracking it. Must be invoked
-  // prior to `Shutdown()`, otherwise is a no-op.
+  // Registers an attributionsrc. This method handles fetching the attribution
+  // src and notifying the browser process to begin tracking it. It is a no-op
+  // if the frame is not attached.
   void Register(const KURL& attribution_src, HTMLImageElement* element);
 
-  void Shutdown();
+  // Like `Register()`, but only allows sources to be registered.
+  RegisterResult RegisterSources(const KURL& attribution_src);
 
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(local_frame_);
-    visitor->Trace(resource_data_host_map_);
-    RawResourceClient::Trace(visitor);
-  }
+  void MaybeRegisterTrigger(const ResourceRequest& request,
+                            const ResourceResponse& response);
 
-  String DebugName() const override { return "AttributionSrcLoader"; }
+  // Registers an attributionsrc which is associated with a top-level
+  // navigation, for example a click on an anchor tag. Returns a WebImpression
+  // which identifies the attributionsrc request and notifies the browser to
+  // begin tracking it.
+  absl::optional<WebImpression> RegisterNavigation(const KURL& attribution_src);
+
+  void Trace(Visitor* visitor) const;
 
  private:
-  // RawResourceClient:
-  void ResponseReceived(Resource* resource,
-                        const ResourceResponse& response) override;
-  bool RedirectReceived(Resource* resource,
-                        const ResourceRequest& request,
-                        const ResourceResponse& response) override;
-  void NotifyFinished(Resource* resource) override;
+  // Represents what events are able to be registered from an attributionsrc.
+  enum class SrcType { kUndetermined, kSource, kTrigger };
 
-  void HandleResponseHeaders(Resource* resource,
-                             const ResourceResponse& response);
-  void HandleSourceRegistration(Resource* resource,
-                                const ResourceResponse& response);
+  class ResourceClient;
+
+  enum class RegisterContext {
+    kAttributionSrc,
+    kResourceTrigger,
+  };
+
+  ResourceClient* DoRegistration(const KURL& src_url,
+                                 SrcType src_type,
+                                 bool associated_with_navigation);
+  void DoPrerenderingRegistration(const KURL& src_url,
+                                  SrcType src_type,
+                                  bool associated_with_navigation);
+
+  // Returns whether the attribution is allowed to be registered. Devtool issue
+  // might be reported if it's not allowed.
+  RegisterResult CanRegisterAttribution(
+      RegisterContext context,
+      const KURL& url,
+      HTMLElement* element,
+      const absl::optional<String>& request_id);
+
+  void RegisterTrigger(
+      mojom::blink::AttributionTriggerDataPtr trigger_data) const;
+
+  ResourceClient* CreateAndSendRequest(const KURL& src_url,
+                                       HTMLElement* element,
+                                       SrcType src_type,
+                                       bool associated_with_navigation,
+                                       RegisterResult& out_register_result);
 
   void LogAuditIssue(AttributionReportingIssueType issue_type,
                      const String& string,
-                     HTMLElement* element = nullptr);
+                     HTMLElement* element,
+                     const absl::optional<String>& request_id);
 
-  Member<LocalFrame> local_frame_;
-  HeapHashMap<WeakMember<Resource>,
-              mojo::Remote<mojom::blink::AttributionDataHost>>
-      resource_data_host_map_;
+  const Member<LocalFrame> local_frame_;
+  HeapHashSet<Member<ResourceClient>> resource_clients_;
 };
 
 }  // namespace blink

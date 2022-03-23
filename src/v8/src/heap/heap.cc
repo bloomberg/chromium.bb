@@ -204,6 +204,7 @@ class ScavengeTaskObserver : public AllocationObserver {
 
 Heap::Heap()
     : isolate_(isolate()),
+      heap_allocator_(this),
       memory_pressure_level_(MemoryPressureLevel::kNone),
       global_pretenuring_feedback_(kInitialFeedbackCapacity),
       safepoint_(std::make_unique<IsolateSafepoint>(this)),
@@ -480,6 +481,8 @@ GarbageCollector Heap::SelectGarbageCollector(AllocationSpace space,
     return GarbageCollector::MARK_COMPACTOR;
   }
 
+  DCHECK(!FLAG_single_generation);
+  DCHECK(!FLAG_gc_global);
   // Default
   *reason = nullptr;
   return YoungGenerationCollector();
@@ -532,12 +535,14 @@ void Heap::PrintShortHeapStatistics() {
                ", committed: %6zu KB\n",
                code_space_->SizeOfObjects() / KB, code_space_->Available() / KB,
                code_space_->CommittedMemory() / KB);
-  PrintIsolate(isolate_,
-               "Map space,              used: %6zu KB"
-               ", available: %6zu KB"
-               ", committed: %6zu KB\n",
-               map_space_->SizeOfObjects() / KB, map_space_->Available() / KB,
-               map_space_->CommittedMemory() / KB);
+  if (map_space()) {
+    PrintIsolate(isolate_,
+                 "Map space,              used: %6zu KB"
+                 ", available: %6zu KB"
+                 ", committed: %6zu KB\n",
+                 map_space_->SizeOfObjects() / KB, map_space_->Available() / KB,
+                 map_space_->CommittedMemory() / KB);
+  }
   PrintIsolate(isolate_,
                "Large object space,     used: %6zu KB"
                ", available: %6zu KB"
@@ -1018,15 +1023,8 @@ void Heap::GarbageCollectionPrologue(
   if (force_gc_on_next_allocation_) force_gc_on_next_allocation_ = false;
 
 #ifdef V8_ENABLE_ALLOCATION_TIMEOUT
-  // Reset the allocation timeout, but make sure to allow at least a few
-  // allocations after a collection. The reason for this is that we have a lot
-  // of allocation sequences and we assume that a garbage collection will allow
-  // the subsequent allocation attempts to go through.
-  if (FLAG_random_gc_interval > 0 || FLAG_gc_interval >= 0) {
-    allocation_timeout_ =
-        std::max(6, NextAllocationTimeout(allocation_timeout_));
-  }
-#endif
+  heap_allocator_.UpdateAllocationTimeout();
+#endif  // V8_ENABLE_ALLOCATION_TIMEOUT
 
   // There may be an allocation memento behind objects in new space. Upon
   // evacuation of a non-full new space (or if we are on the last page) there
@@ -1407,7 +1405,11 @@ void Heap::GarbageCollectionEpilogueInSafepoint(GarbageCollector collector) {
 
   UPDATE_COUNTERS_AND_FRAGMENTATION_FOR_SPACE(old_space)
   UPDATE_COUNTERS_AND_FRAGMENTATION_FOR_SPACE(code_space)
-  UPDATE_COUNTERS_AND_FRAGMENTATION_FOR_SPACE(map_space)
+
+  if (map_space()) {
+    UPDATE_COUNTERS_AND_FRAGMENTATION_FOR_SPACE(map_space)
+  }
+
   UPDATE_COUNTERS_AND_FRAGMENTATION_FOR_SPACE(lo_space)
 #undef UPDATE_COUNTERS_FOR_SPACE
 #undef UPDATE_FRAGMENTATION_FOR_SPACE
@@ -1476,8 +1478,10 @@ void Heap::GarbageCollectionEpilogue(GarbageCollector collector) {
         static_cast<int>(CommittedMemory() / KB));
     isolate_->counters()->heap_sample_total_used()->AddSample(
         static_cast<int>(SizeOfObjects() / KB));
-    isolate_->counters()->heap_sample_map_space_committed()->AddSample(
-        static_cast<int>(map_space()->CommittedMemory() / KB));
+    if (map_space()) {
+      isolate_->counters()->heap_sample_map_space_committed()->AddSample(
+          static_cast<int>(map_space()->CommittedMemory() / KB));
+    }
     isolate_->counters()->heap_sample_code_space_committed()->AddSample(
         static_cast<int>(code_space()->CommittedMemory() / KB));
 
@@ -1533,50 +1537,6 @@ void Heap::HandleGCRequest() {
 void Heap::ScheduleScavengeTaskIfNeeded() {
   DCHECK_NOT_NULL(scavenge_job_);
   scavenge_job_->ScheduleTaskIfNeeded(this);
-}
-
-TimedHistogram* Heap::GCTypePriorityTimer(GarbageCollector collector) {
-  if (IsYoungGenerationCollector(collector)) {
-    if (isolate_->IsIsolateInBackground()) {
-      return isolate_->counters()->gc_scavenger_background();
-    }
-    return isolate_->counters()->gc_scavenger_foreground();
-  }
-  DCHECK_EQ(GarbageCollector::MARK_COMPACTOR, collector);
-  if (incremental_marking()->IsStopped()) {
-    if (isolate_->IsIsolateInBackground()) {
-      return isolate_->counters()->gc_compactor_background();
-    }
-    return isolate_->counters()->gc_compactor_foreground();
-  }
-  if (ShouldReduceMemory()) {
-    if (isolate_->IsIsolateInBackground()) {
-      return isolate_->counters()->gc_finalize_reduce_memory_background();
-    }
-    return isolate_->counters()->gc_finalize_reduce_memory_foreground();
-  }
-  if (isolate_->IsIsolateInBackground()) {
-    return isolate_->counters()->gc_finalize_background();
-  }
-  return isolate_->counters()->gc_finalize_foreground();
-}
-
-TimedHistogram* Heap::GCTypeTimer(GarbageCollector collector) {
-  if (IsYoungGenerationCollector(collector)) {
-    return isolate_->counters()->gc_scavenger();
-  }
-  DCHECK_EQ(GarbageCollector::MARK_COMPACTOR, collector);
-  if (incremental_marking()->IsStopped()) {
-    return isolate_->counters()->gc_compactor();
-  }
-  if (ShouldReduceMemory()) {
-    return isolate_->counters()->gc_finalize_reduce_memory();
-  }
-  if (incremental_marking()->IsMarking() &&
-      incremental_marking()->local_marking_worklists()->IsPerContextMode()) {
-    return isolate_->counters()->gc_finalize_measure_memory();
-  }
-  return isolate_->counters()->gc_finalize();
 }
 
 void Heap::CollectAllGarbage(int flags, GarbageCollectionReason gc_reason,
@@ -1829,7 +1789,7 @@ bool Heap::CollectGarbage(AllocationSpace space,
     // Temporary override any embedder stack state as callbacks may create
     // their own state on the stack and recursively trigger GC.
     EmbedderStackStateScope embedder_scope(
-        local_embedder_heap_tracer(),
+        this, EmbedderStackStateScope::kExplicitInvocation,
         EmbedderHeapTracer::EmbedderStackState::kMayContainHeapPointers);
     if (scope.CheckReenter()) {
       AllowGarbageCollection allow_gc;
@@ -1873,17 +1833,23 @@ bool Heap::CollectGarbage(AllocationSpace space,
 
     GarbageCollectionPrologue(gc_reason, gc_callback_flags);
     {
-      TimedHistogram* gc_type_timer = GCTypeTimer(collector);
-      TimedHistogramScope histogram_timer_scope(gc_type_timer, isolate_);
-      TRACE_EVENT0("v8", gc_type_timer->name());
-
-      TimedHistogram* gc_type_priority_timer = GCTypePriorityTimer(collector);
-      OptionalTimedHistogramScopeMode mode =
-          isolate_->IsMemorySavingsModeActive()
-              ? OptionalTimedHistogramScopeMode::DONT_TAKE_TIME
-              : OptionalTimedHistogramScopeMode::TAKE_TIME;
-      OptionalTimedHistogramScope histogram_timer_priority_scope(
-          gc_type_priority_timer, isolate_, mode);
+      GCTracer::RecordGCPhasesInfo record_gc_phases_info(this, collector);
+      base::Optional<TimedHistogramScope> histogram_timer_scope;
+      base::Optional<OptionalTimedHistogramScope>
+          histogram_timer_priority_scope;
+      if (record_gc_phases_info.type_timer) {
+        histogram_timer_scope.emplace(record_gc_phases_info.type_timer,
+                                      isolate_);
+        TRACE_EVENT0("v8", record_gc_phases_info.type_timer->name());
+      }
+      if (record_gc_phases_info.type_priority_timer) {
+        OptionalTimedHistogramScopeMode mode =
+            isolate_->IsMemorySavingsModeActive()
+                ? OptionalTimedHistogramScopeMode::DONT_TAKE_TIME
+                : OptionalTimedHistogramScopeMode::TAKE_TIME;
+        histogram_timer_priority_scope.emplace(
+            record_gc_phases_info.type_priority_timer, isolate_, mode);
+      }
 
       if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
         tp_heap_->CollectGarbage();
@@ -1899,7 +1865,7 @@ bool Heap::CollectGarbage(AllocationSpace space,
 
       if (collector == GarbageCollector::MARK_COMPACTOR ||
           collector == GarbageCollector::SCAVENGER) {
-        tracer()->RecordGCPhasesHistograms(gc_type_timer);
+        tracer()->RecordGCPhasesHistograms(record_gc_phases_info.mode);
       }
     }
 
@@ -1944,6 +1910,8 @@ bool Heap::CollectGarbage(AllocationSpace space,
     // interrupted full cycle.
     if (IsYoungGenerationCollector(collector)) {
       tracer()->StopCycle(collector);
+    } else {
+      tracer()->StopCycleIfNeeded();
     }
   }
 
@@ -2051,12 +2019,13 @@ void Heap::StartIncrementalMarking(int gc_flags,
 
 void Heap::CompleteSweepingFull() {
   array_buffer_sweeper()->EnsureFinished();
-  mark_compact_collector()->EnsureSweepingCompleted();
+  mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kUnifiedHeap);
+
   DCHECK(!mark_compact_collector()->sweeping_in_progress());
-  if (cpp_heap()) {
-    CppHeap::From(cpp_heap())->FinishSweepingIfRunning();
-  }
-  tracer()->StopCycleIfSweeping();
+  DCHECK_IMPLIES(cpp_heap(),
+                 !CppHeap::From(cpp_heap())->sweeper().IsSweepingInProgress());
+  DCHECK(!tracer()->IsSweepingInProgress());
 }
 
 void Heap::StartIncrementalMarkingIfAllocationLimitIsReached(
@@ -2256,6 +2225,15 @@ size_t Heap::PerformGarbageCollection(
     const char* collector_reason, const v8::GCCallbackFlags gc_callback_flags) {
   DisallowJavascriptExecution no_js(isolate());
 
+#ifdef VERIFY_HEAP
+  if (FLAG_verify_heap) {
+    // We don't really perform a GC here but need this scope for the nested
+    // SafepointScope inside Verify().
+    AllowGarbageCollection allow_gc;
+    Verify();
+  }
+#endif  // VERIFY_HEAP
+
   if (IsYoungGenerationCollector(collector)) {
     CompleteSweepingYoung(collector);
     tracer()->StartCycle(collector, gc_reason, collector_reason,
@@ -2289,15 +2267,6 @@ size_t Heap::PerformGarbageCollection(
   }
 
   collection_barrier_->StopTimeToCollectionTimer();
-
-#ifdef VERIFY_HEAP
-  if (FLAG_verify_heap) {
-    // We don't really perform a GC here but need this scope for the nested
-    // SafepointScope inside Verify().
-    AllowGarbageCollection allow_gc;
-    Verify();
-  }
-#endif
 
   tracer()->StartInSafepoint();
 
@@ -2363,6 +2332,10 @@ size_t Heap::PerformGarbageCollection(
     local_embedder_heap_tracer()->TraceEpilogue();
   }
 
+  if (collector == GarbageCollector::SCAVENGER && cpp_heap()) {
+    CppHeap::From(cpp_heap())->RunMinorGC();
+  }
+
 #ifdef VERIFY_HEAP
   if (FLAG_verify_heap) {
     // We don't really perform a GC here but need this scope for the nested
@@ -2370,7 +2343,7 @@ size_t Heap::PerformGarbageCollection(
     AllowGarbageCollection allow_gc;
     Verify();
   }
-#endif
+#endif  // VERIFY_HEAP
 
   RecomputeLimits(collector);
 
@@ -2430,6 +2403,7 @@ void Heap::PerformSharedGarbageCollection(Isolate* initiator,
   tracer()->StopAtomicPause();
   tracer()->StopObservablePause();
   tracer()->UpdateStatistics(collector);
+  tracer()->StopCycleIfNeeded();
 }
 
 void Heap::CompleteSweepingYoung(GarbageCollector collector) {
@@ -2446,8 +2420,15 @@ void Heap::CompleteSweepingYoung(GarbageCollector collector) {
       UNREACHABLE();
   }
 
-  TRACE_GC_EPOCH(tracer(), scope_id, ThreadKind::kMain);
-  array_buffer_sweeper()->EnsureFinished();
+  {
+    TRACE_GC_EPOCH(tracer(), scope_id, ThreadKind::kMain);
+    array_buffer_sweeper()->EnsureFinished();
+  }
+
+  // If sweeping is in progress and there are no sweeper tasks running, finish
+  // the sweeping here, to avoid having to pause and resume during the young
+  // generation GC.
+  mark_compact_collector()->FinishSweepingIfOutOfWork();
 }
 
 void Heap::EnsureSweepingCompleted(HeapObject object) {
@@ -2567,7 +2548,7 @@ void Heap::MarkCompact() {
   SetGCState(MARK_COMPACT);
 
   PROFILE(isolate_, CodeMovingGCEvent());
-  CodeSpaceMemoryModificationScope code_modifcation(this);
+  CodeSpaceMemoryModificationScope code_modification(this);
 
   // Disable soft allocation limits in the shared heap, if one exists, as
   // promotions into the shared heap should always succeed.
@@ -3644,7 +3625,8 @@ void Heap::CreateFillerForArray(T object, int elements_to_trim,
 }
 
 void Heap::MakeHeapIterable() {
-  mark_compact_collector()->EnsureSweepingCompleted();
+  mark_compact_collector()->EnsureSweepingCompleted(
+      MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
 
   safepoint()->IterateLocalHeaps([](LocalHeap* local_heap) {
     local_heap->MakeLinearAllocationAreaIterable();
@@ -3683,7 +3665,7 @@ void Heap::FreeSharedLinearAllocationAreas() {
 void Heap::FreeMainThreadSharedLinearAllocationAreas() {
   if (!isolate()->shared_isolate()) return;
   shared_old_allocator_->FreeLinearAllocationArea();
-  shared_map_allocator_->FreeLinearAllocationArea();
+  if (shared_map_allocator_) shared_map_allocator_->FreeLinearAllocationArea();
   main_thread_local_heap()->FreeSharedLinearAllocationArea();
 }
 
@@ -4442,8 +4424,8 @@ bool Heap::Contains(HeapObject value) const {
   return HasBeenSetUp() &&
          ((new_space_ && new_space_->ToSpaceContains(value)) ||
           old_space_->Contains(value) || code_space_->Contains(value) ||
-          map_space_->Contains(value) || lo_space_->Contains(value) ||
-          code_lo_space_->Contains(value) ||
+          (map_space_ && map_space_->Contains(value)) ||
+          lo_space_->Contains(value) || code_lo_space_->Contains(value) ||
           (new_lo_space_ && new_lo_space_->Contains(value)));
 }
 
@@ -4462,7 +4444,7 @@ bool Heap::ContainsCode(HeapObject value) const {
 bool Heap::SharedHeapContains(HeapObject value) const {
   if (shared_old_space_)
     return shared_old_space_->Contains(value) ||
-           shared_map_space_->Contains(value);
+           (shared_map_space_ && shared_map_space_->Contains(value));
   return false;
 }
 
@@ -4494,6 +4476,7 @@ bool Heap::InSpace(HeapObject value, AllocationSpace space) const {
     case CODE_SPACE:
       return code_space_->Contains(value);
     case MAP_SPACE:
+      DCHECK(map_space_);
       return map_space_->Contains(value);
     case LO_SPACE:
       return lo_space_->Contains(value);
@@ -4523,6 +4506,7 @@ bool Heap::InSpaceSlow(Address addr, AllocationSpace space) const {
     case CODE_SPACE:
       return code_space_->ContainsSlow(addr);
     case MAP_SPACE:
+      DCHECK(map_space_);
       return map_space_->ContainsSlow(addr);
     case LO_SPACE:
       return lo_space_->ContainsSlow(addr);
@@ -4584,7 +4568,9 @@ void Heap::Verify() {
   if (new_space_) new_space_->Verify(isolate());
 
   old_space_->Verify(isolate(), &visitor);
-  map_space_->Verify(isolate(), &visitor);
+  if (map_space_) {
+    map_space_->Verify(isolate(), &visitor);
+  }
 
   VerifyPointersVisitor no_dirty_regions_visitor(this);
   code_space_->Verify(isolate(), &no_dirty_regions_visitor);
@@ -4593,6 +4579,10 @@ void Heap::Verify() {
   code_lo_space_->Verify(isolate());
   if (new_lo_space_) new_lo_space_->Verify(isolate());
   isolate()->string_table()->VerifyIfOwnedBy(isolate());
+
+#if DEBUG
+  VerifyCommittedPhysicalMemory();
+#endif  // DEBUG
 }
 
 void Heap::VerifyReadOnlyHeap() {
@@ -4784,7 +4774,15 @@ void Heap::VerifyCountersBeforeConcurrentSweeping() {
     space->VerifyCountersBeforeConcurrentSweeping();
   }
 }
-#endif
+
+void Heap::VerifyCommittedPhysicalMemory() {
+  PagedSpaceIterator spaces(this);
+  for (PagedSpace* space = spaces.Next(); space != nullptr;
+       space = spaces.Next()) {
+    space->VerifyCommittedPhysicalMemory();
+  }
+}
+#endif  // DEBUG
 
 void Heap::ZapFromSpace() {
   if (!new_space_ || !new_space_->IsFromSpaceCommitted()) return;
@@ -5306,8 +5304,8 @@ void Heap::RecordStats(HeapStats* stats, bool take_snapshot) {
   *stats->old_space_capacity = old_space_->Capacity();
   *stats->code_space_size = code_space_->SizeOfObjects();
   *stats->code_space_capacity = code_space_->Capacity();
-  *stats->map_space_size = map_space_->SizeOfObjects();
-  *stats->map_space_capacity = map_space_->Capacity();
+  *stats->map_space_size = map_space_ ? map_space_->SizeOfObjects() : 0;
+  *stats->map_space_capacity = map_space_ ? map_space_->Capacity() : 0;
   *stats->lo_space_size = lo_space_->Size();
   *stats->code_lo_space_size = code_lo_space_->Size();
   isolate_->global_handles()->RecordStats(stats);
@@ -5623,98 +5621,13 @@ void Heap::DisableInlineAllocation() {
   }
 }
 
-HeapObject Heap::AllocateRawWithLightRetrySlowPath(
-    int size, AllocationType allocation, AllocationOrigin origin,
-    AllocationAlignment alignment) {
-  HeapObject result;
-  AllocationResult alloc = AllocateRaw(size, allocation, origin, alignment);
-  if (alloc.To(&result)) {
-    // DCHECK that the successful allocation is not "exception". The one
-    // exception to this is when allocating the "exception" object itself, in
-    // which case this must be an ROSpace allocation and the exception object
-    // in the roots has to be unset.
-    DCHECK((CanAllocateInReadOnlySpace() &&
-            allocation == AllocationType::kReadOnly &&
-            ReadOnlyRoots(this).unchecked_exception() == Smi::zero()) ||
-           result != ReadOnlyRoots(this).exception());
-    return result;
-  }
-  // Two GCs before panicking. In newspace will almost always succeed.
-  for (int i = 0; i < 2; i++) {
-    if (IsSharedAllocationType(allocation)) {
-      CollectSharedGarbage(GarbageCollectionReason::kAllocationFailure);
-    } else {
-      CollectGarbage(alloc.ToGarbageCollectionSpace(),
-                     GarbageCollectionReason::kAllocationFailure);
-    }
-    alloc = AllocateRaw(size, allocation, origin, alignment);
-    if (alloc.To(&result)) {
-      DCHECK(result != ReadOnlyRoots(this).exception());
-      return result;
-    }
-  }
-  return HeapObject();
-}
-
-AllocationResult Heap::AllocateRawLargeInternal(int size_in_bytes,
-                                                AllocationType allocation,
-                                                AllocationOrigin origin,
-                                                AllocationAlignment alignment) {
-  DCHECK_GT(size_in_bytes, MaxRegularHeapObjectSize(allocation));
-  switch (allocation) {
-    case AllocationType::kYoung:
-      return new_lo_space_->AllocateRaw(size_in_bytes);
-    case AllocationType::kOld:
-      return lo_space_->AllocateRaw(size_in_bytes);
-    case AllocationType::kCode:
-      return code_lo_space_->AllocateRaw(size_in_bytes);
-    case AllocationType::kMap:
-    case AllocationType::kReadOnly:
-    case AllocationType::kSharedMap:
-    case AllocationType::kSharedOld:
-      UNREACHABLE();
-  }
-}
-
-HeapObject Heap::AllocateRawWithRetryOrFailSlowPath(
-    int size, AllocationType allocation, AllocationOrigin origin,
-    AllocationAlignment alignment) {
-  AllocationResult alloc;
-  HeapObject result =
-      AllocateRawWithLightRetrySlowPath(size, allocation, origin, alignment);
-  if (!result.is_null()) return result;
-
-  isolate()->counters()->gc_last_resort_from_handles()->Increment();
-  if (IsSharedAllocationType(allocation)) {
-    CollectSharedGarbage(GarbageCollectionReason::kLastResort);
-
-    // We need always_allocate() to be true both on the client- and
-    // server-isolate. It is used in both code paths.
-    AlwaysAllocateScope shared_scope(isolate()->shared_isolate()->heap());
-    AlwaysAllocateScope client_scope(isolate()->heap());
-    alloc = AllocateRaw(size, allocation, origin, alignment);
-  } else {
-    CollectAllAvailableGarbage(GarbageCollectionReason::kLastResort);
-
-    AlwaysAllocateScope scope(this);
-    alloc = AllocateRaw(size, allocation, origin, alignment);
-  }
-
-  if (alloc.To(&result)) {
-    DCHECK(result != ReadOnlyRoots(this).exception());
-    return result;
-  }
-  // TODO(1181417): Fix this.
-  FatalProcessOutOfMemory("CALL_AND_RETRY_LAST");
-}
-
 void Heap::SetUp(LocalHeap* main_thread_local_heap) {
   DCHECK_NULL(main_thread_local_heap_);
   main_thread_local_heap_ = main_thread_local_heap;
 
 #ifdef V8_ENABLE_ALLOCATION_TIMEOUT
-  allocation_timeout_ = NextAllocationTimeout();
-#endif
+  heap_allocator_.UpdateAllocationTimeout();
+#endif  // V8_ENABLE_ALLOCATION_TIMEOUT
 
 #ifdef V8_ENABLE_THIRD_PARTY_HEAP
   tp_heap_ = third_party_heap::Heap::New(isolate());
@@ -5812,6 +5725,7 @@ void Heap::SetUpFromReadOnlyHeap(ReadOnlyHeap* ro_heap) {
                  read_only_space_ == ro_heap->read_only_space());
   space_[RO_SPACE] = nullptr;
   read_only_space_ = ro_heap->read_only_space();
+  heap_allocator_.SetReadOnlySpace(read_only_space_);
 }
 
 void Heap::ReplaceReadOnlySpace(SharedReadOnlySpace* space) {
@@ -5822,6 +5736,7 @@ void Heap::ReplaceReadOnlySpace(SharedReadOnlySpace* space) {
   }
 
   read_only_space_ = space;
+  heap_allocator_.SetReadOnlySpace(read_only_space_);
 }
 
 class StressConcurrentAllocationObserver : public AllocationObserver {
@@ -5858,7 +5773,9 @@ void Heap::SetUpSpaces(LinearAllocationArea* new_allocation_info,
   }
   space_[OLD_SPACE] = old_space_ = new OldSpace(this, old_allocation_info);
   space_[CODE_SPACE] = code_space_ = new CodeSpace(this);
-  space_[MAP_SPACE] = map_space_ = new MapSpace(this);
+  if (FLAG_use_map_space) {
+    space_[MAP_SPACE] = map_space_ = new MapSpace(this);
+  }
   space_[LO_SPACE] = lo_space_ = new OldLargeObjectSpace(this);
   space_[CODE_LO_SPACE] = code_lo_space_ = new CodeLargeObjectSpace(this);
 
@@ -5916,16 +5833,21 @@ void Heap::SetUpSpaces(LinearAllocationArea* new_allocation_info,
   write_protect_code_memory_ = FLAG_write_protect_code_memory;
 
   if (isolate()->shared_isolate()) {
-    shared_old_space_ = isolate()->shared_isolate()->heap()->old_space();
+    Heap* shared_heap = isolate()->shared_isolate()->heap();
+
+    shared_old_space_ = shared_heap->old_space();
     shared_old_allocator_.reset(
         new ConcurrentAllocator(main_thread_local_heap(), shared_old_space_));
 
-    shared_map_space_ = isolate()->shared_isolate()->heap()->map_space();
-    shared_map_allocator_.reset(
-        new ConcurrentAllocator(main_thread_local_heap(), shared_map_space_));
+    if (shared_heap->map_space()) {
+      shared_map_space_ = shared_heap->map_space();
+      shared_map_allocator_.reset(
+          new ConcurrentAllocator(main_thread_local_heap(), shared_map_space_));
+    }
   }
 
   main_thread_local_heap()->SetUpMainThread();
+  heap_allocator_.Setup();
 }
 
 void Heap::InitializeHashSeed() {
@@ -5941,17 +5863,9 @@ void Heap::InitializeHashSeed() {
       0, reinterpret_cast<byte*>(&new_hash_seed), kInt64Size);
 }
 
-int Heap::NextAllocationTimeout(int current_timeout) {
-  if (FLAG_random_gc_interval > 0) {
-    // If current timeout hasn't reached 0 the GC was caused by something
-    // different than --stress-atomic-gc flag and we don't update the timeout.
-    if (current_timeout <= 0) {
-      return isolate()->fuzzer_rng()->NextInt(FLAG_random_gc_interval + 1);
-    } else {
-      return current_timeout;
-    }
-  }
-  return FLAG_gc_interval;
+// static
+void Heap::InitializeOncePerProcess() {
+  MemoryAllocator::InitializeOncePerProcess();
 }
 
 void Heap::PrintMaxMarkingLimitReached() {
@@ -6342,7 +6256,7 @@ void Heap::CompactWeakArrayLists() {
 }
 
 void Heap::AddRetainedMap(Handle<NativeContext> context, Handle<Map> map) {
-  if (map->is_in_retained_map_list()) {
+  if (map->is_in_retained_map_list() || map->InSharedWritableHeap()) {
     return;
   }
 
@@ -7484,12 +7398,6 @@ bool Heap::PageFlagsAreConsistent(HeapObject object) {
   return true;
 }
 
-void Heap::SetEmbedderStackStateForNextFinalization(
-    EmbedderHeapTracer::EmbedderStackState stack_state) {
-  local_embedder_heap_tracer()->SetEmbedderStackStateForNextFinalization(
-      stack_state);
-}
-
 #ifdef DEBUG
 void Heap::IncrementObjectCounters() {
   isolate_->counters()->objs_since_last_full()->Increment();
@@ -7535,6 +7443,47 @@ void StrongRootBlockAllocator::deallocate(Address* p, size_t n) noexcept {
   heap_->UnregisterStrongRoots(*header);
 
   base::Free(block);
+}
+
+#ifdef V8_ENABLE_ALLOCATION_TIMEOUT
+void Heap::set_allocation_timeout(int allocation_timeout) {
+  heap_allocator_.SetAllocationTimeout(allocation_timeout);
+}
+#endif  // V8_ENABLE_ALLOCATION_TIMEOUT
+
+EmbedderStackStateScope::EmbedderStackStateScope(
+    Heap* heap, Origin origin,
+    EmbedderHeapTracer::EmbedderStackState stack_state)
+    : local_tracer_(heap->local_embedder_heap_tracer()),
+      old_stack_state_(local_tracer_->embedder_stack_state_) {
+  if (origin == kImplicitThroughTask && heap->overriden_stack_state()) {
+    stack_state = *heap->overriden_stack_state();
+  }
+
+  local_tracer_->embedder_stack_state_ = stack_state;
+  if (EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers == stack_state)
+    local_tracer_->NotifyEmptyEmbedderStack();
+}
+
+// static
+EmbedderStackStateScope EmbedderStackStateScope::ExplicitScopeForTesting(
+    LocalEmbedderHeapTracer* local_tracer,
+    EmbedderHeapTracer::EmbedderStackState stack_state) {
+  return EmbedderStackStateScope(local_tracer, stack_state);
+}
+
+EmbedderStackStateScope::EmbedderStackStateScope(
+    LocalEmbedderHeapTracer* local_tracer,
+    EmbedderHeapTracer::EmbedderStackState stack_state)
+    : local_tracer_(local_tracer),
+      old_stack_state_(local_tracer_->embedder_stack_state_) {
+  local_tracer_->embedder_stack_state_ = stack_state;
+  if (EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers == stack_state)
+    local_tracer_->NotifyEmptyEmbedderStack();
+}
+
+EmbedderStackStateScope::~EmbedderStackStateScope() {
+  local_tracer_->embedder_stack_state_ = old_stack_state_;
 }
 
 }  // namespace internal

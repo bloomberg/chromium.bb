@@ -20,6 +20,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -29,6 +30,8 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Base class for creating autofill save card prompts that support displaying legal message line.
  */
 public abstract class AutofillSaveCardPromptBase implements ModalDialogProperties.Controller {
+    private static final String DIALOG_V2_ENABLED_PARAM_NAME = "save_card_dialog_v2_enabled";
+
     private final AutofillSaveCardPromptBaseDelegate mBaseDelegate;
 
     protected PropertyModel mDialogModel;
@@ -77,6 +80,16 @@ public abstract class AutofillSaveCardPromptBase implements ModalDialogPropertie
             stub.inflate();
         }
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MESSAGES_FOR_ANDROID_SAVE_CARD)
+                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        ChromeFeatureList.MESSAGES_FOR_ANDROID_SAVE_CARD,
+                        DIALOG_V2_ENABLED_PARAM_NAME, false)) {
+            TextView description = mDialogView.findViewById(R.id.description);
+            description.setVisibility(View.VISIBLE);
+            description.setText(
+                    R.string.autofill_mobile_save_card_to_cloud_confirmation_dialog_explanation);
+        }
+
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, this)
@@ -111,9 +124,17 @@ public abstract class AutofillSaveCardPromptBase implements ModalDialogPropertie
         if (activity == null || modalDialogManager == null) return;
 
         if (mSpannableStringBuilder != null) {
-            TextView legalMessage = mDialogView.findViewById(R.id.legal_message);
-            legalMessage.setText(mSpannableStringBuilder);
-            legalMessage.setMovementMethod(LinkMovementMethod.getInstance());
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.MESSAGES_FOR_ANDROID_SAVE_CARD)
+                    && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                            ChromeFeatureList.MESSAGES_FOR_ANDROID_SAVE_CARD,
+                            DIALOG_V2_ENABLED_PARAM_NAME, false)) {
+                mDialogModel.set(ModalDialogProperties.FOOTER_MESSAGE, mSpannableStringBuilder);
+            } else {
+                TextView legalMessage = mDialogView.findViewById(R.id.legal_message);
+                legalMessage.setText(mSpannableStringBuilder);
+                legalMessage.setVisibility(View.VISIBLE);
+                legalMessage.setMovementMethod(LinkMovementMethod.getInstance());
+            }
         }
 
         mContext = activity;
@@ -125,7 +146,8 @@ public abstract class AutofillSaveCardPromptBase implements ModalDialogPropertie
         if (mSpannableStringBuilder == null) {
             mSpannableStringBuilder = new SpannableStringBuilder();
         } else {
-            mSpannableStringBuilder.append("\n");
+            // If this isn't the first line, append a new line before the legal message.
+            mSpannableStringBuilder.append("\n\n");
         }
         int offset = mSpannableStringBuilder.length();
         mSpannableStringBuilder.append(line.text);

@@ -65,6 +65,7 @@ import stylesSidebarPaneStyles from './stylesSidebarPane.css.js';
 
 import type {Context} from './StylePropertyTreeElement.js';
 import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
+import * as LayersWidget from './LayersWidget.js';
 
 const UIStrings = {
   /**
@@ -187,6 +188,14 @@ const UIStrings = {
   *@description Tooltip text that appears after clicking on the copy CSS changes button
   */
   copiedToClipboard: 'Copied to clipboard',
+  /**
+  *@description Text displayed on layer separators in the styles sidebar pane.
+  */
+  layer: 'Layer',
+  /**
+  *@description Tooltip text for the link in the sidebar pane layer separators that reveals the layer in the layer tree view.
+  */
+  clickToRevealLayer: 'Click to reveal layer in layer tree',
 };
 
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylesSidebarPane.ts', UIStrings);
@@ -210,9 +219,7 @@ const HIGHLIGHTABLE_PROPERTIES = [
   {mode: 'flexibility', properties: ['flex', 'flex-basis', 'flex-grow', 'flex-shrink']},
 ];
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _stylesSidebarPaneInstance: StylesSidebarPane;
+let stylesSidebarPaneInstance: StylesSidebarPane;
 
 // TODO(crbug.com/1172300) This workaround is needed to keep the linter happy.
 // Otherwise it complains about: Unknown word CssSyntaxError
@@ -249,10 +256,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
   #urlToChangeTracker: Map<string, ChangeTracker> = new Map();
 
   static instance(): StylesSidebarPane {
-    if (!_stylesSidebarPaneInstance) {
-      _stylesSidebarPaneInstance = new StylesSidebarPane();
+    if (!stylesSidebarPaneInstance) {
+      stylesSidebarPaneInstance = new StylesSidebarPane();
     }
-    return _stylesSidebarPaneInstance;
+    return stylesSidebarPaneInstance;
   }
 
   private constructor() {
@@ -283,7 +290,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     this.swatchPopoverHelperInternal = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
     this.swatchPopoverHelperInternal.addEventListener(
         InlineEditor.SwatchPopoverHelper.Events.WillShowPopover, this.hideAllPopovers, this);
-    this.linkifier = new Components.Linkifier.Linkifier(_maxLinkLength, /* useLinkDecorator */ true);
+    this.linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
     this.decorator = new StylePropertyHighlighter(this);
     this.lastRevealedProperty = null;
     this.userOperation = false;
@@ -298,7 +305,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     this.sectionBlocks = [];
     this.idleCallbackManager = null;
     this.needsForceUpdate = false;
-    _stylesSidebarPaneInstance = this;
+    stylesSidebarPaneInstance = this;
     UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
     this.contentElement.addEventListener('copy', this.clipboardCopy.bind(this));
     this.resizeThrottler = new Common.Throttler.Throttler(100);
@@ -853,6 +860,31 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     const blocks = [new SectionBlock(null)];
     let sectionIdx = 0;
     let lastParentNode: SDK.DOMModel.DOMNode|null = null;
+
+    let lastLayers: SDK.CSSLayer.CSSLayer[]|null = null;
+    let sawLayers: boolean = false;
+
+    const layersExperimentEnabled = Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.CSS_LAYERS);
+    const addLayerSeparator = (style: SDK.CSSStyleDeclaration.CSSStyleDeclaration): void => {
+      if (!layersExperimentEnabled) {
+        return;
+      }
+      const parentRule = style.parentRule;
+      if (parentRule instanceof SDK.CSSRule.CSSStyleRule) {
+        const layers = parentRule.layers;
+        if ((layers.length || lastLayers) && lastLayers !== layers) {
+          const block = SectionBlock.createLayerBlock(parentRule);
+          blocks.push(block);
+          sawLayers = true;
+          lastLayers = layers;
+        }
+      }
+    };
+
+    // We disable the layer widget initially. If we see a layer in
+    // the matched styles we reenable the button.
+    LayersWidget.ButtonProvider.instance().item().setVisible(false);
+
     const refreshedURLs = new Set<string>();
     for (const style of matchedStyles.nodeStyles()) {
       if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES) && style.parentRule) {
@@ -869,6 +901,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
         const block = await SectionBlock.createInheritedNodeBlock(lastParentNode);
         blocks.push(block);
       }
+
+      addLayerSeparator(style);
 
       const lastBlock = blocks[blocks.length - 1];
       if (lastBlock) {
@@ -887,15 +921,18 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     }
     pseudoTypes = pseudoTypes.concat([...keys].sort());
     for (const pseudoType of pseudoTypes) {
-      const block = SectionBlock.createPseudoTypeBlock(pseudoType);
+      blocks.push(SectionBlock.createPseudoTypeBlock(pseudoType));
+      lastLayers = null;
+
       for (const style of matchedStyles.pseudoStyles(pseudoType)) {
+        addLayerSeparator(style);
+        const lastBlock = blocks[blocks.length - 1];
         this.idleCallbackManager.schedule(() => {
           const section = new StylePropertiesSection(this, matchedStyles, style, sectionIdx);
           sectionIdx++;
-          block.sections.push(section);
+          lastBlock.sections.push(section);
         });
       }
-      blocks.push(block);
     }
 
     for (const keyframesRule of matchedStyles.keyframes()) {
@@ -907,6 +944,18 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
         });
       }
       blocks.push(block);
+    }
+
+    if (layersExperimentEnabled) {
+      // If we have seen a layer in matched styles we enable
+      // the layer widget button.
+      if (sawLayers) {
+        LayersWidget.ButtonProvider.instance().item().setVisible(true);
+      } else if (LayersWidget.LayersWidget.instance().isShowing()) {
+        // Since the button for toggling the layers view is now hidden
+        // we ensure that the layers view is not currently toggled.
+        ElementsPanel.instance().showToolbarPane(null, LayersWidget.ButtonProvider.instance().item());
+      }
     }
 
     await this.idleCallbackManager.awaitDone();
@@ -1210,6 +1259,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     copyAllChangesButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, async () => {
       const allChanges = await this.getFormattedChanges();
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
+      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane);
       if (timeout) {
         clearTimeout(timeout);
         timeout = undefined;
@@ -1341,9 +1391,7 @@ async function buildPropertyRuleMaps(content: string):
   return {propertyToSelector, ruleToSelector};
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _maxLinkLength = 23;
+const MAX_LINK_LENGTH = 23;
 
 export class SectionBlock {
   private readonly titleElementInternal: Element|null;
@@ -1376,6 +1424,26 @@ export class SectionBlock {
       tooltip: undefined,
     });
     separatorElement.appendChild(link);
+    return new SectionBlock(separatorElement);
+  }
+
+  static createLayerBlock(rule: SDK.CSSRule.CSSStyleRule): SectionBlock {
+    const separatorElement = document.createElement('div');
+    separatorElement.className = 'sidebar-separator layer-separator';
+    UI.UIUtils.createTextChild(separatorElement.createChild('div'), i18nString(UIStrings.layer));
+    const layers = rule.layers;
+    if (!layers.length && rule.origin === Protocol.CSS.StyleSheetOrigin.UserAgent) {
+      const name = rule.origin === Protocol.CSS.StyleSheetOrigin.UserAgent ? '\xa0user\xa0agent\xa0stylesheet' :
+                                                                             '\xa0implicit\xa0outer\xa0layer';
+      UI.UIUtils.createTextChild(separatorElement.createChild('div'), name);
+      return new SectionBlock(separatorElement);
+    }
+    const layerLink = separatorElement.createChild('button') as HTMLButtonElement;
+    layerLink.className = 'link';
+    layerLink.title = i18nString(UIStrings.clickToRevealLayer);
+    const name = layers.map(layer => SDK.CSSModel.CSSModel.readableLayerName(layer.text)).join('.');
+    layerLink.textContent = name;
+    layerLink.onclick = (): Promise<void> => LayersWidget.LayersWidget.instance().revealLayer(name);
     return new SectionBlock(separatorElement);
   }
 
@@ -2544,16 +2612,19 @@ export class StylePropertiesSection {
     contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copySelector), () => {
       const selectorText = this.headerText();
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(selectorText);
+      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.SelectorViaContextMenu);
     });
 
     contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyRule), () => {
       const ruleText = StylesSidebarPane.formatLeadingProperties(this).ruleText;
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(ruleText);
+      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.RuleViaContextMenu);
     });
 
     contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllDeclarations), () => {
       const allDeclarationText = StylesSidebarPane.formatLeadingProperties(this).allDeclarationText;
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
+      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllDeclarationsViaContextMenu);
     });
 
     void contextMenu.show();
@@ -3124,13 +3195,12 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
       if (!node || this.selectedNodeComputedStyles) {
         return;
       }
-      this.selectedNodeComputedStyles = await node.domModel().cssModel().computedStylePromise(node.id);
+      this.selectedNodeComputedStyles = await node.domModel().cssModel().getComputedStyle(node.id);
       const parentNode = node.parentNode;
       if (parentNode) {
-        this.parentNodeComputedStyles = await parentNode.domModel().cssModel().computedStylePromise(parentNode.id);
+        this.parentNodeComputedStyles = await parentNode.domModel().cssModel().getComputedStyle(parentNode.id);
       }
     };
-
     for (const result of results) {
       await ensureComputedStyles();
       // Using parent node's computed styles does not work in all cases. For example:

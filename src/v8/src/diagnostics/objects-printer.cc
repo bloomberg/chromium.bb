@@ -141,6 +141,9 @@ void HeapObject::HeapObjectPrint(std::ostream& os) {
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
       NameToIndexHashTable::cast(*this).NameToIndexHashTablePrint(os);
       break;
+    case REGISTERED_SYMBOL_TABLE_TYPE:
+      RegisteredSymbolTable::cast(*this).RegisteredSymbolTablePrint(os);
+      break;
     case ORDERED_HASH_MAP_TYPE:
       OrderedHashMap::cast(*this).OrderedHashMapPrint(os);
       break;
@@ -969,6 +972,11 @@ void NameToIndexHashTable::NameToIndexHashTablePrint(std::ostream& os) {
   PrintHashMapContentsFull(os, *this);
 }
 
+void RegisteredSymbolTable::RegisteredSymbolTablePrint(std::ostream& os) {
+  PrintHashTableHeader(os, *this, "RegisteredSymbolTable");
+  PrintHashMapContentsFull(os, *this);
+}
+
 void NumberDictionary::NumberDictionaryPrint(std::ostream& os) {
   PrintHashTableHeader(os, *this, "NumberDictionary");
   PrintDictionaryContentsFull(os, *this);
@@ -1232,22 +1240,22 @@ void FeedbackNexus::Print(std::ostream& os) {
   switch (kind()) {
     case FeedbackSlotKind::kCall:
     case FeedbackSlotKind::kCloneObject:
-    case FeedbackSlotKind::kDefineOwnKeyed:
+    case FeedbackSlotKind::kDefineKeyedOwn:
     case FeedbackSlotKind::kHasKeyed:
     case FeedbackSlotKind::kInstanceOf:
     case FeedbackSlotKind::kLoadGlobalInsideTypeof:
     case FeedbackSlotKind::kLoadGlobalNotInsideTypeof:
     case FeedbackSlotKind::kLoadKeyed:
     case FeedbackSlotKind::kLoadProperty:
-    case FeedbackSlotKind::kStoreDataPropertyInLiteral:
+    case FeedbackSlotKind::kDefineKeyedOwnPropertyInLiteral:
     case FeedbackSlotKind::kStoreGlobalSloppy:
     case FeedbackSlotKind::kStoreGlobalStrict:
     case FeedbackSlotKind::kStoreInArrayLiteral:
-    case FeedbackSlotKind::kStoreKeyedSloppy:
-    case FeedbackSlotKind::kStoreKeyedStrict:
-    case FeedbackSlotKind::kStoreNamedSloppy:
-    case FeedbackSlotKind::kStoreNamedStrict:
-    case FeedbackSlotKind::kStoreOwnNamed: {
+    case FeedbackSlotKind::kSetKeyedSloppy:
+    case FeedbackSlotKind::kSetKeyedStrict:
+    case FeedbackSlotKind::kSetNamedSloppy:
+    case FeedbackSlotKind::kSetNamedStrict:
+    case FeedbackSlotKind::kDefineNamedOwn: {
       os << InlineCacheState2String(ic_state());
       break;
     }
@@ -1405,6 +1413,12 @@ void JSShadowRealm::JSShadowRealmPrint(std::ostream& os) {
   JSObjectPrintBody(os, *this);
 }
 
+void JSWrappedFunction::JSWrappedFunctionPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSWrappedFunction");
+  os << "\n - wrapped_target_function: " << Brief(wrapped_target_function());
+  JSObjectPrintBody(os, *this);
+}
+
 void JSFinalizationRegistry::JSFinalizationRegistryPrint(std::ostream& os) {
   JSObjectPrintHeader(os, *this, "JSFinalizationRegistry");
   os << "\n - native_context: " << Brief(native_context());
@@ -1422,6 +1436,14 @@ void JSFinalizationRegistry::JSFinalizationRegistryPrint(std::ostream& os) {
     cleared_cell = WeakCell::cast(cleared_cell).next();
   }
   os << "\n - key_map: " << Brief(key_map());
+  JSObjectPrintBody(os, *this);
+}
+
+void JSSharedStruct::JSSharedStructPrint(std::ostream& os) {
+  JSObjectPrintHeader(os, *this, "JSSharedStruct");
+  Isolate* isolate = GetIsolateFromWritableObject(*this);
+  os << "\n - isolate: " << isolate;
+  if (isolate->is_shared()) os << " (shared)";
   JSObjectPrintBody(os, *this);
 }
 

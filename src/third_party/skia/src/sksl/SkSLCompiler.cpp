@@ -93,14 +93,14 @@ using RefKind = VariableReference::RefKind;
 
 class AutoSource {
 public:
-    AutoSource(Compiler* compiler, const char* source)
+    AutoSource(Compiler* compiler, std::string_view source)
             : fCompiler(compiler) {
-        SkASSERT(!fCompiler->errorReporter().source());
+        SkASSERT(!fCompiler->errorReporter().source().data());
         fCompiler->errorReporter().setSource(source);
     }
 
     ~AutoSource() {
-        fCompiler->errorReporter().setSource(nullptr);
+        fCompiler->errorReporter().setSource(std::string_view());
     }
 
     Compiler* fCompiler;
@@ -223,7 +223,7 @@ std::shared_ptr<SymbolTable> Compiler::makePrivateSymbolTable(std::shared_ptr<Sy
 
     // sk_Caps is "builtin", but all references to it are resolved to Settings, so we don't need to
     // treat it as builtin (ie, no need to clone it into the Program).
-    privateSymbolTable->add(std::make_unique<Variable>(/*line=*/-1,
+    privateSymbolTable->add(std::make_unique<Variable>(Position(),
                                                        fCoreModifiers.add(Modifiers{}),
                                                        "sk_Caps",
                                                        fContext->fTypes.fSkCaps.get(),
@@ -272,6 +272,16 @@ static void add_glsl_type_aliases(SkSL::SymbolTable* symbols, const SkSL::Builti
     symbols->addWithoutOwnership(types.fMat2.get());
     symbols->addWithoutOwnership(types.fMat3.get());
     symbols->addWithoutOwnership(types.fMat4.get());
+
+    symbols->addWithoutOwnership(types.fMat2x2.get());
+    symbols->addWithoutOwnership(types.fMat2x3.get());
+    symbols->addWithoutOwnership(types.fMat2x4.get());
+    symbols->addWithoutOwnership(types.fMat3x2.get());
+    symbols->addWithoutOwnership(types.fMat3x3.get());
+    symbols->addWithoutOwnership(types.fMat3x4.get());
+    symbols->addWithoutOwnership(types.fMat4x2.get());
+    symbols->addWithoutOwnership(types.fMat4x3.get());
+    symbols->addWithoutOwnership(types.fMat4x4.get());
 
     // Alias every private type to "invalid". This will prevent code from using built-in names like
     // `sampler2D` as variable names.
@@ -466,10 +476,10 @@ std::unique_ptr<Program> Compiler::convertProgram(ProgramKind kind,
     return DSLParser(this, settings, kind, std::move(text)).program();
 }
 
-std::unique_ptr<Expression> Compiler::convertIdentifier(int line, std::string_view name) {
+std::unique_ptr<Expression> Compiler::convertIdentifier(Position pos, std::string_view name) {
     const Symbol* result = (*fSymbolTable)[name];
     if (!result) {
-        this->errorReporter().error(line, "unknown identifier '" + std::string(name) + "'");
+        this->errorReporter().error(pos, "unknown identifier '" + std::string(name) + "'");
         return nullptr;
     }
     switch (result->kind()) {
@@ -477,11 +487,11 @@ std::unique_ptr<Expression> Compiler::convertIdentifier(int line, std::string_vi
             std::vector<const FunctionDeclaration*> f = {
                 &result->as<FunctionDeclaration>()
             };
-            return std::make_unique<FunctionReference>(*fContext, line, f);
+            return std::make_unique<FunctionReference>(*fContext, pos, f);
         }
         case Symbol::Kind::kUnresolvedFunction: {
             const UnresolvedFunction* f = &result->as<UnresolvedFunction>();
-            return std::make_unique<FunctionReference>(*fContext, line, f->functions());
+            return std::make_unique<FunctionReference>(*fContext, pos, f->functions());
         }
         case Symbol::Kind::kVariable: {
             const Variable* var = &result->as<Variable>();
@@ -497,11 +507,11 @@ std::unique_ptr<Expression> Compiler::convertIdentifier(int line, std::string_vi
                     break;
             }
             // default to kRead_RefKind; this will be corrected later if the variable is written to
-            return VariableReference::Make(line, var, VariableReference::RefKind::kRead);
+            return VariableReference::Make(pos, var, VariableReference::RefKind::kRead);
         }
         case Symbol::Kind::kField: {
             const Field* field = &result->as<Field>();
-            auto base = VariableReference::Make(line, &field->owner(),
+            auto base = VariableReference::Make(pos, &field->owner(),
                                                 VariableReference::RefKind::kRead);
             return FieldAccess::Make(*fContext, std::move(base), field->fieldIndex(),
                                      FieldAccess::OwnerKind::kAnonymousInterfaceBlock);
@@ -509,12 +519,12 @@ std::unique_ptr<Expression> Compiler::convertIdentifier(int line, std::string_vi
         case Symbol::Kind::kType: {
             // go through DSLType so we report errors on private types
             dsl::DSLModifiers modifiers;
-            dsl::DSLType dslType(result->name(), &modifiers, PositionInfo(/*file=*/nullptr, line));
-            return TypeReference::Convert(*fContext, line, &dslType.skslType());
+            dsl::DSLType dslType(result->name(), &modifiers, pos);
+            return TypeReference::Convert(*fContext, pos, &dslType.skslType());
         }
         case Symbol::Kind::kExternal: {
             const ExternalFunction* r = &result->as<ExternalFunction>();
-            return std::make_unique<ExternalFunctionReference>(line, r);
+            return std::make_unique<ExternalFunctionReference>(pos, r);
         }
         default:
             SK_ABORT("unsupported symbol type %d\n", (int) result->kind());
@@ -620,7 +630,7 @@ bool Compiler::finalize(Program& program) {
 
 bool Compiler::toSPIRV(Program& program, OutputStream& out) {
     TRACE_EVENT0("skia.shaders", "SkSL::Compiler::toSPIRV");
-    AutoSource as(this, program.fSource->c_str());
+    AutoSource as(this, *program.fSource);
     ProgramSettings settings;
     settings.fDSLUseMemoryPool = false;
     dsl::Start(this, program.fConfig->fKind, settings);
@@ -653,8 +663,8 @@ bool Compiler::toSPIRV(Program& program, OutputStream& out) {
             if (tools.Disassemble((const uint32_t*)data.data(), data.size() / 4, &disassembly)) {
                 errors.append(disassembly);
             }
-            this->errorReporter().error(-1, errors);
-            this->errorReporter().reportPendingErrors(PositionInfo());
+            this->errorReporter().error(Position(), errors);
+            this->errorReporter().reportPendingErrors(Position());
 #else
             SkDEBUGFAILF("%s", errors.c_str());
 #endif
@@ -680,7 +690,7 @@ bool Compiler::toSPIRV(Program& program, std::string* out) {
 
 bool Compiler::toGLSL(Program& program, OutputStream& out) {
     TRACE_EVENT0("skia.shaders", "SkSL::Compiler::toGLSL");
-    AutoSource as(this, program.fSource->c_str());
+    AutoSource as(this, *program.fSource);
     GLSLCodeGenerator cg(fContext.get(), &program, &out);
     bool result = cg.generateCode();
     return result;
@@ -721,7 +731,7 @@ bool Compiler::toHLSL(Program& program, std::string* out) {
 
 bool Compiler::toMetal(Program& program, OutputStream& out) {
     TRACE_EVENT0("skia.shaders", "SkSL::Compiler::toMetal");
-    AutoSource as(this, program.fSource->c_str());
+    AutoSource as(this, *program.fSource);
     MetalCodeGenerator cg(fContext.get(), &program, &out);
     bool result = cg.generateCode();
     return result;
@@ -738,10 +748,10 @@ bool Compiler::toMetal(Program& program, std::string* out) {
 
 #endif // defined(SKSL_STANDALONE) || SK_SUPPORT_GPU
 
-void Compiler::handleError(std::string_view msg, PositionInfo pos) {
+void Compiler::handleError(std::string_view msg, Position pos) {
     fErrorText += "error: ";
-    if (pos.line() >= 1) {
-        fErrorText += std::to_string(pos.line()) + ": ";
+    if (pos.valid()) {
+        fErrorText += std::to_string(pos.line(this->errorReporter().source())) + ": ";
     }
     fErrorText += std::string(msg) + "\n";
 }

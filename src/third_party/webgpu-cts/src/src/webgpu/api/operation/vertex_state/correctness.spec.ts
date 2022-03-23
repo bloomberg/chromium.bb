@@ -173,18 +173,6 @@ fn check(success : bool) {
 }
 
 fn floatsSimilar(a : f32, b : f32, tolerance : f32) -> bool {
-  if (isNan(a) && isNan(b)) {
-    return true;
-  }
-
-  if (isInf(a) && isInf(b) && sign(a) == sign(b)) {
-    return true;
-  }
-
-  if (isInf(a) || isInf(b)) {
-    return false;
-  }
-
   // TODO do we check for + and - 0?
   return abs(a - b) < tolerance;
 }
@@ -284,7 +272,8 @@ struct VSOutputs {
       colorAttachments: [
         {
           view: testTexture.createView(),
-          loadValue: [0, 0, 0, 0],
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -296,7 +285,7 @@ struct VSOutputs {
       pass.setVertexBuffer(buffer.slot, buffer.buffer, buffer.vbOffset ?? 0);
     }
     pass.draw(vertexCount, instanceCount);
-    pass.endPass();
+    pass.end();
 
     this.device.queue.submit([encoder.finish()]);
 
@@ -885,7 +874,7 @@ g.test('vertex_buffer_used_multiple_times_interleaved')
     const alignedFormatByteSize = align(formatByteSize, 4);
 
     // Create data for a single vertex buffer with many attributes, that will be split between
-    // many vertexbuffers set at different offsets.
+    // many vertex buffers set at different offsets.
 
     // In this test we want to test using the same vertex buffer for multiple different attributes.
     // For example if vbCount is 3, we will create a vertex buffer containing the following data:

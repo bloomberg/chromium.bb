@@ -139,7 +139,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DidChangePerformanceTiming() override;
   void DidObserveInputDelay(base::TimeDelta) override;
   void DidObserveUserInteraction(base::TimeDelta max_event_duration,
-                                 base::TimeDelta total_event_duration,
                                  UserInteractionType interaction_type) override;
   void DidChangeCpuTiming(base::TimeDelta) override;
   void DidObserveLoadingBehavior(LoadingBehaviorFlag) override;
@@ -149,8 +148,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
                           uint32_t ng_call_count) override;
-  void DidObserveLazyLoadBehavior(
-      WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   void PreloadSubresourceOptimizationsForOrigins(
       const WTF::HashSet<scoped_refptr<const SecurityOrigin>,
                          SecurityOriginHash>& origins) override;
@@ -168,11 +165,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
       std::unique_ptr<PolicyContainer> policy_container,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
 
-  // Updates the underlying |WebDocumentLoaderImpl| of |DocumentLoader| with
-  // extra_data.
-  void UpdateDocumentLoader(
-      DocumentLoader* document_loader,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+  String UserAgentOverride() override;
   WTF::String UserAgent() override;
   WTF::String FullUserAgent() override;
   WTF::String ReducedUserAgent() override;

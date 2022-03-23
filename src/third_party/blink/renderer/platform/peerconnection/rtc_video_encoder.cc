@@ -10,7 +10,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -183,11 +182,12 @@ webrtc::VideoEncoder::EncoderInfo CopyToWebrtcEncoderInfo(
   info.has_trusted_rate_controller = enc_info.has_trusted_rate_controller;
   info.is_hardware_accelerated = enc_info.is_hardware_accelerated;
   info.supports_simulcast = enc_info.supports_simulcast;
+  info.is_qp_trusted = enc_info.reports_average_qp;
   static_assert(
       webrtc::kMaxSpatialLayers >= media::VideoEncoderInfo::kMaxSpatialLayers,
       "webrtc::kMaxSpatiallayers is less than "
       "media::VideoEncoderInfo::kMaxSpatialLayers");
-  for (size_t i = 0; i < base::size(enc_info.fps_allocation); ++i) {
+  for (size_t i = 0; i < std::size(enc_info.fps_allocation); ++i) {
     if (enc_info.fps_allocation[i].empty())
       continue;
     info.fps_allocation[i] =
@@ -630,6 +630,7 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
   encoder_info_.implementation_name = "ExternalEncoder";
   encoder_info_.has_trusted_rate_controller = true;
   encoder_info_.is_hardware_accelerated = true;
+  encoder_info_.is_qp_trusted = true;
   encoder_info_.fps_allocation[0] = {
       webrtc::VideoEncoder::EncoderInfo::kMaxFramerateFraction};
   DCHECK(encoder_info_.resolution_bitrate_limits.empty());
@@ -1161,7 +1162,7 @@ void RTCVideoEncoder::Impl::LogAndNotifyError(
   static const char* const kErrorNames[] = {
       "kIllegalStateError", "kInvalidArgumentError", "kPlatformFailureError"};
   static_assert(
-      base::size(kErrorNames) == media::VideoEncodeAccelerator::kErrorMax + 1,
+      std::size(kErrorNames) == media::VideoEncodeAccelerator::kErrorMax + 1,
       "Different number of errors and textual descriptions");
   DLOG(ERROR) << location.ToString() << kErrorNames[error] << " - " << str;
   NotifyError(error);
@@ -1486,6 +1487,17 @@ int32_t RTCVideoEncoder::InitEncode(
            << ", width=" << codec_settings->width
            << ", height=" << codec_settings->height
            << ", startBitrate=" << codec_settings->startBitrate;
+
+  if (profile_ >= media::H264PROFILE_MIN &&
+      profile_ <= media::H264PROFILE_MAX &&
+      (codec_settings->width % 2 != 0 || codec_settings->height % 2 != 0)) {
+    DLOG(ERROR)
+        << "Input video size is " << codec_settings->width << "x"
+        << codec_settings->height << ", "
+        << "but hardware H.264 encoder only supports even sized frames.";
+    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+  }
+
   if (impl_)
     Release();
 

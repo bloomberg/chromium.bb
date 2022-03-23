@@ -436,6 +436,10 @@ class Code : public HeapObject {
   // TurboFan optimizing compiler.
   inline bool is_turbofanned() const;
 
+  // TODO(jgruber): Reconsider these predicates; we should probably merge them
+  // and rename to something appropriate.
+  inline bool is_maglevved() const;
+
   // [can_have_weak_objects]: If CodeKindIsOptimizedJSFunction(kind), tells
   // whether the embedded objects in code should be treated weakly.
   inline bool can_have_weak_objects() const;
@@ -451,10 +455,12 @@ class Code : public HeapObject {
   inline unsigned inlined_bytecode_size() const;
   inline void set_inlined_bytecode_size(unsigned size);
 
-  inline bool has_safepoint_info() const;
+  // [uses_safepoint_table]: Whether this Code object uses safepoint tables
+  // (note the table may still be empty, see has_safepoint_table).
+  inline bool uses_safepoint_table() const;
 
-  // [stack_slots]: If {has_safepoint_info()}, the number of stack slots
-  // reserved in the code prologue.
+  // [stack_slots]: If {uses_safepoint_table()}, the number of stack slots
+  // reserved in the code prologue; otherwise 0.
   inline int stack_slots() const;
 
   // [marked_for_deoptimization]: If CodeKindCanDeoptimize(kind), tells whether
@@ -502,7 +508,8 @@ class Code : public HeapObject {
   // This field contains cage base value which is used for decompressing
   // the references to non-Code objects (map, deoptimization_data, etc.).
   inline PtrComprCageBase main_cage_base() const;
-  inline void set_main_cage_base(Address cage_base);
+  inline PtrComprCageBase main_cage_base(RelaxedLoadTag) const;
+  inline void set_main_cage_base(Address cage_base, RelaxedStoreTag);
 
   // Clear uninitialized padding space. This ensures that the snapshot content
   // is deterministic. Depending on the V8 build mode there could be no padding.

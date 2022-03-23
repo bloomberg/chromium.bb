@@ -35,6 +35,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/escape.h"
@@ -50,7 +51,6 @@
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
-#include "pdf/ppapi_migration/image.h"
 #include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ui/document_properties.h"
@@ -324,11 +324,11 @@ void PdfViewPluginBase::NotifyNumberOfFindResultsChanged(int total,
     return;
 
   recently_sent_find_update_ = true;
-  ScheduleTaskOnMainThread(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PdfViewPluginBase::ResetRecentlySentFindUpdate,
                      GetWeakPtr()),
-      /*result=*/0, kFindResultCooldown);
+      kFindResultCooldown);
 }
 
 void PdfViewPluginBase::NotifyTouchSelectionOccurred() {
@@ -561,11 +561,7 @@ void PdfViewPluginBase::DocumentFocusChanged(bool document_has_focus) {
 
 void PdfViewPluginBase::SetLinkUnderCursor(
     const std::string& link_under_cursor) {
-  if (link_under_cursor_ == link_under_cursor)
-    return;
-
   link_under_cursor_ = link_under_cursor;
-  NotifyLinkUnderCursor();
 }
 
 bool PdfViewPluginBase::HandleInputEvent(const blink::WebInputEvent& event) {
@@ -623,7 +619,6 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
           {"setReadOnly", &PdfViewPluginBase::HandleSetReadOnlyMessage},
           {"setTwoUpView", &PdfViewPluginBase::HandleSetTwoUpViewMessage},
           {"stopScrolling", &PdfViewPluginBase::HandleStopScrollingMessage},
-          {"updateScroll", &PdfViewPluginBase::HandleUpdateScrollMessage},
           {"viewport", &PdfViewPluginBase::HandleViewportMessage},
       });
 
@@ -795,7 +790,7 @@ void PdfViewPluginBase::LoadUrl(base::StringPiece url, bool is_print_preview) {
     last_progress_sent_ = 0;
 
   UrlRequest request;
-  request.url = RewriteRequestUrl(url);
+  request.url = static_cast<std::string>(url);
   request.method = "GET";
   request.ignore_redirects = true;
 
@@ -808,19 +803,13 @@ void PdfViewPluginBase::LoadUrl(base::StringPiece url, bool is_print_preview) {
                      GetWeakPtr(), std::move(loader)));
 }
 
-std::string PdfViewPluginBase::RewriteRequestUrl(base::StringPiece url) const {
-  return std::string(url);
-}
-
 void PdfViewPluginBase::InvalidateAfterPaintDone() {
   if (deferred_invalidates_.empty())
     return;
 
-  ScheduleTaskOnMainThread(
-      FROM_HERE,
-      base::BindOnce(&PdfViewPluginBase::ClearDeferredInvalidates,
-                     GetWeakPtr()),
-      /*result=*/0, base::TimeDelta());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PdfViewPluginBase::ClearDeferredInvalidates,
+                                GetWeakPtr()));
 }
 
 void PdfViewPluginBase::OnGeometryChanged(double old_zoom,
@@ -911,8 +900,8 @@ void PdfViewPluginBase::UpdateGeometryOnPluginRectChanged(
   OnGeometryChanged(zoom_, old_device_scale);
 }
 
-Image PdfViewPluginBase::GetPluginImageData() const {
-  return Image(image_data_);
+SkBitmap PdfViewPluginBase::GetPluginImageData() const {
+  return image_data_;
 }
 
 void PdfViewPluginBase::RecalculateAreas(double old_zoom,
@@ -938,10 +927,6 @@ void PdfViewPluginBase::RecalculateAreas(double old_zoom,
 
   engine()->PageOffsetUpdated(available_area_.OffsetFromOrigin());
   engine()->PluginSizeUpdated(available_area_.size());
-
-  if (document_size_.IsEmpty())
-    return;
-  paint_manager_.InvalidateRect(gfx::Rect(plugin_rect_.size()));
 }
 
 void PdfViewPluginBase::CalculateBackgroundParts() {
@@ -1050,11 +1035,11 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo(int32_t page_index) {
                            std::move(chars), std::move(page_objects));
 
   // Schedule loading the next page.
-  ScheduleTaskOnMainThread(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo,
-                     GetWeakPtr()),
-      /*result=*/page_index + 1, kAccessibilityPageDelay);
+                     GetWeakPtr(), page_index + 1),
+      kAccessibilityPageDelay);
 }
 
 void PdfViewPluginBase::PrepareAndSetAccessibilityViewportInfo() {
@@ -1099,7 +1084,10 @@ gfx::Vector2d PdfViewPluginBase::plugin_offset_in_frame() const {
 void PdfViewPluginBase::SetZoom(double scale) {
   double old_zoom = zoom_;
   zoom_ = scale;
+
   OnGeometryChanged(old_zoom, device_scale_);
+  if (!document_size_.IsEmpty())
+    paint_manager_.InvalidateRect(gfx::Rect(plugin_rect_.size()));
 }
 
 // static
@@ -1310,11 +1298,6 @@ void PdfViewPluginBase::HandleStopScrollingMessage(
   stop_scrolling_ = true;
 }
 
-void PdfViewPluginBase::HandleUpdateScrollMessage(const base::Value& message) {
-  UpdateScroll(GetScrollPositionFromOffset(gfx::Vector2dF(
-      message.FindDoubleKey("x").value(), message.FindDoubleKey("y").value())));
-}
-
 void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
   const base::Value* layout_options_value =
       message.FindDictKey("layoutOptions");
@@ -1326,7 +1309,10 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
 
     // TODO(crbug.com/1013800): Eliminate need to get document size from here.
     document_size_ = engine()->ApplyDocumentLayout(layout_options);
+
     OnGeometryChanged(zoom_, device_scale_);
+    if (!document_size_.IsEmpty())
+      paint_manager_.InvalidateRect(gfx::Rect(plugin_rect_.size()));
 
     // Send 100% loading progress only after initial layout negotiated.
     if (last_progress_sent_ < 100 &&
@@ -1539,8 +1525,7 @@ void PdfViewPluginBase::PrepareForFirstPaint(
       PaintReadyRect(rect, GetPluginImageData(), /*flush_now=*/true));
 }
 
-void PdfViewPluginBase::ClearDeferredInvalidates(
-    int32_t /*unused_but_required*/) {
+void PdfViewPluginBase::ClearDeferredInvalidates() {
   DCHECK(!in_paint_);
   for (const gfx::Rect& rect : deferred_invalidates_)
     Invalidate(rect);
@@ -1666,15 +1651,14 @@ void PdfViewPluginBase::LoadAccessibility() {
   PrepareAndSetAccessibilityViewportInfo();
 
   // Schedule loading the first page.
-  ScheduleTaskOnMainThread(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo,
-                     GetWeakPtr()),
-      /*result=*/0, kAccessibilityPageDelay);
+                     GetWeakPtr(), /*page_index=*/0),
+      kAccessibilityPageDelay);
 }
 
-void PdfViewPluginBase::ResetRecentlySentFindUpdate(
-    int32_t /*unused_but_required*/) {
+void PdfViewPluginBase::ResetRecentlySentFindUpdate() {
   recently_sent_find_update_ = false;
 }
 
@@ -1777,7 +1761,10 @@ void PdfViewPluginBase::OnPrintPreviewLoaded() {
     print_preview_loaded_page_count_ = 1;
     AppendBlankPrintPreviewPages();
   }
+
   OnGeometryChanged(0, 0);
+  if (!document_size_.IsEmpty())
+    paint_manager_.InvalidateRect(gfx::Rect(plugin_rect_.size()));
 }
 
 void PdfViewPluginBase::AppendBlankPrintPreviewPages() {

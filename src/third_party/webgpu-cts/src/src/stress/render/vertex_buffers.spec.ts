@@ -45,7 +45,7 @@ function createHugeVertexBuffer(t: GPUTest, size: number) {
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bindGroup);
   pass.dispatch(size);
-  pass.endPass();
+  pass.end();
 
   const vertexBuffer = t.device.createBuffer({
     size: kBufferSize,
@@ -108,7 +108,7 @@ g.test('many')
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
@@ -119,7 +119,7 @@ g.test('many')
     pass.setPipeline(pipeline);
     pass.setVertexBuffer(0, buffer);
     pass.draw(kSize * kSize);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectSingleColor(renderTarget, 'rgba8unorm', {
       size: [kSize, kSize, 1],

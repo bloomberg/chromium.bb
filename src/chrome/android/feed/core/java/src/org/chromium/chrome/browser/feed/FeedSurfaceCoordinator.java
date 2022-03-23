@@ -86,7 +86,7 @@ public class FeedSurfaceCoordinator
                    BackToTopBubbleScrollListener.ResultHandler, SurfaceCoordinator,
                    FeedAutoplaySettingsDelegate, FeedReliabilityLoggingSignals {
     private static final String TAG = "FeedSurfaceCoordinator";
-    private static final long DELAY_FEED_HEADER_IPH_MS = 5;
+    private static final long DELAY_FEED_HEADER_IPH_MS = 50;
 
     protected final Activity mActivity;
     private final SnackbarManager mSnackbarManager;
@@ -95,8 +95,6 @@ public class FeedSurfaceCoordinator
     private final boolean mShowDarkBackground;
     private final boolean mIsPlaceholderShownInitially;
     private final FeedSurfaceDelegate mDelegate;
-    private final int mDefaultMarginPixels;
-    private final int mWideMarginPixels;
     private final FeedSurfaceMediator mMediator;
     private final BottomSheetController mBottomSheetController;
     private final WindowAndroid mWindowAndroid;
@@ -274,17 +272,13 @@ public class FeedSurfaceCoordinator
         mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
 
         Resources resources = mActivity.getResources();
-        mDefaultMarginPixels = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.content_suggestions_card_modern_margin);
-        mWideMarginPixels = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.ntp_wide_card_lateral_margins);
 
         mRootView = new RootView(mActivity);
         mRootView.setPadding(0, resources.getDimensionPixelOffset(R.dimen.tab_strip_height), 0, 0);
         mUiConfig = new UiConfig(mRootView);
         mRecyclerView = setUpView();
-        mStreamViewResizer = FeedStreamViewResizer.createAndAttach(
-                mActivity, mRecyclerView, mUiConfig, mDefaultMarginPixels, mWideMarginPixels);
+        mStreamViewResizer =
+                FeedStreamViewResizer.createAndAttach(mActivity, mRecyclerView, mUiConfig);
 
         // Pull-to-refresh set up.
         if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.getParent() == null) {

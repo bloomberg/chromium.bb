@@ -1002,15 +1002,15 @@ export class DOMNodeShortcut {
 export class DOMDocument extends DOMNode {
   body: DOMNode|null;
   documentElement: DOMNode|null;
-  documentURL: string;
-  baseURL: string;
+  documentURL: Platform.DevToolsPath.UrlString;
+  baseURL: Platform.DevToolsPath.UrlString;
   constructor(domModel: DOMModel, payload: Protocol.DOM.Node) {
     super(domModel);
     this.body = null;
     this.documentElement = null;
     this.init(this, false, payload);
-    this.documentURL = payload.documentURL || '';
-    this.baseURL = payload.baseURL || '';
+    this.documentURL = (payload.documentURL || '') as Platform.DevToolsPath.UrlString;
+    this.baseURL = (payload.baseURL || '') as Platform.DevToolsPath.UrlString;
   }
 }
 
@@ -1243,10 +1243,10 @@ export class DOMModel extends SDKModel<EventTypes> {
 
   documentUpdated(): void {
     // If we have this.#pendingDocumentRequestPromise in flight,
-    // if it hits backend post #document update, it will contain most recent result.
-    const documentWasRequested = this.#document || this.#pendingDocumentRequestPromise;
+    // it will contain most recent result.
+    const documentWasRequested = this.#pendingDocumentRequestPromise;
     this.setDocument(null);
-    if (this.parentModel() && documentWasRequested) {
+    if (this.parentModel() && !documentWasRequested) {
       void this.requestDocument();
     }
   }

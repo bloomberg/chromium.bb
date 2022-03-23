@@ -18,13 +18,19 @@ source_set("public") {
 source_set("util") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "badge_type_util.cc",
+    "badge_overflow_menu_util.h",
+    "badge_overflow_menu_util.mm",
     "badge_type_util.h",
+    "badge_type_util.mm",
   ]
   deps = [
     ":public",
     "//base",
+    "//components/password_manager/core/common",
+    "//components/strings",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/infobars:public",
+    "//ui/base",
   ]
 }
 
@@ -54,7 +60,7 @@ source_set("badges") {
     "resources:wrench_badge",
     "//base",
     "//components/password_manager/core/common",
-    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
@@ -103,6 +109,7 @@ source_set("badges_popup_menu") {
     ":public",
     "//base",
     "//components/password_manager/core/common",
+    "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",

@@ -105,7 +105,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
                                       constraints.fixed_aspect_ratio);
 
   if (target_) {
-    capturer_->ChangeTarget(target_);
+    capturer_->ChangeTarget(target_, crop_version_);
   }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -196,12 +196,17 @@ void FrameSinkVideoCaptureDevice::OnUtilizationReport(
     media::VideoCaptureFeedback feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Assumption: The mojo InterfacePtr in |frame_callbacks_| should be valid at
-  // this point because this method will always be called before the
-  // VideoFrameReceiver signals it is done consuming the frame.
   const auto index = static_cast<size_t>(frame_feedback_id);
   DCHECK_LT(index, frame_callbacks_.size());
-  frame_callbacks_[index]->ProvideFeedback(feedback);
+
+  // In most cases, we expect that the mojo InterfacePtr in |frame_callbacks_|
+  // should be valid because this method will always be called before the
+  // VideoFrameReceiver signals that it is done consuming the frame. However,
+  // some capturers (e.g. Lacros) involve some extra mojo hops that may mean
+  // we got scheduled after the VideoFrameReceiver signaled it was done.
+  const auto& callback = frame_callbacks_[index];
+  if (callback.is_bound())
+    callback->ProvideFeedback(feedback);
 }
 
 void FrameSinkVideoCaptureDevice::OnFrameCaptured(
@@ -285,32 +290,37 @@ void FrameSinkVideoCaptureDevice::OnStopped() {
 }
 
 void FrameSinkVideoCaptureDevice::OnLog(const std::string& message) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&FrameSinkVideoCaptureDevice::OnLog,
+                                  weak_factory_.GetWeakPtr(), message));
+    return;
+  }
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (receiver_) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      receiver_->OnLog(message);
-    } else {
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE,
-          base::BindOnce(&media::VideoFrameReceiver::OnLog,
-                         base::Unretained(receiver_.get()), message));
-    }
+    receiver_->OnLog(message);
   }
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetChanged(
-    const absl::optional<viz::VideoCaptureTarget>& target) {
+    const absl::optional<viz::VideoCaptureTarget>& target,
+    uint32_t crop_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GE(crop_version, crop_version_);
+
   target_ = target;
+  crop_version_ = crop_version;
+
   if (capturer_) {
-    capturer_->ChangeTarget(target_);
+    capturer_->ChangeTarget(target_, crop_version_);
   }
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OnTargetChanged(absl::nullopt);
+  OnTargetChanged(absl::nullopt, crop_version_);
   OnFatalError("Capture target has been permanently lost.");
 }
 

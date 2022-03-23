@@ -1413,9 +1413,8 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
           CacheControlNoStoreHTTPOnlyCookieModified;
     case Reason::kNoResponseHead:
       return Page::BackForwardCacheNotRestoredReasonEnum::NoResponseHead;
-    case Reason::kActivationNavigationsDisallowedForBug1234857:
-      return Page::BackForwardCacheNotRestoredReasonEnum::
-          ActivationNavigationsDisallowedForBug1234857;
+    case Reason::kErrorDocument:
+      return Page::BackForwardCacheNotRestoredReasonEnum::ErrorDocument;
     case Reason::kBlocklistedFeatures:
       // Blocklisted features should be handled separately and be broken down
       // into sub reasons.
@@ -1694,6 +1693,7 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kCacheControlNoStoreCookieModified:
     case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
     case Reason::kNoResponseHead:
+    case Reason::kErrorDocument:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
     case Reason::kOptInUnloadHeaderNotPresent:
     case Reason::kUnloadHandlerExistsInMainFrame:
@@ -1701,7 +1701,6 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::PageSupportNeeded;
     case Reason::kNetworkRequestDatapipeDrainedAsBytesConsumer:
     case Reason::kUnknown:
-    case Reason::kActivationNavigationsDisallowedForBug1234857:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::SupportPending;
     case Reason::kBlocklistedFeatures:
       NOTREACHED();
@@ -1792,13 +1791,16 @@ CreateNotRestoredExplanation(
     } else if (reason == BackForwardCacheMetrics::NotRestoredReason::
                              kDisableForRenderFrameHostCalled) {
       for (auto disabled_reason : disabled_reasons) {
-        reasons->emplace_back(
+        auto reason =
             Page::BackForwardCacheNotRestoredExplanation::Create()
                 .SetType(
                     MapDisableForRenderFrameHostReasonToType(disabled_reason))
                 .SetReason(
                     DisableForRenderFrameHostReasonToProtocol(disabled_reason))
-                .Build());
+                .Build();
+        if (!disabled_reason.context.empty())
+          reason->SetContext(disabled_reason.context);
+        reasons->emplace_back(std::move(reason));
       }
     } else {
       reasons->emplace_back(

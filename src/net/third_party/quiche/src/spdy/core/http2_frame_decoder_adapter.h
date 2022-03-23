@@ -103,6 +103,9 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   Http2DecoderAdapter();
   ~Http2DecoderAdapter() override;
 
+  Http2DecoderAdapter(const Http2DecoderAdapter&) = delete;
+  Http2DecoderAdapter& operator=(const Http2DecoderAdapter&) = delete;
+
   // Set callbacks to be called from the framer.  A visitor must be set, or
   // else the framer will likely crash.  It is acceptable for the visitor
   // to do nothing.  If this is called multiple times, only the last visitor
@@ -137,9 +140,6 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   // is guaranteed to be called exactly once, with the entire payload or field.
   size_t ProcessInput(const char* data, size_t len);
 
-  // Reset the decoder (used just for tests at this time).
-  void Reset();
-
   // Current state of the decoder.
   SpdyState state() const;
 
@@ -161,6 +161,10 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   // A visitor may call this method to indicate it no longer wishes to receive
   // events for this connection.
   void StopProcessing();
+
+  // Sets the limit on the size of received HTTP/2 frame payloads. Corresponds
+  // to SETTINGS_MAX_FRAME_SIZE as advertised to the peer.
+  void SetMaxFrameSize(size_t max_frame_size);
 
  private:
   bool OnFrameHeader(const Http2FrameHeader& header) override;
@@ -219,10 +223,6 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
 
   void DetermineSpdyState(DecodeStatus status);
   void ResetBetweenFrames();
-
-  // ResetInternal is called from the constructor, and during tests, but not
-  // otherwise (i.e. not between every frame).
-  void ResetInternal();
 
   void set_spdy_state(SpdyState v);
 
@@ -292,8 +292,7 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
   // clearing if the adapter is to be used for another connection.
   std::unique_ptr<spdy::HpackDecoderAdapter> hpack_decoder_ = nullptr;
 
-  // The HTTP/2 frame decoder. Accessed via a unique_ptr to allow replacement
-  // (e.g. in tests) when Reset() is called.
+  // The HTTP/2 frame decoder.
   std::unique_ptr<Http2FrameDecoder> frame_decoder_;
 
   // Next frame type expected. Currently only used for CONTINUATION frames,
@@ -310,7 +309,7 @@ class QUICHE_EXPORT_PRIVATE Http2DecoderAdapter
 
   // The limit on the size of received HTTP/2 payloads as specified in the
   // SETTINGS_MAX_FRAME_SIZE advertised to peer.
-  size_t recv_frame_size_limit_ = spdy::kHttp2DefaultFramePayloadLimit;
+  size_t max_frame_size_ = spdy::kHttp2DefaultFramePayloadLimit;
 
   // Has OnFrameHeader been called?
   bool decoded_frame_header_ = false;

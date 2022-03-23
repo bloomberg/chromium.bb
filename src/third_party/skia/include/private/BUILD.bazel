@@ -290,7 +290,6 @@ generated_cc_atom(
         ":SkTo_hdr",
         "//include/core:SkMatrix_hdr",
         "//include/core:SkPoint_hdr",
-        "//include/core:SkRRect_hdr",
         "//include/core:SkRect_hdr",
         "//include/core:SkRefCnt_hdr",
     ],
@@ -367,10 +366,7 @@ generated_cc_atom(
     name = "SkSLString_hdr",
     hdrs = ["SkSLString.h"],
     visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLDefines_hdr",
-        "//include/core:SkString_hdr",
-    ],
+    deps = [":SkSLDefines_hdr"],
 )
 
 generated_cc_atom(
@@ -471,12 +467,6 @@ generated_cc_atom(
     hdrs = ["SkTLogic.h"],
     visibility = ["//:__subpackages__"],
     deps = [":SkTo_hdr"],
-)
-
-generated_cc_atom(
-    name = "SkTOptional_hdr",
-    hdrs = ["SkTOptional.h"],
-    visibility = ["//:__subpackages__"],
 )
 
 generated_cc_atom(

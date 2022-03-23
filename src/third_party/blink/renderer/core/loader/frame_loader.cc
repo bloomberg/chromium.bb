@@ -49,9 +49,11 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -60,7 +62,6 @@
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/app_history/app_history.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
@@ -90,6 +91,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -428,12 +430,13 @@ void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
   if (document_loader_) {
     // Only declare the whole frame finished if the committed navigation is done
     // and there is no provisional navigation in progress.
-    // appHistory may prevent a navigation from completing while waiting for a
-    // JS-provided promise to resolve, so check it as well.
+    // The navigation API may prevent a navigation from completing while waiting
+    // for a JS-provided promise to resolve, so check it as well.
     if (!document_loader_->SentDidFinishLoad() || HasProvisionalNavigation())
       return;
-    if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
-      if (app_history->HasOngoingNavigation())
+    if (auto* navigation_api =
+            NavigationApi::navigation(*frame_->DomWindow())) {
+      if (navigation_api->HasOngoingNavigation())
         return;
     }
   }
@@ -489,28 +492,14 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
   loader = nullptr;
 }
 
-void FrameLoader::DidFinishSameDocumentNavigation(
+void FrameLoader::ProcessScrollForSameDocumentNavigation(
     const KURL& url,
     WebFrameLoadType frame_load_type,
-    HistoryItem* history_item) {
-  // If we have a state object, we cannot also be a new navigation.
-  scoped_refptr<SerializedScriptValue> state_object =
-      history_item ? history_item->StateObject() : nullptr;
-  DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
-
-  // onpopstate might change view state, so stash for later restore.
-  absl::optional<HistoryItem::ViewState> view_state;
-  if (history_item) {
-    view_state = history_item->GetViewState();
-  }
-
-  frame_->DomWindow()->StatePopped(state_object
-                                       ? std::move(state_object)
-                                       : SerializedScriptValue::NullValue());
-
+    absl::optional<HistoryItem::ViewState> view_state,
+    mojom::blink::ScrollRestorationType scroll_restoration_type) {
   if (view_state) {
     RestoreScrollPositionAndViewState(frame_load_type, *view_state,
-                                      history_item->ScrollRestorationType());
+                                      scroll_restoration_type);
   }
 
   // We need to scroll to the fragment whether or not a hash change occurred,
@@ -694,7 +683,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
                                       frame_load_type),
         resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
         /*is_synchronously_committed=*/true, request.GetTriggeringEventInfo(),
-        false /* is_browser_initiated */, nullptr /* extra_data */);
+        false /* is_browser_initiated */);
     return;
   }
 
@@ -765,18 +754,18 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     return;
   }
 
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
+  if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow())) {
     if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
         (!origin_window || origin_window->GetSecurityOrigin()->CanAccess(
                                frame_->DomWindow()->GetSecurityOrigin()))) {
-      if (app_history->DispatchNavigateEvent(
+      if (navigation_api->DispatchNavigateEvent(
               url, request.Form(), NavigateEventType::kCrossDocument,
               frame_load_type,
               request.GetTriggeringEventInfo() ==
                       mojom::blink::TriggeringEventInfo::kFromTrustedEvent
                   ? UserNavigationInvolvement::kActivation
-                  : UserNavigationInvolvement::kNone) !=
-          AppHistory::DispatchResult::kContinue) {
+                  : UserNavigationInvolvement::kNone,
+              nullptr, nullptr) != NavigationApi::DispatchResult::kContinue) {
         return;
       }
     }
@@ -1010,16 +999,16 @@ void FrameLoader::CommitNavigation(
   if (!CancelProvisionalLoaderForNewNavigation())
     return;
 
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
+  if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow())) {
     if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward) {
-      auto result = app_history->DispatchNavigateEvent(
+      auto result = navigation_api->DispatchNavigateEvent(
           navigation_params->url, nullptr, NavigateEventType::kCrossDocument,
           WebFrameLoadType::kBackForward,
           navigation_params->is_browser_initiated
               ? UserNavigationInvolvement::kBrowserUI
               : UserNavigationInvolvement::kNone,
           nullptr, navigation_params->history_item);
-      DCHECK_EQ(result, AppHistory::DispatchResult::kContinue);
+      DCHECK_EQ(result, NavigationApi::DispatchResult::kContinue);
       if (!document_loader_)
         return;
     }
@@ -1171,8 +1160,8 @@ void FrameLoader::StopAllLoaders(bool abort_client) {
   }
 
   frame_->GetDocument()->CancelParsing();
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
-    app_history->InformAboutCanceledNavigation();
+  if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow()))
+    navigation_api->InformAboutCanceledNavigation();
   if (document_loader_)
     document_loader_->StopLoading();
   if (abort_client)
@@ -1329,25 +1318,55 @@ void FrameLoader::RestoreScrollPositionAndViewState(
   view->ScheduleAnimation();
 }
 
-String FrameLoader::UserAgent() const {
-  String user_agent = Client()->UserAgent();
+String FrameLoader::ApplyUserAgentOverrideAndLog(
+    const String& user_agent) const {
+  String user_agent_override;
   probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
-                                &user_agent);
-  return user_agent;
+                                &user_agent_override);
+
+  if (Client()->UserAgentOverride().IsEmpty() &&
+      user_agent_override.IsEmpty()) {
+    return user_agent;
+  }
+
+  if (user_agent_override.IsEmpty()) {
+    user_agent_override = user_agent;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kUserAgentOverrideExperiment)) {
+    String ua_original = Platform::Current()->UserAgent();
+
+    auto it = user_agent_override.Find(ua_original);
+    UserAgentOverride::UserAgentOverrideHistogram histogram =
+        UserAgentOverride::UserAgentOverrideHistogram::UserAgentOverriden;
+    if (it == 0) {
+      histogram = UserAgentOverride::UserAgentOverrideHistogram::
+          UserAgentOverrideSuffix;
+    } else if (it != kNotFound) {
+      histogram = UserAgentOverride::UserAgentOverrideHistogram::
+          UserAgentOverrideSubstring;
+    }
+
+    if (document_loader_) {
+      document_loader_->GetUseCounter().CountUserAgentOverride(histogram,
+                                                               frame_.Get());
+    }
+  }
+
+  return user_agent_override;
+}
+
+String FrameLoader::UserAgent() const {
+  return ApplyUserAgentOverrideAndLog(Client()->UserAgent());
 }
 
 String FrameLoader::FullUserAgent() const {
-  String user_agent = Client()->FullUserAgent();
-  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
-                                &user_agent);
-  return user_agent;
+  return ApplyUserAgentOverrideAndLog(Client()->FullUserAgent());
 }
 
 String FrameLoader::ReducedUserAgent() const {
-  String user_agent = Client()->ReducedUserAgent();
-  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
-                                &user_agent);
-  return user_agent;
+  return ApplyUserAgentOverrideAndLog(Client()->ReducedUserAgent());
 }
 
 absl::optional<blink::UserAgentMetadata> FrameLoader::UserAgentMetadata()
@@ -1465,8 +1484,9 @@ bool FrameLoader::ShouldClose(bool is_reload) {
         frame_->GetDocument());
     if (!frame_->GetDocument()->DispatchBeforeUnloadEvent(
             &page->GetChromeClient(), is_reload, did_allow_navigation)) {
-      if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
-        app_history->InformAboutCanceledNavigation();
+      if (auto* navigation_api =
+              NavigationApi::navigation(*frame_->DomWindow()))
+        navigation_api->InformAboutCanceledNavigation();
       return false;
     }
 
@@ -1489,8 +1509,9 @@ bool FrameLoader::ShouldClose(bool is_reload) {
               descendant_frame->GetDocument());
       if (!descendant_frame->GetDocument()->DispatchBeforeUnloadEvent(
               &page->GetChromeClient(), is_reload, did_allow_navigation)) {
-        if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
-          app_history->InformAboutCanceledNavigation();
+        if (auto* navigation_api =
+                NavigationApi::navigation(*frame_->DomWindow()))
+          navigation_api->InformAboutCanceledNavigation();
         return false;
       }
     }
@@ -1562,8 +1583,8 @@ void FrameLoader::ClearClientNavigation() {
 void FrameLoader::CancelClientNavigation() {
   if (!client_navigation_)
     return;
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
-    app_history->InformAboutCanceledNavigation();
+  if (auto* navigation_api = NavigationApi::navigation(*frame_->DomWindow()))
+    navigation_api->InformAboutCanceledNavigation();
   ResourceError error = ResourceError::CancelledError(client_navigation_->url);
   ClearClientNavigation();
   if (WebPluginContainerImpl* plugin = frame_->GetWebPluginContainer())

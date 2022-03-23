@@ -9,9 +9,8 @@
 #define SKSL_SPIRVCODEGENERATOR
 
 #include <stack>
-#include <unordered_map>
-#include <unordered_set>
 
+#include "include/private/SkTHash.h"
 #include "src/core/SkOpts.h"
 #include "src/sksl/SkSLMemoryLayout.h"
 #include "src/sksl/SkSLStringStream.h"
@@ -58,6 +57,12 @@ struct SPIRVNumberConstant {
     }
     int32_t                fValueBits;
     SkSL::Type::NumberKind fKind;
+
+    struct Hash {
+        uint32_t operator()(const SPIRVNumberConstant& key) const {
+            return key.fValueBits ^ (int)key.fKind;
+        }
+    };
 };
 
 struct SPIRVVectorConstant {
@@ -70,29 +75,13 @@ struct SPIRVVectorConstant {
     }
     SpvId fTypeId;
     SpvId fValueId[4];
+
+    struct Hash {
+        uint32_t operator()(const SPIRVVectorConstant& key) const {
+            return SkOpts::hash(&key, sizeof(key));
+        }
+    };
 };
-
-}  // namespace SkSL
-
-namespace std {
-
-template <>
-struct hash<SkSL::SPIRVNumberConstant> {
-    size_t operator()(const SkSL::SPIRVNumberConstant& key) const {
-        return key.fValueBits ^ (int)key.fKind;
-    }
-};
-
-template <>
-struct hash<SkSL::SPIRVVectorConstant> {
-    size_t operator()(const SkSL::SPIRVVectorConstant& key) const {
-        return SkOpts::hash(&key, sizeof(key));
-    }
-};
-
-}  // namespace std
-
-namespace SkSL {
 
 /**
  * Converts a Program into a SPIR-V binary.
@@ -130,7 +119,6 @@ public:
             , fDefaultLayout(MemoryLayout::k140_Standard)
             , fCapabilities(0)
             , fIdCount(1)
-            , fSetupFragPosition(false)
             , fCurrentBlock(0)
             , fSynthetics(fContext, /*builtin=*/true) {
         this->setupIntrinsics();
@@ -189,8 +177,6 @@ private:
 
     SpvId getType(const Type& type, const MemoryLayout& layout);
 
-    SpvId getImageType(const Type& type);
-
     SpvId getFunctionType(const FunctionDeclaration& function);
 
     SpvId getPointerType(const Type& type, SpvStorageClass_ storageClass);
@@ -200,7 +186,7 @@ private:
 
     std::vector<SpvId> getAccessChain(const Expression& expr, OutputStream& out);
 
-    void writeLayout(const Layout& layout, SpvId target, int line);
+    void writeLayout(const Layout& layout, SpvId target, Position pos);
 
     void writeFieldLayout(const Layout& layout, SpvId target, int member);
 
@@ -353,6 +339,11 @@ private:
     // - `a.x != b.x` merged with `a.y != b.y` generates `(a.x != b.x) || (a.y != b.y)`
     SpvId mergeComparisons(SpvId comparison, SpvId allComparisons, Operator op, OutputStream& out);
 
+    SpvId writeComponentwiseMatrixUnary(const Type& operandType,
+                                        SpvId operand,
+                                        SpvOp_ op,
+                                        OutputStream& out);
+
     SpvId writeComponentwiseMatrixBinary(const Type& operandType, SpvId lhs, SpvId rhs,
                                          SpvOp_ op, OutputStream& out);
 
@@ -467,7 +458,7 @@ private:
 
     void writeUniformBuffer(std::shared_ptr<SymbolTable> topLevelSymbolTable);
 
-    void addRTFlipUniform(int line);
+    void addRTFlipUniform(Position pos);
 
     const MemoryLayout fDefaultLayout;
 
@@ -481,23 +472,18 @@ private:
         int32_t unsignedOp;
         int32_t boolOp;
     };
-    std::unordered_map<IntrinsicKind, Intrinsic> fIntrinsicMap;
-    std::unordered_map<const FunctionDeclaration*, SpvId> fFunctionMap;
-    std::unordered_map<const Variable*, SpvId> fVariableMap;
-    std::unordered_map<const Variable*, int32_t> fInterfaceBlockMap;
-    std::unordered_map<std::string, SpvId> fImageTypeMap;
-    std::unordered_map<std::string, SpvId> fTypeMap;
-    StringStream fCapabilitiesBuffer;
+    SkTHashMap<IntrinsicKind, Intrinsic> fIntrinsicMap;
+    SkTHashMap<const FunctionDeclaration*, SpvId> fFunctionMap;
+    SkTHashMap<const Variable*, SpvId> fVariableMap;
+    SkTHashMap<std::string, SpvId> fTypeMap;
     StringStream fGlobalInitializersBuffer;
     StringStream fConstantBuffer;
-    StringStream fExtraGlobalsBuffer;
     StringStream fVariableBuffer;
     StringStream fNameBuffer;
     StringStream fDecorationBuffer;
 
-    std::unordered_map<SPIRVNumberConstant, SpvId> fNumberConstants;
-    std::unordered_map<SPIRVVectorConstant, SpvId> fVectorConstants;
-    bool fSetupFragPosition;
+    SkTHashMap<SPIRVNumberConstant, SpvId, SPIRVNumberConstant::Hash> fNumberConstants;
+    SkTHashMap<SPIRVVectorConstant, SpvId, SPIRVVectorConstant::Hash> fVectorConstants;
     // label of the current block, or 0 if we are not in a block
     SpvId fCurrentBlock;
     std::stack<SpvId> fBreakTarget;
@@ -505,13 +491,12 @@ private:
     bool fWroteRTFlip = false;
     // holds variables synthesized during output, for lifetime purposes
     SymbolTable fSynthetics;
-    int fSkInCount = 1;
     // Holds a list of uniforms that were declared as globals at the top-level instead of in an
     // interface block.
     UniformBuffer fUniformBuffer;
     std::vector<const VarDeclaration*> fTopLevelUniforms;
-    std::unordered_map<const Variable*, int> fTopLevelUniformMap; //<var, UniformBuffer field index>
-    std::unordered_set<const Variable*> fSPIRVBonusVariables;
+    SkTHashMap<const Variable*, int> fTopLevelUniformMap; // <var, UniformBuffer field index>
+    SkTHashSet<const Variable*> fSPIRVBonusVariables;
     SpvId fUniformBufferId = -1;
 
     friend class PointerLValue;

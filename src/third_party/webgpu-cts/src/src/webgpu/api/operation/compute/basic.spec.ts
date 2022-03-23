@@ -59,7 +59,7 @@ g.test('memcpy').fn(async t => {
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bg);
   pass.dispatch(1);
-  pass.endPass();
+  pass.end();
   t.device.queue.submit([encoder.finish()]);
 
   t.expectGPUBufferValuesEqual(dst, data);
@@ -149,7 +149,7 @@ g.test('large_dispatch')
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bg);
     pass.dispatch(dims[0], dims[1], dims[2]);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
 
     t.expectGPUBufferValuesPassCheck(dst, a => checkElementsEqualGenerated(a, i => val), {

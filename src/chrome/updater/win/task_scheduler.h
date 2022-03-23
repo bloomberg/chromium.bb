@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -62,12 +63,6 @@ class TaskScheduler {
     base::FilePath application_path;
     base::FilePath working_dir;
     std::wstring arguments;
-
-    std::wstring value() const {
-      return base::StrCat({L"[TaskExecAction][application_path]",
-                           application_path.value(), L"[working_dir]",
-                           working_dir.value(), L"[arguments]", arguments});
-    }
   };
 
   // Detailed description of a scheduled task. This type is returned by the
@@ -96,19 +91,6 @@ class TaskScheduler {
 
     // User ID under which the task runs.
     std::wstring user_id;
-
-    std::wstring value() const {
-      std::wstring value =
-          base::StrCat({L"[TaskInfo][name]", name, L"[description]",
-                        description, L"[exec_actions]"});
-      for (auto exec_action : exec_actions)
-        value += base::StrCat({L"[exec_action]", exec_action.value()});
-
-      value += base::StrCat({L"[logon_type]",
-                             base::StringPrintf(L"0x%x", logon_type),
-                             L"[user_id]", user_id});
-      return value;
-    }
   };
 
   static std::unique_ptr<TaskScheduler> CreateInstance();
@@ -160,9 +142,18 @@ class TaskScheduler {
                             TriggerType trigger_type,
                             bool hidden) = 0;
 
+  // Returns true if the scheduled task specified by |task_name| can be started
+  // successfully or is currently running.
+  virtual bool StartTask(const wchar_t* task_name) = 0;
+
  protected:
   TaskScheduler();
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const TaskScheduler::TaskExecAction& t);
+std::ostream& operator<<(std::ostream& stream,
+                         const TaskScheduler::TaskInfo& t);
 
 }  // namespace updater
 

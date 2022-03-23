@@ -20,7 +20,7 @@
 #include "base/tracing/protos/chrome_track_event.pbzero.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom-forward.h"
@@ -64,6 +64,10 @@ class Token;
 namespace blink {
 class StorageKey;
 }  // namespace blink
+
+namespace IPC {
+class ChannelProxy;
+}  // namespace IPC
 
 namespace network {
 struct CrossOriginEmbedderPolicy;
@@ -613,16 +617,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Forces the renderer process to crash ASAP.
   virtual void ForceCrash() {}
-
-  // Controls whether the destructor of RenderProcessHost*Impl* will end up
-  // cleaning the memory used by the exception added via
-  // RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin.
-  //
-  // TODO(lukasza): https://crbug.com/652474: This method shouldn't be part of
-  // the //content public API, because it shouldn't be called by anyone other
-  // than RenderProcessHostImpl (from underneath
-  // RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin).
-  virtual void CleanupNetworkServicePluginExceptionsUponDestruction() = 0;
 
   // Returns a string that contains information useful for debugging
   // crashes related to RenderProcessHost objects staying alive longer than

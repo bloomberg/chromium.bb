@@ -140,7 +140,7 @@ export class ResourceTreeModel extends SDKModel<EventTypes> {
     if (mainFramePayload && mainFramePayload.frame.url !== ':') {
       this.dispatchEventToListeners(Events.WillLoadCachedResources);
       this.addFramesRecursively(null, mainFramePayload);
-      this.target().setInspectedURL(mainFramePayload.frame.url);
+      this.target().setInspectedURL(mainFramePayload.frame.url as Platform.DevToolsPath.UrlString);
     }
     this.#cachedResourcesProcessed = true;
     const runtimeModel = this.target().model(RuntimeModel);
@@ -423,15 +423,15 @@ export class ResourceTreeModel extends SDKModel<EventTypes> {
   }
 
   async fetchAppManifest(): Promise<{
-    url: string,
+    url: Platform.DevToolsPath.UrlString,
     data: string|null,
     errors: Array<Protocol.Page.AppManifestError>,
   }> {
     const response = await this.agent.invoke_getAppManifest();
     if (response.getError()) {
-      return {url: response.url, data: null, errors: []};
+      return {url: response.url as Platform.DevToolsPath.UrlString, data: null, errors: []};
     }
-    return {url: response.url, data: response.data || null, errors: response.errors};
+    return {url: response.url as Platform.DevToolsPath.UrlString, data: response.data || null, errors: response.errors};
   }
 
   async getInstallabilityErrors(): Promise<Protocol.Page.InstallabilityError[]> {

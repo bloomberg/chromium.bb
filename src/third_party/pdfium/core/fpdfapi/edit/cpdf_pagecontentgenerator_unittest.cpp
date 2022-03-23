@@ -12,27 +12,24 @@
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/page/cpdf_page.h"
-#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/page/cpdf_pathobject.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
 #include "core/fpdfapi/page/cpdf_textstate.h"
+#include "core/fpdfapi/page/test_with_page_module.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
-#include "core/fpdfapi/render/cpdf_docrenderdata.h"
+#include "core/fpdfapi/parser/cpdf_test_document.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/cxx17_backports.h"
 
-class CPDF_PageContentGeneratorTest : public testing::Test {
+class CPDF_PageContentGeneratorTest : public TestWithPageModule {
  protected:
-  void SetUp() override { CPDF_PageModule::Create(); }
-  void TearDown() override { CPDF_PageModule::Destroy(); }
-
   void TestProcessPath(CPDF_PageContentGenerator* pGen,
                        fxcrt::ostringstream* buf,
                        CPDF_PathObject* pPathObj) {
@@ -205,10 +202,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
   pPathObj->m_GeneralState.SetFillAlpha(0.5f);
   pPathObj->m_GeneralState.SetStrokeAlpha(0.8f);
 
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
-
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
@@ -248,10 +242,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessGraphics) {
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
   // Checking font whose font dictionary is not yet indirect object.
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
-
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
   auto pTestPage = pdfium::MakeRetain<CPDF_Page>(pDoc.get(), pPageDict);
@@ -317,9 +308,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessStandardText) {
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
   // Checking font whose font dictionary is already an indirect object.
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
 
   CPDF_Dictionary* pPageDict = pDoc->CreateNewPage(0);
@@ -396,9 +385,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessText) {
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessEmptyForm) {
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>();
   auto pStream = pdfium::MakeRetain<CPDF_Stream>(nullptr, 0, std::move(pDict));
@@ -418,9 +405,7 @@ TEST_F(CPDF_PageContentGeneratorTest, ProcessEmptyForm) {
 }
 
 TEST_F(CPDF_PageContentGeneratorTest, ProcessFormWithPath) {
-  auto pDoc =
-      std::make_unique<CPDF_Document>(std::make_unique<CPDF_DocRenderData>(),
-                                      std::make_unique<CPDF_DocPageData>());
+  auto pDoc = std::make_unique<CPDF_TestDocument>();
   pDoc->CreateNewDoc();
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>();
   const char content[] =

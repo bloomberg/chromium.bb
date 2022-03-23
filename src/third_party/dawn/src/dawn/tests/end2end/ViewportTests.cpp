@@ -117,8 +117,10 @@ class ViewportTest : public DawnTest {
 
         // Render the three points with the viewport call.
         utils::ComboRenderPassDescriptor rpDesc({}, depthTexture.CreateView());
-        rpDesc.cDepthStencilAttachmentInfo.clearDepth = 0.0f;
+        rpDesc.cDepthStencilAttachmentInfo.depthClearValue = 0.0f;
         rpDesc.cDepthStencilAttachmentInfo.depthLoadOp = wgpu::LoadOp::Clear;
+        rpDesc.cDepthStencilAttachmentInfo.stencilLoadOp = wgpu::LoadOp::Undefined;
+        rpDesc.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Undefined;
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&rpDesc);
         pass.SetPipeline(pipeline);

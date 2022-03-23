@@ -690,8 +690,8 @@ static int get_refresh_idx(RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
     if (ref_pair.disp_order == -1) continue;
     const int frame_order = ref_pair.disp_order;
     const int reference_frame_level = ref_pair.pyr_level;
-    // Do not refresh a future frame.
-    if (frame_order > cur_frame_disp) continue;
+    // Keep future frames and three closest previous frames in output order.
+    if (frame_order > cur_frame_disp - 3) continue;
 
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
     if (enable_refresh_skip) {
@@ -1969,6 +1969,14 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     return AOM_CODEC_ERROR;
   }
 #endif  // CONFIG_REALTIME_ONLY
+
+  // This is used in rtc temporal filter case. Use true source in the PSNR
+  // calculation.
+  if (is_psnr_calc_enabled(cpi) && cpi->sf.rt_sf.use_rtc_tf &&
+      cpi->common.current_frame.frame_type != KEY_FRAME) {
+    assert(cpi->orig_source.buffer_alloc_sz > 0);
+    cpi->source = &cpi->orig_source;
+  }
 
   // As the frame_update_type can get modified as part of
   // av1_adjust_gf_refresh_qp_one_pass_rt

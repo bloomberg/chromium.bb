@@ -17,6 +17,7 @@
 #include 'src/objects/js-promise.h'
 #include 'src/objects/js-regexp-string-iterator.h'
 #include 'src/objects/js-shadow-realms.h'
+#include 'src/objects/js-struct.h'
 #include 'src/objects/js-weak-refs.h'
 #include 'src/objects/objects.h'
 #include 'src/objects/source-text-module.h'
@@ -213,6 +214,7 @@ extern class OrderedHashMap extends HashTable;
 extern class OrderedHashSet extends HashTable;
 extern class OrderedNameDictionary extends HashTable;
 extern class NameToIndexHashTable extends HashTable;
+extern class RegisteredSymbolTable extends HashTable;
 extern class NameDictionary extends HashTable;
 extern class GlobalDictionary extends HashTable;
 extern class SimpleNumberDictionary extends HashTable;
@@ -256,7 +258,8 @@ type CallableApiObject extends JSObject;
 // A JSProxy with the callable bit set.
 type CallableJSProxy extends JSProxy;
 
-type Callable = JSFunction|JSBoundFunction|CallableJSProxy|CallableApiObject;
+type Callable = JSFunction|JSBoundFunction|JSWrappedFunction|CallableJSProxy|
+    CallableApiObject;
 
 type WriteBarrierMode
     generates 'TNode<Int32T>' constexpr 'WriteBarrierMode';
@@ -572,7 +575,8 @@ extern class Filler extends HeapObject generates 'TNode<HeapObject>';
 // Like JSObject, but created from API function.
 @apiExposedInstanceTypeValue(0x422)
 @doNotGenerateCast
-extern class JSApiObject extends JSObject generates 'TNode<JSObject>';
+extern class JSApiObject extends JSObjectWithEmbedderSlots
+    generates 'TNode<JSObject>';
 
 // TODO(gsathya): This only exists to make JSApiObject instance type into a
 // range.

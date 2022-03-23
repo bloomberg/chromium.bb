@@ -208,9 +208,14 @@ if (is_chromecast) {
     "video_decoder",
   ]
   _default_mojo_media_host = "gpu"
-} else if (is_chromeos_ash || is_mac || is_win ||
-           ((is_linux || is_chromeos_lacros) &&
-            (use_vaapi || use_v4l2_codec))) {
+} else if (is_mac) {
+  _default_mojo_media_services = [
+    "audio_decoder",
+    "video_decoder",
+  ]
+  _default_mojo_media_host = "gpu"
+} else if (is_chromeos_ash || is_win || ((is_linux || is_chromeos_lacros) &&
+                                         (use_vaapi || use_v4l2_codec))) {
   _default_mojo_media_services = [ "video_decoder" ]
   _default_mojo_media_host = "gpu"
 }
@@ -267,6 +272,12 @@ declare_args() {
   # Enable use of libcast (//third_party/openscreen/src/cast) for cast mirroring
   # and linked into the resulting binary.
   enable_cast_streaming_renderer = false
+}
+
+declare_args() {
+  # The audio service must be sandboxed for us to do audio processing there.
+  # Currently it is so only on Win and Mac.
+  chrome_wide_echo_cancellation_supported = is_win || is_mac
 }
 
 assert(!enable_cast_streaming_renderer || is_chromecast,

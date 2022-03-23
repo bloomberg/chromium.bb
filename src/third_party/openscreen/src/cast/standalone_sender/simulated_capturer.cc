@@ -10,6 +10,7 @@
 #include <sstream>
 #include <thread>
 
+#include "cast/standalone_sender/ffmpeg_glue.h"
 #include "cast/streaming/environment.h"
 #include "util/osp_logging.h"
 
@@ -44,7 +45,7 @@ SimulatedCapturer::SimulatedCapturer(Environment* environment,
     return;  // Capturer is halted (unable to start).
   }
 
-  AVCodec* codec;
+  const AVCodec* codec;
   const int stream_result = av_find_best_stream(format_context_.get(),
                                                 media_type_, -1, -1, &codec, 0);
   if (stream_result < 0) {
@@ -105,7 +106,7 @@ void SimulatedCapturer::OnError(const char* function_name, int av_errnum) {
   // Make a human-readable string from the libavcodec error.
   std::ostringstream error;
   error << "For " << av_get_media_type_string(media_type_) << ", "
-        << function_name << " returned error: " << av_err2str(av_errnum);
+        << function_name << " returned error: " << AvErrorToString(av_errnum);
 
   // Deliver the error notification in a separate task since this method might
   // have been called from the constructor.

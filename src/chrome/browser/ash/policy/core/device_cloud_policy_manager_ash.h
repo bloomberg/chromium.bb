@@ -68,6 +68,8 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
     virtual void OnDeviceCloudPolicyManagerConnected() = 0;
     // Invoked when the device cloud policy manager disconnects.
     virtual void OnDeviceCloudPolicyManagerDisconnected() = 0;
+    // Invoked when the device cloud policy manager obtains schema registry.
+    virtual void OnDeviceCloudPolicyManagerGotRegistry() = 0;
   };
 
   using UnregisterCallback = base::OnceCallback<void(bool)>;
@@ -110,6 +112,9 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   void StartConnection(std::unique_ptr<CloudPolicyClient> client_to_connect,
                        chromeos::InstallAttributes* install_attributes);
 
+  // Called when policy store is ready.
+  void OnPolicyStoreReady(chromeos::InstallAttributes* install_attributes);
+
   // Sends the unregister request. |callback| is invoked with a boolean
   // parameter indicating the result when done.
   virtual void Unregister(UnregisterCallback callback);
@@ -118,6 +123,10 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   virtual void Disconnect();
 
   bool IsConnected() const { return core()->service() != nullptr; }
+
+  bool HasSchemaRegistry() const {
+    return signin_profile_forwarding_schema_registry_ != nullptr;
+  }
 
   DeviceCloudPolicyStoreAsh* device_store() { return device_store_.get(); }
 
@@ -153,15 +162,34 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
     return machine_certificate_uploader_.get();
   }
 
+ protected:
+  // Object that monitors managed session related events used by reporting
+  // services, protected for testing.
+  std::unique_ptr<ManagedSessionService> managed_session_service_;
+
+  // Object that reports login/logout events to the server, protected for
+  // testing.
+  std::unique_ptr<ash::reporting::LoginLogoutReporter> login_logout_reporter_;
+
+  // Object that reports user added/removed events to the server, protected for
+  // testing.
+  std::unique_ptr<reporting::UserAddedRemovedReporter>
+      user_added_removed_reporter_;
+
  private:
   // Saves the state keys received from |session_manager_client_|.
   void OnStateKeysUpdated();
 
   void NotifyConnected();
   void NotifyDisconnected();
+  void NotifyGotRegistry();
 
   // Factory function to create the StatusUploader.
   void CreateStatusUploader(ManagedSessionService* managed_session_service);
+
+  // Init |managed_session_service_| and reporting objects such as
+  // |login_logout_reporter_|, and |user_added_removed_reporter_|.
+  void CreateManagedSessionServiceAndReporters();
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
@@ -182,17 +210,6 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   // Helper object that handles sending heartbeats over the GCM channel to
   // the server, to monitor connectivity.
   std::unique_ptr<HeartbeatScheduler> heartbeat_scheduler_;
-
-  // Object that monitors managed session related events used by reporting
-  // services.
-  std::unique_ptr<ManagedSessionService> managed_session_service_;
-
-  // Object that reports login/logout events to the server.
-  std::unique_ptr<ash::reporting::LoginLogoutReporter> login_logout_reporter_;
-
-  // Object that reports user added/removed events to the server.
-  std::unique_ptr<reporting::UserAddedRemovedReporter>
-      user_added_removed_reporter_;
 
   // Object that initiates device metrics collection and reporting.
   std::unique_ptr<reporting::MetricReportingManager> metric_reporting_manager_;

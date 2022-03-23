@@ -43,7 +43,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     with self.m.context(env=env):
       with self.m.depot_tools.on_path():
         return self.m.step(name,
-                           ['python3', '-u', bot_update_path] + cmd,
+                           ['vpython3', '-u', bot_update_path] + cmd,
                            **kwargs)
 
   @property
@@ -306,7 +306,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
       step_result = f.result
       raise
     finally:
-      if step_result and step_result.json.output:
+      # The step_result can be missing the json attribute if the build
+      # is shutting down and the bot_update script is not able to finish
+      # writing the json output.
+      # An AttributeError occuring in this finally block swallows any
+      # StepFailure that may bubble up.
+      if (step_result and hasattr(step_result, 'json')
+          and step_result.json.output):
         result = step_result.json.output
         self._last_returned_properties = result.get('properties', {})
 

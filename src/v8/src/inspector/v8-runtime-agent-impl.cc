@@ -452,15 +452,14 @@ Response V8RuntimeAgentImpl::getProperties(
                                        : WrapMode::kNoPreview,
       result, exceptionDetails);
   if (!response.IsSuccess()) return response;
-  if (exceptionDetails->isJust() || accessorPropertiesOnly.fromMaybe(false))
-    return Response::Success();
+  if (exceptionDetails->isJust()) return Response::Success();
   std::unique_ptr<protocol::Array<InternalPropertyDescriptor>>
       internalPropertiesProtocolArray;
   std::unique_ptr<protocol::Array<PrivatePropertyDescriptor>>
       privatePropertiesProtocolArray;
   response = scope.injectedScript()->getInternalAndPrivateProperties(
-      object, scope.objectGroupName(), &internalPropertiesProtocolArray,
-      &privatePropertiesProtocolArray);
+      object, scope.objectGroupName(), accessorPropertiesOnly.fromMaybe(false),
+      &internalPropertiesProtocolArray, &privatePropertiesProtocolArray);
   if (!response.IsSuccess()) return response;
   if (!internalPropertiesProtocolArray->empty())
     *internalProperties = std::move(internalPropertiesProtocolArray);
@@ -834,6 +833,13 @@ Response V8RuntimeAgentImpl::getExceptionDetails(
   // Lets use the normal message text instead.
   out_exceptionDetails->fromJust()->setText(
       toProtocolString(m_inspector->isolate(), message->Get()));
+
+  // Check if the exception has any metadata on the inspector and also attach
+  // it.
+  std::unique_ptr<protocol::DictionaryValue> data =
+      m_inspector->getAssociatedExceptionDataForProtocol(error);
+  if (data)
+    out_exceptionDetails->fromJust()->setExceptionMetaData(std::move(data));
   return Response::Success();
 }
 

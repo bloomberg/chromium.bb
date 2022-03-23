@@ -17,6 +17,7 @@ cc_library(
     name = "mediums",
     srcs = [
         "ble.cc",
+        "ble_v2.cc",
         "bluetooth_classic.cc",
         "bluetooth_radio.cc",
         "mediums.cc",
@@ -26,6 +27,7 @@ cc_library(
     ],
     hdrs = [
         "ble.h",
+        "ble_v2.h",
         "bluetooth_classic.h",
         "bluetooth_radio.h",
         "lost_entity_tracker.h",
@@ -88,6 +90,7 @@ cc_test(
     size = "small",
     srcs = [
         "ble_test.cc",
+        "ble_v2_test.cc",
         "bluetooth_classic_test.cc",
         "bluetooth_radio_test.cc",
         "lost_entity_tracker_test.cc",

@@ -16,6 +16,7 @@ cast_executable("core_runtime_simple") {
     "//chromecast/browser:browser",
     "//chromecast/browser:prefs_simple",
     "//chromecast/browser:simple_main_parts",
+    "//chromecast/cast_core/grpc:grpc_factory_linux",
     "//chromecast/cast_core/runtime/browser:browser_simple",
     "//chromecast/cast_core/runtime/renderer",
     "//chromecast/utility:simple_client",
@@ -40,8 +41,15 @@ test("cast_cast_core_unittests") {
     ":all_unit_tests",
     "//chromecast/browser:prefs_simple",
     "//chromecast/browser:simple_main_parts",
+    "//chromecast/cast_core/grpc:grpc_factory_linux",
     "//chromecast/cast_core/runtime/browser:browser_simple",
     "//chromecast/cast_core/runtime/renderer",
     "//mojo/core/test:run_all_unittests",
   ]
+}
+
+group("cast_core_integration_test") {
+  testonly = true
+  data = [ "//chromecast/cast_core/test/" ]
+  data_deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
 }

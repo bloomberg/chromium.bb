@@ -39,25 +39,24 @@ bool IsWebmOrProjectorFile(const base::FilePath& path) {
          path.MatchesExtension(GetMetadataFileExtension());
 }
 
-drive::DriveIntegrationService* GetDriveIntegrationServiceForActiveProfile() {
-  return drive::DriveIntegrationServiceFactory::FindForProfile(
-      ProfileManager::GetActiveUserProfile());
-}
-
 drivefs::DriveFsHost* GetDriveFsHostForActiveProfile() {
   auto* drivefs_integration = GetDriveIntegrationServiceForActiveProfile();
   return drivefs_integration ? drivefs_integration->GetDriveFsHost() : nullptr;
 }
 
 // Returns a valid pending screencast from `container_absolute_path`.  A valid
-// screencast should have 1 media file and 1 metadata file. The
-// `container_absolute_path` is the DriveFS absolute path of `container_dir`,
-// for example: container_absolute_path = "/{drivefs mounted
-// point}/root/{$container_dir}";
+// screencast should have 1 media file and 1 metadata file.
 absl::optional<ash::PendingScreencast> GetPendingScreencast(
     const base::FilePath& container_dir,
-    const base::FilePath& container_absolute_path) {
+    const base::FilePath& drivefs_mounted_point,
+    bool upload_failed) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  base::FilePath root("/");
+  // `container_absolute_path` is the DriveFS absolute path of
+  // `container_dir`, for example: container_absolute_path =
+  // "/{$drivefs_mounted_point}/root/{$container_dir}";
+  base::FilePath container_absolute_path(drivefs_mounted_point);
+  root.AppendRelativePath(container_dir, &container_absolute_path);
   if (!base::PathExists(container_absolute_path))
     return absl::nullopt;
 
@@ -101,15 +100,19 @@ absl::optional<ash::PendingScreencast> GetPendingScreencast(
   pending_screencast.created_time = created_time;
   pending_screencast.name = media_name;
   pending_screencast.total_size_in_bytes = total_size_in_bytes;
+  pending_screencast.upload_failed = upload_failed;
   return pending_screencast;
 }
 
-// The `pending_webm_or_projector_events` are new pending ".webm" or
-// ".projector" files' events. Checks whether these files are valid screencast
-// files, calculate the upload progress, and returns valid pending screencasts.
+// The `pending_webm_or_projector_events` are new uploading ".webm" or
+// ".projector" files' events. The `error_syncing_file` are ".webm" or
+// ".projector" files which failed to upload. Checks whether these files are
+// valid screencast files. Calculates the upload progress or error state and
+// returns valid pending or error screencasts.
 ash::PendingScreencastSet ProcessAndGenerateNewScreencasts(
     const std::vector<drivefs::mojom::ItemEvent>&
         pending_webm_or_projector_events,
+    const std::set<base::FilePath>& error_syncing_file,
     const base::FilePath drivefs_mounted_point) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // The valid screencasts set.
@@ -121,13 +124,24 @@ ash::PendingScreencastSet ProcessAndGenerateNewScreencasts(
   // has a unique container directory path in DriveFS.
   std::map<base::FilePath, ash::PendingScreencast> container_to_screencasts;
 
+  // Creates error screencasts from `error_syncing_file`:
+  for (const auto& upload_failed_file : error_syncing_file) {
+    const base::FilePath container_dir = upload_failed_file.DirName();
+    auto new_screencast = GetPendingScreencast(
+        container_dir, drivefs_mounted_point, /*upload_failed=*/true);
+    if (new_screencast)
+      container_to_screencasts[container_dir] = new_screencast.value();
+  }
+
+  // Creates uploading screencasts from `pending_webm_or_projector_events`:
+
   // The `pending_event.path` is the file path in drive. It looks like
   // "/root/{folder path in drive}/{file name}".
   for (const auto& pending_event : pending_webm_or_projector_events) {
+    base::FilePath event_file = base::FilePath(pending_event.path);
     // `container_dir` is the parent folder of `pending_event.path` in drive. It
     // looks like "/root/{folder path in drive}".
-    const base::FilePath container_dir =
-        base::FilePath(pending_event.path).DirName();
+    const base::FilePath container_dir = event_file.DirName();
 
     // During this loop, items of multiple events might be under the same
     // folder.
@@ -140,18 +154,15 @@ ash::PendingScreencastSet ProcessAndGenerateNewScreencasts(
       // `pending_webm_or_projector_events.bytes_transferred`. The missing files
       // might be uploaded or not uploaded. To get an accurate
       // `bytes_transferred`, use DriveIntegrationService::GetMetadata().
-      iter->second.bytes_transferred += pending_event.bytes_transferred;
+      if (!iter->second.upload_failed)
+        iter->second.bytes_transferred += pending_event.bytes_transferred;
 
       // Skips getting the size of a folder if it has been validated before.
       continue;
     }
 
-    base::FilePath root("/");
-    base::FilePath container_absolute_dir(drivefs_mounted_point);
-    root.AppendRelativePath(container_dir, &container_absolute_dir);
-
-    auto new_screencast =
-        GetPendingScreencast(container_dir, container_absolute_dir);
+    auto new_screencast = GetPendingScreencast(
+        container_dir, drivefs_mounted_point, /*upload_failed=*/false);
 
     if (new_screencast) {
       new_screencast->bytes_transferred = pending_event.bytes_transferred;
@@ -177,9 +188,17 @@ PendingSreencastManager::PendingSreencastManager(
       session_manager::SessionManager::Get();
   if (session_manager)
     session_observation_.Observe(session_manager);
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager)
+    session_state_observation_.Observe(user_manager);
 }
 
 PendingSreencastManager::~PendingSreencastManager() = default;
+
+bool PendingSreencastManager::IsDriveFsObservationObservingSource(
+    drivefs::DriveFsHost* source) const {
+  return drivefs_observation_.IsObservingSource(source);
+}
 
 void PendingSreencastManager::OnUnmounted() {
   if (!pending_screencast_cache_.empty()) {
@@ -188,8 +207,15 @@ void PendingSreencastManager::OnUnmounted() {
     // screencast status has changed.
     pending_screencast_change_callback_.Run(pending_screencast_cache_);
   }
+  error_syncing_files_.clear();
 }
 
+// Generates new pending upload screencasts list base on `error_syncing_files_`
+// and files from drivefs::mojom::SyncingStatus.
+//
+// When file in error_syncing_files_ complete uploading, remove from
+// `error_syncing_files_` so failed screencasts will be removed from pending
+// screencast list.
 // TODO(b/200343894): OnSyncingStatusUpdate() gets called for both upload and
 // download event. Find a way to filter out the upload event.
 void PendingSreencastManager::OnSyncingStatusUpdate(
@@ -199,14 +225,18 @@ void PendingSreencastManager::OnSyncingStatusUpdate(
   if (!drivefs_integration->IsMounted())
     return;
   std::vector<drivefs::mojom::ItemEvent> pending_webm_or_projector_events;
-
   for (const auto& event : status.item_events) {
-    base::FilePath pending_file = base::FilePath(event->path);
+    base::FilePath event_file = base::FilePath(event->path);
+    // If observe a error uploaded file is now successfully uploaded, remove it
+    // from `error_syncing_files_`.
+    if (event->state == drivefs::mojom::ItemEvent::State::kCompleted)
+      error_syncing_files_.erase(event_file);
+
     bool pending =
         event->state == drivefs::mojom::ItemEvent::State::kQueued ||
         event->state == drivefs::mojom::ItemEvent::State::kInProgress;
     // Filters pending ".webm" or ".projector".
-    if (!pending || !IsWebmOrProjectorFile(pending_file))
+    if (!pending || !IsWebmOrProjectorFile(event_file))
       continue;
 
     pending_webm_or_projector_events.push_back(
@@ -215,19 +245,33 @@ void PendingSreencastManager::OnSyncingStatusUpdate(
 
   // The `task` is a blocking I/O operation while `reply` runs on current
   // thread.
+  // TODO(b/223668878) OnSyncingStatusUpdate might get called multiple times
+  // within 1s. Add a repeat timer to trigger this task for less frequency.
   blocking_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(ProcessAndGenerateNewScreencasts,
                      std::move(pending_webm_or_projector_events),
+                     error_syncing_files_,
                      drivefs_integration->GetMountPointPath()),
       base::BindOnce(
           &PendingSreencastManager::OnProcessAndGenerateNewScreencastsFinished,
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-// TODO(b/200179137): Handle drive full cannot upload error. Maybe send
-// Notification and show failed file on gallery?
+// Observes the Drive OnError event and add the related files to
+// `error_syncing_files_`. The validation of a screencast happens in
+// OnSyncingStatusUpdate because the drivefs::mojom::SyncingStatus contains the
+// info about the file completed uploaded or not and other files status for the
+// same screencast.
 void PendingSreencastManager::OnError(const drivefs::mojom::DriveError& error) {
+  base::FilePath error_file = base::FilePath(error.path);
+  // mojom::DriveError::Type has 2 types: kCantUploadStorageFull and
+  // kPinningFailedDiskFull. Only handle kCantUploadStorageFull so far.
+  if (error.type != drivefs::mojom::DriveError::Type::kCantUploadStorageFull ||
+      !IsWebmOrProjectorFile(error_file)) {
+    return;
+  }
+  error_syncing_files_.insert(error_file);
 }
 
 const ash::PendingScreencastSet&
@@ -237,7 +281,7 @@ PendingSreencastManager::GetPendingScreencasts() const {
 
 void PendingSreencastManager::OnProcessAndGenerateNewScreencastsFinished(
     const ash::PendingScreencastSet& screencasts) {
-  // Return if pending screencasts didn't change.
+  // Returns if pending screencasts didn't change.
   if (screencasts == pending_screencast_cache_)
     return;
   pending_screencast_cache_ = screencasts;
@@ -247,13 +291,35 @@ void PendingSreencastManager::OnProcessAndGenerateNewScreencastsFinished(
 }
 
 void PendingSreencastManager::OnUserProfileLoaded(const AccountId& account_id) {
+  MaybeSwitchDriveFsObservation();
+}
+
+void PendingSreencastManager::ActiveUserChanged(
+    user_manager::User* active_user) {
+  // After user login, the first ActiveUserChanged() might be called before
+  // profile is loaded.
+  if (!active_user->is_profile_created())
+    return;
+
+  MaybeSwitchDriveFsObservation();
+}
+
+void PendingSreencastManager::MaybeSwitchDriveFsObservation() {
   auto* profile = ProfileManager::GetActiveUserProfile();
+
   if (!IsProjectorAllowedForProfile(profile))
     return;
+
   auto* drivefs_host = GetDriveFsHostForActiveProfile();
-  // DriveFs could be mounted for different profiles.
-  // TODO(b/215199269): Observe ActiveUserChanged for switching between
-  // different profiles.
-  if (drivefs_host && !drivefs_observation_.IsObserving())
-    drivefs_observation_.Observe(drivefs_host);
+  if (!drivefs_host || drivefs_observation_.IsObservingSource(drivefs_host))
+    return;
+
+  pending_screencast_cache_.clear();
+  error_syncing_files_.clear();
+
+  // Reset if observing DriveFsHost of other profile.
+  if (drivefs_observation_.IsObserving())
+    drivefs_observation_.Reset();
+
+  drivefs_observation_.Observe(drivefs_host);
 }

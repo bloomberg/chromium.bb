@@ -75,7 +75,7 @@ void least_square_conjugate_gradient(const MatrixType& mat, const Rhs& rhs, Dest
     Scalar alpha = absNew / tmp.squaredNorm();      // the amount we travel on dir
     x += alpha * p;                                 // update solution
     residual -= alpha * tmp;                        // update residual
-    normal_residual = mat.adjoint() * residual;     // update residual of the normal equation
+    normal_residual.noalias() = mat.adjoint() * residual;     // update residual of the normal equation
     
     residualNorm2 = normal_residual.squaredNorm();
     if(residualNorm2 < threshold)

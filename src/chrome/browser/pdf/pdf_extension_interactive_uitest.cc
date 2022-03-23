@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/with_feature_override.h"
+#include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -19,7 +20,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "pdf/pdf_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
@@ -47,14 +47,10 @@ namespace {
 
 using ::pdf_extension_test_util::ConvertPageCoordToScreenCoord;
 using ::pdf_extension_test_util::EnsurePDFHasLoaded;
+using ::pdf_extension_test_util::SetInputFocusOnPlugin;
 
-class PDFExtensionInteractiveUITest : public base::test::WithFeatureOverride,
-                                      public extensions::ExtensionApiTest {
+class PDFExtensionInteractiveUITest : public extensions::ExtensionApiTest {
  public:
-  PDFExtensionInteractiveUITest()
-      : WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
-  ~PDFExtensionInteractiveUITest() override = default;
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     content::IsolateAllSitesForTesting(command_line);
   }
@@ -104,9 +100,70 @@ class PDFExtensionInteractiveUITest : public base::test::WithFeatureOverride,
   }
 };
 
+class TabChangedWaiter : public TabStripModelObserver {
+ public:
+  explicit TabChangedWaiter(Browser* browser) {
+    browser->tab_strip_model()->AddObserver(this);
+  }
+  TabChangedWaiter(const TabChangedWaiter&) = delete;
+  TabChangedWaiter& operator=(const TabChangedWaiter&) = delete;
+  ~TabChangedWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() == TabStripModelChange::kSelectionOnly)
+      run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest, FocusForwardTraversal) {
+// For crbug.com/1038918
+IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest,
+                       CtrlPageUpDownSwitchesTabs) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+
+  auto* tab_strip_model = browser()->tab_strip_model();
+  ASSERT_EQ(2, tab_strip_model->count());
+  EXPECT_EQ(1, tab_strip_model->active_index());
+
+  SetInputFocusOnPlugin(guest_contents);
+
+  {
+    TabChangedWaiter tab_changed_waiter(browser());
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_NEXT,
+                                                /*control=*/true,
+                                                /*shift=*/false,
+                                                /*alt=*/false,
+                                                /*command=*/false));
+    tab_changed_waiter.Wait();
+  }
+  ASSERT_EQ(2, tab_strip_model->count());
+  EXPECT_EQ(0, tab_strip_model->active_index());
+
+  {
+    TabChangedWaiter tab_changed_waiter(browser());
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_PRIOR,
+                                                /*control=*/true,
+                                                /*shift=*/false,
+                                                /*alt=*/false,
+                                                /*command=*/false));
+    tab_changed_waiter.Wait();
+  }
+  ASSERT_EQ(2, tab_strip_model->count());
+  EXPECT_EQ(1, tab_strip_model->active_index());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest, FocusForwardTraversal) {
   content::WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test.pdf#toolbar=0"));
 
@@ -120,7 +177,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest, FocusForwardTraversal) {
   EXPECT_EQ(blink::mojom::FocusType::kNone, details.focus_type);
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest, FocusReverseTraversal) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest, FocusReverseTraversal) {
   content::WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test.pdf#toolbar=0"));
 
@@ -168,7 +225,7 @@ views::Widget* TouchSelectText(content::WebContents* contents,
 
 // On text selection, a touch selection menu should pop up. On clicking ellipsis
 // icon on the menu, the context menu should open up.
-IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest,
                        ContextMenuOpensFromTouchSelectionMenu) {
   const GURL url = embedded_test_server()->GetURL("/pdf/text_large.pdf");
   content::WebContents* const guest_contents = LoadPdfGetGuestContents(url);
@@ -203,7 +260,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest,
            IDC_CONTENT_CONTEXT_ROTATECCW, IDC_CONTENT_CONTEXT_INSPECTELEMENT}));
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest, TouchSelectionBounds) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionInteractiveUITest, TouchSelectionBounds) {
   // Use test.pdf here because it has embedded font metrics. With a fixed zoom,
   // coordinates should be consistent across platforms.
   const GURL url = embedded_test_server()->GetURL("/pdf/test.pdf#zoom=100");
@@ -230,5 +287,3 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionInteractiveUITest, TouchSelectionBounds) {
   EXPECT_POINTF_NEAR(gfx::PointF(492.0f, 171.0f), end_bound.edge_end(), 1.0f);
 }
 #endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
-
-INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PDFExtensionInteractiveUITest);

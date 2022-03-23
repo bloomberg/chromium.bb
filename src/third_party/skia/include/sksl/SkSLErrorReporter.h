@@ -17,36 +17,7 @@
 
 namespace SkSL {
 
-#ifndef __has_builtin
-    #define __has_builtin(x) 0
-#endif
-
-class PositionInfo {
-public:
-    PositionInfo(const char* file = nullptr, int line = -1)
-        : fFile(file)
-        , fLine(line) {}
-
-#if __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
-    static PositionInfo Capture(const char* file = __builtin_FILE(), int line = __builtin_LINE()) {
-        return PositionInfo(file, line);
-    }
-#else
-    static PositionInfo Capture() { return PositionInfo(); }
-#endif // __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
-
-    const char* file_name() const {
-        return fFile;
-    }
-
-    int line() const {
-        return fLine;
-    }
-
-private:
-    const char* fFile = nullptr;
-    int32_t fLine = -1;
-};
+class Position;
 
 /**
  * Class which is notified in the event of an error.
@@ -59,24 +30,19 @@ public:
         SkASSERT(fPendingErrors.empty());
     }
 
-    void error(std::string_view msg, PositionInfo position);
+    void error(std::string_view msg, Position position);
 
     /**
      * Reports an error message at the given line of the source text. Errors reported
      * with a line of -1 will be queued until line number information can be determined.
      */
-    void error(int line, std::string_view msg);
+    void error(Position pos, std::string_view msg);
 
-    const char* source() const { return fSource; }
+    std::string_view source() const { return fSource; }
 
-    void setSource(const char* source) { fSource = source; }
+    void setSource(std::string_view source) { fSource = source; }
 
-    void reportPendingErrors(PositionInfo pos) {
-        for (const std::string& msg : fPendingErrors) {
-            this->handleError(msg, pos);
-        }
-        fPendingErrors.clear();
-    }
+    void reportPendingErrors(Position pos);
 
     int errorCount() const {
         return fErrorCount;
@@ -90,12 +56,12 @@ protected:
     /**
      * Called when an error is reported.
      */
-    virtual void handleError(std::string_view msg, PositionInfo position) = 0;
+    virtual void handleError(std::string_view msg, Position position) = 0;
 
 private:
-    PositionInfo position(int offset) const;
+    Position position(int offset) const;
 
-    const char* fSource = nullptr;
+    std::string_view fSource;
     std::vector<std::string> fPendingErrors;
     int fErrorCount = 0;
 };
@@ -105,9 +71,7 @@ private:
  */
 class TestingOnly_AbortErrorReporter : public ErrorReporter {
 public:
-    void handleError(std::string_view msg, PositionInfo pos) override {
-        SK_ABORT("%.*s", (int)msg.length(), msg.data());
-    }
+    void handleError(std::string_view msg, Position pos) override;
 };
 
 } // namespace SkSL

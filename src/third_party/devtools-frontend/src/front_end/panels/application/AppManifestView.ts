@@ -541,7 +541,7 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
   }
 
   private async renderManifest(
-      url: string, data: string|null, errors: Protocol.Page.AppManifestError[],
+      url: Platform.DevToolsPath.UrlString, data: string|null, errors: Protocol.Page.AppManifestError[],
       installabilityErrors: Protocol.Page.InstallabilityError[], manifestIcons: {
         primaryIcon: string|null,
       },
@@ -640,11 +640,13 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
 
     this.startURLField.removeChildren();
     if (startURL) {
-      const completeURL = (Common.ParsedURL.ParsedURL.completeURL(url, startURL) as string);
-      const link = Components.Linkifier.Linkifier.linkifyURL(
-          completeURL, ({text: startURL} as Components.Linkifier.LinkifyURLOptions));
-      link.tabIndex = 0;
-      this.startURLField.appendChild(link);
+      const completeURL = Common.ParsedURL.ParsedURL.completeURL(url, startURL);
+      if (completeURL) {
+        const link = Components.Linkifier.Linkifier.linkifyURL(
+            completeURL, ({text: startURL} as Components.Linkifier.LinkifyURLOptions));
+        link.tabIndex = 0;
+        this.startURLField.appendChild(link);
+      }
     }
 
     this.themeColorSwatch.classList.toggle('hidden', !stringProperty('theme_color'));
@@ -1013,7 +1015,8 @@ export class AppManifestView extends UI.Widget.VBox implements SDK.TargetManager
   private async appendImageResourceToSection(
       // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      baseUrl: string, imageResource: any, section: UI.ReportView.Section, isScreenshot: boolean):
+      baseUrl: Platform.DevToolsPath.UrlString, imageResource: any, section: UI.ReportView.Section,
+      isScreenshot: boolean):
       Promise<{imageResourceErrors: Platform.UIString.LocalizedString[], squareSizedIconAvailable?: boolean}> {
     const imageResourceErrors: Platform.UIString.LocalizedString[] = [];
     const resourceName = isScreenshot ? i18nString(UIStrings.screenshot) : i18nString(UIStrings.icon);

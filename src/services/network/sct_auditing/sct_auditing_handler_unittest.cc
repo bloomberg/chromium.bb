@@ -31,6 +31,7 @@
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #include "services/network/sct_auditing/sct_auditing_reporter.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "services/network/url_loader_factory.h"
@@ -51,6 +52,8 @@ const std::string kTestLogIdAsString(reinterpret_cast<const char*>(kTestLogId),
 
 constexpr base::TimeDelta kTestLogMMD = base::Seconds(42);
 
+constexpr base::TimeDelta kTestHWMPeriod = base::Seconds(1);
+
 class SCTAuditingHandlerTest : public testing::Test {
  public:
   SCTAuditingHandlerTest()
@@ -63,6 +66,7 @@ class SCTAuditingHandlerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(persistence_dir_.CreateUniqueTempDir());
     persistence_path_ = persistence_dir_.GetPath().AppendASCII("SCT Auditing");
+    SCTAuditingReporter::SetRetryDelayForTesting(base::TimeDelta());
 
     // Set up a NetworkContext.
     mojom::NetworkContextParamsPtr context_params =
@@ -84,14 +88,24 @@ class SCTAuditingHandlerTest : public testing::Test {
     log_list.emplace_back(std::move(log));
     network_service_->UpdateCtLogList(std::move(log_list), base::Time::Now());
 
+    // A NetworkContextClient is needed for querying/updating the report count.
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
+    network_context_client_ =
+        std::make_unique<network::TestNetworkContextClient>(
+            network_context_client_remote.InitWithNewPipeAndPassReceiver());
+    network_context_->SetClient(std::move(network_context_client_remote));
+
     // Set up SCT auditing configuration.
     auto* cache = network_service_->sct_auditing_cache();
-    cache->set_sampling_rate(1.0);
-    cache->set_report_uri(GURL("https://example.test"));
-    cache->set_traffic_annotation(
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-    cache->set_hashdance_traffic_annotation(
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+    mojom::SCTAuditingConfigurationPtr configuration(base::in_place);
+    configuration->sampling_rate = 1.0;
+    configuration->report_uri = GURL("https://example.test");
+    configuration->traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    configuration->hashdance_traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    cache->Configure(std::move(configuration));
 
     chain_ =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
@@ -99,6 +113,7 @@ class SCTAuditingHandlerTest : public testing::Test {
 
     handler_ = std::make_unique<SCTAuditingHandler>(network_context_.get(),
                                                     persistence_path_);
+    handler_->set_hwm_metrics_period_for_testing(kTestHWMPeriod);
     handler_->SetMode(mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting);
 
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
@@ -159,6 +174,7 @@ class SCTAuditingHandlerTest : public testing::Test {
   base::FilePath persistence_path_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
+  std::unique_ptr<TestNetworkContextClient> network_context_client_;
   scoped_refptr<net::X509Certificate> chain_;
   std::unique_ptr<SCTAuditingHandler> handler_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -191,6 +207,21 @@ void MakeTestSCTAndStatus(
   sct->signature.signature_data = signature_data;
   sct->origin = origin;
   sct_list->push_back(net::SignedCertificateTimestampAndStatus(sct, status));
+}
+
+// Tests that if reporting is disabled, reports are not created.
+TEST_F(SCTAuditingHandlerTest, DisableReporting) {
+  // Create a report which would normally trigger a send.
+  const net::HostPortPair host_port_pair("example.com", 443);
+  net::SignedCertificateTimestampAndStatusList sct_list;
+  MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
+                       "extensions", "signature", base::Time::Now(),
+                       net::ct::SCT_STATUS_OK, &sct_list);
+  handler_->SetMode(mojom::SCTAuditingMode::kDisabled);
+  handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
+
+  // Check that there are no pendin reports.
+  EXPECT_EQ(0u, handler_->GetPendingReportersForTesting()->size());
 }
 
 // Tests that when a new report is sampled, it will be sent to the server.
@@ -226,6 +257,10 @@ TEST_F(SCTAuditingHandlerTest, ReportsSentWithServerOK) {
 
 // Tests when the report server returns an HTTP error code.
 TEST_F(SCTAuditingHandlerTest, ReportSentWithServerError) {
+  // Set a long retry delay to allow inspecting the handler between an error and
+  // resending the report.
+  SCTAuditingReporter::SetRetryDelayForTesting(base::Seconds(1));
+
   // Enqueue a report which will trigger a send.
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list;
@@ -290,7 +325,8 @@ TEST_F(SCTAuditingHandlerTest, ReportsOnlyIncludesValidSCTs) {
 
 // If operating on hashdance mode, calculate and store the SCT leaf hash and
 // append log metadata.
-TEST_F(SCTAuditingHandlerTest, PopularSCTMetadataOnHashdanceMode) {
+TEST_F(SCTAuditingHandlerTest, PopulateSCTMetadataOnHashdanceMode) {
+  base::HistogramTester histograms;
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list;
   const base::Time issued = base::Time::Now();
@@ -306,7 +342,6 @@ TEST_F(SCTAuditingHandlerTest, PopularSCTMetadataOnHashdanceMode) {
     handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
     auto* pending_reporters = handler_->GetPendingReportersForTesting();
     ASSERT_EQ(pending_reporters->size(), 1u);
-
     for (const auto& reporter : *pending_reporters) {
       if (mode == mojom::SCTAuditingMode::kHashdance) {
         net::ct::MerkleTreeLeaf merkle_tree_leaf;
@@ -327,6 +362,55 @@ TEST_F(SCTAuditingHandlerTest, PopularSCTMetadataOnHashdanceMode) {
         EXPECT_FALSE(reporter.second->sct_hashdance_metadata());
       }
     }
+    histograms.ExpectUniqueSample(
+        "Security.SCTAuditing.OptOut.PopularSCTSkipped", false,
+        mode == mojom::SCTAuditingMode::kHashdance ? 1 : 0);
+    handler_->ClearPendingReports();
+    network_service_->sct_auditing_cache()->ClearCache();
+  }
+}
+
+// If operating on hashdance mode, do not report popular SCTs.
+TEST_F(SCTAuditingHandlerTest, DoNotReportPopularSCT) {
+  const net::HostPortPair host_port_pair("example.com", 443);
+  net::SignedCertificateTimestampAndStatusList sct_list;
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, "extensions",
+      "valid_signature", base::Time::Now(), net::ct::SCT_STATUS_OK, &sct_list);
+  net::ct::MerkleTreeLeaf merkle_tree_leaf;
+  std::string leaf_hash_string;
+  ASSERT_TRUE(net::ct::GetMerkleTreeLeaf(chain_.get(), sct_list.at(0).sct.get(),
+                                         &merkle_tree_leaf));
+  ASSERT_TRUE(net::ct::HashMerkleTreeLeaf(merkle_tree_leaf, &leaf_hash_string));
+  std::vector<uint8_t> leaf_hash(leaf_hash_string.begin(),
+                                 leaf_hash_string.end());
+
+  // Create a list of sorted leaf hashes that will contain the SCT's leaf hash.
+  std::vector<std::vector<uint8_t>> leaf_hashes;
+  for (size_t byte = 0; byte < 256; ++byte) {
+    std::vector<uint8_t> new_leaf_hash = leaf_hash;
+    new_leaf_hash[0] = byte;
+    leaf_hashes.emplace_back(std::move(new_leaf_hash));
+  }
+
+  network_service_->sct_auditing_cache()->set_popular_scts({leaf_hash});
+
+  for (mojom::SCTAuditingMode mode :
+       {mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting,
+        mojom::SCTAuditingMode::kHashdance}) {
+    SCOPED_TRACE(testing::Message() << "Mode: " << static_cast<int>(mode));
+    base::HistogramTester histograms;
+    handler_->SetMode(mode);
+    handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
+    auto* pending_reporters = handler_->GetPendingReportersForTesting();
+    EXPECT_EQ(pending_reporters->size(),
+              mode == mojom::SCTAuditingMode::kHashdance ? 0u : 1u);
+
+    // The hashdance request should record a count for PopularSCTSkipped.
+    histograms.ExpectUniqueSample(
+        "Security.SCTAuditing.OptOut.PopularSCTSkipped", true,
+        mode == mojom::SCTAuditingMode::kHashdance ? 1 : 0);
+
     handler_->ClearPendingReports();
     network_service_->sct_auditing_cache()->ClearCache();
   }
@@ -358,19 +442,19 @@ TEST_F(SCTAuditingHandlerTest, ReportSucceedsOnSecondTry) {
       /*content=*/"",
       /*status=*/net::HTTP_TOO_MANY_REQUESTS);
 
-  EXPECT_EQ(0, url_loader_factory_.NumPending());
+  // The retry timer is set to zero, so a retry should have been scheduled
+  // already.
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
   // With retry enabled, the pending reporter should remain on failure.
   EXPECT_EQ(1u, handler_->GetPendingReportersForTesting()->size());
 
-  // Simulate the server returning 200 OK to the report request. The request is
-  // not yet pending, so set the "default" response. Then when
-  // FastForwardUntilNoTasksRemain() is called, the retry will trigger and
-  // succeed. This is more robust than manually advancing the mock time due to
-  // the jitter specified by the backoff policy and the timeout set on the
-  // SimpleURLLoader.
-  url_loader_factory_.AddResponse("https://example.test",
-                                  /*content=*/"",
-                                  /*status=*/net::HTTP_OK);
+  // Simulate the server returning 200 OK to the report request.
+  url_loader_factory_.SimulateResponseForPendingRequest(
+      "https://example.test",
+      /*content=*/"",
+      /*status=*/net::HTTP_OK);
+
   // Wait for second request.
   WaitForRequests(2u);
 
@@ -453,29 +537,22 @@ TEST_F(SCTAuditingHandlerTest, ReportHighWaterMarkMetrics) {
   base::HistogramTester histograms;
 
   // Send two reports.
-  // Use the NetworkContext's handler to avoid repeating histograms.
-  handler_.reset();
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list1;
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
                        "extensions1", "signature1", base::Time::Now(),
                        net::ct::SCT_STATUS_OK, &sct_list1);
-  network_context_->sct_auditing_handler()->MaybeEnqueueReport(
-      host_port_pair, chain_.get(), sct_list1);
+  handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list1);
 
   net::SignedCertificateTimestampAndStatusList sct_list2;
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
                        "extensions2", "signature2", base::Time::Now(),
                        net::ct::SCT_STATUS_OK, &sct_list2);
-  network_context_->sct_auditing_handler()->MaybeEnqueueReport(
-      host_port_pair, chain_.get(), sct_list2);
+  handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list2);
 
-  EXPECT_EQ(2u, network_context_->sct_auditing_handler()
-                    ->GetPendingReportersForTesting()
-                    ->size());
+  EXPECT_EQ(2u, handler_->GetPendingReportersForTesting()->size());
 
-  // High-water-mark metrics are recorded once an hour.
-  task_environment_.FastForwardBy(base::Hours(1));
+  task_environment_.FastForwardBy(kTestHWMPeriod);
 
   // The bucket for a HWM of 2 should have a single sample.
   histograms.ExpectUniqueSample("Security.SCTAuditing.OptIn.ReportersHWM", 2,

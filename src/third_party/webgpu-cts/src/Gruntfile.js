@@ -102,6 +102,10 @@ module.exports = function (grunt) {
         cmd: 'node',
         args: ['node_modules/typedoc/bin/typedoc'],
       },
+      'tsdoc-treatWarningsAsErrors': {
+        cmd: 'node',
+        args: ['node_modules/typedoc/bin/typedoc', '--treatWarningsAsErrors'],
+      },
 
       serve: {
         cmd: 'node',
@@ -182,7 +186,7 @@ module.exports = function (grunt) {
     'ts:check',
     'run:unittest',
     'run:lint',
-    'run:tsdoc',
+    'run:tsdoc-treatWarningsAsErrors',
   ]);
   registerTaskAndAddToHelp('standalone', 'Build standalone and typecheck', [
     'set-quiet-mode',

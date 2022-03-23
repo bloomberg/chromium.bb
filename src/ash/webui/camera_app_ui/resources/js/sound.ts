@@ -20,6 +20,7 @@ const elementsStatus = new Map<HTMLAudioElement, Status>();
 
 /**
  * Plays a sound.
+ *
  * @param el Audio element to play.
  * @return Promise which will be resolved once the sound is stopped. The
  *     resolved value will be true if it is ended. Otherwise, it is just paused
@@ -35,13 +36,17 @@ export async function play(el: HTMLAudioElement): Promise<boolean> {
 
   const audioStopped = new WaitableEvent<boolean>();
   const events = ['ended', 'pause'];
-  const onAudioStopped = () => {
+  function onAudioStopped() {
     elementsStatus.set(el, Status.PAUSED);
-    audioStopped.signal(el.ended);
+
+    // TODO(b/223338160): A temporary workaround to avoid shutter sound being
+    // recorded.
+    const ended = el.ended;
+    setTimeout(() => audioStopped.signal(ended), 200);
     for (const event of events) {
       el.removeEventListener(event, onAudioStopped);
     }
-  };
+  }
   for (const event of events) {
     el.addEventListener(event, onAudioStopped);
   }
@@ -51,6 +56,7 @@ export async function play(el: HTMLAudioElement): Promise<boolean> {
 /**
  * Cancel a sound from playing. If the sound is loading, cancel it right after
  * it start playing. If the sound is paused, do nothing.
+ *
  * @param el Audio element to cancel.
  */
 export async function cancel(el: HTMLAudioElement): Promise<void> {
@@ -61,10 +67,10 @@ export async function cancel(el: HTMLAudioElement): Promise<void> {
     el.pause();
   } else if (status === Status.LOADING) {
     const canceled = new WaitableEvent();
-    const onPlaying = () => {
+    function onPlaying() {
       el.pause();
       canceled.signal();
-    };
+    }
     el.addEventListener('playing', onPlaying, {once: true});
     await canceled.wait();
   }

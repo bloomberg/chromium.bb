@@ -259,6 +259,16 @@ void dav1d_thread_picture_ref(Dav1dThreadPicture *const dst,
     dst->flags = src->flags;
 }
 
+void dav1d_thread_picture_move_ref(Dav1dThreadPicture *const dst,
+                                   Dav1dThreadPicture *const src)
+{
+    dav1d_picture_move_ref(&dst->p, &src->p);
+    dst->visible = src->visible;
+    dst->progress = src->progress;
+    dst->flags = src->flags;
+    memset(src, 0, sizeof(*src));
+}
+
 void dav1d_picture_unref_internal(Dav1dPicture *const p) {
     validate_input(p != NULL);
 
@@ -273,6 +283,7 @@ void dav1d_picture_unref_internal(Dav1dPicture *const p) {
         dav1d_ref_dec(&p->itut_t35_ref);
     }
     memset(p, 0, sizeof(*p));
+    dav1d_data_props_set_defaults(&p->m);
 }
 
 void dav1d_thread_picture_unref(Dav1dThreadPicture *const p) {

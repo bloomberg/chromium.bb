@@ -74,7 +74,7 @@ const HostEventTypeMap& GetHostEventTypeMap() {
       {"RunGraph", kRunGraph},
       {"RunGraphDone", kRunGraphDone},
       {"TfOpRun", kTfOpRun},
-      {"EagerKernelExecute", kEagerKernelExecute},
+      {"EagerExecute", kEagerKernelExecute},
       {"ExecutorState::Process", kExecutorStateProcess},
       {"ExecutorDoneCallback", kExecutorDoneCallback},
       {"MemoryAllocation", kMemoryAllocation},
@@ -203,7 +203,6 @@ const StatTypeMap& GetStatTypeMap() {
       {"group_id", kGroupId},
       {"flow", kFlow},
       {"step_name", kStepName},
-      {"level 0", kLevel0},
       {"tf_op", kTfOp},
       {"hlo_op", kHloOp},
       {"hlo_category", kHloCategory},
@@ -211,6 +210,7 @@ const StatTypeMap& GetStatTypeMap() {
       {"program_id", kProgramId},
       {"equation", kEquation},
       {"is_eager", kIsEager},
+      {"is_func", kIsFunc},
       {"tf_function_call", kTfFunctionCall},
       {"tracing_count", kTfFunctionTracingCount},
       {"flops", kFlops},
@@ -325,7 +325,6 @@ bool IsInternalStat(absl::optional<int64_t> stat_type) {
   if (!stat_type.has_value()) return false;
   switch (*stat_type) {
     case StatType::kKernelDetails:
-    case StatType::kLevel0:
     case StatType::kProducerType:
     case StatType::kProducerId:
     case StatType::kConsumerType:

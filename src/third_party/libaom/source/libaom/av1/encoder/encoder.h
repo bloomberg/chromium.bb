@@ -1443,8 +1443,7 @@ typedef struct ThreadData {
   // Pointer to the array of structures to store source variance information of
   // each 4x4 sub-block in a superblock. Block4x4VarInfo structure is used to
   // store source variance and log of source variance of each 4x4 sub-block
-  // which is retrieved in subsequent calls to log_sub_block_var() and
-  // intra_rd_variance_factor() functions.
+  // for subsequent retrieval.
   Block4x4VarInfo *src_var_info_of_4x4_sub_blocks;
 } ThreadData;
 
@@ -1617,6 +1616,11 @@ typedef struct MultiThreadInfo {
    * enabled.
    */
   bool row_mt_enabled;
+
+  /*!
+   * When set, indicates that multi-threading for bitstream packing is enabled.
+   */
+  bool pack_bs_mt_enabled;
 
   /*!
    * Encoder row multi-threading data.
@@ -2762,6 +2766,12 @@ typedef struct AV1_COMP {
    * content is screen.
    */
   YV12_BUFFER_CONFIG *unfiltered_source;
+
+  /*!
+   * Frame buffer holding the orig source frame for PSNR calculation in rtc tf
+   * case.
+   */
+  YV12_BUFFER_CONFIG orig_source;
 
   /*!
    * Skip tpl setup when tpl data from gop length decision can be reused.

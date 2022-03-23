@@ -135,16 +135,17 @@ const checkContents: (type: 'depth' | 'stencil', ...args: Parameters<CheckConten
         {
           view: renderTexture.createView(),
           resolveTarget,
-          loadValue: [0, 0, 0, 0],
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
       depthStencilAttachment: {
         view: texture.createView(viewDescriptor),
         depthStoreOp: 'store',
-        depthLoadValue: 'load',
+        depthLoadOp: 'load',
         stencilStoreOp: 'store',
-        stencilLoadValue: 'load',
+        stencilLoadOp: 'load',
       },
     });
 
@@ -170,7 +171,7 @@ const checkContents: (type: 'depth' | 'stencil', ...args: Parameters<CheckConten
     }
 
     pass.draw(3);
-    pass.endPass();
+    pass.end();
 
     t.queue.submit([commandEncoder.finish()]);
 

@@ -29,7 +29,6 @@
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/layer_animation_stopped_waiter.h"
 #include "base/callback.h"
@@ -55,10 +54,19 @@ AppListView* GetAppListView() {
   return Shell::Get()->app_list_controller()->fullscreen_presenter()->GetView();
 }
 
+// An app list should be either a bubble app list or a fullscreen app list.
+// Returns true if a bubble app list should be used under the current mode.
+bool ShouldUseBubbleAppList() {
+  // A bubble app list should be used only when:
+  // (1) It is in clamshell mode; and
+  // (2) The productivity launcher flag is enabled.
+  return !Shell::Get()->IsInTabletMode() &&
+         features::IsProductivityLauncherEnabled();
+}
+
 PagedAppsGridView* GetPagedAppsGridView() {
   // This view only exists for tablet launcher and legacy peeking launcher.
-  DCHECK(Shell::Get()->IsInTabletMode() ||
-         !features::IsProductivityLauncherEnabled());
+  DCHECK(!ShouldUseBubbleAppList());
   return AppListView::TestApi(GetAppListView()).GetRootAppsGridView();
 }
 
@@ -75,10 +83,8 @@ AppListBubbleView* GetAppListBubbleView() {
 
 AppListFolderView* GetAppListFolderView() {
   // Handle the case that the app list bubble view is effective.
-  if (features::IsProductivityLauncherEnabled() &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+  if (ShouldUseBubbleAppList())
     return GetAppListBubbleView()->folder_view_for_test();
-  }
 
   return GetAppListView()
       ->app_list_main_view()
@@ -365,8 +371,7 @@ void AppListTestApi::UpdatePagedViewStructure() {
 }
 
 AppsGridView* AppListTestApi::GetTopLevelAppsGridView() {
-  if (features::IsProductivityLauncherEnabled() &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+  if (ShouldUseBubbleAppList()) {
     return GetAppListBubbleView()
         ->apps_page_for_test()
         ->scrollable_apps_grid_view();
@@ -376,8 +381,7 @@ AppsGridView* AppListTestApi::GetTopLevelAppsGridView() {
 }
 
 const AppsGridView* AppListTestApi::GetTopLevelAppsGridView() const {
-  if (features::IsProductivityLauncherEnabled() &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+  if (ShouldUseBubbleAppList()) {
     return GetAppListBubbleView()
         ->apps_page_for_test()
         ->scrollable_apps_grid_view();
@@ -422,10 +426,24 @@ void AppListTestApi::SetFolderViewAnimationCallback(
       folder_view, std::move(folder_animation_done_callback)));
 }
 
+views::View* AppListTestApi::GetToastContainerView() {
+  if (ShouldUseBubbleAppList())
+    return GetToastContainerViewFromBubble();
+
+  return GetToastContainerViewFromFullscreenAppList();
+}
+
 void AppListTestApi::AddReorderAnimationCallback(
     AppsGridView::TestReorderDoneCallbackType callback) {
   DCHECK(features::IsLauncherAppSortEnabled());
   GetTopLevelAppsGridView()->AddReorderCallbackForTest(std::move(callback));
+}
+
+void AppListTestApi::AddFadeOutAnimationStartClosure(
+    base::OnceClosure closure) {
+  DCHECK(features::IsLauncherAppSortEnabled());
+  GetTopLevelAppsGridView()->AddFadeOutAnimationStartClosureForTest(
+      std::move(closure));
 }
 
 bool AppListTestApi::HasAnyWaitingReorderDoneCallback() const {
@@ -434,7 +452,7 @@ bool AppListTestApi::HasAnyWaitingReorderDoneCallback() const {
 }
 
 void AppListTestApi::DisableAppListNudge(bool disable) {
-  AppListNudgeController::SetNudgeDisabledForTest(disable);
+  AppListNudgeController::SetReorderNudgeDisabledForTest(disable);
 }
 
 void AppListTestApi::ReorderItemInRootByDragAndDrop(int source_index,

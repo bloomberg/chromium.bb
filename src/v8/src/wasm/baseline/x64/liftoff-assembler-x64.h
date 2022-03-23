@@ -53,14 +53,15 @@ inline constexpr Condition ToCondition(LiftoffCondition liftoff_cond) {
 constexpr Register kScratchRegister2 = r11;
 static_assert(kScratchRegister != kScratchRegister2, "collision");
 static_assert((kLiftoffAssemblerGpCacheRegs &
-               Register::ListOf(kScratchRegister, kScratchRegister2)) == 0,
+               RegList{kScratchRegister, kScratchRegister2})
+                  .is_empty(),
               "scratch registers must not be used as cache registers");
 
 constexpr DoubleRegister kScratchDoubleReg2 = xmm14;
 static_assert(kScratchDoubleReg != kScratchDoubleReg2, "collision");
 static_assert((kLiftoffAssemblerFpCacheRegs &
-               DoubleRegister::ListOf(kScratchDoubleReg, kScratchDoubleReg2)) ==
-                  0,
+               DoubleRegList{kScratchDoubleReg, kScratchDoubleReg2})
+                  .is_empty(),
               "scratch registers must not be used as cache registers");
 
 // rbp-8 holds the stack marker, rbp-16 is the instance parameter.
@@ -597,8 +598,10 @@ void LiftoffAssembler::AtomicAdd(Register dst_addr, Register offset_reg,
 void LiftoffAssembler::AtomicSub(Register dst_addr, Register offset_reg,
                                  uintptr_t offset_imm, LiftoffRegister value,
                                  LiftoffRegister result, StoreType type) {
-  DCHECK(!cache_state()->is_used(result));
-  if (cache_state()->is_used(value)) {
+  LiftoffRegList dont_overwrite = cache_state()->used_registers |
+                                  LiftoffRegList::ForRegs(dst_addr, offset_reg);
+  DCHECK(!dont_overwrite.has(result));
+  if (dont_overwrite.has(value)) {
     // We cannot overwrite {value}, but the {value} register is changed in the
     // code we generate. Therefore we copy {value} to {result} and use the
     // {result} register in the code below.
@@ -4051,15 +4054,14 @@ void LiftoffAssembler::PopRegisters(LiftoffRegList regs) {
   }
 }
 
-void LiftoffAssembler::RecordSpillsInSafepoint(Safepoint& safepoint,
-                                               LiftoffRegList all_spills,
-                                               LiftoffRegList ref_spills,
-                                               int spill_offset) {
+void LiftoffAssembler::RecordSpillsInSafepoint(
+    SafepointTableBuilder::Safepoint& safepoint, LiftoffRegList all_spills,
+    LiftoffRegList ref_spills, int spill_offset) {
   int spill_space_size = 0;
   while (!all_spills.is_empty()) {
     LiftoffRegister reg = all_spills.GetFirstRegSet();
     if (ref_spills.has(reg)) {
-      safepoint.DefinePointerSlot(spill_offset);
+      safepoint.DefineTaggedStackSlot(spill_offset);
     }
     all_spills.clear(reg);
     ++spill_offset;

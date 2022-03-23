@@ -13,6 +13,22 @@ package perfetto.protos;
 
 option go_package = "github.com/google/perfetto/perfetto_proto";
 
+// Begin of protos/perfetto/common/ftrace_descriptor.proto
+
+message FtraceDescriptor {
+  message AtraceCategory {
+    optional string name = 1;
+    optional string description = 2;
+  }
+
+  // Report the available atrace categories.
+  //
+  // Used by Traceur via `perfetto --query`.
+  repeated AtraceCategory atrace_categories = 1;
+}
+
+// End of protos/perfetto/common/ftrace_descriptor.proto
+
 // Begin of protos/perfetto/common/gpu_counter_descriptor.proto
 
 // Description of GPU counters.
@@ -186,6 +202,8 @@ message DataSourceDescriptor {
   optional GpuCounterDescriptor gpu_counter_descriptor = 5 [lazy = true];
 
   optional TrackEventDescriptor track_event_descriptor = 6 [lazy = true];
+
+  optional FtraceDescriptor ftrace_descriptor = 8 [lazy = true];
 }
 
 // End of protos/perfetto/common/data_source_descriptor.proto
@@ -1506,6 +1524,17 @@ message TrackEventConfig {
 
   // Default: []
   repeated string enabled_tags = 4;
+
+  // Default: false (i.e. enabled by default)
+  optional bool disable_incremental_timestamps = 5;
+
+  // Allows to specify a custom unit different than the default (ns).
+  // A multiplier of 1000 means that a timestamp = 3 should be interpreted as
+  // 3000 ns = 3 us.
+  // Default: 1 (if unset, it should be read as 1).
+  // For now, this multiplier only affects incremental timestamps.
+  // Note: This isn't supported in the SDK yet. It will be supported soon.
+  optional uint64 timestamp_unit_multipler = 6;
 }
 
 // End of protos/perfetto/config/track_event/track_event_config.proto
@@ -2433,6 +2462,57 @@ message AndroidCameraFrameEvent {
   optional bytes vendor_data = 16;
 }
 
+// A profiling event that may be emitted periodically (i.e., at a slower rate
+// than `AndroidCameraFrameEvent`s) to record fixed and aggregated camera
+// session-specific values.
+message AndroidCameraSessionStats {
+  // Identifier for the CameraCaptureSession this frame originates from. See:
+  // https://developer.android.com/reference/android/hardware/camera2/CameraCaptureSession
+  optional uint64 session_id = 1;
+
+  // Although vendor implementations may vary, camera pipeline processing is
+  // typically arranged into a directed graph-like structure. This message is
+  // used to record that graph.
+  message CameraGraph {
+    message CameraNode {
+      optional int64 node_id = 1;
+      // A list of inputs consumed by this node.
+      repeated int64 input_ids = 2;
+      // A list of outputs produced by this node.
+      repeated int64 output_ids = 3;
+
+      // These fields capture vendor-specific additions to this proto message. In
+      // practice `vendor_data` typically contains a serialized message of the
+      // vendor's design, and `vendor_data_version` is incremented each time there
+      // is a backwards incompatible change made to the message.
+      optional int32 vendor_data_version = 4;
+      optional bytes vendor_data = 5;
+    }
+    repeated CameraNode nodes = 1;
+
+    // An adjacency list describing connections between CameraNodes, mapping
+    // nodes and their outputs to other nodes that consume them as inputs.
+    message CameraEdge {
+      // The pair of IDs identifying the node and output connected by this edge.
+      optional int64 output_node_id = 1;
+      optional int64 output_id = 2;
+
+      // The pair of IDs identifying the node and input connected by this edge.
+      optional int64 input_node_id = 3;
+      optional int64 input_id = 4;
+
+      // These fields capture vendor-specific additions to this proto message. In
+      // practice `vendor_data` typically contains a serialized message of the
+      // vendor's design, and `vendor_data_version` is incremented each time there
+      // is a backwards incompatible change made to the message.
+      optional int32 vendor_data_version = 5;
+      optional bytes vendor_data = 6;
+    }
+    repeated CameraEdge edges = 2;
+  }
+  optional CameraGraph graph = 2;
+}
+
 // End of protos/perfetto/trace/android/camera_event.proto
 
 // Begin of protos/perfetto/trace/android/frame_timeline_event.proto
@@ -3226,6 +3306,7 @@ message BinderTransactionAllocBufFtraceEvent {
   optional uint64 data_size = 1;
   optional int32 debug_id = 2;
   optional uint64 offsets_size = 3;
+  optional uint64 extra_buffers_size = 4;
 }
 
 // End of protos/perfetto/trace/ftrace/binder.proto
@@ -3314,6 +3395,7 @@ message BlockRqCompleteFtraceEvent {
   optional int32 errors = 4;
   optional string rwbs = 5;
   optional string cmd = 6;
+  optional int32 error = 7;
 }
 message BlockRqInsertFtraceEvent {
   optional uint64 dev = 1;
@@ -3382,6 +3464,8 @@ message CgroupMkdirFtraceEvent {
   optional int32 root = 1;
   optional int32 id = 2;
   optional string cname = 3;
+  optional int32 level = 4;
+  optional string path = 5;
 }
 message CgroupRemountFtraceEvent {
   optional int32 root = 1;
@@ -3392,6 +3476,8 @@ message CgroupRmdirFtraceEvent {
   optional int32 root = 1;
   optional int32 id = 2;
   optional string cname = 3;
+  optional int32 level = 4;
+  optional string path = 5;
 }
 message CgroupTransferTasksFtraceEvent {
   optional int32 dst_root = 1;
@@ -3399,6 +3485,8 @@ message CgroupTransferTasksFtraceEvent {
   optional int32 pid = 3;
   optional string comm = 4;
   optional string cname = 5;
+  optional int32 dst_level = 6;
+  optional string dst_path = 7;
 }
 message CgroupDestroyRootFtraceEvent {
   optional int32 root = 1;
@@ -3409,11 +3497,15 @@ message CgroupReleaseFtraceEvent {
   optional int32 root = 1;
   optional int32 id = 2;
   optional string cname = 3;
+  optional int32 level = 4;
+  optional string path = 5;
 }
 message CgroupRenameFtraceEvent {
   optional int32 root = 1;
   optional int32 id = 2;
   optional string cname = 3;
+  optional int32 level = 4;
+  optional string path = 5;
 }
 message CgroupSetupRootFtraceEvent {
   optional int32 root = 1;
@@ -3504,6 +3596,7 @@ message MmCompactionKcompactdWakeFtraceEvent {
   optional int32 nid = 1;
   optional int32 order = 2;
   optional uint32 classzone_idx = 3;
+  optional uint32 highest_zoneidx = 4;
 }
 message MmCompactionMigratepagesFtraceEvent {
   optional uint64 nr_migrated = 1;
@@ -3519,11 +3612,13 @@ message MmCompactionTryToCompactPagesFtraceEvent {
   optional int32 order = 1;
   optional uint32 gfp_mask = 2;
   optional uint32 mode = 3;
+  optional int32 prio = 4;
 }
 message MmCompactionWakeupKcompactdFtraceEvent {
   optional int32 nid = 1;
   optional int32 order = 2;
   optional uint32 classzone_idx = 3;
+  optional uint32 highest_zoneidx = 4;
 }
 
 // End of protos/perfetto/trace/ftrace/compaction.proto
@@ -3734,6 +3829,8 @@ message Ext4DiscardBlocksFtraceEvent {
 message Ext4DiscardPreallocationsFtraceEvent {
   optional uint64 dev = 1;
   optional uint64 ino = 2;
+  optional uint32 len = 3;
+  optional uint32 needed = 4;
 }
 message Ext4DropInodeFtraceEvent {
   optional uint64 dev = 1;
@@ -3898,6 +3995,9 @@ message Ext4ExtRemoveSpaceDoneFtraceEvent {
   optional int32 depth = 5;
   optional int64 partial = 6;
   optional uint32 eh_entries = 7;
+  optional uint32 pc_lblk = 8;
+  optional uint64 pc_pclu = 9;
+  optional int32 pc_state = 10;
 }
 message Ext4ExtRmIdxFtraceEvent {
   optional uint64 dev = 1;
@@ -3912,6 +4012,9 @@ message Ext4ExtRmLeafFtraceEvent {
   optional uint32 ee_lblk = 5;
   optional uint64 ee_pblk = 6;
   optional int32 ee_len = 7;
+  optional uint32 pc_lblk = 8;
+  optional uint64 pc_pclu = 9;
+  optional int32 pc_state = 10;
 }
 message Ext4ExtShowExtentFtraceEvent {
   optional uint64 dev = 1;
@@ -4017,6 +4120,7 @@ message Ext4JournalStartFtraceEvent {
   optional int32 blocks = 3;
   optional int32 rsv_blocks = 4;
   optional int32 nblocks = 5;
+  optional int32 revoke_creds = 6;
 }
 message Ext4JournalStartReservedFtraceEvent {
   optional uint64 dev = 1;
@@ -4153,6 +4257,7 @@ message Ext4PunchHoleFtraceEvent {
 message Ext4ReadBlockBitmapLoadFtraceEvent {
   optional uint64 dev = 1;
   optional uint32 group = 2;
+  optional uint32 prefetch = 3;
 }
 message Ext4ReadpageFtraceEvent {
   optional uint64 dev = 1;
@@ -4173,6 +4278,9 @@ message Ext4RemoveBlocksFtraceEvent {
   optional uint64 ee_pblk = 6;
   optional uint32 ee_lblk = 7;
   optional uint32 ee_len = 8;
+  optional uint32 pc_lblk = 9;
+  optional uint64 pc_pclu = 10;
+  optional int32 pc_state = 11;
 }
 message Ext4RequestBlocksFtraceEvent {
   optional uint64 dev = 1;
@@ -4328,6 +4436,7 @@ message F2fsGetVictimFtraceEvent {
   optional uint32 pre_victim = 8;
   optional uint32 prefree = 9;
   optional uint32 free = 10;
+  optional uint32 cost = 11;
 }
 message F2fsIgetFtraceEvent {
   optional uint64 dev = 1;
@@ -4355,6 +4464,9 @@ message F2fsReadpageFtraceEvent {
   optional uint64 index = 3;
   optional uint64 blkaddr = 4;
   optional int32 type = 5;
+  optional int32 dir = 6;
+  optional int32 dirty = 7;
+  optional int32 uptodate = 8;
 }
 message F2fsReserveNewBlockFtraceEvent {
   optional uint64 dev = 1;
@@ -4368,6 +4480,7 @@ message F2fsSetPageDirtyFtraceEvent {
   optional int32 dir = 4;
   optional uint64 index = 5;
   optional int32 dirty = 6;
+  optional int32 uptodate = 7;
 }
 message F2fsSubmitWritePageFtraceEvent {
   optional uint64 dev = 1;
@@ -4392,6 +4505,7 @@ message F2fsSyncFileExitFtraceEvent {
   optional uint32 need_cp = 3;
   optional int32 datasync = 4;
   optional int32 ret = 5;
+  optional int32 cp_reason = 6;
 }
 message F2fsSyncFsFtraceEvent {
   optional uint64 dev = 1;
@@ -4482,6 +4596,7 @@ message F2fsVmPageMkwriteFtraceEvent {
   optional int32 dir = 4;
   optional uint64 index = 5;
   optional int32 dirty = 6;
+  optional int32 uptodate = 7;
 }
 message F2fsWriteBeginFtraceEvent {
   optional uint64 dev = 1;
@@ -4494,6 +4609,7 @@ message F2fsWriteCheckpointFtraceEvent {
   optional uint64 dev = 1;
   optional uint32 is_umount = 2;
   optional string msg = 3;
+  optional int32 reason = 4;
 }
 message F2fsWriteEndFtraceEvent {
   optional uint64 dev = 1;
@@ -4965,6 +5081,174 @@ message IonBufferDestroyFtraceEvent {
 
 // End of protos/perfetto/trace/ftrace/kmem.proto
 
+// Begin of protos/perfetto/trace/ftrace/kvm.proto
+
+message KvmAccessFaultFtraceEvent {
+  optional uint64 ipa = 1;
+}
+message KvmAckIrqFtraceEvent {
+  optional uint32 irqchip = 1;
+  optional uint32 pin = 2;
+}
+message KvmAgeHvaFtraceEvent {
+  optional uint64 end = 1;
+  optional uint64 start = 2;
+}
+message KvmAgePageFtraceEvent {
+  optional uint64 gfn = 1;
+  optional uint64 hva = 2;
+  optional uint32 level = 3;
+  optional uint32 referenced = 4;
+}
+message KvmArmClearDebugFtraceEvent {
+  optional uint32 guest_debug = 1;
+}
+message KvmArmSetDreg32FtraceEvent {
+  optional string name = 1;
+  optional uint32 value = 2;
+}
+message KvmArmSetRegsetFtraceEvent {
+  optional int32 len = 1;
+  optional string name = 2;
+}
+message KvmArmSetupDebugFtraceEvent {
+  optional uint32 guest_debug = 1;
+  optional uint64 vcpu = 2;
+}
+message KvmEntryFtraceEvent {
+  optional uint64 vcpu_pc = 1;
+}
+message KvmExitFtraceEvent {
+  optional uint32 esr_ec = 1;
+  optional int32 ret = 2;
+  optional uint64 vcpu_pc = 3;
+}
+message KvmFpuFtraceEvent {
+  optional uint32 load = 1;
+}
+message KvmGetTimerMapFtraceEvent {
+  optional int32 direct_ptimer = 1;
+  optional int32 direct_vtimer = 2;
+  optional int32 emul_ptimer = 3;
+  optional uint64 vcpu_id = 4;
+}
+message KvmGuestFaultFtraceEvent {
+  optional uint64 hsr = 1;
+  optional uint64 hxfar = 2;
+  optional uint64 ipa = 3;
+  optional uint64 vcpu_pc = 4;
+}
+message KvmHandleSysRegFtraceEvent {
+  optional uint64 hsr = 1;
+}
+message KvmHvcArm64FtraceEvent {
+  optional uint64 imm = 1;
+  optional uint64 r0 = 2;
+  optional uint64 vcpu_pc = 3;
+}
+message KvmIrqLineFtraceEvent {
+  optional int32 irq_num = 1;
+  optional int32 level = 2;
+  optional uint32 type = 3;
+  optional int32 vcpu_idx = 4;
+}
+message KvmMmioFtraceEvent {
+  optional uint64 gpa = 1;
+  optional uint32 len = 2;
+  optional uint32 type = 3;
+  optional uint64 val = 4;
+}
+message KvmMmioEmulateFtraceEvent {
+  optional uint64 cpsr = 1;
+  optional uint64 instr = 2;
+  optional uint64 vcpu_pc = 3;
+}
+message KvmSetGuestDebugFtraceEvent {
+  optional uint32 guest_debug = 1;
+  optional uint64 vcpu = 2;
+}
+message KvmSetIrqFtraceEvent {
+  optional uint32 gsi = 1;
+  optional int32 irq_source_id = 2;
+  optional int32 level = 3;
+}
+message KvmSetSpteHvaFtraceEvent {
+  optional uint64 hva = 1;
+}
+message KvmSetWayFlushFtraceEvent {
+  optional uint32 cache = 1;
+  optional uint64 vcpu_pc = 2;
+}
+message KvmSysAccessFtraceEvent {
+  optional uint32 CRm = 1;
+  optional uint32 CRn = 2;
+  optional uint32 Op0 = 3;
+  optional uint32 Op1 = 4;
+  optional uint32 Op2 = 5;
+  optional uint32 is_write = 6;
+  optional string name = 7;
+  optional uint64 vcpu_pc = 8;
+}
+message KvmTestAgeHvaFtraceEvent {
+  optional uint64 hva = 1;
+}
+message KvmTimerEmulateFtraceEvent {
+  optional uint32 should_fire = 1;
+  optional int32 timer_idx = 2;
+}
+message KvmTimerHrtimerExpireFtraceEvent {
+  optional int32 timer_idx = 1;
+}
+message KvmTimerRestoreStateFtraceEvent {
+  optional uint64 ctl = 1;
+  optional uint64 cval = 2;
+  optional int32 timer_idx = 3;
+}
+message KvmTimerSaveStateFtraceEvent {
+  optional uint64 ctl = 1;
+  optional uint64 cval = 2;
+  optional int32 timer_idx = 3;
+}
+message KvmTimerUpdateIrqFtraceEvent {
+  optional uint32 irq = 1;
+  optional int32 level = 2;
+  optional uint64 vcpu_id = 3;
+}
+message KvmToggleCacheFtraceEvent {
+  optional uint32 now = 1;
+  optional uint64 vcpu_pc = 2;
+  optional uint32 was = 3;
+}
+message KvmUnmapHvaRangeFtraceEvent {
+  optional uint64 end = 1;
+  optional uint64 start = 2;
+}
+message KvmUserspaceExitFtraceEvent {
+  optional uint32 reason = 1;
+}
+message KvmVcpuWakeupFtraceEvent {
+  optional uint64 ns = 1;
+  optional uint32 valid = 2;
+  optional uint32 waited = 3;
+}
+message KvmWfxArm64FtraceEvent {
+  optional uint32 is_wfe = 1;
+  optional uint64 vcpu_pc = 2;
+}
+message TrapRegFtraceEvent {
+  optional string fn = 1;
+  optional uint32 is_write = 2;
+  optional int32 reg = 3;
+  optional uint64 write_value = 4;
+}
+message VgicUpdateIrqPendingFtraceEvent {
+  optional uint32 irq = 1;
+  optional uint32 level = 2;
+  optional uint64 vcpu_id = 3;
+}
+
+// End of protos/perfetto/trace/ftrace/kvm.proto
+
 // Begin of protos/perfetto/trace/ftrace/lowmemorykiller.proto
 
 message LowmemoryKillFtraceEvent {
@@ -5243,6 +5527,14 @@ message GpuFrequencyFtraceEvent {
   optional uint32 gpu_id = 1;
   optional uint32 state = 2;
 }
+message WakeupSourceActivateFtraceEvent {
+  optional string name = 1;
+  optional uint64 state = 2;
+}
+message WakeupSourceDeactivateFtraceEvent {
+  optional string name = 1;
+  optional uint64 state = 2;
+}
 
 // End of protos/perfetto/trace/ftrace/power.proto
 
@@ -5453,6 +5745,16 @@ message SignalGenerateFtraceEvent {
 
 // End of protos/perfetto/trace/ftrace/signal.proto
 
+// Begin of protos/perfetto/trace/ftrace/skb.proto
+
+message KfreeSkbFtraceEvent {
+  optional uint64 location = 1;
+  optional uint32 protocol = 2;
+  optional uint64 skbaddr = 3;
+}
+
+// End of protos/perfetto/trace/ftrace/skb.proto
+
 // Begin of protos/perfetto/trace/ftrace/sock.proto
 
 message InetSockSetStateFtraceEvent {
@@ -5555,6 +5857,27 @@ message CdevUpdateFtraceEvent {
 
 // End of protos/perfetto/trace/ftrace/thermal.proto
 
+// Begin of protos/perfetto/trace/ftrace/ufs.proto
+
+message UfshcdCommandFtraceEvent {
+  optional string dev_name = 1;
+  optional uint32 doorbell = 2;
+  optional uint32 intr = 3;
+  optional uint64 lba = 4;
+  optional uint32 opcode = 5;
+  optional string str = 6;
+  optional uint32 tag = 7;
+  optional int32 transfer_len = 8;
+  optional uint32 group_id = 9;
+  optional uint32 str_t = 10;
+}
+message UfshcdClkGatingFtraceEvent {
+  optional string dev_name = 1;
+  optional int32 state = 2;
+}
+
+// End of protos/perfetto/trace/ftrace/ufs.proto
+
 // Begin of protos/perfetto/trace/ftrace/vmscan.proto
 
 message MmVmscanDirectReclaimBeginFtraceEvent {
@@ -5568,6 +5891,7 @@ message MmVmscanDirectReclaimEndFtraceEvent {
 message MmVmscanKswapdWakeFtraceEvent {
   optional int32 nid = 1;
   optional int32 order = 2;
+  optional int32 zid = 3;
 }
 message MmVmscanKswapdSleepFtraceEvent {
   optional int32 nid = 1;
@@ -5582,6 +5906,7 @@ message WorkqueueActivateWorkFtraceEvent {
 }
 message WorkqueueExecuteEndFtraceEvent {
   optional uint64 work = 1;
+  optional uint64 function = 2;
 }
 message WorkqueueExecuteStartFtraceEvent {
   optional uint64 work = 1;
@@ -5991,6 +6316,47 @@ message FtraceEvent {
     CrosEcSensorhubDataFtraceEvent cros_ec_sensorhub_data = 364;
     NapiGroReceiveEntryFtraceEvent napi_gro_receive_entry = 365;
     NapiGroReceiveExitFtraceEvent napi_gro_receive_exit = 366;
+    KfreeSkbFtraceEvent kfree_skb = 367;
+    KvmAccessFaultFtraceEvent kvm_access_fault = 368;
+    KvmAckIrqFtraceEvent kvm_ack_irq = 369;
+    KvmAgeHvaFtraceEvent kvm_age_hva = 370;
+    KvmAgePageFtraceEvent kvm_age_page = 371;
+    KvmArmClearDebugFtraceEvent kvm_arm_clear_debug = 372;
+    KvmArmSetDreg32FtraceEvent kvm_arm_set_dreg32 = 373;
+    KvmArmSetRegsetFtraceEvent kvm_arm_set_regset = 374;
+    KvmArmSetupDebugFtraceEvent kvm_arm_setup_debug = 375;
+    KvmEntryFtraceEvent kvm_entry = 376;
+    KvmExitFtraceEvent kvm_exit = 377;
+    KvmFpuFtraceEvent kvm_fpu = 378;
+    KvmGetTimerMapFtraceEvent kvm_get_timer_map = 379;
+    KvmGuestFaultFtraceEvent kvm_guest_fault = 380;
+    KvmHandleSysRegFtraceEvent kvm_handle_sys_reg = 381;
+    KvmHvcArm64FtraceEvent kvm_hvc_arm64 = 382;
+    KvmIrqLineFtraceEvent kvm_irq_line = 383;
+    KvmMmioFtraceEvent kvm_mmio = 384;
+    KvmMmioEmulateFtraceEvent kvm_mmio_emulate = 385;
+    KvmSetGuestDebugFtraceEvent kvm_set_guest_debug = 386;
+    KvmSetIrqFtraceEvent kvm_set_irq = 387;
+    KvmSetSpteHvaFtraceEvent kvm_set_spte_hva = 388;
+    KvmSetWayFlushFtraceEvent kvm_set_way_flush = 389;
+    KvmSysAccessFtraceEvent kvm_sys_access = 390;
+    KvmTestAgeHvaFtraceEvent kvm_test_age_hva = 391;
+    KvmTimerEmulateFtraceEvent kvm_timer_emulate = 392;
+    KvmTimerHrtimerExpireFtraceEvent kvm_timer_hrtimer_expire = 393;
+    KvmTimerRestoreStateFtraceEvent kvm_timer_restore_state = 394;
+    KvmTimerSaveStateFtraceEvent kvm_timer_save_state = 395;
+    KvmTimerUpdateIrqFtraceEvent kvm_timer_update_irq = 396;
+    KvmToggleCacheFtraceEvent kvm_toggle_cache = 397;
+    KvmUnmapHvaRangeFtraceEvent kvm_unmap_hva_range = 398;
+    KvmUserspaceExitFtraceEvent kvm_userspace_exit = 399;
+    KvmVcpuWakeupFtraceEvent kvm_vcpu_wakeup = 400;
+    KvmWfxArm64FtraceEvent kvm_wfx_arm64 = 401;
+    TrapRegFtraceEvent trap_reg = 402;
+    VgicUpdateIrqPendingFtraceEvent vgic_update_irq_pending = 403;
+    WakeupSourceActivateFtraceEvent wakeup_source_activate = 404;
+    WakeupSourceDeactivateFtraceEvent wakeup_source_deactivate = 405;
+    UfshcdCommandFtraceEvent ufshcd_command = 406;
+    UfshcdClkGatingFtraceEvent ufshcd_clk_gating = 407;
   }
 }
 
@@ -6150,6 +6516,16 @@ message FtraceStats {
 
   // The memory used by the kernel symbolizer (KernelSymbolMap.size_bytes()).
   optional uint32 kernel_symbols_mem_kb = 4;
+
+  // Atrace errors (even non-fatal ones) are reported here. A typical example is
+  // one or more atrace categories not available on the device.
+  optional string atrace_errors = 5;
+
+  // Ftrace events requested by the config but not present on device.
+  repeated string unknown_ftrace_events = 6;
+
+  // Ftrace events requested by the config, present, which we failed to enable.
+  repeated string failed_ftrace_events = 7;
 }
 
 // End of protos/perfetto/trace/ftrace/ftrace_stats.proto
@@ -6652,7 +7028,8 @@ message ChromeHistogramSample {
 //     }
 //   }
 //
-// Next ID: 13.
+// Next ID: 17.
+// Reserved ID: 15
 message DebugAnnotation {
   // Name fields are set only for dictionary entries.
   oneof name_field {
@@ -6679,6 +7056,18 @@ message DebugAnnotation {
     // NestedValue yet.
     string legacy_json_value = 9;
   }
+
+  // Used to embed arbitrary proto messages (which are also typically used to
+  // represent typed TrackEvent arguments). |proto_type_name| or
+  // |proto_type_name_iid| are storing the full name of the proto messages (e.g.
+  // .perfetto.protos.DebugAnnotation) and |proto_value| contains the serialised
+  // proto messages. See |TracedValue::WriteProto| for more details.
+  oneof proto_type_descriptor {
+    string proto_type_name = 16;
+    // interned DebugAnnotationValueTypeName.
+    uint64 proto_type_name_iid = 13;
+  }
+  optional bytes proto_value = 14;
 
   repeated DebugAnnotation dict_entries = 11;
   repeated DebugAnnotation array_values = 12;
@@ -6710,6 +7099,12 @@ message DebugAnnotation {
 // --------------------
 
 message DebugAnnotationName {
+  optional uint64 iid = 1;
+  optional string name = 2;
+}
+
+// See the |proto_type_descriptor| comment.
+message DebugAnnotationValueTypeName {
   optional uint64 iid = 1;
   optional string name = 2;
 }
@@ -7765,7 +8160,7 @@ message EventName {
 // emitted proactively in advance of referring to them in later packets.
 //
 // Next reserved id: 8 (up to 15).
-// Next id: 27.
+// Next id: 28.
 message InternedData {
   // TODO(eseckler): Replace iid fields inside interned messages with
   // map<iid, message> type fields in InternedData.
@@ -7780,6 +8175,7 @@ message InternedData {
   repeated EventCategory event_categories = 1;
   repeated EventName event_names = 2;
   repeated DebugAnnotationName debug_annotation_names = 3;
+  repeated DebugAnnotationValueTypeName debug_annotation_value_type_names = 27;
   repeated SourceLocation source_locations = 4;
   repeated LogMessageBody log_message_body = 20;
   repeated HistogramName histogram_names = 25;
@@ -9483,7 +9879,7 @@ message UiState {
 // See the [Buffers and Dataflow](/docs/concepts/buffers.md) doc for details.
 //
 // Next reserved id: 14 (up to 15).
-// Next id: 81.
+// Next id: 82.
 message TracePacket {
   // The timestamp of the TracePacket.
   // By default this timestamps refers to the trace clock (CLOCK_BOOTTIME on
@@ -9546,6 +9942,7 @@ message TracePacket {
     AndroidEnergyEstimationBreakdown android_energy_estimation_breakdown = 77;
     UiState ui_state = 78;
     AndroidCameraFrameEvent android_camera_frame_event = 80;
+    AndroidCameraSessionStats android_camera_session_stats = 81;
 
     // Only used in profile packets.
     ProfiledFrameSymbols profiled_frame_symbols = 55;

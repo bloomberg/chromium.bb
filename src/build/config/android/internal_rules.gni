@@ -85,54 +85,6 @@ _custom_d8_path = "//third_party/r8/custom_d8.jar"
 _desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
 _desugar_jdk_libs_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs/desugar_jdk_libs-1.1.5.jar"
 _desugar_jdk_libs_configuration_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs_configuration/desugar_jdk_libs_configuration-1.1.5.jar"
-_desugar_runtime_jar = "$root_build_dir/obj/third_party/bazel/desugar/Desugar_runtime.processed.jar"
-
-_dexdump_path = "$android_sdk_build_tools/dexdump"
-_dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
-_profman_path = "//third_party/android_build_tools/art/profman"
-_art_lib_file_names = [
-  "libartbase.so",
-  "libart-compiler.so",
-  "libart-dexlayout.so",
-  "libart-disassembler.so",
-  "libart-gtest.so",
-  "libart.so",
-  "libbacktrace.so",
-  "libbase.so",
-  "libcrypto-host.so",
-  "libc++.so",
-  "libcutils.so",
-  "libdexfile.so",
-  "libexpat-host.so",
-  "libicui18n-host.so",
-  "libicuuc-host.so",
-  "libjavacore.so",
-  "libjavacrypto.so",
-  "liblog.so",
-  "liblz4.so",
-  "liblzma.so",
-  "libnativebridge.so",
-  "libnativehelper.so",
-  "libnativeloader.so",
-  "libopenjdkjvm.so",
-  "libopenjdkjvmti.so",
-  "libopenjdk.so",
-  "libprofile.so",
-  "libsigchain.so",
-  "libssl-host.so",
-  "libunwindstack.so",
-  "libvixl-arm64.so",
-  "libvixl-arm.so",
-  "libvixld-arm64.so",
-  "libvixld-arm.so",
-  "libz-host.so",
-  "libziparchive.so",
-  "slicer.so",
-]
-_default_art_libs = []
-foreach(lib, _art_lib_file_names) {
-  _default_art_libs += [ "//third_party/android_build_tools/art/lib/$lib" ]
-}
 
 # Put the bug number in the target name so that false-positives have a hint in
 # the error message about why non-existent dependencies are there.
@@ -929,8 +881,7 @@ template("test_runner_script") {
           "${target_gen_dir}/${invoker.test_suite}.build_config.json"
 
       _rebased_robolectric_runtime_deps_dir =
-          rebase_path("$root_build_dir/lib.java/third_party/robolectric",
-                      root_build_dir)
+          rebase_path("//third_party/robolectric/lib", root_build_dir)
       _rebased_resource_apk = rebase_path(invoker.resource_apk, root_build_dir)
       executable_args += [
         "--resource-apk",
@@ -1641,7 +1592,8 @@ if (enable_java_templates) {
           rebase_path(_custom_d8_path, root_build_dir),
 
           # Uncomment when rebuilding custom_d8.jar.
-          #"--skip-custom-d8",
+          # Temporarily enabling to fix: https://crbug.com/1305987
+          "--skip-custom-d8",
         ]
         if (treat_warnings_as_errors) {
           args += [ "--warnings-as-errors" ]
@@ -1688,26 +1640,6 @@ if (enable_java_templates) {
         if (_input_class_jars != []) {
           inputs += _input_class_jars
           args += [ "--class-inputs=${_rebased_input_class_jars}" ]
-        }
-
-        if (defined(invoker.dexlayout_profile)) {
-          args += [
-            "--dexlayout-profile",
-            rebase_path(invoker.dexlayout_profile, root_build_dir),
-            "--dexlayout-path",
-            rebase_path(_dexlayout_path, root_build_dir),
-            "--profman-path",
-            rebase_path(_profman_path, root_build_dir),
-            "--dexdump-path",
-            rebase_path(_dexdump_path, root_build_dir),
-          ]
-          inputs += [
-            _dexlayout_path,
-            _profman_path,
-            _dexdump_path,
-            invoker.dexlayout_profile,
-          ]
-          inputs += _default_art_libs
         }
 
         # Never compile intemediates with --release in order to:

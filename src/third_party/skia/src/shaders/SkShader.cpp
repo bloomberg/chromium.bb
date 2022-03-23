@@ -12,7 +12,6 @@
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkColorSpaceXformSteps.h"
-#include "src/core/SkKeyHelpers.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
@@ -29,6 +28,10 @@
 
 #if SK_SUPPORT_GPU
 #include "src/gpu/GrFragmentProcessor.h"
+#endif
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
 #endif
 
 SkShaderBase::SkShaderBase(const SkMatrix* localMatrix)
@@ -149,13 +152,14 @@ SkUpdatableShader* SkShaderBase::onUpdatableShader(SkArenaAlloc* alloc) const {
     return nullptr;
 }
 
+#ifdef SK_ENABLE_SKSL
 // TODO: add implementations for derived classes
-void SkShaderBase::addToKey(SkShaderCodeDictionary* dict,
-                            SkBackend backend,
+void SkShaderBase::addToKey(const SkKeyContext& keyContext,
                             SkPaintParamsKeyBuilder* builder,
-                            SkUniformBlock* uniformBlock) const {
-    SolidColorShaderBlock::AddToKey(dict, backend, builder, uniformBlock, SkColors::kRed);
+                            SkPipelineData* pipelineData) const {
+    SolidColorShaderBlock::AddToKey(keyContext, builder, pipelineData, {1, 0, 0, 1});
 }
+#endif
 
 sk_sp<SkShader> SkShaders::Empty() { return sk_make_sp<SkEmptyShader>(); }
 sk_sp<SkShader> SkShaders::Color(SkColor color) { return sk_make_sp<SkColorShader>(color); }

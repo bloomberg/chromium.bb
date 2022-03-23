@@ -24,6 +24,7 @@
 #include "chrome/browser/ssl/sct_reporting_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -184,19 +185,19 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
         net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
         "signature1", base::Time::Now(),
         std::string(reinterpret_cast<const char*>(kTestGoogleLogId),
-                    base::size(kTestGoogleLogId)),
+                    std::size(kTestGoogleLogId)),
         net::ct::SCT_STATUS_OK, &verify_result.scts);
     MakeTestSCTAndStatus(
         net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
         "signature2", base::Time::Now(),
         std::string(reinterpret_cast<const char*>(kTestNonGoogleLogId1),
-                    base::size(kTestNonGoogleLogId1)),
+                    std::size(kTestNonGoogleLogId1)),
         net::ct::SCT_STATUS_OK, &verify_result.scts);
     MakeTestSCTAndStatus(
         net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
         "signature3", base::Time::Now(),
         std::string(reinterpret_cast<const char*>(kTestNonGoogleLogId2),
-                    base::size(kTestNonGoogleLogId2)),
+                    std::size(kTestNonGoogleLogId2)),
         net::ct::SCT_STATUS_OK, &verify_result.scts);
 
     // Set up two test hosts as using publicly-issued certificates for testing.
@@ -574,19 +575,19 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
       net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
       "signature1", base::Time::Now(),
       std::string(reinterpret_cast<const char*>(kTestGoogleLogId),
-                  base::size(kTestGoogleLogId)),
+                  std::size(kTestGoogleLogId)),
       net::ct::SCT_STATUS_OK, &verify_result.scts);
   MakeTestSCTAndStatus(
       net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
       "signature2", base::Time::Now(),
       std::string(reinterpret_cast<const char*>(kTestNonGoogleLogId1),
-                  base::size(kTestNonGoogleLogId1)),
+                  std::size(kTestNonGoogleLogId1)),
       net::ct::SCT_STATUS_OK, &verify_result.scts);
   MakeTestSCTAndStatus(
       net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
       "signature3", base::Time::Now(),
       std::string(reinterpret_cast<const char*>(kTestNonGoogleLogId2),
-                  base::size(kTestNonGoogleLogId2)),
+                  std::size(kTestNonGoogleLogId2)),
       net::ct::SCT_STATUS_OK, &verify_result.scts);
   mock_cert_verifier()->AddResultForCertAndHost(
       https_server()->GetCertificate().get(), "a.test", verify_result, net::OK);
@@ -878,7 +879,7 @@ class SCTHashdanceBrowserTest : public SCTReportingServiceBrowserTest {
         net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
         "signature1", base::Time::UnixEpoch(),
         std::string(reinterpret_cast<const char*>(kTestGoogleLogId),
-                    base::size(kTestGoogleLogId)),
+                    std::size(kTestGoogleLogId)),
         net::ct::SCT_STATUS_OK, &verify_result.scts);
     mock_cert_verifier()->AddResultForCertAndHost(
         https_server()->GetCertificate().get(), "hashdance.test", verify_result,
@@ -932,4 +933,39 @@ IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest, DoNotReportSCTFound) {
 
   // No requests should have been sent.
   EXPECT_TRUE(FlushAndCheckZeroReports(/*requests_so_far=*/1));
+}
+
+IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest,
+                       HashdanceReportCountIncremented) {
+  // Visit an HTTPS page and wait for the full report to be sent.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("hashdance.test", "/")));
+  WaitForRequests(2);
+
+  // Check that two requests (lookup and full report) were sent and the report
+  // contains the expected details.
+  EXPECT_EQ(2u, requests_seen());
+  EXPECT_EQ(
+      "hashdance.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
+
+  // Check that the report count got incremented.
+  int report_count = g_browser_process->local_state()->GetInteger(
+      prefs::kSCTAuditingHashdanceReportCount);
+  EXPECT_EQ(report_count, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SCTHashdanceBrowserTest, HashdanceReportLimitReached) {
+  // Override the report count to be the maximum.
+  g_browser_process->local_state()->SetInteger(
+      prefs::kSCTAuditingHashdanceReportCount, 3);
+
+  // Visit an HTTPS page.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("hashdance.test", "/")));
+
+  // Check that no reports are sent.
+  EXPECT_EQ(0u, requests_seen());
+  SetSafeBrowsingEnabled(false);  // Clears the deduplication cache.
+  EXPECT_TRUE(FlushAndCheckZeroReports());
 }

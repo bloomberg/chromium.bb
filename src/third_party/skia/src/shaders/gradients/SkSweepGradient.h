@@ -10,6 +10,8 @@
 
 #include "src/shaders/gradients/SkGradientShaderPriv.h"
 
+class SkShaderCodeDictionary;
+
 class SkSweepGradient final : public SkGradientShaderBase {
 public:
     SkSweepGradient(const SkPoint& center, SkScalar t0, SkScalar t1, const Descriptor&);
@@ -19,10 +21,11 @@ public:
 #if SK_SUPPORT_GPU
     std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(const GrFPArgs&) const override;
 #endif
-    void addToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+#ifdef SK_ENABLE_SKSL
+    void addToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*) const override;
+                  SkPipelineData*) const override;
+#endif
 
     SkScalar getTBias() const { return fTBias; }
 

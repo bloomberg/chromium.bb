@@ -117,28 +117,6 @@ float AveragePower(const media::AudioBus& buffer) {
 
 }  // namespace
 
-#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-// No-op implementation of ReferenceOutput::Listener to allow the
-// InputController to subscribe to playout audio without instantiating a more
-// heavy-duty Listener subclass.
-// TODO(https://crbug.com/1224845): Remove after the output mixing experiment.
-class InputController::NoopReferenceOutputListener
-    : public ReferenceOutput::Listener {
- public:
-  NoopReferenceOutputListener() {}
-
- private:
-  // ReferenceOutput::Listener implementation.
-  void OnPlayoutData(const media::AudioBus& audio_bus,
-                     int sample_rate,
-                     base::TimeDelta delay) final {
-    TRACE_EVENT2("audio", "NoopReferenceOutputListener::OnPlayoutData",
-                 " this ", static_cast<void*>(this), "delay",
-                 delay.InMillisecondsF());
-  }
-};
-#endif  // CHROME_WIDE_ECHO_CANCELLATION
-
 // This class implements the AudioInputCallback interface in place of the
 // InputController (AIC), so that
 // - The AIC itself does not publicly inherit AudioInputCallback.
@@ -220,7 +198,7 @@ InputController::InputController(
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-  MaybeSetUpAudioProcessing(std::move(processing_config),
+  MaybeSetUpAudioProcessing(std::move(processing_config), params,
                             device_output_listener);
 #endif
 
@@ -233,35 +211,33 @@ InputController::InputController(
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 void InputController::MaybeSetUpAudioProcessing(
     media::mojom::AudioProcessingConfigPtr processing_config,
+    const media::AudioParameters& params,
     DeviceOutputListener* device_output_listener) {
   if (!device_output_listener)
     return;
 
-  // TODO(https://crbug.com/1224845): Clean up this initialization logic once
-  // the output mixing experiment is over.
-  // |processing_config| will not be populated while the mixing experiment is
-  // ongoing, so there is no interference here. The mixing experiment always
-  // gets a NoopReferenceOutputListener.
-  ReferenceOutput::Listener* output_listener = nullptr;
-  if (processing_config &&
-      processing_config->settings.NeedAudioModification()) {
-    audio_processor_handler_ = std::make_unique<AudioProcessorHandler>(
-        processing_config->settings,
-        std::move(processing_config->controls_receiver));
-    if (processing_config->settings.NeedPlayoutReference())
-      output_listener = audio_processor_handler_.get();
-  } else {
-    noop_reference_output_listener_ =
-        std::make_unique<NoopReferenceOutputListener>();
-    output_listener = noop_reference_output_listener_.get();
+  if (!(processing_config &&
+        processing_config->settings.NeedAudioModification())) {
+    return;
   }
-  if (output_listener) {
+    // Unretained() is safe, since |this| and |event_handler_| outlive
+    // |audio_processor_handler_|.
+    audio_processor_handler_ = std::make_unique<AudioProcessorHandler>(
+        processing_config->settings, params,
+        base::BindRepeating(&EventHandler::OnLog,
+                            base::Unretained(event_handler_)),
+        base::BindRepeating(&InputController::DeliverProcessedAudio,
+                            base::Unretained(this)),
+        std::move(processing_config->controls_receiver));
+
+    if (!processing_config->settings.NeedPlayoutReference())
+      return;
+
     // Unretained() is safe, since |event_handler_| outlives |output_tapper_|.
     output_tapper_ = std::make_unique<OutputTapper>(
-        device_output_listener, output_listener,
+        device_output_listener, audio_processor_handler_.get(),
         base::BindRepeating(&EventHandler::OnLog,
                             base::Unretained(event_handler_)));
-  }
 }
 #endif
 
@@ -296,6 +272,7 @@ std::unique_ptr<InputController> InputController::Create(
 
   // Create the InputController object and ensure that it runs on
   // the audio-manager thread.
+  // Using `new` to access a non-public constructor.
   std::unique_ptr<InputController> controller =
       base::WrapUnique(new InputController(
           event_handler, sync_writer, user_input_monitor, activity_monitor,
@@ -725,7 +702,15 @@ void InputController::DeliverDataToSyncWriter(const media::AudioBus* source,
                                               base::TimeTicks capture_time,
                                               double volume) {
   const bool key_pressed = CheckForKeyboardInput();
-  sync_writer_->Write(source, volume, key_pressed, capture_time);
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  if (audio_processor_handler_) {
+    audio_processor_handler_->ProcessCapturedAudio(*source, capture_time,
+                                                   volume, key_pressed);
+  } else
+#endif
+  {
+    sync_writer_->Write(source, volume, key_pressed, capture_time);
+  }
 
   float average_power_dbfs;
   int mic_volume_percent;
@@ -739,6 +724,22 @@ void InputController::DeliverDataToSyncWriter(const media::AudioBus* source,
                        average_power_dbfs, mic_volume_percent));
   }
 }
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+void InputController::DeliverProcessedAudio(const media::AudioBus& audio_bus,
+                                            base::TimeTicks audio_capture_time,
+                                            absl::optional<double> new_volume) {
+  // When processing is performed in the audio service, the consumer is not
+  // expected to use the input volume and keypress information.
+  sync_writer_->Write(&audio_bus, /*volume=*/1.0,
+                      /*key_pressed=*/false, audio_capture_time);
+  if (new_volume) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&InputController::SetVolume, weak_this_, *new_volume));
+  }
+}
+#endif
 
 // static
 InputController::StreamType InputController::ParamsToStreamType(

@@ -30,10 +30,10 @@ class SkImage;
 struct SkImageInfo;
 class SkPaint;
 class SkPaintParamsKeyBuilder;
+class SkPipelineData;
 class SkRasterPipeline;
 class SkRuntimeEffect;
-class SkShaderCodeDictionary;
-class SkUniformBlock;
+class SkKeyContext;
 class SkStageUpdater;
 
 class SkUpdatableShader;
@@ -214,19 +214,19 @@ public:
                         skvm::Uniforms* uniforms, SkArenaAlloc* alloc) const;
 
 
+#ifdef SK_ENABLE_SKSL
     /**
         Add implementation details, for the specified backend, of this SkShader to the
         provided key.
 
-        @param dictionary   dictionary of code fragments available to be used in the key
-        @param backend      the backend that would be carrying out the drawing
+        @param keyContext   backend context for key creation
         @param builder      builder for creating the key for this SkShader
-        @param uniformBlock if non-null, storage for this shader's uniform data
+        @param pipelineData if non-null, storage for this shader's data
     */
-    virtual void addToKey(SkShaderCodeDictionary* dictionary,
-                          SkBackend backend,
+    virtual void addToKey(const SkKeyContext& keyContext,
                           SkPaintParamsKeyBuilder* builder,
-                          SkUniformBlock* uniformBlock) const;
+                          SkPipelineData* pipelineData) const;
+#endif
 
 protected:
     SkShaderBase(const SkMatrix* localMatrix = nullptr);

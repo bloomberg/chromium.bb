@@ -15,6 +15,7 @@
 #include "src/ast/scopes.h"
 #include "src/base/flags.h"
 #include "src/base/hashmap.h"
+#include "src/base/pointer-with-payload.h"
 #include "src/base/v8-fallthrough.h"
 #include "src/codegen/bailout-reason.h"
 #include "src/common/globals.h"
@@ -28,7 +29,6 @@
 #include "src/parsing/scanner.h"
 #include "src/parsing/token.h"
 #include "src/regexp/regexp.h"
-#include "src/utils/pointer-with-payload.h"
 #include "src/zone/zone-chunk-list.h"
 
 namespace v8 {
@@ -482,7 +482,7 @@ class ParserBase {
       }
 
      private:
-      PointerWithPayload<FunctionState, bool, 1> state_and_prev_value_;
+      base::PointerWithPayload<FunctionState, bool, 1> state_and_prev_value_;
     };
 
     class V8_NODISCARD LoopScope final {
@@ -1972,7 +1972,11 @@ ParserBase<Impl>::ParsePrimaryExpression() {
 
     case Token::LPAREN: {
       Consume(Token::LPAREN);
+
       if (Check(Token::RPAREN)) {
+        // clear last next_arrow_function_info tracked strict parameters error.
+        next_arrow_function_info_.ClearStrictParameterError();
+
         // ()=>x.  The continuation that consumes the => is in
         // ParseAssignmentExpressionCoverGrammar.
         if (peek() != Token::ARROW) ReportUnexpectedToken(Token::RPAREN);
@@ -4405,6 +4409,16 @@ void ParserBase<Impl>::ParseFunctionBody(
           impl()->ReportVarRedeclarationIn(conflict, inner_scope);
         }
       }
+
+      // According to ES#sec-functiondeclarationinstantiation step 27,28
+      // when hasParameterExpressions is true, we need bind var declared
+      // arguments to "arguments exotic object", so we here first declare
+      // "arguments exotic object", then var declared arguments will be
+      // initialized with "arguments exotic object"
+      if (!IsArrowFunction(kind)) {
+        function_scope->DeclareArguments(ast_value_factory());
+      }
+
       impl()->InsertShadowingVarBindingInitializers(inner_block);
     }
   }
@@ -4413,9 +4427,6 @@ void ParserBase<Impl>::ParseFunctionBody(
                            allow_duplicate_parameters);
 
   if (!IsArrowFunction(kind)) {
-    // Declare arguments after parsing the function since lexical 'arguments'
-    // masks the arguments object. Declare arguments before declaring the
-    // function var since the arguments object masks 'function arguments'.
     function_scope->DeclareArguments(ast_value_factory());
   }
 

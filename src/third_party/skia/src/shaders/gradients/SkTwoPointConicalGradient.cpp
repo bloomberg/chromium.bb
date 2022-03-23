@@ -8,12 +8,15 @@
 #include "src/shaders/gradients/SkTwoPointConicalGradient.h"
 
 #include "include/private/SkFloatingPoint.h"
-#include "src/core/SkKeyHelpers.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkWriteBuffer.h"
 
 #include <utility>
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#endif
 
 // Please see https://skia.org/dev/design/conical for how our shader works.
 
@@ -277,10 +280,10 @@ std::unique_ptr<GrFragmentProcessor> SkTwoPointConicalGradient::asFragmentProces
 
 #endif
 
-void SkTwoPointConicalGradient::addToKey(SkShaderCodeDictionary* dict,
-                                         SkBackend backend,
+#ifdef SK_ENABLE_SKSL
+void SkTwoPointConicalGradient::addToKey(const SkKeyContext& keyContext,
                                          SkPaintParamsKeyBuilder* builder,
-                                         SkUniformBlock* uniformBlock) const {
+                                         SkPipelineData* pipelineData) const {
     GradientShaderBlocks::GradientData data(kConical_GradientType,
                                             fCenter1, fCenter2,
                                             fRadius1, fRadius2,
@@ -289,5 +292,6 @@ void SkTwoPointConicalGradient::addToKey(SkShaderCodeDictionary* dict,
                                             fOrigColors4f,
                                             fOrigPos);
 
-    GradientShaderBlocks::AddToKey(dict, backend, builder, uniformBlock, data);
+    GradientShaderBlocks::AddToKey(keyContext, builder, pipelineData, data);
 }
+#endif

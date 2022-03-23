@@ -359,6 +359,24 @@ typedef enum {
   PRUNE_MESH_SEARCH_LVL_2 = 2,    /*!< Prune mesh search level 2. */
 } PRUNE_MESH_SEARCH_LEVEL;
 
+/*!\enum INTER_SEARCH_EARLY_TERM_IDX
+ * \brief This enumeration defines inter search early termination index in
+ * non-rd path based on sse value.
+ */
+typedef enum {
+  EARLY_TERM_DISABLED =
+      0, /*!< Early terminate inter mode search based on sse disabled. */
+  EARLY_TERM_IDX_1 =
+      1, /*!< Early terminate inter mode search based on sse, index 1. */
+  EARLY_TERM_IDX_2 =
+      2, /*!< Early terminate inter mode search based on sse, index 2. */
+  EARLY_TERM_IDX_3 =
+      3, /*!< Early terminate inter mode search based on sse, index 3. */
+  EARLY_TERM_IDX_4 =
+      4, /*!< Early terminate inter mode search based on sse, index 4. */
+  EARLY_TERM_INDICES, /*!< Total number of early terminate indices */
+} INTER_SEARCH_EARLY_TERM_IDX;
+
 /*!
  * \brief Sequence/frame level speed vs quality features
  */
@@ -1425,6 +1443,26 @@ typedef struct REAL_TIME_SPEED_FEATURES {
 
   // Enable GF refresh based on Q value.
   int gf_refresh_based_on_qp;
+
+  // Temporal filtering
+  int use_rtc_tf;
+
+  // Prune the use of the identity transform in nonrd_pickmode,
+  // used for screen content mode: only for smaller blocks
+  // and higher spatial variance, and when skip_txfm is not
+  // already set.
+  int prune_idtx_nonrd;
+
+  // Skip loopfilter, for static content after slide change
+  // or key frame, once quality has ramped up.
+  int skip_lf_screen;
+
+  // For nonrd: early exit out of variance partition that sets the
+  // block size to superblock size, and sets mode to zeromv-last skip.
+  int part_early_exit_zeromv;
+
+  // Early terminate inter mode search based on sse in non-rd path.
+  INTER_SEARCH_EARLY_TERM_IDX sse_early_term_inter_search;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

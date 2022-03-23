@@ -12,6 +12,7 @@
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/sql_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "net/base/schemeful_site.h"
@@ -21,12 +22,6 @@
 #include "url/origin.h"
 
 namespace content {
-
-namespace {
-
-using Result = ::content::RateLimitTable::Result;
-
-}  // namespace
 
 RateLimitTable::RateLimitTable(const AttributionStorageDelegate* delegate)
     : delegate_(delegate) {
@@ -42,25 +37,25 @@ bool RateLimitTable::CreateTable(sql::Database* db) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // All columns in this table are const.
-  // |impression_id| is the primary key of a row in the |impressions| table,
+  // |source_id| is the primary key of a row in the |impressions| table,
   // though the row may not exist.
   // |scope| is a serialized `RateLimitTable::Scope`.
-  // |impression_site| is the eTLD+1 of the impression.
-  // |impression_origin| is the origin of the impression.
-  // |conversion_destination| is the destination of the conversion.
-  // |conversion_origin| is the origin of the conversion.
+  // |source_site| is the eTLD+1 of the impression.
+  // |source_origin| is the origin of the impression.
+  // |destination_site| is the destination of the conversion.
+  // |destination_origin| is the origin of the conversion.
   // |reporting_origin| is the reporting origin of the impression/conversion.
   // |time| is the time of either the source registration or the attribution
   // trigger, depending on |scope|.
   static constexpr char kRateLimitTableSql[] =
       "CREATE TABLE IF NOT EXISTS rate_limits"
-      "(rate_limit_id INTEGER PRIMARY KEY NOT NULL,"
+      "(id INTEGER PRIMARY KEY NOT NULL,"
       "scope INTEGER NOT NULL,"
-      "impression_id INTEGER NOT NULL,"
-      "impression_site TEXT NOT NULL,"
-      "impression_origin TEXT NOT NULL,"
-      "conversion_destination TEXT NOT NULL,"
-      "conversion_origin TEXT NOT NULL,"
+      "source_id INTEGER NOT NULL,"
+      "source_site TEXT NOT NULL,"
+      "source_origin TEXT NOT NULL,"
+      "destination_site TEXT NOT NULL,"
+      "destination_origin TEXT NOT NULL,"
       "reporting_origin TEXT NOT NULL,"
       "time INTEGER NOT NULL)";
   if (!db->Execute(kRateLimitTableSql))
@@ -72,7 +67,7 @@ bool RateLimitTable::CreateTable(sql::Database* db) {
   // Optimizes calls to |AttributionAllowedForAttributionLimit()|.
   static constexpr char kRateLimitAttributionIndexSql[] =
       "CREATE INDEX IF NOT EXISTS rate_limit_attribution_idx ON rate_limits"
-      "(conversion_destination,impression_site,reporting_origin,time)"
+      "(destination_site,source_site,reporting_origin,time)"
       "WHERE scope=1";
   if (!db->Execute(kRateLimitAttributionIndexSql))
     return false;
@@ -80,7 +75,7 @@ bool RateLimitTable::CreateTable(sql::Database* db) {
   // Optimizes calls to |AllowedForReportingOriginLimit()|.
   static constexpr char kRateLimitReportingOriginIndexSql[] =
       "CREATE INDEX IF NOT EXISTS rate_limit_reporting_origin_idx "
-      "ON rate_limits(scope,conversion_destination,impression_site,time)";
+      "ON rate_limits(scope,destination_site,source_site,time)";
   if (!db->Execute(kRateLimitReportingOriginIndexSql))
     return false;
 
@@ -93,8 +88,8 @@ bool RateLimitTable::CreateTable(sql::Database* db) {
 
   // Optimizes calls to |ClearDataForSourceIds()|.
   static constexpr char kRateLimitImpressionIdIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS rate_limit_impression_id_idx "
-      "ON rate_limits(impression_id)";
+      "CREATE INDEX IF NOT EXISTS rate_limit_source_id_idx "
+      "ON rate_limits(source_id)";
   return db->Execute(kRateLimitImpressionIdIndexSql);
 }
 
@@ -133,8 +128,8 @@ bool RateLimitTable::AddRateLimit(sql::Database* db,
 
   static constexpr char kStoreRateLimitSql[] =
       "INSERT INTO rate_limits"
-      "(scope,impression_id,impression_site,impression_origin,"
-      "conversion_destination,conversion_origin,reporting_origin,time)"
+      "(scope,source_id,source_site,source_origin,"
+      "destination_site,destination_origin,reporting_origin,time)"
       "VALUES(?,?,?,?,?,?,?,?)";
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kStoreRateLimitSql));
@@ -149,7 +144,7 @@ bool RateLimitTable::AddRateLimit(sql::Database* db,
   return statement.Run();
 }
 
-Result RateLimitTable::AttributionAllowedForAttributionLimit(
+RateLimitResult RateLimitTable::AttributionAllowedForAttributionLimit(
     sql::Database* db,
     const AttributionInfo& attribution_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -170,8 +165,8 @@ Result RateLimitTable::AttributionAllowedForAttributionLimit(
       "SELECT COUNT(*)FROM rate_limits "
       DCHECK_SQL_INDEXED_BY("rate_limit_attribution_idx")
       "WHERE scope=1 "
-      "AND impression_site=? "
-      "AND conversion_destination=? "
+      "AND source_site=? "
+      "AND destination_site=? "
       "AND reporting_origin=? "
       "AND time>?";
   sql::Statement statement(
@@ -182,15 +177,15 @@ Result RateLimitTable::AttributionAllowedForAttributionLimit(
   statement.BindTime(3, min_timestamp);
 
   if (!statement.Step())
-    return Result::kError;
+    return RateLimitResult::kError;
 
   int64_t count = statement.ColumnInt64(0);
 
-  return count < rate_limits.max_attributions ? Result::kAllowed
-                                              : Result::kNotAllowed;
+  return count < rate_limits.max_attributions ? RateLimitResult::kAllowed
+                                              : RateLimitResult::kNotAllowed;
 }
 
-Result RateLimitTable::SourceAllowedForReportingOriginLimit(
+RateLimitResult RateLimitTable::SourceAllowedForReportingOriginLimit(
     sql::Database* db,
     const StorableSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -199,7 +194,7 @@ Result RateLimitTable::SourceAllowedForReportingOriginLimit(
                                         source.common_info().impression_time());
 }
 
-Result RateLimitTable::AttributionAllowedForReportingOriginLimit(
+RateLimitResult RateLimitTable::AttributionAllowedForReportingOriginLimit(
     sql::Database* db,
     const AttributionInfo& attribution_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -208,7 +203,7 @@ Result RateLimitTable::AttributionAllowedForReportingOriginLimit(
                                         attribution_info.time);
 }
 
-Result RateLimitTable::AllowedForReportingOriginLimit(
+RateLimitResult RateLimitTable::AllowedForReportingOriginLimit(
     sql::Database* db,
     Scope scope,
     const CommonSourceInfo& common_info,
@@ -237,8 +232,8 @@ Result RateLimitTable::AllowedForReportingOriginLimit(
       "SELECT reporting_origin FROM rate_limits "
       DCHECK_SQL_INDEXED_BY("rate_limit_reporting_origin_idx")
       "WHERE scope=? "
-      "AND impression_site=? "
-      "AND conversion_destination=? "
+      "AND source_site=? "
+      "AND destination_site=? "
       "AND time>?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   statement.BindInt(0, static_cast<int>(scope));
@@ -252,15 +247,16 @@ Result RateLimitTable::AllowedForReportingOriginLimit(
 
     // The origin isn't new, so it doesn't change the count.
     if (reporting_origin == serialized_reporting_origin)
-      return Result::kAllowed;
+      return RateLimitResult::kAllowed;
 
     reporting_origins.insert(std::move(reporting_origin));
 
     if (reporting_origins.size() == static_cast<size_t>(max))
-      return Result::kNotAllowed;
+      return RateLimitResult::kNotAllowed;
   }
 
-  return statement.Succeeded() ? Result::kAllowed : Result::kError;
+  return statement.Succeeded() ? RateLimitResult::kAllowed
+                               : RateLimitResult::kError;
 }
 
 bool RateLimitTable::ClearAllDataInRange(sql::Database* db,
@@ -299,8 +295,7 @@ bool RateLimitTable::ClearDataForOriginsInRange(
   if (filter.is_null())
     return ClearAllDataInRange(db, delete_begin, delete_end);
 
-  static constexpr char kDeleteSql[] =
-      "DELETE FROM rate_limits WHERE rate_limit_id=?";
+  static constexpr char kDeleteSql[] = "DELETE FROM rate_limits WHERE id=?";
   sql::Statement delete_statement(
       db->GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
 
@@ -310,7 +305,7 @@ bool RateLimitTable::ClearDataForOriginsInRange(
 
   static constexpr char kSelectSql[] =
       // clang-format off
-      "SELECT rate_limit_id,impression_origin,conversion_origin,"
+      "SELECT id,source_origin,destination_origin,"
       "reporting_origin "
       "FROM rate_limits "
       DCHECK_SQL_INDEXED_BY("rate_limit_time_idx")
@@ -365,7 +360,7 @@ bool RateLimitTable::ClearDataForSourceIds(
     return false;
 
   static constexpr char kDeleteRateLimitSql[] =
-      "DELETE FROM rate_limits WHERE impression_id = ?";
+      "DELETE FROM rate_limits WHERE source_id = ?";
   sql::Statement statement(
       db->GetCachedStatement(SQL_FROM_HERE, kDeleteRateLimitSql));
 

@@ -15,6 +15,14 @@
 
 namespace app_restore {
 
+namespace {
+
+// Used to generate unique window IDs for desk template launches. Numbers lower
+// than this are reserved for full restore.
+int32_t g_desk_template_window_restore_id = 1000000000;
+
+}  // namespace
+
 RestoreData::RestoreData() = default;
 
 RestoreData::RestoreData(std::unique_ptr<base::Value> restore_data_value) {
@@ -243,6 +251,28 @@ const AppRestoreData* RestoreData::GetAppRestoreData(const std::string& app_id,
     return nullptr;
 
   return data_it->second.get();
+}
+
+void RestoreData::SetDeskIndex(int desk_index) {
+  for (auto& [app_id, launch_list] : app_id_to_launch_list_) {
+    for (auto& [window_id, app_restore_data] : launch_list) {
+      app_restore_data->desk_id = desk_index;
+    }
+  }
+}
+
+void RestoreData::MakeWindowIdsUniqueForDeskTemplate() {
+  for (auto& [app_id, launch_list] : app_id_to_launch_list_) {
+    // We don't want to do in-place updates of the launch list since we could
+    // have collisions. We'll therefore build a new LaunchList and pilfer the
+    // old one for AppRestoreData.
+    LaunchList new_launch_list;
+    for (auto& [window_id, app_restore_data] : launch_list) {
+      new_launch_list[g_desk_template_window_restore_id++] =
+          std::move(app_restore_data);
+    }
+    launch_list = std::move(new_launch_list);
+  }
 }
 
 std::string RestoreData::ToString() const {

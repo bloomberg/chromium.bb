@@ -230,42 +230,97 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
   return 0;
 }
 
-static AOM_INLINE void fill_variance_8x8avg(const uint8_t *s, int sp,
-                                            const uint8_t *d, int dp,
-                                            int x16_idx, int y16_idx,
-                                            VP16x16 *vst,
+static AOM_INLINE int all_blks_inside(int x16_idx, int y16_idx, int pixels_wide,
+                                      int pixels_high) {
+  int all_inside = 1;
+  for (int k = 0; k < 4; k++) {
+    all_inside &= ((x16_idx + ((k & 1) << 3)) < pixels_wide);
+    all_inside &= ((y16_idx + ((k >> 1) << 3)) < pixels_high);
+  }
+  return all_inside;
+}
+
 #if CONFIG_AV1_HIGHBITDEPTH
-                                            int highbd_flag,
-#endif
-                                            int pixels_wide, int pixels_high,
-                                            int is_key_frame) {
-  int k;
-  for (k = 0; k < 4; k++) {
-    int x8_idx = x16_idx + ((k & 1) << 3);
-    int y8_idx = y16_idx + ((k >> 1) << 3);
+// TODO(any) : Perform average of four 8x8 blocks simlar to lowbd
+static AOM_INLINE void fill_variance_8x8avg_highbd(
+    const uint8_t *s, int sp, const uint8_t *d, int dp, int x16_idx,
+    int y16_idx, VP16x16 *vst, int pixels_wide, int pixels_high,
+    int is_key_frame) {
+  for (int k = 0; k < 4; k++) {
+    const int x8_idx = x16_idx + ((k & 1) << 3);
+    const int y8_idx = y16_idx + ((k >> 1) << 3);
     unsigned int sse = 0;
     int sum = 0;
     if (x8_idx < pixels_wide && y8_idx < pixels_high) {
       int s_avg;
       int d_avg = 128;
-#if CONFIG_AV1_HIGHBITDEPTH
-      if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
-        s_avg = aom_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-        if (!is_key_frame)
-          d_avg = aom_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-      } else {
-        s_avg = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-        if (!is_key_frame) d_avg = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-      }
-#else
-      s_avg = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-      if (!is_key_frame) d_avg = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-#endif
+      s_avg = aom_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+      if (!is_key_frame)
+        d_avg = aom_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+
       sum = s_avg - d_avg;
       sse = sum * sum;
     }
     fill_variance(sse, sum, 0, &vst->split[k].part_variances.none);
   }
+}
+#endif
+
+static AOM_INLINE void fill_variance_8x8avg_lowbd(const uint8_t *s, int sp,
+                                                  const uint8_t *d, int dp,
+                                                  int x16_idx, int y16_idx,
+                                                  VP16x16 *vst, int pixels_wide,
+                                                  int pixels_high,
+                                                  int is_key_frame) {
+  unsigned int sse[4] = { 0 };
+  int sum[4] = { 0 };
+  int d_avg[4] = { 128, 128, 128, 128 };
+  int s_avg[4];
+
+  if (all_blks_inside(x16_idx, y16_idx, pixels_wide, pixels_high)) {
+    aom_avg_8x8_quad(s, sp, x16_idx, y16_idx, s_avg);
+    if (!is_key_frame) aom_avg_8x8_quad(d, dp, x16_idx, y16_idx, d_avg);
+    for (int k = 0; k < 4; k++) {
+      sum[k] = s_avg[k] - d_avg[k];
+      sse[k] = sum[k] * sum[k];
+    }
+  } else {
+    for (int k = 0; k < 4; k++) {
+      const int x8_idx = x16_idx + ((k & 1) << 3);
+      const int y8_idx = y16_idx + ((k >> 1) << 3);
+      if (x8_idx < pixels_wide && y8_idx < pixels_high) {
+        s_avg[k] = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+        if (!is_key_frame) d_avg[k] = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+        sum[k] = s_avg[k] - d_avg[k];
+        sse[k] = sum[k] * sum[k];
+      }
+    }
+  }
+
+  for (int k = 0; k < 4; k++) {
+    fill_variance(sse[k], sum[k], 0, &vst->split[k].part_variances.none);
+  }
+}
+
+// Obtain parameters required to calculate variance (such as sum, sse, etc,.)
+// at 8x8 sub-block level for a given 16x16 block.
+static AOM_INLINE void fill_variance_8x8avg(const uint8_t *s, int sp,
+                                            const uint8_t *d, int dp,
+                                            int x16_idx, int y16_idx,
+                                            VP16x16 *vst, int highbd_flag,
+                                            int pixels_wide, int pixels_high,
+                                            int is_key_frame) {
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (highbd_flag) {
+    fill_variance_8x8avg_highbd(s, sp, d, dp, x16_idx, y16_idx, vst,
+                                pixels_wide, pixels_high, is_key_frame);
+    return;
+  }
+#else
+  (void)highbd_flag;
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+  fill_variance_8x8avg_lowbd(s, sp, d, dp, x16_idx, y16_idx, vst, pixels_wide,
+                             pixels_high, is_key_frame);
 }
 
 static int compute_minmax_8x8(const uint8_t *s, int sp, const uint8_t *d,
@@ -878,11 +933,9 @@ static void fill_variance_tree_leaves(
         variance4x4downsample[i2 + j] = 0;
         if (!is_key_frame) {
           fill_variance_8x8avg(src, src_stride, dst, dst_stride, x16_idx,
-                               y16_idx, vst,
-#if CONFIG_AV1_HIGHBITDEPTH
-                               xd->cur_buf->flags,
-#endif
-                               pixels_wide, pixels_high, is_key_frame);
+                               y16_idx, vst, is_cur_buf_hbd(xd), pixels_wide,
+                               pixels_high, is_key_frame);
+
           fill_variance_tree(&vt->split[m].split[i].split[j], BLOCK_16X16);
           get_variance(&vt->split[m].split[i].split[j].part_variances.none);
           avg_16x16[m][i] +=
@@ -1139,6 +1192,36 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     d = AV1_VAR_OFFS;
     dp = 0;
   }
+
+  x->force_zeromv_skip = 0;
+  const unsigned int thresh_exit_part =
+      (cm->seq_params->sb_size == BLOCK_64X64) ? 5000 : 10000;
+  // If the superblock is completely static (zero source sad) and
+  // the y_sad (relative to LAST ref) is very small, take the sb_size partition
+  // and exit, and force zeromv_last skip mode for nonrd_pickmode.
+  // Only do this when the cyclic refresh is applied, and only on the base
+  // segment (so the QP-boosted segment can still contnue cleaning/ramping
+  // up the quality).
+  // TODO(marpan): Check color component for setting this skip.
+  if (!is_key_frame && cpi->sf.rt_sf.part_early_exit_zeromv &&
+      cpi->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ &&
+      cpi->cyclic_refresh->apply_cyclic_refresh &&
+      segment_id == CR_SEGMENT_ID_BASE &&
+      x->content_state_sb.source_sad == kZeroSad &&
+      ref_frame_partition == LAST_FRAME && xd->mi[0]->mv[0].as_int == 0 &&
+      y_sad < thresh_exit_part) {
+    const int block_width = mi_size_wide[cm->seq_params->sb_size];
+    const int block_height = mi_size_high[cm->seq_params->sb_size];
+    if (mi_col + block_width <= tile->mi_col_end &&
+        mi_row + block_height <= tile->mi_row_end) {
+      set_block_size(cpi, x, xd, mi_row, mi_col, bsize);
+      x->force_zeromv_skip = 1;
+      if (vt2) aom_free(vt2);
+      if (vt) aom_free(vt);
+      return 0;
+    }
+  }
+
   if (cpi->noise_estimate.enabled)
     noise_level = av1_noise_estimate_extract_level(&cpi->noise_estimate);
 

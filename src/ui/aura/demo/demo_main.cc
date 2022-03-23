@@ -169,7 +169,7 @@ int DemoMain() {
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
-  gl::init::InitializeGLOneOff();
+  gl::init::InitializeGLOneOff(/*system_device_id=*/0);
 
 #if BUILDFLAG(IS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0f);
@@ -189,7 +189,6 @@ int DemoMain() {
   frame_sink_manager.SetLocalClient(&host_frame_sink_manager);
   auto context_factory = std::make_unique<ui::InProcessContextFactory>(
       &host_frame_sink_manager, &frame_sink_manager);
-  context_factory->set_use_test_surface(false);
 
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());

@@ -55,7 +55,10 @@ export class DevicePool {
       // (Hopefully if the device was lost, it has been reported by the time endErrorScopes()
       // has finished (or timed out). If not, it could cause a finite number of extra test
       // failures following this one (but should recover eventually).)
-      assert(holder.lostInfo === undefined, `Device was unexpectedly lost: ${holder.lostInfo}`);
+      assert(
+        holder.lostInfo === undefined,
+        `Device was unexpectedly lost. Reason: ${holder.lostInfo?.reason}, Message: ${holder.lostInfo?.message}`
+      );
     } catch (ex) {
       // Any error that isn't explicitly TestFailedButDeviceReusable forces a new device to be
       // created for the next test.
@@ -294,6 +297,9 @@ class DeviceHolder implements DeviceProvider {
     let gpuValidationError: GPUValidationError | GPUOutOfMemoryError | null;
     let gpuOutOfMemoryError: GPUValidationError | GPUOutOfMemoryError | null;
 
+    // Submit to the queue to attempt to force a GPU flush.
+    this.device.queue.submit([]);
+
     try {
       // May reject if the device was lost.
       gpuValidationError = await this.device.popErrorScope();
@@ -304,6 +310,11 @@ class DeviceHolder implements DeviceProvider {
         'popErrorScope failed; should only happen if device has been lost'
       );
       throw ex;
+    }
+
+    // Attempt to wait for the queue to be idle.
+    if (this.device.queue.onSubmittedWorkDone) {
+      await this.device.queue.onSubmittedWorkDone();
     }
 
     await assertReject(

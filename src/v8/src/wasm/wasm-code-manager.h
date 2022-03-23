@@ -495,7 +495,9 @@ class V8_EXPORT_PRIVATE WasmCode final {
 // often for rather small functions.
 // Increase the limit if needed, but first check if the size increase is
 // justified.
+#ifndef V8_GC_MOLE
 STATIC_ASSERT(sizeof(WasmCode) <= 88);
+#endif
 
 WasmCode::Kind GetCodeKind(const WasmCompilationResult& result);
 
@@ -785,8 +787,7 @@ class V8_EXPORT_PRIVATE NativeModule final {
 
   void UpdateCPUDuration(size_t cpu_duration, ExecutionTier tier);
   void AddLiftoffBailout() {
-    liftoff_bailout_count_.fetch_add(1,
-                                     std::memory_order::memory_order_relaxed);
+    liftoff_bailout_count_.fetch_add(1, std::memory_order_relaxed);
   }
 
   WasmCode* Lookup(Address) const;

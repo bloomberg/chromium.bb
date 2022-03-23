@@ -9,6 +9,7 @@
 #define SkottieProperty_DEFINED
 
 #include "include/core/SkColor.h"
+#include "include/core/SkPaint.h"
 #include "include/core/SkPoint.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkTypeface.h"
@@ -46,6 +47,7 @@ struct TextPropertyValue {
                             fLineHeight     = 0,
                             fLineShift      = 0,
                             fAscent         = 0;
+    size_t                  fMaxLines       = 0;                                 // when auto-sizing
     SkTextUtils::Align      fHAlign         = SkTextUtils::kLeft_Align;
     Shaper::VAlign          fVAlign         = Shaper::VAlign::kTop;
     Shaper::ResizePolicy    fResize         = Shaper::ResizePolicy::kNone;
@@ -56,6 +58,7 @@ struct TextPropertyValue {
     SkColor                 fFillColor      = SK_ColorTRANSPARENT,
                             fStrokeColor    = SK_ColorTRANSPARENT;
     TextPaintOrder          fPaintOrder     = TextPaintOrder::kFillStroke;
+    SkPaint::Join           fStrokeJoin     = SkPaint::Join::kMiter_Join;
     bool                    fHasFill        = false,
                             fHasStroke      = false;
 

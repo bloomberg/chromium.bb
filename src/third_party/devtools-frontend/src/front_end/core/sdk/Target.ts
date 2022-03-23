@@ -4,6 +4,7 @@
 
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
+import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import type * as Protocol from '../../generated/protocol.js';
 import type {TargetManager} from './TargetManager.js';
@@ -12,7 +13,7 @@ import {SDKModel} from './SDKModel.js';
 export class Target extends ProtocolClient.InspectorBackend.TargetBase {
   readonly #targetManagerInternal: TargetManager;
   #nameInternal: string;
-  #inspectedURLInternal: string;
+  #inspectedURLInternal: Platform.DevToolsPath.UrlString;
   #inspectedURLName: string;
   readonly #capabilitiesMask: number;
   #typeInternal: Type;
@@ -31,7 +32,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     super(needsNodeJSPatching, parentTarget, sessionId, connection);
     this.#targetManagerInternal = targetManager;
     this.#nameInternal = name;
-    this.#inspectedURLInternal = '';
+    this.#inspectedURLInternal = Platform.DevToolsPath.EmptyUrlString;
     this.#inspectedURLName = '';
     this.#capabilitiesMask = 0;
     switch (type) {
@@ -165,16 +166,17 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     return this.#modelByConstructor;
   }
 
-  inspectedURL(): string {
+  inspectedURL(): Platform.DevToolsPath.UrlString {
     return this.#inspectedURLInternal;
   }
 
-  setInspectedURL(inspectedURL: string): void {
+  setInspectedURL(inspectedURL: Platform.DevToolsPath.UrlString): void {
     this.#inspectedURLInternal = inspectedURL;
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(inspectedURL);
     this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : '#' + this.#idInternal;
     if (!this.parentTarget()) {
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(inspectedURL || '');
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(
+          inspectedURL || Platform.DevToolsPath.EmptyUrlString);
     }
     this.#targetManagerInternal.onInspectedURLChange(this);
     if (!this.#nameInternal) {

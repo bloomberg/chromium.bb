@@ -210,24 +210,26 @@ StatusOr<XlaCompilationCache::Signature> XlaCompilationCache::BuildSignature(
   return std::move(signature);
 }
 
-Status XlaCompilationCache::BuildExecutable(
-    const XlaCompiler::Options& options,
-    const XlaCompiler::CompilationResult& result,
-    std::unique_ptr<xla::LocalExecutable>* executable) {
-  VLOG(2) << "Compiling to local executable";
-
-  std::vector<const xla::Shape*> argument_layouts(
-      result.xla_input_shapes.size());
-  for (int i = 0, end = result.xla_input_shapes.size(); i < end; ++i) {
-    argument_layouts[i] = &result.xla_input_shapes[i];
+std::vector<const xla::Shape*> GetShapePointers(
+    absl::Span<const xla::Shape> shapes) {
+  std::vector<const xla::Shape*> shape_ptrs;
+  shape_ptrs.reserve(shapes.size());
+  for (const auto& shape : shapes) {
+    shape_ptrs.push_back(&shape);
   }
+  return shape_ptrs;
+}
+
+static xla::ExecutableBuildOptions GetBuildOptions(
+    const XlaCompiler::Options& options,
+    const XlaCompiler::CompilationResult& result, int default_device_ordinal) {
   xla::ExecutableBuildOptions build_options;
   if (result.collective_info) {
     build_options.set_num_replicas(result.collective_info->group_size);
   }
   build_options.set_device_ordinal(options.device_ordinal != -1
                                        ? options.device_ordinal
-                                       : client_->default_device_ordinal());
+                                       : default_device_ordinal);
   build_options.set_result_layout(result.xla_output_shape);
   build_options.set_device_allocator(options.device_allocator.get());
   build_options.set_alias_passthrough_params(options.alias_passthrough_params);
@@ -236,6 +238,19 @@ Status XlaCompilationCache::BuildExecutable(
   if (tensorflow::OpDeterminismRequired()) {
     build_options.mutable_debug_options()->set_xla_gpu_deterministic_ops(true);
   }
+  return build_options;
+}
+
+Status XlaCompilationCache::BuildExecutable(
+    const XlaCompiler::Options& options,
+    const XlaCompiler::CompilationResult& result,
+    std::unique_ptr<xla::LocalExecutable>* executable) {
+  VLOG(2) << "Compiling to local executable";
+
+  std::vector<const xla::Shape*> argument_layouts =
+      GetShapePointers(result.xla_input_shapes);
+  xla::ExecutableBuildOptions build_options =
+      GetBuildOptions(options, result, client_->default_device_ordinal());
   TF_ASSIGN_OR_RETURN(
       auto executables,
       client_->Compile(*result.computation, argument_layouts, build_options));
@@ -569,9 +584,6 @@ Status XlaCompilationCache::CompileImpl(
     CompileScope scope, CompileMode compile_mode,
     const XlaCompiler::CompilationResult** out_compilation_result,
     xla::LocalExecutable** out_executable) {
-  if (FailOnXlaCompilation()) {
-    return errors::Internal("XLA compilation disabled");
-  }
   DCHECK_NE(out_executable, nullptr);
   VLOG(2) << "XlaCompilationCache::Compile " << DebugString();
 
@@ -582,7 +594,6 @@ Status XlaCompilationCache::CompileImpl(
     }
   }
   TF_ASSIGN_OR_RETURN(Signature signature, BuildSignature(function, args));
-
 
   // The outer lock protects the existence of the cache entry. It does not
   // protect the contents of the cache entry.
@@ -648,6 +659,22 @@ Status XlaCompilationCache::CompileImpl(
   CompileState state = entry->compile_state;
   *out_compilation_result = nullptr;
   *out_executable = nullptr;
+
+  // Check if the requested entry is uncompiled and return an error if
+  // compilation is disabled. This will raise an error for kLazy even if we have
+  // not yet hit the compilation threshold and no compilation happens this
+  // round. This is to avoid non-determanism of when compilation is disallowed,
+  // for example by changing the threshold.
+  if (state == CompileState::kUncompiled && FailOnXlaCompilation()) {
+    VLOG(1) << "XLA compilation disabled: " << function.name() << "\n"
+            << absl::StrJoin(
+                   args, "\n",
+                   [](std::string* out, const XlaCompiler::Argument& arg) {
+                     absl::StrAppend(out, " arg: ", arg.HumanString());
+                   });
+
+    return errors::Internal("XLA compilation disabled");
+  }
 
   if (state == CompileState::kUncompiled) {
     XLA_SCOPED_LOGGING_TIMER("Compilation of XLA executable");

@@ -111,7 +111,7 @@ generated_cc_atom(
         "//include/private:SkTArray_hdr",
         "//include/private:SkTHash_hdr",
         "//src/gpu:GrCaps_hdr",
-        "//src/gpu:GrSwizzle_hdr",
+        "//src/gpu:Swizzle_hdr",
     ],
 )
 
@@ -261,6 +261,7 @@ generated_cc_atom(
         "//include/private:SkTo_hdr",
         "//src/core:SkAutoMalloc_hdr",
         "//src/core:SkCompressedDataUtils_hdr",
+        "//src/core:SkLRUCache_hdr",
         "//src/core:SkMipmap_hdr",
         "//src/core:SkScopeExit_hdr",
         "//src/core:SkTraceEvent_hdr",
@@ -495,7 +496,7 @@ generated_cc_atom(
         ":GrGLDefines_hdr",
         "//include/core:SkScalar_hdr",
         "//include/private:GrGLTypesPriv_hdr",
-        "//src/gpu:GrSwizzle_hdr",
+        "//src/gpu:Swizzle_hdr",
     ],
 )
 

@@ -4,6 +4,7 @@
 
 #include "ash/components/drivefs/fake_drivefs.h"
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -99,6 +100,7 @@ struct FakeDriveFs::FileMetadata {
   mojom::FolderFeature folder_feature;
   std::string doc_id;
   int64_t stable_id = 0;
+  std::string alternate_url;
 };
 
 class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
@@ -277,7 +279,8 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
                               bool shared,
                               const mojom::Capabilities& capabilities,
                               const mojom::FolderFeature& folder_feature,
-                              const std::string& doc_id) {
+                              const std::string& doc_id,
+                              const std::string& alternate_url) {
   auto& stored_metadata = metadata_[path];
   stored_metadata.mime_type = mime_type;
   stored_metadata.original_name = original_name;
@@ -291,6 +294,7 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
   if (shared) {
     stored_metadata.shared = true;
   }
+  stored_metadata.alternate_url = alternate_url;
 }
 
 void FakeDriveFs::DisplayConfirmDialog(
@@ -342,18 +346,23 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
                              ? mojom::FileMetadata::Type::kDirectory
                              : mojom::FileMetadata::Type::kFile;
 
-  base::StringPiece prefix;
-  if (stored_metadata.hosted) {
-    prefix = "https://document_alternate_link/";
-  } else if (info.is_directory) {
-    prefix = "https://folder_alternate_link/";
+  if (!stored_metadata.alternate_url.empty()) {
+    metadata->alternate_url = stored_metadata.alternate_url;
   } else {
-    prefix = "https://file_alternate_link/";
+    base::StringPiece prefix;
+    if (stored_metadata.hosted) {
+      prefix = "https://document_alternate_link/";
+    } else if (info.is_directory) {
+      prefix = "https://folder_alternate_link/";
+    } else {
+      prefix = "https://file_alternate_link/";
+    }
+    std::string suffix = stored_metadata.original_name.empty()
+                             ? path.BaseName().value()
+                             : stored_metadata.original_name;
+    metadata->alternate_url = GURL(base::StrCat({prefix, suffix})).spec();
   }
-  std::string suffix = stored_metadata.original_name.empty()
-                           ? path.BaseName().value()
-                           : stored_metadata.original_name;
-  metadata->alternate_url = GURL(base::StrCat({prefix, suffix})).spec();
+
   metadata->capabilities = stored_metadata.capabilities.Clone();
   metadata->stable_id = stored_metadata.stable_id;
   if (stored_metadata.hosted) {
@@ -508,6 +517,32 @@ void FakeDriveFs::GetQuotaUsage(
     drivefs::mojom::DriveFs::GetQuotaUsageCallback callback) {
   std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
                           mojom::QuotaUsage::New());
+}
+
+void FakeDriveFs::ToggleMirroring(
+    bool enabled,
+    drivefs::mojom::DriveFs::ToggleMirroringCallback callback) {
+  std::move(callback).Run(drivefs::mojom::MirrorSyncStatus::kSuccess);
+}
+
+void FakeDriveFs::ToggleSyncForPath(
+    const base::FilePath& path,
+    drivefs::mojom::MirrorPathStatus status,
+    drivefs::mojom::DriveFs::ToggleSyncForPathCallback callback) {
+  if (status == drivefs::mojom::MirrorPathStatus::kStart) {
+    syncing_paths_.push_back(path);
+  } else {
+    // status == drivefs::mojom::MirrorPathStatus::kStop.
+    auto element =
+        std::find(syncing_paths_.begin(), syncing_paths_.end(), path);
+    syncing_paths_.erase(element);
+  }
+  std::move(callback).Run(drive::FileError::FILE_ERROR_OK);
+}
+
+void FakeDriveFs::GetSyncingPaths(
+    drivefs::mojom::DriveFs::GetSyncingPathsCallback callback) {
+  std::move(callback).Run(drive::FILE_ERROR_OK, syncing_paths_);
 }
 
 }  // namespace drivefs

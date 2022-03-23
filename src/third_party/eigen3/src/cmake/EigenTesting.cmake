@@ -122,18 +122,6 @@ macro(ei_add_test_internal testname testname_with_suffix)
   if(EIGEN_SYCL)
     # Force include of the SYCL file at the end to avoid errors.
     set_property(TARGET ${targetname} PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
-    # Set COMPILE_FLAGS to COMPILE_DEFINITIONS instead to avoid having to duplicate the flags
-    # to the device compiler.
-    get_target_property(target_compile_flags ${targetname} COMPILE_FLAGS)
-    separate_arguments(target_compile_flags)
-    foreach(flag ${target_compile_flags})
-      if(${flag} MATCHES "^-D.*")
-        string(REPLACE "-D" "" definition_flag ${flag})
-        set_property(TARGET ${targetname} APPEND PROPERTY COMPILE_DEFINITIONS ${definition_flag})
-        list(REMOVE_ITEM target_compile_flags ${flag})
-      endif()
-    endforeach()
-    set_property(TARGET ${targetname} PROPERTY COMPILE_FLAGS ${target_compile_flags})
     # Link against pthread and add sycl to target
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)

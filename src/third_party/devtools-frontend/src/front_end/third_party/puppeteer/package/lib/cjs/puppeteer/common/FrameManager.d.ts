@@ -36,6 +36,7 @@ export declare const FrameManagerEmittedEvents: {
     FrameAttached: symbol;
     FrameNavigated: symbol;
     FrameDetached: symbol;
+    FrameSwapped: symbol;
     LifecycleEvent: symbol;
     FrameNavigatedWithinDocument: symbol;
     ExecutionContextCreated: symbol;
@@ -251,6 +252,11 @@ export declare class Frame {
      * @internal
      */
     _updateClient(client: CDPSession): void;
+    /**
+     * @remarks
+     *
+     * @returns `true` if the frame is an OOP frame, or `false` otherwise.
+     */
     isOOPFrame(): boolean;
     /**
      * @remarks
@@ -320,6 +326,10 @@ export declare class Frame {
         timeout?: number;
         waitUntil?: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[];
     }): Promise<HTTPResponse | null>;
+    /**
+     * @internal
+     */
+    client(): CDPSession;
     /**
      * @returns a promise that resolves to the frame's default execution context.
      */

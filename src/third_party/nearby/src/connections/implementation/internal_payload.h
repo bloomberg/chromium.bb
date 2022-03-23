@@ -17,6 +17,7 @@
 
 #include <cstdint>
 
+#include "connections/implementation/proto/offline_wire_formats.pb.h"
 #include "connections/payload.h"
 #include "internal/platform/byte_array.h"
 #include "internal/platform/exception.h"
@@ -40,6 +41,9 @@ class InternalPayload {
   Payload ReleasePayload();
 
   Payload::Id GetId() const;
+
+  const std::string& GetParentFolder() { return payload_.GetParentFolder(); }
+  const std::string& GetFileName() { return payload_.GetFileName(); }
 
   // Returns the PayloadType of the Payload to which this object is bound.
   //

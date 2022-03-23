@@ -36,6 +36,9 @@ class COMPONENT_EXPORT(ASH_LOGIN_AUTH) ExtendedAuthenticatorImpl
   void SetConsumer(AuthStatusConsumer* consumer) override;
   void AuthenticateToCheck(const UserContext& context,
                            base::OnceClosure success_callback) override;
+  void AuthenticateToUnlockWebAuthnSecret(
+      const UserContext& context,
+      base::OnceClosure success_callback) override;
   void StartFingerprintAuthSession(
       const AccountId& account_id,
       base::OnceCallback<void(bool)> callback) override;
@@ -44,13 +47,6 @@ class COMPONENT_EXPORT(ASH_LOGIN_AUTH) ExtendedAuthenticatorImpl
       const UserContext& context,
       base::OnceCallback<void(user_data_auth::CryptohomeErrorCode)> callback)
       override;
-  void AddKey(const UserContext& context,
-              const cryptohome::KeyDefinition& key,
-              bool clobber_if_exists,
-              base::OnceClosure success_callback) override;
-  void RemoveKey(const UserContext& context,
-                 const std::string& key_to_remove,
-                 base::OnceClosure success_callback) override;
   void TransformKeyIfNeeded(const UserContext& user_context,
                             ContextCallback callback) override;
 
@@ -63,14 +59,8 @@ class COMPONENT_EXPORT(ASH_LOGIN_AUTH) ExtendedAuthenticatorImpl
 
   // Performs actual operation with fully configured |context|.
   void DoAuthenticateToCheck(base::OnceClosure success_callback,
+                             bool unlock_webauthn_secret,
                              const UserContext& context);
-  void DoAddKey(const cryptohome::KeyDefinition& key,
-                bool clobber_if_exists,
-                base::OnceClosure success_callback,
-                const UserContext& context);
-  void DoRemoveKey(const std::string& key_to_remove,
-                   base::OnceClosure success_callback,
-                   const UserContext& context);
 
   // Inner operation callbacks.
   template <typename ReplyType>

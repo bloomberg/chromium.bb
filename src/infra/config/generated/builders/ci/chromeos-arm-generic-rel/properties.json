@@ -1,9 +1,4 @@
 {
-  "$build/chromium_tests": {
-    "project_trigger_overrides": {
-      "chromium": "chromium-m100"
-    }
-  },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
       "builder_db": {
@@ -12,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-arm-generic-rel",
-              "project": "chromium-m100"
+              "project": "chromium"
             },
             "builder_spec": {
               "builder_group": "chromium.chromiumos",
@@ -44,7 +39,7 @@
         {
           "bucket": "ci",
           "builder": "chromeos-arm-generic-rel",
-          "project": "chromium-m100"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [

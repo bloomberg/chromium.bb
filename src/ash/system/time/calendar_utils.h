@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_TIME_CALENDAR_UTILS_H_
 #define ASH_SYSTEM_TIME_CALENDAR_UTILS_H_
 
+#include "ash/ash_export.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -24,6 +25,9 @@ namespace calendar_utils {
 
 // Number of days in one week.
 constexpr int kDateInOneWeek = 7;
+
+// Milliseconds per minute.
+constexpr int kMillisecondsPerMinute = 60000;
 
 // The padding in each date cell view.
 constexpr int kDateVerticalPadding = 13;
@@ -45,6 +49,9 @@ constexpr base::TimeDelta kResetToTodayFadeAnimationDuration =
 // Duration of moving animation.
 constexpr base::TimeDelta kAnimationDurationForMoving = base::Milliseconds(300);
 
+// Event fetch will terminate if we don't receive a response sooner than this.
+constexpr base::TimeDelta kEventFetchTimeout = base::Milliseconds(1000);
+
 // Checks if the `selected_date` is local time today.
 bool IsToday(const base::Time selected_date);
 
@@ -54,9 +61,8 @@ bool IsTheSameDay(absl::optional<base::Time> date_a,
 
 // Returns the set of months that includes |selected_date| and
 // |num_months_out| before and after.
-void GetSurroundingMonthsUTC(const base::Time& selected_date,
-                             unsigned int num_months_out,
-                             std::set<base::Time>& months_);
+std::set<base::Time> GetSurroundingMonthsUTC(const base::Time& selected_date,
+                                             int num_months_out);
 
 // Gets the given `date`'s `Exploded` instance, in local time.
 base::Time::Exploded GetExplodedLocal(const base::Time& date);
@@ -96,6 +102,10 @@ base::Time GetStartOfNextMonthUTC(base::Time date);
 
 // Returns true if it's a regular user or the user session is not blocked.
 bool IsActiveUser();
+
+// Get the time difference to UTC time based on the time passed in and the
+// system timezone. Daylight saving is considered.
+ASH_EXPORT int GetTimeDifferenceInMinutes(base::Time date);
 
 }  // namespace calendar_utils
 

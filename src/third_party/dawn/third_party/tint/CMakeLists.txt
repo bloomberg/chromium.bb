@@ -92,6 +92,8 @@ option_if_not_defined(TINT_ENABLE_MSAN "Enable memory sanitizer" OFF)
 option_if_not_defined(TINT_ENABLE_ASAN "Enable address sanitizer" OFF)
 option_if_not_defined(TINT_ENABLE_UBSAN "Enable undefined behaviour sanitizer" OFF)
 
+option_if_not_defined(TINT_ENABLE_BREAK_IN_DEBUGGER "Enable tint::debugger::Break()" OFF)
+
 option_if_not_defined(TINT_EMIT_COVERAGE "Emit code coverage information" OFF)
 
 option_if_not_defined(TINT_CHECK_CHROMIUM_STYLE "Check for [chromium-style] issues during build" OFF)
@@ -198,7 +200,7 @@ if (${TINT_CHECK_CHROMIUM_STYLE})
 endif()
 
 if (${TINT_BUILD_SPV_READER})
-  include_directories("${TINT_ROOT_SOURCE_DIR}/third_party/spirv-tools/include")
+  include_directories("${TINT_THIRD_PARTY_DIR}/spirv-tools/include")
 endif()
 
 if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC"))
@@ -262,7 +264,7 @@ function(tint_core_compile_options TARGET)
 
   if (${TINT_BUILD_SPV_READER} OR ${TINT_BUILD_SPV_WRITER})
     target_include_directories(${TARGET} PUBLIC
-        "${TINT_ROOT_SOURCE_DIR}/third_party/spirv-headers/include")
+        "${TINT_THIRD_PARTY_DIR}/spirv-headers/include")
   endif()
 
   target_compile_definitions(${TARGET} PUBLIC -DTINT_BUILD_SPV_READER=$<BOOL:${TINT_BUILD_SPV_READER}>)
@@ -387,13 +389,13 @@ function(tint_default_compile_options TARGET)
 endfunction()
 
 add_subdirectory(third_party)
-add_subdirectory(src)
+add_subdirectory(src/tint)
 if (TINT_BUILD_SAMPLES)
-  add_subdirectory(samples)
+  add_subdirectory(src/tint/cmd)
 endif()
 
 if (TINT_BUILD_FUZZERS)
-  add_subdirectory(fuzzers)
+  add_subdirectory(src/tint/fuzzers)
 endif()
 
 add_custom_target(tint-lint

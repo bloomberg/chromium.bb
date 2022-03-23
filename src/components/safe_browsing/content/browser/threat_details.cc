@@ -401,11 +401,11 @@ ThreatDetails::ThreatDetails(
       did_proceed_(false),
       num_visits_(0),
       trim_to_ad_tags_(trim_to_ad_tags),
-      cache_collector_(new ThreatDetailsCacheCollector),
+      cache_collector_(std::make_unique<ThreatDetailsCacheCollector>()),
       done_callback_(std::move(done_callback)),
       all_done_expected_(false),
       is_all_done_(false) {
-  redirects_collector_ = new ThreatDetailsRedirectsCollector(
+  redirects_collector_ = std::make_unique<ThreatDetailsRedirectsCollector>(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
 }
@@ -420,9 +420,7 @@ ThreatDetails::ThreatDetails()
       all_done_expected_(false),
       is_all_done_(false) {}
 
-ThreatDetails::~ThreatDetails() {
-  DCHECK_EQ(all_done_expected_, is_all_done_);
-}
+ThreatDetails::~ThreatDetails() = default;
 
 bool ThreatDetails::IsReportableUrl(const GURL& url) const {
   // TODO(panayiotis): also skip internal urls.
@@ -899,8 +897,10 @@ void ThreatDetails::MaybeFillReferrerChain() {
     return;
   }
 
-  referrer_chain_provider_->IdentifyReferrerChainByWebContents(
-      web_contents(), kThreatDetailsUserGestureLimit,
+  // We would have cancelled a prerender if it was blocked, so we can use the
+  // primary main frame here.
+  referrer_chain_provider_->IdentifyReferrerChainByRenderFrameHost(
+      web_contents()->GetMainFrame(), kThreatDetailsUserGestureLimit,
       report_->mutable_referrer_chain());
 }
 

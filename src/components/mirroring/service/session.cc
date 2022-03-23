@@ -129,7 +129,7 @@ class TransportClient final : public media::cast::CastTransport::Client {
 // Generates a string with cryptographically secure random bytes.
 std::string MakeRandomString(size_t length) {
   std::string result(length, ' ');
-  crypto::RandBytes(base::data(result), length);
+  crypto::RandBytes(std::data(result), length);
   return result;
 }
 
@@ -319,6 +319,29 @@ media::mojom::RemotingSinkMetadata ToRemotingSinkMetadata(
   }
 
   return sink_metadata;
+}
+
+bool ShouldQueryForRemotingCapabilities(
+    const std::string& receiver_model_name) {
+  if (base::FeatureList::IsEnabled(features::kCastForceEnableRemotingQuery)) {
+    return true;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kCastUseBlocklistForRemotingQuery)) {
+    // The blocklist has not yet been fully determined.
+    // TODO(b/224993260): Implement this blocklist.
+    NOTREACHED();
+    return false;
+  }
+
+  // This is a workaround for Nest Hub devices, which do not support remoting.
+  // TODO(crbug.com/1198616): filtering hack should be removed. See
+  // issuetracker.google.com/135725157 for more information.
+  return base::StartsWith(receiver_model_name, "Chromecast",
+                          base::CompareCase::SENSITIVE) ||
+         base::StartsWith(receiver_model_name, "Eureka Dongle",
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -791,14 +814,8 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       media_remoter_->OnMirroringResumed();
   }
 
-  // This is a workaround for Nest Hub devices, which do not support remoting.
-  // TODO(crbug.com/1198616): filtering hack should be removed. See
-  // issuetracker.google.com/135725157 for more information.
   if (initially_starting_session &&
-      (base::StartsWith(session_params_.receiver_model_name, "Chromecast",
-                        base::CompareCase::SENSITIVE) ||
-       base::StartsWith(session_params_.receiver_model_name, "Eureka Dongle",
-                        base::CompareCase::SENSITIVE))) {
+      ShouldQueryForRemotingCapabilities(session_params_.receiver_model_name)) {
     QueryCapabilitiesForRemoting();
   }
 

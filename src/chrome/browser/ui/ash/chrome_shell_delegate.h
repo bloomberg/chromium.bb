@@ -32,6 +32,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       ash::NearbyShareController* controller) const override;
   std::unique_ptr<ash::DesksTemplatesDelegate> CreateDesksTemplatesDelegate()
       const override;
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetGeolocationSharedURLLoaderFactory() const override;
   void OpenKeyboardShortcutHelpPage() const override;
   bool CanGoBack(gfx::NativeWindow window) const override;
   void SetTabScrubberChromeOSEnabled(bool enabled) override;
@@ -45,9 +47,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   void BindFingerprint(
       mojo::PendingReceiver<device::mojom::Fingerprint> receiver) override;
   void BindMultiDeviceSetup(
-      mojo::PendingReceiver<
-          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
-      override;
+      mojo::PendingReceiver<ash::multidevice_setup::mojom::MultiDeviceSetup>
+          receiver) override;
   media_session::MediaSessionService* GetMediaSessionService() override;
   bool IsSessionRestoreInProgress() const override;
   void SetUpEnvironmentForLockedFullscreen(bool locked) override;

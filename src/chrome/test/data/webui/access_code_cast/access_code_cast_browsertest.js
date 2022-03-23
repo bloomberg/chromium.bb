@@ -7,6 +7,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "build/build_config.h"');
 GEN('#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"');
 GEN('#include "chrome/browser/profiles/profile.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
@@ -52,7 +53,12 @@ var AccessCodeCastAppTest = class extends AccessCodeCastBrowserTest {
  * This browsertest acts as a thin wrapper to run the unit tests found
  * at access_code_cast_test.js
  */
-TEST_F('AccessCodeCastAppTest', 'All', function() {
+GEN('#if BUILDFLAG(IS_MAC)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+TEST_F('AccessCodeCastAppTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
@@ -69,18 +75,6 @@ TEST_F('AccessCodeCastBrowserProxyTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var AccessCodeCastCodeInputElementTest = class extends AccessCodeCastBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://access-code-cast/test_loader.html?module=access_code_cast/code_input_test.js';
-  }
-};
-
-TEST_F('AccessCodeCastCodeInputElementTest', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var AccessCodeCastErrorMessageElementTest = class extends AccessCodeCastBrowserTest {
   /** @override */
   get browsePreload() {
@@ -89,5 +83,17 @@ var AccessCodeCastErrorMessageElementTest = class extends AccessCodeCastBrowserT
 };
 
 TEST_F('AccessCodeCastErrorMessageElementTest', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var AccessCodeCastPasscodeInputElementTest = class extends AccessCodeCastBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://access-code-cast/test_loader.html?module=access_code_cast/passcode_input_test.js';
+  }
+};
+
+TEST_F('AccessCodeCastPasscodeInputElementTest', 'All', function() {
   mocha.run();
 });

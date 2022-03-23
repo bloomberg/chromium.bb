@@ -8,7 +8,6 @@
 
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "quic/core/quic_buffer_allocator.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_flags.h"
@@ -16,6 +15,8 @@
 #include "quic/quic_transport/quic_transport_protocol.h"
 #include "quic/quic_transport/quic_transport_stream.h"
 #include "quic/tools/web_transport_test_visitors.h"
+#include "common/platform/api/quiche_mem_slice.h"
+#include "common/quiche_buffer_allocator.h"
 
 namespace quic {
 
@@ -127,11 +128,9 @@ void QuicTransportSimpleServerSession::OnMessageReceived(
   if (mode_ != ECHO) {
     return;
   }
-  QuicUniqueBufferPtr buffer = MakeUniqueBuffer(
-      connection()->helper()->GetStreamSendBufferAllocator(), message.size());
-  memcpy(buffer.get(), message.data(), message.size());
   datagram_queue()->SendOrQueueDatagram(
-      QuicMemSlice(std::move(buffer), message.size()));
+      quiche::QuicheMemSlice(quiche::QuicheBuffer::Copy(
+          connection()->helper()->GetStreamSendBufferAllocator(), message)));
 }
 
 void QuicTransportSimpleServerSession::MaybeEchoStreamsBack() {

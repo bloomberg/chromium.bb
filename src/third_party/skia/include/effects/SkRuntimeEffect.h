@@ -18,9 +18,9 @@
 #include "include/core/SkString.h"
 #include "include/private/SkOnce.h"
 #include "include/private/SkSLSampleUsage.h"
-#include "include/private/SkTOptional.h"
 
 #include <string>
+#include <optional>
 #include <vector>
 
 #ifdef SK_ENABLE_SKSL
@@ -183,6 +183,9 @@ public:
         ChildPtr(sk_sp<SkShader> s) : fChild(std::move(s)) {}
         ChildPtr(sk_sp<SkColorFilter> cf) : fChild(std::move(cf)) {}
         ChildPtr(sk_sp<SkBlender> b) : fChild(std::move(b)) {}
+
+        // Asserts that the flattenable is either null, or one of the legal derived types
+        ChildPtr(sk_sp<SkFlattenable> f);
 
         std::optional<ChildType> type() const;
 

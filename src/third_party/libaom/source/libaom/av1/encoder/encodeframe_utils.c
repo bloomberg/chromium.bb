@@ -347,13 +347,13 @@ void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
   // Restore the coding context of the MB to that that was in place
   // when the mode was picked for it
-  for (y = 0; y < mi_height; y++) {
-    for (x_idx = 0; x_idx < mi_width; x_idx++) {
-      if ((xd->mb_to_right_edge >> (3 + MI_SIZE_LOG2)) + mi_width > x_idx &&
-          (xd->mb_to_bottom_edge >> (3 + MI_SIZE_LOG2)) + mi_height > y) {
-        xd->mi[x_idx + y * mis] = mi_addr;
-      }
-    }
+
+  const int cols =
+      AOMMIN((xd->mb_to_right_edge >> (3 + MI_SIZE_LOG2)) + mi_width, mi_width);
+  const int rows = AOMMIN(
+      (xd->mb_to_bottom_edge >> (3 + MI_SIZE_LOG2)) + mi_height, mi_height);
+  for (y = 0; y < rows; y++) {
+    for (x_idx = 0; x_idx < cols; x_idx++) xd->mi[x_idx + y * mis] = mi_addr;
   }
 
   if (cpi->oxcf.q_cfg.aq_mode)
@@ -1282,7 +1282,8 @@ void av1_avg_cdf_symbols(FRAME_CONTEXT *ctx_left, FRAME_CONTEXT *ctx_tr,
 
 // Grade the temporal variation of the source by comparing the current sb and
 // its collocated block in the last frame.
-void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int offset) {
+void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                           int mi_col) {
   unsigned int tmp_sse;
   unsigned int tmp_variance;
   const BLOCK_SIZE bsize = cpi->common.seq_params->sb_size;
@@ -1290,6 +1291,7 @@ void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int offset) {
   int src_ystride = cpi->source->y_stride;
   uint8_t *last_src_y = cpi->last_source->y_buffer;
   int last_src_ystride = cpi->last_source->y_stride;
+  const int offset = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
   uint64_t avg_source_sse_threshold = 100000;        // ~5*5*(64*64)
   uint64_t avg_source_sse_threshold_high = 1000000;  // ~15*15*(64*64)
   uint64_t sum_sq_thresh = 10000;  // sum = sqrt(thresh / 64*64)) ~1.5
@@ -1316,6 +1318,47 @@ void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int offset) {
       x->content_state_sb.lighting_change = 1;
     if ((tmp_sse - tmp_variance) < (sum_sq_thresh >> 1))
       x->content_state_sb.low_sumdiff = 1;
+  }
+
+  if (cpi->last_source->y_width != cpi->source->y_width ||
+      cpi->last_source->y_height != cpi->source->y_height)
+    return;
+  if (!cpi->sf.rt_sf.use_rtc_tf) return;
+
+  // In-place temporal filter. If psnr calculation is enabled, we store the
+  // source for that.
+  AV1_COMMON *const cm = &cpi->common;
+  // Calculate n*mean^2
+  const unsigned int nmean2 = tmp_sse - tmp_variance;
+  const int ac_q_step = av1_ac_quant_QTX(cm->quant_params.base_qindex, 0,
+                                         cm->seq_params->bit_depth);
+  const unsigned int threshold = 3 * ac_q_step * ac_q_step / 2;
+
+  // TODO(yunqing): use a weighted sum instead of averaging in filtering.
+  if (tmp_variance <= threshold && nmean2 <= 15) {
+    const int shift_x[2] = { 0, cpi->source->subsampling_x };
+    const int shift_y[2] = { 0, cpi->source->subsampling_y };
+    const uint8_t h = block_size_high[bsize];
+    const uint8_t w = block_size_wide[bsize];
+
+    for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+      uint8_t *src = cpi->source->buffers[plane];
+      const int src_stride = cpi->source->strides[plane != 0];
+      uint8_t *last_src = cpi->last_source->buffers[plane];
+      const int last_src_stride = cpi->last_source->strides[plane != 0];
+      src += src_stride * (mi_row << (2 - shift_y[plane != 0])) +
+             (mi_col << (2 - shift_x[plane != 0]));
+      last_src += last_src_stride * (mi_row << (2 - shift_y[plane != 0])) +
+                  (mi_col << (2 - shift_x[plane != 0]));
+
+      for (int i = 0; i < (h >> shift_y[plane != 0]); ++i) {
+        for (int j = 0; j < (w >> shift_x[plane != 0]); ++j) {
+          src[j] = (last_src[j] + src[j]) >> 1;
+        }
+        src += src_stride;
+        last_src += last_src_stride;
+      }
+    }
   }
 }
 

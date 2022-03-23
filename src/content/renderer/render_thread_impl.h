@@ -68,6 +68,7 @@ class WebVideoCaptureImplManager;
 namespace base {
 class SingleThreadTaskRunner;
 class Thread;
+class WaitableEvent;
 }
 
 namespace cc {
@@ -277,8 +278,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   gpu::GpuChannelHost* GetGpuChannel();
-
-  base::PlatformThreadId GetIOPlatformThreadId() const;
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which media operations should be run. Must be called

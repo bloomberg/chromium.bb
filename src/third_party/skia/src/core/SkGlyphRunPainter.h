@@ -144,10 +144,12 @@ public:
 
     virtual void processSourcePaths(const SkZip<SkGlyphVariant, SkPoint>& accepted,
                                     const SkFont& runFont,
+                                    const SkDescriptor& descriptor,
                                     SkScalar strikeToSourceScale) = 0;
 
     virtual void processSourceDrawables(const SkZip<SkGlyphVariant, SkPoint>& accepted,
                                         const SkFont& runFont,
+                                        const SkDescriptor& descriptor,
                                         SkScalar strikeToSourceScale) = 0;
 
     virtual void processSourceSDFT(const SkZip<SkGlyphVariant, SkPoint>& accepted,

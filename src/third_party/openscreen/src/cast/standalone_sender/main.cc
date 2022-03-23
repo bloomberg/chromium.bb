@@ -14,7 +14,7 @@
 #include <sstream>
 #include <vector>
 
-#include "cast/common/certificate/cast_trust_store.h"
+#include "cast/common/public/trust_store.h"
 #include "cast/standalone_sender/constants.h"
 #include "cast/standalone_sender/looping_file_cast_agent.h"
 #include "cast/standalone_sender/receiver_chooser.h"
@@ -205,7 +205,7 @@ int StandaloneSenderMain(int argc, char* argv[]) {
 
 #if defined(CAST_ALLOW_DEVELOPER_CERTIFICATE)
   if (!developer_certificate_path.empty()) {
-    CastTrustStore::CreateInstanceFromPemFile(developer_certificate_path);
+    TrustStore::CreateInstanceFromPemFile(developer_certificate_path);
   }
 #endif
 

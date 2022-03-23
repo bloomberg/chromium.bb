@@ -17,7 +17,7 @@ limitations under the License.
 
 include "mlir/IR/OpBase.td"
 include "mlir/Dialect/Shape/IR/ShapeOps.td"
-include "mlir/Dialect/StandardOps/IR/Ops.td"
+include "mlir/Dialect/Func/IR/FuncOps.td"
 include "mlir/Dialect/Tensor/IR/TensorOps.td"
 include "tensorflow/compiler/mlir/tensorflow/ir/tf_ops.td"
 include "tensorflow/compiler/mlir/hlo/include/mlir-hlo/Dialect/mhlo/IR/chlo_ops.td"
@@ -843,3 +843,10 @@ def : Pat<(TF_XlaDynamicSliceOp:$op HLO_Tensor:$input, HLO_Tensor:$starting_indi
 
 def : Pat<(TF_XlaEinsumOp $lhs, $rhs, $equation),
           (HLO_EinsumOp $lhs, $rhs, $equation)>;
+
+//===----------------------------------------------------------------------===//
+// XlaOptimizationBarrierOp op.
+//===----------------------------------------------------------------------===//
+
+def : Pat<(TF_XlaOptimizationBarrierOp $args),
+          (HLO_OptimizationBarrierOp $args)>;

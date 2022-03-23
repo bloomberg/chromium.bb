@@ -66,7 +66,7 @@ inline MemOperand GetHalfStackSlot(int offset, RegPairHalf half) {
 inline Operand GetInstanceOperand() { return GetStackSlot(kInstanceOffset); }
 
 static constexpr LiftoffRegList kByteRegs =
-    LiftoffRegList::FromBits<Register::ListOf(eax, ecx, edx)>();
+    LiftoffRegList::FromBits<RegList{eax, ecx, edx}.bits()>();
 
 inline void Load(LiftoffAssembler* assm, LiftoffRegister dst, Register base,
                  int32_t offset, ValueKind kind) {
@@ -756,7 +756,7 @@ inline void AtomicBinop32(LiftoffAssembler* lasm, Binop op, Register dst_addr,
   if (is_byte_store) {
     // The scratch register has to be a byte register. As we are already tight
     // on registers, we just use the root register here.
-    static_assert((kLiftoffAssemblerGpCacheRegs & kRootRegister.bit()) == 0,
+    static_assert(!kLiftoffAssemblerGpCacheRegs.has(kRootRegister),
                   "root register is not Liftoff cache register");
     DCHECK(kRootRegister.is_byte_register());
     __ push(kRootRegister);
@@ -4504,15 +4504,14 @@ void LiftoffAssembler::PopRegisters(LiftoffRegList regs) {
   }
 }
 
-void LiftoffAssembler::RecordSpillsInSafepoint(Safepoint& safepoint,
-                                               LiftoffRegList all_spills,
-                                               LiftoffRegList ref_spills,
-                                               int spill_offset) {
+void LiftoffAssembler::RecordSpillsInSafepoint(
+    SafepointTableBuilder::Safepoint& safepoint, LiftoffRegList all_spills,
+    LiftoffRegList ref_spills, int spill_offset) {
   int spill_space_size = 0;
   while (!all_spills.is_empty()) {
     LiftoffRegister reg = all_spills.GetFirstRegSet();
     if (ref_spills.has(reg)) {
-      safepoint.DefinePointerSlot(spill_offset);
+      safepoint.DefineTaggedStackSlot(spill_offset);
     }
     all_spills.clear(reg);
     ++spill_offset;

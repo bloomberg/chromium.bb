@@ -20,6 +20,7 @@ class CONTENT_EXPORT StoredSource {
  public:
   using Id = base::StrongAlias<StoredSource, int64_t>;
 
+  // Note that aggregatable reports are not subject to the attribution logic.
   enum class AttributionLogic {
     // Never send a report for this source even if it gets attributed.
     kNever = 0,
@@ -30,8 +31,16 @@ class CONTENT_EXPORT StoredSource {
     kMaxValue = kFalsely,
   };
 
+  enum class ActiveState {
+    kActive = 0,
+    kInactive = 1,
+    kReachedEventLevelAttributionLimit = 2,
+    kMaxValue = kReachedEventLevelAttributionLimit,
+  };
+
   StoredSource(CommonSourceInfo common_info,
                AttributionLogic attribution_logic,
+               ActiveState active_state,
                Id source_id);
 
   ~StoredSource();
@@ -46,6 +55,8 @@ class CONTENT_EXPORT StoredSource {
 
   AttributionLogic attribution_logic() const { return attribution_logic_; }
 
+  ActiveState active_state() const { return active_state_; }
+
   Id source_id() const { return source_id_; }
 
   const std::vector<uint64_t>& dedup_keys() const { return dedup_keys_; }
@@ -58,6 +69,8 @@ class CONTENT_EXPORT StoredSource {
   CommonSourceInfo common_info_;
 
   AttributionLogic attribution_logic_;
+
+  ActiveState active_state_;
 
   Id source_id_;
 

@@ -111,7 +111,7 @@ static void _collect_layout_indices (hb_face_t		  *face,
       retain_all_features = false;
       continue;
     }
-    
+
     if (visited_features.has (tag))
       continue;
 
@@ -228,10 +228,8 @@ _cmap_closure (hb_face_t	   *face,
 	       const hb_set_t	   *unicodes,
 	       hb_set_t		   *glyphset)
 {
-  OT::cmap::accelerator_t cmap;
-  cmap.init (face);
+  OT::cmap::accelerator_t cmap (face);
   cmap.table->closure_glyphs (unicodes, glyphset);
-  cmap.fini ();
 }
 
 static void _colr_closure (hb_face_t *face,
@@ -239,8 +237,7 @@ static void _colr_closure (hb_face_t *face,
                            hb_map_t *palettes_map,
                            hb_set_t *glyphs_colred)
 {
-  OT::COLR::accelerator_t colr;
-  colr.init (face);
+  OT::COLR::accelerator_t colr (face);
   if (!colr.is_valid ()) return;
 
   unsigned iteration_count = 0;
@@ -252,9 +249,9 @@ static void _colr_closure (hb_face_t *face,
     hb_set_t glyphset_colrv0;
     for (hb_codepoint_t gid : glyphs_colred->iter ())
       colr.closure_glyphs (gid, &glyphset_colrv0);
-    
+
     glyphs_colred->union_ (glyphset_colrv0);
-    
+
     //closure for COLRv1
     colr.closure_forV1 (glyphs_colred, &layer_indices, &palette_indices);
   } while (iteration_count++ <= HB_CLOSURE_MAX_STAGES &&
@@ -263,7 +260,6 @@ static void _colr_closure (hb_face_t *face,
   colr.closure_V0palette_indices (glyphs_colred, &palette_indices);
   _remap_indexes (&layer_indices, layers_map);
   _remap_palette_indexes (&palette_indices, palettes_map);
-  colr.fini ();
 }
 
 static inline void
@@ -294,8 +290,7 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
                               const hb_set_t *glyphs,
                               hb_subset_plan_t *plan)
 {
-  OT::cmap::accelerator_t cmap;
-  cmap.init (plan->source);
+  OT::cmap::accelerator_t cmap (plan->source);
 
   constexpr static const int size_threshold = 4096;
 
@@ -343,8 +338,6 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes,
 
   + plan->codepoint_to_glyph->keys ()   | hb_sink (plan->unicodes);
   + plan->codepoint_to_glyph->values () | hb_sink (plan->_glyphset_gsub);
-
-  cmap.fini ();
 }
 
 static void
@@ -353,13 +346,9 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 			  bool close_over_gpos,
 			  bool close_over_gdef)
 {
-  OT::glyf::accelerator_t glyf;
+  OT::glyf::accelerator_t glyf (plan->source);
 #ifndef HB_NO_SUBSET_CFF
-  OT::cff1::accelerator_t cff;
-#endif
-  glyf.init (plan->source);
-#ifndef HB_NO_SUBSET_CFF
-  cff.init (plan->source);
+  OT::cff1::accelerator_t cff (plan->source);
 #endif
 
   plan->_glyphset_gsub->add (0); // Not-def
@@ -419,11 +408,6 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 				       plan->layout_variation_indices,
 				       plan->layout_variation_idx_map);
 #endif
-
-#ifndef HB_NO_SUBSET_CFF
-  cff.fini ();
-#endif
-  glyf.fini ();
 }
 
 static void
@@ -474,7 +458,7 @@ _nameid_closure (hb_face_t *face,
 }
 
 /**
- * hb_subset_plan_create:
+ * hb_subset_plan_create_or_fail:
  * @face: font face to create the plan for.
  * @input: a #hb_subset_input_t input.
  *
@@ -483,17 +467,18 @@ _nameid_closure (hb_face_t *face,
  * which tables and glyphs should be retained.
  *
  * Return value: (transfer full): New subset plan. Destroy with
- * hb_subset_plan_destroy().
+ * hb_subset_plan_destroy(). If there is a failure creating the plan
+ * nullptr will be returned.
  *
- * Since: 1.7.5
+ * Since: 4.0.0
  **/
 hb_subset_plan_t *
-hb_subset_plan_create (hb_face_t	 *face,
-		       const hb_subset_input_t *input)
+hb_subset_plan_create_or_fail (hb_face_t	 *face,
+                               const hb_subset_input_t *input)
 {
   hb_subset_plan_t *plan;
   if (unlikely (!(plan = hb_object_create<hb_subset_plan_t> ())))
-    return const_cast<hb_subset_plan_t *> (&Null (hb_subset_plan_t));
+    return nullptr;
 
   plan->successful = true;
   plan->flags = input->flags;
@@ -530,8 +515,9 @@ hb_subset_plan_create (hb_face_t	 *face,
   plan->layout_variation_indices = hb_set_create ();
   plan->layout_variation_idx_map = hb_map_create ();
 
-  if (plan->in_error ()) {
-    return plan;
+  if (unlikely (plan->in_error ())) {
+    hb_subset_plan_destroy (plan);
+    return nullptr;
   }
 
   _populate_unicodes_to_retain (input->sets.unicodes, input->sets.glyphs, plan);
@@ -548,6 +534,10 @@ hb_subset_plan_create (hb_face_t	 *face,
 				  plan->reverse_glyph_map,
 				  &plan->_num_output_glyphs);
 
+  if (unlikely (plan->in_error ())) {
+    hb_subset_plan_destroy (plan);
+    return nullptr;
+  }
   return plan;
 }
 
@@ -558,7 +548,7 @@ hb_subset_plan_create (hb_face_t	 *face,
  * Decreases the reference count on @plan, and if it reaches zero, destroys
  * @plan, freeing all memory.
  *
- * Since: 1.7.5
+ * Since: 4.0.0
  **/
 void
 hb_subset_plan_destroy (hb_subset_plan_t *plan)
@@ -611,4 +601,117 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
   }
 
   hb_free (plan);
+}
+
+/**
+ * hb_subset_plan_old_to_new_glyph_mapping:
+ * @plan: a subsetting plan.
+ *
+ * Returns the mapping between glyphs in the original font to glyphs in the
+ * subset that will be produced by @plan
+ *
+ * Return value: (transfer none):
+ * A pointer to the #hb_map_t of the mapping.
+ *
+ * Since: 4.0.0
+ **/
+const hb_map_t*
+hb_subset_plan_old_to_new_glyph_mapping (const hb_subset_plan_t *plan)
+{
+  return plan->glyph_map;
+}
+
+/**
+ * hb_subset_plan_new_to_old_glyph_mapping:
+ * @plan: a subsetting plan.
+ *
+ * Returns the mapping between glyphs in the subset that will be produced by
+ * @plan and the glyph in the original font.
+ *
+ * Return value: (transfer none):
+ * A pointer to the #hb_map_t of the mapping.
+ *
+ * Since: 4.0.0
+ **/
+const hb_map_t*
+hb_subset_plan_new_to_old_glyph_mapping (const hb_subset_plan_t *plan)
+{
+  return plan->reverse_glyph_map;
+}
+
+/**
+ * hb_subset_plan_unicode_to_old_glyph_mapping:
+ * @plan: a subsetting plan.
+ *
+ * Returns the mapping between codepoints in the original font and the
+ * associated glyph id in the original font.
+ *
+ * Return value: (transfer none):
+ * A pointer to the #hb_map_t of the mapping.
+ *
+ * Since: 4.0.0
+ **/
+const hb_map_t*
+hb_subset_plan_unicode_to_old_glyph_mapping (const hb_subset_plan_t *plan)
+{
+  return plan->codepoint_to_glyph;
+}
+
+/**
+ * hb_subset_plan_reference: (skip)
+ * @plan: a #hb_subset_plan_t object.
+ *
+ * Increases the reference count on @plan.
+ *
+ * Return value: @plan.
+ *
+ * Since: 4.0.0
+ **/
+hb_subset_plan_t *
+hb_subset_plan_reference (hb_subset_plan_t *plan)
+{
+  return hb_object_reference (plan);
+}
+
+/**
+ * hb_subset_plan_set_user_data: (skip)
+ * @plan: a #hb_subset_plan_t object.
+ * @key: The user-data key to set
+ * @data: A pointer to the user data
+ * @destroy: (nullable): A callback to call when @data is not needed anymore
+ * @replace: Whether to replace an existing data with the same key
+ *
+ * Attaches a user-data key/data pair to the given subset plan object.
+ *
+ * Return value: %true if success, %false otherwise
+ *
+ * Since: 4.0.0
+ **/
+hb_bool_t
+hb_subset_plan_set_user_data (hb_subset_plan_t   *plan,
+                              hb_user_data_key_t *key,
+                              void               *data,
+                              hb_destroy_func_t   destroy,
+                              hb_bool_t	          replace)
+{
+  return hb_object_set_user_data (plan, key, data, destroy, replace);
+}
+
+/**
+ * hb_subset_plan_get_user_data: (skip)
+ * @plan: a #hb_subset_plan_t object.
+ * @key: The user-data key to query
+ *
+ * Fetches the user data associated with the specified key,
+ * attached to the specified subset plan object.
+ *
+ * Return value: (transfer none): A pointer to the user data
+ *
+ * Since: 4.0.0
+ **/
+void *
+hb_subset_plan_get_user_data (const hb_subset_plan_t *plan,
+                              hb_user_data_key_t     *key)
+{
+  return hb_object_get_user_data (plan, key);
 }

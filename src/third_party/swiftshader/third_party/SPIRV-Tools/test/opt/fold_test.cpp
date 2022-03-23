@@ -7087,12 +7087,33 @@ INSTANTIATE_TEST_SUITE_P(DotProductMatchingTest, MatchingInstructionFoldingTest,
         3, true)
 ));
 
+INSTANTIATE_TEST_SUITE_P(VectorShuffleMatchingTest, MatchingInstructionFoldingTest,
+::testing::Values(
+    // Test case 0: Using OpDot to extract last element.
+    InstructionFoldingCase<bool>(
+        Header() +
+            "; CHECK: [[int:%\\w+]] = OpTypeInt 32 1\n" +
+            "; CHECK: [[v2int:%\\w+]] = OpTypeVector [[int]] 2{{[[:space:]]}}\n" +
+            "; CHECK: [[null:%\\w+]] = OpConstantNull [[v2int]]\n" +
+            "; CHECK: OpVectorShuffle\n" +
+            "; CHECK: %3 = OpVectorShuffle [[v2int]] [[null]] {{%\\w+}} 4294967295 2\n" +
+            "%main = OpFunction %void None %void_func\n" +
+            "%main_lab = OpLabel\n" +
+            "%n = OpVariable %_ptr_int Function\n" +
+            "%load = OpLoad %int %n\n" +
+            "%2 = OpVectorShuffle %v2int %v2int_null %v2int_2_3 3 0xFFFFFFFF \n" +
+            "%3 = OpVectorShuffle %v2int %2 %v2int_2_3 1 2 \n" +
+            "OpReturn\n" +
+            "OpFunctionEnd",
+        3, true)
+ ));
+
 using MatchingInstructionWithNoResultFoldingTest =
 ::testing::TestWithParam<InstructionFoldingCase<bool>>;
 
 // Test folding instructions that do not have a result.  The instruction
 // that will be folded is the last instruction before the return.  If there
-// are multiple returns, there is not guarentee which one is used.
+// are multiple returns, there is not guarantee which one is used.
 TEST_P(MatchingInstructionWithNoResultFoldingTest, Case) {
   const auto& tc = GetParam();
 

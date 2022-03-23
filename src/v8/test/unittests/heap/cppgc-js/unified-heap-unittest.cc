@@ -131,7 +131,6 @@ TEST_F(UnifiedHeapTest, FreeUnreferencedDuringNoGcScope) {
 }
 #endif  // DEBUG
 
-#if !V8_OS_FUCHSIA
 TEST_F(UnifiedHeapTest, TracedReferenceRetainsFromStack) {
   v8::HandleScope handle_scope(v8_isolate());
   v8::Local<v8::Context> context = v8::Context::New(v8_isolate());
@@ -147,7 +146,6 @@ TEST_F(UnifiedHeapTest, TracedReferenceRetainsFromStack) {
   auto local = holder.Get(v8_isolate());
   EXPECT_TRUE(local->IsObject());
 }
-#endif  // !V8_OS_FUCHSIA
 
 TEST_F(UnifiedHeapDetachedTest, AllocationBeforeConfigureHeap) {
   auto heap = v8::CppHeap::Create(
@@ -167,7 +165,8 @@ TEST_F(UnifiedHeapDetachedTest, AllocationBeforeConfigureHeap) {
   }
   USE(object);
   {
-    js_heap.SetEmbedderStackStateForNextFinalization(
+    EmbedderStackStateScope stack_scope(
+        &js_heap, EmbedderStackStateScope::kExplicitInvocation,
         EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers);
     CollectGarbage(OLD_SPACE);
     cpp_heap.AsBase().sweeper().FinishIfRunning();

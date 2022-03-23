@@ -2740,8 +2740,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   EXPECT_FALSE(GetInputHandler().animating_for_snap_for_testing());
   // Finish the smooth scroll animation for wheel.
   const int scroll_animation_duration_ms =
-      base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 300
-                                                                       : 150;
+      features::IsImpulseScrollAnimationEnabled() ? 300 : 150;
   BeginImplFrameAndAnimate(
       begin_frame_args,
       start_time + base::Milliseconds(scroll_animation_duration_ms));
@@ -7611,6 +7610,27 @@ TEST_P(LayerTreeHostImplBrowserControlsTest, BrowserControlsAspectRatio) {
   EXPECT_EQ(expected, InnerViewportScrollLayer()->bounds());
 }
 
+TEST_P(LayerTreeHostImplBrowserControlsTest, NoShrinkNotUserScrollable) {
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(100, 100), gfx::Size(100, 100), gfx::Size(100, 200));
+
+  GetScrollNode(OuterViewportScrollLayer())->user_scrollable_vertical = false;
+  DrawFrame();
+
+  gfx::Vector2dF delta(0, 15);
+  ui::ScrollInputType type = ui::ScrollInputType::kTouchscreen;
+  auto& handler = GetInputHandler();
+
+  handler.ScrollBegin(BeginState(gfx::Point(), delta, type).get(), type);
+  handler.ScrollUpdate(UpdateState(gfx::Point(), delta, type).get());
+  handler.ScrollEnd();
+
+  // Outer viewport has overflow, but is not user-scrollable. Make sure the
+  // browser controls did not shrink when we tried to scroll.
+  EXPECT_EQ(top_controls_height_,
+            host_impl_->browser_controls_manager()->ContentTopOffset());
+}
+
 // Test that scrolling the outer viewport affects the browser controls.
 TEST_P(LayerTreeHostImplBrowserControlsTest,
        BrowserControlsScrollOuterViewport) {
@@ -8173,16 +8193,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // the page scale delta on the root layer is applied hierarchically.
   DrawFrame();
 
-  EXPECT_EQ(1, root->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(1, root->DrawTransform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale,
-            inner_scroll->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale,
-            inner_scroll->DrawTransform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale,
-            outer_scroll->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale,
-            outer_scroll->DrawTransform().matrix().getDouble(1, 1));
+  EXPECT_EQ(1, root->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(1, root->DrawTransform().matrix().rc(1, 1));
+  EXPECT_EQ(new_page_scale, inner_scroll->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(new_page_scale, inner_scroll->DrawTransform().matrix().rc(1, 1));
+  EXPECT_EQ(new_page_scale, outer_scroll->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(new_page_scale, outer_scroll->DrawTransform().matrix().rc(1, 1));
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest,
@@ -14845,10 +14861,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
-  EXPECT_NEAR(
-      (base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 87
-                                                                        : 50),
-      CurrentScrollOffset(scrolling_layer).y(), 1);
+  EXPECT_NEAR((features::IsImpulseScrollAnimationEnabled() ? 87 : 50),
+              CurrentScrollOffset(scrolling_layer).y(), 1);
   host_impl_->DidFinishImplFrame(begin_frame_args);
 
   // Update target.
@@ -18204,8 +18218,8 @@ TEST_F(LayerTreeHostImplTest, DocumentTransitionRequestCausesDamage) {
 
   // Adding a transition effect should cause us to redraw.
   host_impl_->active_tree()->AddDocumentTransitionRequest(
-      DocumentTransitionRequest::CreateStart(
-          /*document_tag=*/0, /*shared_element_count=*/0, base::OnceClosure()));
+      DocumentTransitionRequest::CreateAnimateRenderer(
+          /*document_tag=*/0));
 
   // Ensure there is damage and we requested a redraw.
   host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,

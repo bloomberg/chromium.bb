@@ -51,6 +51,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('models/workspace/UISourceCode.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
+// TODO(crbug.com/1297535): Casts to UrlString and RawPathString will be removed from this file when migration to branded types is complete.
+
 export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements
     TextUtils.ContentProvider.ContentProvider {
   private projectInternal: Project;
@@ -92,7 +94,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
       }
     } else {
       this.originInternal = '';
-      this.parentURLInternal = '' as Platform.DevToolsPath.UrlString;
+      this.parentURLInternal = Platform.DevToolsPath.EmptyUrlString;
       this.nameInternal = url;
     }
 
@@ -150,7 +152,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return this.projectInternal.canRename();
   }
 
-  rename(newName: string): Promise<boolean> {
+  rename(newName: Platform.DevToolsPath.RawPathString): Promise<boolean> {
     let fulfill: (arg0: boolean) => void;
     const promise = new Promise<boolean>(x => {
       fulfill = x;
@@ -235,6 +237,13 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return this.contentInternal as TextUtils.ContentProvider.DeferredContent;
   }
 
+  #decodeContent(content: TextUtils.ContentProvider.DeferredContent|null): string|null {
+    if (!content) {
+      return null;
+    }
+    return content.isEncoded && content.content ? window.atob(content.content) : content.content;
+  }
+
   async checkContentUpdated(): Promise<void> {
     if (!this.contentLoadedInternal && !this.forceLoadOnCheckContentInternal) {
       return;
@@ -260,7 +269,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
       return;
     }
 
-    if (this.contentInternal?.content === updatedContent.content) {
+    if (this.#decodeContent(this.contentInternal) === this.#decodeContent(updatedContent)) {
       this.lastAcceptedContent = null;
       return;
     }

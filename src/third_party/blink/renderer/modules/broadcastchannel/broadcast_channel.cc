@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -101,9 +102,31 @@ void BroadcastChannel::postMessage(const ScriptValue& message,
   if (exception_state.HadException())
     return;
 
+  // Defer postMessage() from a prerendered page until page activation.
+  // https://wicg.github.io/nav-speculation/prerendering.html#patch-broadcast-channel
+  if (execution_context->IsWindow()) {
+    Document* document = To<LocalDOMWindow>(execution_context)->document();
+    if (document->IsPrerendering()) {
+      document->AddPostPrerenderingActivationStep(
+          WTF::Bind(&BroadcastChannel::PostMessageInternal,
+                    WrapWeakPersistent(this), std::move(value),
+                    execution_context->GetSecurityOrigin()->IsolatedCopy()));
+      return;
+    }
+  }
+
+  PostMessageInternal(std::move(value),
+                      execution_context->GetSecurityOrigin()->IsolatedCopy());
+}
+
+void BroadcastChannel::PostMessageInternal(
+    scoped_refptr<SerializedScriptValue> value,
+    scoped_refptr<SecurityOrigin> sender_origin) {
+  if (!receiver_.is_bound())
+    return;
   BlinkCloneableMessage msg;
   msg.message = std::move(value);
-  msg.sender_origin = execution_context->GetSecurityOrigin()->IsolatedCopy();
+  msg.sender_origin = std::move(sender_origin);
   remote_client_->OnMessage(std::move(msg));
 }
 

@@ -339,7 +339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenPromoRemindMeSecondPromo"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-06-19">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2022-08-21">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -379,7 +379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserPromo.NonModal.OnScreenTime" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -633,6 +633,16 @@ chromium-metrics-reviews@google.com.
     The time incognito profile is displayed to the user. Incognito sessions
     during less than 10 seconds are not reported. Incognito session paused for
     less than 10 seconds is resumed.
+  </summary>
+</histogram>
+
+<histogram name="IOS.IPH.DefaultSite.Presented" units="BooleanHit"
+    expires_after="2023-02-28">
+  <owner>gambard@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <summary>
+    Recorded when the InProductHelp about the DefaultSite is presented to the
+    user. Can be used as a base number to evaluate the impact of IPH.
   </summary>
 </histogram>
 
@@ -1018,6 +1028,54 @@ chromium-metrics-reviews@google.com.
     Measures the time from the end of user input in the omnibox to when the page
     is fully loaded. Only measures page loads initiated by user typing a URL or
     selecting a suggested entry from the URL bar.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Permission.Modal.Events" enum="IOSPermissionEvent"
+    expires_after="2023-02-22">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Logs media permission events when the user changes the state of a permission
+    (e.g. the microphone permission) from the infobar modal.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Permission.PageInfo.Events" enum="IOSPermissionEvent"
+    expires_after="2023-02-22">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Logs media permission events when the user changes the state of a permission
+    (e.g. the microphone permission) from the page info.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Permission.Requests" enum="IOSPermissionRequest"
+    expires_after="2023-03-05">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Logs media permission requests from websites. (e.g. the microphone
+    permission is asked from a website).
+  </summary>
+</histogram>
+
+<histogram name="IOS.Process.ActivePrewarm" enum="Boolean"
+    expires_after="2022-09-12">
+  <owner>justincohen@google.com</owner>
+  <owner>olivierrobin@google.com</owner>
+  <summary>
+    Whether or not the process was started with ActivePrewarm, an Apple
+    triggered launch of a nonrunning application processes to reduce the amount
+    of time the user waits before the app is usable. A significant change in
+    this metric may indicate a change from Apple outside Chromium's control, or
+    that Chromium has a reduced 'Duet' score in the system, which merits
+    investigation. See the UIKit documentation &quot;Prepare Your App for
+    Prewarming&quot; for more details.
   </summary>
 </histogram>
 
@@ -1474,25 +1532,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WindowIDInjection.ElapsedTime" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>michaeldo@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
     Measures the time taken for windowID injection to complete. Logged once per
     pageload.
-  </summary>
-</histogram>
-
-<histogram name="IOS.WKWebViewClobberedHistory" enum="Boolean"
-    expires_after="2022-09-24">
-  <owner>ajuma@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    Measures the number of main frame navigations in slim navigation manager
-    that are affected by a WKWebView bug that corrupts back/forward history
-    (http://crbug.com/887497). This is recorded during WKWebView's
-    decidePolicyForNavigationAction callback. True means the bug is triggered.
-    False means the bug is not triggered.
   </summary>
 </histogram>
 

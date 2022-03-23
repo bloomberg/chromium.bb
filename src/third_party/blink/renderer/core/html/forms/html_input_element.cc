@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
@@ -2109,15 +2108,21 @@ void HTMLInputElement::SetShouldRevealPassword(bool value) {
 }
 
 #if BUILDFLAG(IS_ANDROID)
-void HTMLInputElement::DispatchSimulatedEnterIfLastInputInForm() {
-  Page* page = GetDocument().GetPage();
-  if (page && !page->GetFocusController().NextFocusableElementInForm(
-                  this, mojom::blink::FocusType::kForward)) {
-    page->GetFocusController().SetFocusedElement(this,
-                                                 GetDocument().GetFrame());
+bool HTMLInputElement::IsLastInputElementInForm() {
+  DCHECK(GetDocument().GetPage());
+  return !GetDocument()
+              .GetPage()
+              ->GetFocusController()
+              .NextFocusableElementForIME(this,
+                                          mojom::blink::FocusType::kForward);
+}
 
-    EventDispatcher::DispatchSimulatedEnterEvent(*this);
-  }
+void HTMLInputElement::DispatchSimulatedEnter() {
+  DCHECK(GetDocument().GetPage());
+  GetDocument().GetPage()->GetFocusController().SetFocusedElement(
+      this, GetDocument().GetFrame());
+
+  EventDispatcher::DispatchSimulatedEnterEvent(*this);
 }
 #endif
 

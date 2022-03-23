@@ -12,28 +12,36 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
+#include "chrome/browser/ui/views/side_search/default_search_icon_source.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
+#include "ui/color/color_id.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
@@ -45,22 +53,7 @@
 
 namespace {
 
-constexpr int kSidePanelWidth = 380;
 constexpr int kDefaultTouchableIconSize = 24;
-
-// Below are hardcoded color constants for the side panel. This is a UX decision
-// to ensure that the colors align with the tier 2 Google SRP which only
-// supports light mode. These are not intended to change to match the light/dark
-// system setting or custom theme colors.
-
-// White background to match the Google SRP.
-constexpr SkColor kHeaderBackgroundColor = SK_ColorWHITE;
-
-// Default light mode icon color for controls.
-constexpr SkColor kIconColor = gfx::kGoogleGrey700;
-
-// Default light mode separator color.
-constexpr SkColor kSeparatorColor = gfx::kGoogleGrey300;
 
 // Base header button class. Responds appropriately to touch ui changes.
 class HeaderButton : public views::ImageButton {
@@ -78,6 +71,13 @@ class HeaderButton : public views::ImageButton {
   }
   ~HeaderButton() override = default;
 
+  // views::ImageButton:
+  void OnThemeChanged() override {
+    ImageButton::OnThemeChanged();
+    views::InkDrop::Get(this)->SetBaseColor(
+        GetColorProvider()->GetColor(ui::kColorIcon));
+  }
+
   void UpdateIcon() {
     const int icon_size =
         ui::TouchUiController::Get()->touch_ui()
@@ -85,7 +85,11 @@ class HeaderButton : public views::ImageButton {
             : ChromeLayoutProvider::Get()->GetDistanceMetric(
                   ChromeDistanceMetric::
                       DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE);
-    views::SetImageFromVectorIconWithColor(this, icon_, icon_size, kIconColor);
+    SetImageModel(Button::STATE_NORMAL, ui::ImageModel::FromVectorIcon(
+                                            icon_, ui::kColorIcon, icon_size));
+    SetImageModel(Button::STATE_DISABLED,
+                  ui::ImageModel::FromVectorIcon(icon_, ui::kColorIconDisabled,
+                                                 icon_size));
   }
 
  private:
@@ -95,22 +99,65 @@ class HeaderButton : public views::ImageButton {
 BEGIN_METADATA(HeaderButton, views::ImageButton)
 END_METADATA
 
-// Header view used to house the close control at the top of the side panel.
+// A view that tracks the icon image of the current DSE.
+class DseImageView : public views::ImageView {
+ public:
+  METADATA_HEADER(DseImageView);
+  explicit DseImageView(Browser* browser)
+      : default_search_icon_source_(
+            browser,
+            base::BindRepeating(&DseImageView::UpdateIconImage,
+                                base::Unretained(this))) {
+    SetFlipCanvasOnPaintForRTLUI(false);
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(0, views::LayoutProvider::Get()->GetDistanceMetric(
+                           views::DISTANCE_RELATED_CONTROL_VERTICAL))));
+  }
+  ~DseImageView() override = default;
+
+  void UpdateIconImage() {
+    SetImage(default_search_icon_source_.GetIconImage());
+  }
+
+ private:
+  DefaultSearchIconSource default_search_icon_source_;
+};
+
+BEGIN_METADATA(DseImageView, views::ImageView)
+END_METADATA
+
+// Header view for the side search side panel. The structure is as follows.
+//  ___________________________________________________________________________
+// | dse_image_view | simple_site_name        | feedback_button | close_button |
+// |
+//  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// The image view and buttons are fixed at their preferred size. The simple site
+// name label is configured to consume the remaining horizontal space.
 class HeaderView : public views::View {
  public:
   METADATA_HEADER(HeaderView);
-  explicit HeaderView(base::RepeatingClosure callback, Browser* browser)
-      : close_button_(AddChildView(
-            std::make_unique<HeaderButton>(vector_icons::kCloseIcon,
-                                           std::move(callback)))),
-        layout_(SetLayoutManager(std::make_unique<views::BoxLayout>())) {
-    views::InstallCircleHighlightPathGenerator(close_button_);
-    close_button_->SetID(SideSearchBrowserController::SideSearchViewID::
-                             VIEW_ID_SIDE_PANEL_CLOSE_BUTTON);
-    close_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_SEARCH_CLOSE_BUTTON));
-    close_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_CLOSE_BUTTON));
+  HeaderView(base::RepeatingClosure callback, Browser* browser)
+      : layout_(SetLayoutManager(std::make_unique<views::FlexLayout>())) {
+    layout_->SetOrientation(views::LayoutOrientation::kHorizontal)
+        .SetMainAxisAlignment(views::LayoutAlignment::kStart)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+
+    dse_image_view_ = AddChildView(std::make_unique<DseImageView>(browser));
+    dse_image_view_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kPreferred));
+
+    auto* simple_site_name = AddChildView(std::make_unique<views::Label>());
+    simple_site_name->SetID(SideSearchBrowserController::SideSearchViewID::
+                                VIEW_ID_SIDE_PANEL_TITLE_LABEL);
+    simple_site_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    simple_site_name->SetTextContext(CONTEXT_SIDE_PANEL_TITLE);
+    simple_site_name->SetTextStyle(views::style::STYLE_PRIMARY);
+    simple_site_name->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kUnbounded));
 
     if (base::FeatureList::IsEnabled(features::kSideSearchFeedback)) {
       base::RepeatingClosure feedback_callback = base::BindRepeating(
@@ -134,33 +181,61 @@ class HeaderView : public views::View {
           l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_SEARCH_FEEDBACK_BUTTON));
       feedback_button_->SetTooltipText(
           l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_FEEDBACK_BUTTON));
+      feedback_button_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                   views::MaximumFlexSizeRule::kPreferred));
     }
 
+    close_button_ = AddChildView(std::make_unique<HeaderButton>(
+        vector_icons::kCloseIcon, std::move(callback)));
+    views::InstallCircleHighlightPathGenerator(close_button_);
+    close_button_->SetID(SideSearchBrowserController::SideSearchViewID::
+                             VIEW_ID_SIDE_PANEL_CLOSE_BUTTON);
+    close_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_SEARCH_CLOSE_BUTTON));
+    close_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_CLOSE_BUTTON));
+    close_button_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kPreferred));
+
+    // Ensure the header view's containing view keeps its vertical size at the
+    // preferred size when laying out the side panel. The side panel does this
+    // using a flex layout so we need to ensure we set the correct flex
+    // behavior.
     SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                  views::MaximumFlexSizeRule::kPreferred));
-    SetBackground(views::CreateSolidBackground(kHeaderBackgroundColor));
-    layout_->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
+    SetBackground(
+        views::CreateThemedSolidBackground(this, ui::kColorDialogBackground));
     UpdateSpacing();
   }
   ~HeaderView() override = default;
 
  private:
+  // Updates the toolbar insets which may change as we enter / leave touch mode.
+  // Icons are also updated to give them the opportunity to resize and adjust
+  // their insets.
   void UpdateSpacing() {
-    close_button_->UpdateIcon();
-
+    dse_image_view_->UpdateIconImage();
     if (feedback_button_)
       feedback_button_->UpdateIcon();
+    close_button_->UpdateIcon();
 
-    layout_->set_inside_border_insets(
+    layout_->SetInteriorMargin(
         GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
   }
 
-  HeaderButton* const close_button_;
-  HeaderButton* feedback_button_ = nullptr;
-  views::BoxLayout* const layout_;
+  raw_ptr<DseImageView> dse_image_view_ = nullptr;
+  raw_ptr<HeaderButton> feedback_button_ = nullptr;
+  raw_ptr<HeaderButton> close_button_ = nullptr;
 
+  raw_ptr<views::FlexLayout> const layout_;
+
+  // Used to listen for when the UI enters / leaves touch mode.
   base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&HeaderView::UpdateSpacing,
@@ -170,26 +245,16 @@ class HeaderView : public views::View {
 BEGIN_METADATA(HeaderView, views::View)
 END_METADATA
 
-std::unique_ptr<views::Separator> CreateSeparator() {
-  auto separator = std::make_unique<views::Separator>();
-  separator->SetColor(kSeparatorColor);
-  return separator;
-}
-
 views::WebView* ConfigureSidePanel(views::View* side_panel,
                                    Profile* profile,
                                    Browser* browser,
                                    base::RepeatingClosure callback) {
-  // BrowserViewLayout will layout the SidePanel to match the height of the
-  // content area.
-  side_panel->SetPreferredSize(gfx::Size(kSidePanelWidth, 1));
-
   auto container = std::make_unique<views::FlexLayoutView>();
   container->SetOrientation(views::LayoutOrientation::kVertical);
   container->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
   container->AddChildView(
       std::make_unique<HeaderView>(std::move(callback), browser));
-  container->AddChildView(CreateSeparator());
+  container->AddChildView(std::make_unique<views::Separator>());
 
   // The WebView will fill the remaining space after the header view has been
   // laid out.
@@ -269,18 +334,16 @@ void SideSearchBrowserController::DidFinishNavigation(
   }
 
   // The toggled state of the side panel for this tab contents should be reset
-  // when landing on a page that should not show the side panel in the
-  // state-per-tab mode (e.g. NTP, Google home page etc). This will prevent the
-  // side panel from reopening automatically after the tab next encounters a
-  // page where the side panel can be shown.
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)) {
-    auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
-        navigation_handle->GetWebContents());
-    if (GetSidePanelToggledOpen() &&
-        !tab_contents_helper->CanShowSidePanelForCommittedNavigation()) {
-      CloseSidePanel();
-      return;
-    }
+  // when landing on a page that should not show the side panel (e.g. NTP,
+  // Google home page etc). This will prevent the side panel from reopening
+  // automatically after the tab next encounters a page where the side panel can
+  // be shown.
+  auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
+      navigation_handle->GetWebContents());
+  if (GetSidePanelToggledOpen() &&
+      !tab_contents_helper->CanShowSidePanelForCommittedNavigation()) {
+    CloseSidePanel();
+    return;
   }
 
   // We need to update the side panel state in response to navigations to catch
@@ -321,8 +384,8 @@ SideSearchBrowserController::CreateToolbarButton() {
   auto toolbar_button = std::make_unique<ToolbarButton>();
   toolbar_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
-  toolbar_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON));
+  toolbar_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
   toolbar_button->SetProperty(views::kElementIdentifierKey,
                               kSideSearchButtonElementId);
 
@@ -332,9 +395,8 @@ SideSearchBrowserController::CreateToolbarButton() {
   toolbar_button->SetVectorIcon(kWebIcon);
 #endif
 
-  toolbar_button->SetCallback(
-      base::BindRepeating(&SideSearchBrowserController::SidePanelButtonPressed,
-                          base::Unretained(this)));
+  toolbar_button->SetCallback(base::BindRepeating(
+      &SideSearchBrowserController::ToggleSidePanel, base::Unretained(this)));
   toolbar_button->SetVisible(false);
   toolbar_button->SetEnabled(true);
 
@@ -342,22 +404,19 @@ SideSearchBrowserController::CreateToolbarButton() {
   return toolbar_button;
 }
 
-bool SideSearchBrowserController::GetSidePanelToggledOpen() const {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)) {
-    auto* active_contents = browser_view_->GetActiveWebContents();
-    return active_contents
-               ? SideSearchTabContentsHelper::FromWebContents(active_contents)
-                     ->toggled_open()
-               : false;
-  }
-  return toggled_open_;
-}
-
-void SideSearchBrowserController::SidePanelButtonPressed() {
+void SideSearchBrowserController::ToggleSidePanel() {
   if (GetSidePanelToggledOpen())
     CloseSidePanel(SideSearchCloseActionType::kTapOnSideSearchToolbarButton);
   else
     OpenSidePanel();
+}
+
+bool SideSearchBrowserController::GetSidePanelToggledOpen() const {
+  auto* active_contents = browser_view_->GetActiveWebContents();
+  return active_contents
+             ? SideSearchTabContentsHelper::FromWebContents(active_contents)
+                   ->toggled_open()
+             : false;
 }
 
 void SideSearchBrowserController::SidePanelCloseButtonPressed() {
@@ -391,25 +450,9 @@ void SideSearchBrowserController::CloseSidePanel(
   SetSidePanelToggledOpen(false);
   UpdateSidePanel();
 
-  if (base::FeatureList::IsEnabled(features::kSideSearchClearCacheWhenClosed)) {
-    // If per tab state is enabled only clear the side contents for the
-    // currently active tab.
-    base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)
-        ? ClearSideContentsCacheForActiveTab()
-        : ClearSideContentsCacheForBrowser();
-  }
-}
-
-void SideSearchBrowserController::ClearSideContentsCacheForBrowser() {
-  web_view_->SetWebContents(nullptr);
-
-  // Notify the tab helpers that their side panel contentes can be cleared away.
-  TabStripModel* tab_strip_model = browser_view_->browser()->tab_strip_model();
-  for (int i = 0; i < tab_strip_model->count(); ++i) {
-    SideSearchTabContentsHelper::FromWebContents(
-        tab_strip_model->GetWebContentsAt(i))
-        ->ClearSidePanelContents();
-  }
+  // Clear the side contents for the currently active tab.
+  if (base::FeatureList::IsEnabled(features::kSideSearchClearCacheWhenClosed))
+    ClearSideContentsCacheForActiveTab();
 }
 
 void SideSearchBrowserController::ClearSideContentsCacheForActiveTab() {
@@ -422,14 +465,10 @@ void SideSearchBrowserController::ClearSideContentsCacheForActiveTab() {
 }
 
 void SideSearchBrowserController::SetSidePanelToggledOpen(bool toggled_open) {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)) {
-    if (auto* active_contents = browser_view_->GetActiveWebContents()) {
-      SideSearchTabContentsHelper::FromWebContents(active_contents)
-          ->set_toggled_open(toggled_open);
-      side_search::MaybeSaveSideSearchTabSessionData(active_contents);
-    }
-  } else {
-    toggled_open_ = toggled_open;
+  if (auto* active_contents = browser_view_->GetActiveWebContents()) {
+    SideSearchTabContentsHelper::FromWebContents(active_contents)
+        ->set_toggled_open(toggled_open);
+    side_search::MaybeSaveSideSearchTabSessionData(active_contents);
   }
 }
 
@@ -455,25 +494,57 @@ void SideSearchBrowserController::UpdateSidePanel() {
   const bool will_show_side_panel =
       can_show_side_panel_for_page && GetSidePanelToggledOpen();
 
+  if (base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
+      will_show_side_panel) {
+    browser_view_->CloseOpenRightAlignedSidePanel(/*exclude_lens=*/false,
+                                                  /*exclude_side_search=*/true);
+  }
+
   // The side panel contents will be created if it does not already exist.
   web_view_->SetWebContents(will_show_side_panel
                                 ? tab_contents_helper->GetSidePanelContents()
                                 : nullptr);
-  side_panel_->SetVisible(will_show_side_panel);
-  toolbar_button_->SetHighlighted(will_show_side_panel);
-  toolbar_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      will_show_side_panel
-          ? IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
-          : IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
 
-  // The toolbar button should remain visible in the toolbar as a side panel can
-  // be shown for the active tab.
-  if (toolbar_button_->GetVisible() != can_show_side_panel_for_page) {
-    toolbar_button_->SetVisible(can_show_side_panel_for_page);
+  // Update the side panel header title text if necessary
+  if (auto last_search_url = tab_contents_helper->last_search_url()) {
+    views::Label* title_label =
+        static_cast<views::Label*>(side_panel_->GetViewByID(
+            static_cast<int>(VIEW_ID_SIDE_PANEL_TITLE_LABEL)));
+    title_label->SetText(
+        url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
+            last_search_url.value()));
+  }
+
+  side_panel_->SetVisible(will_show_side_panel);
+
+  // Update the side panel entrypoints - either the page action or the toolbar
+  // button.
+  // TODO(tluk): Split the entrypoint implementations out into a separate class.
+  browser_view_->UpdatePageActionIcon(PageActionIconType::kSideSearch);
+
+  if (toolbar_button_) {
+    toolbar_button_->SetHighlighted(will_show_side_panel);
+    toolbar_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        will_show_side_panel
+            ? IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
+            : IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+    toolbar_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        will_show_side_panel
+            ? IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
+            : IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+
+    // The toolbar button should remain visible in the toolbar as a side panel
+    // can be shown for the active tab.
+    if (toolbar_button_->GetVisible() != can_show_side_panel_for_page)
+      toolbar_button_->SetVisible(can_show_side_panel_for_page);
+  }
+
+  if (was_side_panel_available_for_page_ != can_show_side_panel_for_page) {
     RecordSideSearchAvailabilityChanged(
         can_show_side_panel_for_page
             ? SideSearchAvailabilityChangeType::kBecomeAvailable
             : SideSearchAvailabilityChangeType::kBecomeUnavailable);
+    was_side_panel_available_for_page_ = can_show_side_panel_for_page;
   }
 
   // Once the anchor element is visible, maybe show promo.

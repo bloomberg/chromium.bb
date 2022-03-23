@@ -165,9 +165,7 @@ void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
 }
 
 void WakeUpGpu(GpuProcessHost* host) {
-  if (host && host->gpu_host()->wake_up_gpu_before_drawing()) {
-    host->gpu_service()->WakeUpGpu();
-  }
+  host->gpu_service()->WakeUpGpu();
 }
 
 std::string CompressAndSaveBitmap(const std::string& dir,
@@ -243,7 +241,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       page_scale_(1.f),
       min_page_scale_(1.f),
       max_page_scale_(1.f),
-      mouse_wheel_phase_handler_(this) {
+      mouse_wheel_phase_handler_(this),
+      is_surface_sync_throttling_(features::IsSurfaceSyncThrottling()) {
   // Set the layer which will hold the content layer for this view. The content
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
@@ -1207,7 +1206,7 @@ bool RenderWidgetHostViewAndroid::CanSynchronizeVisualProperties() {
   //
   // We should instead wait for the full set of new visual properties to be
   // available, and deliver them to the Renderer in one single update.
-  if (in_rotation_)
+  if (in_rotation_ && is_surface_sync_throttling_)
     return false;
   return true;
 }
@@ -1593,7 +1592,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
       navigation_while_hidden_ = false;
       delegated_frame_host_->DidNavigate();
     }
-  } else if (rotation_override) {
+  } else if (rotation_override && is_surface_sync_throttling_) {
     // If a rotation occurred while this was not visible, we need to allocate a
     // new viz::LocalSurfaceId and send the current visual properties to the
     // Renderer. Otherwise there will be no content at all to display.
@@ -1840,8 +1839,7 @@ RenderWidgetHostViewAndroid::FilterInputEvent(
   if (!host())
     return blink::mojom::InputEventResultState::kNotConsumed;
 
-  if (input_event.GetType() == blink::WebInputEvent::Type::kGestureTapDown ||
-      input_event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
+  if (input_event.GetType() == blink::WebInputEvent::Type::kTouchStart) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
                              base::BindOnce(&WakeUpGpu));
@@ -2100,6 +2098,9 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
   if (!view_.parent() || !is_showing_)
     return;
 
+  if (gesture_listener_manager_)
+    gesture_listener_manager_->DidOverscroll(params);
+
   if (overscroll_controller_)
     overscroll_controller_->OnOverscrolled(params);
 }
@@ -2321,6 +2322,7 @@ void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
   if (!view_.parent())
     return;
 
+  UpdateScreenInfo();
   if (is_showing_)
     StartObservingRootWindow();
   DCHECK(view_.GetWindowAndroid());
@@ -2784,6 +2786,10 @@ void RenderWidgetHostViewAndroid::BeginRotationBatching() {
 
 void RenderWidgetHostViewAndroid::EndRotationBatching() {
   in_rotation_ = false;
+  // Always clear when ending batching. As WebView can trigger multiple
+  // OnPhysicalBackingSizeChanged which would re-trigger rotation if we were
+  // still tracking `fullscreen_rotation_`. crbug.com/1302964
+  fullscreen_rotation_ = false;
   DCHECK(!rotation_metrics_.empty());
   const auto delta = rotation_metrics_.back().first - base::TimeTicks();
   TRACE_EVENT_NESTABLE_ASYNC_END1(

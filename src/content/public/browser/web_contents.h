@@ -585,7 +585,7 @@ class WebContents : public PageNavigator,
 
   // Returns whether a navigation is currently in progress that should show
   // loading UI if such UI exists (progress bar, loading spinner, stop button,
-  // etc.) True for different-document navigations and appHistory's
+  // etc.) True for different-document navigations and the navigation API's
   // transitionWhile(). This being true implies that IsLoading() is also true.
   virtual bool ShouldShowLoadingUI() = 0;
 
@@ -1312,14 +1312,6 @@ class WebContents : public PageNavigator,
 
   // Serialise this object into a trace.
   virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
-
-  // Disallows navigations that activate a prerendered page or a back/forward
-  // cached page in this WebContents. Such pages will be ignored and normal
-  // navigation will occur instead.
-  // TODO(https://crbug.com/1234857): Remove this. This is a temporary
-  // workaround to avoid breaking features that must be taught to deal with
-  // activation navigations.
-  virtual void DisallowActivationNavigationsForBug1234857() = 0;
 
   // Returns the value from CreateParams::creator_location.
   virtual const base::Location& GetCreatorLocation() = 0;

@@ -12,20 +12,10 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/url_util.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 
 namespace {
-
-constexpr char kSideSearchQueryParam[] = "sidesearch";
-constexpr char kSideSearchVersion[] = "1";
-
-#if !BUILDFLAG(IS_CHROMEOS)
-constexpr char kChromeOSUserAgent[] =
-    "Mozilla/5.0 (X11; CrOS x86_64 14233.0.0) AppleWebKit/537.36 (KHTML, like "
-    "Gecko) Chrome/96.0.4650.0 Safari/537.36";
-#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 class SideSearchContentsThrottle : public content::NavigationThrottle {
  public:
@@ -162,8 +152,7 @@ void SideSearchSideContentsHelper::LoadURL(const GURL& url) {
   if (web_contents()->GetLastCommittedURL() == url)
     return;
 
-  GURL side_search_url =
-      net::AppendQueryParameter(url, kSideSearchQueryParam, kSideSearchVersion);
+  const GURL side_search_url = GetConfig()->GenerateSideSearchURL(url);
   content::NavigationController::LoadURLParams load_url_params(side_search_url);
 
   // Fake the user agent on non ChromeOS systems to allow for development and
@@ -193,13 +182,6 @@ SideSearchSideContentsHelper::SideSearchSideContentsHelper(
                         "SideSearch.LoadDocumentTime",
                         "SideSearch.LoadCompletedTime") {
   Observe(web_contents);
-
-#if !BUILDFLAG(IS_CHROMEOS)
-  web_contents->SetUserAgentOverride(
-      blink::UserAgentOverride::UserAgentOnly(kChromeOSUserAgent), true);
-  web_contents->SetRendererInitiatedUserAgentOverrideOption(
-      content::NavigationController::UA_OVERRIDE_TRUE);
-#endif  // !BUILDFLAG(IS_CHROMEOS)
 
   web_contents->SetDelegate(this);
 }

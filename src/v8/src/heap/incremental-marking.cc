@@ -6,6 +6,7 @@
 
 #include "src/codegen/compilation-cache.h"
 #include "src/execution/vm-state-inl.h"
+#include "src/handles/global-handles.h"
 #include "src/heap/concurrent-marking.h"
 #include "src/heap/embedder-tracing.h"
 #include "src/heap/gc-idle-time-handler.h"
@@ -251,6 +252,7 @@ void IncrementalMarking::StartMarking() {
   SetState(MARKING);
 
   MarkingBarrier::ActivateAll(heap(), is_compacting_);
+  GlobalHandles::EnableMarkingBarrier(heap()->isolate());
 
   heap_->isolate()->compilation_cache()->MarkCompactPrologue();
 
@@ -283,7 +285,7 @@ void IncrementalMarking::StartBlackAllocation() {
   DCHECK(IsMarking());
   black_allocation_ = true;
   heap()->old_space()->MarkLinearAllocationAreaBlack();
-  heap()->map_space()->MarkLinearAllocationAreaBlack();
+  if (heap()->map_space()) heap()->map_space()->MarkLinearAllocationAreaBlack();
   heap()->code_space()->MarkLinearAllocationAreaBlack();
   heap()->safepoint()->IterateLocalHeaps([](LocalHeap* local_heap) {
     local_heap->MarkLinearAllocationAreaBlack();
@@ -297,7 +299,7 @@ void IncrementalMarking::StartBlackAllocation() {
 void IncrementalMarking::PauseBlackAllocation() {
   DCHECK(IsMarking());
   heap()->old_space()->UnmarkLinearAllocationArea();
-  heap()->map_space()->UnmarkLinearAllocationArea();
+  if (heap()->map_space()) heap()->map_space()->UnmarkLinearAllocationArea();
   heap()->code_space()->UnmarkLinearAllocationArea();
   heap()->safepoint()->IterateLocalHeaps(
       [](LocalHeap* local_heap) { local_heap->UnmarkLinearAllocationArea(); });
@@ -420,7 +422,7 @@ void IncrementalMarking::FinalizeIncrementally() {
   // 2) Age and retain maps embedded in optimized code.
   MarkRoots();
 
-  // Map retaining is needed for perfromance, not correctness,
+  // Map retaining is needed for performance, not correctness,
   // so we can do it only once at the beginning of the finalization.
   RetainMaps();
 

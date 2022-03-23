@@ -28,6 +28,7 @@
 #include "experimental/graphite/src/UniformManager.h"
 #include "experimental/graphite/src/geom/Shape.h"
 #include "experimental/graphite/src/geom/Transform_graphite.h"
+#include "src/core/SkKeyContext.h"
 #include "src/core/SkKeyHelpers.h"
 #include "src/core/SkShaderCodeDictionary.h"
 #include "src/core/SkUniformData.h"
@@ -235,8 +236,8 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
     gpu->testingOnly_startCapture();
 #endif
     auto recorder = context->makeRecorder();
+    SkKeyContext keyContext(recorder.get());
     auto resourceProvider = recorder->priv().resourceProvider();
-    auto dict = resourceProvider->shaderCodeDictionary();
     auto commandBuffer = resourceProvider->createCommandBuffer();
 
     SkISize textureSize = { kTextureWidth, kTextureHeight };
@@ -254,13 +255,18 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
     TextureInfo textureInfo;
 #endif
 
-    std::unique_ptr<SkPaintParamsKey> key = CreateKey(dict,
-                                                      SkBackend::kGraphite,
-                                                      ShaderCombo::ShaderType::kSolidColor,
-                                                      SkTileMode::kClamp,
-                                                      SkBlendMode::kSrc);
+    SkUniquePaintParamsID uniqueID;
+    {
+        auto dict = keyContext.dict();
 
-    auto entry = dict->findOrCreate(std::move(key));
+        SkPaintParamsKeyBuilder builder(dict, SkBackend::kGraphite);
+
+        uniqueID = CreateKey(keyContext,
+                             &builder,
+                             ShaderCombo::ShaderType::kSolidColor,
+                             SkTileMode::kClamp,
+                             SkBlendMode::kSrc);
+    }
 
     auto target = sk_sp<TextureProxy>(new TextureProxy(textureSize, textureInfo));
     REPORTER_ASSERT(reporter, target);
@@ -272,7 +278,7 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
     renderPassDesc.fClearColor = { 1, 0, 0, 1 }; // red
 
     target->instantiate(resourceProvider);
-    DrawBufferManager bufferMgr(resourceProvider, 4);
+    DrawBufferManager bufferMgr(resourceProvider, gpu->caps()->requiredUniformBufferAlignment());
 
     TextureInfo depthStencilInfo =
             gpu->caps()->getDefaultDepthStencilTextureInfo(DepthStencilFlags::kDepthStencil,
@@ -282,7 +288,7 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
     renderPassDesc.fDepthStencilAttachment.fLoadOp = LoadOp::kDiscard;
     renderPassDesc.fDepthStencilAttachment.fStoreOp = StoreOp::kDiscard;
     sk_sp<Texture> depthStencilTexture =
-            resourceProvider->findOrCreateTexture(textureSize, depthStencilInfo);
+            resourceProvider->findOrCreateDepthStencilAttachment(textureSize, depthStencilInfo);
 
     // Create Sampler -- for now, just to test creation
     sk_sp<Sampler> sampler = resourceProvider->findOrCreateCompatibleSampler(
@@ -303,7 +309,7 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
 
     auto draw = [&](const RenderStep* step, std::vector<RectAndColor> draws) {
         GraphicsPipelineDesc pipelineDesc;
-        pipelineDesc.setProgram(step, entry->uniqueID());
+        pipelineDesc.setProgram(step, uniqueID);
         drawWriter.newPipelineState(step->primitiveType(),
                                     step->vertexStride(),
                                     step->instanceStride());

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
@@ -30,9 +31,30 @@ DownloadUIModel::DownloadUIModelPtr OfflineItemModel::Wrap(
   return model;
 }
 
+DownloadUIModel::DownloadUIModelPtr OfflineItemModel::Wrap(
+    OfflineItemModelManager* manager,
+    const OfflineItem& offline_item,
+    std::unique_ptr<DownloadUIModel::StatusTextBuilderBase>
+        status_text_builder) {
+  DownloadUIModel::DownloadUIModelPtr model(
+      new OfflineItemModel(manager, offline_item,
+                           std::move(status_text_builder)),
+      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+  return model;
+}
+
 OfflineItemModel::OfflineItemModel(OfflineItemModelManager* manager,
                                    const OfflineItem& offline_item)
-    : manager_(manager),
+    : OfflineItemModel(manager,
+                       offline_item,
+                       std::make_unique<StatusTextBuilder>()) {}
+
+OfflineItemModel::OfflineItemModel(
+    OfflineItemModelManager* manager,
+    const OfflineItem& offline_item,
+    std::unique_ptr<DownloadUIModel::StatusTextBuilderBase> status_text_builder)
+    : DownloadUIModel(std::move(status_text_builder)),
+      manager_(manager),
       offline_item_(std::make_unique<OfflineItem>(offline_item)) {
   Profile* profile = Profile::FromBrowserContext(manager_->browser_context());
   offline_items_collection::OfflineContentAggregator* aggregator =
@@ -168,6 +190,10 @@ bool OfflineItemModel::TimeRemaining(base::TimeDelta* remaining) const {
   return true;
 }
 
+base::Time OfflineItemModel::GetStartTime() const {
+  return offline_item_->creation_time;
+}
+
 base::Time OfflineItemModel::GetEndTime() const {
   return offline_item_->completion_time;
 }
@@ -273,7 +299,6 @@ bool OfflineItemModel::IsCommandEnabled(
     case DownloadCommands::CANCEL:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DISCARD:
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
@@ -310,7 +335,6 @@ bool OfflineItemModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       return false;
@@ -339,7 +363,6 @@ void OfflineItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::PAUSE:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       DownloadUIModel::ExecuteCommand(download_commands, command);

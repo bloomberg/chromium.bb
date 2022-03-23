@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -1173,7 +1174,7 @@ void TileManager::ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule) {
   image_controller_.ReduceMemoryUsage();
 
   // Insert nodes for our task completion tasks. We enqueue these using
-  // NONCONCURRENT_FOREGROUND category this is the highest prioirty category and
+  // NONCONCURRENT_FOREGROUND category this is the highest priority category and
   // we'd like to run these tasks as soon as possible.
   InsertNodeForTask(&graph_, required_for_activation_done_task.get(),
                     TASK_CATEGORY_NONCONCURRENT_FOREGROUND,
@@ -1260,6 +1261,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       prioritized_tile.priority().resolution == LOW_RESOLUTION;
   playback_settings.use_lcd_text = tile->can_use_lcd_text();
   playback_settings.msaa_sample_count = msaa_sample_count;
+  playback_settings.visible =
+      tile->required_for_activation() || tile->required_for_draw();
 
   // Create and queue all image decode tasks that this tile depends on. Note
   // that we need to store the images for decode tasks in

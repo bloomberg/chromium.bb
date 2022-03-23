@@ -9,6 +9,7 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/observer_list.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -92,7 +93,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     if (web_contents.GetVisibility() == Visibility::HIDDEN) {
       RecordPrerenderHostFinalStatus(
           PrerenderHost::FinalStatus::kTriggerBackgrounded,
-          attributes.trigger_type, attributes.embedder_histogram_suffix);
+          attributes.trigger_type, attributes.embedder_histogram_suffix,
+          attributes.initiator_ukm_id, ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -100,9 +102,10 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // TODO(https://crbug.com/1176120): Fallback to NoStatePrefetch
     // since the memory requirements are different.
     if (!DeviceHasEnoughMemoryForPrerender()) {
-      RecordPrerenderHostFinalStatus(PrerenderHost::FinalStatus::kLowEndDevice,
-                                     attributes.trigger_type,
-                                     attributes.embedder_histogram_suffix);
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kLowEndDevice, attributes.trigger_type,
+          attributes.embedder_histogram_suffix, attributes.initiator_ukm_id,
+          ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -115,7 +118,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
             attributes.prerendering_url)) {
       RecordPrerenderHostFinalStatus(
           PrerenderHost::FinalStatus::kCrossOriginNavigation,
-          attributes.trigger_type, attributes.embedder_histogram_suffix);
+          attributes.trigger_type, attributes.embedder_histogram_suffix,
+          attributes.initiator_ukm_id, ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -130,7 +134,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     if (!IsAllowedToStartPrerenderingForTrigger(attributes.trigger_type)) {
       RecordPrerenderHostFinalStatus(
           PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded,
-          attributes.trigger_type, attributes.embedder_histogram_suffix);
+          attributes.trigger_type, attributes.embedder_histogram_suffix,
+          attributes.initiator_ukm_id, ukm::kInvalidSourceId);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 

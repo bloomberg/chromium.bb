@@ -37,7 +37,8 @@
 #include "src/core/lib/iomgr/sockaddr.h"
 #include "src/core/lib/iomgr/socket_utils.h"
 #include "src/core/lib/security/credentials/xds/xds_credentials.h"
-#include "src/core/lib/slice/slice_utils.h"
+#include "src/core/lib/service_config/service_config_impl.h"
+#include "src/core/lib/slice/slice_internal.h"
 #include "src/core/lib/surface/api_trace.h"
 #include "src/core/lib/surface/server.h"
 #include "src/core/lib/transport/error_utils.h"
@@ -416,6 +417,17 @@ XdsServerConfigFetcher::XdsServerConfigFetcher(
   GPR_ASSERT(xds_client_ != nullptr);
 }
 
+std::string ListenerResourceName(absl::string_view resource_name_template,
+                                 absl::string_view listening_address) {
+  std::string tmp;
+  if (absl::StartsWith(resource_name_template, "xdstp:")) {
+    tmp = URI::PercentEncodePath(listening_address);
+    listening_address = tmp;
+  }
+  return absl::StrReplaceAll(resource_name_template,
+                             {{"%s", listening_address}});
+}
+
 void XdsServerConfigFetcher::StartWatch(
     std::string listening_address,
     std::unique_ptr<grpc_server_config_fetcher::WatcherInterface> watcher) {
@@ -426,9 +438,9 @@ void XdsServerConfigFetcher::StartWatch(
   auto* listener_watcher_ptr = listener_watcher.get();
   XdsListenerResourceType::StartWatch(
       xds_client_.get(),
-      absl::StrReplaceAll(
+      ListenerResourceName(
           xds_client_->bootstrap().server_listener_resource_name_template(),
-          {{"%s", listening_address}}),
+          listening_address),
       std::move(listener_watcher));
   MutexLock lock(&mu_);
   listener_watchers_.emplace(watcher_ptr, listener_watcher_ptr);
@@ -442,9 +454,9 @@ void XdsServerConfigFetcher::CancelWatch(
     // Cancel the watch on the listener before erasing
     XdsListenerResourceType::CancelWatch(
         xds_client_.get(),
-        absl::StrReplaceAll(
+        ListenerResourceName(
             xds_client_->bootstrap().server_listener_resource_name_template(),
-            {{"%s", it->second->listening_address()}}),
+            it->second->listening_address()),
         it->second, false /* delay_unsubscription */);
     listener_watchers_.erase(it);
   }
@@ -1110,7 +1122,7 @@ XdsServerConfigFetcher::ListenerWatcher::FilterChainMatchManager::
             "}");
         grpc_error_handle error = GRPC_ERROR_NONE;
         config_selector_route.method_config =
-            ServiceConfig::Create(result.args, json.c_str(), &error);
+            ServiceConfigImpl::Create(result.args, json.c_str(), &error);
         GPR_ASSERT(error == GRPC_ERROR_NONE);
       }
       grpc_channel_args_destroy(result.args);

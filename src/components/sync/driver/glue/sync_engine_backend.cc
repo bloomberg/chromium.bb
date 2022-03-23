@@ -71,6 +71,16 @@ class SyncInvalidationAdapter : public SyncInvalidation {
   const std::string payload_;
 };
 
+void RecordInvalidationPerModelType(ModelType type) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
+                            ModelTypeHistogramValue(type));
+}
+
+void RecordIncomingInvalidationStatus(
+    SyncEngineBackend::IncomingInvalidationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.IncomingInvalidationStatus", status);
+}
+
 }  // namespace
 
 SyncEngineBackend::RestoredLocalTransportData::RestoredLocalTransportData() =
@@ -168,14 +178,19 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
     ModelType type;
     if (!NotificationTypeToRealModelType(topic, &type)) {
       DLOG(WARNING) << "Notification has invalid topic: " << topic;
+      RecordIncomingInvalidationStatus(
+          IncomingInvalidationStatus::kUnknownModelType);
     } else {
-      UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
-                                ModelTypeHistogramValue(type));
+      RecordInvalidationPerModelType(type);
       invalidation::SingleTopicInvalidationSet invalidation_set =
           invalidation_map.ForTopic(topic);
       for (invalidation::Invalidation invalidation : invalidation_set) {
-        RecordRedundantInvalidationsMetric(invalidation, type);
+        // Topic-based invalidations contain only one data type, hence this
+        // metric should be recorded for each incoming invalidation to represent
+        // all incoming messages.
+        RecordIncomingInvalidationStatus(IncomingInvalidationStatus::kSuccess);
 
+        RecordRedundantInvalidationsMetric(invalidation, type);
         std::unique_ptr<SyncInvalidation> inv_adapter(
             new InvalidationAdapter(invalidation));
         sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
@@ -456,16 +471,27 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
   sync_manager_->UpdateInvalidationClientId(client_id);
 }
 
-void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
+void SyncEngineBackend::DoOnStandaloneInvalidationReceived(
+    const std::string& payload,
+    const ModelTypeSet& interested_data_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::FeatureList::IsEnabled(kSyncSendInterestedDataTypes) &&
          base::FeatureList::IsEnabled(kUseSyncInvalidations));
+  const IncomingInvalidationStatus status =
+      DoOnStandaloneInvalidationReceivedImpl(payload, interested_data_types);
+  RecordIncomingInvalidationStatus(status);
+}
 
+SyncEngineBackend::IncomingInvalidationStatus
+SyncEngineBackend::DoOnStandaloneInvalidationReceivedImpl(
+    const std::string& payload,
+    const ModelTypeSet& interested_data_types) {
   sync_pb::SyncInvalidationsPayload payload_message;
-  // TODO(crbug.com/1119804): Track parsing failures in a histogram.
   if (!payload_message.ParseFromString(payload)) {
-    return;
+    return IncomingInvalidationStatus::kPayloadParseFailed;
   }
+
+  bool contains_valid_model_type = false;
   for (const auto& data_type_invalidation :
        payload_message.data_type_invalidations()) {
     const int field_number = data_type_invalidation.data_type_id();
@@ -475,11 +501,21 @@ void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
       continue;
     }
 
-    // TODO(crbug.com/1119798): Use only enabled data types.
+    if (!interested_data_types.Has(model_type)) {
+      // Filter out invalidations for unsubscribed data types.
+      continue;
+    }
+
+    contains_valid_model_type = true;
+    RecordInvalidationPerModelType(model_type);
     std::unique_ptr<SyncInvalidation> inv_adapter =
         std::make_unique<SyncInvalidationAdapter>(payload_message.hint());
     sync_manager_->OnIncomingInvalidation(model_type, std::move(inv_adapter));
   }
+  if (contains_valid_model_type) {
+    return IncomingInvalidationStatus::kSuccess;
+  }
+  return IncomingInvalidationStatus::kUnknownModelType;
 }
 
 void SyncEngineBackend::DoOnActiveDevicesChanged(
