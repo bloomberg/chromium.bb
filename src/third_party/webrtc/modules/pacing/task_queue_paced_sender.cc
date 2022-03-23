@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <utility>
+
 #include "absl/memory/memory.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
@@ -21,6 +22,13 @@
 
 namespace webrtc {
 
+namespace {
+
+constexpr const char* kSlackedTaskQueuePacedSenderFieldTrial =
+    "WebRTC-SlackedTaskQueuePacedSender";
+
+}  // namespace
+
 TaskQueuePacedSender::TaskQueuePacedSender(
     Clock* clock,
     PacingController::PacketSender* packet_sender,
@@ -29,9 +37,30 @@ TaskQueuePacedSender::TaskQueuePacedSender(
     TaskQueueFactory* task_queue_factory,
     TimeDelta max_hold_back_window,
     int max_hold_back_window_in_packets)
+    : TaskQueuePacedSender(clock,
+                           packet_sender,
+                           event_log,
+                           *field_trials,
+                           task_queue_factory,
+                           max_hold_back_window,
+                           max_hold_back_window_in_packets) {}
+
+TaskQueuePacedSender::TaskQueuePacedSender(
+    Clock* clock,
+    PacingController::PacketSender* packet_sender,
+    RtcEventLog* event_log,
+    const WebRtcKeyValueConfig& field_trials,
+    TaskQueueFactory* task_queue_factory,
+    TimeDelta max_hold_back_window,
+    int max_hold_back_window_in_packets)
     : clock_(clock),
-      max_hold_back_window_(max_hold_back_window),
-      max_hold_back_window_in_packets_(max_hold_back_window_in_packets),
+      allow_low_precision_(
+          field_trials.IsEnabled(kSlackedTaskQueuePacedSenderFieldTrial)),
+      max_hold_back_window_(allow_low_precision_
+                                ? PacingController::kMinSleepTime
+                                : max_hold_back_window),
+      max_hold_back_window_in_packets_(
+          allow_low_precision_ ? 0 : max_hold_back_window_in_packets),
       pacing_controller_(clock,
                          packet_sender,
                          event_log,
@@ -89,28 +118,10 @@ void TaskQueuePacedSender::Resume() {
   });
 }
 
-void TaskQueuePacedSender::SetCongestionWindow(
-    DataSize congestion_window_size) {
-  task_queue_.PostTask([this, congestion_window_size]() {
+void TaskQueuePacedSender::SetCongested(bool congested) {
+  task_queue_.PostTask([this, congested]() {
     RTC_DCHECK_RUN_ON(&task_queue_);
-    pacing_controller_.SetCongestionWindow(congestion_window_size);
-    MaybeProcessPackets(Timestamp::MinusInfinity());
-  });
-}
-
-void TaskQueuePacedSender::UpdateOutstandingData(DataSize outstanding_data) {
-  if (task_queue_.IsCurrent()) {
-    RTC_DCHECK_RUN_ON(&task_queue_);
-    // Fast path since this can be called once per sent packet while on the
-    // task queue.
-    pacing_controller_.UpdateOutstandingData(outstanding_data);
-    MaybeProcessPackets(Timestamp::MinusInfinity());
-    return;
-  }
-
-  task_queue_.PostTask([this, outstanding_data]() {
-    RTC_DCHECK_RUN_ON(&task_queue_);
-    pacing_controller_.UpdateOutstandingData(outstanding_data);
+    pacing_controller_.SetCongested(congested);
     MaybeProcessPackets(Timestamp::MinusInfinity());
   });
 }
@@ -271,7 +282,14 @@ void TaskQueuePacedSender::MaybeProcessPackets(
     // Set a new scheduled process time and post a delayed task.
     next_process_time_ = next_process_time;
 
-    task_queue_.PostDelayedHighPrecisionTask(
+    // Prefer low precision if allowed and not probing.
+    TaskQueueBase::DelayPrecision precision =
+        allow_low_precision_ && !pacing_controller_.IsProbing()
+            ? TaskQueueBase::DelayPrecision::kLow
+            : TaskQueueBase::DelayPrecision::kHigh;
+
+    task_queue_.PostDelayedTaskWithPrecision(
+        precision,
         [this, next_process_time]() { MaybeProcessPackets(next_process_time); },
         time_to_next_process->ms<uint32_t>());
   }

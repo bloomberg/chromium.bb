@@ -38,7 +38,6 @@
 #include "vk_typemap_helper.h"
 #include "vk_layer_data.h"
 #include "android_ndk_types.h"
-#include "range_vector.h"
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -129,12 +128,16 @@ struct create_shader_module_api_state {
     std::vector<uint32_t> instrumented_pgm;
 };
 
-#define VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, instance_scope) \
-    vl_concurrent_unordered_map<handle_type, std::shared_ptr<state_type>> map_member; \
-    template <typename Dummy> \
-    struct MapTraits<state_type, Dummy> { \
-        static constexpr bool kInstanceScope = instance_scope; \
-        using MapType = decltype(map_member); \
+#define VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, instance_scope)        \
+    template <typename Dummy>                                                                         \
+    struct AccessorStateHandle<state_type, Dummy> {                                                   \
+        using StateType = state_type;                                                                 \
+        using HandleType = handle_type;                                                               \
+    };                                                                                                \
+    AccessorTraitsTypes<state_type>::MapType map_member;                                              \
+    template <typename Dummy>                                                                         \
+    struct AccessorTraits<state_type, Dummy> : AccessorTraitsTypes<state_type> {                      \
+        static const bool kInstanceScope = instance_scope;                                            \
         static MapType ValidationStateTracker::*Map() { return &ValidationStateTracker::map_member; } \
     };
 
@@ -142,41 +145,6 @@ struct create_shader_module_api_state {
     VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, false)
 #define VALSTATETRACK_MAP_AND_TRAITS_INSTANCE_SCOPE(handle_type, state_type, map_member) \
     VALSTATETRACK_MAP_AND_TRAITS_IMPL(handle_type, state_type, map_member, true)
-
-namespace state_object {
-// Traits for State function resolution.  Specializations defined in the macros below.
-template <typename StateType>
-struct Traits {};
-
-// Helper object to make the macros simpler
-// HandleType_ is a vulkan handle type
-// StateType_ is the type of the corresponding state object, which may be a derived type
-// BaseType_ is the type of object stored in the ValidationStateTracker, there
-//            *must* be a corresponding map using this type
-template <typename HandleType_, typename StateType_, typename BaseType_ = StateType_>
-struct TraitsBase {
-    using StateType = StateType_;
-    using BaseType = BaseType_;
-    using HandleType = HandleType_;
-    using SharedType = std::shared_ptr<StateType>;
-    using ConstSharedType = std::shared_ptr<const StateType>;
-    using ReadLockedType = LockedSharedPtr<const StateType, ReadLockGuard>;
-    using WriteLockedType = LockedSharedPtr<StateType, WriteLockGuard>;
-};
-}  // namespace state_object
-
-#define VALSTATETRACK_STATE_OBJECT(handle_type, state_type)                    \
-    namespace state_object {                                                   \
-    template <>                                                                \
-    struct Traits<state_type> : public TraitsBase<handle_type, state_type> {}; \
-    }
-
-#define VALSTATETRACK_DERIVED_STATE_OBJECT(handle_type, state_type, base_type)            \
-    namespace state_object {                                                              \
-    template <>                                                                           \
-    struct Traits<state_type> : public TraitsBase<handle_type, state_type, base_type> {}; \
-    }
-
 
 // For image copies between compressed/uncompressed formats, the extent is provided in source image texels
 // Destination image texel extents must be adjusted by block size for the dest validation checks
@@ -270,74 +238,56 @@ enum PushConstantByteState {
 
 struct SHADER_MODULE_STATE;
 
-VALSTATETRACK_STATE_OBJECT(VkQueue, QUEUE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkAccelerationStructureNV, ACCELERATION_STRUCTURE_STATE)
-VALSTATETRACK_STATE_OBJECT(VkRenderPass, RENDER_PASS_STATE);
-VALSTATETRACK_STATE_OBJECT(VkDescriptorSetLayout, cvdescriptorset::DescriptorSetLayout);
-VALSTATETRACK_STATE_OBJECT(VkSampler, SAMPLER_STATE);
-VALSTATETRACK_STATE_OBJECT(VkImageView, IMAGE_VIEW_STATE);
-VALSTATETRACK_STATE_OBJECT(VkImage, IMAGE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkBufferView, BUFFER_VIEW_STATE);
-VALSTATETRACK_STATE_OBJECT(VkBuffer, BUFFER_STATE);
-VALSTATETRACK_STATE_OBJECT(VkPipeline, PIPELINE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkDeviceMemory, DEVICE_MEMORY_STATE);
-VALSTATETRACK_STATE_OBJECT(VkFramebuffer, FRAMEBUFFER_STATE);
-VALSTATETRACK_STATE_OBJECT(VkShaderModule, SHADER_MODULE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkDescriptorUpdateTemplate, UPDATE_TEMPLATE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkSwapchainKHR, SWAPCHAIN_NODE);
-VALSTATETRACK_STATE_OBJECT(VkDescriptorPool, DESCRIPTOR_POOL_STATE);
-VALSTATETRACK_STATE_OBJECT(VkDescriptorSet, cvdescriptorset::DescriptorSet);
-VALSTATETRACK_STATE_OBJECT(VkCommandBuffer, CMD_BUFFER_STATE);
-VALSTATETRACK_STATE_OBJECT(VkCommandPool, COMMAND_POOL_STATE);
-VALSTATETRACK_STATE_OBJECT(VkPipelineLayout, PIPELINE_LAYOUT_STATE);
-VALSTATETRACK_STATE_OBJECT(VkFence, FENCE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkQueryPool, QUERY_POOL_STATE);
-VALSTATETRACK_STATE_OBJECT(VkSemaphore, SEMAPHORE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkEvent, EVENT_STATE);
-VALSTATETRACK_STATE_OBJECT(VkSamplerYcbcrConversion, SAMPLER_YCBCR_CONVERSION_STATE);
-VALSTATETRACK_STATE_OBJECT(VkAccelerationStructureKHR, ACCELERATION_STRUCTURE_STATE_KHR);
-VALSTATETRACK_STATE_OBJECT(VkSurfaceKHR, SURFACE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkDisplayModeKHR, DISPLAY_MODE_STATE);
-VALSTATETRACK_STATE_OBJECT(VkPhysicalDevice, PHYSICAL_DEVICE_STATE);
-
 class ValidationStateTracker : public ValidationObject {
   private:
+    // Traits for State function resolution.  Specializations defined in the macro.
     // NOTE: The Dummy argument allows for *partial* specialization at class scope, as full specialization at class scope
     //       isn't supported until C++17.  Since the Dummy has a default all instantiations of the template can ignore it, but all
     //       specializations of the template must list it (and not give it a default).
     // These must be declared at the same access level as the map declarations (below).
-    template <typename State, typename Dummy=int>
-    struct MapTraits {};
+    template <typename StateType, typename Dummy = int>
+    struct AccessorStateHandle {};
+    template <typename StateType, typename Dummy = int>
+    struct AccessorTraits {};
+    template <typename StateType_>
+    struct AccessorTraitsTypes {
+        using StateType = StateType_;
+        using HandleType = typename AccessorStateHandle<StateType>::HandleType;
+        using SharedType = std::shared_ptr<StateType>;
+        using ConstSharedType = std::shared_ptr<const StateType>;
+        using ReadLockedType = LockedSharedPtr<const StateType, ReadLockGuard>;
+        using WriteLockedType = LockedSharedPtr<StateType, WriteLockGuard>;
+        using MappedType = std::shared_ptr<StateType>;
+        using MapType = vl_concurrent_unordered_map<HandleType, MappedType>;
+    };
 
-    template <typename State, typename BaseType = typename state_object::Traits<State>::BaseType,
-              typename MapTraits = MapTraits<BaseType>>
-    typename MapTraits::MapType& GetStateMap() {
-        auto map_member = MapTraits::Map();
-        return (MapTraits::kInstanceScope && (this->*map_member).size() == 0) ? instance_state->*map_member : this->*map_member;
+    template <typename State, typename Traits = AccessorTraits<State>>
+    typename Traits::MapType& GetStateMap() {
+        auto map_member = Traits::Map();
+        return (Traits::kInstanceScope && (this->*map_member).size() == 0) ? instance_state->*map_member : this->*map_member;
     }
-    template <typename State, typename BaseType = typename state_object::Traits<State>::BaseType,
-              typename MapTraits = MapTraits<BaseType>>
-    const typename MapTraits::MapType& GetStateMap() const {
-        auto map_member = MapTraits::Map();
-        return (MapTraits::kInstanceScope && (this->*map_member).size() == 0) ? instance_state->*map_member : this->*map_member;
+    template <typename State, typename Traits = AccessorTraits<State>>
+    const typename Traits::MapType& GetStateMap() const {
+        auto map_member = Traits::Map();
+        return (Traits::kInstanceScope && (this->*map_member).size() == 0) ? instance_state->*map_member : this->*map_member;
     }
 
   public:
     // Override base class, we have some extra work to do here
     void InitDeviceValidationObject(bool add_obj, ValidationObject* inst_obj, ValidationObject* dev_obj) override;
 
-    template <typename State, typename HandleType = typename state_object::Traits<State>::HandleType>
+    template <typename State>
     void Add(std::shared_ptr<State>&& state_object) {
         auto& map = GetStateMap<State>();
-        auto handle = state_object->Handle().template Cast<HandleType>();
+        auto handle = state_object->Handle().template Cast<typename AccessorTraits<State>::HandleType>();
         // Finish setting up the object node tree, which cannot be done from the state object contructors
         // due to use of shared_from_this()
         state_object->LinkChildNodes();
         map.insert_or_assign(handle, std::move(state_object));
     }
 
-    template <typename State, typename Traits = typename state_object::Traits<State>>
-    void Destroy(typename Traits::HandleType handle) {
+    template <typename State>
+    void Destroy(typename AccessorTraits<State>::HandleType handle) {
         auto& map = GetStateMap<State>();
         auto iter = map.pop(handle);
         if (iter != map.end()) {
@@ -369,8 +319,8 @@ class ValidationStateTracker : public ValidationObject {
         return false;
     }
 
-    template <typename State, typename Traits = typename state_object::Traits<State>>
-    typename Traits::SharedType Get(typename Traits::HandleType handle) {
+    template <typename State>
+    typename AccessorTraits<State>::SharedType Get(typename AccessorTraits<State>::HandleType handle) {
         const auto& map = GetStateMap<State>();
         const auto found_it = map.find(handle);
         if (found_it == map.end()) {
@@ -378,52 +328,11 @@ class ValidationStateTracker : public ValidationObject {
         }
         // NOTE: vl_concurrent_unordered_map::find() makes a copy of the value, so it is safe to move out.
         // But this will break everything, when switching to a different map type.
-        return std::static_pointer_cast<State>(std::move(found_it->second));
+        return std::move(found_it->second);
     };
 
-    template <typename State, typename Traits = typename state_object::Traits<State>>
-    typename Traits::ConstSharedType Get(typename Traits::HandleType handle) const {
-        const auto& map = GetStateMap<State>();
-        const auto found_it = map.find(handle);
-        if (found_it == map.end()) {
-            return nullptr;
-        }
-        return std::static_pointer_cast<State>(std::move(found_it->second));
-    };
-
-    // GetRead() and GetWrite() return an already locked state object. Currently this is only supported by
-    // CMD_BUFFER_STATE, because it has public ReadLock() and WriteLock() methods.
-    // NOTE: Calling base class hook methods with a CMD_BUFFER_STATE lock held will lead to deadlock. Instead,
-    // call the base class hook method before getting/locking the command buffer state for processing in the
-    // derived class method.
-    template <typename State, typename Traits = typename state_object::Traits<State>,
-              typename ReadLockedType = typename Traits::ReadLockedType>
-    ReadLockedType GetRead(typename Traits::HandleType handle) const {
-        auto ptr = Get<State>(handle);
-        if (ptr) {
-            auto guard = ptr->ReadLock();
-            return ReadLockedType(std::move(ptr), std::move(guard));
-        } else {
-            return ReadLockedType();
-        }
-    };
-
-    template <typename State, typename Traits = state_object::Traits<State>,
-              typename WriteLockedType = typename Traits::WriteLockedType>
-    WriteLockedType GetWrite(typename Traits::HandleType handle) {
-        auto ptr = Get<State>(handle);
-        if (ptr) {
-            auto guard = ptr->WriteLock();
-            return WriteLockedType(std::move(ptr), std::move(guard));
-        } else {
-            return WriteLockedType();
-        }
-    };
-
-    // When needing to share ownership, control over constness of access with another object (i.e. adding references while
-    // not modifying the contents of the ValidationStateTracker)
-    template <typename State, typename Traits = state_object::Traits<State>>
-    typename Traits::SharedType GetConstCastShared(typename Traits::HandleType handle) const {
+    template <typename State>
+    typename AccessorTraits<State>::ConstSharedType Get(typename AccessorTraits<State>::HandleType handle) const {
         const auto& map = GetStateMap<State>();
         const auto found_it = map.find(handle);
         if (found_it == map.end()) {
@@ -432,25 +341,46 @@ class ValidationStateTracker : public ValidationObject {
         return std::move(found_it->second);
     };
 
-    std::shared_ptr<BUFFER_STATE> GetBufferByAddress(VkDeviceAddress address) {
-        ReadLockGuard guard(buffer_address_lock_);
-        auto found_it = buffer_address_map_.find(address);
-        if (found_it == buffer_address_map_.end()) {
-            return nullptr;
+    // GetRead() and GetWrite() return an already locked state object. Currently this is only supported by
+    // CMD_BUFFER_STATE, because it has public ReadLock() and WriteLock() methods.
+    // NOTE: Calling base class hook methods with a CMD_BUFFER_STATE lock held will lead to deadlock. Instead,
+    // call the base class hook method before getting/locking the command buffer state for processing in the
+    // derived class method.
+    template <typename State>
+    typename AccessorTraits<State>::ReadLockedType GetRead(typename AccessorTraits<State>::HandleType handle) const {
+        using LockedPtrType = typename AccessorTraits<State>::ReadLockedType;
+        auto ptr = Get<State>(handle);
+        if (ptr) {
+            auto guard = ptr->ReadLock();
+            return LockedPtrType(std::move(ptr), std::move(guard));
+        } else {
+            return LockedPtrType();
         }
-        // NOTE: for the address map found_it is the actual map entry rather than a copy so we cannot std::move
-        return found_it->second;
-    }
+    };
 
-    std::shared_ptr<const BUFFER_STATE> GetBufferByAddress(VkDeviceAddress address) const {
-        ReadLockGuard guard(buffer_address_lock_);
-        auto found_it = buffer_address_map_.find(address);
-        if (found_it == buffer_address_map_.end()) {
+    template <typename State>
+    typename AccessorTraits<State>::WriteLockedType GetWrite(typename AccessorTraits<State>::HandleType handle) {
+        using LockedPtrType = typename AccessorTraits<State>::WriteLockedType;
+        auto ptr = Get<State>(handle);
+        if (ptr) {
+            auto guard = ptr->WriteLock();
+            return LockedPtrType(std::move(ptr), std::move(guard));
+        } else {
+            return LockedPtrType();
+        }
+    };
+
+    // When needing to share ownership, control over constness of access with another object (i.e. adding references while
+    // not modifying the contents of the ValidationStateTracker)
+    template <typename State>
+    typename AccessorTraits<State>::SharedType GetConstCastShared(typename AccessorTraits<State>::HandleType handle) const {
+        const auto& map = GetStateMap<State>();
+        const auto found_it = map.find(handle);
+        if (found_it == map.end()) {
             return nullptr;
         }
-        // NOTE: for the address map found_it is the actual map entry rather than a copy so we cannot std::move
-        return found_it->second;
-    }
+        return std::move(found_it->second);
+    };
 
     using CommandBufferResetCallback = std::function<void(VkCommandBuffer)>;
     template <typename Fn>
@@ -608,8 +538,6 @@ class ValidationStateTracker : public ValidationObject {
                                                       const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
                                                       const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos,
                                                       VkResult result) override;
-    void RecordDeviceAccelerationStructureBuildInfo(CMD_BUFFER_STATE& cb_state,
-                                                    const VkAccelerationStructureBuildGeometryInfoKHR& info);
     void PostCallRecordCmdBuildAccelerationStructuresKHR(
         VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos,
         const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos) override;
@@ -1150,10 +1078,6 @@ class ValidationStateTracker : public ValidationObject {
                                                     const VkCopyAccelerationStructureInfoKHR* pInfo, VkResult result) override;
     void PostCallRecordCmdCopyAccelerationStructureKHR(VkCommandBuffer commandBuffer,
                                                        const VkCopyAccelerationStructureInfoKHR* pInfo) override;
-    void PostCallRecordCmdCopyAccelerationStructureToMemoryKHR(VkCommandBuffer commandBuffer,
-                                                               const VkCopyAccelerationStructureToMemoryInfoKHR* pInfo) override;
-    void PostCallRecordCmdCopyMemoryToAccelerationStructureKHR(VkCommandBuffer commandBuffer,
-                                                               const VkCopyMemoryToAccelerationStructureInfoKHR* pInfo) override;
     void PreCallRecordCmdSetCullMode(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) override;
     void PreCallRecordCmdSetCullModeEXT(VkCommandBuffer commandBuffer, VkCullModeFlags cullMode) override;
     void PreCallRecordCmdSetFrontFace(VkCommandBuffer commandBuffer, VkFrontFace frontFace) override;
@@ -1305,7 +1229,6 @@ class ValidationStateTracker : public ValidationObject {
         VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT texel_buffer_alignment_props;
         VkPhysicalDeviceFragmentDensityMapPropertiesEXT fragment_density_map_props;
         VkPhysicalDeviceFragmentDensityMap2PropertiesEXT fragment_density_map2_props;
-        VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM fragment_density_map_offset_props;
         VkPhysicalDevicePerformanceQueryPropertiesKHR performance_query_props;
         VkPhysicalDeviceSampleLocationsPropertiesEXT sample_locations_props;
         VkPhysicalDeviceCustomBorderColorPropertiesEXT custom_border_color_props;
@@ -1336,9 +1259,8 @@ class ValidationStateTracker : public ValidationObject {
     };
     std::vector<DeviceQueueInfo> device_queue_info_list;
     // If vkGetBufferDeviceAddress is called, keep track of buffer <-> address mapping.
-    sparse_container::range_map<VkDeviceAddress, std::shared_ptr<BUFFER_STATE>> buffer_address_map_;
-    mutable ReadWriteLock buffer_address_lock_;
-
+    // TODO is it sufficient to track a pointer, or do we need a std::shared_ptr<BUFFER_STATE>?
+    vl_concurrent_unordered_map<VkDeviceAddress, BUFFER_STATE*> buffer_address_map_;
     vl_concurrent_unordered_map<uint64_t, VkFormatFeatureFlags2KHR> ahb_ext_formats_map;
 
   private:

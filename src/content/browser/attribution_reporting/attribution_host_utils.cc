@@ -12,9 +12,9 @@
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "content/common/url_utils.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "url/gurl.h"
@@ -24,27 +24,23 @@ namespace content {
 
 namespace attribution_host_utils {
 
-bool IsOriginTrustworthyForAttributions(const url::Origin& origin) {
-  return IsAndroidAppOrigin(origin) ||
-         network::IsOriginPotentiallyTrustworthy(origin);
-}
-
 void VerifyAndStoreImpression(AttributionSourceType source_type,
                               const url::Origin& impression_origin,
                               const blink::Impression& impression,
                               AttributionManager& attribution_manager,
                               base::Time impression_time) {
   // Convert |impression| into a StorableImpression that can be forwarded to
-  // storage. If a reporting origin was not provided, default to the conversion
-  // destination for reporting.
+  // storage. If a reporting origin was not provided, default to the impression
+  // origin for reporting.
   const url::Origin& reporting_origin = !impression.reporting_origin
                                             ? impression_origin
                                             : *impression.reporting_origin;
 
   // Conversion measurement is only allowed in secure contexts.
-  if (!IsOriginTrustworthyForAttributions(impression_origin) ||
-      !IsOriginTrustworthyForAttributions(reporting_origin) ||
-      !IsOriginTrustworthyForAttributions(impression.conversion_destination)) {
+  if (!IsSourceOriginPotentiallyTrustworthy(impression_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(reporting_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(
+          impression.conversion_destination)) {
     return;
   }
 

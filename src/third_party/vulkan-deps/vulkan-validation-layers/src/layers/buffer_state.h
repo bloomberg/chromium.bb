@@ -27,7 +27,6 @@
  */
 #pragma once
 #include "device_memory_state.h"
-#include "range_vector.h"
 
 class ValidationStateTracker;
 
@@ -45,9 +44,6 @@ class BUFFER_STATE : public BINDABLE {
 
     VkBuffer buffer() const { return handle_.Cast<VkBuffer>(); }
 
-    sparse_container::range<VkDeviceAddress> DeviceAddressRange() const {
-        return {deviceAddress, deviceAddress + createInfo.size};
-    }
 };
 
 class BUFFER_VIEW_STATE : public BASE_NODE {

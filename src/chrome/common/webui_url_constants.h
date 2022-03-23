@@ -36,6 +36,7 @@ extern const char kChromeUIAppIconHost[];
 extern const char kChromeUIAppIconURL[];
 extern const char kChromeUIAppLauncherPageHost[];
 extern const char kChromeUIAppsURL[];
+extern const char kChromeUIAppsWithDeprecationDialogURL[];
 extern const char kChromeUIAutofillInternalsHost[];
 extern const char kChromeUIBluetoothInternalsHost[];
 extern const char kChromeUIBookmarksHost[];
@@ -463,7 +464,6 @@ extern const char kAddressesSubPage[];
 extern const char kAppearanceSubPage[];
 extern const char kAutofillSubPage[];
 extern const char kClearBrowserDataSubPage[];
-extern const char kCloudPrintersSubPage[];
 extern const char kContentSettingsSubPage[];
 extern const char kCookieSettingsSubPage[];
 extern const char kCreateProfileSubPage[];
@@ -490,7 +490,7 @@ extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
-extern const char kPrivacySandboxSubPage[];
+extern const char kPrivacySandboxAdPersonalizationSubPage[];
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kPrivacySandboxSubPagePath[];

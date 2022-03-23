@@ -97,6 +97,10 @@
     margin-bottom: 8px;
   }
 
+  ul {
+    padding-inline-start: 20px;
+  }
+
   .learn-more-section-title {
     color: var(--cr-primary-text-color);
     font-size: 0.875rem; /* 14px */
@@ -149,19 +153,6 @@
     --paper-tooltip-delay-in: 300;
     --paper-tooltip-duration-in: 300;
     --paper-tooltip-opacity: 1;
-    /* CSS mixin goes against style guide, but this is the only way to style
-     * the paper tooltip without changing the source code (which is in
-     * third_party)
-     */
-    --paper-tooltip: {
-      border-radius: 4px;
-      box-shadow: var(--cr-elevation-2);
-      font-family: Roboto, Arial, sans-serif;
-      font-size: inherit;
-      font-weight: 400;
-      line-height: 154%;  /* 20px. */
-      margin: 0 4px;
-    };
   }
 </style>
 
@@ -299,9 +290,6 @@
                 </div>
                 <div class="dialog-description">
                   $i18n{privacySandboxAdPersonalizationDialogTopicsLearnMore3}
-                </div>
-                <div class="dialog-description">
-                  $i18n{privacySandboxAdPersonalizationDialogTopicsLearnMore4}
                 </div>
               </paper-tooltip>
             </div>

@@ -139,6 +139,7 @@ config("icu_code") {
       "-Wno-rewrite-not-bool",
       "-Wno-deprecated-anon-enum-enum-conversion",
       "-Wno-deprecated-array-compare",
+      "-Wno-deprecated-pragma",
 
       # Used for conditional changes to the compilation process that
       # are only needed for the Fuchsia toolchain.

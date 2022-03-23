@@ -125,6 +125,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1668469839109562275">Built-in VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> is not connected.</translation>
+<translation id="1677582821739292812">Someone is looking at your screen</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> timer · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 address: <ph name="ADDRESS" /></translation>
 <translation id="1703117532528082099">Active window docked on left.</translation>
@@ -258,12 +259,14 @@ Here are some things that you can try to get started.</translation>
 <translation id="2595239820337756193">5 K in miles</translation>
 <translation id="2596078834055697711">Take window screenshot</translation>
 <translation id="2607678425161541573">Online sign-in required</translation>
+<translation id="2620436844016719705">System</translation>
 <translation id="2621713457727696555">Secured</translation>
 <translation id="263399434338050016">'Select all'</translation>
 <translation id="2653019840645008922">Window capture</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2658778018866295321">Click and drag</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> and <ph name="UNAVAILABLE_APPS_TWO" /> aren't on this device.</translation>
+<translation id="2673968385134502798">Games</translation>
 <translation id="2678852583403169292">Select to Speak menu</translation>
 <translation id="2689613560355655046">Desk 8</translation>
 <translation id="2700493154570097719">Set your keyboard</translation>
@@ -354,6 +357,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="320207200541803018">Set timer</translation>
 <translation id="3203405173652969239">Switch Access enabled</translation>
 <translation id="3207953481422525583">User settings</translation>
+<translation id="3208321278970793882">App</translation>
 <translation id="3217205077783620295">Volume is on; toggling will mute audio.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> more</translation>
 <translation id="3227137524299004712">Microphone</translation>
@@ -669,6 +673,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5078796286268621944">Incorrect PIN</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="5106223312672646208">Personalise</translation>
+<translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="5136175204352732067">Different keyboard connected</translation>
 <translation id="5147567197700016471">Unlocked</translation>
@@ -787,6 +792,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Yellow</translation>
 <translation id="5909862606227538307">Inactive desk.</translation>
+<translation id="5911231045062997865">Lacros windows aren't currently supported. Other apps will be saved.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5920710855273935292">Mic is muted.</translation>
@@ -1038,6 +1044,7 @@ New install</translation>
 <translation id="7513622367902644023">Screenshot mode selected</translation>
 <translation id="7513922695575567867">Calendar, week of <ph name="DATE" />, <ph name="SELECTED_DATE" /> is currently selected.</translation>
 <translation id="7514365320538308">Download</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7526573455193969409">Network may be monitored</translation>
 <translation id="7536035074519304529">IP address: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Linux apps and incognito windows aren’t currently supported. Other apps will be saved.</translation>
@@ -1107,6 +1114,7 @@ New install</translation>
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7902625623987030061">Touch the fingerprint sensor</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Speech is now processed locally and dictation works offline</translation>
 <translation id="7933084174919150729">The Google Assistant is only available for primary profile.</translation>
 <translation id="79341161159229895">Account managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>

@@ -49,6 +49,7 @@ class NetworkScreenTest : public OobeBaseTest {
             features::kEnableOobeNetworkScreenSkip,
         },
         {});
+    needs_network_screen_skip_check_ = true;
   }
 
   NetworkScreenTest(const NetworkScreenTest&) = delete;
@@ -207,7 +208,10 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, HandsOffCanConnect_Skipped) {
   network_screen()->UpdateStatus();
 
   WaitForScreenExit();
-  CheckResult(NetworkScreen::Result::CONNECTED_REGULAR);
+  if (chromeos::features::IsOobeConsolidatedConsentEnabled())
+    CheckResult(NetworkScreen::Result::CONNECTED_REGULAR_CONSOLIDATED_CONSENT);
+  else
+    CheckResult(NetworkScreen::Result::CONNECTED_REGULAR);
 }
 
 // The network screen should NOT be skipped if the connection times out, even if

@@ -82,7 +82,7 @@ class PacingController {
   PacingController(Clock* clock,
                    PacketSender* packet_sender,
                    RtcEventLog* event_log,
-                   const WebRtcKeyValueConfig* field_trials,
+                   const WebRtcKeyValueConfig& field_trials,
                    ProcessMode mode);
 
   ~PacingController();
@@ -97,8 +97,7 @@ class PacingController {
   void Resume();  // Resume sending packets.
   bool IsPaused() const;
 
-  void SetCongestionWindow(DataSize congestion_window_size);
-  void UpdateOutstandingData(DataSize outstanding_data);
+  void SetCongested(bool congested);
 
   // Sets the pacing rates. Must be called once before packets can be sent.
   void SetPacingRates(DataRate pacing_rate, DataRate padding_rate);
@@ -145,8 +144,6 @@ class PacingController {
   // is available.
   void ProcessPackets();
 
-  bool Congested() const;
-
   bool IsProbing() const;
 
  private:
@@ -176,8 +173,7 @@ class PacingController {
   const ProcessMode mode_;
   Clock* const clock_;
   PacketSender* const packet_sender_;
-  const std::unique_ptr<FieldTrialBasedConfig> fallback_field_trials_;
-  const WebRtcKeyValueConfig* field_trials_;
+  const WebRtcKeyValueConfig& field_trials_;
 
   const bool drain_large_queues_;
   const bool send_padding_if_silent_;
@@ -226,8 +222,7 @@ class PacingController {
   RoundRobinPacketQueue packet_queue_;
   uint64_t packet_counter_;
 
-  DataSize congestion_window_size_;
-  DataSize outstanding_data_;
+  bool congested_;
 
   TimeDelta queue_time_limit;
   bool account_for_audio_;

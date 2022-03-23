@@ -108,21 +108,12 @@ class MacPort(base.Port):
     #
 
     def path_to_apache(self):
-        return '/usr/sbin/httpd'
+        return self._path_from_chromium_base(
+            'third_party', 'apache-mac', 'bin', 'httpd')
 
     def path_to_apache_config_file(self):
-        # TODO(crbug.com/1190885): Workaround for Monterey, should be reverted
-        # once we build chromium specific httpd.
-        if self.host.platform.is_mac_monterey():
-            config_file_name = "apache2-httpd-2.4-prefork.conf"
-            return self._filesystem.join(self.apache_config_directory(), config_file_name)
-
-        config_file_basename = 'apache2-httpd-' + self._apache_version()
-        if self.host.platform.os_version not in ['mac10.12']:
-            config_file_basename += '-php7'
-            if self.host.platform.os_version not in ['mac10.13', 'mac10.14']:
-                config_file_basename += '-prefork'
-        return self._filesystem.join(self.apache_config_directory(), config_file_basename + '.conf')
+        config_file_basename = 'apache2-httpd-%s-php7.conf' % (self._apache_version(),)
+        return self._filesystem.join(self.apache_config_directory(), config_file_basename)
 
     def _path_to_driver(self, target=None):
         return self._build_path_with_target(target,

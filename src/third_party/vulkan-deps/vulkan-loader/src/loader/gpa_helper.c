@@ -26,7 +26,6 @@
 
 #include "loader.h"
 #include "debug_utils.h"
-#include "unknown_function_handling.h"
 #include "wsi.h"
 
 void *trampoline_get_proc_addr(struct loader_instance *inst, const char *funcName) {
@@ -259,8 +258,7 @@ void *trampoline_get_proc_addr(struct loader_instance *inst, const char *funcNam
     if (extension_instance_gpa(inst, funcName, &addr)) return addr;
 
     // Unknown physical device extensions
-    addr = loader_phys_dev_ext_gpa_tramp(inst, funcName);
-    if (NULL != addr) return addr;
+    if (loader_phys_dev_ext_gpa(inst, funcName, true, &addr, NULL)) return addr;
 
     // Unknown device extensions
     addr = loader_dev_ext_gpa(inst, funcName);

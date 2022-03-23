@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
+#include "ui/views/controls/image_view.h"
 
 namespace content {
 class WebContents;
@@ -37,6 +38,10 @@ class VirtualCardEnrollBubbleViews : public AutofillBubbleBase,
 
   void Show(DisplayReason reason);
 
+  bool NetworkIconNotEmptyForTesting() {
+    return !card_network_icon_->GetImageModel().IsEmpty();
+  }
+
   // AutofillBubbleBase:
   void Hide() override;
 
@@ -56,16 +61,20 @@ class VirtualCardEnrollBubbleViews : public AutofillBubbleBase,
   void OnDialogDeclined();
 
  private:
+  friend class VirtualCardEnrollBubbleViewsInteractiveUiTest;
+
   std::unique_ptr<views::View> CreateLegalMessageView();
 
   void LearnMoreLinkClicked();
-
-  void LegalMessageClicked(const GURL& url);
+  void GoogleLegalMessageClicked(const GURL& url);
+  void IssuerLegalMessageClicked(const GURL& url);
 
   raw_ptr<VirtualCardEnrollBubbleController> controller_;
 
   PaymentsBubbleClosedReason closed_reason_ =
       PaymentsBubbleClosedReason::kUnknown;
+
+  raw_ptr<views::ImageView> card_network_icon_ = nullptr;
 
   base::WeakPtrFactory<VirtualCardEnrollBubbleViews> weak_ptr_factory_{this};
 };

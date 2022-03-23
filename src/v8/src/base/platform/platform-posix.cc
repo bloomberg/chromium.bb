@@ -46,8 +46,11 @@
 #include <atomic>
 #endif
 
+#if V8_OS_DARWIN || V8_OS_LINUX
+#include <dlfcn.h>  // for dlsym
+#endif
+
 #if V8_OS_DARWIN
-#include <dlfcn.h>
 #include <mach/mach.h>
 #endif
 
@@ -575,10 +578,22 @@ void OS::FreeAddressSpaceReservation(AddressSpaceReservation reservation) {
 // macOS specific implementation in platform-macos.cc.
 #if !defined(V8_OS_MACOS)
 // static
+// Need to disable CFI_ICALL due to the indirect call to memfd_create.
+DISABLE_CFI_ICALL
 PlatformSharedMemoryHandle OS::CreateSharedMemoryHandleForTesting(size_t size) {
 #if V8_OS_LINUX && !V8_OS_ANDROID
-  const char* name = "V8MemFDForTesting";
-  int fd = memfd_create(name, MFD_CLOEXEC);
+  // Use memfd_create if available, otherwise mkstemp.
+  using memfd_create_t = int (*)(const char*, unsigned int);
+  memfd_create_t memfd_create =
+      reinterpret_cast<memfd_create_t>(dlsym(RTLD_DEFAULT, "memfd_create"));
+  int fd = -1;
+  if (memfd_create) {
+    fd = memfd_create("V8MemFDForTesting", MFD_CLOEXEC);
+  } else {
+    char filename[] = "/tmp/v8_tmp_file_for_testing_XXXXXX";
+    fd = mkstemp(filename);
+    if (fd != -1) CHECK_EQ(0, unlink(filename));
+  }
   if (fd == -1) return kInvalidSharedMemoryHandle;
   CHECK_EQ(0, ftruncate(fd, size));
   return SharedMemoryHandleFromFileDescriptor(fd);

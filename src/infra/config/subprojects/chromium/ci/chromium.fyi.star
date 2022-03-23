@@ -82,13 +82,6 @@ def fyi_mac_builder(*, name, **kwargs):
     kwargs.setdefault("os", os.MAC_DEFAULT)
     return ci.builder(name = name, **kwargs)
 
-def _fyi_gpu_windows_builder(*, name, **kwargs):
-    kwargs.setdefault("execution_timeout", ci.DEFAULT_EXECUTION_TIMEOUT)
-    kwargs.setdefault("builderless", True)
-    kwargs.setdefault("cores", 8)
-    kwargs.setdefault("os", os.WINDOWS_ANY)
-    return ci.builder(name = name, **kwargs)
-
 ci.builder(
     name = "Linux Viz",
     console_view_entry = consoles.console_view_entry(
@@ -574,6 +567,25 @@ ci.builder(
 # OS shouldn't matter.
 ci.builder(
     name = "mac-osxbeta-rel",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "beta",
@@ -808,154 +820,6 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
-
-_fyi_gpu_windows_builder(
-    name = "GPU FYI Win x64 Builder (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chrome_internal",
-                "no_kaleidoscope",
-                "enable_reclient",
-            ],
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|Release",
-        short_name = "x64",
-    ),
-)
-
-_fyi_gpu_windows_builder(
-    name = "GPU FYI Win x64 Builder (dbg) (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chrome_internal",
-                "no_kaleidoscope",
-                "enable_reclient",
-            ],
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|Debug",
-        short_name = "x64",
-    ),
-)
-
-_fyi_gpu_windows_builder(
-    name = "GPU FYI XR Win x64 Builder (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chrome_internal",
-                "no_kaleidoscope",
-                "enable_reclient",
-            ],
-        ),
-        # This causes the builder to upload isolates to a location where
-        # Pinpoint can access them in addition to the usual isolate
-        # server. This is necessary because "Win10 FYI x64 Release XR
-        # perf (NVIDIA)", which is a child of this builder, uploads perf
-        # results, and Pinpoint may trigger additional builds on this
-        # builder during a bisect.
-        perf_isolate_upload = True,
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|XR",
-        short_name = "x64",
-    ),
-)
-
-_fyi_gpu_windows_builder(
-    name = "GPU FYI Win x64 DX12 Vulkan Builder (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chrome_internal",
-                "no_kaleidoscope",
-                "enable_reclient",
-            ],
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|dx12vk",
-        short_name = "rel",
-    ),
-)
-
-_fyi_gpu_windows_builder(
-    name = "GPU FYI Win x64 DX12 Vulkan Builder (dbg) (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chrome_internal",
-                "no_kaleidoscope",
-                "enable_reclient",
-            ],
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|Builder|dx12vk",
-        short_name = "dbg",
-    ),
-)
-
-_fyi_gpu_windows_builder(
-    name = "GPU Win x64 Builder (dbg) (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "enable_reclient",
-            ],
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows",
-    ),
-)
 
 ci.builder(
     name = "Win ASan Release (reclient shadow)",

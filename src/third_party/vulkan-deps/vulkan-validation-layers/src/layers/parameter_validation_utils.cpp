@@ -2492,11 +2492,8 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
 
                         if (viewport_state.scissorCount == 0) {
                             if (!has_dynamic_scissor_with_count) {
-                                const char *vuid = IsExtEnabled(device_extensions.vk_ext_extended_dynamic_state)
-                                                       ? "VUID-VkPipelineViewportStateCreateInfo-scissorCount-04136"
-                                                       : "VUID-VkPipelineViewportStateCreateInfo-scissorCount-arraylength";
                                 skip |= LogError(
-                                    device, vuid,
+                                    device, "VUID-VkPipelineViewportStateCreateInfo-scissorCount-arraylength",
                                     "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32 "].pViewportState->scissorCount is 0.", i);
                             }
                         } else if (viewport_state.scissorCount > device_limits.maxViewports) {
@@ -2506,10 +2503,7 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                              ") is greater than VkPhysicalDeviceLimits::maxViewports (=%" PRIu32 ").",
                                              i, viewport_state.scissorCount, device_limits.maxViewports);
                         } else if (has_dynamic_scissor_with_count) {
-                            const char *vuid = IsExtEnabled(device_extensions.vk_ext_extended_dynamic_state)
-                                                   ? "VUID-VkPipelineViewportStateCreateInfo-scissorCount-04136"
-                                                   : "VUID-VkGraphicsPipelineCreateInfo-pDynamicStates-03380";
-                            skip |= LogError(device, vuid,
+                            skip |= LogError(device, "VUID-VkGraphicsPipelineCreateInfo-pDynamicStates-03380",
                                              "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32
                                              "].pViewportState->scissorCount (=%" PRIu32
                                              ") must be zero when VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT is used.",
@@ -2573,18 +2567,13 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                          i, shading_rate_image_struct->viewportCount, device_limits.maxViewports);
                     }
 
-                    if (viewport_state.scissorCount != viewport_state.viewportCount) {
-                        if (!IsExtEnabled(device_extensions.vk_ext_extended_dynamic_state) ||
-                            (!has_dynamic_viewport_with_count && !has_dynamic_scissor_with_count)) {
-                            const char *vuid = IsExtEnabled(device_extensions.vk_ext_extended_dynamic_state)
-                                                   ? "VUID-VkPipelineViewportStateCreateInfo-scissorCount-04134"
-                                                   : "VUID-VkPipelineViewportStateCreateInfo-scissorCount-01220";
-                            skip |= LogError(
-                                device, vuid,
-                                "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32 "].pViewportState->scissorCount (=%" PRIu32
-                                ") is not identical to pCreateInfos[%" PRIu32 "].pViewportState->viewportCount (=%" PRIu32 ").",
-                                i, viewport_state.scissorCount, i, viewport_state.viewportCount);
-                        }
+                    if (viewport_state.scissorCount != viewport_state.viewportCount &&
+                        !(has_dynamic_viewport_with_count || has_dynamic_scissor_with_count)) {
+                        skip |= LogError(device, "VUID-VkPipelineViewportStateCreateInfo-scissorCount-01220",
+                                         "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32
+                                         "].pViewportState->scissorCount (=%" PRIu32 ") is not identical to pCreateInfos[%" PRIu32
+                                         "].pViewportState->viewportCount (=%" PRIu32 ").",
+                                         i, viewport_state.scissorCount, i, viewport_state.viewportCount);
                     }
 
                     if (exclusive_scissor_struct && exclusive_scissor_struct->exclusiveScissorCount != 0 &&
@@ -6067,7 +6056,7 @@ bool StatelessValidation::manual_PreCallValidateCreateRayTracingPipelinesKHR(
             std::stringstream msg;
             msg << "pCreateInfos[%" << i << "].pStages[%" << stage_index << "]";
             ValidatePipelineShaderStageCreateInfo("vkCreateRayTracingPipelinesKHR", msg.str().c_str(),
-                                                  &pCreateInfos[i].pStages[stage_index]);
+                                                   &pCreateInfos[i].pStages[i]);
         }
         if (!raytracing_features || (raytracing_features && raytracing_features->rayTraversalPrimitiveCulling == VK_FALSE)) {
             if (pCreateInfos[i].flags & VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR) {
@@ -8297,39 +8286,3 @@ bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceSurfacePresentM
     return skip;
 }
 #endif  // VK_USE_PLATFORM_WIN32_KHR
-
-// VkDeviceImageMemoryRequirements::planeAspect should have been listed as optional to account for VK_IMAGE_ASPECT_NONE
-bool StatelessValidation::manual_PreCallValidateGetDeviceImageMemoryRequirementsKHR(
-    VkDevice device, const VkDeviceImageMemoryRequirements *pInfo, VkMemoryRequirements2 *pMemoryRequirements) const {
-    return validate_flags("vkGetDeviceImageMemoryRequirementsKHR", "pInfo->planeAspect", "VkImageAspectFlagBits",
-                          AllVkImageAspectFlagBits, pInfo->planeAspect, kOptionalSingleBit,
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter",
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter");
-}
-
-bool StatelessValidation::manual_PreCallValidateGetDeviceImageMemoryRequirements(VkDevice device,
-                                                                                 const VkDeviceImageMemoryRequirements *pInfo,
-                                                                                 VkMemoryRequirements2 *pMemoryRequirements) const {
-    return validate_flags("vkGetDeviceImageMemoryRequirements", "pInfo->planeAspect", "VkImageAspectFlagBits",
-                          AllVkImageAspectFlagBits, pInfo->planeAspect, kOptionalSingleBit,
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter",
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter");
-}
-
-bool StatelessValidation::manual_PreCallValidateGetDeviceImageSparseMemoryRequirementsKHR(
-    VkDevice device, const VkDeviceImageMemoryRequirements *pInfo, uint32_t *pSparseMemoryRequirementCount,
-    VkSparseImageMemoryRequirements2 *pSparseMemoryRequirements) const {
-    return validate_flags("vkGetDeviceImageSparseMemoryRequirementsKHR", "pInfo->planeAspect", "VkImageAspectFlagBits",
-                          AllVkImageAspectFlagBits, pInfo->planeAspect, kOptionalSingleBit,
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter",
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter");
-}
-
-bool StatelessValidation::manual_PreCallValidateGetDeviceImageSparseMemoryRequirements(
-    VkDevice device, const VkDeviceImageMemoryRequirements *pInfo, uint32_t *pSparseMemoryRequirementCount,
-    VkSparseImageMemoryRequirements2 *pSparseMemoryRequirements) const {
-    return validate_flags("vkGetDeviceImageSparseMemoryRequirements", "pInfo->planeAspect", "VkImageAspectFlagBits",
-                          AllVkImageAspectFlagBits, pInfo->planeAspect, kOptionalSingleBit,
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter",
-                          "VUID-VkDeviceImageMemoryRequirements-planeAspect-parameter");
-}

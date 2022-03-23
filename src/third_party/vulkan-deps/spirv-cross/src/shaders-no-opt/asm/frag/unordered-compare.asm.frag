@@ -93,8 +93,6 @@
          %42 = OpLoad %v4float %B
          %43 = OpFUnordNotEqual %v4bool %41 %42
                OpStore %neq %43
-         %ordered = OpFOrdNotEqual %v4bool %41 %42
-               OpStore %neq %ordered
          %44 = OpLoad %v4bool %le
          %49 = OpSelect %v4float %44 %48 %47
          %50 = OpLoad %v4bool %leq

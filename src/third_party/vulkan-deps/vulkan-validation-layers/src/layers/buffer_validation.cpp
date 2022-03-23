@@ -511,7 +511,7 @@ bool CoreChecks::VerifyFramebufferAndRenderPassLayouts(RenderPassCreateVersion r
 
     if (attachments != nullptr) {
         const auto *const_p_cb = static_cast<const CMD_BUFFER_STATE *>(pCB);
-        for (uint32_t i = 0; i < render_pass_info->attachmentCount && i < framebuffer_info.attachmentCount; ++i) {
+        for (uint32_t i = 0; i < render_pass_info->attachmentCount; ++i) {
             auto image_view = attachments[i];
             auto view_state = Get<IMAGE_VIEW_STATE>(image_view);
 
@@ -832,7 +832,7 @@ bool CoreChecks::ValidateBarriersToImages(const Location &outer_loc, const CMD_B
             if (image_state->layout_locked) {
                 // TODO: Add unique id for error when available
                 skip |= LogError(
-                    img_barrier.image, "VUID-Undefined",
+                    img_barrier.image, 0,
                     "%s Attempting to transition shared presentable %s"
                     " from layout %s to layout %s, but image has already been presented and cannot have its layout transitioned.",
                     loc.Message().c_str(), report_data->FormatHandle(img_barrier.image).c_str(),
@@ -1748,13 +1748,14 @@ bool CoreChecks::PreCallValidateCreateImage(VkDevice device, const VkImageCreate
             "vkCreateImage(): images using sparse memory cannot have VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT set");
     }
 
-    if (!enabled_features.fragment_density_map_offset_features.fragmentDensityMapOffset) {
+    if (IsExtEnabled(device_extensions.vk_ext_fragment_density_map) ||
+        IsExtEnabled(device_extensions.vk_ext_fragment_density_map2)) {
         uint32_t ceiling_width = static_cast<uint32_t>(ceil(
             static_cast<float>(device_limits->maxFramebufferWidth) /
             std::max(static_cast<float>(phys_dev_ext_props.fragment_density_map_props.minFragmentDensityTexelSize.width), 1.0f)));
         if ((pCreateInfo->usage & VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT) && (pCreateInfo->extent.width > ceiling_width)) {
             skip |=
-                LogError(device, "VUID-VkImageCreateInfo-fragmentDensityMapOffset-06514",
+                LogError(device, "VUID-VkImageCreateInfo-usage-02559",
                          "vkCreateImage(): Image usage flags include a fragment density map bit and image width (%u) exceeds the "
                          "ceiling of device "
                          "maxFramebufferWidth (%u) / minFragmentDensityTexelSize.width (%u). The ceiling value: %u",
@@ -1767,7 +1768,7 @@ bool CoreChecks::PreCallValidateCreateImage(VkDevice device, const VkImageCreate
             std::max(static_cast<float>(phys_dev_ext_props.fragment_density_map_props.minFragmentDensityTexelSize.height), 1.0f)));
         if ((pCreateInfo->usage & VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT) && (pCreateInfo->extent.height > ceiling_height)) {
             skip |=
-                LogError(device, "VUID-VkImageCreateInfo-fragmentDensityMapOffset-06515",
+                LogError(device, "VUID-VkImageCreateInfo-usage-02560",
                          "vkCreateImage(): Image usage flags include a fragment density map bit and image height (%u) exceeds the "
                          "ceiling of device "
                          "maxFramebufferHeight (%u) / minFragmentDensityTexelSize.height (%u). The ceiling value: %u",
@@ -6039,16 +6040,6 @@ bool CoreChecks::PreCallValidateCreateImageView(VkDevice device, const VkImageVi
                                  image_view_min_lod->minLod, max_level);
             }
         }
-
-        if (FormatRequiresYcbcrConversionExplicitly(view_format)) {
-            const auto ycbcr_conversion = LvlFindInChain<VkSamplerYcbcrConversionInfo>(pCreateInfo->pNext);
-            if (!ycbcr_conversion || ycbcr_conversion->conversion == VK_NULL_HANDLE) {
-                skip |= LogError(
-                    device, "VUID-VkImageViewCreateInfo-format-06415",
-                    "vkCreateImageView(): Format %s requires a VkSamplerYcbcrConversion but one was not passed in the pNext chain.",
-                    string_VkFormat(view_format));
-            }
-        }
     }
     return skip;
 }
@@ -6200,6 +6191,14 @@ bool CoreChecks::PreCallValidateDestroyImageView(VkDevice device, VkImageView im
 
 bool CoreChecks::PreCallValidateDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks *pAllocator) const {
     return ValidateIdleBuffer(buffer);
+}
+
+void CoreChecks::PreCallRecordDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks *pAllocator) {
+    auto buffer_state = Get<BUFFER_STATE>(buffer);
+    if (buffer_state) {
+        buffer_address_map_.erase(buffer_state->deviceAddress);
+    }
+    StateTracker::PreCallRecordDestroyBuffer(device, buffer, pAllocator);
 }
 
 bool CoreChecks::PreCallValidateDestroyBufferView(VkDevice device, VkBufferView bufferView,

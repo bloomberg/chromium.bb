@@ -728,11 +728,6 @@ void CompilerHLSL::emit_builtin_inputs_in_struct()
 			// Handled specially.
 			break;
 
-		case BuiltInHelperInvocation:
-			if (hlsl_options.shader_model < 50 || get_entry_point().model != ExecutionModelFragment)
-				SPIRV_CROSS_THROW("Helper Invocation input is only supported in PS 5.0 or higher.");
-			break;
-
 		case BuiltInClipDistance:
 			// HLSL is a bit weird here, use SV_ClipDistance0, SV_ClipDistance1 and so on with vectors.
 			for (uint32_t clip = 0; clip < clip_distance_count; clip += 4)
@@ -989,8 +984,6 @@ std::string CompilerHLSL::builtin_to_glsl(spv::BuiltIn builtin, spv::StorageClas
 		return "WaveGetLaneIndex()";
 	case BuiltInSubgroupSize:
 		return "WaveGetLaneCount()";
-	case BuiltInHelperInvocation:
-		return "IsHelperLane()";
 
 	default:
 		return CompilerGLSL::builtin_to_glsl(builtin, storage);
@@ -1108,11 +1101,6 @@ void CompilerHLSL::emit_builtin_variables()
 			if (hlsl_options.shader_model < 60)
 				SPIRV_CROSS_THROW("Need SM 6.0 for Wave ops.");
 			type = "uint4";
-			break;
-
-		case BuiltInHelperInvocation:
-			if (hlsl_options.shader_model < 50)
-				SPIRV_CROSS_THROW("Need SM 5.0 for Helper Invocation.");
 			break;
 
 		case BuiltInClipDistance:
@@ -1347,8 +1335,7 @@ void CompilerHLSL::emit_resources()
 		}
 	});
 
-	if (execution.model == ExecutionModelVertex && hlsl_options.shader_model <= 30 &&
-	    active_output_builtins.get(BuiltInPosition))
+	if (execution.model == ExecutionModelVertex && hlsl_options.shader_model <= 30)
 	{
 		statement("uniform float4 gl_HalfPixel;");
 		emitted = true;
@@ -2115,11 +2102,7 @@ void CompilerHLSL::emit_buffer_block(const SPIRVariable &var)
 
 	bool is_uav = var.storage == StorageClassStorageBuffer || has_decoration(type.self, DecorationBufferBlock);
 
-	if (flattened_buffer_blocks.count(var.self))
-	{
-		emit_buffer_block_flattened(var);
-	}
-	else if (is_uav)
+	if (is_uav)
 	{
 		Bitset flags = ir.get_buffer_block_flags(var);
 		bool is_readonly = flags.get(DecorationNonWritable) && !is_hlsl_force_storage_buffer_as_uav(var.self);
@@ -2224,11 +2207,7 @@ void CompilerHLSL::emit_buffer_block(const SPIRVariable &var)
 
 void CompilerHLSL::emit_push_constant_block(const SPIRVariable &var)
 {
-	if (flattened_buffer_blocks.count(var.self))
-	{
-		emit_buffer_block_flattened(var);
-	}
-	else if (root_constants_layout.empty())
+	if (root_constants_layout.empty())
 	{
 		emit_buffer_block(var);
 	}
@@ -2386,7 +2365,7 @@ void CompilerHLSL::emit_function_prototype(SPIRFunction &func, const Bitset &ret
 		out_argument += " ";
 		out_argument += "spvReturnValue";
 		out_argument += type_to_array_glsl(type);
-		arglist.push_back(std::move(out_argument));
+		arglist.push_back(move(out_argument));
 	}
 
 	for (auto &arg : func.arguments)
@@ -2533,7 +2512,6 @@ void CompilerHLSL::emit_hlsl_entry_point()
 		case BuiltInPointCoord:
 		case BuiltInSubgroupSize:
 		case BuiltInSubgroupLocalInvocationId:
-		case BuiltInHelperInvocation:
 			break;
 
 		case BuiltInSubgroupEqMask:
@@ -2753,7 +2731,7 @@ void CompilerHLSL::emit_hlsl_entry_point()
 
 void CompilerHLSL::emit_fixup()
 {
-	if (is_vertex_like_shader() && active_output_builtins.get(BuiltInPosition))
+	if (is_vertex_like_shader())
 	{
 		// Do various mangling on the gl_Position.
 		if (hlsl_options.shader_model <= 30)
@@ -3537,8 +3515,6 @@ void CompilerHLSL::emit_glsl_op(uint32_t result_type, uint32_t id, uint32_t eop,
 	auto int_type = to_signed_basetype(integer_width);
 	auto uint_type = to_unsigned_basetype(integer_width);
 
-	op = get_remapped_glsl_op(op);
-
 	switch (op)
 	{
 	case GLSLstd450InverseSqrt:
@@ -4011,7 +3987,7 @@ void CompilerHLSL::read_access_chain(string *expr, const string &lhs, const SPIR
 	if (lhs.empty())
 	{
 		assert(expr);
-		*expr = std::move(load_expr);
+		*expr = move(load_expr);
 	}
 	else
 		statement(lhs, " = ", load_expr, ";");
@@ -4807,8 +4783,6 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 	auto int_type = to_signed_basetype(integer_width);
 	auto uint_type = to_unsigned_basetype(integer_width);
 
-	opcode = get_remapped_spirv_op(opcode);
-
 	switch (opcode)
 	{
 	case OpAccessChain:
@@ -5359,7 +5333,7 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 				                        image_format_to_components(get<SPIRType>(var->basetype).image.format), imgexpr);
 		}
 
-		if (var)
+		if (var && var->forwardable)
 		{
 			bool forward = forced_temporaries.find(id) == end(forced_temporaries);
 			auto &e = emit_op(result_type, id, imgexpr, forward);
@@ -5603,12 +5577,7 @@ void CompilerHLSL::emit_instruction(const Instruction &instruction)
 	}
 
 	case OpIsHelperInvocationEXT:
-		if (hlsl_options.shader_model < 50 || get_entry_point().model != ExecutionModelFragment)
-			SPIRV_CROSS_THROW("Helper Invocation input is only supported in PS 5.0 or higher.");
-		// Helper lane state with demote is volatile by nature.
-		// Do not forward this.
-		emit_op(ops[0], ops[1], "IsHelperLane()", false);
-		break;
+		SPIRV_CROSS_THROW("helperInvocationEXT() is not supported in HLSL.");
 
 	case OpBeginInvocationInterlockEXT:
 	case OpEndInvocationInterlockEXT:
@@ -5695,7 +5664,7 @@ void CompilerHLSL::require_texture_query_variant(uint32_t var_id)
 
 void CompilerHLSL::set_root_constant_layouts(std::vector<RootConstants> layout)
 {
-	root_constants_layout = std::move(layout);
+	root_constants_layout = move(layout);
 }
 
 void CompilerHLSL::add_vertex_attribute_remap(const HLSLVertexAttributeRemap &vertex_attributes)
@@ -5820,7 +5789,6 @@ string CompilerHLSL::compile()
 	// SM 4.1 does not support precise for some reason.
 	backend.support_precise_qualifier = hlsl_options.shader_model >= 50 || hlsl_options.shader_model == 40;
 
-	fixup_anonymous_struct_names();
 	fixup_type_alias();
 	reorder_type_alias();
 	build_function_control_flow_graphs_and_analyze();

@@ -1125,18 +1125,7 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R101-14579.0.0",
-        "name": "lacros_fyi_tast_tests_OCTOPUS_RELEASE_LKGM",
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_fyi_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_fyi_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "octopus",
-        "cros_img": "octopus-release/R101-14543.0.0",
+        "cros_img": "octopus-release/R101-14574.0.0",
         "name": "lacros_fyi_tast_tests_OCTOPUS_RELEASE_DEV",
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
@@ -1147,7 +1136,7 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R100-14526.19.0",
+        "cros_img": "octopus-release/R100-14526.28.0",
         "name": "lacros_fyi_tast_tests_OCTOPUS_RELEASE_BETA",
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
@@ -1169,17 +1158,7 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R101-14579.0.0",
-        "name": "ozone_unittests_OCTOPUS_RELEASE_LKGM",
-        "swarming": {},
-        "test": "ozone_unittests",
-        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "octopus",
-        "cros_img": "octopus-release/R101-14543.0.0",
+        "cros_img": "octopus-release/R101-14574.0.0",
         "name": "ozone_unittests_OCTOPUS_RELEASE_DEV",
         "swarming": {},
         "test": "ozone_unittests",
@@ -1189,7 +1168,7 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R100-14526.19.0",
+        "cros_img": "octopus-release/R100-14526.28.0",
         "name": "ozone_unittests_OCTOPUS_RELEASE_BETA",
         "swarming": {},
         "test": "ozone_unittests",
@@ -1213,69 +1192,6 @@
       "chrome",
       "lacros_version_metadata"
     ],
-    "skylab_tests": [
-      {
-        "args": [],
-        "cros_board": "kevin",
-        "cros_img": "kevin-release/R101-14579.0.0",
-        "name": "lacros_all_tast_tests_KEVIN_RELEASE_LKGM",
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R101-14579.0.0",
-        "name": "lacros_all_tast_tests_HANA_RELEASE_LKGM",
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "kevin",
-        "cros_img": "kevin-release/R101-14579.0.0",
-        "name": "ozone_unittests_KEVIN_RELEASE_LKGM",
-        "swarming": {},
-        "test": "ozone_unittests",
-        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R101-14579.0.0",
-        "name": "ozone_unittests_HANA_RELEASE_LKGM",
-        "swarming": {},
-        "test": "ozone_unittests",
-        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "kevin",
-        "cros_img": "kevin-release/R101-14579.0.0",
-        "name": "viz_unittests_KEVIN_RELEASE_LKGM",
-        "swarming": {},
-        "test": "viz_unittests",
-        "test_id_prefix": "ninja://components/viz:viz_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R101-14579.0.0",
-        "name": "viz_unittests_HANA_RELEASE_LKGM",
-        "swarming": {},
-        "test": "viz_unittests",
-        "test_id_prefix": "ninja://components/viz:viz_unittests/",
-        "timeout_sec": 3600
-      }
-    ]
+    "skylab_tests": []
   }
 }

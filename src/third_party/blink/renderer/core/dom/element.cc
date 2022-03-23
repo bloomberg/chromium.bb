@@ -2781,15 +2781,12 @@ void Element::DetachLayoutTree(bool performing_reattach) {
       data->ClearPseudoElements();
 
     if (ElementAnimations* element_animations = data->GetElementAnimations()) {
-      if (performing_reattach) {
-        // FIXME: restart compositor animations rather than pull back to the
-        // main thread
-        element_animations->RestartAnimationOnCompositor();
-      } else {
+      if (!performing_reattach) {
         DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
         element_animations->CssAnimations().Cancel();
         element_animations->SetAnimationStyleChange(false);
       }
+      element_animations->RestartAnimationOnCompositor();
     }
   }
 
@@ -2904,15 +2901,15 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   if (UNLIKELY(context || !style->IsContentVisibilityVisible())) {
     if (!context)
       context = &EnsureDisplayLockContext();
-    const auto* block_flow = DynamicTo<LayoutBlockFlow>(GetLayoutObject());
-    bool is_shaping_deferred = block_flow && block_flow->IsShapingDeferred();
+    bool is_shaping_deferred =
+        GetLayoutObject() && GetLayoutObject()->IsShapingDeferred();
     // If shaping is deferred and |content-visibility| is |visible|, do nothing
     // in order to keep the "deferred" state.
     if (!is_shaping_deferred || !style->IsContentVisibilityVisible()) {
       // If shaping is deferred and |content-visibility| is not |visible|,
       // leave the "deferred" state.
       if (is_shaping_deferred)
-        block_flow->StopDeferringShaping();
+        To<LayoutBlockFlow>(GetLayoutObject())->StopDeferringShaping();
       context->SetRequestedState(style->ContentVisibility());
       context->AdjustElementStyle(style.get());
     }
@@ -3171,6 +3168,13 @@ scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties() {
   if (!style || style->Animations() || style->Transitions() ||
       style->HasVariableReference() || style->HasVariableDeclaration())
     return nullptr;
+  if (style->InsideLink() != EInsideLink::kNotInsideLink) {
+    // We cannot do the inherited propagation optimization within links,
+    // since -internal-visited-color is handled in CascadeExpansion
+    // (which we do not run in that path), and we also have no tracking
+    // of whether the property was inherited or not.
+    return nullptr;
+  }
   scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(*style);
   new_style->PropagateIndependentInheritedProperties(*parent_style);
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
@@ -3455,16 +3459,6 @@ StyleRecalcChange Element::RecalcOwnStyle(
       // See http://crbug.com/1228058
       StyleAdjuster::AdjustStyleForCombinedText(*new_style);
     }
-    scoped_refptr<const ComputedStyle> layout_style(std::move(new_style));
-    if (auto* pseudo_element = DynamicTo<PseudoElement>(this)) {
-      if (layout_style->Display() == EDisplay::kContents) {
-        layout_style =
-            pseudo_element->LayoutStyleForDisplayContents(*layout_style);
-      }
-    } else if (auto* html_element = DynamicTo<HTMLHtmlElement>(this)) {
-      if (this == GetDocument().documentElement())
-        layout_style = html_element->LayoutStyleForElement(layout_style);
-    }
     // kEqual means that the computed style didn't change, but there are
     // additional flags in ComputedStyle which may have changed. For instance,
     // the AffectedBy* flags. We don't need to go through the visual
@@ -3474,6 +3468,23 @@ StyleRecalcChange Element::RecalcOwnStyle(
         diff == ComputedStyle::Difference::kEqual
             ? LayoutObject::ApplyStyleChanges::kNo
             : LayoutObject::ApplyStyleChanges::kYes;
+
+    scoped_refptr<const ComputedStyle> layout_style(std::move(new_style));
+    if (auto* pseudo_element = DynamicTo<PseudoElement>(this)) {
+      if (layout_style->Display() == EDisplay::kContents) {
+        layout_style =
+            pseudo_element->LayoutStyleForDisplayContents(*layout_style);
+      }
+    } else if (auto* html_element = DynamicTo<HTMLHtmlElement>(this)) {
+      if (this == GetDocument().documentElement()) {
+        layout_style = html_element->LayoutStyleForElement(layout_style);
+        // Always apply changes for html root, even if the ComputedStyle may be
+        // the same, propagation changes picked up from body style, or
+        // previously propagated styles from a removed body element, may still
+        // change the LayoutObject's style.
+        apply_changes = LayoutObject::ApplyStyleChanges::kYes;
+      }
+    }
     // TODO(crbug.com/1246826): Remove CompositablePaintAnimationChanged.
     if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled()) {
       if (layout_style->CompositablePaintAnimationChanged())

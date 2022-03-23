@@ -8,6 +8,10 @@
 #ifndef SKSL_POSITION
 #define SKSL_POSITION
 
+#include "include/core/SkTypes.h"
+#include <cinttypes>
+#include <string>
+
 #ifndef __has_builtin
     #define __has_builtin(x) 0
 #endif
@@ -17,13 +21,11 @@ namespace SkSL {
 class Position {
 public:
     Position()
-        : fFile(nullptr)
-        , fStartOffsetOrLine(-1)
+        : fStartOffsetOrLine(-1)
         , fEndOffset(-1) {}
 
-    static Position Line(int line, const char* file = nullptr) {
+    static Position Line(int line) {
         Position result;
-        result.fFile = file;
         result.fStartOffsetOrLine = line;
         result.fEndOffset = -1;
         return result;
@@ -31,42 +33,22 @@ public:
 
     static Position Range(int startOffset, int endOffset) {
         Position result;
-        result.fFile = nullptr;
         result.fStartOffsetOrLine = startOffset;
         result.fEndOffset = endOffset;
         return result;
     }
 
 #if __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
-    static Position Capture(const char* file = __builtin_FILE(), int line = __builtin_LINE()) {
-        return Position::Line(line, file);
-    }
+    static Position Capture(const char* file = __builtin_FILE(), int line = __builtin_LINE());
 #else
     static Position Capture() { return Position(); }
 #endif // __has_builtin(__builtin_FILE) && __has_builtin(__builtin_LINE)
-
-    const char* file_name() const {
-        return fFile;
-    }
 
     bool valid() const {
         return fStartOffsetOrLine != -1;
     }
 
-    int line(const char* source = nullptr) const {
-        SkASSERT(this->valid());
-        if (fEndOffset == -1) {
-            return fStartOffsetOrLine;
-        }
-        SkASSERT(source);
-        int line = 1;
-        for (int i = 0; i < fStartOffsetOrLine; i++) {
-            if (source[i] == '\n') {
-                ++line;
-            }
-        }
-        return line;
-    }
+    int line(std::string_view source = std::string_view()) const;
 
     int startOffset() const {
         SkASSERT(fEndOffset != -1);
@@ -79,7 +61,7 @@ public:
     }
 
     bool operator==(const Position& other) const {
-        return fFile == other.fFile && fStartOffsetOrLine == other.fStartOffsetOrLine &&
+        return fStartOffsetOrLine == other.fStartOffsetOrLine &&
                 fEndOffset == other.fEndOffset;
     }
 
@@ -104,8 +86,6 @@ public:
     }
 
 private:
-    // TODO(skia:13051): remove fFile
-    const char* fFile = nullptr;
     // Contains either a start offset (if fEndOffset != -1) or a line number (if fEndOffset == -1)
     int32_t fStartOffsetOrLine;
     int32_t fEndOffset;

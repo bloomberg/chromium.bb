@@ -41,8 +41,6 @@ namespace spvtools {
 namespace opt {
 
 void IRContext::BuildInvalidAnalyses(IRContext::Analysis set) {
-  set = Analysis(set & ~valid_analyses_);
-
   if (set & kAnalysisDefUse) {
     BuildDefUseManager();
   }

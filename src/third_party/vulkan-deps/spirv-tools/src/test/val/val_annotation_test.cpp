@@ -794,8 +794,6 @@ OpFunctionEnd
   CompileSuccessfully(text, SPV_ENV_VULKAN_1_0);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_0));
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("VUID-StandaloneSpirv-DescriptorSet-06491"));
-  EXPECT_THAT(getDiagnosticString(),
               HasSubstr("must be in the StorageBuffer, Uniform, or "
                         "UniformConstant storage class"));
 }

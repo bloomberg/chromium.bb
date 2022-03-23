@@ -936,7 +936,8 @@ void SurfaceDrawContext::drawVertices(const GrClip* clip,
                                       GrPaint&& paint,
                                       const SkMatrixProvider& matrixProvider,
                                       sk_sp<SkVertices> vertices,
-                                      GrPrimitiveType* overridePrimType) {
+                                      GrPrimitiveType* overridePrimType,
+                                      bool skipColorXform) {
     ASSERT_SINGLE_OWNER
     RETURN_IF_ABANDONED
     SkDEBUGCODE(this->validate();)
@@ -945,6 +946,7 @@ void SurfaceDrawContext::drawVertices(const GrClip* clip,
     AutoCheckFlush acf(this->drawingManager());
 
     SkASSERT(vertices);
+    auto xform = skipColorXform ? nullptr : this->colorInfo().refColorSpaceXformFromSRGB();
     GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(GrAA::kNo);
     GrOp::Owner op = DrawCustomMeshOp::Make(fContext,
                                             std::move(paint),
@@ -952,7 +954,7 @@ void SurfaceDrawContext::drawVertices(const GrClip* clip,
                                             overridePrimType,
                                             matrixProvider,
                                             aaType,
-                                            this->colorInfo().refColorSpaceXformFromSRGB());
+                                            std::move(xform));
     this->addDrawOp(clip, std::move(op));
 }
 
@@ -963,7 +965,7 @@ void SurfaceDrawContext::drawCustomMesh(const GrClip* clip,
     ASSERT_SINGLE_OWNER
     RETURN_IF_ABANDONED
     SkDEBUGCODE(this->validate();)
-    GR_CREATE_TRACE_MARKER_CONTEXT("SurfaceDrawContext", "drawVertices", fContext);
+    GR_CREATE_TRACE_MARKER_CONTEXT("SurfaceDrawContext", "drawCustomMesh", fContext);
 
     AutoCheckFlush acf(this->drawingManager());
 
@@ -1181,7 +1183,10 @@ bool SurfaceDrawContext::drawFastShadow(const GrClip* clip,
             ambientRRect = SkRRect::MakeRectXY(outsetRect, outsetRad, outsetRad);
         }
 
-        GrColor ambientColor = SkColorToPremulGrColor(rec.fAmbientColor);
+        // The ShadowRRectOp still uses 8888 colors, so it might get clamped if the shadow color
+        // does not fit in bytes after being transformed to the destination color space. This can
+        // happen if the destination color space is smaller than sRGB, which is highly unlikely.
+        GrColor ambientColor = SkColorToPMColor4f(rec.fAmbientColor, colorInfo()).toBytes_RGBA();
         if (transparent) {
             // set a large inset to force a fill
             devSpaceInsetWidth = ambientRRect.width();
@@ -1290,8 +1295,10 @@ bool SurfaceDrawContext::drawFastShadow(const GrClip* clip,
             spotShadowRRect = SkRRect::MakeRectXY(outsetRect, outsetRad, outsetRad);
         }
 
-        GrColor spotColor = SkColorToPremulGrColor(rec.fSpotColor);
-
+        // The ShadowRRectOp still uses 8888 colors, so it might get clamped if the shadow color
+        // does not fit in bytes after being transformed to the destination color space. This can
+        // happen if the destination color space is smaller than sRGB, which is highly unlikely.
+        GrColor spotColor = SkColorToPMColor4f(rec.fSpotColor, colorInfo()).toBytes_RGBA();
         GrOp::Owner op = ShadowRRectOp::Make(fContext,
                                              spotColor,
                                              viewMatrix,

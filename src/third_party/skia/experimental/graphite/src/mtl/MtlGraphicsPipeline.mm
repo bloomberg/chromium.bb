@@ -20,6 +20,8 @@
 #include "src/core/SkPipelineData.h"
 #include "src/core/SkShaderCodeDictionary.h"
 
+#include "src/gpu/tessellate/WangsFormula.h"
+
 namespace skgpu::mtl {
 
 namespace {
@@ -167,6 +169,10 @@ std::string get_sksl_vs(const GraphicsPipelineDesc& desc) {
     if (step->numUniforms() > 0) {
         sksl += emit_SKSL_uniforms(1, "Step", step->uniforms());
     }
+
+    // TODO: This is only needed for tessellation path renderers and should be handled using a
+    // helper function injector that the SkSL built-in code snippets can use.
+    sksl += wangs_formula::as_sksl().c_str();
 
     // Vertex shader function declaration
     sksl += "void main() {\n";
@@ -554,13 +560,13 @@ sk_sp<GraphicsPipeline> GraphicsPipeline::Make(ResourceProvider* resourceProvide
 
     const DepthStencilSettings& depthStencilSettings =
             pipelineDesc.renderStep()->depthStencilSettings();
-    id<MTLDepthStencilState> dss = resourceProvider->findOrCreateCompatibleDepthStencilState(
-            depthStencilSettings);
+    sk_cfp<id<MTLDepthStencilState>> dss =
+            resourceProvider->findOrCreateCompatibleDepthStencilState(depthStencilSettings);
 
     return sk_sp<GraphicsPipeline>(
             new GraphicsPipeline(gpu,
                                  std::move(pso),
-                                 dss,
+                                 std::move(dss),
                                  depthStencilSettings.fStencilReferenceValue,
                                  pipelineDesc.renderStep()->vertexStride(),
                                  pipelineDesc.renderStep()->instanceStride()));

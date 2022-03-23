@@ -192,18 +192,8 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
     spirv_path = create_temporary()
     msl_path = create_temporary(os.path.basename(shader))
 
-    spirv_16 = '.spv16.' in shader
     spirv_14 = '.spv14.' in shader
-
-    if spirv_16:
-        spirv_env = 'spv1.6'
-        glslang_env = 'spirv1.6'
-    elif spirv_14:
-        spirv_env = 'vulkan1.1spv1.4'
-        glslang_env = 'spirv1.4'
-    else:
-        spirv_env = 'vulkan1.1'
-        glslang_env = 'vulkan1.1'
+    spirv_env = 'vulkan1.1spv1.4' if spirv_14 else 'vulkan1.1'
 
     spirv_cmd = [paths.spirv_as, '--target-env', spirv_env, '-o', spirv_path, shader]
     if '.preserve.' in shader:
@@ -212,6 +202,7 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
     if spirv:
         subprocess.check_call(spirv_cmd)
     else:
+        glslang_env = 'spirv1.4' if spirv_14 else 'vulkan1.1'
         subprocess.check_call([paths.glslang, '--amb' ,'--target-env', glslang_env, '-V', '-o', spirv_path, shader])
 
     if opt and (not shader_is_invalid_spirv(shader)):
@@ -359,8 +350,6 @@ def cross_compile_msl(shader, spirv, opt, iterations, paths):
     if '.mask-clip-distance.' in shader:
         msl_args.append('--mask-stage-output-builtin')
         msl_args.append('ClipDistance')
-    if '.relax-nan.' in shader:
-        msl_args.append('--relax-nan-checks')
 
     subprocess.check_call(msl_args)
 
@@ -451,19 +440,8 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
     spirv_path = create_temporary()
     hlsl_path = create_temporary(os.path.basename(shader))
 
-    spirv_16 = '.spv16.' in shader
     spirv_14 = '.spv14.' in shader
-
-    if spirv_16:
-        spirv_env = 'spv1.6'
-        glslang_env = 'spirv1.6'
-    elif spirv_14:
-        spirv_env = 'vulkan1.1spv1.4'
-        glslang_env = 'spirv1.4'
-    else:
-        spirv_env = 'vulkan1.1'
-        glslang_env = 'vulkan1.1'
-
+    spirv_env = 'vulkan1.1spv1.4' if spirv_14 else 'vulkan1.1'
     spirv_cmd = [paths.spirv_as, '--target-env', spirv_env, '-o', spirv_path, shader]
     if '.preserve.' in shader:
         spirv_cmd.append('--preserve-numeric-ids')
@@ -471,6 +449,7 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
     if spirv:
         subprocess.check_call(spirv_cmd)
     else:
+        glslang_env = 'spirv1.4' if spirv_14 else 'vulkan1.1'
         subprocess.check_call([paths.glslang, '--amb', '--target-env', glslang_env, '-V', '-o', spirv_path, shader])
 
     if opt and (not shader_is_invalid_spirv(hlsl_path)):
@@ -483,8 +462,6 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
     hlsl_args = [spirv_cross_path, '--entry', 'main', '--output', hlsl_path, spirv_path, '--hlsl-enable-compat', '--hlsl', '--shader-model', sm, '--iterations', str(iterations)]
     if '.line.' in shader:
         hlsl_args.append('--emit-line-directives')
-    if '.flatten.' in shader:
-        hlsl_args.append('--flatten-ubo')
     if '.force-uav.' in shader:
         hlsl_args.append('--hlsl-force-storage-buffer-as-uav')
     if '.zero-initialize.' in shader:
@@ -495,8 +472,6 @@ def cross_compile_hlsl(shader, spirv, opt, force_no_external_validation, iterati
         hlsl_args.append('--hlsl-enable-16bit-types')
     if '.flatten-matrix-vertex-input.' in shader:
         hlsl_args.append('--hlsl-flatten-matrix-vertex-input-semantics')
-    if '.relax-nan.' in shader:
-        hlsl_args.append('--relax-nan-checks')
 
     subprocess.check_call(hlsl_args)
 
@@ -545,13 +520,10 @@ def cross_compile(shader, vulkan, spirv, invalid_spirv, eliminate, is_legacy, fl
     spirv_14 = '.spv14.' in shader
     if spirv_16:
         spirv_env = 'spv1.6'
-        glslang_env = 'spirv1.6'
     elif spirv_14:
         spirv_env = 'vulkan1.1spv1.4'
-        glslang_env = 'spirv1.4'
     else:
         spirv_env = 'vulkan1.1'
-        glslang_env = 'vulkan1.1'
 
     if vulkan or spirv:
         vulkan_glsl_path = create_temporary('vk' + os.path.basename(shader))
@@ -563,6 +535,7 @@ def cross_compile(shader, vulkan, spirv, invalid_spirv, eliminate, is_legacy, fl
     if spirv:
         subprocess.check_call(spirv_cmd)
     else:
+        glslang_env = 'spirv1.4' if spirv_14 else 'vulkan1.1'
         subprocess.check_call([paths.glslang, '--amb', '--target-env', glslang_env, '-V', '-o', spirv_path, shader])
 
     if opt and (not invalid_spirv):
@@ -601,8 +574,6 @@ def cross_compile(shader, vulkan, spirv, invalid_spirv, eliminate, is_legacy, fl
         extra_args += ['--force-zero-initialized-variables']
     if '.force-flattened-io.' in shader:
         extra_args += ['--glsl-force-flattened-io-blocks']
-    if '.relax-nan.' in shader:
-        extra_args.append('--relax-nan-checks')
 
     spirv_cross_path = paths.spirv_cross
 

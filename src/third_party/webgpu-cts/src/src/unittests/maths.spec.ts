@@ -120,7 +120,9 @@ interface nextAfterCase {
 }
 
 g.test('test,math,nextAfterFlushToZero')
-  .paramsSubcasesOnly<nextAfterCase>([
+  .paramsSubcasesOnly<nextAfterCase>(
+    // prettier-ignore
+    [
     // Edge Cases
     { val: Number.NaN, dir: true, result: f32Bits(0x7fffffff) },
     { val: Number.NaN, dir: false, result: f32Bits(0x7fffffff) },
@@ -136,25 +138,16 @@ g.test('test,math,nextAfterFlushToZero')
     { val: -0, dir: false, result: f32Bits(kBit.f32.negative.max) },
 
     // Subnormals
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.positive.min), dir: true, result: f32Bits(kBit.f32.positive.min) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.positive.min), dir: false, result: f32Bits(kBit.f32.negative.max) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.positive.max), dir: true, result: f32Bits(kBit.f32.positive.min) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.positive.max), dir: false, result: f32Bits(kBit.f32.negative.max) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.negative.min), dir: true, result: f32Bits(kBit.f32.positive.min) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.negative.min), dir: false, result: f32Bits(kBit.f32.negative.max) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.negative.max), dir: true, result: f32Bits(kBit.f32.positive.min) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.negative.max), dir: false, result: f32Bits(kBit.f32.negative.max) },
 
     // Normals
-    // prettier-ignore
     { val: hexToF32(kBit.f32.positive.max), dir: true, result: f32Bits(kBit.f32.infinity.positive) },
     { val: hexToF32(kBit.f32.positive.max), dir: false, result: f32Bits(0x7f7ffffe) },
     { val: hexToF32(kBit.f32.positive.min), dir: true, result: f32Bits(0x00800001) },
@@ -162,13 +155,13 @@ g.test('test,math,nextAfterFlushToZero')
     { val: hexToF32(kBit.f32.negative.max), dir: true, result: f32(0) },
     { val: hexToF32(kBit.f32.negative.max), dir: false, result: f32Bits(0x80800001) },
     { val: hexToF32(kBit.f32.negative.min), dir: true, result: f32Bits(0xff7ffffe) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.negative.min), dir: false, result: f32Bits(kBit.f32.infinity.negative) },
     { val: hexToF32(0x03800000), dir: true, result: f32Bits(0x03800001) },
     { val: hexToF32(0x03800000), dir: false, result: f32Bits(0x037fffff) },
     { val: hexToF32(0x83800000), dir: true, result: f32Bits(0x837fffff) },
     { val: hexToF32(0x83800000), dir: false, result: f32Bits(0x83800001) },
-  ])
+  ]
+  )
   .fn(t => {
     const val = t.params.val;
     const dir = t.params.dir;
@@ -183,7 +176,9 @@ g.test('test,math,nextAfterFlushToZero')
   });
 
 g.test('test,math,nextAfterNoFlush')
-  .paramsSubcasesOnly<nextAfterCase>([
+  .paramsSubcasesOnly<nextAfterCase>(
+    // prettier-ignore
+    [
     // Edge Cases
     { val: Number.NaN, dir: true, result: f32Bits(0x7fffffff) },
     { val: Number.NaN, dir: false, result: f32Bits(0x7fffffff) },
@@ -201,33 +196,28 @@ g.test('test,math,nextAfterNoFlush')
     // Subnormals
     { val: hexToF32(kBit.f32.subnormal.positive.min), dir: true, result: f32Bits(0x00000002) },
     { val: hexToF32(kBit.f32.subnormal.positive.min), dir: false, result: f32(0) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.positive.max), dir: true, result: f32Bits(kBit.f32.positive.min) },
     { val: hexToF32(kBit.f32.subnormal.positive.max), dir: false, result: f32Bits(0x007ffffe) },
     { val: hexToF32(kBit.f32.subnormal.negative.min), dir: true, result: f32Bits(0x807ffffe) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.subnormal.negative.min), dir: false, result: f32Bits(kBit.f32.negative.max) },
     { val: hexToF32(kBit.f32.subnormal.negative.max), dir: true, result: f32(0) },
     { val: hexToF32(kBit.f32.subnormal.negative.max), dir: false, result: f32Bits(0x80000002) },
 
     // Normals
-    // prettier-ignore
     { val: hexToF32(kBit.f32.positive.max), dir: true, result: f32Bits(kBit.f32.infinity.positive) },
     { val: hexToF32(kBit.f32.positive.max), dir: false, result: f32Bits(0x7f7ffffe) },
     { val: hexToF32(kBit.f32.positive.min), dir: true, result: f32Bits(0x00800001) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.positive.min), dir: false, result: f32Bits(kBit.f32.subnormal.positive.max) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.negative.max), dir: true, result: f32Bits(kBit.f32.subnormal.negative.min) },
     { val: hexToF32(kBit.f32.negative.max), dir: false, result: f32Bits(0x80800001) },
     { val: hexToF32(kBit.f32.negative.min), dir: true, result: f32Bits(0xff7ffffe) },
-    // prettier-ignore
     { val: hexToF32(kBit.f32.negative.min), dir: false, result: f32Bits(kBit.f32.infinity.negative) },
     { val: hexToF32(0x03800000), dir: true, result: f32Bits(0x03800001) },
     { val: hexToF32(0x03800000), dir: false, result: f32Bits(0x037fffff) },
     { val: hexToF32(0x83800000), dir: true, result: f32Bits(0x837fffff) },
     { val: hexToF32(0x83800000), dir: false, result: f32Bits(0x83800001) },
-  ])
+  ]
+  )
   .fn(t => {
     const val = t.params.val;
     const dir = t.params.dir;
@@ -248,7 +238,9 @@ interface correctlyRoundedCase {
 }
 
 g.test('test,math,correctlyRounded')
-  .paramsSubcasesOnly<correctlyRoundedCase>([
+  .paramsSubcasesOnly<correctlyRoundedCase>(
+    // prettier-ignore
+    [
     // NaN Cases
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: NaN, is_correct: true },
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: NaN, is_correct: true },
@@ -262,34 +254,22 @@ g.test('test,math,correctlyRounded')
     { test_val: f32Bits(kBit.f32.negative.zero), target: NaN, is_correct: false },
 
     // Infinities
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.s), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.q), target: Number.POSITIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0x7fffffff), target: Number.POSITIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0xffffffff), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.positive), target: Number.POSITIVE_INFINITY, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.negative), target: Number.POSITIVE_INFINITY, is_correct: false },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.s), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.q), target: Number.NEGATIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0x7fffffff), target: Number.NEGATIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0xffffffff), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.positive), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.negative), target: Number.NEGATIVE_INFINITY, is_correct: true },
 
     // Zeros
@@ -308,95 +288,55 @@ g.test('test,math,correctlyRounded')
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: -0, is_correct: true },
 
     // 32-bit subnormals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
 
     // 64-bit subnormals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
 
     // 32-bit normals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.max), target: hexToF32(kBit.f32.positive.max), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.min), target: hexToF32(kBit.f32.positive.min), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.max), target: hexToF32(kBit.f32.negative.max), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.min), target: hexToF32(kBit.f32.negative.min), is_correct: true },
     { test_val: f32Bits(0x03800000), target: hexToF32(0x03800000), is_correct: true },
     { test_val: f32Bits(0x03800000), target: hexToF32(0x03800002), is_correct: false },
@@ -408,39 +348,24 @@ g.test('test,math,correctlyRounded')
     { test_val: f32Bits(0x83800001), target: hexToF32(0x83800010), is_correct: false },
 
     // 64-bit normals
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00010, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00020, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00030, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00040, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00050, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00060, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00070, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00080, 0x00000002), is_correct: false },
-  ])
+  ]
+  )
   .fn(t => {
     const test_val = t.params.test_val;
     const target = t.params.target;
@@ -454,7 +379,9 @@ g.test('test,math,correctlyRounded')
   });
 
 g.test('test,math,correctlyRoundedNoFlushOnly')
-  .paramsSubcasesOnly<correctlyRoundedCase>([
+  .paramsSubcasesOnly<correctlyRoundedCase>(
+    // prettier-ignore
+    [
     // NaN Cases
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: NaN, is_correct: true },
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: NaN, is_correct: true },
@@ -468,34 +395,22 @@ g.test('test,math,correctlyRoundedNoFlushOnly')
     { test_val: f32Bits(kBit.f32.negative.zero), target: NaN, is_correct: false },
 
     // Infinities
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.s), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.q), target: Number.POSITIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0x7fffffff), target: Number.POSITIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0xffffffff), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.positive), target: Number.POSITIVE_INFINITY, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.negative), target: Number.POSITIVE_INFINITY, is_correct: false },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.s), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.q), target: Number.NEGATIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0x7fffffff), target: Number.NEGATIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0xffffffff), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.positive), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.negative), target: Number.NEGATIVE_INFINITY, is_correct: true },
 
     // Zeros
@@ -514,95 +429,55 @@ g.test('test,math,correctlyRoundedNoFlushOnly')
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: -0, is_correct: false },
 
     // 32-bit subnormals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: false },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: false },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: false },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
 
     // 64-bit subnormals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
 
     // 32-bit normals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.max), target: hexToF32(kBit.f32.positive.max), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.min), target: hexToF32(kBit.f32.positive.min), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.max), target: hexToF32(kBit.f32.negative.max), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.min), target: hexToF32(kBit.f32.negative.min), is_correct: true },
     { test_val: f32Bits(0x03800000), target: hexToF32(0x03800000), is_correct: true },
     { test_val: f32Bits(0x03800000), target: hexToF32(0x03800002), is_correct: false },
@@ -614,39 +489,24 @@ g.test('test,math,correctlyRoundedNoFlushOnly')
     { test_val: f32Bits(0x83800001), target: hexToF32(0x83800010), is_correct: false },
 
     // 64-bit normals
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00010, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00020, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00030, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00040, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00050, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00060, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00070, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00080, 0x00000002), is_correct: false },
-  ])
+  ]
+  )
   .fn(t => {
     const test_val = t.params.test_val;
     const target = t.params.target;
@@ -660,7 +520,9 @@ g.test('test,math,correctlyRoundedNoFlushOnly')
   });
 
 g.test('test,math,correctlyRoundedFlushToZeroOnly')
-  .paramsSubcasesOnly<correctlyRoundedCase>([
+  .paramsSubcasesOnly<correctlyRoundedCase>(
+    // prettier-ignore
+    [
     // NaN Cases
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: NaN, is_correct: true },
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: NaN, is_correct: true },
@@ -674,34 +536,22 @@ g.test('test,math,correctlyRoundedFlushToZeroOnly')
     { test_val: f32Bits(kBit.f32.negative.zero), target: NaN, is_correct: false },
 
     // Infinities
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.s), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.q), target: Number.POSITIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0x7fffffff), target: Number.POSITIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0xffffffff), target: Number.POSITIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.positive), target: Number.POSITIVE_INFINITY, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.negative), target: Number.POSITIVE_INFINITY, is_correct: false },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.s), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.positive.q), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.s), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.nan.negative.q), target: Number.NEGATIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0x7fffffff), target: Number.NEGATIVE_INFINITY, is_correct: false },
     { test_val: f32Bits(0xffffffff), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.positive), target: Number.NEGATIVE_INFINITY, is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.infinity.negative), target: Number.NEGATIVE_INFINITY, is_correct: true },
 
     // Zeros
@@ -720,95 +570,55 @@ g.test('test,math,correctlyRoundedFlushToZeroOnly')
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: -0, is_correct: true },
 
     // 32-bit subnormals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.positive.min).value as number, is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.positive.max).value as number, is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.negative.max).value as number, is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.max), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.min), target: f32Bits(kBit.f32.subnormal.negative.min).value as number, is_correct: true },
 
     // 64-bit subnormals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x00000000, 0x00000001), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.positive.min), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x00000000, 0x00000002), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x800fffff, 0xffffffff), is_correct: true },
 
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.subnormal.negative.max), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.zero), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.zero), target: hexToFloat64(0x800fffff, 0xfffffffe), is_correct: true },
 
     // 32-bit normals
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.max), target: hexToF32(kBit.f32.positive.max), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.positive.min), target: hexToF32(kBit.f32.positive.min), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.max), target: hexToF32(kBit.f32.negative.max), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(kBit.f32.negative.min), target: hexToF32(kBit.f32.negative.min), is_correct: true },
     { test_val: f32Bits(0x03800000), target: hexToF32(0x03800000), is_correct: true },
     { test_val: f32Bits(0x03800000), target: hexToF32(0x03800002), is_correct: false },
@@ -820,39 +630,24 @@ g.test('test,math,correctlyRoundedFlushToZeroOnly')
     { test_val: f32Bits(0x83800001), target: hexToF32(0x83800010), is_correct: false },
 
     // 64-bit normals
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00010, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00020, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800000), target: hexToFloat64(0x3ff00030, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0x3f800001), target: hexToFloat64(0x3ff00040, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00050, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00000, 0x00000001), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00060, 0x00000001), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800000), target: hexToFloat64(0xbff00070, 0x00000002), is_correct: false },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00000, 0x00000002), is_correct: true },
-    // prettier-ignore
     { test_val: f32Bits(0xbf800001), target: hexToFloat64(0xbff00080, 0x00000002), is_correct: false },
-  ])
+  ]
+  )
   .fn(t => {
     const test_val = t.params.test_val;
     const target = t.params.target;
@@ -1047,48 +842,35 @@ interface rangeCase {
 }
 
 g.test('test,math,linearRange')
-  .paramsSimple<rangeCase>([
+  .paramsSimple<rangeCase>(
     // prettier-ignore
+    [
     { a: 0.0, b: Number.POSITIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.POSITIVE_INFINITY, b: 0.0, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.NEGATIVE_INFINITY, b: 1.0, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: 1.0, b: Number.NEGATIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.NEGATIVE_INFINITY, b: Number.POSITIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.POSITIVE_INFINITY, b: Number.NEGATIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
     { a: 0.0, b: 0.0, num_steps: 10, result: new Array<number>(10).fill(0.0) },
     { a: 10.0, b: 10.0, num_steps: 10, result: new Array<number>(10).fill(10.0) },
     { a: 0.0, b: 10.0, num_steps: 1, result: [0.0] },
     { a: 10.0, b: 0.0, num_steps: 1, result: [10] },
-    // prettier-ignore
     { a: 0.0, b: 10.0, num_steps: 11, result: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0] },
-    // prettier-ignore
     { a: 10.0, b: 0.0, num_steps: 11, result: [10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0] },
-    // prettier-ignore
     { a: 0.0, b: 1000.0, num_steps: 11, result: [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0] },
-    // prettier-ignore
     { a: 1000.0, b: 0.0, num_steps: 11, result: [1000.0, 900.0, 800.0, 700.0, 600.0, 500.0, 400.0, 300.0, 200.0, 100.0, 0.0] },
     { a: 1.0, b: 5.0, num_steps: 5, result: [1.0, 2.0, 3.0, 4.0, 5.0] },
     { a: 5.0, b: 1.0, num_steps: 5, result: [5.0, 4.0, 3.0, 2.0, 1.0] },
-    // prettier-ignore
     { a: 0.0, b: 1.0, num_steps: 11, result: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] },
-    // prettier-ignore
     { a: 1.0, b: 0.0, num_steps: 11, result: [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0] },
     { a: 0.0, b: 1.0, num_steps: 5, result: [0.0, 0.25, 0.5, 0.75, 1.0] },
     { a: 1.0, b: 0.0, num_steps: 5, result: [1.0, 0.75, 0.5, 0.25, 0.0] },
-    // prettier-ignore
     { a: -1.0, b: 1.0, num_steps: 11, result: [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0] },
-    // prettier-ignore
     { a: 1.0, b: -1.0, num_steps: 11, result: [1.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4, -0.6, -0.8, -1.0] },
-    // prettier-ignore
     { a: -1.0, b: 0, num_steps: 11, result: [-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0] },
-    // prettier-ignore
     { a: 0.0, b: -1.0, num_steps: 11, result: [0.0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8, -0.9, -1.0] },
-  ])
+  ]
+  )
   .fn(test => {
     const a = test.params.a;
     const b = test.params.b;
@@ -1103,48 +885,35 @@ g.test('test,math,linearRange')
   });
 
 g.test('test,math,biasedRange')
-  .paramsSimple<rangeCase>([
+  .paramsSimple<rangeCase>(
     // prettier-ignore
+    [
     { a: 0.0, b: Number.POSITIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.POSITIVE_INFINITY, b: 0.0, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.NEGATIVE_INFINITY, b: 1.0, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: 1.0, b: Number.NEGATIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.NEGATIVE_INFINITY, b: Number.POSITIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
-    // prettier-ignore
     { a: Number.POSITIVE_INFINITY, b: Number.NEGATIVE_INFINITY, num_steps: 10, result: new Array<number>(10).fill(Number.NaN) },
     { a: 0.0, b: 0.0, num_steps: 10, result: new Array<number>(10).fill(0.0) },
     { a: 10.0, b: 10.0, num_steps: 10, result: new Array<number>(10).fill(10.0) },
     { a: 0.0, b: 10.0, num_steps: 1, result: [0.0] },
     { a: 10.0, b: 0.0, num_steps: 1, result: [10.0] },
-    // prettier-ignore
     { a: 0.0, b: 10.0, num_steps: 11, result: [0.0, 0.1, 0.4, 0.9, 1.6, 2.5, 3.6, 4.9, 6.4, 8.1, 10.0] },
-    // prettier-ignore
     { a: 10.0, b: 0.0, num_steps: 11, result: [10.0, 9.9, 9.6, 9.1, 8.4, 7.5, 6.4, 5.1, 3.6, 1.9, 0.0] },
-    // prettier-ignore
     { a: 0.0, b: 1000.0, num_steps: 11, result: [0.0, 10.0, 40.0, 90.0, 160.0, 250.0, 360.0, 490.0, 640.0, 810.0, 1000.0] },
-    // prettier-ignore
     { a: 1000.0, b: 0.0, num_steps: 11, result: [1000.0, 990.0, 960.0, 910.0, 840.0, 750.0, 640.0, 510.0, 360.0, 190.0, 0.0] },
     { a: 1.0, b: 5.0, num_steps: 5, result: [1.0, 1.25, 2.0, 3.25, 5.0] },
     { a: 5.0, b: 1.0, num_steps: 5, result: [5.0, 4.75, 4.0, 2.75, 1.0] },
-    // prettier-ignore
     { a: 0.0, b: 1.0, num_steps: 11, result: [0.0, 0.01, 0.04, 0.09, 0.16, 0.25, 0.36, 0.49, 0.64, 0.81, 1.0] },
-    // prettier-ignore
     { a: 1.0, b: 0.0, num_steps: 11, result: [1.0, 0.99, 0.96, 0.91, 0.84, 0.75, 0.64, 0.51, 0.36, 0.19, 0.0] },
     { a: 0.0, b: 1.0, num_steps: 5, result: [0.0, 0.0625, 0.25, 0.5625, 1.0] },
     { a: 1.0, b: 0.0, num_steps: 5, result: [1.0, 0.9375, 0.75, 0.4375, 0.0] },
-    // prettier-ignore
     { a: -1.0, b: 1.0, num_steps: 11, result: [-1.0, -0.98, -0.92, -0.82, -0.68, -0.5, -0.28 ,-0.02, 0.28, 0.62, 1.0] },
-    // prettier-ignore
     { a: 1.0, b: -1.0, num_steps: 11, result: [1.0, 0.98, 0.92, 0.82, 0.68, 0.5, 0.28 ,0.02, -0.28, -0.62, -1.0] },
-    // prettier-ignore
     { a: -1.0, b: 0, num_steps: 11, result: [-1.0 , -0.99, -0.96, -0.91, -0.84, -0.75, -0.64, -0.51, -0.36, -0.19, 0.0] },
-    // prettier-ignore
     { a: 0.0, b: -1.0, num_steps: 11, result: [0.0, -0.01, -0.04, -0.09, -0.16, -0.25, -0.36, -0.49, -0.64, -0.81, -1.0] },
-  ])
+  ]
+  )
   .fn(test => {
     const a = test.params.a;
     const b = test.params.b;

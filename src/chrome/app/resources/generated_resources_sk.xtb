@@ -63,6 +63,7 @@
 <translation id="1061130374843955397">Víta vás <ph name="DEVICE_TYPE" /></translation>
 <translation id="1061373870045429865">Vytvoriť QR kód pre tento odkaz</translation>
 <translation id="1061904396131502319">Už je takmer čas na prestávku</translation>
+<translation id="1062628064301375934">Pomôžte nám vytvoriť súkromnejší internet</translation>
 <translation id="1066613507389053689">Vyžaduje sa aktualizácia systému Chrome OS</translation>
 <translation id="1067048845568873861">Vytvorené</translation>
 <translation id="1067922213147265141">Ďalšie služby Googlu</translation>
@@ -586,6 +587,7 @@ Povolenia, ktoré ste už udelili aplikáciám, sa môžu vzťahovať na tento �
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (hosť)</translation>
 <translation id="1572266655485775982">Povolenie Wi‑Fi</translation>
 <translation id="1572876035008611720">Zadajte svoj e-mail</translation>
+<translation id="1573632872794824374">Skúmame nové funkcie, ktoré umožňujú webom zobraziť rovnaké prostredie prehliadania s využitím menšieho množstva vašich údajov</translation>
 <translation id="1575741822946219011">Jazyky a vstupy</translation>
 <translation id="1576594961618857597">Predvolený biely avatar</translation>
 <translation id="1578558981922970608">Vynútiť zavretie</translation>
@@ -884,6 +886,7 @@ Povolenia, ktoré ste už udelili aplikáciám, sa môžu vzťahovať na tento �
 <translation id="1829129547161959350">Tučniak</translation>
 <translation id="1829192082282182671">&amp;Oddialiť</translation>
 <translation id="1830550083491357902">Neprihlásený/-á</translation>
+<translation id="1832459821645506983">Áno, súhlasím</translation>
 <translation id="1832511806131704864">Zmena telefónu bola aktualizovaná</translation>
 <translation id="1832848789136765277">Ak chcete mať neustály prístup k svojim synchronizovaným údajom, overte svoju totožnosť</translation>
 <translation id="1834503245783133039">Sťahovanie sa nepodarilo: <ph name="FILE_NAME" /></translation>
@@ -1065,7 +1068,6 @@ Povolenia, ktoré ste už udelili aplikáciám, sa môžu vzťahovať na tento �
 <translation id="2019718679933488176">&amp;Otvoriť zvuk na novej karte</translation>
 <translation id="2020183425253392403">Zobraziť nastavenia sieťovej adresy</translation>
 <translation id="2020225359413970060">Skontrolovať súbor</translation>
-<translation id="2022395138980869975">Prepnúť bočné vyhľadávanie</translation>
 <translation id="2023167225947895179">PIN sa dá ľahko uhádnuť</translation>
 <translation id="202352106777823113">Sťahovanie trvalo príliš dlho a bolo zastavené sieťou.</translation>
 <translation id="2024195579772565064">Odstránenie vyhľadávača</translation>
@@ -1372,6 +1374,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
     <ph name="FOOTER_MESSAGE" /></translation>
 <translation id="2307630946657910723">Hľadať časť stránky pomocou funkcie <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="2309620859903500144">Tento web má zablokovaný prístup k senzorom pohybu alebo svetla.</translation>
+<translation id="2311721625890389967">↓</translation>
 <translation id="2312219318583366810">Webová adresa stránky</translation>
 <translation id="2314165183524574721">Aktuálne nastavenie viditeľnosti je Skryté</translation>
 <translation id="2314774579020744484">Jazyk použitý pri preklade stránok</translation>
@@ -1423,6 +1426,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2349896577940037438">Ak aktivujete ďalšiu aktivitu na internete a v aplikáciách, tieto údaje sa uložia vo vašom účte Google. Môžete ich zobraziť a odstrániť na account.google.com, kde tiež môžete zmeniť nastavenia účtu.</translation>
 <translation id="2350133097354918058">Znovu načítané</translation>
 <translation id="2350182423316644347">Inicializujú sa aplikácie...</translation>
+<translation id="235028206512346451">Ak odídete od zariadenia, obrazovka sa automaticky uzamkne. Keď ste pred zariadením, obrazovka zostane odomknutá dlhšie. Ak používate uzamknutú obrazovku, zariadenie sa nezamkne, ale prejde do režimu spánku.</translation>
 <translation id="2352495879228166246">{NUM_ITEMS,plural, =1{1 položka}few{{NUM_ITEMS} položky}many{{NUM_ITEMS} položky}other{{NUM_ITEMS} položiek}}</translation>
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">Poznámky na uzamknutej obrazovke sa automaticky ukladajú do aplikácie <ph name="LOCK_SCREEN_APP_NAME" />. Na uzamknutej obrazovke zostane posledná poznámka.</translation>
@@ -1638,6 +1642,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2553340429761841190">Systém <ph name="PRODUCT_NAME" /> sa nemohol pripojiť k sieti <ph name="NETWORK_ID" />. Vyberte inú sieť alebo to skúste znova.</translation>
 <translation id="2553440850688409052">Skryť tento doplnok</translation>
 <translation id="2554553592469060349">Vybratý súbor je príliš veľký (maximálna veľkosť: 3 MB).</translation>
+<translation id="2558569818338050235">Vaša história prehliadania ovplyvňuje zobrazované reklamy</translation>
 <translation id="2558896001721082624">Zobrazovať možnosti dostupnosti v ponuke systému</translation>
 <translation id="2564520396658920462">Spúšťanie JavaScriptu prostredníctvom AppleScriptu je vypnuté. Ak ho chcete zapnúť, prejdite na panel s ponukami a potom do časti Zobraziť &gt; Vývojár &gt; Povoliť JavaScript z udalostí Apple. Ďalšie informácie získate na adrese https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Rozšírená kontrola pravopisu</translation>
@@ -1771,6 +1776,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2710101514844343743">Údaje o využití a diagnostike</translation>
 <translation id="271033894570825754">Nové</translation>
+<translation id="2711073837061989559">Skúšobné obdobia</translation>
 <translation id="2712173769900027643">Požiadať o povolenie</translation>
 <translation id="2713106313042589954">Vypnúť kameru</translation>
 <translation id="2713444072780614174">Biela</translation>
@@ -1965,7 +1971,9 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
 <translation id="288734198558082692"><ph name="DEVICE" /> a ďalšie (<ph name="NUMBER_OF_DEVICES" />)</translation>
 <translation id="2889064240420137087">Otvoriť odkaz pomocou...</translation>
+<translation id="2891566119238851894">Otvorte vyhľadávanie na bočnom paneli. Vyhľadávanie nie je otvorené na bočnom paneli.</translation>
 <translation id="2891922230654533301">Chcete sa pomocou svojho zariadenia prihlásiť do aplikácie <ph name="APP_NAME" />?</translation>
+<translation id="2893013536106749396">Vyberte karty, ktoré vám budú poskytovať aktuálne informácie o veciach, na ktorých vám záleží</translation>
 <translation id="2893168226686371498">Predvolený prehliadač</translation>
 <translation id="2893180576842394309">Google môže pomocou vašej histórie prispôsobiť Vyhľadávanie a ďalšie služby Googlu</translation>
 <translation id="2894757982205307093">Nová karta v skupine</translation>
@@ -2079,6 +2087,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3003623123441819449">Vyrovnávacia pamäť CSS</translation>
 <translation id="3003828226041301643">Zariadenie sa nepodarilo pripojiť k doméne. Skontrolujte svoj účte a uistite sa, že máte oprávnenia na pridávanie zariadení.</translation>
 <translation id="3003967365858406397">Telefón <ph name="PHONE_NAME" /> vytvorí súkromné pripojenie Wi‑Fi.</translation>
+<translation id="3005574332301273731">Nezobraziť</translation>
 <translation id="3006881078666935414">Žiadne údaje o používaní</translation>
 <translation id="3007771295016901659">Duplikovať kartu</translation>
 <translation id="3008232374986381779">Spustite nástroje aj editory pre systém Linux a súbory IDE vo svojom zariadení <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
@@ -2135,6 +2144,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3053013834507634016">Použitie kľúča certifikátu</translation>
 <translation id="3053273573829329829">Povoliť PIN používateľa</translation>
 <translation id="3054766768827382232">Po vypnutí sa môže výkonnosť periférií zvýšiť, ale vaše osobné údaje môžu byť pri neoprávnenom používaní prezradené.</translation>
+<translation id="3055113921564083271">Záujmy, ktoré ste odstránili</translation>
 <translation id="3055590424724986000">Pomocou poskytovateľa podľa vášho výberu</translation>
 <translation id="3058498974290601450">Synchronizáciu môžete kedykoľvek zapnúť v nastaveniach</translation>
 <translation id="3058517085907878899">Pomenujte zariadenie</translation>
@@ -2252,6 +2262,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3183944777708523606">Usporiadanie monitora</translation>
 <translation id="3184536091884214176">Nastaviť alebo spravovať tlačiarne CUPS. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="3185014249447200271">{NUM_APPS,plural, =1{Táto aplikácia je blokovaná}few{Niektoré aplikácie sú blokované}many{Niektoré aplikácie sú blokované}other{Niektoré aplikácie sú blokované}}</translation>
+<translation id="3187472288455401631">Meranie reklám</translation>
 <translation id="3188257591659621405">Moje súbory</translation>
 <translation id="3188465121994729530">Kĺzavý priemer</translation>
 <translation id="3189187154924005138">Veľký kurzor</translation>
@@ -2621,6 +2632,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3575121482199441727">Povoliť pre tento web</translation>
 <translation id="3577745545227000795">Zhromažďovanie údajov o hardvéri systémom <ph name="DEVICE_OS" /></translation>
 <translation id="3578594933904494462">Obsah tejto karty sa zdieľa.</translation>
+<translation id="3578874072190212775">Pomôžte webom bojovať proti podvodom a rozlišovať roboty od ľudí</translation>
 <translation id="3581605050355435601">Automaticky konfigurovať adresu IP</translation>
 <translation id="3582057310199111521">Zadané na podvodnom webe a nájdené v rámci porušenia ochrany údajov</translation>
 <translation id="3584169441612580296">Čítať a meniť fotky, hudbu a ďalšie médiá z tohto počítača</translation>
@@ -2723,6 +2735,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3677959414150797585">Zahŕňa aplikácie, webové stránky a ďalší obsah. Odosiela štatistiky na zlepšovanie návrhov iba vtedy, keď ste vybrali zdieľanie údajov o používaní.</translation>
 <translation id="3678156199662914018">Rozšírenie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678188444105291936">Stránky otvorené v tomto okne sa nezobrazia v histórii prehliadača a po odhlásení nezanechajú v počítači žiadne stopy, ako napríklad súbory cookie. Nezachovajú sa ani stiahnuté súbory a záložky.</translation>
+<translation id="368019053277764111">Otvorte vyhľadávanie na bočnom paneli</translation>
 <translation id="3680683624079082902">Hlas prevodu textu na reč</translation>
 <translation id="3681311097828166361">Ďakujeme vám za spätnú väzbu. Teraz ste offline a vaše hlásenie sa odošle neskôr.</translation>
 <translation id="3682824389861648626">Limit pohybu</translation>
@@ -2965,7 +2978,6 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3888053818972567950">Pripojenie k službe <ph name="WEB_DRIVE" /></translation>
 <translation id="3888550877729210209">Písanie poznámok v aplikácii <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3888586133700543064">Tieto informácie nám pomôžu lepšie pochopiť problém s vaším Asistentom. Budú uložené maximálne 90 dní a prístup k nim je obmedzený len na príslušné tímy zodpovedajúce za programovanie a spätnú väzbu.</translation>
-<translation id="3888900458694486810">Zavrieť bočné vyhľadávanie</translation>
 <translation id="3890064827463908288">Zapnite synchronizáciu Chromu, aby ste mohli používať Synchronizáciu Wi-Fi</translation>
 <translation id="389313931326656921">Prideľte prepínač akcii Ďalej</translation>
 <translation id="3893295674388762059">Ak chcete údaje vymazať, zavrite všetky okná inkognito</translation>
@@ -3073,6 +3085,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="3979748722126423326">Povoliť <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981058120448670012">Zariadeniam v okolí sa na <ph name="REMAINING_TIME" /> zobrazuje ako <ph name="DEVICE_NAME" />...</translation>
 <translation id="3981760180856053153">Zadali ste neplatný typ uloženia.</translation>
+<translation id="3981902534690264083">Inzerenti môžu zistiť, akú výkonnosť dosahujú reklamy</translation>
 <translation id="3982375475032951137">Nastavte si prehliadač niekoľkými jednoduchými krokmi</translation>
 <translation id="3983400541576569538">Údaje z určitých aplikácií sa môžu stratiť</translation>
 <translation id="3983586614702900908">zariadenia od neznámeho dodávateľa</translation>
@@ -3201,6 +3214,10 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="4110490973560452005">Dokončilo sa sťahovanie súboru: <ph name="FILE_NAME" />. Stláčaním klávesov Shift+F6 prejdite do oblasti panela so stiahnutými súbormi.</translation>
 <translation id="4110686435123617899">Vyberte album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (offline)</translation>
+<translation id="4114524937989710624">Zobrazujú sa navrhované súbory, ktoré vám pomôžu ľahko sa vrátiť k poslednej nedávnej aktivite na Disku Google.
+        <ph name="BREAK" />
+        <ph name="BREAK" />
+        Môžete spravovať nastavenia v ponuke karty alebo si zobraziť ďalšie možnosti v sekcii Pripôsobenie Chromu.</translation>
 <translation id="4115002065223188701">Sieť je mimo dosahu</translation>
 <translation id="4115378294792113321">Purpurová</translation>
 <translation id="4116704186509653070">Znova otvoriť</translation>
@@ -3279,7 +3296,6 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="4208390505124702064">Hľadať <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Veľké</translation>
 <translation id="4209251085232852247">Vypnuté</translation>
-<translation id="4209464433672152343">Dokumenty sa <ph name="BEGIN_LINK_HELP" />odosielajú Googlu<ph name="END_LINK_HELP" />, kde sa pripravia na tlač. Na <ph name="BEGIN_LINK_DASHBOARD" />hlavnom paneli služby Google Cloud Print<ph name="END_LINK_DASHBOARD" /> môžete zobraziť, upraviť a spravovať tlačiarne a ich históriu.</translation>
 <translation id="4210048056321123003">Sťahuje sa virtuálny počítač</translation>
 <translation id="421182450098841253">&amp;Zobraziť panel so záložkami</translation>
 <translation id="4211851069413100178">Odosielať údaje o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Používanie tohto <ph name="BEGIN_LINK1" />nastavenia<ph name="END_LINK1" /> je presadzované vlastníkom. Vlastník môže odosielať Googlu diagnostiky a údaje o používaní pre toto zariadenie. Ak aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť vo vašom účte Google. <ph name="BEGIN_LINK2" />Ďalšie informácie<ph name="END_LINK2" /></translation>
@@ -3709,6 +3725,10 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="4651484272688821107">Nepodarilo sa načítať komponent so zdrojmi režimu ukážky.</translation>
 <translation id="4652935475563630866">Zmena nastavenia kamery vyžaduje opätovné spustenie aplikácie Parallels Desktop. Pokračujte opätovným spustením aplikácie Parallels Desktop.</translation>
 <translation id="4653405415038586100">Chyba pri konfigurovaní systému Linux</translation>
+<translation id="465406513924180949">Zobrazujú sa karty, ktoré vám pomôžu ľahko sa vrátiť k položkám, ktoré ste zanechali v nákupných košíkoch na internete.
+        <ph name="BREAK" />
+        <ph name="BREAK" />
+        Môžete spravovať nastavenia v ponuke karty alebo si zobraziť ďalšie možnosti v sekcii Pripôsobenie Chromu.</translation>
 <translation id="4654236001025007561">Zdieľajte súbory s Chromebookmi a zariadeniami s Androidom okolo vás</translation>
 <translation id="4657914796247705218">Rýchlosť TrackPointu</translation>
 <translation id="4658285806588491142">Uchovajte si obsah obrazovky v súkromí</translation>
@@ -4151,6 +4171,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="5121130586824819730">Pevný disk je plný. Uložte inde alebo uvoľnite viac miesta na pevnom disku. </translation>
 <translation id="5123433949759960244">Basketbal</translation>
 <translation id="5125751979347152379">Neplatná webová adresa.</translation>
+<translation id="5125967981703109366">Táto karta</translation>
 <translation id="5126611267288187364">Zobraziť zmeny</translation>
 <translation id="5127242257756472928">Weby, ktoré nemajú povolené otvárať a umiestňovať okná pomocou informácií o vašich obrazovkách</translation>
 <translation id="5127620150973591153">Bezpečný spojovací kód: <ph name="TOKEN" /></translation>
@@ -4291,6 +4312,7 @@ stlačením klávesov Ctrl + Alt + zníženie jasu zobrazenie oddialite.</tr
 <translation id="5265797726250773323">Pri inštalácii sa vyskytla chyba</translation>
 <translation id="5266113311903163739">Chyba importovania certifikačnej autority</translation>
 <translation id="526622169288322445">Ďalšie akcie: <ph name="ADDRESS_SUMMARY" /></translation>
+<translation id="5268373933383932086">Vaša stránka podľa vášho vkusu</translation>
 <translation id="5269977353971873915">Zlyhanie tlače</translation>
 <translation id="5273806377963980154">Úprava adresy webu</translation>
 <translation id="5275352920323889391">Pes</translation>
@@ -4825,6 +4847,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="5799478978078236781">Dostávajte tipy, ponuky a aktuality týkajúce sa zariadenia <ph name="DEVICE_TYPE" /> a zdieľajte spätnú väzbu.</translation>
 <translation id="5799508265798272974">Virtuálny počítač so systémom Linux: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">Cieľový súbor bol od posledného stiahnutia upravený alebo odstránený.</translation>
+<translation id="5800351251499368110">Zavrite vyhľadávanie na bočnom paneli. Vyhľadávanie je otvorené na bočnom paneli.</translation>
 <translation id="5801568494490449797">Predvoľby</translation>
 <translation id="5804241973901381774">Povolenia</translation>
 <translation id="5805697420284793859">Správca okien</translation>
@@ -5103,6 +5126,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="6080689532560039067">Kontrola času systému</translation>
 <translation id="6082877069782862752">Priradenie klávesov</translation>
 <translation id="608531959444400877"><ph name="WINDOW_TITLE" /> – súčasť skupiny bez názvu</translation>
+<translation id="6085457109149794212">Zobraziť všetky možnosti karty v sekcii Prispôsobenie Chromu</translation>
 <translation id="6085886413119427067">Určuje, ako sa pripojiť k webom prostredníctvom zabezpečeného pripojenia</translation>
 <translation id="6086004606538989567">Účet, ktorý ste overili, nemá povolený prístup do tohto zariadenia.</translation>
 <translation id="6086846494333236931">Nainštalované vaším správcom</translation>
@@ -5137,6 +5161,10 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="6116921718742659598">Zmeniť nastavenia jazyka a vstupu</translation>
 <translation id="6119927814891883061">Pomenovať zariadenie <ph name="DEVICE_NAME" /></translation>
 <translation id="6120205520491252677">Pripnúť túto stránku na Úvodnú obrazovku...</translation>
+<translation id="6120707837086723438">Zobrazujú sa navrhované recepty na základe vašej nedávnej aktivity vyhľadávania receptov.
+        <ph name="BREAK" />
+        <ph name="BREAK" />
+        Môžete spravovať nastavenia v ponuke karty alebo si zobraziť ďalšie možnosti v sekcii Pripôsobenie Chromu.</translation>
 <translation id="6121773125605585883">Zobraziť heslo s používateľským menom <ph name="USERNAME" /> pre web <ph name="WEBSITE" /></translation>
 <translation id="6122081475643980456">Vaše internetové pripojenie je ovládané</translation>
 <translation id="6122093587541546701">E-mail (nepovinné):</translation>
@@ -5553,6 +5581,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="6537880577641744343">Commander</translation>
 <translation id="6538098297809675636">Pri rozpoznávaní kódu sa vyskytla chyba</translation>
 <translation id="653920215766444089">Vyhľadáva sa polohovacie zariadenie</translation>
+<translation id="653983593749614101">Obnovuje sa…</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Poznámka:<ph name="END_BOLD" /> Túto možnosť povoľte iba v prípade, ak viete, čo robíte, alebo ak vás o to niekto požiadal, pretože zhromažďovanie údajov môže znížiť výkonnosť.</translation>
 <translation id="6540672086173674880">Google môže pomocou vašej histórie prehliadania prispôsobovať Vyhľadávanie a ďalšie služby Googlu. Toto správanie môžete kedykoľvek zmeniť na myaccount.google.com/activitycontrols/search.</translation>
 <translation id="6541638731489116978">Tomuto webu bol zablokovaný prístup k senzorom pohybu.</translation>
@@ -5768,6 +5797,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="6767566652486411142">Vybrať iný jazyk…</translation>
 <translation id="6767639283522617719">Nepodarilo sa pripojiť k doméne. Skontrolujte, či sú nastavenia organizačnej jednotky správne.</translation>
 <translation id="6768034047581882264">Nemôže zobrazovať nezabezpečený obsah</translation>
+<translation id="6770042910635026163">Navštevované weby, ktoré definujú vaše záujmy</translation>
 <translation id="6770602306803890733">Zvyšuje zabezpečenie pre vás aj ostatných na internete</translation>
 <translation id="6771503742377376720">Je certifikačnou autoritou</translation>
 <translation id="6775163072363532304">Tu sa zobrazia dostupné zariadenia.</translation>
@@ -5784,7 +5814,6 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="6781978626986383437">Záloha systému Linux bola zrušená</translation>
 <translation id="6782067259631821405">Neplatný kód PIN</translation>
 <translation id="6784523122863989144">Profil je podporovaný</translation>
-<translation id="6785518634832172390">PIN musí mať najviac 12 znakov</translation>
 <translation id="6786747875388722282">Rozšírenia</translation>
 <translation id="6787097042755590313">Iná karta</translation>
 <translation id="6787839852456839824">Klávesové skratky</translation>
@@ -6178,7 +6207,6 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
 <translation id="7180865173735832675">Prispôsobiť</translation>
 <translation id="7182791023900310535">Presuňte svoje heslo</translation>
-<translation id="7183420126213758623">Prepnúť bočné vyhľadávanie Bočné vyhľadávanie nebolo aktivované.</translation>
 <translation id="7186088072322679094">Ponechať na paneli s nástrojmi</translation>
 <translation id="7186303001964993981">Web <ph name="ORIGIN" /> nemôže otvoriť tento priečinok, pretože obsahuje súbory systému</translation>
 <translation id="7187428571767585875">Záznamy databázy Registry, ktoré sa majú odstrániť alebo zmeniť:</translation>
@@ -6328,6 +6356,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7347943691222276892">Kliknutím odídete zo stránky <ph name="SUBPAGE_TITLE" />.</translation>
 <translation id="7348093485538360975">Klávesnica na obrazovke</translation>
 <translation id="7349010927677336670">Plynulosť videa</translation>
+<translation id="7352531447904559593">Ďalšie informácie o prispôsobení reklám založenom na prehliadači</translation>
 <translation id="7352651011704765696">Vyskytla sa chyba</translation>
 <translation id="7353261921908507769">Vaše kontakty s vami môžu zdieľať obsah, keď sú nablízku. Prenosy sa začnú až vtedy, keď ich prijmete.</translation>
 <translation id="735361434055555355">Inštaluje sa Linux…</translation>
@@ -6335,6 +6364,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7356908624372060336">Denníky siete</translation>
 <translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="7358324924540718595">Spomienky sú dnes skryté</translation>
+<translation id="7358338787722390626">Zavrite vyhľadávanie na bočnom paneli</translation>
 <translation id="735994578317267253">Získajte svoje aplikácie, nastavenia a viac vo všetkých zariadeniach so systémom ChromOS</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> str. do tlačiarne <ph name="PRINTER_NAME" /></translation>
 <translation id="7361297102842600584">Doplnok <ph name="PLUGIN_NAME" /> spustíte kliknutím pravým tlačidlom myši</translation>
@@ -6617,6 +6647,7 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7631887513477658702">Súbory tohto typu &amp;vždy otvoriť</translation>
 <translation id="7632948528260659758">Nepodarilo sa aktualizovať nasledujúce aplikácie Kiosku:</translation>
 <translation id="7633724038415831385">Na aktualizáciu budete musieť čakať iba teraz. V Chromebookoch sa softvér aktualizuje na pozadí.</translation>
+<translation id="7634280112532283638">Redukcia spamu a podvodov</translation>
 <translation id="7634566076839829401">Niečo sa pokazilo. Skúste to znova.</translation>
 <translation id="7635048370253485243">Pripnuté vaším správcom</translation>
 <translation id="763632859238619983">Zakázať všetkým webom inštalovať obslužné nástroje platieb</translation>
@@ -6691,7 +6722,6 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7691077781194517083">Tento bezpečnostný kľúč sa nedá resetovať. Chyba <ph name="ERROR_CODE" />.</translation>
 <translation id="7691163173018300413">„Hey Google“</translation>
 <translation id="7691698019618282776">Inovácia systému Crostini</translation>
-<translation id="769375405463525957">Ak odídete od zariadenia, obrazovka sa automaticky uzamkne. Keď ste pred ním, obrazovka sa neuzamkne.</translation>
 <translation id="7694246789328885917">Nástroj na zvýraznenie</translation>
 <translation id="7696063401938172191">V telefóne <ph name="PHONE_NAME" />:</translation>
 <translation id="7697166915480294040">Podrobnosti sú počas zdieľania obrazovky skryté</translation>
@@ -6700,7 +6730,6 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7701040980221191251">Žiadne</translation>
 <translation id="7701869757853594372">POUŽÍVATEĽ – popisovače</translation>
 <translation id="7702574632857388784">Odstrániť súbor <ph name="FILE_NAME" /> zo zoznamu</translation>
-<translation id="7702599324215660661">Uzamknúť, keď odídete</translation>
 <translation id="7702907602086592255">Doména</translation>
 <translation id="7704305437604973648">Úloha</translation>
 <translation id="7704317875155739195">Automaticky dopĺňať vyhľadávania a webové adresy</translation>
@@ -6745,6 +6774,10 @@ Tejto akcii môžete prideliť viacero prepínačov.</translation>
 <translation id="7744192722284567281">Nájdené v rámci porušenia ochrany údajov</translation>
 <translation id="7744649840067671761">Spustite úlohu stlačením nového prepínača alebo klávesa.
 Odstráňte ju stlačením prideleného prepínača alebo klávesa.</translation>
+<translation id="7746739418892731373">Zobrazujú sa výbery fotiek a videí z vašej knižnice Fotiek Google. Na <ph name="BEGIN_LINK" />photos.google.com/settings<ph name="END_LINK" /> môžete ovládať, čo sa má vo výberoch zobrazovať.
+        <ph name="BREAK" />
+        <ph name="BREAK" />
+        Môžete spravovať nastavenia tejto karty v jej ponuke alebo si zobraziť ďalšie možnosti v sekcii Pripôsobenie Chromu.</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>
 <translation id="7751260505918304024">Zobraziť všetky</translation>
 <translation id="7753735457098489144">Nepodarilo sa nainštalovať pre nedostatok priestoru. Uvoľníte ho odstránením súborov z úložiska zariadenia.</translation>
@@ -6807,7 +6840,6 @@ Odstráňte ju stlačením prideleného prepínača alebo klávesa.</translation
 <translation id="7798844538707273832">Prehliadač automaticky blokuje <ph name="PERMISSION" /></translation>
 <translation id="7799299114731150374">Tapeta bola úspešne nastavená</translation>
 <translation id="7799817062559422778">Svetlý režim</translation>
-<translation id="7800159967992492578">Prepnúť bočné vyhľadávanie Bočné vyhľadávanie bolo aktivované.</translation>
 <translation id="7800518121066352902">Otočiť &amp;proti smeru hodinových ručičiek</translation>
 <translation id="7801679634091975683">Zmeny, ktoré tu vykonáte, sa použijú iba v prehliadači Lacros Chrome. Ak chcete zmeniť nastavenia prehliadača Chrome, otvorte ho a prejdite do nastavení.</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
@@ -6967,6 +6999,7 @@ Odstráňte ju stlačením prideleného prepínača alebo klávesa.</translation
 <translation id="7957074856830851026">Zobrazte si informácie o zariadení, napríklad sériové číslo alebo identifikátor diela</translation>
 <translation id="7957615753207896812">Otvoriť nastavenia klávesnice</translation>
 <translation id="7959074893852789871">Súbor obsahoval viacero certifikátov a niektoré z nich neboli importované:</translation>
+<translation id="7959157064403954786">Vyskúšanie transparentnejších reklám</translation>
 <translation id="7959665254555683862">Nová karta inkognito</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7963001036288347286">Zrýchlenie touchpadu</translation>
@@ -7655,6 +7688,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="866611985033792019">Dôverovať tomuto certifikátu na identifikáciu e-mailových používateľov</translation>
 <translation id="8666584013686199826">Opýtať sa, keď chce web získať prístup k zariadeniam USB</translation>
 <translation id="8667328578593601900">Stránka <ph name="FULLSCREEN_ORIGIN" /> je teraz zobrazená na celú obrazovku a zakázala kurzor myši.</translation>
+<translation id="8667760277771450375">Skúmame spôsoby, ako obmedziť sledovanie na rôznych weboch a zároveň webom umožniť bojovať proti reklamnému spamu a podvodom.</translation>
 <translation id="8668052347555487755">Farebný režim</translation>
 <translation id="8669284339312441707">Teplejšie</translation>
 <translation id="8670537393737592796">Ak sa sem chcete rýchlo vrátiť, nainštalujte si aplikáciu <ph name="APP_NAME" /> kliknutím na tlačidlo inštalácie</translation>
@@ -8258,6 +8292,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="968000525894980488">Zapnite Služby Google Play</translation>
 <translation id="968037381421390582">Prilepiť a vyhľadať dopyt <ph name="SEARCH_TERMS" /></translation>
 <translation id="969096075394517431">Zmeniť jazyky</translation>
+<translation id="969573236494556070">Obmedzenie zdieľania medzi webmi</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# karty}other{# kariet}}</translation>
 <translation id="971510864672937292">Chcete vymazať dáta a povolenia webu <ph name="SITE_NAME" /> a všetkých jeho podriadených webov?</translation>
 <translation id="971774202801778802">Webová adresa záložky</translation>

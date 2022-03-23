@@ -108,14 +108,14 @@
  */
 
 #if defined(WIN32)
-void set_env_var(std::string const& name, std::string const& value);
-void remove_env_var(std::string const& name);
+bool set_env_var(std::string const& name, std::string const& value);
+bool remove_env_var(std::string const& name);
 #define ENV_VAR_BUFFER_SIZE 4096
 std::string get_env_var(std::string const& name, bool report_failure = true);
 
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-void set_env_var(std::string const& name, std::string const& value);
-void remove_env_var(std::string const& name);
+bool set_env_var(std::string const& name, std::string const& value);
+bool remove_env_var(std::string const& name);
 std::string get_env_var(std::string const& name, bool report_failure = true);
 #endif
 

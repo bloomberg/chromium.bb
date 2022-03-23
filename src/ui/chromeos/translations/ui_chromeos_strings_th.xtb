@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1209796539517632982">เซิร์ฟเวอร์ชื่ออัตโนมัติ</translation>
 <translation id="1210831758834677569">ลาว</translation>
+<translation id="1223825810409523901">ส่วนขยาย Chrome</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="1249250836236328755">ประเภท</translation>
 <translation id="1254593899333212300">เชื่อมต่ออินเทอร์เน็ตโดยตรง</translation>
@@ -80,6 +81,7 @@
 <translation id="166439687370499867">ไม่อนุญาตให้เปลี่ยนการกำหนดค่าเครือข่ายที่ใช้ร่วมกัน</translation>
 <translation id="1665611772925418501">ไม่สามารถแก้ไขไฟล์</translation>
 <translation id="1673103856845176271">ไม่สามารถเข้าถึงไฟล์เนื่องจากเหตุผลด้านความปลอดภัย</translation>
+<translation id="16762847117768727">รูปภาพ ISO</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">ขี่จักรยาน</translation>
 <translation id="1722487484194605434">กำลังซิป <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
@@ -811,6 +813,7 @@
 <translation id="7925686952655276919">อย่าใช้ข้อมูลมือถือสำหรับการซิงค์</translation>
 <translation id="7928710562641958568">ยกเลิกการต่อเชื่อมอุปกรณ์</translation>
 <translation id="7943385054491506837">Colemak แบบสหรัฐอเมริกา</translation>
+<translation id="7948417415021769876">7z archive</translation>
 <translation id="7953739707111622108">ไม่สามารถเปิดอุปกรณ์นี้ได้เนื่องจากระบบไฟล์ของอุปกรณ์ไม่เป็นที่รู้จัก</translation>
 <translation id="7969525169268594403">สโลวีเนีย</translation>
 <translation id="7972920761225148017">ฝรั่งเศส (สวิตเซอร์แลนด์)</translation>
@@ -825,6 +828,7 @@
 <translation id="8042602468072383151">เสียง <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">โรมาเนีย</translation>
 <translation id="8049184478152619004">ป้อนคีย์การเลิกบล็อกส่วนตัว (PUK)</translation>
+<translation id="807187749540895545">กำลังแตกข้อมูลของ <ph name="FILE_NAME" />...</translation>
 <translation id="8079530767338315840">เล่นซ้ำ</translation>
 <translation id="8087576439476816834">ดาวน์โหลด <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">ที่แชร์กับฉัน</translation>
@@ -859,6 +863,7 @@
 <translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
 <translation id="8372852072747894550">กรีก</translation>
 <translation id="8386903983509584791">สแกนเสร็จแล้ว</translation>
+<translation id="8387733224523483503">แตกไฟล์ <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="8395901698320285466">มิติข้อมูล</translation>
 <translation id="8408068190360279472">เครือข่าย <ph name="NETWORK_TYPE" /> กำลังเชื่อมต่อ</translation>
 <translation id="8425213833346101688">เปลี่ยน</translation>
@@ -876,6 +881,7 @@
 <translation id="8484284835977497781">เลือกจากรูปภาพล่าสุด</translation>
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8492972329130824181">เครือข่ายในบ้านไม่พร้อมใช้งาน ต้องเปิดใช้การโรมมิ่งอินเทอร์เน็ตมือถือเพื่อเชื่อมต่อ</translation>
+<translation id="8499098729323186194">กำลังแตกข้อมูล <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
 <translation id="8521441079177373948">สหราชอาณาจักร</translation>
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
 <translation id="853494022971700746">ฝรั่งเศส (ฝรั่งเศส)</translation>
@@ -952,6 +958,7 @@
 <translation id="9174050671906956834">รายการในถังขยะจะถูกลบทิ้งถาวรหลังจาก 30 วัน</translation>
 <translation id="9183302530794969518">Google เอกสาร</translation>
 <translation id="9189836632794948435">คาซัค</translation>
+<translation id="9200427192836333033">แตกไฟล์แล้ว <ph name="NUMBER_OF_ITEMS" /> รายการ</translation>
 <translation id="9213073329713032541">เริ่มการติดตั้งสำเร็จแล้ว</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="9219908252191632183">ดวงจันทร์</translation>

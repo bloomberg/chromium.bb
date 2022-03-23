@@ -94,6 +94,26 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
   bool wal_mode =
       base::FeatureList::IsEnabled(sql::features::kEnableWALModeByDefault);
 
+  // If true, transaction commit waits for data to reach persistent media.
+  //
+  // This is currently only meaningful on macOS. All other operating systems
+  // only support flushing directly to disk.
+  //
+  // If both `flush_to_media` and `wal_mode` are false, power loss can lead to
+  // database corruption.
+  //
+  // By default, SQLite considers that transactions commit when they reach the
+  // disk controller's memory. This guarantees durability in the event of
+  // software crashes, up to and including the operating system. In the event of
+  // power loss, SQLite may lose data. If `wal_mode` is false (SQLite uses a
+  // rollback journal), power loss can lead to database corruption.
+  //
+  // When this option is enabled, committing a transaction causes SQLite to wait
+  // until the data is written to the persistent media. This guarantees
+  // durability in the event of power loss, which is needed to guarantee the
+  // integrity of non-WAL databases.
+  bool flush_to_media = false;
+
   // Database page size.
   //
   // New Chrome features should set an explicit page size in their
@@ -167,8 +187,8 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
 
 // Handle to an open SQLite database.
 //
-// Instances of this class are thread-unsafe and DCHECK that they are accessed
-// on the same sequence.
+// Instances of this class are not thread-safe. After construction, a Database
+// instance should only be accessed from one sequence.
 //
 // When a Database instance goes out of scope, any uncommitted transactions are
 // rolled back.
@@ -835,6 +855,9 @@ class COMPONENT_EXPORT(SQL) Database {
   //
   // This method must only be called while the database is successfully opened.
   sqlite3_file* GetSqliteVfsFile();
+
+  // Will eventually be checked on all methods. See https://crbug.com/1306694
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The actual sqlite database. Will be null before Init has been called or if
   // Init resulted in an error.

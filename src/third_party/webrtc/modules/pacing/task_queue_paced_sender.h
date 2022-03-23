@@ -19,12 +19,14 @@
 #include <queue>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/types/optional.h"
 #include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
+#include "api/webrtc_key_value_config.h"
 #include "modules/pacing/pacing_controller.h"
 #include "modules/pacing/rtp_packet_pacer.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
@@ -39,6 +41,16 @@ class RtcEventLog;
 
 class TaskQueuePacedSender : public RtpPacketPacer, public RtpPacketSender {
  public:
+  ABSL_DEPRECATED("Use the version with field_trials reference instead.")
+  TaskQueuePacedSender(
+      Clock* clock,
+      PacingController::PacketSender* packet_sender,
+      RtcEventLog* event_log,
+      const WebRtcKeyValueConfig* field_trials,
+      TaskQueueFactory* task_queue_factory,
+      TimeDelta max_hold_back_window = PacingController::kMinSleepTime,
+      int max_hold_back_window_in_packets = -1);
+
   // The `hold_back_window` parameter sets a lower bound on time to sleep if
   // there is currently a pacer queue and packets can't immediately be
   // processed. Increasing this reduces thread wakeups at the expense of higher
@@ -48,7 +60,7 @@ class TaskQueuePacedSender : public RtpPacketPacer, public RtpPacketSender {
       Clock* clock,
       PacingController::PacketSender* packet_sender,
       RtcEventLog* event_log,
-      const WebRtcKeyValueConfig* field_trials,
+      const WebRtcKeyValueConfig& field_trials,
       TaskQueueFactory* task_queue_factory,
       TimeDelta max_hold_back_window = PacingController::kMinSleepTime,
       int max_hold_back_window_in_packets = -1);
@@ -75,8 +87,7 @@ class TaskQueuePacedSender : public RtpPacketPacer, public RtpPacketSender {
   // Resume sending packets.
   void Resume() override;
 
-  void SetCongestionWindow(DataSize congestion_window_size) override;
-  void UpdateOutstandingData(DataSize outstanding_data) override;
+  void SetCongested(bool congested) override;
 
   // Sets the pacing rates. Must be called once before packets can be sent.
   void SetPacingRates(DataRate pacing_rate, DataRate padding_rate) override;
@@ -133,6 +144,16 @@ class TaskQueuePacedSender : public RtpPacketPacer, public RtpPacketSender {
   Stats GetStats() const;
 
   Clock* const clock_;
+  // If `kSlackedTaskQueuePacedSenderFieldTrial` is enabled, delayed tasks
+  // invoking MaybeProcessPackets() are scheduled using low precision instead of
+  // high precision, resulting in less idle wake ups and packets being sent in
+  // bursts if the `task_queue_` implementation supports slack.
+  //
+  // When probing, high precision is used regardless of `allow_low_precision_`
+  // to ensure good bandwidth estimation.
+  const bool allow_low_precision_;
+  // The holdback window prevents too frequent delayed MaybeProcessPackets()
+  // calls. These are only applicable if `allow_low_precision_` is false.
   const TimeDelta max_hold_back_window_;
   const int max_hold_back_window_in_packets_;
 

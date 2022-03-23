@@ -82,7 +82,6 @@ add_spvtools_unittest(TARGET opt
        propagator_test.cpp
        reduce_load_size_test.cpp
        redundancy_elimination_test.cpp
-       remove_dontinline_test.cpp
 	   remove_unused_interface_variables_test.cpp
        register_liveness.cpp
        relax_float_ops_test.cpp

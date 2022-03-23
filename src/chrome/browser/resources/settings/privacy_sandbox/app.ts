@@ -152,6 +152,15 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
 
     HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
         TrustSafetyInteraction.OPENED_PRIVACY_SANDBOX);
+
+    const view = new URLSearchParams(window.location.search).get('view');
+    if (Object.values(PrivacySandboxSettingsView)
+            .includes(view as PrivacySandboxSettingsView)) {
+      this.privacySandboxSettingsView_ = view as PrivacySandboxSettingsView;
+    } else {
+      // If no view has been specified, then navigate to main page.
+      this.privacySandboxSettingsView_ = PrivacySandboxSettingsView.MAIN;
+    }
   }
 
   private onFlocChanged_() {
@@ -169,6 +178,13 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
         privacySandboxApisEnabled ? 'Settings.PrivacySandbox.ApisEnabled' :
                                     'Settings.PrivacySandbox.ApisDisabled');
     this.setPrefValue('privacy_sandbox.manually_controlled', true);
+
+    // As the backend will have cleared any data when the API is disabled, clear
+    // the associated model entries.
+    if (!privacySandboxApisEnabled) {
+      this.topTopics_ = [];
+      this.joiningSites_ = [];
+    }
   }
 
   private onFlocToggleButtonChange_(event: Event) {
@@ -342,6 +358,33 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
     const tooltip = this.shadowRoot!.querySelector<PaperTooltipElement>(
         target.id === 'topicsTooltipIcon' ? '#topicsTooltip' :
                                             '#fledgeTooltip')!;
+
+    // Directly inject the required style into the stylesheets of the paper
+    // tooltip element. This is a workaround for CSS mixin properties seemingly
+    // being removed in optimized WebUI builds, and the paper-tooltip not
+    // supporting other styling methods.
+    // TODO(crbug.com/1308262): Expose required style hooks on paper-tooltip
+    const sheet = new CSSStyleSheet();
+    // @ts-ignore
+    sheet.replaceSync(`
+      #tooltip {
+            border-radius: 4px;
+            box-shadow: var(--cr-elevation-2);
+            font-family: Roboto, Arial, sans-serif;
+            font-size: inherit;
+            font-weight: 400;
+            line-height: 154%;  /* 20px. */
+            margin: 0 4px;
+      }`);
+    // @ts-ignore
+    const elemStyleSheets = tooltip.shadowRoot.adoptedStyleSheets;
+
+    if (elemStyleSheets.length === 0 ||
+        JSON.stringify(elemStyleSheets.slice(-1)[0]) !==
+            JSON.stringify(sheet)) {
+      // @ts-ignore
+      tooltip.shadowRoot.adoptedStyleSheets = [...elemStyleSheets, sheet];
+    }
 
     const hide = () => {
       tooltip.hide();

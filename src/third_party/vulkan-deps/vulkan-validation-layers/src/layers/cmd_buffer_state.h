@@ -484,7 +484,6 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
   protected:
     void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
     void UpdateAttachmentsView(const VkRenderPassBeginInfo *pRenderPassBegin);
-    void UnbindResources();
 };
 
 // specializations for barriers that cannot do queue family ownership transfers

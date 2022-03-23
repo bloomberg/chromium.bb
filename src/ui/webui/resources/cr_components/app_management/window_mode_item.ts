@@ -34,7 +34,7 @@ export class AppManagementWindowModeElement extends PolymerElement {
   windowModeLabel: String;
   app: App;
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('click', this.onClick_);
     this.addEventListener('change', this.toggleWindowMode_);
@@ -68,8 +68,8 @@ export class AppManagementWindowModeElement extends PolymerElement {
     );
     const booleanWindowMode = this.getWindowModeBoolean(newWindowMode);
     const windowModeChangeAction = booleanWindowMode ?
-        AppManagementUserAction.WindowModeChangedToWindow :
-        AppManagementUserAction.WindowModeChangedToBrowser;
+        AppManagementUserAction.WINDOW_MODE_CHANGED_TO_WINDOW :
+        AppManagementUserAction.WINDOW_MODE_CHANGED_TO_BROWSER;
     recordAppManagementUserAction(this.app.type, windowModeChangeAction);
   }
 

@@ -180,15 +180,6 @@ bool SkImageShader::isOpaque() const {
            fTileModeX != SkTileMode::kDecal && fTileModeY != SkTileMode::kDecal;
 }
 
-#if defined(SK_LEGACY_RP_BICUBIC)
-constexpr SkCubicResampler kDefaultCubicResampler{1.0f/3, 1.0f/3};
-
-static bool is_default_cubic_resampler(SkCubicResampler cubic) {
-    return SkScalarNearlyEqual(cubic.B, kDefaultCubicResampler.B) &&
-           SkScalarNearlyEqual(cubic.C, kDefaultCubicResampler.C);
-}
-#endif
-
 #ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
 
 static bool legacy_shader_can_handle(const SkMatrix& inv) {
@@ -396,7 +387,9 @@ void SkImageShader::addToKey(const SkKeyContext& keyContext,
 
         auto mipmapped = (fSampling.mipmap != SkMipmapMode::kNone) ? skgpu::Mipmapped::kYes
                                                                    : skgpu::Mipmapped::kNo;
-        auto[view, ct] = grImage->asView(keyContext.recorder(), mipmapped);
+        // TODO: In practice which SkBudgeted value used shouldn't matter because we're not going
+        // to create a new texture here. But should the SkImage know its SkBudgeted state?
+        auto[view, ct] = grImage->asView(keyContext.recorder(), mipmapped, SkBudgeted::kNo);
         imgData.fTextureProxy = view.refProxy();
     }
 #endif
@@ -483,12 +476,6 @@ bool SkImageShader::doStages(const SkStageRec& rec, TransformShader* updater) co
     if (sampling.mipmap == SkMipmapMode::kLinear) {
         return false;
     }
-#if defined(SK_LEGACY_RP_BICUBIC)
-    if (sampling.useCubic && !is_default_cubic_resampler(sampling.cubic)) {
-        return false;
-    }
-#endif
-
     if (updater && (sampling.mipmap != SkMipmapMode::kNone)) {
         // TODO: medium: recall RequestBitmap and update width/height accordingly
         return false;

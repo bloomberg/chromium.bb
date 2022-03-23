@@ -56,7 +56,7 @@
   {
     "name": "add-passwords-in-settings",
     "owners": [ "vidhanj", "mamir", "lizapopova" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "add-to-homescreen-iph",
@@ -212,7 +212,7 @@
   {
     "name": "arc-file-picker-experiment",
     "owners": [ "youkichihosoi", "risan", "niwa" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "arc-ghost-window",
@@ -845,7 +845,7 @@
   {
     "name": "colr-v1-fonts",
     "owners": [ "drott", "layout-dev@chromium.org" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 100
   },
   {
     "name": "compositor-threaded-scrollbar-scrolling",
@@ -933,11 +933,6 @@
     "name": "contextual-search-force-caption",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "contextual-search-literal-search-tap",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "contextual-search-longpress-resolve",
@@ -1207,11 +1202,6 @@
     "name": "device-posture",
     "owners": [ "alexis.menard@intel.com" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "diagnostics-app",
-    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
-    "expiry_milestone": 92
   },
   {
     "name": "diagnostics-app-navigation",
@@ -1633,6 +1623,11 @@
     "expiry_milestone": 99
   },
   {
+    "name": "enable-cast-remoting-query-blocklist",
+    "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "enable-cast-streaming-av1",
     "owners": [ "jophba@google.com", "openscreen-eng@google.com" ],
     "expiry_milestone": 105
@@ -1703,7 +1698,7 @@
   {
     "name": "enable-critical-persisted-tab-data",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 108
   },
   {
     "name": "enable-cros-action-recorder",
@@ -2098,8 +2093,8 @@
   },
   {
     "name": "enable-experimental-kernel-vm-support",
-    "owners": [ "zwisler" ],
-    "expiry_milestone": 98
+    "owners": [ "davidmunro@google.com", "zwisler", "clumptini@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-experimental-web-platform-features",
@@ -2354,7 +2349,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-lens-region-search",
+    "name": "enable-lens-standalone",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
     "expiry_milestone": 103
   },
@@ -2673,16 +2668,6 @@
     // This flag is used by network administrators to debug
     // network issues related to QUIC. It must not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-quick-action-search-widget-android",
-    "owners": [ "maxtauro@google.com", "ender@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
-    "name": "enable-quick-action-search-widget-android-dino-variant",
-    "owners": [ "maxtauro@google.com", "ender@google.com" ],
-    "expiry_milestone": 105
   },
   {
     "name": "enable-raw-draw",
@@ -3278,7 +3263,7 @@
   {
     "name": "extensions-menu-access-control",
     "owners": [ "emiliapaz" ],
-    "expiry_milestone":  100
+    "expiry_milestone":  104
   },
   {
     "name": "extensions-on-chrome-urls",
@@ -3418,7 +3403,7 @@
   {
     "name": "focus-follows-cursor",
     "owners": [ "dandersson", "tclaiborne" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "font-access",
@@ -3446,6 +3431,11 @@
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "force-enable-cast-remoting-query",
+    "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "force-major-version-to-minor",
@@ -3779,6 +3769,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "intent-chip-skips-intent-picker",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
+  },
+  {
     "name": "interest-feed-notice-card-auto-dismiss",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org", "edchin@chromium.org" ],
     "expiry_milestone": 95
@@ -3991,12 +3986,17 @@
   {
     "name": "lens-camera-assisted-search",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 104
   },
   {
     "name": "lightweight-reactions-android",
     "owners": [ "gujen", "sophey" ],
     "expiry_milestone": 104
+  },
+  {
+    "name": "link-capturing-infobar",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "link-capturing-ui-update",
@@ -4021,6 +4021,11 @@
     // This flag is used for debugging and development purposes, allowing users
     // and developers to test LiteVideos reliably on any origin.'
     "expiry_milestone": -1
+  },
+  {
+    "name": "location-bar-model-optimizations",
+    "owners": [ "pnoland@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "mac-syscall-sandbox",
@@ -4741,7 +4746,7 @@
   {
     "name": "ozone-platform-hint",
     "owners": [ "rjkroege", "thomasanderson", "msisov@igalia.com", "nickdiego@igalia.com", "adunaev@igalia.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "page-content-annotations",
@@ -4800,7 +4805,12 @@
   {
     "name": "partitioned-cookies",
     "owners": [ "dylancutler" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
+  },
+  {
+    "name": "partitioned-cookies-bypass-origin-trial",
+    "owners": [ "dylancutler" ],
+    "expiry_milestone": 110
   },
   {
     "name": "password-change-in-settings",
@@ -4823,6 +4833,11 @@
     // The feature is already extensively used externally.
     // However, it's not polished enough yet to launch.
     "expiry_milestone": -1
+  },
+  {
+    "name": "password-notes",
+    "owners": ["mamir", "derinel@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "password-scripts-fetching",
@@ -4862,22 +4877,22 @@
   {
     "name": "performant-split-view-resizing",
     "owners": [ "dandersson", "riomat" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "permission-chip",
-    "owners": [ "bsep", "engedy", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "elklm", "bsep", "engedy", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "permission-chip-gesture",
-    "owners": [ "bsep", "engedy", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "elklm", "bsep", "engedy", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "permission-chip-request-type",
-    "owners": [ "bsep", "engedy", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "elklm", "bsep", "engedy", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "permission-predictions",
@@ -4887,7 +4902,7 @@
   {
     "name": "permission-quiet-chip",
     "owners": [ "elklm", "engedy"],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "persist-share-hub-on-app-switch",
@@ -4955,7 +4970,7 @@
       "andzaytsev",
       "msramek",
       "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "privacy-sandbox-v3-android",
@@ -5580,7 +5595,7 @@
   {
     "name": "smart-lock-ui-revamp",
     "owners": [ "cclem", "better-together-dev@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 103
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -5645,7 +5660,7 @@
     "expiry_milestone": 104
   },
   {
-    "name": "sync-android-promos-revamp",
+    "name": "sync-android-promos-with-single-button",
     "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
     "expiry_milestone": 103
   },

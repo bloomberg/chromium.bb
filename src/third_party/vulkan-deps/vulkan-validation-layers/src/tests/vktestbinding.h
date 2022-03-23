@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2016, 2020-2022 The Khronos Group Inc.
- * Copyright (c) 2015-2016, 2020-2022 Valve Corporation
- * Copyright (c) 2015-2016, 2020-2022 LunarG, Inc.
+ * Copyright (c) 2015-2016, 2020-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2016, 2020-2021 Valve Corporation
+ * Copyright (c) 2015-2016, 2020-2021 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -432,7 +432,8 @@ class Buffer : public internal::NonDispHandle<VkBuffer> {
 
     VkBufferMemoryBarrier buffer_memory_barrier(VkFlags output_mask, VkFlags input_mask, VkDeviceSize offset,
                                                 VkDeviceSize size) const {
-        VkBufferMemoryBarrier barrier = LvlInitStruct<VkBufferMemoryBarrier>();
+        VkBufferMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
         barrier.buffer = handle();
         barrier.srcAccessMask = output_mask;
         barrier.dstAccessMask = input_mask;
@@ -448,7 +449,8 @@ class Buffer : public internal::NonDispHandle<VkBuffer> {
     VkBufferMemoryBarrier2KHR buffer_memory_barrier(VkPipelineStageFlags2KHR src_stage, VkPipelineStageFlags2KHR dst_stage,
                                                     VkAccessFlags2KHR src_access, VkAccessFlags2KHR dst_access, VkDeviceSize offset,
                                                     VkDeviceSize size) const {
-        VkBufferMemoryBarrier2KHR barrier = LvlInitStruct<VkBufferMemoryBarrier2KHR>();
+        VkBufferMemoryBarrier2KHR barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2_KHR;
         barrier.buffer = handle();
         barrier.srcStageMask = src_stage;
         barrier.dstStageMask = dst_stage;
@@ -480,7 +482,9 @@ class BufferView : public internal::NonDispHandle<VkBufferView> {
 };
 
 inline VkBufferViewCreateInfo BufferView::createInfo(VkBuffer buffer, VkFormat format, VkDeviceSize offset, VkDeviceSize range) {
-    VkBufferViewCreateInfo info = LvlInitStruct<VkBufferViewCreateInfo>();
+    VkBufferViewCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+    info.pNext = nullptr;
     info.flags = VkFlags(0);
     info.buffer = buffer;
     info.format = format;
@@ -528,7 +532,8 @@ class Image : public internal::NonDispHandle<VkImage> {
                                               VkImageLayout new_layout, const VkImageSubresourceRange &range,
                                               uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                                               uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED) const {
-        VkImageMemoryBarrier barrier = LvlInitStruct<VkImageMemoryBarrier>();
+        VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.srcAccessMask = output_mask;
         barrier.dstAccessMask = input_mask;
         barrier.oldLayout = old_layout;
@@ -546,7 +551,8 @@ class Image : public internal::NonDispHandle<VkImage> {
                                                   const VkImageSubresourceRange &range,
                                                   uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                                                   uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED) const {
-        VkImageMemoryBarrier2KHR barrier = LvlInitStruct<VkImageMemoryBarrier2KHR>();
+        VkImageMemoryBarrier2KHR barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR;
         barrier.srcStageMask = src_stage;
         barrier.dstStageMask = dst_stage;
         barrier.srcAccessMask = src_access;
@@ -762,7 +768,9 @@ class DescriptorPool : public internal::NonDispHandle<VkDescriptorPool> {
 template <typename PoolSizes>
 inline VkDescriptorPoolCreateInfo DescriptorPool::create_info(VkDescriptorPoolCreateFlags flags, uint32_t max_sets,
                                                               const PoolSizes &pool_sizes) {
-    VkDescriptorPoolCreateInfo info = LvlInitStruct<VkDescriptorPoolCreateInfo>();
+    VkDescriptorPoolCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    info.pNext = nullptr;
     info.flags = flags;
     info.maxSets = max_sets;
     info.poolSizeCount = pool_sizes.size();
@@ -796,7 +804,8 @@ class CommandPool : public internal::NonDispHandle<VkCommandPool> {
 };
 
 inline VkCommandPoolCreateInfo CommandPool::create_info(uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
-    VkCommandPoolCreateInfo info = LvlInitStruct<VkCommandPoolCreateInfo>();
+    VkCommandPoolCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     info.queueFamilyIndex = queue_family_index;
     info.flags = flags;
     return info;
@@ -851,14 +860,16 @@ class Framebuffer : public internal::NonDispHandle<VkFramebuffer> {
 };
 
 inline VkMemoryAllocateInfo DeviceMemory::alloc_info(VkDeviceSize size, uint32_t memory_type_index) {
-    VkMemoryAllocateInfo info = LvlInitStruct<VkMemoryAllocateInfo>();
+    VkMemoryAllocateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     info.allocationSize = size;
     info.memoryTypeIndex = memory_type_index;
     return info;
 }
 
 inline VkBufferCreateInfo Buffer::create_info(VkDeviceSize size, VkFlags usage, const std::vector<uint32_t> *queue_families) {
-    VkBufferCreateInfo info = LvlInitStruct<VkBufferCreateInfo>();
+    VkBufferCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     info.size = size;
     info.usage = usage;
 
@@ -872,37 +883,43 @@ inline VkBufferCreateInfo Buffer::create_info(VkDeviceSize size, VkFlags usage, 
 }
 
 inline VkFenceCreateInfo Fence::create_info(VkFenceCreateFlags flags) {
-    VkFenceCreateInfo info = LvlInitStruct<VkFenceCreateInfo>();
+    VkFenceCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     info.flags = flags;
     return info;
 }
 
 inline VkFenceCreateInfo Fence::create_info() {
-    VkFenceCreateInfo info = LvlInitStruct<VkFenceCreateInfo>();
+    VkFenceCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     return info;
 }
 
 inline VkSemaphoreCreateInfo Semaphore::create_info(VkFlags flags) {
-    VkSemaphoreCreateInfo info = LvlInitStruct<VkSemaphoreCreateInfo>();
+    VkSemaphoreCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     info.flags = flags;
     return info;
 }
 
 inline VkEventCreateInfo Event::create_info(VkFlags flags) {
-    VkEventCreateInfo info = LvlInitStruct<VkEventCreateInfo>();
+    VkEventCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
     info.flags = flags;
     return info;
 }
 
 inline VkQueryPoolCreateInfo QueryPool::create_info(VkQueryType type, uint32_t slot_count) {
-    VkQueryPoolCreateInfo info = LvlInitStruct<VkQueryPoolCreateInfo>();
+    VkQueryPoolCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
     info.queryType = type;
     info.queryCount = slot_count;
     return info;
 }
 
 inline VkImageCreateInfo Image::create_info() {
-    VkImageCreateInfo info = LvlInitStruct<VkImageCreateInfo>();
+    VkImageCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     info.extent.width = 1;
     info.extent.height = 1;
     info.extent.depth = 1;
@@ -1005,7 +1022,8 @@ inline VkExtent3D Image::extent(const VkExtent3D &extent, uint32_t mip_level) {
 }
 
 inline VkShaderModuleCreateInfo ShaderModule::create_info(size_t code_size, const uint32_t *code, VkFlags flags) {
-    VkShaderModuleCreateInfo info = LvlInitStruct<VkShaderModuleCreateInfo>();
+    VkShaderModuleCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     info.codeSize = code_size;
     info.pCode = code;
     info.flags = flags;
@@ -1015,7 +1033,8 @@ inline VkShaderModuleCreateInfo ShaderModule::create_info(size_t code_size, cons
 inline VkWriteDescriptorSet Device::write_descriptor_set(const DescriptorSet &set, uint32_t binding, uint32_t array_element,
                                                          VkDescriptorType type, uint32_t count,
                                                          const VkDescriptorImageInfo *image_info) {
-    VkWriteDescriptorSet write = LvlInitStruct<VkWriteDescriptorSet>();
+    VkWriteDescriptorSet write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.dstSet = set.handle();
     write.dstBinding = binding;
     write.dstArrayElement = array_element;
@@ -1028,7 +1047,8 @@ inline VkWriteDescriptorSet Device::write_descriptor_set(const DescriptorSet &se
 inline VkWriteDescriptorSet Device::write_descriptor_set(const DescriptorSet &set, uint32_t binding, uint32_t array_element,
                                                          VkDescriptorType type, uint32_t count,
                                                          const VkDescriptorBufferInfo *buffer_info) {
-    VkWriteDescriptorSet write = LvlInitStruct<VkWriteDescriptorSet>();
+    VkWriteDescriptorSet write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.dstSet = set.handle();
     write.dstBinding = binding;
     write.dstArrayElement = array_element;
@@ -1040,7 +1060,8 @@ inline VkWriteDescriptorSet Device::write_descriptor_set(const DescriptorSet &se
 
 inline VkWriteDescriptorSet Device::write_descriptor_set(const DescriptorSet &set, uint32_t binding, uint32_t array_element,
                                                          VkDescriptorType type, uint32_t count, const VkBufferView *buffer_views) {
-    VkWriteDescriptorSet write = LvlInitStruct<VkWriteDescriptorSet>();
+    VkWriteDescriptorSet write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.dstSet = set.handle();
     write.dstBinding = binding;
     write.dstArrayElement = array_element;
@@ -1070,7 +1091,8 @@ inline VkWriteDescriptorSet Device::write_descriptor_set(const DescriptorSet &se
 inline VkCopyDescriptorSet Device::copy_descriptor_set(const DescriptorSet &src_set, uint32_t src_binding,
                                                        uint32_t src_array_element, const DescriptorSet &dst_set,
                                                        uint32_t dst_binding, uint32_t dst_array_element, uint32_t count) {
-    VkCopyDescriptorSet copy = LvlInitStruct<VkCopyDescriptorSet>();
+    VkCopyDescriptorSet copy = {};
+    copy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
     copy.srcSet = src_set.handle();
     copy.srcBinding = src_binding;
     copy.srcArrayElement = src_array_element;
@@ -1083,7 +1105,8 @@ inline VkCopyDescriptorSet Device::copy_descriptor_set(const DescriptorSet &src_
 }
 
 inline VkCommandBufferAllocateInfo CommandBuffer::create_info(VkCommandPool const &pool) {
-    VkCommandBufferAllocateInfo info = LvlInitStruct<VkCommandBufferAllocateInfo>();
+    VkCommandBufferAllocateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     info.commandPool = pool;
     info.commandBufferCount = 1;
     return info;

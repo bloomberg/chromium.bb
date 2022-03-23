@@ -114,8 +114,6 @@
                OpStore %t1 %b
          %15 = OpFUnordEqual %bool %a %b
                OpStore %c1 %15
-         %ordered = OpFOrdNotEqual %bool %a %b
-               OpStore %c1 %ordered
          %17 = OpFUnordNotEqual %bool %a %b
                OpStore %c2 %17
          %19 = OpFUnordLessThan %bool %a %b

@@ -18,7 +18,7 @@
       "sub_dir": "Vulkan-Headers",
       "build_dir": "Vulkan-Headers/build",
       "install_dir": "Vulkan-Headers/build/install",
-      "commit": "v1.3.206"
+      "commit": "v1.3.205"
     },
     {
       "name": "SPIRV-Headers",
@@ -37,7 +37,7 @@
       "cmake_options": [
         "-DSPIRV-Headers_SOURCE_DIR={repo_dir}/../SPIRV-Headers"
       ],
-      "commit": "471428a04f9b4561801eb90f29d69bc484ef5473"
+      "commit": "45dd184c790d6bfc78a5a74a10c37e888b1823fa"
     },
     {
       "name": "robin-hood-hashing",

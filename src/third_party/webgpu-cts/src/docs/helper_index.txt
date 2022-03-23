@@ -53,6 +53,9 @@ Whenever a new generally-useful helper is added, it should be indexed here.
 - {@link webgpu/util/conversion}: Numeric encoding/decoding for float/unorm/snorm values, etc.
 - {@link webgpu/util/copy_to_texture}:
     Helper class for copyToTexture test suites for execution copy and check results.
+- {@link webgpu/util/color_space_conversion}:
+    Helper functions to do color space conversion. The algorithm is the same as defined in
+    CSS Color Module Level 4.
 - {@link webgpu/util/create_elements}:
     Helpers for creating web elements like HTMLCanvasElement, OffscrrenCanvas, etc.
 - {@link webgpu/util/texture/base}: General texture-related helpers.
@@ -61,7 +64,7 @@ Whenever a new generally-useful helper is added, it should be indexed here.
 - {@link webgpu/util/texture/subresource}: Helpers for working with texture subresource ranges.
 - {@link webgpu/util/texture/texel_data}: Helpers encoding/decoding texel formats.
 - {@link webgpu/shader/types}: Helpers for WGSL data types.
-- {@link webgpu/shader/execution/expression}: Helpers for WGSL expression execution tests.
+- {@link webgpu/shader/execution/expression/expression}: Helpers for WGSL expression execution tests.
 - {@link webgpu/web_platform/util}: Helpers for web platform features (e.g. video elements).
 
 ### General Helpers

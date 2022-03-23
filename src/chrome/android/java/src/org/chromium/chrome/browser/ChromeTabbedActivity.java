@@ -624,6 +624,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                             MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
                                     ChromeTabbedActivity.this)
                             && MultiWindowUtils.getVisibleTabbedTaskCount() > 1;
+                    boolean tabletGtsPolish =
+                            TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(
+                                    ChromeTabbedActivity.this);
                     boolean useAccessibilityListSwitcher =
                             DeviceClassManager.enableAccessibilityLayout(ChromeTabbedActivity.this);
 
@@ -645,7 +648,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
                     if (gridTabSwitcherEnabled && overviewVisible && !hasNextTab && isTablet()
-                            && !useAccessibilityListSwitcher) {
+                            && !tabletGtsPolish && !useAccessibilityListSwitcher) {
                         mLayoutManager.showLayout(LayoutType.BROWSING, true);
                     }
                 }
@@ -830,8 +833,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     newTabClickHandler, bookmarkClickHandler, null, showStartSurfaceSupplier);
 
             if (!isInstantStartEnabled()) {
-                assert !(mOverviewModeController != null
-                        && mOverviewModeController.overviewVisible());
+                // TODO(https://crbug.com/1306904): Fix this assert which is tripping on unrelated
+                // tests.
+                // assert !(mOverviewModeController != null
+                //         && mOverviewModeController.overviewVisible());
             }
         }
     }
@@ -1648,7 +1653,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged,
                 getShareDelegateSupplier(), getActivityTabProvider(), mTabModelProfileSupplier,
-                mBookmarkBridgeSupplier, this::getContextualSearchManager,
+                mBookmarkBridgeSupplier, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), mStartSurfaceSupplier,
                 mIntentMetadataOneshotSupplier, mLayoutStateProviderOneshotSupplier,
                 mStartSurfaceParentTabSupplier, getBrowserControlsManager(), getWindowAndroid(),
@@ -2688,7 +2693,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
         mTabModalHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(), manager,
                 this::getAppBrowserControlsVisibilityDelegate, this::getTabObscuringHandler,
-                this::getToolbarManager, this::getContextualSearchManager,
+                this::getToolbarManager, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), this::getBrowserControlsManager,
                 this::getFullscreenManager);
         return manager;

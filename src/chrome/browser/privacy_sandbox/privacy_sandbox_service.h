@@ -24,6 +24,7 @@ class Browser;
 class PrefService;
 
 namespace content {
+class BrowsingDataRemover;
 class InterestGroupManager;
 }
 
@@ -89,7 +90,8 @@ class PrivacySandboxService : public KeyedService,
       syncer::SyncService* sync_service,
       signin::IdentityManager* identity_manager,
       content::InterestGroupManager* interest_group_manager,
-      profile_metrics::BrowserProfileType profile_type);
+      profile_metrics::BrowserProfileType profile_type,
+      content::BrowsingDataRemover* browsing_data_remover);
   ~PrivacySandboxService() override;
 
   // Returns the dialog type that should be shown to the user. This consults
@@ -112,10 +114,18 @@ class PrivacySandboxService : public KeyedService,
   // over. Only about:blank and certain chrome:// URLs are considered suitable.
   static bool IsUrlSuitableForDialog(const GURL& url);
 
-  // Informs the service that a Privacy Sandbox dialog has been opened for
-  // |browser|.
+  // Functions for coordinating the display of the Privacy Sandbox dialog
+  // across multiple browser windows. Only relevant for Desktop.
+
+  // Informs the service that a Privacy Sandbox dialog |view| has been opened
+  // or closed for |browser|.
   // Virtual to allow mocking in tests.
   virtual void DialogOpenedForBrowser(Browser* browser);
+  virtual void DialogClosedForBrowser(Browser* browser);
+
+  // Returns whether a Privacy Sandbox dialog is currently open for |browser|.
+  // Virtual to allow mocking in tests.
+  virtual bool IsDialogOpenForBrowser(Browser* browser);
 
   // Disables the display of the Privacy Sandbox dialog for testing. When
   // |disabled| is true, GetRequiredDialogType() will only ever return that no
@@ -184,8 +194,12 @@ class PrivacySandboxService : public KeyedService,
   // Privacy Sandbox related UI is updated appropriately.
   bool IsPrivacySandboxRestricted();
 
-  // Called when a preference relevant to the the Privacy Sandbox is changed.
-  void OnPrivacySandboxPrefChanged();
+  // Called when a preference relevant to the the V1 Privacy Sandbox page is
+  // changed.
+  void OnPrivacySandboxV1PrefChanged();
+
+  // Called when the V2 Privacy Sandbox preference is changed.
+  void OnPrivacySandboxV2PrefChanged();
 
   // Returns the set of eTLD + 1's on which the user was joined to a FLEDGE
   // interest group. Consults with the InterestGroupManager associated with
@@ -200,7 +214,9 @@ class PrivacySandboxService : public KeyedService,
       const;
 
   // Sets Fledge interest group joining to |allowed| for |top_frame_etld_plus1|.
-  // This is a wrapper on the equivalent function on PrivacySandboxSettings.
+  // Forwards the setting to the PrivacySandboxSettings service, but also
+  // removes any Fledge data for the |top_frame_etld_plus1| if |allowed| is
+  // false.
   // Virtual to allow mocking in tests.
   virtual void SetFledgeJoiningAllowed(const std::string& top_frame_etld_plus1,
                                        bool allowed) const;
@@ -400,6 +416,7 @@ class PrivacySandboxService : public KeyedService,
   raw_ptr<signin::IdentityManager> identity_manager_;
   raw_ptr<content::InterestGroupManager> interest_group_manager_;
   profile_metrics::BrowserProfileType profile_type_;
+  raw_ptr<content::BrowsingDataRemover> browsing_data_remover_;
 
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_{this};
@@ -412,6 +429,9 @@ class PrivacySandboxService : public KeyedService,
   // A manual record of whether policy_service_ is being observerd.
   // Unfortunately PolicyService does not support scoped observers.
   bool policy_service_observed_ = false;
+
+  // The set of Browser windows which have an open Privacy Sandbox dialog.
+  std::set<Browser*> browsers_with_open_dialogs_;
 
   // Fake implementation for current and blocked topics.
   std::set<privacy_sandbox::CanonicalTopic> fake_current_topics_ = {

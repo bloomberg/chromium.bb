@@ -20,6 +20,7 @@ class CapabilityDelegationBrowserTest
   CapabilityDelegationBrowserTest() {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kCapabilityDelegationPaymentRequest,
+                              features::kPaymentRequestBasicCard,
                               features::kPaymentRequestRequiresUserActivation},
         /*disabled_features=*/{});
   }

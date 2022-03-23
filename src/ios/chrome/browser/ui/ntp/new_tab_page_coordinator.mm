@@ -218,24 +218,6 @@ namespace {
   if (self) {
     _containerViewController = [[UIViewController alloc] init];
 
-    _prefService =
-        ChromeBrowserState::FromBrowserState(browser->GetBrowserState())
-            ->GetPrefs();
-    _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
-    _prefChangeRegistrar->Init(_prefService);
-    _prefObserverBridge.reset(new PrefObserverBridge(self));
-    _prefObserverBridge->ObserveChangesForPreference(
-        prefs::kArticlesForYouEnabled, _prefChangeRegistrar.get());
-    _prefObserverBridge->ObserveChangesForPreference(
-        prefs::kNTPContentSuggestionsEnabled, _prefChangeRegistrar.get());
-    _prefObserverBridge->ObserveChangesForPreference(
-        DefaultSearchManager::kDefaultSearchProviderDataPrefName,
-        _prefChangeRegistrar.get());
-    _feedExpandedPref = [[PrefBackedBoolean alloc]
-        initWithPrefService:_prefService
-                   prefName:feed::prefs::kArticlesListVisible];
-    [_feedExpandedPref setObserver:self];
-
     // TODO(crbug.com/1277974): Make sure that we always want the Discover feed
     // as default.
     _selectedFeed = FeedType::kDiscoverFeed;
@@ -270,10 +252,28 @@ namespace {
       self.browser->GetBrowserState());
   self.discoverFeedService = DiscoverFeedServiceFactory::GetForBrowserState(
       self.browser->GetBrowserState());
+  self.prefService =
+      ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
+          ->GetPrefs();
 
   self.ntpViewController = [[NewTabPageViewController alloc] init];
-
   self.ntpMediator = [self createNTPMediator];
+
+  // Start observing Prefs.
+  _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
+  _prefChangeRegistrar->Init(_prefService);
+  _prefObserverBridge.reset(new PrefObserverBridge(self));
+  _prefObserverBridge->ObserveChangesForPreference(
+      prefs::kArticlesForYouEnabled, _prefChangeRegistrar.get());
+  _prefObserverBridge->ObserveChangesForPreference(
+      prefs::kNTPContentSuggestionsEnabled, _prefChangeRegistrar.get());
+  _prefObserverBridge->ObserveChangesForPreference(
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName,
+      _prefChangeRegistrar.get());
+  self.feedExpandedPref = [[PrefBackedBoolean alloc]
+      initWithPrefService:_prefService
+                 prefName:feed::prefs::kArticlesListVisible];
+  [self.feedExpandedPref setObserver:self];
 
   // Start observing DiscoverFeedService.
   _discoverFeedObserverBridge = std::make_unique<DiscoverFeedObserverBridge>(
@@ -901,15 +901,18 @@ namespace {
 #pragma mark - FeedManagementNavigationDelegate
 
 - (void)handleNavigateToActivity {
+  [self.feedMetricsRecorder recordHeaderMenuManageActivityTapped];
   [self.ntpMediator handleFeedManageActivityTapped];
 }
 
 - (void)handleNavigateToInterests {
+  [self.feedMetricsRecorder recordHeaderMenuManageInterestsTapped];
   [self.ntpMediator handleFeedManageInterestsTapped];
 }
 
 - (void)handleNavigateToHidden {
   // TODO(crbug.com/1296745): Implement.
+  [self.feedMetricsRecorder recordHeaderMenuManageHiddenTapped];
 }
 
 #pragma mark - Private
@@ -1096,6 +1099,7 @@ namespace {
 }
 
 - (void)handleFeedManageTapped {
+  [self.feedMetricsRecorder recordHeaderMenuManageTapped];
   [self.feedManagementCoordinator stop];
   self.feedManagementCoordinator = nil;
 
@@ -1103,6 +1107,7 @@ namespace {
       initWithBaseViewController:self.ntpViewController
                          browser:self.browser];
   self.feedManagementCoordinator.navigationDelegate = self;
+  self.feedManagementCoordinator.feedMetricsRecorder = self.feedMetricsRecorder;
   [self.feedManagementCoordinator start];
 }
 

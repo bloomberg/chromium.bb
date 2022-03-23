@@ -83,10 +83,6 @@ const char kAriaElementReflectionDescription[] =
     "Enable setting ARIA relationship attributes that reference other elements "
     "directly without an IDREF";
 
-const char kCOLRV1FontsName[] = "COLR v1 Fonts";
-const char kCOLRV1FontsDescription[] =
-    "Display COLR v1 color gradient vector fonts.";
-
 const char kCSSCascadeLayersName[] = "Enable CSS Cascade Layers";
 const char kCSSCascadeLayersDescription[] =
     "Enables support for CSS @layer rules and layered @import syntax.";
@@ -151,6 +147,10 @@ const char kMuteCompromisedPasswordsName[] =
     "Mute & Unmute compromised passwords in bulk leak check";
 const char kMuteCompromisedPasswordsDescription[] =
     "Enables muting/unmuting compromised passwords in bulk leak check.";
+
+const char kPasswordNotesName[] = "Password notes in settings";
+const char kPasswordNotesDescription[] =
+    "Enables a note section for each password in the settings page.";
 
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
@@ -1120,12 +1120,6 @@ const char kDeprecateAltBasedSixPackDescription[] =
     "Show deprecation notifications and disable functionality for Alt based "
     "six pack deprecations. The Search based versions continue to work.";
 
-const char kDiagnosticsAppName[] = "Diagnostics app";
-const char kDiagnosticsAppDescription[] =
-    "Enables the Diagnostics app that allows Chrome OS users to be able to "
-    "view their system telemetric information and run diagnostic tests for "
-    "their device.";
-
 const char kDiagnosticsAppNavigationName[] = "Diagnostics app navigation";
 const char kDiagnosticsAppNavigationDescription[] =
     "Enables the navigation panel in the Diagnostics app.";
@@ -1206,13 +1200,11 @@ const char kEnableAutomaticSnoozeName[] = "Enable Automatic Snooze";
 const char kEnableAutomaticSnoozeDescription[] =
     "Enables automatic snoozing on In-Product Help with no snooze button.";
 
-const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
-const char kEnableLensRegionSearchName[] =
-    "Search your screen with Google Lens";
-const char kEnableLensRegionSearchDescription[] =
-    "Right click and select \"Search images with Google Lens\" to "
-    "search any region of the site to learn more about the visual content you "
-    "see while you browse and shop on the web.";
+const char kEnableLensStandaloneFlagId[] = "enable-lens-standalone";
+const char kEnableLensStandaloneName[] = "Enable Lens features in Chrome.";
+const char kEnableLensStandaloneDescription[] =
+    "Enables Lens image and region search to learn about the visual content "
+    "you see while you browse and shop on the web.";
 
 const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
@@ -1445,6 +1437,19 @@ const char kCastStreamingVp9Description[] =
     "Enables the inclusion of VP9 codec video encoding in Cast mirroring "
     "session negotiations.";
 
+const char kCastUseBlocklistForRemotingQueryName[] =
+    "Use blocklist for controlling remoting capabilities queries";
+const char kCastUseBlocklistForRemotingQueryDescription[] =
+    "Enables the use of the hard-coded blocklist for controlling whether a "
+    "device should be queried for remoting capabilities when configuring a "
+    "mirroring session.";
+
+const char kCastForceEnableRemotingQueryName[] =
+    "Force enable remoting capabilities queries";
+const char kCastForceEnableRemotingQueryDescription[] =
+    "Enables querying for remoting capabilities for ALL devices, regardless of "
+    "the contents of the allowlist or blocklist.";
+
 const char kGoogleLensSdkIntentName[] =
     "Enable the use of the Lens SDK when starting intent into Lens.";
 const char kGoogleLensSdkIntentDescription[] =
@@ -1618,6 +1623,11 @@ const char kLensCameraAssistedSearchName[] =
 const char kLensCameraAssistedSearchDescription[] =
     "Enable an entry point to Google Lens to allow users to search what they "
     "see using their mobile camera.";
+
+const char kLocationBarModelOptimizationsName[] =
+    "LocationBarModel optimizations";
+const char kLocationBarModelOptimizationsDescription[] =
+    "Cache commonly used data in LocationBarModel to improve performance";
 
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
@@ -2194,16 +2204,6 @@ const char kPwaUpdateDialogForAppTitleDescription[] =
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
-const char kQuickActionSearchWidgetAndroidName[] = "Quick Action Search Widget";
-const char kQuickActionSearchWidgetAndroidDescription[] =
-    "When enabled, the quick action search widget will be available to add to "
-    "the homescreen.";
-
-const char kQuickActionSearchWidgetAndroidDinoVariantName[] =
-    "Quick Action Search Widget - Dino Variant";
-const char kQuickActionSearchWidgetAndroidDinoVariantDescription[] =
-    "When enabled, the Dino widget will be available to add to the homescreen";
-
 const char kQuickDimName[] = "Enable lock on leave";
 const char kQuickDimDescription[] =
     "Enables lock on leave feature to better dim or lock the device. Can be "
@@ -2260,6 +2260,12 @@ const char kSamePartyCookiesConsideredFirstPartyDescription[] =
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
+const char kPartitionedCookiesBypassOriginTrialName[] =
+    "Partitioned cookies: bypass origin trial";
+const char kPartitionedCookiesBypassOriginTrialDescription[] =
+    "If this flag is enabled, Chrome will not require a site to opt into the "
+    "origin trial in order to send or receive cookies set with the Partitioned "
+    "attribute.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
@@ -3108,14 +3114,6 @@ const char kContextualSearchForceCaptionName[] =
 const char kContextualSearchForceCaptionDescription[] =
     "Forces a caption to always be shown in the Touch to Search Bar.";
 
-const char kContextualSearchLiteralSearchTapName[] =
-    "Contextual Search literal search with tap";
-const char kContextualSearchLiteralSearchTapDescription[] =
-    "Enables Contextual Search to be activated with a single tap and produce "
-    "a literal search. This is intended to be used in conjunction with the "
-    "long-press resolve feature to allow both gestures to trigger a form of "
-    "Touch to Search.";
-
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
 const char kContextualSearchLongpressResolveDescription[] =
@@ -3609,10 +3607,10 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
-const char kSyncAndroidPromosRevampName[] =
-    "Enable the revamped sync promos on Android";
-const char kSyncAndroidPromosRevampDescription[] =
-    "Improves the visual design of sync promos.";
+const char kSyncAndroidPromosWithSingleButtonName[] =
+    "Enable the single button sync promos on Android";
+const char kSyncAndroidPromosWithSingleButtonDescription[] =
+    "Hides the \"Choose another account\" button on sync promos.";
 
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
@@ -4548,40 +4546,6 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
     "Enable bidirectional native messaging for DriveFS";
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
-
-const char kCrOSDspBasedAecAllowedName[] =
-    "Allow CRAS to use a DSP-based AEC if available";
-const char kCrOSDspBasedAecAllowedDescription[] =
-    "Allows the system variant of the AEC in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedNsAllowedName[] =
-    "Allow CRAS to use a DSP-based NS if available";
-const char kCrOSDspBasedNsAllowedDescription[] =
-    "Allows the system variant of the NS in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedAgcAllowedName[] =
-    "Allow CRAS to use a DSP-based AGC if available";
-const char kCrOSDspBasedAgcAllowedDescription[] =
-    "Allows the system variant of the AGC in CRAS to be run on DSP ";
-
-const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
-const char kCrOSEnforceSystemAecDescription[] =
-    "Enforces using the system variant in CrAS of the AEC";
-
-const char kCrOSEnforceSystemAecAgcName[] =
-    "Enforce using the system AEC and AGC in CrAS";
-const char kCrOSEnforceSystemAecAgcDescription[] =
-    "Enforces using the system variants in CrAS of the AEC and AGC.";
-
-const char kCrOSEnforceSystemAecNsName[] =
-    "Enforce using the system AEC and NS in CrAS";
-const char kCrOSEnforceSystemAecNsDescription[] =
-    "Enforces using the system variants in CrAS of the AEC and NS.";
-
-const char kCrOSEnforceSystemAecNsAgcName[] =
-    "Enforce using the system AEC, NS and AGC in CrAS";
-const char kCrOSEnforceSystemAecNsAgcDescription[] =
-    "Enforces using the system variants in CrAS of the AEC, NS and AGC.";
 
 const char kEnableAppReinstallZeroStateName[] =
     "Enable Zero State App Reinstall Suggestions.";
@@ -5584,6 +5548,40 @@ const char kBluetoothAdvertisementMonitoringDescription[] =
     "scanners that filter low energy advertisements in a power-efficient "
     "manner.";
 
+const char kCrOSDspBasedAecAllowedName[] =
+    "Allow CRAS to use a DSP-based AEC if available";
+const char kCrOSDspBasedAecAllowedDescription[] =
+    "Allows the system variant of the AEC in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedNsAllowedName[] =
+    "Allow CRAS to use a DSP-based NS if available";
+const char kCrOSDspBasedNsAllowedDescription[] =
+    "Allows the system variant of the NS in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedAgcAllowedName[] =
+    "Allow CRAS to use a DSP-based AGC if available";
+const char kCrOSDspBasedAgcAllowedDescription[] =
+    "Allows the system variant of the AGC in CRAS to be run on DSP ";
+
+const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
+const char kCrOSEnforceSystemAecDescription[] =
+    "Enforces using the system variant in CrAS of the AEC";
+
+const char kCrOSEnforceSystemAecAgcName[] =
+    "Enforce using the system AEC and AGC in CrAS";
+const char kCrOSEnforceSystemAecAgcDescription[] =
+    "Enforces using the system variants in CrAS of the AEC and AGC.";
+
+const char kCrOSEnforceSystemAecNsName[] =
+    "Enforce using the system AEC and NS in CrAS";
+const char kCrOSEnforceSystemAecNsDescription[] =
+    "Enforces using the system variants in CrAS of the AEC and NS.";
+
+const char kCrOSEnforceSystemAecNsAgcName[] =
+    "Enforce using the system AEC, NS and AGC in CrAS";
+const char kCrOSEnforceSystemAecNsAgcDescription[] =
+    "Enforces using the system variants in CrAS of the AEC, NS and AGC.";
+
 const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =
     "Enable default installing of the calculator PWA instead of the deprecated "
@@ -5603,6 +5601,20 @@ const char kVaapiAV1DecoderDescription[] =
 const char kEnableTtsLacrosSupportName[] = "Enable tts lacros support";
 const char kEnableTtsLacrosSupportDescription[] =
     "Enable or disable lacros support for text to speech.";
+
+const char kIntentChipSkipsPickerName[] =
+    "Link capturing intent chip skips the intent picker bubble";
+const char kIntentChipSkipsPickerDescription[] =
+    "When enabled, clicking the intent chip in the Omnibox will skip the "
+    "intent picker bubble and launch directly into the app. If multiple apps "
+    "are installed for a URL, the intent picker will still be shown for "
+    "disambigation.";
+
+const char kLinkCapturingInfoBarName[] = "Enable link capturing info bar";
+const char kLinkCapturingInfoBarDescription[] =
+    "Enables an info bar which appears when launching a web app through the "
+    "Omnibox intent chip, prompting to update the link capturing setting for "
+    "that app.";
 
 const char kLinkCapturingUiUpdateName[] = "Enable updated link capturing UI";
 const char kLinkCapturingUiUpdateDescription[] =

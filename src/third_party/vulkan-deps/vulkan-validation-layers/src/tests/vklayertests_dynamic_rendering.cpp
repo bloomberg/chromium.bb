@@ -17,7 +17,7 @@
 #include "cast_utils.h"
 #include "layer_validation_tests.h"
 
-TEST_F(VkLayerTest, DynamicRenderingCommandBufferInheritanceRenderingInfo) {
+TEST_F(VkLayerTest, CommandBufferInheritanceRenderingInfoKHR) {
     TEST_DESCRIPTION("VkCommandBufferInheritanceRenderingInfoKHR Dynamic Rendering Tests.");
 
     uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_2);
@@ -27,29 +27,19 @@ TEST_F(VkLayerTest, DynamicRenderingCommandBufferInheritanceRenderingInfo) {
     }
 
     AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-    ASSERT_NO_FATAL_FAILURE(InitFramework());
 
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s is not supported; skipping\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
-    }
+    VkPhysicalDeviceFeatures2 features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>();
+    ASSERT_NO_FATAL_FAILURE(Init(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
         printf("%s At least Vulkan version 1.2 is required for device, skipping test\n", kSkipPrefix);
         return;
     }
 
-    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeatures>();
-    VkPhysicalDeviceFeatures2 features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
-    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
-    if (dynamic_rendering_features.dynamicRendering == VK_FALSE) {
-        printf("%s Test requires (unsupported) dynamicRendering , skipping\n", kSkipPrefix);
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s is not supported; skipping\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
         return;
     }
-
-    features2.features.variableMultisampleRate = VK_FALSE;
-
-    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     VkPhysicalDeviceMultiviewProperties multiview_props = LvlInitStruct<VkPhysicalDeviceMultiviewProperties>();
     VkPhysicalDeviceProperties2 pd_props2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&multiview_props);
@@ -96,7 +86,6 @@ TEST_F(VkLayerTest, DynamicRenderingCommandBufferInheritanceRenderingInfo) {
                                          "VUID-VkCommandBufferInheritanceRenderingInfo-depthAttachmentFormat-06200");
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
                                          "VUID-VkCommandBufferInheritanceRenderingInfo-pColorAttachmentFormats-06006");
-    m_errorMonitor->SetAllowedFailureMsg("VUID-VkAttachmentSampleCountInfoAMD-pColorAttachmentSamples-parameter");
 
     VkCommandBufferBeginInfo cmd_buffer_begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
     cmd_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
@@ -105,7 +94,7 @@ TEST_F(VkLayerTest, DynamicRenderingCommandBufferInheritanceRenderingInfo) {
     m_errorMonitor->VerifyFound();
 }
 
-TEST_F(VkLayerTest, DynamicRenderingCommandDraw) {
+TEST_F(VkLayerTest, CommandDrawDynamicRendering) {
     TEST_DESCRIPTION("vkCmdDraw* Dynamic Rendering Tests.");
 
     uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_2);
@@ -302,18 +291,6 @@ TEST_F(VkLayerTest, DynamicRenderingGraphicsPipelineCreateInfo) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06054");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
-
-    auto ds_ci = LvlInitStruct<VkPipelineDepthStencilStateCreateInfo>();
-    ds_ci.flags = VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_ARM;
-    color_blend_state_create_info.flags = VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_ARM;
-    create_info.pColorBlendState = &color_blend_state_create_info;
-    create_info.pDepthStencilState = &ds_ci;
-    create_info.renderPass = VK_NULL_HANDLE;
-    pipeline_rendering_info.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-flags-06482");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-flags-06483");
-    pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
-    m_errorMonitor->VerifyFound();
 }
 
 TEST_F(VkLayerTest, DynamicRenderingWithMismatchingViewMask) {
@@ -389,10 +366,12 @@ TEST_F(VkLayerTest, DynamicRenderingWithMismatchingViewMask) {
 
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
 
-    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR color_attachment = {};
+    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
+    VkRenderingInfoKHR begin_rendering_info = {};
+    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
     begin_rendering_info.colorAttachmentCount = 1;
     begin_rendering_info.pColorAttachments = &color_attachment;
     begin_rendering_info.viewMask = 2;
@@ -545,15 +524,19 @@ TEST_F(VkLayerTest, DynamicRenderingWithMistmatchingAttachments) {
     VkImageView depthStencilImageView =
         depthStencilImage.targetView(depthStencilFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
-    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR color_attachment = {};
+    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = colorImageView;
 
-    VkRenderingAttachmentInfoKHR depth_stencil_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR depth_stencil_attachment = {};
+    depth_stencil_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     depth_stencil_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depth_stencil_attachment.imageView = depthStencilImageView;
 
-    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
+    VkRenderingInfoKHR begin_rendering_info = {};
+    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+
     m_commandBuffer->begin();
 
     // Mismatching color attachment count
@@ -728,15 +711,19 @@ TEST_F(VkLayerTest, DynamicRenderingWithMistmatchingAttachmentSamples) {
     VkImageView depthStencilImageView =
         depthStencilImage.targetView(depthStencilFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
-    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR color_attachment = {};
+    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = colorImageView;
 
-    VkRenderingAttachmentInfoKHR depth_stencil_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR depth_stencil_attachment = {};
+    depth_stencil_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     depth_stencil_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depth_stencil_attachment.imageView = depthStencilImageView;
 
-    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
+    VkRenderingInfoKHR begin_rendering_info = {};
+    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+
     m_commandBuffer->begin();
 
     // Mismatching color samples
@@ -863,12 +850,6 @@ TEST_F(VkLayerTest, DynamicRenderingWithMistmatchingMixedAttachmentSamples) {
     pipe1.InitGraphicsPipelineCreateInfo(&create_info1);
     create_info1.pNext = &pipeline_rendering_info;
 
-    samples_info.colorAttachmentCount = 2;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06063");
-    pipe1.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info1);
-    m_errorMonitor->VerifyFound();
-
-    samples_info.colorAttachmentCount = 1;
     pipe1.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info1);
 
     VkFormat depthStencilFormat = FindSupportedDepthStencilFormat(gpu());
@@ -922,15 +903,19 @@ TEST_F(VkLayerTest, DynamicRenderingWithMistmatchingMixedAttachmentSamples) {
     VkImageView depthStencilImageView =
         depthStencilImage.targetView(depthStencilFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
-    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR color_attachment = {};
+    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = colorImageView;
 
-    VkRenderingAttachmentInfoKHR depth_stencil_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
+    VkRenderingAttachmentInfoKHR depth_stencil_attachment = {};
+    depth_stencil_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
     depth_stencil_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depth_stencil_attachment.imageView = depthStencilImageView;
 
-    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
+    VkRenderingInfoKHR begin_rendering_info = {};
+    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+
     m_commandBuffer->begin();
 
     // Mismatching color samples
@@ -1077,128 +1062,5 @@ TEST_F(VkLayerTest, DynamicRenderingAttachmentInfo) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderingAttachmentInfo-imageView-06145");
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderingAttachmentInfo-imageView-06146");
     m_commandBuffer->BeginRendering(begin_rendering_info);
-    m_errorMonitor->VerifyFound();
-}
-
-TEST_F(VkLayerTest, DynamicRenderingBufferBeginInfoLegacy) {
-    TEST_DESCRIPTION("VkCommandBufferBeginInfo Dynamic Rendering Tests.");
-
-    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_2);
-    if (version < VK_API_VERSION_1_2) {
-        printf("%s At least Vulkan version 1.2 is required, skipping test.\n", kSkipPrefix);
-        return;
-    }
-
-    AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-
-    ASSERT_NO_FATAL_FAILURE(Init(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
-
-    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
-        printf("%s At least Vulkan version 1.2 is required for device, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    if (!AreRequestedExtensionsEnabled()) {
-        printf("%s %s is not supported; skipping\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        return;
-    }
-
-    auto cmd_buffer_inheritance_rendering_info = LvlInitStruct<VkCommandBufferInheritanceRenderingInfoKHR>();
-    cmd_buffer_inheritance_rendering_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    auto cmd_buffer_inheritance_info = LvlInitStruct<VkCommandBufferInheritanceInfo>();
-    cmd_buffer_inheritance_info.pNext = &cmd_buffer_inheritance_rendering_info;
-    cmd_buffer_inheritance_info.renderPass = VK_NULL_HANDLE;
-
-    auto cmd_buffer_allocate_info = LvlInitStruct<VkCommandBufferAllocateInfo>();
-    cmd_buffer_allocate_info.commandPool = m_commandPool->handle();
-    cmd_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-    cmd_buffer_allocate_info.commandBufferCount = 0x1;
-
-    VkCommandBuffer secondary_cmd_buffer;
-    VkResult err = vk::AllocateCommandBuffers(m_device->device(), &cmd_buffer_allocate_info, &secondary_cmd_buffer);
-    ASSERT_VK_SUCCESS(err);
-
-    // Invalid RenderPass
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCommandBufferBeginInfo-flags-00053");
-    VkCommandBufferBeginInfo cmd_buffer_begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
-    cmd_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-    cmd_buffer_begin_info.pInheritanceInfo = &cmd_buffer_inheritance_info;
-    vk::BeginCommandBuffer(secondary_cmd_buffer, &cmd_buffer_begin_info);
-    m_errorMonitor->VerifyFound();
-
-    // Valid RenderPass
-    VkAttachmentDescription attach[] = {
-        {0, VK_FORMAT_B8G8R8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED,
-         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
-    };
-    VkAttachmentReference att_ref = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-
-    VkSubpassDescription subpass = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &att_ref, nullptr, nullptr, 0, nullptr};
-    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 1, attach, 1, &subpass, 0, nullptr};
-
-    vk_testing::RenderPass rp1;
-    rp1.init(*m_device, rpci);
-
-    cmd_buffer_inheritance_info.renderPass = rp1.handle();
-    cmd_buffer_inheritance_info.subpass = 0x5;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCommandBufferBeginInfo-flags-00054");
-    vk::BeginCommandBuffer(secondary_cmd_buffer, &cmd_buffer_begin_info);
-    m_errorMonitor->VerifyFound();
-}
-
-TEST_F(VkLayerTest, DynamicRenderingSecondaryCommandBuffer) {
-    TEST_DESCRIPTION("VkCommandBufferBeginInfo Dynamic Rendering Tests.");
-
-    uint32_t version = SetTargetApiVersion(VK_API_VERSION_1_3);
-    if (version < VK_API_VERSION_1_3) {
-        printf("%s At least Vulkan version 1.3 is required, skipping test.\n", kSkipPrefix);
-        return;
-    }
-
-    ASSERT_NO_FATAL_FAILURE(Init());
-
-    if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
-        printf("%s At least Vulkan version 1.3 is required for device, skipping test\n", kSkipPrefix);
-        return;
-    }
-
-    VkCommandBufferObj cb(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
-
-    // Force the failure by not setting the Renderpass and Framebuffer fields
-    VkCommandBufferInheritanceInfo cmd_buf_hinfo = LvlInitStruct<VkCommandBufferInheritanceInfo>();
-    cmd_buf_hinfo.renderPass = VkRenderPass(0x1);
-    VkCommandBufferBeginInfo cmd_buf_info = LvlInitStruct<VkCommandBufferBeginInfo>();
-    cmd_buf_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-    cmd_buf_info.pInheritanceInfo = &cmd_buf_hinfo;
-
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCommandBufferBeginInfo-flags-06000");
-    vk::BeginCommandBuffer(cb.handle(), &cmd_buf_info);
-    m_errorMonitor->VerifyFound();
-
-    // Valid RenderPass
-    VkAttachmentDescription attach[] = {
-        {0, VK_FORMAT_B8G8R8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
-         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED,
-         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
-    };
-    VkAttachmentReference att_ref = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-
-    VkSubpassDescription subpass = {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &att_ref, nullptr, nullptr, 0, nullptr};
-    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 1, attach, 1, &subpass, 0, nullptr};
-
-    vk_testing::RenderPass rp1;
-    rp1.init(*m_device, rpci);
-
-    cmd_buf_hinfo.renderPass = rp1.handle();
-    cmd_buf_hinfo.subpass = 0x5;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCommandBufferBeginInfo-flags-06001");
-    vk::BeginCommandBuffer(cb.handle(), &cmd_buf_info);
-    m_errorMonitor->VerifyFound();
-
-    cmd_buf_hinfo.renderPass = VK_NULL_HANDLE;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkCommandBufferBeginInfo-flags-06002");
-    vk::BeginCommandBuffer(cb.handle(), &cmd_buf_info);
     m_errorMonitor->VerifyFound();
 }

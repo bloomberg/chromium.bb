@@ -4046,6 +4046,85 @@ TEST_P(VertexAttributeTestES3, EmptyArrayBuffer)
     swapBuffers();
 }
 
+// Set an attrib pointer and delete it's buffer after usage, while keeping the vertex array.
+// This will cause MEC to capture an invalid attribute pointer and also trigger
+// "Client data cannot be used with a non-default vertex array object."
+TEST_P(VertexAttributeTestES3, InvalidAttribPointer)
+{
+    GLVertexArray vertexArray;
+    glBindVertexArray(vertexArray);
+
+    std::array<GLbyte, 12> vertexData = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+
+    {
+        GLBuffer toBeDeletedArrayBuffer;
+        glBindBuffer(GL_ARRAY_BUFFER, toBeDeletedArrayBuffer);
+
+        glBufferData(GL_ARRAY_BUFFER, vertexData.size(), vertexData.data(), GL_DYNAMIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6, nullptr);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6, reinterpret_cast<const void *>(6));
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+
+        EXPECT_GL_NO_ERROR();
+    }
+
+    // Set an attrib pointer that will be actually picked up by MEC, since the buffer will be kept.
+    glEnableVertexAttribArray(0);
+
+    GLBuffer arrayBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
+
+    glBufferData(GL_ARRAY_BUFFER, vertexData.size(), vertexData.data(), GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3, reinterpret_cast<const void *>(3));
+
+    EXPECT_GL_NO_ERROR();
+
+    // Swap a frame for MEC
+    swapBuffers();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glEnableVertexAttribArray(0);
+}
+
+// Test bind an empty buffer for vertex attribute does not crash
+TEST_P(VertexAttributeTestES3, emptyBuffer)
+{
+    constexpr char vs2[] =
+        R"(#version 300 es
+            in uvec4 attr0;
+            void main()
+            {
+                gl_Position = vec4(attr0.x, 0.0, 0.0, 0.0);
+            })";
+    constexpr char fs[] =
+        R"(#version 300 es
+            precision highp float;
+            out vec4 color;
+            void main()
+            {
+                color = vec4(1.0, 0.0, 0.0, 1.0);
+            })";
+    GLuint program2 = CompileProgram(vs2, fs);
+    GLuint buf;
+    glGenBuffers(1, &buf);
+    glBindBuffer(GL_ARRAY_BUFFER, buf);
+    glEnableVertexAttribArray(0);
+    glVertexAttribIPointer(0, 4, GL_UNSIGNED_BYTE, 0, 0);
+    glVertexAttribDivisor(0, 2);
+    glUseProgram(program2);
+    glDrawArrays(GL_POINTS, 0, 1);
+
+    swapBuffers();
+}
+
 // VAO emulation fails on Mac but is not used on Mac in the wild. http://anglebug.com/5577
 #if !defined(__APPLE__)
 #    define EMULATED_VAO_CONFIGS                                          \

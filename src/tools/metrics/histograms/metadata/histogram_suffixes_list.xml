@@ -2731,19 +2731,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="SiteEngagementService.EngagementScoreBucket"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="EventLatencyOS" separator=".">
-  <suffix name="KEY_PRESSED" label=""/>
-  <suffix name="MOUSE_PRESSED" label=""/>
-  <suffix name="MOUSE_WHEEL" label=""/>
-  <suffix name="TOUCH_MOVED" label=""/>
-  <suffix name="TOUCH_PRESSED" label=""/>
-  <suffix name="TOUCH_RELEASED" label=""/>
-  <affected-histogram name="Event.Latency.OS"/>
-  <affected-histogram name="Event.Latency.OS2"/>
-  <affected-histogram name="Event.Latency.OS_NO_VALIDATION.NEGATIVE"/>
-  <affected-histogram name="Event.Latency.OS_NO_VALIDATION.POSITIVE"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ExtensionsDatabaseRestore" separator=".">
   <suffix name="Rules" label="Rules backing stores"/>
   <suffix name="Settings" label="Settings backing stores"/>
@@ -4351,20 +4338,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="FasterThanAppRestriction" label=""/>
   <suffix name="SlowerThanAppRestriction" label=""/>
   <affected-histogram name="MobileFre.FragmentInflationSpeed"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="MobileFreFromLaunchTarget" separator=".">
-  <suffix name="ActivityInflated"
-      label="The activity is ready to be drawn, although likely empty."/>
-  <suffix name="FirstFragmentInflatedV2"
-      label="The first fragment is ready to be drawn, the first meaningful
-             paint. Version V2 fixed an issue that previous data was not
-             recording the time duration from FRE launched."/>
-  <suffix name="FreCompleted" label="Entire FRE is completed."/>
-  <suffix name="TosAccepted" label="ToS is accepted."/>
-  <suffix name="TriggerLayoutInflation"
-      label="Recorded when layout inflation is triggered."/>
-  <affected-histogram name="MobileFre.FromLaunch"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ModuleIntegrityVerificationType" separator=".">
@@ -7419,6 +7392,7 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="PermissionTypes" separator=".">
   <suffix name="AR" label="AR permission actions"/>
   <suffix name="AudioCapture" label="Microphone permission actions"/>
+  <suffix name="CameraPanTiltZoom" label="Camera movements permission actions"/>
   <suffix name="ClipboardReadWrite" label="Clipboard permission actions"/>
   <suffix name="DisplayCapture" label="Display capture permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
@@ -7864,6 +7838,14 @@ chromium-metrics-reviews@google.com.
   <suffix name="BlinkGC" label="Only counting Blink GC memory."/>
   <suffix name="BlinkGC.AllocatedObjects"
       label="Only counting objects allocated using Blink GC."/>
+  <suffix name="BlinkGC.Fragmentation"
+      label="Fragmentation of Blink GC."/>
+  <suffix name="BlinkGC.Main.Heap"
+      label="Only counting memory on Blink GC's main thread heap."/>
+  <suffix name="BlinkGC.Main.Heap.AllocatedObjects"
+      label="Only counting objects allocated in Blink GC's main thread heap."/>
+  <suffix name="BlinkGC.Main.Heap.Fragmentation"
+      label="Fragmentation of Blink GC's main thread heap."/>
   <suffix name="CommandBuffer"
       label="Only counting memory used by GL command buffers."/>
   <suffix name="Discardable"

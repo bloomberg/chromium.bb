@@ -813,7 +813,7 @@ void GpuAssisted::PreCallRecordCmdBuildAccelerationStructureNV(VkCommandBuffer c
         return;
     }
 
-    auto cb_state = Get<CMD_BUFFER_STATE_GPUAV>(commandBuffer);
+    auto cb_state = GetCBState(commandBuffer);
     assert(cb_state != nullptr);
 
     std::vector<uint64_t> current_valid_handles;
@@ -1558,7 +1558,7 @@ void GpuAssisted::UpdateInstrumentationBuffer(CMD_BUFFER_STATE_GPUAV *cb_node) {
 }
 
 void GpuAssisted::PreRecordCommandBuffer(VkCommandBuffer command_buffer) {
-    auto cb_node = Get<CMD_BUFFER_STATE_GPUAV>(command_buffer);
+    auto cb_node = GetCBState(command_buffer);
     UpdateInstrumentationBuffer(cb_node.get());
     for (auto *secondary_cmd_buffer : cb_node->linkedCommandBuffers) {
         UpdateInstrumentationBuffer(static_cast<CMD_BUFFER_STATE_GPUAV *>(secondary_cmd_buffer));
@@ -1597,7 +1597,7 @@ void GpuAssisted::PreCallRecordQueueSubmit2(VkQueue queue, uint32_t submitCount,
 
 bool GpuAssisted::CommandBufferNeedsProcessing(VkCommandBuffer command_buffer) {
     bool buffers_present = false;
-    auto cb_node = Get<CMD_BUFFER_STATE_GPUAV>(command_buffer);
+    auto cb_node = GetCBState(command_buffer);
 
     if (cb_node->gpuav_buffer_list.size() || cb_node->hasBuildAccelerationStructureCmd) {
         buffers_present = true;
@@ -1612,7 +1612,7 @@ bool GpuAssisted::CommandBufferNeedsProcessing(VkCommandBuffer command_buffer) {
 }
 
 void GpuAssisted::ProcessCommandBuffer(VkQueue queue, VkCommandBuffer command_buffer) {
-    auto cb_node = Get<CMD_BUFFER_STATE_GPUAV>(command_buffer);
+    auto cb_node = GetCBState(command_buffer);
 
     UtilProcessInstrumentationBuffer(queue, cb_node.get(), this);
     ProcessAccelerationStructureBuildValidationBuffer(queue, cb_node.get());
@@ -1967,19 +1967,10 @@ void GpuAssisted::AllocatePreDrawValidationResources(GpuAssistedDeviceMemoryBloc
 
         pre_draw_validation_state.globals_created = true;
     }
-
-    VkPipeline pipeline = VK_NULL_HANDLE;
     VkRenderPass render_pass = state.pipeline_state->rp_state->renderPass();
-    if (render_pass != VK_NULL_HANDLE) {
-        auto pipeentry = pre_draw_validation_state.renderpass_to_pipeline.find(render_pass);
-        if (pipeentry != pre_draw_validation_state.renderpass_to_pipeline.end()) {
-            pipeline = pipeentry->second;
-        }
-    } else {
-        // Dynamic Rendering
-        pipeline = pre_draw_validation_state.dyn_rendering_pipeline;
-    }
-    if (pipeline == VK_NULL_HANDLE) {
+    assert(render_pass != VK_NULL_HANDLE);
+    auto pipeline = pre_draw_validation_state.renderpass_to_pipeline.find(render_pass);
+    if (pipeline == pre_draw_validation_state.renderpass_to_pipeline.end()) {
         auto pipeline_stage_ci = LvlInitStruct<VkPipelineShaderStageCreateInfo>();
         pipeline_stage_ci.stage = VK_SHADER_STAGE_VERTEX_BIT;
         pipeline_stage_ci.module = pre_draw_validation_state.validation_shader_module;
@@ -2011,12 +2002,9 @@ void GpuAssisted::AllocatePreDrawValidationResources(GpuAssistedDeviceMemoryBloc
         }
 
         *pPipeline = new_pipeline;
-        if (render_pass != VK_NULL_HANDLE)
-            pre_draw_validation_state.renderpass_to_pipeline[render_pass] = new_pipeline;
-        else
-            pre_draw_validation_state.dyn_rendering_pipeline = new_pipeline;
+        pre_draw_validation_state.renderpass_to_pipeline[render_pass] = new_pipeline;
     } else {
-        *pPipeline = pipeline;
+        *pPipeline = pipeline->second;
     }
 
     result = desc_set_manager->GetDescriptorSet(&resources.desc_pool, pre_draw_validation_state.validation_ds_layout,
@@ -2077,7 +2065,7 @@ void GpuAssisted::AllocateValidationResources(const VkCommandBuffer cmd_buffer, 
     VkDescriptorBufferInfo output_desc_buffer_info = {};
     output_desc_buffer_info.range = output_buffer_size;
 
-    auto cb_node = Get<CMD_BUFFER_STATE_GPUAV>(cmd_buffer);
+    auto cb_node = GetCBState(cmd_buffer);
     if (!cb_node) {
         ReportSetupProblem(device, "Unrecognized command buffer");
         aborted = true;

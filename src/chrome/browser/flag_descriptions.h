@@ -70,7 +70,6 @@ extern const char kAnimatedImageResumeDescription[];
 extern const char kAriaElementReflectionName[];
 extern const char kAriaElementReflectionDescription[];
 
-extern const char kCOLRV1FontsName[];
 extern const char kCOLRV1FontsDescription[];
 
 extern const char kCSSCascadeLayersName[];
@@ -111,6 +110,9 @@ extern const char kEditPasswordsInSettingsDescription[];
 
 extern const char kMuteCompromisedPasswordsName[];
 extern const char kMuteCompromisedPasswordsDescription[];
+
+extern const char kPasswordNotesName[];
+extern const char kPasswordNotesDescription[];
 
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
@@ -595,9 +597,6 @@ extern const char kDeprecateAltClickDescription[];
 extern const char kDeprecateAltBasedSixPackName[];
 extern const char kDeprecateAltBasedSixPackDescription[];
 
-extern const char kDiagnosticsAppName[];
-extern const char kDiagnosticsAppDescription[];
-
 extern const char kDiagnosticsAppNavigationName[];
 extern const char kDiagnosticsAppNavigationDescription[];
 
@@ -627,9 +626,6 @@ extern const char kMemlogStackModeDescription[];
 extern const char kMemlogStackModeNative[];
 extern const char kMemlogStackModeNativeWithThreadNames[];
 
-extern const char kQuickActionSearchWidgetAndroidDinoVariantName[];
-extern const char kQuickActionSearchWidgetAndroidDinoVariantDescription[];
-
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
@@ -654,9 +650,9 @@ extern const char kEnableFirmwareUpdaterAppDescription[];
 extern const char kEnableGamepadButtonAxisEventsName[];
 extern const char kEnableGamepadButtonAxisEventsDescription[];
 
-extern const char kEnableLensRegionSearchFlagId[];
-extern const char kEnableLensRegionSearchName[];
-extern const char kEnableLensRegionSearchDescription[];
+extern const char kEnableLensStandaloneFlagId[];
+extern const char kEnableLensStandaloneName[];
+extern const char kEnableLensStandaloneDescription[];
 
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
@@ -813,6 +809,12 @@ extern const char kCastStreamingAv1Description[];
 extern const char kCastStreamingVp9Name[];
 extern const char kCastStreamingVp9Description[];
 
+extern const char kCastUseBlocklistForRemotingQueryName[];
+extern const char kCastUseBlocklistForRemotingQueryDescription[];
+
+extern const char kCastForceEnableRemotingQueryName[];
+extern const char kCastForceEnableRemotingQueryDescription[];
+
 extern const char kGoogleLensSdkIntentName[];
 extern const char kGoogleLensSdkIntentDescription[];
 
@@ -921,6 +923,9 @@ extern const char kLargeFaviconFromGoogleDescription[];
 
 extern const char kLensCameraAssistedSearchName[];
 extern const char kLensCameraAssistedSearchDescription[];
+
+extern const char kLocationBarModelOptimizationsName[];
+extern const char kLocationBarModelOptimizationsDescription[];
 
 extern const char kLogJsConsoleMessagesName[];
 extern const char kLogJsConsoleMessagesDescription[];
@@ -1239,9 +1244,6 @@ extern const char kPwaUpdateDialogForAppTitleDescription[];
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 
-extern const char kQuickActionSearchWidgetAndroidName[];
-extern const char kQuickActionSearchWidgetAndroidDescription[];
-
 extern const char kQuickDimName[];
 extern const char kQuickDimDescription[];
 
@@ -1275,6 +1277,9 @@ extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
 
 extern const char kPartitionedCookiesName[];
 extern const char kPartitionedCookiesDescription[];
+// TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
+extern const char kPartitionedCookiesBypassOriginTrialName[];
+extern const char kPartitionedCookiesBypassOriginTrialDescription[];
 
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
@@ -1765,9 +1770,6 @@ extern const char kContextualSearchDelayedIntelligenceDescription[];
 extern const char kContextualSearchForceCaptionName[];
 extern const char kContextualSearchForceCaptionDescription[];
 
-extern const char kContextualSearchLiteralSearchTapName[];
-extern const char kContextualSearchLiteralSearchTapDescription[];
-
 extern const char kContextualSearchLongpressResolveName[];
 extern const char kContextualSearchLongpressResolveDescription[];
 
@@ -2057,8 +2059,8 @@ extern const char kStartSurfaceAndroidDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
-extern const char kSyncAndroidPromosRevampName[];
-extern const char kSyncAndroidPromosRevampDescription[];
+extern const char kSyncAndroidPromosWithSingleButtonName[];
+extern const char kSyncAndroidPromosWithSingleButtonDescription[];
 
 extern const char kTabGroupsForTabletsName[];
 extern const char kTabGroupsForTabletsDescription[];
@@ -2603,27 +2605,6 @@ extern const char kQuickSettingsPWANotificationsDescription[];
 
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
-
-extern const char kCrOSDspBasedAecAllowedName[];
-extern const char kCrOSDspBasedAecAllowedDescription[];
-
-extern const char kCrOSDspBasedNsAllowedName[];
-extern const char kCrOSDspBasedNsAllowedDescription[];
-
-extern const char kCrOSDspBasedAgcAllowedName[];
-extern const char kCrOSDspBasedAgcAllowedDescription[];
-
-extern const char kCrOSEnforceSystemAecName[];
-extern const char kCrOSEnforceSystemAecDescription[];
-
-extern const char kCrOSEnforceSystemAecAgcName[];
-extern const char kCrOSEnforceSystemAecAgcDescription[];
-
-extern const char kCrOSEnforceSystemAecNsName[];
-extern const char kCrOSEnforceSystemAecNsDescription[];
-
-extern const char kCrOSEnforceSystemAecNsAgcName[];
-extern const char kCrOSEnforceSystemAecNsAgcDescription[];
 
 extern const char kEnableAppReinstallZeroStateName[];
 extern const char kEnableAppReinstallZeroStateDescription[];
@@ -3210,6 +3191,27 @@ extern const char
 extern const char kBluetoothAdvertisementMonitoringName[];
 extern const char kBluetoothAdvertisementMonitoringDescription[];
 
+extern const char kCrOSDspBasedAecAllowedName[];
+extern const char kCrOSDspBasedAecAllowedDescription[];
+
+extern const char kCrOSDspBasedNsAllowedName[];
+extern const char kCrOSDspBasedNsAllowedDescription[];
+
+extern const char kCrOSDspBasedAgcAllowedName[];
+extern const char kCrOSDspBasedAgcAllowedDescription[];
+
+extern const char kCrOSEnforceSystemAecName[];
+extern const char kCrOSEnforceSystemAecDescription[];
+
+extern const char kCrOSEnforceSystemAecAgcName[];
+extern const char kCrOSEnforceSystemAecAgcDescription[];
+
+extern const char kCrOSEnforceSystemAecNsName[];
+extern const char kCrOSEnforceSystemAecNsDescription[];
+
+extern const char kCrOSEnforceSystemAecNsAgcName[];
+extern const char kCrOSEnforceSystemAecNsAgcDescription[];
+
 extern const char kDefaultCalculatorWebAppName[];
 extern const char kDefaultCalculatorWebAppDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -3223,6 +3225,12 @@ extern const char kVaapiAV1DecoderDescription[];
 
 extern const char kEnableTtsLacrosSupportName[];
 extern const char kEnableTtsLacrosSupportDescription[];
+
+extern const char kIntentChipSkipsPickerName[];
+extern const char kIntentChipSkipsPickerDescription[];
+
+extern const char kLinkCapturingInfoBarName[];
+extern const char kLinkCapturingInfoBarDescription[];
 
 extern const char kLinkCapturingUiUpdateName[];
 extern const char kLinkCapturingUiUpdateDescription[];

@@ -801,13 +801,13 @@ TEST_F(VkBestPracticesLayerTest, ClearAttachmentsAfterLoadSecondary) {
     CreatePipelineHelper pipe_masked(*this);
     pipe_masked.InitInfo();
     pipe_masked.InitState();
-    pipe_masked.cb_attachments_[0].colorWriteMask = 0;
+    pipe_masked.cb_attachments_.colorWriteMask = 0;
     pipe_masked.CreateGraphicsPipeline();
 
     CreatePipelineHelper pipe_writes(*this);
     pipe_writes.InitInfo();
     pipe_writes.InitState();
-    pipe_writes.cb_attachments_[0].colorWriteMask = 0xf;
+    pipe_writes.cb_attachments_.colorWriteMask = 0xf;
     pipe_writes.CreateGraphicsPipeline();
 
     m_commandBuffer->begin();
@@ -1256,24 +1256,4 @@ TEST_F(VkBestPracticesLayerTest, WorkgroupSizeDeprecated) {
     };
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kWarningBit,
                                              "UNASSIGNED-BestPractices-SpirvDeprecated_WorkgroupSize");
-}
-
-TEST_F(VkBestPracticesLayerTest, CreatePipelineWithoutRenderPass) {
-    TEST_DESCRIPTION("Test creating a graphics pipeline with no render pass");
-
-    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
-    ASSERT_NO_FATAL_FAILURE(InitState());
-
-    m_errorMonitor->ExpectSuccess();
-
-    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
-    VkShaderObj fs(this, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    CreatePipelineHelper pipe(*this);
-    pipe.InitInfo();
-    pipe.InitState();
-    pipe.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
-    pipe.CreateGraphicsPipeline();
-
-    m_errorMonitor->VerifyNotFound();
 }

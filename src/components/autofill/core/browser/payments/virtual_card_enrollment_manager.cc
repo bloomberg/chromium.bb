@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/strike_database_base.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "ui/gfx/image/image.h"
 
@@ -59,6 +60,12 @@ void VirtualCardEnrollmentManager::OfferVirtualCardEnroll(
         virtual_card_enrollment_fields_loaded_callback) {
   Reset();
   DCHECK_NE(virtual_card_enrollment_source, VirtualCardEnrollmentSource::kNone);
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // Hide the bubble and icon if it is already showing for a previous enrollment
+  // bubble.
+  DCHECK(autofill_client_);
+  autofill_client_->HideVirtualCardEnrollBubbleAndIconIfVisible();
+#endif
   state_.virtual_card_enrollment_fields.credit_card = credit_card;
   risk_assessment_function_ = std::move(risk_assessment_function);
   virtual_card_enrollment_fields_loaded_callback_ =
@@ -167,6 +174,12 @@ void VirtualCardEnrollmentManager::
   GetVirtualCardEnrollmentStrikeDatabase()->ClearStrikes(guid);
 }
 
+void VirtualCardEnrollmentManager::SetSaveCardBubbleAcceptedTimestamp(
+    const base::Time& save_card_bubble_accepted_timestamp) {
+  save_card_bubble_accepted_timestamp_ =
+      std::move(save_card_bubble_accepted_timestamp);
+}
+
 void VirtualCardEnrollmentManager::OnDidGetUpdateVirtualCardEnrollmentResponse(
     VirtualCardEnrollmentRequestType type,
     AutofillClient::PaymentsRpcResult result) {
@@ -206,6 +219,13 @@ void VirtualCardEnrollmentManager::LoadRiskDataAndContinueFlow(
 
 void VirtualCardEnrollmentManager::ShowVirtualCardEnrollBubble() {
   DCHECK(autofill_client_);
+  if (state_.virtual_card_enrollment_fields.virtual_card_enrollment_source ==
+          VirtualCardEnrollmentSource::kUpstream &&
+      save_card_bubble_accepted_timestamp_.has_value()) {
+    LogVirtualCardEnrollBubbleLatencySinceUpstream(
+        AutofillClock::Now() - save_card_bubble_accepted_timestamp_.value());
+    save_card_bubble_accepted_timestamp_.reset();
+  }
   autofill_client_->ShowVirtualCardEnrollDialog(
       state_.virtual_card_enrollment_fields,
       base::BindOnce(&VirtualCardEnrollmentManager::Enroll,

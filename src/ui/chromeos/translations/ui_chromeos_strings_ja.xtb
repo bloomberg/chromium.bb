@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1209796539517632982">自動ネーム サーバー</translation>
 <translation id="1210831758834677569">ラオ語</translation>
+<translation id="1223825810409523901">Chrome 拡張機能</translation>
 <translation id="1243314992276662751">アップロード</translation>
 <translation id="1249250836236328755">ジャンル</translation>
 <translation id="1254593899333212300">インターネットへの直接接続</translation>
@@ -80,6 +81,7 @@
 <translation id="166439687370499867">共有のネットワーク設定を変更することはできません</translation>
 <translation id="1665611772925418501">ファイルを修正することができませんでした。</translation>
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
+<translation id="16762847117768727">ISO イメージ</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">自転車</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを圧縮しています...</translation>
@@ -811,6 +813,7 @@
 <translation id="7925686952655276919">モバイル データを使用して同期しない</translation>
 <translation id="7928710562641958568">デバイスの取り出し</translation>
 <translation id="7943385054491506837">US Colemak 配列</translation>
+<translation id="7948417415021769876">7z アーカイブ</translation>
 <translation id="7953739707111622108">ファイルシステムが認識されなかったため、このデバイスを開くことはできません。</translation>
 <translation id="7969525169268594403">スロベニア語</translation>
 <translation id="7972920761225148017">フランス語（スイス）</translation>
@@ -825,6 +828,7 @@
 <translation id="8042602468072383151">音声（<ph name="AUDIO_TYPE" />）</translation>
 <translation id="8045462269890919536">ルーマニア語</translation>
 <translation id="8049184478152619004">PIN ブロック解除キー（PUK）を入力してください</translation>
+<translation id="807187749540895545"><ph name="FILE_NAME" /> を抽出しています...</translation>
 <translation id="8079530767338315840">繰り返し</translation>
 <translation id="8087576439476816834">ダウンロード、<ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">共有アイテム</translation>
@@ -859,6 +863,7 @@
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="8372852072747894550">ギリシャ語</translation>
 <translation id="8386903983509584791">スキャンが完了しました</translation>
+<translation id="8387733224523483503"><ph name="FILE_NAME" /> を抽出しました。</translation>
 <translation id="8395901698320285466">サイズ</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> ネットワーク、接続中</translation>
 <translation id="8425213833346101688">変更</translation>
@@ -876,6 +881,7 @@
 <translation id="8484284835977497781">最近撮影した写真をピックアップ。</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8492972329130824181">ホーム ネットワークは使用できません。接続するには、モバイルデータ ローミングを有効にする必要があります。</translation>
+<translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> 件のアイテムを抽出しています...</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="853494022971700746">フランス語（フランス）</translation>
@@ -952,6 +958,7 @@
 <translation id="9174050671906956834">ゴミ箱内のアイテムは 30 日後に完全に削除されます。</translation>
 <translation id="9183302530794969518">Google ドキュメント</translation>
 <translation id="9189836632794948435">カザフ語</translation>
+<translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> 件のアイテムを抽出しました。</translation>
 <translation id="9213073329713032541">インストールを開始しました。</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="9219908252191632183">月面</translation>

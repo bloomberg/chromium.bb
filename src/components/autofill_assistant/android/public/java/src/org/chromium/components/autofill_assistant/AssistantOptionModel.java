@@ -4,6 +4,8 @@
 
 package org.chromium.components.autofill_assistant;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +33,8 @@ public abstract class AssistantOptionModel<T> {
         return mErrors.isEmpty();
     }
 
+    public abstract boolean canEdit();
+
     /** Model wrapper for an {@link AssistantAutofillProfile}. */
     public static class ContactModel extends AssistantOptionModel<AssistantAutofillProfile> {
         private final boolean mCanEdit;
@@ -46,6 +50,7 @@ public abstract class AssistantOptionModel<T> {
             mCanEdit = true;
         }
 
+        @Override
         public boolean canEdit() {
             return mCanEdit;
         }
@@ -55,17 +60,22 @@ public abstract class AssistantOptionModel<T> {
     public static class AddressModel extends AssistantOptionModel<AssistantAutofillProfile> {
         private final String mFullDescription;
         private final String mSummaryDescription;
+        @Nullable
+        private final byte[] mEditToken;
 
         public AddressModel(AssistantAutofillProfile address, String fullDescription,
-                String summaryDescription, List<String> errors) {
+                String summaryDescription, List<String> errors, @Nullable byte[] editToken) {
             super(address, errors);
             mFullDescription = fullDescription;
             mSummaryDescription = summaryDescription;
+            mEditToken = editToken;
         }
 
         public AddressModel(AssistantAutofillProfile address, String fullDescription,
                 String summaryDescription) {
-            this(address, fullDescription, summaryDescription, Collections.emptyList());
+            this(address, fullDescription, summaryDescription,
+                    /* errors= */ Collections.emptyList(),
+                    /* editToken= */ null);
         }
 
         public String getFullDescription() {
@@ -75,18 +85,42 @@ public abstract class AssistantOptionModel<T> {
         public String getSummaryDescription() {
             return mSummaryDescription;
         }
+
+        @Override
+        public boolean canEdit() {
+            return mEditToken == null || mEditToken.length > 0;
+        }
+
+        @Nullable
+        byte[] getEditToken() {
+            return mEditToken;
+        }
     }
 
     /** Model wrapper for an {@code AssistantPaymentInstrument}. */
     public static class PaymentInstrumentModel
             extends AssistantOptionModel<AssistantPaymentInstrument> {
-        public PaymentInstrumentModel(
-                AssistantPaymentInstrument paymentInstrument, List<String> errors) {
+        @Nullable
+        private final byte[] mEditToken;
+
+        public PaymentInstrumentModel(AssistantPaymentInstrument paymentInstrument,
+                List<String> errors, @Nullable byte[] editToken) {
             super(paymentInstrument, errors);
+            mEditToken = editToken;
         }
 
         public PaymentInstrumentModel(AssistantPaymentInstrument paymentInstrument) {
-            super(paymentInstrument);
+            this(paymentInstrument, /* errors= */ Collections.emptyList(), /* editToken= */ null);
+        }
+
+        @Override
+        public boolean canEdit() {
+            return mEditToken == null || mEditToken.length > 0;
+        }
+
+        @Nullable
+        byte[] getEditToken() {
+            return mEditToken;
         }
     }
 }

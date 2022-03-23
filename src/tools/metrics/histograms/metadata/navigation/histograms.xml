@@ -601,10 +601,25 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.CrossOtr.ContextMenu.RefreshCountExperimental"
+    units="count" expires_after="2023-01-02">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
+  <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    The count of refreshes on the first document after a cross-OTR navigation
+    completes. This metric is currently experimental and will likely be
+    replaced.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.CrossOtr.ContextMenu.ResponseCodeExperimental"
     enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-01-02">
   <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
   <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
   <summary>
     Http response codes seen when opening links from non-OTR to OTR browsing.
     Logged when using the &quot;Open Link in Incognito Window&quot; menu item.
@@ -960,6 +975,33 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.Preconnect.ProxyLookupLatency" units="ms"
+    expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the duration from initiation to completion for a proxy lookup
+    performed as part of navigation preconnect. Recorded for each proxy lookup.
+    Note: Does not capture any delay spent queuing *before* initiating the proxy
+    lookup (e.g., due to a max # of preconnects being in flight).
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.ResolveHostLatency" units="ms"
+    expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the duration from initiation to completion for a host resolution
+    performed as part of navigation preconnect. Recorded for each host
+    resolution. Note: Does not capture any delay spent queuing *before*
+    initiating the host resolution (e.g., due to a max # of preconnects being in
+    flight).
+  </summary>
+</histogram>
+
 <histogram name="Navigation.Prerender.ActivationCommitDeferTime" units="ms"
     expires_after="2022-09-11">
   <owner>sreejakshetty@chromium.org</owner>
@@ -1162,7 +1204,9 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram name="Navigation.UrlParamFilter.FilteredParamCountExperimental"
     units="count" expires_after="2023-01-02">
   <owner>mreichhoff@chromium.org</owner>
+  <owner>wanderview@chromium.org</owner>
   <owner>bcl@chromium.org</owner>
+  <owner>dc-komics@google.com</owner>
   <summary>
     The number of parameters filtered out of a given request when switching from
     normal browsing to incognito. Determined by backend classification of

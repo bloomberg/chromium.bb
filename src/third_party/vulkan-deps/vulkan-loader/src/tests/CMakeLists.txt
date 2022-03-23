@@ -29,7 +29,6 @@ add_executable(
     test_regression
         loader_testing_main.cpp
         loader_alloc_callback_tests.cpp
-        loader_envvar_tests.cpp
         loader_get_proc_addr_tests.cpp
         loader_debug_ext_tests.cpp
         loader_handle_validation_tests.cpp
@@ -39,17 +38,13 @@ add_executable(
         loader_version_tests.cpp
         loader_unknown_ext_tests.cpp
         loader_wsi_tests.cpp)
-target_link_libraries(test_regression PUBLIC testing_dependencies)
-set_target_properties(test_regression ${LOADER_STANDARD_CXX_PROPERTIES})
-target_compile_definitions(test_regression PUBLIC VK_NO_PROTOTYPES)
+target_link_libraries(test_regression PRIVATE testing_dependencies)
 
 add_executable(
     test_threading
         loader_testing_main.cpp
         loader_threading_tests.cpp)
-target_link_libraries(test_threading PUBLIC testing_dependencies)
-set_target_properties(test_threading ${LOADER_STANDARD_CXX_PROPERTIES})
-target_compile_definitions(test_threading PUBLIC VK_NO_PROTOTYPES)
+target_link_libraries(test_threading PRIVATE testing_dependencies)
 
 # executables that are meant for testing against real drivers rather than the mocks
 if (ENABLE_LIVE_VERIFICATION_TESTS)
