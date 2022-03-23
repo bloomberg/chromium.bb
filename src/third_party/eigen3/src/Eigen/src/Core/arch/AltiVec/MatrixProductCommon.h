@@ -44,8 +44,8 @@ EIGEN_STRONG_INLINE void gemm_extra_cols(
   const Packet& pAlpha,
   const Packet& pMask);
 
-template<typename Packet>
-EIGEN_ALWAYS_INLINE Packet bmask(const int remaining_rows);
+template<typename Packet, typename Index>
+EIGEN_ALWAYS_INLINE Packet bmask(const Index remaining_rows);
 
 template<typename Scalar, typename Packet, typename Packetc, typename DataMapper, typename Index, const Index accRows, const Index accCols, bool ConjugateLhs, bool ConjugateRhs, bool LhsIsReal, bool RhsIsReal>
 EIGEN_ALWAYS_INLINE void gemm_complex_extra_row(
@@ -87,7 +87,7 @@ template<typename Scalar, typename Packet>
 EIGEN_ALWAYS_INLINE Packet ploadLhs(const Scalar* lhs);
 
 template<typename DataMapper, typename Packet, typename Index, const Index accCols, int StorageOrder, bool Complex, int N>
-EIGEN_ALWAYS_INLINE void bload(PacketBlock<Packet,N>& acc, const DataMapper& res, Index row, Index col);
+EIGEN_ALWAYS_INLINE void bload(PacketBlock<Packet,N*(Complex?2:1)>& acc, const DataMapper& res, Index row, Index col);
 
 template<typename Packet, int N>
 EIGEN_ALWAYS_INLINE void bscale(PacketBlock<Packet,N>& acc, PacketBlock<Packet,N>& accZ, const Packet& pAlpha);

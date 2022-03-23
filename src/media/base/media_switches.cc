@@ -527,7 +527,7 @@ const base::Feature kVaapiH264TemporalLayerHWEncoding{
     "VaapiH264TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enable VP8 temporal layer encoding with HW encoder on ChromeOS.
 const base::Feature kVaapiVp8TemporalLayerHWEncoding{
-    "VaapiVp8TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
+    "VaapiVp8TemporalLayerEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enable VP9 k-SVC encoding with HW encoder for webrtc use case on ChromeOS.
 const base::Feature kVaapiVp9kSVCHWEncoding{"VaapiVp9kSVCHWEncoding",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -735,11 +735,17 @@ const base::Feature kUseAlternateVideoDecoderImplementation{
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+const base::Feature kVideoToolboxHEVCDecoding{
+    "VideoToolboxHEVCDecoding", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+
 // Enable binding multiple shared images to a single GpuMemoryBuffer for
 // accelerated video decode using VideoToolbox.
 const base::Feature kMultiPlaneVideoToolboxSharedImages{
     "MultiPlaneVideoToolboxSharedImages", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
 // Does NV12->NV12 video copy on the main thread right before the texture's

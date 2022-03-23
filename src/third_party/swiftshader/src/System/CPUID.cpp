@@ -27,6 +27,11 @@
 #	include <sys/types.h>
 #endif
 
+#if defined(__i386__) || defined(__x86_64__)
+#	include <xmmintrin.h>
+#	include <pmmintrin.h>
+#endif
+
 namespace sw {
 
 static void cpuid(int registers[4], int info)
@@ -154,18 +159,42 @@ int CPUID::processAffinity()
 	return cores;
 }
 
-void CPUID::setFlushToZero(bool enable)
+void CPUID::setFlushToZero(bool enableFTZ)
 {
 #if defined(_MSC_VER)
-	_controlfp(enable ? _DN_FLUSH : _DN_SAVE, _MCW_DN);
+	unsigned int current = _controlfp(0, 0) & _MCW_DN;
+	if(current == _DN_SAVE || current == _DN_SAVE_OPERANDS_FLUSH_RESULTS)  // DAZ off
+	{
+		_controlfp(enableFTZ ? _DN_SAVE_OPERANDS_FLUSH_RESULTS : _DN_SAVE, _MCW_DN);
+	}
+	else  // DAZ on
+	{
+		_controlfp(enableFTZ ? _DN_FLUSH : _DN_FLUSH_OPERANDS_SAVE_RESULTS, _MCW_DN);
+	}
+#elif defined(__i386__) || defined(__x86_64__)
+	_MM_SET_FLUSH_ZERO_MODE(enableFTZ ? _MM_FLUSH_ZERO_ON : _MM_FLUSH_ZERO_OFF);
 #else
-	                     // Unimplemented
+	// Unimplemented
 #endif
 }
 
-void CPUID::setDenormalsAreZero(bool enable)
+void CPUID::setDenormalsAreZero(bool enableDAZ)
 {
+#if defined(_MSC_VER)
+	unsigned int current = _controlfp(0, 0) & _MCW_DN;
+	if(current == _DN_SAVE || current == _DN_FLUSH_OPERANDS_SAVE_RESULTS)  // FTZ off
+	{
+		_controlfp(enableDAZ ? _DN_FLUSH_OPERANDS_SAVE_RESULTS : _DN_SAVE, _MCW_DN);
+	}
+	else  // FTZ on
+	{
+		_controlfp(enableDAZ ? _DN_FLUSH : _DN_SAVE_OPERANDS_FLUSH_RESULTS, _MCW_DN);
+	}
+#elif defined(__i386__) || defined(__x86_64__)
+	_MM_SET_DENORMALS_ZERO_MODE(enableDAZ ? _MM_DENORMALS_ZERO_ON : _MM_DENORMALS_ZERO_OFF);
+#else
 	// Unimplemented
+#endif
 }
 
 }  // namespace sw

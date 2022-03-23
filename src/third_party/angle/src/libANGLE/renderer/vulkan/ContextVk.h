@@ -652,8 +652,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     vk::BufferHelper &getEmptyBuffer() { return mEmptyBuffer; }
 
-    const vk::PerfCounters &getPerfCounters() const { return mPerfCounters; }
-    vk::PerfCounters &getPerfCounters() { return mPerfCounters; }
+    const angle::VulkanPerfCounters &getPerfCounters() const { return mPerfCounters; }
+    angle::VulkanPerfCounters &getPerfCounters() { return mPerfCounters; }
 
     // Implementation of MultisampleTextureInitializer
     angle::Result initializeMultisampleTextureToBlack(const gl::Context *context,
@@ -687,6 +687,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
         }
         return angle::Result::Continue;
     }
+
+    const angle::PerfMonitorCounterGroups &getPerfMonitorCounters() override;
 
   private:
     // Dirty bits.
@@ -793,6 +795,15 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                             const void *indices,
                             DirtyBits dirtyBitMask);
 
+    angle::Result setupNonIndexedDraw(const gl::Context *context,
+                                      gl::PrimitiveMode mode,
+                                      GLint firstVertexOrInvalid,
+                                      GLsizei vertexOrIndexCount,
+                                      GLsizei instanceCount,
+                                      gl::DrawElementsType indexTypeOrInvalid,
+                                      const void *indices,
+                                      DirtyBits dirtyBitMask);
+
     angle::Result setupIndexedDraw(const gl::Context *context,
                                    gl::PrimitiveMode mode,
                                    GLsizei indexCount,
@@ -827,6 +838,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                                     gl::DrawElementsType indexTypeOrInvalid,
                                     const void *indices,
                                     uint32_t *numIndicesOut);
+
     angle::Result setupDispatch(const gl::Context *context);
 
     gl::Rectangle getCorrectedViewport(const gl::Rectangle &viewport) const;
@@ -1170,7 +1182,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     GraphicsEventCmdBuf mQueryEventType;
 
     // Transform feedback buffers.
-    angle::FastUnorderedSet<const vk::BufferHelper *,
+    angle::FlatUnorderedSet<const vk::BufferHelper *,
                             gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS>
         mCurrentTransformFeedbackBuffers;
 
@@ -1210,7 +1222,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     uint64_t mGpuEventTimestampOrigin;
 
     // A mix of per-frame and per-run counters.
-    vk::PerfCounters mPerfCounters;
+    angle::VulkanPerfCounters mPerfCounters;
+    angle::PerfMonitorCounterGroups mPerfMonitorCounters;
     ContextVkPerfCounters mContextPerfCounters;
     ContextVkPerfCounters mCumulativeContextPerfCounters;
 

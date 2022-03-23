@@ -122,7 +122,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4008040567710660924">السماح لموقع إلكتروني معيّن بتشغيل ملفات تعريف الارتباط</translation>
-<translation id="4040330681741629921">تلقّي إشعارات في حال كان خيار العرض المبسَّط متاحًا لموقع إلكتروني</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4149994727733219643">عرض مبسَّط لصفحات الويب</translation>
 <translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
@@ -255,6 +254,7 @@
 <translation id="7087918508125750058">تم اختيار <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7141896414559753902">منع المواقع الإلكترونية من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
+<translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="723171743924126238">اختيار الصور</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
@@ -309,7 +309,9 @@
 <translation id="83792324527827022">هناك موقع إلكتروني يستخدم الميكروفون والكاميرا.</translation>
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8394832520002899662">يُرجى النقر للرجوع إلى الموقع الإلكتروني.</translation>
+<translation id="8409345997656833551">تلقّي إشعارات في حال كان خيار العرض المبسَّط متاحًا لمقالة</translation>
 <translation id="8425213833346101688">تغيير</translation>
+<translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8441146129660941386">الرجوع للوراء</translation>
 <translation id="8444433999583714703">‏للسماح لتطبيق <ph name="APP_NAME" /> بالوصول إلى موقعك الجغرافي، يُرجى أيضًا تفعيل الموقع الجغرافي في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>

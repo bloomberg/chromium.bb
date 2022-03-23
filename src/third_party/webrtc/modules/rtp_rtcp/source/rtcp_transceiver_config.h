@@ -149,10 +149,10 @@ struct RtcpTransceiverConfig {
   // Initial state if `outgoing_transport` ready to accept packets.
   bool initial_ready_to_send = true;
   // Delay before 1st periodic compound packet.
-  int initial_report_delay_ms = 500;
+  TimeDelta initial_report_delay = TimeDelta::Millis(500);
 
   // Period between periodic compound packets.
-  int report_period_ms = 1000;
+  TimeDelta report_period = TimeDelta::Seconds(1);
 
   //
   // Flags for features and experiments.
@@ -161,6 +161,13 @@ struct RtcpTransceiverConfig {
   // Estimate RTT as non-sender as described in
   // https://tools.ietf.org/html/rfc3611#section-4.4 and #section-4.5
   bool non_sender_rtt_measurement = false;
+
+  // Reply to incoming RRTR messages so that remote endpoint may estimate RTT as
+  // non-sender as described in https://tools.ietf.org/html/rfc3611#section-4.4
+  // and #section-4.5
+  // TODO(danilchap): Make it true by default after users got enough time to
+  // turn it off if not needed.
+  bool reply_to_non_sender_rtt_measurement = false;
 
   // Allows a REMB message to be sent immediately when SetRemb is called without
   // having to wait for the next compount message to be sent.

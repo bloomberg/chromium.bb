@@ -10,24 +10,36 @@
 
 #include <stdint.h>
 
-#include <algorithm>
-#include <memory>
+#include <cstdlib>
+#include <iterator>
 #include <string>
+#include <tuple>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/types/optional.h"
 #include "api/data_channel_interface.h"
-#include "api/dtmf_sender_interface.h"
+#include "api/dtls_transport_interface.h"
 #include "api/peer_connection_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/sctp_transport_interface.h"
+#include "api/stats/rtc_stats_report.h"
+#include "api/stats/rtcstats_objects.h"
 #include "api/units/time_delta.h"
+#include "p2p/base/transport_description.h"
+#include "p2p/base/transport_info.h"
+#include "pc/media_session.h"
+#include "pc/session_description.h"
 #include "pc/test/integration_test_helpers.h"
 #include "pc/test/mock_peer_connection_observers.h"
+#include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/fake_clock.h"
 #include "rtc_base/gunit.h"
-#include "rtc_base/ref_counted_object.h"
+#include "rtc_base/helpers.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/numerics/safe_conversions.h"
 #include "rtc_base/virtual_socket_server.h"
-#include "system_wrappers/include/field_trial.h"
+#include "test/gmock.h"
 #include "test/gtest.h"
 
 namespace webrtc {
@@ -832,7 +844,7 @@ TEST_P(DataChannelIntegrationTest,
   EXPECT_GT(202u, callee()->data_observer()->received_message_count());
   EXPECT_LE(2u, callee()->data_observer()->received_message_count());
   // Then, check that observed behavior (lose some messages) has not changed
-  if (!webrtc::field_trial::IsDisabled("WebRTC-DataChannel-Dcsctp")) {
+  if (!trials().IsDisabled("WebRTC-DataChannel-Dcsctp")) {
     // DcSctp loses all messages. This is correct.
     EXPECT_EQ(2u, callee()->data_observer()->received_message_count());
   } else {

@@ -83,7 +83,7 @@ class F extends GPUTest {
     computePass.setBindGroup(0, bindGroup);
     computePass.setPipeline(computePipeline);
     computePass.dispatch(1);
-    computePass.endPass();
+    computePass.end();
     this.queue.submit([encoder.finish()]);
 
     this.CheckBufferAndOutputTexture(buffer, boundBufferSize + bufferOffset, outputTexture);
@@ -134,12 +134,13 @@ class F extends GPUTest {
       colorAttachments: [
         {
           view: texture.createView(),
-          loadValue: color,
+          clearValue: color,
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
     });
-    renderPass.endPass();
+    renderPass.end();
   }
 
   CheckBufferAndOutputTexture(
@@ -457,12 +458,13 @@ remaining part of it will be initialized to 0.`
               arrayLayerCount: 1,
               baseMipLevel: copyMipLevel,
             }),
-            loadValue: { r: layer + 1, g: 0, b: 0, a: 0 },
+            clearValue: { r: layer + 1, g: 0, b: 0, a: 0 },
+            loadOp: 'clear',
             storeOp: 'store',
           },
         ],
       });
-      renderPass.endPass();
+      renderPass.end();
     }
 
     // Do texture-to-buffer copy
@@ -641,7 +643,8 @@ g.test('vertex_buffer')
       colorAttachments: [
         {
           view: outputTexture.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -649,7 +652,7 @@ g.test('vertex_buffer')
     renderPass.setVertexBuffer(0, vertexBuffer, bufferOffset);
     renderPass.setPipeline(renderPipeline);
     renderPass.draw(1);
-    renderPass.endPass();
+    renderPass.end();
     t.queue.submit([encoder.finish()]);
 
     t.CheckBufferAndOutputTexture(vertexBuffer, bufferSize, outputTexture);
@@ -705,7 +708,8 @@ GPUBuffer, all the contents in that GPUBuffer have been initialized to 0.`
       colorAttachments: [
         {
           view: outputTexture.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -713,7 +717,7 @@ GPUBuffer, all the contents in that GPUBuffer have been initialized to 0.`
     renderPass.setPipeline(renderPipeline);
     renderPass.setIndexBuffer(indexBuffer, 'uint16', bufferOffset, 4);
     renderPass.drawIndexed(1);
-    renderPass.endPass();
+    renderPass.end();
     t.queue.submit([encoder.finish()]);
 
     t.CheckBufferAndOutputTexture(indexBuffer, bufferSize, outputTexture);
@@ -772,7 +776,7 @@ have been initialized to 0.`
       colorAttachments: [
         {
           view: outputTexture.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
@@ -791,7 +795,7 @@ have been initialized to 0.`
       renderPass.drawIndirect(indirectBuffer, bufferOffset);
     }
 
-    renderPass.endPass();
+    renderPass.end();
     t.queue.submit([encoder.finish()]);
 
     // The indirect buffer should be lazily cleared to 0, so we actually draw nothing and the color
@@ -858,7 +862,7 @@ creation of that GPUBuffer, all the contents in that GPUBuffer have been initial
     computePass.setBindGroup(0, bindGroup);
     computePass.setPipeline(computePipeline);
     computePass.dispatchIndirect(indirectBuffer, bufferOffset);
-    computePass.endPass();
+    computePass.end();
     t.queue.submit([encoder.finish()]);
 
     // The indirect buffer should be lazily cleared to 0, so we actually draw nothing and the color

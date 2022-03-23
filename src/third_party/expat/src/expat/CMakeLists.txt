@@ -29,6 +29,7 @@
 # Copyright (c) 2020      Gulliver <gulliver@traumkristalle.net>
 # Copyright (c) 2020      Thomas Beutlich <tc@tbeu.de>
 # Copyright (c) 2021      Alex Richardson <Alexander.Richardson@cl.cam.ac.uk>
+# Copyright (c) 2022      Johnny Jazeix <jazeix@gmail.com>
 # Unlike most of Expat,
 # this file is copyrighted under the BSD-license for buildsystem files of KDE.
 
@@ -64,7 +65,7 @@ endif()
 
 project(expat
     VERSION
-        2.4.6
+        2.4.7
     LANGUAGES
         C
 )
@@ -381,7 +382,7 @@ endforeach()
 #
 # C library
 #
-set(expat_SRCS
+set(_EXPAT_C_SOURCES
     lib/xmlparse.c
     lib/xmlrole.c
     lib/xmltok.c
@@ -393,13 +394,18 @@ set(expat_SRCS
 if(EXPAT_SHARED_LIBS)
     set(_SHARED SHARED)
     if(MSVC)
-        set(expat_SRCS ${expat_SRCS} lib/libexpat.def)
+        set(_EXPAT_EXTRA_SOURCES ${_EXPAT_EXTRA_SOURCES} lib/libexpat.def)
+    endif()
+    if(WIN32)
+        # Add DLL version
+        string(REPLACE "." "," _EXPAT_DLL_VERSION ${PROJECT_VERSION}.0)
+        set(_EXPAT_EXTRA_SOURCES ${_EXPAT_EXTRA_SOURCES} win32/version.rc)
     endif()
 else()
     set(_SHARED STATIC)
 endif()
 
-add_library(expat ${_SHARED} ${expat_SRCS})
+add_library(expat ${_SHARED} ${_EXPAT_C_SOURCES} ${_EXPAT_EXTRA_SOURCES})
 if(_EXPAT_LIBM_FOUND)
     target_link_libraries(expat m)
 endif()
@@ -408,7 +414,7 @@ if(EXPAT_WITH_LIBBSD)
 endif()
 
 set(LIBCURRENT 9)   # sync
-set(LIBREVISION 6)  # with
+set(LIBREVISION 7)  # with
 set(LIBAGE 8)       # configure.ac!
 math(EXPR LIBCURRENT_MINUS_AGE "${LIBCURRENT} - ${LIBAGE}")
 
@@ -434,8 +440,12 @@ target_include_directories(expat
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-if(NOT EXPAT_SHARED_LIBS AND WIN32)
-    target_compile_definitions(expat PUBLIC -DXML_STATIC)
+if(WIN32)
+    if(EXPAT_SHARED_LIBS)
+        target_compile_definitions(expat PRIVATE VER_FILEVERSION=${_EXPAT_DLL_VERSION})
+    else()
+        target_compile_definitions(expat PUBLIC -DXML_STATIC)
+    endif()
 endif()
 
 expat_install(TARGETS expat EXPORT expat
@@ -550,7 +560,7 @@ if(EXPAT_BUILD_TESTS)
         tests/memcheck.c
         tests/minicheck.c
         tests/structdata.c
-        ${expat_SRCS}
+        ${_EXPAT_C_SOURCES}
     )
 
     if(NOT MSVC)
@@ -619,7 +629,7 @@ if(EXPAT_BUILD_FUZZERS)
     set(encoding_types UTF-16 UTF-8 ISO-8859-1 US-ASCII UTF-16BE UTF-16LE)
     set(fuzz_targets xml_parse_fuzzer xml_parsebuffer_fuzzer)
 
-    add_library(fuzzpat STATIC ${expat_SRCS})
+    add_library(fuzzpat STATIC ${_EXPAT_C_SOURCES})
     if(NOT EXPAT_OSSFUZZ_BUILD)
         target_compile_options(fuzzpat PRIVATE -fsanitize=fuzzer-no-link)
     endif()

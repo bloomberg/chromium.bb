@@ -50,11 +50,15 @@ class EventContext;
 template <typename MessageType>
 class TracedProto {
  public:
+  // implicit
+  TracedProto(TracedValue&& value)
+      : TracedProto(std::move(value).WriteProto<MessageType>()) {}
+  ~TracedProto() = default;
+
   TracedProto(const TracedProto&) = delete;
   TracedProto& operator=(const TracedProto&) = delete;
   TracedProto& operator=(TracedProto&&) = delete;
   TracedProto(TracedProto&&) = default;
-  ~TracedProto() = default;
 
   MessageType* operator->() const { return message_; }
 
@@ -82,7 +86,8 @@ class TracedProto {
         "This message does not have a |debug_annotations| field. Please add a"
         "'repeated perfetto.protos.DebugAnnotation debug_annnotations = N;' "
         "field to your message.");
-    return TracedDictionary(message_, MessageType::kDebugAnnotations, nullptr);
+    return TracedDictionary(message_, MessageType::kDebugAnnotations, context_,
+                            nullptr);
   }
 
   // Write a nested message into a field according to the provided metadata.
@@ -91,10 +96,9 @@ class TracedProto {
     static_assert(std::is_base_of<MessageType,
                                   typename FieldMetadata::message_type>::value,
                   "Field should belong to the current message");
-    return TracedProto<typename FieldMetadata::cpp_field_type>(
+    return Wrap(
         message_->template BeginNestedMessage<
-            typename FieldMetadata::cpp_field_type>(FieldMetadata::kFieldId),
-        context_);
+            typename FieldMetadata::cpp_field_type>(FieldMetadata::kFieldId));
   }
 
   template <typename FieldMetadata>
@@ -105,6 +109,7 @@ class TracedProto {
 
  private:
   friend class EventContext;
+  friend class TracedValue;
   // Allow TracedProto<Foo> to create TracedProto<Bar>.
   template <typename T>
   friend class TracedProto;
@@ -112,7 +117,7 @@ class TracedProto {
   // Wraps a raw protozero message using the same context as the current object.
   template <typename ChildMessageType>
   TracedProto<ChildMessageType> Wrap(ChildMessageType* message) {
-    return TracedProto(message, context_);
+    return TracedProto<ChildMessageType>(message, context_);
   }
 
   // Context might be null here when writing typed message which is
@@ -127,6 +132,9 @@ class TracedProto {
   MessageType* const message_;
   EventContext* context_;
 };
+
+template <typename MessageType, typename ValueType>
+void WriteIntoTracedProto(TracedProto<MessageType> message, ValueType&& value);
 
 namespace internal {
 
@@ -171,8 +179,8 @@ struct TypedProtoWriterImpl<
     protozero::proto_utils::RepetitionType::kNotRepeated> {
   template <typename Proto, typename ValueType>
   static void Write(TracedProto<Proto> context, ValueType&& value) {
-    // TODO(altimin): support TraceFormatTraits here.
-    value.WriteIntoTrace(context.template WriteNestedMessage<FieldMetadata>());
+    WriteIntoTracedProto(context.template WriteNestedMessage<FieldMetadata>(),
+                         std::forward<ValueType>(value));
   }
 };
 
@@ -184,12 +192,39 @@ struct TypedProtoWriterImpl<
     protozero::proto_utils::RepetitionType::kRepeatedNotPacked> {
   template <typename Proto, typename ValueType>
   static void Write(TracedProto<Proto> context, ValueType&& value) {
-    // TODO(altimin): support TraceFormatTraits here.
     for (auto&& item : value) {
-      item.WriteIntoTrace(context.template WriteNestedMessage<FieldMetadata>());
+      WriteIntoTracedProto(context.template WriteNestedMessage<FieldMetadata>(),
+                           item);
     }
   }
 };
+
+constexpr int kMaxWriteTracedProtoImplPriority = 1;
+
+// If perfetto::TraceFormatTraits<T>::WriteIntoTrace(TracedProto<MessageType>,
+// T) is available, use it.
+template <typename MessageType, typename T>
+decltype(TraceFormatTraits<base::remove_cvref_t<T>>::WriteIntoTrace(
+             std::declval<TracedProto<MessageType>>(),
+             std::declval<T>()),
+         void())
+WriteIntoTracedProtoImpl(base::priority_tag<1>,
+                         TracedProto<MessageType> message,
+                         T&& value) {
+  TraceFormatTraits<base::remove_cvref_t<T>>::WriteIntoTrace(
+      std::move(message), std::forward<T>(value));
+}
+
+// If T has WriteIntoTrace(TracedProto<MessageType>) method, use it.
+template <typename MessageType, typename T>
+decltype(
+    std::declval<T>().WriteIntoTrace(std::declval<TracedProto<MessageType>>()),
+    void())
+WriteIntoTracedProtoImpl(base::priority_tag<0>,
+                         TracedProto<MessageType> message,
+                         T&& value) {
+  value.WriteIntoTrace(std::move(message));
+}
 
 // TypedProtoWriter takes the protozero message (TracedProto<MessageType>),
 // field description (FieldMetadata) and value and writes the given value
@@ -227,8 +262,50 @@ struct TypedProtoWriter {
 
 }  // namespace internal
 
+// Helper template to determine if a given type can be passed to
+// perfetto::WriteIntoTracedProto. These templates will fail to resolve if the
+// class does not have necesary support, so they are useful for SFINAE and for
+// producing helpful compiler error messages.
+template <typename MessageType, typename ValueType, typename Result = void>
+using check_traced_proto_support_t =
+    decltype(internal::WriteIntoTracedProtoImpl(
+        std::declval<
+            base::priority_tag<internal::kMaxWriteTracedProtoImplPriority>>(),
+        std::declval<TracedProto<MessageType>>(),
+        std::declval<ValueType>()));
+
+// check_traced_proto_support<MessageType, T, V>::type is defined (and equal to
+// V) iff T supports being passed to WriteIntoTracedProto together with
+// TracedProto<MessageType>. See the comment in traced_value_forward.h for more
+// details.
+template <typename MessageType, typename ValueType, class Result>
+struct check_traced_proto_support<
+    MessageType,
+    ValueType,
+    Result,
+    check_traced_proto_support_t<MessageType, ValueType, Result>> {
+  static constexpr bool value = true;
+  using type = Result;
+};
+
+template <typename MessageType, typename ValueType>
+void WriteIntoTracedProto(TracedProto<MessageType> message, ValueType&& value) {
+  // TODO(altimin): Add a URL to the documentation and a list of common failure
+  // patterns.
+  static_assert(
+      std::is_same<check_traced_proto_support_t<MessageType, ValueType>,
+                   void>::value,
+      "The provided type does not support being serialised into the "
+      "provided protozero message. Please see the comment in traced_proto.h "
+      "for more details.");
+
+  internal::WriteIntoTracedProtoImpl(
+      base::priority_tag<internal::kMaxWriteTracedProtoImplPriority>(),
+      std::move(message), std::forward<ValueType>(value));
+}
+
 template <typename MessageType, typename FieldMetadataType, typename ValueType>
-void WriteIntoTracedProto(
+void WriteTracedProtoField(
     TracedProto<MessageType> message,
     protozero::proto_utils::internal::FieldMetadataHelper<FieldMetadataType>,
     ValueType&& value) {

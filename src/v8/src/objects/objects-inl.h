@@ -205,7 +205,7 @@ DEF_GETTER(HeapObject, IsUniqueName, bool) {
 }
 
 DEF_GETTER(HeapObject, IsFunction, bool) {
-  return IsJSFunctionOrBoundFunction();
+  return IsJSFunctionOrBoundFunctionOrWrappedFunction();
 }
 
 DEF_GETTER(HeapObject, IsCallable, bool) {
@@ -1120,7 +1120,8 @@ Object Object::GetSimpleHash(Object object) {
     uint32_t hash = ComputeUnseededHash(Smi::ToInt(object));
     return Smi::FromInt(hash & Smi::kMaxValue);
   }
-  if (object.IsHeapNumber()) {
+  auto instance_type = HeapObject::cast(object).map().instance_type();
+  if (InstanceTypeChecker::IsHeapNumber(instance_type)) {
     double num = HeapNumber::cast(object).value();
     if (std::isnan(num)) return Smi::FromInt(Smi::kMaxValue);
     // Use ComputeUnseededHash for all values in Signed32 range, including -0,
@@ -1133,20 +1134,16 @@ Object Object::GetSimpleHash(Object object) {
       hash = ComputeLongHash(base::double_to_uint64(num));
     }
     return Smi::FromInt(hash & Smi::kMaxValue);
-  }
-  if (object.IsName()) {
+  } else if (InstanceTypeChecker::IsName(instance_type)) {
     uint32_t hash = Name::cast(object).EnsureHash();
     return Smi::FromInt(hash);
-  }
-  if (object.IsOddball()) {
+  } else if (InstanceTypeChecker::IsOddball(instance_type)) {
     uint32_t hash = Oddball::cast(object).to_string().EnsureHash();
     return Smi::FromInt(hash);
-  }
-  if (object.IsBigInt()) {
+  } else if (InstanceTypeChecker::IsBigInt(instance_type)) {
     uint32_t hash = BigInt::cast(object).Hash();
     return Smi::FromInt(hash & Smi::kMaxValue);
-  }
-  if (object.IsSharedFunctionInfo()) {
+  } else if (InstanceTypeChecker::IsSharedFunctionInfo(instance_type)) {
     uint32_t hash = SharedFunctionInfo::cast(object).Hash();
     return Smi::FromInt(hash & Smi::kMaxValue);
   }
@@ -1162,6 +1159,51 @@ Object Object::GetHash() {
   DCHECK(IsJSReceiver());
   JSReceiver receiver = JSReceiver::cast(*this);
   return receiver.GetIdentityHash();
+}
+
+bool Object::IsShared() const {
+  // This logic should be kept in sync with fast paths in
+  // CodeStubAssembler::SharedValueBarrier.
+
+  // Smis are trivially shared.
+  if (IsSmi()) return true;
+
+  HeapObject object = HeapObject::cast(*this);
+
+  // RO objects are shared when the RO space is shared.
+  if (IsReadOnlyHeapObject(object)) {
+    return ReadOnlyHeap::IsReadOnlySpaceShared();
+  }
+
+  // Check if this object is already shared.
+  switch (object.map().instance_type()) {
+    case SHARED_STRING_TYPE:
+    case SHARED_ONE_BYTE_STRING_TYPE:
+    case JS_SHARED_STRUCT_TYPE:
+      DCHECK(object.InSharedHeap());
+      return true;
+    case INTERNALIZED_STRING_TYPE:
+    case ONE_BYTE_INTERNALIZED_STRING_TYPE:
+      if (FLAG_shared_string_table) {
+        DCHECK(object.InSharedHeap());
+        return true;
+      }
+      return false;
+    case HEAP_NUMBER_TYPE:
+      return object.InSharedWritableHeap();
+    default:
+      return false;
+  }
+}
+
+// static
+MaybeHandle<Object> Object::Share(Isolate* isolate, Handle<Object> value,
+                                  ShouldThrow throw_if_cannot_be_shared) {
+  // Sharing values requires the RO space be shared.
+  DCHECK(ReadOnlyHeap::IsReadOnlySpaceShared());
+  if (value->IsShared()) return value;
+  return ShareSlow(isolate, Handle<HeapObject>::cast(value),
+                   throw_if_cannot_be_shared);
 }
 
 Handle<Object> ObjectHashTableShape::AsHandle(Handle<Object> key) {

@@ -920,6 +920,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip(glMsaaConfig, "gm", ALL, "imageblurtiled")
 			skip(glMsaaConfig, "gm", ALL, "imagefiltersbase")
 		}
+
+		skip(ALL, "tests", ALL, "SkSLUnaryPositiveNegative_GPU")
 	}
 
 	if b.matchGpu("Adreno[3456]") { // disable broken tests on Adreno 3/4/5/6xx
@@ -934,13 +936,6 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip(ALL, "tests", ALL, "DSLFPTest_SwitchStatement")  // skia:11891
 		skip(ALL, "tests", ALL, "SkSLMatrixToVectorCast_GPU") // skia:12192
 		skip(ALL, "tests", ALL, "SkSLStructsInFunctions_GPU") // skia:11929
-	}
-
-	if b.matchGpu("Adreno6") || b.matchGpu("MaliG77") || b.matchGpu("QuadroP400") {
-		skip(ALL, "tests", ALL, "SkSLRecursiveComparison_Arrays_GPU") // skia:12642
-		skip(ALL, "tests", ALL, "SkSLRecursiveComparison_Structs_GPU")
-		skip(ALL, "tests", ALL, "SkSLRecursiveComparison_Types_GPU")
-		skip(ALL, "tests", ALL, "SkSLRecursiveComparison_Vectors_GPU")
 	}
 
 	if b.matchGpu("Adreno6") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 6xx GLSL
@@ -1001,8 +996,21 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			// Various Nvidia GPUs crash or generate errors when assembling weird matrices
 			skip(ALL, "tests", ALL, "SkSLMatrixConstructorsES2_GPU") // skia:12443
 			skip(ALL, "tests", ALL, "SkSLMatrixConstructorsES3_GPU") // skia:12443
+
+			// Nvidia drivers erroneously constant-fold expressions with side-effects in matrix and
+			// vector constructors when compiling GLSL.
+			skip(ALL, "tests", ALL, "SkSLPreserveSideEffects_GPU") // skia:13035
 		}
+	}
+
+	if b.gpu("Tegra3") && !b.extraConfig("Vulkan") {
+		// Fails on Tegra3 w/ OpenGL ES
 		skip(ALL, "tests", ALL, "SkSLMatrixFoldingES2_GPU") // skia:11919
+	}
+
+	if b.gpu("QuadroP400") && b.matchOs("Ubuntu") && b.matchModel("Golo") {
+		// Fails on Ubuntu18-Golo bots with QuadroP400 GPUs on Vulkan and OpenGL
+		skip(ALL, "tests", ALL, "SkSLPreserveSideEffects_GPU") // skia:13035
 	}
 
 	if b.gpu("PowerVRGE8320") || b.gpu("Tegra3") || b.gpu("Adreno308") {
@@ -1152,6 +1160,11 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	}
 
 	if b.matchOs("Mac") && b.gpu("IntelHD615") {
+		// skia:7603
+		match = append(match, "~^GrMeshTest$")
+	}
+
+	if b.matchOs("Mac") && b.gpu("IntelIrisPlus") {
 		// skia:7603
 		match = append(match, "~^GrMeshTest$")
 	}

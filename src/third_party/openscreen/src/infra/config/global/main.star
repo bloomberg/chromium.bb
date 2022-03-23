@@ -176,14 +176,12 @@ def builder(builder_type, name, properties, os, cpu):
         cpu: the target central processing unit.
     """
     recipe_id = "openscreen"
-    use_python3 = False
+    use_python3 = True
     if properties:
         if "builder_group" in properties:
             recipe_id = "chromium"
-            use_python3 = True
         elif "runhooks" in properties:
             recipe_id = "run_presubmit"
-            use_python3 = True
 
     caches = []
     if os == MAC_VERSION:

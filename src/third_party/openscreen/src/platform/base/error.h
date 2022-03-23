@@ -132,6 +132,9 @@ class Error {
     // The pathlen constraint of the root certificate was exceeded.
     kErrCertsPathlen,
 
+    // The certificate provided could not be serialized.
+    kErrCertSerialize,
+
     // Cast authentication errors.
     kCastV2PeerCertEmpty,
     kCastV2WrongPayloadType,

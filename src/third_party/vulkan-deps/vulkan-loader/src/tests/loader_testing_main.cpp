@@ -50,7 +50,10 @@ int main(int argc, char** argv) {
 
     // make sure the tests don't find these env-vars if they were set on the system
     remove_env_var("VK_ICD_FILENAMES");
+    remove_env_var("VK_DRIVER_FILES");
+    remove_env_var("VK_ADD_DRIVER_FILES");
     remove_env_var("VK_LAYER_PATH");
+    remove_env_var("VK_ADD_LAYER_PATH");
     remove_env_var("VK_INSTANCE_LAYERS");
     remove_env_var("VK_LOADER_DEBUG");
     remove_env_var("VK_LOADER_DISABLE_INST_EXT_FILTER");
@@ -65,24 +68,8 @@ int main(int argc, char** argv) {
     set_env_var("HOME", "/home/fake_home");
 #endif
 
-#if defined(_WIN32)
-    // Death tests call main twice, this causes the override to be set up multiple times.
-    // Use an env-var to signal whether the override has been set up.
-    uint32_t random_base_path = 0;
-    std::string env_var{"size_large_enough"};
-    DWORD has_not_setup_tests = GetEnvironmentVariable("VK_LOADER_TEST_REGISTRY_IS_SETUP", (LPSTR)env_var.c_str(), 256);
-    if (has_not_setup_tests == 0) {
-        random_base_path = setup_override(DebugMode::none);
-        set_env_var("VK_LOADER_TEST_REGISTRY_IS_SETUP", "SETUP");
-    }
-#endif
-
     ::testing::InitGoogleTest(&argc, argv);
     int result = RUN_ALL_TESTS();
-#if defined(_WIN32)
-    if (has_not_setup_tests == 0) {
-        clear_override(DebugMode::none, random_base_path);
-    }
-#endif
+
     return result;
 }

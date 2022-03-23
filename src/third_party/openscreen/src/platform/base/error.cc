@@ -166,6 +166,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "ErrCertsRevoked";
     case Error::Code::kErrCertsPathlen:
       return os << "ErrCertsPathlen";
+    case Error::Code::kErrCertSerialize:
+      return os << "ErrCertSerialize";
     case Error::Code::kUnknownError:
       return os << "UnknownError";
     case Error::Code::kNotImplemented:

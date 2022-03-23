@@ -43,6 +43,7 @@
 <translation id="3344973607274501920">Chromium konnte Ihre Passwörter nicht prüfen. Prüfen Sie Ihre Internetverbindung.</translation>
 <translation id="3472200483164753384">Wird von Chromium Canary nicht unterstützt</translation>
 <translation id="3639997914391704523">Chromium kann Ihre Passwörter prüfen, wenn Sie sich mit Ihrem Google-Konto anmelden.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> hat Chromium genutzt und Lesezeichen, Passwörter und andere Einstellungen auf diesem Gerät festgelegt.</translation>
 <translation id="3805899903892079518">Chromium hat keinen Zugriff auf Ihre Fotos und Videos. Aktivieren Sie den Zugriff unter "iOS-Einstellungen &gt; Datenschutz &gt; Fotos".</translation>
 <translation id="4043291146360695975">Passwörter werden auf diesem Gerät nur im Passwortmanager gespeichert.</translation>
 <translation id="4099085513035183040">Wird von Chromium Beta nicht unterstützt</translation>
@@ -54,6 +55,13 @@
 <translation id="4828317641996116749">Chromium konnte nicht alle Passwörter prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="4985291216379576555">Offline, Chromium kann nicht nach Aktualisierungen suchen</translation>
 <translation id="4999538639245140991">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chromium-Daten von diesem Gerät gelöscht. Sie bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
+<translation id="5039881550736388123">Wenn aktiviert:
+<ph name="BEGIN_INDENT" />  • Sie helfen, Chromium für Nutzer zu optimieren, die es genauso verwenden wie Sie.<ph name="END_INDENT" />
+
+Wichtige Hinweise:
+<ph name="BEGIN_INDENT" />  • Daten zu Ihrer Chromium-Nutzung werden an Google gesendet, können aber nicht mit Ihnen in Verbindung gebracht werden.
+  • Falls Chromium abstürzt, können die Details zum Absturz einige personenbezogene Daten enthalten.
+  • Falls Sie die Synchronisierung aktivieren, können die Messwerte auch Informationen zu den von Ihnen besuchten URLs enthalten.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">In Chromium anmelden</translation>
 <translation id="5224391634244552924">Keine gespeicherten Passwörter. Chromium kann Ihre Passwörter prüfen, wenn Sie sie speichern.</translation>
 <translation id="5308226104666789935">Chromium kann nicht nach Aktualisierungen suchen</translation>
@@ -64,6 +72,7 @@
 <translation id="5777187867430702742">Chromium-Seite</translation>
 <translation id="5862307444128926510">Willkommen bei Chromium</translation>
 <translation id="5945387852661427312">Sie melden sich mit einem von <ph name="DOMAIN" /> verwalteten Konto an und geben dem Administrator der Domain Kontrolle über Ihre Chromium-Daten. Die Daten werden diesem Konto dauerhaft zugeordnet. Wenn Sie sich von Chromium abmelden, werden Ihre Daten auf dem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
+<translation id="5983312940147103417">Chromium verbessern</translation>
 <translation id="602807004951640891">Wenn Sie Chromium nutzen, stimmen Sie damit den <ph name="BEGIN_LINK_TOS" />Nutzungsbedingungen<ph name="END_LINK_TOS" /> zu.</translation>
 <translation id="6119647025869519954">So legen Sie Chromium als Standardbrowser fest:
 1. Öffnen Sie die Einstellungen

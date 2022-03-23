@@ -193,6 +193,7 @@
 // Need to explicitly add "root"
         "root",
 
+        "af",
         "am",
         "ar",
         "bg",
@@ -246,6 +247,7 @@
         "tl",
         "tr",
         "uk",
+        "ur",
         "vi",
         "zh"
       ]
@@ -268,6 +270,7 @@
 // Need to explicitly add "root"
             "root",
 
+            "af",
             "am",
             "ar",
             "bg",
@@ -320,6 +323,7 @@
             "tl",
             "tr",
             "uk",
+            "ur",
             "vi",
             "zh"
           ]
@@ -343,6 +347,7 @@
 // Need to explicitly add "root"
         "root",
 
+        "af",
         "am",
         "ar",
         "bg",
@@ -396,6 +401,7 @@
         "tl",
         "tr",
         "uk",
+        "ur",
         "vi",
         "zh"
       ]
@@ -418,6 +424,7 @@
 // Need to explicitly add "root"
         "root",
 
+        "af",
         "am",
         "ar",
         "bg",
@@ -471,6 +478,7 @@
         "tl",
         "tr",
         "uk",
+        "ur",
         "vi",
         "zh"
       ]
@@ -487,6 +495,7 @@
 // Need to explicitly add "tzdbNames"
         "tzdbNames",
 
+        "af",
         "am",
         "ar",
         "bg",
@@ -540,6 +549,7 @@
         "tl",
         "tr",
         "uk",
+        "ur",
         "vi",
         "zh"
       ]
@@ -814,7 +824,6 @@
         "includelist": [
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
           "ach",
-          "af",
           "ak",
           "an",
           "ast",
@@ -909,7 +918,6 @@
           "tum",
           "tw",
           "ug",
-          "ur",
           "uz",
           "wa",
           "wo",
@@ -931,7 +939,6 @@
     },
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
     {"categories":["lang_tree"],"files":{"includelist":["ach"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ach"] },
-    {"categories":["lang_tree"],"files":{"includelist":["af"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/af"] },
     {"categories":["lang_tree"],"files":{"includelist":["ak"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ak"] },
     {"categories":["lang_tree"],"files":{"includelist":["an"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/an"] },
     {"categories":["lang_tree"],"files":{"includelist":["ast"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ast"] },
@@ -1022,7 +1029,6 @@
     {"categories":["lang_tree"],"files":{"includelist":["tum"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/tum"] },
     {"categories":["lang_tree"],"files":{"includelist":["tw"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/tw"] },
     {"categories":["lang_tree"],"files":{"includelist":["ug"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ug"] },
-    {"categories":["lang_tree"],"files":{"includelist":["ur"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/ur"] },
     {"categories":["lang_tree"],"files":{"includelist":["uz"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/uz"] },
     {"categories":["lang_tree"],"files":{"includelist":["wa"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/wa"] },
     {"categories":["lang_tree"],"files":{"includelist":["wo"]},"rules":["-/*","+/%%ALIAS","+/%%Parent","+/Languages/wo"] },

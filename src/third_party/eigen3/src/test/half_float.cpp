@@ -157,6 +157,12 @@ void test_numtraits()
   VERIFY( (std::numeric_limits<half>::denorm_min)() > half(0.f) );
   VERIFY( (std::numeric_limits<half>::min)()/half(2) > half(0.f) );
   VERIFY_IS_EQUAL( (std::numeric_limits<half>::denorm_min)()/half(2), half(0.f) );
+
+  // Test to see that we are able to link against the symbols for digits and
+  // digits10.
+  volatile const int& digits10 = std::numeric_limits<half>::digits10;
+  volatile const int& digits = std::numeric_limits<half>::digits;
+  VERIFY( (digits10) != (digits) );
 }
 
 void test_arithmetic()

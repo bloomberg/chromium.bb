@@ -629,7 +629,10 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       const int coeff_ctx = coeff_contexts[pos];
       const tran_low_t v = qcoeff[pos];
       const tran_low_t level = abs(v);
-      td->abs_sum_level += level;
+      /* abs_sum_level is needed to decide the job scheduling order of
+       * pack bitstream multi-threading. This data is not needed if
+       * multi-threading is disabled. */
+      if (cpi->mt_info.pack_bs_mt_enabled) td->abs_sum_level += level;
 
       if (allow_update_cdf) {
         if (c == eob - 1) {
@@ -761,6 +764,9 @@ void av1_record_txb_context(int plane, int block, int blk_row, int blk_col,
                          td->counts, 0 /*allow_update_cdf*/);
 
     const TX_CLASS tx_class = tx_type_to_class[tx_type];
+    const bool do_coeff_scan = true;
+#else
+    const bool do_coeff_scan = cpi->mt_info.pack_bs_mt_enabled;
 #endif
     const int16_t *const scan = scan_order->scan;
 
@@ -777,11 +783,14 @@ void av1_record_txb_context(int plane, int block, int blk_row, int blk_col,
                             coeff_contexts);
 #endif
 
-    for (int c = eob - 1; c >= 0; --c) {
+    for (int c = eob - 1; (c >= 0) && do_coeff_scan; --c) {
       const int pos = scan[c];
       const tran_low_t v = qcoeff[pos];
       const tran_low_t level = abs(v);
-      td->abs_sum_level += level;
+      /* abs_sum_level is needed to decide the job scheduling order of
+       * pack bitstream multi-threading. This data is not needed if
+       * multi-threading is disabled. */
+      if (cpi->mt_info.pack_bs_mt_enabled) td->abs_sum_level += level;
 
 #if CONFIG_ENTROPY_STATS
       const int coeff_ctx = coeff_contexts[pos];

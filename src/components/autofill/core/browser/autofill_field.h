@@ -146,6 +146,11 @@ class AutofillField : public FormFieldData {
   // field).
   bool IsFieldFillable() const;
 
+  // Returns true if suggestion prompts should not be shown for this field.
+  // Currently, prompts are suppressed if the autocomplete attribute is
+  // unrecognized unless it is a credit card form related field.
+  bool ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute() const;
+
   void set_initial_value_hash(uint32_t value) { initial_value_hash_ = value; }
   absl::optional<uint32_t> initial_value_hash() { return initial_value_hash_; }
 
@@ -205,7 +210,7 @@ class AutofillField : public FormFieldData {
   // Getter and Setter methods for
   // |value_not_autofilled_over_existing_value_hash_|.
   void set_value_not_autofilled_over_existing_value_hash(
-      size_t value_not_autofilled_over_existing_value_hash) {
+      absl::optional<size_t> value_not_autofilled_over_existing_value_hash) {
     value_not_autofilled_over_existing_value_hash_ =
         value_not_autofilled_over_existing_value_hash;
   }

@@ -239,6 +239,7 @@ dawn_test("dawn_unittests") {
     "unittests/ToBackendTests.cpp",
     "unittests/TypedIntegerTests.cpp",
     "unittests/native/CommandBufferEncodingTests.cpp",
+    "unittests/native/CreatePipelineAsyncTaskTests.cpp",
     "unittests/native/DestroyObjectTests.cpp",
     "unittests/native/DeviceCreationTests.cpp",
     "unittests/validation/BindGroupValidationTests.cpp",
@@ -533,6 +534,7 @@ source_set("white_box_tests_sources") {
   if (dawn_enable_d3d12) {
     sources += [
       "white_box/D3D12DescriptorHeapTests.cpp",
+      "white_box/D3D12GPUTimestampCalibrationTests.cpp",
       "white_box/D3D12ResidencyTests.cpp",
       "white_box/D3D12ResourceHeapTests.cpp",
     ]

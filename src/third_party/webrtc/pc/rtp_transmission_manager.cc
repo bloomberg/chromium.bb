@@ -10,7 +10,7 @@
 
 #include "pc/rtp_transmission_manager.h"
 
-#include <algorithm>
+#include <type_traits>
 #include <utility>
 
 #include "absl/types/optional.h"
@@ -23,6 +23,7 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/ref_counted_object.h"
 
 namespace webrtc {
 
@@ -459,13 +460,14 @@ void RtpTransmissionManager::CreateAudioReceiver(
   // TODO(https://crbug.com/webrtc/9480): When we remove remote_streams(), use
   // the constructor taking stream IDs instead.
   auto audio_receiver = rtc::make_ref_counted<AudioRtpReceiver>(
-      worker_thread(), remote_sender_info.sender_id, streams, IsUnifiedPlan());
-  audio_receiver->SetMediaChannel(voice_media_channel());
+      worker_thread(), remote_sender_info.sender_id, streams, IsUnifiedPlan(),
+      voice_media_channel());
   if (remote_sender_info.sender_id == kDefaultAudioSenderId) {
     audio_receiver->SetupUnsignaledMediaChannel();
   } else {
     audio_receiver->SetupMediaChannel(remote_sender_info.first_ssrc);
   }
+
   auto receiver = RtpReceiverProxyWithInternal<RtpReceiverInternal>::Create(
       signaling_thread(), worker_thread(), std::move(audio_receiver));
   GetAudioTransceiver()->internal()->AddReceiver(receiver);
@@ -483,12 +485,13 @@ void RtpTransmissionManager::CreateVideoReceiver(
   // the constructor taking stream IDs instead.
   auto video_receiver = rtc::make_ref_counted<VideoRtpReceiver>(
       worker_thread(), remote_sender_info.sender_id, streams);
-  video_receiver->SetMediaChannel(video_media_channel());
-  if (remote_sender_info.sender_id == kDefaultVideoSenderId) {
-    video_receiver->SetupUnsignaledMediaChannel();
-  } else {
-    video_receiver->SetupMediaChannel(remote_sender_info.first_ssrc);
-  }
+
+  video_receiver->SetupMediaChannel(
+      remote_sender_info.sender_id == kDefaultVideoSenderId
+          ? absl::nullopt
+          : absl::optional<uint32_t>(remote_sender_info.first_ssrc),
+      video_media_channel());
+
   auto receiver = RtpReceiverProxyWithInternal<RtpReceiverInternal>::Create(
       signaling_thread(), worker_thread(), std::move(video_receiver));
   GetVideoTransceiver()->internal()->AddReceiver(receiver);

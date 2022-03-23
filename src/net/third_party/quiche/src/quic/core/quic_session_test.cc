@@ -28,7 +28,6 @@
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_flags.h"
-#include "quic/platform/api/quic_mem_slice_storage.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/mock_quic_session_visitor.h"
 #include "quic/test_tools/quic_config_peer.h"
@@ -39,6 +38,7 @@
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
+#include "common/quiche_mem_slice_storage.h"
 
 using spdy::kV3HighestPriority;
 using spdy::SpdyPriority;
@@ -190,7 +190,7 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
 
   bool encryption_established_;
   bool one_rtt_keys_available_;
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
 };
 
 class TestStream : public QuicStream {
@@ -352,14 +352,12 @@ class TestSession : public QuicSession {
   }
 
   QuicConsumedData SendStreamData(QuicStream* stream) {
-    struct iovec iov;
     if (!QuicUtils::IsCryptoStreamId(connection()->transport_version(),
                                      stream->id()) &&
         this->connection()->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
       this->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
-    MakeIOVector("not empty", &iov);
-    QuicStreamPeer::SendBuffer(stream).SaveStreamData(&iov, 1, 0, 9);
+    QuicStreamPeer::SendBuffer(stream).SaveStreamData("not empty");
     QuicConsumedData consumed =
         WritevData(stream->id(), 9, 0, FIN, NOT_RETRANSMISSION,
                    GetEncryptionLevelToSendApplicationData());
@@ -1411,8 +1409,7 @@ TEST_P(QuicSessionTestServer, InvalidGoAway) {
 // Test that server session will send a connectivity probe in response to a
 // connectivity probe on the same path.
 TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbe) {
-  if (connection_->send_path_response() &&
-      VersionHasIetfQuicFrames(transport_version())) {
+  if (VersionHasIetfQuicFrames(transport_version())) {
     return;
   }
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
@@ -1427,62 +1424,14 @@ TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbe) {
       QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, WritePacket(_, _, _, new_peer_address, _))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
-  if (connection_->send_path_response()) {
+
     EXPECT_CALL(*connection_, SendConnectivityProbingPacket(_, _))
         .WillOnce(
             Invoke(connection_,
                    &MockQuicConnection::ReallySendConnectivityProbingPacket));
-  } else {
-    EXPECT_CALL(*connection_, SendConnectivityProbingResponsePacket(_))
-        .WillOnce(Invoke(
-            connection_,
-            &MockQuicConnection::ReallySendConnectivityProbingResponsePacket));
-  }
-  if (VersionHasIetfQuicFrames(transport_version())) {
-    // Need to explicitly do this to emulate the reception of a PathChallenge,
-    // which stores its payload for use in generating the response.
-    connection_->OnPathChallengeFrame(
-        QuicPathChallengeFrame(0, path_frame_buffer1_));
-  }
   session_.OnPacketReceived(session_.self_address(), new_peer_address,
                             /*is_connectivity_probe=*/true);
   EXPECT_EQ(old_peer_address, session_.peer_address());
-}
-
-// Same as above, but check that if there are two PATH_CHALLENGE frames in the
-// packet, the response has both of them AND we do not do migration.  This for
-// IETF QUIC only.
-TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbes) {
-  if (connection_->send_path_response() ||
-      !VersionHasIetfQuicFrames(transport_version())) {
-    return;
-  }
-  connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-  QuicSocketAddress old_peer_address =
-      QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort);
-  EXPECT_EQ(old_peer_address, session_.peer_address());
-
-  MockPacketWriter* writer = static_cast<MockPacketWriter*>(
-      QuicConnectionPeer::GetWriter(session_.connection()));
-  // CheckMultiPathResponse validates that the written packet
-  // contains both path responses.
-  EXPECT_CALL(*writer, WritePacket(_, _, _, old_peer_address, _))
-      .WillOnce(Invoke(this, &QuicSessionTestServer::CheckMultiPathResponse));
-
-  EXPECT_CALL(*connection_, SendConnectivityProbingResponsePacket(_))
-      .WillOnce(Invoke(
-          connection_,
-          &MockQuicConnection::ReallySendConnectivityProbingResponsePacket));
-  QuicConnectionPeer::SetLastHeaderFormat(connection_,
-                                          IETF_QUIC_SHORT_HEADER_PACKET);
-  // Need to explicitly do this to emulate the reception of a PathChallenge,
-  // which stores its payload for use in generating the response.
-  connection_->OnPathChallengeFrame(
-      QuicPathChallengeFrame(0, path_frame_buffer1_));
-  connection_->OnPathChallengeFrame(
-      QuicPathChallengeFrame(0, path_frame_buffer2_));
-  session_.OnPacketReceived(session_.self_address(), old_peer_address,
-                            /*is_connectivity_probe=*/true);
 }
 
 TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
@@ -2749,7 +2698,7 @@ TEST_P(QuicSessionTestServer, WritevDataOnReadUnidirectionalStream) {
       .Times(1);
   std::string body(100, '.');
   struct iovec iov = {const_cast<char*>(body.data()), body.length()};
-  QuicMemSliceStorage storage(
+  quiche::QuicheMemSliceStorage storage(
       &iov, 1, session_.connection()->helper()->GetStreamSendBufferAllocator(),
       1024);
   stream4->WriteMemSlices(storage.ToSpan(), false);
@@ -2765,7 +2714,7 @@ TEST_P(QuicSessionTestServer, WriteMemSlicesOnReadUnidirectionalStream) {
                   QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM, _, _))
       .Times(1);
   std::string data(1024, 'a');
-  std::vector<QuicMemSlice> buffers;
+  std::vector<quiche::QuicheMemSlice> buffers;
   buffers.push_back(MemSliceFromString(data));
   buffers.push_back(MemSliceFromString(data));
   stream4->WriteMemSlices(absl::MakeSpan(buffers), false);

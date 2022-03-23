@@ -93,6 +93,7 @@ devtools_svg_sources = [
   "ic_folder_local.svg",
   "ic_folder_network.svg",
   "ic_info_black_18dp.svg",
+  "ic_layers_16x16.svg",
   "ic_memory_16x16.svg",
   "ic_page_next_16x16_icon.svg",
   "ic_page_prev_16x16_icon.svg",
@@ -123,9 +124,11 @@ devtools_svg_sources = [
   "lighthouse_logo.svg",
   "link_icon.svg",
   "mediumIcons.svg",
+  "minus_icon.svg",
   "network_conditions_icon.svg",
   "network_panel_icon.svg",
   "node_search_icon.svg",
+  "plus_icon.svg",
   "preview_feature_video_thumbnail.svg",
   "refresh_12x12_icon.svg",
   "resizeDiagonal.svg",
@@ -140,6 +143,8 @@ devtools_svg_sources = [
   "three_dots_menu_icon.svg",
   "trash_bin_icon.svg",
   "treeoutlineTriangles.svg",
+  "triangle-collapsed.svg",
+  "triangle-expanded.svg",
   "warning_icon.svg",
 ]
 

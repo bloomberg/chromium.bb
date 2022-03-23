@@ -21,6 +21,7 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_random.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_context.h"
@@ -28,7 +29,7 @@
 #include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/cxx17_backports.h"
 #include "third_party/base/numerics/safe_conversions.h"
 #include "v8/include/v8-container.h"
@@ -37,8 +38,8 @@
 #include "v8/include/v8-primitive.h"
 #include "xfa/fgas/crt/cfgas_decimal.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
-#include "xfa/fxfa/fm2js/cxfa_fmparser.h"
-#include "xfa/fxfa/fm2js/cxfa_fmtojavascriptdepth.h"
+#include "xfa/fxfa/formcalc/cxfa_fmparser.h"
+#include "xfa/fxfa/formcalc/cxfa_fmtojavascriptdepth.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_localevalue.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
@@ -199,7 +200,7 @@ const XFA_FMHtmlReserveCode kReservesForEncode[] = {
     {9824, "spades"}, {9827, "clubs"},  {9829, "hearts"},  {9830, "diams"},
 };
 
-const FXJSE_FUNCTION_DESCRIPTOR kFormCalcFM2JSFunctions[] = {
+const FXJSE_FUNCTION_DESCRIPTOR kFormCalcFunctions[] = {
     {kFuncTag, "Abs", CFXJSE_FormCalcContext::Abs},
     {kFuncTag, "Avg", CFXJSE_FormCalcContext::Avg},
     {kFuncTag, "Ceil", CFXJSE_FormCalcContext::Ceil},
@@ -1665,15 +1666,15 @@ int GetValidatedPaymentPeriods(v8::Isolate* isolate, v8::Local<v8::Value> arg) {
 
 }  // namespace
 
-const FXJSE_CLASS_DESCRIPTOR kFormCalcFM2JSDescriptor = {
-    kClassTag,                              // tag
-    "XFA_FM2JS_FormCalcClass",              // name
-    kFormCalcFM2JSFunctions,                // methods
-    pdfium::size(kFormCalcFM2JSFunctions),  // number of methods
-    nullptr,                                // dynamic prop type
-    nullptr,                                // dynamic prop getter
-    nullptr,                                // dynamic prop setter
-    nullptr,                                // dynamic prop method call
+const FXJSE_CLASS_DESCRIPTOR kFormCalcDescriptor = {
+    kClassTag,                         // tag
+    "XFA_FormCalcClass",               // name
+    kFormCalcFunctions,                // methods
+    pdfium::size(kFormCalcFunctions),  // number of methods
+    nullptr,                           // dynamic prop type
+    nullptr,                           // dynamic prop getter
+    nullptr,                           // dynamic prop setter
+    nullptr,                           // dynamic prop method call
 };
 
 // static
@@ -3377,7 +3378,7 @@ void CFXJSE_FormCalcContext::UnitType(
     return;
   }
 
-  enum XFA_FM2JS_VALUETYPE_ParserStatus {
+  enum XFA_FormCalc_VALUETYPE_ParserStatus {
     VALUETYPE_START,
     VALUETYPE_HAVEINVALIDCHAR,
     VALUETYPE_HAVEDIGIT,
@@ -3396,7 +3397,7 @@ void CFXJSE_FormCalcContext::UnitType(
   while (IsWhitespace(pData[u]))
     u++;
 
-  XFA_FM2JS_VALUETYPE_ParserStatus eParserStatus = VALUETYPE_START;
+  XFA_FormCalc_VALUETYPE_ParserStatus eParserStatus = VALUETYPE_START;
   wchar_t typeChar;
   // TODO(dsinclair): Cleanup this parser, figure out what the various checks
   //    are for.
@@ -5253,6 +5254,8 @@ ByteString CFXJSE_FormCalcContext::GenerateSomExpression(ByteStringView bsName,
   if (bIsStar)
     return ByteString(bsName, "[*]");
 
+  // `iIndexFlags` values are the same as enum class
+  // `CXFA_FMIndexExpression::AccessorIndex` values.
   if (iIndexFlags == 0)
     return ByteString(bsName);
 
@@ -5263,12 +5266,17 @@ ByteString CFXJSE_FormCalcContext::GenerateSomExpression(ByteStringView bsName,
 
   const bool bNegative = iIndexValue < 0;
   ByteString bsSomExp(bsName);
-  if (iIndexFlags == 2)
+  if (iIndexFlags == 2) {
     bsSomExp += bNegative ? "[-" : "[+";
-  else
+  } else {
+    DCHECK_EQ(iIndexFlags, 3);
     bsSomExp += bNegative ? "[" : "[-";
-  iIndexValue = bNegative ? 0 - iIndexValue : iIndexValue;
-  bsSomExp += ByteString::FormatInteger(iIndexValue);
+  }
+
+  FX_SAFE_INT32 safe_index = iIndexValue;
+  if (bNegative)
+    safe_index = -safe_index;
+  bsSomExp += ByteString::FormatInteger(safe_index.ValueOrDefault(0));
   bsSomExp += "]";
   return bsSomExp;
 }
@@ -5300,12 +5308,11 @@ CFXJSE_FormCalcContext::CFXJSE_FormCalcContext(v8::Isolate* pIsolate,
                                                CFXJSE_Context* pScriptContext,
                                                CXFA_Document* pDoc)
     : m_pIsolate(pIsolate), m_pDocument(pDoc) {
-  m_Value.Reset(
-      m_pIsolate,
-      NewBoundV8Object(
-          m_pIsolate,
-          CFXJSE_Class::Create(pScriptContext, &kFormCalcFM2JSDescriptor, false)
-              ->GetTemplate(m_pIsolate)));
+  m_Value.Reset(m_pIsolate,
+                NewBoundV8Object(
+                    m_pIsolate, CFXJSE_Class::Create(
+                                    pScriptContext, &kFormCalcDescriptor, false)
+                                    ->GetTemplate(m_pIsolate)));
 }
 
 CFXJSE_FormCalcContext::~CFXJSE_FormCalcContext() = default;

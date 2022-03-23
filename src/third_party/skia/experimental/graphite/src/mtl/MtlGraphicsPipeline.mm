@@ -17,6 +17,7 @@
 #include "include/core/SkSpan.h"
 #include "include/gpu/ShaderErrorHandler.h"
 #include "include/private/SkSLString.h"
+#include "src/core/SkPipelineData.h"
 #include "src/core/SkShaderCodeDictionary.h"
 
 namespace skgpu::mtl {
@@ -59,6 +60,10 @@ std::string get_uniforms(SkSpan<const SkUniform> uniforms, int* offset, int mang
             case SkSLType::kHalf4:
                 result.append("half4");
                 *offset += 8 * count;
+                break;
+            case SkSLType::kInt:
+                result.append("int");
+                *offset += 4 * count;
                 break;
             default:
                 SkASSERT(0);
@@ -175,9 +180,9 @@ std::string get_sksl_vs(const GraphicsPipelineDesc& desc) {
 
 std::string get_sksl_fs(SkShaderCodeDictionary* dict,
                         const GraphicsPipelineDesc& desc,
-                        bool* writesColor) {
+                        SkPipelineData::BlendInfo* blendInfo) {
     if (!desc.paintParamsID().isValid()) {
-        *writesColor = false;
+        // TODO: we should return the error shader code here
         return {};
     }
 
@@ -185,7 +190,7 @@ std::string get_sksl_fs(SkShaderCodeDictionary* dict,
 
     dict->getShaderInfo(desc.paintParamsID(), &shaderInfo);
 
-    *writesColor = shaderInfo.writesColor();
+    *blendInfo = shaderInfo.blendInfo();
 #if SK_SUPPORT_GPU
     return shaderInfo.toSkSL();
 #else
@@ -323,14 +328,119 @@ MTLVertexDescriptor* create_vertex_descriptor(const RenderStep* step) {
     return vertexDescriptor;
 }
 
+// TODO: share this w/ Ganesh Metal backend?
+static MTLBlendFactor blend_coeff_to_mtl_blend(skgpu::BlendCoeff coeff) {
+    switch (coeff) {
+        case skgpu::BlendCoeff::kZero:
+            return MTLBlendFactorZero;
+        case skgpu::BlendCoeff::kOne:
+            return MTLBlendFactorOne;
+        case skgpu::BlendCoeff::kSC:
+            return MTLBlendFactorSourceColor;
+        case skgpu::BlendCoeff::kISC:
+            return MTLBlendFactorOneMinusSourceColor;
+        case skgpu::BlendCoeff::kDC:
+            return MTLBlendFactorDestinationColor;
+        case skgpu::BlendCoeff::kIDC:
+            return MTLBlendFactorOneMinusDestinationColor;
+        case skgpu::BlendCoeff::kSA:
+            return MTLBlendFactorSourceAlpha;
+        case skgpu::BlendCoeff::kISA:
+            return MTLBlendFactorOneMinusSourceAlpha;
+        case skgpu::BlendCoeff::kDA:
+            return MTLBlendFactorDestinationAlpha;
+        case skgpu::BlendCoeff::kIDA:
+            return MTLBlendFactorOneMinusDestinationAlpha;
+        case skgpu::BlendCoeff::kConstC:
+            return MTLBlendFactorBlendColor;
+        case skgpu::BlendCoeff::kIConstC:
+            return MTLBlendFactorOneMinusBlendColor;
+        case skgpu::BlendCoeff::kS2C:
+            if (@available(macOS 10.12, iOS 11.0, *)) {
+                return MTLBlendFactorSource1Color;
+            } else {
+                return MTLBlendFactorZero;
+            }
+        case skgpu::BlendCoeff::kIS2C:
+            if (@available(macOS 10.12, iOS 11.0, *)) {
+                return MTLBlendFactorOneMinusSource1Color;
+            } else {
+                return MTLBlendFactorZero;
+            }
+        case skgpu::BlendCoeff::kS2A:
+            if (@available(macOS 10.12, iOS 11.0, *)) {
+                return MTLBlendFactorSource1Alpha;
+            } else {
+                return MTLBlendFactorZero;
+            }
+        case skgpu::BlendCoeff::kIS2A:
+            if (@available(macOS 10.12, iOS 11.0, *)) {
+                return MTLBlendFactorOneMinusSource1Alpha;
+            } else {
+                return MTLBlendFactorZero;
+            }
+        case skgpu::BlendCoeff::kIllegal:
+            return MTLBlendFactorZero;
+    }
+
+    SK_ABORT("Unknown blend coefficient");
+}
+
+// TODO: share this w/ Ganesh Metal backend?
+static MTLBlendOperation blend_equation_to_mtl_blend_op(skgpu::BlendEquation equation) {
+    static const MTLBlendOperation gTable[] = {
+            MTLBlendOperationAdd,              // skgpu::BlendEquation::kAdd
+            MTLBlendOperationSubtract,         // skgpu::BlendEquation::kSubtract
+            MTLBlendOperationReverseSubtract,  // skgpu::BlendEquation::kReverseSubtract
+    };
+    static_assert(SK_ARRAY_COUNT(gTable) == (int)skgpu::BlendEquation::kFirstAdvanced);
+    static_assert(0 == (int)skgpu::BlendEquation::kAdd);
+    static_assert(1 == (int)skgpu::BlendEquation::kSubtract);
+    static_assert(2 == (int)skgpu::BlendEquation::kReverseSubtract);
+
+    SkASSERT((unsigned)equation < skgpu::kBlendEquationCnt);
+    return gTable[(int)equation];
+}
+
+static MTLRenderPipelineColorAttachmentDescriptor* create_color_attachment(
+        MTLPixelFormat format,
+        const SkPipelineData::BlendInfo& blendInfo) {
+
+    skgpu::BlendEquation equation = blendInfo.fEquation;
+    skgpu::BlendCoeff srcCoeff = blendInfo.fSrcBlend;
+    skgpu::BlendCoeff dstCoeff = blendInfo.fDstBlend;
+    bool blendOn = !skgpu::BlendShouldDisable(equation, srcCoeff, dstCoeff);
+
+    // TODO: I *think* this gets cleaned up by the pipelineDescriptor?
+    auto mtlColorAttachment = [[MTLRenderPipelineColorAttachmentDescriptor alloc] init];
+
+    mtlColorAttachment.pixelFormat = format;
+
+    mtlColorAttachment.blendingEnabled = blendOn;
+
+    if (blendOn) {
+        mtlColorAttachment.sourceRGBBlendFactor = blend_coeff_to_mtl_blend(srcCoeff);
+        mtlColorAttachment.destinationRGBBlendFactor = blend_coeff_to_mtl_blend(dstCoeff);
+        mtlColorAttachment.rgbBlendOperation = blend_equation_to_mtl_blend_op(equation);
+        mtlColorAttachment.sourceAlphaBlendFactor = blend_coeff_to_mtl_blend(srcCoeff);
+        mtlColorAttachment.destinationAlphaBlendFactor = blend_coeff_to_mtl_blend(dstCoeff);
+        mtlColorAttachment.alphaBlendOperation = blend_equation_to_mtl_blend_op(equation);
+    }
+
+    mtlColorAttachment.writeMask = blendInfo.fWritesColor ? MTLColorWriteMaskAll
+                                                          : MTLColorWriteMaskNone;
+
+    return mtlColorAttachment;
+}
+
 } // anonymous namespace
 
 std::string GetMtlUniforms(int bufferID,
                            const char* name,
-                           const std::vector<SkShaderInfo::SnippetEntry>& codeSnippets) {
+                           const std::vector<SkPaintParamsKey::BlockReader>& readers) {
     size_t numUniforms = 0;
-    for (auto e : codeSnippets) {
-        numUniforms += e.fUniforms.size();
+    for (auto r : readers) {
+        numUniforms += r.entry()->fUniforms.size();
     }
 
     if (!numUniforms) {
@@ -340,8 +450,8 @@ std::string GetMtlUniforms(int bufferID,
     int offset = 0;
 
     std::string result = get_uniform_header(bufferID, name);
-    for (int i = 0; i < (int) codeSnippets.size(); ++i) {
-        result += get_uniforms(codeSnippets[i].fUniforms, &offset, i);
+    for (int i = 0; i < (int) readers.size(); ++i) {
+        result += get_uniforms(readers[i].entry()->fUniforms, &offset, i);
     }
     result.append("};\n\n");
 
@@ -378,10 +488,10 @@ sk_sp<GraphicsPipeline> GraphicsPipeline::Make(ResourceProvider* resourceProvide
         return nullptr;
     }
 
-    bool writesColor;
+    SkPipelineData::BlendInfo blendInfo;
     auto dict = resourceProvider->shaderCodeDictionary();
     if (!SkSLToMSL(gpu,
-                   get_sksl_fs(dict, pipelineDesc, &writesColor),
+                   get_sksl_fs(dict, pipelineDesc, &blendInfo),
                    SkSL::ProgramKind::kFragment,
                    settings,
                    &msl[kFragment_ShaderType],
@@ -412,17 +522,11 @@ sk_sp<GraphicsPipeline> GraphicsPipeline::Make(ResourceProvider* resourceProvide
     // TODO: I *think* this gets cleaned up by the pipelineDescriptor?
     (*psoDescriptor).vertexDescriptor = create_vertex_descriptor(pipelineDesc.renderStep());
 
-    // TODO: I *think* this gets cleaned up by the pipelineDescriptor as well?
-    auto mtlColorAttachment = [[MTLRenderPipelineColorAttachmentDescriptor alloc] init];
-
     mtl::TextureInfo mtlTexInfo;
     renderPassDesc.fColorAttachment.fTextureInfo.getMtlTextureInfo(&mtlTexInfo);
 
-    mtlColorAttachment.pixelFormat = (MTLPixelFormat)mtlTexInfo.fFormat;
-
-    mtlColorAttachment.blendingEnabled = FALSE;
-
-    mtlColorAttachment.writeMask = writesColor ? MTLColorWriteMaskAll : MTLColorWriteMaskNone;
+    auto mtlColorAttachment = create_color_attachment((MTLPixelFormat)mtlTexInfo.fFormat,
+                                                      blendInfo);
 
     (*psoDescriptor).colorAttachments[0] = mtlColorAttachment;
 
@@ -462,7 +566,7 @@ sk_sp<GraphicsPipeline> GraphicsPipeline::Make(ResourceProvider* resourceProvide
                                  pipelineDesc.renderStep()->instanceStride()));
 }
 
-void GraphicsPipeline::onFreeGpuData() {
+void GraphicsPipeline::freeGpuData() {
     fPipelineState.reset();
 }
 

@@ -226,14 +226,14 @@ icu::StringPiece ToICUStringPiece(Isolate* isolate, Handle<String> string,
   DisallowGarbageCollection no_gc;
 
   const String::FlatContent& flat = string->GetFlatContent(no_gc);
-  if (!flat.IsOneByte()) return icu::StringPiece(nullptr, 0);
+  if (!flat.IsOneByte()) return icu::StringPiece();
 
   int32_t length = string->length();
   DCHECK_LT(offset, length);
   const char* char_buffer =
       reinterpret_cast<const char*>(flat.ToOneByteVector().begin());
   if (!String::IsAscii(char_buffer, length)) {
-    return icu::StringPiece(nullptr, 0);
+    return icu::StringPiece();
   }
 
   return icu::StringPiece(char_buffer + offset, length - offset);
@@ -2012,8 +2012,8 @@ MaybeHandle<JSObject> SupportedLocales(
   }
 
   // 5. Return CreateArrayFromList(supportedLocales).
-  PropertyAttributes attr = static_cast<PropertyAttributes>(NONE);
-  return CreateArrayFromList(isolate, supported_locales, attr);
+  return CreateArrayFromList(isolate, supported_locales,
+                             PropertyAttributes::NONE);
 }
 
 }  // namespace
@@ -2027,8 +2027,8 @@ MaybeHandle<JSArray> Intl::GetCanonicalLocales(Isolate* isolate,
   MAYBE_RETURN(maybe_ll, MaybeHandle<JSArray>());
 
   // 2. Return CreateArrayFromList(ll).
-  PropertyAttributes attr = static_cast<PropertyAttributes>(NONE);
-  return CreateArrayFromList(isolate, maybe_ll.FromJust(), attr);
+  return CreateArrayFromList(isolate, maybe_ll.FromJust(),
+                             PropertyAttributes::NONE);
 }
 
 namespace {
@@ -2897,12 +2897,9 @@ Maybe<bool> Intl::GetTimeZoneIndex(Isolate* isolate, Handle<String> identifier,
 // #sec-tointlmathematicalvalue
 MaybeHandle<Object> Intl::ToIntlMathematicalValueAsNumberBigIntOrString(
     Isolate* isolate, Handle<Object> input) {
-  // Strings are used to preserve arbitrary precision decimals, and are passed
-  // through to ICU.
-  if (input->IsNumber() || input->IsBigInt() || input->IsString())
-    return input;  // Shortcut.
-
-  // TODO(ftang) revisit the following later.
+  if (input->IsNumber() || input->IsBigInt()) return input;  // Shortcut.
+  // TODO(ftang) revisit the following after the resolution of
+  // https://github.com/tc39/proposal-intl-numberformat-v3/pull/82
   if (input->IsOddball()) {
     return Oddball::ToNumber(isolate, Handle<Oddball>::cast(input));
   }
@@ -2915,7 +2912,48 @@ MaybeHandle<Object> Intl::ToIntlMathematicalValueAsNumberBigIntOrString(
       JSReceiver::ToPrimitive(isolate, Handle<JSReceiver>::cast(input),
                               ToPrimitiveHint::kNumber),
       Object);
+  if (input->IsString()) UNIMPLEMENTED();
   return input;
+}
+
+Intl::FormatRangeSourceTracker::FormatRangeSourceTracker() {
+  start_[0] = start_[1] = limit_[0] = limit_[1] = 0;
+}
+
+void Intl::FormatRangeSourceTracker::Add(int32_t field, int32_t start,
+                                         int32_t limit) {
+  DCHECK_LT(field, 2);
+  start_[field] = start;
+  limit_[field] = limit;
+}
+
+Intl::FormatRangeSource Intl::FormatRangeSourceTracker::GetSource(
+    int32_t start, int32_t limit) const {
+  FormatRangeSource source = FormatRangeSource::kShared;
+  if (FieldContains(0, start, limit)) {
+    source = FormatRangeSource::kStartRange;
+  } else if (FieldContains(1, start, limit)) {
+    source = FormatRangeSource::kEndRange;
+  }
+  return source;
+}
+
+bool Intl::FormatRangeSourceTracker::FieldContains(int32_t field, int32_t start,
+                                                   int32_t limit) const {
+  DCHECK_LT(field, 2);
+  return (start_[field] <= start) && (start <= limit_[field]) &&
+         (start_[field] <= limit) && (limit <= limit_[field]);
+}
+
+Handle<String> Intl::SourceString(Isolate* isolate, FormatRangeSource source) {
+  switch (source) {
+    case FormatRangeSource::kShared:
+      return ReadOnlyRoots(isolate).shared_string_handle();
+    case FormatRangeSource::kStartRange:
+      return ReadOnlyRoots(isolate).startRange_string_handle();
+    case FormatRangeSource::kEndRange:
+      return ReadOnlyRoots(isolate).endRange_string_handle();
+  }
 }
 
 }  // namespace internal

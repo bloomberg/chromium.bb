@@ -50,10 +50,6 @@ div {
     display: block
 }
 
-layer {
-    display: block
-}
-
 article, aside, footer, header, hgroup, main, nav, section {
     display: block
 }
@@ -1159,6 +1155,10 @@ nobr {
 
 /* states */
 
+:-internal-selector-fragment-anchor {
+    outline: Highlight 3px solid;
+}
+
 :-internal-spatial-navigation-interest {
     outline: auto 1px -webkit-focus-ring-color !important;
     box-shadow: none !important
@@ -1388,6 +1388,7 @@ dialog:-internal-modal {
     /* 6px + 2em = border + padding, as by default box-sizing is content-box. */
     max-width: calc(100% - 6px - 2em);
     max-height: calc(100% - 6px - 2em);
+    user-select: text;
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the

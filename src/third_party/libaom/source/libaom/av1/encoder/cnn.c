@@ -151,6 +151,8 @@ void av1_find_cnn_layer_output_size(int in_width, int in_height,
                                     const CNN_LAYER_CONFIG *layer_config,
                                     int *out_width, int *out_height) {
   if (!layer_config->deconvolve) {
+    assert(layer_config->skip_width > 0);
+    assert(layer_config->skip_height > 0);
     switch (layer_config->pad) {
       case PADDING_SAME_ZERO:
       case PADDING_SAME_REPLICATE:
@@ -719,6 +721,7 @@ static void convolve_layer_mt(const float **input, int in_width, int in_height,
                               float **output, int out_stride) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   const int num_workers = thread_data->num_workers;
+  assert(thread_data->workers);
 
   CONVOLVE_OPS convolve_ops[CNN_MAX_THREADS];
   for (int th = 0; th < AOMMIN(num_workers, CNN_MAX_THREADS); ++th) {

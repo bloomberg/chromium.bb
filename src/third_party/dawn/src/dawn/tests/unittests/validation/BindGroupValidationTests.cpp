@@ -964,6 +964,33 @@ TEST_F(BindGroupLayoutValidationTest, DynamicAndTypeCompatibility) {
                 });
 }
 
+// Test that it is invalid to create a BGL with more than one binding type set.
+TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutEntryTooManySet) {
+    wgpu::BindGroupLayoutEntry entry = {};
+    entry.binding = 0;
+    entry.visibility = wgpu::ShaderStage::Fragment;
+    entry.buffer.type = wgpu::BufferBindingType::Uniform;
+    entry.sampler.type = wgpu::SamplerBindingType::Filtering;
+
+    wgpu::BindGroupLayoutDescriptor descriptor;
+    descriptor.entryCount = 1;
+    descriptor.entries = &entry;
+    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor),
+                        testing::HasSubstr("had more than one of"));
+}
+
+// Test that it is invalid to create a BGL with none one of buffer,
+// sampler, texture, storageTexture, or externalTexture set.
+TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutEntryNoneSet) {
+    wgpu::BindGroupLayoutEntry entry = {};
+
+    wgpu::BindGroupLayoutDescriptor descriptor;
+    descriptor.entryCount = 1;
+    descriptor.entries = &entry;
+    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor),
+                        testing::HasSubstr("had none of"));
+}
+
 // This test verifies that visibility of bindings in BindGroupLayout can be none
 TEST_F(BindGroupLayoutValidationTest, BindGroupLayoutVisibilityNone) {
     utils::MakeBindGroupLayout(device,
@@ -2096,7 +2123,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
     }
 };
 
-// Test that it is valid to pass a writable storage buffer in the pipeline layout when the shader
+// Test that it is invalid to pass a writable storage buffer in the pipeline layout when the shader
 // uses the binding as a readonly storage buffer.
 TEST_F(BindGroupLayoutCompatibilityTest, RWStorageInBGLWithROStorageInShader) {
     // Set up the bind group layout.
@@ -2107,9 +2134,9 @@ TEST_F(BindGroupLayoutCompatibilityTest, RWStorageInBGLWithROStorageInShader) {
         device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
                   wgpu::BufferBindingType::Storage}});
 
-    CreateRenderPipeline({bgl0, bgl1});
+    ASSERT_DEVICE_ERROR(CreateRenderPipeline({bgl0, bgl1}));
 
-    CreateComputePipeline({bgl0, bgl1});
+    ASSERT_DEVICE_ERROR(CreateComputePipeline({bgl0, bgl1}));
 }
 
 // Test that it is invalid to pass a readonly storage buffer in the pipeline layout when the shader
@@ -2349,7 +2376,8 @@ TEST_F(BindingsValidationTest, BindGroupsWithMoreBindingsThanPipelineLayout) {
     for (uint32_t i = 0; i < kBindingNum + 1; ++i) {
         bgl[i] = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BufferBindingType::Storage}});
+                      i == 1 ? wgpu::BufferBindingType::ReadOnlyStorage
+                             : wgpu::BufferBindingType::Storage}});
         buffer[i] = CreateBuffer(mBufferSize, wgpu::BufferUsage::Storage);
         bg[i] = utils::MakeBindGroup(device, bgl[i], {{0, buffer[i]}});
     }
@@ -2390,7 +2418,8 @@ TEST_F(BindingsValidationTest, BindGroupsWithLessBindingsThanPipelineLayout) {
     for (uint32_t i = 0; i < kBindingNum; ++i) {
         bgl[i] = utils::MakeBindGroupLayout(
             device, {{0, wgpu::ShaderStage::Compute | wgpu::ShaderStage::Fragment,
-                      wgpu::BufferBindingType::Storage}});
+                      i == 1 ? wgpu::BufferBindingType::ReadOnlyStorage
+                             : wgpu::BufferBindingType::Storage}});
         buffer[i] = CreateBuffer(mBufferSize, wgpu::BufferUsage::Storage);
         bg[i] = utils::MakeBindGroup(device, bgl[i], {{0, buffer[i]}});
     }

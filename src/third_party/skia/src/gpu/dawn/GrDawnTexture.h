@@ -9,7 +9,7 @@
 #define GrDawnTexture_DEFINED
 
 #include "src/gpu/GrTexture.h"
-#include "dawn/webgpu_cpp.h"
+#include "webgpu/webgpu_cpp.h"
 
 class GrDawnGpu;
 
@@ -33,7 +33,11 @@ public:
     wgpu::Texture texture() const { return fInfo.fTexture; }
     wgpu::TextureFormat format() const { return fInfo.fFormat; }
 protected:
-    GrDawnTexture(GrDawnGpu*, SkISize dimensions, const GrDawnTextureInfo&, GrMipmapStatus);
+    GrDawnTexture(GrDawnGpu*,
+                  SkISize dimensions,
+                  const GrDawnTextureInfo&,
+                  GrMipmapStatus,
+                  std::string_view label);
 
     GrDawnGpu* getDawnGpu() const;
 

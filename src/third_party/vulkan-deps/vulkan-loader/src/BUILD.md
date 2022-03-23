@@ -213,7 +213,6 @@ on/off options currently supported by this repository:
 
 | Option                       | Platform | Default | Description                                                                                                                                                                       |
 | ---------------------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| BUILD_LOADER                 | All      | `ON`    | Controls whether or not the loader is built.                                                                                                                                      |
 | BUILD_TESTS                  | All      | `OFF`   | Controls whether or not the loader tests are built.                                                                                                                               |
 | BUILD_WSI_XCB_SUPPORT        | Linux    | `ON`    | Build the loader with the XCB entry points enabled. Without this, the XCB headers should not be needed, but the extension `VK_KHR_xcb_surface` won't be available.                |
 | BUILD_WSI_XLIB_SUPPORT       | Linux    | `ON`    | Build the loader with the Xlib entry points enabled. Without this, the X11 headers should not be needed, but the extension `VK_KHR_xlib_surface` won't be available.              |
@@ -721,7 +720,7 @@ Before you run these tests, you will need to clone and build the
 
 You will also need to direct your new loader to the MoltenVK ICD:
 
-    export VK_ICD_FILENAMES=<path to MoltenVK repository>/Package/Latest/MoltenVK/macOS/MoltenVK_icd.json
+    export VK_DRIVER_FILES=<path to MoltenVK repository>/Package/Latest/MoltenVK/macOS/MoltenVK_icd.json
 
 To run the loader test script, change to the `build/tests` directory in your
 Vulkan-Loader repository, and run:

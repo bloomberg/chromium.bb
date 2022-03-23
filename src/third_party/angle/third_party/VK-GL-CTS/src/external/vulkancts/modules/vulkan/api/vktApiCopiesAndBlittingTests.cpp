@@ -3018,7 +3018,7 @@ private:
 class CompressedTextureForBlit
 {
 public:
-	CompressedTextureForBlit(const tcu::CompressedTexFormat& srcFormat, int width, int height, int depth, VkFormat dstFormat);
+	CompressedTextureForBlit(const tcu::CompressedTexFormat& srcFormat, int width, int height, int depth);
 
 	tcu::PixelBufferAccess			getDecompressedAccess() const;
 	const tcu::CompressedTexture&	getCompressedTexture() const;
@@ -3030,7 +3030,7 @@ protected:
 	tcu::PixelBufferAccess		m_decompressedAccess;
 };
 
-CompressedTextureForBlit::CompressedTextureForBlit(const tcu::CompressedTexFormat& srcFormat, int width, int height, int depth, VkFormat dstFormat)
+CompressedTextureForBlit::CompressedTextureForBlit(const tcu::CompressedTexFormat& srcFormat, int width, int height, int depth)
 	: m_compressedTexture(srcFormat, width, height, depth)
 {
 	de::Random			random					(123);
@@ -3048,11 +3048,10 @@ CompressedTextureForBlit::CompressedTextureForBlit(const tcu::CompressedTexForma
 		tcu::astc::generateRandomValidBlocks(compressedData, compressedDataSize / tcu::astc::BLOCK_SIZE_BYTES,
 											 srcFormat, tcu::TexDecompressionParams::ASTCMODE_LDR, random.getUint32());
 	}
-	else if ((dstFormat == VK_FORMAT_E5B9G9R9_UFLOAT_PACK32) &&
-			((srcFormat == tcu::COMPRESSEDTEXFORMAT_BC6H_UFLOAT_BLOCK) ||
-			 (srcFormat == tcu::COMPRESSEDTEXFORMAT_BC6H_SFLOAT_BLOCK)))
+	else if ((srcFormat == tcu::COMPRESSEDTEXFORMAT_BC6H_UFLOAT_BLOCK) ||
+			 (srcFormat == tcu::COMPRESSEDTEXFORMAT_BC6H_SFLOAT_BLOCK))
 	{
-		// special case - when we are blitting compressed image to RGB999E5 image we can't have both big and small values
+		// special case - when we are blitting compressed floating-point image we can't have both big and small values
 		// in compressed image; to resolve this we are constructing source texture out of set of predefined compressed
 		// blocks that after decompression will have components in proper range
 
@@ -3278,7 +3277,7 @@ tcu::TestStatus BlittingImages::iterate (void)
 	{
 		// for compressed images srcImageParams.fillMode is not used - we are using random data
 		tcu::CompressedTexFormat compressedFormat = mapVkCompressedFormat(srcImageParams.format);
-		m_sourceCompressedTexture = CompressedTextureForBlitSp(new CompressedTextureForBlit(compressedFormat, srcWidth, srcHeight, srcDepth, dstImageParams.format));
+		m_sourceCompressedTexture = CompressedTextureForBlitSp(new CompressedTextureForBlit(compressedFormat, srcWidth, srcHeight, srcDepth));
 		uploadCompressedImage(m_source.get(), srcImageParams);
 	}
 	else
@@ -3295,7 +3294,7 @@ tcu::TestStatus BlittingImages::iterate (void)
 	{
 		// compressed images are filled with random data
 		tcu::CompressedTexFormat compressedFormat = mapVkCompressedFormat(dstImageParams.format);
-		m_destinationCompressedTexture = CompressedTextureForBlitSp(new CompressedTextureForBlit(compressedFormat, srcWidth, srcHeight, srcDepth, VK_FORMAT_UNDEFINED));
+		m_destinationCompressedTexture = CompressedTextureForBlitSp(new CompressedTextureForBlit(compressedFormat, srcWidth, srcHeight, srcDepth));
 		uploadCompressedImage(m_destination.get(), dstImageParams);
 	}
 	else
@@ -6654,7 +6653,7 @@ void ResolveImageToImage::copyMSImageToMSImage (deUint32 copyArraySize)
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,		// VkStructureType			sType;
 		DE_NULL,									// const void*				pNext;
 		VK_ACCESS_TRANSFER_WRITE_BIT,				// VkAccessFlags			srcAccessMask;
-		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,		// VkAccessFlags			dstAccessMask;
+		VK_ACCESS_TRANSFER_READ_BIT,				// VkAccessFlags			dstAccessMask;
 		m_params.dst.image.operationLayout,			// VkImageLayout			oldLayout;
 		m_params.src.image.operationLayout,			// VkImageLayout			newLayout;
 		VK_QUEUE_FAMILY_IGNORED,					// deUint32					srcQueueFamilyIndex;
@@ -6677,7 +6676,7 @@ void ResolveImageToImage::copyMSImageToMSImage (deUint32 copyArraySize)
 		if(m_options == COPY_MS_IMAGE_TO_MS_IMAGE_NO_CAB)
 		{
 			vk.cmdCopyImage(*m_cmdBuffer, m_multisampledImage.get(), m_params.src.image.operationLayout, m_multisampledCopyNoCabImage.get(), m_params.dst.image.operationLayout, (deUint32)imageCopies.size(), imageCopies.data());
-			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1u, &betweenCopyImageBarrier);
+			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1u, &betweenCopyImageBarrier);
 			vk.cmdCopyImage(*m_cmdBuffer, m_multisampledCopyNoCabImage.get(), m_params.src.image.operationLayout, m_multisampledCopyImage.get(), m_params.dst.image.operationLayout, (deUint32)imageCopies.size(), imageCopies.data());
 		}
 		else
@@ -6714,7 +6713,7 @@ void ResolveImageToImage::copyMSImageToMSImage (deUint32 copyArraySize)
 			};
 
 			vk.cmdCopyImage2(*m_cmdBuffer, &copyImageInfo2KHR);
-			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1u, &betweenCopyImageBarrier);
+			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1u, &betweenCopyImageBarrier);
 			vk.cmdCopyImage2(*m_cmdBuffer, &copyImageInfo2KHRCopy);
 		}
 		else

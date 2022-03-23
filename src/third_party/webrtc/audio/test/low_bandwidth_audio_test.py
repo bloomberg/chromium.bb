@@ -67,24 +67,16 @@ def _ParseArgs():
       '--isolated-script-test-output',
       default=None,
       help='Path to output an empty JSON file which Chromium infra requires.')
-  parser.add_argument('--extra-test-args',
-                      default=[],
-                      action='append',
-                      help='Extra args to path to the test binary.')
 
-  # Ignore Chromium-specific flags
-  parser.add_argument('--test-launcher-summary-output', type=str, default=None)
-  args = parser.parse_args()
-
-  return args
+  return parser.parse_known_args()
 
 
 def _GetPlatform():
   if sys.platform == 'win32':
     return 'win'
-  elif sys.platform == 'darwin':
+  if sys.platform == 'darwin':
     return 'mac'
-  elif sys.platform.startswith('linux'):
+  if sys.platform.startswith('linux'):
     return 'linux'
   raise AssertionError('Unknown platform %s' % sys.platform)
 
@@ -258,14 +250,13 @@ def _ConfigurePythonPath(args):
 
   # Fail early in case the proto hasn't been built.
   try:
-    #pylint: disable=unused-variable
+    #pylint: disable=unused-import
     import histogram_pb2
   except ImportError as e:
-    logging.exception(e)
     raise ImportError('Could not import histogram_pb2. You need to build the '
                       'low_bandwidth_audio_perf_test target before invoking '
                       'this script. Expected to find '
-                      'histogram_pb2.py in %s.' % histogram_proto_path)
+                      'histogram_pb2.py in %s.' % histogram_proto_path) from e
 
 
 def main():
@@ -274,7 +265,7 @@ def main():
                       datefmt='%Y-%m-%d %H:%M:%S')
   logging.info('Invoked with %s', str(sys.argv))
 
-  args = _ParseArgs()
+  args, extra_test_args = _ParseArgs()
 
   _ConfigurePythonPath(args)
 
@@ -296,9 +287,6 @@ def main():
   else:
     test_command = [os.path.join(args.build_dir, 'low_bandwidth_audio_test')]
 
-  if args.isolated_script_test_output:
-    test_command += ['--gtest_output=json:' + args.isolated_script_test_output]
-
   analyzers = [Analyzer('pesq', _RunPesq, pesq_path, 16000)]
   # Check if POLQA can run at all, or skip the 48 kHz tests entirely.
   example_path = os.path.join(SRC_DIR, 'resources', 'voice_engine',
@@ -312,7 +300,7 @@ def main():
     test_process = subprocess.Popen(_LogCommand(test_command + [
         '--sample_rate_hz=%d' % analyzer.sample_rate_hz,
         '--test_case_prefix=%s' % analyzer.name,
-    ] + args.extra_test_args),
+    ] + extra_test_args),
                                     universal_newlines=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
@@ -365,6 +353,10 @@ def main():
   if args.isolated_script_test_perf_output:
     with open(args.isolated_script_test_perf_output, 'wb') as f:
       f.write(histograms.AsProto().SerializeToString())
+
+  if args.isolated_script_test_output:
+    with open(args.isolated_script_test_output, 'w') as f:
+      json.dump({"version": 3}, f)
 
   return test_process.wait()
 

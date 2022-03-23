@@ -157,7 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.HttpsFirstMode.SettingChanged" enum="BooleanEnabled"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -179,7 +179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.JSONParser.ChromiumExtensionUsage"
-    enum="JsonParserExtension" expires_after="2022-06-26">
+    enum="JsonParserExtension" expires_after="2022-08-28">
   <owner>rsesek@chromium.org</owner>
   <owner>chrome-platform-security@google.com</owner>
   <summary>
@@ -304,7 +304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.GetDomainInfoTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
@@ -316,7 +316,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.GetReputationStatusWithEngagedSitesTime"
-    units="ms" expires_after="2022-07-03">
+    units="ms" expires_after="2022-09-11">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>blundell@chromium.org</owner>

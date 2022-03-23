@@ -121,6 +121,16 @@ class DisplayImpl : public EGLImplFactory, public angle::Subject
 
     virtual egl::Error handleGPUSwitch();
 
+    virtual bool isX11() const;
+
+    virtual bool supportsDmaBufFormat(EGLint format) const;
+    virtual egl::Error queryDmaBufFormats(EGLint max_formats, EGLint *formats, EGLint *num_formats);
+    virtual egl::Error queryDmaBufModifiers(EGLint format,
+                                            EGLint max_modifiers,
+                                            EGLuint64KHR *modifiers,
+                                            EGLBoolean *external_only,
+                                            EGLint *num_modifiers);
+
   protected:
     const egl::DisplayState &mState;
 

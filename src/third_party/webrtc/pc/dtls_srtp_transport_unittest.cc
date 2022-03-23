@@ -14,7 +14,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
 
 #include "call/rtp_demuxer.h"
 #include "media/base/fake_rtp.h"
@@ -26,10 +25,13 @@
 #include "pc/test/rtp_transport_test_util.h"
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/byte_order.h"
+#include "rtc_base/containers/flat_set.h"
 #include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/rtc_certificate.h"
 #include "rtc_base/ssl_identity.h"
+#include "rtc_base/third_party/sigslot/sigslot.h"
 #include "test/gtest.h"
+#include "test/scoped_key_value_config.h"
 
 using cricket::FakeDtlsTransport;
 using cricket::FakeIceTransport;
@@ -58,7 +60,7 @@ class DtlsSrtpTransportTest : public ::testing::Test,
       FakeDtlsTransport* rtcp_dtls,
       bool rtcp_mux_enabled) {
     auto dtls_srtp_transport =
-        std::make_unique<DtlsSrtpTransport>(rtcp_mux_enabled);
+        std::make_unique<DtlsSrtpTransport>(rtcp_mux_enabled, field_trials_);
 
     dtls_srtp_transport->SetDtlsTransports(rtp_dtls, rtcp_dtls);
 
@@ -255,6 +257,7 @@ class DtlsSrtpTransportTest : public ::testing::Test,
   webrtc::TransportObserver transport_observer2_;
 
   int sequence_number_ = 0;
+  webrtc::test::ScopedKeyValueConfig field_trials_;
 };
 
 // Tests that if RTCP muxing is enabled and transports are set after RTP

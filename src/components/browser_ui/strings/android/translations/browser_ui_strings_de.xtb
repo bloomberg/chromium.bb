@@ -122,7 +122,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> von ?</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
-<translation id="4040330681741629921">Benachrichtigen, wenn eine Website in der vereinfachten Ansicht angezeigt werden kann</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4149994727733219643">Vereinfachte Ansicht für Webseiten</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
@@ -255,6 +254,7 @@
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
 <translation id="7141896414559753902">Anzeige von Pop-ups und Weiterleitungen für Websites blockieren (empfohlen)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="723171743924126238">Bilder auswählen</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ausgewählt</translation>
@@ -308,7 +308,9 @@
 <translation id="83792324527827022">Eine Website verwendet Ihre Kamera und Ihr Mikrofon</translation>
 <translation id="8380167699614421159">Diese Website zeigt aufdringliche oder irreführende Werbung an</translation>
 <translation id="8394832520002899662">Tippen, um zur Website zurückzukehren</translation>
+<translation id="8409345997656833551">Benachrichtigen, wenn ein Artikel in der vereinfachten Ansicht angezeigt werden kann</translation>
 <translation id="8425213833346101688">Ändern</translation>
+<translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8441146129660941386">Zurück navigieren</translation>
 <translation id="8444433999583714703">Um <ph name="APP_NAME" /> Zugriff auf Ihren Standort zu gewähren, müssen Sie die Standortberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>

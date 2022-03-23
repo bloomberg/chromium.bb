@@ -111,6 +111,7 @@ struct GpuAssistedPreDrawValidationState {
     VkShaderModule validation_shader_module = VK_NULL_HANDLE;
     VkDescriptorSetLayout validation_ds_layout = VK_NULL_HANDLE;
     VkPipelineLayout validation_pipeline_layout = VK_NULL_HANDLE;
+    VkPipeline dyn_rendering_pipeline = VK_NULL_HANDLE;
     layer_data::unordered_map <VkRenderPass, VkPipeline> renderpass_to_pipeline;
 };
 
@@ -133,6 +134,8 @@ class CMD_BUFFER_STATE_GPUAV : public CMD_BUFFER_STATE {
 
     void Reset() final;
 };
+
+VALSTATETRACK_DERIVED_STATE_OBJECT(VkCommandBuffer, CMD_BUFFER_STATE_GPUAV, CMD_BUFFER_STATE);
 
 class GpuAssisted : public ValidationStateTracker {
     VkPhysicalDeviceFeatures supported_features;
@@ -354,12 +357,6 @@ class GpuAssisted : public ValidationStateTracker {
     void PostCallRecordGetPhysicalDeviceProperties2(VkPhysicalDevice physicalDevice,
                                                     VkPhysicalDeviceProperties2* pPhysicalDeviceProperties2) override;
 
-    std::shared_ptr<CMD_BUFFER_STATE_GPUAV> GetCBState(VkCommandBuffer commandBuffer) {
-        return std::static_pointer_cast<CMD_BUFFER_STATE_GPUAV>(Get<CMD_BUFFER_STATE>(commandBuffer));
-    }
-    const std::shared_ptr<const CMD_BUFFER_STATE_GPUAV> GetCBState(VkCommandBuffer commandBuffer) const {
-        return std::static_pointer_cast<const CMD_BUFFER_STATE_GPUAV>(Get<CMD_BUFFER_STATE>(commandBuffer));
-    }
     std::shared_ptr<SHADER_MODULE_STATE> GetShaderModuleState(VkShaderModule shader_module) {
         return Get<SHADER_MODULE_STATE>(shader_module);
     }

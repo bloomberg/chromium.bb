@@ -642,7 +642,7 @@ int av1_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
 
 // Clamping utilities for bitrate targets for iframes and pframes.
 int av1_rc_clamp_iframe_target_size(const struct AV1_COMP *const cpi,
-                                    int target);
+                                    int64_t target);
 int av1_rc_clamp_pframe_target_size(const struct AV1_COMP *const cpi,
                                     int target, uint8_t frame_update_type);
 

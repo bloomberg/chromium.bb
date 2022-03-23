@@ -460,6 +460,7 @@
 <translation id="2310021320168182093">Chou2 (ស្រោម​សំបុត្រ)</translation>
 <translation id="2316887270356262533">បង្កើន​ទំហំផ្ទុក​តិចជាង 1 MB ។ ទំព័រ​មួយចំនួន​អាចផ្ទុកយឺត​ជាងមុន នៅពេលដែល​អ្នកចូល​លើកក្រោយ។</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> តម្រូវឲ្យមានឈ្មោះអ្នកប្រើ និងពាក្យសម្ងាត់។</translation>
+<translation id="2318594867107319532">ពេលវេលានៃគោលការណ៍ចុងក្រោយ៖</translation>
 <translation id="2328651992442742497">អនុញ្ញាត (លំនាំដើម)</translation>
 <translation id="2329182534073751090">ការដាក់​វិនដូ</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" /> ផុតកំណត់នៅថ្ងៃទី <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -495,6 +496,7 @@
 <translation id="2430968933669123598">គ្រប់គ្រង​គណនី Google, ចុច Enter ដើម្បីគ្រប់គ្រង​ព័ត៌មាន ឯកជនភាព និង​សុវត្ថិភាព​របស់អ្នក​នៅក្នុង​គណនី Google របស់អ្នក</translation>
 <translation id="2436186046335138073">អនុញ្ញាត <ph name="HANDLER_HOSTNAME" /> ឲ្យបើក <ph name="PROTOCOL" /> តំណទាំងអស់?</translation>
 <translation id="2438874542388153331">ចោះ​បួនរន្ធ​ខាងស្ដាំ</translation>
+<translation id="2448295565072560657">ឧបករណ៍ខាងក្រៅដែលភ្ជាប់ជាមួយឧបករណ៍នេះ នៅពេលដែលអ្នកចូល</translation>
 <translation id="2450021089947420533">ការស្វែងរក</translation>
 <translation id="2463739503403862330">បំពេញ</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -502,6 +504,7 @@
 <translation id="2465688316154986572">កិប</translation>
 <translation id="2465914000209955735">គ្រប់គ្រងឯកសារ​ដែលអ្នកបាន​ទាញយកនៅក្នុង Chrome</translation>
 <translation id="2466004615675155314">បង្ហាញព័ត៌មាន​ពីបណ្ដាញ</translation>
+<translation id="2467272921457885625">ស្ថិតិ និងសេចក្តីលម្អិតអំពីហាតវែររបស់ឧបករណ៍ដូចជា ប្រវត្តិនៃការប្រើប្រាស់ CPU/RAM ជាដើម</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />កំពុងដំណើរការការវិភាគបណ្តាញ<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">លំដាប់លំដោយ 1-to-N</translation>
 <translation id="2470767536994572628">នៅពេល​អ្នក​កែចំណារ ឯកសារ​នេះ​នឹងត្រឡប់ទៅ​ការមើល​ទំព័រ​ទោល និង​ការបង្វិលដើម​របស់វា​វិញ</translation>
@@ -528,6 +531,7 @@
 <translation id="2539524384386349900">ស្វែងរក</translation>
 <translation id="2540701853218677861">ប្រវត្តិចូល/ចេញ រួមទាំង​ពេលវេលា និងការព្យាយាម​មិនបានសម្រេច</translation>
 <translation id="2541219929084442027">ទំព័រ​ដែលអ្នកមើល​នៅក្នុង​ផ្ទាំងឯកជន​នឹងមិនស្ថិតនៅក្នុង​ប្រវត្តិរបស់​កម្មវិធីរុករកតាមអ៊ីនធឺណិត កន្លែងផ្ទុក​ខូគី ឬប្រវត្តិ​ស្វែងរក​របស់អ្នកទេ បន្ទាប់ពីអ្នកបានបិទ​ផ្ទាំងឯកជន​ទាំងអស់​របស់អ្នក។ ឯកសារដែលអ្នក​ទាញយក ឬចំណាំ​ដែលអ្នកបង្កើត​នឹងត្រូវបានរក្សាទុក។</translation>
+<translation id="2544546346215446551">អ្នកគ្រប់គ្រង​របស់អ្នកបានចាប់ផ្ដើម​ឧបករណ៍របស់អ្នក​ឡើងវិញ</translation>
 <translation id="2544644783021658368">ឯកសារ​តែមួយ</translation>
 <translation id="2546283357679194313">ខុកឃី និងទិន្នន័យគេហទំព័រ</translation>
 <translation id="254947805923345898">តម្លៃ​របស់គោលការណ៍​គ្មានសុពលភាពទេ។</translation>
@@ -755,7 +759,6 @@
 <translation id="3288238092761586174"><ph name="URL" /> អាចត្រូវអនុវត្ត​ជំហានបន្ថែម ដើម្បីផ្ទៀងផ្ទាត់​ការបង់ប្រាក់​របស់អ្នក</translation>
 <translation id="3293642807462928945">ស្វែង​យល់បន្ថែម​អំពី​គោលការណ៍ <ph name="POLICY_NAME" /></translation>
 <translation id="3295444047715739395">មើល និងគ្រប់គ្រង​ពាក្យសម្ងាត់របស់អ្នក​នៅក្នុងការកំណត់ Chrome</translation>
-<translation id="3303795387212510132">អនុញ្ញាត​ឱ្យកម្មវិធី​បើកតំណ <ph name="PROTOCOL_SCHEME" /> ដែរទេ?</translation>
 <translation id="3303855915957856445">រកមិនឃើញលទ្ធផលស្វែងរកទេ</translation>
 <translation id="3304073249511302126">ការស្កេន​ប៊្លូធូស</translation>
 <translation id="3308006649705061278">ក្រុមអង្គភាព (OU)</translation>
@@ -942,7 +945,6 @@
 <translation id="385051799172605136">ថយក្រោយ</translation>
 <translation id="3858027520442213535">ធ្វើបច្ចុប្បន្នភាពកាលបរិច្ឆេទ និងម៉ោង</translation>
 <translation id="3858860766373142691">ឈ្មោះ</translation>
-<translation id="3879224246272917991">ស្ថិតិឧបករណ៍​ដូចជា ការប្រើប្រាស់ CPU/RAM និងសេចក្តីលម្អិត​អំពី​ហាតវែរ​ជាដើម</translation>
 <translation id="3881478300875776315">បង្ហាញបន្ទាត់តិចជាងនេះ</translation>
 <translation id="3884278016824448484">មានបញ្ហាជាមួយឧបករណ៍សម្គាល់ឧបករណ៍</translation>
 <translation id="3885155851504623709">តំបន់រដ្ឋបាល</translation>
@@ -977,6 +979,7 @@
 <translation id="3990250421422698716">គម្លាតរុញ</translation>
 <translation id="3996311196211510766">គេហទំព័រ <ph name="ORIGIN" /> បានស្នើសុំឱ្យ​អនុវត្ត​គោលការណ៍​ដើម
     ចំពោះ​គ្រប់សំណើ​មក​កាន់​វា ប៉ុន្តែ​គោលការណ៍នេះមិនអាច​អនុវត្ត​បាន​ទេក្នុងពេលបច្ចុប្បន្ន។</translation>
+<translation id="4006465311664329701">វិធី​បង់ប្រាក់ ការផ្ដល់ជូន និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
 <translation id="4009243425692662128">ខ្លឹមសារក្នុងទំព័រដែលអ្នកបោះពុម្ពត្រូវបានផ្ញើទៅ Google Cloud ឬភាគីទីបីដើម្បីវិភាគ។ ឧទាហរណ៍ ខ្លឹមសារនោះ​អាចត្រូវបាន​ស្កេន ដើម្បីរកមើល​ទិន្នន័យ​រសើប​។</translation>
 <translation id="4010758435855888356">អនុញ្ញាត​ឱ្យចូលប្រើ​ទំហំផ្ទុក​ដែរទេ?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}other{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}}</translation>
@@ -1257,6 +1260,7 @@
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, ចុច Tab រួចចុច Enter ដើម្បី​បង្កើត​បញ្ជី Google ថ្មីបានរហ័ស</translation>
 <translation id="4825507807291741242">មាន​ឥទ្ធិពល​ខ្លាំង</translation>
 <translation id="483241715238664915">បើក​ការព្រមាន</translation>
+<translation id="4834250788637067901">វិធី​បង់ប្រាក់ ការផ្ដល់ជូន និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
 <translation id="4838327282952368871">ដូចក្ដី​សុបិន</translation>
 <translation id="4840250757394056958">មើលប្រវត្តិ Chrome របស់អ្នក</translation>
 <translation id="484462545196658690">ស្វ័យប្រវត្តិ</translation>
@@ -1384,7 +1388,6 @@
 <translation id="5205222826937269299">តម្រូវឲ្យមានឈ្មោះ</translation>
 <translation id="5209518306177824490">ស្នាមម្រាមដៃ SHA-1</translation>
 <translation id="5209670883520018268">ទម្រទី 20</translation>
-<translation id="5215116848420601511">វិធី​បង់ប្រាក់ និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">ទម្រទី 13</translation>
 <translation id="5216942107514965959">បានចូលមើល​លើកចុងក្រោយ​នៅថ្ងៃនេះ</translation>
@@ -1663,6 +1666,7 @@
 <translation id="6157754950574419155">លុបទាំងអស់​ចេញពីប្រវត្តិ</translation>
 <translation id="6157877588268064908">ដើម្បីមើលមធ្យោបាយ និងលក្ខខណ្ឌតម្រូវនៃការដឹកជញ្ជូនតាមប្រៃសណីយ៍ សូមជ្រើសរើសអាសយដ្ឋាន</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
+<translation id="6167577165590485365">បានព្យាយាមទាញយកចុងក្រោយ៖</translation>
 <translation id="6169916984152623906">ឥឡូវនេះ អ្នកអាចធ្វើការរុករកជាលក្ខណៈឯកជនបានហើយ ដូច្នេះអ្នកផ្សេងទៀតដែលប្រើឧបករណ៍នេះនឹងមើលមិនឃើញសកម្មភាពរបស់អ្នកទេ។ ទោះជាយ៉ាងណាក្តី ឯកសារទាញយក និងចំណាំនឹងត្រូវបានរក្សាទុក។</translation>
 <translation id="6177128806592000436">ការតភ្ជាប់របស់អ្នកទៅគេហទំព័រនេះមិនមានសុវត្ថិភាពទេ</translation>
 <translation id="6180316780098470077">ចន្លោះ​ពេលនៃ​ការព្យាយាមម្ដងទៀត</translation>
@@ -2299,7 +2303,6 @@
 <translation id="8241712895048303527">ទប់ស្កាត់​នៅលើ​ទំព័រនេះ</translation>
 <translation id="8242426110754782860">បន្ត</translation>
 <translation id="8249296373107784235">បោះបង់</translation>
-<translation id="8249320324621329438">បាននាំយកចុងក្រោយ៖</translation>
 <translation id="8253091569723639551">តម្រូវឲ្យមានអាសយដ្ឋានបញ្ចូលវិក្កយបត្រ</translation>
 <translation id="8257387598443225809">កម្មវិធីនេះត្រូវបានរចនាសម្រាប់ឧបករណ៍ចល័ត</translation>
 <translation id="825929999321470778">បង្ហាញ​ពាក្យ​សម្ងាត់​ដែល​បាន​រក្សាទុក​ទាំងអស់</translation>
@@ -2502,7 +2505,6 @@
 <translation id="8975012916872825179">រួម​បញ្ចូល​ព័ត៌មាន​ដូចជា លេខទូរសព្ទ អាសយដ្ឋាន​អ៊ីមែល និង​អាសយដ្ឋាន​ដឹកជញ្ជូន​ជាដើម</translation>
 <translation id="8975263830901772334">ឈ្មោះ​ឯកសារដែលអ្នក​បោះពុម្ព</translation>
 <translation id="8978053250194585037">កាលពី​ពេល​ថ្មីៗនេះ ការរុករក​ដោយ​សុវត្ថិភាព​លើ Google <ph name="BEGIN_LINK" />បាន​រកឃើញ​ការដាក់​នុយ<ph name="END_LINK" />នៅលើ <ph name="SITE" /> ។ ទំព័រដាក់​នុយក្លែង​ធ្វើ​ជា​គេហទំព័រ​ផ្សេង ដើម្បី​បញ្ឆោត​អ្នក។</translation>
-<translation id="8983003182662520383">វិធី​បង់ប្រាក់ និង​អាសយដ្ឋាន​ដែលប្រើ Google Pay</translation>
 <translation id="8983369100812962543">ឥឡូវនេះ អ្នកអាចប្ដូរទំហំកម្មវិធីនេះបានហើយ</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />, ចុច "tab" រួចចុច "Enter" ដើម្បីមើលប្រវត្តិរុករក​តាមអ៊ីនធឺណិត​របស់អ្នកនៅក្នុង Chrome</translation>
 <translation id="8987927404178983737">ខែ</translation>

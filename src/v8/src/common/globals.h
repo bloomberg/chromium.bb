@@ -918,6 +918,8 @@ enum class CompactionSpaceKind {
 
 enum Executability { NOT_EXECUTABLE, EXECUTABLE };
 
+enum PageSize { kRegular, kLarge };
+
 enum class CodeFlushMode {
   kFlushBytecode,
   kFlushBaselineCode,
@@ -1513,34 +1515,6 @@ class CompareOperationFeedback {
   };
 };
 
-enum class Operation {
-  // Binary operations.
-  kAdd,
-  kSubtract,
-  kMultiply,
-  kDivide,
-  kModulus,
-  kExponentiate,
-  kBitwiseAnd,
-  kBitwiseOr,
-  kBitwiseXor,
-  kShiftLeft,
-  kShiftRight,
-  kShiftRightLogical,
-  // Unary operations.
-  kBitwiseNot,
-  kNegate,
-  kIncrement,
-  kDecrement,
-  // Compare operations.
-  kEqual,
-  kStrictEqual,
-  kLessThan,
-  kLessThanOrEqual,
-  kGreaterThan,
-  kGreaterThanOrEqual,
-};
-
 // Type feedback is encoded in such a way that, we can combine the feedback
 // at different points by performing an 'OR' operation. Type feedback moves
 // to a more generic type when we combine feedback.
@@ -1607,16 +1581,17 @@ inline std::ostream& operator<<(std::ostream& os, CollectionKind kind) {
   UNREACHABLE();
 }
 
-// Flags for the runtime function kDefineDataPropertyInLiteral. A property can
-// be enumerable or not, and, in case of functions, the function name
-// can be set or not.
-enum class DataPropertyInLiteralFlag {
+// Flags for the runtime function kDefineKeyedOwnPropertyInLiteral. A property
+// can be enumerable or not, and, in case of functions, the function name can be
+// set or not.
+enum class DefineKeyedOwnPropertyInLiteralFlag {
   kNoFlags = 0,
   kDontEnum = 1 << 0,
   kSetFunctionName = 1 << 1
 };
-using DataPropertyInLiteralFlags = base::Flags<DataPropertyInLiteralFlag>;
-DEFINE_OPERATORS_FOR_FLAGS(DataPropertyInLiteralFlags)
+using DefineKeyedOwnPropertyInLiteralFlags =
+    base::Flags<DefineKeyedOwnPropertyInLiteralFlag>;
+DEFINE_OPERATORS_FOR_FLAGS(DefineKeyedOwnPropertyInLiteralFlags)
 
 enum ExternalArrayType {
   kExternalInt8Array = 1,
@@ -1651,10 +1626,12 @@ using FileAndLine = std::pair<const char*, int>;
 enum class OptimizationMarker : int32_t {
   // These values are set so that it is easy to check if there is a marker where
   // some processing needs to be done.
-  kNone = 0b00,
-  kInOptimizationQueue = 0b01,
-  kCompileTurbofan_NotConcurrent = 0b10,
-  kCompileTurbofan_Concurrent = 0b11,
+  kNone = 0b000,
+  kInOptimizationQueue = 0b001,
+  kCompileMaglev_NotConcurrent = 0b010,
+  kCompileMaglev_Concurrent = 0b011,
+  kCompileTurbofan_NotConcurrent = 0b100,
+  kCompileTurbofan_Concurrent = 0b101,
   kLastOptimizationMarker = kCompileTurbofan_Concurrent,
 };
 // For kNone or kInOptimizationQueue we don't need any special processing.
@@ -1664,18 +1641,18 @@ STATIC_ASSERT(static_cast<int>(OptimizationMarker::kNone) == 0b00 &&
               static_cast<int>(OptimizationMarker::kInOptimizationQueue) ==
                   0b01);
 STATIC_ASSERT(static_cast<int>(OptimizationMarker::kLastOptimizationMarker) <=
-              0b11);
-static constexpr uint32_t kNoneOrInOptimizationQueueMask = 0b10;
-
-inline bool IsInOptimizationQueueMarker(OptimizationMarker marker) {
-  return marker == OptimizationMarker::kInOptimizationQueue;
-}
+              0b111);
+static constexpr uint32_t kNoneOrInOptimizationQueueMask = 0b110;
 
 inline std::ostream& operator<<(std::ostream& os,
                                 const OptimizationMarker& marker) {
   switch (marker) {
     case OptimizationMarker::kNone:
       return os << "OptimizationMarker::kNone";
+    case OptimizationMarker::kCompileMaglev_NotConcurrent:
+      return os << "OptimizationMarker::kCompileMaglev_NotConcurrent";
+    case OptimizationMarker::kCompileMaglev_Concurrent:
+      return os << "OptimizationMarker::kCompileMaglev_Concurrent";
     case OptimizationMarker::kCompileTurbofan_NotConcurrent:
       return os << "OptimizationMarker::kCompileTurbofan_NotConcurrent";
     case OptimizationMarker::kCompileTurbofan_Concurrent:
@@ -1696,13 +1673,34 @@ inline std::ostream& operator<<(std::ostream& os,
     case SpeculationMode::kDisallowSpeculation:
       return os << "SpeculationMode::kDisallowSpeculation";
   }
-  UNREACHABLE();
-  return os;
 }
 
 enum class BlockingBehavior { kBlock, kDontBlock };
 
-enum class ConcurrencyMode { kNotConcurrent, kConcurrent };
+enum class ConcurrencyMode : uint8_t { kNotConcurrent, kConcurrent };
+
+inline const char* ToString(ConcurrencyMode mode) {
+  switch (mode) {
+    case ConcurrencyMode::kNotConcurrent:
+      return "ConcurrencyMode::kNotConcurrent";
+    case ConcurrencyMode::kConcurrent:
+      return "ConcurrencyMode::kConcurrent";
+  }
+}
+inline std::ostream& operator<<(std::ostream& os, ConcurrencyMode mode) {
+  return os << ToString(mode);
+}
+
+// An architecture independent representation of the sets of registers available
+// for instruction creation.
+enum class AliasingKind {
+  // Registers alias a single register of every other size (e.g. Intel).
+  kOverlap,
+  // Registers alias two registers of the next smaller size (e.g. ARM).
+  kCombine,
+  // SIMD128 Registers are independent of every other size (e.g Riscv)
+  kIndependent
+};
 
 #define FOR_EACH_ISOLATE_ADDRESS_NAME(C)                            \
   C(Handler, handler)                                               \
@@ -1892,15 +1890,17 @@ enum class StringTransitionStrategy {
 
 }  // namespace internal
 
-// Tag dispatching support for acquire loads and release stores.
+// Tag dispatching support for atomic loads and stores.
 struct AcquireLoadTag {};
 struct RelaxedLoadTag {};
 struct ReleaseStoreTag {};
 struct RelaxedStoreTag {};
+struct SeqCstAccessTag {};
 static constexpr AcquireLoadTag kAcquireLoad;
 static constexpr RelaxedLoadTag kRelaxedLoad;
 static constexpr ReleaseStoreTag kReleaseStore;
 static constexpr RelaxedStoreTag kRelaxedStore;
+static constexpr SeqCstAccessTag kSeqCstAccess;
 
 }  // namespace v8
 

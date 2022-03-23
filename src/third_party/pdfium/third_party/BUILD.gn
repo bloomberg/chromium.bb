@@ -200,7 +200,14 @@ if (pdf_bundle_freetype) {
   }
 }
 
-if (!pdf_use_skia && !pdf_use_skia_paths) {
+if (pdf_use_skia || pdf_use_skia_paths) {
+  config("system_fontconfig") {
+    libs = [ "fontconfig" ]
+  }
+  group("fontconfig") {
+    public_configs = [ ":system_fontconfig" ]
+  }
+} else {
   config("fx_agg_warnings") {
     visibility = [ ":*" ]
     if (is_clang) {
@@ -406,7 +413,8 @@ source_set("fx_libopenjpeg") {
     "libopenjpeg20/mct.c",
     "libopenjpeg20/mqc.c",
     "libopenjpeg20/openjpeg.c",
-    "libopenjpeg20/opj_clock.c",
+
+    # NOTE: libopenjpeg20/opj_clock.c is not used.
     "libopenjpeg20/opj_malloc.cc",
     "libopenjpeg20/opj_malloc.h",
     "libopenjpeg20/pi.c",
@@ -648,10 +656,12 @@ source_set("pdfium_base") {
 
 source_set("pdfium_base_test_support") {
   testonly = true
-  configs += [ "../:pdfium_strict_config" ]
   sources = []
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
   deps = []
-
   if (is_posix || is_fuchsia) {
     sources += [
       "base/test/scoped_locale.cc",
@@ -662,9 +672,12 @@ source_set("pdfium_base_test_support") {
 }
 
 source_set("skia_shared") {
-  configs += [ "../:pdfium_strict_config" ]
   sources = [
     "skia_shared/SkFloatToDecimal.cpp",
     "skia_shared/SkFloatToDecimal.h",
+  ]
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
   ]
 }

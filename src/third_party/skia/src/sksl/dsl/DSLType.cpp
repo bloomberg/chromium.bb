@@ -18,7 +18,7 @@ namespace dsl {
 static const SkSL::Type* verify_type(const Context& context,
                                      const SkSL::Type* type,
                                      bool allowPrivateTypes,
-                                     PositionInfo pos) {
+                                     Position pos) {
     if (!context.fConfig->fIsBuiltinCode) {
         if (!allowPrivateTypes && type->isPrivate()) {
             context.fErrors->error("type '" + std::string(type->name()) + "' is private", pos);
@@ -35,7 +35,7 @@ static const SkSL::Type* verify_type(const Context& context,
 
 static const SkSL::Type* find_type(const Context& context,
                                    std::string_view name,
-                                   PositionInfo pos) {
+                                   Position pos) {
     const Symbol* symbol = (*ThreadContext::SymbolTable())[name];
     if (!symbol) {
         context.fErrors->error(String::printf("no symbol named '%.*s'",
@@ -54,10 +54,10 @@ static const SkSL::Type* find_type(const Context& context,
 static const SkSL::Type* find_type(const Context& context,
                                    std::string_view name,
                                    Modifiers* modifiers,
-                                   PositionInfo pos) {
+                                   Position pos) {
     const Type* type = find_type(context, name, pos);
     type = type->applyPrecisionQualifiers(context, modifiers, ThreadContext::SymbolTable().get(),
-                                          pos.line());
+            pos);
     ThreadContext::ReportErrors(pos);
     return type;
 }
@@ -168,14 +168,14 @@ static const SkSL::Type* get_type_from_type_constant(const Context& context, Typ
 }
 
 DSLType::DSLType(std::string_view name)
-        : fSkSLType(find_type(ThreadContext::Context(), name, PositionInfo())) {}
+        : fSkSLType(find_type(ThreadContext::Context(), name, Position())) {}
 
-DSLType::DSLType(std::string_view name, DSLModifiers* modifiers, PositionInfo position)
-        : fSkSLType(find_type(ThreadContext::Context(), name, &modifiers->fModifiers, position)) {}
+DSLType::DSLType(std::string_view name, DSLModifiers* modifiers, Position pos)
+        : fSkSLType(find_type(ThreadContext::Context(), name, &modifiers->fModifiers, pos)) {}
 
 DSLType::DSLType(const SkSL::Type* type)
         : fSkSLType(verify_type(ThreadContext::Context(), type, /*allowPrivateTypes=*/true,
-                                PositionInfo())) {}
+                                Position())) {}
 
 bool DSLType::isBoolean() const {
     return this->skslType().isBoolean();
@@ -233,7 +233,7 @@ const SkSL::Type& DSLType::skslType() const {
     return *verify_type(context,
                         get_type_from_type_constant(context, fTypeConstant),
                         /*allowPrivateTypes=*/true,
-                        PositionInfo());
+                        Position());
 }
 
 DSLPossibleExpression DSLType::Construct(DSLType type, SkSpan<DSLExpression> argArray) {
@@ -246,11 +246,11 @@ DSLPossibleExpression DSLType::Construct(DSLType type, SkSpan<DSLExpression> arg
         }
         skslArgs.push_back(arg.release());
     }
-    return SkSL::Constructor::Convert(ThreadContext::Context(), /*line=*/-1, type.skslType(),
+    return SkSL::Constructor::Convert(ThreadContext::Context(), Position(), type.skslType(),
             std::move(skslArgs));
 }
 
-DSLType Array(const DSLType& base, int count, PositionInfo pos) {
+DSLType Array(const DSLType& base, int count, Position pos) {
     count = base.skslType().convertArraySize(ThreadContext::Context(),
             DSLExpression(count, pos).release());
     ThreadContext::ReportErrors(pos);
@@ -260,7 +260,7 @@ DSLType Array(const DSLType& base, int count, PositionInfo pos) {
     return ThreadContext::SymbolTable()->addArrayDimension(&base.skslType(), count);
 }
 
-DSLType Struct(std::string_view name, SkSpan<DSLField> fields, PositionInfo pos) {
+DSLType Struct(std::string_view name, SkSpan<DSLField> fields, Position pos) {
     std::vector<SkSL::Type::Field> skslFields;
     skslFields.reserve(fields.size());
     for (const DSLField& field : fields) {
@@ -289,12 +289,12 @@ DSLType Struct(std::string_view name, SkSpan<DSLField> fields, PositionInfo pos)
         }
         skslFields.emplace_back(field.fModifiers.fModifiers, field.fName, &type);
     }
-    const SkSL::Type* result = ThreadContext::SymbolTable()->add(Type::MakeStructType(pos.line(),
-            name, skslFields));
+    const SkSL::Type* result = ThreadContext::SymbolTable()->add(Type::MakeStructType(pos, name,
+            skslFields));
     if (result->isTooDeeplyNested()) {
         ThreadContext::ReportError("struct '" + std::string(name) + "' is too deeply nested", pos);
     }
-    ThreadContext::ProgramElements().push_back(std::make_unique<SkSL::StructDefinition>(/*line=*/-1,
+    ThreadContext::ProgramElements().push_back(std::make_unique<SkSL::StructDefinition>(Position(),
             *result));
     return result;
 }

@@ -141,13 +141,16 @@ class ObjectCacheIndexMap {
   // If |obj| is in the map, immediately return true.  Otherwise add it to the
   // map and return false. In either case set |*index_out| to the index
   // associated with the map.
-  bool LookupOrInsert(Handle<HeapObject> obj, int* index_out) {
+  bool LookupOrInsert(HeapObject obj, int* index_out) {
     auto find_result = map_.FindOrInsert(obj);
     if (!find_result.already_exists) {
       *find_result.entry = next_index_++;
     }
     *index_out = *find_result.entry;
     return find_result.already_exists;
+  }
+  bool LookupOrInsert(Handle<HeapObject> obj, int* index_out) {
+    return LookupOrInsert(*obj, index_out);
   }
 
   bool Lookup(HeapObject obj, int* index_out) const {
@@ -158,6 +161,8 @@ class ObjectCacheIndexMap {
     *index_out = *index;
     return true;
   }
+
+  Handle<FixedArray> Values(Isolate* isolate);
 
   int size() const { return next_index_; }
 
@@ -467,6 +472,7 @@ class Serializer::ObjectSerializer : public ObjectVisitor {
   uint32_t SerializeBackingStore(void* backing_store, int32_t byte_length);
   void SerializeJSTypedArray();
   void SerializeJSArrayBuffer();
+  void SerializeJSExternalObject();
   void SerializeExternalString();
   void SerializeExternalStringAsSequentialString();
 

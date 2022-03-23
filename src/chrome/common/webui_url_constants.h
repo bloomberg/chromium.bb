@@ -283,6 +283,8 @@ extern const char kChromeUIIntenetConfigDialogURL[];
 extern const char kChromeUIIntenetDetailDialogURL[];
 extern const char kChromeUIInternetConfigDialogHost[];
 extern const char kChromeUIInternetDetailDialogHost[];
+extern const char kChromeUIBorealisCreditsHost[];
+extern const char kChromeUIBorealisCreditsURL[];
 extern const char kChromeUICrostiniCreditsHost[];
 extern const char kChromeUICrostiniCreditsURL[];
 extern const char kChromeUILockScreenNetworkHost[];
@@ -337,22 +339,24 @@ extern const char kOsUIAccountManagerWelcomeURL[];
 extern const char kOsUIAccountMigrationWelcomeURL[];
 extern const char kOsUIAddSupervisionURL[];
 extern const char kOsUIAppDisabledURL[];
-extern const char kOsUICrashesUrl[];
+extern const char kOsUICrashesURL[];
 extern const char kOsUICreditsURL[];
-extern const char kOsUIDeviceLogUrl[];
-extern const char kOsUIDriveInternalsUrl[];
+extern const char kOsUIDeviceLogURL[];
+extern const char kOsUIDriveInternalsURL[];
 extern const char kOsUIEmojiPickerURL[];
 extern const char kOsUIGpuURL[];
 extern const char kOsUIHistogramsURL[];
-extern const char kOsUIInvalidationsUrl[];
+extern const char kOsUIInvalidationsURL[];
 extern const char kOsUILockScreenNetworkURL[];
-extern const char kOsUINetworkUrl[];
+extern const char kOsUINetworkURL[];
 extern const char kOsUIRestartURL[];
 extern const char kOsUIScanningAppURL[];
 extern const char kOsUISettingsURL[];
-extern const char kOsUISignInInternalsUrl[];
-extern const char kOsUISyncInternalsUrl[];
-extern const char kOsUITerms[];
+extern const char kOsUISignInInternalsURL[];
+extern const char kOsUISyncInternalsURL[];
+extern const char kOsUISysInternalsUrl[];
+extern const char kOsUISystemURL[];
+extern const char kOsUITermsURL[];
 
 // Returns true if this web UI is part of the "system UI". Generally this is
 // UI that opens in a window (not a browser tab) and that on other operating
@@ -366,7 +370,7 @@ extern const char kChromeUIAppDisabledHost[];
 extern const char kChromeUIOSSettingsHost[];
 extern const char kChromeUIOSSettingsURL[];
 extern const char kOsUIAboutURL[];
-extern const char kOsUIComponentsUrl[];
+extern const char kOsUIComponentsURL[];
 extern const char kOsUIFlagsURL[];
 extern const char kOsUIVersionURL[];
 #endif
@@ -377,7 +381,7 @@ extern const char kChromeUIWebUIJsErrorURL[];
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+    BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kChromeUIConnectorsInternalsHost[];
 #endif
 

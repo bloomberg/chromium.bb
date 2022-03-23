@@ -236,7 +236,8 @@ fn linearMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
           {
             view: ctx.getCurrentTexture().createView(),
 
-            loadValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            loadOp: 'clear',
             storeOp: 'store',
           },
         ],
@@ -247,7 +248,7 @@ fn linearMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
       passEncoder.setPipeline(pipeline);
       passEncoder.setBindGroup(0, uniformBindGroup);
       passEncoder.draw(6, 1, 0, 0);
-      passEncoder.endPass();
+      passEncoder.end();
       t.device.queue.submit([commandEncoder.finish()]);
     }
 
@@ -314,7 +315,8 @@ fn main(@location(0) fragColor: vec4<f32>) -> @location(0) vec4<f32> {
           {
             view: ctx.getCurrentTexture().createView(),
 
-            loadValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            loadOp: 'clear',
             storeOp: 'store',
           },
         ],
@@ -324,7 +326,7 @@ fn main(@location(0) fragColor: vec4<f32>) -> @location(0) vec4<f32> {
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);
       passEncoder.draw(24, 1, 0, 0);
-      passEncoder.endPass();
+      passEncoder.end();
       t.device.queue.submit([commandEncoder.finish()]);
     }
 
@@ -396,7 +398,8 @@ fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
           {
             view: ctx.getCurrentTexture().createView(),
 
-            loadValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            loadOp: 'clear',
             storeOp: 'store',
           },
         ],
@@ -406,7 +409,7 @@ fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);
       passEncoder.draw(6, 1, 0, 0);
-      passEncoder.endPass();
+      passEncoder.end();
       t.device.queue.submit([commandEncoder.finish()]);
     }
 

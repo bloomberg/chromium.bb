@@ -335,6 +335,7 @@ export interface PivotTableState {
 // correctly. Generated together with the text of query and passed without the
 // change to the query response.
 export interface PivotTableReduxQueryMetadata {
+  tableName: string;
   pivotColumns: string[];
   aggregationColumns: string[];
 }
@@ -511,7 +512,8 @@ export function isAdbTarget(target: RecordingTarget):
 }
 
 export function hasActiveProbes(config: RecordConfig) {
-  const fieldsWithEmptyResult = new Set<string>(['hpBlockClient']);
+  const fieldsWithEmptyResult =
+      new Set<string>(['hpBlockClient', 'allAtraceApps']);
   let key: keyof RecordConfig;
   for (key in config) {
     if (typeof (config[key]) === 'boolean' && config[key] === true &&

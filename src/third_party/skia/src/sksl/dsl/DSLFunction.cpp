@@ -22,7 +22,7 @@ namespace SkSL {
 namespace dsl {
 
 void DSLFunction::init(DSLModifiers modifiers, const DSLType& returnType, std::string_view name,
-                       SkTArray<DSLParameter*> params, PositionInfo pos) {
+                       SkTArray<DSLParameter*> params, Position pos) {
     fPosition = pos;
     // Conservatively assume all user-defined functions have side effects.
     if (!ThreadContext::IsModule()) {
@@ -54,7 +54,7 @@ void DSLFunction::init(DSLModifiers modifiers, const DSLType& returnType, std::s
     SkASSERT(paramVars.size() == params.size());
     fDecl = SkSL::FunctionDeclaration::Convert(ThreadContext::Context(),
                                                *ThreadContext::SymbolTable(),
-                                               pos.line(),
+                                               pos,
                                                ThreadContext::Modifiers(modifiers.fModifiers),
                                                name == "main" ? name : DSLWriter::Name(name),
                                                std::move(paramVars), &returnType.skslType());
@@ -68,11 +68,11 @@ void DSLFunction::init(DSLModifiers modifiers, const DSLType& returnType, std::s
         // case the definition is delayed. If we end up defining the function immediately, we'll
         // remove the prototype in define().
         ThreadContext::ProgramElements().push_back(std::make_unique<SkSL::FunctionPrototype>(
-                pos.line(), fDecl, ThreadContext::IsModule()));
+                pos, fDecl, ThreadContext::IsModule()));
     }
 }
 
-void DSLFunction::define(DSLBlock block, PositionInfo pos) {
+void DSLFunction::define(DSLBlock block, Position pos) {
     std::unique_ptr<SkSL::Block> body = block.release();
     if (!fDecl) {
         // Evidently we failed to create the declaration; error should already have been reported.
@@ -98,7 +98,7 @@ void DSLFunction::define(DSLBlock block, PositionInfo pos) {
     }
     std::unique_ptr<FunctionDefinition> function = FunctionDefinition::Convert(
             ThreadContext::Context(),
-            pos.line(),
+            pos,
             *fDecl,
             std::move(body),
             /*builtin=*/false);
@@ -107,7 +107,7 @@ void DSLFunction::define(DSLBlock block, PositionInfo pos) {
     ThreadContext::ProgramElements().push_back(std::move(function));
 }
 
-DSLExpression DSLFunction::call(SkTArray<DSLWrapper<DSLExpression>> args, PositionInfo pos) {
+DSLExpression DSLFunction::call(SkTArray<DSLWrapper<DSLExpression>> args, Position pos) {
     ExpressionArray released;
     released.reserve_back(args.size());
     for (DSLWrapper<DSLExpression>& arg : args) {
@@ -116,9 +116,9 @@ DSLExpression DSLFunction::call(SkTArray<DSLWrapper<DSLExpression>> args, Positi
     return this->call(std::move(released));
 }
 
-DSLExpression DSLFunction::call(ExpressionArray args, PositionInfo pos) {
+DSLExpression DSLFunction::call(ExpressionArray args, Position pos) {
     std::unique_ptr<SkSL::Expression> result = SkSL::FunctionCall::Convert(ThreadContext::Context(),
-            pos.line(), *fDecl, std::move(args));
+            pos, *fDecl, std::move(args));
     return DSLExpression(std::move(result), pos);
 }
 

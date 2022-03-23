@@ -31,7 +31,7 @@ namespace module_decoder_unittest {
 #define WASM_INIT_EXPR_F32(val) WASM_F32(val), kExprEnd
 #define WASM_INIT_EXPR_I64(val) WASM_I64(val), kExprEnd
 #define WASM_INIT_EXPR_F64(val) WASM_F64(val), kExprEnd
-#define WASM_INIT_EXPR_EXTERN_REF_NULL WASM_REF_NULL(kExternRefCode), kExprEnd
+#define WASM_INIT_EXPR_EXTERN_REF_NULL WASM_REF_NULL(kAnyRefCode), kExprEnd
 #define WASM_INIT_EXPR_FUNC_REF_NULL WASM_REF_NULL(kFuncRefCode), kExprEnd
 #define WASM_INIT_EXPR_REF_FUNC(val) WASM_REF_FUNC(val), kExprEnd
 #define WASM_INIT_EXPR_GLOBAL(index) WASM_GLOBAL_GET(index), kExprEnd
@@ -76,9 +76,11 @@ namespace module_decoder_unittest {
                     'H', 'i', 'n', 't', 's'),                              \
           ADD_COUNT(__VA_ARGS__))
 
-#define SECTION_BRANCH_HINTS(...)                                           \
-  SECTION(Unknown,                                                          \
-          ADD_COUNT('b', 'r', 'a', 'n', 'c', 'h', 'H', 'i', 'n', 't', 's'), \
+#define SECTION_BRANCH_HINTS(...)                                          \
+  SECTION(Unknown,                                                         \
+          ADD_COUNT('m', 'e', 't', 'a', 'd', 'a', 't', 'a', '.', 'c', 'o', \
+                    'd', 'e', '.', 'b', 'r', 'a', 'n', 'c', 'h', '_', 'h', \
+                    'i', 'n', 't'),                                        \
           __VA_ARGS__)
 
 #define FAIL_IF_NO_EXPERIMENTAL_EH(data)                                 \
@@ -183,12 +185,12 @@ struct ValueTypePair {
   uint8_t code;
   ValueType type;
 } kValueTypes[] = {
-    {kI32Code, kWasmI32},              // --
-    {kI64Code, kWasmI64},              // --
-    {kF32Code, kWasmF32},              // --
-    {kF64Code, kWasmF64},              // --
-    {kFuncRefCode, kWasmFuncRef},      // --
-    {kExternRefCode, kWasmExternRef},  // --
+    {kI32Code, kWasmI32},          // --
+    {kI64Code, kWasmI64},          // --
+    {kF32Code, kWasmF32},          // --
+    {kF64Code, kWasmF64},          // --
+    {kFuncRefCode, kWasmFuncRef},  // --
+    {kAnyRefCode, kWasmAnyRef},    // --
 };
 
 class WasmModuleVerifyTest : public TestWithIsolateAndZone {
@@ -307,7 +309,7 @@ TEST_F(WasmModuleVerifyTest, ExternRefGlobal) {
       TWO_EMPTY_FUNCTIONS(SIG_INDEX(0)),
       SECTION(Global,                          // --
               ENTRY_COUNT(2),                  // --
-              kExternRefCode,                  // local type
+              kAnyRefCode,                     // local type
               0,                               // immutable
               WASM_INIT_EXPR_EXTERN_REF_NULL,  // init
               kFuncRefCode,                    // local type
@@ -334,7 +336,7 @@ TEST_F(WasmModuleVerifyTest, ExternRefGlobal) {
     EXPECT_EQ(0u, result.value()->data_segments.size());
 
     const WasmGlobal* global = &result.value()->globals[0];
-    EXPECT_EQ(kWasmExternRef, global->type);
+    EXPECT_EQ(kWasmAnyRef, global->type);
     EXPECT_FALSE(global->mutability);
 
     global = &result.value()->globals[1];
@@ -408,12 +410,12 @@ TEST_F(WasmModuleVerifyTest, ExternRefGlobalWithGlobalInit) {
               ADD_COUNT('m'),   // module name
               ADD_COUNT('f'),   // global name
               kExternalGlobal,  // import kind
-              kExternRefCode,   // type
+              kAnyRefCode,      // type
               0),               // mutability
       SECTION(Global,           // --
               ENTRY_COUNT(1),
-              kExternRefCode,  // local type
-              0,               // immutable
+              kAnyRefCode,  // local type
+              0,            // immutable
               WASM_INIT_EXPR_GLOBAL(0)),
   };
 
@@ -427,7 +429,7 @@ TEST_F(WasmModuleVerifyTest, ExternRefGlobalWithGlobalInit) {
 
     const WasmGlobal* global = &result.value()->globals.back();
 
-    EXPECT_EQ(kWasmExternRef, global->type);
+    EXPECT_EQ(kWasmAnyRef, global->type);
     EXPECT_FALSE(global->mutability);
   }
 }
@@ -439,12 +441,12 @@ TEST_F(WasmModuleVerifyTest, NullGlobalWithGlobalInit) {
               ADD_COUNT('m'),   // module name
               ADD_COUNT('n'),   // global name
               kExternalGlobal,  // import kind
-              kExternRefCode,   // type
+              kAnyRefCode,      // type
               0),               // mutability
       SECTION(Global,           // --
               ENTRY_COUNT(1),
-              kExternRefCode,  // local type
-              0,               // immutable
+              kAnyRefCode,  // local type
+              0,            // immutable
               WASM_INIT_EXPR_GLOBAL(0)),
   };
 
@@ -459,7 +461,7 @@ TEST_F(WasmModuleVerifyTest, NullGlobalWithGlobalInit) {
 
     const WasmGlobal* global = &result.value()->globals.back();
 
-    EXPECT_EQ(kWasmExternRef, global->type);
+    EXPECT_EQ(kWasmAnyRef, global->type);
     EXPECT_FALSE(global->mutability);
   }
 }
@@ -1929,7 +1931,7 @@ TEST_F(WasmModuleVerifyTest, ElementSectionInitExternRefTableWithFuncRef) {
       ONE_EMPTY_FUNCTION(SIG_INDEX(0)),
       // table declaration ---------------------------------------------------
       SECTION(Table, ENTRY_COUNT(2),  // section header
-              kExternRefCode, 0, 5,   // table 0
+              kAnyRefCode, 0, 5,      // table 0
               kFuncRefCode, 0, 9),    // table 1
       // elements ------------------------------------------------------------
       SECTION(Element,
@@ -2009,7 +2011,7 @@ TEST_F(WasmModuleVerifyTest, ElementSectionDontInitExternRefImportedTable) {
               ADD_COUNT('m'),  // module name
               ADD_COUNT('s'),  // table name
               kExternalTable,  // import kind
-              kExternRefCode,  // elem_type
+              kAnyRefCode,     // elem_type
               0,               // no maximum field
               10),             // initial size
       // funcs ---------------------------------------------------------------
@@ -2046,6 +2048,65 @@ TEST_F(WasmModuleVerifyTest, ElementSectionGlobalGetOutOfBounds) {
   EXPECT_FAILURE_WITH_MSG(data, "Invalid global index: 0");
 }
 
+// Make sure extended constants do not work without the experimental feature.
+TEST_F(WasmModuleVerifyTest, ExtendedConstantsFail) {
+  static const byte data[] = {
+      SECTION(Import, ENTRY_COUNT(1),         // one import
+              0x01, 'm', 0x01, 'g',           // module, name
+              kExternalGlobal, kI32Code, 0),  // type, mutability
+      SECTION(Global, ENTRY_COUNT(1),         // one defined global
+              kI32Code, 0,                    // type, mutability
+              // initializer
+              kExprGlobalGet, 0x00, kExprGlobalGet, 0x00, kExprI32Add,
+              kExprEnd)};
+  EXPECT_FAILURE_WITH_MSG(data,
+                          "opcode i32.add is not allowed in init. expressions");
+}
+
+TEST_F(WasmModuleVerifyTest, ExtendedConstantsI32) {
+  WASM_FEATURE_SCOPE(extended_const);
+  static const byte data[] = {
+      SECTION(Import, ENTRY_COUNT(1),         // one import
+              0x01, 'm', 0x01, 'g',           // module, name
+              kExternalGlobal, kI32Code, 0),  // type, mutability
+      SECTION(Global, ENTRY_COUNT(1),         // one defined global
+              kI32Code, 0,                    // type, mutability
+              // initializer
+              kExprGlobalGet, 0x00, kExprGlobalGet, 0x00, kExprI32Add,
+              kExprGlobalGet, 0x00, kExprI32Sub, kExprGlobalGet, 0x00,
+              kExprI32Mul, kExprEnd)};
+  EXPECT_VERIFIES(data);
+}
+
+TEST_F(WasmModuleVerifyTest, ExtendedConstantsI64) {
+  WASM_FEATURE_SCOPE(extended_const);
+  static const byte data[] = {
+      SECTION(Import, ENTRY_COUNT(1),         // one import
+              0x01, 'm', 0x01, 'g',           // module, name
+              kExternalGlobal, kI64Code, 0),  // type, mutability
+      SECTION(Global, ENTRY_COUNT(1),         // one defined global
+              kI64Code, 0,                    // type, mutability
+              // initializer
+              kExprGlobalGet, 0x00, kExprGlobalGet, 0x00, kExprI64Add,
+              kExprGlobalGet, 0x00, kExprI64Sub, kExprGlobalGet, 0x00,
+              kExprI64Mul, kExprEnd)};
+  EXPECT_VERIFIES(data);
+}
+
+TEST_F(WasmModuleVerifyTest, ExtendedConstantsTypeError) {
+  WASM_FEATURE_SCOPE(extended_const);
+  static const byte data[] = {
+      SECTION(Import, ENTRY_COUNT(1),         // one import
+              0x01, 'm', 0x01, 'g',           // module, name
+              kExternalGlobal, kI32Code, 0),  // type, mutability
+      SECTION(Global, ENTRY_COUNT(1),         // one defined global
+              kI32Code, 0,                    // type, mutability
+              // initializer
+              kExprGlobalGet, 0x00, kExprI64Const, 1, kExprI32Add, kExprEnd)};
+  EXPECT_FAILURE_WITH_MSG(
+      data, "i32.add[1] expected type i32, found i64.const of type i64");
+}
+
 TEST_F(WasmModuleVerifyTest, IndirectFunctionNoFunctions) {
   static const byte data[] = {
       // sig#0 -------------------------------------------------------
@@ -2075,7 +2136,7 @@ TEST_F(WasmModuleVerifyTest, MultipleTables) {
               kFuncRefCode,    // table 1: type
               0,               // table 1: no maximum
               10,              // table 1: minimum size
-              kExternRefCode,  // table 2: type
+              kAnyRefCode,     // table 2: type
               0,               // table 2: no maximum
               11),             // table 2: minimum size
   };
@@ -2089,7 +2150,7 @@ TEST_F(WasmModuleVerifyTest, MultipleTables) {
   EXPECT_EQ(kWasmFuncRef, result.value()->tables[0].type);
 
   EXPECT_EQ(11u, result.value()->tables[1].initial_size);
-  EXPECT_EQ(kWasmExternRef, result.value()->tables[1].type);
+  EXPECT_EQ(kWasmAnyRef, result.value()->tables[1].type);
 }
 
 TEST_F(WasmModuleVerifyTest, TypedFunctionTable) {
@@ -2228,10 +2289,10 @@ TEST_F(WasmModuleVerifyTest, BranchHinting) {
   WASM_FEATURE_SCOPE(branch_hinting);
   static const byte data[] = {
       TYPE_SECTION(1, SIG_ENTRY_v_v), FUNCTION_SECTION(2, 0, 0),
-      SECTION_BRANCH_HINTS(ENTRY_COUNT(2), 0 /*func_index*/, 0 /*reserved*/,
-                           ENTRY_COUNT(1), 1 /*likely*/, 2 /* if offset*/,
-                           1 /*func_index*/, 0 /*reserved*/, ENTRY_COUNT(1),
-                           0 /*unlikely*/, 4 /* br_if offset*/),
+      SECTION_BRANCH_HINTS(ENTRY_COUNT(2), 0 /*func_index*/, ENTRY_COUNT(1),
+                           3 /* if offset*/, 1 /*reserved*/, 1 /*likely*/,
+                           1 /*func_index*/, ENTRY_COUNT(1),
+                           5 /* br_if offset*/, 1 /*reserved*/, 0 /*unlikely*/),
       SECTION(Code, ENTRY_COUNT(2),
               ADD_COUNT(0, /*no locals*/
                         WASM_IF(WASM_I32V_1(1), WASM_NOP), WASM_END),
@@ -2243,9 +2304,9 @@ TEST_F(WasmModuleVerifyTest, BranchHinting) {
 
   EXPECT_EQ(2u, result.value()->branch_hints.size());
   EXPECT_EQ(WasmBranchHint::kLikely,
-            result.value()->branch_hints[0].GetHintFor(2));
+            result.value()->branch_hints[0].GetHintFor(3));
   EXPECT_EQ(WasmBranchHint::kUnlikely,
-            result.value()->branch_hints[1].GetHintFor(4));
+            result.value()->branch_hints[1].GetHintFor(5));
 }
 
 class WasmSignatureDecodeTest : public TestWithZone {
@@ -3187,7 +3248,7 @@ TEST_F(WasmModuleVerifyTest, PassiveElementSegmentExternRef) {
       // table declaration -----------------------------------------------------
       SECTION(Table, ENTRY_COUNT(1), kFuncRefCode, 0, 1),
       // element segments  -----------------------------------------------------
-      SECTION(Element, ENTRY_COUNT(1), PASSIVE_WITH_ELEMENTS, kExternRefCode,
+      SECTION(Element, ENTRY_COUNT(1), PASSIVE_WITH_ELEMENTS, kAnyRefCode,
               U32V_1(0)),
       // code ------------------------------------------------------------------
       ONE_EMPTY_BODY};

@@ -40,21 +40,23 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
-import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
-import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBox;
-import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxModel;
-import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
-import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.autofill_assistant.AssistantCoordinator;
+import org.chromium.components.autofill_assistant.AssistantStaticDependencies;
+import org.chromium.components.autofill_assistant.R;
+import org.chromium.components.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
+import org.chromium.components.autofill_assistant.carousel.AssistantCarouselModel;
+import org.chromium.components.autofill_assistant.carousel.AssistantChip;
+import org.chromium.components.autofill_assistant.details.AssistantDetails;
+import org.chromium.components.autofill_assistant.header.AssistantHeaderModel;
+import org.chromium.components.autofill_assistant.infobox.AssistantInfoBox;
+import org.chromium.components.autofill_assistant.infobox.AssistantInfoBoxModel;
+import org.chromium.components.autofill_assistant.overlay.AssistantOverlayModel;
+import org.chromium.components.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -123,7 +125,8 @@ public class AutofillAssistantUiTest {
                             getActivity(), R.dimen.autofill_assistant_profile_size),
                     staticDependencies.createImageFetcher(),
                     staticDependencies.createEditorFactory(),
-                    staticDependencies.createDependencies(getActivity()).getWindowAndroid());
+                    staticDependencies.createDependencies(getActivity()).getWindowAndroid(),
+                    staticDependencies.createSettingsUtil());
             coordinator.show();
             return coordinator;
         });

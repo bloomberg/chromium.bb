@@ -80,7 +80,7 @@ public:
         uint32_t       fAttachmentCount;
     };
 
-    enum AttachmentFlags {
+    enum AttachmentFlags : uint32_t {
         kColor_AttachmentFlag = 0x1,
         kStencil_AttachmentFlag = 0x2,
         kResolve_AttachmentFlag = 0x4,
@@ -199,7 +199,6 @@ private:
     uint32_t              fClearValueCount;
     // For internally created render passes we assume the color attachment index is always 0.
     uint32_t              fColorAttachmentIndex = 0;
-    uint32_t              fResolveAttachmentIndex = 0;
 
     using INHERITED = GrVkManagedResource;
 };

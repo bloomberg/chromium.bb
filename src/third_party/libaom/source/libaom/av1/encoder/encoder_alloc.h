@@ -278,6 +278,7 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free_frame_buffer(&cpi->trial_frame_rst);
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
+  aom_free_frame_buffer(&cpi->orig_source);
 
   free_token_info(token_info);
 

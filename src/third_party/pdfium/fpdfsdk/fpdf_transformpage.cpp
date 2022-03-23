@@ -21,10 +21,12 @@
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fxcrt/fx_string_wrappers.h"
 #include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_path.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/span.h"
 
 namespace {
@@ -320,7 +322,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFClipPath_CountPaths(FPDF_CLIPPATH clip_path) {
   if (!pClipPath || !pClipPath->HasRef())
     return -1;
 
-  return pClipPath->GetPathCount();
+  return pdfium::base::checked_cast<int>(pClipPath->GetPathCount());
 }
 
 FPDF_EXPORT int FPDF_CALLCONV

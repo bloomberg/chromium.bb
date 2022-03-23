@@ -95,6 +95,7 @@
 #include "pc/test/mock_peer_connection_observers.h"
 #include "pc/video_track_source.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/event.h"
 #include "rtc_base/fake_clock.h"
 #include "rtc_base/fake_mdns_responder.h"
 #include "rtc_base/fake_network.h"
@@ -111,14 +112,16 @@
 #include "rtc_base/socket_address.h"
 #include "rtc_base/ssl_stream_adapter.h"
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
+#include "rtc_base/task_utils/repeating_task.h"
 #include "rtc_base/task_utils/to_queued_task.h"
 #include "rtc_base/test_certificate_verifier.h"
 #include "rtc_base/thread.h"
+#include "rtc_base/thread_annotations.h"
 #include "rtc_base/time_utils.h"
 #include "rtc_base/virtual_socket_server.h"
 #include "system_wrappers/include/metrics.h"
-#include "test/field_trial.h"
 #include "test/gmock.h"
+#include "test/scoped_key_value_config.h"
 
 namespace webrtc {
 
@@ -171,6 +174,24 @@ int FindFirstMediaStatsIndexByKind(
     const std::string& kind,
     const std::vector<const webrtc::RTCMediaStreamTrackStats*>&
         media_stats_vec);
+
+class TaskQueueMetronome : public webrtc::Metronome {
+ public:
+  TaskQueueMetronome(TaskQueueFactory* factory, TimeDelta tick_period);
+  ~TaskQueueMetronome() override;
+
+  // webrtc::Metronome implementation.
+  void AddListener(TickListener* listener) override;
+  void RemoveListener(TickListener* listener) override;
+  TimeDelta TickPeriod() const override;
+
+ private:
+  Mutex mutex_;
+  const TimeDelta tick_period_;
+  std::set<TickListener*> listeners_ RTC_GUARDED_BY(mutex_);
+  RepeatingTaskHandle tick_task_;
+  rtc::TaskQueue queue_;
+};
 
 class SignalingMessageReceiver {
  public:
@@ -735,6 +756,8 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
     pc_factory_dependencies.task_queue_factory =
         webrtc::CreateDefaultTaskQueueFactory();
     pc_factory_dependencies.trials = std::make_unique<FieldTrialBasedConfig>();
+    pc_factory_dependencies.metronome = std::make_unique<TaskQueueMetronome>(
+        pc_factory_dependencies.task_queue_factory.get(), TimeDelta::Millis(8));
     cricket::MediaEngineDependencies media_deps;
     media_deps.task_queue_factory =
         pc_factory_dependencies.task_queue_factory.get();
@@ -1343,9 +1366,9 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
         fss_(new rtc::FirewallSocketServer(ss_.get())),
         network_thread_(new rtc::Thread(fss_.get())),
         worker_thread_(rtc::Thread::Create()),
-        field_trials_(field_trials.has_value()
-                          ? new test::ScopedFieldTrials(*field_trials)
-                          : nullptr) {
+        // TODO(bugs.webrtc.org/10335): Pass optional ScopedKeyValueConfig.
+        field_trials_(new test::ScopedKeyValueConfig(
+            field_trials.has_value() ? *field_trials : "")) {
     network_thread_->SetName("PCNetworkThread", this);
     worker_thread_->SetName("PCWorkerThread", this);
     RTC_CHECK(network_thread_->Start());
@@ -1832,6 +1855,8 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
                               expected_cipher_suite);
   }
 
+  const WebRtcKeyValueConfig& trials() const { return *field_trials_.get(); }
+
  protected:
   SdpSemantics sdp_semantics_;
 
@@ -1851,7 +1876,7 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
   std::vector<std::unique_ptr<cricket::TestTurnCustomizer>> turn_customizers_;
   std::unique_ptr<PeerConnectionIntegrationWrapper> caller_;
   std::unique_ptr<PeerConnectionIntegrationWrapper> callee_;
-  std::unique_ptr<test::ScopedFieldTrials> field_trials_;
+  std::unique_ptr<WebRtcKeyValueConfig> field_trials_;
 };
 
 }  // namespace webrtc

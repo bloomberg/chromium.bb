@@ -345,6 +345,125 @@ TEST(OgHttp2AdapterTest, ClientHandles100Headers) {
               EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::PING}));
 }
 
+TEST(OgHttp2AdapterTest, QueuingWindowUpdateAffectsWindow) {
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{.perspective = Perspective::kClient};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  EXPECT_EQ(adapter->GetReceiveWindowSize(), kInitialFlowControlWindowSize);
+  adapter->SubmitWindowUpdate(0, 10000);
+  EXPECT_EQ(adapter->GetReceiveWindowSize(),
+            kInitialFlowControlWindowSize + 10000);
+
+  const std::vector<Header> headers =
+      ToHeaders({{":method", "GET"},
+                 {":scheme", "http"},
+                 {":authority", "example.com"},
+                 {":path", "/this/is/request/one"}});
+  const int32_t stream_id = adapter->SubmitRequest(headers, nullptr, nullptr);
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(WINDOW_UPDATE, 0, 4, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(WINDOW_UPDATE, 0, 4, 0x0, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_id, _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_id, _, 0x5, 0));
+
+  int result = adapter->Send();
+  EXPECT_EQ(0, result);
+
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id),
+            kInitialFlowControlWindowSize);
+  adapter->SubmitWindowUpdate(1, 20000);
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id),
+            kInitialFlowControlWindowSize + 20000);
+}
+
+TEST(OgHttp2AdapterTest, AckOfSettingInitialWindowSizeAffectsWindow) {
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{.perspective = Perspective::kClient};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  testing::InSequence s;
+
+  const std::vector<Header> headers =
+      ToHeaders({{":method", "GET"},
+                 {":scheme", "http"},
+                 {":authority", "example.com"},
+                 {":path", "/this/is/request/one"}});
+  const int32_t stream_id1 = adapter->SubmitRequest(headers, nullptr, nullptr);
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_id1, _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_id1, _, 0x5, 0));
+
+  int result = adapter->Send();
+  EXPECT_EQ(0, result);
+
+  const std::string initial_frames =
+      TestFrameSequence()
+          .ServerPreface()
+          .SettingsAck()  // Ack of the client's initial settings.
+          .Serialize();
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSettingsEnd());
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck);
+
+  int64_t parse_result = adapter->ProcessBytes(initial_frames);
+  EXPECT_EQ(initial_frames.size(), static_cast<size_t>(parse_result));
+
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id1),
+            kInitialFlowControlWindowSize);
+  adapter->SubmitSettings({{INITIAL_WINDOW_SIZE, 80000u}});
+  // No update for the first stream, yet.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id1),
+            kInitialFlowControlWindowSize);
+
+  // Ack of server's initial settings.
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+
+  // Outbound SETTINGS containing INITIAL_WINDOW_SIZE.
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 6, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 6, 0x0, 0));
+
+  result = adapter->Send();
+  EXPECT_EQ(0, result);
+
+  // Still no update, as a SETTINGS ack has not yet been received.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id1),
+            kInitialFlowControlWindowSize);
+
+  const std::string settings_ack =
+      TestFrameSequence().SettingsAck().Serialize();
+
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck);
+
+  parse_result = adapter->ProcessBytes(settings_ack);
+  EXPECT_EQ(settings_ack.size(), static_cast<size_t>(parse_result));
+
+  // Stream window has been updated.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id1), 80000);
+
+  const std::vector<Header> headers2 =
+      ToHeaders({{":method", "GET"},
+                 {":scheme", "http"},
+                 {":authority", "example.com"},
+                 {":path", "/this/is/request/two"}});
+  const int32_t stream_id2 = adapter->SubmitRequest(headers, nullptr, nullptr);
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_id2, _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_id2, _, 0x5, 0));
+  result = adapter->Send();
+  EXPECT_EQ(0, result);
+
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(stream_id2), 80000);
+}
+
 TEST(OgHttp2AdapterTest, ClientRejects100HeadersWithFin) {
   DataSavingVisitor visitor;
   OgHttp2Adapter::Options options{.perspective = Perspective::kClient};
@@ -1066,14 +1185,16 @@ TEST(OgHttp2AdapterTest, ClientHandlesMetadataWithPayloadError) {
   // Negative integer returned to indicate an error.
   EXPECT_LT(stream_result, 0);
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::INTERNAL_ERROR)));
 
   EXPECT_FALSE(adapter->want_read());
   EXPECT_TRUE(adapter->want_write());
   result = adapter->Send();
   EXPECT_EQ(0, result);
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientHandlesMetadataWithCompletionError) {
@@ -1139,14 +1260,16 @@ TEST(OgHttp2AdapterTest, ClientHandlesMetadataWithCompletionError) {
   // Negative integer returned to indicate an error.
   EXPECT_LT(stream_result, 0);
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::INTERNAL_ERROR)));
 
   EXPECT_FALSE(adapter->want_read());
   EXPECT_TRUE(adapter->want_write());
   result = adapter->Send();
   EXPECT_EQ(0, result);
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientRstStreamWhileHandlingHeaders) {
@@ -1290,13 +1413,15 @@ TEST(OgHttp2AdapterTest, ClientConnectionErrorWhileHandlingHeaders) {
   const int64_t stream_result = adapter->ProcessBytes(stream_frames);
   EXPECT_LT(stream_result, 0);
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::INTERNAL_ERROR)));
 
   EXPECT_TRUE(adapter->want_write());
   result = adapter->Send();
   EXPECT_EQ(0, result);
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientConnectionErrorWhileHandlingHeadersOnly) {
@@ -1360,13 +1485,15 @@ TEST(OgHttp2AdapterTest, ClientConnectionErrorWhileHandlingHeadersOnly) {
   const int64_t stream_result = adapter->ProcessBytes(stream_frames);
   EXPECT_LT(stream_result, 0);
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::INTERNAL_ERROR)));
 
   EXPECT_TRUE(adapter->want_write());
   result = adapter->Send();
   EXPECT_EQ(0, result);
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientRejectsHeaders) {
@@ -1427,13 +1554,15 @@ TEST(OgHttp2AdapterTest, ClientRejectsHeaders) {
   const int64_t stream_result = adapter->ProcessBytes(stream_frames);
   EXPECT_LT(stream_result, 0);
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::INTERNAL_ERROR)));
 
   EXPECT_TRUE(adapter->want_write());
   result = adapter->Send();
   EXPECT_EQ(0, result);
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientHandlesSmallerHpackHeaderTableSetting) {
@@ -1834,13 +1963,15 @@ TEST(OgHttp2AdapterTest, ClientFailsOnGoAway) {
   const int64_t stream_result = adapter->ProcessBytes(stream_frames);
   EXPECT_LT(stream_result, 0);
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::INTERNAL_ERROR)));
 
   EXPECT_TRUE(adapter->want_write());
   result = adapter->Send();
   EXPECT_EQ(0, result);
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientRejects101Response) {
@@ -2220,9 +2351,7 @@ TEST(OgHttp2AdapterTest, InvalidInitialWindowSetting) {
       visitor,
       OnInvalidFrame(0, Http2VisitorInterface::InvalidFrameError::kFlowControl))
       .Times(2);
-  EXPECT_CALL(visitor,
-              OnConnectionError(
-                  Http2VisitorInterface::ConnectionError::kFlowControlError));
+  EXPECT_CALL(visitor, OnConnectionError(ConnectionError::kFlowControlError));
 
   const int64_t initial_result = adapter->ProcessBytes(initial_frames);
   EXPECT_EQ(initial_frames.size(), static_cast<size_t>(initial_result));
@@ -2232,8 +2361,11 @@ TEST(OgHttp2AdapterTest, InvalidInitialWindowSetting) {
 
   EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
   EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(
+      visitor,
+      OnFrameSent(GOAWAY, 0, _, 0x0,
+                  static_cast<int>(Http2ErrorCode::FLOW_CONTROL_ERROR)));
 
   int64_t result = adapter->Send();
   EXPECT_EQ(0, result);
@@ -2242,7 +2374,7 @@ TEST(OgHttp2AdapterTest, InvalidInitialWindowSetting) {
               testing::StartsWith(spdy::kHttp2ConnectionHeaderPrefix));
   serialized.remove_prefix(strlen(spdy::kHttp2ConnectionHeaderPrefix));
   EXPECT_THAT(serialized,
-              EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::SETTINGS}));
+              EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::GOAWAY}));
   visitor.Clear();
 }
 
@@ -2403,13 +2535,14 @@ TEST(OgHttp2AdapterTest, ClientForbidsPushPromise) {
 
   EXPECT_TRUE(adapter->want_write());
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::PROTOCOL_ERROR)));
 
   int result = adapter->Send();
   EXPECT_EQ(0, result);
-  // SETTINGS ack.
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientForbidsPushStream) {
@@ -2475,13 +2608,14 @@ TEST(OgHttp2AdapterTest, ClientForbidsPushStream) {
 
   EXPECT_TRUE(adapter->want_write());
 
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::PROTOCOL_ERROR)));
 
   int result = adapter->Send();
   EXPECT_EQ(0, result);
-  // SETTINGS ack.
-  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::SETTINGS}));
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientReceivesDataOnClosedStream) {
@@ -2766,6 +2900,89 @@ TEST(OgHttp2AdapterTest, ClientSendsMetadataAfterFlowControlBlock) {
   EXPECT_EQ(0, result);
 }
 
+TEST(OgHttp2AdapterTest, ClientQueuesRequests) {
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{.perspective = Perspective::kClient};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  testing::InSequence s;
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
+
+  adapter->Send();
+
+  const std::string initial_frames =
+      TestFrameSequence()
+          .ServerPreface({{MAX_CONCURRENT_STREAMS, 2}})
+          .SettingsAck()
+          .Serialize();
+
+  EXPECT_CALL(visitor, OnFrameHeader(0, 6, SETTINGS, 0x0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSetting(Http2Setting{
+                           Http2KnownSettingsId::MAX_CONCURRENT_STREAMS, 2u}))
+      .Times(2);
+  EXPECT_CALL(visitor, OnSettingsEnd());
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck());
+
+  adapter->ProcessBytes(initial_frames);
+
+  const std::vector<Header> headers =
+      ToHeaders({{":method", "GET"},
+                 {":scheme", "http"},
+                 {":authority", "example.com"},
+                 {":path", "/example/request"}});
+  std::vector<int32_t> stream_ids;
+  // Start two, which hits the limit.
+  int32_t stream_id = adapter->SubmitRequest(headers, nullptr, nullptr);
+  stream_ids.push_back(stream_id);
+  stream_id = adapter->SubmitRequest(headers, nullptr, nullptr);
+  stream_ids.push_back(stream_id);
+  // Start two more, which must be queued.
+  stream_id = adapter->SubmitRequest(headers, nullptr, nullptr);
+  stream_ids.push_back(stream_id);
+  stream_id = adapter->SubmitRequest(headers, nullptr, nullptr);
+  stream_ids.push_back(stream_id);
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_ids[0], _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_ids[0], _, 0x5, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_ids[1], _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_ids[1], _, 0x5, 0));
+
+  adapter->Send();
+
+  const std::string update_streams =
+      TestFrameSequence().Settings({{MAX_CONCURRENT_STREAMS, 5}}).Serialize();
+
+  EXPECT_CALL(visitor, OnFrameHeader(0, 6, SETTINGS, 0x0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSetting(Http2Setting{
+                           Http2KnownSettingsId::MAX_CONCURRENT_STREAMS, 5u}))
+      .Times(2);
+  EXPECT_CALL(visitor, OnSettingsEnd());
+
+  adapter->ProcessBytes(update_streams);
+  stream_id = adapter->SubmitRequest(headers, nullptr, nullptr);
+  stream_ids.push_back(stream_id);
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_ids[2], _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_ids[2], _, 0x5, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_ids[3], _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_ids[3], _, 0x5, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(HEADERS, stream_ids[4], _, 0x5));
+  EXPECT_CALL(visitor, OnFrameSent(HEADERS, stream_ids[4], _, 0x5, 0));
+  // Header frames should all have been sent in order, regardless of any
+  // queuing.
+
+  adapter->Send();
+}
+
 TEST(OgHttp2AdapterTest, SubmitMetadata) {
   DataSavingVisitor visitor;
   OgHttp2Adapter::Options options{.perspective = Perspective::kServer};
@@ -2856,13 +3073,41 @@ TEST(OgHttp2AdapterTest, GetSendWindowSize) {
   EXPECT_EQ(peer_window, kInitialFlowControlWindowSize);
 }
 
-TEST(OgHttp2AdapterTest, MarkDataConsumedForStream) {
+TEST(OgHttp2AdapterTest, MarkDataConsumedForNonexistentStream) {
   DataSavingVisitor visitor;
   OgHttp2Adapter::Options options{.perspective = Perspective::kServer};
   auto adapter = OgHttp2Adapter::Create(visitor, options);
 
-  EXPECT_QUICHE_BUG(adapter->MarkDataConsumedForStream(1, 11),
-                    "Stream 1 not found");
+  // Send some data on stream 1 so the connection window manager doesn't
+  // underflow later.
+  const std::string frames = TestFrameSequence()
+                                 .ClientPreface()
+                                 .Headers(1,
+                                          {{":method", "GET"},
+                                           {":scheme", "https"},
+                                           {":authority", "example.com"},
+                                           {":path", "/this/is/request/one"}},
+                                          /*fin=*/false)
+                                 .Data(1, "Some data on stream 1")
+                                 .Serialize();
+
+  // Client preface (empty SETTINGS)
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSettingsEnd());
+  // Stream 1
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, HEADERS, 4));
+  EXPECT_CALL(visitor, OnBeginHeadersForStream(1));
+  EXPECT_CALL(visitor, OnHeaderForStream).Times(4);
+  EXPECT_CALL(visitor, OnEndHeadersForStream(1));
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, DATA, 0));
+  EXPECT_CALL(visitor, OnBeginDataForStream(1, _));
+  EXPECT_CALL(visitor, OnDataForStream(1, _));
+
+  adapter->ProcessBytes(frames);
+
+  // This should not cause a crash or QUICHE_BUG.
+  adapter->MarkDataConsumedForStream(3, 11);
 }
 
 TEST(OgHttp2AdapterTest, TestSerialize) {
@@ -2943,6 +3188,79 @@ TEST(OgHttp2AdapterTest, TestPartialSerialize) {
   EXPECT_THAT(visitor.data(),
               EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::GOAWAY,
                             SpdyFrameType::PING}));
+}
+
+TEST(OgHttp2AdapterTest, TestStreamInitialWindowSizeUpdates) {
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{.perspective = Perspective::kServer};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  adapter->SubmitSettings({{INITIAL_WINDOW_SIZE, 80000}});
+  EXPECT_TRUE(adapter->want_write());
+
+  const std::string frames = TestFrameSequence()
+                                 .ClientPreface()
+                                 .Headers(1,
+                                          {{":method", "GET"},
+                                           {":scheme", "https"},
+                                           {":authority", "example.com"},
+                                           {":path", "/this/is/request/one"}},
+                                          /*fin=*/false)
+                                 .Serialize();
+  testing::InSequence s;
+
+  // Client preface (empty SETTINGS)
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSettingsEnd());
+  // Stream 1
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, HEADERS, 0x4));
+  EXPECT_CALL(visitor, OnBeginHeadersForStream(1));
+  EXPECT_CALL(visitor, OnHeaderForStream(1, _, _)).Times(4);
+  EXPECT_CALL(visitor, OnEndHeadersForStream(1));
+
+  const int64_t read_result = adapter->ProcessBytes(frames);
+  EXPECT_EQ(static_cast<size_t>(read_result), frames.size());
+
+  // New stream window size has not yet been applied.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(1), 65535);
+
+  // Server initial SETTINGS
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 6, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 6, 0x0, 0));
+  // SETTINGS ack
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  int result = adapter->Send();
+  EXPECT_EQ(0, result);
+
+  // New stream window size has still not been applied.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(1), 65535);
+
+  const std::string ack = TestFrameSequence().SettingsAck().Serialize();
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck());
+  adapter->ProcessBytes(ack);
+
+  // New stream window size has finally been applied upon SETTINGS ack.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(1), 80000);
+
+  // Update the stream window size again.
+  adapter->SubmitSettings({{INITIAL_WINDOW_SIZE, 90000}});
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 6, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 6, 0x0, 0));
+  result = adapter->Send();
+  EXPECT_EQ(0, result);
+
+  // New stream window size has not yet been applied.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(1), 80000);
+
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck());
+  adapter->ProcessBytes(ack);
+
+  // New stream window size is applied after the ack.
+  EXPECT_EQ(adapter->GetStreamReceiveWindowSize(1), 90000);
 }
 
 TEST(OgHttp2AdapterTest, ConnectionErrorOnControlFrameSent) {
@@ -3869,11 +4187,8 @@ TEST(OgHttp2AdapterTest, ClientDisobeysConnectionFlowControl) {
   EXPECT_CALL(visitor, OnBeginDataForStream(1, 16384));
   EXPECT_CALL(visitor, OnDataForStream(1, _));
   EXPECT_CALL(visitor, OnFrameHeader(1, 16384, DATA, 0x0));
-  EXPECT_CALL(visitor, OnBeginDataForStream(1, 16384));
-  EXPECT_CALL(visitor, OnDataForStream(1, _));
-  EXPECT_CALL(visitor, OnFrameHeader(1, 4464, DATA, 0x0));
-  EXPECT_CALL(visitor, OnBeginDataForStream(1, 4464));
-  EXPECT_CALL(visitor, OnDataForStream(1, _));
+  EXPECT_CALL(visitor, OnConnectionError(ConnectionError::kFlowControlError));
+  // No further frame data or headers are delivered.
 
   const int64_t result = adapter->ProcessBytes(frames);
   EXPECT_EQ(frames.size(), static_cast<size_t>(result));
@@ -3882,13 +4197,180 @@ TEST(OgHttp2AdapterTest, ClientDisobeysConnectionFlowControl) {
 
   EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
   EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
-  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
-  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(
+      visitor,
+      OnFrameSent(GOAWAY, 0, _, 0x0,
+                  static_cast<int>(Http2ErrorCode::FLOW_CONTROL_ERROR)));
+
+  int send_result = adapter->Send();
+  EXPECT_EQ(0, send_result);
+  EXPECT_THAT(visitor.data(),
+              EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::GOAWAY}));
+}
+
+TEST(OgHttp2AdapterTest, ClientDisobeysConnectionFlowControlWithOneDataFrame) {
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{.perspective = Perspective::kServer};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  // Allow the client to send a DATA frame that exceeds the connection flow
+  // control window.
+  const uint32_t window_overflow_bytes = kInitialFlowControlWindowSize + 1;
+  adapter->SubmitSettings({{MAX_FRAME_SIZE, window_overflow_bytes}});
+
+  const std::string initial_frames =
+      TestFrameSequence()
+          .ClientPreface()
+          .Headers(1,
+                   {{":method", "POST"},
+                    {":scheme", "https"},
+                    {":authority", "example.com"},
+                    {":path", "/this/is/request/one"}},
+                   /*fin=*/false)
+          .Serialize();
+
+  testing::InSequence s;
+
+  // Client preface (empty SETTINGS)
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSettingsEnd());
+
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, HEADERS, 4));
+  EXPECT_CALL(visitor, OnBeginHeadersForStream(1));
+  EXPECT_CALL(visitor, OnHeaderForStream).Times(4);
+  EXPECT_CALL(visitor, OnEndHeadersForStream(1));
+
+  int64_t process_result = adapter->ProcessBytes(initial_frames);
+  EXPECT_EQ(initial_frames.size(), static_cast<size_t>(process_result));
+
+  EXPECT_TRUE(adapter->want_write());
+
+  // Outbound SETTINGS containing MAX_FRAME_SIZE.
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 6, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 6, 0x0, 0));
+
+  // Ack of client's initial settings.
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
 
   int send_result = adapter->Send();
   EXPECT_EQ(0, send_result);
   EXPECT_THAT(visitor.data(),
               EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::SETTINGS}));
+  visitor.Clear();
+
+  // Now let the client ack the MAX_FRAME_SIZE SETTINGS and send a DATA frame to
+  // overflow the connection-level window. The result should be a GOAWAY.
+  // TODO(b/223471995): The result is a GOAWAY, but not for the right reason.
+  // Fix oghttp2 to handle outbound SETTINGS with MAX_FRAME_SIZE.
+  const std::string overflow_frames =
+      TestFrameSequence()
+          .SettingsAck()
+          .Data(1, std::string(window_overflow_bytes, 'a'))
+          .Serialize();
+
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck());
+  EXPECT_CALL(visitor, OnFrameHeader(1, window_overflow_bytes, DATA, 0x0));
+  EXPECT_CALL(visitor, OnConnectionError(ConnectionError::kParseError));
+  // No further frame data is delivered.
+
+  process_result = adapter->ProcessBytes(overflow_frames);
+  EXPECT_EQ(overflow_frames.size(), static_cast<size_t>(process_result));
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::FRAME_SIZE_ERROR)));
+
+  send_result = adapter->Send();
+  EXPECT_EQ(0, send_result);
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
+}
+
+TEST(OgHttp2AdapterTest, ClientDisobeysConnectionFlowControlAcrossReads) {
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{.perspective = Perspective::kServer};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  // Allow the client to send a DATA frame that exceeds the connection flow
+  // control window.
+  const uint32_t window_overflow_bytes = kInitialFlowControlWindowSize + 1;
+  adapter->SubmitSettings({{MAX_FRAME_SIZE, window_overflow_bytes}});
+
+  const std::string initial_frames =
+      TestFrameSequence()
+          .ClientPreface()
+          .Headers(1,
+                   {{":method", "POST"},
+                    {":scheme", "https"},
+                    {":authority", "example.com"},
+                    {":path", "/this/is/request/one"}},
+                   /*fin=*/false)
+          .Serialize();
+
+  testing::InSequence s;
+
+  // Client preface (empty SETTINGS)
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSettingsEnd());
+
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, HEADERS, 4));
+  EXPECT_CALL(visitor, OnBeginHeadersForStream(1));
+  EXPECT_CALL(visitor, OnHeaderForStream).Times(4);
+  EXPECT_CALL(visitor, OnEndHeadersForStream(1));
+
+  int64_t process_result = adapter->ProcessBytes(initial_frames);
+  EXPECT_EQ(initial_frames.size(), static_cast<size_t>(process_result));
+
+  EXPECT_TRUE(adapter->want_write());
+
+  // Outbound SETTINGS containing MAX_FRAME_SIZE.
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 6, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 6, 0x0, 0));
+
+  // Ack of client's initial settings.
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x1, 0));
+
+  int send_result = adapter->Send();
+  EXPECT_EQ(0, send_result);
+  EXPECT_THAT(visitor.data(),
+              EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::SETTINGS}));
+  visitor.Clear();
+
+  // Now let the client ack the MAX_FRAME_SIZE SETTINGS and send a DATA frame to
+  // overflow the connection-level window. The result should be a GOAWAY.
+  // TODO(b/223471995): The result is a GOAWAY, but not for the right reason.
+  // Fix oghttp2 to handle outbound SETTINGS with MAX_FRAME_SIZE.
+  const std::string overflow_frames =
+      TestFrameSequence()
+          .SettingsAck()
+          .Data(1, std::string(window_overflow_bytes, 'a'))
+          .Serialize();
+
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0x1));
+  EXPECT_CALL(visitor, OnSettingsAck());
+  EXPECT_CALL(visitor, OnFrameHeader(1, window_overflow_bytes, DATA, 0x0));
+  EXPECT_CALL(visitor, OnConnectionError(ConnectionError::kParseError));
+
+  const size_t chunk_length = 16384;
+  ASSERT_GE(overflow_frames.size(), chunk_length);
+  process_result =
+      adapter->ProcessBytes(overflow_frames.substr(0, chunk_length));
+  EXPECT_EQ(chunk_length, static_cast<size_t>(process_result));
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(GOAWAY, 0, _, 0x0));
+  EXPECT_CALL(visitor,
+              OnFrameSent(GOAWAY, 0, _, 0x0,
+                          static_cast<int>(Http2ErrorCode::FRAME_SIZE_ERROR)));
+
+  send_result = adapter->Send();
+  EXPECT_EQ(0, send_result);
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::GOAWAY}));
 }
 
 TEST(OgHttp2AdapterTest, ClientDisobeysStreamFlowControl) {
@@ -3943,6 +4425,7 @@ TEST(OgHttp2AdapterTest, ClientDisobeysStreamFlowControl) {
   EXPECT_THAT(visitor.data(),
               EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::SETTINGS,
                             SpdyFrameType::WINDOW_UPDATE}));
+  visitor.Clear();
 
   EXPECT_CALL(visitor, OnFrameHeader(1, 16384, DATA, 0x0));
   EXPECT_CALL(visitor, OnBeginDataForStream(1, 16384));
@@ -3954,16 +4437,22 @@ TEST(OgHttp2AdapterTest, ClientDisobeysStreamFlowControl) {
   EXPECT_CALL(visitor, OnBeginDataForStream(1, 16384));
   EXPECT_CALL(visitor, OnDataForStream(1, _));
   EXPECT_CALL(visitor, OnFrameHeader(1, 16384, DATA, 0x0));
-  EXPECT_CALL(visitor, OnBeginDataForStream(1, 16384));
-  EXPECT_CALL(visitor, OnDataForStream(1, _));
-  EXPECT_CALL(visitor, OnFrameHeader(1, 4464, DATA, 0x0));
-  EXPECT_CALL(visitor, OnBeginDataForStream(1, 4464));
-  EXPECT_CALL(visitor, OnDataForStream(1, _));
+  // No further frame data or headers are delivered.
 
   result = adapter->ProcessBytes(more_frames);
   EXPECT_EQ(more_frames.size(), static_cast<size_t>(result));
 
-  EXPECT_FALSE(adapter->want_write());
+  EXPECT_TRUE(adapter->want_write());
+  EXPECT_CALL(visitor, OnBeforeFrameSent(RST_STREAM, 1, 4, 0x0));
+  EXPECT_CALL(
+      visitor,
+      OnFrameSent(RST_STREAM, 1, 4, 0x0,
+                  static_cast<int>(Http2ErrorCode::FLOW_CONTROL_ERROR)));
+  EXPECT_CALL(visitor, OnCloseStream(1, Http2ErrorCode::HTTP2_NO_ERROR));
+
+  send_result = adapter->Send();
+  EXPECT_EQ(0, send_result);
+  EXPECT_THAT(visitor.data(), EqualsFrames({SpdyFrameType::RST_STREAM}));
 }
 
 TEST(OgHttp2AdapterTest, ServerErrorWhileHandlingHeaders) {
@@ -4528,11 +5017,11 @@ TEST(OgHttp2AdapterTest, ServerRejectsStreamData) {
 // without recursion guards in OgHttp2Session.
 TEST(OgHttp2AdapterInteractionTest, ClientServerInteractionTest) {
   MockHttp2Visitor client_visitor;
-  auto client_adapter =
-      OgHttp2Adapter::Create(client_visitor, {Perspective::kClient});
+  auto client_adapter = OgHttp2Adapter::Create(
+      client_visitor, {.perspective = Perspective::kClient});
   MockHttp2Visitor server_visitor;
-  auto server_adapter =
-      OgHttp2Adapter::Create(server_visitor, {Perspective::kServer});
+  auto server_adapter = OgHttp2Adapter::Create(
+      server_visitor, {.perspective = Perspective::kServer});
 
   // Feeds bytes sent from the client into the server's ProcessBytes.
   EXPECT_CALL(client_visitor, OnReadyToSend(_))
@@ -4896,9 +5385,8 @@ TEST(OgHttp2AdapterTest, ServerForbidsNewStreamAboveStreamLimit) {
       visitor,
       OnInvalidFrame(3, Http2VisitorInterface::InvalidFrameError::kProtocol));
   // The oghttp2 stack also signals the error via OnConnectionError().
-  EXPECT_CALL(visitor,
-              OnConnectionError(Http2VisitorInterface::ConnectionError::
-                                    kExceededMaxConcurrentStreams));
+  EXPECT_CALL(visitor, OnConnectionError(
+                           ConnectionError::kExceededMaxConcurrentStreams));
 
   const int64_t stream_result = adapter->ProcessBytes(stream_frames);
   EXPECT_EQ(static_cast<size_t>(stream_result), stream_frames.size());
@@ -5803,6 +6291,68 @@ TEST(OgHttp2AdapterTest, ServerHandlesTeHeader) {
   EXPECT_THAT(visitor.data(),
               EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::SETTINGS,
                             SpdyFrameType::RST_STREAM}));
+}
+
+TEST(OgHttp2AdapterTest, ServerUsesCustomWindowUpdateStrategy) {
+  // Test the use of a custom WINDOW_UPDATE strategy.
+  DataSavingVisitor visitor;
+  OgHttp2Adapter::Options options{
+      .should_window_update_fn = [](int64_t /*limit*/, int64_t /*size*/,
+                                    int64_t /*delta*/) { return true; },
+      .perspective = Perspective::kServer};
+  auto adapter = OgHttp2Adapter::Create(visitor, options);
+
+  const std::string frames = TestFrameSequence()
+                                 .ClientPreface()
+                                 .Headers(1,
+                                          {{":method", "POST"},
+                                           {":scheme", "https"},
+                                           {":authority", "example.com"},
+                                           {":path", "/this/is/request/one"}},
+                                          /*fin=*/false)
+                                 .Data(1, "This is the request body.",
+                                       /*fin=*/true)
+                                 .Serialize();
+  testing::InSequence s;
+
+  // Client preface (empty SETTINGS)
+  EXPECT_CALL(visitor, OnFrameHeader(0, 0, SETTINGS, 0));
+  EXPECT_CALL(visitor, OnSettingsStart());
+  EXPECT_CALL(visitor, OnSettingsEnd());
+
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, HEADERS, 4));
+  EXPECT_CALL(visitor, OnBeginHeadersForStream(1));
+  EXPECT_CALL(visitor, OnHeaderForStream(1, _, _)).Times(4);
+  EXPECT_CALL(visitor, OnEndHeadersForStream(1));
+  EXPECT_CALL(visitor, OnFrameHeader(1, _, DATA, 0x1));
+  EXPECT_CALL(visitor, OnBeginDataForStream(1, _));
+  EXPECT_CALL(visitor, OnDataForStream(1, "This is the request body."));
+  EXPECT_CALL(visitor, OnEndStream(1));
+
+  const int64_t result = adapter->ProcessBytes(frames);
+  EXPECT_EQ(static_cast<int64_t>(frames.size()), result);
+
+  // Mark a small number of bytes for the stream as consumed. Because of the
+  // custom WINDOW_UPDATE strategy, the session should send WINDOW_UPDATEs.
+  adapter->MarkDataConsumedForStream(1, 5);
+
+  EXPECT_TRUE(adapter->want_write());
+
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, _, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, _, 0x0, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(SETTINGS, 0, 0, 0x1));
+  EXPECT_CALL(visitor, OnFrameSent(SETTINGS, 0, 0, 0x1, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(WINDOW_UPDATE, 1, 4, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(WINDOW_UPDATE, 1, 4, 0x0, 0));
+  EXPECT_CALL(visitor, OnBeforeFrameSent(WINDOW_UPDATE, 0, 4, 0x0));
+  EXPECT_CALL(visitor, OnFrameSent(WINDOW_UPDATE, 0, 4, 0x0, 0));
+
+  int send_result = adapter->Send();
+  EXPECT_EQ(0, send_result);
+  EXPECT_THAT(visitor.data(),
+              EqualsFrames({SpdyFrameType::SETTINGS, SpdyFrameType::SETTINGS,
+                            SpdyFrameType::WINDOW_UPDATE,
+                            SpdyFrameType::WINDOW_UPDATE}));
 }
 
 }  // namespace

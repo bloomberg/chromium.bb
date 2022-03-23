@@ -9,13 +9,17 @@
 #define GrDawnBuffer_DEFINED
 
 #include "src/gpu/GrGpuBuffer.h"
-#include "dawn/webgpu_cpp.h"
+#include "webgpu/webgpu_cpp.h"
 
 class GrDawnGpu;
 
 class GrDawnBuffer : public GrGpuBuffer {
 public:
-    GrDawnBuffer(GrDawnGpu* gpu, size_t sizeInBytes, GrGpuBufferType type, GrAccessPattern pattern);
+    GrDawnBuffer(GrDawnGpu* gpu,
+                 size_t sizeInBytes,
+                 GrGpuBufferType type,
+                 GrAccessPattern pattern,
+                 std::string_view label);
 
     ~GrDawnBuffer() override;
 

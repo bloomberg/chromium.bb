@@ -30,6 +30,7 @@
 
 import type * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import type * as Platform from '../../core/platform/platform.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 
@@ -115,7 +116,7 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
   }
 
   rename(
-      uiSourceCode: Workspace.UISourceCode.UISourceCode, newName: string,
+      uiSourceCode: Workspace.UISourceCode.UISourceCode, newName: Platform.DevToolsPath.RawPathString,
       callback:
           (arg0: boolean, arg1?: string|undefined, arg2?: string|undefined,
            arg3?: Common.ResourceType.ResourceType|undefined) => void): void {
@@ -139,12 +140,13 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
   excludeFolder(_path: string): void {
   }
 
-  canExcludeFolder(_path: string): boolean {
+  canExcludeFolder(_path: Platform.DevToolsPath.EncodedPathString): boolean {
     return false;
   }
 
-  async createFile(_path: string, _name: string|null, _content: string, _isBase64?: boolean):
-      Promise<Workspace.UISourceCode.UISourceCode|null> {
+  async createFile(
+      _path: Platform.DevToolsPath.EncodedPathString, _name: string|null, _content: string,
+      _isBase64?: boolean): Promise<Workspace.UISourceCode.UISourceCode|null> {
     return null;
   }
 

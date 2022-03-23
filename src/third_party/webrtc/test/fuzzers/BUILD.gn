@@ -259,6 +259,14 @@ rtc_library("audio_decoder_fuzzer") {
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 
+webrtc_fuzzer_test("audio_decoder_g722_fuzzer") {
+  sources = [ "audio_decoder_g722_fuzzer.cc" ]
+  deps = [
+    ":audio_decoder_fuzzer",
+    "../../modules/audio_coding:g722",
+  ]
+}
+
 webrtc_fuzzer_test("audio_decoder_ilbc_fuzzer") {
   sources = [ "audio_decoder_ilbc_fuzzer.cc" ]
   deps = [
@@ -305,6 +313,14 @@ webrtc_fuzzer_test("audio_decoder_multiopus_fuzzer") {
     ":audio_decoder_fuzzer",
     "../../api/audio_codecs/opus:audio_decoder_multiopus",
     "../../api/audio_codecs/opus:audio_decoder_opus_config",
+  ]
+}
+
+webrtc_fuzzer_test("audio_decoder_pcm_fuzzer") {
+  sources = [ "audio_decoder_pcm_fuzzer.cc" ]
+  deps = [
+    ":audio_decoder_fuzzer",
+    "../../modules/audio_coding:g711",
   ]
 }
 
@@ -630,6 +646,7 @@ webrtc_fuzzer_test("sctp_utils_fuzzer") {
     "../../api:libjingle_peerconnection_api",
     "../../pc:libjingle_peerconnection",
     "../../pc:rtc_pc_base",
+    "../../pc:sctp_utils",
     "../../rtc_base:rtc_base_approved",
   ]
 }

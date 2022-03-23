@@ -101,7 +101,7 @@ class F extends ValidationTest {
 export const g = makeTestGroup(F);
 
 g.test('state_and_binding_index')
-  .desc('Tests that setBindGroup correctly handles {valid, invalid} bindGroups.')
+  .desc('Tests that setBindGroup correctly handles {valid, invalid, destroyed} bindGroups.')
   .params(u =>
     u
       .combine('encoderType', kProgrammableEncoderTypes)

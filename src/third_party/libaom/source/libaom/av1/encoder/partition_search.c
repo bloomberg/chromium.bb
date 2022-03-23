@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom_dsp/txfm_common.h"
+
 #include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
@@ -530,11 +532,11 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         intra_tx_size = mbmi->tx_size;
       }
 
-      for (j = 0; j < mi_height; j++)
-        for (i = 0; i < mi_width; i++)
-          if (mi_col + i < cm->mi_params.mi_cols &&
-              mi_row + j < cm->mi_params.mi_rows)
-            mi_4x4[mis * j + i]->tx_size = intra_tx_size;
+      const int cols = AOMMIN(cm->mi_params.mi_cols - mi_col, mi_width);
+      const int rows = AOMMIN(cm->mi_params.mi_rows - mi_row, mi_height);
+      for (j = 0; j < rows; j++) {
+        for (i = 0; i < cols; i++) mi_4x4[mis * j + i]->tx_size = intra_tx_size;
+      }
 
       if (intra_tx_size != max_txsize_rect_lookup[bsize])
         ++x->txfm_search_info.txb_split_count;
@@ -625,8 +627,12 @@ static void setup_block_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   }
 #endif
   if (cpi->oxcf.mode == ALLINTRA) {
-    x->rdmult = (x->rdmult * x->intra_sb_rdmult_modifier) >> 7;
+    x->rdmult = (int)(((int64_t)x->rdmult * x->intra_sb_rdmult_modifier) >> 7);
   }
+
+  // Check to make sure that the adjustments above have not caused the
+  // rd multiplier to be truncated to 0.
+  x->rdmult = (x->rdmult > 0) ? x->rdmult : 1;
 }
 
 void av1_set_offsets_without_segment_id(const AV1_COMP *const cpi,
@@ -2057,6 +2063,7 @@ static void encode_b_nonrd(const AV1_COMP *const cpi, TileDataEnc *tile_data,
            ((1 << num_pels_log2_lookup[cpi->common.seq_params->sb_size]) >>
             (subsampling_x + subsampling_y)));
   }
+
   encode_superblock(cpi, tile_data, td, tp, dry_run, bsize, rate);
   if (!dry_run) {
     update_cb_offsets(x, bsize, subsampling_x, subsampling_y);
@@ -2234,8 +2241,9 @@ static void pick_sb_modes_nonrd(AV1_COMP *const cpi, TileDataEnc *tile_data,
         cm->mi_params.mi_grid_base +
         get_mi_grid_idx(&cm->mi_params, mi_row_sb, mi_col_sb);
     // Do not skip if intra or new mv is picked, or color sensitivity is set.
+    // Never skip on slide/scene change.
     mi_sb[0]->skip_cdef_curr_sb =
-        mi_sb[0]->skip_cdef_curr_sb &&
+        mi_sb[0]->skip_cdef_curr_sb && !cpi->rc.high_source_sad &&
         !(x->color_sensitivity[0] || x->color_sensitivity[1]) &&
         !(mbmi->mode < INTRA_MODES || mbmi->mode == NEWMV);
     // Store in the pickmode context.
@@ -4637,31 +4645,23 @@ static void log_sub_block_var(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
       (xd->mb_to_right_edge < 0) ? ((-xd->mb_to_right_edge) >> 3) : 0;
   const int bottom_overflow =
       (xd->mb_to_bottom_edge < 0) ? ((-xd->mb_to_bottom_edge) >> 3) : 0;
-  const BLOCK_SIZE sb_size = cpi->common.seq_params->sb_size;
   const int bw = MI_SIZE * mi_size_wide[bs] - right_overflow;
   const int bh = MI_SIZE * mi_size_high[bs] - bottom_overflow;
-  const int mi_row_in_sb = x->e_mbd.mi_row & (mi_size_high[sb_size] - 1);
-  const int mi_col_in_sb = x->e_mbd.mi_col & (mi_size_wide[sb_size] - 1);
+
   // Initialize minimum variance to a large value and maximum variance to 0.
   double min_var_4x4 = (double)INT_MAX;
   double max_var_4x4 = 0.0;
 
   for (int i = 0; i < bh; i += MI_SIZE) {
-    const int r = mi_row_in_sb + (i >> MI_SIZE_LOG2);
     for (int j = 0; j < bw; j += MI_SIZE) {
-      const int c = mi_col_in_sb + (j >> MI_SIZE_LOG2);
-      const int mi_offset = r * mi_size_wide[sb_size] + c;
-      int var = x->src_var_info_of_4x4_sub_blocks[mi_offset].var;
-      // Calculate and store 4x4 sub-block variance, if the source variance
-      // value present in src_var_info_of_4x4_sub_blks is not valid. Reuse the
-      // the same if it is readily available with a valid value.
-      if (var < 0) {
-        var = av1_calc_normalized_variance(
-            cpi->ppi->fn_ptr[BLOCK_4X4].vf,
-            x->plane[0].src.buf + i * x->plane[0].src.stride + j,
-            x->plane[0].src.stride, is_hbd);
-        x->src_var_info_of_4x4_sub_blocks[mi_offset].var = var;
-      }
+      int var;
+      // Calculate the 4x4 sub-block variance.
+      var = av1_calc_normalized_variance(
+          cpi->ppi->fn_ptr[BLOCK_4X4].vf,
+          x->plane[0].src.buf + (i * x->plane[0].src.stride) + j,
+          x->plane[0].src.stride, is_hbd);
+
+      // Record min and max for over-arching block
       min_var_4x4 = AOMMIN(min_var_4x4, var);
       max_var_4x4 = AOMMAX(max_var_4x4, var);
     }

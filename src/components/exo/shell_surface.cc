@@ -4,6 +4,7 @@
 
 #include "components/exo/shell_surface.h"
 
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
@@ -38,6 +39,14 @@ namespace {
 // Maximum amount of time to wait for contents after a change to maximize,
 // fullscreen or pinned state.
 constexpr int kMaximizedOrFullscreenOrPinnedLockTimeoutMs = 100;
+
+gfx::Rect GetClientBoundsInScreen(views::Widget* widget) {
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+  gfx::Rect window_bounds = widget->GetWindowBoundsInScreen();
+  return frame_view->GetClientBoundsForWindowBounds(window_bounds);
+}
 
 }  // namespace
 
@@ -110,6 +119,7 @@ ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   // Client is gone by now, so don't call callback.
   configure_callback_.Reset();
+  origin_change_callback_.Reset();
   if (widget_)
     ash::WindowState::Get(widget_->GetNativeWindow())->RemoveObserver(this);
 }
@@ -307,12 +317,7 @@ absl::optional<gfx::Rect> ShellSurface::GetWidgetBounds() const {
   if (!pending_configs_.empty() || scoped_configure_)
     return absl::nullopt;
 
-  gfx::Rect visible_bounds = GetVisibleBounds();
-  gfx::Rect new_widget_bounds =
-      widget_->non_client_view()
-          ? widget_->non_client_view()->GetWindowBoundsForClientBounds(
-                visible_bounds)
-          : visible_bounds;
+  gfx::Rect new_widget_bounds = GetWidgetBoundsFromVisibleBounds();
 
   if (movement_disabled_) {
     new_widget_bounds.set_origin(origin_);
@@ -373,8 +378,16 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
     return;
 
   if (window == widget_->GetNativeWindow()) {
-    if (new_bounds.size() == old_bounds.size())
+    if (new_bounds.size() == old_bounds.size()) {
+      if (!origin_change_callback_.is_null())
+        origin_change_callback_.Run(GetClientBoundsInScreen(widget_).origin());
       return;
+    }
+
+    if (needs_layout_on_show_) {
+      needs_layout_on_show_ = false;
+      return;
+    }
 
     // If size changed then give the client a chance to produce new contents
     // before origin on screen is changed. Retain the old origin by reverting
@@ -565,10 +578,10 @@ void ShellSurface::Configure(bool ends_drag) {
   if (!configure_callback_.is_null()) {
     if (window_state) {
       serial = configure_callback_.Run(
-          GetClientViewBounds().size(), window_state->GetStateType(),
+          GetClientBoundsInScreen(widget_), window_state->GetStateType(),
           IsResizing(), widget_->IsActive(), origin_offset);
     } else {
-      serial = configure_callback_.Run(gfx::Size(),
+      serial = configure_callback_.Run(gfx::Rect(),
                                        chromeos::WindowStateType::kNormal,
                                        false, false, origin_offset);
     }

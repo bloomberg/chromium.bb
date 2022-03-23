@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "System/CPUID.hpp"
 #include "System/Half.hpp"
 #include "System/Math.hpp"
 
@@ -21,6 +22,225 @@
 #include <cstdlib>
 
 using namespace sw;
+
+// Returns the whole-number ULP error of `a` relative to `x`.
+// Use the doouble-precision version below. This just illustrates the principle.
+[[deprecated]] float ULP_32(float x, float a)
+{
+	// Flip the last mantissa bit to compute the 'unit in the last place' error.
+	float x1 = bit_cast<float>(bit_cast<uint32_t>(x) ^ 0x00000001);
+	float ulp = abs(x1 - x);
+
+	return abs(a - x) / ulp;
+}
+
+double ULP_32(double x, double a)
+{
+	// binary64 has 52 mantissa bits, while binary32 has 23, so the ULP for the latter is 29 bits shifted.
+	double x1 = bit_cast<double>(bit_cast<uint64_t>(x) ^ 0x0000000020000000ull);
+	double ulp = abs(x1 - x);
+
+	return abs(a - x) / ulp;
+}
+
+float ULP_16(float x, float a)
+{
+	// binary32 has 23 mantissa bits, while binary16 has 10, so the ULP for the latter is 13 bits shifted.
+	double x1 = bit_cast<float>(bit_cast<uint32_t>(x) ^ 0x00002000);
+	float ulp = abs(x1 - x);
+
+	return abs(a - x) / ulp;
+}
+
+float Log2_legacy(float x)
+{
+	float x0;
+	float x1;
+	float x2;
+	float x3;
+
+	x0 = x;
+
+	x1 = bit_cast<float>(bit_cast<int>(x0) & int(0x7F800000));
+	x1 = bit_cast<float>(bit_cast<unsigned int>(x1) >> 8);
+	x1 = bit_cast<float>(bit_cast<int>(x1) | bit_cast<int>(float(1.0f)));
+	x1 = (x1 - float(1.4960938f)) * float(256.0f);  // FIXME: (x1 - 1.4960938f) * 256.0f;
+	x0 = bit_cast<float>((bit_cast<int>(x0) & int(0x007FFFFF)) | bit_cast<int>(float(1.0f)));
+
+	x2 = (float(9.5428179e-2f) * x0 + float(4.7779095e-1f)) * x0 + float(1.9782813e-1f);
+	x3 = ((float(1.6618466e-2f) * x0 + float(2.0350508e-1f)) * x0 + float(2.7382900e-1f)) * x0 + float(4.0496687e-2f);
+	x2 /= x3;
+
+	x1 += (x0 - float(1.0f)) * x2;
+
+	int pos_inf_x = (bit_cast<int>(x) == int(0x7F800000)) ? 0xFFFFFFFF : 0x00000000;
+	return bit_cast<float>((pos_inf_x & bit_cast<int>(x)) | (~pos_inf_x & bit_cast<int>(x1)));
+}
+
+TEST(MathTest, Log2Exhaustive)
+{
+	CPUID::setDenormalsAreZero(true);
+	CPUID::setFlushToZero(true);
+
+	float worst_margin = 0;
+	float worst_ulp = 0;
+	float worst_x = 0;
+	float worst_val = 0;
+	float worst_ref = 0;
+
+	float worst_abs = 0;
+
+	for(float x = 0.10f; x <= 10.0f; x = inc(x))
+	{
+		float val = Log2_legacy(x);
+
+		double ref = log2((double)x);
+
+		if(ref == (int)ref)
+		{
+			ASSERT_EQ(val, ref);
+		}
+		else if(x >= 0.5f && x <= 2.0f)
+		{
+			const float tolerance = pow(2.0f, -21.0f);  // Absolute
+
+			float margin = abs(val - ref) / tolerance;
+
+			if(margin > worst_abs)
+			{
+				worst_abs = margin;
+			}
+		}
+		else
+		{
+			const float tolerance = 3;  // ULP
+
+			float ulp = (float)ULP_32(ref, (double)val);
+			float margin = ulp / tolerance;
+
+			if(margin > worst_margin)
+			{
+				worst_margin = margin;
+				worst_ulp = ulp;
+				worst_x = x;
+				worst_val = val;
+				worst_ref = ref;
+			}
+		}
+	}
+
+	ASSERT_TRUE(worst_margin < 1.0f);
+	ASSERT_TRUE(worst_abs <= 1.0f);
+
+	CPUID::setDenormalsAreZero(false);
+	CPUID::setFlushToZero(false);
+}
+
+// ULP-32: 3.36676240, Vulkan margin: 1.0737335
+float Exp2_legacy(float x)
+{
+	// This implementation is based on 2^(i + f) = 2^i * 2^f,
+	// where i is the integer part of x and f is the fraction.
+
+	// For 2^i we can put the integer part directly in the exponent of
+	// the IEEE-754 floating-point number. Clamp to prevent overflow
+	// past the representation of infinity.
+	float x0 = x;
+	// x0 = Min(x0, bit_cast<float>(int(0x43010000)));  // 129.00000e+0f
+	// x0 = Max(x0, bit_cast<float>(int(0xC2FDFFFF)));  // -126.99999e+0f
+
+	int i = (int)round(x0 - 0.5f);
+	float ii = bit_cast<float>((i + int(127)) << 23);  // Add single-precision bias, and shift into exponent.
+
+	// For the fractional part use a polynomial
+	// which approximates 2^f in the 0 to 1 range.
+	float f = x0 - float(i);
+	float ff = bit_cast<float>(int(0x3AF61905));     // 1.8775767e-3f
+	ff = ff * f + bit_cast<float>(int(0x3C134806));  // 8.9893397e-3f
+	ff = ff * f + bit_cast<float>(int(0x3D64AA23));  // 5.5826318e-2f
+	ff = ff * f + bit_cast<float>(int(0x3E75EAD4));  // 2.4015361e-1f
+	ff = ff * f + bit_cast<float>(int(0x3F31727B));  // 6.9315308e-1f
+	ff = ff * f + float(1.0f);
+
+	return ii * ff;
+}
+
+// lolremez --float -d 4 -r "0:1" "(2^x-1)/x" "1/x"
+// ULP_32: 2.65837669, Vulkan margin: 0.847366512
+float f_r(float x)
+{
+	float u = 1.8852974e-3f;
+	u = u * x + 8.9733787e-3f;
+	u = u * x + 5.5835927e-2f;
+	u = u * x + 2.4015281e-1f;
+	return u * x + 6.9315247e-1f;
+}
+
+float Exp2(float x)
+{
+	// This implementation is based on 2^(i + f) = 2^i * 2^f,
+	// where i is the integer part of x and f is the fraction.
+
+	// For 2^i we can put the integer part directly in the exponent of
+	// the IEEE-754 floating-point number. Clamp to prevent overflow
+	// past the representation of infinity.
+	float x0 = x;
+	x0 = min(x0, bit_cast<float>(int(0x4300FFFF)));  // 128.999985
+	x0 = max(x0, bit_cast<float>(int(0xC2FDFFFF)));  // -126.999992
+
+	float xi = floor(x0);
+	int i = int(xi);
+	float ii = bit_cast<float>((i + int(127)) << 23);  // Add single-precision bias, and shift into exponent.
+
+	// For the fractional part use a polynomial which approximates 2^f in the 0 to 1 range.
+	// To be exact at integers it uses the form f(x) * x + 1.
+	float f = x0 - xi;
+	float ff = f_r(f) * f + 1.0f;
+
+	return ii * ff;
+}
+
+TEST(MathTest, Exp2Exhaustive)
+{
+	CPUID::setDenormalsAreZero(true);
+	CPUID::setFlushToZero(true);
+
+	float worst_margin = 0;
+	float worst_ulp = 0;
+	float worst_x = 0;
+	float worst_val = 0;
+	float worst_ref = 0;
+
+	for(float x = -10; x <= 10; x = inc(x))
+	{
+		float val = Exp2(x);
+
+		double ref = exp2((double)x);
+
+		if(x == (int)x)
+		{
+			ASSERT_EQ(val, ref);
+		}
+
+		const float tolerance = (3 + 2 * abs(x));
+		float ulp = (float)ULP_32(ref, (double)val);
+		float margin = ulp / tolerance;
+
+		if(margin > worst_margin)
+		{
+			worst_margin = margin;
+			worst_ulp = ulp;
+			worst_x = x;
+			worst_val = val;
+			worst_ref = ref;
+		}
+	}
+
+	ASSERT_TRUE(worst_margin <= 1.0f);
+
+	CPUID::setDenormalsAreZero(false);
+	CPUID::setFlushToZero(false);
+}
 
 // Polynomial approximation of order 5 for sin(x * 2 * pi) in the range [-1/4, 1/4]
 static float sin5(float x)

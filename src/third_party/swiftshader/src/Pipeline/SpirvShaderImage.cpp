@@ -23,6 +23,8 @@
 
 namespace {
 
+using namespace sw;
+
 vk::Format SpirvFormatToVulkanFormat(spv::ImageFormat format)
 {
 	switch(format)
@@ -74,14 +76,14 @@ vk::Format SpirvFormatToVulkanFormat(spv::ImageFormat format)
 	}
 }
 
-sw::SIMD::Float sRGBtoLinear(sw::SIMD::Float c)
+SIMD::Float sRGBtoLinear(SIMD::Float c)
 {
-	sw::SIMD::Float lc = c * sw::SIMD::Float(1.0f / 12.92f);
-	sw::SIMD::Float ec = sw::power((c + sw::SIMD::Float(0.055f)) * sw::SIMD::Float(1.0f / 1.055f), sw::SIMD::Float(2.4f));
+	SIMD::Float lc = c * (1.0f / 12.92f);
+	SIMD::Float ec = Pow<Mediump>((c + 0.055f) * (1.0f / 1.055f), 2.4f);  // TODO(b/149574741): Use a custom approximation.
 
-	sw::SIMD::Int linear = CmpLT(c, sw::SIMD::Float(0.04045f));
+	SIMD::Int linear = CmpLT(c, 0.04045f);
 
-	return rr::As<sw::SIMD::Float>((linear & rr::As<sw::SIMD::Int>(lc)) | (~linear & rr::As<sw::SIMD::Int>(ec)));  // TODO: IfThenElse()
+	return rr::As<SIMD::Float>((linear & rr::As<SIMD::Int>(lc)) | (~linear & rr::As<SIMD::Int>(ec)));  // TODO: IfThenElse()
 }
 
 }  // anonymous namespace
@@ -684,7 +686,7 @@ SIMD::Pointer SpirvShader::GetTexelAddress(ImageInstructionSignature instruction
 	if(dim == spv::DimSubpassData)
 	{
 		// Multiview input attachment access is to the layer corresponding to the current view
-		ptrOffset += SIMD::Int(state->routine->viewID) * slicePitch;
+		ptrOffset += SIMD::Int(state->routine->layer) * slicePitch;
 	}
 
 	if(instruction.sample)
@@ -1096,13 +1098,13 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instr
 		dst.move(2, SIMD::Float((packed[0] >> 12) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(3, SIMD::Float((packed[0]) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		break;
-	case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4R4G4B4_UNORM_PACK16:
 		dst.move(0, SIMD::Float((packed[0] >> 8) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(1, SIMD::Float((packed[0] >> 4) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(2, SIMD::Float((packed[0]) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(3, SIMD::Float((packed[0] >> 12) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		break;
-	case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4B4G4R4_UNORM_PACK16:
 		dst.move(0, SIMD::Float((packed[0]) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(1, SIMD::Float((packed[0] >> 4) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));
 		dst.move(2, SIMD::Float((packed[0] >> 8) & SIMD::Int(0xF)) * SIMD::Float(1.0f / 0xF));

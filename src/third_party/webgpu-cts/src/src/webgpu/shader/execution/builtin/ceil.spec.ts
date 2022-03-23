@@ -4,9 +4,10 @@ Execution Tests for the 'ceil' builtin function
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { correctlyRoundedThreshold, anyOf } from '../../../util/compare.js';
+import { kBit, kValue } from '../../../util/constants.js';
 import { f32, f32Bits, TypeF32 } from '../../../util/conversion.js';
-
-import { anyOf, Config, correctlyRoundedThreshold, kBit, kValue, run } from './builtin.js';
+import { builtin, Config, run } from '../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -31,7 +32,7 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
     const cfg: Config = t.params;
     cfg.cmpFloats = correctlyRoundedThreshold();
 
-    run(t, 'ceil', [TypeF32], TypeF32, cfg, [
+    run(t, builtin('ceil'), [TypeF32], TypeF32, cfg, [
       // Small positive numbers
       { input: f32(0.1), expected: f32(1.0) },
       { input: f32(0.9), expected: f32(1.0) },

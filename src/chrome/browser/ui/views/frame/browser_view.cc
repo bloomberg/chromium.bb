@@ -116,6 +116,7 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
@@ -227,6 +228,7 @@
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -457,12 +459,8 @@ class ContentsSeparator : public views::View {
  private:
   // views::View:
   void OnThemeChanged() override {
-    const ui::ThemeProvider* const theme_provider = GetThemeProvider();
-    SetBackground(
-        views::CreateSolidBackground(color_utils::GetResultingPaintColor(
-            theme_provider->GetColor(
-                ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-            theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR))));
+    SetBackground(views::CreateSolidBackground(GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR)));
     View::OnThemeChanged();
   }
 };
@@ -470,11 +468,12 @@ class ContentsSeparator : public views::View {
 BEGIN_METADATA(ContentsSeparator, views::View)
 END_METADATA
 
-bool ShouldShowWindowIcon(const Browser* browser) {
+bool ShouldShowWindowIcon(const Browser* browser,
+                          bool app_uses_window_controls_overlay) {
 #if BUILDFLAG(IS_CHROMEOS)
   // For Chrome OS only, trusted windows (apps and settings) do not show a
   // window icon, crbug.com/119411. Child windows (i.e. popups) do show an icon.
-  if (browser->is_trusted_source())
+  if (browser->is_trusted_source() || app_uses_window_controls_overlay)
     return false;
 #endif
   return browser->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
@@ -694,7 +693,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       browser_(std::move(browser)),
       accessibility_mode_observer_(
           std::make_unique<AccessibilityModeObserver>(this)) {
-  SetShowIcon(::ShouldShowWindowIcon(browser_.get()));
+  SetShowIcon(
+      ::ShouldShowWindowIcon(browser_.get(), AppUsesWindowControlsOverlay()));
 
   // In forced app mode, all size controls are always disabled. Otherwise, use
   // `create_params` to enable/disable specific size controls.
@@ -885,7 +885,7 @@ BrowserView::~BrowserView() {
 }
 
 // static
-const BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
+BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
     content::WebContents* web_contents) {
   // Check first to see if the we can find a top level widget for the
   // `web_contents`. This covers the case of searching for the browser window
@@ -2877,7 +2877,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 #if BUILDFLAG(IS_CHROMEOS)
   // For Chrome OS only, trusted windows (apps and settings) do not show a
   // title, crbug.com/119411. Child windows (i.e. popups) do show a title.
-  if (browser_->is_trusted_source())
+  if (browser_->is_trusted_source() || AppUsesWindowControlsOverlay())
     return false;
 #elif BUILDFLAG(IS_WIN)
   // On Windows in touch mode we display a window title.
@@ -3751,9 +3751,14 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // TODO(crbug.com/1034783): Implement at lower layers to avoid transitions.
 #if BUILDFLAG(IS_MAC)
   bool entering_cross_screen_fullscreen = false;
+  const bool fullscreen_controller_mac_enabled =
+      base::FeatureList::IsEnabled(views::features::kFullscreenControllerMac);
+#else   // BUILDFLAG(IS_MAC)
+  const bool fullscreen_controller_mac_enabled = false;
 #endif  // BUILDFLAG(IS_MAC)
   bool swapping_screens_during_fullscreen = false;
-  if (fullscreen && display_id != display::kInvalidDisplayId) {
+  if (fullscreen && display_id != display::kInvalidDisplayId &&
+      !fullscreen_controller_mac_enabled) {
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display;
     display::Display current_display =
@@ -3818,7 +3823,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     delay = base::Milliseconds(1000);
   else if (entering_cross_screen_fullscreen)
     delay = base::Milliseconds(1);
-  frame_->SetFullscreen(fullscreen, delay);
+  frame_->SetFullscreen(fullscreen, delay,
+                        fullscreen_controller_mac_enabled
+                            ? display_id
+                            : display::kInvalidDisplayId);
 #else   // BUILDFLAG(IS_MAC)
   frame_->SetFullscreen(fullscreen);
   // On Mac, the pre-fullscreen bounds must be restored after an asynchronous

@@ -9,6 +9,7 @@
 #include <cstring>
 #include <type_traits>
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkYUVAPixmaps.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
@@ -194,7 +195,10 @@ std::unique_ptr<GrFragmentProcessor> SkImage_GpuYUVA::onAsFragmentProcessor(
     auto wmy = SkTileModeToWrapMode(tileModes[1]);
     GrSamplerState sampler(wmx, wmy, sampling.filter, sampling.mipmap);
     if (sampler.mipmapped() == GrMipmapped::kYes && !this->setupMipmapsForPlanes(context)) {
-        sampler.setMipmapMode(GrSamplerState::MipmapMode::kNone);
+        sampler = GrSamplerState(sampler.wrapModeX(),
+                                 sampler.wrapModeY(),
+                                 sampler.filter(),
+                                 GrSamplerState::MipmapMode::kNone);
     }
 
     const auto& yuvM = sampling.useCubic ? SkMatrix::I() : m;

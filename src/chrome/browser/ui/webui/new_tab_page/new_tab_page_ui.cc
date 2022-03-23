@@ -24,7 +24,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/browser_command/browser_command_handler.h"
 #include "chrome/browser/ui/webui/cr_components/most_visited/most_visited_handler.h"
@@ -188,6 +187,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "modulesDragAndDropEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop));
+  source->AddBoolean("modulesFirstRunExperienceEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpModulesFirstRunExperience));
   source->AddBoolean("modulesLoadEnabled", base::FeatureList::IsEnabled(
                                                ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
@@ -286,11 +288,13 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesCustomizeButtonText", IDS_NTP_MODULES_CUSTOMIZE_BUTTON_TEXT},
       {"modulesShoppingTasksSentence", IDS_NTP_MODULES_SHOPPING_TASKS_SENTENCE},
       {"modulesShoppingTasksLower", IDS_NTP_MODULES_SHOPPING_TASKS_LOWER},
+      {"modulesRecipeInfo", IDS_NTP_MODULES_RECIPE_INFO},
       {"modulesRecipeTasksSentence", IDS_NTP_MODULES_RECIPE_TASKS_SENTENCE},
       {"modulesRecipeTasksLower", IDS_NTP_MODULES_RECIPE_TASKS_LOWER},
       {"modulesRecipeTasksLowerThese",
        IDS_NTP_MODULES_RECIPE_TASKS_LOWER_THESE},
       {"modulesTasksInfo", IDS_NTP_MODULES_TASKS_INFO},
+      {"modulesCartInfo", IDS_NTP_MODULES_CART_INFO},
       {"modulesCartSentence", IDS_NTP_MODULES_CART_SENTENCE},
       {"modulesCartSentenceV2", IDS_NTP_MODULES_CART_SENTENCE_V2},
       {"modulesCartLower", IDS_NTP_MODULES_CART_LOWER},
@@ -343,7 +347,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesPhotosNew", IDS_NTP_MODULES_PHOTOS_NEW},
       {"modulesTasksInfoTitle", IDS_NTP_MODULES_SHOPPING_TASKS_INFO_TITLE},
       {"modulesTasksInfoClose", IDS_NTP_MODULES_SHOPPING_TASKS_INFO_CLOSE},
-      {"modulesCartHeaderNew", IDS_NTP_MODULES_CART_HEADER_CHIP_NEW},
       {"modulesCartWarmWelcome", IDS_NTP_MODULES_CART_WARM_WELCOME},
       {"modulesCartModuleMenuHideToastMessage",
        IDS_NTP_MODULES_CART_MODULE_MENU_HIDE_TOAST_MESSAGE},
@@ -377,6 +380,17 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT_V3},
       {"modulesCartDiscountConentTitle",
        IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_TITLE},
+      {"modulesNewTagLabel", IDS_NTP_MODULES_NEW_TAG_LABEL},
+      {"modulesFirstRunExperienceTitle",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_TITLE},
+      {"modulesFirstRunExperienceBodyLine1",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_BODY_LINE_1},
+      {"modulesFirstRunExperienceBodyLine2",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_BODY_LINE_2},
+      {"modulesFirstRunOptInButton",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_IN_BUTTON},
+      {"modulesFirstRunOptOutButton",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT_BUTTON},
   };
   source->AddLocalizedStrings(kStrings);
 
@@ -691,21 +705,21 @@ void NewTabPageUI::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 void NewTabPageUI::OnThemeChanged() {
   std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
-  const Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  DCHECK(browser);
-  const ui::ThemeProvider* theme_provider =
-      browser->window()->GetThemeProvider();
 
-  // `theme_provider` will be nullptr in unit tests. If you want to test NTP
-  // color, use webui::SetThemeProviderForTesting().
+  const ui::ThemeProvider* theme_provider =
+      webui::GetThemeProvider(web_contents_);
+  // TODO(crbug.com/1299925): Always mock theme provider in tests so that
+  // `theme_provider` is never nullptr.
   if (theme_provider) {
     auto background_color =
         theme_provider->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
     update->SetStringKey("backgroundColor",
                          skia::SkColorToHexString(background_color));
-    content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
-                                     std::move(update));
+  } else {
+    update->SetStringKey("backgroundColor", "");
   }
+  content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
+                                   std::move(update));
 }
 
 void NewTabPageUI::OnCustomBackgroundImageUpdated() {

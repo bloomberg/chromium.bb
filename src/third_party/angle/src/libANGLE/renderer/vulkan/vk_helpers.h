@@ -214,6 +214,8 @@ class DynamicDescriptorPool final : angle::NonCopyable
     static uint32_t GetMaxSetsPerPoolMultiplierForTesting();
     static void SetMaxSetsPerPoolMultiplierForTesting(uint32_t maxSetsPerPool);
 
+    bool valid() const { return !mDescriptorPools.empty(); }
+
   private:
     angle::Result allocateNewPool(ContextVk *contextVk);
 
@@ -845,10 +847,12 @@ class BufferPool : angle::NonCopyable
     uint32_t mMemoryTypeIndex;
     BufferBlockPointerVector mBufferBlocks;
     // When pruneDefaultBufferPools gets called, we do not immediately free all empty buffers. Only
-    // buffers that we found are empty for this number of times consecutively, we will actually free
-    // it. That way we avoid the situation that a buffer just becomes empty and gets freed right
-    // after and then we have to allocate a new one next frame.
+    // buffers that we found are empty for kMaxCountRemainsEmpty number of times consecutively, or
+    // we have more than kMaxEmptyBufferCount number of empty buffers, we will actually free it.
+    // That way we avoid the situation that a buffer just becomes empty and gets freed right after
+    // and only to find out that we have to allocate a new one next frame.
     static constexpr int32_t kMaxCountRemainsEmpty = 4;
+    static constexpr int32_t kMaxEmptyBufferCount  = 16;
 };
 using BufferPoolPointerArray = std::array<std::unique_ptr<BufferPool>, VK_MAX_MEMORY_TYPES>;
 
@@ -998,8 +1002,8 @@ class CommandBufferHelperCommon : angle::NonCopyable
 
     // Tracks resources used in the command buffer.
     // For Buffers, we track the read/write access type so we can enable simultaneous reads.
-    static constexpr uint32_t kFastMapSize = 16;
-    angle::FastUnorderedMap<BufferSerial, BufferAccess, kFastMapSize> mUsedBuffers;
+    static constexpr uint32_t kFlatMapSize = 16;
+    angle::FlatUnorderedMap<BufferSerial, BufferAccess, kFlatMapSize> mUsedBuffers;
 };
 
 class OutsideRenderPassCommandBufferHelper final : public CommandBufferHelperCommon
@@ -1283,7 +1287,7 @@ class RenderPassCommandBufferHelper final : public CommandBufferHelperCommon
     // Tracks resources used in the command buffer.
     // Images have unique layouts unlike buffers therefore we can't support simultaneous reads with
     // different layout.
-    angle::FastUnorderedSet<ImageSerial, kFastMapSize> mRenderPassUsedImages;
+    angle::FlatUnorderedSet<ImageSerial, kFlatMapSize> mRenderPassUsedImages;
 
     ImageHelper *mDepthStencilImage;
     ImageHelper *mDepthStencilResolveImage;
@@ -1434,7 +1438,7 @@ bool CanCopyWithTransfer(RendererVk *renderer,
                          VkImageTiling srcTilingMode,
                          angle::FormatID dstFormatID,
                          VkImageTiling dstTilingMode);
-
+class ImageViewHelper;
 class ImageHelper final : public Resource, public angle::Subject
 {
   public:
@@ -1587,6 +1591,7 @@ class ImageHelper final : public Resource, public angle::Subject
     // Similar to releaseImage, but also notify all contexts in the same share group to stop
     // accessing to it.
     void releaseImageFromShareContexts(RendererVk *renderer, ContextVk *contextVk);
+    void collectViewGarbage(RendererVk *renderer, vk::ImageViewHelper *imageView);
     void releaseStagedUpdates(RendererVk *renderer);
 
     bool valid() const { return mImage.valid(); }
@@ -1606,6 +1611,7 @@ class ImageHelper final : public Resource, public angle::Subject
                              GLint samples,
                              bool isRobustResourceInitEnabled);
     void resetImageWeakReference();
+    void releaseImageAndViewGarbage(RendererVk *renderer);
 
     const Image &getImage() const { return mImage; }
     const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
@@ -2299,6 +2305,8 @@ class ImageHelper final : public Resource, public angle::Subject
     // above which the contents are considered unconditionally defined.
     gl::TexLevelArray<LevelContentDefinedMask> mContentDefined;
     gl::TexLevelArray<LevelContentDefinedMask> mStencilContentDefined;
+
+    std::vector<vk::GarbageObject> mImageAndViewGarbage;
 };
 
 ANGLE_INLINE bool RenderPassCommandBufferHelper::usesImage(const ImageHelper &image) const
@@ -2334,15 +2342,14 @@ enum class SrgbDecodeMode
     SrgbDecode
 };
 
-class ImageViewHelper final : public Resource
+class ImageViewHelper final : angle::NonCopyable
 {
   public:
     ImageViewHelper();
     ImageViewHelper(ImageViewHelper &&other);
-    ~ImageViewHelper() override;
+    ~ImageViewHelper();
 
     void init(RendererVk *renderer);
-    void release(RendererVk *renderer);
     void destroy(VkDevice device);
 
     const ImageView &getLinearReadImageView() const
@@ -2491,6 +2498,10 @@ class ImageViewHelper final : public Resource
         LayerMode layerMode,
         SrgbDecodeMode srgbDecodeMode,
         gl::SrgbOverride srgbOverrideMode) const;
+
+    bool isImageViewGarbageEmpty() const;
+
+    void release(RendererVk *renderer, std::vector<vk::GarbageObject> &garbage);
 
   private:
     ImageView &getReadImageView()

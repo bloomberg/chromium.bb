@@ -98,6 +98,7 @@ if (!build_with_chromium) {
     testonly = true
     deps = [
       ":openscreen_unittests_all",
+      "cast/common:certificate_boringssl",
       "test:test_main",
     ]
   }

@@ -62,6 +62,10 @@
 #endif
 #endif
 
+#ifdef SK_GRAPHITE_ENABLED
+#include "experimental/graphite/src/Device.h"
+#endif
+
 #define RETURN_ON_NULL(ptr)     do { if (nullptr == (ptr)) return; } while (0)
 #define RETURN_ON_FALSE(pred)   do { if (!(pred)) return; } while (0)
 
@@ -1706,13 +1710,24 @@ GrBackendRenderTarget SkCanvas::topLayerBackendRenderTarget() const {
 
 GrRecordingContext* SkCanvas::recordingContext() {
 #if SK_SUPPORT_GPU
-    if (auto gpuDevice = this->topDevice()->asGpuDevice()) {
+    if (auto gpuDevice = this->topDevice()->asGaneshDevice()) {
         return gpuDevice->recordingContext();
     }
 #endif
 
     return nullptr;
 }
+
+skgpu::Recorder* SkCanvas::recorder() {
+#ifdef SK_GRAPHITE_ENABLED
+    if (auto graphiteDevice = this->topDevice()->asGraphiteDevice()) {
+        return graphiteDevice->recorder();
+    }
+#endif
+
+    return nullptr;
+}
+
 
 void SkCanvas::drawDRRect(const SkRRect& outer, const SkRRect& inner,
                           const SkPaint& paint) {
@@ -2335,14 +2350,14 @@ SkCanvas::doConvertBlobToSlug(const SkTextBlob& blob, SkPoint origin, const SkPa
     return nullptr;
 }
 
-void SkCanvas::drawSlug(GrSlug* slug) {
+void SkCanvas::drawSlug(const GrSlug* slug) {
     TRACE_EVENT0("skia", TRACE_FUNC);
     if (slug) {
         this->doDrawSlug(slug);
     }
 }
 
-void SkCanvas::doDrawSlug(GrSlug* slug) {
+void SkCanvas::doDrawSlug(const GrSlug* slug) {
     SkRect bounds = slug->sourceBounds();
     if (this->internalQuickReject(bounds, slug->paint())) {
         return;

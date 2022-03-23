@@ -122,7 +122,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Tillåt cookies för en enskild webbplats.</translation>
-<translation id="4040330681741629921">Bli meddelad om det finns en förenklad vy av en webbplats.</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4149994727733219643">Förenklad vy för webbsidor</translation>
 <translation id="4165986682804962316">Webbplatsinställningar</translation>
@@ -255,6 +254,7 @@
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> har valts. Alternativ finns högt upp på skärmen</translation>
 <translation id="7141896414559753902">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
+<translation id="7180611975245234373">Uppdatera</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
@@ -308,7 +308,9 @@
 <translation id="83792324527827022">En webbplats använder kameran och mikrofonen</translation>
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8394832520002899662">Återgå till webbplatsen genom att trycka här</translation>
+<translation id="8409345997656833551">Bli meddelad om det finns en förenklad vy av en artikel</translation>
 <translation id="8425213833346101688">Ändra</translation>
+<translation id="8428213095426709021">Inställningar</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8444433999583714703">Om du vill ge <ph name="APP_NAME" /> åtkomst till din plats måste du även aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>

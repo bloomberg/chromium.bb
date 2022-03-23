@@ -491,14 +491,7 @@ void QuicSession::OnPacketReceived(const QuicSocketAddress& /*self_address*/,
   if (is_connectivity_probe && perspective() == Perspective::IS_SERVER) {
     // Server only sends back a connectivity probe after received a
     // connectivity probe from a new peer address.
-    if (connection_->send_path_response()) {
-      // SendConnectivityProbingResponsePacket() will be deprecated.
-      // SendConnectivityProbingPacket() will be used to send both probing
-      // request and response as both of them are padded PING.
       connection_->SendConnectivityProbingPacket(nullptr, peer_address);
-    } else {
-      connection_->SendConnectivityProbingResponsePacket(peer_address);
-    }
   }
 }
 
@@ -1689,8 +1682,8 @@ bool QuicSession::MaybeSendAddressToken() {
   const size_t buf_len = address_token.length() + 1;
   auto buffer = std::make_unique<char[]>(buf_len);
   QuicDataWriter writer(buf_len, buffer.get());
-  // Add prefix 0 for token sent in NEW_TOKEN frame.
-  writer.WriteUInt8(0);
+  // Add |kAddressTokenPrefix| for token sent in NEW_TOKEN frame.
+  writer.WriteUInt8(kAddressTokenPrefix);
   writer.WriteBytes(address_token.data(), address_token.length());
   control_frame_manager_.WriteOrBufferNewToken(
       absl::string_view(buffer.get(), buf_len));
@@ -2287,7 +2280,7 @@ void QuicSession::OnFrameLost(const QuicFrame& frame) {
   }
 }
 
-void QuicSession::RetransmitFrames(const QuicFrames& frames,
+bool QuicSession::RetransmitFrames(const QuicFrames& frames,
                                    TransmissionType type) {
   QuicConnection::ScopedPacketFlusher retransmission_flusher(connection_);
   for (const QuicFrame& frame : frames) {
@@ -2296,12 +2289,17 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
       continue;
     }
     if (frame.type == CRYPTO_FRAME) {
-      GetMutableCryptoStream()->RetransmitData(frame.crypto_frame, type);
+      const bool data_retransmitted =
+          GetMutableCryptoStream()->RetransmitData(frame.crypto_frame, type);
+      if (GetQuicRestartFlag(quic_set_packet_state_if_all_data_retransmitted) &&
+          !data_retransmitted) {
+        return false;
+      }
       continue;
     }
     if (frame.type != STREAM_FRAME) {
       if (!control_frame_manager_.RetransmitControlFrame(frame, type)) {
-        break;
+        return false;
       }
       continue;
     }
@@ -2310,9 +2308,10 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
         !stream->RetransmitStreamData(frame.stream_frame.offset,
                                       frame.stream_frame.data_length,
                                       frame.stream_frame.fin, type)) {
-      break;
+      return false;
     }
   }
+  return true;
 }
 
 bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
@@ -2471,16 +2470,17 @@ void QuicSession::SetTransmissionType(TransmissionType type) {
   connection_->SetTransmissionType(type);
 }
 
-MessageResult QuicSession::SendMessage(absl::Span<QuicMemSlice> message) {
+MessageResult QuicSession::SendMessage(
+    absl::Span<quiche::QuicheMemSlice> message) {
   return SendMessage(message, /*flush=*/false);
 }
 
-MessageResult QuicSession::SendMessage(QuicMemSlice message) {
+MessageResult QuicSession::SendMessage(quiche::QuicheMemSlice message) {
   return SendMessage(absl::MakeSpan(&message, 1), /*flush=*/false);
 }
 
-MessageResult QuicSession::SendMessage(absl::Span<QuicMemSlice> message,
-                                       bool flush) {
+MessageResult QuicSession::SendMessage(
+    absl::Span<quiche::QuicheMemSlice> message, bool flush) {
   QUICHE_DCHECK(connection_->connected())
       << ENDPOINT << "Try to write messages when connection is closed.";
   if (!IsEncryptionEstablished()) {
@@ -2652,7 +2652,7 @@ bool QuicSession::ValidateToken(absl::string_view token) {
   if (GetQuicFlag(FLAGS_quic_reject_retry_token_in_initial_packet)) {
     return false;
   }
-  if (token.empty() || token[0] != 0) {
+  if (token.empty() || token[0] != kAddressTokenPrefix) {
     // Validate the prefix for token received in NEW_TOKEN frame.
     return false;
   }

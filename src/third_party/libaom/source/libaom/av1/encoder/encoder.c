@@ -2465,6 +2465,29 @@ static int encode_without_recode(AV1_COMP *cpi) {
   segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
   cm->cur_frame->seg.enabled = cm->seg.enabled;
 
+  // This is for rtc temporal filtering case.
+  if (is_psnr_calc_enabled(cpi) && cpi->sf.rt_sf.use_rtc_tf &&
+      cm->current_frame.frame_type != KEY_FRAME) {
+    const SequenceHeader *seq_params = cm->seq_params;
+
+    if (cpi->orig_source.buffer_alloc_sz == 0 ||
+        cpi->last_source->y_width != cpi->source->y_width ||
+        cpi->last_source->y_height != cpi->source->y_height) {
+      // Allocate a source buffer to store the true source for psnr calculation.
+      if (aom_alloc_frame_buffer(
+              &cpi->orig_source, cpi->oxcf.frm_dim_cfg.width,
+              cpi->oxcf.frm_dim_cfg.height, seq_params->subsampling_x,
+              seq_params->subsampling_y, seq_params->use_highbitdepth,
+              cpi->oxcf.border_in_pixels, cm->features.byte_alignment))
+        aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                           "Failed to allocate scaled buffer");
+    }
+
+    aom_yv12_copy_y(cpi->source, &cpi->orig_source);
+    aom_yv12_copy_u(cpi->source, &cpi->orig_source);
+    aom_yv12_copy_v(cpi->source, &cpi->orig_source);
+  }
+
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, av1_encode_frame_time);
 #endif

@@ -192,6 +192,11 @@
 6418 MAC APPLE METAL : UniformBlockWithOneLargeArrayMemberTest.MemberTypeIsMatrixAndInstanced/ES3_Metal = SKIP
 6418 MAC APPLE METAL : UniformBlockWithOneLargeArrayMemberTest.MemberTypeIsStructAndInstancedArray/ES3_Metal = SKIP
 
+7079 MAC METAL INTEL : MultisampleResolveTest.ResolveD32FS8F4Samples/ES3_Metal = SKIP
+7079 MAC METAL INTEL : MultisampleResolveTest.ResolveD24S8Samples/ES3_Metal = SKIP
+7079 MAC METAL INTEL : MultisampleResolveTest.ResolveD32FSamples/ES3_Metal = SKIP
+7079 MAC METAL INTEL : MultisampleResolveTest.ResolveD24Samples/ES3_Metal = SKIP
+7079 MAC METAL INTEL : MultisampleResolveTest.ResolveD16Samples/ES3_Metal = SKIP
 
 4908 MAC METAL INTEL : BlitFramebufferTest.MultisampleDepth/* = SKIP
 4908 MAC METAL AMD : BlitFramebufferTest.MultisampleDepth/* = SKIP
@@ -256,6 +261,11 @@
 6095 ANDROID GLES : GLSLTest_ES3.InitGlobalComplexConstant/* = SKIP
 6116 ANDROID GLES : GLSLTestLoops.ForNoCondition/* = SKIP
 6237 ANDROID GLES : BufferDataTestES3.DrawWithNotCallingBufferData/* = SKIP
+7059 ANDROID VULKAN : EGLSurfaceTest.ResizeWindowWithDraw/* = SKIP
+7059 ANDROID : EGLReadinessCheckTest.IsRunningOnANGLE/* = SKIP
+7059 ANDROID : EGLReadinessCheckTest.GetProcAddressNegativeTest/* = SKIP
+7059 ANDROID : EGLReadinessCheckTest.HasGetPlatformDisplayEXT/* = SKIP
+7059 ANDROID : EGLContextSharingTestNoSyncTextureUploads.NoSync/* = SKIP
 
 // Reading back the contents of an RGBX image initialized with non-255 alpha returns the original alpha (instead of 255)
 6472 ANDROID GLES : ImageTestES3.RGBXAHBImportThenUpload/* = SKIP
@@ -517,3 +527,5 @@
 // NVidia fails new SwizzledChainedAssignIncrement test on GL and GLES.
 7029 NVIDIA OPENGL : GLSLTest.SwizzledChainedAssignIncrement/* = SKIP
 7029 NVIDIA GLES : GLSLTest.SwizzledChainedAssignIncrement/* = SKIP
+
+7085 : VulkanPerformanceCounterTest.InvalidateDrawDisable/* = SKIP

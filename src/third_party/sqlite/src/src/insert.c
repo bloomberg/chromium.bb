@@ -43,7 +43,7 @@ void sqlite3OpenTable(
   }else{
     Index *pPk = sqlite3PrimaryKeyIndex(pTab);
     assert( pPk!=0 );
-    assert( pPk->tnum==pTab->tnum );
+    assert( pPk->tnum==pTab->tnum || CORRUPT_DB );
     sqlite3VdbeAddOp3(v, opcode, iCur, pPk->tnum, iDb);
     sqlite3VdbeSetP4KeyInfo(pParse, pPk);
     VdbeComment((v, "%s", pTab->zName));
@@ -715,9 +715,11 @@ void sqlite3Insert(
 #endif
 
   db = pParse->db;
-  if( pParse->nErr || db->mallocFailed ){
+  assert( db->pParse==pParse );
+  if( pParse->nErr ){
     goto insert_cleanup;
   }
+  assert( db->mallocFailed==0 );
   dest.iSDParm = 0;  /* Suppress a harmless compiler warning */
 
   /* If the Select object is really just a simple VALUES() list with a
@@ -893,7 +895,9 @@ void sqlite3Insert(
     dest.nSdst = pTab->nCol;
     rc = sqlite3Select(pParse, pSelect, &dest);
     regFromSelect = dest.iSdst;
-    if( rc || db->mallocFailed || pParse->nErr ) goto insert_cleanup;
+    assert( db->pParse==pParse );
+    if( rc || pParse->nErr ) goto insert_cleanup;
+    assert( db->mallocFailed==0 );
     sqlite3VdbeEndCoroutine(v, regYield);
     sqlite3VdbeJumpHere(v, addrTop - 1);                       /* label B: */
     assert( pSelect->pEList );
@@ -1382,9 +1386,7 @@ insert_end:
   ** invoke the callback function.
   */
   if( regRowCount ){
-    sqlite3VdbeAddOp2(v, OP_ChngCntRow, regRowCount, 1);
-    sqlite3VdbeSetNumCols(v, 1);
-    sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows inserted", SQLITE_STATIC);
+    sqlite3CodeChangeCount(v, regRowCount, "rows inserted");
   }
 
 insert_cleanup:
@@ -2549,7 +2551,6 @@ void sqlite3CompleteInsertion(
     }
     pik_flags = (useSeekResult ? OPFLAG_USESEEKRESULT : 0);
     if( IsPrimaryKeyIndex(pIdx) && !HasRowid(pTab) ){
-      assert( pParse->nested==0 );
       pik_flags |= OPFLAG_NCHANGE;
       pik_flags |= (update_flags & OPFLAG_SAVEPOSITION);
       if( update_flags==0 ){

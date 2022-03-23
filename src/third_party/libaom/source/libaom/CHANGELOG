@@ -9,7 +9,10 @@
     * Add --deltaq-strength
     * rtc: Allow scene-change and overshoot detection for svc
     * rtc: Intra-only frame for svc
-    * AV1 RT: CDEF control option to disable CDEF on non-ref frames
+    * AV1 RT: Option 2 for codec control AV1E_SET_ENABLE_CDEF to disable
+      CDEF on non-ref frames
+    * New codec controls AV1E_SET_LOOPFILTER_CONTROL and
+      AOME_GET_LOOPFILTER_LEVEL
     * Improvements to three pass encoding
 
   - Compression Efficiency Improvements

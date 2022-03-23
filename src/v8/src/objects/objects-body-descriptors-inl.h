@@ -84,22 +84,24 @@ void BodyDescriptorBase::IterateJSObjectBodyImpl(Map map, HeapObject obj,
                                                  ObjectVisitor* v) {
 #ifdef V8_COMPRESS_POINTERS
   STATIC_ASSERT(kEmbedderDataSlotSize == 2 * kTaggedSize);
-  int header_size = JSObject::GetHeaderSize(map);
-  int inobject_fields_offset = map.GetInObjectPropertyOffset(0);
+  int header_end_offset = JSObject::GetHeaderSize(map);
+  int inobject_fields_start_offset = map.GetInObjectPropertyOffset(0);
   // We are always requested to process header and embedder fields.
-  DCHECK_LE(inobject_fields_offset, end_offset);
+  DCHECK_LE(inobject_fields_start_offset, end_offset);
   // Embedder fields are located between header and inobject properties.
-  if (header_size < inobject_fields_offset) {
+  if (header_end_offset < inobject_fields_start_offset) {
     // There are embedder fields.
-    IteratePointers(obj, start_offset, header_size, v);
-    // Iterate only tagged payload of the embedder slots and skip raw payload.
-    DCHECK_EQ(header_size, JSObject::GetEmbedderFieldsStartOffset(map));
-    for (int offset = header_size + EmbedderDataSlot::kTaggedPayloadOffset;
-         offset < inobject_fields_offset; offset += kEmbedderDataSlotSize) {
-      IteratePointer(obj, offset, v);
+    DCHECK_EQ(header_end_offset, JSObject::GetEmbedderFieldsStartOffset(map));
+    IteratePointers(obj, start_offset, header_end_offset, v);
+    for (int offset = header_end_offset; offset < inobject_fields_start_offset;
+         offset += kEmbedderDataSlotSize) {
+      IteratePointer(obj, offset + EmbedderDataSlot::kTaggedPayloadOffset, v);
+      v->VisitExternalPointer(
+          obj, obj.RawExternalPointerField(
+                   offset + EmbedderDataSlot::kExternalPointerOffset));
     }
     // Proceed processing inobject properties.
-    start_offset = inobject_fields_offset;
+    start_offset = inobject_fields_start_offset;
   }
 #else
   // We store raw aligned pointers as Smis, so it's safe to iterate the whole
@@ -107,11 +109,6 @@ void BodyDescriptorBase::IterateJSObjectBodyImpl(Map map, HeapObject obj,
   STATIC_ASSERT(kEmbedderDataSlotSize == kTaggedSize);
 #endif
   IteratePointers(obj, start_offset, end_offset, v);
-
-  JSObject js_obj = JSObject::cast(obj);
-  for (int i = 0; i < js_obj.GetEmbedderFieldCount(); i++) {
-    v->VisitEmbedderDataSlot(obj, EmbedderDataSlot(js_obj, i));
-  }
 }
 
 template <typename ObjectVisitor>
@@ -432,6 +429,22 @@ class JSDataView::BodyDescriptor final : public BodyDescriptorBase {
     // JSDataView contains raw data that the GC does not know about.
     IteratePointers(obj, kPropertiesOrHashOffset, kEndOfTaggedFieldsOffset, v);
     IterateJSObjectBodyImpl(map, obj, kHeaderSize, object_size, v);
+  }
+
+  static inline int SizeOf(Map map, HeapObject object) {
+    return map.instance_size();
+  }
+};
+
+class JSExternalObject::BodyDescriptor final : public BodyDescriptorBase {
+ public:
+  static bool IsValidSlot(Map map, HeapObject obj, int offset) { return false; }
+
+  template <typename ObjectVisitor>
+  static inline void IterateBody(Map map, HeapObject obj, int object_size,
+                                 ObjectVisitor* v) {
+    IteratePointers(obj, kPropertiesOrHashOffset, kEndOfTaggedFieldsOffset, v);
+    v->VisitExternalPointer(obj, obj.RawExternalPointerField(kValueOffset));
   }
 
   static inline int SizeOf(Map map, HeapObject object) {
@@ -998,25 +1011,20 @@ class EmbedderDataArray::BodyDescriptor final : public BodyDescriptorBase {
                                  ObjectVisitor* v) {
 #ifdef V8_COMPRESS_POINTERS
     STATIC_ASSERT(kEmbedderDataSlotSize == 2 * kTaggedSize);
-    // Iterate only tagged payload of the embedder slots and skip raw payload.
-    for (int offset = EmbedderDataArray::OffsetOfElementAt(0) +
-                      EmbedderDataSlot::kTaggedPayloadOffset;
+    for (int offset = EmbedderDataArray::OffsetOfElementAt(0);
          offset < object_size; offset += kEmbedderDataSlotSize) {
-      IteratePointer(obj, offset, v);
+      IteratePointer(obj, offset + EmbedderDataSlot::kTaggedPayloadOffset, v);
+      v->VisitExternalPointer(
+          obj, obj.RawExternalPointerField(
+                   offset + EmbedderDataSlot::kExternalPointerOffset));
     }
+
 #else
     // We store raw aligned pointers as Smis, so it's safe to iterate the whole
     // array.
     STATIC_ASSERT(kEmbedderDataSlotSize == kTaggedSize);
     IteratePointers(obj, EmbedderDataArray::kHeaderSize, object_size, v);
 #endif
-
-    EmbedderDataArray array = EmbedderDataArray::cast(obj);
-    EmbedderDataSlot start(array, 0);
-    EmbedderDataSlot end(array, array.length());
-    for (EmbedderDataSlot slot = start; slot < end; ++slot) {
-      v->VisitEmbedderDataSlot(obj, slot);
-    }
   }
 
   static inline int SizeOf(Map map, HeapObject object) {
@@ -1070,6 +1078,7 @@ auto BodyDescriptorApply(InstanceType type, Args&&... args) {
     case NUMBER_DICTIONARY_TYPE:
     case SIMPLE_NUMBER_DICTIONARY_TYPE:
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
+    case REGISTERED_SYMBOL_TABLE_TYPE:
     case SCRIPT_CONTEXT_TABLE_TYPE:
       return CALL_APPLY(FixedArray);
     case EPHEMERON_HASH_TABLE_TYPE:
@@ -1157,6 +1166,7 @@ auto BodyDescriptorApply(InstanceType type, Args&&... args) {
     case JS_SET_VALUE_ITERATOR_TYPE:
     case JS_SPECIAL_API_OBJECT_TYPE:
     case JS_SHADOW_REALM_TYPE:
+    case JS_SHARED_STRUCT_TYPE:
     case JS_STRING_ITERATOR_PROTOTYPE_TYPE:
     case JS_STRING_ITERATOR_TYPE:
     case JS_TEMPORAL_CALENDAR_TYPE:
@@ -1174,6 +1184,7 @@ auto BodyDescriptorApply(InstanceType type, Args&&... args) {
     case JS_CLASS_CONSTRUCTOR_TYPE:
     case JS_PROMISE_CONSTRUCTOR_TYPE:
     case JS_REG_EXP_CONSTRUCTOR_TYPE:
+    case JS_WRAPPED_FUNCTION_TYPE:
     case JS_ARRAY_CONSTRUCTOR_TYPE:
 #define TYPED_ARRAY_CONSTRUCTORS_SWITCH(Type, type, TYPE, Ctype) \
   case TYPE##_TYPED_ARRAY_CONSTRUCTOR_TYPE:
@@ -1216,6 +1227,8 @@ auto BodyDescriptorApply(InstanceType type, Args&&... args) {
       return CALL_APPLY(JSDataView);
     case JS_TYPED_ARRAY_TYPE:
       return CALL_APPLY(JSTypedArray);
+    case JS_EXTERNAL_OBJECT_TYPE:
+      return CALL_APPLY(JSExternalObject);
     case WEAK_CELL_TYPE:
       return CALL_APPLY(WeakCell);
     case JS_WEAK_REF_TYPE:

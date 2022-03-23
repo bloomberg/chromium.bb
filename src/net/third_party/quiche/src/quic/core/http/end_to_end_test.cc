@@ -13,6 +13,8 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "quic/core/crypto/null_encrypter.h"
 #include "quic/core/crypto/quic_client_session_cache.h"
 #include "quic/core/http/http_constants.h"
@@ -35,7 +37,6 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_port_utils.h"
-#include "quic/platform/api/quic_sleep.h"
 #include "quic/platform/api/quic_socket_address.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/platform/api/quic_test_loopback.h"
@@ -1672,7 +1673,11 @@ TEST_P(EndToEndTest, AddressToken) {
       // QuicSentPacketManager::SetInitialRtt clamps the initial_rtt to between
       // [min_initial_rtt, max_initial_rtt].
       const QuicTime::Delta min_initial_rtt =
-          QuicTime::Delta::FromMicroseconds(kMinInitialRoundTripTimeUs);
+          server_connection->sent_packet_manager().use_lower_min_irtt()
+              ? QuicTime::Delta::FromMicroseconds(
+                    kMinTrustedInitialRoundTripTimeUs)
+              : QuicTime::Delta::FromMicroseconds(
+                    kMinUntrustedInitialRoundTripTimeUs);
       const QuicTime::Delta max_initial_rtt =
           QuicTime::Delta::FromMicroseconds(kMaxInitialRoundTripTimeUs);
       const QuicTime::Delta expected_initial_rtt =
@@ -3942,7 +3947,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   const int expected_bytes_acked = header_size + request_string.length();
 
   // The TestAckListener will cause a failure if not notified.
-  QuicReferenceCountedPointer<TestAckListener> ack_listener(
+  quiche::QuicheReferenceCountedPointer<TestAckListener> ack_listener(
       new TestAckListener());
 
   // Send the request, and register the delegate for ACKs.
@@ -4203,7 +4208,6 @@ TEST_P(EndToEndTest, VersionNegotiationDowngradeAttackIsDetected) {
     ASSERT_TRUE(Initialize());
     return;
   }
-  SetQuicReloadableFlag(quic_version_information, true);
   connect_to_server_on_initialize_ = false;
   client_supported_versions_.insert(client_supported_versions_.begin(),
                                     target_version);
@@ -4330,7 +4334,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
       client_->client()->network_helper()->GetLatestClientAddress().host(),
       server_address_, nullptr);
   // Give the server time to process the packet.
-  QuicSleep(QuicTime::Delta::FromSeconds(1));
+  absl::SleepFor(absl::Seconds(1));
   // This error is sent to the connection's OnError (which ignores it), so the
   // dispatcher doesn't see it.
   // Pause the server so we can access the server's internals without races.
@@ -6638,7 +6642,7 @@ TEST_P(EndToEndTest, WebTransportDatagrams) {
   ASSERT_TRUE(session != nullptr);
   NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
 
-  SimpleBufferAllocator allocator;
+  quiche::SimpleBufferAllocator allocator;
   for (int i = 0; i < 10; i++) {
     session->SendOrQueueDatagram(MemSliceFromString("test"));
   }
@@ -6668,7 +6672,7 @@ TEST_P(EndToEndTest, WebTransportDatagramsWithContexts) {
   ASSERT_TRUE(connect_stream != nullptr);
   NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
 
-  SimpleBufferAllocator allocator;
+  quiche::SimpleBufferAllocator allocator;
   for (int i = 0; i < 10; i++) {
     session->SendOrQueueDatagram(MemSliceFromString("test"));
   }

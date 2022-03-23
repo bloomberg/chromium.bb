@@ -113,6 +113,7 @@ struct ProgramExecutablePerfCounters
     DescriptorSetCountList descriptorSetCacheHits;
     DescriptorSetCountList descriptorSetCacheMisses;
     DescriptorSetCountList descriptorSetCacheSizes;
+    DescriptorSetCountList descriptorSetCacheKeySizesBytes;
 };
 
 using DefaultUniformBlockMap = gl::ShaderMap<std::shared_ptr<DefaultUniformBlock>>;
@@ -147,6 +148,7 @@ class ProgramExecutableVk
     angle::Result getGraphicsPipeline(ContextVk *contextVk,
                                       gl::PrimitiveMode mode,
                                       const vk::GraphicsPipelineDesc &desc,
+                                      const gl::ProgramExecutable &glExecutable,
                                       const vk::GraphicsPipelineDesc **descPtrOut,
                                       vk::PipelineHelper **pipelineOut);
 
@@ -257,10 +259,9 @@ class ProgramExecutableVk
                                             vk::BufferHelper *defaultUniformBuffer);
     void updateTransformFeedbackDescriptorSetImpl(ContextVk *contextVk,
                                                   const gl::ProgramExecutable &executable);
-    angle::Result getOrAllocateShaderResourcesDescriptorSet(
+    angle::Result allocateShaderResourcesDescriptorSet(
         ContextVk *contextVk,
-        const vk::DescriptorSetDesc *shaderBuffersDesc,
-        VkDescriptorSet *descriptorSetOut);
+        const vk::DescriptorSetDesc *shaderBuffersDesc);
     angle::Result updateBuffersDescriptorSet(ContextVk *contextVk,
                                              const gl::ShaderType shaderType,
                                              const vk::DescriptorSetDesc &shaderBuffersDesc,

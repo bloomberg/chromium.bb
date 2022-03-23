@@ -59,6 +59,7 @@ class V8DebuggerScript {
   V8DebuggerScript(const V8DebuggerScript&) = delete;
   V8DebuggerScript& operator=(const V8DebuggerScript&) = delete;
 
+  v8::Local<v8::debug::ScriptSource> scriptSource();
   const String16& scriptId() const { return m_id; }
   bool hasSourceURLComment() const { return m_hasSourceURLComment; }
   const String16& sourceURL() const { return m_url; }
@@ -76,7 +77,6 @@ class V8DebuggerScript {
   int executionContextId() const { return m_executionContextId; }
   virtual bool isLiveEdit() const = 0;
   virtual bool isModule() const = 0;
-  virtual bool isSourceLoadedLazily() const = 0;
   virtual int length() const = 0;
 
   void setSourceURL(const String16&);

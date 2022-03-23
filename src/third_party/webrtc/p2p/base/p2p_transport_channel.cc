@@ -786,6 +786,16 @@ void P2PTransportChannel::SetIceConfig(const IceConfig& config) {
     SetOption(rtc::Socket::OPT_DSCP, *field_trials_.override_dscp);
   }
 
+  std::string field_trial_string =
+      webrtc::field_trial::FindFullName("WebRTC-SetSocketReceiveBuffer");
+  int receive_buffer_size_kb = 0;
+  sscanf(field_trial_string.c_str(), "Enabled-%d", &receive_buffer_size_kb);
+  if (receive_buffer_size_kb > 0) {
+    RTC_LOG(LS_INFO) << "Set WebRTC-SetSocketReceiveBuffer: Enabled and set to "
+                     << receive_buffer_size_kb << "kb";
+    SetOption(rtc::Socket::OPT_RCVBUF, receive_buffer_size_kb * 1024);
+  }
+
   RTC_DCHECK(ValidateIceConfig(config_).ok());
 }
 
@@ -1598,6 +1608,7 @@ int P2PTransportChannel::SendPacket(const char* data,
     return -1;
   }
 
+  packets_sent_++;
   last_sent_packet_id_ = options.packet_id;
   rtc::PacketOptions modified_options(options);
   modified_options.info_signaled_after_sent.packet_type =
@@ -1606,7 +1617,10 @@ int P2PTransportChannel::SendPacket(const char* data,
   if (sent <= 0) {
     RTC_DCHECK(sent < 0);
     error_ = selected_connection_->GetError();
+    return sent;
   }
+
+  bytes_sent_ += sent;
   return sent;
 }
 
@@ -1633,6 +1647,11 @@ bool P2PTransportChannel::GetStats(IceTransportStats* ice_transport_stats) {
 
   ice_transport_stats->selected_candidate_pair_changes =
       selected_candidate_pair_changes_;
+
+  ice_transport_stats->bytes_sent = bytes_sent_;
+  ice_transport_stats->bytes_received = bytes_received_;
+  ice_transport_stats->packets_sent = packets_sent_;
+  ice_transport_stats->packets_received = packets_received_;
   return true;
 }
 
@@ -2228,6 +2247,8 @@ void P2PTransportChannel::OnReadPacket(Connection* connection,
 
   if (connection == selected_connection_) {
     // Let the client know of an incoming packet
+    packets_received_++;
+    bytes_received_ += len;
     RTC_DCHECK(connection->last_data_received() >= last_data_received_ms_);
     last_data_received_ms_ =
         std::max(last_data_received_ms_, connection->last_data_received());
@@ -2239,6 +2260,8 @@ void P2PTransportChannel::OnReadPacket(Connection* connection,
   if (!FindConnection(connection))
     return;
 
+  packets_received_++;
+  bytes_received_ += len;
   RTC_DCHECK(connection->last_data_received() >= last_data_received_ms_);
   last_data_received_ms_ =
       std::max(last_data_received_ms_, connection->last_data_received());

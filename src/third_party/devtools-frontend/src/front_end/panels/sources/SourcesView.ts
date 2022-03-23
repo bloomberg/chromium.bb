@@ -12,6 +12,7 @@ import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js'
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
+import * as Components from './components/components.js';
 import {EditingLocationHistoryManager} from './EditingLocationHistoryManager.js';
 import sourcesViewStyles from './sourcesView.css.js';
 
@@ -377,6 +378,10 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin<EventTypes, typ
       sourceView = new SourceFrame.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
     } else if (contentType === Common.ResourceType.resourceTypes.Font) {
       sourceView = new SourceFrame.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
+    } else if (
+        uiSourceCode.name() === HEADER_OVERRIDES_FILENAME &&
+        Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
+      sourceView = new Components.HeadersView.HeadersView(uiSourceCode);
     } else {
       sourceFrame = new UISourceCodeFrame(uiSourceCode);
     }
@@ -385,9 +390,56 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin<EventTypes, typ
       this.historyManager.trackSourceFrameCursorJumps(sourceFrame);
     }
 
+    uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+
     const widget = (sourceFrame || sourceView as UI.Widget.Widget);
     this.sourceViewByUISourceCode.set(uiSourceCode, widget);
     return widget;
+  }
+
+  #sourceViewTypeForWidget(widget: UI.Widget.Widget): SourceViewType {
+    if (widget instanceof SourceFrame.ImageView.ImageView) {
+      return SourceViewType.ImageView;
+    }
+    if (widget instanceof SourceFrame.FontView.FontView) {
+      return SourceViewType.FontView;
+    }
+    if (widget instanceof Components.HeadersView.HeadersView) {
+      return SourceViewType.HeadersView;
+    }
+    return SourceViewType.SourceView;
+  }
+
+  #sourceViewTypeForUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): SourceViewType {
+    if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME &&
+        Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
+      return SourceViewType.HeadersView;
+    }
+    const contentType = uiSourceCode.contentType();
+    switch (contentType) {
+      case Common.ResourceType.resourceTypes.Image:
+        return SourceViewType.ImageView;
+      case Common.ResourceType.resourceTypes.Font:
+        return SourceViewType.FontView;
+      default:
+        return SourceViewType.SourceView;
+    }
+  }
+
+  #uiSourceCodeTitleChanged(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
+    const widget = this.sourceViewByUISourceCode.get(uiSourceCode);
+    if (widget) {
+      if (this.#sourceViewTypeForWidget(widget) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
+        // Remove the exisiting editor tab and create a new one of the correct type.
+        this.removeUISourceCodes([uiSourceCode]);
+        this.showSourceLocation(uiSourceCode);
+      }
+    }
+  }
+
+  getSourceView(uiSourceCode: Workspace.UISourceCode.UISourceCode): UI.Widget.Widget|undefined {
+    return this.sourceViewByUISourceCode.get(uiSourceCode);
   }
 
   private getOrCreateSourceView(uiSourceCode: Workspace.UISourceCode.UISourceCode): UI.Widget.Widget {
@@ -395,9 +447,12 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin<EventTypes, typ
   }
 
   recycleUISourceCodeFrame(sourceFrame: UISourceCodeFrame, uiSourceCode: Workspace.UISourceCode.UISourceCode): void {
+    sourceFrame.uiSourceCode().removeEventListener(
+        Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
     this.sourceViewByUISourceCode.delete(sourceFrame.uiSourceCode());
     sourceFrame.setUISourceCode(uiSourceCode);
     this.sourceViewByUISourceCode.set(uiSourceCode, sourceFrame);
+    uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
   }
 
   viewForFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): UI.Widget.Widget {
@@ -410,6 +465,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin<EventTypes, typ
     if (sourceView && sourceView instanceof UISourceCodeFrame) {
       (sourceView as UISourceCodeFrame).dispose();
     }
+    uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
   }
 
   private editorClosed(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
@@ -558,20 +614,18 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin<EventTypes, typ
   }
 
   save(): void {
-    this.saveSourceFrame(this.currentSourceFrame());
+    this.saveSourceView(this.visibleView());
   }
 
   saveAll(): void {
     const sourceFrames = this.editorContainer.fileViews();
-    sourceFrames.forEach(this.saveSourceFrame.bind(this));
+    sourceFrames.forEach(this.saveSourceView.bind(this));
   }
 
-  private saveSourceFrame(sourceFrame: UI.Widget.Widget|null): void {
-    if (!(sourceFrame instanceof UISourceCodeFrame)) {
-      return;
+  private saveSourceView(sourceView: UI.Widget.Widget|null): void {
+    if (sourceView instanceof UISourceCodeFrame || sourceView instanceof Components.HeadersView.HeadersView) {
+      sourceView.commitEditing();
     }
-    const uiSourceCodeFrame = (sourceFrame as UISourceCodeFrame);
-    uiSourceCodeFrame.commitEditing();
   }
 
   toggleBreakpointsActiveState(active: boolean): void {
@@ -718,4 +772,14 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
 
     return false;
   }
+}
+
+const HEADER_OVERRIDES_FILENAME = '.headers';
+
+// eslint-disable-next-line rulesdir/const_enum
+enum SourceViewType {
+  ImageView = 'ImageView',
+  FontView = 'FontView',
+  HeadersView = 'HeadersView',
+  SourceView = 'SourceView',
 }

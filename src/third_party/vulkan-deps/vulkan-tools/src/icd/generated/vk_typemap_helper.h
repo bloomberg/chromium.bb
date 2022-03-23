@@ -2307,6 +2307,17 @@ template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR> 
 
 #endif // VK_ENABLE_BETA_EXTENSIONS
 #ifdef VK_ENABLE_BETA_EXTENSIONS
+// Map type VkVideoDecodeCapabilitiesKHR to id VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR
+template <> struct LvlTypeMap<VkVideoDecodeCapabilitiesKHR> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR> {
+    typedef VkVideoDecodeCapabilitiesKHR Type;
+};
+
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
 // Map type VkVideoDecodeInfoKHR to id VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR
 template <> struct LvlTypeMap<VkVideoDecodeInfoKHR> {
     static const VkStructureType kSType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
@@ -2924,6 +2935,17 @@ template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR> {
 
 #endif // VK_ENABLE_BETA_EXTENSIONS
 #ifdef VK_ENABLE_BETA_EXTENSIONS
+// Map type VkVideoEncodeCapabilitiesKHR to id VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR
+template <> struct LvlTypeMap<VkVideoEncodeCapabilitiesKHR> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR> {
+    typedef VkVideoEncodeCapabilitiesKHR Type;
+};
+
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
 // Map type VkVideoEncodeRateControlLayerInfoKHR to id VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR
 template <> struct LvlTypeMap<VkVideoEncodeRateControlLayerInfoKHR> {
     static const VkStructureType kSType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR;
@@ -3177,6 +3199,17 @@ template <> struct LvlTypeMap<VkVideoEncodeH264DpbSlotInfoEXT> {
 
 template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_DPB_SLOT_INFO_EXT> {
     typedef VkVideoEncodeH264DpbSlotInfoEXT Type;
+};
+
+#endif // VK_ENABLE_BETA_EXTENSIONS
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+// Map type VkVideoEncodeH264ReferenceListsEXT to id VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_REFERENCE_LISTS_EXT
+template <> struct LvlTypeMap<VkVideoEncodeH264ReferenceListsEXT> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_REFERENCE_LISTS_EXT;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_REFERENCE_LISTS_EXT> {
+    typedef VkVideoEncodeH264ReferenceListsEXT Type;
 };
 
 #endif // VK_ENABLE_BETA_EXTENSIONS
@@ -5676,6 +5709,33 @@ template <> struct LvlTypeMap<VkPhysicalDevicePageableDeviceLocalMemoryFeaturesE
 
 template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT> {
     typedef VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT Type;
+};
+
+// Map type VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE to id VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE
+template <> struct LvlTypeMap<VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE> {
+    typedef VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE Type;
+};
+
+// Map type VkDescriptorSetBindingReferenceVALVE to id VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE
+template <> struct LvlTypeMap<VkDescriptorSetBindingReferenceVALVE> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE> {
+    typedef VkDescriptorSetBindingReferenceVALVE Type;
+};
+
+// Map type VkDescriptorSetLayoutHostMappingInfoVALVE to id VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE
+template <> struct LvlTypeMap<VkDescriptorSetLayoutHostMappingInfoVALVE> {
+    static const VkStructureType kSType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE;
+};
+
+template <> struct LvlSTypeMap<VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE> {
+    typedef VkDescriptorSetLayoutHostMappingInfoVALVE Type;
 };
 
 // Map type VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM to id VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM

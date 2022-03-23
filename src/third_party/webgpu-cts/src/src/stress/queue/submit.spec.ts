@@ -44,7 +44,7 @@ results verified at the end of the test.`
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bindGroup);
       pass.dispatch(kNumElements);
-      pass.endPass();
+      pass.end();
     }
     t.device.queue.submit([encoder.finish()]);
     t.expectGPUBufferValuesEqual(
@@ -89,7 +89,7 @@ submit() call.`
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bindGroup);
       pass.dispatch(kNumElements);
-      pass.endPass();
+      pass.end();
       buffers.push(encoder.finish());
     }
     t.device.queue.submit(buffers);

@@ -18,6 +18,8 @@ config("fxge_warnings") {
 
 source_set("fxge") {
   sources = [
+    "calculate_pitch.cpp",
+    "calculate_pitch.h",
     "cfx_cliprgn.cpp",
     "cfx_cliprgn.h",
     "cfx_color.cpp",
@@ -161,7 +163,7 @@ source_set("fxge") {
     ]
   }
 
-  if (is_linux || is_chromeos) {
+  if (is_linux || is_chromeos || is_fuchsia) {
     sources += [ "linux/fx_linux_impl.cpp" ]
   }
 

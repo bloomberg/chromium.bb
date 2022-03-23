@@ -83,7 +83,7 @@ tf_cc_test(
     ],
 )
 
-# TODO(mdan): Get rid of if_static, it's nonstandard.
+# TODO(b/221223841): Get rid of if_static, it's nonstandard.
 tf_python_pybind_extension(
     name = "runtime_client_pybind",
     srcs = ["runtime_client_pybind.cc"],
@@ -129,6 +129,7 @@ py_strict_test(
     srcs = ["runtime_client_test.py"],
     main = "runtime_client_test.py",
     python_version = "PY3",
+    tags = ["no_oss"],  # TODO(b/219089812)
     deps = [
         ":runtime_client_py",
         "//tensorflow/core/framework:function_proto_py",

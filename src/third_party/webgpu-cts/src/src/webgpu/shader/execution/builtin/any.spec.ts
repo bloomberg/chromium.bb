@@ -5,8 +5,7 @@ Execution Tests for the 'any' builtin function
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { False, True, TypeBool, TypeVec, vec2, vec3, vec4 } from '../../../util/conversion.js';
-
-import { run } from './builtin.js';
+import { builtin, run } from '../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -82,5 +81,5 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
     };
     const overload = overloads[t.params.overload];
 
-    run(t, 'any', [overload.type], TypeBool, t.params, overload.cases);
+    run(t, builtin('any'), [overload.type], TypeBool, t.params, overload.cases);
   });

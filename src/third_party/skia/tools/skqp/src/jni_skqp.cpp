@@ -21,7 +21,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
 JNIEXPORT void JNICALL Java_org_skia_skqp_SkQP_nInit(JNIEnv*, jobject, jobject, jstring);
-JNIEXPORT jlong JNICALL Java_org_skia_skqp_SkQP_nExecuteGM(JNIEnv*, jobject, jint, jint);
 JNIEXPORT jobjectArray JNICALL Java_org_skia_skqp_SkQP_nExecuteUnitTest(JNIEnv*, jobject, jint);
 JNIEXPORT void JNICALL Java_org_skia_skqp_SkQP_nMakeReport(JNIEnv*, jobject);
 }  // extern "C"
@@ -63,6 +62,16 @@ static SkQP gSkQP;
                     __FILE__ ": assert(" #cond ") failed."); \
     return ret; } } while (0)
 
+////////////////////////////////////////////////////////////////////////////////
+
+static jobjectArray make_java_string_array(JNIEnv* env, jint arraySize) {
+    jclass stringClass = env->FindClass("java/lang/String");
+    jassert(env, stringClass, nullptr);
+    jobjectArray jarray = env->NewObjectArray(arraySize, stringClass, nullptr);
+    jassert(env, jarray != nullptr, nullptr);
+    return jarray;
+}
+
 static void set_string_array_element(JNIEnv* env, jobjectArray a, const char* s, unsigned i) {
     jstring jstr = env->NewStringUTF(s);
     jassert(env, jstr != nullptr,);
@@ -70,16 +79,11 @@ static void set_string_array_element(JNIEnv* env, jobjectArray a, const char* s,
     env->DeleteLocalRef(jstr);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 template <typename T, typename F>
-jobjectArray to_java_string_array(JNIEnv* env,
-                                  const std::vector<T>& array,
-                                  F toString) {
-    jclass stringClass = env->FindClass("java/lang/String");
-    jassert(env, stringClass, nullptr);
-    jobjectArray jarray = env->NewObjectArray((jint)array.size(), stringClass, nullptr);
-    jassert(env, jarray != nullptr, nullptr);
+static jobjectArray to_java_string_array(JNIEnv* env,
+                                         const std::vector<T>& array,
+                                         F toString) {
+    jobjectArray jarray = make_java_string_array(env, (jint)array.size());
     for (unsigned i = 0; i < array.size(); ++i) {
         set_string_array_element(env, jarray, std::string(toString(array[i])).c_str(), i);
     }
@@ -109,41 +113,13 @@ void Java_org_skia_skqp_SkQP_nInit(JNIEnv* env, jobject object, jobject assetMan
     jassert(env, gAAssetManager,);
 
     std::lock_guard<std::mutex> lock(gMutex);
-    gSkQP.init(&gAndroidAssetManager, nullptr, reportDirectory.c_str());
+    gSkQP.init(&gAndroidAssetManager, reportDirectory.c_str());
 
-    auto backends = gSkQP.getSupportedBackends();
-    jassert(env, backends.size() > 0,);
-    auto gms = gSkQP.getGMs();
-    auto unitTests = gSkQP.getUnitTests();
+    const std::vector<SkQP::UnitTest>& unitTests = gSkQP.getUnitTests();
 
     constexpr char kStringArrayType[] = "[Ljava/lang/String;";
-    env->SetObjectField(object, env->GetFieldID(SkQP_class, "mBackends", kStringArrayType),
-                        to_java_string_array(env, backends, SkQP::GetBackendName));
     env->SetObjectField(object, env->GetFieldID(SkQP_class, "mUnitTests", kStringArrayType),
                         to_java_string_array(env, unitTests, SkQP::GetUnitTestName));
-    env->SetObjectField(object, env->GetFieldID(SkQP_class, "mGMs", kStringArrayType),
-                        to_java_string_array(env, gms, SkQP::GetGMName));
-}
-
-jlong Java_org_skia_skqp_SkQP_nExecuteGM(JNIEnv* env,
-                                          jobject object,
-                                          jint gmIndex,
-                                          jint backendIndex) {
-    SkQP::RenderOutcome outcome;
-    std::string except;
-    {
-        std::lock_guard<std::mutex> lock(gMutex);
-        jassert(env, backendIndex < (jint)gSkQP.getSupportedBackends().size(), -1);
-        jassert(env, gmIndex < (jint)gSkQP.getGMs().size(), -1);
-        SkQP::SkiaBackend backend = gSkQP.getSupportedBackends()[backendIndex];
-        SkQP::GMFactory gm = gSkQP.getGMs()[gmIndex];
-        std::tie(outcome, except) = gSkQP.evaluateGM(backend, gm);
-    }
-
-    if (!except.empty()) {
-        (void)env->ThrowNew(env->FindClass("org/skia/skqp/SkQPException"), except.c_str());
-    }
-    return (jlong)outcome.fTotalError;
 }
 
 jobjectArray Java_org_skia_skqp_SkQP_nExecuteUnitTest(JNIEnv* env,

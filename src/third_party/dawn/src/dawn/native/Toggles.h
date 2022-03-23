@@ -62,6 +62,8 @@ namespace dawn::native {
         UseDummyFragmentInVertexOnlyPipeline,
         FxcOptimizations,
         RecordDetailedTimingInTraceEvents,
+        DisableTimestampQueryConversion,
+        VulkanUseZeroInitializeWorkgroupMemoryExtension,
 
         EnumCount,
         InvalidEnum = EnumCount,

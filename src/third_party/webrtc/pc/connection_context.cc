@@ -10,14 +10,15 @@
 
 #include "pc/connection_context.h"
 
-#include <string>
 #include <type_traits>
 #include <utility>
 
 #include "api/transport/field_trial_based_config.h"
+#include "media/base/media_engine.h"
 #include "media/sctp/sctp_transport_factory.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/internal/default_socket_server.h"
+#include "rtc_base/socket_server.h"
 #include "rtc_base/task_utils/to_queued_task.h"
 #include "rtc_base/time_utils.h"
 
@@ -72,12 +73,14 @@ rtc::Thread* MaybeWrapThread(rtc::Thread* signaling_thread,
 
 std::unique_ptr<SctpTransportFactoryInterface> MaybeCreateSctpFactory(
     std::unique_ptr<SctpTransportFactoryInterface> factory,
-    rtc::Thread* network_thread) {
+    rtc::Thread* network_thread,
+    const WebRtcKeyValueConfig& field_trials) {
   if (factory) {
     return factory;
   }
 #ifdef WEBRTC_HAVE_SCTP
-  return std::make_unique<cricket::SctpTransportFactory>(network_thread);
+  return std::make_unique<cricket::SctpTransportFactory>(network_thread,
+                                                         field_trials);
 #else
   return nullptr;
 #endif
@@ -101,15 +104,15 @@ ConnectionContext::ConnectionContext(
                                             owned_worker_thread_)),
       signaling_thread_(MaybeWrapThread(dependencies->signaling_thread,
                                         wraps_current_thread_)),
+      trials_(dependencies->trials ? std::move(dependencies->trials)
+                                   : std::make_unique<FieldTrialBasedConfig>()),
       network_monitor_factory_(
           std::move(dependencies->network_monitor_factory)),
       call_factory_(std::move(dependencies->call_factory)),
       sctp_factory_(
           MaybeCreateSctpFactory(std::move(dependencies->sctp_factory),
-                                 network_thread())),
-      trials_(dependencies->trials
-                  ? std::move(dependencies->trials)
-                  : std::make_unique<FieldTrialBasedConfig>()) {
+                                 network_thread(),
+                                 *trials_.get())) {
   signaling_thread_->AllowInvokesToThread(worker_thread_);
   signaling_thread_->AllowInvokesToThread(network_thread_);
   worker_thread_->AllowInvokesToThread(network_thread_);

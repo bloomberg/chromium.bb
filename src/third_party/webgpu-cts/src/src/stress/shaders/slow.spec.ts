@@ -38,7 +38,7 @@ g.test('compute')
     });
     pass.setBindGroup(0, bindGroup);
     pass.dispatch(kDispatchSize);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectGPUBufferValuesEqual(buffer, new Uint32Array(new Array(kDispatchSize).fill(1000000)));
   });
@@ -95,7 +95,8 @@ g.test('vertex')
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: [0, 0, 0, 0],
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -103,7 +104,7 @@ g.test('vertex')
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.draw(1);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectSinglePixelIn2DTexture(
       renderTarget,
@@ -167,7 +168,8 @@ g.test('fragment')
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: [0, 0, 0, 0],
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -175,7 +177,7 @@ g.test('fragment')
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.draw(1);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectSinglePixelIn2DTexture(
       renderTarget,

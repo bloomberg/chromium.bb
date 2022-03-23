@@ -21,7 +21,10 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::
           virtual_card_enroll_bubble_controller) {}
 
 AutofillVirtualCardEnrollmentInfoBarDelegateMobile::
-    ~AutofillVirtualCardEnrollmentInfoBarDelegateMobile() = default;
+    ~AutofillVirtualCardEnrollmentInfoBarDelegateMobile() {
+  if (!had_user_interaction_)
+    OnInfobarClosed(PaymentsBubbleClosedReason::kNotInteracted);
+}
 
 // static
 AutofillVirtualCardEnrollmentInfoBarDelegateMobile*
@@ -49,14 +52,14 @@ const raw_ptr<gfx::Image>
 AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetIssuerIcon() const {
   return virtual_card_enroll_bubble_controller_
       ->GetVirtualCardEnrollmentFields()
-      ->card_art_image.get();
+      .card_art_image.get();
 }
 
 std::u16string
 AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetCardLabel() const {
   return virtual_card_enroll_bubble_controller_
       ->GetVirtualCardEnrollmentFields()
-      ->credit_card.CardIdentifierStringForAutofillDisplay();
+      .credit_card.CardIdentifierStringForAutofillDisplay();
 }
 
 LegalMessageLines
@@ -64,7 +67,7 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetGoogleLegalMessage()
     const {
   return virtual_card_enroll_bubble_controller_
       ->GetVirtualCardEnrollmentFields()
-      ->google_legal_message;
+      .google_legal_message;
 }
 
 LegalMessageLines
@@ -72,7 +75,7 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetIssuerLegalMessage()
     const {
   return virtual_card_enroll_bubble_controller_
       ->GetVirtualCardEnrollmentFields()
-      ->issuer_legal_message;
+      .issuer_legal_message;
 }
 
 void AutofillVirtualCardEnrollmentInfoBarDelegateMobile::OnInfobarLinkClicked(
@@ -113,17 +116,28 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetButtonLabel(
 }
 
 void AutofillVirtualCardEnrollmentInfoBarDelegateMobile::InfoBarDismissed() {
+  OnInfobarClosed(PaymentsBubbleClosedReason::kClosed);
   virtual_card_enroll_bubble_controller_->OnDeclineButton();
 }
 
 bool AutofillVirtualCardEnrollmentInfoBarDelegateMobile::Cancel() {
+  OnInfobarClosed(PaymentsBubbleClosedReason::kClosed);
   virtual_card_enroll_bubble_controller_->OnDeclineButton();
   return true;
 }
 
 bool AutofillVirtualCardEnrollmentInfoBarDelegateMobile::Accept() {
+  OnInfobarClosed(PaymentsBubbleClosedReason::kAccepted);
   virtual_card_enroll_bubble_controller_->OnAcceptButton();
   return true;
+}
+
+void AutofillVirtualCardEnrollmentInfoBarDelegateMobile::OnInfobarClosed(
+    PaymentsBubbleClosedReason closed_reason) {
+  DCHECK(!had_user_interaction_);
+
+  virtual_card_enroll_bubble_controller_->OnBubbleClosed(closed_reason);
+  had_user_interaction_ = true;
 }
 
 }  // namespace autofill

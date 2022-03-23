@@ -211,8 +211,6 @@ std::string HeapTypeToConstantName(HeapType heap_type) {
   switch (heap_type.representation()) {
     case HeapType::kFunc:
       return "kWasmFuncRef";
-    case HeapType::kExtern:
-      return "kWasmExternRef";
     case HeapType::kEq:
       return "kWasmEqRef";
     case HeapType::kI31:
@@ -248,8 +246,6 @@ std::string ValueTypeToConstantName(ValueType type) {
       return "kWasmS128";
     case kOptRef:
       switch (type.heap_representation()) {
-        case HeapType::kExtern:
-          return "kWasmExternRef";
         case HeapType::kFunc:
           return "kWasmFuncRef";
         case HeapType::kEq:
@@ -341,6 +337,12 @@ class InitExprInterface {
   void S128Const(FullDecoder* decoder, Simd128Immediate<validate>& imm,
                  Value* result) {
     result->init_expr = WasmInitExpr(imm.value);
+  }
+
+  void BinOp(FullDecoder* decoder, WasmOpcode opcode, const Value& lhs,
+             const Value& rhs, Value* result) {
+    // TODO(12089): Implement.
+    UNIMPLEMENTED();
   }
 
   void RefNull(FullDecoder* decoder, ValueType type, Value* result) {

@@ -51,18 +51,6 @@ template<> struct is_arithmetic<Packet8bf> { enum { value = true }; };
 template<> struct is_arithmetic<Packet4l> { enum { value = true }; };
 #endif
 
-#define EIGEN_DECLARE_CONST_Packet8f(NAME,X) \
-  const Packet8f p8f_##NAME = pset1<Packet8f>(X)
-
-#define EIGEN_DECLARE_CONST_Packet4d(NAME,X) \
-  const Packet4d p4d_##NAME = pset1<Packet4d>(X)
-
-#define EIGEN_DECLARE_CONST_Packet8f_FROM_INT(NAME,X) \
-  const Packet8f p8f_##NAME = _mm256_castsi256_ps(pset1<Packet8i>(X))
-
-#define EIGEN_DECLARE_CONST_Packet8i(NAME,X) \
-  const Packet8i p8i_##NAME = pset1<Packet8i>(X)
-
 // Use the packet_traits defined in AVX512/PacketMath.h instead if we're going
 // to leverage AVX512 instructions.
 #ifndef EIGEN_VECTORIZE_AVX512

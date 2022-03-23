@@ -1,5 +1,5 @@
 export const description = `
-copyImageBitmapToTexture from ImageBitmaps created from various sources.
+copyExternalImageToTexture from ImageBitmaps created from various sources.
 
 TODO: Test ImageBitmap generated from all possible ImageBitmapSource, relevant ImageBitmapOptions
     (https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#images-2)
@@ -319,7 +319,9 @@ g.test('from_canvas')
     // Use putImageData to prevent color space conversion.
     imageCanvasContext.putImageData(imageData, 0, 0);
 
-    const imageBitmap = await createImageBitmap(imageCanvas, {
+    // MAINTENANCE_TODO: Workaround for @types/offscreencanvas missing an overload of
+    // `createImageBitmap` that takes `ImageBitmapOptions`.
+    const imageBitmap = await createImageBitmap(imageCanvas as HTMLCanvasElement, {
       premultiplyAlpha: 'premultiply',
       imageOrientation: orientation,
     });

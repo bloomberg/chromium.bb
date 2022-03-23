@@ -205,10 +205,6 @@ button.close {
   width: 100%;
 }
 
-.x-scrollable {
-  overflow-x: auto;
-}
-
 .query-table {
     width: 100%;
     font-size: 14px;
@@ -481,6 +477,10 @@ canvas.main-canvas {
   height: 20px;
 }
 
+.x-scrollable {
+  overflow-x: auto;
+}
+
 header.overview {
   display: flex;
   align-content: center;
@@ -605,6 +605,9 @@ button.query-ctrl {
     }
     .track-button {
       color: white;
+    }
+    span.chip {
+      color: #121212;
     }
   }
   .shell {

@@ -260,7 +260,8 @@ class JSReceiver : public TorqueGeneratedJSReceiver<JSReceiver, HeapObject> {
       Isolate* isolate, Handle<JSReceiver> object, Handle<Object> value,
       bool from_javascript, ShouldThrow should_throw);
 
-  inline static Handle<Object> GetDataProperty(Handle<JSReceiver> object,
+  inline static Handle<Object> GetDataProperty(Isolate* isolate,
+                                               Handle<JSReceiver> object,
                                                Handle<Name> name);
   V8_EXPORT_PRIVATE static Handle<Object> GetDataProperty(
       LookupIterator* it, AllocationPolicy allocation_policy =
@@ -610,7 +611,6 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
   static inline int GetEmbedderFieldCount(Map map);
   inline int GetEmbedderFieldCount() const;
   inline int GetEmbedderFieldOffset(int index);
-  inline void InitializeEmbedderField(Isolate* isolate, int index);
   inline Object GetEmbedderField(int index);
   inline void SetEmbedderField(int index, Object value);
   inline void SetEmbedderField(int index, Smi value);
@@ -679,9 +679,16 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
                                        Handle<JSObject> object,
                                        Representation representation,
                                        FieldIndex index);
+  static Handle<Object> FastPropertyAt(Isolate* isolate,
+                                       Handle<JSObject> object,
+                                       Representation representation,
+                                       FieldIndex index, SeqCstAccessTag tag);
   inline Object RawFastPropertyAt(FieldIndex index) const;
   inline Object RawFastPropertyAt(PtrComprCageBase cage_base,
                                   FieldIndex index) const;
+  inline Object RawFastPropertyAt(FieldIndex index, SeqCstAccessTag tag) const;
+  inline Object RawFastPropertyAt(PtrComprCageBase cage_base, FieldIndex index,
+                                  SeqCstAccessTag tag) const;
 
   // See comment in the body of the method to understand the conditions
   // in which this method is meant to be used, and what guarantees it
@@ -692,9 +699,13 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
 
   inline void FastPropertyAtPut(FieldIndex index, Object value,
                                 WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+  inline void FastPropertyAtPut(FieldIndex index, Object value,
+                                SeqCstAccessTag tag);
   inline void RawFastInobjectPropertyAtPut(
       FieldIndex index, Object value,
       WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
+  inline void RawFastInobjectPropertyAtPut(FieldIndex index, Object value,
+                                           SeqCstAccessTag tag);
   inline void WriteToField(InternalIndex descriptor, PropertyDetails details,
                            Object value);
 
@@ -877,6 +888,30 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
       Handle<JSObject> object, ShouldThrow should_throw);
 
   TQ_OBJECT_CONSTRUCTORS(JSObject)
+};
+
+// A JSObject created through the public api which wraps an external pointer.
+// See v8::External.
+class JSExternalObject
+    : public TorqueGeneratedJSExternalObject<JSExternalObject, JSObject> {
+ public:
+  inline void AllocateExternalPointerEntries(Isolate* isolate);
+
+  // [value]: field containing the pointer value.
+  DECL_GETTER(value, void*)
+
+  inline void set_value(Isolate* isolate, void* value);
+
+  // Used in the serializer/deserializer.
+  inline uint32_t GetValueRefForDeserialization();
+  inline void SetValueRefForSerialization(uint32_t ref);
+
+  static constexpr int kEndOfTaggedFieldsOffset = JSObject::kHeaderSize;
+
+  class BodyDescriptor;
+
+ private:
+  TQ_OBJECT_CONSTRUCTORS(JSExternalObject)
 };
 
 // An abstract superclass for JSObjects that may have elements while having an

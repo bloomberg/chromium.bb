@@ -36,6 +36,7 @@
   'wasm/wasm-module-builder': [SKIP],
   'compiler/fast-api-helpers': [SKIP],
   'typedarray-helpers': [SKIP],
+  'web-snapshot/web-snapshot-helpers': [SKIP],
 
   # All tests in the bug directory are expected to fail.
   'bugs/*': [FAIL],
@@ -79,7 +80,6 @@
   'temporal/instant-subtract': [FAIL],
   'temporal/instant-to-json': [FAIL],
   'temporal/instant-toJSON': [FAIL],
-  'temporal/instant-valueOf': [FAIL],
   'temporal/plain-date-add': [FAIL],
   'temporal/plain-date-compare': [FAIL],
   'temporal/plain-date-equals': [FAIL],
@@ -273,6 +273,10 @@
 
   # TODO(v8:10915): Fails with --future.
   'harmony/weakrefs/stress-finalizationregistry-dirty-enqueue': [SKIP],
+
+  # BUG(v8:12645)
+  'shared-memory/shared-struct-workers': [SKIP],
+  'shared-memory/shared-struct-atomics-workers': [SKIP],
 }],  # ALWAYS
 
 ##############################################################################
@@ -1342,6 +1346,13 @@
 }], # no_harness
 
 ##############################################################################
+['arch != x64 or not pointer_compression or variant in (nooptimization, jitless)', {
+  # Maglev is x64-only for now.
+  # TODO(v8:7700): Update as we extend support.
+  'maglev/*': [SKIP],
+}], # arch != x64 or not pointer_compression or variant in (nooptimization, jitless)
+
+##############################################################################
 ['arch != x64 or deopt_fuzzer', {
     # Skip stress-deopt-count tests since it's in x64 only
     'compiler/stress-deopt-count-*': [SKIP],
@@ -1460,13 +1471,13 @@
   'regress/wasm/regress-9017': [SKIP],
 }],  # variant == slow_path
 
-['((arch == mipsel or arch == mips64el or arch == mips or arch == mips64) and not simd_mips) or (arch in [ppc64, s390x])', {
+['((arch == mipsel or arch == mips64el or arch == mips or arch == mips64) and not simd_mips) or (arch in [ppc64])', {
   # Requires scalar lowering for 64x2 SIMD instructions, which are not
   # implemented yet.
   # Also skip tests on archs that don't support SIMD and lowering doesn't yet work correctly.
   # Condition copied from cctest.status.
   'regress/wasm/regress-10831': [SKIP],
-}],  # ((arch == mipsel or arch == mips64el or arch == mips or arch == mips64) and not simd_mips) or (arch in [ppc64, s390x])
+}],  # ((arch == mipsel or arch == mips64el or arch == mips or arch == mips64) and not simd_mips) or (arch in [ppc64])
 
 ##############################################################################
 ['variant == stress_sampling', {
@@ -1542,7 +1553,7 @@
 
 ##############################################################################
 # TODO(v8:11421): Port baseline compiler to other architectures.
-['arch not in (x64, arm64, ia32, arm, mips64el, mipsel, riscv64, loong64)', {
+['arch not in (x64, arm64, ia32, arm, mips64el, mipsel, riscv64, loong64, s390x)', {
   'baseline/*': [SKIP],
   'regress/regress-1242306': [SKIP],
 }],

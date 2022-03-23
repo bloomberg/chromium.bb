@@ -225,11 +225,17 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
+    SaveCreditCardOptions& with_has_multiple_legal_lines(bool b = true) {
+      has_multiple_legal_lines = b;
+      return *this;
+    }
+
     bool from_dynamic_change_form = false;
     bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;
     bool show_prompt = false;
+    bool has_multiple_legal_lines = false;
   };
 
   // Used for options of save (and update) address profile prompt.
@@ -422,7 +428,7 @@ class AutofillClient : public RiskDataLoader {
 
   // Shows a dialog for the user to enroll in a virtual card.
   virtual void ShowVirtualCardEnrollDialog(
-      const raw_ptr<VirtualCardEnrollmentFields> virtual_card_enrollment_fields,
+      const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
       base::OnceClosure decline_virtual_card_callback);
 

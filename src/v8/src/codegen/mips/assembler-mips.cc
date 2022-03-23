@@ -290,8 +290,7 @@ const Instr kLwSwOffsetMask = kImm16Mask;
 
 Assembler::Assembler(const AssemblerOptions& options,
                      std::unique_ptr<AssemblerBuffer> buffer)
-    : AssemblerBase(options, std::move(buffer)),
-      scratch_register_list_(at.bit()) {
+    : AssemblerBase(options, std::move(buffer)), scratch_register_list_({at}) {
   reloc_info_writer.Reposition(buffer_start_ + buffer_->size(), pc_);
 
   last_trampoline_pool_end_ = 0;
@@ -344,7 +343,7 @@ void Assembler::GetCode(Isolate* isolate, CodeDesc* desc,
   const int safepoint_table_offset =
       (safepoint_table_builder == kNoSafepointTable)
           ? handler_table_offset2
-          : safepoint_table_builder->GetCodeOffset();
+          : safepoint_table_builder->safepoint_table_offset();
   const int reloc_info_offset =
       static_cast<int>(reloc_info_writer.pos() - buffer_->start());
   CodeDesc::Initialize(desc, this, safepoint_table_offset,

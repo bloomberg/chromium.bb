@@ -160,7 +160,8 @@ class TextureUsageTracking extends ValidationTest {
       colorAttachments: [
         {
           view,
-          loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -476,17 +477,19 @@ g.test('subresources_and_binding_types_combination_for_color')
         colorAttachments: [
           {
             view: view0,
-            loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+            clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+            loadOp: 'clear',
             storeOp: 'store',
           },
           {
             view: view1,
-            loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+            clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+            loadOp: 'clear',
             storeOp: 'store',
           },
         ],
       });
-      pass.endPass();
+      pass.end();
     } else {
       const pass = compute
         ? encoder.beginComputePass()
@@ -537,7 +540,7 @@ g.test('subresources_and_binding_types_combination_for_color')
           t.device.createPipelineLayout({ bindGroupLayouts: bgls })
         );
       }
-      pass.endPass();
+      pass.end();
     }
 
     const success = _resourceSuccess || _usageOK;
@@ -666,17 +669,20 @@ g.test('subresources_and_binding_types_combination_for_aspect')
           colorAttachments: [
             {
               view: t.createTexture({ width: size, height: size }).createView(),
-              loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+              clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+              loadOp: 'clear',
               storeOp: 'store',
             },
           ],
           depthStencilAttachment: depthStencilFormat
             ? {
                 view: view1,
-                depthStoreOp: 'discard',
-                depthLoadValue: 'load',
-                stencilStoreOp: 'discard',
-                stencilLoadValue: 'load',
+                depthStoreOp: kTextureFormatInfo[depthStencilFormat].depth ? 'discard' : undefined,
+                depthLoadOp: kTextureFormatInfo[depthStencilFormat].depth ? 'load' : undefined,
+                stencilStoreOp: kTextureFormatInfo[depthStencilFormat].stencil
+                  ? 'discard'
+                  : undefined,
+                stencilLoadOp: kTextureFormatInfo[depthStencilFormat].stencil ? 'load' : undefined,
               }
             : undefined,
         });
@@ -718,7 +724,7 @@ g.test('subresources_and_binding_types_combination_for_aspect')
       }
     }
     if (compute) t.setComputePipelineAndCallDispatch(pass as GPUComputePassEncoder);
-    pass.endPass();
+    pass.end();
 
     const disjointAspects =
       (aspect0 === 'depth-only' && aspect1 === 'stencil-only') ||
@@ -794,7 +800,7 @@ g.test('shader_stages_and_visibility')
         })
       );
     }
-    pass.endPass();
+    pass.end();
 
     // Texture usages in bindings with invisible shader stages should be validated. Invisible shader
     // stages include shader stage with visibility none, compute shader stage in render pass, and
@@ -861,7 +867,7 @@ g.test('replaced_binding')
       t.issueDrawOrDispatch(pass, compute);
     }
     pass.setBindGroup(0, bindGroup1);
-    pass.endPass();
+    pass.end();
 
     // MAINTENANCE_TODO: If the Compatible Usage List (https://gpuweb.github.io/gpuweb/#compatible-usage-list)
     // gets programmatically defined in capability_info, use it here, instead of this logic, for clarity.
@@ -976,7 +982,7 @@ g.test('bindings_in_bundle')
       }
     }
 
-    pass.endPass();
+    pass.end();
 
     const isReadOnly = (t: typeof type0 | typeof type1) => {
       switch (t) {
@@ -1088,7 +1094,8 @@ g.test('unused_bindings_in_pipeline')
           colorAttachments: [
             {
               view: t.createTexture().createView(),
-              loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+              clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+              loadOp: 'clear',
               storeOp: 'store',
             },
           ],
@@ -1101,7 +1108,7 @@ g.test('unused_bindings_in_pipeline')
     pass.setBindGroup(index1, bindGroup1);
     if (setPipeline === 'after') t.setPipeline(pass, pipeline, compute);
     if (callDrawOrDispatch) t.issueDrawOrDispatch(pass, compute);
-    pass.endPass();
+    pass.end();
 
     // Resource usage validation scope is defined by the whole render pass or by dispatch calls.
     // Regardless of whether or not dispatch is called, in a compute pass, we always succeed
@@ -1129,7 +1136,7 @@ g.test('validation_scope,no_draw_or_dispatch')
     t.setPipeline(pass, pipeline, compute);
     pass.setBindGroup(0, bindGroup0);
     pass.setBindGroup(1, bindGroup1);
-    pass.endPass();
+    pass.end();
 
     // Resource usage validation scope is defined by dispatch calls. If dispatch is not called,
     // we don't need to do resource usage validation and no validation error to be reported.
@@ -1148,7 +1155,7 @@ g.test('validation_scope,same_draw_or_dispatch')
     pass.setBindGroup(0, bindGroup0);
     pass.setBindGroup(1, bindGroup1);
     t.issueDrawOrDispatch(pass, compute);
-    pass.endPass();
+    pass.end();
 
     t.expectValidationError(() => {
       encoder.finish();
@@ -1168,7 +1175,7 @@ g.test('validation_scope,different_draws_or_dispatches')
     pass.setBindGroup(1, bindGroup1);
     t.issueDrawOrDispatch(pass, compute);
 
-    pass.endPass();
+    pass.end();
 
     // Note that bindGroup0 will be inherited in the second draw/dispatch.
     t.expectValidationError(() => {
@@ -1184,7 +1191,7 @@ g.test('validation_scope,different_passes')
     t.setPipeline(pass, pipeline, compute);
     pass.setBindGroup(0, bindGroup0);
     if (compute) t.setComputePipelineAndCallDispatch(pass as GPUComputePassEncoder);
-    pass.endPass();
+    pass.end();
 
     const pass1 = compute
       ? encoder.beginComputePass()
@@ -1192,7 +1199,7 @@ g.test('validation_scope,different_passes')
     t.setPipeline(pass1, pipeline, compute);
     pass1.setBindGroup(1, bindGroup1);
     if (compute) t.setComputePipelineAndCallDispatch(pass1 as GPUComputePassEncoder);
-    pass1.endPass();
+    pass1.end();
 
     // No validation error.
     encoder.finish();

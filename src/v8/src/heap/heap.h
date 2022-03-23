@@ -27,6 +27,7 @@
 #include "src/common/globals.h"
 #include "src/heap/allocation-observer.h"
 #include "src/heap/allocation-result.h"
+#include "src/heap/heap-allocator.h"
 #include "src/init/heap-symbols.h"
 #include "src/objects/allocation-site.h"
 #include "src/objects/fixed-array.h"
@@ -125,15 +126,6 @@ enum class ClearFreedMemoryMode { kClearFreedMemory, kDontClearFreedMemory };
 enum ExternalBackingStoreType { kArrayBuffer, kExternalString, kNumTypes };
 
 enum class RetainingPathOption { kDefault, kTrackEphemeronPath };
-
-enum class AllocationOrigin {
-  kGeneratedCode = 0,
-  kRuntime = 1,
-  kGC = 2,
-  kFirstAllocationOrigin = kGeneratedCode,
-  kLastAllocationOrigin = kGC,
-  kNumberOfAllocationOrigins = kLastAllocationOrigin + 1
-};
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. If you add new items here, update
@@ -760,7 +752,6 @@ class Heap {
   // This event is triggered after object is moved to a new place.
   void OnMoveEvent(HeapObject target, HeapObject source, int size_in_bytes);
 
-  inline bool CanAllocateInReadOnlySpace();
   bool deserialization_complete() const { return deserialization_complete_; }
 
   // We can only invoke Safepoint() on the main thread local heap after
@@ -817,6 +808,9 @@ class Heap {
   // (Re-)Initialize hash seed from flag or RNG.
   void InitializeHashSeed();
 
+  // Invoked once for the process from V8::Initialize.
+  static void InitializeOncePerProcess();
+
   // Bootstraps the object heap with the core set of objects required to run.
   // Returns whether it succeeded.
   bool CreateHeapObjects();
@@ -844,6 +838,7 @@ class Heap {
   OldSpace* shared_old_space() { return shared_old_space_; }
   CodeSpace* code_space() { return code_space_; }
   MapSpace* map_space() { return map_space_; }
+  inline PagedSpace* space_for_maps();
   OldLargeObjectSpace* lo_space() { return lo_space_; }
   CodeLargeObjectSpace* code_lo_space() { return code_lo_space_; }
   NewLargeObjectSpace* new_lo_space() { return new_lo_space_; }
@@ -862,6 +857,8 @@ class Heap {
   const MemoryAllocator* memory_allocator() const {
     return memory_allocator_.get();
   }
+
+  inline ConcurrentAllocator* concurrent_allocator_for_maps();
 
   inline Isolate* isolate();
 
@@ -1152,8 +1149,6 @@ class Heap {
   EmbedderHeapTracer* GetEmbedderHeapTracer() const;
 
   void RegisterExternallyReferencedObject(Address* location);
-  V8_EXPORT_PRIVATE void SetEmbedderStackStateForNextFinalization(
-      EmbedderHeapTracer::EmbedderStackState stack_state);
 
   EmbedderHeapTracer::TraceFlags flags_for_embedder_tracer() const;
 
@@ -1582,23 +1577,24 @@ class Heap {
 #endif
 
 #ifdef V8_ENABLE_ALLOCATION_TIMEOUT
-  void set_allocation_timeout(int timeout) { allocation_timeout_ = timeout; }
-#endif
+  void V8_EXPORT_PRIVATE set_allocation_timeout(int allocation_timeout);
+#endif  // V8_ENABLE_ALLOCATION_TIMEOUT
 
 #ifdef DEBUG
   void VerifyCountersAfterSweeping();
   void VerifyCountersBeforeConcurrentSweeping();
+  void VerifyCommittedPhysicalMemory();
 
   void Print();
   void PrintHandles();
 
   // Report code statistics.
   void ReportCodeStatistics(const char* title);
-#endif
+#endif  // DEBUG
   void* GetRandomMmapAddr() {
     void* result = v8::internal::GetRandomMmapAddr();
 #if V8_TARGET_ARCH_X64
-#if V8_OS_MACOSX
+#if V8_OS_DARWIN
     // The Darwin kernel [as of macOS 10.12.5] does not clean up page
     // directory entries [PDE] created from mmap or mach_vm_allocate, even
     // after the region is destroyed. Using a virtual address space that is
@@ -1608,7 +1604,7 @@ class Heap {
     // space. See crbug.com/700928.
     uintptr_t offset = reinterpret_cast<uintptr_t>(result) & kMmapRegionMask;
     result = reinterpret_cast<void*>(mmap_region_base_ + offset);
-#endif  // V8_OS_MACOSX
+#endif  // V8_OS_DARWIN
 #endif  // V8_TARGET_ARCH_X64
     return result;
   }
@@ -1841,8 +1837,6 @@ class Heap {
                                 GCIdleTimeHeapState heap_state, double start_ms,
                                 double deadline_in_ms);
 
-  int NextAllocationTimeout(int current_timeout = 0);
-
   void PrintMaxMarkingLimitReached();
   void PrintMaxNewSpaceSizeReached();
 
@@ -1870,15 +1864,6 @@ class Heap {
 
   void InvokeIncrementalMarkingPrologueCallbacks();
   void InvokeIncrementalMarkingEpilogueCallbacks();
-
-  // Returns the timer used for a given GC type.
-  // - GCScavenger: young generation GC
-  // - GCCompactor: full GC
-  // - GCFinalzeMC: finalization of incremental full GC
-  // - GCFinalizeMCReduceMemory: finalization of incremental full GC with
-  // memory reduction
-  TimedHistogram* GCTypeTimer(GarbageCollector collector);
-  TimedHistogram* GCTypePriorityTimer(GarbageCollector collector);
 
   // ===========================================================================
   // Pretenuring. ==============================================================
@@ -2039,6 +2024,8 @@ class Heap {
   // Allocation methods. =======================================================
   // ===========================================================================
 
+  HeapAllocator* allocator() { return &heap_allocator_; }
+
   // Allocates a JS Map in the heap.
   V8_WARN_UNUSED_RESULT AllocationResult
   AllocateMap(InstanceType instance_type, int instance_size,
@@ -2054,13 +2041,6 @@ class Heap {
               AllocationOrigin origin = AllocationOrigin::kRuntime,
               AllocationAlignment alignment = kTaggedAligned);
 
-  // Allocates an uninitialized large object. Used as dispatch by
-  // `AllocateRaw()` for large objects. Do not call this from anywhere else.
-  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT AllocationResult
-  AllocateRawLargeInternal(int size_in_bytes, AllocationType allocation,
-                           AllocationOrigin origin = AllocationOrigin::kRuntime,
-                           AllocationAlignment alignment = kTaggedAligned);
-
   // This method will try to allocate objects quickly (AllocationType::kYoung)
   // otherwise it falls back to a slower path indicated by the mode.
   enum AllocationRetryMode { kLightRetry, kRetryOrFail };
@@ -2074,25 +2054,6 @@ class Heap {
   V8_WARN_UNUSED_RESULT inline Address AllocateRawOrFail(
       int size, AllocationType allocation,
       AllocationOrigin origin = AllocationOrigin::kRuntime,
-      AllocationAlignment alignment = kTaggedAligned);
-
-  // This method will try to perform an allocation of a given size of a given
-  // AllocationType. If the allocation fails, a regular full garbage collection
-  // is triggered and the allocation is retried. This is performed multiple
-  // times. If after that retry procedure the allocation still fails nullptr is
-  // returned.
-  V8_WARN_UNUSED_RESULT HeapObject AllocateRawWithLightRetrySlowPath(
-      int size, AllocationType allocation, AllocationOrigin origin,
-      AllocationAlignment alignment = kTaggedAligned);
-
-  // This method will try to perform an allocation of a given size of a given
-  // AllocationType. If the allocation fails, a regular full garbage collection
-  // is triggered and the allocation is retried. This is performed multiple
-  // times. If after that retry procedure the allocation still fails a "hammer"
-  // garbage collection is triggered which tries to significantly reduce memory.
-  // If the allocation still fails after that a fatal error is thrown.
-  V8_WARN_UNUSED_RESULT HeapObject AllocateRawWithRetryOrFailSlowPath(
-      int size, AllocationType allocation, AllocationOrigin origin,
       AllocationAlignment alignment = kTaggedAligned);
 
   // Allocates a heap object based on the map.
@@ -2145,6 +2106,8 @@ class Heap {
   // This can be calculated directly from a pointer to the heap; however, it is
   // more expedient to get at the isolate directly from within Heap methods.
   Isolate* isolate_ = nullptr;
+
+  HeapAllocator heap_allocator_;
 
   // These limits are initialized in Heap::ConfigureHeap based on the resource
   // constraints and flags.
@@ -2439,13 +2402,6 @@ class Heap {
   base::Mutex unprotected_memory_chunks_mutex_;
   std::unordered_set<MemoryChunk*> unprotected_memory_chunks_;
 
-#ifdef V8_ENABLE_ALLOCATION_TIMEOUT
-  // If the --gc-interval flag is set to a positive value, this
-  // variable holds the value indicating the number of allocations
-  // remain until the next failure and garbage collection.
-  int allocation_timeout_ = 0;
-#endif  // V8_ENABLE_ALLOCATION_TIMEOUT
-
   std::unordered_map<HeapObject, HeapObject, Object::Hasher> retainer_;
   std::unordered_map<HeapObject, Root, Object::Hasher> retaining_root_;
   // If an object is retained by an ephemeron, then the retaining key of the
@@ -2470,6 +2426,7 @@ class Heap {
   friend class EvacuateVisitorBase;
   friend class GCCallbacksScope;
   friend class GCTracer;
+  friend class HeapAllocator;
   friend class HeapObjectIterator;
   friend class ScavengeTaskObserver;
   friend class IgnoreLocalGCRequests;
@@ -2559,6 +2516,7 @@ class V8_NODISCARD AlwaysAllocateScope {
   friend class AlwaysAllocateScopeForTesting;
   friend class Evacuator;
   friend class Heap;
+  friend class HeapAllocator;
   friend class Isolate;
 
   explicit inline AlwaysAllocateScope(Heap* heap);
@@ -2601,9 +2559,8 @@ class V8_NODISCARD CodeSpaceMemoryModificationScope {
   Heap* heap_;
 };
 
-// The CodePageCollectionMemoryModificationScope can only be used by the main
-// thread. It will not be enabled if a CodeSpaceMemoryModificationScope is
-// already active.
+// The CodePageCollectionMemoryModificationScope can be used by any thread. It
+// will not be enabled if a CodeSpaceMemoryModificationScope is already active.
 class V8_NODISCARD CodePageCollectionMemoryModificationScope {
  public:
   explicit inline CodePageCollectionMemoryModificationScope(Heap* heap);
@@ -2813,6 +2770,30 @@ struct StrongRootBlockAllocator::rebind {
     // NOLINTNEXTLINE
     other(const StrongRootBlockAllocator&) {}
   };
+};
+
+class V8_EXPORT_PRIVATE V8_NODISCARD EmbedderStackStateScope final {
+ public:
+  enum Origin {
+    kImplicitThroughTask,
+    kExplicitInvocation,
+  };
+
+  // Only used for testing where the Origin is always an explicit invocation.
+  static EmbedderStackStateScope ExplicitScopeForTesting(
+      LocalEmbedderHeapTracer* local_tracer,
+      EmbedderHeapTracer::EmbedderStackState stack_state);
+
+  EmbedderStackStateScope(Heap* heap, Origin origin,
+                          EmbedderHeapTracer::EmbedderStackState stack_state);
+  ~EmbedderStackStateScope();
+
+ private:
+  EmbedderStackStateScope(LocalEmbedderHeapTracer* local_tracer,
+                          EmbedderHeapTracer::EmbedderStackState stack_state);
+
+  LocalEmbedderHeapTracer* const local_tracer_;
+  const EmbedderHeapTracer::EmbedderStackState old_stack_state_;
 };
 
 }  // namespace internal

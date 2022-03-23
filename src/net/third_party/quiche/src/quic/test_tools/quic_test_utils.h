@@ -30,10 +30,8 @@
 #include "quic/core/quic_path_validator.h"
 #include "quic/core/quic_sent_packet_manager.h"
 #include "quic/core/quic_server_id.h"
-#include "quic/core/quic_simple_buffer_allocator.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
-#include "quic/platform/api/quic_mem_slice_storage.h"
 #include "quic/platform/api/quic_socket_address.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/mock_clock.h"
@@ -41,6 +39,8 @@
 #include "quic/test_tools/mock_random.h"
 #include "quic/test_tools/quic_framer_peer.h"
 #include "quic/test_tools/simple_quic_framer.h"
+#include "common/quiche_mem_slice_storage.h"
+#include "common/simple_buffer_allocator.h"
 
 namespace quic {
 
@@ -517,13 +517,13 @@ class MockQuicConnectionHelper : public QuicConnectionHelperInterface {
   ~MockQuicConnectionHelper() override;
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
-  QuicBufferAllocator* GetStreamSendBufferAllocator() override;
+  quiche::QuicheBufferAllocator* GetStreamSendBufferAllocator() override;
   void AdvanceTime(QuicTime::Delta delta);
 
  private:
   MockClock clock_;
   MockRandom random_generator_;
-  SimpleBufferAllocator buffer_allocator_;
+  quiche::SimpleBufferAllocator buffer_allocator_;
 };
 
 class MockAlarmFactory : public QuicAlarmFactory {
@@ -631,8 +631,6 @@ class MockQuicConnection : public QuicConnection {
                const std::string& details),
               (override));
   MOCK_METHOD(void, OnCanWrite, (), (override));
-  MOCK_METHOD(void, SendConnectivityProbingResponsePacket,
-              (const QuicSocketAddress& peer_address), (override));
   MOCK_METHOD(bool, SendConnectivityProbingPacket,
               (QuicPacketWriter*, const QuicSocketAddress& peer_address),
               (override));
@@ -647,7 +645,8 @@ class MockQuicConnection : public QuicConnection {
               (override));
   MOCK_METHOD(bool, SendControlFrame, (const QuicFrame& frame), (override));
   MOCK_METHOD(MessageStatus, SendMessage,
-              (QuicMessageId, absl::Span<QuicMemSlice>, bool), (override));
+              (QuicMessageId, absl::Span<quiche::QuicheMemSlice>, bool),
+              (override));
   MOCK_METHOD(bool, SendPathChallenge,
               (const QuicPathFrameBuffer&, const QuicSocketAddress&,
                const QuicSocketAddress&, const QuicSocketAddress&,
@@ -701,11 +700,6 @@ class MockQuicConnection : public QuicConnection {
       QuicPacketWriter* probing_writer, const QuicSocketAddress& peer_address) {
     return QuicConnection::SendConnectivityProbingPacket(probing_writer,
                                                          peer_address);
-  }
-
-  void ReallySendConnectivityProbingResponsePacket(
-      const QuicSocketAddress& peer_address) {
-    QuicConnection::SendConnectivityProbingResponsePacket(peer_address);
   }
 
   bool ReallyOnPathResponseFrame(const QuicPathResponseFrame& frame) {
@@ -864,7 +858,7 @@ class MockQuicCryptoStream : public QuicCryptoStream {
   SSL* GetSsl() const override { return nullptr; }
 
  private:
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
   CryptoFramer crypto_framer_;
 };
 
@@ -986,7 +980,6 @@ class MockHttp3DebugVisitor : public Http3DebugVisitor {
 
   MOCK_METHOD(void, OnSettingsFrameSent, (const SettingsFrame&), (override));
   MOCK_METHOD(void, OnGoAwayFrameSent, (QuicStreamId), (override));
-  MOCK_METHOD(void, OnMaxPushIdFrameSent, (const MaxPushIdFrame&), (override));
   MOCK_METHOD(void, OnPriorityUpdateFrameSent, (const PriorityUpdateFrame&),
               (override));
 
@@ -1394,7 +1387,7 @@ class MockSessionNotifier : public SessionNotifierInterface {
   MOCK_METHOD(void, OnStreamFrameRetransmitted, (const QuicStreamFrame&),
               (override));
   MOCK_METHOD(void, OnFrameLost, (const QuicFrame&), (override));
-  MOCK_METHOD(void, RetransmitFrames,
+  MOCK_METHOD(bool, RetransmitFrames,
               (const QuicFrames&, TransmissionType type), (override));
   MOCK_METHOD(bool, IsFrameOutstanding, (const QuicFrame&), (const, override));
   MOCK_METHOD(bool, HasUnackedCryptoData, (), (const, override));
@@ -1517,12 +1510,6 @@ QuicHeaderList AsHeaderList(const T& container) {
   return l;
 }
 
-// Utility function that stores |str|'s data in |iov|.
-inline void MakeIOVector(absl::string_view str, struct iovec* iov) {
-  iov->iov_base = const_cast<char*>(str.data());
-  iov->iov_len = static_cast<size_t>(str.size());
-}
-
 // Helper functions for stream ids, to allow test logic to abstract over the
 // HTTP stream numbering scheme (i.e. whether one or two QUIC streams are used
 // per HTTP transaction).
@@ -1541,7 +1528,7 @@ StreamType DetermineStreamType(QuicStreamId id, ParsedQuicVersion version,
 
 // Creates a MemSlice using a singleton trivial buffer allocator.  Performs a
 // copy.
-QuicMemSlice MemSliceFromString(absl::string_view data);
+quiche::QuicheMemSlice MemSliceFromString(absl::string_view data);
 
 // Used to compare ReceivedPacketInfo.
 MATCHER_P(ReceivedPacketInfoEquals, info, "") {

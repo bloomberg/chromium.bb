@@ -15,6 +15,36 @@ It's an open list, so
 if you're interested in updates, discussion, or feisty rants related to Chromium
 security.
 
+## Q4 2021
+
+Greetings,
+
+As we enter the last month of the first quarter of 2022, here's a look back to what Chrome Security was doing in the last quarter of 2021.
+
+**Chrome is hiring for security positions! See [g.co/chrome/hiring](https://g.co/chrome/hiring)** **for more details.**
+
+For extension security, we are working on a telemetry framework that monitors suspicious extension activity and transmits associated signals to Safe Browsing, for users opt-ed into sharing these data. The signals are analyzed server-side (both manual and automated analysis) to detect and mitigate extension abuse patterns.
+
+We proposed a redesigned downloads experience for Chrome on desktop platforms that moves downloads into the toolbar. This would be a better overall user experience and also allow us to build advanced downloads features in the future. We plan to launch the MVP in Q1 2022.
+
+In preparation for an [HTTPS-first world](https://blog.chromium.org/2021/07/increasing-https-adoption.html), we conducted Stable experiments to determine the impact of changing the lock icon (which has been shown to be misleading to users) to a more security-neutral and obviously-clickable icon, with 1% stable results from Chrome 96. Results from this experiment were positive, indicating that the new icon increased engagement with the Page Info surface without regressing user activity or security metrics.
+
+We’re running an experiment to expand Certificate Transparency (CT) enforcement to Chrome for Android, improving our ability to detect malicious certificates and unifying certificate validation across platforms. This experiment is rolling out in Chrome 98.
+
+We launched support for Control Flow Guard on Windows, and continue to make good progress with network process sandboxing on multiple platforms. We’ve also been involved in the “unseasoned PDF” project, which removes NaCl as a dependency from PDFium.
+
+We’re experimenting with Rust in Chrome, to give easier options to write safe code. These experiments aren’t yet switched on in shipping code, but they help us learn what it would take to do so. For example, we’ve landed a memory-safe JSON parser which can save the overhead of creating a utility process.
+
+We continued our progress towards increased isolation between websites and networks on the one hand, and cross-site scripting mitigation on the other. For isolation, we've started a [Private Network Access](https://wicg.github.io/private-network-access/) [experiment](https://groups.google.com/a/chromium.org/g/blink-dev/c/72CK2mxD47c/m/Tl59oNfABwAJ) to ensure that preflights aren't going to cause problems for subresource requests, shipped [COEP: credentialless](https://html.spec.whatwg.org/multipage/origin.html#coep-credentialless), and reworked our [document.domain deprecation plans](https://groups.google.com/a/chromium.org/g/blink-dev/c/_oRc19PjpFo/m/10vHgsmwAQAJ) based on feedback from the ecosystem. For injection, we've solidified the design and implementation of the [Sanitizer API](https://wicg.github.io/sanitizer-api/) (you can poke at it with this handy [Playground](https://sanitizer-api.dev/)!) in coordination with our friends at Mozilla, whose implementation is also proceeding apace.
+
+The Security Architecture team was honored to receive an [IEEE Cybersecurity Award for Practice](https://secdev.ieee.org/2021/ieee-award-ceremony/) for [Site Isolation's impact](https://youtu.be/xopIryMS5Fs) on browser security! We continued work on full Site Isolation on some Android devices, extension and [citadel](https://crbug.com/1286501) enforcements, [ORB](https://github.com/annevk/orb), and [SiteInstanceGroups](https://crbug.com/1195535). We also started designing [Site Isolation for the &lt;webview> tags](https://crbug.com/1267977) used in Chrome Apps and WebUI pages. We updated code to support new plans for [turning on Origin-Agent-Cluster by default](https://groups.google.com/a/chromium.org/g/blink-dev/c/_oRc19PjpFo/m/10vHgsmwAQAJ), which could allow isolating origins instead of sites. For memory safety, we updated several unsafe uses of RenderFrameHost pointers and continued local work with Rust and C++ lifetime annotations.
+
+The Chrome VRP just achieved some new records as we closed out 2021 with close to $3.3 million in total rewards to 115 Chrome VRP researchers for 333 valid unique reports of Chrome browser and Chrome OS security bugs. Of that total, just under just over $3M was rewarded for Chrome browser bugs and $250,500 for Chrome OS bugs, with $45,000 being the highest reward for an individual Chrome OS report and $27,000 for a Chrome browser report. $58,000 was rewarded for security issues discovered by fuzzers contributed by VRP researchers to the [Chrome Fuzzer program](https://bughunters.google.com/about/rules/5745167867576320#fuzzerprogram), the highest reward being $16,000 for [an individual fuzzer-based report](https://crbug.com/1242257). To show our appreciation for helping us keep Chrome safe in 2021, in collaboration with Google VRP, we sent end of year gifts to our Top 20 researchers of 2021 and also [celebrated their achievements publicly on Twitter](https://twitter.com/GoogleVRP/status/1466865149655109641?s=20&t=n_a2eIUW3Y114euQ2PIBUw). 
+
+Cheers,
+
+Andrew
+
 ## Q3 2021
 
 Greetings,

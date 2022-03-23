@@ -111,6 +111,8 @@ static bool isFeatureSupported(const vkt::Context& ctx, const std::string& featu
 		return (ctx.getSubgroupProperties().supportedStages & vk::VK_SHADER_STAGE_FRAGMENT_BIT) != 0;
 	if (feature == "SubgroupSupportedOperations.vote")
 		return (ctx.getSubgroupProperties().supportedOperations & vk::VK_SUBGROUP_FEATURE_VOTE_BIT) != 0;
+	if (feature == "SubgroupSupportedOperations.basic")
+		return (ctx.getSubgroupProperties().supportedOperations & vk::VK_SUBGROUP_FEATURE_BASIC_BIT) != 0;
 	if (feature == "SubgroupSupportedOperations.ballot")
 		return (ctx.getSubgroupProperties().supportedOperations & vk::VK_SUBGROUP_FEATURE_BALLOT_BIT) != 0;
 	if (feature == "Storage16BitFeatures.storageBuffer16BitAccess")
@@ -222,6 +224,9 @@ void AmberTestCase::checkSupport(Context& ctx) const
 				TCU_THROW(NotSupportedError, "VK_KHR_portability_subset: Stride is not multiply of minVertexInputBindingStrideAlignment");
 		}
 	}
+
+	if (m_checkSupportCallback)
+		(m_checkSupportCallback)(ctx, m_name);
 }
 
 class Delegate : public amber::Delegate

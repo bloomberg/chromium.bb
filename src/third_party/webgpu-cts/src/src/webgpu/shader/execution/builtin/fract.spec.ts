@@ -4,9 +4,10 @@ Execution Tests for the 'fract' builtin function
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { correctlyRoundedThreshold, anyOf } from '../../../util/compare.js';
+import { kBit } from '../../../util/constants.js';
 import { f32, f32Bits, TypeF32 } from '../../../util/conversion.js';
-
-import { anyOf, Config, correctlyRoundedThreshold, kBit, run } from './builtin.js';
+import { builtin, Config, run } from '../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -27,7 +28,7 @@ T is f32 or vecN<f32> fract(e: T ) -> T Returns the fractional bits of e (e.g. e
   .fn(async t => {
     const cfg: Config = t.params;
     cfg.cmpFloats = correctlyRoundedThreshold();
-    run(t, 'fract', [TypeF32], TypeF32, cfg, [
+    run(t, builtin('fract'), [TypeF32], TypeF32, cfg, [
       // Zeroes
       { input: f32Bits(kBit.f32.positive.zero), expected: f32(0) },
       { input: f32Bits(kBit.f32.negative.zero), expected: f32(0) },

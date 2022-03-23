@@ -87,7 +87,7 @@ static EIGEN_DECLARE_CONST_Packet2d(cephes_exp_q3, 2.00000000000000000009e0);
 static EIGEN_DECLARE_CONST_Packet2d(cephes_exp_C1, 0.693145751953125);
 static EIGEN_DECLARE_CONST_Packet2d(cephes_exp_C2, 1.42860682030941723212e-6);
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 Packet2d pexp<Packet2d>(const Packet2d& _x)
 {
   Packet2d x = _x;
@@ -138,7 +138,7 @@ Packet2d pexp<Packet2d>(const Packet2d& _x)
                  isnumber_mask);
 }
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 Packet4f pexp<Packet4f>(const Packet4f& _x)
 {
 #if !defined(__ARCH__) || (defined(__ARCH__) && __ARCH__ >= 12)
@@ -185,13 +185,13 @@ Packet4f pexp<Packet4f>(const Packet4f& _x)
 #endif
 }
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 Packet2d psqrt<Packet2d>(const Packet2d& x)
 {
   return vec_sqrt(x);
 }
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 Packet4f psqrt<Packet4f>(const Packet4f& x)
 {
   Packet4f res;
@@ -204,12 +204,12 @@ Packet4f psqrt<Packet4f>(const Packet4f& x)
   return res;
 }
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 Packet2d prsqrt<Packet2d>(const Packet2d& x) {
   return pset1<Packet2d>(1.0) / psqrt<Packet2d>(x);
 }
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 Packet4f prsqrt<Packet4f>(const Packet4f& x) {
   Packet4f res;
 #if !defined(__ARCH__) || (defined(__ARCH__) && __ARCH__ >= 12)
@@ -223,7 +223,7 @@ Packet4f prsqrt<Packet4f>(const Packet4f& x) {
 
 // Hyperbolic Tangent function.
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet4f
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet4f
 ptanh<Packet4f>(const Packet4f& x) {
   return internal::generic_fast_tanh_float(x);
 }

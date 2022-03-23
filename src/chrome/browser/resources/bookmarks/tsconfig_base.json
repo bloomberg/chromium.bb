@@ -1,9 +1,9 @@
 {
   "extends": "../../../../tools/typescript/tsconfig_base.json",
   "compilerOptions": {
+    "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "strictPropertyInitialization": false
   }
 }

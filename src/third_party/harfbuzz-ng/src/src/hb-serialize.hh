@@ -36,6 +36,9 @@
 #include "hb-map.hh"
 #include "hb-pool.hh"
 
+#ifdef HB_EXPERIMENTAL_API
+#include "hb-subset-repacker.h"
+#endif
 
 /*
  * Serialize
@@ -70,6 +73,24 @@ struct hb_serialize_context_t
       virtual_links.fini ();
     }
 
+    object_t () = default;
+    
+#ifdef HB_EXPERIMENTAL_API
+    object_t (const hb_object_t &o)
+    {
+      head = o.head;
+      tail = o.tail;
+      next = nullptr;
+      real_links.alloc (o.num_real_links);
+      for (unsigned i = 0 ; i < o.num_real_links; i++)
+        real_links.push (o.real_links[i]);
+
+      virtual_links.alloc (o.num_virtual_links);
+      for (unsigned i = 0; i < o.num_virtual_links; i++)
+        virtual_links.push (o.virtual_links[i]);
+    }
+#endif
+
     bool operator == (const object_t &o) const
     {
       // Virtual links aren't considered for equality since they don't affect the functionality
@@ -95,6 +116,20 @@ struct hb_serialize_context_t
       unsigned position: 28;
       unsigned bias;
       objidx_t objidx;
+
+      link_t () = default;
+
+#ifdef HB_EXPERIMENTAL_API
+      link_t (const hb_link_t &o)
+      {
+        width = o.width;
+        is_signed = 0;
+        whence = 0;
+        position = o.position;
+        bias = 0;
+        objidx = o.objidx;
+      }
+#endif
     };
 
     char *head;
@@ -279,7 +314,7 @@ struct hb_serialize_context_t
     object_pool.release (obj);
   }
 
-  /* Set share to false when an object is unlikely sharable with others
+  /* Set share to false when an object is unlikely shareable with others
    * so not worth an attempt, or a contiguous table is serialized as
    * multiple consecutive objects in the reverse order so can't be shared.
    */
@@ -381,7 +416,7 @@ struct hb_serialize_context_t
   // Adding a virtual link from object a to object b will ensure that object b is always packed after
   // object a in the final serialized order.
   //
-  // This is useful in certain situtations where there needs to be a specific ordering in the
+  // This is useful in certain situations where there needs to be a specific ordering in the
   // final serialization. Such as when platform bugs require certain orderings, or to provide
   //  guidance to the repacker for better offset overflow resolution.
   void add_virtual_link (objidx_t objidx)
@@ -510,7 +545,7 @@ struct hb_serialize_context_t
   { return reinterpret_cast<Type *> (this->head); }
   template <typename Type>
   Type *start_embed (const Type &obj) const
-  { return start_embed (hb_addressof (obj)); }
+  { return start_embed (std::addressof (obj)); }
 
   bool err (hb_serialize_error_t err_type)
   {
@@ -548,7 +583,7 @@ struct hb_serialize_context_t
   }
   template <typename Type>
   Type *embed (const Type &obj)
-  { return embed (hb_addressof (obj)); }
+  { return embed (std::addressof (obj)); }
 
   template <typename Type, typename ...Ts> auto
   _copy (const Type &src, hb_priority<1>, Ts&&... ds) HB_RETURN
@@ -595,19 +630,19 @@ struct hb_serialize_context_t
   }
   template <typename Type>
   Type *extend_size (Type &obj, size_t size)
-  { return extend_size (hb_addressof (obj), size); }
+  { return extend_size (std::addressof (obj), size); }
 
   template <typename Type>
   Type *extend_min (Type *obj) { return extend_size (obj, obj->min_size); }
   template <typename Type>
-  Type *extend_min (Type &obj) { return extend_min (hb_addressof (obj)); }
+  Type *extend_min (Type &obj) { return extend_min (std::addressof (obj)); }
 
   template <typename Type, typename ...Ts>
   Type *extend (Type *obj, Ts&&... ds)
   { return extend_size (obj, obj->get_size (std::forward<Ts> (ds)...)); }
   template <typename Type, typename ...Ts>
   Type *extend (Type &obj, Ts&&... ds)
-  { return extend (hb_addressof (obj), std::forward<Ts> (ds)...); }
+  { return extend (std::addressof (obj), std::forward<Ts> (ds)...); }
 
   /* Output routines. */
   hb_bytes_t copy_bytes () const

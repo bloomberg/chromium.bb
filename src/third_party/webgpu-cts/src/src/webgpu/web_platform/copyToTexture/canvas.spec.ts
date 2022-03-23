@@ -86,10 +86,11 @@ class F extends CopyToTextureUtils {
   } {
     const canvas = createCanvas(this, canvasType, width, height);
 
-    const gl = canvas.getContext(contextName, { premultipliedAlpha: premultiplied }) as
-      | WebGLRenderingContext
-      | WebGL2RenderingContext
-      | null;
+    // MAINTENANCE_TODO: Workaround for @types/offscreencanvas missing an overload of
+    // `OffscreenCanvas.getContext` that takes `string` or a union of context types.
+    const gl = (canvas as HTMLCanvasElement).getContext(contextName, {
+      premultipliedAlpha: premultiplied,
+    }) as WebGLRenderingContext | WebGL2RenderingContext | null;
 
     if (gl === null) {
       this.skip(canvasType + ' canvas ' + contextName + ' context not available');

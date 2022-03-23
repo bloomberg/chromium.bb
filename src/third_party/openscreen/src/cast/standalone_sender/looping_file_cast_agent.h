@@ -5,8 +5,6 @@
 #ifndef CAST_STANDALONE_SENDER_LOOPING_FILE_CAST_AGENT_H_
 #define CAST_STANDALONE_SENDER_LOOPING_FILE_CAST_AGENT_H_
 
-#include <openssl/x509.h>
-
 #include <functional>
 #include <memory>
 #include <string>

@@ -111,11 +111,6 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
  public:
   inline ReadOnlyRoots read_only_roots() const;
 
-  template <typename T>
-  Handle<T> MakeHandle(T obj) {
-    return handle(obj, isolate());
-  }
-
   Handle<Oddball> NewOddball(Handle<Map> map, const char* to_string,
                              Handle<Object> to_number, const char* type_of,
                              byte kind);
@@ -128,7 +123,8 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   Handle<Oddball> NewBasicBlockCountersMarker();
 
   // Allocates a property array initialized with undefined values.
-  Handle<PropertyArray> NewPropertyArray(int length);
+  Handle<PropertyArray> NewPropertyArray(
+      int length, AllocationType allocation = AllocationType::kYoung);
   // Tries allocating a fixed array initialized with undefined values.
   // In case of an allocation failure (OOM) an empty handle is returned.
   // The caller has to manually signal an
@@ -445,10 +441,12 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
                      ElementsKind elements_kind = TERMINAL_FAST_ELEMENTS_KIND,
                      int inobject_properties = 0,
                      AllocationType allocation_type = AllocationType::kMap);
-  // Initializes the fields of a newly created Map. Exposed for tests and
-  // heap setup; other code should just call NewMap which takes care of it.
+  // Initializes the fields of a newly created Map using roots from the
+  // passed-in Heap. Exposed for tests and heap setup; other code should just
+  // call NewMap which takes care of it.
   Map InitializeMap(Map map, InstanceType type, int instance_size,
-                    ElementsKind elements_kind, int inobject_properties);
+                    ElementsKind elements_kind, int inobject_properties,
+                    Heap* roots);
 
   // Allocate a block of memory of the given AllocationType (filled with a
   // filler). Used as a fall-back for generated code when the space is full.
@@ -587,6 +585,9 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   Handle<JSGeneratorObject> NewJSGeneratorObject(Handle<JSFunction> function);
 
   Handle<JSModuleNamespace> NewJSModuleNamespace();
+
+  Handle<JSWrappedFunction> NewJSWrappedFunction(
+      Handle<NativeContext> creation_context, Handle<Object> target);
 
 #if V8_ENABLE_WEBASSEMBLY
   Handle<WasmTypeInfo> NewWasmTypeInfo(Address type_address,
@@ -1028,6 +1029,8 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
     return nullptr;
 #endif  // V8_SANDBOXED_EXTERNAL_POINTERS
   }
+
+  V8_INLINE HeapAllocator* allocator() const;
 
   bool CanAllocateInReadOnlySpace();
   bool EmptyStringRootIsInitialized();

@@ -166,6 +166,10 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 
+void av1_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                   int mi_col, RD_STATS *this_rdc, int *skippable,
+                   BLOCK_SIZE bsize, TX_SIZE tx_size, TX_TYPE tx_type);
+
 static INLINE int coded_to_superres_mi(int mi_col, int denom) {
   return (mi_col * denom + SCALE_NUMERATOR / 2) / SCALE_NUMERATOR;
 }

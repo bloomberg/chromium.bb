@@ -105,30 +105,11 @@ public:
         fV.glyph = glyph;
         SkDEBUGCODE(fTag = kGlyph);
         return *this;
-
-    }
-    SkGlyphVariant& operator= (const SkPath* path) {
-        fV.path = path;
-        SkDEBUGCODE(fTag = kPath);
-        return *this;
-    }
-    SkGlyphVariant& operator= (SkDrawable* drawable) {
-        fV.drawable = drawable;
-        SkDEBUGCODE(fTag = kDrawable);
-        return *this;
     }
 
     const SkGlyph* glyph() const {
         SkASSERT(fTag == kGlyph);
         return fV.glyph;
-    }
-    const SkPath* path() const {
-        SkASSERT(fTag == kPath);
-        return fV.path;
-    }
-    SkDrawable* drawable() const {
-        SkASSERT(fTag == kDrawable);
-        return fV.drawable;
     }
     SkPackedGlyphID packedID() const {
         SkASSERT(fTag == kPackedID);
@@ -137,14 +118,10 @@ public:
 
     operator SkPackedGlyphID()  const { return this->packedID(); }
     operator const SkGlyph*()   const { return this->glyph();    }
-    operator const SkPath*()    const { return this->path();     }
-    operator const SkDrawable*()const { return this->drawable(); }
 
 private:
     union {
         const SkGlyph* glyph;
-        const SkPath* path;
-        SkDrawable* drawable;
         SkPackedGlyphID packedID;
     } fV;
 
@@ -153,14 +130,12 @@ private:
         kEmpty,
         kPackedID,
         kGlyph,
-        kPath,
-        kDrawable,
     } fTag{kEmpty};
 #endif
 };
 
-// A buffer for converting SkPackedGlyph to SkGlyph* or SkPath*. Initially the buffer contains
-// SkPackedGlyphIDs, but those are used to lookup SkGlyph*/SkPath* which are then copied over the
+// A buffer for converting SkPackedGlyph to SkGlyph*s. Initially the buffer contains
+// SkPackedGlyphIDs, but those are used to lookup SkGlyph*s which are then copied over the
 // SkPackedGlyphIDs.
 class SkDrawableGlyphBuffer {
 public:
@@ -180,7 +155,7 @@ public:
     //
     // The positions are calculated integer positions in devices space, and the mapping of the
     // the source origin through the initial matrix is returned. It is given that these positions
-    // are only reused when the blob is translated by an integral amount. Thus the shifted
+    // are only reused when the blob is translated by an integral amount. Thus, the shifted
     // positions are given by the following equation where (ix, iy) is the integer positions of
     // the glyph, initialMappedOrigin is (0,0) in source mapped to the device using the initial
     // matrix, and newMappedOrigin is (0,0) in source mapped to the device using the current
@@ -210,24 +185,6 @@ public:
         SkASSERT(fAcceptedSize <= from);
         fPositions[fAcceptedSize] = fPositions[from];
         fMultiBuffer[fAcceptedSize] = glyph;
-        fAcceptedSize++;
-    }
-
-    // Store the path in the next slot, using the position information located at index from.
-    void accept(const SkPath* path, size_t from) {
-        SkASSERT(fPhase == kProcess);
-        SkASSERT(fAcceptedSize <= from);
-        fPositions[fAcceptedSize] = fPositions[from];
-        fMultiBuffer[fAcceptedSize] = path;
-        fAcceptedSize++;
-    }
-
-    // Store drawable in the next slot, using the position information located at index from.
-    void accept(SkDrawable* drawable, size_t from) {
-        SkASSERT(fPhase == kProcess);
-        SkASSERT(fAcceptedSize <= from);
-        fPositions[fAcceptedSize] = fPositions[from];
-        fMultiBuffer[fAcceptedSize] = drawable;
         fAcceptedSize++;
     }
 

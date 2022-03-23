@@ -56,6 +56,7 @@ struct RtcpTransceiverImpl::RemoteSenderState {
 
 struct RtcpTransceiverImpl::LocalSenderState {
   uint32_t ssrc;
+  size_t last_num_sent_bytes = 0;
   RtpStreamRtcpHandler* handler = nullptr;
 };
 
@@ -99,7 +100,7 @@ RtcpTransceiverImpl::RtcpTransceiverImpl(const RtcpTransceiverConfig& config)
     : config_(config), ready_to_send_(config.initial_ready_to_send) {
   RTC_CHECK(config_.Validate());
   if (ready_to_send_ && config_.schedule_periodic_compound_packets) {
-    SchedulePeriodicCompoundPackets(config_.initial_report_delay_ms);
+    SchedulePeriodicCompoundPackets(config_.initial_report_delay);
   }
 }
 
@@ -158,7 +159,7 @@ void RtcpTransceiverImpl::SetReadyToSend(bool ready) {
       periodic_task_handle_.Stop();
 
     if (!ready_to_send_ && ready)  // Restart periodic sending.
-      SchedulePeriodicCompoundPackets(config_.report_period_ms / 2);
+      SchedulePeriodicCompoundPackets(config_.report_period / 2);
   }
   ready_to_send_ = ready;
 }
@@ -369,6 +370,14 @@ void RtcpTransceiverImpl::HandleExtendedReports(
   if (!extended_reports.Parse(rtcp_packet_header))
     return;
 
+  if (config_.reply_to_non_sender_rtt_measurement && extended_reports.rrtr()) {
+    RrtrTimes& rrtr = received_rrtrs_[extended_reports.sender_ssrc()];
+    rrtr.received_remote_mid_ntp_time =
+        CompactNtp(extended_reports.rrtr()->ntp());
+    rrtr.local_receive_mid_ntp_time =
+        CompactNtp(config_.clock->ConvertTimestampToNtpTime(now));
+  }
+
   if (extended_reports.dlrr())
     HandleDlrr(extended_reports.dlrr(), now);
 
@@ -461,16 +470,16 @@ void RtcpTransceiverImpl::ReschedulePeriodicCompoundPackets() {
     return;
   periodic_task_handle_.Stop();
   RTC_DCHECK(ready_to_send_);
-  SchedulePeriodicCompoundPackets(config_.report_period_ms);
+  SchedulePeriodicCompoundPackets(config_.report_period);
 }
 
-void RtcpTransceiverImpl::SchedulePeriodicCompoundPackets(int64_t delay_ms) {
-  periodic_task_handle_ = RepeatingTaskHandle::DelayedStart(
-      config_.task_queue, TimeDelta::Millis(delay_ms), [this] {
+void RtcpTransceiverImpl::SchedulePeriodicCompoundPackets(TimeDelta delay) {
+  periodic_task_handle_ =
+      RepeatingTaskHandle::DelayedStart(config_.task_queue, delay, [this] {
         RTC_DCHECK(config_.schedule_periodic_compound_packets);
         RTC_DCHECK(ready_to_send_);
         SendPeriodicCompoundPacket();
-        return TimeDelta::Millis(config_.report_period_ms);
+        return config_.report_period;
       });
 }
 
@@ -526,6 +535,17 @@ RtcpTransceiverImpl::CompoundPacketInfo RtcpTransceiverImpl::FillReports(
        ++it) {
     LocalSenderState& rtp_sender = *it;
     RtpStreamRtcpHandler::RtpStats stats = rtp_sender.handler->SentStats();
+
+    if (stats.num_sent_bytes() < rtp_sender.last_num_sent_bytes) {
+      RTC_LOG(LS_ERROR) << "Inconsistent SR for SSRC " << rtp_sender.ssrc
+                        << ". Number of total sent bytes decreased.";
+      rtp_sender.last_num_sent_bytes = 0;
+    }
+    if (stats.num_sent_bytes() == rtp_sender.last_num_sent_bytes) {
+      // Skip because no RTP packet was send for this SSRC since last report.
+      continue;
+    }
+    rtp_sender.last_num_sent_bytes = stats.num_sent_bytes();
 
     last_handled_sender_it = it;
     rtcp::SenderReport sender_report;
@@ -608,7 +628,29 @@ void RtcpTransceiverImpl::CreateCompoundPacket(Timestamp now,
   if (remb_.has_value()) {
     reserved_bytes += remb_->BlockLength();
   }
+  absl::optional<rtcp::ExtendedReports> xr;
+  if (!received_rrtrs_.empty()) {
+    RTC_DCHECK(config_.reply_to_non_sender_rtt_measurement);
+    xr.emplace();
+    uint32_t now_ntp =
+        CompactNtp(config_.clock->ConvertTimestampToNtpTime(now));
+    for (const auto& [ssrc, rrtr_info] : received_rrtrs_) {
+      rtcp::ReceiveTimeInfo reply;
+      reply.ssrc = ssrc;
+      reply.last_rr = rrtr_info.received_remote_mid_ntp_time;
+      reply.delay_since_last_rr =
+          now_ntp - rrtr_info.local_receive_mid_ntp_time;
+      xr->AddDlrrItem(reply);
+    }
+    reserved_bytes += xr->BlockLength();
+  }
   if (config_.non_sender_rtt_measurement) {
+    // It looks like bytes for ExtendedReport header are reserved twice, but in
+    // practice the same RtcpTransceiver won't both produce RRTR (i.e. it is a
+    // receiver-only) and reply to RRTR (i.e. remote participant is a receiver
+    // only). If that happen, then `reserved_bytes` would be slightly larger
+    // than it should, which is not an issue.
+
     // 4 bytes for common RTCP header + 4 bytes for the ExtenedReports header.
     reserved_bytes += (4 + 4 + rtcp::Rrtr::kLength);
   }
@@ -623,14 +665,16 @@ void RtcpTransceiverImpl::CreateCompoundPacket(Timestamp now,
     sender.AppendPacket(*remb_);
   }
   if (!result.has_sender_report && config_.non_sender_rtt_measurement) {
-    rtcp::ExtendedReports xr;
-    xr.SetSenderSsrc(result.sender_ssrc);
-
+    if (!xr.has_value()) {
+      xr.emplace();
+    }
     rtcp::Rrtr rrtr;
     rrtr.SetNtp(config_.clock->ConvertTimestampToNtpTime(now));
-    xr.SetRrtr(rrtr);
-
-    sender.AppendPacket(xr);
+    xr->SetRrtr(rrtr);
+  }
+  if (xr.has_value()) {
+    xr->SetSenderSsrc(result.sender_ssrc);
+    sender.AppendPacket(*xr);
   }
 }
 

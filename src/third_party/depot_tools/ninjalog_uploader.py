@@ -34,7 +34,8 @@ ALLOWLISTED_CONFIGS = ('symbol_level', 'use_goma', 'is_debug',
                        'host_cpu', 'target_os', 'target_cpu',
                        'blink_symbol_level', 'is_java_debug',
                        'treat_warnings_as_errors', 'disable_android_lint',
-                       'use_errorprone_java_compiler', 'incremental_install')
+                       'use_errorprone_java_compiler', 'incremental_install',
+                       'android_static_analysis')
 
 
 def IsGoogler():

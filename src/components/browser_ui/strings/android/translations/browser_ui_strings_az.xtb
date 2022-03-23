@@ -122,7 +122,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Başlıq</translation>
 <translation id="4008040567710660924">Xüsusi sayt üçün kukilərə icazə verin.</translation>
-<translation id="4040330681741629921">Sayt sadələşdirilmiş görünüşdə göstərilə bildikdə bildiriş alın</translation>
 <translation id="4046123991198612571">Növbəti trek</translation>
 <translation id="4149994727733219643">İnternet səhifələr üçün sadələşdirilmiş görünüş</translation>
 <translation id="4165986682804962316">Sayt ayarları</translation>
@@ -255,6 +254,7 @@
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> seçildi. Seçimlər ekranın yuxarısında əlçatandır</translation>
 <translation id="7141896414559753902">Saytların popapları və yönləndirmələri göstərməyini blok edin (tövsiyə olunur)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7180611975245234373">Yeniləyin</translation>
 <translation id="723171743924126238">Şəkil seçin</translation>
 <translation id="7243308994586599757">Seçənəklər ekranın aşağısına yaxın yerdə əlçatandır</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> seçildi</translation>
@@ -308,7 +308,9 @@
 <translation id="83792324527827022">Sayt kamera və mikrofonunuzdan istifadə edir</translation>
 <translation id="8380167699614421159">Bu sayt inadçı və ya aldadıcı reklamlar göstərir</translation>
 <translation id="8394832520002899662">Sayta qayıtmaq üçün toxunun</translation>
+<translation id="8409345997656833551">Məqalə sadələşdirilmiş görünüşdə göstərilə bildikdə bildiriş alın</translation>
 <translation id="8425213833346101688">Dəyişin</translation>
+<translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8441146129660941386">Geri axtarı</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> tətbiqinə məkanınıza giriş icazəsi vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> məkanı da aktiv edin.</translation>
 <translation id="8447861592752582886">Cihaz icazəsini ləğv edin</translation>

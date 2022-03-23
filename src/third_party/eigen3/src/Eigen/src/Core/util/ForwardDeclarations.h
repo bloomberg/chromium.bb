@@ -42,11 +42,6 @@ template<typename T> struct evaluator_traits;
 
 template< typename T> struct evaluator;
 
-template<typename T> struct has_trivially_copyable_storage
-{
-  static const bool value = false;
-};
-
 } // end namespace internal
 
 template<typename T> struct NumTraits;
@@ -260,8 +255,8 @@ template<typename MatrixType> class ColPivHouseholderQR;
 template<typename MatrixType> class FullPivHouseholderQR;
 template<typename MatrixType> class CompleteOrthogonalDecomposition;
 template<typename MatrixType> class SVDBase;
-template<typename MatrixType, int QRPreconditioner = ColPivHouseholderQRPreconditioner> class JacobiSVD;
-template<typename MatrixType> class BDCSVD;
+template<typename MatrixType, int Options = 0> class JacobiSVD;
+template<typename MatrixType, int Options = 0> class BDCSVD;
 template<typename MatrixType, int UpLo = Lower> class LLT;
 template<typename MatrixType, int UpLo = Lower> class LDLT;
 template<typename VectorsType, typename CoeffsType, int Side=OnTheLeft> class HouseholderSequence;

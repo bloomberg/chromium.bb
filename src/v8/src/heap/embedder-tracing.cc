@@ -70,8 +70,7 @@ void LocalEmbedderHeapTracer::TraceEpilogue() {
       EmbedderHeapTracer::EmbedderStackState::kMayContainHeapPointers;
 
   if (cpp_heap_) {
-    cpp_heap()->TraceEpilogue(
-        cppgc::internal::GarbageCollector::Config::CollectionType::kMajor);
+    cpp_heap()->TraceEpilogue();
   } else {
     EmbedderHeapTracer::TraceSummary summary;
     remote_tracer_->TraceEpilogue(&summary);
@@ -112,15 +111,6 @@ bool LocalEmbedderHeapTracer::Trace(double max_duration) {
 bool LocalEmbedderHeapTracer::IsRemoteTracingDone() {
   return !InUse() || (cpp_heap_ ? cpp_heap()->IsTracingDone()
                                 : remote_tracer_->IsTracingDone());
-}
-
-void LocalEmbedderHeapTracer::SetEmbedderStackStateForNextFinalization(
-    EmbedderHeapTracer::EmbedderStackState stack_state) {
-  if (!InUse()) return;
-
-  embedder_stack_state_ = stack_state;
-  if (EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers == stack_state)
-    NotifyEmptyEmbedderStack();
 }
 
 LocalEmbedderHeapTracer::ProcessingScope::ProcessingScope(

@@ -242,7 +242,7 @@ class Hook(object):
 
     if cmd[0] == 'python':
       cmd[0] = 'vpython'
-    if cmd[0] == 'vpython' and _detect_host_os() == 'win':
+    if (cmd[0] in ['vpython', 'vpython3']) and _detect_host_os() == 'win':
       cmd[0] += '.bat'
 
     exit_code = 2
@@ -2699,6 +2699,11 @@ def CMDsync(parser, args):
                          'patch was created, it is used to determine which '
                          'commits from the |patch-ref| actually constitute a '
                          'patch.')
+  parser.add_option('-t', '--download-topics', action='store_true',
+                    help='Downloads and patches locally changes from all open '
+                         'Gerrit CLs that have the same topic as the changes '
+                         'in the specified patch_refs. Only works if atleast '
+                         'one --patch-ref is specified.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
@@ -2765,6 +2770,10 @@ def CMDsync(parser, args):
 
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')
+
+  if options.download_topics and not options.rebase_patch_ref:
+    raise gclient_utils.Error(
+        'Warning: You cannot download topics and not rebase each patch ref')
 
   if options.ignore_locks:
     print('Warning: ignore_locks is no longer used. Please remove its usage.')

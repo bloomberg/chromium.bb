@@ -59,6 +59,7 @@
 #include "src/objects/js-segmenter.h"
 #include "src/objects/js-segments.h"
 #endif  // V8_INTL_SUPPORT
+#include "src/objects/js-struct-inl.h"
 #include "src/objects/js-temporal-objects-inl.h"
 #include "src/objects/js-weak-refs.h"
 #include "src/objects/map-inl.h"
@@ -583,7 +584,7 @@ Handle<String> JSReceiver::GetConstructorName(Isolate* isolate,
 MaybeHandle<NativeContext> JSReceiver::GetCreationContext() {
   JSReceiver receiver = *this;
   // Externals are JSObjects with null as a constructor.
-  DCHECK(!receiver.IsExternal(GetIsolate()));
+  DCHECK(!receiver.IsJSExternalObject());
   Object constructor = receiver.map().GetConstructor();
   JSFunction function;
   if (constructor.IsJSFunction()) {
@@ -633,6 +634,11 @@ MaybeHandle<NativeContext> JSReceiver::GetFunctionRealm(
     if (current.IsJSBoundFunction()) {
       JSBoundFunction function = JSBoundFunction::cast(current);
       current = function.bound_target_function();
+      continue;
+    }
+    if (current.IsJSWrappedFunction()) {
+      JSWrappedFunction function = JSWrappedFunction::cast(current);
+      current = function.wrapped_target_function();
       continue;
     }
     JSObject object = JSObject::cast(current);
@@ -1197,6 +1203,8 @@ Maybe<PropertyAttributes> GetPropertyAttributesWithInterceptorInternal(
     if (!result.is_null()) {
       int32_t value;
       CHECK(result->ToInt32(&value));
+      DCHECK_IMPLIES((value & ~PropertyAttributes::ALL_ATTRIBUTES_MASK) != 0,
+                     value == PropertyAttributes::ABSENT);
       return Just(static_cast<PropertyAttributes>(value));
     }
   } else if (!interceptor->getter().IsUndefined(isolate)) {
@@ -2336,12 +2344,16 @@ int JSObject::GetHeaderSize(InstanceType type,
       return JSObject::kHeaderSize;
     case JS_ERROR_TYPE:
       return JSObject::kHeaderSize;
+    case JS_EXTERNAL_OBJECT_TYPE:
+      return JSExternalObject::kHeaderSize;
     case JS_SHADOW_REALM_TYPE:
       return JSShadowRealm::kHeaderSize;
     case JS_STRING_ITERATOR_TYPE:
       return JSStringIterator::kHeaderSize;
     case JS_MODULE_NAMESPACE_TYPE:
       return JSModuleNamespace::kHeaderSize;
+    case JS_SHARED_STRUCT_TYPE:
+      return JSSharedStruct::kHeaderSize;
     case JS_TEMPORAL_CALENDAR_TYPE:
       return JSTemporalCalendar::kHeaderSize;
     case JS_TEMPORAL_DURATION_TYPE:
@@ -2362,6 +2374,8 @@ int JSObject::GetHeaderSize(InstanceType type,
       return JSTemporalTimeZone::kHeaderSize;
     case JS_TEMPORAL_ZONED_DATE_TIME_TYPE:
       return JSTemporalZonedDateTime::kHeaderSize;
+    case JS_WRAPPED_FUNCTION_TYPE:
+      return JSWrappedFunction::kHeaderSize;
 #ifdef V8_INTL_SUPPORT
     case JS_V8_BREAK_ITERATOR_TYPE:
       return JSV8BreakIterator::kHeaderSize;
@@ -4089,7 +4103,7 @@ void JSObject::ApplyAttributesToDictionary(
       Object v = dictionary->ValueAt(i);
       if (v.IsAccessorPair()) attrs &= ~READ_ONLY;
     }
-    details = details.CopyAddAttributes(static_cast<PropertyAttributes>(attrs));
+    details = details.CopyAddAttributes(PropertyAttributesFromInt(attrs));
     dictionary->DetailsAtPut(i, details);
   }
 }
@@ -4308,6 +4322,14 @@ Handle<Object> JSObject::FastPropertyAt(Isolate* isolate,
                                         Representation representation,
                                         FieldIndex index) {
   Handle<Object> raw_value(object->RawFastPropertyAt(index), isolate);
+  return Object::WrapForRead(isolate, raw_value, representation);
+}
+
+Handle<Object> JSObject::FastPropertyAt(Isolate* isolate,
+                                        Handle<JSObject> object,
+                                        Representation representation,
+                                        FieldIndex index, SeqCstAccessTag tag) {
+  Handle<Object> raw_value(object->RawFastPropertyAt(index, tag), isolate);
   return Object::WrapForRead(isolate, raw_value, representation);
 }
 

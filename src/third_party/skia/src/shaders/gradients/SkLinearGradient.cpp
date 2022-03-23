@@ -7,10 +7,14 @@
 
 #include "src/shaders/gradients/SkLinearGradient.h"
 
-#include "src/core/SkKeyHelpers.h"
+
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkWriteBuffer.h"
 #include "src/shaders/gradients/Sk4fLinearGradient.h"
+
+#ifdef SK_ENABLE_SKSL
+#include "src/core/SkKeyHelpers.h"
+#endif
 
 static SkMatrix pts_to_unit_matrix(const SkPoint pts[2]) {
     SkVector    vec = pts[1] - pts[0];
@@ -104,10 +108,10 @@ std::unique_ptr<GrFragmentProcessor> SkLinearGradient::asFragmentProcessor(
 
 #endif
 
-void SkLinearGradient::addToKey(SkShaderCodeDictionary* dict,
-                                SkBackend backend,
+#ifdef SK_ENABLE_SKSL
+void SkLinearGradient::addToKey(const SkKeyContext& keyContext,
                                 SkPaintParamsKeyBuilder* builder,
-                                SkUniformBlock* uniformBlock) const {
+                                SkPipelineData* pipelineData) const {
     GradientShaderBlocks::GradientData data(kLinear_GradientType,
                                             fStart, fEnd,
                                             0.0f, 0.0f,
@@ -116,5 +120,6 @@ void SkLinearGradient::addToKey(SkShaderCodeDictionary* dict,
                                             fOrigColors4f,
                                             fOrigPos);
 
-    GradientShaderBlocks::AddToKey(dict, backend, builder, uniformBlock, data);
+    GradientShaderBlocks::AddToKey(keyContext, builder, pipelineData, data);
 }
+#endif

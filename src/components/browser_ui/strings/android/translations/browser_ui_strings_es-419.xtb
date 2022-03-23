@@ -122,7 +122,6 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4008040567710660924">Permite las cookies para un sitio específico.</translation>
-<translation id="4040330681741629921">Notificarme cada vez que se pueda mostrar la vista simplificada de un sitio</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
 <translation id="4165986682804962316">Configuración de sitios</translation>
@@ -255,6 +254,7 @@
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Opciones disponibles cerca de la parte superior de la pantalla</translation>
 <translation id="7141896414559753902">Bloquea las ventanas emergentes y los redireccionamientos en los sitios (recomendado)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
+<translation id="7180611975245234373">Actualizar</translation>
 <translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7243308994586599757">Opciones disponibles junto a la parte inferior de la pantalla</translation>
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
@@ -308,7 +308,9 @@
 <translation id="83792324527827022">Un sitio está utilizando la cámara y el micrófono</translation>
 <translation id="8380167699614421159">Este sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="8394832520002899662">Presiona para volver al sitio</translation>
+<translation id="8409345997656833551">Notificarme cada vez que se pueda mostrar la vista simplificada de un artículo</translation>
 <translation id="8425213833346101688">Cambiar</translation>
+<translation id="8428213095426709021">Configuración</translation>
 <translation id="8441146129660941386">Buscar más atrás</translation>
 <translation id="8444433999583714703">Para permitir que <ph name="APP_NAME" /> acceda a tu ubicación, actívala también en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revocar permiso para el dispositivo</translation>

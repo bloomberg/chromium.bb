@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "config",
@@ -33,7 +33,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "sync",
@@ -87,7 +87,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "recurse",
@@ -121,7 +121,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "recurse",
@@ -155,7 +155,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "config",
@@ -188,7 +188,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "sync",
@@ -247,7 +247,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "recurse",
@@ -282,7 +282,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "recurse",
@@ -317,11 +317,12 @@
   },
   {
     "cmd": [
-      "python3",
+      "python",
       "-u",
-      "RECIPE_MODULE[depot_tools::gclient]/resources/cleanup.py",
+      "\nfrom __future__ import print_function\nimport os, sys\n\nbuild_path = sys.argv[1]\nif os.path.exists(build_path):\n  for (path, dir, files) in os.walk(build_path):\n    for cur_file in files:\n      if cur_file.endswith('index.lock'):\n        path_to_file = os.path.join(path, cur_file)\n        print('deleting %s' % path_to_file)\n        os.remove(path_to_file)\n",
       "[START_DIR]"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:ci"
@@ -334,11 +335,26 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "cleanup index.lock"
+    "name": "cleanup index.lock",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@python.inline@@@@",
+      "@@@STEP_LOG_LINE@python.inline@from __future__ import print_function@@@",
+      "@@@STEP_LOG_LINE@python.inline@import os, sys@@@",
+      "@@@STEP_LOG_LINE@python.inline@@@@",
+      "@@@STEP_LOG_LINE@python.inline@build_path = sys.argv[1]@@@",
+      "@@@STEP_LOG_LINE@python.inline@if os.path.exists(build_path):@@@",
+      "@@@STEP_LOG_LINE@python.inline@  for (path, dir, files) in os.walk(build_path):@@@",
+      "@@@STEP_LOG_LINE@python.inline@    for cur_file in files:@@@",
+      "@@@STEP_LOG_LINE@python.inline@      if cur_file.endswith('index.lock'):@@@",
+      "@@@STEP_LOG_LINE@python.inline@        path_to_file = os.path.join(path, cur_file)@@@",
+      "@@@STEP_LOG_LINE@python.inline@        print('deleting %s' % path_to_file)@@@",
+      "@@@STEP_LOG_LINE@python.inline@        os.remove(path_to_file)@@@",
+      "@@@STEP_LOG_END@python.inline@@@"
+    ]
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "RECIPE_REPO[depot_tools]/gclient.py",
       "runhooks"

@@ -17,6 +17,52 @@ title: MobLab Release Notes
 *   [Wyvern (puff) OS Recovery
             Image](https://storage.googleapis.com/moblab-recovery-images/chromeos_13904.81.0_puff-moblab_recovery_stable-channel_mp-v3.bin.zip)
 
+# Mar 14th 2022: Moblab Update
+**You should reboot your Moblab when next not running tests to get this latest version of the software.**
+
+You should reboot your Moblab to get the latest version of the software. Make
+sure no tests are running or scheduled. This update includes an update to
+the Moblab software and an update to the underlying ChromeOS version
+(ChromeOS version update will roll out gradually starting the week of March 14th);
+after the update you will be running Moblab version R-2.15.0.
+
+**Highlights**
+
+*   Fix for running tests based on Python 3
+
+*   New functionality to copy a build to the partner bucket in the Configuration page
+
+*   Other bug fixes and improvements
+
+**UI - Manage DUTs**
+
+*   Now trimming leading/trailing spaces from the key, value, pool, and label inputs
+
+*   Renamed Name column to DUT
+
+**UI - DUT Detail**
+
+*   Removed the obsolete Name field
+
+**UI - Update modal**
+
+*   Fixed wording to point to the About page for updates
+
+**UI - MobMonitor**
+
+*   Fixed the link shown when sending logs
+
+**UI - Configuration**
+
+* Copy build button on the Configuration page will allow you to copy a build to the partner bucket
+
+**Other**
+
+*   Better handling of aborted jobs on Moblab restart
+
+*   Fix for test migration to Python 3
+
+
 # Dec 13th 2021: Moblab Update
 **You should reboot your Moblab when next not running tests to get this latest version of the software.**
 

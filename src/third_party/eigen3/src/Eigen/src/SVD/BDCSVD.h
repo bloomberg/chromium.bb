@@ -39,19 +39,32 @@ namespace Eigen {
 IOFormat bdcsvdfmt(8, 0, ", ", "\n", "  [", "]");
 #endif
 
-template<typename MatrixType_> class BDCSVD;
+template <typename MatrixType_, int Options>
+class BDCSVD;
 
 namespace internal {
 
-template<typename MatrixType_>
-struct traits<BDCSVD<MatrixType_> >
-        : traits<MatrixType_>
-{
+template <typename MatrixType_, int Options>
+struct traits<BDCSVD<MatrixType_, Options> > : svd_traits<MatrixType_, Options> {
   typedef MatrixType_ MatrixType;
 };
 
-} // end namespace internal
+template <typename MatrixType, int Options>
+struct allocate_small_svd {
+  static void run(JacobiSVD<MatrixType, Options>& smallSvd, Index rows, Index cols, unsigned int computationOptions) {
+    (void)computationOptions;
+    smallSvd = JacobiSVD<MatrixType, Options>(rows, cols);
+  }
+};
 
+template <typename MatrixType>
+struct allocate_small_svd<MatrixType, 0> {
+  static void run(JacobiSVD<MatrixType>& smallSvd, Index rows, Index cols, unsigned int computationOptions) {
+    smallSvd = JacobiSVD<MatrixType>(rows, cols, computationOptions);
+  }
+};
+
+} // end namespace internal
 
 /** \ingroup SVD_Module
  *
@@ -61,6 +74,11 @@ struct traits<BDCSVD<MatrixType_> >
  * \brief class Bidiagonal Divide and Conquer SVD
  *
  * \tparam MatrixType_ the type of the matrix of which we are computing the SVD decomposition
+ *
+ * \tparam Options_ this optional parameter allows one to specify options for computing unitaries \a U and \a V.
+ *                  Possible values are #ComputeThinU, #ComputeThinV, #ComputeFullU, #ComputeFullV.
+ *                  It is not possible to request both the thin and full version of \a U or \a V.
+ *                  By default, unitaries are not computed.
  *
  * This class first reduces the input matrix to bi-diagonal form using class UpperBidiagonalization,
  * and then performs a divide-and-conquer diagonalization. Small blocks are diagonalized using class JacobiSVD.
@@ -75,9 +93,8 @@ struct traits<BDCSVD<MatrixType_> >
  *
  * \sa class JacobiSVD
  */
-template<typename MatrixType_>
-class BDCSVD : public SVDBase<BDCSVD<MatrixType_> >
-{
+template <typename MatrixType_, int Options_>
+class BDCSVD : public SVDBase<BDCSVD<MatrixType_, Options_> > {
   typedef SVDBase<BDCSVD> Base;
 
 public:
@@ -87,17 +104,19 @@ public:
   using Base::computeV;
 
   typedef MatrixType_ MatrixType;
-  typedef typename MatrixType::Scalar Scalar;
-  typedef typename NumTraits<typename MatrixType::Scalar>::Real RealScalar;
+  typedef typename Base::Scalar Scalar;
+  typedef typename Base::RealScalar RealScalar;
   typedef typename NumTraits<RealScalar>::Literal Literal;
+  typedef typename Base::Index Index;
   enum {
-    RowsAtCompileTime = MatrixType::RowsAtCompileTime,
-    ColsAtCompileTime = MatrixType::ColsAtCompileTime,
-    DiagSizeAtCompileTime = internal::min_size_prefer_dynamic(RowsAtCompileTime, ColsAtCompileTime),
-    MaxRowsAtCompileTime = MatrixType::MaxRowsAtCompileTime,
-    MaxColsAtCompileTime = MatrixType::MaxColsAtCompileTime,
-    MaxDiagSizeAtCompileTime = internal::min_size_prefer_fixed(MaxRowsAtCompileTime, MaxColsAtCompileTime),
-    MatrixOptions = MatrixType::Options
+    Options = Options_,
+    RowsAtCompileTime = Base::RowsAtCompileTime,
+    ColsAtCompileTime = Base::ColsAtCompileTime,
+    DiagSizeAtCompileTime = Base::DiagSizeAtCompileTime,
+    MaxRowsAtCompileTime = Base::MaxRowsAtCompileTime,
+    MaxColsAtCompileTime = Base::MaxColsAtCompileTime,
+    MaxDiagSizeAtCompileTime = Base::MaxDiagSizeAtCompileTime,
+    MatrixOptions = Base::MatrixOptions
   };
 
   typedef typename Base::MatrixUType MatrixUType;
@@ -120,60 +139,85 @@ public:
   BDCSVD() : m_algoswap(16), m_isTranspose(false), m_compU(false), m_compV(false), m_numIters(0)
   {}
 
+  /** \brief Default Constructor with memory preallocation
+   *
+   * Like the default constructor but with preallocation of the internal data
+   * according to the specified problem size and \a Options template parameter.
+   * \sa BDCSVD()
+   */
+  BDCSVD(Index rows, Index cols) : m_algoswap(16), m_numIters(0) {
+    allocate(rows, cols, internal::get_computation_options(Options));
+  }
 
   /** \brief Default Constructor with memory preallocation
    *
    * Like the default constructor but with preallocation of the internal data
-   * according to the specified problem size.
+   * according to the specified problem size and the \a computationOptions.
+   *
+   * One \b cannot request unitiaries using both the \a Options template parameter
+   * and the constructor. If possible, prefer using the \a Options template parameter.
+   *
+   * \param computationOptions specifification for computing Thin/Full unitaries U/V
    * \sa BDCSVD()
+   *
+   * \deprecated Will be removed in the next major Eigen version. Options should
+   * be specified in the \a Options template parameter.
    */
-  BDCSVD(Index rows, Index cols, unsigned int computationOptions = 0)
-    : m_algoswap(16), m_numIters(0)
-  {
+  EIGEN_DEPRECATED
+  BDCSVD(Index rows, Index cols, unsigned int computationOptions) : m_algoswap(16), m_numIters(0) {
+    internal::check_svd_options_assertions<MatrixType, Options>(computationOptions, rows, cols);
     allocate(rows, cols, computationOptions);
   }
 
-  /** \brief Constructor performing the decomposition of given matrix.
+  /** \brief Constructor performing the decomposition of given matrix, using the custom options specified
+   *         with the \a Options template paramter.
    *
    * \param matrix the matrix to decompose
-   * \param computationOptions optional parameter allowing to specify if you want full or thin U or V unitaries to be computed.
-   *                           By default, none is computed. This is a bit - field, the possible bits are #ComputeFullU, #ComputeThinU,
-   *                           #ComputeFullV, #ComputeThinV.
-   *
-   * Thin unitaries are only available if your matrix type has a Dynamic number of columns (for example MatrixXf). They also are not
-   * available with the (non - default) FullPivHouseholderQR preconditioner.
    */
-  BDCSVD(const MatrixType& matrix, unsigned int computationOptions = 0)
-    : m_algoswap(16), m_numIters(0)
-  {
-    compute(matrix, computationOptions);
+  BDCSVD(const MatrixType& matrix) : m_algoswap(16), m_numIters(0) {
+    compute_impl(matrix, internal::get_computation_options(Options));
   }
 
-  ~BDCSVD()
-  {
+  /** \brief Constructor performing the decomposition of given matrix using specified options
+   *         for computing unitaries.
+   *
+   *  One \b cannot request unitiaries using both the \a Options template parameter
+   *  and the constructor. If possible, prefer using the \a Options template parameter.
+   *
+   * \param matrix the matrix to decompose
+   * \param computationOptions specifification for computing Thin/Full unitaries U/V
+   *
+   * \deprecated Will be removed in the next major Eigen version. Options should
+   * be specified in the \a Options template parameter.
+   */
+  EIGEN_DEPRECATED
+  BDCSVD(const MatrixType& matrix, unsigned int computationOptions) : m_algoswap(16), m_numIters(0) {
+    internal::check_svd_options_assertions<MatrixType, Options>(computationOptions, matrix.rows(), matrix.cols());
+    compute_impl(matrix, computationOptions);
   }
 
-  /** \brief Method performing the decomposition of given matrix using custom options.
-   *
-   * \param matrix the matrix to decompose
-   * \param computationOptions optional parameter allowing to specify if you want full or thin U or V unitaries to be computed.
-   *                           By default, none is computed. This is a bit - field, the possible bits are #ComputeFullU, #ComputeThinU,
-   *                           #ComputeFullV, #ComputeThinV.
-   *
-   * Thin unitaries are only available if your matrix type has a Dynamic number of columns (for example MatrixXf). They also are not
-   * available with the (non - default) FullPivHouseholderQR preconditioner.
-   */
-  BDCSVD& compute(const MatrixType& matrix, unsigned int computationOptions);
+  ~BDCSVD() {}
 
-  /** \brief Method performing the decomposition of given matrix using current options.
+  /** \brief Method performing the decomposition of given matrix. Computes Thin/Full unitaries U/V if specified
+   *         using the \a Options template parameter or the class constructor.
    *
    * \param matrix the matrix to decompose
-   *
-   * This method uses the current \a computationOptions, as already passed to the constructor or to compute(const MatrixType&, unsigned int).
    */
-  BDCSVD& compute(const MatrixType& matrix)
-  {
-    return compute(matrix, this->m_computationOptions);
+  BDCSVD& compute(const MatrixType& matrix) { return compute_impl(matrix, m_computationOptions); }
+  
+  /** \brief Method performing the decomposition of given matrix, as specified by
+   *         the `computationOptions` parameter.
+   *
+   * \param matrix the matrix to decompose
+   * \param computationOptions specify whether to compute Thin/Full unitaries U/V
+   * 
+   * \deprecated Will be removed in the next major Eigen version. Options should
+   * be specified in the \a Options template parameter.
+   */
+  EIGEN_DEPRECATED
+  BDCSVD& compute(const MatrixType& matrix, unsigned int computationOptions) {
+    internal::check_svd_options_assertions<MatrixType, Options>(computationOptions, matrix.rows(), matrix.cols());
+    return compute_impl(matrix, computationOptions);
   }
 
   void setSwitchSize(int s)
@@ -184,6 +228,7 @@ public:
 
 private:
   void allocate(Index rows, Index cols, unsigned int computationOptions);
+  BDCSVD& compute_impl(const MatrixType& matrix, unsigned int computationOptions);
   void divide(Index firstCol, Index lastCol, Index firstRowW, Index firstColW, Index shift);
   void computeSVDofM(Index firstCol, Index n, MatrixXr& U, VectorType& singVals, MatrixXr& V);
   void computeSingVals(const ArrayRef& col0, const ArrayRef& diag, const IndicesRef& perm, VectorType& singVals, ArrayRef shifts, ArrayRef mus);
@@ -196,8 +241,10 @@ private:
   void copyUV(const HouseholderU &householderU, const HouseholderV &householderV, const NaiveU &naiveU, const NaiveV &naivev);
   void structured_update(Block<MatrixXr,Dynamic,Dynamic> A, const MatrixXr &B, Index n1);
   static RealScalar secularEq(RealScalar x, const ArrayRef& col0, const ArrayRef& diag, const IndicesRef &perm, const ArrayRef& diagShifted, RealScalar shift);
+  template <typename SVDType>
+  void computeBaseCase(SVDType& svd, Index n, Index firstCol, Index firstRowW, Index firstColW, Index shift);
 
-protected:
+ protected:
   MatrixXr m_naiveU, m_naiveV;
   MatrixXr m_computed;
   Index m_nRec;
@@ -205,36 +252,36 @@ protected:
   ArrayXi m_workspaceI;
   int m_algoswap;
   bool m_isTranspose, m_compU, m_compV;
+  JacobiSVD<MatrixType, Options> smallSvd;
 
-  using Base::m_singularValues;
-  using Base::m_diagSize;
-  using Base::m_computeFullU;
-  using Base::m_computeFullV;
+  using Base::m_computationOptions;
   using Base::m_computeThinU;
   using Base::m_computeThinV;
-  using Base::m_matrixU;
-  using Base::m_matrixV;
+  using Base::m_diagSize;
   using Base::m_info;
   using Base::m_isInitialized;
+  using Base::m_matrixU;
+  using Base::m_matrixV;
   using Base::m_nonzeroSingularValues;
+  using Base::m_singularValues;
 
-public:
+ public:
   int m_numIters;
-}; //end class BDCSVD
-
+};  // end class BDCSVD
 
 // Method to allocate and initialize matrix and attributes
-template<typename MatrixType>
-void BDCSVD<MatrixType>::allocate(Eigen::Index rows, Eigen::Index cols, unsigned int computationOptions)
-{
-  m_isTranspose = (cols > rows);
-
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::allocate(Index rows, Index cols, unsigned int computationOptions) {
   if (Base::allocate(rows, cols, computationOptions))
     return;
+
+  if (cols < m_algoswap)
+    internal::allocate_small_svd<MatrixType, Options>::run(smallSvd, rows, cols, computationOptions);
 
   m_computed = MatrixXr::Zero(m_diagSize + 1, m_diagSize );
   m_compU = computeV();
   m_compV = computeU();
+  m_isTranspose = (cols > rows);
   if (m_isTranspose)
     std::swap(m_compU, m_compV);
 
@@ -245,31 +292,31 @@ void BDCSVD<MatrixType>::allocate(Eigen::Index rows, Eigen::Index cols, unsigned
 
   m_workspace.resize((m_diagSize+1)*(m_diagSize+1)*3);
   m_workspaceI.resize(3*m_diagSize);
-}// end allocate
+}  // end allocate
 
-template<typename MatrixType>
-BDCSVD<MatrixType>& BDCSVD<MatrixType>::compute(const MatrixType& matrix, unsigned int computationOptions)
-{
+template <typename MatrixType, int Options>
+BDCSVD<MatrixType, Options>& BDCSVD<MatrixType, Options>::compute_impl(const MatrixType& matrix,
+                                                                       unsigned int computationOptions) {
 #ifdef EIGEN_BDCSVD_DEBUG_VERBOSE
   std::cout << "\n\n\n======================================================================================================================\n\n\n";
 #endif
-  allocate(matrix.rows(), matrix.cols(), computationOptions);
   using std::abs;
+
+  allocate(matrix.rows(), matrix.cols(), computationOptions);
 
   const RealScalar considerZero = (std::numeric_limits<RealScalar>::min)();
 
   //**** step -1 - If the problem is too small, directly falls back to JacobiSVD and return
   if(matrix.cols() < m_algoswap)
   {
-    // FIXME this line involves temporaries
-    JacobiSVD<MatrixType> jsvd(matrix,computationOptions);
+    smallSvd.compute(matrix);
     m_isInitialized = true;
-    m_info = jsvd.info();
+    m_info = smallSvd.info();
     if (m_info == Success || m_info == NoConvergence) {
-      if(computeU()) m_matrixU = jsvd.matrixU();
-      if(computeV()) m_matrixV = jsvd.matrixV();
-      m_singularValues = jsvd.singularValues();
-      m_nonzeroSingularValues = jsvd.nonzeroSingularValues();
+      if (computeU()) m_matrixU = smallSvd.matrixU();
+      if (computeV()) m_matrixV = smallSvd.matrixV();
+      m_singularValues = smallSvd.singularValues();
+      m_nonzeroSingularValues = smallSvd.nonzeroSingularValues();
     }
     return *this;
   }
@@ -330,13 +377,12 @@ BDCSVD<MatrixType>& BDCSVD<MatrixType>::compute(const MatrixType& matrix, unsign
 
   m_isInitialized = true;
   return *this;
-}// end compute
+}  // end compute
 
-
-template<typename MatrixType>
-template<typename HouseholderU, typename HouseholderV, typename NaiveU, typename NaiveV>
-void BDCSVD<MatrixType>::copyUV(const HouseholderU &householderU, const HouseholderV &householderV, const NaiveU &naiveU, const NaiveV &naiveV)
-{
+template <typename MatrixType, int Options>
+template <typename HouseholderU, typename HouseholderV, typename NaiveU, typename NaiveV>
+void BDCSVD<MatrixType, Options>::copyUV(const HouseholderU& householderU, const HouseholderV& householderV,
+                                         const NaiveU& naiveU, const NaiveV& naiveV) {
   // Note exchange of U and V: m_matrixU is set from m_naiveV and vice versa
   if (computeU())
   {
@@ -362,9 +408,8 @@ void BDCSVD<MatrixType>::copyUV(const HouseholderU &householderU, const Househol
   * We can thus pack them prior to the the matrix product. However, this is only worth the effort if the matrix is large
   * enough.
   */
-template<typename MatrixType>
-void BDCSVD<MatrixType>::structured_update(Block<MatrixXr,Dynamic,Dynamic> A, const MatrixXr &B, Index n1)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::structured_update(Block<MatrixXr, Dynamic, Dynamic> A, const MatrixXr& B, Index n1) {
   Index n = A.rows();
   if(n>100)
   {
@@ -403,8 +448,26 @@ void BDCSVD<MatrixType>::structured_update(Block<MatrixXr,Dynamic,Dynamic> A, co
   }
 }
 
-// The divide algorithm is done "in place", we are always working on subsets of the same matrix. The divide methods takes as argument the
-// place of the submatrix we are currently working on.
+template <typename MatrixType, int Options>
+template <typename SVDType>
+void BDCSVD<MatrixType, Options>::computeBaseCase(SVDType& svd, Index n, Index firstCol, Index firstRowW,
+                                                  Index firstColW, Index shift) {
+  svd.compute(m_computed.block(firstCol, firstCol, n + 1, n));
+  m_info = svd.info();
+  if (m_info != Success && m_info != NoConvergence) return;
+  if (m_compU)
+    m_naiveU.block(firstCol, firstCol, n + 1, n + 1).real() = svd.matrixU();
+  else {
+    m_naiveU.row(0).segment(firstCol, n + 1).real() = svd.matrixU().row(0);
+    m_naiveU.row(1).segment(firstCol, n + 1).real() = svd.matrixU().row(n);
+  }
+  if (m_compV) m_naiveV.block(firstRowW, firstColW, n, n).real() = svd.matrixV();
+  m_computed.block(firstCol + shift, firstCol + shift, n + 1, n).setZero();
+  m_computed.diagonal().segment(firstCol + shift, n) = svd.singularValues().head(n);
+}
+
+// The divide algorithm is done "in place", we are always working on subsets of the same matrix. The divide methods
+// takes as argument the place of the submatrix we are currently working on.
 
 //@param firstCol : The Index of the first column of the submatrix of m_computed and for m_naiveU;
 //@param lastCol : The Index of the last column of the submatrix of m_computed and for m_naiveU;
@@ -413,9 +476,9 @@ void BDCSVD<MatrixType>::structured_update(Block<MatrixXr,Dynamic,Dynamic> A, co
 //@param firstColW : Same as firstRowW with the column.
 //@param shift : Each time one takes the left submatrix, one must add 1 to the shift. Why? Because! We actually want the last column of the U submatrix
 // to become the first column (*coeff) and to shift all the other columns to the right. There are more details on the reference paper.
-template<typename MatrixType>
-void BDCSVD<MatrixType>::divide(Eigen::Index firstCol, Eigen::Index lastCol, Eigen::Index firstRowW, Eigen::Index firstColW, Eigen::Index shift)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::divide(Index firstCol, Index lastCol, Index firstRowW,
+                                         Index firstColW, Index shift) {
   // requires rows = cols + 1;
   using std::pow;
   using std::sqrt;
@@ -432,20 +495,14 @@ void BDCSVD<MatrixType>::divide(Eigen::Index firstCol, Eigen::Index lastCol, Eig
   // matrices.
   if (n < m_algoswap)
   {
-    // FIXME this line involves temporaries
-    JacobiSVD<MatrixXr> b(m_computed.block(firstCol, firstCol, n + 1, n), ComputeFullU | (m_compV ? ComputeFullV : 0));
-    m_info = b.info();
-    if (m_info != Success && m_info != NoConvergence) return;
-    if (m_compU)
-      m_naiveU.block(firstCol, firstCol, n + 1, n + 1).real() = b.matrixU();
-    else
-    {
-      m_naiveU.row(0).segment(firstCol, n + 1).real() = b.matrixU().row(0);
-      m_naiveU.row(1).segment(firstCol, n + 1).real() = b.matrixU().row(n);
+    // FIXME this block involves temporaries
+    if (m_compV) {
+      JacobiSVD<MatrixXr, ComputeFullU | ComputeFullV> baseSvd;
+      computeBaseCase(baseSvd, n, firstCol, firstRowW, firstColW, shift);
+    } else {
+      JacobiSVD<MatrixXr, ComputeFullU> baseSvd;
+      computeBaseCase(baseSvd, n, firstCol, firstRowW, firstColW, shift);
     }
-    if (m_compV) m_naiveV.block(firstRowW, firstColW, n, n).real() = b.matrixV();
-    m_computed.block(firstCol + shift, firstCol + shift, n + 1, n).setZero();
-    m_computed.diagonal().segment(firstCol + shift, n) = b.singularValues().head(n);
     return;
   }
   // We use the divide and conquer algorithm
@@ -587,7 +644,7 @@ void BDCSVD<MatrixType>::divide(Eigen::Index firstCol, Eigen::Index lastCol, Eig
 
   m_computed.block(firstCol + shift, firstCol + shift, n, n).setZero();
   m_computed.block(firstCol + shift, firstCol + shift, n, n).diagonal() = singVals;
-}// end divide
+}  // end divide
 
 // Compute SVD of m_computed.block(firstCol, firstCol, n + 1, n); this block only has non-zeros in
 // the first column and on the diagonal and has undergone deflation, so diagonal is in increasing
@@ -597,9 +654,9 @@ void BDCSVD<MatrixType>::divide(Eigen::Index firstCol, Eigen::Index lastCol, Eig
 // TODO Opportunities for optimization: better root finding algo, better stopping criterion, better
 // handling of round-off errors, be consistent in ordering
 // For instance, to solve the secular equation using FMM, see http://www.stat.uchicago.edu/~lekheng/courses/302/classics/greengard-rokhlin.pdf
-template <typename MatrixType>
-void BDCSVD<MatrixType>::computeSVDofM(Eigen::Index firstCol, Eigen::Index n, MatrixXr& U, VectorType& singVals, MatrixXr& V)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::computeSVDofM(Index firstCol, Index n, MatrixXr& U,
+                                                VectorType& singVals, MatrixXr& V) {
   const RealScalar considerZero = (std::numeric_limits<RealScalar>::min)();
   using std::abs;
   ArrayRef col0 = m_computed.col(firstCol).segment(firstCol, n);
@@ -728,9 +785,10 @@ void BDCSVD<MatrixType>::computeSVDofM(Eigen::Index firstCol, Eigen::Index n, Ma
 #endif
 }
 
-template <typename MatrixType>
-typename BDCSVD<MatrixType>::RealScalar BDCSVD<MatrixType>::secularEq(RealScalar mu, const ArrayRef& col0, const ArrayRef& diag, const IndicesRef &perm, const ArrayRef& diagShifted, RealScalar shift)
-{
+template <typename MatrixType, int Options>
+typename BDCSVD<MatrixType, Options>::RealScalar BDCSVD<MatrixType, Options>::secularEq(
+    RealScalar mu, const ArrayRef& col0, const ArrayRef& diag, const IndicesRef& perm, const ArrayRef& diagShifted,
+    RealScalar shift) {
   Index m = perm.size();
   RealScalar res = Literal(1);
   for(Index i=0; i<m; ++i)
@@ -741,13 +799,11 @@ typename BDCSVD<MatrixType>::RealScalar BDCSVD<MatrixType>::secularEq(RealScalar
     res += (col0(j) / (diagShifted(j) - mu)) * (col0(j) / (diag(j) + shift + mu));
   }
   return res;
-
 }
 
-template <typename MatrixType>
-void BDCSVD<MatrixType>::computeSingVals(const ArrayRef& col0, const ArrayRef& diag, const IndicesRef &perm,
-                                         VectorType& singVals, ArrayRef shifts, ArrayRef mus)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::computeSingVals(const ArrayRef& col0, const ArrayRef& diag, const IndicesRef& perm,
+                                                  VectorType& singVals, ArrayRef shifts, ArrayRef mus) {
   using std::abs;
   using std::swap;
   using std::sqrt;
@@ -993,13 +1049,11 @@ void BDCSVD<MatrixType>::computeSingVals(const ArrayRef& col0, const ArrayRef& d
   }
 }
 
-
 // zhat is perturbation of col0 for which singular vectors can be computed stably (see Section 3.1)
-template <typename MatrixType>
-void BDCSVD<MatrixType>::perturbCol0
-   (const ArrayRef& col0, const ArrayRef& diag, const IndicesRef &perm, const VectorType& singVals,
-    const ArrayRef& shifts, const ArrayRef& mus, ArrayRef zhat)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::perturbCol0(const ArrayRef& col0, const ArrayRef& diag, const IndicesRef& perm,
+                                              const VectorType& singVals, const ArrayRef& shifts, const ArrayRef& mus,
+                                              ArrayRef zhat) {
   using std::sqrt;
   Index n = col0.size();
   Index m = perm.size();
@@ -1075,11 +1129,10 @@ void BDCSVD<MatrixType>::perturbCol0
 }
 
 // compute singular vectors
-template <typename MatrixType>
-void BDCSVD<MatrixType>::computeSingVecs
-   (const ArrayRef& zhat, const ArrayRef& diag, const IndicesRef &perm, const VectorType& singVals,
-    const ArrayRef& shifts, const ArrayRef& mus, MatrixXr& U, MatrixXr& V)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::computeSingVecs(const ArrayRef& zhat, const ArrayRef& diag, const IndicesRef& perm,
+                                                  const VectorType& singVals, const ArrayRef& shifts,
+                                                  const ArrayRef& mus, MatrixXr& U, MatrixXr& V) {
   Index n = zhat.size();
   Index m = perm.size();
 
@@ -1117,13 +1170,12 @@ void BDCSVD<MatrixType>::computeSingVecs
   U.col(n) = VectorType::Unit(n+1, n);
 }
 
-
 // page 12_13
 // i >= 1, di almost null and zi non null.
 // We use a rotation to zero out zi applied to the left of M
-template <typename MatrixType>
-void BDCSVD<MatrixType>::deflation43(Eigen::Index firstCol, Eigen::Index shift, Eigen::Index i, Eigen::Index size)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::deflation43(Index firstCol, Index shift, Index i,
+                                              Index size) {
   using std::abs;
   using std::sqrt;
   using std::pow;
@@ -1143,16 +1195,16 @@ void BDCSVD<MatrixType>::deflation43(Eigen::Index firstCol, Eigen::Index shift, 
   JacobiRotation<RealScalar> J(c/r,-s/r);
   if (m_compU)  m_naiveU.middleRows(firstCol, size+1).applyOnTheRight(firstCol, firstCol+i, J);
   else          m_naiveU.applyOnTheRight(firstCol, firstCol+i, J);
-}// end deflation 43
-
+}  // end deflation 43
 
 // page 13
 // i,j >= 1, i!=j and |di - dj| < epsilon * norm2(M)
 // We apply two rotations to have zj = 0;
 // TODO deflation44 is still broken and not properly tested
-template <typename MatrixType>
-void BDCSVD<MatrixType>::deflation44(Eigen::Index firstColu , Eigen::Index firstColm, Eigen::Index firstRowW, Eigen::Index firstColW, Eigen::Index i, Eigen::Index j, Eigen::Index size)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::deflation44(Index firstColu, Index firstColm, Index firstRowW,
+                                              Index firstColW, Index i, Index j,
+                                              Index size) {
   using std::abs;
   using std::sqrt;
   using std::conj;
@@ -1186,13 +1238,12 @@ void BDCSVD<MatrixType>::deflation44(Eigen::Index firstColu , Eigen::Index first
   if (m_compU)  m_naiveU.middleRows(firstColu, size+1).applyOnTheRight(firstColu + i, firstColu + j, J);
   else          m_naiveU.applyOnTheRight(firstColu+i, firstColu+j, J);
   if (m_compV)  m_naiveV.middleRows(firstRowW, size).applyOnTheRight(firstColW + i, firstColW + j, J);
-}// end deflation 44
-
+}  // end deflation 44
 
 // acts on block from (firstCol+shift, firstCol+shift) to (lastCol+shift, lastCol+shift) [inclusive]
-template <typename MatrixType>
-void BDCSVD<MatrixType>::deflation(Eigen::Index firstCol, Eigen::Index lastCol, Eigen::Index k, Eigen::Index firstRowW, Eigen::Index firstColW, Eigen::Index shift)
-{
+template <typename MatrixType, int Options>
+void BDCSVD<MatrixType, Options>::deflation(Index firstCol, Index lastCol, Index k,
+                                            Index firstRowW, Index firstColW, Index shift) {
   using std::sqrt;
   using std::abs;
   const Index length = lastCol + 1 - firstCol;
@@ -1360,7 +1411,7 @@ void BDCSVD<MatrixType>::deflation(Eigen::Index firstCol, Eigen::Index lastCol, 
   assert(m_naiveV.allFinite());
   assert(m_computed.allFinite());
 #endif
-}//end deflation
+}  // end deflation
 
 /** \svd_module
   *
@@ -1368,11 +1419,23 @@ void BDCSVD<MatrixType>::deflation(Eigen::Index firstCol, Eigen::Index lastCol, 
   *
   * \sa class BDCSVD
   */
-template<typename Derived>
-BDCSVD<typename MatrixBase<Derived>::PlainObject>
-MatrixBase<Derived>::bdcSvd(unsigned int computationOptions) const
-{
-  return BDCSVD<PlainObject>(*this, computationOptions);
+template <typename Derived>
+template <int Options>
+BDCSVD<typename MatrixBase<Derived>::PlainObject, Options> MatrixBase<Derived>::bdcSvd() const {
+  return BDCSVD<PlainObject, Options>(*this);
+}
+
+/** \svd_module
+ *
+ * \return the singular value decomposition of \c *this computed by Divide & Conquer algorithm
+ *
+ * \sa class BDCSVD
+ */
+template <typename Derived>
+template <int Options>
+BDCSVD<typename MatrixBase<Derived>::PlainObject, Options> MatrixBase<Derived>::bdcSvd(
+    unsigned int computationOptions) const {
+  return BDCSVD<PlainObject, Options>(*this, computationOptions);
 }
 
 } // end namespace Eigen

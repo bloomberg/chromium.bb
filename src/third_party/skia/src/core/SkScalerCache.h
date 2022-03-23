@@ -65,6 +65,9 @@ public:
     std::tuple<SkSpan<const SkGlyph*>, size_t> prepareImages(
             SkSpan<const SkPackedGlyphID> glyphIDs, const SkGlyph* results[]) SK_EXCLUDES(fMu);
 
+    std::tuple<SkSpan<const SkGlyph*>, size_t> prepareDrawables(
+            SkSpan<const SkGlyphID> glyphIDs, const SkGlyph* results[]) SK_EXCLUDES(fMu);
+
     size_t prepareForDrawingMasksCPU(SkDrawableGlyphBuffer* accepted) SK_EXCLUDES(fMu);
 
     // SkStrikeForGPU APIs
@@ -104,10 +107,10 @@ private:
     std::tuple<const void*, size_t> prepareImage(SkGlyph* glyph) SK_REQUIRES(fMu);
 
     // If the path has never been set, then use the scaler context to add the glyph.
-    std::tuple<const SkPath*, size_t> preparePath(SkGlyph*) SK_REQUIRES(fMu);
+    size_t preparePath(SkGlyph*) SK_REQUIRES(fMu);
 
     // If the drawable has never been set, then use the scaler context to add the glyph.
-    std::tuple<SkDrawable*, size_t> prepareDrawable(SkGlyph*) SK_REQUIRES(fMu);
+    size_t prepareDrawable(SkGlyph*) SK_REQUIRES(fMu);
 
     enum PathDetail {
         kMetricsOnly,

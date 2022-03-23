@@ -833,11 +833,45 @@ TEST_F(ValidateMemory, VulkanPushConstantNotStructBad) {
 )";
   CompileSuccessfully(spirv, SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("PushConstant OpVariable <id> '6[%6]' has illegal "
-                        "type.\nFrom Vulkan spec, section 14.5.1:\n"
-                        "Such variables must be typed as OpTypeStruct, "
-                        "or an array of this type"));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("PushConstant OpVariable <id> '6[%6]' has illegal "
+                "type.\nFrom Vulkan spec, Push Constant Interface section:\n"
+                "Such variables must be typed as OpTypeStruct"));
+}
+
+TEST_F(ValidateMemory, VulkanPushConstantArrayOfStructBad) {
+  std::string spirv = R"(
+            OpCapability Shader
+            OpMemoryModel Logical GLSL450
+            OpEntryPoint Fragment %1 "main"
+            OpExecutionMode %1 OriginUpperLeft
+
+            OpDecorate %struct Block
+            OpMemberDecorate %struct 0 Offset 0
+
+    %void = OpTypeVoid
+  %voidfn = OpTypeFunction %void
+   %float = OpTypeFloat 32
+     %int = OpTypeInt 32 0
+   %int_1 = OpConstant %int 1
+  %struct = OpTypeStruct %float
+   %array = OpTypeArray %struct %int_1
+     %ptr = OpTypePointer PushConstant %array
+      %pc = OpVariable %ptr PushConstant
+
+       %1 = OpFunction %void None %voidfn
+   %label = OpLabel
+            OpReturn
+            OpFunctionEnd
+)";
+  CompileSuccessfully(spirv, SPV_ENV_VULKAN_1_1);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("PushConstant OpVariable <id> '10[%10]' has illegal "
+                "type.\nFrom Vulkan spec, Push Constant Interface section:\n"
+                "Such variables must be typed as OpTypeStruct"));
 }
 
 TEST_F(ValidateMemory, VulkanPushConstant) {
@@ -2097,6 +2131,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2162,6 +2198,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("For Vulkan with RuntimeDescriptorArrayEXT, a variable "
@@ -2217,11 +2255,14 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
           "For Vulkan, OpTypeStruct variables containing OpTypeRuntimeArray "
-          "must have storage class of StorageBuffer or Uniform.\n  %6 = "
+          "must have storage class of StorageBuffer, PhysicalStorageBuffer, or "
+          "Uniform.\n  %6 = "
           "OpVariable %_ptr_Workgroup__struct_4 Workgroup\n"));
 }
 
@@ -2247,9 +2288,12 @@ OpFunctionEnd
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
   EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
+  EXPECT_THAT(getDiagnosticString(),
               HasSubstr("For Vulkan, an OpTypeStruct variable containing an "
                         "OpTypeRuntimeArray must be decorated with Block if it "
-                        "has storage class StorageBuffer.\n  %6 = OpVariable "
+                        "has storage class StorageBuffer or "
+                        "PhysicalStorageBuffer.\n  %6 = OpVariable "
                         "%_ptr_StorageBuffer__struct_4 StorageBuffer\n"));
 }
 
@@ -2301,6 +2345,8 @@ OpFunctionEnd
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
   EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
+  EXPECT_THAT(getDiagnosticString(),
               HasSubstr("For Vulkan, an OpTypeStruct variable containing an "
                         "OpTypeRuntimeArray must be decorated with BufferBlock "
                         "if it has storage class Uniform.\n  %6 = OpVariable "
@@ -2328,6 +2374,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2361,6 +2409,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2423,6 +2473,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2459,6 +2511,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2490,6 +2544,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr("OpTypeArray Element Type <id> '5[%_runtimearr_4]' is not "
@@ -2524,6 +2580,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2558,6 +2616,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -2595,6 +2655,8 @@ OpFunctionEnd
 
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_1);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_1));
+  EXPECT_THAT(getDiagnosticString(),
+              AnyVUID("VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"));
   EXPECT_THAT(
       getDiagnosticString(),
       HasSubstr(
@@ -4259,8 +4321,10 @@ OpFunctionEnd
   CompileSuccessfully(spirv.c_str(), SPV_ENV_VULKAN_1_0);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_VULKAN_1_0));
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Variable initializers in Workgroup storage class are "
-                        "limited to OpConstantNull"));
+              AnyVUID(" VUID-StandaloneSpirv-OpVariable-04734"));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpVariable, <id> '5[%5]', initializers are limited to "
+                        "OpConstantNull in Workgroup storage class"));
 }
 
 TEST_F(ValidateMemory, VulkanInitializerWithWorkgroupStorageClassGood) {

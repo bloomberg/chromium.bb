@@ -63,7 +63,6 @@
 #include "rtc_base/string_encode.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/trace_event.h"
-#include "system_wrappers/include/field_trial.h"
 #include "system_wrappers/include/metrics.h"
 
 using cricket::ContentInfo;
@@ -90,9 +89,6 @@ namespace {
 
 typedef webrtc::PeerConnectionInterface::RTCOfferAnswerOptions
     RTCOfferAnswerOptions;
-
-constexpr const char* kAlwaysAllowPayloadTypeDemuxingFieldTrialName =
-    "WebRTC-AlwaysAllowPayloadTypeDemuxing";
 
 // Error messages
 const char kInvalidSdp[] = "Invalid session description.";
@@ -1189,13 +1185,14 @@ std::unique_ptr<SdpOfferAnswerHandler> SdpOfferAnswerHandler::Create(
     PeerConnectionDependencies& dependencies,
     ConnectionContext* context) {
   auto handler = absl::WrapUnique(new SdpOfferAnswerHandler(pc, context));
-  handler->Initialize(configuration, dependencies);
+  handler->Initialize(configuration, dependencies, context);
   return handler;
 }
 
 void SdpOfferAnswerHandler::Initialize(
     const PeerConnectionInterface::RTCConfiguration& configuration,
-    PeerConnectionDependencies& dependencies) {
+    PeerConnectionDependencies& dependencies,
+    ConnectionContext* context) {
   RTC_DCHECK_RUN_ON(signaling_thread());
   video_options_.screencast_min_bitrate_kbps =
       configuration.screencast_min_bitrate;
@@ -1225,9 +1222,8 @@ void SdpOfferAnswerHandler::Initialize(
 
   webrtc_session_desc_factory_ =
       std::make_unique<WebRtcSessionDescriptionFactory>(
-          signaling_thread(), channel_manager(), this, pc_->session_id(),
-          pc_->dtls_enabled(), std::move(dependencies.cert_generator),
-          certificate,
+          context, this, pc_->session_id(), pc_->dtls_enabled(),
+          std::move(dependencies.cert_generator), certificate,
           [this](const rtc::scoped_refptr<rtc::RTCCertificate>& certificate) {
             RTC_DCHECK_RUN_ON(signaling_thread());
             transport_controller_s()->SetLocalCertificate(certificate);
@@ -5090,13 +5086,6 @@ bool SdpOfferAnswerHandler::UpdatePayloadTypeDemuxingState(
   bool bundled_pt_demux_allowed_video = !IsUnifiedPlan() ||
                                         mid_header_extension_missing_video ||
                                         pt_demuxing_has_been_used_video_;
-  // Kill switch for the above change.
-  if (field_trial::IsEnabled(kAlwaysAllowPayloadTypeDemuxingFieldTrialName)) {
-    // TODO(https://crbug.com/webrtc/12814): If disabling PT-based demux does
-    // not trigger regressions, remove this kill switch.
-    bundled_pt_demux_allowed_audio = true;
-    bundled_pt_demux_allowed_video = true;
-  }
 
   // Gather all updates ahead of time so that all channels can be updated in a
   // single Invoke; necessary due to thread guards.

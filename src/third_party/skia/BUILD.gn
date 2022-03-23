@@ -97,6 +97,9 @@ config("skia_private") {
       defines += [ "GRAPHITE_TEST_UTILS=1" ]
     }
   }
+  if (skia_compare_vm_vs_rp) {
+    defines += [ "SKIA_COMPARE_VM_VS_RP" ]
+  }
   libs = []
   lib_dirs = []
   if (skia_use_gl && skia_use_angle) {
@@ -2039,6 +2042,8 @@ if (skia_enable_tools) {
     sources = [
       "tests/Test.cpp",
       "tests/Test.h",
+      "tests/TestHarness.cpp",
+      "tests/TestHarness.h",
       "tests/TestUtils.cpp",
       "tests/TestUtils.h",
     ]
@@ -2081,7 +2086,6 @@ if (skia_enable_tools) {
       ":skia",
       ":test",
       ":tool_utils",
-      "experimental/skrive:tests",
       "experimental/sktext:tests",
       "modules/skottie:tests",
       "modules/skparagraph:tests",
@@ -2212,7 +2216,6 @@ if (skia_enable_tools) {
         ":tests",
         ":tool_utils",
         ":trace",
-        "experimental/skrive",
         "modules/skottie",
         "modules/skottie:utils",
         "modules/svg",
@@ -2476,6 +2479,7 @@ if (skia_enable_tools) {
       sources = [
         "dm/DMGpuTestProcs.cpp",
         "tools/skqp/src/skqp.cpp",
+        "tools/skqp/src/skqp.h",
       ]
       deps = [
         ":gm",
@@ -2791,8 +2795,6 @@ if (skia_enable_tools) {
         "tools/viewer/SKPSlide.h",
         "tools/viewer/SampleSlide.cpp",
         "tools/viewer/SampleSlide.h",
-        "tools/viewer/SkRiveSlide.cpp",
-        "tools/viewer/SkRiveSlide.h",
         "tools/viewer/SkSLDebuggerSlide.cpp",
         "tools/viewer/SkSLDebuggerSlide.h",
         "tools/viewer/SkSLSlide.cpp",
@@ -2824,7 +2826,6 @@ if (skia_enable_tools) {
         ":skia",
         ":tool_utils",
         ":trace",
-        "experimental/skrive",
         "experimental/sktext",
         "modules/audioplayer",
         "modules/particles",

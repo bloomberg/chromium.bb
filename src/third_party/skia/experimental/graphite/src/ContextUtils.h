@@ -14,17 +14,20 @@
 #include "include/core/SkTileMode.h"
 
 enum class CodeSnippetID : uint8_t;
+class SkPaintParamsKeyBuilder;
+class SkPipelineData;
 class SkShaderCodeDictionary;
 class SkUniform;
-class SkUniformBlock;
 class SkUniquePaintParamsID;
 
 namespace skgpu {
 
 class PaintParams;
 
-std::tuple<SkUniquePaintParamsID, std::unique_ptr<SkUniformBlock>> ExtractPaintData(
-        SkShaderCodeDictionary*, const PaintParams&);
+std::tuple<SkUniquePaintParamsID, std::unique_ptr<SkPipelineData>> ExtractPaintData(
+        Recorder*,
+        SkPaintParamsKeyBuilder* builder,
+        const PaintParams&);
 
 } // namespace skgpu
 

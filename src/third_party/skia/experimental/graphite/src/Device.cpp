@@ -20,6 +20,7 @@
 #include "experimental/graphite/src/Gpu.h"
 #include "experimental/graphite/src/Log.h"
 #include "experimental/graphite/src/RecorderPriv.h"
+#include "experimental/graphite/src/Renderer.h"
 #include "experimental/graphite/src/ResourceProvider.h"
 #include "experimental/graphite/src/Texture.h"
 #include "experimental/graphite/src/TextureProxy.h"
@@ -36,6 +37,7 @@
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkPaintPriv.h"
 #include "src/core/SkSpecialImage.h"
+#include "src/core/SkStroke.h"
 
 #include <unordered_map>
 #include <vector>
@@ -401,34 +403,20 @@ void Device::drawShape(const Shape& shape,
     if (dependsOnDst) {
         order.dependsOnPaintersOrder(prevDraw);
     }
-    // TODO: if the chosen Renderer for a draw uses coverage AA, then it cannot be considered opaque
-    // regardless of what the PaintParams would do, but we won't know that until after the Renderer
-    // has been selected for the draw.
 
     if (styleType == SkStrokeRec::kStroke_Style ||
         styleType == SkStrokeRec::kHairline_Style ||
         styleType == SkStrokeRec::kStrokeAndFill_Style) {
-        // TODO: If DC supports stroked primitives, Device could choose one of those based on shape
         StrokeParams stroke(style.getWidth(), style.getMiter(), style.getJoin(), style.getCap());
-        fDC->strokePath(localToDevice, shape, stroke, clip, order, &shading);
+        this->recordDraw(localToDevice, shape, clip, order, &shading, &stroke);
     }
     if (styleType == SkStrokeRec::kFill_Style ||
         styleType == SkStrokeRec::kStrokeAndFill_Style) {
-        // TODO: If DC supports filled primitives, Device could choose one of those based on shape
-
-        // TODO: Route all filled shapes to stencil-and-cover for the sprint; convex will draw
-        // correctly but uses an unnecessary stencil step.
-        // if (shape.convex()) {
-        //     fDC->fillConvexPath(localToDevice, shape, clip, order, &shading);
-        // } else {
-            DisjointStencilIndex setIndex = fDisjointStencilSet->add(order.paintOrder(),
-                                                                     clip.drawBounds());
-            order.dependsOnStencil(setIndex);
-            fDC->stencilAndFillPath(localToDevice, shape, clip, order, &shading);
-        // }
+        this->recordDraw(localToDevice, shape, clip, order, &shading, nullptr);
     }
 
     // Record the painters order and depth used for this draw
+    // TODO: If recordDraw picked a coverage AA renderer, 'dependsOnDst' is out of date.
     const bool fullyOpaque = !dependsOnDst &&
                              shape.isRect() &&
                              localToDevice.type() <= Transform::Type::kRectStaysRect;
@@ -439,6 +427,86 @@ void Device::drawShape(const Shape& shape,
 
     fCurrentDepth = order.depth();
     fDrawsOverlap |= (prevDraw != DrawOrder::kNoIntersection);
+}
+
+void Device::recordDraw(const Transform& localToDevice,
+                        const Shape& shape,
+                        const Clip& clip,
+                        DrawOrder ordering,
+                        const PaintParams* paint,
+                        const StrokeParams* stroke) {
+    // TODO: remove after CPU-transform fallbacks are no longer needed
+    static const Transform kIdentity{SkM44()};
+
+    // TODO: For now stroked paths are converted to fills on the CPU since the fixed count
+    // stroke path renderer hasn't been ported to Graphite yet.
+    if (stroke) {
+        SkPath strokeAsPath = shape.asPath();
+        SkStroke stroker;
+        stroker.setCap(stroke->cap());
+        stroker.setJoin(stroke->join());
+        stroker.setMiterLimit(stroke->miterLimit());
+        stroker.setDoFill(false);
+        const Transform* transform;
+        if (stroke->halfWidth() == 0.f) {
+            // Manually transform to device space and then generate a 1px stroke filled path, which
+            // would require applying a local matrix to the paint but we skip that for now since all
+            // of this is temporary anyways and most hairlines aren't spatially-varying.
+            strokeAsPath.transform(localToDevice.matrix().asM33());
+            stroker.setWidth(1.f);
+            stroker.strokePath(strokeAsPath, &strokeAsPath);
+            transform = &kIdentity;
+        } else {
+            stroker.setResScale(localToDevice.maxScaleFactor());
+            stroker.setWidth(stroke->width());
+            stroker.strokePath(strokeAsPath, &strokeAsPath);
+            transform = &localToDevice;
+        }
+        // Strokes as fills shouldn't be inverse filled
+        if (strokeAsPath.isInverseFillType()) {
+            strokeAsPath.toggleInverseFillType();
+        }
+        // Stroked paths with just moveTos may produce an empty path, which shouldn't be sent on
+        if (!strokeAsPath.isEmpty()) {
+            this->recordDraw(*transform, Shape(strokeAsPath), clip, ordering, paint, nullptr);
+        }
+        return;
+    }
+    // TODO: The tessellating path renderers haven't implemented perspective yet, so transform to
+    // device space so we draw something approximately correct (barring local coord issues).
+    if (localToDevice.type() == Transform::Type::kPerspective) {
+        SkPath devicePath = shape.asPath();
+        devicePath.transform(localToDevice.matrix().asM33());
+        this->recordDraw(kIdentity, Shape(devicePath), clip, ordering, paint, nullptr);
+        return;
+    }
+
+    // TODO: Eventually the Renderer selection logic should be lifted to some external
+    // RendererSelector that can be reused between Device and other wrappers around DrawContext.
+    // TODO: All shapes that select a tessellating path renderer need to be "pre-chopped" if they
+    // are large enough to exceed the fixed count tessellation limits.
+    const Renderer* renderer = nullptr;
+    // TODO: Route all filled shapes to stencil-and-cover for the sprint; convex will draw
+    // correctly but uses an unnecessary stencil step.
+    // if (shape.convex()) {
+    //     renderer = Renderer::ConvexPath();
+    // } else {
+    renderer = &Renderer::StencilAndFillPath(shape.fillType());
+
+    if (!renderer) {
+        SKGPU_LOG_W("Skipping draw with no supported path renderer.");
+        return;
+    }
+
+    if (renderer->depthStencilFlags() & DepthStencilFlags::kStencil) {
+        DisjointStencilIndex setIndex = fDisjointStencilSet->add(ordering.paintOrder(),
+                                                                 clip.drawBounds());
+        ordering.dependsOnStencil(setIndex);
+    }
+    // TODO: if the chosen Renderer uses coverage AA, then 'ordering' depends on painter's order,
+    // so we will need to take into account the previous draw. Since no Renderer uses coverage AA
+    // right now, it's not an issue yet.
+    fDC->recordDraw(*renderer, localToDevice, shape, clip, ordering, paint, stroke);
 }
 
 std::pair<Clip, CompressedPaintersOrder> Device::applyClipToDraw(const Transform& localToDevice,

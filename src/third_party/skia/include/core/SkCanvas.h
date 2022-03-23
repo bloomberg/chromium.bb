@@ -28,10 +28,10 @@
 #include "include/core/SkTypes.h"
 #include "include/private/SkDeque.h"
 #include "include/private/SkMacros.h"
-#include "include/private/SkTOptional.h"
 
 #include <cstring>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #ifndef SK_SUPPORT_LEGACY_GETTOTALMATRIX
@@ -65,6 +65,8 @@ class SkSurface;
 class SkSurface_Base;
 class SkTextBlob;
 class SkVertices;
+
+namespace skgpu { class Recorder; }
 
 /** \class SkCanvas
     SkCanvas provides an interface for drawing, and how the drawing is clipped and transformed.
@@ -296,6 +298,12 @@ public:
         example: https://fiddle.skia.org/c/@Canvas_recordingContext
      */
     virtual GrRecordingContext* recordingContext();
+
+    /** Returns Recorder for the GPU surface associated with SkCanvas.
+
+        @return  Recorder, if available; nullptr otherwise
+     */
+    virtual skgpu::Recorder* recorder();
 
     /** Sometimes a canvas is owned by a surface. If it is, getSurface() will return a bare
      *  pointer to that surface, else this will return nullptr.
@@ -2268,7 +2276,7 @@ protected:
 
     /** Experimental
      */
-    virtual void doDrawSlug(GrSlug* slug);
+    virtual void doDrawSlug(const GrSlug* slug);
 #endif
 
 private:
@@ -2352,15 +2360,15 @@ private:
         void reset(SkBaseDevice* device);
     };
 
-    SkDeque     fMCStack;
-    // points to top of stack
-    MCRec*      fMCRec;
-
     // the first N recs that can fit here mean we won't call malloc
     static constexpr int kMCRecSize      = 96; // most recent measurement
     static constexpr int kMCRecCount     = 32; // common depth for save/restores
 
     intptr_t fMCRecStorage[kMCRecSize * kMCRecCount / sizeof(intptr_t)];
+
+    SkDeque     fMCStack;
+    // points to top of stack
+    MCRec*      fMCRec;
 
     // Installed via init()
     sk_sp<SkBaseDevice> fBaseDevice;
@@ -2416,7 +2424,7 @@ private:
     /** Experimental
      * Draw an GrSlug given the current canvas state.
      */
-    void drawSlug(GrSlug* slug);
+    void drawSlug(const GrSlug* slug);
 #endif
 
     /** Experimental

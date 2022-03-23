@@ -4,6 +4,8 @@ Execution Tests for the 'clamp' builtin function
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { anyOf, correctlyRoundedThreshold } from '../../../util/compare.js';
+import { kBit } from '../../../util/constants.js';
 import {
   f32,
   f32Bits,
@@ -17,8 +19,7 @@ import {
   u32Bits,
 } from '../../../util/conversion.js';
 import { isSubnormalScalar } from '../../../util/math.js';
-
-import { anyOf, Case, Config, correctlyRoundedThreshold, kBit, run } from './builtin.js';
+import { builtin, Case, Config, run } from '../expression.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -82,7 +83,14 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
       u32Bits(kBit.u32.max),
     ];
 
-    run(t, 'clamp', [TypeU32, TypeU32, TypeU32], TypeU32, cfg, generateTestCases(test_values));
+    run(
+      t,
+      builtin('clamp'),
+      [TypeU32, TypeU32, TypeU32],
+      TypeU32,
+      cfg,
+      generateTestCases(test_values)
+    );
   });
 
 g.test('integer_builtin_functions,signed_clamp')
@@ -119,7 +127,14 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
       i32Bits(kBit.i32.positive.max),
     ];
 
-    run(t, 'clamp', [TypeI32, TypeI32, TypeI32], TypeI32, cfg, generateTestCases(test_values));
+    run(
+      t,
+      builtin('clamp'),
+      [TypeI32, TypeI32, TypeI32],
+      TypeI32,
+      cfg,
+      generateTestCases(test_values)
+    );
   });
 
 g.test('float_builtin_functions,clamp')
@@ -163,5 +178,12 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
       f32Bits(kBit.f32.infinity.positive),
     ];
 
-    run(t, 'clamp', [TypeF32, TypeF32, TypeF32], TypeF32, cfg, generateTestCases(test_values));
+    run(
+      t,
+      builtin('clamp'),
+      [TypeF32, TypeF32, TypeF32],
+      TypeF32,
+      cfg,
+      generateTestCases(test_values)
+    );
   });

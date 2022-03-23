@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -136,6 +137,9 @@ class JsepTransportController : public sigslot::has_slots<> {
     // Factory for SCTP transports.
     SctpTransportFactoryInterface* sctp_factory = nullptr;
     std::function<void(rtc::SSLHandshakeError)> on_dtls_handshake_error_;
+
+    // Field trials.
+    const webrtc::WebRtcKeyValueConfig* field_trials;
   };
 
   // The ICE related events are fired on the `network_thread`.

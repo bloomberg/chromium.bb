@@ -15,6 +15,7 @@
 #include "src/debug/debug-type-profile.h"
 #include "src/debug/debug.h"
 #include "src/execution/vm-state-inl.h"
+#include "src/heap/heap.h"
 #include "src/objects/js-generator-inl.h"
 #include "src/profiler/heap-profiler.h"
 #include "src/strings/string-builder-inl.h"
@@ -295,6 +296,41 @@ bool CanBreakProgram(Isolate* v8_isolate) {
   return !isolate->debug()->AllFramesOnStackAreBlackboxed();
 }
 
+size_t ScriptSource::Length() const {
+  i::Handle<i::HeapObject> source = Utils::OpenHandle(this);
+  if (source->IsString()) return i::Handle<i::String>::cast(source)->length();
+  return Size();
+}
+
+size_t ScriptSource::Size() const {
+#if V8_ENABLE_WEBASSEMBLY
+  MemorySpan<const uint8_t> wasm_bytecode;
+  if (WasmBytecode().To(&wasm_bytecode)) {
+    return wasm_bytecode.size();
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
+  i::Handle<i::HeapObject> source = Utils::OpenHandle(this);
+  if (!source->IsString()) return 0;
+  i::Handle<i::String> string = i::Handle<i::String>::cast(source);
+  return string->length() * (string->IsTwoByteRepresentation() ? 2 : 1);
+}
+
+MaybeLocal<String> ScriptSource::JavaScriptCode() const {
+  i::Handle<i::HeapObject> source = Utils::OpenHandle(this);
+  if (!source->IsString()) return MaybeLocal<String>();
+  return Utils::ToLocal(i::Handle<i::String>::cast(source));
+}
+
+#if V8_ENABLE_WEBASSEMBLY
+Maybe<MemorySpan<const uint8_t>> ScriptSource::WasmBytecode() const {
+  i::Handle<i::HeapObject> source = Utils::OpenHandle(this);
+  if (!source->IsForeign()) return Nothing<MemorySpan<const uint8_t>>();
+  base::Vector<const uint8_t> wire_bytes =
+      i::Managed<i::wasm::NativeModule>::cast(*source).raw()->wire_bytes();
+  return Just(MemorySpan<const uint8_t>{wire_bytes.begin(), wire_bytes.size()});
+}
+#endif  // V8_ENABLE_WEBASSEMBLY
+
 Isolate* Script::GetIsolate() const {
   return reinterpret_cast<Isolate*>(Utils::OpenHandle(this)->GetIsolate());
 }
@@ -316,81 +352,89 @@ bool Script::IsEmbedded() const {
 
 int Script::Id() const { return Utils::OpenHandle(this)->id(); }
 
-int Script::LineOffset() const {
-  return Utils::OpenHandle(this)->line_offset();
-}
+int Script::StartLine() const { return Utils::OpenHandle(this)->line_offset(); }
 
-int Script::ColumnOffset() const {
+int Script::StartColumn() const {
   return Utils::OpenHandle(this)->column_offset();
 }
 
-std::vector<int> Script::LineEnds() const {
+int Script::EndLine() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
 #if V8_ENABLE_WEBASSEMBLY
-  if (script->type() == i::Script::TYPE_WASM) return {};
+  if (script->type() == i::Script::TYPE_WASM) return 0;
 #endif  // V8_ENABLE_WEBASSEMBLY
-
+  if (!script->source().IsString()) {
+    return script->line_offset();
+  }
   i::Isolate* isolate = script->GetIsolate();
   i::HandleScope scope(isolate);
-  i::Script::InitLineEnds(isolate, script);
-  CHECK(script->line_ends().IsFixedArray());
-  i::Handle<i::FixedArray> line_ends(i::FixedArray::cast(script->line_ends()),
-                                     isolate);
-  std::vector<int> result(line_ends->length());
-  for (int i = 0; i < line_ends->length(); ++i) {
-    i::Smi line_end = i::Smi::cast(line_ends->get(i));
-    result[i] = line_end.value();
+  i::Script::PositionInfo info;
+  i::Script::GetPositionInfo(script, i::String::cast(script->source()).length(),
+                             &info, i::Script::WITH_OFFSET);
+  return info.line;
+}
+
+int Script::EndColumn() const {
+  i::Handle<i::Script> script = Utils::OpenHandle(this);
+#if V8_ENABLE_WEBASSEMBLY
+  if (script->type() == i::Script::TYPE_WASM) {
+    return script->wasm_native_module()->wire_bytes().length();
   }
-  return result;
+#endif  // V8_ENABLE_WEBASSEMBLY
+  if (!script->source().IsString()) {
+    return script->column_offset();
+  }
+  i::Isolate* isolate = script->GetIsolate();
+  i::HandleScope scope(isolate);
+  i::Script::PositionInfo info;
+  i::Script::GetPositionInfo(script, i::String::cast(script->source()).length(),
+                             &info, i::Script::WITH_OFFSET);
+  return info.column;
 }
 
 MaybeLocal<String> Script::Name() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
   i::Isolate* isolate = script->GetIsolate();
-  i::HandleScope handle_scope(isolate);
   i::Handle<i::Object> value(script->name(), isolate);
   if (!value->IsString()) return MaybeLocal<String>();
-  return Utils::ToLocal(
-      handle_scope.CloseAndEscape(i::Handle<i::String>::cast(value)));
+  return Utils::ToLocal(i::Handle<i::String>::cast(value));
 }
 
 MaybeLocal<String> Script::SourceURL() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
   i::Isolate* isolate = script->GetIsolate();
-  i::HandleScope handle_scope(isolate);
-  i::Handle<i::Object> value(script->source_url(), isolate);
+  i::Handle<i::PrimitiveHeapObject> value(script->source_url(), isolate);
   if (!value->IsString()) return MaybeLocal<String>();
-  return Utils::ToLocal(
-      handle_scope.CloseAndEscape(i::Handle<i::String>::cast(value)));
+  return Utils::ToLocal(i::Handle<i::String>::cast(value));
 }
 
 MaybeLocal<String> Script::SourceMappingURL() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
   i::Isolate* isolate = script->GetIsolate();
-  i::HandleScope handle_scope(isolate);
   i::Handle<i::Object> value(script->source_mapping_url(), isolate);
   if (!value->IsString()) return MaybeLocal<String>();
-  return Utils::ToLocal(
-      handle_scope.CloseAndEscape(i::Handle<i::String>::cast(value)));
+  return Utils::ToLocal(i::Handle<i::String>::cast(value));
 }
 
 Maybe<int> Script::ContextId() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
-  i::Isolate* isolate = script->GetIsolate();
-  i::HandleScope handle_scope(isolate);
   i::Object value = script->context_data();
   if (value.IsSmi()) return Just(i::Smi::ToInt(value));
   return Nothing<int>();
 }
 
-MaybeLocal<String> Script::Source() const {
+Local<ScriptSource> Script::Source() const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
   i::Isolate* isolate = script->GetIsolate();
-  i::HandleScope handle_scope(isolate);
-  i::Handle<i::Object> value(script->source(), isolate);
-  if (!value->IsString()) return MaybeLocal<String>();
-  return Utils::ToLocal(
-      handle_scope.CloseAndEscape(i::Handle<i::String>::cast(value)));
+#if V8_ENABLE_WEBASSEMBLY
+  if (script->type() == i::Script::TYPE_WASM) {
+    i::Handle<i::Object> wasm_native_module(
+        script->wasm_managed_native_module(), isolate);
+    return Utils::Convert<i::Object, ScriptSource>(wasm_native_module);
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
+  i::Handle<i::PrimitiveHeapObject> source(script->source(), isolate);
+  return Utils::Convert<i::PrimitiveHeapObject, ScriptSource>(source);
 }
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -570,8 +614,9 @@ Platform* GetCurrentPlatform() { return i::V8::GetCurrentPlatform(); }
 void ForceGarbageCollection(
     Isolate* isolate,
     EmbedderHeapTracer::EmbedderStackState embedder_stack_state) {
-  i::Heap* heap = reinterpret_cast<i::Isolate*>(isolate)->heap();
-  heap->SetEmbedderStackStateForNextFinalization(embedder_stack_state);
+  i::EmbedderStackStateScope stack_scope(
+      reinterpret_cast<i::Isolate*>(isolate)->heap(),
+      i::EmbedderStackStateScope::kImplicitThroughTask, embedder_stack_state);
   isolate->LowMemoryNotification();
 }
 
@@ -629,13 +674,6 @@ int WasmScript::NumImportedFunctions() const {
   const i::wasm::WasmModule* module = native_module->module();
   DCHECK_GE(i::kMaxInt, module->num_imported_functions);
   return static_cast<int>(module->num_imported_functions);
-}
-
-MemorySpan<const uint8_t> WasmScript::Bytecode() const {
-  i::Handle<i::Script> script = Utils::OpenHandle(this);
-  base::Vector<const uint8_t> wire_bytes =
-      script->wasm_native_module()->wire_bytes();
-  return {wire_bytes.begin(), wire_bytes.size()};
 }
 
 std::pair<int, int> WasmScript::GetFunctionRange(int function_index) const {
@@ -1224,7 +1262,7 @@ MaybeLocal<Message> GetMessageFromPromise(Local<Promise> p) {
 
   i::Handle<i::Symbol> key = isolate->factory()->promise_debug_message_symbol();
   i::Handle<i::Object> maybeMessage =
-      i::JSReceiver::GetDataProperty(promise, key);
+      i::JSReceiver::GetDataProperty(isolate, promise, key);
 
   if (!maybeMessage->IsJSMessageObject(isolate)) return MaybeLocal<Message>();
   return ToApiHandle<Message>(

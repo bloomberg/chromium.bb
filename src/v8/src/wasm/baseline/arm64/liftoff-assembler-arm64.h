@@ -98,13 +98,13 @@ inline CPURegister GetRegFromType(const LiftoffRegister& reg, ValueKind kind) {
 }
 
 inline CPURegList PadRegList(RegList list) {
-  if ((base::bits::CountPopulation(list) & 1) != 0) list |= padreg.bit();
-  return CPURegList(CPURegister::kRegister, kXRegSizeInBits, list);
+  if ((list.Count() & 1) != 0) list.set(padreg);
+  return CPURegList(kXRegSizeInBits, list);
 }
 
-inline CPURegList PadVRegList(RegList list) {
-  if ((base::bits::CountPopulation(list) & 1) != 0) list |= fp_scratch.bit();
-  return CPURegList(CPURegister::kVRegister, kQRegSizeInBits, list);
+inline CPURegList PadVRegList(DoubleRegList list) {
+  if ((list.Count() & 1) != 0) list.set(fp_scratch);
+  return CPURegList(kQRegSizeInBits, list);
 }
 
 inline CPURegister AcquireByType(UseScratchRegisterScope* temps,
@@ -3131,13 +3131,11 @@ void LiftoffAssembler::PopRegisters(LiftoffRegList regs) {
   PopCPURegList(liftoff::PadRegList(regs.GetGpList()));
 }
 
-void LiftoffAssembler::RecordSpillsInSafepoint(Safepoint& safepoint,
-                                               LiftoffRegList all_spills,
-                                               LiftoffRegList ref_spills,
-                                               int spill_offset) {
+void LiftoffAssembler::RecordSpillsInSafepoint(
+    SafepointTableBuilder::Safepoint& safepoint, LiftoffRegList all_spills,
+    LiftoffRegList ref_spills, int spill_offset) {
   int spill_space_size = 0;
-  bool needs_padding =
-      (base::bits::CountPopulation(all_spills.GetGpList()) & 1) != 0;
+  bool needs_padding = (all_spills.GetGpList().Count() & 1) != 0;
   if (needs_padding) {
     spill_space_size += kSystemPointerSize;
     ++spill_offset;
@@ -3145,7 +3143,7 @@ void LiftoffAssembler::RecordSpillsInSafepoint(Safepoint& safepoint,
   while (!all_spills.is_empty()) {
     LiftoffRegister reg = all_spills.GetLastRegSet();
     if (ref_spills.has(reg)) {
-      safepoint.DefinePointerSlot(spill_offset);
+      safepoint.DefineTaggedStackSlot(spill_offset);
     }
     all_spills.clear(reg);
     ++spill_offset;

@@ -7,6 +7,7 @@
 
 #include "src/gpu/text/GrGlyphVector.h"
 
+#include "include/private/chromium/SkChromeRemoteGlyphCache.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkStrikeCache.h"
 #include "src/core/SkStrikeSpec.h"
@@ -33,22 +34,29 @@ GrGlyphVector GrGlyphVector::Make(
 }
 
 std::optional<GrGlyphVector> GrGlyphVector::MakeFromBuffer(SkReadBuffer& buffer,
+                                                           const SkStrikeClient* client,
                                                            GrSubRunAllocator* alloc) {
     auto descriptor = SkAutoDescriptor::MakeFromBuffer(buffer);
-    if (!descriptor.has_value()) { return {}; }
+    if (!buffer.validate(descriptor.has_value())) { return {}; }
+
+    if (client != nullptr) {
+        if (!client->translateTypefaceID(&descriptor.value())) { return {}; }
+    }
 
     sk_sp<SkStrike> strike = SkStrikeCache::GlobalStrikeCache()->findStrike(*descriptor->getDesc());
+    if (!buffer.validate(strike != nullptr)) { return {}; }
 
     int32_t glyphCount = buffer.read32();
     // Since the glyph count can never be zero. There was a buffer reading problem.
-    if (glyphCount == 0) { return {}; }
+    if (!buffer.validate(glyphCount > 0)) { return {}; }
 
-    // Make sure we can do the multiply in the check below and not overflow an int.
-    if ((int)(INT_MAX / sizeof(uint32_t)) < glyphCount) { return {}; }
+    // Make sure we can multiply without overflow in the check below.
+    static constexpr int kMaxCount = (int)(INT_MAX / sizeof(uint32_t));
+    if (!buffer.validate(glyphCount <= kMaxCount)) { return {}; }
 
-    // Check for enough bytes to populate the packedGlyphID array. If not enought something has
+    // Check for enough bytes to populate the packedGlyphID array. If not enough something has
     // gone wrong.
-    if (glyphCount * sizeof(uint32_t) > buffer.available()) { return {}; }
+    if (!buffer.validate(glyphCount * sizeof(uint32_t) <= buffer.available())) { return {}; }
 
     Variant* variants = alloc->makePODArray<Variant>(glyphCount);
     for (int i = 0; i < glyphCount; i++) {

@@ -517,9 +517,11 @@ class GlobalHandles::Node final : public NodeBase<GlobalHandles::Node> {
       case v8::WeakCallbackType::kInternalFields:
         set_weakness_type(PHANTOM_WEAK_2_EMBEDDER_FIELDS);
         break;
+        START_ALLOW_USE_DEPRECATED()
       case v8::WeakCallbackType::kFinalizer:
         set_weakness_type(FINALIZER_WEAK);
         break;
+        END_ALLOW_USE_DEPRECATED()
     }
     set_parameter(parameter);
     weak_callback_ = phantom_callback;
@@ -881,6 +883,20 @@ void GlobalHandles::OnStackTracedNodeSpace::CleanupBelowCurrentStackPosition() {
 }
 
 // static
+void GlobalHandles::EnableMarkingBarrier(Isolate* isolate) {
+  auto* global_handles = isolate->global_handles();
+  DCHECK(!global_handles->is_marking_);
+  global_handles->is_marking_ = true;
+}
+
+// static
+void GlobalHandles::DisableMarkingBarrier(Isolate* isolate) {
+  auto* global_handles = isolate->global_handles();
+  DCHECK(global_handles->is_marking_);
+  global_handles->is_marking_ = false;
+}
+
+// static
 void GlobalHandles::TracedNode::Verify(GlobalHandles* global_handles,
                                        const Address* const* slot) {
 #ifdef DEBUG
@@ -1172,10 +1188,7 @@ void GlobalHandles::DestroyTraced(Address* location) {
     // When marking is off the handle may be freed immediately. Note that this
     // includes also the case when invoking the first pass callbacks during the
     // atomic pause which requires releasing a node fully.
-    if (!global_handles->isolate()
-             ->heap()
-             ->incremental_marking()
-             ->IsMarking()) {
+    if (!global_handles->is_marking_) {
       NodeSpace<TracedNode>::Release(node);
       return;
     }

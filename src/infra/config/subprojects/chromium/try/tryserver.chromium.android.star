@@ -52,7 +52,25 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "android-12-x64-fyi-rel",
+    name = "android-12-x64-dbg",
+)
+
+try_.orchestrator_builder(
+    name = "android-12-x64-rel",
+    compilator = "android-12-x64-rel-compilator",
+    # TODO(crbug.com/1225851): Enable it on branch after running on CQ
+    # branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 20,
+    ),
+)
+
+try_.compilator_builder(
+    name = "android-12-x64-rel-compilator",
+    # TODO(crbug.com/1225851): Enable it on branch after running on CQ
+    # branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -135,14 +153,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-cronet-lollipop-arm-rel",
-)
-
-try_.builder(
-    name = "android-cronet-marshmallow-arm64-rel",
-)
-
-try_.builder(
     name = "android-cronet-x86-dbg",
 )
 
@@ -152,6 +162,20 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg-10-tests",
+    branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
+    main_list_view = "try",
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/components/cronet/.+",
+            ".+/[+]/components/grpc_support/.+",
+            ".+/[+]/build/android/.+",
+            ".+/[+]/build/config/android/.+",
+        ],
+        location_regexp_exclude = [
+            ".+/[+]/components/cronet/ios/.+",
+        ],
+    ),
 )
 
 try_.builder(
@@ -220,6 +244,11 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-nougat-x86-rel",
+    mirrors = ["ci/android-nougat-x86-rel"],
+)
+
+try_.builder(
     name = "android-opus-arm-rel",
 )
 
@@ -229,12 +258,14 @@ try_.builder(
 
 try_.builder(
     name = "android-oreo-arm64-dbg",
+    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 try_.builder(
     name = "android-pie-arm64-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
+    check_for_flakiness = True,
     cores = 16,
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",
@@ -271,6 +302,7 @@ try_.builder(
 try_.orchestrator_builder(
     name = "android-pie-arm64-rel",
     compilator = "android-pie-arm64-rel-compilator",
+    check_for_flakiness = True,
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -279,6 +311,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-pie-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
 )
 
@@ -326,6 +359,10 @@ try_.builder(
 
 try_.builder(
     name = "android-weblayer-pie-x86-wpt-smoketest",
+)
+
+try_.builder(
+    name = "android-webview-12-x64-dbg",
 )
 
 try_.builder(
@@ -454,11 +491,13 @@ try_.builder(
 
 try_.builder(
     name = "try-nougat-phone-tester",
+    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 try_.gpu.optional_tests_builder(
     name = "android_optional_gpu_tests_rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(

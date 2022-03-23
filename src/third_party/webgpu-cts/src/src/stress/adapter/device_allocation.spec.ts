@@ -80,7 +80,7 @@ class DeviceAllocationTests extends Fixture {
           DefaultLimits.maxComputeWorkgroupSizeX,
           DefaultLimits.maxComputeWorkgroupSizeY
         );
-        pass.endPass();
+        pass.end();
         commands.push(encoder.finish());
       }
     }
@@ -170,7 +170,7 @@ class DeviceAllocationTests extends Fixture {
           colorAttachments: [
             {
               view: texture.createView(),
-              loadValue: 'load',
+              loadOp: 'load',
               storeOp: 'store',
             },
           ],
@@ -178,7 +178,7 @@ class DeviceAllocationTests extends Fixture {
         pass.setPipeline(pipeline);
         pass.setBindGroup(0, bindgroup);
         pass.draw(kSize * kSize);
-        pass.endPass();
+        pass.end();
         commands.push(encoder.finish());
       }
     }

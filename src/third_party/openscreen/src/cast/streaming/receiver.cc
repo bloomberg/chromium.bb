@@ -24,6 +24,7 @@ namespace cast {
 // session.
 //
 #define RECEIVER_LOG(level) OSP_LOG_##level << "[SSRC:" << ssrc() << "] "
+#define RECEIVER_VLOG OSP_VLOG << "[SSRC:" << ssrc() << "] "
 
 Receiver::Receiver(Environment* environment,
                    ReceiverPacketRouter* packet_router,
@@ -127,12 +128,12 @@ int Receiver::AdvanceToNextFrame() {
 
     // If this incomplete frame is not yet late for playout, simply wait for the
     // rest of its packets to come in. However, do schedule a check to
-    // re-examine things at the time it would become a late frame, to possibly
-    // skip-over it.
-    const auto playout_time =
-        *entry.estimated_capture_time + ResolveTargetPlayoutDelay(f);
-    if (playout_time > (now_() + player_processing_time_)) {
-      ScheduleFrameReadyCheck(playout_time);
+    // re-examine things at the time it should be processed.
+    const auto process_time = *entry.estimated_capture_time +
+                              ResolveTargetPlayoutDelay(f) -
+                              player_processing_time_;
+    if (process_time > now_()) {
+      ScheduleFrameReadyCheck(process_time);
       break;
     }
   }
@@ -157,13 +158,14 @@ EncodedFrame Receiver::ConsumeNextFrame(absl::Span<uint8_t> buffer) {
   frame.reference_time =
       *entry.estimated_capture_time + ResolveTargetPlayoutDelay(frame_id);
 
-  OSP_VLOG << "ConsumeNextFrame → " << frame.frame_id << ": "
-           << frame.data.size() << " payload bytes, RTP Timestamp "
-           << frame.rtp_timestamp.ToTimeSinceOrigin<microseconds>(rtp_timebase_)
-                  .count()
-           << " µs, to play-out "
-           << to_microseconds(frame.reference_time - now_()).count()
-           << " µs from now.";
+  RECEIVER_VLOG << "ConsumeNextFrame → " << frame.frame_id << ": "
+                << frame.data.size() << " payload bytes, RTP Timestamp "
+                << frame.rtp_timestamp
+                       .ToTimeSinceOrigin<microseconds>(rtp_timebase_)
+                       .count()
+                << " µs, to play-out "
+                << to_microseconds(frame.reference_time - now_()).count()
+                << " µs from now.";
 
   entry.Reset();
   last_frame_consumed_ = frame_id;

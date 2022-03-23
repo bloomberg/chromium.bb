@@ -4,7 +4,6 @@
 
 #include "chrome/common/webui_url_constants.h"
 
-#include "base/cxx17_backports.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -302,6 +301,8 @@ const char kChromeUIIntenetDetailDialogURL[] =
     "chrome://internet-detail-dialog/";
 const char kChromeUIInternetConfigDialogHost[] = "internet-config-dialog";
 const char kChromeUIInternetDetailDialogHost[] = "internet-detail-dialog";
+const char kChromeUIBorealisCreditsHost[] = "borealis-credits";
+const char kChromeUIBorealisCreditsURL[] = "chrome://borealis-credits/";
 const char kChromeUICrostiniCreditsHost[] = "crostini-credits";
 const char kChromeUICrostiniCreditsURL[] = "chrome://crostini-credits/";
 const char kChromeUILockScreenNetworkHost[] = "lock-network";
@@ -361,22 +362,24 @@ const char kOsUIAccountManagerWelcomeURL[] = "os://account-manager-welcome";
 const char kOsUIAccountMigrationWelcomeURL[] = "os://account-migration-welcome";
 const char kOsUIAddSupervisionURL[] = "os://add-supervision";
 const char kOsUIAppDisabledURL[] = "os://app-disabled";
-const char kOsUICrashesUrl[] = "os://crashes";
+const char kOsUICrashesURL[] = "os://crashes";
 const char kOsUICreditsURL[] = "os://credits";
-const char kOsUIDeviceLogUrl[] = "os://device-log";
-const char kOsUIDriveInternalsUrl[] = "os://drive-internals";
+const char kOsUIDeviceLogURL[] = "os://device-log";
+const char kOsUIDriveInternalsURL[] = "os://drive-internals";
 const char kOsUIEmojiPickerURL[] = "os://emoji-picker";
 const char kOsUIGpuURL[] = "os://gpu";
 const char kOsUIHistogramsURL[] = "os://histograms";
-const char kOsUIInvalidationsUrl[] = "os://invalidations";
+const char kOsUIInvalidationsURL[] = "os://invalidations";
 const char kOsUILockScreenNetworkURL[] = "os://lock-network";
-const char kOsUINetworkUrl[] = "os://network";
+const char kOsUINetworkURL[] = "os://network";
 const char kOsUIRestartURL[] = "os://restart";
 const char kOsUIScanningAppURL[] = "os://scanning";
 const char kOsUISettingsURL[] = "os://settings";
-const char kOsUISignInInternalsUrl[] = "os://signin-internals";
-const char kOsUISyncInternalsUrl[] = "os://sync-internals";
-const char kOsUITerms[] = "os://terms";
+const char kOsUISignInInternalsURL[] = "os://signin-internals";
+const char kOsUISyncInternalsURL[] = "os://sync-internals";
+const char kOsUISysInternalsUrl[] = "os://sys-internals";
+const char kOsUISystemURL[] = "os://system";
+const char kOsUITermsURL[] = "os://terms";
 
 // Keep alphabetized.
 
@@ -391,6 +394,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
     kChromeUIAddSupervisionHost,
     kChromeUIAssistantOptInHost,
     kChromeUIBluetoothPairingHost,
+    kChromeUIBorealisCreditsHost,
     kChromeUICertificateManagerHost,
     kChromeUICrostiniCreditsHost,
     kChromeUICrostiniInstallerHost,
@@ -429,7 +433,7 @@ const char kChromeUIAppDisabledHost[] = "app-disabled";
 const char kChromeUIOSSettingsHost[] = "os-settings";
 const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";
 const char kOsUIAboutURL[] = "os://about";
-const char kOsUIComponentsUrl[] = "os://components";
+const char kOsUIComponentsURL[] = "os://components";
 const char kOsUIFlagsURL[] = "os://flags";
 const char kOsUIVersionURL[] = "os://version";
 #endif
@@ -440,7 +444,7 @@ const char kChromeUIWebUIJsErrorURL[] = "chrome://webuijserror/";
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+    BUILDFLAG(IS_CHROMEOS_ASH)
 const char kChromeUIConnectorsInternalsHost[] = "connectors-internals";
 #endif
 
@@ -662,6 +666,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIWebApksHost,
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    kChromeUIBorealisCreditsHost,
     kChromeUICertificateManagerHost,
     kChromeUICrostiniCreditsHost,
     kChromeUICryptohomeHost,
@@ -678,7 +683,7 @@ const char* const kChromeHostURLs[] = {
     kChromeUIAssistantOptInHost,
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+    BUILDFLAG(IS_CHROMEOS_ASH)
     kChromeUIConnectorsInternalsHost,
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -703,6 +708,7 @@ const char* const kChromeHostURLs[] = {
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     kChromeUIExtensionsHost,
+    kChromeUIExtensionsInternalsHost,
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     kChromeUIPrintHost,
@@ -712,7 +718,7 @@ const char* const kChromeHostURLs[] = {
     kCfmNetworkSettingsHost,
 #endif  // BUILDFLAG(PLATFORM_CFM)
 };
-const size_t kNumberOfChromeHostURLs = base::size(kChromeHostURLs);
+const size_t kNumberOfChromeHostURLs = std::size(kChromeHostURLs);
 
 // Add chrome://internals/* subpages here to be included in chrome://chrome-urls
 // (about:about).
@@ -725,7 +731,7 @@ const char* const kChromeInternalsPathURLs[] = {
 #endif
 };
 const size_t kNumberOfChromeInternalsPathURLs =
-    base::size(kChromeInternalsPathURLs);
+    std::size(kChromeInternalsPathURLs);
 
 const char* const kChromeDebugURLs[] = {
     blink::kChromeUIBadCastCrashURL,
@@ -754,6 +760,6 @@ const char* const kChromeDebugURLs[] = {
 #endif
     kChromeUIQuitURL,
     kChromeUIRestartURL};
-const size_t kNumberOfChromeDebugURLs = base::size(kChromeDebugURLs);
+const size_t kNumberOfChromeDebugURLs = std::size(kChromeDebugURLs);
 
 }  // namespace chrome

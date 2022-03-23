@@ -121,6 +121,45 @@ unsigned int aom_avg_8x8_sse2(const uint8_t *s, int p) {
   return (avg + 32) >> 6;
 }
 
+void aom_avg_8x8_quad_sse2(const uint8_t *s, int p, int x16_idx, int y16_idx,
+                           int *avg) {
+  const __m128i u0 = _mm_setzero_si128();
+  for (int k = 0; k < 4; k++) {
+    __m128i s0, s1;
+    unsigned int avg_temp = 0;
+    const int x8_idx = x16_idx + ((k & 1) << 3);
+    const int y8_idx = y16_idx + ((k >> 1) << 3);
+    const uint8_t *s_tmp = s + y8_idx * p + x8_idx;
+    s0 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp)), u0);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + p)), u0);
+    s0 = _mm_adds_epu16(s0, s1);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + 2 * p)),
+                           u0);
+    s0 = _mm_adds_epu16(s0, s1);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + 3 * p)),
+                           u0);
+    s0 = _mm_adds_epu16(s0, s1);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + 4 * p)),
+                           u0);
+    s0 = _mm_adds_epu16(s0, s1);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + 5 * p)),
+                           u0);
+    s0 = _mm_adds_epu16(s0, s1);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + 6 * p)),
+                           u0);
+    s0 = _mm_adds_epu16(s0, s1);
+    s1 = _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)(s_tmp + 7 * p)),
+                           u0);
+    s0 = _mm_adds_epu16(s0, s1);
+
+    s0 = _mm_adds_epu16(s0, _mm_srli_si128(s0, 8));
+    s0 = _mm_adds_epu16(s0, _mm_srli_epi64(s0, 32));
+    s0 = _mm_adds_epu16(s0, _mm_srli_epi64(s0, 16));
+    avg_temp = _mm_extract_epi16(s0, 0);
+    avg[k] = (avg_temp + 32) >> 6;
+  }
+}
+
 unsigned int aom_avg_4x4_sse2(const uint8_t *s, int p) {
   __m128i s0, s1, u0;
   unsigned int avg = 0;
@@ -312,6 +351,56 @@ static INLINE void hadamard_8x8_sse2(const int16_t *src_diff,
 void aom_hadamard_8x8_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
                            tran_low_t *coeff) {
   hadamard_8x8_sse2(src_diff, src_stride, coeff, 1);
+}
+
+void aom_pixel_scale_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
+                          int16_t *coeff, int log_scale, int h8, int w8) {
+  __m128i src[8];
+  const int16_t *org_src_diff = src_diff;
+  int16_t *org_coeff = coeff;
+  int coeff_stride = w8 << 3;
+  for (int idy = 0; idy < h8; ++idy) {
+    for (int idx = 0; idx < w8; ++idx) {
+      src_diff = org_src_diff + (idx << 3);
+      coeff = org_coeff + (idx << 3);
+
+      src[0] = _mm_load_si128((const __m128i *)src_diff);
+      src[1] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+      src[2] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+      src[3] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+      src[4] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+      src[5] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+      src[6] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+      src[7] = _mm_load_si128((const __m128i *)(src_diff += src_stride));
+
+      src[0] = _mm_slli_epi16(src[0], log_scale);
+      src[1] = _mm_slli_epi16(src[1], log_scale);
+      src[2] = _mm_slli_epi16(src[2], log_scale);
+      src[3] = _mm_slli_epi16(src[3], log_scale);
+      src[4] = _mm_slli_epi16(src[4], log_scale);
+      src[5] = _mm_slli_epi16(src[5], log_scale);
+      src[6] = _mm_slli_epi16(src[6], log_scale);
+      src[7] = _mm_slli_epi16(src[7], log_scale);
+
+      _mm_store_si128((__m128i *)coeff, src[0]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[1]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[2]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[3]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[4]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[5]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[6]);
+      coeff += coeff_stride;
+      _mm_store_si128((__m128i *)coeff, src[7]);
+    }
+    org_src_diff += (src_stride << 3);
+    org_coeff += (coeff_stride << 3);
+  }
 }
 
 static INLINE void hadamard_lp_8x8_sse2(const int16_t *src_diff,

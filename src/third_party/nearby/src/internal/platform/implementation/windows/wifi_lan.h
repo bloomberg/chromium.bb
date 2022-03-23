@@ -16,8 +16,8 @@
 #define PLATFORM_IMPL_WINDOWS_WIFI_LAN_H_
 
 // Windows headers
-#include <windows.h>       // NOLINT
-#include <win32/windns.h>  // NOLINT
+#include <windows.h>  // NOLINT
+#include <windns.h>   // NOLINT
 
 // Standard C/C++ headers
 #include <exception>
@@ -31,12 +31,12 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
-#include "internal/platform/implementation/wifi_lan.h"
-#include "internal/platform/exception.h"
-#include "internal/platform/input_stream.h"
-#include "internal/platform/output_stream.h"
 #include "internal/platform/count_down_latch.h"
+#include "internal/platform/exception.h"
+#include "internal/platform/implementation/wifi_lan.h"
+#include "internal/platform/input_stream.h"
 #include "internal/platform/mutex.h"
+#include "internal/platform/output_stream.h"
 
 // WinRT headers
 #include "internal/platform/implementation/windows/generated/winrt/Windows.Devices.Enumeration.h"
@@ -60,6 +60,7 @@ using winrt::Windows::Devices::Enumeration::DeviceWatcher;
 using winrt::Windows::Foundation::IInspectable;
 using winrt::Windows::Foundation::Collections::IMapView;
 using winrt::Windows::Networking::HostName;
+using winrt::Windows::Networking::HostNameType;
 using winrt::Windows::Networking::Connectivity::NetworkInformation;
 using winrt::Windows::Networking::ServiceDiscovery::Dnssd::
     DnssdRegistrationResult;
@@ -193,7 +194,7 @@ class WifiLanServerSocket : public api::WifiLanServerSocket {
       StreamSocketListenerConnectionReceivedEventArgs const& args);
 
   // Retrieves IP addresses from local machine
-  std::vector<std::string> GetIpAddresses();
+  std::vector<std::string> GetIpAddresses() const;
 
   mutable absl::Mutex mutex_;
   absl::CondVar cond_;

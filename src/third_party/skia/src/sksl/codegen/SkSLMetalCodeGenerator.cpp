@@ -119,7 +119,7 @@ void MetalCodeGenerator::writeStructDefinition(const StructDefinition& s) {
     const Type& type = s.type();
     this->writeLine("struct " + type.displayName() + " {");
     fIndentation++;
-    this->writeFields(type.fields(), type.fLine);
+    this->writeFields(type.fields(), type.fPosition);
     fIndentation--;
     this->writeLine("};");
 }
@@ -223,7 +223,7 @@ std::string MetalCodeGenerator::getOutParamHelper(const FunctionCall& call,
     // We need to detect cases where the caller passes the same variable as an out-param more than
     // once, and avoid reusing the variable name. (In those cases we can actually just ignore the
     // redundant input parameter entirely, and not give it any name.)
-    std::unordered_set<const Variable*> writtenVars;
+    SkTHashSet<const Variable*> writtenVars;
 
     for (int index = 0; index < arguments.count(); ++index) {
         this->write(separator);
@@ -239,8 +239,10 @@ std::string MetalCodeGenerator::getOutParamHelper(const FunctionCall& call,
             this->write("&");
         }
         if (outVars[index]) {
-            auto [iter, didInsert] = writtenVars.insert(outVars[index]->variable());
-            if (didInsert) {
+            const Variable* var = outVars[index]->variable();
+            if (!writtenVars.contains(var)) {
+                writtenVars.add(var);
+
                 this->write(" ");
                 fIgnoreVariableReferenceModifiers = true;
                 this->writeVariableReference(*outVars[index]);
@@ -1071,34 +1073,33 @@ std::string MetalCodeGenerator::getMatrixConstructHelper(const AnyConstructor& c
         String::appendf(&name, "_%s", this->typeName(expr->type()).c_str());
     }
 
-    // If a helper-method has already been synthesized, we don't need to synthesize it again.
-    auto [iter, newlyCreated] = fHelpers.insert(name);
-    if (!newlyCreated) {
-        return name;
+    // If a helper-method has not been synthesized yet, create it now.
+    if (!fHelpers.contains(name)) {
+        fHelpers.add(name);
+
+        // Unlike GLSL, Metal requires that matrices are initialized with exactly R vectors of C
+        // components apiece. (In Metal 2.0, you can also supply R*C scalars, but you still cannot
+        // supply a mixture of scalars and vectors.)
+        fExtraFunctions.printf("%s %s(", typeName.c_str(), name.c_str());
+
+        size_t argIndex = 0;
+        const char* argSeparator = "";
+        for (const std::unique_ptr<Expression>& expr : args) {
+            fExtraFunctions.printf("%s%s x%zu", argSeparator,
+                                   this->typeName(expr->type()).c_str(), argIndex++);
+            argSeparator = ", ";
+        }
+
+        fExtraFunctions.printf(") {\n    return %s(", typeName.c_str());
+
+        if (args.size() == 1 && args.front()->type().isMatrix()) {
+            this->assembleMatrixFromMatrix(args.front()->type(), rows, columns);
+        } else {
+            this->assembleMatrixFromExpressions(c, columns, rows);
+        }
+
+        fExtraFunctions.writeText(");\n}\n");
     }
-
-    // Unlike GLSL, Metal requires that matrices are initialized with exactly R vectors of C
-    // components apiece. (In Metal 2.0, you can also supply R*C scalars, but you still cannot
-    // supply a mixture of scalars and vectors.)
-    fExtraFunctions.printf("%s %s(", typeName.c_str(), name.c_str());
-
-    size_t argIndex = 0;
-    const char* argSeparator = "";
-    for (const std::unique_ptr<Expression>& expr : args) {
-        fExtraFunctions.printf("%s%s x%zu", argSeparator,
-                               this->typeName(expr->type()).c_str(), argIndex++);
-        argSeparator = ", ";
-    }
-
-    fExtraFunctions.printf(") {\n    return %s(", typeName.c_str());
-
-    if (args.size() == 1 && args.front()->type().isMatrix()) {
-        this->assembleMatrixFromMatrix(args.front()->type(), rows, columns);
-    } else {
-        this->assembleMatrixFromExpressions(c, columns, rows);
-    }
-
-    fExtraFunctions.writeText(");\n}\n");
     return name;
 }
 
@@ -1163,7 +1164,7 @@ void MetalCodeGenerator::writeConstructorCompound(const ConstructorCompound& c,
     } else if (c.type().isMatrix()) {
         this->writeConstructorCompoundMatrix(c, parentPrecedence);
     } else {
-        fContext.fErrors->error(c.fLine, "unsupported compound constructor");
+        fContext.fErrors->error(c.fPosition, "unsupported compound constructor");
     }
 }
 
@@ -1175,8 +1176,8 @@ void MetalCodeGenerator::writeConstructorArrayCast(const ConstructorArrayCast& c
     std::string outTypeName = this->typeName(outType);
 
     std::string name = "array_of_" + outTypeName + "_from_" + inTypeName;
-    auto [iter, didInsert] = fHelpers.insert(name);
-    if (didInsert) {
+    if (!fHelpers.contains(name)) {
+        fHelpers.add(name);
         fExtraFunctions.printf(R"(
 template <size_t N>
 array<%s, N> %s(thread const array<%s, N>& x) {
@@ -1205,8 +1206,8 @@ std::string MetalCodeGenerator::getVectorFromMat2x2ConstructorHelper(const Type&
 
     std::string baseType = this->typeName(matrixType.componentType());
     std::string name = String::printf("%s4_from_%s2x2", baseType.c_str(), baseType.c_str());
-    if (fHelpers.find(name) == fHelpers.end()) {
-        fHelpers.insert(name);
+    if (!fHelpers.contains(name)) {
+        fHelpers.add(name);
 
         fExtraFunctions.printf(R"(
 %s4 %s(%s2x2 x) {
@@ -1417,8 +1418,8 @@ void MetalCodeGenerator::writeMatrixTimesEqualHelper(const Type& left, const Typ
 
     std::string key = "Matrix *= " + this->typeName(left) + ":" + this->typeName(right);
 
-    auto [iter, wasInserted] = fHelpers.insert(key);
-    if (wasInserted) {
+    if (!fHelpers.contains(key)) {
+        fHelpers.add(key);
         fExtraFunctions.printf("thread %s& operator*=(thread %s& left, thread const %s& right) {\n"
                                "    left = left * right;\n"
                                "    return left;\n"
@@ -1436,8 +1437,8 @@ void MetalCodeGenerator::writeMatrixEqualityHelpers(const Type& left, const Type
 
     std::string key = "Matrix == " + this->typeName(left) + ":" + this->typeName(right);
 
-    auto [iter, wasInserted] = fHelpers.insert(key);
-    if (wasInserted) {
+    if (!fHelpers.contains(key)) {
+        fHelpers.add(key);
         fExtraFunctionPrototypes.printf(R"(
 thread bool operator==(const %s left, const %s right);
 thread bool operator!=(const %s left, const %s right);
@@ -1473,8 +1474,8 @@ void MetalCodeGenerator::writeMatrixDivisionHelpers(const Type& type) {
 
     std::string key = "Matrix / " + this->typeName(type);
 
-    auto [iter, wasInserted] = fHelpers.insert(key);
-    if (wasInserted) {
+    if (!fHelpers.contains(key)) {
+        fHelpers.add(key);
         std::string typeName = this->typeName(type);
 
         fExtraFunctions.printf(
@@ -1504,8 +1505,9 @@ void MetalCodeGenerator::writeArrayEqualityHelpers(const Type& type) {
     // If the array's component type needs a helper as well, we need to emit that one first.
     this->writeEqualityHelpers(type.componentType(), type.componentType());
 
-    auto [iter, wasInserted] = fHelpers.insert("ArrayEquality []");
-    if (wasInserted) {
+    std::string key = "ArrayEquality []";
+    if (!fHelpers.contains(key)) {
+        fHelpers.add(key);
         fExtraFunctionPrototypes.writeText(R"(
 template <typename T1, typename T2, size_t N>
 bool operator==(thread const array<T1, N>& left, thread const array<T2, N>& right);
@@ -1535,8 +1537,8 @@ void MetalCodeGenerator::writeStructEqualityHelpers(const Type& type) {
     SkASSERT(type.isStruct());
     std::string key = "StructEquality " + this->typeName(type);
 
-    auto [iter, wasInserted] = fHelpers.insert(key);
-    if (wasInserted) {
+    if (!fHelpers.contains(key)) {
+        fHelpers.add(key);
         // If one of the struct's fields needs a helper as well, we need to emit that one first.
         for (const Type::Field& field : type.fields()) {
             this->writeEqualityHelpers(*field.fType, *field.fType);
@@ -1706,12 +1708,30 @@ void MetalCodeGenerator::writeTernaryExpression(const TernaryExpression& t,
 
 void MetalCodeGenerator::writePrefixExpression(const PrefixExpression& p,
                                                Precedence parentPrecedence) {
-    if (Precedence::kPrefix >= parentPrecedence) {
+    // According to the MSL specification, the arithmetic unary operators (+ and –) do not act
+    // upon matrix type operands. We treat the unary "+" as NOP for all operands.
+    const Operator op = p.getOperator();
+    if (op.kind() == Token::Kind::TK_PLUS) {
+        return this->writeExpression(*p.operand(), Precedence::kPrefix);
+    }
+
+    const bool matrixNegation =
+            op.kind() == Token::Kind::TK_MINUS && p.operand()->type().isMatrix();
+    const bool needParens = Precedence::kPrefix >= parentPrecedence || matrixNegation;
+
+    if (needParens) {
         this->write("(");
     }
-    this->write(p.getOperator().tightOperatorName());
+
+    // Transform the unary "-" on a matrix type to a multiplication by -1.
+    if (matrixNegation) {
+        this->write("-1.0 * ");
+    } else {
+        this->write(p.getOperator().tightOperatorName());
+    }
     this->writeExpression(*p.operand(), Precedence::kPrefix);
-    if (Precedence::kPrefix >= parentPrecedence) {
+
+    if (needParens) {
         this->write(")");
     }
 }
@@ -1841,7 +1861,7 @@ bool MetalCodeGenerator::writeFunctionDeclaration(const FunctionDeclaration& f) 
                 this->write("vertex Outputs vertexMain");
                 break;
             default:
-                fContext.fErrors->error(-1, "unsupported kind of program");
+                fContext.fErrors->error(Position(), "unsupported kind of program");
                 return false;
         }
         this->write("(Inputs _in [[stage_in]]");
@@ -1856,7 +1876,7 @@ bool MetalCodeGenerator::writeFunctionDeclaration(const FunctionDeclaration& f) 
                 if (var.var().type().typeKind() == Type::TypeKind::kSampler) {
                     if (var.var().type().dimensions() != SpvDim2D) {
                         // Not yet implemented--Skia currently only uses 2D textures.
-                        fContext.fErrors->error(decls.fLine, "Unsupported texture dimensions");
+                        fContext.fErrors->error(decls.fPosition, "Unsupported texture dimensions");
                         return false;
                     }
                     int binding = getUniformBinding(var.var().modifiers());
@@ -2013,7 +2033,7 @@ void MetalCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
         structType = &structType->componentType();
     }
     fIndentation++;
-    this->writeFields(structType->fields(), structType->fLine, &intf);
+    this->writeFields(structType->fields(), structType->fPosition, &intf);
     if (fProgram.fInputs.fUseFlipRTUniform) {
         this->writeLine("float2 " SKSL_RTFLIP_NAME ";");
     }
@@ -2027,29 +2047,29 @@ void MetalCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
             this->write(std::to_string(intf.arraySize()));
             this->write("]");
         }
-        fInterfaceBlockNameMap[&intf] = intf.instanceName();
+        fInterfaceBlockNameMap.set(&intf, intf.instanceName());
     } else {
-        fInterfaceBlockNameMap[&intf] = *fProgram.fSymbols->takeOwnershipOfString(
-                "_anonInterface" + std::to_string(fAnonInterfaceCount++));
+        fInterfaceBlockNameMap.set(&intf, *fProgram.fSymbols->takeOwnershipOfString(
+                "_anonInterface" + std::to_string(fAnonInterfaceCount++)));
     }
     this->writeLine(";");
 }
 
-void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int parentLine,
-                                     const InterfaceBlock* parentIntf) {
+void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, Position parentPos,
+        const InterfaceBlock* parentIntf) {
     MemoryLayout memoryLayout(MemoryLayout::kMetal_Standard);
     int currentOffset = 0;
     for (const Type::Field& field : fields) {
         int fieldOffset = field.fModifiers.fLayout.fOffset;
         const Type* fieldType = field.fType;
         if (!MemoryLayout::LayoutIsSupported(*fieldType)) {
-            fContext.fErrors->error(parentLine, "type '" + std::string(fieldType->name()) +
+            fContext.fErrors->error(parentPos, "type '" + std::string(fieldType->name()) +
                                                 "' is not permitted here");
             return;
         }
         if (fieldOffset != -1) {
             if (currentOffset > fieldOffset) {
-                fContext.fErrors->error(parentLine,
+                fContext.fErrors->error(parentPos,
                                         "offset of field '" + std::string(field.fName) +
                                         "' must be at least " + std::to_string(currentOffset));
                 return;
@@ -2063,7 +2083,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int
             }
             int alignment = memoryLayout.alignment(*fieldType);
             if (fieldOffset % alignment) {
-                fContext.fErrors->error(parentLine,
+                fContext.fErrors->error(parentPos,
                                         "offset of field '" + std::string(field.fName) +
                                         "' must be a multiple of " + std::to_string(alignment));
                 return;
@@ -2071,7 +2091,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int
         }
         size_t fieldSize = memoryLayout.size(*fieldType);
         if (fieldSize > static_cast<size_t>(std::numeric_limits<int>::max() - currentOffset)) {
-            fContext.fErrors->error(parentLine, "field offset overflow");
+            fContext.fErrors->error(parentPos, "field offset overflow");
             return;
         }
         currentOffset += fieldSize;
@@ -2081,7 +2101,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int
         this->writeName(field.fName);
         this->writeLine(";");
         if (parentIntf) {
-            fInterfaceBlockMap[&field] = parentIntf;
+            fInterfaceBlockMap.set(&field, parentIntf);
         }
     }
 }
@@ -2091,7 +2111,7 @@ void MetalCodeGenerator::writeVarInitializer(const Variable& var, const Expressi
 }
 
 void MetalCodeGenerator::writeName(std::string_view name) {
-    if (fReservedWords.find(name) != fReservedWords.end()) {
+    if (fReservedWords.contains(name)) {
         this->write("_"); // adding underscore before name to avoid conflict with reserved words
     }
     this->write(name);
@@ -2272,7 +2292,7 @@ void MetalCodeGenerator::writeReturnStatement(const ReturnStatement& r) {
                 this->writeExpression(*r.expression(), Precedence::kTopLevel);
                 this->writeLine(";");
             } else {
-                fContext.fErrors->error(r.fLine,
+                fContext.fErrors->error(r.fPosition,
                         "Metal does not support returning '" +
                         r.expression()->type().description() + "' from main()");
             }
@@ -2308,7 +2328,7 @@ void MetalCodeGenerator::writeUniformStruct() {
                     this->write("struct Uniforms {\n");
                     fUniformBuffer = uniformSet;
                 } else if (uniformSet != fUniformBuffer) {
-                    fContext.fErrors->error(decls.fLine,
+                    fContext.fErrors->error(decls.fPosition,
                             "Metal backend requires all uniforms to have the same "
                             "'layout(set=...)'");
                 }
@@ -2373,7 +2393,7 @@ void MetalCodeGenerator::writeOutputStruct() {
 
                 int location = var.modifiers().fLayout.fLocation;
                 if (location < 0) {
-                    fContext.fErrors->error(var.fLine,
+                    fContext.fErrors->error(var.fPosition,
                             "Metal out variables must have 'layout(location=...)'");
                 } else if (fProgram.fConfig->fKind == ProgramKind::kVertex) {
                     this->write(" [[user(locn" + std::to_string(location) + ")]]");
@@ -2715,15 +2735,15 @@ MetalCodeGenerator::Requirements MetalCodeGenerator::requirements(const Function
     if (f.isBuiltin()) {
         return kNo_Requirements;
     }
-    auto found = fRequirements.find(&f);
-    if (found == fRequirements.end()) {
-        fRequirements[&f] = kNo_Requirements;
+    Requirements* found = fRequirements.find(&f);
+    if (!found) {
+        fRequirements.set(&f, kNo_Requirements);
         for (const ProgramElement* e : fProgram.elements()) {
             if (e->is<FunctionDefinition>()) {
                 const FunctionDefinition& def = e->as<FunctionDefinition>();
                 if (&def.declaration() == &f) {
                     Requirements reqs = this->requirements(def.body().get());
-                    fRequirements[&f] = reqs;
+                    fRequirements.set(&f, reqs);
                     return reqs;
                 }
             }
@@ -2732,7 +2752,7 @@ MetalCodeGenerator::Requirements MetalCodeGenerator::requirements(const Function
         // function without ever giving a definition, as long as you don't call it.
         return kNo_Requirements;
     }
-    return found->second;
+    return *found;
 }
 
 bool MetalCodeGenerator::generateCode() {
@@ -2758,7 +2778,7 @@ bool MetalCodeGenerator::generateCode() {
     write_stringstream(fExtraFunctionPrototypes, *fOut);
     write_stringstream(fExtraFunctions, *fOut);
     write_stringstream(body, *fOut);
-    fContext.fErrors->reportPendingErrors(PositionInfo());
+    fContext.fErrors->reportPendingErrors(Position());
     return fContext.fErrors->errorCount() == 0;
 }
 

@@ -4,7 +4,7 @@ import { assert } from '../../common/util/util.js';
 import { uint32ToFloat32 } from '../util/conversion.js';
 
 /** Returns an array of subnormal f32 numbers.
- * Subnnormals are non-zero finite numbers with the minimum representable
+ * Subnormals are non-zero finite numbers with the minimum representable
  * exponent.
  */
 export function subnormalF32Examples(): Array<number> {

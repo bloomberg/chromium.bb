@@ -36,12 +36,14 @@
 #include "dawn/platform/DawnPlatform.h"
 #include "dawn/platform/tracing/TraceEvent.h"
 
-#include <cmath>
-#include <map>
-
 namespace dawn::native {
 
     namespace {
+
+        bool HasDeprecatedColor(const RenderPassColorAttachment& attachment) {
+            return !std::isnan(attachment.clearColor.r) || !std::isnan(attachment.clearColor.g) ||
+                   !std::isnan(attachment.clearColor.b) || !std::isnan(attachment.clearColor.a);
+        }
 
         MaybeError ValidateB2BCopyAlignment(uint64_t dataSize,
                                             uint64_t srcOffset,
@@ -209,6 +211,10 @@ namespace dawn::native {
                 "The resolve target %s format (%s) does not match the color attachment %s format "
                 "(%s).",
                 resolveTarget, resolveTargetFormat, attachment, attachment->GetFormat().format);
+            DAWN_INVALID_IF(
+                !resolveTarget->GetFormat().supportsResolveTarget,
+                "The resolve target %s format (%s) does not support being used as resolve target.",
+                resolveTarget, resolveTargetFormat);
 
             return {};
         }
@@ -221,6 +227,9 @@ namespace dawn::native {
             uint32_t* sampleCount,
             UsageValidationMode usageValidationMode) {
             TextureViewBase* attachment = colorAttachment.view;
+            if (attachment == nullptr) {
+                return {};
+            }
             DAWN_TRY(device->ValidateObject(attachment));
             DAWN_TRY(ValidateCanUseAs(attachment->GetTexture(),
                                       wgpu::TextureUsage::RenderAttachment, usageValidationMode));
@@ -232,14 +241,24 @@ namespace dawn::native {
 
             DAWN_TRY(ValidateLoadOp(colorAttachment.loadOp));
             DAWN_TRY(ValidateStoreOp(colorAttachment.storeOp));
+            DAWN_INVALID_IF(colorAttachment.loadOp == wgpu::LoadOp::Undefined,
+                            "loadOp must be set.");
+            DAWN_INVALID_IF(colorAttachment.storeOp == wgpu::StoreOp::Undefined,
+                            "storeOp must be set.");
+
+            // TODO(dawn:1269): Remove after the deprecation period.
+            bool useClearColor = HasDeprecatedColor(colorAttachment);
+            const dawn::native::Color& clearValue =
+                useClearColor ? colorAttachment.clearColor : colorAttachment.clearValue;
+            if (useClearColor) {
+                device->EmitDeprecationWarning(
+                    "clearColor is deprecated, prefer using clearValue instead.");
+            }
 
             if (colorAttachment.loadOp == wgpu::LoadOp::Clear) {
-                DAWN_INVALID_IF(std::isnan(colorAttachment.clearColor.r) ||
-                                    std::isnan(colorAttachment.clearColor.g) ||
-                                    std::isnan(colorAttachment.clearColor.b) ||
-                                    std::isnan(colorAttachment.clearColor.a),
-                                "Color clear value (%s) contain a NaN.",
-                                &colorAttachment.clearColor);
+                DAWN_INVALID_IF(std::isnan(clearValue.r) || std::isnan(clearValue.g) ||
+                                    std::isnan(clearValue.b) || std::isnan(clearValue.a),
+                                "Color clear value (%s) contain a NaN.", &clearValue);
             }
 
             DAWN_TRY(ValidateOrSetColorAttachmentSampleCount(attachment, sampleCount));
@@ -288,52 +307,95 @@ namespace dawn::native {
                 "is 'all'.",
                 depthStencilAttachment->depthReadOnly, depthStencilAttachment->stencilReadOnly);
 
-            if (depthStencilAttachment->depthReadOnly) {
+            // Read only, or depth doesn't exist.
+            if (depthStencilAttachment->depthReadOnly ||
+                !IsSubset(Aspect::Depth, attachment->GetAspects())) {
                 if (depthStencilAttachment->depthLoadOp == wgpu::LoadOp::Load &&
                     depthStencilAttachment->depthStoreOp == wgpu::StoreOp::Store) {
                     // TODO(dawn:1269): Remove this branch after the deprecation period.
                     device->EmitDeprecationWarning(
-                        "Setting depthLoadOp and depthStore when "
-                        "depthReadOnly is true is deprecated.");
+                        "Setting depthLoadOp and depthStoreOp when "
+                        "the attachment has no depth aspect or depthReadOnly is true is "
+                        "deprecated.");
                 } else {
                     DAWN_INVALID_IF(depthStencilAttachment->depthLoadOp != wgpu::LoadOp::Undefined,
-                                    "depthLoadOp (%s) must not be set when depthReadOnly is true.",
-                                    depthStencilAttachment->depthLoadOp);
+                                    "depthLoadOp (%s) must not be set if the attachment (%s) has "
+                                    "no depth aspect or depthReadOnly (%u) is true.",
+                                    depthStencilAttachment->depthLoadOp, attachment,
+                                    depthStencilAttachment->depthReadOnly);
                     DAWN_INVALID_IF(
                         depthStencilAttachment->depthStoreOp != wgpu::StoreOp::Undefined,
-                        "depthStoreOp (%s) must not be set when depthReadOnly is true.",
-                        depthStencilAttachment->depthStoreOp);
+                        "depthStoreOp (%s) must not be set if the attachment (%s) has no depth "
+                        "aspect or depthReadOnly (%u) is true.",
+                        depthStencilAttachment->depthStoreOp, attachment,
+                        depthStencilAttachment->depthReadOnly);
                 }
             } else {
                 DAWN_TRY(ValidateLoadOp(depthStencilAttachment->depthLoadOp));
+                DAWN_INVALID_IF(depthStencilAttachment->depthLoadOp == wgpu::LoadOp::Undefined,
+                                "depthLoadOp must be set if the attachment (%s) has a depth aspect "
+                                "and depthReadOnly (%u) is false.",
+                                attachment, depthStencilAttachment->depthReadOnly);
                 DAWN_TRY(ValidateStoreOp(depthStencilAttachment->depthStoreOp));
+                DAWN_INVALID_IF(depthStencilAttachment->depthStoreOp == wgpu::StoreOp::Undefined,
+                                "depthStoreOp must be set if the attachment (%s) has a depth "
+                                "aspect and depthReadOnly (%u) is false.",
+                                attachment, depthStencilAttachment->depthReadOnly);
             }
 
-            if (depthStencilAttachment->stencilReadOnly) {
+            // Read only, or stencil doesn't exist.
+            if (depthStencilAttachment->stencilReadOnly ||
+                !IsSubset(Aspect::Stencil, attachment->GetAspects())) {
                 if (depthStencilAttachment->stencilLoadOp == wgpu::LoadOp::Load &&
                     depthStencilAttachment->stencilStoreOp == wgpu::StoreOp::Store) {
                     // TODO(dawn:1269): Remove this branch after the deprecation period.
                     device->EmitDeprecationWarning(
                         "Setting stencilLoadOp and stencilStoreOp when "
-                        "stencilReadOnly is true is deprecated.");
+                        "the attachment has no stencil aspect or stencilReadOnly is true is "
+                        "deprecated.");
                 } else {
                     DAWN_INVALID_IF(
                         depthStencilAttachment->stencilLoadOp != wgpu::LoadOp::Undefined,
-                        "stencilLoadOp (%s) must not be set when stencilReadOnly is true.",
-                        depthStencilAttachment->stencilLoadOp);
+                        "stencilLoadOp (%s) must not be set if the attachment (%s) has no stencil "
+                        "aspect or stencilReadOnly (%u) is true.",
+                        depthStencilAttachment->stencilLoadOp, attachment,
+                        depthStencilAttachment->stencilReadOnly);
                     DAWN_INVALID_IF(
                         depthStencilAttachment->stencilStoreOp != wgpu::StoreOp::Undefined,
-                        "stencilStoreOp (%s) must not be set when stencilReadOnly is true.",
-                        depthStencilAttachment->stencilStoreOp);
+                        "stencilStoreOp (%s) must not be set if the attachment (%s) has no stencil "
+                        "aspect or stencilReadOnly (%u) is true.",
+                        depthStencilAttachment->stencilStoreOp, attachment,
+                        depthStencilAttachment->stencilReadOnly);
                 }
             } else {
                 DAWN_TRY(ValidateLoadOp(depthStencilAttachment->stencilLoadOp));
+                DAWN_INVALID_IF(depthStencilAttachment->stencilLoadOp == wgpu::LoadOp::Undefined,
+                                "stencilLoadOp must be set if the attachment (%s) has a stencil "
+                                "aspect and stencilReadOnly (%u) is false.",
+                                attachment, depthStencilAttachment->stencilReadOnly);
                 DAWN_TRY(ValidateStoreOp(depthStencilAttachment->stencilStoreOp));
+                DAWN_INVALID_IF(depthStencilAttachment->depthStoreOp == wgpu::StoreOp::Undefined,
+                                "stencilStoreOp must be set if the attachment (%s) has a stencil "
+                                "aspect and stencilReadOnly (%u) is false.",
+                                attachment, depthStencilAttachment->stencilReadOnly);
             }
 
-            DAWN_INVALID_IF(depthStencilAttachment->depthLoadOp == wgpu::LoadOp::Clear &&
-                                std::isnan(depthStencilAttachment->clearDepth),
-                            "Depth clear value is NaN.");
+            if (!std::isnan(depthStencilAttachment->clearDepth)) {
+                // TODO(dawn:1269): Remove this branch after the deprecation period.
+                device->EmitDeprecationWarning(
+                    "clearDepth is deprecated, prefer depthClearValue instead.");
+            } else {
+                DAWN_INVALID_IF(depthStencilAttachment->depthLoadOp == wgpu::LoadOp::Clear &&
+                                    std::isnan(depthStencilAttachment->depthClearValue),
+                                "depthClearValue is NaN.");
+            }
+
+            // TODO(dawn:1269): Remove after the deprecation period.
+            if (depthStencilAttachment->stencilClearValue == 0 &&
+                depthStencilAttachment->clearStencil != 0) {
+                device->EmitDeprecationWarning(
+                    "clearStencil is deprecated, prefer stencilClearValue instead.");
+            }
 
             // *sampleCount == 0 must only happen when there is no color attachment. In that case we
             // do not need to validate the sample count of the depth stencil attachment.
@@ -365,11 +427,15 @@ namespace dawn::native {
                 "Color attachment count (%u) exceeds the maximum number of color attachments (%u).",
                 descriptor->colorAttachmentCount, kMaxColorAttachments);
 
+            bool isAllColorAttachmentNull = true;
             for (uint32_t i = 0; i < descriptor->colorAttachmentCount; ++i) {
                 DAWN_TRY_CONTEXT(ValidateRenderPassColorAttachment(
                                      device, descriptor->colorAttachments[i], width, height,
                                      sampleCount, usageValidationMode),
                                  "validating colorAttachments[%u].", i);
+                if (descriptor->colorAttachments[i].view) {
+                    isAllColorAttachmentNull = false;
+                }
             }
 
             if (descriptor->depthStencilAttachment != nullptr) {
@@ -377,6 +443,10 @@ namespace dawn::native {
                                      device, descriptor->depthStencilAttachment, width, height,
                                      sampleCount, usageValidationMode),
                                  "validating depthStencilAttachment.");
+            } else {
+                DAWN_INVALID_IF(
+                    isAllColorAttachmentNull,
+                    "No color or depthStencil attachments specified. At least one is required.");
             }
 
             if (descriptor->occlusionQuerySet != nullptr) {
@@ -388,6 +458,38 @@ namespace dawn::native {
                     descriptor->occlusionQuerySet->GetQueryType(), wgpu::QueryType::Occlusion);
             }
 
+            if (descriptor->timestampWriteCount > 0) {
+                DAWN_ASSERT(descriptor->timestampWrites != nullptr);
+
+                // Record the query set and query index used on render passes for validating query
+                // index overwrite. The TrackQueryAvailability of
+                // RenderPassResourceUsageTracker is not used here because the timestampWrites are
+                // not validated and encoded one by one, but encoded together after passing the
+                // validation.
+                QueryAvailabilityMap usedQueries;
+                for (uint32_t i = 0; i < descriptor->timestampWriteCount; ++i) {
+                    QuerySetBase* querySet = descriptor->timestampWrites[i].querySet;
+                    DAWN_ASSERT(querySet != nullptr);
+                    uint32_t queryIndex = descriptor->timestampWrites[i].queryIndex;
+                    DAWN_TRY_CONTEXT(ValidateTimestampQuery(device, querySet, queryIndex),
+                                     "validating querySet and queryIndex of timestampWrites[%u].",
+                                     i);
+                    DAWN_TRY_CONTEXT(ValidateRenderPassTimestampLocation(
+                                         descriptor->timestampWrites[i].location),
+                                     "validating location of timestampWrites[%u].", i);
+
+                    auto checkIt = usedQueries.find(querySet);
+                    DAWN_INVALID_IF(checkIt != usedQueries.end() && checkIt->second[queryIndex],
+                                    "Query index %u of %s is written to twice in a render pass.",
+                                    queryIndex, querySet);
+
+                    // Gets the iterator for that querySet or create a new vector of bool set to
+                    // false if the querySet wasn't registered.
+                    auto addIt = usedQueries.emplace(querySet, querySet->GetQueryCount()).first;
+                    addIt->second[queryIndex] = true;
+                }
+            }
+
             DAWN_INVALID_IF(descriptor->colorAttachmentCount == 0 &&
                                 descriptor->depthStencilAttachment == nullptr,
                             "Render pass has no attachments.");
@@ -397,6 +499,25 @@ namespace dawn::native {
 
         MaybeError ValidateComputePassDescriptor(const DeviceBase* device,
                                                  const ComputePassDescriptor* descriptor) {
+            if (descriptor == nullptr) {
+                return {};
+            }
+
+            if (descriptor->timestampWriteCount > 0) {
+                DAWN_ASSERT(descriptor->timestampWrites != nullptr);
+
+                for (uint32_t i = 0; i < descriptor->timestampWriteCount; ++i) {
+                    DAWN_ASSERT(descriptor->timestampWrites[i].querySet != nullptr);
+                    DAWN_TRY_CONTEXT(
+                        ValidateTimestampQuery(device, descriptor->timestampWrites[i].querySet,
+                                               descriptor->timestampWrites[i].queryIndex),
+                        "validating querySet and queryIndex of timestampWrites[%u].", i);
+                    DAWN_TRY_CONTEXT(ValidateComputePassTimestampLocation(
+                                         descriptor->timestampWrites[i].location),
+                                     "validating location of timestampWrites[%u].", i);
+                }
+            }
+
             return {};
         }
 
@@ -578,12 +699,40 @@ namespace dawn::native {
         const ComputePassDescriptor* descriptor) {
         DeviceBase* device = GetDevice();
 
+        std::vector<TimestampWrite> timestampWritesAtBeginning;
+        std::vector<TimestampWrite> timestampWritesAtEnd;
         bool success = mEncodingContext.TryEncode(
             this,
             [&](CommandAllocator* allocator) -> MaybeError {
                 DAWN_TRY(ValidateComputePassDescriptor(device, descriptor));
 
-                allocator->Allocate<BeginComputePassCmd>(Command::BeginComputePass);
+                BeginComputePassCmd* cmd =
+                    allocator->Allocate<BeginComputePassCmd>(Command::BeginComputePass);
+
+                if (descriptor == nullptr) {
+                    return {};
+                }
+
+                // Split the timestampWrites used in BeginComputePassCmd and EndComputePassCmd
+                for (uint32_t i = 0; i < descriptor->timestampWriteCount; i++) {
+                    QuerySetBase* querySet = descriptor->timestampWrites[i].querySet;
+                    uint32_t queryIndex = descriptor->timestampWrites[i].queryIndex;
+
+                    switch (descriptor->timestampWrites[i].location) {
+                        case wgpu::ComputePassTimestampLocation::Beginning:
+                            timestampWritesAtBeginning.push_back({querySet, queryIndex});
+                            break;
+                        case wgpu::ComputePassTimestampLocation::End:
+                            timestampWritesAtEnd.push_back({querySet, queryIndex});
+                            break;
+                        default:
+                            break;
+                    }
+
+                    TrackQueryAvailability(querySet, queryIndex);
+                }
+
+                cmd->timestampWrites = std::move(timestampWritesAtBeginning);
 
                 return {};
             },
@@ -595,8 +744,8 @@ namespace dawn::native {
                 descriptor = &defaultDescriptor;
             }
 
-            ComputePassEncoder* passEncoder =
-                new ComputePassEncoder(device, descriptor, this, &mEncodingContext);
+            ComputePassEncoder* passEncoder = new ComputePassEncoder(
+                device, descriptor, this, &mEncodingContext, std::move(timestampWritesAtEnd));
             mEncodingContext.EnterPass(passEncoder);
             return passEncoder;
         }
@@ -614,6 +763,8 @@ namespace dawn::native {
         bool depthReadOnly = false;
         bool stencilReadOnly = false;
         Ref<AttachmentState> attachmentState;
+        std::vector<TimestampWrite> timestampWritesAtBeginning;
+        std::vector<TimestampWrite> timestampWritesAtEnd;
         bool success = mEncodingContext.TryEncode(
             this,
             [&](CommandAllocator* allocator) -> MaybeError {
@@ -631,6 +782,28 @@ namespace dawn::native {
                 cmd->attachmentState = device->GetOrCreateAttachmentState(descriptor);
                 attachmentState = cmd->attachmentState;
 
+                // Split the timestampWrites used in BeginRenderPassCmd and EndRenderPassCmd
+                for (uint32_t i = 0; i < descriptor->timestampWriteCount; i++) {
+                    QuerySetBase* querySet = descriptor->timestampWrites[i].querySet;
+                    uint32_t queryIndex = descriptor->timestampWrites[i].queryIndex;
+
+                    switch (descriptor->timestampWrites[i].location) {
+                        case wgpu::RenderPassTimestampLocation::Beginning:
+                            timestampWritesAtBeginning.push_back({querySet, queryIndex});
+                            break;
+                        case wgpu::RenderPassTimestampLocation::End:
+                            timestampWritesAtEnd.push_back({querySet, queryIndex});
+                            break;
+                        default:
+                            break;
+                    }
+
+                    TrackQueryAvailability(querySet, queryIndex);
+                    // Track the query availability with true on render pass again for rewrite
+                    // validation and query reset on Vulkan
+                    usageTracker.TrackQueryAvailability(querySet, queryIndex);
+                }
+
                 for (ColorAttachmentIndex index :
                      IterateBitSet(cmd->attachmentState->GetColorAttachmentsMask())) {
                     uint8_t i = static_cast<uint8_t>(index);
@@ -641,8 +814,11 @@ namespace dawn::native {
                     cmd->colorAttachments[index].resolveTarget = resolveTarget;
                     cmd->colorAttachments[index].loadOp = descriptor->colorAttachments[i].loadOp;
                     cmd->colorAttachments[index].storeOp = descriptor->colorAttachments[i].storeOp;
+
                     cmd->colorAttachments[index].clearColor =
-                        descriptor->colorAttachments[i].clearColor;
+                        HasDeprecatedColor(descriptor->colorAttachments[i])
+                            ? descriptor->colorAttachments[i].clearColor
+                            : descriptor->colorAttachments[i].clearValue;
 
                     usageTracker.TextureViewUsedAs(view, wgpu::TextureUsage::RenderAttachment);
 
@@ -656,16 +832,34 @@ namespace dawn::native {
                     TextureViewBase* view = descriptor->depthStencilAttachment->view;
 
                     cmd->depthStencilAttachment.view = view;
-                    cmd->depthStencilAttachment.clearDepth =
-                        descriptor->depthStencilAttachment->clearDepth;
-                    cmd->depthStencilAttachment.clearStencil =
-                        descriptor->depthStencilAttachment->clearStencil;
+
+                    if (!std::isnan(descriptor->depthStencilAttachment->clearDepth)) {
+                        // TODO(dawn:1269): Remove this branch after the deprecation period.
+                        cmd->depthStencilAttachment.clearDepth =
+                            descriptor->depthStencilAttachment->clearDepth;
+                    } else {
+                        cmd->depthStencilAttachment.clearDepth =
+                            descriptor->depthStencilAttachment->depthClearValue;
+                    }
+
+                    if (descriptor->depthStencilAttachment->stencilClearValue == 0 &&
+                        descriptor->depthStencilAttachment->clearStencil != 0) {
+                        // TODO(dawn:1269): Remove this branch after the deprecation period.
+                        cmd->depthStencilAttachment.clearStencil =
+                            descriptor->depthStencilAttachment->clearStencil;
+                    } else {
+                        cmd->depthStencilAttachment.clearStencil =
+                            descriptor->depthStencilAttachment->stencilClearValue;
+                    }
+
                     cmd->depthStencilAttachment.depthReadOnly =
                         descriptor->depthStencilAttachment->depthReadOnly;
                     cmd->depthStencilAttachment.stencilReadOnly =
                         descriptor->depthStencilAttachment->stencilReadOnly;
 
-                    if (descriptor->depthStencilAttachment->depthReadOnly) {
+                    if (descriptor->depthStencilAttachment->depthReadOnly ||
+                        !IsSubset(Aspect::Depth,
+                                  descriptor->depthStencilAttachment->view->GetAspects())) {
                         cmd->depthStencilAttachment.depthLoadOp = wgpu::LoadOp::Load;
                         cmd->depthStencilAttachment.depthStoreOp = wgpu::StoreOp::Store;
                     } else {
@@ -675,7 +869,9 @@ namespace dawn::native {
                             descriptor->depthStencilAttachment->depthStoreOp;
                     }
 
-                    if (descriptor->depthStencilAttachment->stencilReadOnly) {
+                    if (descriptor->depthStencilAttachment->stencilReadOnly ||
+                        !IsSubset(Aspect::Stencil,
+                                  descriptor->depthStencilAttachment->view->GetAspects())) {
                         cmd->depthStencilAttachment.stencilLoadOp = wgpu::LoadOp::Load;
                         cmd->depthStencilAttachment.stencilStoreOp = wgpu::StoreOp::Store;
                     } else {
@@ -700,6 +896,8 @@ namespace dawn::native {
 
                 cmd->occlusionQuerySet = descriptor->occlusionQuerySet;
 
+                cmd->timestampWrites = std::move(timestampWritesAtBeginning);
+
                 return {};
             },
             "encoding %s.BeginRenderPass(%s).", this, descriptor);
@@ -707,7 +905,7 @@ namespace dawn::native {
         if (success) {
             RenderPassEncoder* passEncoder = new RenderPassEncoder(
                 device, descriptor, this, &mEncodingContext, std::move(usageTracker),
-                std::move(attachmentState), descriptor->occlusionQuerySet, width, height,
+                std::move(attachmentState), std::move(timestampWritesAtEnd), width, height,
                 depthReadOnly, stencilReadOnly);
             mEncodingContext.EnterPass(passEncoder);
             return passEncoder;
@@ -1093,7 +1291,8 @@ namespace dawn::native {
                 cmd->destinationOffset = destinationOffset;
 
                 // Encode internal compute pipeline for timestamp query
-                if (querySet->GetQueryType() == wgpu::QueryType::Timestamp) {
+                if (querySet->GetQueryType() == wgpu::QueryType::Timestamp &&
+                    !GetDevice()->IsToggleEnabled(Toggle::DisableTimestampQueryConversion)) {
                     DAWN_TRY(EncodeTimestampsToNanosecondsConversion(
                         this, querySet, firstQuery, queryCount, destination, destinationOffset));
                 }
@@ -1135,8 +1334,7 @@ namespace dawn::native {
             this,
             [&](CommandAllocator* allocator) -> MaybeError {
                 if (GetDevice()->IsValidationEnabled()) {
-                    DAWN_TRY(GetDevice()->ValidateObject(querySet));
-                    DAWN_TRY(ValidateTimestampQuery(querySet, queryIndex));
+                    DAWN_TRY(ValidateTimestampQuery(GetDevice(), querySet, queryIndex));
                 }
 
                 TrackQueryAvailability(querySet, queryIndex);

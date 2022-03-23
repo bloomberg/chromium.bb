@@ -96,7 +96,7 @@ class MockQuicCryptoStream : public QuicCryptoStream,
   SSL* GetSsl() const override { return nullptr; }
 
  private:
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
   std::vector<CryptoHandshakeMessage> messages_;
 };
 
@@ -107,6 +107,9 @@ class QuicCryptoStreamTest : public QuicTest {
                                            &alarm_factory_,
                                            Perspective::IS_CLIENT)),
         session_(connection_, /*create_mock_crypto_stream=*/false) {
+    EXPECT_CALL(*static_cast<MockPacketWriter*>(connection_->writer()),
+                WritePacket(_, _, _, _, _))
+        .WillRepeatedly(Return(WriteResult(WRITE_STATUS_OK, 0)));
     stream_ = new MockQuicCryptoStream(&session_);
     session_.SetCryptoStream(stream_);
     session_.Initialize();
@@ -709,12 +712,7 @@ TEST_F(QuicCryptoStreamTest, EmptyCryptoFrame) {
   if (!QuicVersionUsesCryptoFrames(connection_->transport_version())) {
     return;
   }
-  if (GetQuicReloadableFlag(quic_accept_empty_crypto_frame)) {
-    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  } else {
-    EXPECT_CALL(*connection_,
-                CloseConnection(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _, _));
-  }
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   QuicCryptoFrame empty_crypto_frame(ENCRYPTION_INITIAL, 0, nullptr, 0);
   stream_->OnCryptoFrame(empty_crypto_frame);
 }

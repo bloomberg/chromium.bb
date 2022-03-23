@@ -309,24 +309,32 @@ export class TextureZeroInitTest extends GPUTest {
               {
                 view: texture.createView(viewDescriptor),
                 storeOp: 'store',
-                loadValue: initializedStateAsColor(state, this.p.format),
+                clearValue: initializedStateAsColor(state, this.p.format),
+                loadOp: 'clear',
               },
             ],
           })
-          .endPass();
+          .end();
       } else {
+        const depthStencilAttachment: GPURenderPassDepthStencilAttachment = {
+          view: texture.createView(viewDescriptor),
+        };
+        if (kTextureFormatInfo[this.p.format].depth) {
+          depthStencilAttachment.depthClearValue = initializedStateAsDepth[state];
+          depthStencilAttachment.depthLoadOp = 'clear';
+          depthStencilAttachment.depthStoreOp = 'store';
+        }
+        if (kTextureFormatInfo[this.p.format].stencil) {
+          depthStencilAttachment.stencilClearValue = initializedStateAsStencil[state];
+          depthStencilAttachment.stencilLoadOp = 'clear';
+          depthStencilAttachment.stencilStoreOp = 'store';
+        }
         commandEncoder
           .beginRenderPass({
             colorAttachments: [],
-            depthStencilAttachment: {
-              view: texture.createView(viewDescriptor),
-              depthStoreOp: 'store',
-              depthLoadValue: initializedStateAsDepth[state],
-              stencilStoreOp: 'store',
-              stencilLoadValue: initializedStateAsStencil[state],
-            },
+            depthStencilAttachment,
           })
-          .endPass();
+          .end();
       }
     }
     this.queue.submit([commandEncoder.finish()]);
@@ -411,24 +419,29 @@ export class TextureZeroInitTest extends GPUTest {
               {
                 view: texture.createView(desc),
                 storeOp: 'discard',
-                loadValue: 'load',
+                loadOp: 'load',
               },
             ],
           })
-          .endPass();
+          .end();
       } else {
+        const depthStencilAttachment: GPURenderPassDepthStencilAttachment = {
+          view: texture.createView(desc),
+        };
+        if (kTextureFormatInfo[this.p.format].depth) {
+          depthStencilAttachment.depthLoadOp = 'load';
+          depthStencilAttachment.depthStoreOp = 'discard';
+        }
+        if (kTextureFormatInfo[this.p.format].stencil) {
+          depthStencilAttachment.stencilLoadOp = 'load';
+          depthStencilAttachment.stencilStoreOp = 'discard';
+        }
         commandEncoder
           .beginRenderPass({
             colorAttachments: [],
-            depthStencilAttachment: {
-              view: texture.createView(desc),
-              depthStoreOp: 'discard',
-              depthLoadValue: 'load',
-              stencilStoreOp: 'discard',
-              stencilLoadValue: 'load',
-            },
+            depthStencilAttachment,
           })
-          .endPass();
+          .end();
       }
     }
     this.queue.submit([commandEncoder.finish()]);
@@ -512,7 +525,8 @@ const kTestParams = kUnitCaseParamsBuilder
 
     return (
       ((usage & GPUConst.TextureUsage.RENDER_ATTACHMENT) !== 0 && !info.renderable) ||
-      ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage)
+      ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage) ||
+      (sampleCount > 1 && !info.multisample)
     );
   })
   .combine('nonPowerOfTwo', [false, true])

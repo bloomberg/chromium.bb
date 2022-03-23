@@ -312,26 +312,32 @@ void SkTypeface_FreeType::FaceRec::setupPalette(const SkFontData& data) {
     if (FT_Palette_Data_Get(fFace.get(), &paletteData)) {
         return;
     }
-    if (paletteData.num_palettes < data.getPaletteIndex() ) {
-        return;
+
+    // Treat out of range values as 0. Still apply overrides.
+    // https://www.w3.org/TR/css-fonts-4/#base-palette-desc
+    FT_UShort basePaletteIndex = 0;
+    if (SkTFitsIn<FT_UShort>(data.getPaletteIndex()) &&
+        SkTo<FT_UShort>(data.getPaletteIndex()) < paletteData.num_palettes)
+    {
+        basePaletteIndex = data.getPaletteIndex();
     }
+
     FT_Color* ftPalette = nullptr;
-    if (FT_Palette_Select(fFace.get(), data.getPaletteIndex(), &ftPalette)) {
+    if (FT_Palette_Select(fFace.get(), basePaletteIndex, &ftPalette)) {
         return;
     }
     fFTPaletteEntryCount = paletteData.num_palette_entries;
 
     for (int i = 0; i < data.getPaletteOverrideCount(); ++i) {
         const SkFontArguments::Palette::Override& paletteOverride = data.getPaletteOverrides()[i];
-        if (paletteOverride.index < 0 || fFTPaletteEntryCount <= paletteOverride.index) {
-            continue;
+        if (0 <= paletteOverride.index && paletteOverride.index < fFTPaletteEntryCount) {
+            const SkColor& skColor = paletteOverride.color;
+            FT_Color& ftColor = ftPalette[paletteOverride.index];
+            ftColor.blue  = SkColorGetB(skColor);
+            ftColor.green = SkColorGetG(skColor);
+            ftColor.red   = SkColorGetR(skColor);
+            ftColor.alpha = SkColorGetA(skColor);
         }
-        const SkColor& skColor = paletteOverride.color;
-        FT_Color& ftColor = ftPalette[paletteOverride.index];
-        ftColor.blue  = SkColorGetB(skColor);
-        ftColor.green = SkColorGetG(skColor);
-        ftColor.red   = SkColorGetR(skColor);
-        ftColor.alpha = SkColorGetA(skColor);
     }
 
     fSkPalette.reset(new SkColor[fFTPaletteEntryCount]);
@@ -851,7 +857,7 @@ SkScalerContext_FreeType::SkScalerContext_FreeType(sk_sp<SkTypeface_FreeType> ty
             // See http://code.google.com/p/chromium/issues/detail?id=43252#c24
             loadFlags = FT_LOAD_TARGET_MONO;
             if (fRec.getHinting() == SkFontHinting::kNone) {
-                loadFlags = FT_LOAD_NO_HINTING;
+                loadFlags |= FT_LOAD_NO_HINTING;
                 linearMetrics = true;
             }
         } else {
@@ -931,7 +937,7 @@ SkScalerContext_FreeType::SkScalerContext_FreeType(sk_sp<SkTypeface_FreeType> ty
         return;
     }
 
-    fRec.computeMatrices(SkScalerContextRec::kFull_PreMatrixScale, &fScale, &fMatrix22Scalar);
+    fRec.computeMatrices(SkScalerContextRec::PreMatrixScale::kFull, &fScale, &fMatrix22Scalar);
     FT_F26Dot6 scaleX = SkScalarToFDot6(fScale.fX);
     FT_F26Dot6 scaleY = SkScalarToFDot6(fScale.fY);
 
@@ -1292,6 +1298,8 @@ void SkScalerContext_FreeType::generateMetrics(SkGlyph* glyph, SkArenaAlloc* all
         updateGlyphIfLCD(glyph);
 
     } else if (fFace->glyph->format == FT_GLYPH_FORMAT_BITMAP) {
+        glyph->setPath(alloc, nullptr, false);
+
         if (this->isVertical()) {
             FT_Vector vector;
             vector.x = fFace->glyph->metrics.vertBearingX - fFace->glyph->metrics.horiBearingX;
@@ -1873,7 +1881,7 @@ std::unique_ptr<SkFontData> SkTypeface_FreeType::makeFontData() const {
 
 void SkTypeface_FreeType::FontDataPaletteToDescriptorPalette(const SkFontData& fontData,
                                                              SkFontDescriptor* desc) {
-    desc->setPaleteIndex(fontData.getPaletteIndex());
+    desc->setPaletteIndex(fontData.getPaletteIndex());
     int paletteOverrideCount = fontData.getPaletteOverrideCount();
     auto overrides = desc->setPaletteEntryOverrides(paletteOverrideCount);
     for (int i = 0; i < paletteOverrideCount; ++i) {

@@ -21,7 +21,9 @@ export function parseQuery(s: string): TestQuery {
   try {
     return parseQueryImpl(s);
   } catch (ex) {
-    ex.message += '\n  on: ' + s;
+    if (ex instanceof Error) {
+      ex.message += '\n  on: ' + s;
+    }
     throw ex;
   }
 }

@@ -139,7 +139,7 @@
 #include "src/wasm/wasm-serialization.h"
 #endif  // V8_ENABLE_WEBASSEMBLY
 
-#if V8_OS_LINUX || V8_OS_MACOSX || V8_OS_FREEBSD
+#if V8_OS_LINUX || V8_OS_DARWIN || V8_OS_FREEBSD
 #include <signal.h>
 #include "include/v8-wasm-trap-handler-posix.h"
 #include "src/trap-handler/handler-inside-posix.h"
@@ -3633,15 +3633,7 @@ bool Value::IsBoolean() const { return Utils::OpenHandle(this)->IsBoolean(); }
 
 bool Value::IsExternal() const {
   i::Object obj = *Utils::OpenHandle(this);
-  if (!obj.IsHeapObject()) return false;
-  i::HeapObject heap_obj = i::HeapObject::cast(obj);
-  // Check the instance type is JS_OBJECT (instance type of Externals) before
-  // attempting to get the Isolate since that guarantees the object is writable
-  // and GetIsolate will work.
-  if (heap_obj.map().instance_type() != i::JS_OBJECT_TYPE) return false;
-  i::Isolate* isolate = i::JSObject::cast(heap_obj).GetIsolate();
-  ASSERT_NO_SCRIPT_NO_EXCEPTION(isolate);
-  return heap_obj.IsExternal(isolate);
+  return obj.IsJSExternalObject();
 }
 
 bool Value::IsInt32() const {
@@ -5996,15 +5988,6 @@ void v8::Object::SetAlignedPointerInInternalFields(int argc, int indices[],
 #endif  // VERIFY_HEAP
 }
 
-static void* ExternalValue(i::Object obj) {
-  // Obscure semantics for undefined, but somehow checked in our unit tests...
-  if (obj.IsUndefined()) {
-    return nullptr;
-  }
-  i::Object foreign = i::JSObject::cast(obj).GetEmbedderField(0);
-  return reinterpret_cast<void*>(i::Foreign::cast(foreign).foreign_address());
-}
-
 // --- E n v i r o n m e n t ---
 
 void v8::V8::InitializePlatform(Platform* platform) {
@@ -6060,7 +6043,7 @@ bool v8::V8::Initialize(const int build_config) {
   return true;
 }
 
-#if V8_OS_LINUX || V8_OS_MACOSX
+#if V8_OS_LINUX || V8_OS_DARWIN
 bool TryHandleWebAssemblyTrapPosix(int sig_code, siginfo_t* info,
                                    void* context) {
 #if V8_ENABLE_WEBASSEMBLY && V8_TRAP_HANDLER_SUPPORTED
@@ -6732,6 +6715,11 @@ bool FunctionTemplate::IsLeafTemplateForApiObject(
 
 Local<External> v8::External::New(Isolate* isolate, void* value) {
   STATIC_ASSERT(sizeof(value) == sizeof(i::Address));
+  // Nullptr is not allowed here because serialization/deserialization of
+  // nullptr external api references is not possible as nullptr is used as an
+  // external_references table terminator, see v8::SnapshotCreator()
+  // constructors.
+  DCHECK_NOT_NULL(value);
   i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(isolate);
   LOG_API(i_isolate, External, New);
   ENTER_V8_NO_SCRIPT_NO_EXCEPTION(i_isolate);
@@ -6740,7 +6728,8 @@ Local<External> v8::External::New(Isolate* isolate, void* value) {
 }
 
 void* External::Value() const {
-  return ExternalValue(*Utils::OpenHandle(this));
+  auto self = Utils::OpenHandle(this);
+  return i::JSExternalObject::cast(*self).value();
 }
 
 // anonymous namespace for string creation helper functions
@@ -8531,10 +8520,11 @@ void Isolate::RequestGarbageCollectionForTesting(GarbageCollectionType type) {
 void Isolate::RequestGarbageCollectionForTesting(
     GarbageCollectionType type,
     EmbedderHeapTracer::EmbedderStackState stack_state) {
+  base::Optional<i::EmbedderStackStateScope> stack_scope;
   if (type == kFullGarbageCollection) {
-    reinterpret_cast<i::Isolate*>(this)
-        ->heap()
-        ->SetEmbedderStackStateForNextFinalization(stack_state);
+    stack_scope.emplace(reinterpret_cast<i::Isolate*>(this)->heap(),
+                        i::EmbedderStackStateScope::kExplicitInvocation,
+                        stack_state);
   }
   RequestGarbageCollectionForTesting(type);
 }
@@ -10241,19 +10231,6 @@ void EmbedderHeapTracer::FinalizeTracing() {
           i::GarbageCollectionReason::kExternalFinalize);
     }
   }
-}
-
-void EmbedderHeapTracer::GarbageCollectionForTesting(
-    EmbedderStackState stack_state) {
-  CHECK(isolate_);
-  Utils::ApiCheck(i::FLAG_expose_gc,
-                  "v8::EmbedderHeapTracer::GarbageCollectionForTesting",
-                  "Must use --expose-gc");
-  i::Heap* const heap = reinterpret_cast<i::Isolate*>(isolate_)->heap();
-  heap->SetEmbedderStackStateForNextFinalization(stack_state);
-  heap->PreciseCollectAllGarbage(i::Heap::kNoGCFlags,
-                                 i::GarbageCollectionReason::kTesting,
-                                 kGCCallbackFlagForced);
 }
 
 void EmbedderHeapTracer::IncreaseAllocatedSize(size_t bytes) {

@@ -24,6 +24,8 @@ static void test_static_index_list()
   VERIFY_IS_EQUAL(static_cast<Index>(reduction_axis[1]), 1);
   VERIFY_IS_EQUAL(static_cast<Index>(reduction_axis[2]), 2);
 
+  VERIFY_IS_EQUAL(reduction_axis.size(), std::size_t(3));
+
   EIGEN_STATIC_ASSERT((internal::array_get<0>(reduction_axis) == 0), YOU_MADE_A_PROGRAMMING_MISTAKE);
   EIGEN_STATIC_ASSERT((internal::array_get<1>(reduction_axis) == 1), YOU_MADE_A_PROGRAMMING_MISTAKE);
   EIGEN_STATIC_ASSERT((internal::array_get<2>(reduction_axis) == 2), YOU_MADE_A_PROGRAMMING_MISTAKE);

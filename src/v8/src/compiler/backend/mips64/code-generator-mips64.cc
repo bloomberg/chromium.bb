@@ -169,8 +169,10 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
                      exit());
     __ Daddu(scratch1_, object_, index_);
     RememberedSetAction const remembered_set_action =
-        mode_ > RecordWriteMode::kValueIsMap ? RememberedSetAction::kEmit
-                                             : RememberedSetAction::kOmit;
+        mode_ > RecordWriteMode::kValueIsMap ||
+                FLAG_use_full_record_write_builtin
+            ? RememberedSetAction::kEmit
+            : RememberedSetAction::kOmit;
     SaveFPRegsMode const save_fp_mode = frame()->DidAllocateDoubleRegisters()
                                             ? SaveFPRegsMode::kSave
                                             : SaveFPRegsMode::kIgnore;
@@ -455,9 +457,9 @@ FPUCondition FlagsConditionToConditionCmpFPU(bool* predicate,
     __ load_linked(i.TempRegister(2), MemOperand(i.TempRegister(0), 0));       \
     __ ExtractBits(i.OutputRegister(0), i.TempRegister(2), i.TempRegister(1),  \
                    size, sign_extend);                                         \
-    __ ExtractBits(i.InputRegister(2), i.InputRegister(2), zero_reg, size,     \
+    __ ExtractBits(i.TempRegister(2), i.InputRegister(2), zero_reg, size,      \
                    sign_extend);                                               \
-    __ BranchShort(&exit, ne, i.InputRegister(2),                              \
+    __ BranchShort(&exit, ne, i.TempRegister(2),                               \
                    Operand(i.OutputRegister(0)));                              \
     __ InsertBits(i.TempRegister(2), i.InputRegister(3), i.TempRegister(1),    \
                   size);                                                       \
@@ -4137,7 +4139,7 @@ void CodeGenerator::AssembleArchSelect(Instruction* instr,
 void CodeGenerator::FinishFrame(Frame* frame) {
   auto call_descriptor = linkage()->GetIncomingDescriptor();
 
-  const RegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
+  const DoubleRegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
   if (saves_fpu != 0) {
     int count = base::bits::CountPopulation(saves_fpu);
     DCHECK_EQ(kNumCalleeSavedFPU, count);
@@ -4146,8 +4148,8 @@ void CodeGenerator::FinishFrame(Frame* frame) {
   }
 
   const RegList saves = call_descriptor->CalleeSavedRegisters();
-  if (saves != 0) {
-    int count = base::bits::CountPopulation(saves);
+  if (!saves.is_empty()) {
+    int count = saves.Count();
     frame->AllocateSavedCalleeRegisterSlots(count);
   }
 }
@@ -4205,7 +4207,7 @@ void CodeGenerator::AssembleConstructFrame() {
   }
 
   const RegList saves = call_descriptor->CalleeSavedRegisters();
-  const RegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
+  const DoubleRegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
 
   if (required_slots > 0) {
     DCHECK(frame_access_state()->has_frame());
@@ -4246,7 +4248,7 @@ void CodeGenerator::AssembleConstructFrame() {
   const int returns = frame()->GetReturnSlotCount();
 
   // Skip callee-saved and return slots, which are pushed below.
-  required_slots -= base::bits::CountPopulation(saves);
+  required_slots -= saves.Count();
   required_slots -= base::bits::CountPopulation(saves_fpu);
   required_slots -= returns;
   if (required_slots > 0) {
@@ -4259,7 +4261,7 @@ void CodeGenerator::AssembleConstructFrame() {
     DCHECK_EQ(kNumCalleeSavedFPU, base::bits::CountPopulation(saves_fpu));
   }
 
-  if (saves != 0) {
+  if (!saves.is_empty()) {
     // Save callee-saved registers.
     __ MultiPush(saves);
   }
@@ -4280,12 +4282,12 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
 
   // Restore GP registers.
   const RegList saves = call_descriptor->CalleeSavedRegisters();
-  if (saves != 0) {
+  if (!saves.is_empty()) {
     __ MultiPop(saves);
   }
 
   // Restore FPU registers.
-  const RegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
+  const DoubleRegList saves_fpu = call_descriptor->CalleeSavedFPRegisters();
   if (saves_fpu != 0) {
     __ MultiPopFPU(saves_fpu);
   }

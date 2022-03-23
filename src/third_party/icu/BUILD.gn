@@ -145,6 +145,11 @@ config("icu_code") {
       "-DICU_IS_IN_FUCHSIA",
     ]
   }
+  if (target_cpu == "wasm") {
+    # Tell ICU that we are a 32 bit platform, otherwise,
+    # double-conversion-utils.h doesn't know how to operate.
+    defines += [ "__i386__" ]
+  }
 }
 
 # Config used to set default visibility to hidden.
@@ -305,7 +310,7 @@ template("generate_icuuc") {
       deps += [ ":icudata_hash" ]
     }
 
-    if (icu_use_data_file) {
+    if (icu_use_data_file && icu_use_stub_data) {
       sources += [ "source/stubdata/stubdata.cpp" ]
     }
 
@@ -371,6 +376,8 @@ if (is_android) {
   data_dir = "ios"
 } else if (is_chromeos) {
   data_dir = "chromeos"
+} else if (target_cpu == "wasm") {
+  data_dir = "flutter"
 } else {
   data_dir = "common"
 }
@@ -397,30 +404,47 @@ if (icu_use_data_file) {
     }
   }
 
+  if (is_chromeos) {
+    copy("icudata_hash") {
+      sources = [ "//third_party/icu/chromeos/icudtl.dat.hash" ]
+      outputs = [ "$root_out_dir/icudtl.dat.hash" ]
+    }
+  }
+
   copy("extra_icudata") {
     sources = [ "//third_party/icu/android_small/icudtl_extra.dat" ]
     outputs = [ "$root_out_dir/icudtl_extra.dat" ]
   }
-
-  copy("icudata_hash") {
-    sources = [ "//third_party/icu/chromeos/${data_bundle}.hash" ]
-    outputs = [ "$root_out_dir/${data_bundle}.hash" ]
-  }
 } else {
-  data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
+  if (target_cpu == "wasm") {
+    data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cpp"
+  } else {
+    data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
+  }
   inline_data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cc"
   action("make_data_assembly") {
-    script = "scripts/make_data_assembly.py"
-    inputs = [ "$data_dir/$data_bundle" ]
-    outputs = [ data_assembly ]
-    args = [
-      rebase_path(inputs[0], root_build_dir),
-      rebase_path(data_assembly, root_build_dir),
-    ]
-    if (is_mac || is_ios) {
-      args += [ "--mac" ]
-    } else if (is_win) {
-      args += [ "--win" ]
+    if (target_cpu == "wasm") {
+      # See scripts/make_data_cpp.py for details on building ICU for wasm.
+      script = "scripts/make_data_cpp.py"
+      inputs = [ "$data_dir/$data_bundle" ]
+      outputs = [ data_assembly ]
+      args = [
+        rebase_path(inputs[0], root_build_dir),
+        rebase_path(data_assembly, root_build_dir),
+      ]
+    } else {
+      script = "scripts/make_data_assembly.py"
+      inputs = [ "$data_dir/$data_bundle" ]
+      outputs = [ data_assembly ]
+      args = [
+        rebase_path(inputs[0], root_build_dir),
+        rebase_path(data_assembly, root_build_dir),
+      ]
+      if (is_mac || is_ios) {
+        args += [ "--mac" ]
+      } else if (is_win) {
+        args += [ "--win" ]
+      }
     }
   }
 

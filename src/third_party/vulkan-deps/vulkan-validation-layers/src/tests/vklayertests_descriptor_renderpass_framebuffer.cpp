@@ -1596,8 +1596,7 @@ TEST_F(VkLayerTest, InvalidFragmentDensityMapLayerCount) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkAttachmentDescription2 attach_desc = {};
-    attach_desc.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
+    VkAttachmentDescription2 attach_desc = LvlInitStruct<VkAttachmentDescription2>();
     attach_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -1608,17 +1607,14 @@ TEST_F(VkLayerTest, InvalidFragmentDensityMapLayerCount) {
                                                           nullptr, ref};
 
     // Create a renderPass with viewMask 0
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>();
     subpass.viewMask = 0;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>(&rpfdmi);
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
     rpci.pAttachments = &attach_desc;
-    rpci.pNext = &rpfdmi;
 
     VkRenderPass rp;
 
@@ -1632,9 +1628,7 @@ TEST_F(VkLayerTest, InvalidFragmentDensityMapLayerCount) {
                                                VK_IMAGE_TILING_OPTIMAL, 0));
     VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
 
-    VkFramebufferCreateInfo fb_info = {};
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = NULL;
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>();
     fb_info.renderPass = rp;
     fb_info.attachmentCount = 1;
     fb_info.pAttachments = &imageView;
@@ -2885,6 +2879,373 @@ TEST_F(VkLayerTest, RenderPassEndBeforeFinalSubpass) {
     vk::DestroyRenderPass(m_device->device(), rp, nullptr);
 }
 
+TEST_F(VkLayerTest, InvalidRenderPassEndFragmentDensityMapOffsetQCOM) {
+    TEST_DESCRIPTION("Ensure RenderPass end meets the requirements for VK_QCOM_fragment_density_map_offset");
+
+    // enable extension
+    AddRequiredExtensions(VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix,
+               VK_QCOM_FRAGMENT_DENSITY_MAP_OFFSET_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    m_errorMonitor->ExpectSuccess();
+
+    PFN_vkCmdEndRenderPass2KHR vkCmdEndRenderPass2KHR = nullptr;
+    PFN_vkCreateRenderPass2KHR vkCreateRenderPass2KHR = nullptr;
+
+    bool rp2Supported = CheckCreateRenderPass2Support(this, m_device_extension_names);
+
+    if (rp2Supported) {
+        vkCmdEndRenderPass2KHR =
+            reinterpret_cast<PFN_vkCmdEndRenderPass2KHR>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdEndRenderPass2KHR"));
+        vkCreateRenderPass2KHR =
+            reinterpret_cast<PFN_vkCreateRenderPass2KHR>(vk::GetDeviceProcAddr(m_device->device(), "vkCreateRenderPass2KHR"));
+    }
+
+    const VkFormat ds_format = FindSupportedDepthStencilFormat(gpu());
+    if (ds_format == VK_FORMAT_UNDEFINED) {
+        printf("%s No Depth + Stencil format found rest of tests skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    std::vector<VkAttachmentDescription2> attachments = {
+        // FDM attachments
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, VK_FORMAT_R8G8_UNORM, VK_SAMPLE_COUNT_1_BIT,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT},
+        // input attachments
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL},
+        // color attachments
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        // depth attachment
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, ds_format, VK_SAMPLE_COUNT_4_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
+        // resolve attachment
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        // preserve attachments
+        {VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr, 0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_4_BIT,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+         VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+    };
+
+    std::vector<VkAttachmentReference2> fdm = {
+        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, 0, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_ASPECT_COLOR_BIT},
+    };
+
+    std::vector<VkAttachmentReference2> input = {
+        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, 1, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_ASPECT_COLOR_BIT},
+    };
+
+    std::vector<VkAttachmentReference2> color = {
+        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT},
+        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, 3, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT},
+    };
+    VkAttachmentReference2 depth = {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, 4,
+                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT};
+    std::vector<VkAttachmentReference2> resolve = {
+        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, 5, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT},
+        {VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr, VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0},
+    };
+    std::vector<uint32_t> preserve = {6};
+
+    VkSubpassDescription2 subpass = {VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2,
+                                     nullptr,
+                                     0,
+                                     VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                     0,
+                                     (uint32_t)input.size(),
+                                     input.data(),
+                                     (uint32_t)color.size(),
+                                     color.data(),
+                                     resolve.data(),
+                                     &depth,
+                                     (uint32_t)preserve.size(),
+                                     preserve.data()};
+
+    // Create a renderPass with a single color attachment for fragment density map
+    auto fragment_density_map_create_info = LvlInitStruct<VkRenderPassFragmentDensityMapCreateInfoEXT>();
+    fragment_density_map_create_info.fragmentDensityMapAttachment.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkRenderPassCreateInfo2 rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+                                    &fragment_density_map_create_info,
+                                    0,
+                                    (uint32_t)attachments.size(),
+                                    attachments.data(),
+                                    1,
+                                    &subpass,
+                                    0,
+                                    nullptr,
+                                    0,
+                                    nullptr};
+
+    // Create rp2[0] without Multiview (zero viewMask), rp2[1] with Multiview
+    VkRenderPass rp2[2];
+    VkResult err = vkCreateRenderPass2KHR(m_device->device(), &rpci, nullptr, &rp2[0]);
+    ASSERT_VK_SUCCESS(err);
+
+    subpass.viewMask = 0x3u;
+    err = vkCreateRenderPass2KHR(m_device->device(), &rpci, nullptr, &rp2[1]);
+    ASSERT_VK_SUCCESS(err);
+
+    auto image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8_UNORM;
+    image_create_info.extent.width = 16;
+    image_create_info.extent.height = 16;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 3;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
+    image_create_info.flags = 0;
+
+    VkImageObj fdm_image(m_device);
+    fdm_image.init(&image_create_info);
+    ASSERT_TRUE(fdm_image.initialized());
+
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;
+
+    VkImageObj input_image(m_device);
+    input_image.init(&image_create_info);
+    ASSERT_TRUE(input_image.initialized());
+
+    image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    VkImageObj color_image1(m_device);
+    color_image1.init(&image_create_info);
+    ASSERT_TRUE(color_image1.initialized());
+
+    VkImageObj color_image2(m_device);
+    color_image2.init(&image_create_info);
+    ASSERT_TRUE(color_image2.initialized());
+
+    image_create_info.format = ds_format;
+    image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    VkImageObj depth_image(m_device);
+    depth_image.init(&image_create_info);
+    ASSERT_TRUE(depth_image.initialized());
+
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+
+    VkImageObj resolve_image(m_device);
+    resolve_image.init(&image_create_info);
+    ASSERT_TRUE(resolve_image.initialized());
+
+    image_create_info.samples = VK_SAMPLE_COUNT_4_BIT;
+    VkImageObj preserve_image(m_device);
+    preserve_image.init(&image_create_info);
+    ASSERT_TRUE(preserve_image.initialized());
+
+    // Create view attachment
+    VkImageView iv[7];
+    vk_testing::ImageView iv0;
+    auto ivci = LvlInitStruct<VkImageViewCreateInfo>();
+    ivci.image = fdm_image.handle();
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    ivci.format = VK_FORMAT_R8G8_UNORM;
+    ivci.flags = 0;
+    ivci.subresourceRange.layerCount = 3;
+    ivci.subresourceRange.baseMipLevel = 0;
+    ivci.subresourceRange.levelCount = 1;
+    ivci.subresourceRange.baseArrayLayer = 0;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    iv0.init(*m_device, ivci);
+    ASSERT_TRUE(iv0.initialized());
+    iv[0] = iv0.handle();
+
+    ivci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ivci.image = input_image.handle();
+    vk_testing::ImageView iv1;
+    iv1.init(*m_device, ivci);
+    ASSERT_TRUE(iv1.initialized());
+    iv[1] = iv1.handle();
+
+    ivci.image = color_image1.handle();
+    vk_testing::ImageView iv2;
+    iv2.init(*m_device, ivci);
+    ASSERT_TRUE(iv2.initialized());
+    iv[2] = iv2.handle();
+
+    ivci.image = color_image2.handle();
+    vk_testing::ImageView iv3;
+    iv3.init(*m_device, ivci);
+    ASSERT_TRUE(iv3.initialized());
+    iv[3] = iv3.handle();
+
+    ivci.format = ds_format;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    ivci.image = depth_image.handle();
+    vk_testing::ImageView iv4;
+    iv4.init(*m_device, ivci);
+    ASSERT_TRUE(iv4.initialized());
+    iv[4] = iv4.handle();
+
+    ivci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    ivci.image = resolve_image.handle();
+    vk_testing::ImageView iv5;
+    iv5.init(*m_device, ivci);
+    ASSERT_TRUE(iv5.initialized());
+    iv[5] = iv5.handle();
+
+    ivci.image = preserve_image.handle();
+    vk_testing::ImageView iv6;
+    iv6.init(*m_device, ivci);
+    ASSERT_TRUE(iv6.initialized());
+    iv[6] = iv6.handle();
+    ASSERT_VK_SUCCESS(err);
+
+    auto fbci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fbci.flags = 0;
+    fbci.width = 16;
+    fbci.height = 16;
+    fbci.layers = 1;
+    fbci.renderPass = rp2[0];
+    fbci.attachmentCount = 7;
+    fbci.pAttachments = iv;
+
+    vk_testing::Framebuffer fb1(*m_device, fbci);
+
+    fbci.renderPass = rp2[1];
+    vk_testing::Framebuffer fb2(*m_device, fbci);
+    m_errorMonitor->VerifyNotFound();
+
+    // define renderpass begin info
+    VkRenderPassBeginInfo rpbi1 = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, rp2[0], fb1.handle(), {{0, 0}, {16, 16}}, 0, nullptr};
+    VkRenderPassBeginInfo rpbi2 = {
+        VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, rp2[1], fb2.handle(), {{0, 0}, {16, 16}}, 0, nullptr};
+
+    if (rp2Supported) {
+        auto offsetting = LvlInitStruct<VkSubpassFragmentDensityMapOffsetEndInfoQCOM>();
+        auto subpassEndInfo = LvlInitStruct<VkSubpassEndInfoKHR>(&offsetting);
+        VkOffset2D m_vOffsets[2];
+        offsetting.pFragmentDensityOffsets = m_vOffsets;
+        offsetting.fragmentDensityOffsetCount = 2;
+
+        PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR =
+            (PFN_vkGetPhysicalDeviceProperties2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceProperties2KHR");
+        ASSERT_TRUE(vkGetPhysicalDeviceProperties2KHR != nullptr);
+        VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM fdm_offset_properties =
+            LvlInitStruct<VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM>();
+        VkPhysicalDeviceProperties2KHR properties2 = LvlInitStruct<VkPhysicalDeviceProperties2KHR>(&fdm_offset_properties);
+        vkGetPhysicalDeviceProperties2KHR(gpu(), &properties2);
+
+        m_vOffsets[0].x = 1;
+        m_vOffsets[0].y = 1;
+
+        m_vOffsets[1].x = 1;
+        m_vOffsets[1].y = 1;
+
+        m_commandBuffer->reset();
+        m_commandBuffer->begin();
+
+        // begin renderpass that uses rbpi1 renderpass begin info
+        vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi1, VK_SUBPASS_CONTENTS_INLINE);
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-fragmentDensityMapOffsets-06503");
+
+        if (fdm_offset_properties.fragmentDensityOffsetGranularity.width > 1) {
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-x-06512");
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-x-06512");
+        }
+
+        if (fdm_offset_properties.fragmentDensityOffsetGranularity.height > 1) {
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-y-06513");
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-y-06513");
+        }
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(
+            kErrorBit, "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-fragmentDensityMapAttachment-06504");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pInputAttachments-06506");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pColorAttachments-06507");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pColorAttachments-06507");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pDepthStencilAttachment-06505");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pResolveAttachments-06508");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pPreserveAttachments-06509");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-fragmentDensityOffsetCount-06511");
+        vkCmdEndRenderPass2KHR(m_commandBuffer->handle(), &subpassEndInfo);
+        m_errorMonitor->VerifyFound();
+
+        m_commandBuffer->reset();
+        m_commandBuffer->begin();
+
+        // begin renderpass that uses rbpi2 renderpass begin info
+        vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi2, VK_SUBPASS_CONTENTS_INLINE);
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-x-06512");
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-x-06512");
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-y-06513");
+        m_errorMonitor->SetUnexpectedError("VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-y-06513");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkFramebufferCreateInfo-renderPass-06502");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-fragmentDensityMapOffsets-06503");
+        m_errorMonitor->SetDesiredFailureMsg(
+            kErrorBit, "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-fragmentDensityMapAttachment-06504");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pInputAttachments-06506");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pColorAttachments-06507");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pColorAttachments-06507");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pDepthStencilAttachment-06505");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pResolveAttachments-06508");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-pPreserveAttachments-06509");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
+                                             "VUID-VkSubpassFragmentDensityMapOffsetEndInfoQCOM-fragmentDensityOffsetCount-06510");
+        vkCmdEndRenderPass2KHR(m_commandBuffer->handle(), &subpassEndInfo);
+        m_errorMonitor->VerifyFound();
+    }
+
+    vk::DestroyRenderPass(m_device->device(), rp2[0], nullptr);
+    vk::DestroyRenderPass(m_device->device(), rp2[1], nullptr);
+}
+
 TEST_F(VkLayerTest, RenderPassDestroyWhileInUse) {
     TEST_DESCRIPTION("Delete in-use renderPass.");
 
@@ -3527,8 +3888,7 @@ TEST_F(VkLayerTest, AllocDescriptorFromEmptyPool) {
     // Try to allocate 2 sets when pool only has 1 set
     VkDescriptorSet descriptor_sets[2];
     VkDescriptorSetLayout set_layouts[2] = {ds_layout_samp.handle(), ds_layout_samp.handle()};
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
     alloc_info.descriptorSetCount = 2;
     alloc_info.descriptorPool = ds_pool;
     alloc_info.pSetLayouts = set_layouts;
@@ -3592,8 +3952,7 @@ TEST_F(VkLayerTest, FreeDescriptorFromOneShotPool) {
     const VkDescriptorSetLayoutObj ds_layout(m_device, {dsl_binding});
 
     VkDescriptorSet descriptorSet;
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
     alloc_info.descriptorSetCount = 1;
     alloc_info.descriptorPool = ds_pool;
     alloc_info.pSetLayouts = &ds_layout.handle();
@@ -4220,8 +4579,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     const VkDescriptorSetLayoutObj ds_layout(m_device, {dsl_binding});
 
     VkDescriptorSet descriptorSet;
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
     alloc_info.descriptorSetCount = 1;
     alloc_info.descriptorPool = ds_pool;
     alloc_info.pSetLayouts = &ds_layout.handle();
@@ -5358,8 +5716,7 @@ TEST_F(VkLayerTest, DescriptorSetCompatibility) {
 
     static const uint32_t NUM_SETS = 4;
     VkDescriptorSet descriptorSet[NUM_SETS] = {};
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
     alloc_info.descriptorPool = ds_pool;
     alloc_info.descriptorSetCount = ds_vk_layouts.size();
     alloc_info.pSetLayouts = ds_vk_layouts.data();
@@ -6281,9 +6638,7 @@ TEST_F(VkLayerTest, CopyDescriptorUpdateErrors) {
     descriptor_set.WriteDescriptorImageInfo(1, VK_NULL_HANDLE, sampler, VK_DESCRIPTOR_TYPE_SAMPLER);
     descriptor_set.UpdateDescriptorSets();
     // Now perform a copy update that fails due to type mismatch
-    VkCopyDescriptorSet copy_ds_update;
-    memset(&copy_ds_update, 0, sizeof(VkCopyDescriptorSet));
-    copy_ds_update.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+    VkCopyDescriptorSet copy_ds_update = LvlInitStruct<VkCopyDescriptorSet>();
     copy_ds_update.srcSet = descriptor_set.set_;
     copy_ds_update.srcBinding = 1;  // Copy from SAMPLER binding
     copy_ds_update.dstSet = descriptor_set.set_;
@@ -6294,8 +6649,7 @@ TEST_F(VkLayerTest, CopyDescriptorUpdateErrors) {
     m_errorMonitor->VerifyFound();
     // Now perform a copy update that fails due to binding out of bounds
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, " does not have copy update src binding of 3.");
-    memset(&copy_ds_update, 0, sizeof(VkCopyDescriptorSet));
-    copy_ds_update.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+    copy_ds_update = LvlInitStruct<VkCopyDescriptorSet>();
     copy_ds_update.srcSet = descriptor_set.set_;
     copy_ds_update.srcBinding = 3;  // ERROR : Invalid binding for matching layout
     copy_ds_update.dstSet = descriptor_set.set_;
@@ -6310,8 +6664,7 @@ TEST_F(VkLayerTest, CopyDescriptorUpdateErrors) {
                                          " binding#1 with offset index of 1 plus update array offset of 0 and update of 5 "
                                          "descriptors oversteps total number of descriptors in set: 2.");
 
-    memset(&copy_ds_update, 0, sizeof(VkCopyDescriptorSet));
-    copy_ds_update.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+    copy_ds_update = LvlInitStruct<VkCopyDescriptorSet>();
     copy_ds_update.srcSet = descriptor_set.set_;
     copy_ds_update.srcBinding = 1;
     copy_ds_update.dstSet = descriptor_set.set_;
@@ -6452,8 +6805,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
     ref.attachment = 0;
     ref.layout = VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT;
 
-    VkRenderPassFragmentDensityMapCreateInfoEXT rpfdmi = {};
-    rpfdmi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT;
+    VkRenderPassFragmentDensityMapCreateInfoEXT rpfdmi = LvlInitStruct<VkRenderPassFragmentDensityMapCreateInfoEXT>();
     rpfdmi.fragmentDensityMapAttachment = ref;
 
     VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>(&rpfdmi);
@@ -6587,8 +6939,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     subpass.pColorAttachments = &color_att;
 
     uint32_t viewMasks[] = {0x3u};
-    VkRenderPassMultiviewCreateInfo rpmvci = {};
-    rpmvci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+    VkRenderPassMultiviewCreateInfo rpmvci = LvlInitStruct<VkRenderPassMultiviewCreateInfo>();
     rpmvci.subpassCount = 1;
     rpmvci.pViewMasks = viewMasks;
 
@@ -6905,8 +7256,7 @@ TEST_F(VkLayerTest, UpdateDestroyDescriptorSetLayout) {
     write_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     write_descriptor.pBufferInfo = &info;
 
-    VkCopyDescriptorSet copy_descriptor = {};
-    copy_descriptor.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+    VkCopyDescriptorSet copy_descriptor = LvlInitStruct<VkCopyDescriptorSet>();
     copy_descriptor.srcSet = VK_NULL_HANDLE;  // must update
     copy_descriptor.srcBinding = 0;
     copy_descriptor.dstSet = VK_NULL_HANDLE;  // must update
@@ -7014,8 +7364,7 @@ TEST_F(VkLayerTest, FramebufferIncompatible) {
     err = vk::CreateFramebuffer(m_device->device(), &fci, nullptr, &fb);
     ASSERT_VK_SUCCESS(err);
 
-    VkCommandBufferAllocateInfo cbai = {};
-    cbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    VkCommandBufferAllocateInfo cbai = LvlInitStruct<VkCommandBufferAllocateInfo>();
     cbai.commandPool = m_commandPool->handle();
     cbai.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
     cbai.commandBufferCount = 1;
@@ -7032,7 +7381,7 @@ TEST_F(VkLayerTest, FramebufferIncompatible) {
     vk::BeginCommandBuffer(sec_cb, &cbbi);
     vk::EndCommandBuffer(sec_cb);
 
-    VkCommandBufferBeginInfo cbbi2 = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, 0, nullptr};
+    VkCommandBufferBeginInfo cbbi2 = LvlInitStruct<VkCommandBufferBeginInfo>();
     vk::BeginCommandBuffer(m_commandBuffer->handle(), &cbbi2);
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &m_renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -7461,7 +7810,7 @@ TEST_F(VkLayerTest, DescriptorIndexingSetLayout) {
 
     if (!(CheckDescriptorIndexingSupportAndInitFramework(this, m_instance_extension_names, m_device_extension_names, NULL,
                                                          m_errorMonitor))) {
-        printf("%s Descriptor indexing or one of its dependencies not supported, skipping tests\n.", kSkipPrefix);
+        printf("%s Descriptor indexing or one of its dependencies not supported, skipping tests.\n", kSkipPrefix);
         return;
     }
 
@@ -7817,7 +8166,7 @@ TEST_F(VkLayerTest, DescriptorIndexingSetNonIdenticalWrite) {
 
     if (!(CheckDescriptorIndexingSupportAndInitFramework(this, m_instance_extension_names, m_device_extension_names, NULL,
                                                          m_errorMonitor))) {
-        printf("%s Descriptor indexing or one of its dependencies not supported, skipping tests\n.", kSkipPrefix);
+        printf("%s Descriptor indexing or one of its dependencies not supported, skipping tests.\n", kSkipPrefix);
         return;
     }
 
@@ -8005,9 +8354,7 @@ TEST_F(VkLayerTest, CreateDescriptorUpdateTemplate) {
 
     uint64_t badhandle = 0xcadecade;
     VkDescriptorUpdateTemplateEntry entries = {0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0, sizeof(VkBuffer)};
-    VkDescriptorUpdateTemplateCreateInfo create_info = {};
-    create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO;
-    create_info.pNext = nullptr;
+    VkDescriptorUpdateTemplateCreateInfo create_info = LvlInitStruct<VkDescriptorUpdateTemplateCreateInfo>();
     create_info.flags = 0;
     create_info.descriptorUpdateEntryCount = 1;
     create_info.pDescriptorUpdateEntries = &entries;
@@ -8248,8 +8595,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
 
     VkDescriptorSet descriptor_sets[2];
     VkDescriptorSetLayout set_layouts[2] = {ds_layout, ds_layout};
-    VkDescriptorSetAllocateInfo alloc_info = {};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo alloc_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
     alloc_info.descriptorSetCount = 2;
     alloc_info.descriptorPool = ds_pool;
     alloc_info.pSetLayouts = set_layouts;
@@ -8265,8 +8611,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
 
     uint32_t dummyData[8] = {};
-    VkWriteDescriptorSetInlineUniformBlockEXT write_inline_uniform = {};
-    write_inline_uniform.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK_EXT;
+    VkWriteDescriptorSetInlineUniformBlockEXT write_inline_uniform = LvlInitStruct<VkWriteDescriptorSetInlineUniformBlockEXT>();
     write_inline_uniform.dataSize = 3;
     write_inline_uniform.pData = &dummyData[0];
     descriptor_write.pNext = &write_inline_uniform;
@@ -8293,8 +8638,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
     m_errorMonitor->VerifyNotFound();
 
     // Test invalid VkCopyDescriptorSet parameters (array element and size must be multiple of 4)
-    VkCopyDescriptorSet copy_ds_update = {};
-    copy_ds_update.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+    VkCopyDescriptorSet copy_ds_update = LvlInitStruct<VkCopyDescriptorSet>();
     copy_ds_update.srcSet = descriptor_sets[0];
     copy_ds_update.srcBinding = 0;
     copy_ds_update.srcArrayElement = 0;
@@ -10458,8 +10802,7 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
     auto prop2 = LvlInitStruct<VkPhysicalDeviceProperties2KHR>(&inlineUniformProps);
     vk::GetPhysicalDeviceProperties2(gpu(), &prop2);
 
-    VkPhysicalDeviceInlineUniformBlockFeaturesEXT extEnable = {};
-    extEnable.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES_EXT;
+    VkPhysicalDeviceInlineUniformBlockFeaturesEXT extEnable = LvlInitStruct<VkPhysicalDeviceInlineUniformBlockFeaturesEXT>();
     extEnable.inlineUniformBlock = VK_TRUE;
     extEnable.descriptorBindingInlineUniformBlockUpdateAfterBind = VK_FALSE;
 
@@ -10501,8 +10844,8 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
 
     vk_testing::DescriptorPool descPool;
     {
-        VkDescriptorPoolInlineUniformBlockCreateInfoEXT descPoolInlineInfo = {};
-        descPoolInlineInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO_EXT;
+        VkDescriptorPoolInlineUniformBlockCreateInfoEXT descPoolInlineInfo =
+            LvlInitStruct<VkDescriptorPoolInlineUniformBlockCreateInfoEXT>();
         descPoolInlineInfo.maxInlineUniformBlockBindings = 2;
 
         VkDescriptorPoolSize poolSize[2];
@@ -10522,8 +10865,7 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
 
     VkDescriptorSet descSetHandle = VK_NULL_HANDLE;
     {
-        VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        VkDescriptorSetAllocateInfo allocInfo = LvlInitStruct<VkDescriptorSetAllocateInfo>();
         allocInfo.pSetLayouts = &descLayout.handle();
         allocInfo.descriptorSetCount = 1;
         allocInfo.descriptorPool = descPool.handle();
@@ -10537,18 +10879,16 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
     }
     vk_testing::DescriptorSet descSet(*m_device, &descPool, descSetHandle);
 
-    VkWriteDescriptorSetInlineUniformBlockEXT writeInlineUbDesc{};
-    writeInlineUbDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK_EXT;
+    VkWriteDescriptorSetInlineUniformBlockEXT writeInlineUbDesc = LvlInitStruct<VkWriteDescriptorSetInlineUniformBlockEXT>();
     writeInlineUbDesc.dataSize = sizeof(inline_data);
     writeInlineUbDesc.pData = inline_data;
 
-    VkWriteDescriptorSet writeDesc = LvlInitStruct<VkWriteDescriptorSet>();
+    VkWriteDescriptorSet writeDesc = LvlInitStruct<VkWriteDescriptorSet>(&writeInlineUbDesc);
     writeDesc.descriptorCount = sizeof(inline_data);
     writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
     writeDesc.dstBinding = 0;
     writeDesc.dstArrayElement = 0;
     writeDesc.dstSet = descSet.handle();
-    writeDesc.pNext = &writeInlineUbDesc;
 
     m_errorMonitor->Reset();
     m_errorMonitor->ExpectSuccess();
@@ -11089,12 +11429,10 @@ TEST_F(VkLayerTest, InvalidDeviceGroupRenderAreaDynamicRendering) {
     device_group_render_pass_begin_info.deviceRenderAreaCount = 1;
     device_group_render_pass_begin_info.pDeviceRenderAreas = &renderArea;
 
-    VkRenderingAttachmentInfoKHR color_attachment = {};
-    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     auto begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>(&device_group_render_pass_begin_info);
-    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
     begin_rendering_info.flags = VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT_KHR;
     begin_rendering_info.colorAttachmentCount = 1;
     begin_rendering_info.pColorAttachments = &color_attachment;
@@ -11196,8 +11534,8 @@ TEST_F(VkLayerTest, EndRenderingWithIncorrectlyStartedRenderpassInstance) {
 
     VkFormat color_formats = {VK_FORMAT_R8G8B8A8_UNORM};
 
-    VkCommandBufferInheritanceRenderingInfoKHR inheritance_rendering_info = {};
-    inheritance_rendering_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO_KHR;
+    VkCommandBufferInheritanceRenderingInfoKHR inheritance_rendering_info =
+        LvlInitStruct<VkCommandBufferInheritanceRenderingInfoKHR>();
     inheritance_rendering_info.colorAttachmentCount = 1;
     inheritance_rendering_info.pColorAttachmentFormats = &color_formats;
 
@@ -11257,13 +11595,11 @@ TEST_F(VkLayerTest, EndRenderpassWithBeginRenderingRenderpassInstance) {
     image.InitNoLayout(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
     VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
 
-    VkRenderingAttachmentInfoKHR color_attachment = {};
-    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+    VkRenderingAttachmentInfoKHR color_attachment = LvlInitStruct<VkRenderingAttachmentInfoKHR>();
     color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_attachment.imageView = imageView;
 
-    VkRenderingInfoKHR begin_rendering_info = {};
-    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+    VkRenderingInfoKHR begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>();
     begin_rendering_info.colorAttachmentCount = 1;
     begin_rendering_info.pColorAttachments = &color_attachment;
 

@@ -30,6 +30,7 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_stack_trace.h"
+#include "common/platform/api/quiche_mem_slice.h"
 #include "spdy/core/http2_frame_decoder_adapter.h"
 
 using http2::Http2DecoderAdapter;
@@ -675,7 +676,8 @@ size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov) {
 size_t QuicSpdySession::WriteHeadersOnHeadersStream(
     QuicStreamId id, SpdyHeaderBlock headers, bool fin,
     const spdy::SpdyStreamPrecedence& precedence,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   QUICHE_DCHECK(!VersionUsesHttp3(transport_version()));
 
   return WriteHeadersOnHeadersStreamImpl(
@@ -904,7 +906,8 @@ bool QuicSpdySession::UsesPendingStreamForFrame(QuicFrameType type,
 size_t QuicSpdySession::WriteHeadersOnHeadersStreamImpl(
     QuicStreamId id, spdy::SpdyHeaderBlock headers, bool fin,
     QuicStreamId parent_stream_id, int weight, bool exclusive,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   QUICHE_DCHECK(!VersionUsesHttp3(transport_version()));
 
   const QuicByteCount uncompressed_size = headers.TotalBytesUsed();
@@ -1591,13 +1594,6 @@ bool QuicSpdySession::goaway_sent() const {
              : transport_goaway_sent();
 }
 
-bool QuicSpdySession::CanCreatePushStreamWithId(PushId /* push_id */) {
-  // TODO(b/171463363): Remove this method.
-  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
-
-  return false;
-}
-
 void QuicSpdySession::CloseConnectionOnDuplicateHttp3UnidirectionalStreams(
     absl::string_view type) {
   QUIC_PEER_BUG(quic_peer_bug_10360_9) << absl::StrCat(
@@ -1669,8 +1665,8 @@ MessageStatus QuicSpdySession::SendHttp3Datagram(
   if (context_id.has_value()) {
     slice_length += QuicDataWriter::GetVarInt62Len(context_id.value());
   }
-  QuicBuffer buffer(connection()->helper()->GetStreamSendBufferAllocator(),
-                    slice_length);
+  quiche::QuicheBuffer buffer(
+      connection()->helper()->GetStreamSendBufferAllocator(), slice_length);
   QuicDataWriter writer(slice_length, buffer.data());
   if (!writer.WriteVarInt62(stream_id_to_write)) {
     QUIC_BUG(h3 datagram stream ID write fail)
@@ -1690,7 +1686,7 @@ MessageStatus QuicSpdySession::SendHttp3Datagram(
     return MESSAGE_STATUS_INTERNAL_ERROR;
   }
 
-  QuicMemSlice slice(std::move(buffer));
+  quiche::QuicheMemSlice slice(std::move(buffer));
   return datagram_queue()->SendOrQueueDatagram(std::move(slice));
 }
 

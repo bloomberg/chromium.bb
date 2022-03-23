@@ -197,34 +197,6 @@ apps::mojom::InstallSource ConvertInstallSourceToMojom(
   }
 }
 
-apps::WindowMode GetDisplayMode(blink::mojom::DisplayMode display_mode) {
-  switch (display_mode) {
-    case blink::mojom::DisplayMode::kUndefined:
-      return apps::WindowMode::kUnknown;
-    case blink::mojom::DisplayMode::kBrowser:
-      return apps::WindowMode::kBrowser;
-    case blink::mojom::DisplayMode::kTabbed:
-      return apps::WindowMode::kTabbedWindow;
-    case blink::mojom::DisplayMode::kMinimalUi:
-    case blink::mojom::DisplayMode::kStandalone:
-    case blink::mojom::DisplayMode::kFullscreen:
-    case blink::mojom::DisplayMode::kWindowControlsOverlay:
-      return apps::WindowMode::kWindow;
-  }
-}
-
-apps::RunOnOsLoginMode ConvertOsLoginMode(
-    web_app::RunOnOsLoginMode login_mode) {
-  switch (login_mode) {
-    case web_app::RunOnOsLoginMode::kWindowed:
-      return apps::RunOnOsLoginMode::kWindowed;
-    case web_app::RunOnOsLoginMode::kNotRun:
-      return apps::RunOnOsLoginMode::kNotRun;
-    case web_app::RunOnOsLoginMode::kMinimized:
-      return apps::RunOnOsLoginMode::kUnknown;
-  }
-}
-
 bool IsNoteTakingWebApp(const web_app::WebApp& web_app) {
   return web_app.note_taking_new_note_url().is_valid();
 }
@@ -406,7 +378,7 @@ void WebAppPublisherHelper::SetWebAppShowInFields(apps::mojom::AppPtr& app,
 void WebAppPublisherHelper::PopulateWebAppPermissions(
     const WebApp* web_app,
     std::vector<apps::mojom::PermissionPtr>* target) {
-  const GURL url = web_app->start_url();
+  const GURL& url = web_app->start_url();
 
   auto* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -450,7 +422,7 @@ apps::Permissions WebAppPublisherHelper::CreatePermissions(
     const WebApp* web_app) {
   apps::Permissions permissions;
 
-  const GURL url = web_app->start_url();
+  const GURL& url = web_app->start_url();
   auto* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
   DCHECK(host_content_settings_map);
@@ -574,14 +546,12 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   }
 #endif
 
-  app->window_mode =
-      GetDisplayMode(registrar().GetAppUserDisplayMode(web_app->app_id()));
+  app->window_mode = ConvertDisplayModeToWindowMode(
+      registrar().GetAppUserDisplayMode(web_app->app_id()));
 
   const auto login_mode = registrar().GetAppRunOnOsLoginMode(web_app->app_id());
-  app->run_on_os_login =
-      apps::RunOnOsLogin(apps::ConvertMojomRunOnOsLoginModeToRunOnOsLoginMode(
-                             ConvertOsLoginModeToMojom(login_mode.value)),
-                         !login_mode.user_controllable);
+  app->run_on_os_login = apps::RunOnOsLogin(
+      ConvertOsLoginMode(login_mode.value), !login_mode.user_controllable);
   return app;
 }
 
@@ -634,7 +604,8 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
   app->publisher_id = web_app->start_url().spec();
 
   auto display_mode = registrar().GetAppUserDisplayMode(web_app->app_id());
-  app->window_mode = ConvertDisplayModeToWindowMode(display_mode);
+  app->window_mode = apps::ConvertWindowModeToMojomWindowMode(
+      ConvertDisplayModeToWindowMode(display_mode));
 
   // app->version is left empty here.
   PopulateWebAppPermissions(web_app, &app->permissions);
@@ -685,7 +656,8 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
 #endif
   const auto login_mode = registrar().GetAppRunOnOsLoginMode(web_app->app_id());
   app->run_on_os_login = apps::mojom::RunOnOsLogin::New(
-      ConvertOsLoginModeToMojom(login_mode.value),
+      apps::ConvertRunOnOsLoginModeToMojomRunOnOsLoginMode(
+          ConvertOsLoginMode(login_mode.value)),
       !login_mode.user_controllable);
 
   return app;
@@ -729,11 +701,9 @@ void WebAppPublisherHelper::UninstallWebApp(
   web_app = nullptr;
 
   if (!clear_site_data) {
-    // TODO(crbug.com/1062885): Add UMA_HISTOGRAM_ENUMERATION here.
     return;
   }
 
-  // TODO(crbug.com/1062885): Add UMA_HISTOGRAM_ENUMERATION here.
   constexpr bool kClearCookies = true;
   constexpr bool kClearStorage = true;
   constexpr bool kClearCache = true;
@@ -1069,19 +1039,14 @@ void WebAppPublisherHelper::StopApp(const std::string& app_id) {
     return;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   if (!IsWebAppsCrosapiEnabled()) {
-    return;
-  }
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!chromeos::LacrosService::Get()->init_params()->web_apps_enabled) {
     return;
   }
 #endif
 
   apps::BrowserAppInstanceTracker* instance_tracker =
-      apps::AppServiceProxyFactory::GetInstance()
-          ->GetForProfile(profile_)
+      apps::AppServiceProxyFactory::GetForProfile(profile_)
           ->BrowserAppInstanceTracker();
 
   instance_tracker->StopInstancesOfApp(app_id);
@@ -1101,11 +1066,11 @@ void WebAppPublisherHelper::OpenNativeSettings(const std::string& app_id) {
   chrome::ShowSiteSettings(profile(), web_app->start_url());
 }
 
-apps::mojom::WindowMode WebAppPublisherHelper::GetWindowMode(
+apps::WindowMode WebAppPublisherHelper::GetWindowMode(
     const std::string& app_id) {
   const WebApp* web_app = GetWebApp(app_id);
   if (!web_app)
-    return apps::mojom::WindowMode::kUnknown;
+    return apps::WindowMode::kUnknown;
 
   auto display_mode = registrar().GetAppUserDisplayMode(web_app->app_id());
   return ConvertDisplayModeToWindowMode(display_mode);
@@ -1158,32 +1123,32 @@ WebAppPublisherHelper::ConvertOsLoginModeToWebAppConstants(
   return web_app_constant_login_mode;
 }
 
-apps::mojom::RunOnOsLoginMode WebAppPublisherHelper::ConvertOsLoginModeToMojom(
+apps::RunOnOsLoginMode WebAppPublisherHelper::ConvertOsLoginMode(
     web_app::RunOnOsLoginMode login_mode) {
   switch (login_mode) {
     case web_app::RunOnOsLoginMode::kWindowed:
-      return apps::mojom::RunOnOsLoginMode::kWindowed;
+      return apps::RunOnOsLoginMode::kWindowed;
     case web_app::RunOnOsLoginMode::kNotRun:
-      return apps::mojom::RunOnOsLoginMode::kNotRun;
+      return apps::RunOnOsLoginMode::kNotRun;
     case web_app::RunOnOsLoginMode::kMinimized:
-      return apps::mojom::RunOnOsLoginMode::kUnknown;
+      return apps::RunOnOsLoginMode::kUnknown;
   }
 }
 
-apps::mojom::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
+apps::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
     blink::mojom::DisplayMode display_mode) {
   switch (display_mode) {
     case blink::mojom::DisplayMode::kUndefined:
-      return apps::mojom::WindowMode::kUnknown;
+      return apps::WindowMode::kUnknown;
     case blink::mojom::DisplayMode::kBrowser:
-      return apps::mojom::WindowMode::kBrowser;
+      return apps::WindowMode::kBrowser;
     case blink::mojom::DisplayMode::kTabbed:
-      return apps::mojom::WindowMode::kTabbedWindow;
+      return apps::WindowMode::kTabbedWindow;
     case blink::mojom::DisplayMode::kMinimalUi:
     case blink::mojom::DisplayMode::kStandalone:
     case blink::mojom::DisplayMode::kFullscreen:
     case blink::mojom::DisplayMode::kWindowControlsOverlay:
-      return apps::mojom::WindowMode::kWindow;
+      return apps::WindowMode::kWindow;
   }
 }
 
@@ -1196,7 +1161,7 @@ void WebAppPublisherHelper::PublishWindowModeUpdate(
   }
 
   auto app = std::make_unique<apps::App>(app_type(), app_id);
-  app->window_mode = GetDisplayMode(display_mode);
+  app->window_mode = ConvertDisplayModeToWindowMode(display_mode);
   delegate_->PublishWebApp(std::move(app));
 }
 
@@ -1658,6 +1623,7 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::App& app) {
     DCHECK(system_app);
     app.show_in_launcher = system_app->ShouldShowInLauncher();
     app.show_in_search = system_app->ShouldShowInSearch();
+    app.show_in_shelf = app.show_in_search;
   }
 #endif
 }
@@ -1686,6 +1652,7 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::mojom::AppPtr& app) {
     app->show_in_search = system_app->ShouldShowInSearch()
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;
+    app->show_in_shelf = app->show_in_search;
   }
 #endif
 }

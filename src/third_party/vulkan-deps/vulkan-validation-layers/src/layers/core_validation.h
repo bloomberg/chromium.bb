@@ -316,7 +316,8 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidatePrimaryCommandBuffer(const CMD_BUFFER_STATE* pCB, char const* cmd_name, const char* error_code) const;
 
     void RecordCmdNextSubpassLayouts(VkCommandBuffer commandBuffer, VkSubpassContents contents);
-    bool ValidateCmdEndRenderPass(RenderPassCreateVersion rp_version, VkCommandBuffer commandBuffer, CMD_TYPE cmd_type) const;
+    bool ValidateCmdEndRenderPass(RenderPassCreateVersion rp_version, VkCommandBuffer commandBuffer, CMD_TYPE cmd_type,
+                                  const VkSubpassEndInfo* pSubpassEndInfo) const;
     void RecordCmdEndRenderPassLayouts(VkCommandBuffer commandBuffer);
     bool ValidateFramebufferCreateInfo(const VkFramebufferCreateInfo* pCreateInfo) const;
     bool MatchUsage(uint32_t count, const VkAttachmentReference2* attachments, const VkFramebufferCreateInfo* fbci,
@@ -395,6 +396,7 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateUpdateDescriptorSetWithTemplate(VkDescriptorSet descriptorSet, VkDescriptorUpdateTemplate descriptorUpdateTemplate,
                                                  const void* pData) const;
     bool ValidateMemoryIsBoundToBuffer(const BUFFER_STATE*, const char*, const char*) const;
+    bool ValidateHostVisibleMemoryIsBoundToBuffer(const BUFFER_STATE*, const char*, const char*) const;
     bool ValidateMemoryIsBoundToImage(const IMAGE_STATE*, const char*, const char*) const;
     bool ValidateMemoryIsBoundToImage(const IMAGE_STATE*, const Location&) const;
     template <typename Location>
@@ -580,8 +582,6 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateShaderStageGroupNonUniform(SHADER_MODULE_STATE const* module_state, VkShaderStageFlagBits stage,
                                             spirv_inst_iter& insn) const;
     bool ValidateMemoryScope(SHADER_MODULE_STATE const* module_state, const spirv_inst_iter& insn) const;
-    bool ValidateWorkgroupSize(SHADER_MODULE_STATE const* module_state, VkPipelineShaderStageCreateInfo const* pStage,
-                               const std::unordered_map<uint32_t, std::vector<uint32_t>>& id_value_map) const;
     bool ValidateCooperativeMatrix(SHADER_MODULE_STATE const* module_state, VkPipelineShaderStageCreateInfo const* pStage,
                                    const PIPELINE_STATE* pipeline) const;
     bool ValidateShaderResolveQCOM(SHADER_MODULE_STATE const* module_state, VkPipelineShaderStageCreateInfo const* pStage,
@@ -909,7 +909,6 @@ class CoreChecks : public ValidationStateTracker {
                                          const VkAllocationCallbacks* pAllocator) const override;
 
     bool PreCallValidateDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks* pAllocator) const override;
-    void PreCallRecordDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks* pAllocator) override;
 
     bool PreCallValidateDestroyBufferView(VkDevice device, VkBufferView bufferView,
                                           const VkAllocationCallbacks* pAllocator) const override;
@@ -1552,7 +1551,8 @@ class CoreChecks : public ValidationStateTracker {
     bool PreCallValidateGetSemaphoreCounterValueKHR(VkDevice device, VkSemaphore sempahore, uint64_t* pValue) const override;
     bool PreCallValidateGetSemaphoreCounterValue(VkDevice device, VkSemaphore sempahore, uint64_t* pValue) const override;
     bool ValidateComputeWorkGroupSizes(const SHADER_MODULE_STATE* module_state, const spirv_inst_iter& entrypoint,
-                                       const PipelineStageState& stage_state) const;
+                                       const PipelineStageState& stage_state, uint32_t local_size_x, uint32_t local_size_y,
+                                       uint32_t local_size_z) const;
 
     bool ValidateQueryRange(VkDevice device, VkQueryPool queryPool, uint32_t totalCount, uint32_t firstQuery, uint32_t queryCount,
                             const char* vuid_badfirst, const char* vuid_badrange, const char* apiName) const;

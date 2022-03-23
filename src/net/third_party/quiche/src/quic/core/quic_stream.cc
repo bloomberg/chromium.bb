@@ -20,8 +20,8 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_mem_slice.h"
 #include "common/platform/api/quiche_logging.h"
+#include "common/platform/api/quiche_mem_slice.h"
 
 using spdy::SpdyPriority;
 
@@ -649,7 +649,8 @@ void QuicStream::SetPriority(const spdy::SpdyStreamPrecedence& precedence) {
 
 void QuicStream::WriteOrBufferData(
     absl::string_view data, bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   QUIC_BUG_IF(quic_bug_12570_4,
               QuicUtils::IsCryptoStreamId(transport_version(), id_))
       << ENDPOINT
@@ -662,7 +663,8 @@ void QuicStream::WriteOrBufferData(
 
 void QuicStream::WriteOrBufferDataAtLevel(
     absl::string_view data, bool fin, EncryptionLevel level,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   if (data.empty() && !fin) {
     QUIC_BUG(quic_bug_10586_2) << "data.empty() && !fin";
     return;
@@ -688,7 +690,6 @@ void QuicStream::WriteOrBufferDataAtLevel(
   // Do not respect buffered data upper limit as WriteOrBufferData guarantees
   // all data to be consumed.
   if (data.length() > 0) {
-    struct iovec iov(QuicUtils::MakeIovec(data));
     QuicStreamOffset offset = send_buffer_.stream_offset();
     if (kMaxStreamLength - offset < data.length()) {
       QUIC_BUG(quic_bug_10586_4) << "Write too many data via stream " << id_;
@@ -697,7 +698,7 @@ void QuicStream::WriteOrBufferDataAtLevel(
           absl::StrCat("Write too many data via stream ", id_));
       return;
     }
-    send_buffer_.SaveStreamData(&iov, 1, 0, data.length());
+    send_buffer_.SaveStreamData(data);
     OnDataBuffered(offset, data.length(), ack_listener);
   }
   if (!had_buffered_data && (HasBufferedData() || fin_buffered_)) {
@@ -759,12 +760,13 @@ void QuicStream::MaybeSendBlocked() {
   }
 }
 
-QuicConsumedData QuicStream::WriteMemSlice(QuicMemSlice span, bool fin) {
+QuicConsumedData QuicStream::WriteMemSlice(quiche::QuicheMemSlice span,
+                                           bool fin) {
   return WriteMemSlices(absl::MakeSpan(&span, 1), fin);
 }
 
-QuicConsumedData QuicStream::WriteMemSlices(absl::Span<QuicMemSlice> span,
-                                            bool fin) {
+QuicConsumedData QuicStream::WriteMemSlices(
+    absl::Span<quiche::QuicheMemSlice> span, bool fin) {
   QuicConsumedData consumed_data(0, false);
   if (span.empty() && !fin) {
     QUIC_BUG(quic_bug_10586_6) << "span.empty() && !fin";

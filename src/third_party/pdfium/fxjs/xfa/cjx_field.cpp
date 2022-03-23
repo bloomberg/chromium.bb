@@ -11,6 +11,7 @@
 #include "fxjs/cfx_v8.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/js_resources.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "v8/include/v8-primitive.h"
 #include "xfa/fgas/crt/cfgas_decimal.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -357,7 +358,9 @@ void CJX_Field::length(v8::Isolate* pIsolate,
 
   CXFA_Node* node = GetXFANode();
   *pValue = fxv8::NewNumberHelper(
-      pIsolate, node->IsWidgetReady() ? node->CountChoiceListItems(true) : 0);
+      pIsolate, node->IsWidgetReady() ? pdfium::base::checked_cast<int>(
+                                            node->CountChoiceListItems(true))
+                                      : 0);
 }
 
 void CJX_Field::parentSubform(v8::Isolate* pIsolate,

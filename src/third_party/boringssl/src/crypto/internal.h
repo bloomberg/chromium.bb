@@ -121,6 +121,10 @@
 #include <valgrind/memcheck.h>
 #endif
 
+#if defined(BORINGSSL_FIPS_BREAK_TESTS)
+#include <stdlib.h>
+#endif
+
 #if !defined(__cplusplus)
 #if defined(_MSC_VER)
 #define alignas(x) __declspec(align(x))
@@ -932,25 +936,55 @@ static inline uint64_t CRYPTO_rotr_u64(uint64_t value, int shift) {
 // FIPS functions.
 
 #if defined(BORINGSSL_FIPS)
+
 // BORINGSSL_FIPS_abort is called when a FIPS power-on or continuous test
 // fails. It prevents any further cryptographic operations by the current
 // process.
 void BORINGSSL_FIPS_abort(void) __attribute__((noreturn));
-#endif
 
-// boringssl_fips_self_test runs the FIPS KAT-based self tests. It returns one
-// on success and zero on error. The argument is the integrity hash of the FIPS
-// module and may be used to check and write flag files to suppress duplicate
-// self-tests. If |module_hash_len| is zero then no flag file will be checked
-// nor written and tests will always be run.
-int boringssl_fips_self_test(const uint8_t *module_hash,
-                             size_t module_hash_len);
+// boringssl_self_test_startup runs all startup self tests and returns one on
+// success or zero on error. Startup self tests do not include lazy tests.
+// Call |BORINGSSL_self_test| to run every self test.
+int boringssl_self_test_startup(void);
+
+// boringssl_ensure_rsa_self_test checks whether the RSA self-test has been run
+// in this address space. If not, it runs it and crashes the address space if
+// unsuccessful.
+void boringssl_ensure_rsa_self_test(void);
+
+#else
+
+// Outside of FIPS mode, the lazy tests are no-ops.
+
+OPENSSL_INLINE void boringssl_ensure_rsa_self_test(void) {}
+
+#endif  // FIPS
+
+// boringssl_self_test_sha256 performs a SHA-256 KAT.
+int boringssl_self_test_sha256(void);
+
+// boringssl_self_test_sha512 performs a SHA-512 KAT.
+int boringssl_self_test_sha512(void);
+
+// boringssl_self_test_hmac_sha256 performs an HMAC-SHA-256 KAT.
+int boringssl_self_test_hmac_sha256(void);
 
 #if defined(BORINGSSL_FIPS_COUNTERS)
 void boringssl_fips_inc_counter(enum fips_counter_t counter);
 #else
 OPENSSL_INLINE void boringssl_fips_inc_counter(enum fips_counter_t counter) {}
 #endif
+
+#if defined(BORINGSSL_FIPS_BREAK_TESTS)
+OPENSSL_INLINE int boringssl_fips_break_test(const char *test) {
+  const char *const value = getenv("BORINGSSL_FIPS_BREAK_TEST");
+  return value != NULL && strcmp(value, test) == 0;
+}
+#else
+OPENSSL_INLINE int boringssl_fips_break_test(const char *test) {
+  return 0;
+}
+#endif  // BORINGSSL_FIPS_BREAK_TESTS
 
 
 // Runtime CPU feature support
@@ -978,14 +1012,126 @@ OPENSSL_INLINE void boringssl_fips_inc_counter(enum fips_counter_t counter) {}
 extern uint32_t OPENSSL_ia32cap_P[4];
 
 #if defined(BORINGSSL_FIPS) && !defined(BORINGSSL_SHARED_LIBRARY)
-const uint32_t *OPENSSL_ia32cap_get(void);
+// The FIPS module, as a static library, requires an out-of-line version of
+// |OPENSSL_ia32cap_get| so accesses can be rewritten by delocate. Mark the
+// function const so multiple accesses can be optimized together.
+const uint32_t *OPENSSL_ia32cap_get(void) __attribute__((const));
 #else
 OPENSSL_INLINE const uint32_t *OPENSSL_ia32cap_get(void) {
   return OPENSSL_ia32cap_P;
 }
 #endif
 
+// See Intel manual, volume 2A, table 3-11.
+
+OPENSSL_INLINE int CRYPTO_is_FXSR_capable(void) {
+#if defined(__FXSR__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[0] & (1 << 24)) != 0;
 #endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_intel_cpu(void) {
+  // The reserved bit 30 is used to indicate an Intel CPU.
+  return (OPENSSL_ia32cap_get()[0] & (1 << 30)) != 0;
+}
+
+// See Intel manual, volume 2A, table 3-10.
+
+OPENSSL_INLINE int CRYPTO_is_PCLMUL_capable(void) {
+#if defined(__PCLMUL__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[1] & (1 << 1)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_SSSE3_capable(void) {
+#if defined(__SSSE3__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[1] & (1 << 9)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_SSE4_1_capable(void) {
+#if defined(__SSE4_1__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_P[1] & (1 << 19)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_MOVBE_capable(void) {
+#if defined(__MOVBE__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[1] & (1 << 22)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_AESNI_capable(void) {
+#if defined(__AES__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[1] & (1 << 25)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_AVX_capable(void) {
+#if defined(__AVX__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[1] & (1 << 28)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_RDRAND_capable(void) {
+  // The GCC/Clang feature name and preprocessor symbol for RDRAND are "rdrnd"
+  // and |__RDRND__|, respectively.
+#if defined(__RDRND__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[1] & (1u << 30)) != 0;
+#endif
+}
+
+// See Intel manual, volume 2A, table 3-8.
+
+OPENSSL_INLINE int CRYPTO_is_BMI1_capable(void) {
+#if defined(__BMI1__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[2] & (1 << 3)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_AVX2_capable(void) {
+#if defined(__AVX2__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[2] & (1 << 5)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_BMI2_capable(void) {
+#if defined(__BMI2__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[2] & (1 << 8)) != 0;
+#endif
+}
+
+OPENSSL_INLINE int CRYPTO_is_ADX_capable(void) {
+#if defined(__ADX__)
+  return 1;
+#else
+  return (OPENSSL_ia32cap_get()[2] & (1 << 19)) != 0;
+#endif
+}
+
+#endif  // OPENSSL_X86 || OPENSSL_X86_64
 
 #if defined(OPENSSL_ARM) || defined(OPENSSL_AARCH64)
 

@@ -170,8 +170,6 @@ See also: All [How-tos](/developers/how-tos).
     *   [Leak Detection](/developers/leak-detection)
 *   [Perf
             Sheriffing](http://www.chromium.org/developers/tree-sheriffs/perf-sheriffs)
-*   [Optimizing Energy
-            Consumption](/developers/how-tos/optimizing-energy-consumption)
 
 ### Sync
 

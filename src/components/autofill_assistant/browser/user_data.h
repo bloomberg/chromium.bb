@@ -30,7 +30,7 @@ namespace autofill_assistant {
 class UserModel;
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data)
+// org.chromium.components.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTermsAndConditionsState
 enum TermsAndConditionsState {
   NOT_SELECTED = 0,
@@ -39,12 +39,12 @@ enum TermsAndConditionsState {
 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections)
+// org.chromium.components.autofill_assistant.user_data.additional_sections)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTextInputType
 enum TextInputType { INPUT_TEXT = 0, INPUT_ALPHANUMERIC = 1 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data)
+// org.chromium.components.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantContactField
 enum AutofillContactField {
   NAME_FULL = 7,
@@ -53,7 +53,7 @@ enum AutofillContactField {
 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data)
+// org.chromium.components.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantUserDataEventType
 enum UserDataEventType {
   UNKNOWN,
@@ -158,7 +158,10 @@ struct UserDataMetrics {
 
   bool initially_prefilled = false;
   bool personal_data_changed = false;
-  bool action_successful = false;
+  Metrics::CollectUserDataResult action_result =
+      Metrics::CollectUserDataResult::FAILURE;
+
+  Metrics::UserDataSource user_data_source = Metrics::UserDataSource::UNKNOWN;
 
   // Selection states.
   Metrics::UserDataSelectionState contact_selection_state =
@@ -310,6 +313,9 @@ struct CollectUserDataOptions {
   bool should_store_data_changes = false;
   bool can_edit_contacts = true;
   bool use_gms_core_edit_dialogs = false;
+
+  absl::optional<std::string> add_payment_instrument_action_token;
+  absl::optional<std::string> add_address_token;
 
   // If empty, terms and conditions should not be shown.
   std::string accept_terms_and_conditions_text;

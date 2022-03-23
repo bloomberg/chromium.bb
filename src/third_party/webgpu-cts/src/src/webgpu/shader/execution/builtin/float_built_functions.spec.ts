@@ -35,21 +35,6 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
   .unimplemented();
 
-g.test('float_builtin_functions,atan2')
-  .uniqueId('cc85953f226ac95c')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-atan2:
-T is f32 or vecN<f32> atan2(e1: T ,e2: T ) -> T Returns the arc tangent of e1 over e2. Component-wise when T is a vector. (GLSLstd450Atan2)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
 g.test('float_builtin_functions,cosh')
   .uniqueId('e4499ece6f25610d')
   .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
@@ -202,21 +187,6 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
   .unimplemented();
 
-g.test('float_builtin_functions,ldexp')
-  .uniqueId('358f6e4501a32907')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-ldexp:
-T is f32 or vecN<f32> I is i32 or vecN<i32>, where I is a scalar if T is a scalar, or a vector when T is a vector ldexp(e1: T ,e2: I ) -> T Returns e1 * 2e2. Component-wise when T is a vector. (GLSLstd450Ldexp)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
 g.test('float_builtin_functions,length')
   .uniqueId('0e5dba3253f9dec6')
   .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
@@ -224,36 +194,6 @@ g.test('float_builtin_functions,length')
     `
 length:
 T is f32 or vecN<f32> length(e: T ) -> f32 Returns the length of e (e.g. abs(e) if T is a scalar, or sqrt(e[0]2 + e[1]2 + ...) if T is a vector). (GLSLstd450Length)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
-g.test('float_builtin_functions,log')
-  .uniqueId('7cd6780116b47d00')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-log:
-T is f32 or vecN<f32> log(e: T ) -> T Returns the natural logaritm of e. Component-wise when T is a vector. (GLSLstd450Log)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
-g.test('float_builtin_functions,log2')
-  .uniqueId('9ed120de1990296a')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-log2:
-T is f32 or vecN<f32> log2(e: T ) -> T Returns the base-2 logarithm of e. Component-wise when T is a vector. (GLSLstd450Log2)
 
 Please read the following guidelines before contributing:
 https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
@@ -421,21 +361,6 @@ g.test('float_builtin_functions,float_sign')
     `
 float sign:
 T is f32 or vecN<f32> sign(e: T ) -> T Returns the sign of e. Component-wise when T is a vector. (GLSLstd450FSign)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
-g.test('float_builtin_functions,sin')
-  .uniqueId('d10f3745e5ea639d')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-sin:
-T is f32 or vecN<f32> sin(e: T ) -> T Returns the sine of e. Component-wise when T is a vector. (GLSLstd450Sin)
 
 Please read the following guidelines before contributing:
 https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md

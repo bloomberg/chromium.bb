@@ -9,6 +9,7 @@
 
 #include "include/private/SkSLProgramElement.h"
 #include "include/private/SkSLStatement.h"
+#include "include/private/SkTHash.h"
 #include "src/core/SkSafeMath.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLProgramSettings.h"
@@ -18,7 +19,6 @@
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLProgram.h"
 
-#include <unordered_map>
 #include <vector>
 
 namespace SkSL {
@@ -55,10 +55,9 @@ bool Analysis::CheckProgramUnrolledSize(const Program& program) {
                 // Check the function-size cache map first. We don't need to visit this function if
                 // we already processed it before.
                 const FunctionDeclaration* decl = &pe.as<FunctionDefinition>().declaration();
-                auto [iter, wasInserted] = fFunctionCostMap.insert({decl, kUnknownCost});
-                if (!wasInserted) {
+                if (size_t *cachedCost = fFunctionCostMap.find(decl)) {
                     // We already have this function in our map. We don't need to check it again.
-                    if (iter->second == kUnknownCost) {
+                    if (*cachedCost == kUnknownCost) {
                         // If the function is present in the map with an unknown cost, we're
                         // recursively processing it--in other words, we found a cycle in the code.
                         // Unwind our stack into a string.
@@ -70,12 +69,13 @@ bool Analysis::CheckProgramUnrolledSize(const Program& program) {
                             }
                         }
                         msg = "potential recursion (function call cycle) not allowed:" + msg;
-                        fContext.fErrors->error(pe.fLine, std::move(msg));
-                        fFunctionSize = iter->second = 0;
+                        fContext.fErrors->error(pe.fPosition, std::move(msg));
+                        fFunctionSize = 0;
+                        *cachedCost = 0;
                         return true;
                     }
                     // Set the size to its known value.
-                    fFunctionSize = iter->second;
+                    fFunctionSize = *cachedCost;
                     return false;
                 }
 
@@ -86,16 +86,18 @@ bool Analysis::CheckProgramUnrolledSize(const Program& program) {
                         msg += "\n\t" + (*unwind)->description();
                     }
                     msg += "\n\t" + decl->description();
-                    fContext.fErrors->error(pe.fLine, std::move(msg));
-                    fFunctionSize = iter->second = 0;
+                    fContext.fErrors->error(pe.fPosition, std::move(msg));
+                    fFunctionSize = 0;
+                    fFunctionCostMap.set(decl, 0);
                     return true;
                 }
 
                 // Calculate the function cost and store it in our cache.
+                fFunctionCostMap.set(decl, kUnknownCost);
                 fStack.push_back(decl);
                 fFunctionSize = 0;
                 bool result = INHERITED::visitProgramElement(pe);
-                iter->second = fFunctionSize;
+                fFunctionCostMap.set(decl, fFunctionSize);
                 fStack.pop_back();
 
                 return result;
@@ -184,7 +186,7 @@ bool Analysis::CheckProgramUnrolledSize(const Program& program) {
 
         const Context& fContext;
         size_t fFunctionSize = 0;
-        std::unordered_map<const FunctionDeclaration*, size_t> fFunctionCostMap;
+        SkTHashMap<const FunctionDeclaration*, size_t> fFunctionCostMap;
         std::vector<const FunctionDeclaration*> fStack;
     };
 
@@ -198,7 +200,7 @@ bool Analysis::CheckProgramUnrolledSize(const Program& program) {
             // Report an error when main()'s flattened size is larger than our program limit.
             if (visitor.functionSize() > kProgramSizeLimit &&
                 element->as<FunctionDefinition>().declaration().isMain()) {
-                context.fErrors->error(/*line=*/-1, "program is too large");
+                context.fErrors->error(Position(), "program is too large");
             }
         }
     }

@@ -503,7 +503,9 @@ void Debug::Break(JavaScriptFrame* frame, Handle<JSFunction> break_target) {
 
   // Find the break location where execution has stopped.
   BreakLocation location = BreakLocation::FromFrame(debug_info, frame);
-  if (IsBreakOnInstrumentation(debug_info, location)) {
+  const bool hitInstrumentationBreak =
+      IsBreakOnInstrumentation(debug_info, location);
+  if (hitInstrumentationBreak) {
     OnInstrumentationBreak();
   }
 
@@ -540,7 +542,9 @@ void Debug::Break(JavaScriptFrame* frame, Handle<JSFunction> break_target) {
   // StepOut at not return position was requested and return break locations
   // were flooded with one shots.
   if (thread_local_.fast_forward_to_return_) {
-    DCHECK(location.IsReturnOrSuspend());
+    // We might hit an instrumentation breakpoint before running into a
+    // return/suspend location.
+    DCHECK(location.IsReturnOrSuspend() || hitInstrumentationBreak);
     // We have to ignore recursive calls to function.
     if (current_frame_count > target_frame_count) return;
     ClearStepping();
@@ -1271,7 +1275,8 @@ void Debug::PrepareStep(StepAction step_action) {
           Handle<JSReceiver> return_value(
               JSReceiver::cast(thread_local_.return_value_), isolate_);
           Handle<Object> awaited_by = JSReceiver::GetDataProperty(
-              return_value, isolate_->factory()->promise_awaited_by_symbol());
+              isolate_, return_value,
+              isolate_->factory()->promise_awaited_by_symbol());
           if (awaited_by->IsJSGeneratorObject()) {
             DCHECK(!has_suspended_generator());
             thread_local_.suspended_generator_ = *awaited_by;
@@ -2141,7 +2146,8 @@ void Debug::OnPromiseReject(Handle<Object> promise, Handle<Object> value) {
   // Check whether the promise has been marked as having triggered a message.
   Handle<Symbol> key = isolate_->factory()->promise_debug_marker_symbol();
   if (!promise->IsJSObject() ||
-      JSReceiver::GetDataProperty(Handle<JSObject>::cast(promise), key)
+      JSReceiver::GetDataProperty(isolate_, Handle<JSObject>::cast(promise),
+                                  key)
           ->IsUndefined(isolate_)) {
     OnException(value, promise, v8::debug::kPromiseRejection);
   }

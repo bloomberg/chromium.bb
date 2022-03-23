@@ -14,6 +14,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -59,11 +60,11 @@ bool WebAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
       GenerateAppId(/*manifest_id=*/absl::nullopt, start_url));
 }
 
-std::vector<PermissionsPolicyDeclaration> WebAppRegistrar::GetPermissionsPolicy(
+blink::ParsedPermissionsPolicy WebAppRegistrar::GetPermissionsPolicy(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->permissions_policy()
-                 : std::vector<PermissionsPolicyDeclaration>();
+                 : blink::ParsedPermissionsPolicy();
 }
 
 bool WebAppRegistrar::IsPlaceholderApp(const AppId& app_id) const {
@@ -478,7 +479,7 @@ bool WebAppRegistrar::WasInstalledBySubApp(const AppId& app_id) const {
 
 bool WebAppRegistrar::IsAllowedLaunchProtocol(
     const AppId& app_id,
-    std::string protocol_scheme) const {
+    const std::string& protocol_scheme) const {
   const WebApp* web_app = GetAppById(app_id);
   return web_app &&
          base::Contains(web_app->allowed_launch_protocols(), protocol_scheme);
@@ -486,7 +487,7 @@ bool WebAppRegistrar::IsAllowedLaunchProtocol(
 
 bool WebAppRegistrar::IsDisallowedLaunchProtocol(
     const AppId& app_id,
-    std::string protocol_scheme) const {
+    const std::string& protocol_scheme) const {
   const WebApp* web_app = GetAppById(app_id);
   return web_app && base::Contains(web_app->disallowed_launch_protocols(),
                                    protocol_scheme);
@@ -855,11 +856,11 @@ WebAppRegistrar::AppSet::const_iterator WebAppRegistrar::AppSet::end() const {
                         registrar_->registry_.end(), filter_);
 }
 
-const WebAppRegistrar::AppSet WebAppRegistrar::GetAppsIncludingStubs() const {
+WebAppRegistrar::AppSet WebAppRegistrar::GetAppsIncludingStubs() const {
   return AppSet(this, nullptr, /*empty=*/registry_profile_being_deleted_);
 }
 
-const WebAppRegistrar::AppSet WebAppRegistrar::GetApps() const {
+WebAppRegistrar::AppSet WebAppRegistrar::GetApps() const {
   return AppSet(
       this,
       [](const WebApp& web_app) {
@@ -874,7 +875,7 @@ void WebAppRegistrar::SetRegistry(Registry&& registry) {
   registry_ = std::move(registry);
 }
 
-const WebAppRegistrar::AppSet WebAppRegistrar::FilterApps(Filter filter) const {
+WebAppRegistrar::AppSet WebAppRegistrar::FilterApps(Filter filter) const {
   return AppSet(this, filter, /*empty=*/registry_profile_being_deleted_);
 }
 

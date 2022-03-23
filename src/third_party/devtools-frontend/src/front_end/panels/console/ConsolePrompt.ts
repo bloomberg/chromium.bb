@@ -7,6 +7,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Formatter from '../../models/formatter/formatter.js';
 import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
@@ -41,6 +42,10 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
   private readonly eagerEvalSetting: Common.Settings.Setting<boolean>;
   private previewRequestForTest: Promise<void>|null;
   private highlightingNode: boolean;
+  // The CodeMirror state field that controls whether the argument hints are showing.
+  // If they are, the escape key will clear them. However, if they aren't, then the
+  // console drawer should be hidden as a whole.
+  #argumentHintsState: CodeMirror.StateField<CodeMirror.Tooltip|null>;
 
   constructor() {
     super();
@@ -70,13 +75,15 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
     this.element.tabIndex = 0;
     this.previewRequestForTest = null;
     this.highlightingNode = false;
+    const argumentHints = TextEditor.JavaScript.argumentHints();
+    this.#argumentHintsState = argumentHints[0];
 
     const editorState = CodeMirror.EditorState.create({
       doc: this.initialText,
       extensions: [
         CodeMirror.keymap.of(this.editorKeymap()),
         CodeMirror.EditorView.updateListener.of(update => this.editorUpdate(update)),
-        TextEditor.JavaScript.argumentHints(),
+        argumentHints,
         TextEditor.JavaScript.completion(),
         TextEditor.Config.showCompletionHint,
         CodeMirror.javascript.javascript(),
@@ -210,6 +217,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
       {mac: 'Ctrl-p', run: (): boolean => this.moveHistory(-1, true)},
       {mac: 'Ctrl-n', run: (): boolean => this.moveHistory(1, true)},
       {
+        key: 'Escape',
+        run: (): boolean => {
+          return TextEditor.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState);
+        },
+      },
+      {
         key: 'Enter',
         run: (): boolean => {
           void this.handleEnter();
@@ -259,6 +272,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
   private async handleEnter(): Promise<void> {
     if (await this.enterWillEvaluate()) {
       this.appendCommand(this.text(), true);
+      TextEditor.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState);
       this.editor.dispatch({
         changes: {from: 0, to: this.editor.state.doc.length},
         scrollIntoView: true,
@@ -296,7 +310,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
       const callFrame = executionContext.debuggerModel.selectedCallFrame();
       if (callFrame) {
         const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
-        expression = this.substituteNames(expression, nameMap);
+        expression = await this.substituteNames(expression, nameMap);
       }
     }
 
@@ -304,11 +318,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin<EventTypes, t
         executionContext, message, expression, useCommandLineAPI);
   }
 
-  private substituteNames(expression: string, mapping: Map<string, string>): string {
-    // TODO(jarin) Build a more reliable replacer, based on the parsed AST.
-    // Here, we just replace exact occurrences.
-    const replacement = mapping.get(expression);
-    return replacement ?? expression;
+  private async substituteNames(expression: string, mapping: Map<string, string>): Promise<string> {
+    try {
+      return await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, mapping);
+    } catch {
+      return expression;
+    }
   }
 
   private editorUpdate(update: CodeMirror.ViewUpdate): void {

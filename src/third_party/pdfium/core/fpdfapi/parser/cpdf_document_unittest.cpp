@@ -7,8 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "core/fpdfapi/page/cpdf_docpagedata.h"
-#include "core/fpdfapi/page/cpdf_pagemodule.h"
+#include "core/fpdfapi/page/test_with_page_module.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_boolean.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -18,7 +17,7 @@
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
-#include "core/fpdfapi/render/cpdf_docrenderdata.h"
+#include "core/fpdfapi/parser/cpdf_test_document.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/check.h"
 
@@ -48,11 +47,9 @@ RetainPtr<CPDF_Dictionary> CreateNumberedPage(size_t number) {
   return page;
 }
 
-class CPDF_TestDocumentForPages final : public CPDF_Document {
+class CPDF_TestDocumentForPages final : public CPDF_TestDocument {
  public:
-  CPDF_TestDocumentForPages()
-      : CPDF_Document(std::make_unique<CPDF_DocRenderData>(),
-                      std::make_unique<CPDF_DocPageData>()) {
+  CPDF_TestDocumentForPages() {
     // Set up test
     auto zeroToTwo = pdfium::MakeRetain<CPDF_Array>();
     zeroToTwo->AppendNew<CPDF_Reference>(
@@ -101,11 +98,9 @@ class CPDF_TestDocumentForPages final : public CPDF_Document {
   }
 };
 
-class CPDF_TestDocumentWithPageWithoutPageNum final : public CPDF_Document {
+class CPDF_TestDocumentWithPageWithoutPageNum final : public CPDF_TestDocument {
  public:
-  CPDF_TestDocumentWithPageWithoutPageNum()
-      : CPDF_Document(std::make_unique<CPDF_DocRenderData>(),
-                      std::make_unique<CPDF_DocPageData>()) {
+  CPDF_TestDocumentWithPageWithoutPageNum() {
     // Set up test
     auto allPages = pdfium::MakeRetain<CPDF_Array>();
     allPages->AppendNew<CPDF_Reference>(
@@ -133,11 +128,9 @@ class TestLinearized final : public CPDF_LinearizedHeader {
       : CPDF_LinearizedHeader(dict, 0) {}
 };
 
-class CPDF_TestDocPagesWithoutKids final : public CPDF_Document {
+class CPDF_TestDocPagesWithoutKids final : public CPDF_TestDocument {
  public:
-  CPDF_TestDocPagesWithoutKids()
-      : CPDF_Document(std::make_unique<CPDF_DocRenderData>(),
-                      std::make_unique<CPDF_DocPageData>()) {
+  CPDF_TestDocPagesWithoutKids() {
     CPDF_Dictionary* pagesDict = NewIndirect<CPDF_Dictionary>();
     pagesDict->SetNewFor<CPDF_Name>("Type", "Pages");
     pagesDict->SetNewFor<CPDF_Number>("Count", 3);
@@ -147,24 +140,18 @@ class CPDF_TestDocPagesWithoutKids final : public CPDF_Document {
   }
 };
 
-class CPDF_TestDocumentAllowSetParser final : public CPDF_Document {
+class CPDF_TestDocumentAllowSetParser final : public CPDF_TestDocument {
  public:
-  CPDF_TestDocumentAllowSetParser()
-      : CPDF_Document(std::make_unique<CPDF_DocRenderData>(),
-                      std::make_unique<CPDF_DocPageData>()) {}
+  CPDF_TestDocumentAllowSetParser() = default;
 
   using CPDF_Document::SetParser;
 };
 
 }  // namespace
 
-class cpdf_document_test : public testing::Test {
- public:
-  void SetUp() override { CPDF_PageModule::Create(); }
-  void TearDown() override { CPDF_PageModule::Destroy(); }
-};
+using DocumentTest = TestWithPageModule;
 
-TEST_F(cpdf_document_test, GetPages) {
+TEST_F(DocumentTest, GetPages) {
   std::unique_ptr<CPDF_TestDocumentForPages> document =
       std::make_unique<CPDF_TestDocumentForPages>();
   for (int i = 0; i < kNumTestPages; i++) {
@@ -177,7 +164,7 @@ TEST_F(cpdf_document_test, GetPages) {
   EXPECT_FALSE(page);
 }
 
-TEST_F(cpdf_document_test, GetPageWithoutObjNumTwice) {
+TEST_F(DocumentTest, GetPageWithoutObjNumTwice) {
   auto document = std::make_unique<CPDF_TestDocumentWithPageWithoutPageNum>();
   CPDF_Dictionary* page = document->GetPageDictionary(2);
   ASSERT_TRUE(page);
@@ -188,7 +175,7 @@ TEST_F(cpdf_document_test, GetPageWithoutObjNumTwice) {
   EXPECT_EQ(page, second_call_page);
 }
 
-TEST_F(cpdf_document_test, GetPagesReverseOrder) {
+TEST_F(DocumentTest, GetPagesReverseOrder) {
   std::unique_ptr<CPDF_TestDocumentForPages> document =
       std::make_unique<CPDF_TestDocumentForPages>();
   for (int i = 6; i >= 0; i--) {
@@ -201,7 +188,7 @@ TEST_F(cpdf_document_test, GetPagesReverseOrder) {
   EXPECT_FALSE(page);
 }
 
-TEST_F(cpdf_document_test, GetPagesInDisorder) {
+TEST_F(DocumentTest, GetPagesInDisorder) {
   std::unique_ptr<CPDF_TestDocumentForPages> document =
       std::make_unique<CPDF_TestDocumentForPages>();
 
@@ -224,7 +211,7 @@ TEST_F(cpdf_document_test, GetPagesInDisorder) {
   EXPECT_EQ(6, page->GetIntegerFor("PageNumbering"));
 }
 
-TEST_F(cpdf_document_test, IsValidPageObject) {
+TEST_F(DocumentTest, IsValidPageObject) {
   CPDF_TestDocumentForPages document;
 
   auto dict_type_name_page = pdfium::MakeRetain<CPDF_Dictionary>();
@@ -246,7 +233,7 @@ TEST_F(cpdf_document_test, IsValidPageObject) {
   EXPECT_FALSE(CPDF_Document::IsValidPageObject(obj_no_type));
 }
 
-TEST_F(cpdf_document_test, UseCachedPageObjNumIfHaveNotPagesDict) {
+TEST_F(DocumentTest, UseCachedPageObjNumIfHaveNotPagesDict) {
   // ObjNum can be added in CPDF_DataAvail::IsPageAvail(), and PagesDict may not
   // exist in this case, e.g. when hint table is used to page check in
   // CPDF_DataAvail.
@@ -286,7 +273,7 @@ TEST_F(cpdf_document_test, UseCachedPageObjNumIfHaveNotPagesDict) {
   EXPECT_EQ(page_stub, document.GetPageDictionary(kTestPageNum));
 }
 
-TEST_F(cpdf_document_test, CountGreaterThanPageTree) {
+TEST_F(DocumentTest, CountGreaterThanPageTree) {
   std::unique_ptr<CPDF_TestDocumentForPages> document =
       std::make_unique<CPDF_TestDocumentForPages>();
   document->SetTreeSize(kNumTestPages + 3);
@@ -297,7 +284,7 @@ TEST_F(cpdf_document_test, CountGreaterThanPageTree) {
   EXPECT_TRUE(document->GetPageDictionary(kNumTestPages - 1));
 }
 
-TEST_F(cpdf_document_test, PagesWithoutKids) {
+TEST_F(DocumentTest, PagesWithoutKids) {
   // Set up a document with Pages dict without kids, and Count = 3
   auto pDoc = std::make_unique<CPDF_TestDocPagesWithoutKids>();
   EXPECT_TRUE(pDoc->GetPageDictionary(0));

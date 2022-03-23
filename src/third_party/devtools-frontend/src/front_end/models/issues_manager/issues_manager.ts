@@ -6,6 +6,7 @@ import * as AttributionReportingIssue from './AttributionReportingIssue.js';
 import * as ClientHintIssue from './ClientHintIssue.js';
 import * as ContentSecurityPolicyIssue from './ContentSecurityPolicyIssue.js';
 import * as ContrastCheckTrigger from './ContrastCheckTrigger.js';
+import * as CookieIssue from './CookieIssue.js';
 import * as CorsIssue from './CorsIssue.js';
 import * as CrossOriginEmbedderPolicyIssue from './CrossOriginEmbedderPolicyIssue.js';
 import * as DeprecationIssue from './DeprecationIssue.js';
@@ -20,7 +21,6 @@ import * as MixedContentIssue from './MixedContentIssue.js';
 import * as NavigatorUserAgentIssue from './NavigatorUserAgentIssue.js';
 import * as QuirksModeIssue from './QuirksModeIssue.js';
 import * as RelatedIssue from './RelatedIssue.js';
-import * as SameSiteCookieIssue from './SameSiteCookieIssue.js';
 import * as SharedArrayBufferIssue from './SharedArrayBufferIssue.js';
 import * as SourceFrameIssuesManager from './SourceFrameIssuesManager.js';
 import * as TrustedWebActivityIssue from './TrustedWebActivityIssue.js';
@@ -30,6 +30,7 @@ export {
   ClientHintIssue,
   ContentSecurityPolicyIssue,
   ContrastCheckTrigger,
+  CookieIssue,
   CorsIssue,
   CrossOriginEmbedderPolicyIssue,
   DeprecationIssue,
@@ -44,7 +45,6 @@ export {
   NavigatorUserAgentIssue,
   QuirksModeIssue,
   RelatedIssue,
-  SameSiteCookieIssue,
   SharedArrayBufferIssue,
   SourceFrameIssuesManager,
   TrustedWebActivityIssue,

@@ -21,7 +21,7 @@ limitations under the License.
 #include <string>
 #include <utility>
 
-#include "tensorflow/compiler/xla/primitive_util.h"
+#include "tensorflow/compiler/xla/util.h"
 
 #define EIGEN_USE_THREADS
 
@@ -38,9 +38,12 @@ limitations under the License.
 #include "tensorflow/compiler/xla/literal.h"
 #include "tensorflow/compiler/xla/pjrt/mlir_to_hlo.h"
 #include "tensorflow/compiler/xla/pjrt/pjrt_client.h"
+#include "tensorflow/compiler/xla/pjrt/pjrt_future.h"
 #include "tensorflow/compiler/xla/pjrt/semaphore.h"
+#include "tensorflow/compiler/xla/pjrt/tracked_tfrt_cpu_device_buffer.h"
 #include "tensorflow/compiler/xla/pjrt/utils.h"
 #include "tensorflow/compiler/xla/pjrt/worker_thread.h"
+#include "tensorflow/compiler/xla/primitive_util.h"
 #include "tensorflow/compiler/xla/service/buffer_assignment.h"
 #include "tensorflow/compiler/xla/service/computation_placer.h"
 #include "tensorflow/compiler/xla/service/cpu/cpu_executable.h"
@@ -983,12 +986,11 @@ static void EnqueueWorkWhenReady(
   });
 }
 
-void TfrtCpuBuffer::ToLiteral(MutableLiteralBase* literal,
-                              std::function<void(Status)> on_ready) {
+PjRtFuture<Status> TfrtCpuBuffer::ToLiteral(MutableLiteralBase* literal) {
   tensorflow::profiler::TraceMe traceme("TfrtCpuBuffer::ToLiteral");
   if (IsEmptyTuple()) {
-    on_ready(InvalidArgument("ToLiteral called on empty tuple"));
-    return;
+    return PjRtFuture<Status>(
+        InvalidArgument("ToLiteral called on empty tuple"));
   }
   TfrtCpuBuffer::ScopedHold device_buffer(this, ScopedHold::kUsage);
   {
@@ -996,9 +998,8 @@ void TfrtCpuBuffer::ToLiteral(MutableLiteralBase* literal,
     // We can't perform any other action while a donation hold is in progress.
     WaitForOutstandingDonationHold();
     if (tracked_device_buffer_ == nullptr) {
-      on_ready(InvalidArgument(
+      return PjRtFuture<Status>(InvalidArgument(
           "CopyToHostAsync() called on deleted or donated buffer"));
-      return;
     }
     AcquireHoldLocked(&device_buffer);
   }
@@ -1026,8 +1027,9 @@ void TfrtCpuBuffer::ToLiteral(MutableLiteralBase* literal,
       }
     }
     // Unblock ToLiteral caller.
-    on_ready(Status::OK());
+    return PjRtFuture<Status>(Status::OK());
   } else {
+    auto ready_event = tfrt::MakeUnconstructedAsyncValueRef<Status>();
     // Wait for buffer definition events to finish before d2h dispatch.
     // D2H dispatch should be in parallel, e.g. one Execute event finish may
     // trigger multiple outputs' D2H, they should happen in different threads in
@@ -1036,13 +1038,13 @@ void TfrtCpuBuffer::ToLiteral(MutableLiteralBase* literal,
         host_ctx, device_buffer_wait_avs,
         [this, movable_device_buffer{device_buffer.ToClosure()},
          device_buffer_wait_avs = std::move(device_buffer_wait_avs_copy),
-         literal, on_ready{std::move(on_ready)}] {
+         literal, ready_event = ready_event.CopyRef()] {
           tensorflow::profiler::TraceMe traceme("D2H Dispatch");
           TfrtCpuBuffer::ScopedHold device_buffer(movable_device_buffer);
           // Errors in src buffer are surfaced to user.
           for (const auto& av : device_buffer_wait_avs) {
             if (auto* error = av->GetErrorIfPresent()) {
-              on_ready(
+              ready_event.emplace(
                   Internal("Error converting to literal: %s", error->message));
               return;
             }
@@ -1062,8 +1064,23 @@ void TfrtCpuBuffer::ToLiteral(MutableLiteralBase* literal,
             }
           }
 
-          // Unblock ToLiteral caller.
-          on_ready(Status::OK());
+          // Unblock ToLiteral event.
+          ready_event.emplace(Status::OK());
+        });
+    return PjRtFuture<Status>(
+        client_->GetHostContext(), std::move(ready_event),
+        /*on_block_start=*/
+        []() {
+          tensorflow::profiler::TraceMeProducer traceme(
+              "TfrtCpuBuffer::ToLiteral");
+          VLOG(1) << "TfrtCpuBuffer::ToLiteral";
+          return PjRtFutureHelpers::ProfilingKeys(
+              {/*traceme_context_id =*/traceme.GetContextId()});
+        },
+        /*on_block_end=*/
+        [](PjRtFutureHelpers::ProfilingKeys keys) {
+          tensorflow::profiler::TraceMeConsumer traceme(
+              "TfrtCpuBuffer::ToLiteral", keys.traceme_context_id);
         });
   }
 }
@@ -1082,7 +1099,7 @@ StatusOr<std::unique_ptr<PjRtBuffer>> TfrtCpuBuffer::CopyToDevice(
 
   // Copying across PjRtClients involves a copy through the host.
   if (dst_device->client() != client_) {
-    TF_ASSIGN_OR_RETURN(std::shared_ptr<Literal> literal, ToLiteral());
+    TF_ASSIGN_OR_RETURN(std::shared_ptr<Literal> literal, ToLiteralSync());
     // Avoid use-after-free on `literal` due to unsequenced move and use.
     Literal* literal_pointer = literal.get();
     absl::InlinedVector<int64_t, 4> byte_strides(
@@ -1147,6 +1164,13 @@ StatusOr<std::unique_ptr<PjRtBuffer>> TfrtCpuBuffer::CopyToDevice(
       src_device_buffer_definition_events_avs_copy =
           CopyAsyncValues(src_device_buffer_definition_events_avs);
 
+  // Grab a reference to the tracked device buffer object that underlies the
+  // source buffer. The tracked device buffer object may hold ownership of
+  // external objects, such as NumPy arrays, and we must not allow it to be
+  // deleted until the closure below completes.
+  std::shared_ptr<TrackedTfrtCpuDeviceBuffer> source_tdb =
+      src_device_buffer.buffer();
+
   // Add d2d as usage event on src_buffer.
   src_device_buffer.ConvertUsageHold(absl::MakeSpan(src_usage_events));
 
@@ -1155,7 +1179,8 @@ StatusOr<std::unique_ptr<PjRtBuffer>> TfrtCpuBuffer::CopyToDevice(
       [client = client_, num_leaf_buffers, src_buffers = std::move(src_buffers),
        dst_buffers_copies = dst_buffers, indirect_avs = std::move(indirect_avs),
        src_device_buffer_definition_events_avs =
-           std::move(src_device_buffer_definition_events_avs_copy)]() mutable {
+           std::move(src_device_buffer_definition_events_avs_copy),
+       source_tdb{std::move(source_tdb)}]() mutable {
         tensorflow::profiler::TraceMe traceme("D2D Dispatch");
         for (const auto& av : src_device_buffer_definition_events_avs) {
           if (auto* error = av->GetErrorIfPresent()) {
@@ -1184,69 +1209,82 @@ StatusOr<std::unique_ptr<PjRtBuffer>> TfrtCpuBuffer::CopyToDevice(
       client(), tensorflow::down_cast<TfrtCpuDevice*>(dst_device)));
 }
 
-Status TfrtCpuBuffer::BlockHostUntilReady() {
-  tensorflow::profiler::TraceMe traceme("TfrtCpuBuffer::BlockHostUntilReady");
-  std::shared_ptr<TrackedTfrtCpuDeviceBuffer> device_buffer;
+PjRtFuture<Status> TfrtCpuBuffer::GetReadyFuture() {
+  tfrt::AsyncValueRef<Status> definition_event;
+  std::shared_ptr<TrackedTfrtCpuDeviceBuffer> tracked_device_buffer;
   {
     absl::MutexLock lock(&mu_);
-    if (tracked_device_buffer_ == nullptr) {
-      return InvalidArgument(
-          "BlockHostUntilReady() called on deleted or donated buffer");
+    if (!tracked_device_buffer_) {
+      return PjRtFuture<Status>(InvalidArgument(
+          "GetReadyFuture() called on deleted or donated buffer"));
     }
-    device_buffer = tracked_device_buffer_;
-  }
-
-  // Wait for all definition events to complete.
-  Status status;
-  for (const auto& ev : device_buffer->DefinitionEvents()) {
-    client_->GetHostContext()->Await(ev.CopyRCRef());
-    if (auto* error = ev.GetErrorIfPresent()) {
-      status.Update(FailedPrecondition(
-          "Error in BlockHostUntilReady waiting for definition events: %s",
-          error->message));
+    if (!definition_event_) {
+      definition_event_ = tfrt::MakeUnconstructedAsyncValueRef<Status>();
+      tracked_device_buffer = tracked_device_buffer_;
     }
+    definition_event = definition_event_;
   }
-  return status;
-}
-
-void TfrtCpuBuffer::OnReady(std::function<void(Status)> callback) {
-  std::shared_ptr<TrackedTfrtCpuDeviceBuffer> device_buffer;
-  {
-    absl::MutexLock lock(&mu_);
-    if (tracked_device_buffer_ == nullptr) {
-      callback(
-          InvalidArgument("OnReady() called on deleted or donated buffer"));
-      return;
-    }
-    device_buffer = tracked_device_buffer_;
-  }
-
-  std::vector<tfrt::RCReference<tfrt::AsyncValue>> avs;
-  avs.reserve(device_buffer->DefinitionEvents().size());
-  // Wait for all definition events to complete.
-  for (const auto& ev : device_buffer->DefinitionEvents()) {
-    avs.push_back(ev.CopyRCRef());
-  }
-
-  absl::InlinedVector<tfrt::RCReference<tfrt::AsyncValue>, 4> avs_to_move;
-  avs_to_move.reserve(avs.size());
-  for (const auto& av : avs) {
-    avs_to_move.push_back(av.CopyRef());
-  }
-
-  EnqueueWorkWhenReady(
-      client_->GetHostContext(), avs,
-      [avs = std::move(avs_to_move), callback = std::move(callback)]() {
-        Status s;
-        for (const auto& av : avs) {
-          if (auto* error = av->GetErrorIfPresent()) {
-            s.Update(FailedPrecondition(
-                "Error in OnReady waiting for buffer ready: %s",
-                error->message));
-          }
+  if (tracked_device_buffer) {
+    auto events = tracked_device_buffer->DefinitionEvents();
+    if (events.size() == 1) {
+      auto& event = events[0];
+      if (event.IsAvailable()) {
+        if (auto* error = event.GetErrorIfPresent()) {
+          definition_event.emplace(FailedPrecondition(
+              "Buffer Definition Event: %s", error->message));
+        } else {
+          definition_event.emplace(Status::OK());
         }
-        callback(s);
-      });
+      } else {
+        event.AndThen([event = event.CopyRef(),
+                       definition_event = definition_event.CopyRef()]() {
+          if (auto* error = event.GetErrorIfPresent()) {
+            definition_event.emplace(FailedPrecondition(
+                "Buffer Definition Event: %s", error->message));
+          } else {
+            definition_event.emplace(Status::OK());
+          }
+        });
+      }
+    } else {
+      absl::InlinedVector<tfrt::AsyncValue*, 4> events;
+      events.reserve(tracked_device_buffer->DefinitionEvents().size());
+      for (const auto& ev : tracked_device_buffer->DefinitionEvents()) {
+        events.push_back(ev.GetAsyncValue());
+      }
+      tfrt::RunWhenReady(
+          {events.data(), events.size()},
+          [definition_event = definition_event.CopyRef(),
+           tracked_device_buffer = tracked_device_buffer]() {
+            Status s;
+            for (const auto& e : tracked_device_buffer->DefinitionEvents()) {
+              if (auto* error = e.GetErrorIfPresent()) {
+                s.Update(FailedPrecondition("Buffer Definition Event: %s",
+                                            error->message));
+              }
+            }
+            definition_event.emplace(s);
+          });
+    }
+  }
+  if (definition_event.IsAvailable()) {
+    return PjRtFuture<Status>(*definition_event);
+  } else {
+    return PjRtFuture<Status>(
+        client_->GetHostContext(), definition_event.CopyRef(),
+        /*on_block_start=*/
+        []() {
+          tensorflow::profiler::TraceMeProducer traceme("TfrtCpuBuffer::Await");
+          VLOG(1) << "TfrtCpuBuffer::Await";
+          return PjRtFutureHelpers::ProfilingKeys(
+              {/*traceme_context_id=*/traceme.GetContextId()});
+        },
+        /*on_block_end=*/
+        [](PjRtFutureHelpers::ProfilingKeys keys) {
+          tensorflow::profiler::TraceMeConsumer traceme(
+              "TfrtCpuBuffer::Await", keys.traceme_context_id);
+        });
+  }
 }
 
 TfrtCpuExecutable::TfrtCpuExecutable(

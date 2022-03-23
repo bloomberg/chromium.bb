@@ -1278,7 +1278,7 @@ void GetRenderPassAndUpdateCounters(ContextVk *contextVk,
     *renderPassOut = &renderPassHelper->getRenderPass();
     if (updatePerfCounters)
     {
-        PerfCounters &counters                   = contextVk->getPerfCounters();
+        angle::VulkanPerfCounters &counters      = contextVk->getPerfCounters();
         const RenderPassPerfCounters &rpCounters = renderPassHelper->getPerfCounters();
 
         counters.depthClears += rpCounters.depthClears;
@@ -2752,6 +2752,17 @@ void GraphicsPipelineDesc::updateRenderPassDesc(GraphicsPipelineTransitionBits *
     {
         transition->set(kFirstBit + bit);
     }
+}
+
+void GraphicsPipelineDesc::setRenderPassSampleCount(GLint samples)
+{
+    mRenderPassDesc.setSamples(samples);
+}
+
+void GraphicsPipelineDesc::setRenderPassColorAttachmentFormat(size_t colorIndexGL,
+                                                              angle::FormatID formatID)
+{
+    mRenderPassDesc.packColorAttachment(colorIndexGL, formatID);
 }
 
 // AttachmentOpsArray implementation.

@@ -244,7 +244,22 @@ const char* Http2DecoderAdapter::SpdyFramerErrorToString(
 
 Http2DecoderAdapter::Http2DecoderAdapter() {
   QUICHE_DVLOG(1) << "Http2DecoderAdapter ctor";
-  ResetInternal();
+
+  set_spdy_state(SpdyState::SPDY_READY_FOR_FRAME);
+  spdy_framer_error_ = SpdyFramerError::SPDY_NO_ERROR;
+
+  decoded_frame_header_ = false;
+  has_frame_header_ = false;
+  on_headers_called_ = false;
+  on_hpack_fragment_called_ = false;
+  latched_probable_http_response_ = false;
+  has_expected_frame_type_ = false;
+
+  CorruptFrameHeader(&frame_header_);
+  CorruptFrameHeader(&hpack_first_frame_header_);
+
+  frame_decoder_ = std::make_unique<Http2FrameDecoder>(this);
+  hpack_decoder_ = nullptr;
 }
 
 Http2DecoderAdapter::~Http2DecoderAdapter() = default;
@@ -264,9 +279,6 @@ void Http2DecoderAdapter::set_extension_visitor(
 }
 
 size_t Http2DecoderAdapter::ProcessInput(const char* data, size_t len) {
-  size_t limit = recv_frame_size_limit_;
-  frame_decoder_->set_maximum_payload_size(limit);
-
   size_t total_processed = 0;
   while (len > 0 && spdy_state_ != SPDY_ERROR) {
     // Process one at a time so that we update the adapter's internal
@@ -290,10 +302,6 @@ size_t Http2DecoderAdapter::ProcessInput(const char* data, size_t len) {
   return total_processed;
 }
 
-void Http2DecoderAdapter::Reset() {
-  ResetInternal();
-}
-
 Http2DecoderAdapter::SpdyState Http2DecoderAdapter::state() const {
   return spdy_state_;
 }
@@ -310,6 +318,11 @@ bool Http2DecoderAdapter::probable_http_response() const {
 void Http2DecoderAdapter::StopProcessing() {
   SetSpdyErrorAndNotify(SpdyFramerError::SPDY_STOP_PROCESSING,
                         "Ignoring further events on this connection.");
+}
+
+void Http2DecoderAdapter::SetMaxFrameSize(size_t max_frame_size) {
+  max_frame_size_ = max_frame_size;
+  frame_decoder_->set_maximum_payload_size(max_frame_size);
 }
 
 // ===========================================================================
@@ -767,8 +780,7 @@ void Http2DecoderAdapter::OnPaddingTooLong(const Http2FrameHeader& header,
 
 void Http2DecoderAdapter::OnFrameSizeError(const Http2FrameHeader& header) {
   QUICHE_DVLOG(1) << "OnFrameSizeError: " << header;
-  size_t recv_limit = recv_frame_size_limit_;
-  if (header.payload_length > recv_limit) {
+  if (header.payload_length > max_frame_size_) {
     if (header.type == Http2FrameType::DATA) {
       SetSpdyErrorAndNotify(SpdyFramerError::SPDY_OVERSIZED_PAYLOAD, "");
     } else {
@@ -886,26 +898,6 @@ void Http2DecoderAdapter::ResetBetweenFrames() {
   decoded_frame_header_ = false;
   has_frame_header_ = false;
   set_spdy_state(SpdyState::SPDY_READY_FOR_FRAME);
-}
-
-// ResetInternal is called from the constructor, and during tests, but not
-// otherwise (i.e. not between every frame).
-void Http2DecoderAdapter::ResetInternal() {
-  set_spdy_state(SpdyState::SPDY_READY_FOR_FRAME);
-  spdy_framer_error_ = SpdyFramerError::SPDY_NO_ERROR;
-
-  decoded_frame_header_ = false;
-  has_frame_header_ = false;
-  on_headers_called_ = false;
-  on_hpack_fragment_called_ = false;
-  latched_probable_http_response_ = false;
-  has_expected_frame_type_ = false;
-
-  CorruptFrameHeader(&frame_header_);
-  CorruptFrameHeader(&hpack_first_frame_header_);
-
-  frame_decoder_ = std::make_unique<Http2FrameDecoder>(this);
-  hpack_decoder_ = nullptr;
 }
 
 void Http2DecoderAdapter::set_spdy_state(SpdyState v) {

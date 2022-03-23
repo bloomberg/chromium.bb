@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
 <translation id="417201473131094001">Wird von Chrome Canary nicht unterstützt</translation>
 <translation id="4214277427269650960">Melden Sie sich bei dieser Website und in Chrome an. Sie können die Synchronisierung später aktivieren.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> hat Chrome genutzt und Lesezeichen, Passwörter und andere Einstellungen auf diesem Gerät festgelegt.</translation>
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4249068189593983585">Chrome-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, berühren und halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste. Sie befindet sich unten oder oben auf dem Bildschirm.</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es morgen noch einmal oder <ph name="BEGIN_LINK" />prüfen Sie die Passwörter in Ihrem Google-Konto<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Wird von Chrome Beta nicht unterstützt</translation>
 <translation id="5030102366287574140">Chrome kann helfen, Sie vor Bedrohungen wie Datenpannen und schädlichen Erweiterungen zu schützen</translation>
+<translation id="5108659628347594808">Chrome verbessern</translation>
 <translation id="5119391094379141756">Wählen Sie Chrome aus</translation>
 <translation id="5162467219239570114">Chrome ist veraltet. Wenn im <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> kein Update verfügbar ist, unterstützt Ihr Gerät neuere Versionen von Chrome möglicherweise nicht mehr.</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
@@ -81,6 +83,13 @@
 <translation id="6709398533399187136">Ihr Passwort wurde durch eine Datenpanne preisgegeben. Der Passwortmanager von Google empfiehlt, dieses Passwort jetzt zu ändern.</translation>
 <translation id="6822673484890854830">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="6964931465519938134">Sie können jetzt Chrome jederzeit nutzen, wenn Sie in Nachrichten, Dokumenten und anderen Apps auf Links tippen.</translation>
+<translation id="7046845777663074840">Wenn aktiviert:
+<ph name="BEGIN_INDENT" />  • Sie helfen, Chrome für Nutzer zu optimieren, die es genauso verwenden wie Sie.<ph name="END_INDENT" />
+
+Wichtige Hinweise:
+<ph name="BEGIN_INDENT" />  • Daten zu Ihrer Chrome-Nutzung werden an Google gesendet, können aber nicht mit Ihnen in Verbindung gebracht werden.
+  • Falls Chrome abstürzt, können die Details zum Absturz einige personenbezogene Daten enthalten.
+  • Falls Sie die Synchronisierung aktivieren, können die Messwerte auch Informationen zu den von Ihnen besuchten URLs enthalten.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chrome personalisieren</translation>
 <translation id="7124339256045485976">Chrome auf dem neuesten Stand halten</translation>
 <translation id="7161390184744336561">Google Chrome ist veraltet</translation>

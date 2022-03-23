@@ -85,9 +85,10 @@ MaybeHandle<Object> JSReceiver::GetElement(Isolate* isolate,
   return Object::GetProperty(&it);
 }
 
-Handle<Object> JSReceiver::GetDataProperty(Handle<JSReceiver> object,
+Handle<Object> JSReceiver::GetDataProperty(Isolate* isolate,
+                                           Handle<JSReceiver> object,
                                            Handle<Name> name) {
-  LookupIterator it(object->GetIsolate(), object, name, object,
+  LookupIterator it(isolate, object, name, object,
                     LookupIterator::PROTOTYPE_CHAIN_SKIP_INTERCEPTOR);
   if (!it.IsFound()) return it.factory()->undefined_value();
   return GetDataProperty(&it);
@@ -307,10 +308,6 @@ int JSObject::GetEmbedderFieldOffset(int index) {
   return GetEmbedderFieldsStartOffset() + (kEmbedderDataSlotSize * index);
 }
 
-void JSObject::InitializeEmbedderField(Isolate* isolate, int index) {
-  EmbedderDataSlot(*this, index).AllocateExternalPointerEntry(isolate);
-}
-
 Object JSObject::GetEmbedderField(int index) {
   return EmbedderDataSlot(*this, index).load_tagged();
 }
@@ -334,10 +331,28 @@ Object JSObject::RawFastPropertyAt(FieldIndex index) const {
 Object JSObject::RawFastPropertyAt(PtrComprCageBase cage_base,
                                    FieldIndex index) const {
   if (index.is_inobject()) {
-    return TaggedField<Object>::load(cage_base, *this, index.offset());
+    return TaggedField<Object>::Relaxed_Load(cage_base, *this, index.offset());
   } else {
     return property_array(cage_base).get(cage_base,
                                          index.outobject_array_index());
+  }
+}
+
+// The SeqCst versions of RawFastPropertyAt are used for atomically accessing
+// shared struct fields.
+Object JSObject::RawFastPropertyAt(FieldIndex index,
+                                   SeqCstAccessTag tag) const {
+  PtrComprCageBase cage_base = GetPtrComprCageBase(*this);
+  return RawFastPropertyAt(cage_base, index, tag);
+}
+
+Object JSObject::RawFastPropertyAt(PtrComprCageBase cage_base, FieldIndex index,
+                                   SeqCstAccessTag tag) const {
+  if (index.is_inobject()) {
+    return TaggedField<Object>::SeqCst_Load(cage_base, *this, index.offset());
+  } else {
+    return property_array(cage_base).get(cage_base,
+                                         index.outobject_array_index(), tag);
   }
 }
 
@@ -384,6 +399,17 @@ void JSObject::RawFastInobjectPropertyAtPut(FieldIndex index, Object value,
   CONDITIONAL_WRITE_BARRIER(*this, offset, value, mode);
 }
 
+void JSObject::RawFastInobjectPropertyAtPut(FieldIndex index, Object value,
+                                            SeqCstAccessTag tag) {
+  DCHECK(index.is_inobject());
+  DCHECK(value.IsShared());
+  SEQ_CST_WRITE_FIELD(*this, index.offset(), value);
+  // JSSharedStructs are allocated in the shared old space, which is currently
+  // collected by stopping the world, so the incremental write barrier is not
+  // needed. They can only store Smis and other HeapObjects in the shared old
+  // space, so the generational write barrier is also not needed.
+}
+
 void JSObject::FastPropertyAtPut(FieldIndex index, Object value,
                                  WriteBarrierMode mode) {
   if (index.is_inobject()) {
@@ -391,6 +417,15 @@ void JSObject::FastPropertyAtPut(FieldIndex index, Object value,
   } else {
     DCHECK_EQ(UPDATE_WRITE_BARRIER, mode);
     property_array().set(index.outobject_array_index(), value);
+  }
+}
+
+void JSObject::FastPropertyAtPut(FieldIndex index, Object value,
+                                 SeqCstAccessTag tag) {
+  if (index.is_inobject()) {
+    RawFastInobjectPropertyAtPut(index, value, tag);
+  } else {
+    property_array().set(index.outobject_array_index(), value, tag);
   }
 }
 
@@ -444,11 +479,33 @@ void JSObject::InitializeBody(Map map, int start_offset,
                               MapWord filler_map, Object undefined_filler) {
   int size = map.instance_size();
   int offset = start_offset;
+  int embedder_field_start = GetEmbedderFieldsStartOffset(map);
+  int embedder_field_count = GetEmbedderFieldCount(map);
+
+  if (embedder_field_count) {
+    // fill start with references to the undefined value object
+    DCHECK_LE(offset, embedder_field_start);
+    while (offset < embedder_field_start) {
+      WRITE_FIELD(*this, offset, undefined_filler);
+      offset += kTaggedSize;
+    }
+
+    // initialize embedder data slots
+    DCHECK_EQ(offset, embedder_field_start);
+    for (int i = 0; i < embedder_field_count; i++) {
+      // TODO(v8): consider initializing embedded data slots with Smi::zero().
+      EmbedderDataSlot(*this, i).Initialize(undefined_filler);
+      offset += kEmbedderDataSlotSize;
+    }
+  }
+
+  DCHECK_LE(offset, size);
   if (is_slack_tracking_in_progress) {
     int end_of_pre_allocated_offset =
         size - (map.UnusedPropertyFields() * kTaggedSize);
     DCHECK_LE(kHeaderSize, end_of_pre_allocated_offset);
-    // fill start with references to the undefined value object
+    DCHECK_LE(offset, end_of_pre_allocated_offset);
+    // fill pre allocated slots with references to the undefined value object
     while (offset < end_of_pre_allocated_offset) {
       WRITE_FIELD(*this, offset, undefined_filler);
       offset += kTaggedSize;
@@ -461,11 +518,40 @@ void JSObject::InitializeBody(Map map, int start_offset,
     }
   } else {
     while (offset < size) {
-      // fill with references to the undefined value object
+      // fill everything with references to the undefined value object
       WRITE_FIELD(*this, offset, undefined_filler);
       offset += kTaggedSize;
     }
   }
+}
+
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSExternalObject)
+
+DEF_GETTER(JSExternalObject, value, void*) {
+  Isolate* isolate = GetIsolateForSandbox(*this);
+  return reinterpret_cast<void*>(
+      ReadExternalPointerField(kValueOffset, isolate, kExternalObjectValueTag));
+}
+
+void JSExternalObject::AllocateExternalPointerEntries(Isolate* isolate) {
+  InitExternalPointerField(kValueOffset, isolate, kExternalObjectValueTag);
+}
+
+void JSExternalObject::set_value(Isolate* isolate, void* value) {
+  WriteExternalPointerField(kValueOffset, isolate,
+                            reinterpret_cast<Address>(value),
+                            kExternalObjectValueTag);
+}
+
+uint32_t JSExternalObject::GetValueRefForDeserialization() {
+  ExternalPointer_t encoded_address =
+      ReadField<ExternalPointer_t>(kValueOffset);
+  return static_cast<uint32_t>(encoded_address);
+}
+
+void JSExternalObject::SetValueRefForSerialization(uint32_t ref) {
+  WriteField<ExternalPointer_t>(kValueOffset,
+                                static_cast<ExternalPointer_t>(ref));
 }
 
 DEF_GETTER(JSGlobalObject, native_context_unchecked, Object) {
