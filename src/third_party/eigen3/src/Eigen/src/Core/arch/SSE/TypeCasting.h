@@ -10,6 +10,8 @@
 #ifndef EIGEN_TYPE_CASTING_SSE_H
 #define EIGEN_TYPE_CASTING_SSE_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -75,6 +77,14 @@ template<> EIGEN_STRONG_INLINE Packet4i preinterpret<Packet4i,Packet4f>(const Pa
 
 template<> EIGEN_STRONG_INLINE Packet4f preinterpret<Packet4f,Packet4i>(const Packet4i& a) {
   return _mm_castsi128_ps(a);
+}
+
+template<> EIGEN_STRONG_INLINE Packet2d preinterpret<Packet2d,Packet4i>(const Packet4i& a) {
+  return _mm_castsi128_pd(a);
+}
+
+template<> EIGEN_STRONG_INLINE Packet4i preinterpret<Packet4i,Packet2d>(const Packet2d& a) {
+  return _mm_castpd_si128(a);
 }
 
 // Disable the following code since it's broken on too many platforms / compilers.

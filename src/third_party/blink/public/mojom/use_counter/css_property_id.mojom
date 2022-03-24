@@ -461,7 +461,7 @@ enum CSSSampleId {
     kUserZoom = 409,
     // kWebkitDashboardRegion = 410,
     // kWebkitOverflowScrolling = 411,
-    kWebkitAppRegion = 412,
+    kAliasWebkitAppRegion = 412,
     kAliasWebkitFilter = 413,
     kWebkitBoxDecorationBreak = 414,
     kWebkitTapHighlightColor = 415,
@@ -747,16 +747,24 @@ enum CSSSampleId {
     kBorderEndEndRadius = 694,
     kAccentColor = 695,
     kSizeAdjust = 696,
+    kContainerName = 697,
+    kContainerType = 698,
+    kContainer = 699,
+    kFontSynthesisWeight = 700,
+    kFontSynthesisStyle = 701,
+    kAppRegion = 702,
+    kFontSynthesisSmallCaps = 703,
+    kFontSynthesis = 704,
 
 
 
-    // patch section: rubberband (features 697,698,699)
+    // patch section: rubberband (features 705,706,707)
 
 
-    // patch section: lcd-text background (feature 700)
+    // patch section: lcd-text background (feature 708)
 
 
-    // patch section: suppress-needs-compositing-input-update (feature 701)
+    // patch section: suppress-needs-compositing-input-update (feature 709)
 
 
 

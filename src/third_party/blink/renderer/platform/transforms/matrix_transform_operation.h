@@ -69,7 +69,8 @@ class PLATFORM_EXPORT MatrixTransformOperation final
            e_ == m->e_ && f_ == m->f_;
   }
 
-  void Apply(TransformationMatrix& transform, const FloatSize&) const override {
+  void Apply(TransformationMatrix& transform,
+             const gfx::SizeF&) const override {
     TransformationMatrix matrix(a_, b_, c_, d_, e_, f_);
     transform.Multiply(matrix);
   }
@@ -98,7 +99,7 @@ class PLATFORM_EXPORT MatrixTransformOperation final
                            double f)
       : a_(a), b_(b), c_(c), d_(d), e_(e), f_(f) {}
 
-  MatrixTransformOperation(const TransformationMatrix& t)
+  explicit MatrixTransformOperation(const TransformationMatrix& t)
       : a_(t.A()), b_(t.B()), c_(t.C()), d_(t.D()), e_(t.E()), f_(t.F()) {}
 
   double a_;

@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const _Eps: number = 1e-5;
@@ -389,58 +387,6 @@ export class Size {
 
   addHeight(size: number|Size): Size {
     return new Size(this.width, this.height + (typeof size === 'number' ? size : size.height));
-  }
-}
-
-export class Insets {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-  constructor(left: number, top: number, right: number, bottom: number) {
-    this.left = left;
-    this.top = top;
-    this.right = right;
-    this.bottom = bottom;
-  }
-
-  isEqual(insets: Insets|null): boolean {
-    return insets !== null && this.left === insets.left && this.top === insets.top && this.right === insets.right &&
-        this.bottom === insets.bottom;
-  }
-}
-
-export class Rect {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  constructor(left: number, top: number, width: number, height: number) {
-    this.left = left;
-    this.top = top;
-    this.width = width;
-    this.height = height;
-  }
-
-  isEqual(rect: Rect|null): boolean {
-    return rect !== null && this.left === rect.left && this.top === rect.top && this.width === rect.width &&
-        this.height === rect.height;
-  }
-
-  scale(scale: number): Rect {
-    return new Rect(this.left * scale, this.top * scale, this.width * scale, this.height * scale);
-  }
-
-  size(): Size {
-    return new Size(this.width, this.height);
-  }
-
-  relativeTo(origin: Rect): Rect {
-    return new Rect(this.left - origin.left, this.top - origin.top, this.width, this.height);
-  }
-
-  rebaseTo(origin: Rect): Rect {
-    return new Rect(this.left + origin.left, this.top + origin.top, this.width, this.height);
   }
 }
 

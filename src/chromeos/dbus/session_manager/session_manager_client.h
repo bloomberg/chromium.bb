@@ -11,10 +11,10 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 
 namespace cryptohome {
@@ -130,6 +130,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Returns the global instance if initialized. May return null.
   static SessionManagerClient* Get();
+
+  SessionManagerClient(const SessionManagerClient&) = delete;
+  SessionManagerClient& operator=(const SessionManagerClient&) = delete;
 
   // Sets the delegate used by the stub implementation. Ownership of |delegate|
   // remains with the caller.
@@ -249,6 +252,13 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Notifies session_manager that Chrome has hidden the lock screen.
   virtual void NotifyLockScreenDismissed() = 0;
+
+  // Makes session_manager add some flags to carry out browser data migration
+  // upon next ash-chrome restart. The method returns true if the DBus call was
+  // successful. The callback is passed true if the DBus call is successful and
+  // false otherwise.
+  virtual bool RequestBrowserDataMigration(
+      const cryptohome::AccountIdentifier& cryptohome_id) = 0;
 
   // Map that is used to describe the set of active user sessions where |key|
   // is cryptohome id and |value| is user_id_hash.
@@ -394,7 +404,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // manager.
   virtual void SetFeatureFlagsForUser(
       const cryptohome::AccountIdentifier& cryptohome_id,
-      const std::vector<std::string>& feature_flags) = 0;
+      const std::vector<std::string>& feature_flags,
+      const std::map<std::string, std::string>& origin_list_flags) = 0;
 
   using StateKeysCallback =
       base::OnceCallback<void(const std::vector<std::string>& state_keys)>;
@@ -408,6 +419,18 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // is invoked with an empty state key vector in case of errors. If the time
   // sync fails or there's no network, the callback is never invoked.
   virtual void GetServerBackedStateKeys(StateKeysCallback callback) = 0;
+
+  using PsmDeviceActiveSecretCallback =
+      base::OnceCallback<void(const std::string& psm_device_active_secret)>;
+
+  // Get a derivative of the stable_device_secret_DO_NOT_SHARE vpd field.
+  // Derivative of this field is used to prevent privacy complications in the
+  // case of a Chrome data leak.
+  //
+  // The string is returned asynchronously via |callback|. The callback is
+  // invoked with an empty string in case of errors.
+  virtual void GetPsmDeviceActiveSecret(
+      PsmDeviceActiveSecretCallback callback) = 0;
 
   // StartArcMiniContainer starts a container with only a handful of ARC
   // processes for Chrome OS login screen.
@@ -476,9 +499,6 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // Use Initialize/Shutdown instead.
   SessionManagerClient();
   virtual ~SessionManagerClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SessionManagerClient);
 };
 
 }  // namespace chromeos

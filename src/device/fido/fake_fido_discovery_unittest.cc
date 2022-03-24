@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,14 +25,15 @@ using ::testing::_;
 class FakeFidoDiscoveryTest : public ::testing::Test {
  public:
   FakeFidoDiscoveryTest() = default;
+
+  FakeFidoDiscoveryTest(const FakeFidoDiscoveryTest&) = delete;
+  FakeFidoDiscoveryTest& operator=(const FakeFidoDiscoveryTest&) = delete;
+
   ~FakeFidoDiscoveryTest() override = default;
 
  protected:
   FakeFidoDiscoveryFactory fake_fido_discovery_factory_;
   base::test::TaskEnvironment task_environment_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeFidoDiscoveryTest);
 };
 
 using FakeFidoDiscoveryFactoryTest = FakeFidoDiscoveryTest;

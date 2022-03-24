@@ -5,13 +5,11 @@
 #ifndef V8_OBJECTS_TRANSITIONS_INL_H_
 #define V8_OBJECTS_TRANSITIONS_INL_H_
 
-#include "src/ic/handler-configuration-inl.h"
 #include "src/objects/fixed-array-inl.h"
 #include "src/objects/maybe-object-inl.h"
 #include "src/objects/slots.h"
 #include "src/objects/smi.h"
 #include "src/objects/transitions.h"
-#include "src/snapshot/deserializer.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -162,7 +160,7 @@ bool TransitionArray::GetTargetIfExists(int transition_number, Isolate* isolate,
   // transition.
   if (raw.IsSmi()) {
     DCHECK(isolate->has_active_deserializer());
-    DCHECK_EQ(raw.ToSmi(), Deserializer::uninitialized_field_value());
+    DCHECK_EQ(raw.ToSmi(), Smi::uninitialized_deserialization_value());
     return false;
   }
   if (raw->GetHeapObjectIfStrong(&heap_object) &&
@@ -182,19 +180,22 @@ Map TransitionArray::SearchAndGetTargetForTesting(
   return SearchAndGetTarget(kind, name, attributes);
 }
 
-int TransitionArray::SearchSpecial(Symbol symbol, int* out_insertion_index) {
-  return SearchName(symbol, out_insertion_index);
+int TransitionArray::SearchSpecial(Symbol symbol, bool concurrent_search,
+                                   int* out_insertion_index) {
+  return SearchName(symbol, concurrent_search, out_insertion_index);
 }
 
-int TransitionArray::SearchName(Name name, int* out_insertion_index) {
+int TransitionArray::SearchName(Name name, bool concurrent_search,
+                                int* out_insertion_index) {
   DCHECK(name.IsUniqueName());
   return internal::Search<ALL_ENTRIES>(this, name, number_of_entries(),
-                                       out_insertion_index);
+                                       out_insertion_index, concurrent_search);
 }
 
 TransitionsAccessor::TransitionsAccessor(Isolate* isolate, Map map,
-                                         DisallowGarbageCollection* no_gc)
-    : isolate_(isolate), map_(map), concurrent_access_(false) {
+                                         DisallowGarbageCollection* no_gc,
+                                         bool concurrent_access)
+    : isolate_(isolate), map_(map), concurrent_access_(concurrent_access) {
   Initialize();
   USE(no_gc);
 }
@@ -216,26 +217,32 @@ void TransitionsAccessor::Reload() {
 
 int TransitionsAccessor::Capacity() { return transitions().Capacity(); }
 
-void TransitionsAccessor::Initialize() {
-  raw_transitions_ = map_.raw_transitions(isolate_, kAcquireLoad);
+// static
+TransitionsAccessor::Encoding TransitionsAccessor::GetEncoding(
+    Isolate* isolate, MaybeObject raw_transitions) {
   HeapObject heap_object;
-  if (raw_transitions_->IsSmi() || raw_transitions_->IsCleared()) {
-    encoding_ = kUninitialized;
-  } else if (raw_transitions_->IsWeak()) {
-    encoding_ = kWeakRef;
-  } else if (raw_transitions_->GetHeapObjectIfStrong(isolate_, &heap_object)) {
+  if (raw_transitions->IsSmi() || raw_transitions->IsCleared()) {
+    return kUninitialized;
+  } else if (raw_transitions->IsWeak()) {
+    return kWeakRef;
+  } else if (raw_transitions->GetHeapObjectIfStrong(isolate, &heap_object)) {
     if (heap_object.IsTransitionArray()) {
-      encoding_ = kFullTransitionArray;
+      return kFullTransitionArray;
     } else if (heap_object.IsPrototypeInfo()) {
-      encoding_ = kPrototypeInfo;
+      return kPrototypeInfo;
     } else {
-      DCHECK(map_.is_deprecated());
       DCHECK(heap_object.IsMap());
-      encoding_ = kMigrationTarget;
+      return kMigrationTarget;
     }
   } else {
     UNREACHABLE();
   }
+}
+
+void TransitionsAccessor::Initialize() {
+  raw_transitions_ = map_.raw_transitions(isolate_, kAcquireLoad);
+  encoding_ = GetEncoding(isolate_, raw_transitions_);
+  DCHECK_IMPLIES(encoding_ == kMigrationTarget, map_.is_deprecated());
 #if DEBUG
   needs_reload_ = false;
 #endif
@@ -319,8 +326,9 @@ Handle<String> TransitionsAccessor::ExpectedTransitionKey() {
     case kWeakRef: {
       Map target = Map::cast(raw_transitions_->GetHeapObjectAssumeWeak());
       PropertyDetails details = GetSimpleTargetDetails(target);
-      if (details.location() != kField) return Handle<String>::null();
-      DCHECK_EQ(kData, details.kind());
+      if (details.location() != PropertyLocation::kField)
+        return Handle<String>::null();
+      DCHECK_EQ(PropertyKind::kData, details.kind());
       if (details.attributes() != NONE) return Handle<String>::null();
       Name name = GetSimpleTransitionKey(target);
       if (!name.IsString()) return Handle<String>::null();

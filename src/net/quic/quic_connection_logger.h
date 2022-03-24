@@ -8,9 +8,8 @@
 #include <stddef.h>
 
 #include <bitset>
-#include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -39,6 +38,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
       const char* const connection_description,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       const NetLogWithSource& net_log);
+
+  QuicConnectionLogger(const QuicConnectionLogger&) = delete;
+  QuicConnectionLogger& operator=(const QuicConnectionLogger&) = delete;
 
   ~QuicConnectionLogger() override;
 
@@ -148,7 +150,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // the overall packet loss rate, and record it into a histogram.
   void RecordAggregatePacketLossRate() const;
 
-  quic::QuicSession* session_;  // Unowned.
+  raw_ptr<quic::QuicSession> session_;  // Unowned.
   // The last packet number received.
   quic::QuicPacketNumber last_received_packet_number_;
   // The size of the most recently received packet.
@@ -211,8 +213,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   const std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
 
   QuicEventLogger event_logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };
 
 }  // namespace net

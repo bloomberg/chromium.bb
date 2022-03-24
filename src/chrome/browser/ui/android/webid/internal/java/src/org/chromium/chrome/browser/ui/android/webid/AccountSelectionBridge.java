@@ -9,9 +9,12 @@ import androidx.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
+import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
+import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 import java.util.Arrays;
 
@@ -42,33 +45,23 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
 
     @CalledByNative
     private void destroy() {
+        mAccountSelectionComponent.hideBottomSheet();
         mNativeView = 0;
     }
 
     /* Shows the accounts in a bottom sheet UI allowing user to select one.
      *
      * @param url is the URL for RP that has initiated the WebID flow.
-     * @param accountsFiled is a 2d string array where each of its element is
-     * the fields for a single account. Note that we use a string array to
-     * represent and account given that it helps reduce the number of JNI
-     * methods needed and thus avoid APK size overhead.
+     * @param accounts is the list of accounts to be shown.
+     * @param isAutoSignIn represents whether this is an auto sign in flow.
      */
     @CalledByNative
-    private void showAccounts(String url, String[][] accountsFields) {
-        assert accountsFields != null && accountsFields.length > 0;
-        Account[] accounts = new Account[accountsFields.length];
-        for (int i = 0; i < accountsFields.length; i++) {
-            String[] fields = accountsFields[i];
-            accounts[i] = new Account(
-                    /* subject= */ fields[0],
-                    /* email= */ fields[1],
-                    /* name= */ fields[2],
-                    /* givenName= */ fields[3],
-                    /* picture= */ fields[4],
-                    /* originUrl= */ fields[5]);
-        }
-
-        mAccountSelectionComponent.showAccounts(url, Arrays.asList(accounts));
+    private void showAccounts(GURL rpUrl, GURL idpUrl, Account[] accounts,
+            IdentityProviderMetadata idpMetadata, ClientIdMetadata clientIdMetadata,
+            boolean isAutoSignIn) {
+        assert accounts != null && accounts.length > 0;
+        mAccountSelectionComponent.showAccounts(rpUrl, idpUrl, Arrays.asList(accounts), idpMetadata,
+                clientIdMetadata, isAutoSignIn);
     }
 
     @Override
@@ -81,13 +74,29 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
     @Override
     public void onAccountSelected(Account account) {
         if (mNativeView != 0) {
-            AccountSelectionBridgeJni.get().onAccountSelected(mNativeView, account.getFields());
+            // This call passes the account fields directly as String and GURL parameters as an
+            // optimization to avoid needing multiple JNI getters on the Account class on for each
+            // field.
+            AccountSelectionBridgeJni.get().onAccountSelected(mNativeView,
+                    account.getStringFields(), account.getPictureUrl(), account.isSignIn());
+        }
+    }
+
+    @Override
+    public void onAutoSignInCancelled() {
+        if (mNativeView != 0) {
+            // This call passes the account fields directly as String and GURL parameters as an
+            // optimization to avoid needing multiple JNI getters on the Account class on for each
+            // field.
+            AccountSelectionBridgeJni.get().onAutoSignInCancelled(mNativeView);
         }
     }
 
     @NativeMethods
     interface Natives {
-        void onAccountSelected(long nativeAccountSelectionViewAndroid, String[] accountFields);
+        void onAccountSelected(long nativeAccountSelectionViewAndroid, String[] accountFields,
+                GURL accountPictureUrl, boolean isSignedIn);
         void onDismiss(long nativeAccountSelectionViewAndroid);
+        void onAutoSignInCancelled(long nativeAccountSelectionViewAndroid);
     }
 }

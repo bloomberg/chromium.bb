@@ -7,10 +7,11 @@ import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
-import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.js';
-import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.js';
-import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.js';
-import {fakeDataBind, isChildVisible} from 'chrome://test/test_util.m.js';
+import {fakeDataBind, isChildVisible} from 'chrome://webui-test/test_util.js';
+
+import {getFakeLanguagePrefs} from './fake_language_settings_private.js';
+import {FakeSettingsPrivate} from './fake_settings_private.js';
+import {TestLanguagesBrowserProxy} from './test_languages_browser_proxy.js';
 
 // clang-format on
 
@@ -18,6 +19,7 @@ window.languages_page_tests = {};
 
 /** @enum {string} */
 window.languages_page_tests.TestNames = {
+  LanguageSettings: 'language_settings',
   Spellcheck: 'spellcheck_all',
   SpellcheckOfficialBuild: 'spellcheck_official',
   ChromeOSLanguagesSettingsUpdate: 'chromeos settings update',
@@ -36,10 +38,6 @@ suite('languages page', function() {
   /** @type {?LanguagesBrowserProxy} */
   let browserProxy = null;
 
-  // Enabled language pref name for the platform.
-  const languagesPref = isChromeOS ? 'settings.language.preferred_languages' :
-                                     'intl.accept_languages';
-
   suiteSetup(function() {
     testing.Test.disableAnimationsAndTransitions();
     PolymerTest.clearBody();
@@ -54,7 +52,7 @@ suite('languages page', function() {
     return CrSettingsPrefs.initialized.then(function() {
       // Set up test browser proxy.
       browserProxy = new TestLanguagesBrowserProxy();
-      LanguagesBrowserProxyImpl.instance_ = browserProxy;
+      LanguagesBrowserProxyImpl.setInstance(browserProxy);
 
       // Set up fake languageSettingsPrivate API.
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
@@ -70,10 +68,13 @@ suite('languages page', function() {
 
       document.body.appendChild(languagesPage);
       flush();
-      languagesCollapse = languagesPage.$$('#languagesCollapse');
+      languagesCollapse =
+          languagesPage.shadowRoot.querySelector('#languagesCollapse');
       languagesCollapse.opened = true;
       actionMenu =
-          languagesPage.$$('settings-languages-subpage').$$('#menu').get();
+          languagesPage.shadowRoot.querySelector('settings-languages-subpage')
+              .shadowRoot.querySelector('#menu')
+              .get();
 
       languageHelper = languagesPage.languageHelper;
       return languageHelper.whenReady();
@@ -84,9 +85,24 @@ suite('languages page', function() {
     PolymerTest.clearBody();
   });
 
+  suite(languages_page_tests.TestNames.LanguageSettings, function() {
+    test('decoupled language subtitle', function() {
+      const secondaryText = languagesPage.shadowRoot.querySelector(
+          '#languageSectionSecondaryText');
+      if (isChromeOS || isWindows) {
+        // Set to English from FakeLanguageSettingsPrivate.
+        assertEquals(
+            secondaryText.textContent.trim(), 'English (United States)');
+      } else {
+        assertEquals(secondaryText, null);
+      }
+    });
+  });
+
   suite(languages_page_tests.TestNames.Spellcheck, function() {
     test('structure', function() {
-      const spellCheckCollapse = languagesPage.$$('#spellCheckCollapse');
+      const spellCheckCollapse =
+          languagesPage.shadowRoot.querySelector('#spellCheckCollapse');
       const spellCheckSettingsExist = !!spellCheckCollapse;
       if (isMac) {
         assertFalse(spellCheckSettingsExist);
@@ -95,7 +111,8 @@ suite('languages page', function() {
 
       assertTrue(spellCheckSettingsExist);
 
-      const triggerRow = languagesPage.$$('#enableSpellcheckingToggle');
+      const triggerRow =
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle');
 
       // Disable spellcheck for en-US.
       const spellcheckLanguageRow =
@@ -168,7 +185,8 @@ suite('languages page', function() {
       flush();
 
       // The policy indicator should be present.
-      assertTrue(!!triggerRow.$$('cr-policy-pref-indicator'));
+      assertTrue(
+          !!triggerRow.shadowRoot.querySelector('cr-policy-pref-indicator'));
 
       // Force-enable spellchecking via policy, and ensure that the policy
       // indicator is not present. |enable_spellchecking| can be forced to
@@ -193,34 +211,47 @@ suite('languages page', function() {
         return;
       }
 
-      const list = languagesPage.$$('#spellCheckLanguagesList');
+      const list =
+          languagesPage.shadowRoot.querySelector('#spellCheckLanguagesList');
       assertFalse(list.hidden);
-      assertTrue(languagesPage.$$('#enableSpellcheckingToggle').checked);
+      assertTrue(
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .checked);
       assertDeepEquals(
           ['en-US'], languageHelper.getPref('spellcheck.dictionaries').value);
 
       // Update supported languages to just 1 language should hide list.
-      languageHelper.setPrefValue(languagesPref, 'en-US');
+      languageHelper.setPrefValue('intl.accept_languages', 'en-US');
+      if (isChromeOS) {
+        languageHelper.setPrefValue(
+            'settings.language.preferred_languages', 'en-US');
+      }
       flush();
       assertTrue(list.hidden);
 
       // Disable spell check should keep list hidden and remove the single
       // language from dictionaries.
-      languagesPage.$$('#enableSpellcheckingToggle').click();
+      languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+          .click();
       flush();
 
       assertTrue(list.hidden);
-      assertFalse(languagesPage.$$('#enableSpellcheckingToggle').checked);
+      assertFalse(
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .checked);
       assertDeepEquals(
           [], languageHelper.getPref('spellcheck.dictionaries').value);
 
       // Enable spell check should keep list hidden and add the single language
       // to dictionaries.
-      languagesPage.$$('#enableSpellcheckingToggle').click();
+      languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+          .click();
       flush();
 
       assertTrue(list.hidden);
-      assertTrue(languagesPage.$$('#enableSpellcheckingToggle').checked);
+      assertTrue(
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .checked);
       assertDeepEquals(
           ['en-US'], languageHelper.getPref('spellcheck.dictionaries').value);
     });
@@ -234,19 +265,26 @@ suite('languages page', function() {
         spellCheckDisabledReason: 'no languages!',
       });
 
-      assertFalse(languagesPage.$$('#enableSpellcheckingToggle').disabled);
+      assertFalse(
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .disabled);
       assertTrue(languageHelper.getPref('browser.enable_spellchecking').value);
       assertEquals(
-          languagesPage.$$('#enableSpellcheckingToggle').subLabel, undefined);
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .subLabel,
+          undefined);
 
       // Empty out supported languages
       for (const lang of languageHelper.languages.enabled) {
         languageHelper.disableLanguage(lang.language.code);
       }
-      assertTrue(languagesPage.$$('#enableSpellcheckingToggle').disabled);
+      assertTrue(
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .disabled);
       assertFalse(languageHelper.getPref('browser.enable_spellchecking').value);
       assertEquals(
-          languagesPage.$$('#enableSpellcheckingToggle').subLabel,
+          languagesPage.shadowRoot.querySelector('#enableSpellcheckingToggle')
+              .subLabel,
           'no languages!');
     });
 
@@ -260,7 +298,8 @@ suite('languages page', function() {
       };
 
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
-      const spellCheckCollapse = languagesPage.$$('#spellCheckCollapse');
+      const spellCheckCollapse =
+          languagesPage.shadowRoot.querySelector('#spellCheckCollapse');
       const errorDivs = Array.from(
           spellCheckCollapse.querySelectorAll('.name-with-error-list div'));
       assertEquals(4, errorDivs.length);
@@ -305,7 +344,7 @@ suite('languages page', function() {
     test('enabling and disabling the spelling service', () => {
       const previousValue =
           languagesPage.prefs.spellcheck.use_spelling_service.value;
-      languagesPage.$$('#spellingServiceEnable').click();
+      languagesPage.shadowRoot.querySelector('#spellingServiceEnable').click();
       flush();
       assertNotEquals(
           previousValue,
@@ -336,7 +375,7 @@ suite(languages_page_tests.TestNames.RestructuredLanguageSettings, function() {
     return CrSettingsPrefs.initialized.then(function() {
       // Set up test browser proxy.
       browserProxy = new TestLanguagesBrowserProxy();
-      LanguagesBrowserProxyImpl.instance_ = browserProxy;
+      LanguagesBrowserProxyImpl.setInstance(browserProxy);
 
       // Set up fake languageSettingsPrivate API.
       const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
@@ -366,39 +405,9 @@ suite(languages_page_tests.TestNames.RestructuredLanguageSettings, function() {
   });
 
   test('languageSubpageTriggerClicked', function() {
-    languagesPage.$$('#languagesSubpageTrigger').click();
+    languagesPage.shadowRoot.querySelector('#languagesSubpageTrigger').click();
     assertEquals(
         Router.getInstance().getCurrentRoute(), routes.LANGUAGE_SETTINGS);
   });
 
 });
-
-// TODO(crbug/1109431): Delete this.
-suite(
-    languages_page_tests.TestNames.ChromeOSLanguagesSettingsUpdate, function() {
-      test('shows correct structure if update is true', () => {
-        const page = document.createElement('settings-languages-page');
-        page.isChromeOSLanguagesSettingsUpdate_ = true;
-        document.body.appendChild(page);
-        flush();
-
-        assertTrue(!!page.$$('#openChromeOSLanguagesSettings'));
-        assertFalse(!!page.$$('cr-expand-button'));
-        assertFalse(!!page.$$('#languagesCollapse'));
-        assertFalse(!!page.$$('#enableSpellcheckingToggle'));
-        assertFalse(!!page.$$('#spellCheckCollapse'));
-      });
-
-      test('shows correct structure if update is false', () => {
-        const page = document.createElement('settings-languages-page');
-        page.isChromeOSLanguagesSettingsUpdate_ = false;
-        document.body.appendChild(page);
-        flush();
-
-        assertFalse(!!page.$$('#openChromeOSLanguagesSettings'));
-        assertTrue(!!page.$$('cr-expand-button'));
-        assertTrue(!!page.$$('#languagesCollapse'));
-        assertTrue(!!page.$$('#enableSpellcheckingToggle'));
-        assertTrue(!!page.$$('#spellCheckCollapse'));
-      });
-    });

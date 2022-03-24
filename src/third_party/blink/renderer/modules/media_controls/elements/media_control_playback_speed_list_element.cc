@@ -4,9 +4,13 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_playback_speed_list_element.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_boolean_scrollintoviewoptions.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
@@ -14,12 +18,29 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
 namespace {
+
+// This enum is used to record histograms. Do not reorder.
+enum class MediaControlsPlaybackSpeed {
+  k0_25X = 0,
+  k0_5X,
+  k0_75X,
+  k1X,
+  k1_25X,
+  k1_5X,
+  k1_75X,
+  k2X,
+  kMaxValue = k2X,
+};
+
+void RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed playback_speed) {
+  base::UmaHistogramEnumeration("Media.Controls.PlaybackSpeed", playback_speed);
+}
 
 struct PlaybackSpeed {
   const int display_name;
@@ -44,6 +65,28 @@ const QualifiedName& PlaybackRateAttrName() {
 }
 
 }  // anonymous namespace
+
+class MediaControlPlaybackSpeedListElement::RequestAnimationFrameCallback final
+    : public FrameCallback {
+ public:
+  explicit RequestAnimationFrameCallback(
+      MediaControlPlaybackSpeedListElement* list)
+      : list_(list) {}
+
+  RequestAnimationFrameCallback(const RequestAnimationFrameCallback&) = delete;
+  RequestAnimationFrameCallback& operator=(
+      const RequestAnimationFrameCallback&) = delete;
+
+  void Invoke(double) override { list_->CenterCheckedItem(); }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(list_);
+    FrameCallback::Trace(visitor);
+  }
+
+ private:
+  Member<MediaControlPlaybackSpeedListElement> list_;
+};
 
 MediaControlPlaybackSpeedListElement::MediaControlPlaybackSpeedListElement(
     MediaControlsImpl& media_controls)
@@ -84,7 +127,28 @@ void MediaControlPlaybackSpeedListElement::DefaultEventHandler(Event& event) {
 
     double playback_rate =
         To<Element>(target)->GetFloatingPointAttribute(PlaybackRateAttrName());
+    MediaElement().setDefaultPlaybackRate(playback_rate);
     MediaElement().setPlaybackRate(playback_rate);
+
+    if (playback_rate == 0.25) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k0_25X);
+    } else if (playback_rate == 0.5) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k0_5X);
+    } else if (playback_rate == 0.75) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k0_75X);
+    } else if (playback_rate == 1.0) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k1X);
+    } else if (playback_rate == 1.25) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k1_25X);
+    } else if (playback_rate == 1.5) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k1_5X);
+    } else if (playback_rate == 1.75) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k1_75X);
+    } else if (playback_rate == 2.0) {
+      RecordPlaybackSpeedUMA(MediaControlsPlaybackSpeed::k2X);
+    } else {
+      NOTREACHED();
+    }
 
     // Close the playback speed list.
     SetIsWanted(false);
@@ -111,6 +175,7 @@ Element* MediaControlPlaybackSpeedListElement::CreatePlaybackSpeedListItem(
   if (playback_rate == MediaElement().playbackRate()) {
     playback_speed_item_input->setChecked(true);
     playback_speed_item->setAttribute(html_names::kAriaCheckedAttr, "true");
+    checked_item_ = playback_speed_item;
   }
   // Allows to focus the list entry instead of the button.
   playback_speed_item->setTabIndex(0);
@@ -154,6 +219,8 @@ void MediaControlPlaybackSpeedListElement::RefreshPlaybackSpeedListMenu() {
 
   ParserAppendChild(CreatePlaybackSpeedHeaderItem());
 
+  checked_item_ = nullptr;
+
   // Construct a menu for playback speeds.
   for (unsigned i = 0; i < base::size(kPlaybackSpeeds); i++) {
     auto& playback_speed = kPlaybackSpeeds[i];
@@ -168,6 +235,25 @@ void MediaControlPlaybackSpeedListElement::RefreshPlaybackSpeedListMenu() {
                                       "menuitemcheckbox");
     ParserAppendChild(playback_speed_item);
   }
+  RequestAnimationFrameCallback* callback =
+      MakeGarbageCollected<RequestAnimationFrameCallback>(this);
+  GetDocument().RequestAnimationFrame(callback);
+}
+
+void MediaControlPlaybackSpeedListElement::CenterCheckedItem() {
+  if (!checked_item_)
+    return;
+  ScrollIntoViewOptions* options = ScrollIntoViewOptions::Create();
+  options->setBlock("center");
+  auto* arg =
+      MakeGarbageCollected<V8UnionBooleanOrScrollIntoViewOptions>(options);
+  checked_item_->scrollIntoView(arg);
+  checked_item_->focus();
+}
+
+void MediaControlPlaybackSpeedListElement::Trace(Visitor* visitor) const {
+  visitor->Trace(checked_item_);
+  MediaControlPopupMenuElement::Trace(visitor);
 }
 
 }  // namespace blink

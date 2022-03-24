@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 
-#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -12,7 +11,9 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row_interface.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_layout_algorithm_helpers.h"
@@ -37,6 +38,8 @@ inline bool NeedsTableSection(const LayoutObject& object) {
 
 LayoutNGTable::LayoutNGTable(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {}
+
+LayoutNGTable::~LayoutNGTable() = default;
 
 wtf_size_t LayoutNGTable::ColumnCount() const {
   NOT_DESTROYED();
@@ -95,6 +98,8 @@ void LayoutNGTable::TableGridStructureChanged() {
   NOT_DESTROYED();
   // Callers must ensure table layout gets invalidated.
   InvalidateCachedTableBorders();
+  if (StyleRef().BorderCollapse() == EBorderCollapse::kCollapse)
+    SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
 }
 
 bool LayoutNGTable::HasBackgroundForPaint() const {
@@ -115,7 +120,6 @@ bool LayoutNGTable::HasBackgroundForPaint() const {
 
 void LayoutNGTable::UpdateBlockLayout(bool relayout_children) {
   NOT_DESTROYED();
-  LayoutAnalyzer::BlockScope analyzer(*this);
 
   if (IsOutOfFlowPositioned()) {
     UpdateOutOfFlowBlockLayout();
@@ -196,9 +200,7 @@ void LayoutNGTable::StyleDidChange(StyleDifference diff,
         !old_style->BorderVisuallyEqual(StyleRef()) ||
         old_style->GetWritingDirection() != StyleRef().GetWritingDirection() ||
         old_style->IsFixedTableLayout() != StyleRef().IsFixedTableLayout() ||
-        old_style->EmptyCells() != StyleRef().EmptyCells() ||
-        (diff.TextDecorationOrColorChanged() &&
-         StyleRef().HasBorderColorReferencingCurrentColor());
+        old_style->EmptyCells() != StyleRef().EmptyCells();
     bool collapse_changed =
         StyleRef().BorderCollapse() != old_style->BorderCollapse();
     if (borders_changed || collapse_changed)
@@ -221,14 +223,14 @@ PhysicalRect LayoutNGTable::OverflowClipRect(
   if (StyleRef().BorderCollapse() == EBorderCollapse::kCollapse) {
     clip_rect = PhysicalRect(location, Size());
     const auto overflow_clip = GetOverflowClipAxes();
-    IntRect infinite_rect = PhysicalRect::InfiniteIntRect();
+    gfx::Rect infinite_rect = PhysicalRect::InfiniteIntRect();
     if ((overflow_clip & kOverflowClipX) == kNoOverflowClip) {
-      clip_rect.offset.left = LayoutUnit(infinite_rect.X());
-      clip_rect.size.width = LayoutUnit(infinite_rect.Width());
+      clip_rect.offset.left = LayoutUnit(infinite_rect.x());
+      clip_rect.size.width = LayoutUnit(infinite_rect.width());
     }
     if ((overflow_clip & kOverflowClipY) == kNoOverflowClip) {
-      clip_rect.offset.top = LayoutUnit(infinite_rect.Y());
-      clip_rect.size.height = LayoutUnit(infinite_rect.Height());
+      clip_rect.offset.top = LayoutUnit(infinite_rect.y());
+      clip_rect.size.height = LayoutUnit(infinite_rect.height());
     }
   } else {
     clip_rect = LayoutNGMixin<LayoutBlock>::OverflowClipRect(
@@ -262,13 +264,6 @@ void LayoutNGTable::AddVisualEffectOverflow() {
   NOTREACHED();
 }
 #endif
-
-void LayoutNGTable::Paint(const PaintInfo& paint_info) const {
-  NOT_DESTROYED();
-  DCHECK_EQ(PhysicalFragmentCount(), 1u);
-  NGBoxFragmentPainter(*LayoutNGMixin<LayoutBlock>::GetPhysicalFragment(0))
-      .Paint(paint_info);
-}
 
 LayoutUnit LayoutNGTable::BorderLeft() const {
   NOT_DESTROYED();

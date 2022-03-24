@@ -30,7 +30,7 @@ namespace tensorflow {
 // testing.
 class TestWorkerInterface : public WorkerInterface {
  public:
-  void GetStatusAsync(const GetStatusRequest* request,
+  void GetStatusAsync(CallOptions* opts, const GetStatusRequest* request,
                       GetStatusResponse* response, bool fail_fast,
                       StatusCallback done) override {
     done(errors::Unimplemented("GetStatusAsync"));
@@ -164,6 +164,11 @@ class TestWorkerCache : public WorkerCacheInterface {
 
   Status GetEagerClientCache(
       std::unique_ptr<eager::EagerClientCache>* eager_client_cache) override {
+    return errors::Unimplemented("Unimplemented.");
+  }
+
+  Status GetCoordinationClientCache(
+      std::unique_ptr<CoordinationClientCache>* coord_client_cache) override {
     return errors::Unimplemented("Unimplemented.");
   }
 

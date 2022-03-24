@@ -19,7 +19,6 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -112,6 +111,9 @@ class NetWatcher :
  public:
   NetWatcher() = default;
 
+  NetWatcher(const NetWatcher&) = delete;
+  NetWatcher& operator=(const NetWatcher&) = delete;
+
   ~NetWatcher() override = default;
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
@@ -141,9 +143,6 @@ class NetWatcher :
     LOG(INFO) << "OnProxyConfigChanged(" << ProxyConfigToString(config.value())
               << ", " << ConfigAvailabilityToString(availability) << ")";
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetWatcher);
 };
 
 }  // namespace

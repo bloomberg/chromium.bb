@@ -4,9 +4,11 @@
 
 #include "device/fido/cable/v2_authenticator.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
@@ -69,6 +71,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         })");
 
 struct MakeCredRequest {
+  // All fields below are not a raw_ptr<int64_t>, because ELEMENT() treats the
+  // raw_ptr<T> as a void*, skipping AddRef() call and causing a ref-counting
+  // mismatch.
   const std::vector<uint8_t>* client_data_hash;
   const std::string* rp_id;
   const std::vector<uint8_t>* user_id;
@@ -103,6 +108,9 @@ static constexpr StepOrByte<MakeCredRequest> kMakeCredParseSteps[] = {
 };
 
 struct AttestationObject {
+  // All the fields below are not a raw_ptr<,,,>, because ELEMENT() treats the
+  // raw_ptr<T> as a void*, skipping AddRef() call and causing a ref-counting
+  // mismatch.
   const std::string* fmt;
   const std::vector<uint8_t>* auth_data;
   const cbor::Value* statement;
@@ -124,6 +132,9 @@ static constexpr StepOrByte<AttestationObject> kAttObjParseSteps[] = {
 };
 
 struct GetAssertionRequest {
+  // All the fields below are not a raw_ptr<,,,>, because ELEMENT() treats the
+  // raw_ptr<T> as a void*, skipping AddRef() call and causing a ref-counting
+  // mismatch.
   const std::string* rp_id;
   const std::vector<uint8_t>* client_data_hash;
   const cbor::Value::ArrayValue* allowed_credentials;
@@ -244,17 +255,14 @@ class TunnelTransport : public Transport {
 
     update_callback_ = std::move(update_callback);
 
-    network_context_->CreateWebSocket(
-        target_, {device::kCableWebSocketProtocol}, net::SiteForCookies(),
-        net::IsolationInfo(), /*additional_headers=*/{},
-        network::mojom::kBrowserProcessId, url::Origin::Create(target_),
-        network::mojom::kWebSocketOptionBlockAllCookies,
-        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
-        websocket_client_->BindNewHandshakeClientPipe(),
-        /*url_loader_network_observer=*/mojo::NullRemote(),
-        /*auth_handler=*/mojo::NullRemote(),
-        /*header_client=*/mojo::NullRemote());
-    FIDO_LOG(DEBUG) << "Creating WebSocket to " << target_.spec();
+    // Delay the WebSocket creation by 250ms. This to measure whether DNS
+    // errors are reduced in UMA stats. If so, then the network errors that we
+    // see are probably due to a start-up race.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&TunnelTransport::StartWebSocket,
+                       weak_factory_.GetWeakPtr()),
+        base::Milliseconds(250));
   }
 
   void Write(std::vector<uint8_t> data) override {
@@ -277,6 +285,23 @@ class TunnelTransport : public Transport {
     kConnectedPaired,
     kReady,
   };
+
+  void StartWebSocket() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    network_context_->CreateWebSocket(
+        target_, {device::kCableWebSocketProtocol}, net::SiteForCookies(),
+        net::IsolationInfo(), /*additional_headers=*/{},
+        network::mojom::kBrowserProcessId, url::Origin::Create(target_),
+        network::mojom::kWebSocketOptionBlockAllCookies,
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
+        websocket_client_->BindNewHandshakeClientPipe(),
+        /*url_loader_network_observer=*/mojo::NullRemote(),
+        /*auth_handler=*/mojo::NullRemote(),
+        /*header_client=*/mojo::NullRemote(),
+        /*throttling_profile_id=*/absl::nullopt);
+    FIDO_LOG(DEBUG) << "Creating WebSocket to " << target_.spec();
+  }
 
   void OnTunnelReady(
       WebSocketAdapter::Result result,
@@ -301,11 +326,11 @@ class TunnelTransport : public Transport {
 
     CableEidArray plaintext_eid;
     if (state_ == State::kConnecting) {
-      const device::cablev2::eid::Components components{
-          .tunnel_server_domain = kTunnelServer,
-          .routing_id = *routing_id,
-          .nonce = RandomNonce(),
-      };
+      device::cablev2::eid::Components components;
+      components.tunnel_server_domain = kTunnelServer;
+      components.routing_id = *routing_id;
+      components.nonce = RandomNonce();
+
       plaintext_eid = device::cablev2::eid::FromComponents(components);
       state_ = State::kConnected;
     } else {
@@ -370,11 +395,18 @@ class TunnelTransport : public Transport {
         }
 
         // It should be the case that all post-handshake messages fall into
-        // a single padding bucket. It doesn't have to be the smallest one, but
-        // that's currently true. If altering this, consider whether
-        // kPostHandshakeMsgPaddingGranularity needs to be increased instead.
-        DCHECK_EQ(post_handshake_msg_bytes->size(),
-                  kPostHandshakeMsgPaddingGranularity);
+        // a single padding bucket. (It doesn't have to be the smallest one.)
+        //
+        // This check should be:
+        // DCHECK_EQ(post_handshake_msg_bytes->size(),
+        //          kPostHandshakeMsgPaddingGranularity);
+        //
+        // ... but we're waiting to roll out a protocol change that allows it.
+        // For now, check that the messages fit within the future padding
+        // granularity, which will also highlight this when that constant is
+        // rename to remove "Future".
+        DCHECK_LE(post_handshake_msg_bytes->size(),
+                  kFuturePostHandshakeMsgPaddingGranularity);
 
         if (!crypter_->Encrypt(&post_handshake_msg_bytes.value())) {
           FIDO_LOG(ERROR) << "failed to encrypt post-handshake message";
@@ -407,13 +439,13 @@ class TunnelTransport : public Transport {
     }
   }
 
-  Platform* const platform_;
+  const raw_ptr<Platform> platform_;
   State state_ = State::kNone;
   const std::array<uint8_t, kTunnelIdSize> tunnel_id_;
   const std::array<uint8_t, kEIDKeySize> eid_key_;
   std::unique_ptr<WebSocketAdapter> websocket_client_;
   std::unique_ptr<Crypter> crypter_;
-  network::mojom::NetworkContext* const network_context_;
+  const raw_ptr<network::mojom::NetworkContext> network_context_;
   const absl::optional<std::array<uint8_t, kP256X962Length>> peer_identity_;
   std::array<uint8_t, kPSKSize> psk_;
   GeneratePairingDataCallback generate_pairing_data_;
@@ -425,6 +457,7 @@ class TunnelTransport : public Transport {
   bool first_message_ = true;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<TunnelTransport> weak_factory_{this};
 };
 
 class CTAP2Processor : public Transaction {
@@ -448,8 +481,10 @@ class CTAP2Processor : public Transaction {
       return;
     } else if (absl::get_if<Transport::Disconnected>(&update)) {
       absl::optional<Platform::Error> maybe_error;
-      if (!transaction_done_) {
+      if (!transaction_received_) {
         maybe_error = Platform::Error::UNEXPECTED_EOF;
+      } else if (!transaction_done_) {
+        maybe_error = Platform::Error::EOF_WHILE_PROCESSING;
       }
       platform_->OnCompleted(maybe_error);
       return;
@@ -574,6 +609,7 @@ class CTAP2Processor : public Transaction {
 
         // TODO: plumb the rk flag through once GmsCore supports resident
         // keys. This will require support for optional maps in |Extract|.
+        transaction_received_ = true;
         platform_->MakeCredential(std::move(params));
         return std::vector<uint8_t>();
       }
@@ -616,6 +652,7 @@ class CTAP2Processor : public Transaction {
           return absl::nullopt;
         }
 
+        transaction_received_ = true;
         platform_->GetAssertion(std::move(params));
         return std::vector<uint8_t>();
       }
@@ -627,8 +664,9 @@ class CTAP2Processor : public Transaction {
     }
   }
 
-  void OnMakeCredentialResponse(uint32_t ctap_status,
-                                base::span<const uint8_t> attestation_object) {
+  void OnMakeCredentialResponse(
+      uint32_t ctap_status,
+      base::span<const uint8_t> attestation_object_bytes) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_LE(ctap_status, 0xFFu);
 
@@ -636,7 +674,7 @@ class CTAP2Processor : public Transaction {
     if (ctap_status == static_cast<uint8_t>(CtapDeviceResponseCode::kSuccess)) {
       // TODO: pass response parameters from the Java side.
       absl::optional<cbor::Value> cbor_attestation_object =
-          cbor::Reader::Read(attestation_object);
+          cbor::Reader::Read(attestation_object_bytes);
       if (!cbor_attestation_object || !cbor_attestation_object->is_map()) {
         FIDO_LOG(ERROR) << "invalid CBOR attestation object";
         return;
@@ -667,7 +705,10 @@ class CTAP2Processor : public Transaction {
       platform_->OnStatus(Platform::Status::CTAP_ERROR);
     }
 
-    transaction_done_ = true;
+    if (!transaction_done_) {
+      platform_->OnStatus(Platform::Status::FIRST_TRANSACTION_DONE);
+      transaction_done_ = true;
+    }
     transport_->Write(std::move(response));
   }
 
@@ -704,10 +745,14 @@ class CTAP2Processor : public Transaction {
       platform_->OnStatus(Platform::Status::CTAP_ERROR);
     }
 
-    transaction_done_ = true;
+    if (!transaction_done_) {
+      platform_->OnStatus(Platform::Status::FIRST_TRANSACTION_DONE);
+      transaction_done_ = true;
+    }
     transport_->Write(std::move(response));
   }
 
+  bool transaction_received_ = false;
   bool transaction_done_ = false;
   const std::unique_ptr<Transport> transport_;
   const std::unique_ptr<Platform> platform_;

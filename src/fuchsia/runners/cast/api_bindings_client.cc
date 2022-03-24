@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/strings/string_piece.h"
-#include "components/cast/message_port/message_port_fuchsia.h"
+#include "components/cast/message_port/fuchsia/message_port_fuchsia.h"
 
 namespace {
 
@@ -55,7 +55,6 @@ void ApiBindingsClient::AttachToFrame(
       << "AttachToFrame() was called before bindings were received.";
 
   if (!bindings_service_) {
-    LOG(ERROR) << "ApiBindings channel disconnect before attaching Frame.";
     std::move(on_error_callback).Run();
     return;
   }

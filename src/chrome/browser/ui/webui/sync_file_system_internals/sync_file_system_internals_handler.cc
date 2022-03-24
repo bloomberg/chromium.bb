@@ -24,7 +24,7 @@
 #include "components/drive/drive_notification_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
-#include "google_apis/drive/time_util.h"
+#include "google_apis/common/time_util.h"
 
 using drive::EventLogger;
 using sync_file_system::SyncFileSystemServiceFactory;
@@ -52,25 +52,25 @@ SyncFileSystemInternalsHandler::~SyncFileSystemInternalsHandler() {
 }
 
 void SyncFileSystemInternalsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getServiceStatus",
       base::BindRepeating(
           &SyncFileSystemInternalsHandler::HandleGetServiceStatus,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getLog",
       base::BindRepeating(&SyncFileSystemInternalsHandler::HandleGetLog,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "clearLogs",
       base::BindRepeating(&SyncFileSystemInternalsHandler::HandleClearLogs,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getNotificationSource",
       base::BindRepeating(
           &SyncFileSystemInternalsHandler::HandleGetNotificationSource,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "observeTaskLog",
       base::BindRepeating(&SyncFileSystemInternalsHandler::HandleObserveTaskLog,
                           base::Unretained(this)));
@@ -80,6 +80,11 @@ void SyncFileSystemInternalsHandler::OnSyncStateUpdated(
     const GURL& app_origin,
     sync_file_system::SyncServiceState state,
     const std::string& description) {
+  if (!IsJavascriptAllowed()) {
+    // Javascript is disallowed, either due to the page still loading, or in the
+    // process of being unloaded. Skip this update.
+    return;
+  }
   std::string state_string = chrome_apps::api::sync_file_system::ToString(
       chrome_apps::api::SyncServiceStateToExtensionEnum(state));
   if (!description.empty())
@@ -106,11 +111,11 @@ void SyncFileSystemInternalsHandler::OnLogRecorded(
   dict.SetString("task_description", task_log.task_description);
   dict.SetString("result_description", task_log.result_description);
 
-  std::unique_ptr<base::ListValue> details(new base::ListValue);
+  base::ListValue details;
   for (const std::string& detail : task_log.details) {
-    details->Append(detail);
+    details.Append(detail);
   }
-  dict.Set("details", std::move(details));
+  dict.SetKey("details", std::move(details));
   FireWebUIListener("task-log-recorded", dict);
 }
 
@@ -143,31 +148,34 @@ void SyncFileSystemInternalsHandler::HandleGetNotificationSource(
 
 void SyncFileSystemInternalsHandler::HandleGetLog(const base::ListValue* args) {
   AllowJavascript();
+  const auto& args_list = args->GetList();
+  DCHECK_GE(args_list.size(), 1u);
+  const base::Value& callback_id = args_list[0];
   const std::vector<EventLogger::Event> log =
       sync_file_system::util::GetLogHistory();
 
-  int last_log_id_sent;
-  if (!args->GetInteger(1, &last_log_id_sent))
-    last_log_id_sent = -1;
+  int last_log_id_sent = -1;
+  if (args_list.size() >= 2 && args_list[1].is_int())
+    last_log_id_sent = args_list[1].GetInt();
 
   // Collate events which haven't been sent to WebUI yet.
-  base::ListValue list;
+  base::Value list(base::Value::Type::LIST);
   for (auto log_entry = log.begin(); log_entry != log.end(); ++log_entry) {
     if (log_entry->id <= last_log_id_sent)
       continue;
 
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->SetInteger("id", log_entry->id);
-    dict->SetString("time",
-        google_apis::util::FormatTimeAsStringLocaltime(log_entry->when));
-    dict->SetString("logEvent", log_entry->what);
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetIntKey("id", log_entry->id);
+    dict.SetStringKey("time", google_apis::util::FormatTimeAsStringLocaltime(
+                                  log_entry->when));
+    dict.SetStringKey("logEvent", log_entry->what);
     list.Append(std::move(dict));
     last_log_id_sent = log_entry->id;
   }
-  if (list.empty())
+  if (list.GetList().empty())
     return;
 
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */, list);
+  ResolveJavascriptCallback(callback_id, list);
 }
 
 void SyncFileSystemInternalsHandler::HandleClearLogs(

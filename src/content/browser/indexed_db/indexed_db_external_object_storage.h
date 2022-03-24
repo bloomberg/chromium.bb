@@ -16,7 +16,6 @@
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "storage/common/file_system/file_system_mount_option.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
@@ -53,6 +52,12 @@ using BlobWriteCallback =
 class IndexedDBExternalObjectChangeRecord {
  public:
   IndexedDBExternalObjectChangeRecord(const std::string& object_store_data_key);
+
+  IndexedDBExternalObjectChangeRecord(
+      const IndexedDBExternalObjectChangeRecord&) = delete;
+  IndexedDBExternalObjectChangeRecord& operator=(
+      const IndexedDBExternalObjectChangeRecord&) = delete;
+
   ~IndexedDBExternalObjectChangeRecord();
 
   const std::string& object_store_data_key() const {
@@ -71,7 +76,6 @@ class IndexedDBExternalObjectChangeRecord {
  private:
   std::string object_store_data_key_;
   std::vector<IndexedDBExternalObject> external_objects_;
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBExternalObjectChangeRecord);
 };
 
 // Reports that the recovery and/or active journals have been processed, and

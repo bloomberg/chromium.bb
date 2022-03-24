@@ -21,23 +21,13 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrDriverBugWorkarounds.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 
 namespace {
-
-scoped_refptr<viz::RasterContextProvider> GetRasterContextProvider() {
-  auto wrapper = SharedGpuContext::ContextProviderWrapper();
-  if (!wrapper)
-    return nullptr;
-
-  if (auto* provider = wrapper->ContextProvider())
-    return base::WrapRefCounted(provider->RasterContextProvider());
-
-  return nullptr;
-}
 
 bool CanUseZeroCopyImages(const media::VideoFrame& frame) {
   // SharedImage optimization: create AcceleratedStaticBitmapImage directly.
@@ -174,7 +164,8 @@ scoped_refptr<StaticBitmapImage> CreateImageFromVideoFrame(
 
     return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
         frame->mailbox_holder(0).mailbox, frame->mailbox_holder(0).sync_token,
-        0u, sk_image_info, frame->mailbox_holder(0).texture_target, true,
+        0u, sk_image_info, frame->mailbox_holder(0).texture_target,
+        frame->metadata().texture_origin_is_top_left,
         // Pass nullptr for |context_provider_wrapper|, because we don't
         // know which context the mailbox came from. It is used only to
         // detect when the mailbox is invalid due to context loss, and is
@@ -202,8 +193,7 @@ scoped_refptr<StaticBitmapImage> CreateImageFromVideoFrame(
     DLOG(ERROR) << "An external CanvasResourceProvider must be provided when "
                    "providing a custom destination rect.";
     return nullptr;
-  } else if (!gfx::Rect(gfx::Size(resource_provider->Size()))
-                  .Contains(final_dest_rect)) {
+  } else if (!gfx::Rect(resource_provider->Size()).Contains(final_dest_rect)) {
     DLOG(ERROR)
         << "Provided CanvasResourceProvider is too small. Expected at least "
         << final_dest_rect.ToString() << " got "
@@ -212,7 +202,7 @@ scoped_refptr<StaticBitmapImage> CreateImageFromVideoFrame(
   }
 
   auto raster_context_provider = GetRasterContextProvider();
-  const auto resource_provider_size = IntSize(final_dest_rect.size());
+  const auto resource_provider_size = final_dest_rect.size();
   std::unique_ptr<CanvasResourceProvider> local_resource_provider;
   if (!resource_provider) {
     local_resource_provider = CreateResourceProviderForVideoFrame(
@@ -250,7 +240,7 @@ bool DrawVideoFrameIntoResourceProvider(
     bool ignore_video_transformation) {
   DCHECK(frame);
   DCHECK(resource_provider);
-  DCHECK(gfx::Rect(gfx::Size(resource_provider->Size())).Contains(dest_rect));
+  DCHECK(gfx::Rect(resource_provider->Size()).Contains(dest_rect));
 
   if (frame->HasTextures()) {
     if (!raster_context_provider) {
@@ -268,7 +258,7 @@ bool DrawVideoFrameIntoResourceProvider(
 
   cc::PaintFlags media_flags;
   media_flags.setAlpha(0xFF);
-  media_flags.setFilterQuality(kLow_SkFilterQuality);
+  media_flags.setFilterQuality(cc::PaintFlags::FilterQuality::kLow);
   media_flags.setBlendMode(SkBlendMode::kSrc);
 
   std::unique_ptr<media::PaintCanvasVideoRenderer> local_video_renderer;
@@ -294,17 +284,52 @@ bool DrawVideoFrameIntoResourceProvider(
   return true;
 }
 
+void DrawVideoFrameIntoCanvas(scoped_refptr<media::VideoFrame> frame,
+                              cc::PaintCanvas* canvas,
+                              cc::PaintFlags& flags,
+                              bool ignore_video_transformation) {
+  viz::RasterContextProvider* raster_context_provider = nullptr;
+  if (auto wrapper = SharedGpuContext::ContextProviderWrapper()) {
+    if (auto* context_provider = wrapper->ContextProvider())
+      raster_context_provider = context_provider->RasterContextProvider();
+  }
+
+  const gfx::RectF dest_rect(frame->natural_size().width(),
+                             frame->natural_size().height());
+
+  media::PaintCanvasVideoRenderer video_renderer;
+  auto transformation =
+      ignore_video_transformation
+          ? media::kNoTransformation
+          : frame->metadata().transformation.value_or(media::kNoTransformation);
+  video_renderer.Paint(frame, canvas, dest_rect, flags, transformation,
+                       raster_context_provider);
+}
+
+scoped_refptr<viz::RasterContextProvider> GetRasterContextProvider() {
+  auto wrapper = SharedGpuContext::ContextProviderWrapper();
+  if (!wrapper)
+    return nullptr;
+
+  if (auto* provider = wrapper->ContextProvider())
+    return base::WrapRefCounted(provider->RasterContextProvider());
+
+  return nullptr;
+}
+
 std::unique_ptr<CanvasResourceProvider> CreateResourceProviderForVideoFrame(
-    IntSize size,
+    gfx::Size size,
     viz::RasterContextProvider* raster_context_provider) {
   if (!ShouldCreateAcceleratedImages(raster_context_provider)) {
     return CanvasResourceProvider::CreateBitmapProvider(
-        size, kLow_SkFilterQuality, CanvasResourceParams(),
+        SkImageInfo::MakeN32Premul(size.width(), size.height()),
+        cc::PaintFlags::FilterQuality::kLow,
         CanvasResourceProvider::ShouldInitialize::kNo);
   }
 
   return CanvasResourceProvider::CreateSharedImageProvider(
-      size, kLow_SkFilterQuality, CanvasResourceParams(),
+      SkImageInfo::MakeN32Premul(size.width(), size.height()),
+      cc::PaintFlags::FilterQuality::kLow,
       CanvasResourceProvider::ShouldInitialize::kNo,
       SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
       false,  // Origin of GL texture is bottom left on screen

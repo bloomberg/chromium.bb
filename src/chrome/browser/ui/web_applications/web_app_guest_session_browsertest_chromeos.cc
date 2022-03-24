@@ -8,8 +8,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/with_crosapi_param.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
@@ -21,9 +22,13 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
+using web_app::test::CrosapiParam;
+using web_app::test::WithCrosapiParam;
+
 namespace web_app {
 
-class WebAppGuestSessionBrowserTest : public InProcessBrowserTest {
+class WebAppGuestSessionBrowserTest : public InProcessBrowserTest,
+                                      public WithCrosapiParam {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitch(::switches::kIncognito);
@@ -31,14 +36,14 @@ class WebAppGuestSessionBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(
         chromeos::switches::kLoginUser,
         user_manager::GuestAccountId().GetUserEmail());
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
 // Test that the OS Settings app launches successfully.
-IN_PROC_BROWSER_TEST_F(WebAppGuestSessionBrowserTest, LaunchOsSettings) {
+IN_PROC_BROWSER_TEST_P(WebAppGuestSessionBrowserTest, LaunchOsSettings) {
   auto& system_web_app_manager =
-      WebAppProvider::Get(browser()->profile())->system_web_app_manager();
+      WebAppProvider::GetForTest(browser()->profile())
+          ->system_web_app_manager();
   system_web_app_manager.InstallSystemAppsForTesting();
 
   Profile* profile = browser()->profile();
@@ -46,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(WebAppGuestSessionBrowserTest, LaunchOsSettings) {
       web_app::kOsSettingsAppId,
       apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      apps::mojom::AppLaunchSource::kSourceTest);
+      apps::mojom::LaunchSource::kFromTest);
 
   content::WebContents* contents =
       apps::AppServiceProxyFactory::GetForProfile(profile)
@@ -54,5 +59,11 @@ IN_PROC_BROWSER_TEST_F(WebAppGuestSessionBrowserTest, LaunchOsSettings) {
           ->LaunchAppWithParams(std::move(params));
   EXPECT_EQ(GURL(chrome::kChromeUIOSSettingsURL), contents->GetVisibleURL());
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppGuestSessionBrowserTest,
+                         ::testing::Values(CrosapiParam::kDisabled,
+                                           CrosapiParam::kEnabled),
+                         WithCrosapiParam::ParamToString);
 
 }  // namespace web_app

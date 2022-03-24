@@ -17,10 +17,6 @@
 This file should eventually contain everything we need to scan looking for
 tf_export decorators.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 # go/tf-wildcard-import
 # pylint: disable=wildcard-import,g-bad-import-order,g-import-not-at-top
 # pylint: disable=unused-import,g-importing-member
@@ -46,12 +42,32 @@ from tensorflow.python.framework import graph_util
 from tensorflow.python.client.client_lib import *
 
 # Ops
-from tensorflow.python.ops.standard_ops import *
+from tensorflow.python.ops.standard_ops import *  # pylint: disable=redefined-builtin
 
 # Namespaces
 from tensorflow.python.ops import initializers_ns as initializers
 
 from tensorflow.python.util.tf_export import tf_export
+
+# _internal APIs
+from tensorflow.python.distribute.combinations import generate
+from tensorflow.python.distribute.experimental.rpc.rpc_ops import *
+from tensorflow.python.distribute.merge_call_interim import *
+from tensorflow.python.distribute.multi_process_runner import *
+from tensorflow.python.distribute.multi_worker_test_base import *
+from tensorflow.python.distribute.strategy_combinations import *
+from tensorflow.python.framework.combinations import *
+from tensorflow.python.framework.composite_tensor import *
+from tensorflow.python.framework.test_combinations import *
+from tensorflow.python.util.tf_decorator import make_decorator
+from tensorflow.python.util.tf_decorator import unwrap
+
+from tensorflow.python.distribute.parameter_server_strategy_v2 import *
+from tensorflow.python.distribute.coordinator.cluster_coordinator import *
+
+tf_export('__internal__.decorator.make_decorator', v1=[])(make_decorator)
+tf_export('__internal__.decorator.unwrap', v1=[])(unwrap)
+
 
 # Export protos
 # pylint: disable=undefined-variable
@@ -59,7 +75,6 @@ tf_export(v1=['AttrValue'])(AttrValue)
 tf_export(v1=['ConfigProto'])(ConfigProto)
 tf_export(v1=['Event', 'summary.Event'])(Event)
 tf_export(v1=['GPUOptions'])(GPUOptions)
-tf_export(v1=['GraphDef'])(GraphDef)
 tf_export(v1=['GraphOptions'])(GraphOptions)
 tf_export(v1=['HistogramProto'])(HistogramProto)
 tf_export(v1=['LogMessage'])(LogMessage)

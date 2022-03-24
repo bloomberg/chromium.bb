@@ -8,7 +8,7 @@
   }
 
   .list-item:focus-within {
-    background-color: var(--google-blue-50);
+    background-color: var(--cros-highlight-color);
     outline: none;
   }
 </style>
@@ -16,6 +16,10 @@
   <div id="entry" class="list-item" focus-row-control focus-type="entry">
     <div class="printer-name text-elide">
       <span id="printerName" aria-hidden="true">
+          <iron-icon
+            hidden="[[!printerEntry.printerInfo.isManaged]]"
+            icon="cr20:domain">
+          </iron-icon>
           [[printerEntry.printerInfo.printerName]]
       </span>
       <div id="printerSubtext" hidden="[[!subtext]]" class="secondary"
@@ -24,7 +28,7 @@
       </div>
     </div>
     <template is="dom-if"
-        if="[[isSavedPrinter_(printerEntry.printerType)]]">
+        if="[[showActionsMenu_(printerEntry.printerType)]]">
       <cr-icon-button id="moreActions" class="icon-more-vert"
           on-click="onOpenActionMenuTap_" title="$i18n{moreActions}"
           aria-labelledby="printerName" focus-row-control
@@ -38,7 +42,8 @@
           aria-label$="[[getSetupButtonAria_()]]"
           focus-row-control
           focus-type="setupPrinterButton"
-          disabled="[[savingPrinter]]">
+          disabled="[[isConfigureDisabled_(userPrintersAllowed,
+              savingPrinter)]]">
         $i18n{setupPrinter}
       </cr-button>
     </template>
@@ -49,7 +54,8 @@
           aria-label$="[[getSaveButtonAria_()]]"
           focus-row-control
           focus-type="automaticPrinterButton"
-          disabled="[[savingPrinter]]">
+          disabled="[[isConfigureDisabled_(userPrintersAllowed,
+              savingPrinter)]]">
         $i18n{savePrinter}
       </cr-button>
     </template>
@@ -60,7 +66,8 @@
           aria-label$="[[getSaveButtonAria_()]]"
           focus-row-control
           focus-type="savePrinterButton"
-          disabled="[[savingPrinter]]">
+          disabled="[[isConfigureDisabled_(userPrintersAllowed,
+              savingPrinter)]]">
         $i18n{savePrinter}
       </cr-button>
     </template>

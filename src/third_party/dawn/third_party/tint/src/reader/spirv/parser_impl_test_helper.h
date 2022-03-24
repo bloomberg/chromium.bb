@@ -21,8 +21,11 @@
 #include <utility>
 #include <vector>
 
-#include "gtest/gtest.h"
+#if TINT_BUILD_SPV_READER
 #include "source/opt/ir_context.h"
+#endif
+
+#include "gtest/gtest.h"
 #include "src/demangler.h"
 #include "src/reader/spirv/fail_stream.h"
 #include "src/reader/spirv/function.h"
@@ -184,18 +187,21 @@ class ParserImplWrapperForTest {
     return impl_.GetDecorationsForMember(id, member_index);
   }
 
-  /// Converts a SPIR-V struct member decoration. If the decoration is
-  /// recognized but deliberately dropped, then returns nullptr without a
-  /// diagnostic. On failure, emits a diagnostic and returns nullptr.
+  /// Converts a SPIR-V struct member decoration into a number of AST
+  /// decorations. If the decoration is recognized but deliberately dropped,
+  /// then returns an empty list without a diagnostic. On failure, emits a
+  /// diagnostic and returns an empty list.
   /// @param struct_type_id the ID of the struct type
   /// @param member_index the index of the member
+  /// @param member_ty the type of the member
   /// @param decoration an encoded SPIR-V Decoration
-  /// @returns the corresponding ast::StructuMemberDecoration
-  ast::Decoration* ConvertMemberDecoration(uint32_t struct_type_id,
-                                           uint32_t member_index,
-                                           const Decoration& decoration) {
+  /// @returns the AST decorations
+  ast::DecorationList ConvertMemberDecoration(uint32_t struct_type_id,
+                                              uint32_t member_index,
+                                              const Type* member_ty,
+                                              const Decoration& decoration) {
     return impl_.ConvertMemberDecoration(struct_type_id, member_index,
-                                         decoration);
+                                         member_ty, decoration);
   }
 
   /// For a SPIR-V ID that might define a sampler, image, or sampled image
@@ -248,15 +254,6 @@ class ParserImplWrapperForTest {
     return impl_.GetSourceForResultIdForTest(id);
   }
 
-  /// Changes pipeline IO to be HLSL-style: as entry point parameters and
-  /// return.
-  /// TODO(crbug.com/tint/508): Once all this support has landed, switch
-  /// over to that, and remove the old support.
-  void SetHLSLStylePipelineIO() { impl_.SetHLSLStylePipelineIO(); }
-
-  /// @returns true if HLSL-style IO should be used.
-  bool UseHLSLStylePipelineIO() const { return impl_.UseHLSLStylePipelineIO(); }
-
  private:
   ParserImpl impl_;
   /// When true, indicates the input SPIR-V module should not be emitted.
@@ -271,6 +268,23 @@ class ParserImplWrapperForTest {
 inline void DumpSuccessfullyConvertedSpirv() {
   ParserImplWrapperForTest::DumpSuccessfullyConvertedSpirv();
 }
+
+/// Returns the WGSL printed string of a program.
+/// @param program the Program
+/// @returns the WGSL printed string the program.
+std::string ToString(const Program& program);
+
+/// Returns the WGSL printed string of a statement list.
+/// @param program the Program
+/// @param stmts the statement list
+/// @returns the WGSL printed string of a statement list.
+std::string ToString(const Program& program, const ast::StatementList& stmts);
+
+/// Returns the WGSL printed string of an AST node.
+/// @param program the Program
+/// @param node the AST node
+/// @returns the WGSL printed string of the AST node.
+std::string ToString(const Program& program, const ast::Node* node);
 
 }  // namespace test
 
@@ -297,32 +311,6 @@ class SpvParserTestBase : public T {
 
 // Use this form when you don't need to template any further.
 using SpvParserTest = SpvParserTestBase<::testing::Test>;
-
-/// Returns the string dump of a statement list.
-/// @param program the Program
-/// @param stmts the statement list
-/// @returns the string dump of a statement list.
-inline std::string ToString(const Program& program,
-                            const ast::StatementList& stmts) {
-  std::ostringstream outs;
-  for (const auto* stmt : stmts) {
-    program.to_str(stmt, outs, 0);
-  }
-  return Demangler().Demangle(program.Symbols(), outs.str());
-}
-
-/// Returns the string dump of a statement list.
-/// @param builder the ProgramBuilder
-/// @param stmts the statement list
-/// @returns the string dump of a statement list.
-inline std::string ToString(ProgramBuilder& builder,
-                            const ast::StatementList& stmts) {
-  std::ostringstream outs;
-  for (const auto* stmt : stmts) {
-    builder.to_str(stmt, outs, 0);
-  }
-  return Demangler().Demangle(builder.Symbols(), outs.str());
-}
 
 }  // namespace spirv
 }  // namespace reader

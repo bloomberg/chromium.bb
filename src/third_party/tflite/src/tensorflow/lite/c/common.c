@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/lite/c/common.h"
+#include "tensorflow/lite/c/c_api_types.h"
+
 #ifndef TF_LITE_STATIC_MEMORY
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +23,13 @@ limitations under the License.
 
 int TfLiteIntArrayGetSizeInBytes(int size) {
   static TfLiteIntArray dummy;
-  return sizeof(dummy) + sizeof(dummy.data[0]) * size;
+
+  int computed_size = sizeof(dummy) + sizeof(dummy.data[0]) * size;
+#if defined(_MSC_VER)
+  // Context for why this is needed is in http://b/189926408#comment21
+  computed_size -= sizeof(dummy.data[0]);
+#endif
+  return computed_size;
 }
 
 int TfLiteIntArrayEqual(const TfLiteIntArray* a, const TfLiteIntArray* b) {
@@ -43,8 +51,10 @@ int TfLiteIntArrayEqualsArray(const TfLiteIntArray* a, int b_size,
 #ifndef TF_LITE_STATIC_MEMORY
 
 TfLiteIntArray* TfLiteIntArrayCreate(int size) {
-  TfLiteIntArray* ret =
-      (TfLiteIntArray*)malloc(TfLiteIntArrayGetSizeInBytes(size));
+  int alloc_size = TfLiteIntArrayGetSizeInBytes(size);
+  if (alloc_size <= 0) return NULL;
+  TfLiteIntArray* ret = (TfLiteIntArray*)malloc(alloc_size);
+  if (!ret) return ret;
   ret->size = size;
   return ret;
 }
@@ -64,7 +74,13 @@ void TfLiteIntArrayFree(TfLiteIntArray* a) { free(a); }
 
 int TfLiteFloatArrayGetSizeInBytes(int size) {
   static TfLiteFloatArray dummy;
-  return sizeof(dummy) + sizeof(dummy.data[0]) * size;
+
+  int computed_size = sizeof(dummy) + sizeof(dummy.data[0]) * size;
+#if defined(_MSC_VER)
+  // Context for why this is needed is in http://b/189926408#comment21
+  computed_size -= sizeof(dummy.data[0]);
+#endif
+  return computed_size;
 }
 
 #ifndef TF_LITE_STATIC_MEMORY
@@ -172,6 +188,26 @@ void TfLiteTensorReset(TfLiteType type, const char* name, TfLiteIntArray* dims,
   tensor->quantization.params = NULL;
 }
 
+TfLiteStatus TfLiteTensorCopy(const TfLiteTensor* src, TfLiteTensor* dst) {
+  if (!src || !dst)
+    return kTfLiteOk;
+  if (src->bytes != dst->bytes)
+    return kTfLiteError;
+  if (src == dst)
+    return kTfLiteOk;
+
+  dst->type = src->type;
+  if (dst->dims)
+    TfLiteIntArrayFree(dst->dims);
+  dst->dims = TfLiteIntArrayCopy(src->dims);
+  memcpy(dst->data.raw, src->data.raw, src->bytes);
+  dst->buffer_handle = src->buffer_handle;
+  dst->data_is_stale = src->data_is_stale;
+  dst->delegate = src->delegate;
+
+  return kTfLiteOk;
+}
+
 void TfLiteTensorRealloc(size_t num_bytes, TfLiteTensor* tensor) {
   if (tensor->allocation_type != kTfLiteDynamic &&
       tensor->allocation_type != kTfLitePersistentRo) {
@@ -179,9 +215,9 @@ void TfLiteTensorRealloc(size_t num_bytes, TfLiteTensor* tensor) {
   }
   // TODO(b/145340303): Tensor data should be aligned.
   if (!tensor->data.raw) {
-    tensor->data.raw = malloc(num_bytes);
+    tensor->data.raw = (char*)malloc(num_bytes);
   } else if (num_bytes > tensor->bytes) {
-    tensor->data.raw = realloc(tensor->data.raw, num_bytes);
+    tensor->data.raw = (char*)realloc(tensor->data.raw, num_bytes);
   }
   tensor->bytes = num_bytes;
 }
@@ -197,27 +233,37 @@ const char* TfLiteTypeGetName(TfLiteType type) {
       return "INT16";
     case kTfLiteInt32:
       return "INT32";
+    case kTfLiteUInt32:
+      return "UINT32";
     case kTfLiteUInt8:
       return "UINT8";
     case kTfLiteInt8:
       return "INT8";
     case kTfLiteInt64:
       return "INT64";
+    case kTfLiteUInt64:
+      return "UINT64";
     case kTfLiteBool:
       return "BOOL";
     case kTfLiteComplex64:
       return "COMPLEX64";
+    case kTfLiteComplex128:
+      return "COMPLEX128";
     case kTfLiteString:
       return "STRING";
     case kTfLiteFloat16:
       return "FLOAT16";
     case kTfLiteFloat64:
       return "FLOAT64";
+    case kTfLiteResource:
+      return "RESOURCE";
+    case kTfLiteVariant:
+      return "VARIANT";
   }
   return "Unknown type";
 }
 
-TfLiteDelegate TfLiteDelegateCreate() {
+TfLiteDelegate TfLiteDelegateCreate(void) {
   TfLiteDelegate d = {
       .data_ = NULL,
       .Prepare = NULL,

@@ -6,13 +6,16 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -39,9 +42,11 @@ ChromePasswordProtectionServiceFactory::ChromePasswordProtectionServiceFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(VerdictCacheManagerFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
+  DependsOn(PasswordReuseManagerFactory::GetInstance());
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
+  DependsOn(SafeBrowsingNavigationObserverManagerFactory::GetInstance());
 }
 
 KeyedService* ChromePasswordProtectionServiceFactory::BuildServiceInstanceFor(

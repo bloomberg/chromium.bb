@@ -43,7 +43,8 @@ MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
 
 bool MediaRouterDialogControllerViews::ShowMediaRouterDialogForPresentation(
     std::unique_ptr<StartPresentationContext> context) {
-  if (!GlobalMediaControlsCastStartStopEnabled()) {
+  if (!GlobalMediaControlsCastStartStopEnabled(
+          initiator()->GetBrowserContext())) {
     // Delegate to the base class, which will show the Cast dialog.
     return MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
         std::move(context));
@@ -81,7 +82,7 @@ bool MediaRouterDialogControllerViews::ShowMediaRouterDialogForPresentation(
   scoped_widget_observations_.AddObservation(
       MediaDialogView::ShowDialogForPresentationRequest(
           media_button, service, profile, initiator(),
-          GlobalMediaControlsEntryPoint::kPresentation));
+          global_media_controls::GlobalMediaControlsEntryPoint::kPresentation));
   return true;
 }
 
@@ -156,7 +157,9 @@ void MediaRouterDialogControllerViews::SetDialogCreationCallbackForTesting(
 
 MediaRouterDialogControllerViews::MediaRouterDialogControllerViews(
     WebContents* web_contents)
-    : MediaRouterDialogController(web_contents),
+    : content::WebContentsUserData<MediaRouterDialogControllerViews>(
+          *web_contents),
+      MediaRouterDialogController(web_contents),
       media_router_ui_service_(GetMediaRouterUIService(web_contents)) {
   DCHECK(media_router_ui_service_);
   media_router_ui_service_->AddObserver(this);
@@ -182,6 +185,6 @@ MediaRouterDialogControllerViews::GetActionController() {
   return media_router_ui_service_->action_controller();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerViews)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerViews);
 
 }  // namespace media_router

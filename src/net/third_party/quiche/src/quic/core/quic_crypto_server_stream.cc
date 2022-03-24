@@ -11,6 +11,7 @@
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 #include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_testvalue.h"
 #include "common/quiche_text_utils.h"
 
 namespace quic {
@@ -164,6 +165,21 @@ void QuicCryptoServerStream::
   process_client_hello_cb_ = nullptr;
   proof_source_details_ = std::move(proof_source_details);
 
+  AdjustTestValue("quic::QuicCryptoServerStream::after_process_client_hello",
+                  session());
+
+  if (noop_if_disconnected_after_process_chlo_) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_crypto_noop_if_disconnected_after_process_chlo);
+    if (!session()->connection()->connected()) {
+      QUIC_CODE_COUNT(quic_crypto_disconnected_after_process_client_hello);
+      QUIC_LOG_FIRST_N(INFO, 10)
+          << "After processing CHLO, QUIC connection has been closed with code "
+          << session()->error() << ", details: " << session()->error_details();
+      return;
+    }
+  }
+
   const CryptoHandshakeMessage& message = result.client_hello;
   if (error != QUIC_NO_ERROR) {
     OnUnrecoverableError(error, error_details);
@@ -287,15 +303,8 @@ void QuicCryptoServerStream::FinishSendServerConfigUpdate(
   QUIC_DVLOG(1) << "Server: Sending server config update: "
                 << message.DebugString();
 
-  if (!session()->use_write_or_buffer_data_at_level() &&
-      !QuicVersionUsesCryptoFrames(transport_version())) {
-    const QuicData& data = message.GetSerialized();
-    WriteOrBufferData(absl::string_view(data.data(), data.length()), false,
-                      nullptr);
-  } else {
-    // Send server config update in ENCRYPTION_FORWARD_SECURE.
-    SendHandshakeMessage(message, ENCRYPTION_FORWARD_SECURE);
-  }
+  // Send server config update in ENCRYPTION_FORWARD_SECURE.
+  SendHandshakeMessage(message, ENCRYPTION_FORWARD_SECURE);
 
   ++num_server_config_update_messages_sent_;
 }
@@ -344,7 +353,8 @@ void QuicCryptoServerStream::OnNewTokenReceived(absl::string_view /*token*/) {
   QUICHE_DCHECK(false);
 }
 
-std::string QuicCryptoServerStream::GetAddressToken() const {
+std::string QuicCryptoServerStream::GetAddressToken(
+    const CachedNetworkParameters* /*cached_network_parameters*/) const {
   QUICHE_DCHECK(false);
   return "";
 }
@@ -357,6 +367,10 @@ bool QuicCryptoServerStream::ValidateAddressToken(
 
 bool QuicCryptoServerStream::ShouldSendExpectCTHeader() const {
   return signed_config_->proof.send_expect_ct_header;
+}
+
+bool QuicCryptoServerStream::DidCertMatchSni() const {
+  return signed_config_->proof.cert_matched_sni;
 }
 
 const ProofSource::Details* QuicCryptoServerStream::ProofSourceDetails() const {
@@ -513,5 +527,7 @@ void QuicCryptoServerStream::ValidateCallback::Run(
 const QuicSocketAddress QuicCryptoServerStream::GetClientAddress() {
   return session()->connection()->peer_address();
 }
+
+SSL* QuicCryptoServerStream::GetSsl() const { return nullptr; }
 
 }  // namespace quic

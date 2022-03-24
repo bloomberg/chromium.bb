@@ -14,10 +14,6 @@
 # =============================================================================
 """Tests for tensorflow.python.training.saver.py."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 from tensorflow.python.client import session
@@ -51,7 +47,7 @@ class SaverLargePartitionedVariableTest(test.TestCase):
             partitioner=partitioned_variables.fixed_size_partitioner(4),
             initializer=init,
             dtype=dtypes.bool))
-        variables.global_variables_initializer().run()
+        self.evaluate(variables.global_variables_initializer())
         save = saver.Saver(partitioned_var)
         val = save.save(sess, save_path)
         self.assertEqual(save_path, val)

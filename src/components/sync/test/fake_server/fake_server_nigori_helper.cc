@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "components/sync/nigori/nigori_test_utils.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +47,7 @@ void SetKeystoreNigoriInFakeServer(FakeServer* fake_server) {
       fake_server->GetKeystoreKeys();
   ASSERT_EQ(keystore_keys.size(), 1u);
   const syncer::KeyParamsForTesting keystore_key_params =
-      syncer::Pbkdf2KeyParamsForTesting(keystore_keys.back());
+      syncer::KeystoreKeyParamsForTesting(keystore_keys.back());
   SetNigoriInFakeServer(syncer::BuildKeystoreNigoriSpecifics(
                             /*keybag_keys_params=*/{keystore_key_params},
                             /*keystore_decryptor_params=*/keystore_key_params,

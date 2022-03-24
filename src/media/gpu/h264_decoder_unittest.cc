@@ -14,6 +14,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/h264_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -173,7 +174,7 @@ class H264DecoderTest : public ::testing::Test {
 
  protected:
   std::unique_ptr<H264Decoder> decoder_;
-  MockH264Accelerator* accelerator_;
+  raw_ptr<MockH264Accelerator> accelerator_;
 
  private:
   base::queue<std::string> input_frame_files_;
@@ -575,7 +576,7 @@ TEST_F(H264DecoderTest, SetEncryptedStream) {
   const std::vector<SubsampleEntry> subsamples = {
       // No encrypted bytes. This test only checks whether the data is passed
       // thru to the acclerator so making this completely clear.
-      {bitstream.size(), 0},
+      {static_cast<uint32_t>(bitstream.size()), 0},
   };
 
   std::unique_ptr<DecryptConfig> decrypt_config =

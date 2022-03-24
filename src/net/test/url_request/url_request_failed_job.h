@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_job.h"
 #include "url/gurl.h"
@@ -35,6 +34,9 @@ class URLRequestFailedJob : public URLRequestJob {
   // Same as above, except that the job fails at FailurePhase.START.
   URLRequestFailedJob(URLRequest* request,
                       int net_error);
+
+  URLRequestFailedJob(const URLRequestFailedJob&) = delete;
+  URLRequestFailedJob& operator=(const URLRequestFailedJob&) = delete;
 
   ~URLRequestFailedJob() override;
 
@@ -81,8 +83,6 @@ class URLRequestFailedJob : public URLRequestJob {
   int64_t total_received_bytes_;
 
   base::WeakPtrFactory<URLRequestFailedJob> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestFailedJob);
 };
 
 }  // namespace net

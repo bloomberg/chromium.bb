@@ -25,7 +25,7 @@
 #    foo_protojson
 #      Protobuf JSON value format, contains actual color information
 template("style_variable_generator") {
-  script_file = "//tools/style_variable_generator/style_variable_generator.py"
+  script_file = "//tools/style_variable_generator/main.py"
   original_target_name = target_name
   common_inputs = [
     "//tools/style_variable_generator/base_generator.py",
@@ -44,11 +44,13 @@ template("style_variable_generator") {
                "//tools/style_variable_generator/css_generator.py",
                "//tools/style_variable_generator/css_generator.tmpl",
              ]
-    out_file = "$target_gen_dir/${original_target_name}.generated.css"
+    out_file = "$target_gen_dir/${original_target_name}.css"
     outputs = [ out_file ]
 
     args = [
              "--generator=CSS",
+             "--generator-option",
+             "debug_placeholder=\$i18n{crosColorsDebugOverrides}",
              "--out-file",
              rebase_path("$out_file", root_build_dir),
            ] + rebase_path(sources, root_build_dir)

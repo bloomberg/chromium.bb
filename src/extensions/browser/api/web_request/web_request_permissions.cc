@@ -4,9 +4,9 @@
 
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
+#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/chromeos_buildflags.h"
@@ -43,11 +43,13 @@ namespace {
 // ExtensionWebRequestEventRouter::RequestFiler, which specifies the schemes
 // allowed by web request event listeners. Consolidate the two.
 bool HasWebRequestScheme(const GURL& url) {
+  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
   return (url.SchemeIs(url::kAboutScheme) || url.SchemeIs(url::kFileScheme) ||
           url.SchemeIs(url::kFileSystemScheme) ||
           url.SchemeIs(url::kFtpScheme) || url.SchemeIsHTTPOrHTTPS() ||
           url.SchemeIs(extensions::kExtensionScheme) || url.SchemeIsWSOrWSS() ||
-          url.SchemeIs(url::kUrnScheme));
+          url.SchemeIs(url::kUrnScheme) ||
+          url.SchemeIs(url::kUuidInPackageScheme));
 }
 
 bool g_allow_all_extension_locations_in_public_session = false;

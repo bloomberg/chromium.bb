@@ -90,6 +90,11 @@ SkBlitter* SkCreateRasterPipelineBlitter(const SkPixmap& dst,
                                          const SkMatrixProvider& matrixProvider,
                                          SkArenaAlloc* alloc,
                                          sk_sp<SkShader> clipShader) {
+    if (!paint.asBlendMode()) {
+        // The raster pipeline doesn't support SkBlender.
+        return nullptr;
+    }
+
     SkColorSpace* dstCS = dst.colorSpace();
     SkColorType dstCT = dst.colorType();
     SkColor4f paintColor = paint.getColor4f();
@@ -146,10 +151,12 @@ SkBlitter* SkRasterPipelineBlitter::Create(const SkPixmap& dst,
                                            bool is_opaque,
                                            bool is_constant,
                                            sk_sp<SkShader> clipShader) {
-    auto blitter = alloc->make<SkRasterPipelineBlitter>(dst,
-                                                        paint.getBlendMode(),
-                                                        alloc);
+    const auto bm = paint.asBlendMode();
+    if (!bm) {
+        return nullptr;
+    }
 
+    auto blitter = alloc->make<SkRasterPipelineBlitter>(dst, bm.value(), alloc);
 
     // Our job in this factory is to fill out the blitter's color pipeline.
     // This is the common front of the full blit pipelines, each constructed lazily on first use.
@@ -161,7 +168,7 @@ SkBlitter* SkRasterPipelineBlitter::Create(const SkPixmap& dst,
         SkPaint clipPaint;  // just need default values
         SkColorType clipCT = kRGBA_8888_SkColorType;
         SkColorSpace* clipCS = nullptr;
-        SkSimpleMatrixProvider clipMatrixProvider(SkMatrix::I());
+        SkMatrixProvider clipMatrixProvider(SkMatrix::I());
         SkStageRec rec = {clipP, alloc, clipCT, clipCS, clipPaint, nullptr, clipMatrixProvider};
         if (as_SB(clipShader)->appendStages(rec)) {
             struct Storage {
@@ -182,7 +189,7 @@ SkBlitter* SkRasterPipelineBlitter::Create(const SkPixmap& dst,
 
     // If there's a color filter it comes next.
     if (auto colorFilter = paint.getColorFilter()) {
-        SkSimpleMatrixProvider matrixProvider(SkMatrix::I());
+        SkMatrixProvider matrixProvider(SkMatrix::I());
         SkStageRec rec = {
             colorPipeline, alloc, dst.colorType(), dst.colorSpace(), paint, nullptr, matrixProvider
         };
@@ -201,7 +208,8 @@ SkBlitter* SkRasterPipelineBlitter::Create(const SkPixmap& dst,
             case    kGray_8_SkColorType:
             case  kRGB_888x_SkColorType:
             case kRGBA_8888_SkColorType:
-            case kBGRA_8888_SkColorType:    blitter->fDitherRate =  1/255.0f; break;
+            case kBGRA_8888_SkColorType:
+            case kSRGBA_8888_SkColorType:   blitter->fDitherRate =  1/255.0f; break;
             case kRGB_101010x_SkColorType:
             case kRGBA_1010102_SkColorType:
             case kBGR_101010x_SkColorType:

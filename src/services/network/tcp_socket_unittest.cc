@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -32,6 +32,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/mojo_socket_test_util.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/socket_factory.h"
 #include "services/network/tcp_connected_socket.h"
@@ -118,7 +120,7 @@ class MockServerSocket : public net::ServerSocket {
   net::IoMode mode_ = net::SYNCHRONOUS;
   int accept_result_ = net::OK;
   net::CompletionOnceCallback accept_callback_;
-  std::unique_ptr<net::StreamSocket>* accept_socket_;
+  raw_ptr<std::unique_ptr<net::StreamSocket>> accept_socket_;
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers_;
   size_t next_data_provider_index_ = 0;
@@ -269,6 +271,10 @@ class TCPSocketTest : public testing::Test {
   TCPSocketTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         url_request_context_(true) {}
+
+  TCPSocketTest(const TCPSocketTest&) = delete;
+  TCPSocketTest& operator=(const TCPSocketTest&) = delete;
+
   ~TCPSocketTest() override {}
 
   void Init(net::ClientSocketFactory* mock_client_socket_factory) {
@@ -358,8 +364,6 @@ class TCPSocketTest : public testing::Test {
   std::unique_ptr<SocketFactory> factory_;
   TestSocketObserver test_observer_;
   mojo::UniqueReceiverSet<mojom::TCPServerSocket> tcp_server_socket_receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketTest);
 };
 
 TEST_F(TCPSocketTest, ReadAndWrite) {
@@ -471,8 +475,8 @@ TEST_F(TCPSocketTest, ServerReceivesMultipleAccept) {
                   &client_socket_send_handle));
     client_sockets.push_back(std::move(client_socket));
   }
-  for (const auto& callback : accept_callbacks) {
-    EXPECT_EQ(net::OK, callback->WaitForResult());
+  for (const auto& accept_callback : accept_callbacks) {
+    EXPECT_EQ(net::OK, accept_callback->WaitForResult());
   }
 }
 
@@ -579,11 +583,8 @@ TEST_F(TCPSocketTest, SocketClosed) {
   // On some macOS kernels, send() on a closing TCP socket can return
   // EPROTOTYPE, which is unknown to the net stack and gets mapped to
   // net::ERR_FAILED.
-  // This behavior is known to exist as late as 10.12. Whether it exists after
-  // that is unknown.
   // See https://crbug.com/1034991
-  if (base::mac::IsAtMostOS10_12())
-    result_ok |= result == net::ERR_FAILED;
+  result_ok |= result == net::ERR_FAILED;
 #endif
   EXPECT_TRUE(result_ok) << "actual result: " << result;
 }

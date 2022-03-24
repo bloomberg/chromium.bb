@@ -19,7 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 
@@ -195,13 +195,6 @@ void DisplayItemList::Finalize() {
   offsets_.clear();
   offsets_.shrink_to_fit();
   paired_begin_stack_.shrink_to_fit();
-}
-
-size_t DisplayItemList::BytesUsed() const {
-  // TODO(jbroman): Does anything else owned by this class substantially
-  // contribute to memory usage?
-  // TODO(vmpstr): Probably DiscardableImageMap is worth counting here.
-  return sizeof(*this) + paint_op_buffer_.bytes_used();
 }
 
 void DisplayItemList::EmitTraceSnapshot() const {
@@ -454,8 +447,8 @@ DisplayItemList::GetDirectlyCompositedImageResult(
   result.intrinsic_image_size = gfx::Size(width, height);
   // Ensure the layer will use nearest neighbor when drawn by the display
   // compositor, if required.
-  result.nearest_neighbor =
-      draw_image_rect_op->flags.getFilterQuality() == kNone_SkFilterQuality;
+  result.nearest_neighbor = draw_image_rect_op->flags.getFilterQuality() ==
+                            PaintFlags::FilterQuality::kNone;
   return result;
 }
 

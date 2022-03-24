@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
@@ -52,6 +51,9 @@ class TestRendererServiceImpl : public mojom::TestService {
     receiver_.set_disconnect_handler(base::BindOnce(
         &TestRendererServiceImpl::OnConnectionError, base::Unretained(this)));
   }
+
+  TestRendererServiceImpl(const TestRendererServiceImpl&) = delete;
+  TestRendererServiceImpl& operator=(const TestRendererServiceImpl&) = delete;
 
   ~TestRendererServiceImpl() override {}
 
@@ -110,8 +112,6 @@ class TestRendererServiceImpl : public mojom::TestService {
   }
 
   mojo::Receiver<mojom::TestService> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRendererServiceImpl);
 };
 
 void CreateRendererTestService(
@@ -193,10 +193,7 @@ void ShellContentRendererClient::AddSupportedKeySystems(
   if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
     return;
 
-  static const char kExternalClearKeyKeySystem[] =
-      "org.chromium.externalclearkey";
-  key_systems->emplace_back(
-      new cdm::ExternalClearKeyProperties(kExternalClearKeyKeySystem));
+  key_systems->push_back(std::make_unique<cdm::ExternalClearKeyProperties>());
 }
 #endif
 

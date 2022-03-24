@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,7 +44,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -81,7 +82,7 @@ void HungPagesTableModel::InitForWebContents(
   }
 
   process_observation_.Observe(render_widget_host_->GetProcess());
-  widget_observation_.Observe(render_widget_host_);
+  widget_observation_.Observe(render_widget_host_.get());
 
   // The world is different.
   if (observer_)
@@ -117,12 +118,12 @@ std::u16string HungPagesTableModel::GetText(int row, int column_id) {
                                  render_widget_host_->GetProcess());
 }
 
-gfx::ImageSkia HungPagesTableModel::GetIcon(int row) {
+ui::ImageModel HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return favicon::ContentFaviconDriver::FromWebContents(
-             tab_observers_[row]->web_contents())
-      ->GetFavicon()
-      .AsImageSkia();
+  return ui::ImageModel::FromImage(
+      favicon::ContentFaviconDriver::FromWebContents(
+          tab_observers_[row]->web_contents())
+          ->GetFavicon());
 }
 
 void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {
@@ -145,7 +146,7 @@ void HungPagesTableModel::RenderProcessExited(
 
 void HungPagesTableModel::RenderWidgetHostDestroyed(
     content::RenderWidgetHost* widget_host) {
-  DCHECK(widget_observation_.IsObservingSource(render_widget_host_));
+  DCHECK(widget_observation_.IsObservingSource(render_widget_host_.get()));
   widget_observation_.Reset();
   render_widget_host_ = nullptr;
 
@@ -216,7 +217,7 @@ constexpr int kDialogHolderUserDataKey = 0;
 struct DialogHolder : public base::SupportsUserData::Data {
   explicit DialogHolder(HungRendererDialogView* dialog) : dialog(dialog) {}
 
-  HungRendererDialogView* const dialog = nullptr;
+  const raw_ptr<HungRendererDialogView> dialog = nullptr;
 };
 
 static bool g_bypass_active_browser_requirement = false;
@@ -302,27 +303,16 @@ HungRendererDialogView::HungRendererDialogView(WebContents* web_contents)
 
   DialogModelChanged();
 
-  views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
-  constexpr int kColumnSetId = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  info_label_ = AddChildView(std::move(info_label));
 
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  info_label_ = layout->AddView(std::move(info_label));
-
-  layout->AddPaddingRow(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-
-  layout->StartRow(1.0, kColumnSetId);
-  layout->AddView(
-      views::TableView::CreateScrollViewWithTable(std::move(hung_pages_table)),
-      1, 1, views::GridLayout::FILL, views::GridLayout::FILL, kTableViewWidth,
-      kTableViewHeight);
+  AddChildView(
+      views::TableView::CreateScrollViewWithTable(std::move(hung_pages_table)))
+      ->SetPreferredSize(gfx::Size(kTableViewWidth, kTableViewHeight));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HUNG_RENDERER);
 }

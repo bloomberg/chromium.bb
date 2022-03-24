@@ -17,13 +17,15 @@
 #include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceContext.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/SurfaceContext.h"
 #include "src/gpu/effects/GrSkSLFP.h"
-#include "src/gpu/ops/GrAtlasTextOp.h"
 #include "src/gpu/text/GrTextBlob.h"
 #include "src/gpu/text/GrTextBlobCache.h"
+
+#if SK_GPU_V1
+#include "src/gpu/ops/AtlasTextOp.h"
+#endif
 
 GrRecordingContext::ProgramData::ProgramData(std::unique_ptr<const GrProgramDesc> desc,
                                              const GrProgramInfo* info)
@@ -46,7 +48,9 @@ GrRecordingContext::GrRecordingContext(sk_sp<GrContextThreadSafeProxy> proxy, bo
 }
 
 GrRecordingContext::~GrRecordingContext() {
-    GrAtlasTextOp::ClearCache();
+#if SK_GPU_V1
+    skgpu::v1::AtlasTextOp::ClearCache();
+#endif
 }
 
 int GrRecordingContext::maxSurfaceSampleCountForColorType(SkColorType colorType) const {
@@ -61,7 +65,8 @@ bool GrRecordingContext::init() {
         return false;
     }
 
-    GrPathRendererChain::Options prcOptions;
+#if SK_GPU_V1
+    skgpu::v1::PathRendererChain::Options prcOptions;
     prcOptions.fAllowPathMaskCaching = this->options().fAllowPathMaskCaching;
 #if GR_TEST_UTILS
     prcOptions.fGpuPathRenderers = this->options().fGpuPathRenderers;
@@ -70,8 +75,9 @@ bool GrRecordingContext::init() {
     if (this->options().fDisableDistanceFieldPaths) {
         prcOptions.fGpuPathRenderers &= ~GpuPathRenderers::kSmall;
     }
+#endif
 
-    bool reduceOpsTaskSplitting = false;
+    bool reduceOpsTaskSplitting = true;
     if (this->caps()->avoidReorderingRenderTasks()) {
         reduceOpsTaskSplitting = false;
     } else if (GrContextOptions::Enable::kYes == this->options().fReduceOpsTaskSplitting) {
@@ -80,7 +86,9 @@ bool GrRecordingContext::init() {
         reduceOpsTaskSplitting = false;
     }
     fDrawingManager.reset(new GrDrawingManager(this,
+#if SK_GPU_V1
                                                prcOptions,
+#endif
                                                reduceOpsTaskSplitting));
     return true;
 }
@@ -170,15 +178,6 @@ bool GrRecordingContext::colorTypeSupportedAsImage(SkColorType colorType) const 
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-sk_sp<const GrCaps> GrRecordingContextPriv::refCaps() const {
-    return fContext->refCaps();
-}
-
-void GrRecordingContextPriv::addOnFlushCallbackObject(GrOnFlushCallbackObject* onFlushCBObject) {
-    fContext->addOnFlushCallbackObject(onFlushCBObject);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef SK_ENABLE_DUMP_GPU
 #include "src/utils/SkJSONWriter.h"
@@ -201,13 +200,13 @@ void GrRecordingContext::dumpJSON(SkJSONWriter*) const { }
 
 #if GR_GPU_STATS
 
-void GrRecordingContext::Stats::dump(SkString* out) {
+void GrRecordingContext::Stats::dump(SkString* out) const {
     out->appendf("Num Path Masks Generated: %d\n", fNumPathMasksGenerated);
     out->appendf("Num Path Mask Cache Hits: %d\n", fNumPathMaskCacheHits);
 }
 
 void GrRecordingContext::Stats::dumpKeyValuePairs(SkTArray<SkString>* keys,
-                                                  SkTArray<double>* values) {
+                                                  SkTArray<double>* values) const {
     keys->push_back(SkString("path_masks_generated"));
     values->push_back(fNumPathMasksGenerated);
 

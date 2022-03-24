@@ -9,7 +9,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "base/types/pass_key.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/mojom/frame.mojom.h"
@@ -54,9 +55,19 @@ class ExtensionWebContentsObserver
     : public content::WebContentsObserver,
       public ExtensionFunctionDispatcher::Delegate {
  public:
+  ExtensionWebContentsObserver(const ExtensionWebContentsObserver&) = delete;
+  ExtensionWebContentsObserver& operator=(const ExtensionWebContentsObserver&) =
+      delete;
+
   // Returns the ExtensionWebContentsObserver for the given |web_contents|.
   static ExtensionWebContentsObserver* GetForWebContents(
       content::WebContents* web_contents);
+
+  // Binds the LocalFrameHost interface to the ExtensionFrameHost associated
+  // with the RenderFrameHost.
+  static void BindLocalFrameHost(
+      mojo::PendingAssociatedReceiver<mojom::LocalFrameHost> receiver,
+      content::RenderFrameHost* rfh);
 
   // This must be called by clients directly after the EWCO has been created.
   void Initialize();
@@ -119,9 +130,11 @@ class ExtensionWebContentsObserver
       content::RenderFrameHost* render_frame_host) const;
 
  private:
+  using PassKey = base::PassKey<ExtensionWebContentsObserver>;
+
   friend class ExtensionFrameHostBrowserTest;
   // The BrowserContext associated with the WebContents being observed.
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   ExtensionFunctionDispatcher dispatcher_;
 
@@ -133,8 +146,6 @@ class ExtensionWebContentsObserver
   // A map of render frame host to mojo remotes.
   std::map<content::RenderFrameHost*, mojo::AssociatedRemote<mojom::LocalFrame>>
       local_frame_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebContentsObserver);
 };
 
 }  // namespace extensions

@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -203,7 +204,7 @@ void AddressTrackerLinux::Init() {
     // Request notifications.
     struct sockaddr_nl addr = {};
     addr.nl_family = AF_NETLINK;
-    addr.nl_pid = getpid();
+    addr.nl_pid = 0;  // Let the kernel select a unique value.
     // TODO(szym): Track RTMGRP_LINK as well for ifi_type,
     // http://crbug.com/113993
     addr.nl_groups =
@@ -229,7 +230,7 @@ void AddressTrackerLinux::Init() {
   request.header.nlmsg_len = NLMSG_LENGTH(sizeof(request.msg));
   request.header.nlmsg_type = RTM_GETADDR;
   request.header.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
-  request.header.nlmsg_pid = getpid();
+  request.header.nlmsg_pid = 0;  // This field is opaque to netlink.
   request.msg.rtgen_family = AF_UNSPEC;
 
   rv = HANDLE_EINTR(
@@ -274,6 +275,11 @@ void AddressTrackerLinux::Init() {
         base::BindRepeating(&AddressTrackerLinux::OnFileCanReadWithoutBlocking,
                             base::Unretained(this)));
   }
+}
+
+bool AddressTrackerLinux::DidTrackingInitSucceedForTesting() const {
+  CHECK(tracking_);
+  return watcher_ != nullptr;
 }
 
 void AddressTrackerLinux::AbortAndForceOnline() {

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ash/login/quick_unlock/pin_storage_cryptohome.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,23 +20,22 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_unlock {
-
 namespace {
 
 // Read the salt from local state.
 std::string GetSalt(const AccountId& account_id) {
   std::string salt;
-  user_manager::known_user::GetStringPref(
-      account_id, ash::prefs::kQuickUnlockPinSalt, &salt);
+  user_manager::known_user::GetStringPref(account_id,
+                                          prefs::kQuickUnlockPinSalt, &salt);
   return salt;
 }
 
 // Write the salt to local state.
 void WriteSalt(const AccountId& account_id, const std::string& salt) {
-  user_manager::known_user::SetStringPref(
-      account_id, ash::prefs::kQuickUnlockPinSalt, salt);
+  user_manager::known_user::SetStringPref(account_id,
+                                          prefs::kQuickUnlockPinSalt, salt);
 }
 
 template <typename ReplyType>
@@ -107,7 +106,7 @@ void OnCryptohomedServiceAvailable(int attempt,
         FROM_HERE,
         base::BindOnce(&CheckForCryptohomedService, attempt + 1,
                        std::move(result)),
-        base::TimeDelta::FromMilliseconds(retry_delay_in_milliseconds));
+        base::Milliseconds(retry_delay_in_milliseconds));
     return;
   }
 
@@ -290,4 +289,4 @@ void PinStorageCryptohome::TryAuthenticate(const AccountId& account_id,
 }
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash

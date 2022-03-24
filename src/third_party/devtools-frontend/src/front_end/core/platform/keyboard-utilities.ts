@@ -8,6 +8,16 @@ export const enum ArrowKey {
   LEFT = 'ArrowLeft',
   RIGHT = 'ArrowRight',
 }
+
+export const enum PageKey {
+  UP = 'PageUp',
+  DOWN = 'PageDown',
+}
+
+export const ENTER_KEY = 'Enter';
+export const ESCAPE_KEY = 'Escape';
+export const TAB_KEY = 'Tab';
+
 export const ARROW_KEYS = new Set<ArrowKey>([
   ArrowKey.UP,
   ArrowKey.DOWN,

@@ -22,7 +22,7 @@ interface AutofillDriver {
 
   // Notification that forms have been seen that are candidates for
   // filling/submitting by the AutofillManager.
-  FormsSeen(array<FormData> forms);
+  FormsSeen(array<FormData> updated_forms, array<FormRendererId> removed_forms);
 
   // Notification that a form has been submitted. The |known_success| indicates
   // whether the submission succeeded or not. Currently, we assume submission
@@ -51,8 +51,9 @@ interface AutofillDriver {
   SelectFieldOptionsDidChange(FormData form);
 
   // Queries the browser for Autofill suggestions for a form input field.
+  // For autofill this means asking the user which values to fill.
   // |id| is the request ID which is used to map responses correctly.
-  QueryFormFieldAutofill(int32 id,
+  AskForValuesToFill(int32 id,
                          FormData form,
                          FormFieldData field,
                          gfx.mojom.RectF bounding_box,
@@ -127,6 +128,7 @@ interface PasswordManagerDriver {
   // Notification that the user (not JavaScript) modified the value of a
   // non-password field with |renderer_id|, and |value| is the current value.
   UserModifiedNonPasswordField(FieldRendererId renderer_id,
+                               mojo_base.mojom.String16 field_name,
                                mojo_base.mojom.String16 value);
 
   // Instructs the browser to show a popup with password suggestions. The popup

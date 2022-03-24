@@ -17,7 +17,6 @@
 #include "chrome/browser/ash/login/screens/user_selection_screen.h"
 #include "chrome/browser/ash/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_adb_sideloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
@@ -28,12 +27,11 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
-#include "content/public/browser/notification_service.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace chromeos {
+namespace ash {
 
 LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host) : host_(host) {
   user_manager::UserManager::Get()->AddObserver(this);
@@ -53,7 +51,7 @@ void LoginDisplayMojo::UpdateChallengeResponseAuthAvailability(
     const AccountId& account_id) {
   const bool enable_challenge_response =
       ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id);
-  ash::LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
+  LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
       account_id, enable_challenge_response);
 }
 
@@ -70,14 +68,14 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
   // login screen multiple times. Views-login only supports initialization once.
   if (!initialized_) {
     client->SetDelegate(host_);
-    ash::LoginScreen::Get()->ShowLoginScreen();
+    LoginScreen::Get()->ShowLoginScreen();
   }
 
   UserSelectionScreen* user_selection_screen = host_->user_selection_screen();
   user_selection_screen->Init(filtered_users);
-  ash::LoginScreen::Get()->GetModel()->SetUserList(
+  LoginScreen::Get()->GetModel()->SetUserList(
       user_selection_screen->UpdateAndReturnUserListForAsh());
-  ash::LoginScreen::Get()->SetAllowLoginAsGuest(show_guest);
+  LoginScreen::Get()->SetAllowLoginAsGuest(show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
 
   if (user_manager::UserManager::IsInitialized()) {
@@ -98,10 +96,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     VLOG(1) << "Emitting login-prompt-visible";
     SessionManagerClient::Get()->EmitLoginPromptVisible();
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    session_manager::SessionManager::Get()->NotifyLoginOrLockScreenVisible();
 
     // If there no available users exist, delay showing the dialogs until after
     // GAIA dialog is shown (GAIA dialog will check these local state values,
@@ -191,7 +186,7 @@ bool LoginDisplayMojo::IsUserSigninCompleted() const {
 }
 
 void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {
-  ash::LoginScreen::Get()->GetModel()->SetAvatarForUser(
+  LoginScreen::Get()->GetModel()->SetAvatarForUser(
       user.GetAccountId(),
       UserSelectionScreen::BuildAshUserAvatarForUser(user));
 }
@@ -201,8 +196,8 @@ void LoginDisplayMojo::ShowOwnerPod(const AccountId& owner) {
       user_manager::UserManager::Get()->FindUser(owner);
   CHECK(device_owner);
 
-  std::vector<ash::LoginUserInfo> user_info_list;
-  ash::LoginUserInfo user_info;
+  std::vector<LoginUserInfo> user_info_list;
+  LoginUserInfo user_info;
   user_info.basic_user_info.type = device_owner->GetType();
   user_info.basic_user_info.account_id = device_owner->GetAccountId();
   user_info.basic_user_info.display_name =
@@ -216,19 +211,19 @@ void LoginDisplayMojo::ShowOwnerPod(const AccountId& owner) {
   user_info.can_remove = false;
   user_info_list.push_back(user_info);
 
-  ash::LoginScreen::Get()->GetModel()->SetUserList(user_info_list);
-  ash::LoginScreen::Get()->SetAllowLoginAsGuest(false);
-  ash::LoginScreen::Get()->EnableAddUserButton(false);
+  LoginScreen::Get()->GetModel()->SetUserList(user_info_list);
+  LoginScreen::Get()->SetAllowLoginAsGuest(false);
+  LoginScreen::Get()->EnableAddUserButton(false);
 
   // Disable PIN.
-  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(owner,
-                                                            /*enabled=*/false);
+  LoginScreen::Get()->GetModel()->SetPinEnabledForUser(owner,
+                                                       /*enabled=*/false);
 }
 
 void LoginDisplayMojo::OnPinCanAuthenticate(const AccountId& account_id,
                                             bool can_authenticate) {
-  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
-                                                            can_authenticate);
+  LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
+                                                       can_authenticate);
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -178,9 +179,9 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
 
   base::ScopedTempDir test_gallery_;
 
-  const extensions::Extension* extension_ = nullptr;
+  raw_ptr<const extensions::Extension> extension_ = nullptr;
 
-  content::RenderFrameHost* background_main_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> background_main_frame_ = nullptr;
 };
 
 // TODO(crbug.com/1177103): Re-enable. Flaky on Linux and Windows.
@@ -214,8 +215,16 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
     ExecuteCmdAndCheckReply(kRemoveGalleryWatchCmd, kRemoveGalleryWatchOK);
 }
 
+// TODO(crbug.com/1047645): Flaky on Linux and Windows.
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_CorrectResponseOnModifyingWatchedGallery \
+  DISABLED_CorrectResponseOnModifyingWatchedGallery
+#else
+#define MAYBE_CorrectResponseOnModifyingWatchedGallery \
+  CorrectResponseOnModifyingWatchedGallery
+#endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
-                       CorrectResponseOnModifyingWatchedGallery) {
+                       MAYBE_CorrectResponseOnModifyingWatchedGallery) {
   if (!GalleryWatchesSupported())
     return;
 

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/containers/span.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/ntlm/ntlm.h"
@@ -25,8 +25,8 @@ std::vector<uint8_t> GenerateAuthMsg(const NtlmClient& client,
                                      base::span<const uint8_t> challenge_msg) {
   return client.GenerateAuthenticateMessage(
       test::kNtlmDomain, test::kUser, test::kPassword, test::kHostnameAscii,
-      test::kChannelBindings, test::kNtlmSpn, test::kClientTimestamp,
-      test::kClientChallenge, challenge_msg);
+      reinterpret_cast<const char*>(test::kChannelBindings), test::kNtlmSpn,
+      test::kClientTimestamp, test::kClientChallenge, challenge_msg);
 }
 
 std::vector<uint8_t> GenerateAuthMsg(const NtlmClient& client,

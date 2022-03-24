@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
@@ -32,6 +31,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   // the current thread is in fact an instance of ClipboardNonBacked.
   static ClipboardNonBacked* GetForCurrentThread();
 
+  ClipboardNonBacked(const ClipboardNonBacked&) = delete;
+  ClipboardNonBacked& operator=(const ClipboardNonBacked&) = delete;
+
   // Returns the current ClipboardData.
   const ClipboardData* GetClipboardData(DataTransferEndpoint* data_dst) const;
 
@@ -42,17 +44,26 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
 
   // Clipboard overrides:
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
-  uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
+  const ClipboardSequenceNumberToken& GetSequenceNumber(
+      ClipboardBuffer buffer) const override;
+
+  int NumImagesEncodedForTesting() const;
 
  private:
   friend class Clipboard;
   friend class ClipboardNonBackedTest;
   FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, TextURIList);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, ImageEncoding);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, EncodeImageOnce);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardNonBackedTest, EncodeMultipleImages);
   ClipboardNonBacked();
   ~ClipboardNonBacked() override;
 
   // Clipboard overrides:
   void OnPreShutdown() override;
+  std::vector<std::u16string> GetStandardFormats(
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
@@ -60,9 +71,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           const DataTransferEndpoint* data_dst,
                           std::vector<std::u16string>* types) const override;
-  std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const override;
   void ReadText(ClipboardBuffer buffer,
                 const DataTransferEndpoint* data_dst,
                 std::u16string* result) const override;
@@ -84,9 +92,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   void ReadPng(ClipboardBuffer buffer,
                const DataTransferEndpoint* data_dst,
                ReadPngCallback callback) const override;
-  void ReadImage(ClipboardBuffer buffer,
-                 const DataTransferEndpoint* data_dst,
-                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const std::u16string& type,
                       const DataTransferEndpoint* data_dst,
@@ -103,12 +108,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
 #if defined(USE_OZONE)
   bool IsSelectionBufferAvailable() const override;
 #endif  // defined(USE_OZONE)
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -130,8 +132,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
                  size_t data_len) override;
 
   const std::unique_ptr<ClipboardInternal> clipboard_internal_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardNonBacked);
 };
 
 }  // namespace ui

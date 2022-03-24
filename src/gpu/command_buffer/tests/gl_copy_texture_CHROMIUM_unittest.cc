@@ -13,8 +13,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
@@ -681,6 +681,14 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     return false;
 #endif
   }
+
+  bool IsMac() const {
+#if defined(OS_MAC)
+    return true;
+#else
+    return false;
+#endif
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(CopyType,
@@ -750,6 +758,12 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
     // TODO(geofflang): anglebug.com/1932
     LOG(INFO)
         << "Passthrough command decoder expected failure. Skipping test...";
+    return;
+  }
+  if (IsMac() && !gl_.gpu_preferences().use_passthrough_cmd_decoder) {
+    // TODO(crbug.com/1227853): Remove this suppression once this passes on Mac
+    // 11.
+    LOG(INFO) << "Validating decoder on Mac. Skipping.";
     return;
   }
   const CopyType copy_type = GetParam();
@@ -1858,90 +1872,6 @@ TEST_F(GLCopyTextureCHROMIUMTest, CopyTextureBetweenTexture2DAndRectangleArb) {
       glDeleteFramebuffers(1, &framebuffer_id_);
     }
   }
-}
-
-TEST_F(GLCopyTextureCHROMIUMTest, UnpremultiplyAndDitherCopy) {
-  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
-    // UnpremultiplyAndDitherCopyCHROMIUM is not supported on passthrough.
-    return;
-  }
-
-  uint8_t premul_undithered_rgba_pixels[4 * 4] = {
-      64u, 0u, 0u,  128u, 0u, 128u, 0u, 255u,
-      0u,  0u, 64u, 255u, 0u, 0u,   0u, 128u};
-  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, textures_[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               premul_undithered_rgba_pixels);
-
-  uint16_t transparent_pixels[4] = {0u, 0u, 0u, 0u};
-  glBindTexture(GL_TEXTURE_2D, textures_[1]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA,
-               GL_UNSIGNED_SHORT_4_4_4_4, transparent_pixels);
-
-  glUnpremultiplyAndDitherCopyCHROMIUM(textures_[0], textures_[1], 0, 0, 2, 2);
-  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
-
-  uint8_t pixel_0_0[4] = {135u, 8u, 8u, 136u};
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 17, pixel_0_0, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  uint8_t pixel_1_0[4] = {0u, 127u, 0u, 255u};
-  GLTestHelper::CheckPixels(1, 0, 1, 1, 17, pixel_1_0, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  uint8_t pixel_0_1[4] = {4u, 4u, 68u, 255u};
-  GLTestHelper::CheckPixels(0, 1, 1, 1, 17, pixel_0_1, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  uint8_t pixel_1_1[4] = {0u, 0u, 0u, 123u};
-  GLTestHelper::CheckPixels(1, 1, 1, 1, 17, pixel_1_1, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  glDeleteTextures(2, textures_);
-  glDeleteFramebuffers(1, &framebuffer_id_);
-}
-
-TEST_F(GLCopyTextureCHROMIUMTest, UnpremultiplyAndDitherCopySubrect) {
-  if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
-    // UnpremultiplyAndDitherCopyCHROMIUM is not supported on passthrough.
-    return;
-  }
-
-  uint8_t premul_undithered_rgba_pixels[4 * 4] = {
-      64u, 0u, 0u,  128u, 0u, 128u, 0u, 255u,
-      0u,  0u, 64u, 255u, 0u, 0u,   0u, 128u};
-  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, textures_[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               premul_undithered_rgba_pixels);
-
-  uint16_t transparent_pixels[4] = {0u, 0u, 0u, 0u};
-  glBindTexture(GL_TEXTURE_2D, textures_[1]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA,
-               GL_UNSIGNED_SHORT_4_4_4_4, transparent_pixels);
-
-  glUnpremultiplyAndDitherCopyCHROMIUM(textures_[0], textures_[1], 1, 0, 1, 2);
-  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
-
-  uint8_t pixel_0_0[4] = {0u, 0u, 0u, 0u};
-  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, pixel_0_0, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  uint8_t pixel_1_0[4] = {0u, 127u, 0u, 255u};
-  GLTestHelper::CheckPixels(1, 0, 1, 1, 17, pixel_1_0, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  uint8_t pixel_0_1[4] = {0u, 0u, 0u, 0u};
-  GLTestHelper::CheckPixels(0, 1, 1, 1, 0, pixel_0_1, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  uint8_t pixel_1_1[4] = {0u, 0u, 0u, 123u};
-  GLTestHelper::CheckPixels(1, 1, 1, 1, 17, pixel_1_1, nullptr);
-  EXPECT_TRUE(GL_NO_ERROR == glGetError());
-
-  glDeleteTextures(2, textures_);
-  glDeleteFramebuffers(1, &framebuffer_id_);
 }
 
 }  // namespace gpu

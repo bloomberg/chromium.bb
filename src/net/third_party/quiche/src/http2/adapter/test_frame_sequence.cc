@@ -2,6 +2,7 @@
 
 #include "http2/adapter/http2_util.h"
 #include "http2/adapter/oghttp2_util.h"
+#include "spdy/core/hpack/hpack_encoder.h"
 #include "spdy/core/spdy_framer.h"
 
 namespace http2 {
@@ -11,21 +12,22 @@ namespace test {
 std::vector<const Header> ToHeaders(
     absl::Span<const std::pair<absl::string_view, absl::string_view>> headers) {
   std::vector<const Header> out;
-  for (auto [name, value] : headers) {
-    out.push_back(std::make_pair(HeaderRep(name), HeaderRep(value)));
+  for (const auto& header : headers) {
+    out.push_back(
+        std::make_pair(HeaderRep(header.first), HeaderRep(header.second)));
   }
   return out;
 }
 
-TestFrameSequence& TestFrameSequence::ClientPreface() {
+TestFrameSequence& TestFrameSequence::ClientPreface(
+    absl::Span<const Http2Setting> settings) {
   preface_ = spdy::kHttp2ConnectionHeaderPrefix;
-  frames_.push_back(absl::make_unique<spdy::SpdySettingsIR>());
-  return *this;
+  return Settings(settings);
 }
 
-TestFrameSequence& TestFrameSequence::ServerPreface() {
-  frames_.push_back(absl::make_unique<spdy::SpdySettingsIR>());
-  return *this;
+TestFrameSequence& TestFrameSequence::ServerPreface(
+    absl::Span<const Http2Setting> settings) {
+  return Settings(settings);
 }
 
 TestFrameSequence& TestFrameSequence::Data(Http2StreamId stream_id,
@@ -49,12 +51,12 @@ TestFrameSequence& TestFrameSequence::RstStream(Http2StreamId stream_id,
 }
 
 TestFrameSequence& TestFrameSequence::Settings(
-    absl::Span<Http2Setting> values) {
-  auto settings = absl::make_unique<spdy::SpdySettingsIR>();
-  for (const Http2Setting& setting : values) {
-    settings->AddSetting(setting.id, setting.value);
+    absl::Span<const Http2Setting> settings) {
+  auto settings_frame = absl::make_unique<spdy::SpdySettingsIR>();
+  for (const Http2Setting& setting : settings) {
+    settings_frame->AddSetting(setting.id, setting.value);
   }
-  frames_.push_back(std::move(settings));
+  frames_.push_back(std::move(settings_frame));
   return *this;
 }
 
@@ -62,6 +64,14 @@ TestFrameSequence& TestFrameSequence::SettingsAck() {
   auto settings = absl::make_unique<spdy::SpdySettingsIR>();
   settings->set_is_ack(true);
   frames_.push_back(std::move(settings));
+  return *this;
+}
+
+TestFrameSequence& TestFrameSequence::PushPromise(
+    Http2StreamId stream_id, Http2StreamId promised_stream_id,
+    absl::Span<const Header> headers) {
+  frames_.push_back(absl::make_unique<spdy::SpdyPushPromiseIR>(
+      stream_id, promised_stream_id, ToHeaderBlock(headers)));
   return *this;
 }
 
@@ -88,24 +98,44 @@ TestFrameSequence& TestFrameSequence::GoAway(Http2StreamId last_good_stream_id,
 TestFrameSequence& TestFrameSequence::Headers(
     Http2StreamId stream_id,
     absl::Span<const std::pair<absl::string_view, absl::string_view>> headers,
-    bool fin) {
-  return Headers(stream_id, ToHeaders(headers), fin);
+    bool fin, bool add_continuation) {
+  return Headers(stream_id, ToHeaders(headers), fin, add_continuation);
 }
 
 TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
                                               spdy::Http2HeaderBlock block,
-                                              bool fin) {
-  auto headers =
-      absl::make_unique<spdy::SpdyHeadersIR>(stream_id, std::move(block));
-  headers->set_fin(fin);
-  frames_.push_back(std::move(headers));
+                                              bool fin, bool add_continuation) {
+  if (add_continuation) {
+    // The normal intermediate representations don't allow you to represent a
+    // nonterminal HEADERS frame explicitly, so we'll need to use
+    // SpdyUnknownIRs. For simplicity, and in order not to mess up HPACK state,
+    // the payload will be uncompressed.
+    spdy::HpackEncoder encoder;
+    encoder.DisableCompression();
+    std::string encoded_block = encoder.EncodeHeaderBlock(block);
+    const size_t pos = encoded_block.size() / 2;
+    const uint8_t flags = fin ? 0x1 : 0x0;
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, static_cast<uint8_t>(spdy::SpdyFrameType::HEADERS), flags,
+        encoded_block.substr(0, pos)));
+
+    auto continuation = absl::make_unique<spdy::SpdyContinuationIR>(stream_id);
+    continuation->set_end_headers(true);
+    continuation->take_encoding(encoded_block.substr(pos));
+    frames_.push_back(std::move(continuation));
+  } else {
+    auto headers =
+        absl::make_unique<spdy::SpdyHeadersIR>(stream_id, std::move(block));
+    headers->set_fin(fin);
+    frames_.push_back(std::move(headers));
+  }
   return *this;
 }
 
 TestFrameSequence& TestFrameSequence::Headers(Http2StreamId stream_id,
                                               absl::Span<const Header> headers,
-                                              bool fin) {
-  return Headers(stream_id, ToHeaderBlock(headers), fin);
+                                              bool fin, bool add_continuation) {
+  return Headers(stream_id, ToHeaderBlock(headers), fin, add_continuation);
 }
 
 TestFrameSequence& TestFrameSequence::WindowUpdate(Http2StreamId stream_id,
@@ -124,6 +154,25 @@ TestFrameSequence& TestFrameSequence::Priority(Http2StreamId stream_id,
   return *this;
 }
 
+TestFrameSequence& TestFrameSequence::Metadata(Http2StreamId stream_id,
+                                               absl::string_view payload,
+                                               bool multiple_frames) {
+  const std::string encoded_payload = MetadataBlockForPayload(payload);
+  if (multiple_frames) {
+    const size_t pos = encoded_payload.size() / 2;
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, 0, encoded_payload.substr(0, pos)));
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, kMetadataEndFlag,
+        encoded_payload.substr(pos)));
+  } else {
+    frames_.push_back(absl::make_unique<spdy::SpdyUnknownIR>(
+        stream_id, kMetadataFrameType, kMetadataEndFlag,
+        std::move(encoded_payload)));
+  }
+  return *this;
+}
+
 std::string TestFrameSequence::Serialize() {
   std::string result;
   if (!preface_.empty()) {
@@ -135,6 +184,16 @@ std::string TestFrameSequence::Serialize() {
     absl::StrAppend(&result, absl::string_view(f));
   }
   return result;
+}
+
+std::string TestFrameSequence::MetadataBlockForPayload(
+    absl::string_view payload) {
+  // Encode the payload using a header block.
+  spdy::SpdyHeaderBlock block;
+  block["example-payload"] = payload;
+  spdy::HpackEncoder encoder;
+  encoder.DisableCompression();
+  return encoder.EncodeHeaderBlock(block);
 }
 
 }  // namespace test

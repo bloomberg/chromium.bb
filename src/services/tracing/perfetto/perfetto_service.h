@@ -9,7 +9,6 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
 #include "base/tracing/perfetto_task_runner.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
@@ -30,6 +29,10 @@ class PerfettoService : public mojom::PerfettoService {
  public:
   explicit PerfettoService(scoped_refptr<base::SequencedTaskRunner>
                                task_runner_for_testing = nullptr);
+
+  PerfettoService(const PerfettoService&) = delete;
+  PerfettoService& operator=(const PerfettoService&) = delete;
+
   ~PerfettoService() override;
 
   static PerfettoService* GetInstance();
@@ -94,8 +97,6 @@ class PerfettoService : public mojom::PerfettoService {
   std::set<base::ProcessId> active_service_pids_;
   std::map<base::ProcessId, int> num_active_connections_;
   bool active_service_pids_initialized_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfettoService);
 };
 
 }  // namespace tracing

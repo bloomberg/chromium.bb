@@ -33,9 +33,6 @@ class WebMediaSource;
 // increased complexity for handling the latter. Concrete implementations of
 // this interface are reference counted to ensure they are available potentially
 // cross-thread and from the registry.
-//
-// TODO(https://crbug.com/878133): This is not yet implementing the multi-thread
-// aspect.
 class CORE_EXPORT MediaSourceAttachment
     : public URLRegistrable,
       public WTF::ThreadSafeRefCounted<MediaSourceAttachment> {
@@ -51,6 +48,8 @@ class CORE_EXPORT MediaSourceAttachment
       const String& url);
 
   MediaSourceAttachment();
+  MediaSourceAttachment(const MediaSourceAttachment&) = delete;
+  MediaSourceAttachment& operator=(const MediaSourceAttachment&) = delete;
   ~MediaSourceAttachment() override;
 
   // This is called on the main thread when the URLRegistry unregisters the
@@ -136,8 +135,6 @@ class CORE_EXPORT MediaSourceAttachment
   friend class WTF::ThreadSafeRefCounted<MediaSourceAttachment>;
 
   static URLRegistry* registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaSourceAttachment);
 };
 
 }  // namespace blink

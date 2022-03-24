@@ -4,6 +4,8 @@
 
 #include "gpu/vulkan/vulkan_image.h"
 
+#include "base/containers/cxx20_erase.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -33,14 +35,34 @@ bool VulkanImage::InitializeFromGpuMemoryBufferHandle(
     VkFormat format,
     VkImageUsageFlags usage,
     VkImageCreateFlags flags,
-    VkImageTiling image_tiling) {
+    VkImageTiling image_tiling,
+    uint32_t queue_family_index) {
   if (gmb_handle.type != gfx::GpuMemoryBufferType::NATIVE_PIXMAP) {
     DLOG(ERROR) << "GpuMemoryBuffer is not supported. type:" << gmb_handle.type;
     return false;
   }
 
   auto& native_pixmap_handle = gmb_handle.native_pixmap_handle;
-  DCHECK_EQ(native_pixmap_handle.planes.size(), 1u);
+
+  // 2 plane images are ok, they just need ycbcr set up.
+  DCHECK_LT(native_pixmap_handle.planes.size(), 3u);
+
+  if (native_pixmap_handle.planes.size() == 2) {
+    ycbcr_info_ = VulkanYCbCrInfo(
+        /*image_format=*/format,
+        /*external_format=*/0,
+        /*suggested_ycbcr_model=*/native_pixmap_handle.planes.size(),
+        /*suggested_ycbcr_range=*/1,
+        /*suggested_xchroma_offset=*/0,
+        /*suggested_ychroma_offset=*/0,
+        // The same flags that VaapiVideoDecoderUses to create the texture.
+        /*format_features=*/VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT |
+            VK_FORMAT_FEATURE_TRANSFER_DST_BIT |
+            VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+            VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
+            VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT |
+            VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+  }
 
   auto& scoped_fd = native_pixmap_handle.planes[0].fd;
   if (!scoped_fd.is_valid()) {
@@ -153,7 +175,7 @@ bool VulkanImage::InitializeWithExternalMemoryAndModifiers(
 
   VkImageDrmFormatModifierListCreateInfoEXT modifier_list = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
-      .drmFormatModifierCount = modifiers.size(),
+      .drmFormatModifierCount = static_cast<uint32_t>(modifiers.size()),
       .pDrmFormatModifiers = modifiers.data(),
   };
 
@@ -191,7 +213,8 @@ bool VulkanImage::InitializeWithExternalMemoryAndModifiers(
     // TODO(penghuang): use VK_IMAGE_ASPECT_MEMORY_PLANE_i_BIT_EXT when the mesa
     // can handle VK_IMAGE_ASPECT_MEMORY_PLANE_i_BIT_EXT.
     const VkImageSubresource image_subresource = {
-        .aspectMask = VK_IMAGE_ASPECT_PLANE_0_BIT << i,
+        .aspectMask =
+            static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_PLANE_0_BIT << i),
         .mipLevel = 0,
         .arrayLayer = 0,
     };

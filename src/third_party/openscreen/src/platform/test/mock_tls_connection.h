@@ -5,6 +5,9 @@
 #ifndef PLATFORM_TEST_MOCK_TLS_CONNECTION_H_
 #define PLATFORM_TEST_MOCK_TLS_CONNECTION_H_
 
+#include <utility>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "platform/api/tls_connection.h"
 
@@ -24,7 +27,6 @@ class MockTlsConnection : public TlsConnection {
 
   MOCK_METHOD(bool, Send, (const void* data, size_t len), (override));
 
-  IPEndpoint GetLocalEndpoint() const override { return local_address_; }
   IPEndpoint GetRemoteEndpoint() const override { return remote_address_; }
 
   void OnError(Error error) {

@@ -30,6 +30,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_convolver_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/audio/reverb.h"
@@ -43,7 +44,7 @@
 // a good value.  But, the Reverb object is multi-threaded, so we want this as
 // high as possible without losing too much accuracy.  Very large FFTs will have
 // worse phase errors. Given these constraints 32768 is a good compromise.
-const size_t MaxFFTSize = 32768;
+const unsigned MaxFFTSize = 32768;
 
 namespace blink {
 
@@ -144,7 +145,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   {
     // Get some statistics on the size of the impulse response.
     UMA_HISTOGRAM_LONG_TIMES("WebAudio.ConvolverNode.ImpulseResponseLength",
-                             base::TimeDelta::FromSecondsD(buffer->duration()));
+                             base::Seconds(buffer->duration()));
   }
 
   // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not
@@ -158,11 +159,9 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   // length of 0, it was transferred.
   bool any_buffer_detached = false;
   for (unsigned i = 0; i < number_of_channels; ++i) {
-    for (unsigned i = 0; i < number_of_channels; ++i) {
-      if (buffer->getChannelData(i)->length() == 0) {
-        any_buffer_detached = true;
-        break;
-      }
+    if (buffer->getChannelData(i)->length() == 0) {
+      any_buffer_detached = true;
+      break;
     }
   }
 
@@ -240,7 +239,7 @@ unsigned ConvolverHandler::ComputeNumberOfOutputChannels(
   // The number of output channels for a Convolver must be one or two.
   // And can only be one if there's a mono source and a mono response
   // buffer.
-  return clampTo(std::max(input_channels, response_channels), 1, 2);
+  return ClampTo(std::max(input_channels, response_channels), 1, 2);
 }
 
 void ConvolverHandler::SetChannelCount(unsigned channel_count,

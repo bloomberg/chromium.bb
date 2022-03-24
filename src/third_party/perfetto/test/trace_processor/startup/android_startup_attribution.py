@@ -18,7 +18,7 @@ from os import sys, path
 import synth_common
 
 APP_PID = 3
-APP_TID = 1
+APP_TID = APP_PID
 SECOND_APP_TID = 3
 JIT_TID = 4
 GC_TID = 5
@@ -64,6 +64,10 @@ trace.add_atrace_async_begin(
     pid=SYSTEM_SERVER_PID,
     tid=SYSTEM_SERVER_TID,
     buf='launching: com.some.app')
+
+# Emulate a hot start (and therefore that we only see activityResume).
+trace.add_atrace_begin(ts=125, tid=APP_TID, pid=APP_PID, buf='activityResume')
+trace.add_atrace_end(ts=130, tid=APP_TID, pid=APP_PID)
 
 # OpenDex slices within the startup.
 trace.add_atrace_begin(
@@ -150,18 +154,18 @@ trace.add_sched(ts=350, prev_pid=GC2_TID, next_pid=GC_TID)
 trace.add_sched(ts=360, prev_pid=GC_TID, next_pid=0)
 
 # Long binder transactions.
-trace.add_atrace_begin(
-    ts=10**8, pid=APP_PID, tid=BINDER_TID, buf='binder transaction')
-trace.add_atrace_end(ts=2 * (10**8), pid=APP_PID, tid=BINDER_TID)
+trace.add_binder_transaction(1, 10**8, 2 * (10**8), BINDER_TID, APP_PID, 2,
+                             10**8 + 1, 2 * (10**8) - 1, SYSTEM_SERVER_TID,
+                             SYSTEM_SERVER_PID)
 
-trace.add_atrace_begin(
-    ts=3 * (10**8), pid=APP_PID, tid=FONTS_TID, buf='binder transaction')
-trace.add_atrace_end(ts=5 * (10**8), pid=APP_PID, tid=FONTS_TID)
+trace.add_binder_transaction(3, 3 * (10**8), 5 * (10**8), FONTS_TID, APP_PID, 4,
+                             3 * (10**8) + 1, 5 * (10**8) - 1, BINDER_TID,
+                             APP_PID)
 
 # A short binder transaction.
-trace.add_atrace_begin(
-    ts=10**7, pid=APP_PID, tid=BINDER_TID, buf='binder transaction')
-trace.add_atrace_end(ts=6 * (10**7), pid=APP_PID, tid=BINDER_TID)
+trace.add_binder_transaction(5, 10**7, 5 * (10**7), BINDER_TID, APP_TID, 6,
+                             10**7 + 1, 5 * (10**7) - 1, SYSTEM_SERVER_TID,
+                             SYSTEM_SERVER_PID)
 
 # Intent successful.
 trace.add_atrace_begin(

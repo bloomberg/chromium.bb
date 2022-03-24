@@ -8,27 +8,21 @@ import("//pdf/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
+import("//tools/grit/repack.gni")
 import("//v8/gni/v8.gni")
 
 # Generate a buildflag header for compile-time checking of PDF support.
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
+    "ENABLE_INK=$enable_ink",
     "ENABLE_PDF=$enable_pdf",
-    "ENABLE_PDF_UNSEASONED=$enable_pdf_unseasoned",
   ]
 }
 
 if (enable_pdf) {
-  config("common") {
-    configs = [ "//build/config/compiler:noshadowing" ]
-  }
-
   config("strict") {
-    configs = [
-      ":common",
-      "//build/config/compiler:wexit_time_destructors",
-    ]
+    configs = [ "//build/config/compiler:wexit_time_destructors" ]
   }
 
   config("pdfium_includes") {
@@ -83,7 +77,13 @@ if (enable_pdf) {
   }
 
   source_set("internal") {
-    visibility = [ ":*" ]
+    visibility = [
+      ":*",
+
+      # TODO(crbug.com/1158929): Eliminate chrome_find_request_manager_browsertest.cc's dependence
+      # on document_loader_impl.h.
+      "//chrome/test:browser_tests",
+    ]
 
     sources = [
       "accessibility.cc",
@@ -111,6 +111,8 @@ if (enable_pdf) {
       "paint_manager.h",
       "paint_ready_rect.cc",
       "paint_ready_rect.h",
+      "parsed_params.cc",
+      "parsed_params.h",
       "pdf_engine.h",
       "pdf_init.cc",
       "pdf_init.h",
@@ -130,8 +132,6 @@ if (enable_pdf) {
       "pdfium/pdfium_engine_exports.h",
       "pdfium/pdfium_form_filler.cc",
       "pdfium/pdfium_form_filler.h",
-      "pdfium/pdfium_mem_buffer_file_read.cc",
-      "pdfium/pdfium_mem_buffer_file_read.h",
       "pdfium/pdfium_mem_buffer_file_write.cc",
       "pdfium/pdfium_mem_buffer_file_write.h",
       "pdfium/pdfium_page.cc",
@@ -163,10 +163,14 @@ if (enable_pdf) {
 
     configs += [ ":strict" ]
 
-    public_deps = [ "//skia" ]
+    public_deps = [
+      "//printing/mojom",
+      "//skia",
+      "//v8",
+    ]
 
     deps = [
-      ":accessibility_structs",
+      ":accessibility",
       ":features",
       ":ppapi_migration",
       "//base",
@@ -175,10 +179,11 @@ if (enable_pdf) {
       "//components/strings",
       "//gin",
       "//net",
-      "//pdf/pdfium/fuzzers",
+      "//pdf:buildflags",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//printing",
+      "//third_party/blink/public:blink_headers",
       "//third_party/blink/public/common:headers",
       "//third_party/icu",
       "//third_party/pdfium",
@@ -195,6 +200,11 @@ if (enable_pdf) {
         "pdfium/pdfium_font_linux.cc",
         "pdfium/pdfium_font_linux.h",
       ]
+
+      deps += [
+        ":font_table_linux",
+        "//components/services/font/public/cpp",
+      ]
     }
   }
 
@@ -208,10 +218,8 @@ if (enable_pdf) {
       "ppapi_migration/ppapi_assert_matching_enums.cc",
     ]
 
-    configs += [ ":common" ]
-
     deps = [
-      ":accessibility_structs",
+      ":accessibility",
       ":internal",
       ":pdf",
       ":ppapi_migration",
@@ -222,14 +230,21 @@ if (enable_pdf) {
     ]
   }
 
-  source_set("accessibility_structs") {
-    visibility = [ ":*" ]
+  source_set("accessibility") {
+    visibility = [
+      ":*",
+      "//components:components_browsertests",
+      "//components/pdf/renderer",
+      "//components/pdf/renderer:unit_tests",
+    ]
 
     sources = [
       "accessibility_helper.cc",
       "accessibility_helper.h",
       "accessibility_structs.cc",
       "accessibility_structs.h",
+      "pdf_accessibility_action_handler.h",
+      "pdf_accessibility_data_handler.h",
     ]
 
     configs += [ ":strict" ]
@@ -256,6 +271,9 @@ if (enable_pdf) {
       "ppapi_migration/image.h",
       "ppapi_migration/input_event_conversions.cc",
       "ppapi_migration/input_event_conversions.h",
+      "ppapi_migration/printing_conversions.cc",
+      "ppapi_migration/printing_conversions.h",
+      "ppapi_migration/result_codes.h",
       "ppapi_migration/url_loader.cc",
       "ppapi_migration/url_loader.h",
       "ppapi_migration/value_conversions.cc",
@@ -269,6 +287,7 @@ if (enable_pdf) {
     deps = [
       "//base",
       "//ppapi/cpp:objects",
+      "//printing/mojom",
       "//skia",
       "//third_party/blink/public:blink",
       "//third_party/blink/public/common:headers",
@@ -276,6 +295,13 @@ if (enable_pdf) {
       "//ui/base/cursor/mojom:cursor_type",
       "//ui/gfx",
     ]
+
+    if (is_linux || is_chromeos) {
+      sources += [
+        "ppapi_migration/pdfium_font_linux.cc",
+        "ppapi_migration/pdfium_font_linux.h",
+      ]
+    }
   }
 
   source_set("out_of_process_instance") {
@@ -291,19 +317,20 @@ if (enable_pdf) {
     public_deps = [ "//third_party/abseil-cpp:absl" ]
 
     deps = [
-      ":accessibility_structs",
+      ":accessibility",
       ":internal",
       ":ppapi_migration",
       "//base",
-      "//base:i18n",
       "//build:chromeos_buildflags",
       "//net",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//skia",
+      "//third_party/blink/public:blink_headers",
       "//third_party/blink/public/common:headers",
       "//ui/base",
       "//ui/base/cursor/mojom:cursor_type",
+      "//url",
     ]
   }
 
@@ -312,6 +339,7 @@ if (enable_pdf) {
     visibility = [
       ":*",
       "//chrome/renderer",
+      "//components/pdf/renderer",
     ]
 
     sources = [
@@ -326,20 +354,26 @@ if (enable_pdf) {
 
     public = [ "pdf_view_web_plugin.h" ]
 
+    public_deps = [ "//pdf/mojom" ]
+
     deps = [
-      ":accessibility_structs",
+      ":accessibility",
       ":internal",
       ":ppapi_migration",
       "//base",
+      "//base:i18n",
       "//cc/paint",
       "//content/public/renderer",
       "//gin",
       "//ppapi/cpp:objects",  # TODO(crbug.com/1114263): PDFEngine::Client only.
+      "//printing",
+      "//services/network/public/mojom:url_loader_base",
       "//skia",
       "//third_party/blink/public:blink_headers",
       "//third_party/blink/public/common:headers",
-      "//ui/base/cursor:cursor_base",
+      "//ui/base/cursor",
       "//ui/base/cursor/mojom:cursor_type",
+      "//ui/display",
       "//ui/events/blink",
       "//v8",
     ]
@@ -357,19 +391,35 @@ if (enable_pdf) {
       "test/test_document_loader.h",
       "test/test_helpers.cc",
       "test/test_helpers.h",
+      "test/test_pdfium_engine.cc",
+      "test/test_pdfium_engine.h",
     ]
-
-    configs += [ ":common" ]
 
     deps = [
       ":internal",
       ":ppapi_migration",
       "//base",
       "//ppapi/cpp:objects",
+      "//testing/gmock",
       "//testing/gtest",
-      "//ui/gfx:geometry_skia",
+      "//third_party/blink/public/common:headers",
       "//ui/gfx/range",
+      "//ui/latency:latency",
     ]
+  }
+
+  if (is_linux || is_chromeos) {
+    # TODO(crbug.com/702993): After PPAPI deprecation, there will only be one
+    # caller left. Move inside the file with the caller.
+    static_library("font_table_linux") {
+      sources = [ "font_table_linux.cc" ]
+
+      configs += [ ":strict" ]
+
+      public = [ "font_table_linux.h" ]
+
+      deps = [ "//base" ]
+    }
   }
 
   test("pdf_unittests") {
@@ -381,6 +431,7 @@ if (enable_pdf) {
       "document_loader_impl_unittest.cc",
       "draw_utils/coordinates_unittest.cc",
       "page_orientation_unittest.cc",
+      "parsed_params_unittest.cc",
       "pdf_transform_unittest.cc",
       "pdf_utils/dates_unittest.cc",
       "pdf_view_plugin_base_unittest.cc",
@@ -397,6 +448,7 @@ if (enable_pdf) {
       "pdfium/pdfium_test_base.h",
       "ppapi_migration/geometry_conversions_unittest.cc",
       "ppapi_migration/graphics_unittest.cc",
+      "ppapi_migration/printing_conversions_unittest.cc",
       "ppapi_migration/url_loader_unittest.cc",
       "range_set_unittest.cc",
       "test/run_all_unittests.cc",
@@ -405,12 +457,10 @@ if (enable_pdf) {
       "ui/thumbnail_unittest.cc",
     ]
 
-    configs += [ ":common" ]
-
     data = [ "test/data/" ]
 
     deps = [
-      ":accessibility_structs",
+      ":accessibility",
       ":assert_enums",
       ":features",
       ":internal",
@@ -423,10 +473,10 @@ if (enable_pdf) {
       "//base:i18n",
       "//base/test:test_support",
       "//cc:test_support",
-      "//components/strings",
       "//gin",
       "//mojo/core/embedder",
       "//mojo/public/cpp/bindings",
+      "//pdf:buildflags",
       "//ppapi/c",
       "//ppapi/cpp:objects",
       "//printing",
@@ -437,10 +487,13 @@ if (enable_pdf) {
       "//third_party/blink/public:test_support",
       "//third_party/blink/public/common:headers",
       "//third_party/pdfium",
-      "//ui/base:test_support",
+      "//ui/base",
+      "//ui/base/cursor",
+      "//ui/events/blink:blink",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
       "//ui/gfx/range",
+      "//v8",
     ]
 
     if (v8_use_external_startup_data) {
@@ -450,6 +503,18 @@ if (enable_pdf) {
         "//v8:external_startup_data",
       ]
     }
+
+    data_deps = [
+      ":pdf_unittests_pak",
+      "//ui/resources:ui_test_pak_data",
+    ]
+  }
+
+  repack("pdf_unittests_pak") {
+    sources =
+        [ "$root_gen_dir/components/strings/components_strings_en-US.pak" ]
+    output = "$root_out_dir/pdf_tests_resources.pak"
+    deps = [ "//components/strings" ]
   }
 
   fuzzer_test("pdf_dates_fuzzer") {

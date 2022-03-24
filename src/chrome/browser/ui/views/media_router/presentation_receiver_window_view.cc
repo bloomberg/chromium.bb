@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -16,7 +15,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/subresource_filter/chrome_content_subresource_filter_throttle_manager_factory.h"
+#include "chrome/browser/subresource_filter/chrome_content_subresource_filter_web_contents_helper_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
@@ -72,6 +71,9 @@ class FullscreenWindowObserver : public aura::WindowObserver {
     window_observation_.Observe(observed_window);
   }
 
+  FullscreenWindowObserver(const FullscreenWindowObserver&) = delete;
+  FullscreenWindowObserver& operator=(const FullscreenWindowObserver&) = delete;
+
   ~FullscreenWindowObserver() override = default;
 
  private:
@@ -99,8 +101,6 @@ class FullscreenWindowObserver : public aura::WindowObserver {
 
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       window_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenWindowObserver);
 };
 
 #endif
@@ -116,6 +116,19 @@ PresentationReceiverWindowView::PresentationReceiverWindowView(
       command_updater_(this),
       exclusive_access_manager_(this) {
   SetHasWindowSizeControls(true);
+
+  // TODO(pbos): See if this can retain SetOwnedByWidget(true) and get deleted
+  // through WidgetDelegate::DeleteDelegate(). This requires confirming that
+  // delegate_->WindowClosed() is safe to call before this deletes.
+  SetOwnedByWidget(false);
+  RegisterDeleteDelegateCallback(base::BindOnce(
+      [](PresentationReceiverWindowView* dialog) {
+        auto* const delegate = dialog->delegate_.get();
+        delete dialog;
+        delegate->WindowClosed();
+      },
+      this));
+
   DCHECK(frame);
   DCHECK(delegate);
 }
@@ -168,7 +181,7 @@ void PresentationReceiverWindowView::Init() {
   SearchTabHelper::CreateForWebContents(web_contents);
   TabDialogs::CreateForWebContents(web_contents);
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
-  CreateSubresourceFilterThrottleManagerForWebContents(web_contents);
+  CreateSubresourceFilterWebContentsHelper(web_contents);
   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   blocked_content::PopupBlockerTabHelper::CreateForWebContents(web_contents);
   content_settings::PageSpecificContentSettings::CreateForWebContents(
@@ -189,7 +202,7 @@ void PresentationReceiverWindowView::Init() {
   box_owner->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
   auto* box = SetLayoutManager(std::move(box_owner));
-  AddChildView(location_bar_view_);
+  AddChildView(location_bar_view_.get());
   box->SetFlexForView(location_bar_view_, 0);
   AddChildView(web_view);
   box->SetFlexForView(web_view, 1);
@@ -264,12 +277,6 @@ WebContents* PresentationReceiverWindowView::GetActiveWebContents() const {
   return delegate_->web_contents();
 }
 
-void PresentationReceiverWindowView::DeleteDelegate() {
-  auto* const delegate = delegate_;
-  delete this;
-  delegate->WindowClosed();
-}
-
 std::u16string PresentationReceiverWindowView::GetWindowTitle() const {
   return delegate_->web_contents()->GetTitle();
 }
@@ -342,6 +349,10 @@ void PresentationReceiverWindowView::UpdateExclusiveAccessExitBubbleContent(
 
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
       this, url, bubble_type, std::move(bubble_first_hide_callback));
+}
+
+bool PresentationReceiverWindowView::IsExclusiveAccessBubbleDisplayed() const {
+  return exclusive_access_bubble_ && exclusive_access_bubble_->IsShowing();
 }
 
 void PresentationReceiverWindowView::OnExclusiveAccessUserInput() {}

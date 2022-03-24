@@ -5,6 +5,7 @@
 #include "base/task/post_task.h"
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/task_executor.h"
 #include "base/task/test_task_traits_extension.h"
@@ -44,6 +45,9 @@ class MockTaskExecutor : public TaskExecutor {
 #endif  // defined(OS_WIN)
   }
 
+  MockTaskExecutor(const MockTaskExecutor&) = delete;
+  MockTaskExecutor& operator=(const MockTaskExecutor&) = delete;
+
   // TaskExecutor:
   // Helper because gmock doesn't support move-only types.
   bool PostDelayedTask(const Location& from_here,
@@ -77,8 +81,6 @@ class MockTaskExecutor : public TaskExecutor {
  private:
   scoped_refptr<TestSimpleTaskRunner> runner_ =
       MakeRefCounted<TestSimpleTaskRunner>();
-
-  DISALLOW_COPY_AND_ASSIGN(MockTaskExecutor);
 };
 
 }  // namespace
@@ -155,6 +157,9 @@ class FlagOnDelete {
     other.deleted_ = nullptr;
   }
 
+  FlagOnDelete(const FlagOnDelete&) = delete;
+  FlagOnDelete& operator=(const FlagOnDelete&) = delete;
+
   ~FlagOnDelete() {
     if (deleted_) {
       EXPECT_FALSE(*deleted_);
@@ -163,8 +168,7 @@ class FlagOnDelete {
   }
 
  private:
-  bool* deleted_;
-  DISALLOW_COPY_AND_ASSIGN(FlagOnDelete);
+  raw_ptr<bool> deleted_;
 };
 
 }  // namespace

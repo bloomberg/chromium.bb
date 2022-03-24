@@ -6,34 +6,43 @@
 
 #include <array>
 #include <sstream>
-#include "base/logging.h"
 
+#include "base/containers/flat_map.h"
+#include "base/logging.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/value_util.h"
+
+namespace autofill_assistant {
 namespace {
+
+// Prefix used to annotate values coming from the the startup parameters.
+const char kParameterMemoryPrefix[] = "param:";
 
 // Converts a value to a target type. Returns nullopt for invalid or
 // non-existent values. Expects bool parameters as 'false' and 'true'.
 template <typename T>
 absl::optional<T> GetTypedParameter(
-    const std::map<std::string, std::string> parameters,
+    const base::flat_map<std::string, ValueProto> parameters,
     const std::string& key) {
   auto iter = parameters.find(key);
   if (iter == parameters.end())
     return absl::nullopt;
 
+  std::string value = iter->second.strings().values(0);
   std::stringstream ss;
-  ss << iter->second;
+  ss << value;
   T out;
   if (!(ss >> std::boolalpha >> out)) {
     LOG(ERROR) << "Error trying to convert parameter '" << key
-               << "' with value '" << iter->second << "' to target type";
+               << "' with value '" << value << "' to target type";
     return absl::nullopt;
   }
   return out;
 }
 
 }  // namespace
-
-namespace autofill_assistant {
 
 // Parameter that allows setting the color of the overlay.
 const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
@@ -80,6 +89,20 @@ const char kTriggerScriptExperimentParameterName[] =
 // The intent parameter.
 const char kIntent[] = "INTENT";
 
+// Parameter that allows enabling Text-to-Speech functionality.
+const char kEnableTtsParameterName[] = "ENABLE_TTS";
+
+// Parameter name of the CALLER script parameter. Note that the corresponding
+// values are integers, corresponding to the caller proto in the backend.
+const char kCallerParameterName[] = "CALLER";
+
+// Parameter name of the SOURCE script parameter. Note that the corresponding
+// values are integers, corresponding to the source proto in the backend.
+const char kSourceParameterName[] = "SOURCE";
+
+// Parameter to specify experiments.
+const char kExperimentsParameterName[] = "EXPERIMENT_IDS";
+
 // The list of script parameters that trigger scripts are allowed to send to
 // the backend.
 constexpr std::array<const char*, 6> kAllowlistedTriggerScriptParameters = {
@@ -103,8 +126,12 @@ const char kDetailsTotalPriceLabel[] = "DETAILS_TOTAL_PRICE_LABEL";
 const char kDetailsTotalPrice[] = "DETAILS_TOTAL_PRICE";
 
 ScriptParameters::ScriptParameters(
-    const std::map<std::string, std::string>& parameters)
-    : parameters_(parameters) {}
+    const base::flat_map<std::string, std::string>& parameters) {
+  for (const auto& it : parameters) {
+    parameters_.emplace(
+        it.first, SimpleValue(it.second, /* is_client_side_only= */ false));
+  }
+}
 
 ScriptParameters::ScriptParameters() = default;
 ScriptParameters::~ScriptParameters() = default;
@@ -139,7 +166,7 @@ ScriptParameters::ToProto(bool only_trigger_script_allowlisted) const {
       }
       auto* out_param = out.Add();
       out_param->set_name(key);
-      out_param->set_value(iter->second);
+      out_param->set_value(iter->second.strings().values(0));
     }
     return out;
   }
@@ -149,9 +176,12 @@ ScriptParameters::ToProto(bool only_trigger_script_allowlisted) const {
     if (parameter.first == kEnabledParameterName) {
       continue;
     }
+    if (parameter.second.is_client_side_only()) {
+      continue;
+    }
     auto* out_param = out.Add();
     out_param->set_name(parameter.first);
-    out_param->set_value(parameter.second);
+    out_param->set_value(parameter.second.strings().values(0));
   }
   return out;
 }
@@ -162,7 +192,7 @@ absl::optional<std::string> ScriptParameters::GetParameter(
   if (iter == parameters_.end())
     return absl::nullopt;
 
-  return iter->second;
+  return iter->second.strings().values(0);
 }
 
 absl::optional<std::string> ScriptParameters::GetOverlayColors() const {
@@ -209,6 +239,30 @@ absl::optional<std::string> ScriptParameters::GetCallerEmail() const {
   return GetParameter(kCallerEmailParameterName);
 }
 
+absl::optional<bool> ScriptParameters::GetEnableTts() const {
+  return GetTypedParameter<bool>(parameters_, kEnableTtsParameterName);
+}
+
+absl::optional<int> ScriptParameters::GetCaller() const {
+  return GetTypedParameter<int>(parameters_, kCallerParameterName);
+}
+
+absl::optional<int> ScriptParameters::GetSource() const {
+  return GetTypedParameter<int>(parameters_, kSourceParameterName);
+}
+
+std::vector<std::string> ScriptParameters::GetExperiments() const {
+  absl::optional<std::string> experiments_str =
+      GetParameter(kExperimentsParameterName);
+  if (!experiments_str) {
+    return std::vector<std::string>();
+  }
+
+  return base::SplitString(*experiments_str, ",",
+                           base::WhitespaceHandling::TRIM_WHITESPACE,
+                           base::SplitResult::SPLIT_WANT_NONEMPTY);
+}
+
 absl::optional<bool> ScriptParameters::GetDetailsShowInitial() const {
   return GetTypedParameter<bool>(parameters_, kDetailsShowInitialParameterName);
 }
@@ -253,6 +307,21 @@ absl::optional<std::string> ScriptParameters::GetDetailsTotalPriceLabel()
 
 absl::optional<std::string> ScriptParameters::GetDetailsTotalPrice() const {
   return GetParameter(kDetailsTotalPrice);
+}
+
+void ScriptParameters::UpdateDeviceOnlyParameters(
+    const base::flat_map<std::string, std::string>& parameters) {
+  for (const auto& parameter : parameters) {
+    parameters_[parameter.first] =
+        SimpleValue(parameter.second, /* is_client_side_only= */ true);
+  }
+}
+
+void ScriptParameters::WriteToUserData(UserData* user_data) const {
+  for (const auto& parameter : parameters_) {
+    user_data->SetAdditionalValue(kParameterMemoryPrefix + parameter.first,
+                                  parameter.second);
+  }
 }
 
 }  // namespace autofill_assistant

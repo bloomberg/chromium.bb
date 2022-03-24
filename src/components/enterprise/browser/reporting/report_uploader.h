@@ -9,7 +9,7 @@
 #include <queue>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
 #include "net/base/backoff_entry.h"
@@ -50,6 +50,10 @@ class ReportUploader {
 
   ReportUploader(policy::CloudPolicyClient* client,
                  int maximum_number_of_retries);
+
+  ReportUploader(const ReportUploader&) = delete;
+  ReportUploader& operator=(const ReportUploader&) = delete;
+
   virtual ~ReportUploader();
 
   // Sets a list of requests and upload it. Request will be uploaded one after
@@ -75,7 +79,7 @@ class ReportUploader {
   // Moves to the next request if exist, or notifies the accomplishments.
   void NextRequest();
 
-  policy::CloudPolicyClient* client_;
+  raw_ptr<policy::CloudPolicyClient> client_;
   ReportCallback callback_;
   ReportRequests requests_;
 
@@ -84,7 +88,6 @@ class ReportUploader {
   const int maximum_number_of_retries_;
 
   base::WeakPtrFactory<ReportUploader> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ReportUploader);
 };
 
 enum ReportResponseMetricsStatus {

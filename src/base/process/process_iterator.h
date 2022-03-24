@@ -15,7 +15,7 @@
 
 #include "base/base_export.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -81,6 +81,10 @@ class BASE_EXPORT ProcessIterator {
   typedef std::list<ProcessEntry> ProcessEntries;
 
   explicit ProcessIterator(const ProcessFilter* filter);
+
+  ProcessIterator(const ProcessIterator&) = delete;
+  ProcessIterator& operator=(const ProcessIterator&) = delete;
+
   virtual ~ProcessIterator();
 
   // If there's another process that matches the given executable name,
@@ -114,12 +118,10 @@ class BASE_EXPORT ProcessIterator {
   std::vector<kinfo_proc> kinfo_procs_;
   size_t index_of_kinfo_proc_;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  DIR* procfs_dir_;
+  raw_ptr<DIR> procfs_dir_;
 #endif
   ProcessEntry entry_;
-  const ProcessFilter* filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessIterator);
+  raw_ptr<const ProcessFilter> filter_;
 };
 
 // This class provides a way to iterate through the list of processes
@@ -130,6 +132,10 @@ class BASE_EXPORT NamedProcessIterator : public ProcessIterator {
  public:
   NamedProcessIterator(const FilePath::StringType& executable_name,
                        const ProcessFilter* filter);
+
+  NamedProcessIterator(const NamedProcessIterator&) = delete;
+  NamedProcessIterator& operator=(const NamedProcessIterator&) = delete;
+
   ~NamedProcessIterator() override;
 
  protected:
@@ -137,8 +143,6 @@ class BASE_EXPORT NamedProcessIterator : public ProcessIterator {
 
  private:
   FilePath::StringType executable_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(NamedProcessIterator);
 };
 
 // Returns the number of processes on the machine that are running from the

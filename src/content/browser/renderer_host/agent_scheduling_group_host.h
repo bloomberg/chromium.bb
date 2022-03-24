@@ -17,6 +17,7 @@
 #include "content/common/state_transitions.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/content_features.h"
+#include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom-forward.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -38,13 +39,19 @@ namespace content {
 class AgentSchedulingGroupHostFactory;
 class BrowserMessageFilter;
 class RenderProcessHost;
-class SiteInstance;
+class SiteInstanceGroup;
 
 // Browser-side host of an AgentSchedulingGroup, used for
 // AgentSchedulingGroup-bound messaging. AgentSchedulingGroup is Blink's unit of
 // scheduling and performance isolation, which is the only way to obtain
 // ordering guarantees between different Mojo (associated) interfaces and legacy
 // IPC messages.
+//
+// AgentSchedulingGroups can be assigned at various granularities, as coarse as
+// process-wide or as specific as SiteInstanceGroup. There cannot be more than
+// one AgentSchedulingGroup per SiteInstanceGroup without breaking IPC ordering
+// for RenderWidgetHost. (SiteInstanceGroups themselves can be tuned to contain
+// one or more SiteInstances, depending on platform and policy.)
 //
 // An AgentSchedulingGroupHost is stored as (and owned by) UserData on the
 // RenderProcessHost.
@@ -56,13 +63,15 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
       public mojom::RouteProvider,
       public blink::mojom::AssociatedInterfaceProvider {
  public:
-  // Get the appropriate AgentSchedulingGroupHost for the given `instance` and
-  // `process`. Depending on the value of `features::kMBIModeParam`, there may
-  // be a single AgentSchedulingGroupHost per RenderProcessHost, or a single one
-  // per SiteInstance, which may lead to multiple AgentSchedulingGroupHosts per
-  // RenderProcessHost. This method will never return null.
-  static AgentSchedulingGroupHost* GetOrCreate(const SiteInstance& instance,
-                                               RenderProcessHost& process);
+  // Get the appropriate AgentSchedulingGroupHost for the given
+  // `site_instance_group` and `process`. Depending on the value of
+  // `features::kMBIModeParam`, there may be a single AgentSchedulingGroupHost
+  // per RenderProcessHost, or a single one per SiteInstanceGroup, which may
+  // lead to multiple AgentSchedulingGroupHosts per RenderProcessHost. This
+  // method will never return null.
+  static AgentSchedulingGroupHost* GetOrCreate(
+      const SiteInstanceGroup& site_instance_group,
+      RenderProcessHost& process);
 
   // Should not be called explicitly. Use `CreateIfNeeded()` instead.
   explicit AgentSchedulingGroupHost(RenderProcessHost& process);
@@ -90,17 +99,20 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
   mojom::RouteProvider* GetRemoteRouteProvider();
   void CreateFrame(mojom::CreateFrameParamsPtr params);
   void CreateView(mojom::CreateViewParamsPtr params);
-  void DestroyView(int32_t routing_id,
-                   mojom::AgentSchedulingGroup::DestroyViewCallback callback);
+  void DestroyView(int32_t routing_id);
   void CreateFrameProxy(
       const blink::RemoteFrameToken& token,
       int32_t routing_id,
       const absl::optional<blink::FrameToken>& opener_frame_token,
       int32_t view_routing_id,
       int32_t parent_routing_id,
+      blink::mojom::TreeScopeType tree_scope_type,
       blink::mojom::FrameReplicationStatePtr replicated_state,
       const base::UnguessableToken& devtools_frame_token,
       mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
+  void CreateSharedStorageWorkletService(
+      mojo::PendingReceiver<
+          shared_storage_worklet::mojom::SharedStorageWorkletService> receiver);
 
   void ReportNoBinderForInterface(const std::string& error);
 
@@ -188,6 +200,11 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
   // BrowserInterfaceBroker implementation through which this
   // AgentSchedulingGroupHost exposes ASG-scoped Mojo services to the
   // currently active document.
+  //
+  // The interfaces that can be requested from this broker are defined in the
+  // content/browser/browser_interface_binders.cc file, in the functions which
+  // take a `AgentSchedulingGroupHost*` parameter.
+  //
   // TODO(crbug.com/1132752): Enable capability control for Prerender2 by
   // initializing BrowserInterfaceBrokerImpl with a non-null
   // MojoBinderPolicyApplier pointer.

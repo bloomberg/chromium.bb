@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -27,18 +28,20 @@ namespace {
 CiceroneClient* g_instance = nullptr;
 
 // How long to wait before timing out on regular RPCs.
-constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kDefaultTimeout = base::Minutes(1);
 
 // How long to wait while doing more complex operations like starting or
 // creating a container.
-constexpr base::TimeDelta kLongOperationTimeout =
-    base::TimeDelta::FromMinutes(3);
+constexpr base::TimeDelta kLongOperationTimeout = base::Minutes(3);
 
 }  // namespace
 
 class CiceroneClientImpl : public CiceroneClient {
  public:
   CiceroneClientImpl() = default;
+
+  CiceroneClientImpl(const CiceroneClientImpl&) = delete;
+  CiceroneClientImpl& operator=(const CiceroneClientImpl&) = delete;
 
   ~CiceroneClientImpl() override = default;
 
@@ -618,6 +621,21 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void FileSelected(
+      const vm_tools::cicerone::FileSelectedSignal& signal) override {
+    dbus::MethodCall method_call(vm_tools::cicerone::kVmCiceroneInterface,
+                                 vm_tools::cicerone::kFileSelectedMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(signal)) {
+      LOG(ERROR) << "Failed to encode FileSelected protobuf";
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(&method_call, kDefaultTimeout.InMilliseconds(),
+                                base::DoNothing());
+  }
+
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
       override {
@@ -1084,8 +1102,6 @@ class CiceroneClientImpl : public CiceroneClient {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CiceroneClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CiceroneClientImpl);
 };
 
 CiceroneClient::CiceroneClient() {

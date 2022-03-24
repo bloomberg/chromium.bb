@@ -19,7 +19,7 @@ class TimeDelta;
 }
 
 namespace ui {
-class BitmapCursorOzone;
+class BitmapCursor;
 class DrmWindowHostManager;
 
 // DrmCursor manages all cursor state but is dependent on an injected
@@ -45,6 +45,10 @@ class DrmCursorProxy {
 class DrmCursor : public CursorDelegateEvdev {
  public:
   explicit DrmCursor(DrmWindowHostManager* window_manager);
+
+  DrmCursor(const DrmCursor&) = delete;
+  DrmCursor& operator=(const DrmCursor&) = delete;
+
   ~DrmCursor() override;
 
   // Sets or the DrmProxy |proxy|. If |proxy| is set, the DrmCursor uses
@@ -55,7 +59,7 @@ class DrmCursor : public CursorDelegateEvdev {
 
   // Change the cursor over the specified window.
   void SetCursor(gfx::AcceleratedWidget window,
-                 scoped_refptr<BitmapCursorOzone> platform_cursor);
+                 scoped_refptr<BitmapCursor> platform_cursor);
 
   // Handle window lifecycle.
   void OnWindowAdded(gfx::AcceleratedWidget window,
@@ -102,7 +106,7 @@ class DrmCursor : public CursorDelegateEvdev {
   gfx::Point GetBitmapLocationLocked();
 
   // The current cursor bitmap (immutable).
-  scoped_refptr<BitmapCursorOzone> cursor_;
+  scoped_refptr<BitmapCursor> cursor_;
 
   // The window under the cursor.
   gfx::AcceleratedWidget window_;
@@ -119,8 +123,6 @@ class DrmCursor : public CursorDelegateEvdev {
   DrmWindowHostManager* const window_manager_;  // Not owned.
 
   std::unique_ptr<DrmCursorProxy> proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrmCursor);
 };
 
 }  // namespace ui

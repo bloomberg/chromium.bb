@@ -9,7 +9,7 @@ import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
-import "services/network/public/mojom/url_request.mojom";
+import "services/network/public/mojom/request_priority.mojom";
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
 // spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-12
@@ -103,18 +103,6 @@ struct DnsConfigOverrides {
 
   // Whether to clear data read from the system HOSTS file.
   bool clear_hosts = false;
-};
-
-// Host resolution error info.
-struct ResolveErrorInfo {
-  // Underlying network error code. See net/base/net_error_list.h for error
-  // descriptions.
-  int32 error;
-
-  // Whether |error| came from a DNS-over-HTTPS lookup. This will be false if
-  // the answer was obtained from the cache or if |error| is net::OK since this
-  // field is intended to identify secure DNS *network* failures.
-  bool is_secure_network_error = false;
 };
 
 // Control handle used to control outstanding NetworkContext::ResolveHost
@@ -253,6 +241,19 @@ struct ResolveHostParameters {
 
   // Controls the resolver's Secure DNS behavior for this request.
   SecureDnsPolicy secure_dns_policy = SecureDnsPolicy.ALLOW;
+
+  // Enumeration for specifying the purpose of a host resolve request.
+  // These values are used for UMA. Entries should not be reordered. Keep this
+  // in sync with tools/metrics/histograms/enums.xml.
+  // TODO(crbug.com/1232623): Consider adding more values if kPreconnect isn't
+  // a majority of the purpose of host resolve requests.
+  enum Purpose {
+    kUnspecified,
+    kPreconnect,
+  };
+
+  // Specifies the purpose of the request.
+  Purpose purpose = Purpose.kUnspecified;
 };
 
 // Response interface used to receive notifications from

@@ -23,19 +23,17 @@ Blink code in `third_party/blink` uses [Blink style](blink-c++.md).
 
 Google style
 [targets C++17](https://google.github.io/styleguide/cppguide.html#C++_Version).
-Chromium targets C++14; [C++17 support](https://crbug.com/752720) is not
-expected before
-[mid-2021](https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html).
-Additionally, some features of supported C++ versions remain forbidden. The
-status of Chromium's C++ support is covered in more detail in
-[Modern C++ use in Chromium](https://chromium-cpp.appspot.com/).
+Chromium targets C++14; C++17 support is not expected before 2022. (See the
+[tracking bug](https://crbug.com/752720) for more details.) Additionally, some
+features of supported C++ versions remain forbidden. The status of Chromium's
+C++ support is covered in more detail in [Modern C++ use in Chromium](c++11.md).
 
 ## Naming
 
   * "Chromium" is the name of the project, not the product, and should never
     appear in code, variable names, API names etc. Use "Chrome" instead.
 
-## Test-only Code
+## Tests and Test-only Code
 
   * Functions used only for testing should be restricted to test-only usages
     with the testing suffixes supported by
@@ -46,9 +44,17 @@ status of Chromium's C++ support is covered in more detail in
   * Classes used only for testing should be in a GN build target that is
     marked `testonly=true`. Tests can depend on such targets, but production
     code can not.
-  * The code for `testonly` targets should be placed in a `test/` subdirectory.
-    For test classes used across multiple directories, it might make sense to
-    move them into a nested `test` namespace for clarity.
+  * While test files generally appear alongside the production code they test,
+    support code for `testonly` targets should be placed in a `test/` subdirectory.
+    For example, see `//mojo/core/core_unittest.cc` and
+    `//mojo/core/test/mojo_test_base.cc`. For test classes used across multiple
+    directories, it might make sense to move them into a nested `test` namespace for
+    clarity.
+  * Despite the Google C++ style guide
+    [deprecating](https://google.github.io/styleguide/cppguide.html#File_Names)
+    the `_unittest.cc` suffix for unit test files, in Chromium we still use this
+    suffix to distinguish unit tests from browser tests, which are written in
+    files with the `_browsertest.cc` suffix.
 
 ## Code formatting
 
@@ -214,6 +220,21 @@ functions take ownership of params passed as `T*`, or take `const
 scoped_refptr<T>&` instead of `T*`, or return `T*` instead of
 `scoped_refptr<T>` (to avoid refcount churn pre-C++11). Try to clean up such
 code when you find it, or at least not make such usage any more widespread.
+
+## Non-owning pointers in class fields
+
+Use `raw_ptr<T>` for class and struct fields in place of a raw C++ pointer `T*`
+whenever possible, except in paths that include `/renderer/` or
+`blink/public/web/`.  `raw_ptr<T>` is a non-owning smart pointer that has
+improved memory-safety over raw pointers, and can prevent exploitation of a
+significant percentage of Use-after-Free bugs.
+
+Using `raw_ptr<T>` may not be possible in rare cases for
+[performance reasons](../../base/memory/raw_ptr.md#Performance).
+Additionally, `raw_ptr<T>` doesn’t support some C++ scenarios (e.g. `constexpr`,
+ObjC pointers).  Tooling will help to encourage use of `raw_ptr<T>`.  See
+[raw_ptr.md](../../base/memory/raw_ptr.md#When-to-use-raw_ptr_T)
+for how to add exclusions.
 
 ## Forward declarations vs. #includes
 

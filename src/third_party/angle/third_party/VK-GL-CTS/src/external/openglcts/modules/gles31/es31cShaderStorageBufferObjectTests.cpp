@@ -282,8 +282,8 @@ public:
 				{
 					m_context.getTestContext().getLog()
 						<< tcu::TestLog::Message << "Incorrect framebuffer color at pixel (" << x << " " << y
-						<< "). Color is (" << fb[0] / g_color_max[0] << " " << fb[1] / g_color_max[1] << " "
-						<< fb[2] / g_color_max[2] << "). Color should be (" << expected[0] << " " << expected[1] << " "
+						<< "). Color is (" << fb[i + 0] / g_color_max[0] << " " << fb[i + 1] / g_color_max[1] << " "
+						<< fb[i + 2] / g_color_max[2] << "). Color should be (" << expected[0] << " " << expected[1] << " "
 						<< expected[2] << ")." << tcu::TestLog::EndMessage;
 					return false;
 				}
@@ -4231,7 +4231,6 @@ const char* GetInputUBO2(std::vector<GLubyte> in_data[2])
 		fp[4]	 = 5.0f;
 		fp[5]	 = 6.0f;
 		fp[6]	 = 7.0f;
-		fp[8]	 = 8.0f;
 		fp[8]	 = 9.0f;
 		fp[12]	= 10.0f;
 		fp[16]	= 11.0f;

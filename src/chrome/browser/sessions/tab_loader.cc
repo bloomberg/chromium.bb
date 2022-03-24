@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -87,6 +88,9 @@ class TabLoader::ReentrancyHelper {
     tab_loader_->reentry_depth_++;
   }
 
+  ReentrancyHelper(const ReentrancyHelper&) = delete;
+  ReentrancyHelper& operator=(const ReentrancyHelper&) = delete;
+
   ~ReentrancyHelper() {
     if (--tab_loader_->reentry_depth_ != 0)
       return;
@@ -107,9 +111,7 @@ class TabLoader::ReentrancyHelper {
 
   void DestroyTabLoader() { tab_loader_->this_retainer_ = nullptr; }
 
-  TabLoader* tab_loader_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReentrancyHelper);
+  raw_ptr<TabLoader> tab_loader_;
 };
 
 // static
@@ -521,7 +523,9 @@ void TabLoader::MarkTabAsLoading(WebContents* contents) {
     auto it = tabs_load_initiated_.find(contents);
     if (it != tabs_load_initiated_.end()) {
       tabs_load_initiated_.erase(it);
-      tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
+      auto result =
+          tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
+      DCHECK(result.second);
       return;
     }
   }

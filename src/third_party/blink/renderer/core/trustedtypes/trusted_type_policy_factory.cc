@@ -15,7 +15,11 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/exception_metadata.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -56,6 +60,11 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kTrustedTypesCreatePolicy);
 
+  // This issue_id is used to generate a link in the DevTools front-end from
+  // the JavaScript TypeError to the inspector issue which is reported by
+  // ContentSecurityPolicy::ReportViolation via the call to
+  // AllowTrustedTypeAssignmentFailure below.
+  base::UnguessableToken issue_id = base::UnguessableToken::Create();
   if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()) &&
       GetExecutionContext()->GetContentSecurityPolicy()) {
     ContentSecurityPolicy::AllowTrustedTypePolicyDetails violation_details =
@@ -64,15 +73,14 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
                            ->GetContentSecurityPolicy()
                            ->AllowTrustedTypePolicy(
                                policy_name, policy_map_.Contains(policy_name),
-                               violation_details);
+                               violation_details, issue_id);
     if (violation_details != ContentSecurityPolicy::ContentSecurityPolicy::
                                  AllowTrustedTypePolicyDetails::kAllowed) {
       // We may report a violation here even when disallowed is false
       // in case policy is a report-only one.
       probe::OnContentSecurityPolicyViolation(
           GetExecutionContext(),
-          ContentSecurityPolicy::ContentSecurityPolicyViolationType::
-              kTrustedTypesPolicyViolation);
+          ContentSecurityPolicyViolationType::kTrustedTypesPolicyViolation);
     }
     if (disallowed) {
       // For a better error message, we'd like to disambiguate between
@@ -86,6 +94,9 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
               ? "Policy with name \"" + policy_name + "\" already exists."
               : "Policy \"" + policy_name + "\" disallowed.";
       exception_state.ThrowTypeError(message);
+      MaybeAssociateExceptionMetaData(
+          exception_state, "issueId",
+          IdentifiersFactory::IdFromToken(issue_id));
       return nullptr;
     }
   }
@@ -104,7 +115,8 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
 }
 
 TrustedTypePolicy* TrustedTypePolicyFactory::defaultPolicy() const {
-  return policy_map_.at("default");
+  const auto iter = policy_map_.find("default");
+  return iter != policy_map_.end() ? iter->value : nullptr;
 }
 
 TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
@@ -288,7 +300,7 @@ ScriptValue TrustedTypePolicyFactory::getTypeMapping(ScriptState* script_state,
   // {tagname: { ["attributes"|"properties"]: { attribute: type }}}
 
   if (!ns.IsEmpty())
-    return ScriptValue();
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   v8::HandleScope handle_scope(script_state->GetIsolate());
   v8::Local<v8::Object> top = v8::Object::New(script_state->GetIsolate());

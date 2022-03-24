@@ -31,6 +31,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -317,7 +318,7 @@ std::string JsonRequest::Builder::BuildBody() const {
 
   auto excluded = std::make_unique<base::ListValue>();
   for (const auto& id : params_.excluded_ids) {
-    excluded->AppendString(id);
+    excluded->Append(id);
   }
   request->Set("excludedSuggestionIds", std::move(excluded));
 

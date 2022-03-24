@@ -8,11 +8,12 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/safe_browsing/download_protection/file_analyzer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "content/public/browser/file_system_access_write_item.h"
 
 namespace safe_browsing {
@@ -53,6 +54,10 @@ class DownloadRequestMaker {
       const std::vector<ClientDownloadRequest::Resource>& resources,
       bool is_user_initiated,
       ReferrerChainData* referrer_chain_data);
+
+  DownloadRequestMaker(const DownloadRequestMaker&) = delete;
+  DownloadRequestMaker& operator=(const DownloadRequestMaker&) = delete;
+
   ~DownloadRequestMaker();
 
   // Starts filling in fields in the download ping. Will run the callback with
@@ -69,7 +74,7 @@ class DownloadRequestMaker {
   // Callback when the history service has retrieved the tab redirects.
   void OnGotTabRedirects(history::RedirectList redirect_list);
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<ClientDownloadRequest> request_;
   const scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor_;
   const std::unique_ptr<FileAnalyzer> file_analyzer_ =
@@ -89,8 +94,6 @@ class DownloadRequestMaker {
   Callback callback_;
 
   base::WeakPtrFactory<DownloadRequestMaker> weakptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadRequestMaker);
 };
 
 }  // namespace safe_browsing

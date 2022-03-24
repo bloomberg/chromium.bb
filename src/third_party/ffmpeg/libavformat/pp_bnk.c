@@ -23,6 +23,7 @@
 #include "internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/avassert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/internal.h"
 
 #define PP_BNK_MAX_READ_SIZE    4096
@@ -55,6 +56,7 @@ typedef struct PPBnkCtx {
     int             track_count;
     PPBnkCtxTrack   *tracks;
     uint32_t        current_track;
+    int             is_music;
 } PPBnkCtx;
 
 enum {
@@ -143,7 +145,7 @@ static int pp_bnk_read_header(AVFormatContext *s)
 
         ret = avio_read(s->pb, buf, PP_BNK_TRACK_SIZE);
         if (ret < 0 && ret != AVERROR_EOF)
-            goto fail;
+            return ret;
 
         /* Short byte-count or EOF, we have a truncated file. */
         if (ret != PP_BNK_TRACK_SIZE) {
@@ -156,15 +158,12 @@ static int pp_bnk_read_header(AVFormatContext *s)
         pp_bnk_parse_track(&e, buf);
 
         /* The individual sample rates of all tracks must match that of the file header. */
-        if (e.sample_rate != hdr.sample_rate) {
-            ret = AVERROR_INVALIDDATA;
-            goto fail;
-        }
+        if (e.sample_rate != hdr.sample_rate)
+            return AVERROR_INVALIDDATA;
 
         if (e.always1_1 != 1 || e.always1_2 != 1) {
             avpriv_request_sample(s, "Non-one track header values");
-            ret = AVERROR_PATCHWELCOME;
-            goto fail;
+            return AVERROR_PATCHWELCOME;
         }
 
         trk->data_offset = avio_tell(s->pb);
@@ -184,34 +183,40 @@ static int pp_bnk_read_header(AVFormatContext *s)
                    i, ctx->track_count);
             break;
         } else if (ret < 0) {
-            goto fail;
+            return ret;
         }
     }
 
     /* File is only a header. */
-    if (ctx->track_count == 0) {
-        ret = AVERROR_INVALIDDATA;
-        goto fail;
-    }
+    if (ctx->track_count == 0)
+        return AVERROR_INVALIDDATA;
+
+    ctx->is_music = (hdr.flags & PP_BNK_FLAG_MUSIC) &&
+                    (ctx->track_count == 2) &&
+                    (ctx->tracks[0].data_size == ctx->tracks[1].data_size);
 
     /* Build the streams. */
-    for (int i = 0; i < ctx->track_count; i++) {
-        if (!(st = avformat_new_stream(s, NULL))) {
-            ret = AVERROR(ENOMEM);
-            goto fail;
-        }
+    for (int i = 0; i < (ctx->is_music ? 1 : ctx->track_count); i++) {
+        if (!(st = avformat_new_stream(s, NULL)))
+            return AVERROR(ENOMEM);
 
         par                         = st->codecpar;
         par->codec_type             = AVMEDIA_TYPE_AUDIO;
         par->codec_id               = AV_CODEC_ID_ADPCM_IMA_CUNNING;
-        par->format                 = AV_SAMPLE_FMT_S16;
-        par->channel_layout         = AV_CH_LAYOUT_MONO;
-        par->channels               = 1;
+        par->format                 = AV_SAMPLE_FMT_S16P;
+
+        if (ctx->is_music) {
+            par->channel_layout     = AV_CH_LAYOUT_STEREO;
+            par->channels           = 2;
+        } else {
+            par->channel_layout     = AV_CH_LAYOUT_MONO;
+            par->channels           = 1;
+        }
+
         par->sample_rate            = hdr.sample_rate;
         par->bits_per_coded_sample  = 4;
-        par->bits_per_raw_sample    = 16;
         par->block_align            = 1;
-        par->bit_rate               = par->sample_rate * par->bits_per_coded_sample;
+        par->bit_rate               = par->sample_rate * (int64_t)par->bits_per_coded_sample * par->channels;
 
         avpriv_set_pts_info(st, 64, 1, par->sample_rate);
         st->start_time              = 0;
@@ -219,10 +224,6 @@ static int pp_bnk_read_header(AVFormatContext *s)
     }
 
     return 0;
-
-fail:
-    av_freep(&ctx->tracks);
-    return ret;
 }
 
 static int pp_bnk_read_packet(AVFormatContext *s, AVPacket *pkt)
@@ -253,18 +254,38 @@ static int pp_bnk_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         size = FFMIN(trk->data_size - trk->bytes_read, PP_BNK_MAX_READ_SIZE);
 
-        if ((ret = av_get_packet(s->pb, pkt, size)) == AVERROR_EOF) {
-            /* If we've hit EOF, don't attempt this track again. */
-            trk->data_size = trk->bytes_read;
-            continue;
-        } else if (ret < 0) {
-            return ret;
+        if (!ctx->is_music) {
+            ret = av_get_packet(s->pb, pkt, size);
+            if (ret == AVERROR_EOF) {
+                /* If we've hit EOF, don't attempt this track again. */
+                trk->data_size = trk->bytes_read;
+                continue;
+            }
+        } else {
+            if (!pkt->data && (ret = av_new_packet(pkt, size * 2)) < 0)
+                return ret;
+            ret = avio_read(s->pb, pkt->data + size * ctx->current_track, size);
+            if (ret >= 0 && ret != size) {
+                /* Only return stereo packets if both tracks could be read. */
+                ret = AVERROR_EOF;
+            }
         }
+        if (ret < 0)
+            return ret;
 
         trk->bytes_read    += ret;
         pkt->flags         &= ~AV_PKT_FLAG_CORRUPT;
-        pkt->stream_index   = ctx->current_track++;
+        pkt->stream_index   = ctx->current_track;
         pkt->duration       = ret * 2;
+
+        if (ctx->is_music) {
+            if (pkt->stream_index == 0)
+                continue;
+
+            pkt->stream_index = 0;
+        }
+
+        ctx->current_track++;
         return 0;
     }
 
@@ -281,12 +302,33 @@ static int pp_bnk_read_close(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_pp_bnk_demuxer = {
+static int pp_bnk_seek(AVFormatContext *s, int stream_index,
+                       int64_t pts, int flags)
+{
+    PPBnkCtx *ctx = s->priv_data;
+
+    if (pts != 0)
+        return AVERROR(EINVAL);
+
+    if (ctx->is_music) {
+        av_assert0(stream_index == 0);
+        ctx->tracks[0].bytes_read = 0;
+        ctx->tracks[1].bytes_read = 0;
+    } else {
+        ctx->tracks[stream_index].bytes_read = 0;
+    }
+
+    return 0;
+}
+
+const AVInputFormat ff_pp_bnk_demuxer = {
     .name           = "pp_bnk",
     .long_name      = NULL_IF_CONFIG_SMALL("Pro Pinball Series Soundbank"),
     .priv_data_size = sizeof(PPBnkCtx),
+    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = pp_bnk_probe,
     .read_header    = pp_bnk_read_header,
     .read_packet    = pp_bnk_read_packet,
-    .read_close     = pp_bnk_read_close
+    .read_close     = pp_bnk_read_close,
+    .read_seek      = pp_bnk_seek,
 };

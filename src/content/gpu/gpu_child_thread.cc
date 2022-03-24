@@ -18,7 +18,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -60,12 +60,13 @@ void HandleBadMessage(const std::string& error) {
   base::debug::DumpWithoutCrashing();
 }
 
-ChildThreadImpl::Options GetOptions() {
+ChildThreadImpl::Options GetOptions(
+    const InProcessChildThreadParams* in_process_params = nullptr) {
   ChildThreadImpl::Options::Builder builder;
-
   builder.ConnectToBrowser(true);
   builder.ExposesInterfacesToBrowser();
-
+  if (in_process_params)
+    builder.InBrowserProcess(*in_process_params);
   return builder.Build();
 }
 
@@ -105,11 +106,7 @@ GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
 GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
     : GpuChildThread(base::DoNothing(),
-                     ChildThreadImpl::Options::Builder()
-                         .InBrowserProcess(params)
-                         .ConnectToBrowser(true)
-                         .ExposesInterfacesToBrowser()
-                         .Build(),
+                     GetOptions(&params),
                      std::move(gpu_init)) {}
 
 GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
@@ -152,14 +149,6 @@ bool GpuChildThread::in_process_gpu() const {
   return viz_main_.gpu_service()->gpu_info().in_process_gpu;
 }
 
-bool GpuChildThread::Send(IPC::Message* msg) {
-  // The GPU process must never send a synchronous IPC message to the browser
-  // process. This could result in deadlock.
-  DCHECK(!msg->is_sync());
-
-  return ChildThreadImpl::Send(msg);
-}
-
 void GpuChildThread::OnInitializationFailed() {
   OnChannelError();
 }
@@ -186,7 +175,7 @@ void GpuChildThread::OnGpuServiceConnection(viz::GpuServiceImpl* gpu_service) {
   service_factory_ = std::make_unique<GpuServiceFactory>(
       gpu_service->gpu_preferences(),
       gpu_service->gpu_channel_manager()->gpu_driver_bug_workarounds(),
-      gpu_service->gpu_feature_info(),
+      gpu_service->gpu_feature_info(), gpu_service->gpu_info(),
       gpu_service->media_gpu_channel_manager()->AsWeakPtr(),
       gpu_service->gpu_memory_buffer_factory(), std::move(overlay_factory_cb));
   for (auto& receiver : pending_service_receivers_)

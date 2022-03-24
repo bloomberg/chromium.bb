@@ -10,7 +10,7 @@ namespace download {
 namespace features {
 
 const base::Feature kUseDownloadOfflineContentProvider{
-    "UseDownloadOfflineContentProvider", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseDownloadOfflineContentProvider", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionNative {
   "DownloadsAutoResumptionNative",
@@ -54,10 +54,6 @@ const base::Feature kAllowDownloadResumptionWithoutStrongValidators{
 #endif
 };
 
-const base::Feature kUseParallelRequestsForUnknwonRangeSupport{
-    "UseParallelRequestForUnknownRangeSupport",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kUseParallelRequestsForHTTP2{
     "UseParallelRequestsForHTTP2", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -69,6 +65,18 @@ const base::Feature kDeleteExpiredDownloads{"DeleteExpiredDownloads",
 
 const base::Feature kDeleteOverwrittenDownloads{
     "DeleteOverwrittenDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAllowFileBufferSizeControl{
+    "AllowFileBufferSizeControl", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAllowSavePackageScanning{"AllowSavePackageScanning",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kIncognitoDownloadsWarning{
+    "IncognitoDownloadsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDownloadRange{"DownloadRange",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 

@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/data_type_manager_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,12 +14,13 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/data_type_debug_info_listener.h"
 
 namespace syncer {
@@ -53,7 +55,6 @@ DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo(
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() = default;
 
 DataTypeManagerImpl::DataTypeManagerImpl(
-    ModelTypeSet initial_types,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const DataTypeEncryptionHandler* encryption_handler,
@@ -61,13 +62,16 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     DataTypeManagerObserver* observer)
     : configurer_(configurer),
       controllers_(controllers),
-      downloaded_types_(initial_types),
       debug_info_listener_(debug_info_listener),
       model_load_manager_(controllers, this),
       observer_(observer),
       encryption_handler_(encryption_handler) {
   DCHECK(configurer_);
   DCHECK(observer_);
+
+  // This class does not really handle NIGORI (whose controller lives on a
+  // different thread).
+  DCHECK_EQ(controllers_->count(NIGORI), 0u);
 
   // Check if any of the controllers are already in a FAILED state, and if so,
   // mark them accordingly in the status table.
@@ -120,14 +124,14 @@ void DataTypeManagerImpl::DataTypePreconditionChanged(ModelType type) {
 
     case DataTypeController::PreconditionState::kMustStopAndClearData:
       model_load_manager_.StopDatatype(
-          type, DISABLE_SYNC,
+          type, ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA,
           SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
                     "Datatype preconditions not met.", type));
       break;
 
     case DataTypeController::PreconditionState::kMustStopAndKeepData:
       model_load_manager_.StopDatatype(
-          type, STOP_SYNC,
+          type, ShutdownReason::STOP_SYNC_AND_KEEP_DATA,
           SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
                     "Data type is unready.", type));
       break;
@@ -186,32 +190,46 @@ void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
   Restart();
 }
 
-void DataTypeManagerImpl::ActivateDataTypes() {
+void DataTypeManagerImpl::ConnectDataTypes() {
   for (ModelType type : last_enabled_types_) {
     const auto& dtc_iter = controllers_->find(type);
-    if (dtc_iter == controllers_->end())
+    if (dtc_iter == controllers_->end()) {
       continue;
-    DataTypeController* dtc = dtc_iter->second.get();
-    if (dtc->state() == DataTypeController::MODEL_LOADED) {
-      // Only call ActivateDataType for types that completed LoadModels
-      // successfully. Such types shouldn't be in an error state at the same
-      // time.
-      DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
-      switch (dtc->ActivateDataType(configurer_)) {
-        case DataTypeController::TYPE_ALREADY_DOWNLOADED:
-          // Proxy types (as opposed to protocol types) don't actually have any
-          // data, so keep proxy types out of |downloaded_types_|.
-          if (!IsProxyType(type))
-            downloaded_types_.Put(type);
-          break;
-        case DataTypeController::TYPE_NOT_YET_DOWNLOADED:
-          downloaded_types_.Remove(type);
-          break;
-      }
-      if (force_redownload_types_.Has(type)) {
-        downloaded_types_.Remove(type);
-      }
     }
+    DataTypeController* dtc = dtc_iter->second.get();
+    if (dtc->state() != DataTypeController::MODEL_LOADED) {
+      continue;
+    }
+    // Only call Connect() for types that completed LoadModels()
+    // successfully. Such types shouldn't be in an error state at the same
+    // time.
+    DCHECK(!data_type_status_table_.GetFailedTypes().Has(dtc->type()));
+
+    std::unique_ptr<DataTypeActivationResponse> activation_response =
+        dtc->Connect();
+    DCHECK(activation_response);
+    DCHECK_EQ(dtc->state(), DataTypeController::RUNNING);
+
+    if (activation_response->skip_engine_connection) {
+      // |skip_engine_connection| means ConnectDataType() shouldn't be invoked
+      // because the datatype has some alternative way to sync changes to the
+      // server, without relying on this instance of the sync engine. This is
+      // currently possible for PROXY_TABS and, on Android, for PASSWORDS.
+      DCHECK(!activation_response->type_processor);
+      downloaded_types_.Put(type);
+      continue;
+    }
+
+    if (activation_response->model_type_state.initial_sync_done()) {
+      downloaded_types_.Put(type);
+    } else {
+      downloaded_types_.Remove(type);
+    }
+    if (force_redownload_types_.Has(type)) {
+      downloaded_types_.Remove(type);
+    }
+
+    configurer_->ConnectDataType(type, std::move(activation_response));
   }
 }
 
@@ -336,7 +354,15 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
   // TODO(pavely): By now some of datatypes in |configuration_types_queue_|
   // could have failed loading and should be excluded from configuration. I need
   // to adjust |configuration_types_queue_| for such types.
-  ActivateDataTypes();
+  ConnectDataTypes();
+
+  // Propagate the state of PROXY_TABS to the sync engine.
+  const auto& dtc_iter = controllers_->find(PROXY_TABS);
+  if (dtc_iter != controllers_->end()) {
+    configurer_->SetProxyTabsDatatypeEnabled(dtc_iter->second->state() ==
+                                             DataTypeController::RUNNING);
+  }
+
   StartNextConfiguration(/*higher_priority_types_before=*/ModelTypeSet());
 }
 
@@ -542,58 +568,40 @@ DataTypeManagerImpl::PrepareConfigureParams(
   const ModelTypeSet inactive_types =
       GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
 
-  const ModelTypeSet enabled_types = active_types;
   ModelTypeSet disabled_types = GetDataTypesInState(DISABLED, config_state_map);
   disabled_types.PutAll(fatal_types);
   disabled_types.PutAll(crypto_types);
   disabled_types.PutAll(unready_types);
 
-  DCHECK(Intersection(enabled_types, disabled_types).Empty());
+  DCHECK(Intersection(active_types, disabled_types).Empty());
 
-  // The sync engine's enabled types will be updated by adding |enabled_types|
-  // to the list then removing |disabled_types|. Any types which are not in
-  // either of those sets will remain untouched. Types which were not in
-  // |downloaded_types_| previously are not fully downloaded, so we must ask the
-  // engine to download them. Any newly supported datatypes won't have been in
-  // |downloaded_types_|, so they will also be downloaded if they are enabled.
-  ModelTypeSet types_to_download = Difference(enabled_types, downloaded_types_);
-  downloaded_types_.PutAll(enabled_types);
-  downloaded_types_.RemoveAll(disabled_types);
-
-  types_to_download.RemoveAll(ProxyTypes());
+  ModelTypeSet types_to_download = Difference(active_types, downloaded_types_);
+  // Commit-only types never require downloading.
   types_to_download.RemoveAll(CommitOnlyTypes());
-  if (!types_to_download.Empty())
-    types_to_download.Put(NIGORI);
+  if (!types_to_download.Empty()) {
+    types_to_download.PutAll(ControlTypes());
+  }
 
+  // All types to download are expected to be protocol types (proxy types should
+  // have skipped full activation via
+  // |DataTypeActivationResponse::skip_engine_connection|).
+  DCHECK(ProtocolTypes().HasAll(types_to_download));
+
+  // Already (optimistically) update the |downloaded_types_|, so that the next
+  // time we get here, it has the correct value.
+  downloaded_types_.PutAll(active_types);
+  // Assume that disabled types are not downloaded anymore - if they get
+  // re-enabled, we'll want to re-download them as well.
+  downloaded_types_.RemoveAll(disabled_types);
   force_redownload_types_.RemoveAll(types_to_download);
-
-  // TODO(sync): crbug.com/137550.
-  // It's dangerous to configure types that have progress markers. Types with
-  // progress markers can trigger a MIGRATION_DONE response. We are not
-  // prepared to handle a migration during a configure, so we must ensure that
-  // all our types_to_download actually contain no data before we sync them.
-  //
-  // One common way to end up in this situation used to be types which
-  // downloaded some or all of their data but have not applied it yet. We avoid
-  // problems with those types by purging the data of any such partially synced
-  // types soon after we load the Directory.
-  //
-  // Another possible scenario is that we have newly supported or newly enabled
-  // data types being downloaded here but the nigori type, which is always
-  // included in any GetUpdates request, requires migration. The server has
-  // code to detect this scenario based on the configure reason, the fact that
-  // the nigori type is the only requested type which requires migration, and
-  // that the requested types list includes at least one non-nigori type. It
-  // will not send a MIGRATION_DONE response in that case. We still need to be
-  // careful to not send progress markers for non-nigori types, though. If a
-  // non-nigori type in the request requires migration, a MIGRATION_DONE
-  // response will be sent.
 
   ModelTypeSet types_to_purge;
   // If we're using transport-only mode, don't clear any old data. The reason is
   // that if a user temporarily disables Sync, we don't want to wipe (and later
   // redownload) all their data, just because Sync restarted in transport-only
   // mode.
+  // TODO(crbug.com/1142771): "Purging" logic is only implemented for NIGORI -
+  // verify whether it is actually needed at all.
   if (last_requested_context_.sync_mode == SyncMode::kFull) {
     types_to_purge = Difference(ModelTypeSet::All(), downloaded_types_);
     types_to_purge.RemoveAll(inactive_types);
@@ -610,7 +618,6 @@ DataTypeManagerImpl::PrepareConfigureParams(
 
   ModelTypeConfigurer::ConfigureParams params;
   params.reason = last_requested_context_.reason;
-  params.enabled_types = enabled_types;
   params.to_download = types_to_download;
   params.to_purge = types_to_purge;
   params.ready_task =
@@ -639,10 +646,8 @@ void DataTypeManagerImpl::RecordConfigurationStats(
 
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
                                                    const SyncError& error) {
-  auto c_it = controllers_->find(type);
-  DCHECK(c_it != controllers_->end());
-  // Delegate deactivation to the controller.
-  c_it->second->DeactivateDataType(configurer_);
+  // No-op if the type is not connected.
+  configurer_->DisconnectDataType(type);
 
   if (error.IsSet()) {
     data_type_status_table_.UpdateFailedDataType(type, error);
@@ -650,7 +655,7 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
     last_requested_context_.reason =
         GetReasonForProgrammaticReconfigure(last_requested_context_.reason);
     // Do this asynchronously so the ModelLoadManager has a chance to
-    // finish stopping this type, otherwise DeactivateDataType() and Stop()
+    // finish stopping this type, otherwise Disconnect() and Stop()
     // end up getting called twice on the controller.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&DataTypeManagerImpl::ProcessReconfigure,
@@ -694,16 +699,6 @@ void DataTypeManagerImpl::Stop(ShutdownReason reason) {
     ConfigureResult result(ABORTED, last_requested_types_);
     NotifyDone(result);
   }
-}
-
-void DataTypeManagerImpl::Abort(ConfigureStatus status) {
-  DCHECK_EQ(CONFIGURING, state_);
-
-  StopImpl(STOP_SYNC);
-
-  DCHECK_NE(OK, status);
-  ConfigureResult result(status, last_requested_types_);
-  NotifyDone(result);
 }
 
 void DataTypeManagerImpl::StopImpl(ShutdownReason reason) {

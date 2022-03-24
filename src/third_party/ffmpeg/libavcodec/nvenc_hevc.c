@@ -134,6 +134,10 @@ static const AVOption options[] = {
     { "init_qpI",     "Initial QP value for I frame",       OFFSET(init_qp_i),    AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 51, VE },
     { "qp",           "Constant quantization parameter rate control method",
                                                             OFFSET(cqp),          AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 51, VE },
+    { "qp_cb_offset", "Quantization parameter offset for cb channel",
+                                                            OFFSET(qp_cb_offset), AV_OPT_TYPE_INT,   { .i64 = 0 }, -12, 12, VE },
+    { "qp_cr_offset", "Quantization parameter offset for cr channel",
+                                                            OFFSET(qp_cr_offset), AV_OPT_TYPE_INT,   { .i64 = 0 }, -12, 12, VE },
     { "weighted_pred","Set 1 to enable weighted prediction",
                                                             OFFSET(weighted_pred),AV_OPT_TYPE_INT,   { .i64 = 0 }, 0, 1, VE },
 #ifdef NVENC_HAVE_HEVC_BFRAME_REF_MODE
@@ -163,6 +167,14 @@ static const AVOption options[] = {
     { "ldkfs",        "Low delay key frame scale; Specifies the Scene Change frame size increase allowed in case of single frame VBV and CBR",
                                                             OFFSET(ldkfs),        AV_OPT_TYPE_INT,   { .i64 = 0 }, 0, UCHAR_MAX, VE },
 #endif
+    { "extra_sei",    "Pass on extra SEI data (e.g. a53 cc) to be included in the bitstream",
+                                                            OFFSET(extra_sei),    AV_OPT_TYPE_BOOL,  { .i64 = 1 }, 0, 1, VE },
+    { "intra-refresh","Use Periodic Intra Refresh instead of IDR frames",
+                                                            OFFSET(intra_refresh),AV_OPT_TYPE_BOOL,  { .i64 = 0 }, 0, 1, VE },
+    { "single-slice-intra-refresh", "Use single slice intra refresh",
+                                                            OFFSET(single_slice_intra_refresh), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
+    { "constrained-encoding", "Enable constrainedFrame encoding where each slice in the constrained picture is independent of other slices",
+                                                            OFFSET(constrained_encoding), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     { NULL }
 };
 
@@ -179,43 +191,6 @@ static const AVCodecDefault defaults[] = {
     { NULL },
 };
 
-#if FF_API_NVENC_OLD_NAME
-
-static av_cold int nvenc_old_init(AVCodecContext *avctx)
-{
-    av_log(avctx, AV_LOG_WARNING, "This encoder is deprecated, use 'hevc_nvenc' instead\n");
-    return ff_nvenc_encode_init(avctx);
-}
-
-static const AVClass nvenc_hevc_class = {
-    .class_name = "nvenc_hevc",
-    .item_name = av_default_item_name,
-    .option = options,
-    .version = LIBAVUTIL_VERSION_INT,
-};
-
-AVCodec ff_nvenc_hevc_encoder = {
-    .name           = "nvenc_hevc",
-    .long_name      = NULL_IF_CONFIG_SMALL("NVIDIA NVENC hevc encoder"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_HEVC,
-    .init           = nvenc_old_init,
-    .receive_packet = ff_nvenc_receive_packet,
-    .close          = ff_nvenc_encode_close,
-    .flush          = ff_nvenc_encode_flush,
-    .priv_data_size = sizeof(NvencContext),
-    .priv_class     = &nvenc_hevc_class,
-    .defaults       = defaults,
-    .pix_fmts       = ff_nvenc_pix_fmts,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
-                      AV_CODEC_CAP_ENCODER_FLUSH,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
-    .wrapper_name   = "nvenc",
-    .hw_configs     = ff_nvenc_hw_configs,
-};
-
-#endif
-
 static const AVClass hevc_nvenc_class = {
     .class_name = "hevc_nvenc",
     .item_name = av_default_item_name,
@@ -223,7 +198,7 @@ static const AVClass hevc_nvenc_class = {
     .version = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_hevc_nvenc_encoder = {
+const AVCodec ff_hevc_nvenc_encoder = {
     .name           = "hevc_nvenc",
     .long_name      = NULL_IF_CONFIG_SMALL("NVIDIA NVENC hevc encoder"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -237,7 +212,7 @@ AVCodec ff_hevc_nvenc_encoder = {
     .defaults       = defaults,
     .pix_fmts       = ff_nvenc_pix_fmts,
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
-                      AV_CODEC_CAP_ENCODER_FLUSH,
+                      AV_CODEC_CAP_ENCODER_FLUSH | AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .wrapper_name   = "nvenc",
     .hw_configs     = ff_nvenc_hw_configs,

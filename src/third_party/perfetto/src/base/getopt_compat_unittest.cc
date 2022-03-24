@@ -47,6 +47,8 @@ struct OurGetopt {
   GetoptFn getopt = &getopt_compat::getopt;
   GetoptLongFn getopt_long = &getopt_compat::getopt_long;
   int& optind = getopt_compat::optind;
+  int& optopt = getopt_compat::optopt;
+  int& opterr = getopt_compat::opterr;
   char*& optarg = getopt_compat::optarg;
 };
 
@@ -58,6 +60,8 @@ struct SystemGetopt {
   GetoptFn getopt = &::getopt;
   GetoptLongFn getopt_long = &::getopt_long;
   int& optind = ::optind;
+  int& optopt = ::optopt;
+  int& opterr = ::opterr;
   char*& optarg = ::optarg;
 };
 #endif
@@ -109,7 +113,6 @@ TYPED_TEST(GetoptCompatTest, ShortOptions) {
   sops = "h";
   this->SetCmdline({"argv0", "-h"});
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'h');
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 2);
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), -1);
   EXPECT_EQ(t.optind, 2);
@@ -133,7 +136,6 @@ TYPED_TEST(GetoptCompatTest, ShortOptions) {
   sops = "abc";
   this->SetCmdline({"argv0", "-c", "-a", "-b"});
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'c');
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 2);
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'a');
   EXPECT_EQ(t.optind, 3);
@@ -145,25 +147,19 @@ TYPED_TEST(GetoptCompatTest, ShortOptions) {
   sops = "abc";
   this->SetCmdline({"argv0", "-c", "-a", "--", "nonopt"});
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'c');
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 2);
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'a');
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 3);
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), -1);
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 4);
 
   sops = "abc";
   this->SetCmdline({"argv0", "-cb"});
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'c');
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 1);
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'b');
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 2);
   EXPECT_EQ(t.getopt(this->argc, this->argv, sops), -1);
-  EXPECT_EQ(t.optarg, nullptr);
   EXPECT_EQ(t.optind, 2);
 
   sops = "abc";
@@ -228,7 +224,6 @@ TYPED_TEST(GetoptCompatTest, LongOptions) {
     const char* sops = "";
     this->SetCmdline({"argv0"});
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), -1);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 1);
   }
 
@@ -239,7 +234,6 @@ TYPED_TEST(GetoptCompatTest, LongOptions) {
     const char* sops = "";
     this->SetCmdline({"argv0", "--unknown"});
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), '?');
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 2);
   }
 
@@ -252,13 +246,10 @@ TYPED_TEST(GetoptCompatTest, LongOptions) {
     const char* sops = "";
     this->SetCmdline({"argv0", "--two", "--one"});
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), 2);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 2);
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), 1);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 3);
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), -1);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 3);
   }
 
@@ -271,13 +262,10 @@ TYPED_TEST(GetoptCompatTest, LongOptions) {
     const char* sops = "";
     this->SetCmdline({"argv0", "--two", "--one", "--not-an-opt"});
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), 2);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 2);
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), 1);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 3);
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), '?');
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 4);
   }
 
@@ -351,7 +339,6 @@ TYPED_TEST(GetoptCompatTest, ShortAndLongOptions) {
 
     this->SetCmdline({"argv0"});
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), -1);
-    EXPECT_EQ(t.optarg, nullptr);
     EXPECT_EQ(t.optind, 1);
 
     this->SetCmdline({"argv0", "-13", "--two", "--three", "--", "--one"});
@@ -380,6 +367,32 @@ TYPED_TEST(GetoptCompatTest, ShortAndLongOptions) {
     EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), -1);
     EXPECT_EQ(t.optind, 5);
   }
+}
+
+TYPED_TEST(GetoptCompatTest, OpterrHandling) {
+  auto& t = this->impl;
+  t.opterr = 0;  // Make errors silent.
+
+  const char* sops = "ab:";
+  this->SetCmdline({"argv0", "-a", "-c", "-b"});
+  EXPECT_EQ(t.getopt(this->argc, this->argv, sops), 'a');
+  EXPECT_EQ(t.getopt(this->argc, this->argv, sops), '?');
+  EXPECT_EQ(t.optopt, 'c');
+  EXPECT_EQ(t.getopt(this->argc, this->argv, sops), '?');
+  EXPECT_EQ(t.optopt, 'b');
+  EXPECT_EQ(t.getopt(this->argc, this->argv, sops), -1);
+
+  using LongOptionType = typename decltype(this->impl)::LongOptionType;
+  LongOptionType lopts[]{
+      {"requires_arg", 1 /*required_argument*/, nullptr, 42},
+      {nullptr, 0, nullptr, 0},
+  };
+  this->SetCmdline({"argv0", "-a", "--unkonwn", "--requires_arg"});
+  EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), 'a');
+  EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), '?');
+  EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), '?');
+  EXPECT_EQ(t.optopt, 42);
+  EXPECT_EQ(t.getopt_long(this->argc, this->argv, sops, lopts, nullptr), -1);
 }
 
 }  // namespace

@@ -418,7 +418,7 @@ void PosixSystemProducer::ConnectSocket() {
     auto service = perfetto::ProducerIPCClient::Connect(
         socket_name_.c_str(), this, std::move(producer_name), task_runner(),
         perfetto::TracingService::ProducerSMBScrapingMode::kEnabled,
-        kSMBSizeBytes, kSMBPageSizeBytes);
+        GetPreferredSmbSizeBytes(), kSMBPageSizeBytes);
 
     base::AutoLock lock(lock_);
     services_.push_back(std::move(service));
@@ -429,6 +429,11 @@ void PosixSystemProducer::ConnectSocket() {
   // If the child process hasn't received the Mojo remote, try again later.
   auto& remote = TracedProcessImpl::GetInstance()->system_tracing_service();
   if (!remote.is_bound()) {
+    // We don't really open the socket using ProducerIPCClient in child
+    // processes and need to reset |state_| to make DelayedReconnect() retry the
+    // connection using mojo.
+    DCHECK(state_ == State::kConnecting);
+    state_ = State::kDisconnected;
     DelayedReconnect();
     return;
   }
@@ -440,6 +445,9 @@ void PosixSystemProducer::ConnectSocket() {
           return;
 
         if (!file.IsValid()) {
+          // Reset |state_| to make DelayedReconnect() retry the connection.
+          DCHECK(self->state_ == State::kConnecting);
+          self->state_ = State::kDisconnected;
           self->DelayedReconnect();
           return;
         }
@@ -450,7 +458,7 @@ void PosixSystemProducer::ConnectSocket() {
                 perfetto::base::ScopedFile(file.TakePlatformFile())),
             self.get(), std::move(producer_name), self->task_runner(),
             perfetto::TracingService::ProducerSMBScrapingMode::kEnabled,
-            kSMBSizeBytes, kSMBPageSizeBytes);
+            self->GetPreferredSmbSizeBytes(), kSMBPageSizeBytes);
 
         base::AutoLock lock(self->lock_);
         self->services_.push_back(std::move(service));
@@ -467,8 +475,9 @@ bool PosixSystemProducer::SkipIfOnAndroidAndPreAndroidPie() const {
   return disallow_pre_android_pie_ &&
          base::android::BuildInfo::GetInstance()->sdk_int() <
              base::android::SDK_VERSION_P;
-#endif  // defined(OS_ANDROID)
+#else
   return false;
+#endif  // defined(OS_ANDROID)
 }
 
 void PosixSystemProducer::InvokeStoredOnDisconnectCallbacks() {
@@ -545,7 +554,7 @@ void PosixSystemProducer::DelayedReconnect() {
             }
           },
           weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(connection_backoff_ms_));
+      base::Milliseconds(connection_backoff_ms_));
 
   connection_backoff_ms_ =
       IncreaseBackoff(connection_backoff_ms_, kMaxConnectionBackoffMs);

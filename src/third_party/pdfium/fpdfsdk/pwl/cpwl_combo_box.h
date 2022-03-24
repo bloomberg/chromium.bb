@@ -8,13 +8,11 @@
 #define FPDFSDK_PWL_CPWL_COMBO_BOX_H_
 
 #include <memory>
-#include <utility>
 
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
 
-class CFFL_FormFiller;
 class CPWL_Edit;
 class CPWL_CBButton;
 class CPWL_CBListBox;
@@ -31,8 +29,8 @@ class CPWL_ComboBox final : public CPWL_Wnd {
 
   // CPWL_Wnd:
   void OnDestroy() override;
-  bool OnKeyDown(uint16_t nChar, uint32_t nFlag) override;
-  bool OnChar(uint16_t nChar, uint32_t nFlag) override;
+  bool OnKeyDown(FWL_VKEYCODE nChar, Mask<FWL_EVENTFLAG> nFlag) override;
+  bool OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) override;
   void NotifyLButtonDown(CPWL_Wnd* child, const CFX_PointF& pos) override;
   void NotifyLButtonUp(CPWL_Wnd* child, const CFX_PointF& pos) override;
   void CreateChildWnd(const CreateParams& cp) override;
@@ -57,12 +55,10 @@ class CPWL_ComboBox final : public CPWL_Wnd {
   void SetSelect(int32_t nItemIndex);
 
   void SetEditSelection(int32_t nStartChar, int32_t nEndChar);
-  std::pair<int32_t, int32_t> GetEditSelection() const;
   void ClearSelection();
   void SelectAll();
   bool IsPopup() const;
   void SetSelectText();
-  void AttachFFLData(CFFL_FormFiller* pData) { m_pFormFiller = pData; }
 
  private:
   void CreateEdit(const CreateParams& cp);
@@ -80,7 +76,6 @@ class CPWL_ComboBox final : public CPWL_Wnd {
   bool m_bBottom = true;
   int32_t m_nSelectItem = -1;
   UnownedPtr<IPWL_FillerNotify> m_pFillerNotify;
-  UnownedPtr<CFFL_FormFiller> m_pFormFiller;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_COMBO_BOX_H_

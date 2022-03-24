@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "ui/gfx/geometry/insets.h"
@@ -15,9 +16,9 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class ListValue;
 class Value;
 }
+struct RegisterOptions;
 
 /**
  * Dispatcher for messages sent from the DevTools frontend running in an
@@ -81,11 +82,14 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void OpenRemotePage(const std::string& browser_id,
                                 const std::string& url) = 0;
     virtual void OpenNodeFrontend() = 0;
+    virtual void RegisterPreference(const std::string& name,
+                                    const RegisterOptions& options) = 0;
     virtual void GetPreferences(DispatchCallback callback) = 0;
     virtual void SetPreference(const std::string& name,
                                const std::string& value) = 0;
     virtual void RemovePreference(const std::string& name) = 0;
     virtual void ClearPreferences() = 0;
+    virtual void GetSyncInformation(DispatchCallback callback) = 0;
     virtual void DispatchProtocolMessageFromDevToolsFrontend(
         const std::string& message) = 0;
     virtual void RecordEnumeratedHistogram(const std::string& name,
@@ -114,7 +118,7 @@ class DevToolsEmbedderMessageDispatcher {
   virtual ~DevToolsEmbedderMessageDispatcher() = default;
   virtual bool Dispatch(DispatchCallback callback,
                         const std::string& method,
-                        const base::ListValue* params) = 0;
+                        const std::vector<base::Value>& params) = 0;
 
   static std::unique_ptr<DevToolsEmbedderMessageDispatcher>
   CreateForDevToolsFrontend(Delegate* delegate);

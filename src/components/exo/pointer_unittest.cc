@@ -104,6 +104,9 @@ class TestDataSourceDelegate : public DataSourceDelegate {
  public:
   TestDataSourceDelegate() {}
 
+  TestDataSourceDelegate(const TestDataSourceDelegate&) = delete;
+  TestDataSourceDelegate& operator=(const TestDataSourceDelegate&) = delete;
+
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* device) override {}
   void OnTarget(const absl::optional<std::string>& mime_type) override {}
@@ -115,13 +118,14 @@ class TestDataSourceDelegate : public DataSourceDelegate {
   bool CanAcceptDataEventsForSurface(Surface* surface) const override {
     return true;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(TestDataSourceDelegate);
 };
 
 class PointerTest : public test::ExoTestBase {
  public:
   PointerTest() = default;
+
+  PointerTest(const PointerTest&) = delete;
+  PointerTest& operator=(const PointerTest&) = delete;
 
   void SetUp() override {
     test::ExoTestBase::SetUp();
@@ -130,9 +134,6 @@ class PointerTest : public test::ExoTestBase {
     // consumed before starting. See https://crbug.com/854674.
     base::RunLoop().RunUntilIdle();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PointerTest);
 };
 
 TEST_F(PointerTest, SetCursor) {
@@ -527,7 +528,7 @@ TEST_F(PointerTest, OnPointerMotion) {
   std::unique_ptr<Surface> sub_surface(new Surface);
   std::unique_ptr<SubSurface> sub(
       new SubSurface(sub_surface.get(), surface.get()));
-  surface->SetSubSurfacePosition(sub_surface.get(), gfx::Point(5, 5));
+  surface->SetSubSurfacePosition(sub_surface.get(), gfx::PointF(5, 5));
   gfx::Size sub_buffer_size(5, 5);
   std::unique_ptr<Buffer> sub_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(sub_buffer_size)));
@@ -1010,7 +1011,7 @@ TEST_F(PointerTest, OnPointerRelativeMotion) {
 
   auto sub_surface = std::make_unique<Surface>();
   auto sub = std::make_unique<SubSurface>(sub_surface.get(), surface.get());
-  surface->SetSubSurfacePosition(sub_surface.get(), gfx::Point(5, 5));
+  surface->SetSubSurfacePosition(sub_surface.get(), gfx::PointF(5, 5));
   gfx::Size sub_buffer_size(5, 5);
   auto sub_buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(sub_buffer_size));

@@ -96,12 +96,10 @@ void TlsHandshaker::AdvanceHandshake() {
     return;
   }
 
-  QUICHE_BUG_IF(quic_tls_server_async_done_no_flusher,
-                SSL_is_server(ssl()) && add_packet_flusher_on_async_op_done_ &&
-                    !handshaker_delegate_->PacketFlusherAttached())
-      << "is_server:" << SSL_is_server(ssl())
-      << ", add_packet_flusher_on_async_op_done_:"
-      << add_packet_flusher_on_async_op_done_;
+  QUICHE_BUG_IF(
+      quic_tls_server_async_done_no_flusher,
+      SSL_is_server(ssl()) && !handshaker_delegate_->PacketFlusherAttached())
+      << "is_server:" << SSL_is_server(ssl());
 
   QUIC_VLOG(1) << ENDPOINT << "Continuing handshake";
   int rv = SSL_do_handshake(ssl());
@@ -111,8 +109,7 @@ void TlsHandshaker::AdvanceHandshake() {
   // processed. Retry SSL_do_handshake once will advance the handshake more in
   // that case. If there are no unprocessed ServerHello, the retry will return a
   // non-positive number.
-  if (retry_handshake_on_early_data_ && rv == 1 && SSL_in_early_data(ssl())) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_retry_handshake_on_early_data, 1, 2);
+  if (rv == 1 && SSL_in_early_data(ssl())) {
     OnEnterEarlyData();
     rv = SSL_do_handshake(ssl());
     QUIC_VLOG(1) << ENDPOINT
@@ -210,6 +207,7 @@ enum ssl_verify_result_t TlsHandshaker::VerifyCert(uint8_t* out_alert) {
         std::string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
                     CRYPTO_BUFFER_len(cert)));
   }
+  QUIC_DVLOG(1) << "VerifyCert: peer cert_chain length: " << certs.size();
 
   ProofVerifierCallbackImpl* proof_verify_callback =
       new ProofVerifierCallbackImpl(this);
@@ -329,6 +327,23 @@ std::unique_ptr<QuicEncrypter> TlsHandshaker::CreateCurrentOneRttEncrypter() {
       reinterpret_cast<char*>(one_rtt_write_header_protection_key_.data()),
       one_rtt_write_header_protection_key_.size()));
   return encrypter;
+}
+
+bool TlsHandshaker::ExportKeyingMaterialForLabel(absl::string_view label,
+                                                 absl::string_view context,
+                                                 size_t result_len,
+                                                 std::string* result) {
+  // TODO(haoyuewang) Adding support of keying material export when 0-RTT is
+  // accepted.
+  if (SSL_in_init(ssl())) {
+    return false;
+  }
+  result->resize(result_len);
+  return SSL_export_keying_material(
+             ssl(), reinterpret_cast<uint8_t*>(&*result->begin()), result_len,
+             label.data(), label.size(),
+             reinterpret_cast<const uint8_t*>(context.data()), context.size(),
+             !context.empty()) == 1;
 }
 
 void TlsHandshaker::WriteMessage(EncryptionLevel level,

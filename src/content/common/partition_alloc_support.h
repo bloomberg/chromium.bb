@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -67,7 +68,7 @@ class PartitionAllocSupport {
 #if defined(PA_THREAD_CACHE_SUPPORTED) && \
     BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   size_t largest_cached_size_ =
-      base::internal::ThreadCache::kDefaultSizeThreshold;
+      base::internal::ThreadCacheLimits::kDefaultSizeThreshold;
 #endif
 };
 

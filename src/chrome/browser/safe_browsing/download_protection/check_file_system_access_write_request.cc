@@ -15,10 +15,10 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/file_type_policies.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -105,11 +105,11 @@ CheckFileSystemAccessWriteRequest::ShouldUploadBinary(
 }
 
 void CheckFileSystemAccessWriteRequest::UploadBinary(
+    DownloadCheckResult result,
     DownloadCheckResultReason reason,
     enterprise_connectors::AnalysisSettings settings) {}
 
 bool CheckFileSystemAccessWriteRequest::ShouldPromptForDeepScanning(
-    DownloadCheckResultReason reason,
     bool server_requests_prompt) const {
   return false;
 }

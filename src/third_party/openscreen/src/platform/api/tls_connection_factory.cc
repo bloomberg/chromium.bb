@@ -9,4 +9,6 @@ namespace openscreen {
 TlsConnectionFactory::TlsConnectionFactory() = default;
 TlsConnectionFactory::~TlsConnectionFactory() = default;
 
+TlsConnectionFactory::Client::~Client() = default;
+
 }  // namespace openscreen

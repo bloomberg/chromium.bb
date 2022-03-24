@@ -12,9 +12,9 @@
 namespace {
 
 const CXFA_Node::PropertyData kScriptPropertyData[] = {
-    {XFA_Element::Exclude, 1, 0},
-    {XFA_Element::CurrentPage, 1, 0},
-    {XFA_Element::RunScripts, 1, 0},
+    {XFA_Element::Exclude, 1, {}},
+    {XFA_Element::CurrentPage, 1, {}},
+    {XFA_Element::RunScripts, 1, {}},
 };
 
 const CXFA_Node::AttributeData kScriptAttributeData[] = {
@@ -33,22 +33,22 @@ const CXFA_Node::AttributeData kScriptAttributeData[] = {
 }  // namespace
 
 CXFA_Script::CXFA_Script(CXFA_Document* doc, XFA_PacketType packet)
-    : CXFA_Node(
-          doc,
-          packet,
-          (XFA_XDPPACKET_Config | XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
-          XFA_ObjectType::ContentNode,
-          XFA_Element::Script,
-          kScriptPropertyData,
-          kScriptAttributeData,
-          cppgc::MakeGarbageCollected<CJX_Script>(
-              doc->GetHeap()->GetAllocationHandle(),
-              this)) {}
+    : CXFA_Node(doc,
+                packet,
+                {XFA_XDPPACKET::kConfig, XFA_XDPPACKET::kTemplate,
+                 XFA_XDPPACKET::kForm},
+                XFA_ObjectType::ContentNode,
+                XFA_Element::Script,
+                kScriptPropertyData,
+                kScriptAttributeData,
+                cppgc::MakeGarbageCollected<CJX_Script>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Script::~CXFA_Script() = default;
 
 CXFA_Script::Type CXFA_Script::GetContentType() {
-  Optional<WideString> cData =
+  absl::optional<WideString> cData =
       JSObject()->TryCData(XFA_Attribute::ContentType, false);
   if (!cData.has_value())
     return Type::Formcalc;

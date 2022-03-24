@@ -5,7 +5,6 @@
 #ifndef SERVICES_DEVICE_GEOLOCATION_EMPTY_WIFI_DATA_PROVIDER_H_
 #define SERVICES_DEVICE_GEOLOCATION_EMPTY_WIFI_DATA_PROVIDER_H_
 
-#include "base/macros.h"
 #include "services/device/geolocation/wifi_data_provider.h"
 
 namespace device {
@@ -16,6 +15,9 @@ class EmptyWifiDataProvider : public WifiDataProvider {
  public:
   EmptyWifiDataProvider();
 
+  EmptyWifiDataProvider(const EmptyWifiDataProvider&) = delete;
+  EmptyWifiDataProvider& operator=(const EmptyWifiDataProvider&) = delete;
+
   // WifiDataProvider implementation
   void StartDataProvider() override {}
   void StopDataProvider() override {}
@@ -25,8 +27,6 @@ class EmptyWifiDataProvider : public WifiDataProvider {
 
  private:
   ~EmptyWifiDataProvider() override;
-
-  DISALLOW_COPY_AND_ASSIGN(EmptyWifiDataProvider);
 };
 
 }  // namespace device

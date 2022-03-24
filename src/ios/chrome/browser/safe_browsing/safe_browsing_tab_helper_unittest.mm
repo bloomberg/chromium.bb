@@ -69,11 +69,22 @@ class SafeBrowsingTabHelperTest
       bool for_main_frame = true,
       ui::PageTransition transition =
           ui::PageTransition::PAGE_TRANSITION_FIRST) {
-    web::WebStatePolicyDecider::RequestInfo request_info(
+    const web::WebStatePolicyDecider::RequestInfo request_info(
         transition, for_main_frame, /*target_frame_is_cross_origin=*/false,
         /*has_user_gesture=*/false);
-    return web_state_.ShouldAllowRequest(
-        [NSURLRequest requestWithURL:net::NSURLWithGURL(url)], request_info);
+    __block bool callback_called = false;
+    __block web::WebStatePolicyDecider::PolicyDecision policy_decision =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::BindOnce(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          policy_decision = decision;
+          callback_called = true;
+        });
+    web_state_.ShouldAllowRequest(
+        [NSURLRequest requestWithURL:net::NSURLWithGURL(url)], request_info,
+        std::move(callback));
+    EXPECT_TRUE(callback_called);
+    return policy_decision;
   }
 
   // Helper function that calls into WebState::ShouldAllowResponse with the
@@ -95,7 +106,8 @@ class SafeBrowsingTabHelperTest
           policy_decision = decision;
           callback_called = true;
         });
-    web_state_.ShouldAllowResponse(response, for_main_frame,
+    web::WebStatePolicyDecider::ResponseInfo response_info(for_main_frame);
+    web_state_.ShouldAllowResponse(response, response_info,
                                    std::move(callback));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(callback_called);
@@ -337,6 +349,28 @@ TEST_P(SafeBrowsingTabHelperTest,
        SafeSubFrameRequestAndResponseWithDifferingRef) {
   GURL request_url("http://chromium_sub_frame.test");
   GURL response_url("http://chromium_sub_frame.test#different_hash");
+  SimulateSafeMainFrameLoad();
+
+  // Execute ShouldAllowRequest() for a safe subframe navigation.
+  auto sub_frame_request_decision =
+      ShouldAllowRequestUrl(request_url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_request_decision.ShouldAllowNavigation());
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  // Verify that the sub frame navigation is allowed.
+  web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision =
+      ShouldAllowResponseUrl(response_url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_response_decision.ShouldAllowNavigation());
+}
+
+// Tests the case of a single safe sub frame navigation request and response,
+// where the response URL has a different query string than the request.
+TEST_P(SafeBrowsingTabHelperTest,
+       SafeSubFrameRequestAndResponseWithDifferingQueryString) {
+  GURL request_url("http://chromium_sub_frame.test?foo=bar");
+  GURL response_url("http://chromium_sub_frame.test?something=else");
   SimulateSafeMainFrameLoad();
 
   // Execute ShouldAllowRequest() for a safe subframe navigation.

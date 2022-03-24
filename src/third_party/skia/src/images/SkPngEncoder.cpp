@@ -19,7 +19,7 @@
 #include "src/images/SkImageEncoderFns.h"
 #include <vector>
 
-#include "png.h"
+#include <png.h>
 
 static_assert(PNG_FILTER_NONE  == (int)SkPngEncoder::FilterFlag::kNone,  "Skia libpng filter err.");
 static_assert(PNG_FILTER_SUB   == (int)SkPngEncoder::FilterFlag::kSub,   "Skia libpng filter err.");
@@ -236,6 +236,11 @@ static transform_scanline_proc choose_proc(const SkImageInfo& info) {
     switch (info.colorType()) {
         case kUnknown_SkColorType:
             break;
+
+        // TODO: I don't think this can just use kRGBA's procs.
+        // kPremul is especially tricky here, since it's presumably TF⁻¹(rgb * a),
+        // so to get at unpremul rgb we'd need to undo the transfer function first.
+        case kSRGBA_8888_SkColorType: return nullptr;
 
         case kRGBA_8888_SkColorType:
             switch (info.alphaType()) {

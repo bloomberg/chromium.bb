@@ -16,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -70,7 +69,11 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
                 scoped_refptr<base::SequencedTaskRunner> file_task_runner =
                     base::ThreadPool::CreateSequencedTaskRunner(
                         {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+                bool read_only = false);
+
+  JsonPrefStore(const JsonPrefStore&) = delete;
+  JsonPrefStore& operator=(const JsonPrefStore&) = delete;
 
   // PrefStore overrides:
   bool GetValue(const std::string& key,
@@ -203,8 +206,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   base::OnceClosure on_next_successful_write_reply_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };
 
 #endif  // COMPONENTS_PREFS_JSON_PREF_STORE_H_

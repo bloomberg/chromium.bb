@@ -8,8 +8,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/authenticator_get_assertion_response.h"
@@ -180,10 +182,10 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
-  test::FakeFidoDiscovery* discovery_;
-  test::FakeFidoDiscovery* cable_discovery_;
-  test::FakeFidoDiscovery* nfc_discovery_;
-  test::FakeFidoDiscovery* platform_discovery_;
+  raw_ptr<test::FakeFidoDiscovery> discovery_;
+  raw_ptr<test::FakeFidoDiscovery> cable_discovery_;
+  raw_ptr<test::FakeFidoDiscovery> nfc_discovery_;
+  raw_ptr<test::FakeFidoDiscovery> platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_ =
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
   TestGetAssertionRequestCallback get_assertion_cb_;
@@ -347,7 +349,7 @@ TEST_F(FidoGetAssertionHandlerTest, ValidEmptyCredential) {
   ASSERT_EQ(1u, response->size());
   EXPECT_TRUE(response.value()[0].credential);
   EXPECT_THAT(
-      response.value()[0].credential->id(),
+      response.value()[0].credential->id,
       ::testing::ElementsAreArray(test_data::kTestGetAssertionCredentialId));
 }
 
@@ -616,8 +618,7 @@ TEST_F(FidoGetAssertionHandlerTest,
   platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   platform_device->ExpectCtap2CommandAndRespondWithError(
       CtapRequestCommand::kAuthenticatorGetAssertion,
-      CtapDeviceResponseCode::kCtap2ErrOperationDenied,
-      base::TimeDelta::FromMicroseconds(10));
+      CtapDeviceResponseCode::kCtap2ErrOperationDenied, base::Microseconds(10));
   platform_discovery()->WaitForCallToStartAndSimulateSuccess();
   platform_discovery()->AddDevice(std::move(platform_device));
 

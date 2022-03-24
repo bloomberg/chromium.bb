@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
@@ -20,6 +20,8 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#include <windows.h>
 
 namespace safe_browsing {
 namespace platform_state_store {
@@ -36,6 +38,10 @@ class PlatformStateStoreWinTest : public ::testing::Test {
   PlatformStateStoreWinTest()
       : profile_(nullptr),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
+  PlatformStateStoreWinTest(const PlatformStateStoreWinTest&) = delete;
+  PlatformStateStoreWinTest& operator=(const PlatformStateStoreWinTest&) =
+      delete;
 
   void SetUp() override {
     ::testing::Test::SetUp();
@@ -98,14 +104,12 @@ class PlatformStateStoreWinTest : public ::testing::Test {
 
   static const char kProfileName_[];
   static const wchar_t kStoreKeyName_[];
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
   TestingProfileManager profile_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformStateStoreWinTest);
 };
 
 // static

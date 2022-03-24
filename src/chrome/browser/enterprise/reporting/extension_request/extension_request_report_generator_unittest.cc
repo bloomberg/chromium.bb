@@ -4,16 +4,19 @@
 
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_generator.h"
 
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/json/values_util.h"
 #include "base/time/time.h"
-#include "base/util/values/values_util.h"
-#include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler_test.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/common/proto/extensions_workflow_events.pb.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/pref_names.h"
@@ -24,11 +27,10 @@ namespace enterprise_reporting {
 namespace {
 
 constexpr int kTimeStamp = 42;
+constexpr char kJustification[] = "Please, I need dark mode everywhere!";
 constexpr char kProfileName[] = "profile-1";
-constexpr char kAnotherProfileName[] = "profile-2";
 constexpr char kExtensionId1[] = "abcdefghijklmnopabcdefghijklmnop";
 constexpr char kExtensionId2[] = "abcdefghijklmnopabcdefghijklmnpo";
-constexpr char kExtensionId3[] = "abcdefghijklmnopabcdefghijklmonp";
 
 constexpr char kAllowedExtensionSettings[] = R"({
   "abcdefghijklmnopabcdefghijklmnop" : {
@@ -72,11 +74,8 @@ class ExtensionRequestReportGeneratorTest : public ::testing::Test {
 
   std::vector<std::unique_ptr<ExtensionsWorkflowEvent>> GenerateReports(
       Profile* profile) {
-    return generator_.GenerateForProfile(profile);
-  }
-
-  std::vector<std::unique_ptr<ExtensionsWorkflowEvent>> GenerateReports() {
-    return generator_.Generate();
+    return generator_.Generate(
+        ExtensionRequestReportGenerator::ExtensionRequestData(profile));
   }
 
   TestingProfile* CreateProfile(const std::string& profile_name) {
@@ -92,8 +91,14 @@ class ExtensionRequestReportGeneratorTest : public ::testing::Test {
                     const std::string& expected_id,
                     bool is_removed) {
     EXPECT_EQ(expected_id, actual_report->id());
-    if (!is_removed)
+    if (!is_removed) {
       EXPECT_EQ(kTimeStamp, actual_report->request_timestamp_millis());
+      EXPECT_EQ(actual_report->justification(),
+                base::FeatureList::IsEnabled(
+                    features::kExtensionWorkflowJustification)
+                    ? kJustification
+                    : std::string());
+    }
     EXPECT_EQ(is_removed, actual_report->removed());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     EXPECT_EQ(ExtensionsWorkflowEvent::CHROME_OS_USER,
@@ -101,12 +106,11 @@ class ExtensionRequestReportGeneratorTest : public ::testing::Test {
 #else
     EXPECT_EQ(ExtensionsWorkflowEvent::BROWSER_DEVICE,
               actual_report->client_type());
+    EXPECT_EQ(policy::GetMachineName(), actual_report->device_name());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
-  void AddProfileToThrottler(Profile* profile) {
-    throttler_.Get()->AddProfile(profile->GetPath());
-  }
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   void SetRequestPrefs(const std::vector<std::string>& ids,
@@ -119,7 +123,12 @@ class ExtensionRequestReportGeneratorTest : public ::testing::Test {
       base::Value request_data(base::Value::Type::DICTIONARY);
       request_data.SetKey(
           timestamp_name,
-          ::util::TimeToValue(base::Time::FromJavaTime(kTimeStamp)));
+          ::base::TimeToValue(base::Time::FromJavaTime(kTimeStamp)));
+      if (base::FeatureList::IsEnabled(
+              features::kExtensionWorkflowJustification)) {
+        request_data.SetKey(extension_misc::kExtensionWorkflowJustification,
+                            base::Value(kJustification));
+      }
       id_values->SetKey(id, std::move(request_data));
     }
 
@@ -130,10 +139,26 @@ class ExtensionRequestReportGeneratorTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   ExtensionRequestReportGenerator generator_;
   TestingProfileManager profile_manager_;
-  ScopedExtensionRequestReportThrottler throttler_;
 };
 
 TEST_F(ExtensionRequestReportGeneratorTest, AddRequests) {
+  auto* profile = CreateProfile(kProfileName);
+  SetExtensionRequestsList({kExtensionId1, kExtensionId2}, {}, profile);
+
+  auto reports = GenerateReports(profile);
+
+  EXPECT_EQ(2u, reports.size());
+  VerifyReport(reports[0].get(), kExtensionId1, /*is_removed=*/false);
+  VerifyReport(reports[1].get(), kExtensionId2, /*is_removed=*/false);
+
+  reports = GenerateReports(profile);
+
+  EXPECT_EQ(0u, reports.size());
+}
+
+TEST_F(ExtensionRequestReportGeneratorTest, AddRequests_Justification) {
+  feature_list_.InitAndEnableFeature(features::kExtensionWorkflowJustification);
+
   auto* profile = CreateProfile(kProfileName);
   SetExtensionRequestsList({kExtensionId1, kExtensionId2}, {}, profile);
 
@@ -181,27 +206,6 @@ TEST_F(ExtensionRequestReportGeneratorTest, RejectedRequest) {
   auto reports = GenerateReports(profile);
 
   EXPECT_EQ(0u, reports.size());
-}
-
-TEST_F(ExtensionRequestReportGeneratorTest, MultipleProfiles) {
-  auto* profile = CreateProfile(kProfileName);
-  auto* another_profile = CreateProfile(kAnotherProfileName);
-
-  SetExtensionRequestsList({kExtensionId1, kExtensionId2}, {}, profile);
-  SetExtensionRequestsList({kExtensionId1, kExtensionId3}, {}, another_profile);
-
-  AddProfileToThrottler(profile);
-  AddProfileToThrottler(another_profile);
-
-  auto reports = GenerateReports();
-
-  EXPECT_EQ(4u, reports.size());
-  VerifyReport(reports[0].get(), kExtensionId1, /*is_removed=*/false);
-  VerifyReport(reports[1].get(), kExtensionId2, /*is_removed=*/false);
-  VerifyReport(reports[2].get(), kExtensionId1, /*is_removed=*/false);
-  VerifyReport(reports[3].get(), kExtensionId3, /*is_removed=*/false);
-
-  EXPECT_EQ(0u, GenerateReports().size());
 }
 
 }  // namespace enterprise_reporting

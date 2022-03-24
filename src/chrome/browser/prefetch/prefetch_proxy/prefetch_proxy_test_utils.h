@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -27,6 +27,9 @@ class TestProxySocketDataPump {
                           net::StreamSocket* to_socket,
                           base::OnceClosure on_done_callback);
 
+  TestProxySocketDataPump(const TestProxySocketDataPump&) = delete;
+  TestProxySocketDataPump& operator=(const TestProxySocketDataPump&) = delete;
+
   ~TestProxySocketDataPump();
 
   void Start();
@@ -38,8 +41,8 @@ class TestProxySocketDataPump {
   void Write();
   void HandleWriteResult(int result);
 
-  net::StreamSocket* from_socket_;
-  net::StreamSocket* to_socket_;
+  raw_ptr<net::StreamSocket> from_socket_;
+  raw_ptr<net::StreamSocket> to_socket_;
 
   scoped_refptr<net::IOBuffer> read_buffer_;
   scoped_refptr<net::DrainableIOBuffer> write_buffer_;
@@ -47,8 +50,6 @@ class TestProxySocketDataPump {
   base::OnceClosure on_done_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(TestProxySocketDataPump);
 };
 
 // Represents a single CONNECT proxy tunnel connection used for browser tests.
@@ -56,6 +57,11 @@ class TestProxySocketDataPump {
 class TestProxyTunnelConnection {
  public:
   TestProxyTunnelConnection();
+
+  TestProxyTunnelConnection(const TestProxyTunnelConnection&) = delete;
+  TestProxyTunnelConnection& operator=(const TestProxyTunnelConnection&) =
+      delete;
+
   ~TestProxyTunnelConnection();
 
   base::WeakPtr<TestProxyTunnelConnection> GetWeakPtr();
@@ -96,8 +102,6 @@ class TestProxyTunnelConnection {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<TestProxyTunnelConnection> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestProxyTunnelConnection);
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_TEST_UTILS_H_

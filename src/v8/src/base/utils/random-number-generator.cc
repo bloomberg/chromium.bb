@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(V8_OS_STARBOARD)
+#include "starboard/system.h"
+#endif  //  V8_OS_STARBOARD
 
 #include <algorithm>
 #include <new>
@@ -51,6 +54,7 @@ RandomNumberGenerator::RandomNumberGenerator() {
   DCHECK_EQ(0, result);
   result = rand_s(&second_half);
   DCHECK_EQ(0, result);
+  USE(result);
   SetSeed((static_cast<int64_t>(first_half) << 32) + second_half);
 #elif V8_OS_MACOSX || V8_OS_FREEBSD || V8_OS_OPENBSD
   // Despite its prefix suggests it is not RC4 algorithm anymore.
@@ -59,6 +63,8 @@ RandomNumberGenerator::RandomNumberGenerator() {
   int64_t seed;
   arc4random_buf(&seed, sizeof(seed));
   SetSeed(seed);
+#elif V8_OS_STARBOARD
+  SetSeed(SbSystemGetRandomUInt64());
 #else
   // Gather entropy from /dev/urandom if available.
   FILE* fp = base::Fopen("/dev/urandom", "rb");

@@ -44,6 +44,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/views/window/client_view.h"
 
@@ -123,18 +124,11 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     window_title_->SetSubpixelRenderingEnabled(false);
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->SetID(VIEW_ID_WINDOW_TITLE);
-    AddChildView(window_title_);
+    AddChildView(window_title_.get());
   }
 
   caption_button_container_ =
       AddChildView(std::make_unique<GlassBrowserCaptionButtonContainer>(this));
-
-  // Because currently focus mode uses a vertically-expanded titlebar, there is
-  // no need to add extra space for a grab handle. However, traditional PWA and
-  // full browser mode require the extra space when the window is not maximized.
-  constexpr int kTopResizeFrameArea = 5;
-  drag_handle_padding_ =
-      browser_view->browser()->is_focus_mode() ? 0 : kTopResizeFrameArea;
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() = default;
@@ -230,6 +224,27 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   min_size.Enlarge(0, GetTopInset(false));
 
   return min_size;
+}
+
+void GlassBrowserFrameView::WindowControlsOverlayEnabledChanged() {
+  caption_button_container_->OnWindowControlsOverlayEnabledChanged();
+  web_app_frame_toolbar()->OnWindowControlsOverlayEnabledChanged();
+  InvalidateLayout();
+}
+
+TabSearchBubbleHost* GlassBrowserFrameView::GetTabSearchBubbleHost() {
+  return caption_button_container_->GetTabSearchBubbleHost();
+}
+
+void GlassBrowserFrameView::PaintAsActiveChanged() {
+  BrowserNonClientFrameView::PaintAsActiveChanged();
+
+  // When window controls overlay is enabled, the caption button container is
+  // painted to a layer and is not repainted by
+  // BrowserNonClientFrameView::PaintAsActiveChanged. Schedule a re-paint here
+  // to update the caption button colors.
+  if (caption_button_container_ && caption_button_container_->layer())
+    caption_button_container_->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -345,7 +360,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // pixels at the end of the top and bottom edges trigger diagonal resizing.
   constexpr int kResizeCornerWidth = 16;
   int window_component = GetHTComponentForFrame(
-      point, top_border_thickness, 0, top_border_thickness,
+      point, gfx::Insets(top_border_thickness, 0, 0, 0), top_border_thickness,
       kResizeCornerWidth - FrameBorderThickness(),
       frame()->widget_delegate()->CanResize());
   // Fall back to the caption if no other component matches.
@@ -376,7 +391,7 @@ bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
   return current_tab && current_tab->IsLoading();
 }
 
-gfx::ImageSkia GlassBrowserFrameView::GetFaviconForTabIconView() {
+ui::ImageModel GlassBrowserFrameView::GetFaviconForTabIconView() {
   DCHECK(ShouldShowWindowIcon(TitlebarType::kCustom));
   return frame()->widget_delegate()->GetWindowIcon();
 }
@@ -428,8 +443,9 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
     // default. When maximized, the OS sizes the window such that the border
     // extends beyond the screen edges. In that case, we must return the default
     // value.
+    constexpr int kTopResizeFrameArea = 5;
     if (browser_view()->GetTabStripVisible())
-      return drag_handle_padding_;
+      return kTopResizeFrameArea;
 
     // There is no top border in tablet mode when the window is "restored"
     // because it is still tiled into either the left or right pane of the
@@ -689,10 +705,12 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   }
 
   if (web_app_frame_toolbar()) {
+    const int web_app_titlebar_height =
+        caption_button_container_->size().height();
     std::pair<int, int> remaining_bounds =
-        web_app_frame_toolbar()->LayoutInContainer(next_leading_x,
-                                                   next_trailing_x, window_top,
-                                                   titlebar_visual_height);
+        web_app_frame_toolbar()->LayoutInContainer(
+            next_leading_x, next_trailing_x, WindowTopY(),
+            web_app_titlebar_height);
     next_leading_x = remaining_bounds.first;
     next_trailing_x = remaining_bounds.second;
   }
@@ -722,7 +740,7 @@ void GlassBrowserFrameView::LayoutCaptionButtons() {
     return;
   }
 
-  caption_button_container_->SetVisible(true);
+  caption_button_container_->SetVisible(!frame()->IsFullscreen());
 
   const gfx::Size preferred_size =
       caption_button_container_->GetPreferredSize();
@@ -731,9 +749,7 @@ void GlassBrowserFrameView::LayoutCaptionButtons() {
   // is smaller than our preferred button size.
   if (IsWebUITabStrip() && IsMaximized()) {
     height = std::min(height, TitlebarMaximizedVisualHeight());
-  } else if (browser_view()->IsWindowControlsOverlayEnabled()) {
-    // When the WCO is enabled, the caption button container should be the same
-    // height as the WebAppFrameToolbar for a seamless overlay.
+  } else if (web_app_frame_toolbar()) {
     height = IsMaximized() ? TitlebarMaximizedVisualHeight()
                            : TitlebarHeight(false) - WindowTopY();
   }
@@ -763,9 +779,10 @@ void GlassBrowserFrameView::LayoutWindowControlsOverlay() {
 
 void GlassBrowserFrameView::LayoutClientView() {
   client_view_bounds_ = GetLocalBounds();
-  int top_inset = browser_view()->IsWindowControlsOverlayEnabled()
-                      ? WindowTopY()
-                      : GetTopInset(false);
+  int top_inset = GetTopInset(false);
+  if (browser_view()->IsWindowControlsOverlayEnabled()) {
+    top_inset = frame()->IsFullscreen() ? 0 : WindowTopY();
+  }
   client_view_bounds_.Inset(0, top_inset, 0, 0);
 }
 
@@ -791,7 +808,9 @@ void GlassBrowserFrameView::StopThrobber() {
     HICON small_icon = nullptr;
     HICON big_icon = nullptr;
 
-    gfx::ImageSkia icon = browser_view()->GetWindowIcon();
+    gfx::ImageSkia icon = views::GetImageSkiaFromImageModel(
+        browser_view()->GetWindowIcon(), GetColorProvider());
+
     if (!icon.isNull()) {
       // Keep previous icons alive as long as they are referenced by the HWND.
       previous_small_icon = std::move(small_window_icon_);

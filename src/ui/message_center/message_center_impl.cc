@@ -13,10 +13,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/message_center/lock_screen/lock_screen_controller.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
@@ -25,6 +25,10 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
 
 namespace message_center {
 
@@ -37,6 +41,10 @@ MessageCenterImpl::MessageCenterImpl(
       popup_timers_controller_(std::make_unique<PopupTimersController>(this)),
       stats_collector_(this) {
   notification_list_ = std::make_unique<NotificationList>(this);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  notifications_grouping_enabled_ =
+      ash::features::IsNotificationsRefreshEnabled();
+#endif
 }
 
 MessageCenterImpl::~MessageCenterImpl() = default;
@@ -143,6 +151,35 @@ bool MessageCenterImpl::IsSpokenFeedbackEnabled() const {
   return spoken_feedback_enabled_;
 }
 
+Notification* MessageCenterImpl::FindNotificationById(const std::string& id) {
+  return notification_list_->GetNotificationById(id);
+}
+
+Notification* MessageCenterImpl::FindParentNotificationForOriginUrl(
+    const GURL& origin_url) {
+  if (origin_url.is_empty())
+    return nullptr;
+
+  NotificationList::Notifications notifications =
+      notification_list_->GetNotificationsByOriginUrl(origin_url);
+
+  if (notifications.size())
+    return *std::prev(notifications.end());
+  return nullptr;
+}
+
+Notification* MessageCenterImpl::FindPopupNotificationById(
+    const std::string& id) {
+  auto id_match = [&id](Notification* notification) {
+    return id == notification->id();
+  };
+  auto notifications = GetPopupNotifications();
+  auto notification =
+      std::find_if(notifications.begin(), notifications.end(), id_match);
+
+  return notification == notifications.end() ? nullptr : *notification;
+}
+
 Notification* MessageCenterImpl::FindVisibleNotificationById(
     const std::string& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -174,7 +211,7 @@ MessageCenterImpl::GetVisibleNotifications() {
 }
 
 NotificationList::PopupNotifications
-    MessageCenterImpl::GetPopupNotifications() {
+MessageCenterImpl::GetPopupNotifications() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return notification_list_->GetPopupNotifications(blockers_, nullptr);
 }
@@ -185,6 +222,9 @@ void MessageCenterImpl::AddNotification(
     std::unique_ptr<Notification> notification) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(notification);
+
+  notification->set_allow_group(notifications_grouping_enabled_);
+
   const std::string id = notification->id();
   for (NotificationBlocker* blocker : blockers_)
     blocker->CheckState();
@@ -196,6 +236,12 @@ void MessageCenterImpl::AddNotification(
   if (already_exists) {
     UpdateNotification(id, std::move(notification));
     return;
+  }
+
+  auto* parent = FindParentNotificationForOriginUrl(notification->origin_url());
+  if (notification->allow_group() && parent) {
+    parent->SetGroupParent();
+    notification->SetGroupChild();
   }
 
   notification_list_->AddNotification(std::move(notification));
@@ -431,6 +477,13 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
     }
   } else {
     RemoveNotification(id, false);
+  }
+}
+
+void MessageCenterImpl::ResetSinglePopup(const std::string& id) {
+  notification_list_->ResetSinglePopup(id);
+  for (MessageCenterObserver& observer : observer_list_) {
+    observer.OnNotificationUpdated(id);
   }
 }
 

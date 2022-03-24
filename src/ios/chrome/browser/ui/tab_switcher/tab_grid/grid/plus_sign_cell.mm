@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/plus_sign_cell.h"
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -36,12 +35,7 @@
 
     AddSameCenterConstraints(plusSignView, self.contentView);
 
-    if (@available(iOS 13, *)) {
-      // TODO(crbug.com/981889): When iOS 12 is dropped, only the next line is
-      // needed for styling. Every other check can be sremoved, as well as the
-      // incognito specific assets.
-      self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
-    }
+    self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
   }
   return self;
 }
@@ -78,9 +72,8 @@
 
   // selectedBackgroundView is used for highlighting as well.
   self.selectedBackgroundView = [[UIView alloc] init];
-  UIColor* highlightedBackgroundColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTertiaryBackgroundColor], /*forceDark=*/true,
-      [UIColor colorNamed:kTertiaryBackgroundDarkColor]);
+  UIColor* highlightedBackgroundColor =
+      [UIColor colorNamed:kTertiaryBackgroundColor];
   self.selectedBackgroundView.backgroundColor = highlightedBackgroundColor;
 
   _theme = theme;

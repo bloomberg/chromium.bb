@@ -8,10 +8,11 @@
 // video_encoder.cc.
 dictionary VideoEncoderConfig {
   required DOMString codec;
-  HardwarePreference hardwareAcceleration = "allow";
+  HardwarePreference hardwareAcceleration = "no-preference";
   AlphaOption alpha = "discard";
 
-  unsigned long long bitrate;
+  [EnforceRange] unsigned long long bitrate;
+  BitrateMode bitrateMode = "variable";
 
   double framerate;
 
@@ -26,4 +27,6 @@ dictionary VideoEncoderConfig {
 
   // Same as in WebRTC SVC (https://w3c.github.io/webrtc-svc/)
   DOMString scalabilityMode;
+
+  LatencyMode latencyMode = "quality";
 };

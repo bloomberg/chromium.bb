@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -153,6 +152,8 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
     // content::InterstitialPageImpl::DontProceed().
     //
     // TODO(lazyboy): Write a WebUI test once http://crbug.com/463674 is fixed.
+    // TODO(falken): Check whether this code is dead, since InterstitialPageImpl
+    // does not exist.
     return;
   }
 
@@ -191,9 +192,10 @@ void BrowserPluginGuest::DidFinishNavigation(
     RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
-void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
+void BrowserPluginGuest::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   switch (status) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:

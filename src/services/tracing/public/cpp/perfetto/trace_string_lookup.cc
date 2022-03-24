@@ -4,7 +4,7 @@
 
 #include "services/tracing/public/cpp/perfetto/trace_string_lookup.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/pattern.h"
 
 using ::perfetto::protos::pbzero::ChromeProcessDescriptor;
@@ -20,6 +20,7 @@ struct ProcessType {
 constexpr ProcessType kProcessTypes[] = {
     {"Browser", ChromeProcessDescriptor::PROCESS_BROWSER},
     {"Renderer", ChromeProcessDescriptor::PROCESS_RENDERER},
+    {"Extension Renderer", ChromeProcessDescriptor::PROCESS_RENDERER_EXTENSION},
     {"GPU Process", ChromeProcessDescriptor::PROCESS_GPU},
     {"HeadlessBrowser", ChromeProcessDescriptor::PROCESS_BROWSER},
     {"PPAPI Process", ChromeProcessDescriptor::PROCESS_PPAPI_PLUGIN},
@@ -147,6 +148,7 @@ constexpr ThreadType kThreadTypes[] = {
     {"NetworkConfigWatcher",
      ChromeThreadDescriptor::THREAD_NETWORKCONFIGWATCHER},
     {"wasapi_render_thread", ChromeThreadDescriptor::THREAD_WASAPI_RENDER},
+    {"LoaderLockSampler", ChromeThreadDescriptor::THREAD_LOADER_LOCK_SAMPLER},
 };
 
 ChromeProcessDescriptor::ProcessType GetProcessType(const std::string& name) {

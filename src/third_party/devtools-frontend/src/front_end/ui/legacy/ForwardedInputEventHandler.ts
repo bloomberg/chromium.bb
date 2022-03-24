@@ -2,28 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
-import type * as Common from '../../core/common/common.js'; // eslint-disable-line no-unused-vars
+import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 
-import {Context} from './Context.js';  // eslint-disable-line no-unused-vars
+import {Context} from './Context.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import {ForwardedShortcut, ShortcutRegistry} from './ShortcutRegistry.js';  // eslint-disable-line no-unused-vars
+import {ForwardedShortcut, ShortcutRegistry} from './ShortcutRegistry.js';
 
+// This handler only forwards the keystrokes if DevTools front-end is
+// not running in hosted mode.
 export class ForwardedInputEventHandler {
   constructor() {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
-        Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, this._onKeyEventUnhandled, this);
+        Host.InspectorFrontendHostAPI.Events.KeyEventUnhandled, this.onKeyEventUnhandled, this);
   }
 
-  _onKeyEventUnhandled(event: Common.EventTarget.EventTargetEvent): void {
-    const data = event.data;
-    const type = (data.type as string);
-    const key = (data.key as string);
-    const keyCode = (data.keyCode as number);
-    const modifiers = (data.modifiers as number);
-
+  private async onKeyEventUnhandled(
+      event: Common.EventTarget.EventTargetEvent<Host.InspectorFrontendHostAPI.KeyEventUnhandledEvent>): Promise<void> {
+    const {type, key, keyCode, modifiers} = event.data;
     if (type !== 'keydown') {
       return;
     }
@@ -32,7 +28,7 @@ export class ForwardedInputEventHandler {
     const shortcutRegistry = ShortcutRegistry.instance();
 
     context.setFlavor(ForwardedShortcut, ForwardedShortcut.instance);
-    shortcutRegistry.handleKey(KeyboardShortcut.makeKey(keyCode, modifiers), key);
+    await shortcutRegistry.handleKey(KeyboardShortcut.makeKey(keyCode, modifiers), key);
     context.setFlavor(ForwardedShortcut, null);
   }
 }

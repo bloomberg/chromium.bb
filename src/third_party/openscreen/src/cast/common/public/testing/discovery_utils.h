@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "cast/common/public/service_info.h"
+#include "cast/common/public/receiver_info.h"
 #include "discovery/dnssd/public/dns_sd_txt_record.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

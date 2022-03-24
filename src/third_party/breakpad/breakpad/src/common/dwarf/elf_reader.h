@@ -24,7 +24,7 @@
 using std::vector;
 using std::pair;
 
-namespace dwarf2reader {
+namespace google_breakpad {
 
 class SymbolMap;
 class Elf32;
@@ -162,6 +162,6 @@ class ElfReader {
   ElfReaderImpl<Elf64>* impl64_;
 };
 
-}  // namespace dwarf2reader
+}  // namespace google_breakpad
 
 #endif  // COMMON_DWARF_ELF_READER_H__

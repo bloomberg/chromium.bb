@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/simple_task_executor.h"
 #include "base/threading/thread_checker.h"
@@ -33,6 +32,8 @@ class PLATFORM_EXPORT SchedulerHelper
   // object is destroyed.
   explicit SchedulerHelper(
       base::sequence_manager::SequenceManager* sequence_manager);
+  SchedulerHelper(const SchedulerHelper&) = delete;
+  SchedulerHelper& operator=(const SchedulerHelper&) = delete;
   ~SchedulerHelper() override;
 
   // Must be invoked before running any task from the scheduler, on the thread
@@ -101,11 +102,10 @@ class PLATFORM_EXPORT SchedulerHelper
   void ReclaimMemory();
 
   // Accessor methods.
-  base::sequence_manager::TimeDomain* real_time_domain() const;
-  void RegisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
-  void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
+  absl::optional<base::sequence_manager::WakeUp> GetNextWakeUp() const;
+  void SetTimeDomain(base::sequence_manager::TimeDomain* time_domain);
+  void ResetTimeDomain();
   bool GetAndClearSystemIsQuiescentBit();
-  double GetSamplingRateForRecordingCPUTime() const;
   bool HasCPUTimingForEachTask() const;
 
   bool ShouldRecordTaskUkm(bool task_has_thread_time) {
@@ -142,8 +142,6 @@ class PLATFORM_EXPORT SchedulerHelper
 
   UkmTaskSampler ukm_task_sampler_;
   absl::optional<base::SimpleTaskExecutor> simple_task_executor_;
-
-  DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };
 
 }  // namespace scheduler

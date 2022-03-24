@@ -113,6 +113,25 @@ class SimpleSerializer<BasicSourceLineResolver::Line> {
   }
 };
 
+// Specializations of SimpleSerializer: InlineOrigin
+template <>
+class SimpleSerializer<BasicSourceLineResolver::InlineOrigin> {
+  typedef BasicSourceLineResolver::InlineOrigin InlineOrigin;
+
+ public:
+  static size_t SizeOf(const InlineOrigin& origin) {
+    return SimpleSerializer<bool>::SizeOf(origin.has_file_id) +
+           SimpleSerializer<int32_t>::SizeOf(origin.source_file_id) +
+           SimpleSerializer<string>::SizeOf(origin.name);
+  }
+  static char* Write(const InlineOrigin& origin, char* dest) {
+    dest = SimpleSerializer<bool>::Write(origin.has_file_id, dest);
+    dest = SimpleSerializer<int32_t>::Write(origin.source_file_id, dest);
+    dest = SimpleSerializer<string>::Write(origin.name, dest);
+    return dest;
+  }
+};
+
 // Specializations of SimpleSerializer: PublicSymbol
 template<>
 class SimpleSerializer<BasicSourceLineResolver::PublicSymbol> {
@@ -165,7 +184,7 @@ class SimpleSerializer<WindowsFrameInfo> {
 };
 
 // Specializations of SimpleSerializer: Linked_ptr version of
-// Line, Function, PublicSymbol, WindowsFrameInfo.
+// Line, InlineOrigin, Inline, Function, PublicSymbol, WindowsFrameInfo.
 template<>
 class SimpleSerializer< linked_ptr<BasicSourceLineResolver::Line> > {
   typedef BasicSourceLineResolver::Line Line;
@@ -181,11 +200,86 @@ class SimpleSerializer< linked_ptr<BasicSourceLineResolver::Line> > {
   }
 };
 
+template <>
+class SimpleSerializer<linked_ptr<BasicSourceLineResolver::InlineOrigin>> {
+  typedef BasicSourceLineResolver::InlineOrigin InlineOrigin;
+
+ public:
+  static size_t SizeOf(const linked_ptr<InlineOrigin>& origin_ptr) {
+    if (origin_ptr.get() == NULL)
+      return 0;
+    return SimpleSerializer<InlineOrigin>::SizeOf(*(origin_ptr.get()));
+  }
+  static char* Write(const linked_ptr<InlineOrigin>& origin_ptr, char* dest) {
+    if (origin_ptr.get())
+      dest = SimpleSerializer<InlineOrigin>::Write(*(origin_ptr.get()), dest);
+    return dest;
+  }
+};
+
+// Specializations of SimpleSerializer: Inline
+template <>
+class SimpleSerializer<linked_ptr<BasicSourceLineResolver::Inline>>;
+template <>
+class SimpleSerializer<BasicSourceLineResolver::Inline> {
+  typedef BasicSourceLineResolver::Inline Inline;
+
+ public:
+  inline static size_t SizeOf(const Inline& in);
+  inline static char* Write(const Inline& in, char* dest);
+};
+
+template <>
+class SimpleSerializer<linked_ptr<BasicSourceLineResolver::Inline>> {
+  typedef BasicSourceLineResolver::Inline Inline;
+
+ public:
+  static size_t SizeOf(const linked_ptr<Inline>& inline_ptr) {
+    if (inline_ptr.get() == NULL)
+      return 0;
+    return SimpleSerializer<Inline>::SizeOf(*(inline_ptr.get()));
+  }
+  static char* Write(const linked_ptr<Inline>& inline_ptr, char* dest) {
+    if (inline_ptr.get())
+      dest = SimpleSerializer<Inline>::Write(*(inline_ptr.get()), dest);
+    return dest;
+  }
+};
+
+size_t SimpleSerializer<BasicSourceLineResolver::Inline>::SizeOf(
+    const Inline& in) {
+  return SimpleSerializer<bool>::SizeOf(in.has_call_site_file_id) +
+         SimpleSerializer<int32_t>::SizeOf(in.inline_nest_level) +
+         SimpleSerializer<int32_t>::SizeOf(in.call_site_line) +
+         SimpleSerializer<int32_t>::SizeOf(in.call_site_file_id) +
+         SimpleSerializer<int32_t>::SizeOf(in.origin_id) +
+         sizeof(uint32_t) +  // This is to store the size of inline_ranges.
+         (in.inline_ranges.size() * sizeof(MemAddr) * 2);
+}
+
+char* SimpleSerializer<BasicSourceLineResolver::Inline>::Write(const Inline& in,
+                                                               char* dest) {
+  dest = SimpleSerializer<bool>::Write(in.has_call_site_file_id, dest);
+  dest = SimpleSerializer<int32_t>::Write(in.inline_nest_level, dest);
+  dest = SimpleSerializer<int32_t>::Write(in.call_site_line, dest);
+  dest = SimpleSerializer<int32_t>::Write(in.call_site_file_id, dest);
+  dest = SimpleSerializer<int32_t>::Write(in.origin_id, dest);
+  // Write the size of inline_ranges.
+  dest = SimpleSerializer<int32_t>::Write(in.inline_ranges.size(), dest);
+  for (const std::pair<MemAddr, MemAddr>& range : in.inline_ranges) {
+    dest = SimpleSerializer<MemAddr>::Write(range.first, dest);
+    dest = SimpleSerializer<MemAddr>::Write(range.second, dest);
+  }
+  return dest;
+}
+
 template<>
 class SimpleSerializer<BasicSourceLineResolver::Function> {
   // Convenient type names.
   typedef BasicSourceLineResolver::Function Function;
   typedef BasicSourceLineResolver::Line Line;
+  typedef BasicSourceLineResolver::Inline Inline;
+
  public:
   static size_t SizeOf(const Function& func) {
     unsigned int size = 0;
@@ -193,6 +287,11 @@ class SimpleSerializer<BasicSourceLineResolver::Function> {
     size += SimpleSerializer<MemAddr>::SizeOf(func.address);
     size += SimpleSerializer<MemAddr>::SizeOf(func.size);
     size += SimpleSerializer<int32_t>::SizeOf(func.parameter_size);
+    size += SimpleSerializer<bool>::SizeOf(func.is_multiple);
+    // This extra size is used to store the size of serialized func.inlines, so
+    // we know where to start de-serialize func.lines.
+    size += sizeof(int32_t);
+    size += inline_range_map_serializer_.SizeOf(&func.inlines);
     size += range_map_serializer_.SizeOf(func.lines);
     return size;
   }
@@ -202,12 +301,22 @@ class SimpleSerializer<BasicSourceLineResolver::Function> {
     dest = SimpleSerializer<MemAddr>::Write(func.address, dest);
     dest = SimpleSerializer<MemAddr>::Write(func.size, dest);
     dest = SimpleSerializer<int32_t>::Write(func.parameter_size, dest);
+    dest = SimpleSerializer<bool>::Write(func.is_multiple, dest);
+    char* old_dest = dest;
+    dest += sizeof(int32_t);
+    dest = inline_range_map_serializer_.Write(&func.inlines, dest);
+    // Write the size of serialized func.inlines. The size doesn't include size
+    // field itself.
+    SimpleSerializer<MemAddr>::Write(dest - old_dest - sizeof(int32_t),
+                                     old_dest);
     dest = range_map_serializer_.Write(func.lines, dest);
     return dest;
   }
  private:
   // This static member is defined in module_serializer.cc.
-  static RangeMapSerializer< MemAddr, linked_ptr<Line> > range_map_serializer_;
+  static RangeMapSerializer<MemAddr, linked_ptr<Line>> range_map_serializer_;
+  static ContainedRangeMapSerializer<MemAddr, linked_ptr<Inline>>
+      inline_range_map_serializer_;
 };
 
 template<>

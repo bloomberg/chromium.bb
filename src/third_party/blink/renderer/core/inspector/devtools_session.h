@@ -7,14 +7,14 @@
 
 #include <memory>
 #include "base/callback.h"
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Forward.h"
+#include "third_party/blink/renderer/core/inspector/protocol/forward.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
@@ -48,6 +48,8 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
       bool client_expects_binary_responses,
       const String& session_id,
       scoped_refptr<base::SequencedTaskRunner> mojo_task_runner);
+  DevToolsSession(const DevToolsSession&) = delete;
+  DevToolsSession& operator=(const DevToolsSession&) = delete;
   ~DevToolsSession() override;
 
   void ConnectToV8(v8_inspector::V8Inspector*, int context_group_id);
@@ -123,8 +125,6 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   InspectorAgentState v8_session_state_;
   InspectorAgentState::Bytes v8_session_state_cbor_;
   const String session_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsSession);
 };
 
 }  // namespace blink

@@ -28,9 +28,9 @@
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSamplerState.h"
-#include "src/gpu/GrSurfaceFillContext.h"
 #include "src/gpu/GrYUVATextureProxies.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/SurfaceFillContext.h"
 #include "src/gpu/effects/GrYUVtoRGBEffect.h"
 #endif
 
@@ -197,8 +197,12 @@ sk_sp<SkImage> SkImage_Lazy::onMakeSubset(const SkIRect& subset, GrDirectContext
     // TODO: can we do this more efficiently, by telling the generator we want to
     //       "realize" a subset?
 
+#if SK_SUPPORT_GPU
     auto pixels = direct ? this->makeTextureImage(direct)
                          : this->makeRasterImage();
+#else
+    auto pixels = this->makeRasterImage();
+#endif
     return pixels ? pixels->makeSubset(subset, direct) : nullptr;
 }
 
@@ -327,15 +331,15 @@ GrSurfaceProxyView SkImage_Lazy::textureProxyViewFromPlanes(GrRecordingContext* 
                      kPremul_SkAlphaType,
                      /*color space*/ nullptr,
                      this->dimensions());
-    auto surfaceFillContext = GrSurfaceFillContext::Make(ctx,
-                                                         info,
-                                                         SkBackingFit::kExact,
-                                                         1,
-                                                         GrMipmapped::kNo,
-                                                         GrProtected::kNo,
-                                                         kTopLeft_GrSurfaceOrigin,
-                                                         budgeted);
-    if (!surfaceFillContext) {
+
+    auto sfc = ctx->priv().makeSFC(info,
+                                   SkBackingFit::kExact,
+                                   1,
+                                   GrMipmapped::kNo,
+                                   GrProtected::kNo,
+                                   kTopLeft_GrSurfaceOrigin,
+                                   budgeted);
+    if (!sfc) {
         return {};
     }
 
@@ -363,9 +367,9 @@ GrSurfaceProxyView SkImage_Lazy::textureProxyViewFromPlanes(GrRecordingContext* 
     fp = GrColorSpaceXformEffect::Make(std::move(fp),
                                        srcColorSpace, kOpaque_SkAlphaType,
                                        dstColorSpace, kOpaque_SkAlphaType);
-    surfaceFillContext->fillWithFP(std::move(fp));
+    sfc->fillWithFP(std::move(fp));
 
-    return surfaceFillContext->readSurfaceView();
+    return sfc->readSurfaceView();
 }
 
 sk_sp<SkCachedData> SkImage_Lazy::getPlanes(

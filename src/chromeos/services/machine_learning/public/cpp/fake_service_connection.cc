@@ -149,9 +149,19 @@ void FakeServiceConnectionImpl::LoadSpeechRecognizer(
 
 void FakeServiceConnectionImpl::LoadTextSuggester(
     mojo::PendingReceiver<mojom::TextSuggester> receiver,
+    mojom::TextSuggesterSpecPtr spec,
     mojom::MachineLearningService::LoadTextSuggesterCallback callback) {
+  ScheduleCall(
+      base::BindOnce(&FakeServiceConnectionImpl::HandleLoadTextSuggesterCall,
+                     base::Unretained(this), std::move(receiver),
+                     std::move(spec), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::LoadDocumentScanner(
+    mojo::PendingReceiver<mojom::DocumentScanner> receiver,
+    mojom::MachineLearningService::LoadDocumentScannerCallback callback) {
   ScheduleCall(base::BindOnce(
-      &FakeServiceConnectionImpl::HandleLoadTextSuggesterCall,
+      &FakeServiceConnectionImpl::HandleLoadDocumentScannerCall,
       base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
@@ -342,6 +352,16 @@ void FakeServiceConnectionImpl::SetOutputTextSuggesterResult(
   text_suggester_result_ = result.Clone();
 }
 
+void FakeServiceConnectionImpl::SetOutputDetectCornersResult(
+    const mojom::DetectCornersResultPtr& result) {
+  detect_corners_result_ = result.Clone();
+}
+
+void FakeServiceConnectionImpl::SetOutputDoPostProcessingResult(
+    const mojom::DoPostProcessingResultPtr& result) {
+  do_post_processing_result_ = result.Clone();
+}
+
 void FakeServiceConnectionImpl::Annotate(
     mojom::TextAnnotationRequestPtr request,
     mojom::TextClassifier::AnnotateCallback callback) {
@@ -426,6 +446,33 @@ void FakeServiceConnectionImpl::Suggest(
       base::Unretained(this), std::move(query), std::move(callback)));
 }
 
+void FakeServiceConnectionImpl::DetectCornersFromNV12Image(
+    base::ReadOnlySharedMemoryRegion nv12_image,
+    mojom::DocumentScanner::DetectCornersFromNV12ImageCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleDocumentScannerDetectNV12Call,
+      base::Unretained(this), std::move(nv12_image), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::DetectCornersFromJPEGImage(
+    base::ReadOnlySharedMemoryRegion jpeg_image,
+    mojom::DocumentScanner::DetectCornersFromJPEGImageCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleDocumentScannerDetectJPEGCall,
+      base::Unretained(this), std::move(jpeg_image), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::DoPostProcessing(
+    base::ReadOnlySharedMemoryRegion jpeg_image,
+    const std::vector<gfx::PointF>& corners,
+    chromeos::machine_learning::mojom::Rotation rotation,
+    mojom::DocumentScanner::DoPostProcessingCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleDocumentScannerPostProcessingCall,
+      base::Unretained(this), std::move(jpeg_image), std::move(corners),
+      std::move(callback)));
+}
+
 void FakeServiceConnectionImpl::HandleLoadHandwritingModelCall(
     mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
     mojom::MachineLearningService::LoadHandwritingModelCallback callback) {
@@ -490,6 +537,7 @@ void FakeServiceConnectionImpl::HandleGrammarCheckerQueryCall(
 
 void FakeServiceConnectionImpl::HandleLoadTextSuggesterCall(
     mojo::PendingReceiver<mojom::TextSuggester> receiver,
+    mojom::TextSuggesterSpecPtr spec,
     mojom::MachineLearningService::LoadTextSuggesterCallback callback) {
   if (load_model_result_ == mojom::LoadModelResult::OK)
     text_suggester_receivers_.Add(this, std::move(receiver));
@@ -501,6 +549,34 @@ void FakeServiceConnectionImpl::HandleTextSuggesterSuggestCall(
     mojom::TextSuggesterQueryPtr query,
     mojom::TextSuggester::SuggestCallback callback) {
   std::move(callback).Run(text_suggester_result_.Clone());
+}
+
+void FakeServiceConnectionImpl::HandleLoadDocumentScannerCall(
+    mojo::PendingReceiver<mojom::DocumentScanner> receiver,
+    mojom::MachineLearningService::LoadDocumentScannerCallback callback) {
+  if (load_model_result_ == mojom::LoadModelResult::OK)
+    document_scanner_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(load_model_result_);
+}
+
+void FakeServiceConnectionImpl::HandleDocumentScannerDetectNV12Call(
+    base::ReadOnlySharedMemoryRegion nv12_image,
+    mojom::DocumentScanner::DetectCornersFromNV12ImageCallback callback) {
+  std::move(callback).Run(detect_corners_result_.Clone());
+}
+
+void FakeServiceConnectionImpl::HandleDocumentScannerDetectJPEGCall(
+    base::ReadOnlySharedMemoryRegion jpeg_image,
+    mojom::DocumentScanner::DetectCornersFromJPEGImageCallback callback) {
+  std::move(callback).Run(detect_corners_result_.Clone());
+}
+
+void FakeServiceConnectionImpl::HandleDocumentScannerPostProcessingCall(
+    base::ReadOnlySharedMemoryRegion jpeg_image,
+    const std::vector<gfx::PointF>& corners,
+    mojom::DocumentScanner::DoPostProcessingCallback callback) {
+  std::move(callback).Run(do_post_processing_result_.Clone());
 }
 
 }  // namespace machine_learning

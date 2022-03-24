@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/android/autofill_assistant/assistant_bottom_bar_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_collect_user_data_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
@@ -46,6 +46,7 @@ class UiControllerAndroid : public ControllerObserver {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
       content::WebContents* web_contents,
+      const base::android::JavaRef<jobject>& jdependencies,
       const base::android::JavaRef<jobject>& joverlay_coordinator);
 
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
@@ -56,7 +57,12 @@ class UiControllerAndroid : public ControllerObserver {
   UiControllerAndroid(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jactivity,
+      const base::android::JavaRef<jobject>& jdependencies,
       const base::android::JavaRef<jobject>& joverlay_coordinator);
+
+  UiControllerAndroid(const UiControllerAndroid&) = delete;
+  UiControllerAndroid& operator=(const UiControllerAndroid&) = delete;
+
   ~UiControllerAndroid() override;
 
   // Attaches the UI to the given client, its web contents and delegate.
@@ -84,9 +90,7 @@ class UiControllerAndroid : public ControllerObserver {
   //
   // If action_index != -1, execute that action as close/cancel. Otherwise
   // execute the default close or cancel action.
-  void CloseOrCancel(int action_index,
-                     std::unique_ptr<TriggerContext> trigger_context,
-                     Metrics::DropOutReason dropout_reason);
+  void CloseOrCancel(int action_index, Metrics::DropOutReason dropout_reason);
   // Returns the size of the window.
   absl::optional<std::pair<int, int>> GetWindowSize() const;
   // Returns the screen's orientation.
@@ -94,17 +98,18 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Overrides ControllerObserver:
   void OnStateChanged(AutofillAssistantState new_state) override;
+  void OnKeyboardSuppressionStateChanged(
+      bool should_suppress_keyboard) override;
   void OnStatusMessageChanged(const std::string& message) override;
   void OnBubbleMessageChanged(const std::string& message) override;
   void CloseCustomTab() override;
   void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnCollectUserDataOptionsChanged(
       const CollectUserDataOptions* collect_user_data_options) override;
-  void OnUserDataChanged(const UserData* state,
+  void OnUserDataChanged(const UserData& user_data,
                          UserData::FieldChange field_change) override;
   void OnDetailsChanged(const std::vector<Details>& details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
-  void OnProgressChanged(int progress) override;
   void OnProgressActiveStepChanged(int active_step) override;
   void OnProgressVisibilityChanged(bool visible) override;
   void OnProgressBarErrorStateChanged(bool error) override;
@@ -129,6 +134,8 @@ class UiControllerAndroid : public ControllerObserver {
   void OnPersistentGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) override;
   void OnShouldShowOverlayChanged(bool should_show) override;
+  void OnTtsButtonVisibilityChanged(bool visible) override;
+  void OnTtsButtonStateChanged(TtsButtonState state) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -136,6 +143,7 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantHeaderDelegate:
   void OnHeaderFeedbackButtonClicked();
+  void OnTtsButtonClicked();
 
   // Called by AssistantGenericUiDelegate:
   void OnViewEvent(const EventHandler::EventKey& key);
@@ -143,13 +151,16 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantCollectUserDataDelegate:
   void OnShippingAddressChanged(
-      std::unique_ptr<autofill::AutofillProfile> address);
-  void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile);
+      std::unique_ptr<autofill::AutofillProfile> address,
+      UserDataEventType event_type);
+  void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile,
+                            UserDataEventType event_type);
   void OnCreditCardChanged(
       std::unique_ptr<autofill::CreditCard> card,
-      std::unique_ptr<autofill::AutofillProfile> billing_profile);
+      std::unique_ptr<autofill::AutofillProfile> billing_profile,
+      UserDataEventType event_type);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
-  void OnLoginChoiceChanged(std::string identifier);
+  void OnLoginChoiceChanged(const std::string& identifier);
   void OnTextLinkClicked(int link);
   void OnFormActionLinkClicked(int link);
   void OnDateTimeRangeStartDateChanged(int year, int month, int day);
@@ -162,10 +173,6 @@ class UiControllerAndroid : public ControllerObserver {
   void OnDateTimeRangeEndTimeSlotCleared();
   void OnKeyValueChanged(const std::string& key, const ValueProto& value);
   void OnInputTextFocusChanged(bool is_text_focused);
-  bool IsContactComplete(autofill::AutofillProfile* contact);
-  bool IsShippingAddressComplete(autofill::AutofillProfile* address);
-  bool IsPaymentInstrumentComplete(autofill::CreditCard* card,
-                                   autofill::AutofillProfile* address);
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);
@@ -221,10 +228,10 @@ class UiControllerAndroid : public ControllerObserver {
 
  private:
   // A pointer to the client. nullptr until Attach() is called.
-  ClientAndroid* client_ = nullptr;
+  raw_ptr<ClientAndroid> client_ = nullptr;
 
   // A pointer to the ui_delegate. nullptr until Attach() is called.
-  UiDelegate* ui_delegate_ = nullptr;
+  raw_ptr<UiDelegate> ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
   AssistantCollectUserDataDelegate collect_user_data_delegate_;
@@ -252,7 +259,6 @@ class UiControllerAndroid : public ControllerObserver {
   void SetOverlayState(OverlayState state);
   // Applies the specified OverlayState to the UI.
   void ApplyOverlayState(OverlayState state);
-  void AllowShowingSoftKeyboard(bool enabled);
   void ShowContentAndExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
   std::string GetDebugContext();
@@ -269,11 +275,10 @@ class UiControllerAndroid : public ControllerObserver {
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(base::TimeDelta delay,
                     const std::string& message,
+                    const std::string& undo_string,
                     base::OnceCallback<void()> action);
 
-  void OnCancel(int action_index,
-                std::unique_ptr<TriggerContext> context,
-                Metrics::DropOutReason dropout_reason);
+  void OnCancel(int action_index, Metrics::DropOutReason dropout_reason);
 
   // Updates the state of the UI to reflect the UIDelegate's state.
   void SetupForState();
@@ -283,6 +288,9 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Restore the UI for the current UIDelegate.
   void RestoreUi();
+
+  // Performs tasks to update Display String Changes.
+  void OnClientSettingsDisplayStringsChanged(const ClientSettings& settings);
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
@@ -302,8 +310,6 @@ class UiControllerAndroid : public ControllerObserver {
   std::unique_ptr<AssistantHeaderModel> header_model_;
 
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };
 
 }  // namespace autofill_assistant.

@@ -39,7 +39,7 @@ class ConstantOpTest : public OpsTestBase {
 
 void ConstantOpTest::PersistentMemoryTrackingTest(bool on_gpu) {
   DataType data_type = DT_INT32;
-  std::initializer_list<int64> dims = {2, 3, 4, 5};
+  std::initializer_list<int64_t> dims = {2, 3, 4, 5};
   Tensor tensor(data_type, TensorShape(dims));
   for (int i = 0; i < 2 * 3 * 4 * 5; ++i) {
     tensor.flat<int32>()(i) = i;
@@ -114,15 +114,23 @@ static Graph* ManyConsts(int num, bool sequential) {
   return g;
 }
 
-static void BM_ManyConsts_Parallel(int iters, int num) {
-  testing::ItemsProcessed(static_cast<int64>(iters) * num);
-  test::Benchmark("cpu", ManyConsts(num, false /* !sequential */)).Run(iters);
+static void BM_ManyConsts_Parallel(::testing::benchmark::State& state) {
+  const int num = state.range(0);
+
+  test::Benchmark("cpu", ManyConsts(num, false /* !sequential */),
+                  /*old_benchmark_api*/ false)
+      .Run(state);
+  state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * num);
 }
 BENCHMARK(BM_ManyConsts_Parallel)->Range(1, 1 << 10);
 
-static void BM_ManyConsts_Sequential(int iters, int num) {
-  testing::ItemsProcessed(static_cast<int64>(iters) * num);
-  test::Benchmark("cpu", ManyConsts(num, true /* sequential */)).Run(iters);
+static void BM_ManyConsts_Sequential(::testing::benchmark::State& state) {
+  const int num = state.range(0);
+
+  test::Benchmark("cpu", ManyConsts(num, true /* sequential */),
+                  /*old_benchmark_api*/ false)
+      .Run(state);
+  state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) * num);
 }
 BENCHMARK(BM_ManyConsts_Sequential)->Range(1, 1 << 10);
 

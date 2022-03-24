@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "components/reputation/core/safety_tips.pb.h"
@@ -60,7 +60,7 @@ SafetyTipsComponentInstallerPolicy::~SafetyTipsComponentInstallerPolicy() =
 
 bool SafetyTipsComponentInstallerPolicy::
     SupportsGroupPolicyEnabledComponentUpdates() const {
-  return false;
+  return true;
 }
 
 bool SafetyTipsComponentInstallerPolicy::RequiresNetworkEncryption() const {
@@ -69,7 +69,7 @@ bool SafetyTipsComponentInstallerPolicy::RequiresNetworkEncryption() const {
 
 update_client::CrxInstaller::Result
 SafetyTipsComponentInstallerPolicy::OnCustomInstall(
-    const base::DictionaryValue& /* manifest */,
+    const base::Value& /* manifest */,
     const base::FilePath& /* install_dir */) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
@@ -84,7 +84,7 @@ base::FilePath SafetyTipsComponentInstallerPolicy::GetInstalledPath(
 void SafetyTipsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    std::unique_ptr<base::DictionaryValue> /* manifest */) {
+    base::Value /* manifest */) {
   DVLOG(1) << "Component ready, version " << version.GetString() << " in "
            << install_dir.value();
 
@@ -103,7 +103,7 @@ void SafetyTipsComponentInstallerPolicy::ComponentReady(
 
 // Called during startup and installation before ComponentReady().
 bool SafetyTipsComponentInstallerPolicy::VerifyInstallation(
-    const base::DictionaryValue& /* manifest */,
+    const base::Value& /* manifest */,
     const base::FilePath& install_dir) const {
   // No need to actually validate the proto here, since we'll do the checking
   // in PopulateFromDynamicUpdate().

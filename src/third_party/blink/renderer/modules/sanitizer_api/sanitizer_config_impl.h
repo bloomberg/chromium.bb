@@ -30,12 +30,24 @@ struct SanitizerConfigImpl {
   HashMap<String, Vector<String>> allow_attributes_;
   HashMap<String, Vector<String>> drop_attributes_;
   bool allow_custom_elements_;
+  bool allow_comments_;
+
+  // These members store whether the original SanitizerConfig had the
+  // corresponding members set or not. This only serves to reconstruct the
+  // SanitizerConfig* in the ToAPI method.
+  bool had_allow_elements_;
+  bool had_allow_attributes_;
+  bool had_allow_custom_elements_;
 
   // Create a SantizerConfigImpl from a SanitizerConfig.
   // Will use the default config if it received nullptr.
   static SanitizerConfigImpl From(const SanitizerConfig*);
 
-  static SanitizerConfig* defaultConfig();
+  // Create an IDL SanitizerConfig from this impl, for use in the config()
+  // accessor.
+  static SanitizerConfig* ToAPI(const SanitizerConfigImpl&);
+
+  static SanitizerConfig* DefaultConfig();
 };
 
 }  // namespace blink

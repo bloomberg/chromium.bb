@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_STREAM_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_STREAM_MOJOM_TRAITS_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -106,6 +107,10 @@ struct BLINK_COMMON_EXPORT
   static bool request_pan_tilt_zoom_permission(
       const blink::StreamControls& controls) {
     return controls.request_pan_tilt_zoom_permission;
+  }
+
+  static bool region_capture_capable(const blink::StreamControls& controls) {
+    return controls.region_capture_capable;
   }
 
   static bool Read(blink::mojom::StreamControlsDataView input,

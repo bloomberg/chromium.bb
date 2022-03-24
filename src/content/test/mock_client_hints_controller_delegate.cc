@@ -4,8 +4,6 @@
 
 #include "content/test/mock_client_hints_controller_delegate.h"
 
-#include "base/feature_list.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
@@ -28,8 +26,9 @@ bool MockClientHintsControllerDelegate::IsJavaScriptAllowed(const GURL& url) {
   return true;
 }
 
-bool MockClientHintsControllerDelegate::UserAgentClientHintEnabled() {
-  return base::FeatureList::IsEnabled(features::kUserAgentClientHint);
+bool MockClientHintsControllerDelegate::AreThirdPartyCookiesBlocked(
+    const GURL& url) {
+  return false;
 }
 
 blink::UserAgentMetadata
@@ -39,21 +38,20 @@ MockClientHintsControllerDelegate::GetUserAgentMetadata() {
 
 void MockClientHintsControllerDelegate::PersistClientHints(
     const url::Origin& primary_origin,
-    const std::vector<::network::mojom::WebClientHintsType>& client_hints,
-    base::TimeDelta expiration_duration) {
-  blink::WebEnabledClientHints web_client_hints;
+    const std::vector<::network::mojom::WebClientHintsType>& client_hints) {
+  blink::EnabledClientHints enabled_client_hints;
   for (const auto& type : client_hints) {
-    web_client_hints.SetIsEnabled(type, true);
+    enabled_client_hints.SetIsEnabled(type, true);
   }
 
-  PersistClientHintsHelper(primary_origin.GetURL(), web_client_hints,
-                           expiration_duration, &client_hints_map_);
+  PersistClientHintsHelper(primary_origin.GetURL(), enabled_client_hints,
+                           &client_hints_map_);
 }
 
 // Get which client hints opt-ins were persisted on current origin.
 void MockClientHintsControllerDelegate::GetAllowedClientHintsFromSource(
     const GURL& url,
-    blink::WebEnabledClientHints* client_hints) {
+    blink::EnabledClientHints* client_hints) {
   GetAllowedClientHintsFromSourceHelper(url, client_hints_map_, client_hints);
   for (auto hint : additional_hints_)
     client_hints->SetIsEnabled(hint, true);

@@ -18,6 +18,7 @@ import {Registry} from '../common/registry';
 import {TraceTime, TrackState} from '../common/state';
 import {fromNs, toNs} from '../common/time';
 import {LIMIT, TrackData} from '../common/track_data';
+import {publishTrackData} from '../frontend/publish';
 
 import {Controller} from './controller';
 import {ControllerFactory} from './controller';
@@ -68,7 +69,7 @@ export abstract class TrackController<
   // Must be overridden by the track implementation. Is invoked when the track
   // frontend runs out of cached data. The derived track controller is expected
   // to publish new track data in response to this call.
-  abstract async onBoundsChange(start: number, end: number, resolution: number):
+  abstract onBoundsChange(start: number, end: number, resolution: number):
       Promise<Data>;
 
   get trackState(): TrackState {
@@ -93,7 +94,7 @@ export abstract class TrackController<
 
   publish(data: Data): void {
     this.data = data;
-    globals.publish('TrackData', {id: this.trackId, data});
+    publishTrackData({id: this.trackId, data});
   }
 
   /**
@@ -151,7 +152,7 @@ export abstract class TrackController<
         globals.state.frontendLocalState.visibleState.resolution;
   }
 
-  // Decides, based on the the length of the trace and the number of rows
+  // Decides, based on the length of the trace and the number of rows
   // provided whether a TrackController subclass should cache its quantized
   // data. Returns the bucket size (in ns) if caching should happen and
   // undefined otherwise.

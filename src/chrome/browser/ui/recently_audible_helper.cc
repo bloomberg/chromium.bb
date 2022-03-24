@@ -46,6 +46,7 @@ RecentlyAudibleHelper::RegisterCallbackForTesting(const Callback& callback) {
 
 RecentlyAudibleHelper::RecentlyAudibleHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
+      content::WebContentsUserData<RecentlyAudibleHelper>(*contents),
       tick_clock_(GetDefaultTickClock()) {
   if (contents->IsCurrentlyAudible())
     last_audible_time_ = base::TimeTicks::Max();
@@ -117,4 +118,4 @@ void RecentlyAudibleHelper::SetNotRecentlyAudibleForTesting() {
   recently_audible_timer_.Stop();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(RecentlyAudibleHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(RecentlyAudibleHelper);

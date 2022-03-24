@@ -40,6 +40,8 @@ const char* ConnectorPref(AnalysisConnector connector) {
       return kOnFileDownloadedPref;
     case AnalysisConnector::FILE_ATTACHED:
       return kOnFileAttachedPref;
+    case AnalysisConnector::PRINT:
+      return kOnPrintPref;
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
       NOTREACHED() << "Using unspecified analysis connector";
       return "";
@@ -68,6 +70,8 @@ const char* ConnectorScopePref(AnalysisConnector connector) {
       return kOnFileDownloadedScopePref;
     case AnalysisConnector::FILE_ATTACHED:
       return kOnFileAttachedScopePref;
+    case AnalysisConnector::PRINT:
+      return kOnPrintScopePref;
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
       NOTREACHED() << "Using unspecified analysis connector";
       return "";
@@ -82,7 +86,8 @@ const char* ConnectorScopePref(ReportingConnector connector) {
 }
 
 TriggeredRule::Action GetHighestPrecedenceAction(
-    const ContentAnalysisResponse& response) {
+    const ContentAnalysisResponse& response,
+    std::string* tag) {
   auto action = TriggeredRule::ACTION_UNSPECIFIED;
 
   for (const auto& result : response.results()) {
@@ -91,8 +96,14 @@ TriggeredRule::Action GetHighestPrecedenceAction(
       continue;
     }
 
-    for (const auto& rule : result.triggered_rules())
-      action = GetHighestPrecedenceAction(action, rule.action());
+    for (const auto& rule : result.triggered_rules()) {
+      auto higher_precedence_action =
+          GetHighestPrecedenceAction(action, rule.action());
+      if (higher_precedence_action != action && tag != nullptr) {
+        *tag = result.tag();
+      }
+      action = higher_precedence_action;
+    }
   }
   return action;
 }
@@ -122,10 +133,43 @@ TriggeredRule::Action GetHighestPrecedenceAction(
   return TriggeredRule::ACTION_UNSPECIFIED;
 }
 
+FileMetadata::FileMetadata(const std::string& filename,
+                           const std::string& sha256,
+                           const std::string& mime_type,
+                           int64_t size,
+                           const ContentAnalysisResponse& scan_response)
+    : filename(filename),
+      sha256(sha256),
+      mime_type(mime_type),
+      size(size),
+      scan_response(scan_response) {}
+FileMetadata::FileMetadata(FileMetadata&&) = default;
+FileMetadata::FileMetadata(const FileMetadata&) = default;
+FileMetadata& FileMetadata::operator=(const FileMetadata&) = default;
+FileMetadata::~FileMetadata() = default;
+
 const char ScanResult::kKey[] = "enterprise_connectors.scan_result_key";
-ScanResult::ScanResult(const ContentAnalysisResponse& response)
-    : response(response) {}
+ScanResult::ScanResult(FileMetadata metadata) {
+  file_metadata.push_back(std::move(metadata));
+}
 ScanResult::~ScanResult() = default;
+
+const char SavePackageScanningData::kKey[] =
+    "enterprise_connectors.save_package_scanning_key";
+SavePackageScanningData::SavePackageScanningData(
+    content::SavePackageAllowedCallback callback)
+    : callback(std::move(callback)) {}
+SavePackageScanningData::~SavePackageScanningData() = default;
+
+void RunSavePackageScanningCallback(download::DownloadItem* item,
+                                    bool allowed) {
+  DCHECK(item);
+
+  auto* data = static_cast<SavePackageScanningData*>(
+      item->GetUserData(SavePackageScanningData::kKey));
+  if (data && !data->callback.is_null())
+    std::move(data->callback).Run(allowed);
+}
 
 bool ContainsMalwareVerdict(const ContentAnalysisResponse& response) {
   const auto& results = response.results();

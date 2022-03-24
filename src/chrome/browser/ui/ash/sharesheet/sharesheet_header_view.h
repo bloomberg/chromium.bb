@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "base/callback_list.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/ash/thumbnail_loader.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -54,12 +55,10 @@ class SharesheetHeaderView : public views::View {
 
   // Parses the share_text attribute for each individual url and text
   // from the intent struct and returns the result in a vector.
-  //
-  // TODO(crbug.com/2650014): Move the existing ExtractSharedFields function
-  // from share_target_utils.h to a common place and reuse the function here.
   std::vector<std::u16string> ExtractShareText();
   const gfx::VectorIcon& GetTextVectorIcon();
 
+  // TODO(crbug.com/1233830): Move business logic out of UI code.
   void ResolveImages();
   void ResolveImage(size_t index);
   void LoadImage(const base::FilePath& file_path,
@@ -67,17 +66,14 @@ class SharesheetHeaderView : public views::View {
                  HoldingSpaceImage::BitmapCallback callback);
   void OnImageLoaded(const gfx::Size& size, size_t index);
 
-  const base::FilePath GetFilePathFromFileSystemUrl(
-      const GURL& file_system_url);
-
   // Contains the share title and text preview views.
-  views::View* text_view_ = nullptr;
-  SharesheetImagePreview* image_preview_;
+  raw_ptr<views::View> text_view_ = nullptr;
+  raw_ptr<SharesheetImagePreview> image_preview_;
   // |text_icon_| is only used when we have no icons to show in the image
   // preview.
   TextPlaceholderIcon text_icon_ = TextPlaceholderIcon::kGenericText;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   apps::mojom::IntentPtr intent_;
 
   ThumbnailLoader thumbnail_loader_;

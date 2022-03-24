@@ -82,7 +82,7 @@ class RequirementsCheckerTest : public ExtensionsTest {
       manifest_dict_->Set(kFeaturesKey, std::make_unique<base::ListValue>());
     base::ListValue* features_list = nullptr;
     ASSERT_TRUE(manifest_dict_->GetList(kFeaturesKey, &features_list));
-    features_list->AppendString(feature);
+    features_list->Append(feature);
   }
 
   std::unique_ptr<RequirementsChecker> checker_;
@@ -148,7 +148,7 @@ TEST_F(RequirementsCheckerTest, RequirementsFailWebGL) {
   // waiting for the GPU check to succeed: crbug.com/706204.
   if (runner_.errors().size()) {
     EXPECT_THAT(runner_.errors(), testing::UnorderedElementsAre(
-                                      PreloadCheck::WEBGL_NOT_SUPPORTED));
+                                      PreloadCheck::Error::kWebglNotSupported));
     EXPECT_FALSE(checker_->GetErrorMessage().empty());
   }
 }

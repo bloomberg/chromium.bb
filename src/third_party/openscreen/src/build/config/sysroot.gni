@@ -29,7 +29,6 @@ if (use_sysroot) {
   if (exec_script("//build/scripts/dir_exists.py",
                   [ rebase_path(sysroot) ],
                   "string") != "True") {
-    print("Missing or outdated sysroot for $current_cpu, downloading latest...")
     exec_script("//build/scripts/install-sysroot.py",
                 [
                   "$current_cpu",

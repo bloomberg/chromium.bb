@@ -21,6 +21,21 @@ class ContentBrowserTestShellContentBrowserClient
   }
 };
 
+ContentBrowserTestShellMainDelegate::ContentBrowserTestShellMainDelegate()
+    : ShellMainDelegate(/*is_content_browsertests=*/true) {}
+
+ContentBrowserTestShellMainDelegate::~ContentBrowserTestShellMainDelegate() =
+    default;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ContentBrowserTestShellMainDelegate::PostEarlyInitialization(
+    bool is_running_tests) {
+  // Browser tests on Lacros requires a non-null LacrosService.
+  lacros_service_ = std::make_unique<chromeos::LacrosService>();
+  ShellMainDelegate::PostEarlyInitialization(is_running_tests);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 ContentBrowserClient*
 ContentBrowserTestShellMainDelegate::CreateContentBrowserClient() {
   browser_client_ =

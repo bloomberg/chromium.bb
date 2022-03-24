@@ -32,7 +32,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
@@ -59,6 +59,9 @@ class CastTransportImpl final : public CastTransport {
       std::unique_ptr<Client> client,
       std::unique_ptr<PacketTransport> transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
+
+  CastTransportImpl(const CastTransportImpl&) = delete;
+  CastTransportImpl& operator=(const CastTransportImpl&) = delete;
 
   ~CastTransportImpl() final;
 
@@ -143,7 +146,7 @@ class CastTransportImpl final : public CastTransport {
   void OnReceivedCastMessage(uint32_t ssrc,
                              const RtcpCastMessage& cast_message);
 
-  const base::TickClock* const clock_;  // Not owned by this class.
+  const raw_ptr<const base::TickClock> clock_;  // Not owned by this class.
   const base::TimeDelta logging_flush_interval_;
   const std::unique_ptr<Client> transport_client_;
   const std::unique_ptr<PacketTransport> transport_;
@@ -184,8 +187,6 @@ class CastTransportImpl final : public CastTransport {
   SessionMap sessions_;
 
   base::WeakPtrFactory<CastTransportImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CastTransportImpl);
 };
 
 }  // namespace cast

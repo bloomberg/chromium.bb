@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -828,11 +827,12 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, LinkRelPrefetchReferrerPolicy) {
   EXPECT_TRUE(image_request->initiator.has_value());
   EXPECT_EQ(top_origin, image_request->initiator);
   // Respect the "origin" policy set by the <meta> tag.
-  EXPECT_EQ(top_url.GetOrigin().spec(), image_request->referrer);
+  EXPECT_EQ(top_url.DeprecatedGetOriginAsURL().spec(), image_request->referrer);
   EXPECT_TRUE(image_request->load_flags & net::LOAD_PREFETCH);
 }
 
-IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, BasicCrossSite) {
+// TODO(crbug.com/1271868): Flaky on all platforms.
+IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, DISABLED_BasicCrossSite) {
   GURL top_url(embedded_test_server()->GetURL(
       "a.com", "/nested_page_with_subresources.html"));
   GURL nested_url(embedded_test_server()->GetURL(
@@ -1091,6 +1091,10 @@ class URLModifyingThrottle : public blink::URLLoaderThrottle {
  public:
   URLModifyingThrottle(bool modify_start, bool modify_redirect)
       : modify_start_(modify_start), modify_redirect_(modify_redirect) {}
+
+  URLModifyingThrottle(const URLModifyingThrottle&) = delete;
+  URLModifyingThrottle& operator=(const URLModifyingThrottle&) = delete;
+
   ~URLModifyingThrottle() override = default;
 
   void WillStartRequest(network::ResourceRequest* request,
@@ -1133,8 +1137,6 @@ class URLModifyingThrottle : public blink::URLLoaderThrottle {
   bool modify_start_;
   bool modify_redirect_;
   bool modified_redirect_url_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(URLModifyingThrottle);
 };
 
 class ThrottleContentBrowserClient : public TestContentBrowserClient {
@@ -1143,6 +1145,11 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
       : TestContentBrowserClient(),
         modify_start_(modify_start),
         modify_redirect_(modify_redirect) {}
+
+  ThrottleContentBrowserClient(const ThrottleContentBrowserClient&) = delete;
+  ThrottleContentBrowserClient& operator=(const ThrottleContentBrowserClient&) =
+      delete;
+
   ~ThrottleContentBrowserClient() override {}
 
   // ContentBrowserClient overrides:
@@ -1163,8 +1170,6 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
  private:
   bool modify_start_;
   bool modify_redirect_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThrottleContentBrowserClient);
 };
 
 // Ensures if a URLLoaderThrottle modifies a URL in WillStartRequest the

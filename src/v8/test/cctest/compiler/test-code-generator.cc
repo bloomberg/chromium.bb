@@ -114,7 +114,6 @@ Handle<Code> BuildSetupFunction(Isolate* isolate,
       }
       default:
         UNREACHABLE();
-        break;
     }
   }
   params.push_back(state_out);
@@ -151,7 +150,6 @@ Handle<Code> BuildSetupFunction(Isolate* isolate,
       }
       default:
         UNREACHABLE();
-        break;
     }
     params.push_back(element);
   }
@@ -246,7 +244,6 @@ Handle<Code> BuildTeardownFunction(Isolate* isolate,
       }
       default:
         UNREACHABLE();
-        break;
     }
   }
   __ Return(result_array);
@@ -672,7 +669,6 @@ class TestEnvironment : public HandleAndZoneScope {
         }
         default:
           UNREACHABLE();
-          break;
       }
     }
     return state;
@@ -757,7 +753,6 @@ class TestEnvironment : public HandleAndZoneScope {
             break;
           default:
             UNREACHABLE();
-            break;
         }
         state_out->set(to_index, *constant_value);
       } else {
@@ -828,7 +823,6 @@ class TestEnvironment : public HandleAndZoneScope {
         return true;
       default:
         UNREACHABLE();
-        break;
     }
   }
 
@@ -971,7 +965,7 @@ class CodeGeneratorTester {
   explicit CodeGeneratorTester(TestEnvironment* environment,
                                int extra_stack_space = 0)
       : zone_(environment->main_zone()),
-        info_(ArrayVector("test"), environment->main_zone(),
+        info_(base::ArrayVector("test"), environment->main_zone(),
               CodeKind::FOR_TESTING),
         linkage_(environment->test_descriptor()),
         frame_(environment->test_descriptor()->CalculateFixedFrameSize(
@@ -1008,9 +1002,8 @@ class CodeGeneratorTester {
         environment->main_zone(), &frame_, &linkage_,
         environment->instructions(), &info_, environment->main_isolate(),
         base::Optional<OsrHelper>(), kNoSourcePosition, nullptr,
-        PoisoningMitigationLevel::kDontPoison,
         AssemblerOptions::Default(environment->main_isolate()),
-        Builtins::kNoBuiltinId, kMaxUnoptimizedFrameHeight,
+        Builtin::kNoBuiltinId, kMaxUnoptimizedFrameHeight,
         kMaxPushedArgumentCount);
 
     generator_->tasm()->CodeEntry();
@@ -1062,7 +1055,6 @@ class CodeGeneratorTester {
         AllocatedOperand(LocationOperand::REGISTER,
                          MachineRepresentation::kTagged,
                          kReturnRegister0.code()),
-        ImmediateOperand(ImmediateOperand::INLINE_INT32, -1),  // poison index.
         ImmediateOperand(ImmediateOperand::INLINE_INT32, optional_padding_slot),
         ImmediateOperand(ImmediateOperand::INLINE_INT32, stack_slot_delta)};
     Instruction* tail_call =
@@ -1085,8 +1077,7 @@ class CodeGeneratorTester {
     defined(V8_TARGET_ARCH_PPC) || defined(V8_TARGET_ARCH_PPC64)
     // Only folding register pushes is supported on ARM.
     bool supported = ((push_type & CodeGenerator::kRegisterPush) == push_type);
-#elif defined(V8_TARGET_ARCH_X64) || defined(V8_TARGET_ARCH_IA32) || \
-    defined(V8_TARGET_ARCH_X87)
+#elif defined(V8_TARGET_ARCH_X64) || defined(V8_TARGET_ARCH_IA32)
     bool supported = ((push_type & CodeGenerator::kScalarPush) == push_type);
 #else
     bool supported = false;
@@ -1151,7 +1142,6 @@ class CodeGeneratorTester {
         AllocatedOperand(LocationOperand::REGISTER,
                          MachineRepresentation::kTagged,
                          kReturnRegister0.code()),
-        ImmediateOperand(ImmediateOperand::INLINE_INT32, -1),  // poison index.
         ImmediateOperand(ImmediateOperand::INLINE_INT32, optional_padding_slot),
         ImmediateOperand(ImmediateOperand::INLINE_INT32,
                          first_unused_stack_slot)};
@@ -1447,7 +1437,7 @@ std::shared_ptr<wasm::NativeModule> AllocateNativeModule(Isolate* isolate,
   // We have to add the code object to a NativeModule, because the
   // WasmCallDescriptor assumes that code is on the native heap and not
   // within a code object.
-  auto native_module = isolate->wasm_engine()->NewNativeModule(
+  auto native_module = wasm::GetWasmEngine()->NewNativeModule(
       isolate, wasm::WasmFeatures::All(), std::move(module), code_size);
   native_module->SetWireBytes({});
   return native_module;
@@ -1490,8 +1480,8 @@ TEST(Regress_1171759) {
 
   m.Return(m.Int32Constant(0));
 
-  OptimizedCompilationInfo info(ArrayVector("testing"), handles.main_zone(),
-                                CodeKind::WASM_FUNCTION);
+  OptimizedCompilationInfo info(base::ArrayVector("testing"),
+                                handles.main_zone(), CodeKind::WASM_FUNCTION);
   Handle<Code> code =
       Pipeline::GenerateCodeForTesting(
           &info, handles.main_isolate(), desc, m.graph(),

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 
@@ -25,6 +25,9 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
       network::NetworkConnectionTracker* network_connection_tracker,
       PrefService* local_state);
 
+  ChromeDataUseMeasurement(const ChromeDataUseMeasurement&) = delete;
+  ChromeDataUseMeasurement& operator=(const ChromeDataUseMeasurement&) = delete;
+
   // Called when requests complete from NetworkService. Called for all requests
   // (including service requests and user-initiated requests).
   void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
@@ -40,13 +43,11 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeDataUseMeasurement);
-
   void UpdateMetricsUsagePrefs(int64_t total_bytes,
                                bool is_cellular,
                                bool is_metrics_service_usage);
 
-  PrefService* local_state_ = nullptr;
+  raw_ptr<PrefService> local_state_ = nullptr;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

@@ -35,9 +35,19 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
         for property_name, project_name in revision_mapping.items()
     }
     if commit_positions:
+
+      def get_ref(project_name):
+        revision = fixed_revisions.get(project_name, 'HEAD')
+        if revision.startswith('origin/'):
+          return revision.replace('origin/', 'refs/heads/', 1)
+        if revision.startswith('refs/'):
+          return revision
+        return 'refs/heads/main'
+
       properties.update({
-          '%s_cp' % property_name: ('refs/heads/master@{#%s}' %
-                                    self.gen_commit_position(project_name))
+          '%s_cp' % property_name:
+          ('%s@{#%s}' %
+           (get_ref(project_name), self.gen_commit_position(project_name)))
           for property_name, project_name in revision_mapping.items()
       })
 
@@ -100,11 +110,11 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
   @staticmethod
   def gen_revision(project):
     """Hash project to bogus deterministic git hash values."""
-    h = hashlib.sha1(project)
+    h = hashlib.sha1(project.encode('utf-8'))
     return h.hexdigest()
 
   @staticmethod
   def gen_commit_position(project):
     """Hash project to bogus deterministic Cr-Commit-Position values."""
-    h = hashlib.sha1(project)
+    h = hashlib.sha1(project.encode('utf-8'))
     return struct.unpack('!I', h.digest()[:4])[0] % 300000

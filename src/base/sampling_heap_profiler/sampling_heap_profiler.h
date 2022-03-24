@@ -11,16 +11,18 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
+#include "build/build_config.h"
+
+namespace heap_profiling {
+class HeapProfilerControllerTest;
+}
 
 namespace base {
-
-template <typename T>
-class NoDestructor;
 
 // The class implements sampling profiling of native memory heap.
 // It uses PoissonAllocationSampler to aggregate the heap allocations and
@@ -46,11 +48,6 @@ class BASE_EXPORT SamplingHeapProfiler
     // Name of the thread that made the sampled allocation.
     const char* thread_name = nullptr;
     // Call stack of PC addresses responsible for the allocation.
-    // If AllocationContextTracker::capture_mode() is in PSEUDO or MIXED modes
-    // the frame pointers may point to the name strings instead of PCs. In this
-    // cases all the strings pointers are also reported with |GetStrings| method
-    // of the |SamplingHeapProfiler|. This way they can be distinguished from
-    // the PC pointers.
     std::vector<void*> stack;
 
     // Public for testing.
@@ -93,12 +90,13 @@ class BASE_EXPORT SamplingHeapProfiler
   // Captures up to |max_entries| stack frames using the buffer pointed by
   // |frames|. Puts the number of captured frames into the |count| output
   // parameters. Returns the pointer to the topmost frame.
-  static void** CaptureStackTrace(void** frames,
-                                  size_t max_entries,
-                                  size_t* count);
+  void** CaptureStackTrace(void** frames, size_t max_entries, size_t* count);
 
   static void Init();
   static SamplingHeapProfiler* Get();
+
+  SamplingHeapProfiler(const SamplingHeapProfiler&) = delete;
+  SamplingHeapProfiler& operator=(const SamplingHeapProfiler&) = delete;
 
   // ThreadIdNameManager::Observer implementation:
   void OnThreadNameChanged(const char* name) override;
@@ -115,9 +113,14 @@ class BASE_EXPORT SamplingHeapProfiler
                    const char* context) override;
   void SampleRemoved(void* address) override;
 
-  void CaptureMixedStack(const char* context, Sample* sample);
   void CaptureNativeStack(const char* context, Sample* sample);
   const char* RecordString(const char* string) EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+
+  // Delete all samples recorded, to ensure the profiler is in a consistent
+  // state at the beginning of a test. This should only be called within the
+  // scope of a PoissonAllocationSampler::ScopedMuteHookedSamplesForTesting so
+  // that new hooked samples don't arrive while it's running.
+  void ClearSamplesForTesting();
 
   // Mutex to access |samples_| and |strings_|.
   Lock mutex_;
@@ -125,12 +128,7 @@ class BASE_EXPORT SamplingHeapProfiler
   // Samples of the currently live allocations.
   std::unordered_map<void*, Sample> samples_ GUARDED_BY(mutex_);
 
-  // When CaptureMode::PSEUDO_STACK or CaptureMode::MIXED_STACK is enabled
-  // the call stack contents of samples may contain strings besides
-  // PC addresses.
-  // In this case each string pointer is also added to the |strings_| set.
-  // The set does only contain pointers to static strings that are never
-  // deleted.
+  // Contains pointers to static sample context strings that are never deleted.
   std::unordered_set<const char*> strings_ GUARDED_BY(mutex_);
 
   // Mutex to make |running_sessions_| and Add/Remove samples observer access
@@ -146,10 +144,14 @@ class BASE_EXPORT SamplingHeapProfiler
   // Whether it should record thread names.
   std::atomic<bool> record_thread_names_{false};
 
+#if defined(OS_ANDROID)
+  // Whether to use CFI unwinder or default unwinder.
+  std::atomic<bool> use_default_unwinder_{false};
+#endif
+
+  friend class heap_profiling::HeapProfilerControllerTest;
   friend class NoDestructor<SamplingHeapProfiler>;
   friend class SamplingHeapProfilerTest;
-
-  DISALLOW_COPY_AND_ASSIGN(SamplingHeapProfiler);
 };
 
 }  // namespace base

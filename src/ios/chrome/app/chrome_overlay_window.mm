@@ -7,7 +7,7 @@
 #include "base/check.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/metrics/user_interface_style_recorder.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,10 +30,8 @@
   if (self) {
     // When not created via a nib, create the recorders immediately.
     [self updateBreakpad];
-    if (@available(iOS 13, *)) {
-      _userInterfaceStyleRecorder = [[UserInterfaceStyleRecorder alloc]
-          initWithUserInterfaceStyle:self.traitCollection.userInterfaceStyle];
-    }
+    _userInterfaceStyleRecorder = [[UserInterfaceStyleRecorder alloc]
+        initWithUserInterfaceStyle:self.traitCollection.userInterfaceStyle];
   }
   return self;
 }
@@ -51,13 +49,10 @@
 }
 
 - (void)setFrame:(CGRect)rect {
-  if (@available(iOS 13, *)) {
-    if (!IsIPadIdiom() && (rect.origin.x != 0 || rect.origin.y != 0)) {
-      // skip, this rect is wrong and probably in portrait while
-      // display is in landscape or vice-versa.
-    } else {
-      [super setFrame:rect];
-    }
+  if ((ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) &&
+      (rect.origin.x != 0 || rect.origin.y != 0)) {
+    // skip, this rect is wrong and probably in portrait while
+    // display is in landscape or vice-versa.
   } else {
     [super setFrame:rect];
   }
@@ -71,15 +66,13 @@
       self.traitCollection.horizontalSizeClass) {
     [self updateBreakpad];
   }
-  if (@available(iOS 13, *)) {
-    if ([self.traitCollection
-            hasDifferentColorAppearanceComparedToTraitCollection:
-                previousTraitCollection]) {
-      [self.userInterfaceStyleRecorder
-          userInterfaceStyleDidChange:self.traitCollection.userInterfaceStyle];
-    }
-    [self updateBreakpad];
+  if ([self.traitCollection
+          hasDifferentColorAppearanceComparedToTraitCollection:
+              previousTraitCollection]) {
+    [self.userInterfaceStyleRecorder
+        userInterfaceStyleDidChange:self.traitCollection.userInterfaceStyle];
   }
+  [self updateBreakpad];
 }
 
 @end

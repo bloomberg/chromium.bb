@@ -74,6 +74,7 @@ typedef struct MCDeintContext {
     int mode;           ///< MCDeintMode
     int parity;         ///< MCDeintParity
     int qp;
+    AVPacket *pkt;
     AVCodecContext *enc_ctx;
 } MCDeintContext;
 
@@ -112,6 +113,9 @@ static int config_props(AVFilterLink *inlink)
         return AVERROR(EINVAL);
     }
 
+    mcdeint->pkt = av_packet_alloc();
+    if (!mcdeint->pkt)
+        return AVERROR(ENOMEM);
     mcdeint->enc_ctx = avcodec_alloc_context3(enc);
     if (!mcdeint->enc_ctx)
         return AVERROR(ENOMEM);
@@ -154,18 +158,8 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     MCDeintContext *mcdeint = ctx->priv;
 
+    av_packet_free(&mcdeint->pkt);
     avcodec_free_context(&mcdeint->enc_ctx);
-}
-
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE
-    };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
@@ -173,7 +167,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     MCDeintContext *mcdeint = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
     AVFrame *outpic, *frame_dec;
-    AVPacket pkt = {0};
+    AVPacket *pkt = mcdeint->pkt;
     int x, y, i, ret, got_frame = 0;
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -184,9 +178,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     av_frame_copy_props(outpic, inpic);
     inpic->quality = mcdeint->qp * FF_QP2LAMBDA;
 
-    av_init_packet(&pkt);
-
-    ret = avcodec_encode_video2(mcdeint->enc_ctx, &pkt, inpic, &got_frame);
+    ret = avcodec_encode_video2(mcdeint->enc_ctx, pkt, inpic, &got_frame);
     if (ret < 0)
         goto end;
 
@@ -274,7 +266,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     mcdeint->parity ^= 1;
 
 end:
-    av_packet_unref(&pkt);
+    av_packet_unref(pkt);
     av_frame_free(&inpic);
     if (ret < 0) {
         av_frame_free(&outpic);
@@ -290,7 +282,6 @@ static const AVFilterPad mcdeint_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_props,
     },
-    { NULL }
 };
 
 static const AVFilterPad mcdeint_outputs[] = {
@@ -298,16 +289,15 @@ static const AVFilterPad mcdeint_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_mcdeint = {
+const AVFilter ff_vf_mcdeint = {
     .name          = "mcdeint",
     .description   = NULL_IF_CONFIG_SMALL("Apply motion compensating deinterlacing."),
     .priv_size     = sizeof(MCDeintContext),
     .uninit        = uninit,
-    .query_formats = query_formats,
-    .inputs        = mcdeint_inputs,
-    .outputs       = mcdeint_outputs,
+    FILTER_INPUTS(mcdeint_inputs),
+    FILTER_OUTPUTS(mcdeint_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_YUV420P),
     .priv_class    = &mcdeint_class,
 };

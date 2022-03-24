@@ -47,8 +47,8 @@ class ProcessTrackerTest : public ::testing::Test {
 TEST_F(ProcessTrackerTest, PushProcess) {
   context.process_tracker->SetProcessMetadata(1, base::nullopt, "test",
                                               base::StringView());
-  auto pair_it = context.process_tracker->UpidsForPidForTesting(1);
-  ASSERT_EQ(pair_it.first->second, 1u);
+  auto opt_upid = context.process_tracker->UpidForPidForTesting(1);
+  ASSERT_EQ(opt_upid.value_or(-1), 1u);
 }
 
 TEST_F(ProcessTrackerTest, GetOrCreateNewProcess) {
@@ -57,8 +57,8 @@ TEST_F(ProcessTrackerTest, GetOrCreateNewProcess) {
 }
 
 TEST_F(ProcessTrackerTest, StartNewProcess) {
-  auto upid =
-      context.process_tracker->StartNewProcess(1000, 0u, 123, kNullStringId);
+  auto upid = context.process_tracker->StartNewProcess(
+      1000, 0u, 123, kNullStringId, ThreadNamePriority::kFtrace);
   ASSERT_EQ(context.process_tracker->GetOrCreateProcess(123), upid);
   ASSERT_EQ(context.storage->process_table().start_ts()[upid], 1000);
 }
@@ -68,9 +68,8 @@ TEST_F(ProcessTrackerTest, PushTwoProcessEntries_SamePidAndName) {
                                               base::StringView());
   context.process_tracker->SetProcessMetadata(1, base::nullopt, "test",
                                               base::StringView());
-  auto pair_it = context.process_tracker->UpidsForPidForTesting(1);
-  ASSERT_EQ(pair_it.first->second, 1u);
-  ASSERT_EQ(++pair_it.first, pair_it.second);
+  auto opt_upid = context.process_tracker->UpidForPidForTesting(1);
+  ASSERT_EQ(opt_upid.value_or(-1), 1u);
 }
 
 TEST_F(ProcessTrackerTest, PushTwoProcessEntries_DifferentPid) {
@@ -78,10 +77,10 @@ TEST_F(ProcessTrackerTest, PushTwoProcessEntries_DifferentPid) {
                                               base::StringView());
   context.process_tracker->SetProcessMetadata(3, base::nullopt, "test",
                                               base::StringView());
-  auto pair_it = context.process_tracker->UpidsForPidForTesting(1);
-  ASSERT_EQ(pair_it.first->second, 1u);
-  auto second_pair_it = context.process_tracker->UpidsForPidForTesting(3);
-  ASSERT_EQ(second_pair_it.first->second, 2u);
+  auto opt_upid = context.process_tracker->UpidForPidForTesting(1);
+  ASSERT_EQ(opt_upid.value_or(-1), 1u);
+  opt_upid = context.process_tracker->UpidForPidForTesting(3);
+  ASSERT_EQ(opt_upid.value_or(-1), 2u);
 }
 
 TEST_F(ProcessTrackerTest, AddProcessEntry_CorrectName) {
@@ -101,18 +100,20 @@ TEST_F(ProcessTrackerTest, UpdateThreadCreate) {
   auto tid_it = context.process_tracker->UtidsForTidForTesting(12);
   ASSERT_NE(tid_it.first, tid_it.second);
   ASSERT_EQ(context.storage->thread_table().upid()[1].value(), 1u);
-  auto pid_it = context.process_tracker->UpidsForPidForTesting(2);
-  ASSERT_NE(pid_it.first, pid_it.second);
+  auto opt_upid = context.process_tracker->UpidForPidForTesting(2);
+  ASSERT_TRUE(opt_upid.has_value());
   ASSERT_EQ(context.storage->process_table().row_count(), 2u);
 }
 
 TEST_F(ProcessTrackerTest, PidReuseWithoutStartAndEndThread) {
   UniquePid p1 = context.process_tracker->StartNewProcess(
-      base::nullopt, base::nullopt, /*pid=*/1, kNullStringId);
+      base::nullopt, base::nullopt, /*pid=*/1, kNullStringId,
+      ThreadNamePriority::kFtrace);
   UniqueTid t1 = context.process_tracker->UpdateThread(/*tid=*/2, /*pid=*/1);
 
   UniquePid p2 = context.process_tracker->StartNewProcess(
-      base::nullopt, base::nullopt, /*pid=*/1, kNullStringId);
+      base::nullopt, base::nullopt, /*pid=*/1, kNullStringId,
+      ThreadNamePriority::kFtrace);
   UniqueTid t2 = context.process_tracker->UpdateThread(/*tid=*/2, /*pid=*/1);
 
   ASSERT_NE(p1, p2);
@@ -156,12 +157,47 @@ TEST_F(ProcessTrackerTest, UpdateThreadName) {
 
 TEST_F(ProcessTrackerTest, SetStartTsIfUnset) {
   auto upid = context.process_tracker->StartNewProcess(
-      /*timestamp=*/base::nullopt, 0u, 123, kNullStringId);
+      /*timestamp=*/base::nullopt, 0u, 123, kNullStringId,
+      ThreadNamePriority::kFtrace);
   context.process_tracker->SetStartTsIfUnset(upid, 1000);
   ASSERT_EQ(context.storage->process_table().start_ts()[upid], 1000);
 
   context.process_tracker->SetStartTsIfUnset(upid, 3000);
   ASSERT_EQ(context.storage->process_table().start_ts()[upid], 1000);
+}
+
+TEST_F(ProcessTrackerTest, PidReuseAfterExplicitEnd) {
+  UniquePid upid = context.process_tracker->GetOrCreateProcess(123);
+  context.process_tracker->EndThread(100, 123);
+
+  UniquePid reuse = context.process_tracker->GetOrCreateProcess(123);
+  ASSERT_NE(upid, reuse);
+}
+
+TEST_F(ProcessTrackerTest, TidReuseAfterExplicitEnd) {
+  UniqueTid utid = context.process_tracker->UpdateThread(123, 123);
+  context.process_tracker->EndThread(100, 123);
+
+  UniqueTid reuse = context.process_tracker->UpdateThread(123, 123);
+  ASSERT_NE(utid, reuse);
+
+  UniqueTid reuse_again = context.process_tracker->UpdateThread(123, 123);
+  ASSERT_EQ(reuse, reuse_again);
+}
+
+TEST_F(ProcessTrackerTest, EndThreadAfterProcessEnd) {
+  context.process_tracker->StartNewProcess(
+      100, base::nullopt, 123, kNullStringId, ThreadNamePriority::kFtrace);
+  context.process_tracker->UpdateThread(124, 123);
+
+  context.process_tracker->EndThread(200, 123);
+  context.process_tracker->EndThread(201, 124);
+
+  // We expect two processes: the idle process and 123.
+  ASSERT_EQ(context.storage->process_table().row_count(), 2u);
+
+  // We expect three theads: the idle thread, 123 and 124.
+  ASSERT_EQ(context.storage->thread_table().row_count(), 3u);
 }
 
 }  // namespace

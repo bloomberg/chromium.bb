@@ -374,6 +374,8 @@ public:
 	Vec4					getPixel					(int x, int y, int z = 0) const;
 	IVec4					getPixelInt					(int x, int y, int z = 0) const;
 	UVec4					getPixelUint				(int x, int y, int z = 0) const { return getPixelInt(x, y, z).cast<deUint32>(); }
+	I64Vec4					getPixelInt64				(int x, int y, int z = 0) const;
+	U64Vec4					getPixelUint64				(int x, int y, int z = 0) const { return getPixelInt64(x, y, z).cast<deUint64>(); }
 
 	template<typename T>
 	Vector<T, 4>			getPixelT					(int x, int y, int z = 0) const;
@@ -624,25 +626,25 @@ private:
 class Texture2D : private TextureLevelPyramid
 {
 public:
-									Texture2D			(const TextureFormat& format, int width, int height, bool es2 = false);
-									Texture2D			(const TextureFormat& format, int width, int height, int mipmaps);
-									Texture2D			(const Texture2D& other);
-									~Texture2D			(void);
+						Texture2D		(const TextureFormat& format, int width, int height, bool es2 = false);
+						Texture2D		(const TextureFormat& format, int width, int height, int mipmaps);
+						Texture2D		(const Texture2D& other);
+						~Texture2D		(void);
 
-	int								getWidth			(void) const	{ return m_width;	}
-	int								getHeight			(void) const	{ return m_height;	}
-	const Texture2DView&			getView				(void) const	{ return m_view;	}
-
-	void							allocLevel			(int levelNdx);
+	int					getWidth		(void) const	{ return m_width;	}
+	int					getHeight		(void) const	{ return m_height;	}
+	const Texture2DView&			getView			(void) const	{ return m_view;	}
+	bool					isYUVTextureUsed	(void) const	{ return m_yuvTextureUsed;}
+	void					allocLevel		(int levelNdx);
 
 	// Sampling
-	Vec4							sample				(const Sampler& sampler, float s, float t, float lod) const;
-	Vec4							sampleOffset		(const Sampler& sampler, float s, float t, float lod, const IVec2& offset) const;
-	float							sampleCompare		(const Sampler& sampler, float ref, float s, float t, float lod) const;
-	float							sampleCompareOffset	(const Sampler& sampler, float ref, float s, float t, float lod, const IVec2& offset) const;
+	Vec4					sample			(const Sampler& sampler, float s, float t, float lod) const;
+	Vec4					sampleOffset		(const Sampler& sampler, float s, float t, float lod, const IVec2& offset) const;
+	float					sampleCompare		(const Sampler& sampler, float ref, float s, float t, float lod) const;
+	float					sampleCompareOffset	(const Sampler& sampler, float ref, float s, float t, float lod, const IVec2& offset) const;
 
-	Vec4							gatherOffsets		(const Sampler& sampler, float s, float t, int componentNdx, const IVec2 (&offsets)[4]) const;
-	Vec4							gatherOffsetsCompare(const Sampler& sampler, float ref, float s, float t, const IVec2 (&offsets)[4]) const;
+	Vec4					gatherOffsets		(const Sampler& sampler, float s, float t, int componentNdx, const IVec2 (&offsets)[4]) const;
+	Vec4					gatherOffsetsCompare	(const Sampler& sampler, float ref, float s, float t, const IVec2 (&offsets)[4]) const;
 
 	using TextureLevelPyramid::getFormat;
 	using TextureLevelPyramid::getNumLevels;
@@ -651,13 +653,14 @@ public:
 	using TextureLevelPyramid::isLevelEmpty;
 
 	Texture2D&						operator=			(const Texture2D& other);
-
+	//whether this is a yuv format texture tests
+	bool							m_yuvTextureUsed;
 	operator Texture2DView (void) const { return m_view; }
 
 private:
-	int								m_width;
-	int								m_height;
-	Texture2DView					m_view;
+	int							m_width;
+	int							m_height;
+	Texture2DView						m_view;
 } DE_WARN_UNUSED_TYPE;
 
 inline Vec4 Texture2D::sample (const Sampler& sampler, float s, float t, float lod) const

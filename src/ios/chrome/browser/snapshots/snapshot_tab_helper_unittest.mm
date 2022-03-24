@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #import "ios/chrome/browser/snapshots/fake_snapshot_generator_delegate.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -107,6 +106,10 @@ class SnapshotTabHelperTest : public PlatformTest {
     view.backgroundColor = [UIColor redColor];
     delegate_.view = view;
   }
+
+  SnapshotTabHelperTest(const SnapshotTabHelperTest&) = delete;
+  SnapshotTabHelperTest& operator=(const SnapshotTabHelperTest&) = delete;
+
   ~SnapshotTabHelperTest() override { [snapshot_cache_ shutdown]; }
 
   void SetCachedSnapshot(UIImage* image) {
@@ -135,9 +138,6 @@ class SnapshotTabHelperTest : public PlatformTest {
   SnapshotCache* snapshot_cache_ = nil;
   NSString* snapshot_id_ = nil;
   web::FakeWebState web_state_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SnapshotTabHelperTest);
 };
 
 // Tests that RetrieveColorSnapshot uses the image from the cache if

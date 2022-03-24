@@ -1,6 +1,0 @@
-{
-  "dependencies": [
-    "models/extensions",
-    "models/persistence"
-  ]
-}

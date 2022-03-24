@@ -8,12 +8,10 @@
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 
 namespace base {
-
 class TimeDelta;
-
 }  // namespace base
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 // Record the status of loading quick answers with status and duration.
@@ -37,15 +35,6 @@ void RecordRequestTextLength(IntentType intent_type, int length);
 void RecordActiveImpression(ResultType result_type,
                             const base::TimeDelta duration);
 
-// Record user interaction with the consent UI with how many times the user has
-// seen the consent and impression duration.
-void RecordNoticeInteraction(NoticeInteractionType type,
-                             int nth_impression,
-                             const base::TimeDelta duration);
-
-// Record consent impression with how many times the user has seen the consent.
-void RecordNoticeImpression(int nth_impression);
-
 // Record the intent generated on-device.
 void RecordIntentType(IntentType intent_type);
 
@@ -53,6 +42,6 @@ void RecordIntentType(IntentType intent_type);
 void RecordNetworkError(IntentType intent_type);
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_UTILS_QUICK_ANSWERS_METRICS_H_

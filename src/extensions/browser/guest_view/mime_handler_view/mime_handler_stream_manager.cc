@@ -5,6 +5,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -81,7 +82,8 @@ class MimeHandlerStreamManager::EmbedderObserver
  private:
   // WebContentsObserver overrides.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -94,7 +96,7 @@ class MimeHandlerStreamManager::EmbedderObserver
 
   bool IsTrackedRenderFrameHost(content::RenderFrameHost* render_frame_host);
 
-  MimeHandlerStreamManager* const stream_manager_;
+  const raw_ptr<MimeHandlerStreamManager> stream_manager_;
   const std::string view_id_;
   int frame_tree_node_id_;
   int render_process_id_;
@@ -106,7 +108,7 @@ class MimeHandlerStreamManager::EmbedderObserver
   // If a RFH is swapped with another RFH, this is set to the new RFH. This
   // ensures that we don't inadvarently clean up the stream when the old RFH
   // dies.
-  content::RenderFrameHost* new_host_;
+  raw_ptr<content::RenderFrameHost> new_host_;
 };
 
 MimeHandlerStreamManager::MimeHandlerStreamManager() = default;
@@ -194,14 +196,14 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderFrameDeleted(
   // picked, a specualtive RenderFrameHost might be deleted. Do not abort the
   // stream in that case.
   if (frame_tree_node_id_ != content::RenderFrameHost::kNoFrameTreeNodeId &&
-      !render_frame_host->IsCurrent())
+      !render_frame_host->IsActive())
     return;
 
   AbortStream();
 }
 
-void MimeHandlerStreamManager::EmbedderObserver::RenderProcessGone(
-    base::TerminationStatus status) {
+void MimeHandlerStreamManager::EmbedderObserver::
+    PrimaryMainFrameRenderProcessGone(base::TerminationStatus status) {
   AbortStream();
 }
 
@@ -228,7 +230,10 @@ void MimeHandlerStreamManager::EmbedderObserver::ReadyToCommitNavigation(
 void MimeHandlerStreamManager::EmbedderObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // If the top level frame is navigating away, clean up the stream.
-  if (navigation_handle->IsInMainFrame() &&
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     AbortStream();
   }

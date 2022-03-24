@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/base_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/memory_dump_provider.h"
 
@@ -60,10 +61,13 @@ struct BASE_EXPORT MemoryDumpProviderInfo
                          const MemoryDumpProvider::Options& options,
                          bool allowed_in_background_mode);
 
+  MemoryDumpProviderInfo(const MemoryDumpProviderInfo&) = delete;
+  MemoryDumpProviderInfo& operator=(const MemoryDumpProviderInfo&) = delete;
+
   // It is safe to access the const fields below from any thread as they are
   // never mutated.
 
-  MemoryDumpProvider* const dump_provider;
+  const raw_ptr<MemoryDumpProvider> dump_provider;
 
   // The |options| arg passed to MDM::RegisterDumpProvider().
   const MemoryDumpProvider::Options options;
@@ -98,8 +102,6 @@ struct BASE_EXPORT MemoryDumpProviderInfo
  private:
   friend class base::RefCountedThreadSafe<MemoryDumpProviderInfo>;
   ~MemoryDumpProviderInfo();
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryDumpProviderInfo);
 };
 
 }  // namespace trace_event

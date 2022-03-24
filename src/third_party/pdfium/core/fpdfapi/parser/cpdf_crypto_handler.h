@@ -7,13 +7,15 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_CRYPTO_HANDLER_H_
 #define CORE_FPDFAPI_PARSER_CPDF_CRYPTO_HANDLER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <memory>
 
 #include "core/fdrm/fx_crypt.h"
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/cfx_binarybuf.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "third_party/base/span.h"
 
@@ -40,12 +42,12 @@ class CPDF_CryptoHandler {
                       uint32_t gennum,
                       pdfium::span<const uint8_t> source,
                       uint8_t* dest_buf,
-                      uint32_t& dest_size) const;
+                      size_t& dest_size) const;
 
   bool IsCipherAES() const;
 
  private:
-  uint32_t DecryptGetSize(uint32_t src_size);
+  size_t DecryptGetSize(size_t src_size);
   void* DecryptStart(uint32_t objnum, uint32_t gennum);
   ByteString Decrypt(uint32_t objnum, uint32_t gennum, const ByteString& str);
   bool DecryptStream(void* context,
@@ -59,8 +61,7 @@ class CPDF_CryptoHandler {
                   uint32_t gennum,
                   pdfium::span<const uint8_t> source,
                   uint8_t* dest_buf,
-                  uint32_t& dest_size) const;
-  void* CryptStart(uint32_t objnum, uint32_t gennum, bool bEncrypt);
+                  size_t& dest_size) const;
   bool CryptStream(void* context,
                    pdfium::span<const uint8_t> source,
                    CFX_BinaryBuf& dest_buf,

@@ -678,7 +678,6 @@ void Texture::CompressedImage(const glw::Functions& gl, glw::GLenum target, glw:
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 }
 
@@ -811,7 +810,6 @@ void Texture::Image(const glw::Functions& gl, glw::GLenum target, glw::GLint lev
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 }
 
@@ -852,7 +850,6 @@ void Texture::Storage(const glw::Functions& gl, glw::GLenum target, glw::GLsizei
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 }
 
@@ -903,7 +900,6 @@ void Texture::SubImage(const glw::Functions& gl, glw::GLenum target, glw::GLint 
 		break;
 	default:
 		TCU_FAIL("Invliad enum");
-		break;
 	}
 }
 
@@ -1006,7 +1002,7 @@ void initPixels(std::vector<TYPE>& pixels, GLuint n_pixels, GLuint n_channels)
 
 RobustnessBase::RobustnessBase(tcu::TestContext& testCtx, const char* name, const char* description,
 							   glu::ApiType apiType)
-	: tcu::TestCase(testCtx, name, description), m_api_type(apiType), m_has_khr_robust_buffer_access(false)
+	: tcu::TestCase(testCtx, name, description), m_api_type(apiType), m_context_is_es(false), m_has_khr_robust_buffer_access(false)
 {
 }
 
@@ -1669,7 +1665,6 @@ const glw::GLchar* TexelFetchTest::getTestCaseName() const
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-		break;
 	}
 
 	return name;
@@ -2614,7 +2609,7 @@ std::string ImageLoadStoreTest::getComputeShader(VERSION version, GLuint coord_o
 		break;
 	default:
 		TCU_FAIL("Invalid enum");
-	};
+	}
 
 	m_specializationMap["SRC_COORD_OFFSET"]  = "0";
 	m_specializationMap["SRC_SAMPLE_OFFSET"] = "0";

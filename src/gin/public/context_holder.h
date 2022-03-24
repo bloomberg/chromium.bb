@@ -8,8 +8,11 @@
 #include <list>
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "gin/gin_export.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 namespace gin {
 
@@ -41,7 +44,7 @@ class GIN_EXPORT ContextHolder {
   void SetContext(v8::Local<v8::Context> context);
 
  private:
-  v8::Isolate* isolate_;
+  raw_ptr<v8::Isolate> isolate_;
   v8::UniquePersistent<v8::Context> context_;
   std::unique_ptr<PerContextData> data_;
 };

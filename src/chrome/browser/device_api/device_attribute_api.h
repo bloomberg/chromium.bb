@@ -8,9 +8,14 @@
 #include "third_party/blink/public/mojom/device/device.mojom.h"
 
 using blink::mojom::DeviceAPIService;
+using blink::mojom::DeviceAttributeResultPtr;
 
 namespace device_attribute_api {
 
+void ReportNotAffiliatedError(
+    base::OnceCallback<void(DeviceAttributeResultPtr)> callback);
+void ReportNotAllowedError(
+    base::OnceCallback<void(DeviceAttributeResultPtr)> callback);
 void GetDirectoryId(DeviceAPIService::GetDirectoryIdCallback callback);
 void GetHostname(DeviceAPIService::GetHostnameCallback callback);
 void GetSerialNumber(DeviceAPIService::GetSerialNumberCallback callback);

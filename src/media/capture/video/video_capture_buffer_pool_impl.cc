@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
+#include "media/capture/video/video_capture_buffer_pool_util.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -20,6 +21,11 @@
 #endif  // defined(OS_WIN)
 
 namespace media {
+
+VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
+    VideoCaptureBufferType buffer_type)
+    : VideoCaptureBufferPoolImpl(buffer_type,
+                                 kVideoCaptureDefaultMaxBufferPoolSize) {}
 
 VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
     VideoCaptureBufferType buffer_type,
@@ -273,9 +279,18 @@ VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
   // Create the new tracker.
   const int new_buffer_id = next_buffer_id_++;
 
+  VideoCaptureBufferType buffer_type = buffer_type_;
+#if defined(OS_WIN)
+  // If the MediaFoundationD3D11VideoCapture path fails, a shared memory buffer
+  // is sent instead.
+  if (buffer_type == VideoCaptureBufferType::kGpuMemoryBuffer &&
+      pixel_format != PIXEL_FORMAT_NV12) {
+    buffer_type = VideoCaptureBufferType::kSharedMemory;
+  }
+#endif
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
-      buffer_tracker_factory_->CreateTracker(buffer_type_);
-  if (!tracker->Init(dimensions, pixel_format, strides)) {
+      buffer_tracker_factory_->CreateTracker(buffer_type);
+  if (!tracker || !tracker->Init(dimensions, pixel_format, strides)) {
     DLOG(ERROR) << "Error initializing VideoCaptureBufferTracker";
     *buffer_id = kInvalidId;
     return VideoCaptureDevice::Client::ReserveResult::kAllocationFailed;

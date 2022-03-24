@@ -7,11 +7,11 @@
 #ifndef CORE_FXCRT_WEAK_PTR_H_
 #define CORE_FXCRT_WEAK_PTR_H_
 
-#include <cstddef>
+#include <stdint.h>
+
 #include <memory>
 #include <utility>
 
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 
 namespace fxcrt {

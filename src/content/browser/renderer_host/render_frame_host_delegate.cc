@@ -13,6 +13,8 @@
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -26,10 +28,6 @@ bool RenderFrameHostDelegate::OnMessageReceived(
   return false;
 }
 
-const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() {
-  return GURL::EmptyGURL();
-}
-
 bool RenderFrameHostDelegate::DidAddMessageToConsole(
     RenderFrameHostImpl* source_frame,
     blink::mojom::ConsoleMessageLevel log_level,
@@ -38,10 +36,6 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
     const std::u16string& source_id,
     const absl::optional<std::u16string>& untrusted_stack_trace) {
   return false;
-}
-
-WebContents* RenderFrameHostDelegate::GetAsWebContents() {
-  return nullptr;
 }
 
 void RenderFrameHostDelegate::RequestMediaAccessPermission(
@@ -83,9 +77,16 @@ void RenderFrameHostDelegate::GetNFC(
     mojo::PendingReceiver<device::mojom::NFC> receiver) {}
 #endif
 
-bool RenderFrameHostDelegate::CanEnterFullscreenMode() {
+bool RenderFrameHostDelegate::CanEnterFullscreenMode(
+    RenderFrameHostImpl* requesting_frame,
+    const blink::mojom::FullscreenOptions& options) {
   return true;
 }
+
+void RenderFrameHostDelegate::FullscreenStateChanged(
+    RenderFrameHostImpl* rfh,
+    bool is_fullscreen,
+    blink::mojom::FullscreenOptionsPtr options) {}
 
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
     RenderFrameHostImpl* target_rfh,
@@ -98,10 +99,6 @@ RenderFrameHostDelegate::GetFocusedFrameIncludingInnerWebContents() {
   return nullptr;
 }
 
-RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrame() {
-  return nullptr;
-}
-
 std::unique_ptr<WebUIImpl>
 RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
     RenderFrameHostImpl* frame_host,
@@ -109,7 +106,7 @@ RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
   return nullptr;
 }
 
-RenderFrameHostDelegate* RenderFrameHostDelegate::CreateNewWindow(
+FrameTree* RenderFrameHostDelegate::CreateNewWindow(
     RenderFrameHostImpl* opener,
     const mojom::CreateNewWindowParams& params,
     bool is_new_browsing_instance,
@@ -132,22 +129,8 @@ RenderFrameHostDelegate::GetJavaRenderFrameHostDelegate() {
 }
 #endif
 
-bool RenderFrameHostDelegate::IsBeingDestroyed() {
-  return false;
-}
-
 Visibility RenderFrameHostDelegate::GetVisibility() {
   return Visibility::HIDDEN;
-}
-
-ukm::SourceId RenderFrameHostDelegate::
-    GetUkmSourceIdForLastCommittedSourceIncludingSameDocument() const {
-  return ukm::kInvalidSourceId;
-}
-
-RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
-    FrameTreeNode* frame_tree_node) {
-  return nullptr;
 }
 
 std::vector<FrameTreeNode*> RenderFrameHostDelegate::GetUnattachedOwnedNodes(
@@ -156,7 +139,8 @@ std::vector<FrameTreeNode*> RenderFrameHostDelegate::GetUnattachedOwnedNodes(
 }
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
-RenderFrameHostDelegate::GetRecordAggregateWatchTimeCallback() {
+RenderFrameHostDelegate::GetRecordAggregateWatchTimeCallback(
+    const GURL& page_main_frame_last_committed_url) {
   return base::NullCallback();
 }
 

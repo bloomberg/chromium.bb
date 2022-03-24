@@ -22,10 +22,10 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rrect_f.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
@@ -65,7 +65,7 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
   static base::NoDestructor<NativeThemeAura> s_native_theme(false, true);
   return s_native_theme.get();
 }
-#endif  // OS_WIN
+#endif  // !OS_WIN
 #endif  // !OS_APPLE
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,6 @@ NativeThemeAura* NativeThemeAura::web_instance() {
 
 SkColor NativeThemeAura::FocusRingColorForBaseColor(SkColor base_color) const {
 #if defined(OS_APPLE)
-  DCHECK(features::IsFormControlsRefreshEnabled());
   // On Mac OSX, the system Accent Color setting is darkened a bit
   // for better contrast.
   return SkColorSetA(base_color, 166);
@@ -183,12 +182,6 @@ void NativeThemeAura::PaintArrowButton(
 
   cc::PaintFlags flags;
   flags.setColor(bg_color);
-
-  if (!features::IsFormControlsRefreshEnabled()) {
-    canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
-
-    return PaintArrow(canvas, rect, direction, arrow_color);
-  }
 
   SkScalar upper_left_radius = 0;
   SkScalar lower_left_radius = 0;

@@ -5,10 +5,13 @@
 #ifndef V8_API_API_INL_H_
 #define V8_API_API_INL_H_
 
+#include "include/v8-fast-api-calls.h"
 #include "src/api/api.h"
 #include "src/execution/interrupts-scope.h"
 #include "src/execution/microtask-queue.h"
+#include "src/execution/protectors.h"
 #include "src/handles/handles-inl.h"
+#include "src/heap/heap-inl.h"
 #include "src/objects/foreign-inl.h"
 #include "src/objects/js-weak-refs.h"
 #include "src/objects/objects-inl.h"
@@ -108,7 +111,7 @@ MAKE_TO_LOCAL(CallableToLocal, JSReceiver, Function)
 MAKE_TO_LOCAL(ToLocalPrimitive, Object, Primitive)
 MAKE_TO_LOCAL(FixedArrayToLocal, FixedArray, FixedArray)
 MAKE_TO_LOCAL(PrimitiveArrayToLocal, FixedArray, PrimitiveArray)
-MAKE_TO_LOCAL(ScriptOrModuleToLocal, Script, ScriptOrModule)
+MAKE_TO_LOCAL(ToLocal, ScriptOrModule, ScriptOrModule)
 
 #undef MAKE_TO_LOCAL_TYPED_ARRAY
 #undef MAKE_TO_LOCAL
@@ -239,9 +242,83 @@ inline bool IsExecutionTerminatingCheck(i::Isolate* isolate) {
   return false;
 }
 
+template <typename T>
+void CopySmiElementsToTypedBuffer(T* dst, uint32_t length,
+                                  i::FixedArray elements) {
+  for (uint32_t i = 0; i < length; ++i) {
+    double value = elements.get(static_cast<int>(i)).Number();
+    // TODO(mslekova): Avoid converting back-and-forth when possible, e.g
+    // avoid int->double->int conversions to boost performance.
+    dst[i] = i::ConvertDouble<T>(value);
+  }
+}
+
+template <typename T>
+void CopyDoubleElementsToTypedBuffer(T* dst, uint32_t length,
+                                     i::FixedDoubleArray elements) {
+  for (uint32_t i = 0; i < length; ++i) {
+    double value = elements.get_scalar(static_cast<int>(i));
+    // TODO(mslekova): There are certain cases, e.g. double->double, in which
+    // we could do a memcpy directly.
+    dst[i] = i::ConvertDouble<T>(value);
+  }
+}
+
+template <CTypeInfo::Identifier type_info_id, typename T>
+bool CopyAndConvertArrayToCppBuffer(Local<Array> src, T* dst,
+                                    uint32_t max_length) {
+  static_assert(
+      std::is_same<T, typename i::CTypeInfoTraits<
+                          CTypeInfo(type_info_id).GetType()>::ctype>::value,
+      "Type mismatch between the expected CTypeInfo::Type and the destination "
+      "array");
+
+  uint32_t length = src->Length();
+  if (length > max_length) {
+    return false;
+  }
+
+  i::DisallowGarbageCollection no_gc;
+  i::JSArray obj = *reinterpret_cast<i::JSArray*>(*src);
+  if (obj.IterationHasObservableEffects()) {
+    // The array has a custom iterator.
+    return false;
+  }
+
+  i::FixedArrayBase elements = obj.elements();
+  switch (obj.GetElementsKind()) {
+    case i::PACKED_SMI_ELEMENTS:
+      CopySmiElementsToTypedBuffer(dst, length, i::FixedArray::cast(elements));
+      return true;
+    case i::PACKED_DOUBLE_ELEMENTS:
+      CopyDoubleElementsToTypedBuffer(dst, length,
+                                      i::FixedDoubleArray::cast(elements));
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Deprecated; to be removed.
+template <const CTypeInfo* type_info, typename T>
+inline bool V8_EXPORT TryCopyAndConvertArrayToCppBuffer(Local<Array> src,
+                                                        T* dst,
+                                                        uint32_t max_length) {
+  return CopyAndConvertArrayToCppBuffer<type_info->GetId(), T>(src, dst,
+                                                               max_length);
+}
+
+template <CTypeInfo::Identifier type_info_id, typename T>
+inline bool V8_EXPORT TryToCopyAndConvertArrayToCppBuffer(Local<Array> src,
+                                                          T* dst,
+                                                          uint32_t max_length) {
+  return CopyAndConvertArrayToCppBuffer<type_info_id, T>(src, dst, max_length);
+}
+
 namespace internal {
 
 Handle<Context> HandleScopeImplementer::LastEnteredContext() {
+  DCHECK_EQ(entered_contexts_.capacity(), is_microtask_context_.capacity());
   DCHECK_EQ(entered_contexts_.size(), is_microtask_context_.size());
 
   for (size_t i = 0; i < entered_contexts_.size(); ++i) {

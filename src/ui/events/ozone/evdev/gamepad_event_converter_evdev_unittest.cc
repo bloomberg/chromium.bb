@@ -15,11 +15,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,6 +91,11 @@ class GamepadEventConverterEvdevTest : public testing::Test {
  public:
   GamepadEventConverterEvdevTest() {}
 
+  GamepadEventConverterEvdevTest(const GamepadEventConverterEvdevTest&) =
+      delete;
+  GamepadEventConverterEvdevTest& operator=(
+      const GamepadEventConverterEvdevTest&) = delete;
+
   // Overriden from testing::Test:
   void SetUp() override {
     device_manager_ = ui::CreateDeviceManagerForTest();
@@ -127,8 +132,6 @@ class GamepadEventConverterEvdevTest : public testing::Test {
   std::unique_ptr<ui::KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;
   std::unique_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(GamepadEventConverterEvdevTest);
 };
 
 struct ExpectedEvent {
@@ -223,8 +226,9 @@ TEST_F(GamepadEventConverterEvdevTest, XboxGamepadVibrationEvents) {
   std::unique_ptr<ui::TestGamepadEventConverterEvdev> dev =
       CreateDevice(kXboxGamepad);
 
-  struct ExpectedVibrationEvent expected_events[] = {{dev->kEffectId, 1},
-                                                     {dev->kEffectId, 0}};
+  struct ExpectedVibrationEvent expected_events[] = {
+      {static_cast<uint16_t>(dev->kEffectId), 1},
+      {static_cast<uint16_t>(dev->kEffectId), 0}};
   struct ExpectedVibrationEffect expected_effect = {10000, 0x8080, 0x8080};
 
   dev->PlayVibrationEffect(0x80, 10000);

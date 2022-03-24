@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -38,6 +39,7 @@ public class SingleActionMessage implements MessageStateHandler {
     private final Supplier<Long> mAutodismissDurationMs;
     private final Supplier<Integer> mMaxTranslationSupplier;
     private final Callback<Animator> mAnimatorStartCallback;
+    private boolean mMessageDismissed;
 
     // The timestamp when the message was shown. Used for reproting visible duration.
     private long mMessageShownTime;
@@ -69,10 +71,13 @@ public class SingleActionMessage implements MessageStateHandler {
                 ? mModel.get(MessageBannerProperties.DISMISSAL_DURATION)
                 : 0;
 
-        mAutodismissDurationMs = () -> autodismissDurationProvider.get(dismissalDuration);
+        mAutodismissDurationMs = ()
+                -> autodismissDurationProvider.get(
+                        model.get(MessageBannerProperties.MESSAGE_IDENTIFIER), dismissalDuration);
 
         mModel.set(
                 MessageBannerProperties.PRIMARY_BUTTON_CLICK_LISTENER, this::handlePrimaryAction);
+        mModel.set(MessageBannerProperties.ON_SECONDARY_BUTTON_CLICK, this::handleSecondaryAction);
     }
 
     /**
@@ -119,21 +124,44 @@ public class SingleActionMessage implements MessageStateHandler {
      */
     @Override
     public void dismiss(@DismissReason int dismissReason) {
-        if (mMessageBanner != null) mMessageBanner.dismiss();
         Callback<Integer> onDismissed = mModel.get(MessageBannerProperties.ON_DISMISSED);
         if (onDismissed != null) onDismissed.onResult(dismissReason);
+        mMessageDismissed = true;
         if (dismissReason == DismissReason.PRIMARY_ACTION
                 || dismissReason == DismissReason.SECONDARY_ACTION
                 || dismissReason == DismissReason.GESTURE) {
             // Only record time to dismiss when the user explicitly dismissed the message.
-            MessagesMetrics.recordTimeToAction(
-                    getMessageIdentifier(), MessagesMetrics.now() - mMessageShownTime);
+            MessagesMetrics.recordTimeToAction(getMessageIdentifier(),
+                    dismissReason == DismissReason.GESTURE,
+                    MessagesMetrics.now() - mMessageShownTime);
         }
     }
 
+    /**
+     * Invoke a {@link BooleanSupplier} optionally defined by a consumer to determine if an enqueued
+     * message should be shown.
+     * @return true if an enqueued message should be shown, false otherwise.
+     */
+    @Override
+    public boolean shouldShow() {
+        BooleanSupplier onStartedShowing = mModel.get(MessageBannerProperties.ON_STARTED_SHOWING);
+        if (onStartedShowing != null) {
+            return onStartedShowing.getAsBoolean();
+        }
+        return true;
+    }
+
     private void handlePrimaryAction(View v) {
+        // Avoid running the primary action callback if the message has already been dismissed.
+        if (mMessageDismissed) return;
         mModel.get(MessageBannerProperties.ON_PRIMARY_ACTION).run();
         mDismissHandler.invoke(mModel, DismissReason.PRIMARY_ACTION);
+    }
+
+    private void handleSecondaryAction() {
+        // Avoid running the secondary action callback if the message has already been dismissed.
+        if (mMessageDismissed) return;
+        mModel.get(MessageBannerProperties.ON_SECONDARY_ACTION).run();
     }
 
     @VisibleForTesting
@@ -149,6 +177,16 @@ public class SingleActionMessage implements MessageStateHandler {
     @VisibleForTesting
     void setViewForTesting(MessageBannerView view) {
         mView = view;
+    }
+
+    @VisibleForTesting
+    boolean getMessageDismissedForTesting() {
+        return mMessageDismissed;
+    }
+
+    @VisibleForTesting
+    PropertyModel getModelForTesting() {
+        return mModel;
     }
 
     @Override

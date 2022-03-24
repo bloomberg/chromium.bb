@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -77,6 +78,17 @@ class AutocompleteController : public AutocompleteProviderListener,
                                  bool default_match_changed) {}
   };
 
+  // Converts the given match to a type (and possibly subtype) based on the AQS
+  // specification. For more details, see go/binary-clients-logging.
+  // Note: the `subtypes` parameter passed over to this function may be filled
+  // with subtypes reported by the suggest server. This call will update this
+  // set with Chrome-specific subtypes.
+  // TODO(https://crbug.com/1103056): relocate subtype updates to appropriate
+  //  sites that construct these matches.
+  static void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
+                                            size_t* type,
+                                            base::flat_set<int>* subtypes);
+
   // |provider_types| is a bitmap containing AutocompleteProvider::Type values
   // that will (potentially, depending on platform, flags, etc.) be
   // instantiated. |provider_client| is passed to all those providers, and
@@ -109,6 +121,10 @@ class AutocompleteController : public AutocompleteProviderListener,
   // sent.
   void Start(const AutocompleteInput& input);
 
+  // Simply calls StartPrefetch() on all providers so those providers that
+  // override it could perform a prefetch request and populate their caches.
+  void StartPrefetch(const AutocompleteInput& input);
+
   // Cancels the current query, ensuring there will be no future notifications
   // fired.  If new matches have come in since the most recent notification was
   // fired, they will be discarded.
@@ -139,19 +155,17 @@ class AutocompleteController : public AutocompleteProviderListener,
   // content; see |OmniboxEditModel::user_input_in_progress_|.
   void ResetSession();
 
-  // Constructs the final destination URL for a given match using additional
-  // parameters otherwise not available at initial construction time.  This
-  // method should be called from OmniboxEditModel::OpenMatch() before the user
-  // navigates to the selected match.
-  void UpdateMatchDestinationURLWithQueryFormulationTime(
+  // Updates the destination URL for the given match with the final AQS
+  // parameter using additional information otherwise not available at initial
+  // construction time iff the provider's TemplateURL supports assisted query
+  // stats.
+  // This method should be called right before the user navigates to the match.
+  void UpdateMatchDestinationURLWithAdditionalAssistedQueryStats(
       base::TimeDelta query_formulation_time,
       AutocompleteMatch* match) const;
 
-  // Constructs the final destination URL for a given match using additional
-  // parameters otherwise not available at initial construction time.
-  void UpdateMatchDestinationURL(
-      const TemplateURLRef::SearchTermsArgs& search_terms_args,
-      AutocompleteMatch* match) const;
+  // Constructs and sets the final destination URL on the given match.
+  void SetMatchDestinationURL(AutocompleteMatch* match) const;
 
   // Prepend missing tail suggestion prefixes in results, if present.
   void InlineTailPrefixes();
@@ -189,6 +203,12 @@ class AutocompleteController : public AutocompleteProviderListener,
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderPrefetchTest,
+                           SupportedProvider_NonPrefetch);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderPrefetchTest,
+                           SupportedProvider_Prefetch);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderPrefetchTest,
+                           UnsupportedProvider_Prefetch);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
                            EmitAccessibilityEvents);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
@@ -201,15 +221,15 @@ class AutocompleteController : public AutocompleteProviderListener,
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsUIATest, AccessibleOmnibox);
 #endif  // OS_WIN
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, SetSelectedLine);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest,
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest, SetSelectedLine);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest,
                            SetSelectedLineWithNoDefaultMatches);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, TestFocusFixing);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupPositionChanging);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupStepSelection);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest,
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest, TestFocusFixing);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest, PopupPositionChanging);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest, PopupStepSelection);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest,
                            PopupStepSelectionWithHiddenGroupIds);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest,
+  FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelPopupTest,
                            PopupInlineAutocompleteAndTemporaryText);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
                            EmitSelectedChildrenChangedAccessibilityEvent);
@@ -247,9 +267,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   // provider name as a description on the first match in the group.
   void UpdateKeywordDescriptions(AutocompleteResult* result);
 
-  // For each AutocompleteMatch returned by SearchProvider, updates the
-  // destination_url iff the provider's TemplateURL supports assisted query
-  // stats.
+  // For each AutocompleteMatch in |result|, updates the assisted query stats
+  // iff the provider's TemplateURL supports it.
   void UpdateAssistedQueryStats(AutocompleteResult* result);
 
   // Calls AutocompleteController::Observer::OnResultChanged() and if done sends
@@ -288,21 +307,21 @@ class AutocompleteController : public AutocompleteProviderListener,
   // A list of all providers.
   Providers providers_;
 
-  DocumentProvider* document_provider_;
+  raw_ptr<DocumentProvider> document_provider_;
 
-  HistoryURLProvider* history_url_provider_;
+  raw_ptr<HistoryURLProvider> history_url_provider_;
 
-  KeywordProvider* keyword_provider_;
+  raw_ptr<KeywordProvider> keyword_provider_;
 
-  SearchProvider* search_provider_;
+  raw_ptr<SearchProvider> search_provider_;
 
-  ZeroSuggestProvider* zero_suggest_provider_;
+  raw_ptr<ZeroSuggestProvider> zero_suggest_provider_;
 
-  OnDeviceHeadProvider* on_device_head_provider_;
+  raw_ptr<OnDeviceHeadProvider> on_device_head_provider_;
 
-  ClipboardProvider* clipboard_provider_;
+  raw_ptr<ClipboardProvider> clipboard_provider_;
 
-  VoiceSuggestProvider* voice_suggest_provider_;
+  raw_ptr<VoiceSuggestProvider> voice_suggest_provider_;
 
   // Input passed to Start.
   AutocompleteInput input_;
@@ -348,7 +367,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   // controller creation and after |ResetSession| is called.
   bool search_service_worker_signal_sent_;
 
-  TemplateURLService* template_url_service_;
+  raw_ptr<TemplateURLService> template_url_service_;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_CONTROLLER_H_

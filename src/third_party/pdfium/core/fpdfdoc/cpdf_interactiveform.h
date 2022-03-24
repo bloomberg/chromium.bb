@@ -7,6 +7,9 @@
 #ifndef CORE_FPDFDOC_CPDF_INTERACTIVEFORM_H_
 #define CORE_FPDFDOC_CPDF_INTERACTIVEFORM_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -14,10 +17,11 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfdoc/cpdf_defaultappearance.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
+#include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "third_party/base/span.h"
 
 class CFieldTree;
 class CFDF_Document;
@@ -25,7 +29,6 @@ class CPDF_Document;
 class CPDF_Dictionary;
 class CPDF_Font;
 class CPDF_FormControl;
-class CPDF_Object;
 class CPDF_Page;
 
 class CPDF_InteractiveForm {
@@ -55,7 +58,7 @@ class CPDF_InteractiveForm {
       ByteString* csNameTag);
 
   size_t CountFields(const WideString& csFieldName) const;
-  CPDF_FormField* GetField(uint32_t index, const WideString& csFieldName) const;
+  CPDF_FormField* GetField(size_t index, const WideString& csFieldName) const;
   CPDF_FormField* GetFieldByDict(CPDF_Dictionary* pFieldDict) const;
 
   const CPDF_FormControl* GetControlAtPoint(const CPDF_Page* pPage,
@@ -75,20 +78,14 @@ class CPDF_InteractiveForm {
   bool CheckRequiredFields(const std::vector<CPDF_FormField*>* fields,
                            bool bIncludeOrExclude) const;
 
-  std::unique_ptr<CFDF_Document> ExportToFDF(const WideString& pdf_path,
-                                             bool bSimpleFileSpec) const;
-
+  std::unique_ptr<CFDF_Document> ExportToFDF(const WideString& pdf_path) const;
   std::unique_ptr<CFDF_Document> ExportToFDF(
       const WideString& pdf_path,
       const std::vector<CPDF_FormField*>& fields,
-      bool bIncludeOrExclude,
-      bool bSimpleFileSpec) const;
+      bool bIncludeOrExclude) const;
 
   void ResetForm();
-
-  // TODO(tsepez): Use a span.
-  void ResetForm(const std::vector<CPDF_FormField*>& fields,
-                 bool bIncludeOrExclude);
+  void ResetForm(pdfium::span<CPDF_FormField*> fields, bool bIncludeOrExclude);
 
   void SetNotifierIface(NotifierIface* pNotify);
   void FixPageFields(CPDF_Page* pPage);

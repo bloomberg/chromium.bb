@@ -33,8 +33,17 @@ extern const base::Feature kWebAuthCableServerLink {
 #endif
 };
 
-extern const base::Feature kWebAuthCableSecondFactor{
-    "WebAuthenticationCableSecondFactor", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kWebAuthCableSecondFactor {
+  "WebAuthenticationCableSecondFactor",
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+// If updating this, also update kWebAuthCableServerLink.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 extern const base::Feature kWebAuthPhoneSupport{
     "WebAuthenticationPhoneSupport", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -48,5 +57,8 @@ const base::Feature kWebAuthCrosPlatformAuthenticator{
     "WebAuthenticationCrosPlatformAuthenticator",
     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+extern const base::Feature kU2fPermissionPrompt{
+    "U2fPermissionPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace device

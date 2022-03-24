@@ -8,10 +8,11 @@
 
 #include <string>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
@@ -72,15 +73,13 @@ constexpr char kDisplayPowerInternalOnExternalOff[] =
 // TODO(mukai): fix base::JSONValueConverter and use it here.
 bool ValueToInsets(const base::DictionaryValue& value, gfx::Insets* insets) {
   DCHECK(insets);
-  int top = 0;
-  int left = 0;
-  int bottom = 0;
-  int right = 0;
-  if (value.GetInteger(kInsetsTopKey, &top) &&
-      value.GetInteger(kInsetsLeftKey, &left) &&
-      value.GetInteger(kInsetsBottomKey, &bottom) &&
-      value.GetInteger(kInsetsRightKey, &right)) {
-    insets->Set(top, left, bottom, right);
+
+  absl::optional<int> top = value.FindIntKey(kInsetsTopKey);
+  absl::optional<int> left = value.FindIntKey(kInsetsLeftKey);
+  absl::optional<int> bottom = value.FindIntKey(kInsetsBottomKey);
+  absl::optional<int> right = value.FindIntKey(kInsetsRightKey);
+  if (top && left && bottom && right) {
+    insets->Set(*top, *left, *bottom, *right);
     return true;
   }
   return false;
@@ -137,12 +136,12 @@ bool ValueToTouchData(const base::DictionaryValue& value,
   if (!ParseTouchCalibrationStringValue(str, point_pair_quad))
     return false;
 
-  int width, height;
-  if (!value.GetInteger(kTouchCalibrationWidth, &width) ||
-      !value.GetInteger(kTouchCalibrationHeight, &height)) {
+  absl::optional<int> width = value.FindIntKey(kTouchCalibrationWidth);
+  absl::optional<int> height = value.FindIntKey(kTouchCalibrationHeight);
+  if (!width || !height) {
     return false;
   }
-  touch_calibration_data->bounds = gfx::Size(width, height);
+  touch_calibration_data->bounds = gfx::Size(*width, *height);
   return true;
 }
 
@@ -189,7 +188,6 @@ bool UserCanSaveDisplayPreference() {
 
   return *user_type == user_manager::USER_TYPE_REGULAR ||
          *user_type == user_manager::USER_TYPE_CHILD ||
-         *user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          *user_type == user_manager::USER_TYPE_KIOSK_APP ||
          (*user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
           Shell::Get()->local_state()->GetBoolean(
@@ -201,7 +199,7 @@ void LoadDisplayLayouts(PrefService* local_state) {
       GetDisplayManager()->layout_store();
 
   const base::Value* layouts = local_state->Get(prefs::kSecondaryDisplays);
-  for (const auto& it : layouts->DictItems()) {
+  for (const auto it : layouts->DictItems()) {
     std::unique_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
     if (!display::JsonToDisplayLayout(it.second, layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.first;
@@ -227,7 +225,7 @@ void LoadDisplayLayouts(PrefService* local_state) {
 
 void LoadDisplayProperties(PrefService* local_state) {
   const base::Value* properties = local_state->Get(prefs::kDisplayProperties);
-  for (const auto& it : properties->DictItems()) {
+  for (const auto it : properties->DictItems()) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!it.second.GetAsDictionary(&dict_value) || dict_value == nullptr)
       continue;
@@ -236,23 +234,23 @@ void LoadDisplayProperties(PrefService* local_state) {
         id == display::kInvalidDisplayId) {
       continue;
     }
-    display::Display::Rotation rotation = display::Display::ROTATE_0;
     const gfx::Insets* insets_to_set = nullptr;
 
-    int rotation_value = 0;
-    if (dict_value->GetInteger("rotation", &rotation_value)) {
-      rotation = static_cast<display::Display::Rotation>(rotation_value);
+    display::Display::Rotation rotation = display::Display::ROTATE_0;
+    if (absl::optional<int> rotation_value =
+            dict_value->FindIntKey("rotation")) {
+      rotation = static_cast<display::Display::Rotation>(*rotation_value);
     }
 
-    int width = 0, height = 0;
-    dict_value->GetInteger("width", &width);
-    dict_value->GetInteger("height", &height);
+    int width = dict_value->FindIntKey("width").value_or(0);
+    int height = dict_value->FindIntKey("height").value_or(0);
     gfx::Size resolution_in_pixels(width, height);
 
     float device_scale_factor = 1.0;
-    int dsf_value = 0;
-    if (dict_value->GetInteger("device-scale-factor", &dsf_value))
-      device_scale_factor = static_cast<float>(dsf_value) / 1000.0f;
+    if (absl::optional<int> dsf_value =
+            dict_value->FindIntKey("device-scale-factor")) {
+      device_scale_factor = static_cast<float>(*dsf_value) / 1000.0f;
+    }
 
     // Default refresh rate is 60 Hz, until
     // DisplayManager::OnNativeDisplaysChanged() updates us with the actual
@@ -260,16 +258,18 @@ void LoadDisplayProperties(PrefService* local_state) {
     double refresh_rate = 60.0;
     bool is_interlaced = false;
     if (display::features::IsListAllDisplayModesEnabled()) {
-      dict_value->GetDouble("refresh-rate", &refresh_rate);
-      dict_value->GetBoolean("interlaced", &is_interlaced);
+      refresh_rate =
+          dict_value->FindDoubleKey("refresh-rate").value_or(refresh_rate);
+      absl::optional<bool> is_interlaced_opt =
+          dict_value->FindBoolKey("interlaced");
+      is_interlaced = is_interlaced_opt.value_or(false);
     }
 
     gfx::Insets insets;
     if (ValueToInsets(*dict_value, &insets))
       insets_to_set = &insets;
 
-    double display_zoom = 1.0;
-    dict_value->GetDouble(kDisplayZoom, &display_zoom);
+    double display_zoom = dict_value->FindDoubleKey(kDisplayZoom).value_or(1.0);
 
     GetDisplayManager()->RegisterDisplayProperty(
         id, rotation, insets_to_set, resolution_in_pixels, device_scale_factor,
@@ -301,7 +301,7 @@ void LoadDisplayTouchAssociations(PrefService* local_state) {
   DCHECK(properties->is_dict());
 
   display::TouchDeviceManager::TouchAssociationMap touch_associations;
-  for (const auto& item : properties->DictItems()) {
+  for (const auto item : properties->DictItems()) {
     uint32_t identifier_raw;
     if (!base::StringToUint(item.first, &identifier_raw))
       continue;
@@ -310,7 +310,7 @@ void LoadDisplayTouchAssociations(PrefService* local_state) {
         identifier, display::TouchDeviceManager::AssociationInfoMap());
     if (!item.second.is_dict())
       continue;
-    for (const auto& association_info_item : item.second.DictItems()) {
+    for (const auto association_info_item : item.second.DictItems()) {
       display::TouchDeviceManager::TouchAssociationInfo info;
       int64_t display_id;
       if (!base::StringToInt64(association_info_item.first, &display_id))
@@ -338,7 +338,7 @@ void LoadDisplayTouchAssociations(PrefService* local_state) {
   const display::TouchDeviceIdentifier& fallback_identifier =
       display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
   properties = local_state->Get(prefs::kDisplayProperties);
-  for (const auto& it : properties->DictItems()) {
+  for (const auto it : properties->DictItems()) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!it.second.GetAsDictionary(&dict_value) || dict_value == nullptr)
       continue;
@@ -367,7 +367,7 @@ void LoadDisplayTouchAssociations(PrefService* local_state) {
   // Retrieve port association information.
   properties = local_state->Get(prefs::kDisplayTouchPortAssociations);
   display::TouchDeviceManager::PortAssociationMap port_associations;
-  for (const auto& item : properties->DictItems()) {
+  for (const auto item : properties->DictItems()) {
     // Retrieve the secondary id that identifies the port.
     uint32_t secondary_id_raw;
     if (!base::StringToUint(item.first, &secondary_id_raw))
@@ -410,12 +410,12 @@ void LoadExternalDisplayMirrorInfo(PrefService* local_state) {
       local_state->Get(prefs::kExternalDisplayMirrorInfo);
   std::set<int64_t> external_display_mirror_info;
   for (const auto& it : pref_data->GetList()) {
-    std::string display_id_str;
-    if (!it.GetAsString(&display_id_str))
+    const std::string* display_id_str = it.GetIfString();
+    if (!display_id_str)
       continue;
 
     int64_t display_id;
-    if (!base::StringToInt64(display_id_str, &display_id))
+    if (!base::StringToInt64(*display_id_str, &display_id))
       continue;
 
     external_display_mirror_info.emplace(display_id);
@@ -473,15 +473,15 @@ void StoreDisplayLayoutPref(PrefService* pref_service,
 
   DictionaryPrefUpdate update(pref_service, prefs::kSecondaryDisplays);
   base::DictionaryValue* pref_data = update.Get();
-  std::unique_ptr<base::Value> layout_value(new base::DictionaryValue());
+  base::Value layout_value(base::Value::Type::DICTIONARY);
   if (pref_data->HasKey(name)) {
     base::Value* value = nullptr;
     if (pref_data->Get(name, &value) && value != nullptr) {
-      layout_value = base::Value::ToUniquePtrValue(value->Clone());
+      layout_value = value->Clone();
     }
   }
-  if (display::DisplayLayoutToJson(display_layout, layout_value.get()))
-    pref_data->Set(name, std::move(layout_value));
+  if (display::DisplayLayoutToJson(display_layout, &layout_value))
+    pref_data->SetPath(name, std::move(layout_value));
 }
 
 void StoreCurrentDisplayLayoutPrefs(PrefService* pref_service) {
@@ -530,44 +530,60 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
     int64_t id = display.id();
     display::ManagedDisplayInfo info = display_manager->GetDisplayInfo(id);
 
-    std::unique_ptr<base::DictionaryValue> property_value(
-        new base::DictionaryValue());
+    base::DictionaryValue property_value;
     // Don't save the display preference in unified mode because its
     // size and modes can change depending on the combination of displays.
     if (display_manager->IsInUnifiedMode())
       continue;
-    property_value->SetInteger("rotation",
-                               static_cast<int>(info.GetRotation(
-                                   display::Display::RotationSource::USER)));
+    // Don't save rotation when in tablet mode, so that if the device is
+    // rebooted into clamshell mode, it won't have an unexpected rotation.
+    // https://crbug.com/733092.
+    // But we should keep any original value so that it can be restored when
+    // exiting tablet mode.
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+      const base::Value* original_property =
+          pref_data->FindDictKey(base::NumberToString(id));
+      if (original_property) {
+        absl::optional<int> original_rotation =
+            original_property->FindIntKey("rotation");
+        if (original_rotation) {
+          property_value.SetInteger("rotation", *original_rotation);
+        }
+      }
+    } else {
+      property_value.SetInteger("rotation",
+                                static_cast<int>(info.GetRotation(
+                                    display::Display::RotationSource::USER)));
+    }
 
     display::ManagedDisplayMode mode;
     if (!display.IsInternal() &&
         display_manager->GetSelectedModeForDisplayId(id, &mode) &&
         !mode.native()) {
-      property_value->SetInteger("width", mode.size().width());
-      property_value->SetInteger("height", mode.size().height());
-      property_value->SetInteger(
+      property_value.SetInteger("width", mode.size().width());
+      property_value.SetInteger("height", mode.size().height());
+      property_value.SetInteger(
           "device-scale-factor",
           static_cast<int>(mode.device_scale_factor() * 1000));
 
       if (display::features::IsListAllDisplayModesEnabled()) {
-        property_value->SetBoolean("interlaced", mode.is_interlaced());
-        property_value->SetDouble("refresh-rate", mode.refresh_rate());
+        property_value.SetBoolean("interlaced", mode.is_interlaced());
+        property_value.SetDoubleKey("refresh-rate", mode.refresh_rate());
       }
     }
     if (!info.overscan_insets_in_dip().IsEmpty())
-      InsetsToValue(info.overscan_insets_in_dip(), property_value.get());
+      InsetsToValue(info.overscan_insets_in_dip(), &property_value);
 
     // Store the legacy format touch calibration data. This can be removed after
     // a couple of milestones when every device has migrated to the new format.
     if (legacy_data_map.size() && base::Contains(legacy_data_map, id)) {
       TouchDataToValue(legacy_data_map.at(id).calibration_data,
-                       property_value.get());
+                       &property_value);
     }
 
-    property_value->SetDouble(kDisplayZoom, info.zoom_factor());
+    property_value.SetDoubleKey(kDisplayZoom, info.zoom_factor());
 
-    pref_data->Set(base::NumberToString(id), std::move(property_value));
+    pref_data->SetKey(base::NumberToString(id), std::move(property_value));
   }
 }
 
@@ -641,7 +657,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
 
   DictionaryPrefUpdate update(pref_service, prefs::kDisplayTouchAssociations);
   base::DictionaryValue* pref_data = update.Get();
-  pref_data->Clear();
+  pref_data->DictClear();
 
   const display::TouchDeviceManager::TouchAssociationMap& touch_associations =
       touch_device_manager->touch_associations();
@@ -692,7 +708,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
   DictionaryPrefUpdate update_port(pref_service,
                                    prefs::kDisplayTouchPortAssociations);
   pref_data = update_port.Get();
-  update_port->Clear();
+  update_port->DictClear();
 
   const display::TouchDeviceManager::PortAssociationMap& port_associations =
       touch_device_manager->port_associations();
@@ -717,7 +733,7 @@ void StoreDisplayTouchAssociations(PrefService* pref_service) {
 void StoreExternalDisplayMirrorInfo(PrefService* pref_service) {
   ListPrefUpdate update(pref_service, prefs::kExternalDisplayMirrorInfo);
   base::ListValue* pref_data = update.Get();
-  pref_data->Clear();
+  pref_data->ClearList();
   const std::set<int64_t>& external_display_mirror_info =
       GetDisplayManager()->external_display_mirror_info();
   for (const auto& id : external_display_mirror_info)
@@ -732,7 +748,7 @@ void StoreDisplayMixedMirrorModeParams(
   DictionaryPrefUpdate update(pref_service,
                               prefs::kDisplayMixedMirrorModeParams);
   base::DictionaryValue* pref_data = update.Get();
-  pref_data->Clear();
+  pref_data->DictClear();
 
   if (!mixed_params)
     return;
@@ -814,12 +830,16 @@ void DisplayPrefs::MaybeStoreDisplayPrefs() {
   }
 
   store_requested_ = false;
-  StoreCurrentDisplayLayoutPrefs(local_state_);
+  // Don't save certain display properties when in tablet mode, so if
+  // the device is rebooted in clamshell mode, it won't have an unexpected
+  // mirroring layout. https://crbug.com/733092.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    StoreCurrentDisplayLayoutPrefs(local_state_);
+    StoreExternalDisplayMirrorInfo(local_state_);
+    StoreCurrentDisplayMixedMirrorModeParams(local_state_);
+  }
   StoreCurrentDisplayProperties(local_state_);
   StoreDisplayTouchAssociations(local_state_);
-  StoreExternalDisplayMirrorInfo(local_state_);
-  StoreCurrentDisplayMixedMirrorModeParams(local_state_);
-
   // The display prefs need to be committed immediately to guarantee they're not
   // lost, and are restored properly on reboot. https://crbug.com/936884.
   // This sends a request via mojo to commit the prefs to disk.
@@ -885,10 +905,10 @@ void DisplayPrefs::StoreLegacyTouchDataForTest(
     const display::TouchCalibrationData& data) {
   DictionaryPrefUpdate update(local_state_, prefs::kDisplayProperties);
   base::DictionaryValue* pref_data = update.Get();
-  std::unique_ptr<base::DictionaryValue> property_value =
-      std::make_unique<base::DictionaryValue>();
-  TouchDataToValue(data, property_value.get());
-  pref_data->Set(base::NumberToString(display_id), std::move(property_value));
+  base::DictionaryValue property_value;
+  TouchDataToValue(data, &property_value);
+  pref_data->SetKey(base::NumberToString(display_id),
+                    std::move(property_value));
 }
 
 bool DisplayPrefs::ParseTouchCalibrationStringForTest(

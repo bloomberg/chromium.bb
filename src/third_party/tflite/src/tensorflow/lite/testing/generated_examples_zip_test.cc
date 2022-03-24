@@ -18,11 +18,12 @@ limitations under the License.
 #include <fstream>
 #include <map>
 #include <sstream>
+#include <tuple>
+#include <utility>
 
 #include <gtest/gtest.h>
 #include "re2/re2.h"
 #include "tensorflow/core/platform/env.h"
-#include "tensorflow/core/platform/status.h"
 #include "tensorflow/core/platform/subprocess.h"
 #include "tensorflow/core/util/command_line_flags.h"
 #include "tensorflow/lite/testing/parse_testdata.h"
@@ -54,61 +55,25 @@ bool FLAGS_ignore_unsupported_nnapi = false;
 // TensorFlow system environment for file system called.
 tensorflow::Env* env = tensorflow::Env::Default();
 
-// List of tests that are expected to fail when
+// Already known broken tests.
+// Key is a substring of the test name and value is pair of a bug number and
+// whether this test should be always ignored regardless of `ignore_known_bugs`.
+// if `always_ignore` is false, tests are expected to fail when
 //   --test_arg=--ignore_known_bugs=false
-// Key is a substring of the test name and value is a bug number.
+using BrokenTestMap =
+    std::map</* test_name */ string,
+             std::pair</* bug_number */ string, /* always_ignore */ bool>>;
 // TODO(ahentz): make sure we clean this list up frequently.
-const std::map<string, string>& GetKnownBrokenTests() {
-  static const std::map<string, string>* const kBrokenTests = new std::map<
-      string, string>({
-      // L2Norm only supports tensors with 4D or fewer.
-      {R"(^\/l2norm.*_dim=.*,epsilon=.*,input_shape=\[.,.,.,.,.*\])",
-       "67963684"},
+const BrokenTestMap& GetKnownBrokenTests() {
+  static const BrokenTestMap* const kBrokenTests = new BrokenTestMap({
+      // Select kernel doesn't support broadcasting yet.
+      {R"(^\/where.*1,2,3,1)", {"134692786", false}},
 
-      // SpaceToBatchND only supports 4D tensors.
-      {R"(^\/space_to_batch_nd.*input_shape=\[1,4,4,4,1,1\])", "70848787"},
-
-      // BatchToSpaceND only supports 4D tensors.
-      {R"(^\/batch_to_space_nd.*input_shape=\[8,2,2,2,1,1\])", "70848787"},
-
-      // L2Norm only works for dim=-1.
-      {R"(^\/l2norm.*_dim=-2,epsilon=.*,input_shape=\[.,.\])", "67963812"},
-      {R"(^\/l2norm.*_dim=0,epsilon=.*,input_shape=\[.,.\])", "67963812"},
-      {R"(^\/l2norm.*_dim=-2,epsilon=.*,input_shape=\[3,15,14,3\])",
-       "67963812"},
-      {R"(^\/l2norm.*_dim=-2,epsilon=.*,input_shape=\[1,3,4,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=2,epsilon=.*,input_shape=\[3,15,14,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=2,epsilon=.*,input_shape=\[1,3,4,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=0,epsilon=.*,input_shape=\[3,15,14,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=0,epsilon=.*,input_shape=\[1,3,4,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=1,epsilon=.*,input_shape=\[3,15,14,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=1,epsilon=.*,input_shape=\[1,3,4,3\])", "67963812"},
-      {R"(^\/l2norm.*_dim=\[2,3\],epsilon=.*,input_shape=\[3,15,14,3\])",
-       "67963812"},
-      {R"(^\/l2norm.*_dim=\[2,3\],epsilon=.*,input_shape=\[1,3,4,3\])",
-       "67963812"},
-
-      // ResizeBilinear looks completely incompatible with Tensorflow
-      {R"(^\/resize_bilinear.*dtype=tf.int32)", "72401107"},
-
-      // Relu does not support int32.
-      // These test cases appends a Relu after the tested ops when
-      // activation=True. The tests are failing since Relu doesn't support
-      // int32.
-      {R"(^\/div.*activation=True.*dtype=tf\.int32)", "112968789"},
-      {R"(^\/floor_div.*activation=True.*dtype=tf\.int32)", "112968789"},
-      {R"(^\/floor_mod.*activation=True.*dtype=tf\.int32)", "112968789"},
-      {R"(^\/floor_mod.*activation=True.*dtype=tf\.int64)", "112968789"},
-
-      {R"(^\/sub.*dtype=tf\.int64)", "119126484"},
-      {R"(^\/div.*dtype=tf\.int64)", "119126484"},
-      {R"(^\/mul.*dtype=tf\.int64)", "119126484"},
-      {R"(^\/add.*dtype=tf\.int64)", "119126484"},
-      {R"(^\/floor_div.*dtype=tf\.int64)", "119126484"},
-      {R"(^\/squared_difference.*dtype=tf\.int64)", "119126484"},
-
-      // Strided slice doesn't support ellipsis.
-      {R"(strided_slice.*Ellipsis)", "138098220"},
+      // TODO(b/194364155): TF and TFLite have different behaviors when output
+      // nan values in LocalResponseNorm ops.
+      {R"(^\/local_response_norm.*alpha=-3.*beta=2)", {"194364155", true}},
+      {R"(^\/local_response_norm.*alpha=(None|2).*beta=2.*bias=-0\.1.*depth_radius=(0|1).*input_shape=\[3,15,14,3\])",
+       {"194364155", true}},
   });
   return *kBrokenTests;
 }
@@ -151,18 +116,11 @@ const std::map<string, string>& GetKnownBrokenNnapiTests() {
 const std::map<string, string>& GetKnownQuantizeBrokenTests() {
   static const std::map<string, string>* const kQuantizeBrokenTests =
       new std::map<string, string>({
+          {R"(^\/conv.*fully_quantize=True)", "134594898"},
+          {R"(^\/depthwiseconv.*fully_quantize=True)", "134594898"},
           {R"(^\/sum.*fully_quantize=True)", "134594898"},
           {R"(^\/l2norm.*fully_quantize=True)", "134594898"},
-      });
-  return *kQuantizeBrokenTests;
-}
-
-const std::map<string, int>& GetQuantizeTestsError() {
-  static const std::map<string, int>* const kQuantizeBrokenTests =
-      new std::map<string, int>({
-          {R"(^\/conv_relu1.*fully_quantize=True)", 18},
-          {R"(^\/conv_relu6.*fully_quantize=True)", 8},
-          {R"(^\/maximum.*fully_quantize=True)", 8},
+          {R"(^\/prelu.*fully_quantize=True)", "156112683"},
       });
   return *kQuantizeBrokenTests;
 }
@@ -176,7 +134,7 @@ class ArchiveEnvironment : public ::testing::Environment {
   // Delete all temporary directories on teardown.
   void TearDown() override {
     for (const auto& dir : temporary_directories_) {
-      tensorflow::int64 undeleted_dirs, undeleted_files;
+      int64_t undeleted_dirs, undeleted_files;
       TF_CHECK_OK(
           env->DeleteRecursively(dir, &undeleted_dirs, &undeleted_files));
     }
@@ -256,7 +214,7 @@ tensorflow::Status ReadManifest(const string& original_file, const string& dir,
   size_t pos = 0;
   int added = 0;
   while (true) {
-    size_t end_pos = manifest.find("\n", pos);
+    size_t end_pos = manifest.find('\n', pos);
     if (end_pos == string::npos) break;
     string filename = manifest.substr(pos, end_pos - pos);
     test_paths->push_back(dir + "/" + filename);
@@ -292,26 +250,27 @@ std::vector<string> UnarchiveAndFindTestNames(const string& zip_file,
 class OpsTest : public ::testing::TestWithParam<string> {};
 
 TEST_P(OpsTest, RunZipTests) {
-  string test_path = GetParam();
+  string test_path_and_label = GetParam();
+  string test_path = test_path_and_label;
+  string label = test_path_and_label;
+  size_t end_pos = test_path_and_label.find(' ');
+  if (end_pos != string::npos) {
+    test_path = test_path_and_label.substr(0, end_pos);
+    label = test_path_and_label.substr(end_pos + 1);
+  }
   string tflite_test_case = test_path + "_tests.txt";
-  string tflite_dir = test_path.substr(0, test_path.find_last_of("/"));
-  string test_name = test_path.substr(test_path.find_last_of('/'));
+  string tflite_dir = test_path.substr(0, test_path.find_last_of('/'));
+  string test_name = label.substr(label.find_last_of('/'));
 
   std::ifstream tflite_stream(tflite_test_case);
   ASSERT_TRUE(tflite_stream.is_open()) << tflite_test_case;
   tflite::testing::TfLiteDriver test_driver(
       FLAGS_use_nnapi ? TfLiteDriver::DelegateType::kNnapi
                       : TfLiteDriver::DelegateType::kNone);
-
-  auto quantized_tests_error = GetQuantizeTestsError();
   bool fully_quantize = false;
-  if (test_path.find("fully_quantize=True") != std::string::npos) {
-    for (const auto& p : quantized_tests_error) {
-      if (RE2::PartialMatch(test_name, p.first)) {
-        test_driver.SetQuantizationErrorMultiplier(p.second);
-        break;
-      }
-    }
+  if (label.find("fully_quantize=True") != std::string::npos) {
+    // TODO(b/134594898): Tighten this constraint.
+    test_driver.SetThreshold(0.2, 0.1);
     fully_quantize = true;
   }
 
@@ -319,18 +278,22 @@ TEST_P(OpsTest, RunZipTests) {
 
   auto broken_tests = GetKnownBrokenTests();
   if (FLAGS_use_nnapi) {
-    auto kBrokenNnapiTests = GetKnownBrokenNnapiTests();
-    broken_tests.insert(kBrokenNnapiTests.begin(), kBrokenNnapiTests.end());
+    for (const auto& t : GetKnownBrokenNnapiTests()) {
+      broken_tests[t.first] =
+          std::make_pair(t.second, /* always ignore */ false);
+    }
   }
+  auto quantize_broken_tests = GetKnownQuantizeBrokenTests();
 
   bool result = tflite::testing::ParseAndRunTests(&tflite_stream, &test_driver);
   string message = test_driver.GetErrorMessage();
 
   if (!fully_quantize) {
     string bug_number;
+    bool always_ignore;
     for (const auto& p : broken_tests) {
       if (RE2::PartialMatch(test_name, p.first)) {
-        bug_number = p.second;
+        std::tie(bug_number, always_ignore) = p.second;
         break;
       }
     }
@@ -346,7 +309,7 @@ TEST_P(OpsTest, RunZipTests) {
                                 "you can mark http://b/"
                              << bug_number << " as fixed! Yay!";
       } else {
-        EXPECT_TRUE(result)
+        EXPECT_TRUE(result || always_ignore)
             << message << ": Possibly due to http://b/" << bug_number;
       }
     }
@@ -354,7 +317,7 @@ TEST_P(OpsTest, RunZipTests) {
     if (!result) {
       string bug_number;
       // See if the tests are potential quantize failures.
-      for (const auto& p : GetKnownQuantizeBrokenTests()) {
+      for (const auto& p : quantize_broken_tests) {
         if (RE2::PartialMatch(test_name, p.first)) {
           bug_number = p.second;
           break;
@@ -419,6 +382,11 @@ int main(int argc, char** argv) {
   if (!success || (argc == 2 && !strcmp(argv[1], "--helpfull"))) {
     fprintf(stderr, "%s", tensorflow::Flags::Usage(argv[0], flags).c_str());
     return 1;
+  }
+
+  if (!tflite::testing::TfLiteDriver::InitTestDelegateProviders(
+          &argc, const_cast<const char**>(argv))) {
+    return EXIT_FAILURE;
   }
 
   ::tflite::LogToStderr();

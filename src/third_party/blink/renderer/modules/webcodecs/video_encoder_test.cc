@@ -91,12 +91,7 @@ VideoFrame* MakeVideoFrame(ScriptState* script_state,
   VideoFrameInit* video_frame_init = VideoFrameInit::Create();
   video_frame_init->setTimestamp(timestamp);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  CanvasImageSourceUnion source;
-  source.SetImageBitmap(image_bitmap);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   return VideoFrame::Create(script_state, source, video_frame_init,
                             IGNORE_EXCEPTION_FOR_TESTING);
@@ -139,6 +134,68 @@ TEST_F(VideoEncoderTest, RejectFlushAfterClose) {
 
   tester.WaitUntilSettled();
   ASSERT_TRUE(tester.IsRejected());
+}
+
+TEST_F(VideoEncoderTest, CodecReclamation) {
+  V8TestingScope v8_scope;
+  auto& es = v8_scope.GetExceptionState();
+  auto* script_state = v8_scope.GetScriptState();
+
+  // Create a video encoder.
+  auto* output_callback = MockFunction::Create(script_state);
+  auto* error_callback = MockFunction::Create(script_state);
+
+  auto* init = CreateInit(output_callback, error_callback);
+  auto* encoder = CreateEncoder(script_state, init, es);
+  ASSERT_FALSE(es.HadException());
+
+  // Simulate backgrounding to enable reclamation.
+  if (!encoder->is_backgrounded_for_testing()) {
+    encoder->SimulateLifecycleStateForTesting(
+        scheduler::SchedulingLifecycleState::kHidden);
+    DCHECK(encoder->is_backgrounded_for_testing());
+  }
+
+  auto* config = CreateConfig();
+  encoder->configure(config, es);
+  ASSERT_FALSE(es.HadException());
+  {
+    // We need this to make sure that configuration has completed.
+    auto promise = encoder->flush(es);
+    ScriptPromiseTester tester(script_state, promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
+
+  // The encoder should be active, for reclamation purposes.
+  ASSERT_TRUE(encoder->IsReclamationTimerActiveForTesting());
+
+  // Resetting the encoder should prevent codec reclamation, silently.
+  EXPECT_CALL(*error_callback, Call(testing::_)).Times(0);
+  encoder->reset(es);
+  ASSERT_FALSE(encoder->IsReclamationTimerActiveForTesting());
+
+  testing::Mock::VerifyAndClearExpectations(error_callback);
+
+  // Reconfiguring the encoder should restart the reclamation timer.
+  encoder->configure(config, es);
+  ASSERT_FALSE(es.HadException());
+  {
+    // We need this to make sure that configuration has completed.
+    auto promise = encoder->flush(es);
+    ScriptPromiseTester tester(script_state, promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+  }
+
+  ASSERT_TRUE(encoder->IsReclamationTimerActiveForTesting());
+
+  // Reclaiming a configured encoder should call the error callback.
+  EXPECT_CALL(*error_callback, Call(testing::_)).Times(1);
+  encoder->SimulateCodecReclaimedForTesting();
+  ASSERT_FALSE(encoder->IsReclamationTimerActiveForTesting());
+
+  testing::Mock::VerifyAndClearExpectations(error_callback);
 }
 
 }  // namespace

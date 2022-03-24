@@ -14,7 +14,7 @@ HEADER = headers.header(
         ),
         headers.oncall(
             name = "Chromium Branches",
-            branch_selector = branches.STANDARD_BRANCHES,
+            branch_selector = [branches.STANDARD_BRANCHES, branches.DESKTOP_EXTENDED_STABLE_BRANCHES],
             url = "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-branch-sheriff",
         ),
         headers.oncall(
@@ -28,6 +28,10 @@ HEADER = headers.header(
         headers.oncall(
             name = "ChromeOS",
             url = "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chromeos-gardeners",
+        ),
+        headers.oncall(
+            name = "Fuchsia",
+            url = "https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-fuchsia-gardener",
         ),
         headers.oncall(
             name = "GPU",
@@ -208,7 +212,7 @@ HEADER = headers.header(
                 ),
                 headers.link(
                     text = "chromiumos",
-                    branch_selector = branches.LTS_MILESTONE,
+                    branch_selector = branches.CROS_LTS_MILESTONE,
                     url = "/p/{}/g/chromium.chromiumos".format(settings.project),
                     alt = "ChromiumOS console",
                 ),
@@ -258,7 +262,7 @@ HEADER = headers.header(
                 ),
                 headers.link(
                     text = "chromiumos",
-                    branch_selector = branches.LTS_MILESTONE,
+                    branch_selector = branches.CROS_LTS_MILESTONE,
                     url = "/p/{}/g/tryserver.chromium.chromiumos/builders".format(settings.project),
                     alt = "ChromiumOS",
                 ),
@@ -299,7 +303,7 @@ HEADER = headers.header(
                 headers.link(
                     text = "customize",
                     branch_selector = branches.ALL_BRANCHES,
-                    url = "https://chromium.googlesource.com/chromium/src/+/{}/infra/config/generated/luci-milo.cfg".format(settings.ref),
+                    url = "https://chromium.googlesource.com/chromium/src/+/{}/infra/config/generated/luci/luci-milo.cfg".format(settings.ref),
                     alt = "Customize this console",
                 ),
             ],
@@ -346,7 +350,7 @@ HEADER = headers.header(
             ]],
         ),
         headers.console_group(
-            branch_selector = branches.LTS_BRANCHES,
+            branch_selector = branches.CROS_LTS_BRANCHES,
             console_ids = ["{}/{}".format(settings.project, c) for c in [
                 "chromium.chromiumos",
             ]],

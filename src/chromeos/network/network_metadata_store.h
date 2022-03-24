@@ -66,7 +66,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
                               const std::string& guid) override;
   void OnConfigurationModified(const std::string& service_path,
                                const std::string& guid,
-                               base::DictionaryValue* set_properties) override;
+                               const base::Value* set_properties) override;
   void OnConfigurationRemoved(const std::string& service_path,
                               const std::string& guid) override;
 
@@ -109,6 +109,25 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // When the active user is the device owner and its the first login, this
   // marks networks that were added in OOBE to the user's list.
   void OwnSharedNetworksOnFirstUserLogin();
+
+  // Sets whether traffic counters should be automatically reset.
+  void SetEnableTrafficCountersAutoReset(const std::string& network_guid,
+                                         bool enable);
+
+  // Sets the day of the month on which traffic counters are automatically
+  // reset.
+  void SetDayOfTrafficCountersAutoReset(const std::string& network_guid,
+                                        int day);
+
+  // Returns whether traffic counters should be automatically reset. Returns
+  // nullptr if no pref exists for |network_guid|.
+  const base::Value* GetEnableTrafficCountersAutoReset(
+      const std::string& network_guid);
+
+  // Returns the day of the month on which traffic counters are automatically
+  // reset. Returns nullptr if no pref exists for |network_guid|.
+  const base::Value* GetDayOfTrafficCountersAutoReset(
+      const std::string& network_guid);
 
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);

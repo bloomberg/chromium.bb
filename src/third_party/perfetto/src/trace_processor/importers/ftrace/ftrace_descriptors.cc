@@ -24,7 +24,7 @@ namespace perfetto {
 namespace trace_processor {
 namespace {
 
-std::array<MessageDescriptor, 359> descriptors{{
+std::array<MessageDescriptor, 361> descriptors{{
     {nullptr, 0, {}},
     {nullptr, 0, {}},
     {nullptr, 0, {}},
@@ -617,7 +617,7 @@ std::array<MessageDescriptor, 359> descriptors{{
     },
     {
         "cgroup_attach_task",
-        5,
+        7,
         {
             {},
             {"dst_root", ProtoSchemaType::kInt32},
@@ -625,6 +625,8 @@ std::array<MessageDescriptor, 359> descriptors{{
             {"pid", ProtoSchemaType::kInt32},
             {"comm", ProtoSchemaType::kString},
             {"cname", ProtoSchemaType::kString},
+            {"dst_level", ProtoSchemaType::kInt32},
+            {"dst_path", ProtoSchemaType::kString},
         },
     },
     {
@@ -3839,6 +3841,27 @@ std::array<MessageDescriptor, 359> descriptors{{
             {"bus_id", ProtoSchemaType::kUint32},
             {"client", ProtoSchemaType::kInt32},
             {"ib_quota", ProtoSchemaType::kUint64},
+        },
+    },
+    {
+        "rss_stat_throttled",
+        4,
+        {
+            {},
+            {"curr", ProtoSchemaType::kUint32},
+            {"member", ProtoSchemaType::kInt32},
+            {"mm_id", ProtoSchemaType::kUint32},
+            {"size", ProtoSchemaType::kInt64},
+        },
+    },
+    {
+        "netif_receive_skb",
+        3,
+        {
+            {},
+            {"len", ProtoSchemaType::kUint32},
+            {"name", ProtoSchemaType::kString},
+            {"skbaddr", ProtoSchemaType::kUint64},
         },
     },
 }};

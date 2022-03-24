@@ -16,8 +16,8 @@
 #include "base/strings/string_split.h"
 #include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/accessibility/ax_node_text_styles.h"
 #include "ui/accessibility/ax_relative_bounds.h"
+#include "ui/accessibility/ax_text_attributes.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace ui {
@@ -91,10 +91,10 @@ struct AX_BASE_EXPORT AXNodeData {
   bool GetStringAttribute(ax::mojom::StringAttribute attribute,
                           std::string* value) const;
 
-  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
-                            std::u16string* value) const;
   std::u16string GetString16Attribute(
       ax::mojom::StringAttribute attribute) const;
+  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
+                            std::u16string* value) const;
 
   bool HasIntListAttribute(ax::mojom::IntListAttribute attribute) const;
   const std::vector<int32_t>& GetIntListAttribute(
@@ -108,8 +108,8 @@ struct AX_BASE_EXPORT AXNodeData {
   bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
                               std::vector<std::string>* value) const;
 
-  bool GetHtmlAttribute(const char* attribute, std::u16string* value) const;
   bool GetHtmlAttribute(const char* attribute, std::string* value) const;
+  bool GetHtmlAttribute(const char* attribute, std::u16string* value) const;
 
   //
   // Setting accessibility attributes.
@@ -119,14 +119,14 @@ struct AX_BASE_EXPORT AXNodeData {
   // have wanted or what existing code already assumes.
   //
 
+  void AddBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
+  void AddChildTreeId(const ui::AXTreeID& tree_id);
+  void AddIntAttribute(ax::mojom::IntAttribute attribute, int32_t value);
+  void AddFloatAttribute(ax::mojom::FloatAttribute attribute, float value);
   // This method cannot be used to set kChildTreeId due to a common
   // misuse of base::UnguessableToken serialization. Use AddChildTreeId instead.
   void AddStringAttribute(ax::mojom::StringAttribute attribute,
                           const std::string& value);
-  void AddChildTreeId(const ui::AXTreeID& tree_id);
-  void AddIntAttribute(ax::mojom::IntAttribute attribute, int32_t value);
-  void AddFloatAttribute(ax::mojom::FloatAttribute attribute, float value);
-  void AddBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
   void AddIntListAttribute(ax::mojom::IntListAttribute attribute,
                            const std::vector<int32_t>& value);
   void AddStringListAttribute(ax::mojom::StringListAttribute attribute,
@@ -136,17 +136,18 @@ struct AX_BASE_EXPORT AXNodeData {
   // Removing accessibility attributes.
   //
 
-  void RemoveStringAttribute(ax::mojom::StringAttribute attribute);
+  void RemoveBoolAttribute(ax::mojom::BoolAttribute attribute);
   void RemoveIntAttribute(ax::mojom::IntAttribute attribute);
   void RemoveFloatAttribute(ax::mojom::FloatAttribute attribute);
-  void RemoveBoolAttribute(ax::mojom::BoolAttribute attribute);
+  void RemoveStringAttribute(ax::mojom::StringAttribute attribute);
   void RemoveIntListAttribute(ax::mojom::IntListAttribute attribute);
   void RemoveStringListAttribute(ax::mojom::StringListAttribute attribute);
 
   //
-  // Text styles.
+  // Text attributes, such as spelling markers and style information.
   //
-  AXNodeTextStyles GetTextStyles() const;
+
+  AXTextAttributes GetTextAttributes() const;
 
   //
   // Convenience functions.
@@ -281,6 +282,13 @@ struct AX_BASE_EXPORT AXNodeData {
   // created using the CSS "user-modify" property, or the "contenteditable"
   // attribute.
   bool IsNonAtomicTextField() const;
+
+  // Some spinners are text fields, and some are not. For example, an ordinary
+  // <input type="number"> allows caret movement and behaves like a textfield,
+  // but the <input type="number"> used inside date, datetime, datetime-local,
+  // month, time, and week types does not allow this. In either type, pressing
+  // up/down arrow will change the value to the previous/next allowed value.
+  bool IsSpinnerTextField() const;
 
   // Helper to determine if |GetRestriction| is either ReadOnly or Disabled.
   // By default, all nodes that can't be edited are readonly.

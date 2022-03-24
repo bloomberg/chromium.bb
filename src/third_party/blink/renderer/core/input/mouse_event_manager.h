@@ -46,8 +46,7 @@ class CORE_EXPORT MouseEventManager final
       EventTarget*,
       const AtomicString&,
       const WebMouseEvent&,
-      const String& canvas_region_id,
-      const FloatPoint* last_position,
+      const gfx::PointF* last_position,
       EventTarget* related_target,
       bool check_for_listener = false,
       const PointerId& pointer_id = PointerEventFactory::kInvalidId,
@@ -55,14 +54,12 @@ class CORE_EXPORT MouseEventManager final
 
   WebInputEventResult SetMousePositionAndDispatchMouseEvent(
       Element* target_element,
-      const String& canvas_region_id,
       const AtomicString& event_type,
       const WebMouseEvent&);
 
   WebInputEventResult DispatchMouseClickIfNeeded(
       Element* mouse_release_target,
       const WebMouseEvent& mouse_event,
-      const String& canvas_region_id,
       const PointerId& pointer_id,
       const String& pointer_type);
 
@@ -79,11 +76,9 @@ class CORE_EXPORT MouseEventManager final
 
   void SendBoundaryEvents(EventTarget* exited_target,
                           EventTarget* entered_target,
-                          const String& canvas_region_id,
                           const WebMouseEvent&);
 
   void SetElementUnderMouse(Element*,
-                            const String& canvas_region_id,
                             const WebMouseEvent&);
 
   WebInputEventResult HandleMouseFocus(
@@ -127,8 +122,8 @@ class CORE_EXPORT MouseEventManager final
   // refactoring to be able to remove the dependency from EventHandler.
   Element* GetElementUnderMouse();
   bool IsMousePositionUnknown();
-  FloatPoint LastKnownMousePositionInViewport();
-  FloatPoint LastKnownMouseScreenPosition();
+  gfx::PointF LastKnownMousePositionInViewport();
+  gfx::PointF LastKnownMouseScreenPosition();
 
   bool MousePressed();
   void ReleaseMousePress();
@@ -158,10 +153,7 @@ class CORE_EXPORT MouseEventManager final
  private:
   class MouseEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
    public:
-    MouseEventBoundaryEventDispatcher(MouseEventManager*,
-                                      const WebMouseEvent*,
-                                      EventTarget* exited_target,
-                                      const String& canvas_region_id);
+    MouseEventBoundaryEventDispatcher(MouseEventManager*, const WebMouseEvent*);
     MouseEventBoundaryEventDispatcher(
         const MouseEventBoundaryEventDispatcher&) = delete;
     MouseEventBoundaryEventDispatcher& operator=(
@@ -183,13 +175,10 @@ class CORE_EXPORT MouseEventManager final
     void Dispatch(EventTarget*,
                   EventTarget* related_target,
                   const AtomicString&,
-                  const String& canvas_region_id,
                   const WebMouseEvent&,
                   bool check_for_listener);
     MouseEventManager* mouse_event_manager_;
     const WebMouseEvent* web_mouse_event_;
-    EventTarget* exited_target_;
-    String canvas_region_id_;
   };
 
   // If the given element is a shadow host and its root has delegatesFocus=false
@@ -197,7 +186,7 @@ class CORE_EXPORT MouseEventManager final
   // is different from the given element.
   bool SlideFocusOnShadowHostIfNecessary(const Element&);
 
-  bool DragThresholdExceeded(const IntPoint&) const;
+  bool DragThresholdExceeded(const gfx::Point&) const;
   bool HandleDrag(const MouseEventWithHitTestResults&, DragInitiator);
   bool TryStartDrag(const MouseEventWithHitTestResults&);
   void ClearDragDataTransfer();
@@ -223,8 +212,9 @@ class CORE_EXPORT MouseEventManager final
 
   // The last mouse movement position this frame has seen in viewport
   // coordinates.
-  FloatPoint last_known_mouse_position_;
-  FloatPoint last_known_mouse_screen_position_;
+  PhysicalOffset last_known_mouse_position_in_root_frame_;
+  gfx::PointF last_known_mouse_position_;
+  gfx::PointF last_known_mouse_screen_position_;
 
   unsigned is_mouse_position_unknown_ : 1;
   // Current button-press state for mouse/mouse-like-stylus.
@@ -247,11 +237,11 @@ class CORE_EXPORT MouseEventManager final
   // remains unchanged.
   Member<Element> mouse_down_element_;
 
-  IntPoint mouse_down_pos_;  // In our view's coords.
+  gfx::Point mouse_down_pos_;  // In our view's coords.
   base::TimeTicks mouse_down_timestamp_;
   WebMouseEvent mouse_down_;
 
-  PhysicalOffset drag_start_pos_;
+  PhysicalOffset drag_start_pos_in_root_frame_;
   // This indicates that whether we should update the hover at each begin
   // frame. This is set to be true after the compositor or main thread scroll
   // ends, and at each begin frame, we will dispatch a fake mouse move event to

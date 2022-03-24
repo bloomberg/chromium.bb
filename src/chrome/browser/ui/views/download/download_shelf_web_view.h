@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_WEB_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_WEB_VIEW_H_
 
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
@@ -28,7 +30,7 @@ class DownloadShelfWebView : public DownloadShelf,
 
   // views::WebView:
   gfx::Size CalculatePreferredSize() const override;
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) override;
 
  protected:
@@ -41,6 +43,7 @@ class DownloadShelfWebView : public DownloadShelf,
   views::View* GetView() override;
 
   // DownloadShelfUIEmbedder:
+  void DoShowAll() override;
   void ShowDownloadContextMenu(
       DownloadUIModel* download,
       const gfx::Point& position,
@@ -62,7 +65,7 @@ class DownloadShelfWebView : public DownloadShelf,
 
   DownloadShelfUI* GetDownloadShelfUI();
 
-  BrowserView* parent_;
+  raw_ptr<BrowserView> parent_;
 
   // The show/hide animation for the shelf itself.
   gfx::SlideAnimation shelf_animation_{this};

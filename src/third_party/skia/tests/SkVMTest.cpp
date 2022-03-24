@@ -102,7 +102,7 @@ DEF_TEST(SkVM_allow_jit, r) {
         b.store32(dst, b.load32(src));
     }
 
-    if (b.done("", /*allow_jit=*/true).hasJIT()) {
+    if (b.done("test-allow_jit", /*allow_jit=*/true).hasJIT()) {
         REPORTER_ASSERT(r, !b.done("", false).hasJIT());
     }
 }
@@ -138,8 +138,8 @@ DEF_TEST(SkVM_LoopCounts, r) {
 DEF_TEST(SkVM_gather32, r) {
     skvm::Builder b;
     {
-        skvm::Ptr uniforms = b.uniform(),
-                  buf      = b.varying<int>();
+        skvm::UPtr uniforms = b.uniform();
+        skvm::Ptr buf = b.varying<int>();
         skvm::I32 x = b.load32(buf);
         b.store32(buf, b.gather32(uniforms,0, b.bit_and(x, b.splat(7))));
     }
@@ -186,8 +186,8 @@ DEF_TEST(SkVM_gather32, r) {
 DEF_TEST(SkVM_gathers, r) {
     skvm::Builder b;
     {
-        skvm::Ptr uniforms = b.uniform(),
-                  buf32    = b.varying<int>(),
+        skvm::UPtr uniforms = b.uniform();
+        skvm::Ptr buf32    = b.varying<int>(),
                   buf16    = b.varying<uint16_t>(),
                   buf8     = b.varying<uint8_t>();
 
@@ -244,8 +244,8 @@ DEF_TEST(SkVM_gathers, r) {
 DEF_TEST(SkVM_gathers2, r) {
     skvm::Builder b;
     {
-        skvm::Ptr uniforms = b.uniform(),
-                  buf32    = b.varying<int>(),
+        skvm::UPtr uniforms = b.uniform();
+        skvm::Ptr buf32    = b.varying<int>(),
                   buf16    = b.varying<uint16_t>(),
                   buf8     = b.varying<uint8_t>();
 
@@ -714,8 +714,8 @@ DEF_TEST(SkVM_NewOps, r) {
     // Exercise a somewhat arbitrary set of new ops.
     skvm::Builder b;
     {
-        skvm::Ptr buf      = b.varying<int16_t>(),
-                  uniforms = b.uniform();
+        skvm::Ptr buf = b.varying<int16_t>();
+        skvm::UPtr uniforms = b.uniform();
 
         skvm::I32 x = b.load16(buf);
 
@@ -769,6 +769,67 @@ DEF_TEST(SkVM_NewOps, r) {
     });
 }
 
+DEF_TEST(SKVM_array32, r) {
+
+
+
+    skvm::Builder b;
+    skvm::Uniforms uniforms(b.uniform(), 0);
+    // Take up the first slot, so other uniforms are not at 0 offset.
+    uniforms.push(0);
+    int i[] = {3, 7};
+    skvm::Uniform array = uniforms.pushArray(i);
+    float f[] = {5, 9};
+    skvm::Uniform arrayF = uniforms.pushArrayF(f);
+    {
+        skvm::Ptr buf0     = b.varying<int32_t>(),
+                  buf1     = b.varying<int32_t>(),
+                  buf2     = b.varying<int32_t>();
+
+        skvm::I32 j = b.array32(array, 0);
+        b.store32(buf0, j);
+        skvm::I32 k = b.array32(array, 1);
+        b.store32(buf1, k);
+
+        skvm::F32 x = b.arrayF(arrayF, 0);
+        skvm::F32 y = b.arrayF(arrayF, 1);
+        b.store32(buf2, b.trunc(b.add(x, y)));
+    }
+
+    test_jit_and_interpreter(b, [&](const skvm::Program& program) {
+        const int K = 10;
+        int32_t buf0[K],
+                buf1[K],
+                buf2[K];
+
+        // reset the i[0] for the two tests.
+        i[0] = 3;
+        f[1] = 9;
+        program.eval(K, uniforms.buf.data(), buf0, buf1, buf2);
+        for (auto v : buf0) {
+            REPORTER_ASSERT(r, v == 3);
+        }
+        for (auto v : buf1) {
+            REPORTER_ASSERT(r, v == 7);
+        }
+        for (auto v : buf2) {
+            REPORTER_ASSERT(r, v == 14);
+        }
+        i[0] = 4;
+        f[1] = 10;
+        program.eval(K, uniforms.buf.data(), buf0, buf1, buf2);
+        for (auto v : buf0) {
+            REPORTER_ASSERT(r, v == 4);
+        }
+        for (auto v : buf1) {
+            REPORTER_ASSERT(r, v == 7);
+        }
+        for (auto v : buf2) {
+            REPORTER_ASSERT(r, v == 15);
+        }
+    });
+}
+
 DEF_TEST(SkVM_sqrt, r) {
     skvm::Builder b;
     auto buf = b.varying<int>();
@@ -817,6 +878,121 @@ DEF_TEST(SkVM_assert, r) {
         int buf[] = { 0,1,2,3,4,5,6,7,8,9 };
         program.eval(SK_ARRAY_COUNT(buf), buf);
     });
+}
+
+DEF_TEST(SkVM_trace_line, r) {
+    class TestTraceHook : public skvm::TraceHook {
+    public:
+        void var(int, int32_t) override { fBuffer.push_back(-9999999); }
+        void enter(int) override        { fBuffer.push_back(-9999999); }
+        void exit(int) override         { fBuffer.push_back(-9999999); }
+        void line(int lineNum) override { fBuffer.push_back(lineNum); }
+
+        std::vector<int> fBuffer;
+    };
+
+    skvm::Builder b;
+    TestTraceHook testTrace;
+    int traceHookID = b.attachTraceHook(&testTrace);
+    b.trace_line(traceHookID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 123);
+    b.trace_line(traceHookID, b.splat(0x00000000), b.splat(0xFFFFFFFF), 456);
+    b.trace_line(traceHookID, b.splat(0xFFFFFFFF), b.splat(0x00000000), 567);
+    b.trace_line(traceHookID, b.splat(0x00000000), b.splat(0x00000000), 678);
+    b.trace_line(traceHookID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 789);
+    skvm::Program p = b.done();
+    p.eval(1);
+
+    REPORTER_ASSERT(r, (testTrace.fBuffer == std::vector<int>{123, 789}));
+}
+
+DEF_TEST(SkVM_trace_var, r) {
+    class TestTraceHook : public skvm::TraceHook {
+    public:
+        void line(int) override                  { fBuffer.push_back(-9999999); }
+        void enter(int) override                 { fBuffer.push_back(-9999999); }
+        void exit(int) override                  { fBuffer.push_back(-9999999); }
+        void var(int slot, int32_t val) override {
+            fBuffer.push_back(slot);
+            fBuffer.push_back(val);
+        }
+
+        std::vector<int> fBuffer;
+    };
+
+    skvm::Builder b;
+    TestTraceHook testTrace;
+    int traceHookID = b.attachTraceHook(&testTrace);
+    b.trace_var(traceHookID, b.splat(0x00000000), b.splat(0xFFFFFFFF), 2, b.splat(333));
+    b.trace_var(traceHookID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 4, b.splat(555));
+    b.trace_var(traceHookID, b.splat(0x00000000), b.splat(0x00000000), 5, b.splat(666));
+    b.trace_var(traceHookID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 6, b.splat(777));
+    b.trace_var(traceHookID, b.splat(0xFFFFFFFF), b.splat(0x00000000), 8, b.splat(999));
+    skvm::Program p = b.done();
+    p.eval(1);
+
+    REPORTER_ASSERT(r, (testTrace.fBuffer == std::vector<int>{4, 555, 6, 777}));
+}
+
+DEF_TEST(SkVM_trace_enter_exit, r) {
+    class TestTraceHook : public skvm::TraceHook {
+    public:
+        void line(int) override                   { fBuffer.push_back(-9999999); }
+        void var(int, int32_t) override           { fBuffer.push_back(-9999999); }
+        void enter(int fnIdx) override {
+            fBuffer.push_back(fnIdx);
+            fBuffer.push_back(1);
+        }
+        void exit(int fnIdx) override {
+            fBuffer.push_back(fnIdx);
+            fBuffer.push_back(0);
+        }
+
+        std::vector<int> fBuffer;
+    };
+
+    skvm::Builder b;
+    TestTraceHook testTrace;
+    int traceHookID = b.attachTraceHook(&testTrace);
+    b.trace_enter(traceHookID, b.splat(0x00000000), b.splat(0x00000000), 99);
+    b.trace_enter(traceHookID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 12);
+    b.trace_enter(traceHookID, b.splat(0x00000000), b.splat(0xFFFFFFFF), 34);
+    b.trace_exit(traceHookID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 56);
+    b.trace_exit(traceHookID, b.splat(0xFFFFFFFF), b.splat(0x00000000), 78);
+    b.trace_exit(traceHookID, b.splat(0x00000000), b.splat(0x00000000), 90);
+    skvm::Program p = b.done();
+    p.eval(1);
+
+    REPORTER_ASSERT(r, (testTrace.fBuffer == std::vector<int>{12, 1, 56, 0}));
+}
+
+DEF_TEST(SkVM_trace_multiple_hooks, r) {
+    class TestTraceHook : public skvm::TraceHook {
+    public:
+        void var(int, int32_t) override { fBuffer.push_back(-9999999); }
+        void enter(int) override        { fBuffer.push_back(-9999999); }
+        void exit(int) override         { fBuffer.push_back(-9999999); }
+        void line(int lineNum) override { fBuffer.push_back(lineNum); }
+
+        std::vector<int> fBuffer;
+    };
+
+    skvm::Builder b;
+    TestTraceHook testTraceA, testTraceB, testTraceC;
+    int traceHookAID = b.attachTraceHook(&testTraceA);
+    int traceHookBID = b.attachTraceHook(&testTraceB);
+    int traceHookCID = b.attachTraceHook(&testTraceC);
+    b.trace_line(traceHookCID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 111);
+    b.trace_line(traceHookAID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 222);
+    b.trace_line(traceHookCID, b.splat(0x00000000), b.splat(0x00000000), 333);
+    b.trace_line(traceHookBID, b.splat(0xFFFFFFFF), b.splat(0x00000000), 444);
+    b.trace_line(traceHookAID, b.splat(0x00000000), b.splat(0xFFFFFFFF), 555);
+    b.trace_line(traceHookBID, b.splat(0xFFFFFFFF), b.splat(0xFFFFFFFF), 666);
+    skvm::Program p = b.done();
+    p.eval(1);
+
+    REPORTER_ASSERT(r, (testTraceA.fBuffer == std::vector<int>{222}));
+    REPORTER_ASSERT(r, (testTraceB.fBuffer == std::vector<int>{666}));
+    REPORTER_ASSERT(r, (testTraceC.fBuffer == std::vector<int>{111}));
 }
 
 DEF_TEST(SkVM_premul, reporter) {
@@ -2222,11 +2398,11 @@ DEF_TEST(SkVM_64bit, r) {
     {
         skvm::Builder b;
         {
-            skvm::Ptr wide = b.varying<uint64_t>(),
-                        lo = b.varying<int>(),
-                        hi = b.varying<int>();
-            b.store32(lo, b.load64(wide, 0));
-            b.store32(hi, b.load64(wide, 1));
+            skvm::Ptr widePtr = b.varying<uint64_t>(),
+                        loPtr = b.varying<int>(),
+                        hiPtr = b.varying<int>();
+            b.store32(loPtr, b.load64(widePtr, 0));
+            b.store32(hiPtr, b.load64(widePtr, 1));
         }
         test_jit_and_interpreter(b, [&](const skvm::Program& program){
             uint32_t l[65], h[65];
@@ -2241,10 +2417,10 @@ DEF_TEST(SkVM_64bit, r) {
     {
         skvm::Builder b;
         {
-            skvm::Ptr wide = b.varying<uint64_t>(),
-                        lo = b.varying<int>(),
-                        hi = b.varying<int>();
-            b.store64(wide, b.load32(lo), b.load32(hi));
+            skvm::Ptr widePtr = b.varying<uint64_t>(),
+                        loPtr = b.varying<int>(),
+                        hiPtr = b.varying<int>();
+            b.store64(widePtr, b.load32(loPtr), b.load32(hiPtr));
         }
         test_jit_and_interpreter(b, [&](const skvm::Program& program){
             uint64_t w[65];
@@ -2270,8 +2446,8 @@ DEF_TEST(SkVM_128bit, r) {
     {  // Convert RGBA F32 to RGBA 8888, testing 128-bit loads.
         skvm::Builder b;
         {
-            skvm::Ptr dst = b.arg( 4),
-                      src = b.arg(16);
+            skvm::Ptr dst = b.varying(4),
+                      src = b.varying(16);
 
             skvm::Color c = b.load(rgba_ffff, src);
             b.store(rgba_8888, dst, c);
@@ -2289,8 +2465,8 @@ DEF_TEST(SkVM_128bit, r) {
     {  // Convert RGBA 8888 to RGBA F32, testing 128-bit stores.
         skvm::Builder b;
         {
-            skvm::Ptr dst = b.arg(16),
-                      src = b.arg( 4);
+            skvm::Ptr dst = b.varying(16),
+                      src = b.varying(4);
 
             skvm::Color c = b.load(rgba_8888, src);
             b.store(rgba_ffff, dst, c);
@@ -2359,13 +2535,13 @@ DEF_TEST(SkVM_args, r) {
     });
 }
 
-DEF_TEST(SkVM_badpack, r) {
+DEF_TEST(SkVM_badpack, reporter) {
     // Test case distilled from actual failing draw,
     // originally with a bad arm64 implementation of pack().
     skvm::Builder p;
     {
-        skvm::Ptr uniforms = p.uniform(),
-                  dst      = p.varying<uint16_t>();
+        skvm::UPtr uniforms = p.uniform();
+        skvm::Ptr dst = p.varying<uint16_t>();
 
         skvm::I32 r = round(p.uniformF(uniforms, 8) * 15),
                   a = p.splat(0xf);
@@ -2383,7 +2559,7 @@ DEF_TEST(SkVM_badpack, r) {
         uint16_t dst[17] = {0};
         program.eval(17, uniforms,dst);
         for (int i = 0; i < 17; i++) {
-            REPORTER_ASSERT(r, dst[i] == 0xf00f, "got %04x, want %04x\n", dst[i], 0xf00f);
+            REPORTER_ASSERT(reporter, dst[i] == 0xf00f, "got %04x, want %04x\n", dst[i], 0xf00f);
         }
     });
 }
@@ -2423,8 +2599,8 @@ DEF_TEST(SkVM_gather_can_hoist, r) {
     // First a typical gather scenario with varying index.
     {
         skvm::Builder b;
-        skvm::Ptr uniforms = b.uniform(),
-                  buf      = b.varying<int>();
+        skvm::UPtr uniforms = b.uniform();
+        skvm::Ptr buf = b.varying<int>();
         skvm::I32 ix = b.load32(buf);
         b.store32(buf, b.gather32(uniforms,0, ix));
 
@@ -2443,8 +2619,8 @@ DEF_TEST(SkVM_gather_can_hoist, r) {
     // Now the same but with a uniform index instead.
     {
         skvm::Builder b;
-        skvm::Ptr uniforms = b.uniform(),
-                  buf      = b.varying<int>();
+        skvm::UPtr uniforms = b.uniform();
+        skvm::Ptr buf = b.varying<int>();
         skvm::I32 ix = b.uniform32(uniforms,8);
         b.store32(buf, b.gather32(uniforms,0, ix));
 

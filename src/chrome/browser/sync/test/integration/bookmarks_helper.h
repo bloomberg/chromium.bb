@@ -14,6 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
@@ -174,10 +175,7 @@ void SetTitle(int profile,
               const std::string& new_title);
 
 // The source of the favicon.
-enum FaviconSource {
-  FROM_UI,
-  FROM_SYNC
-};
+enum FaviconSource { FROM_UI, FROM_SYNC };
 
 // Sets the |icon_url| and |image| data for the favicon for |node| in the
 // bookmark model for |profile|.
@@ -426,7 +424,7 @@ class SingleBookmarkModelStatusChangeChecker
 
  private:
   const int profile_index_;
-  bookmarks::BookmarkModel* bookmark_model_;
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 };
 
 // Generic status change checker that waits until a predicate as defined by
@@ -476,7 +474,7 @@ class BookmarkFaviconLoadedChecker
   bool IsExitConditionSatisfied(std::ostream* os) override;
 
  private:
-  const bookmarks::BookmarkNode* const bookmark_node_;
+  const raw_ptr<const bookmarks::BookmarkNode> bookmark_node_;
 };
 
 // Checker used to block until the bookmarks on the server match a given set of
@@ -494,21 +492,24 @@ class ServerBookmarksEqualityChecker : public SingleClientStatusChangeChecker {
   // will be used to decrypt the data prior to checking for equality.
   // |fake_server| must not be nullptr and must outlive this object.
   ServerBookmarksEqualityChecker(
-      syncer::ProfileSyncService* service,
+      syncer::SyncServiceImpl* service,
       fake_server::FakeServer* fake_server,
       std::vector<ExpectedBookmark> expected_bookmarks,
       syncer::Cryptographer* cryptographer);
 
   bool IsExitConditionSatisfied(std::ostream* os) override;
 
+  ServerBookmarksEqualityChecker(const ServerBookmarksEqualityChecker&) =
+      delete;
+  ServerBookmarksEqualityChecker& operator=(
+      const ServerBookmarksEqualityChecker&) = delete;
+
   ~ServerBookmarksEqualityChecker() override;
 
  private:
-  fake_server::FakeServer* fake_server_;
-  syncer::Cryptographer* cryptographer_;
+  raw_ptr<fake_server::FakeServer> fake_server_;
+  raw_ptr<syncer::Cryptographer> cryptographer_;
   const std::vector<ExpectedBookmark> expected_bookmarks_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServerBookmarksEqualityChecker);
 };
 
 // Checker used to block until the actual number of bookmarks with the given url
@@ -543,7 +544,7 @@ class BookmarkModelMatchesFakeServerChecker
     : public SingleClientStatusChangeChecker {
  public:
   BookmarkModelMatchesFakeServerChecker(int profile,
-                                        syncer::ProfileSyncService* service,
+                                        syncer::SyncServiceImpl* service,
                                         fake_server::FakeServer* fake_server);
 
   bool IsExitConditionSatisfied(std::ostream* os) override;
@@ -577,7 +578,7 @@ class BookmarkModelMatchesFakeServerChecker
       const std::map<base::GUID, sync_pb::SyncEntity>& server_bookmarks_by_guid)
       const;
 
-  fake_server::FakeServer* const fake_server_;
+  const raw_ptr<fake_server::FakeServer> fake_server_;
   const int profile_index_;
 };
 

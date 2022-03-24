@@ -73,6 +73,9 @@ Polymer({
     this.id_ = queryParams.get('id') || '';
     this.parentNode.pageTitle =
         this.languageHelper.getInputMethodDisplayName(this.id_);
+    assert(
+        this.parentNode.pageTitle !== '',
+        `Input method ID '${this.id_}' is invalid`);
     this.engineId_ =
         settings.input_method_util.getFirstPartyInputMethodEngineId(this.id_);
     this.populateOptionSections_();
@@ -87,7 +90,8 @@ Polymer({
   getMenuItems(name, value) {
     return settings.input_method_util.getOptionMenuItems(name).map(menuItem => {
       menuItem['selected'] = menuItem['value'] === value;
-      menuItem['label'] = this.i18n(menuItem['name']);
+      menuItem['label'] =
+          menuItem['name'] ? this.i18n(menuItem['name']) : menuItem['value'];
       return menuItem;
     });
   },
@@ -103,18 +107,30 @@ Polymer({
     const prefix = this.getPrefsPrefix_();
     const currentSettings = prefix in prefValue ? prefValue[prefix] : {};
 
-    const makeOption = (name) => {
+    const makeOption = (option) => {
+      const name = option.name;
       const uiType = settings.input_method_util.getOptionUiType(name);
-      const value = name in currentSettings ?
+      let value = name in currentSettings ?
           currentSettings[name] :
           settings.input_method_util.OPTION_DEFAULT[name];
+      if (!this.isSettingValueValid_(name, value)) {
+        value = settings.input_method_util.OPTION_DEFAULT[name];
+        this.updatePref_(name, value);
+      }
+
+      const label = settings.input_method_util.isOptionLabelTranslated(name) ?
+          this.i18n(settings.input_method_util.getOptionLabelName(name)) :
+          settings.input_method_util.getUntranslatedOptionLabelName(name);
       return {
         name: name,
         uiType: uiType,
         value: value,
-        label: this.i18n(settings.input_method_util.getOptionLabelName(name)),
+        label: label,
         menuItems: this.getMenuItems(name, value),
         url: settings.input_method_util.getOptionUrl(name),
+        dependentOptions: option.dependentOptions ?
+            option.dependentOptions.map(t => makeOption({name: t})) :
+            []
       };
     };
 
@@ -125,7 +141,7 @@ Polymer({
             .map(section => {
               return {
                 title: this.getSectionTitleI18n_(section.title),
-                options: section.optionNames.map(makeOption),
+                options: section.optionNames.map(makeOption, false),
               };
             });
   },
@@ -137,15 +153,23 @@ Polymer({
    * @private
    */
   getPrefsPrefix_() {
-    if (this.engineId_ ===
-        settings.input_method_util.InputToolCode.PINYIN_CHINESE_SIMPLIFIED) {
+    if (this.engineId_ === 'zh-t-i0-pinyin') {
       return 'pinyin';
-    } else if (
-        this.engineId_ ===
-        settings.input_method_util.InputToolCode.ZHUYIN_CHINESE_TRADITIONAL) {
+    } else if (this.engineId_ === 'zh-hant-t-i0-und') {
       return 'zhuyin';
     }
     return this.engineId_;
+  },
+
+  /**
+   *
+   * @param {*} value
+   * @private
+   */
+  dependentOptionsDisabled_(value) {
+    // TODO(b/189909728): Sometimes the value comes as a string, other times as
+    // an integer, so handle both cases. Try to understand and fix this.
+    return value === '0' || value === 0;
   },
 
   /**
@@ -155,6 +179,33 @@ Polymer({
    * @private
    */
   onToggleButtonOrDropdownChange_(e) {
+    // e.model isn't correctly set for dependent options, due to nested
+    // dom-repeat, so figure out what option was actually set.
+    const option = e.model.dependant ? e.model.dependant : e.model.option;
+    // The value of dropdown is not updated immediately when the event is fired.
+    // Wait for the polymer state to update to make sure we write the latest
+    // to Cros Prefs.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      this.updatePref_(option.name, option.value);
+    });
+  },
+
+  isSettingValueValid_(name, value) {
+    const uiType = settings.input_method_util.getOptionUiType(name);
+    if (uiType !== UiType.DROPDOWN) {
+      return true;
+    }
+    const menuItems = settings.input_method_util.getOptionMenuItems(name);
+    return menuItems.find((item) => item.value === value);
+  },
+
+  /**
+   * Update an input method pref.
+   * @param {!settings.input_method_util.OptionType} optionName
+   * @param {*} newValue
+   * @private
+   */
+  updatePref_(optionName, newValue) {
     // Get the existing settings dictionary, in order to update it later.
     // |PrefsBehavior.setPrefValue| will update Cros Prefs only if the reference
     // of variable has changed, so we need to copy the current content into a
@@ -165,30 +216,23 @@ Polymer({
     if (!(prefix in updatedSettings)) {
       updatedSettings[prefix] = {};
     }
-
-    // The value of dropdown is not updated immediately when the event is fired.
-    // Wait for the polymer state to update to make sure we write the latest
-    // to Cros Prefs.
-    Polymer.RenderStatus.afterNextRender(this, () => {
-      let newValue = e.model.option.value;
-      // The value of dropdown in html is always string, but some of the prefs
-      // values are used as integer or enum by IME, so we need to store numbers
-      // for them to function correctly.
-      if (settings.input_method_util.isNumberValue(e.model.option.name)) {
-        newValue = parseInt(newValue, 10);
-      }
-      updatedSettings[prefix][e.model.option.name] = newValue;
-      this.setPrefValue(this.PREFS_PATH, updatedSettings);
-    });
+    // The value of dropdown in html is always string, but some of the prefs
+    // values are used as integer or enum by IME, so we need to store numbers
+    // for them to function correctly.
+    if (settings.input_method_util.isNumberValue(optionName)) {
+      newValue = parseInt(newValue, 10);
+    }
+    updatedSettings[prefix][optionName] = newValue;
+    this.setPrefValue(this.PREFS_PATH, updatedSettings);
   },
 
   /**
    * Opens external link in Chrome.
-   * @param {!{model: !{option: !{url: string}}}} e
+   * @param {!{model: !{option: !{url: !settings.Route}}}} e
    * @private
    */
-  onExternalLinkClick_(e) {
-    window.open(e.model.option.url);
+  navigateToOtherPageInSettings_(e) {
+    settings.Router.getInstance().navigateTo(e.model.option.url);
   },
 
   /**

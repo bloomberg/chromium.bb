@@ -6,12 +6,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/bookmarks/common/bookmark_pref_names.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
-#import "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_xcui_actions.h"
@@ -19,6 +21,8 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/http_server/http_server_util.h"
+#import "net/base/mac/url_conversions.h"
+#import "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,6 +38,7 @@ using chrome_test_util::WindowWithNumber;
 using chrome_test_util::AddToBookmarksButton;
 using chrome_test_util::AddToReadingListButton;
 using chrome_test_util::CloseTabMenuButton;
+using chrome_test_util::TabGridSelectTabsMenuButton;
 
 namespace {
 char kURL1[] = "http://firstURL";
@@ -51,16 +56,6 @@ char kResponse4[] = "Test Page 4 content";
 const CFTimeInterval kSnackbarAppearanceTimeout = 5;
 const CFTimeInterval kSnackbarDisappearanceTimeout = 11;
 
-// Matcher for the 'Close All' confirmation button.
-id<GREYMatcher> CloseAllTabsConfirmationWithNumberOfTabs(
-    NSInteger numberOfTabs) {
-  NSString* closeTabs =
-      base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
-          IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION, numberOfTabs));
-  return grey_allOf(grey_accessibilityLabel(closeTabs),
-                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-}
-
 id<GREYMatcher> TabWithTitle(NSString* title) {
   return grey_allOf(grey_accessibilityLabel(title), grey_sufficientlyVisible(),
                     nil);
@@ -69,6 +64,23 @@ id<GREYMatcher> TabWithTitle(NSString* title) {
 // Identifer for cell at given |index| in the tab grid.
 NSString* IdentifierForCellAtIndex(unsigned int index) {
   return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
+}
+
+id<GREYMatcher> DeselectAllButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                        IDS_IOS_TAB_GRID_DESELECT_ALL_BUTTON),
+                    grey_userInteractionEnabled(), nullptr);
+}
+
+id<GREYMatcher> SelectAllButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                        IDS_IOS_TAB_GRID_SELECT_ALL_BUTTON),
+                    grey_userInteractionEnabled(), nullptr);
+}
+
+id<GREYMatcher> VisibleTabGridEditButton() {
+  return grey_allOf(chrome_test_util::TabGridEditButton(),
+                    grey_sufficientlyVisible(), nil);
 }
 
 }  // namespace
@@ -89,14 +101,27 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   // Features are enabled or disabled based on the name of the test that is
   // running. This is done because it is inefficient to use
   // ensureAppLaunchedWithConfiguration for each test.
-  if ([self isRunningTest:@selector(testTabGridItemContextMenuShare)] ||
+  if ([self isRunningTest:@selector(testCloseAllAndUndoCloseAll)] ||
       [self isRunningTest:@selector
-            (testTabGridItemContextMenuAddToReadingList)] ||
-      [self isRunningTest:@selector(testTabGridItemContextCloseTab)] ||
-      [self
-          isRunningTest:@selector(testTabGridItemContextMenuAddToBookmarks)]) {
-    config.features_enabled.push_back(kTabGridContextMenu);
+            (testUndoCloseAllNotAvailableAfterNewTabCreation)] ||
+      [self isRunningTest:@selector(testTabGridBulkActionCloseTabs)] ||
+      [self isRunningTest:@selector(testTabGridBulkActionDeselectAll)] ||
+      [self isRunningTest:@selector(testTabGridBulkActionSelectAll)] ||
+      [self isRunningTest:@selector(testTabGridBulkActionAddToBookmarks)] ||
+      [self isRunningTest:@selector(testTabGridBulkActionAddToReadingList)] ||
+      [self isRunningTest:@selector(testTabGridBulkActionShare)]) {
+    config.features_enabled.push_back(kTabsBulkActions);
+  } else if (
+      [self isRunningTest:@selector
+            (testCloseAllAndUndoCloseAll_BulkActionsDisabled)] ||
+      [self isRunningTest:@selector
+            (testUndoCloseAllNotAvailableAfterNewTabCreation_BulkActionsDisabled
+                )]) {
+    config.features_disabled.push_back(kTabsBulkActions);
   }
+
+  config.features_disabled.push_back(kStartSurface);
+
   return config;
 }
 
@@ -152,12 +177,8 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests that tapping Close All shows no tabs, shows Undo button, and displays
 // the empty state. Then tests tapping Undo shows Close All button again.
-- (void)testCloseAllAndUndoCloseAll {
-  if ([ChromeEarlGrey isCloseAllTabsConfirmationEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Close All Tabs Confirmation feature flag is on.");
-  }
-
+// Validates this case when Tab Grid Bulk Actions feature is disabled.
+- (void)testCloseAllAndUndoCloseAll_BulkActionsDisabled {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
@@ -181,14 +202,50 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Tests that tapping Close All shows no tabs, shows Undo button, and displays
+// the empty state. Then tests tapping Undo shows Close All button again.
+// Validates this case when Tab Grid Bulk Actions feature is enabled.
+- (void)testCloseAllAndUndoCloseAll {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  // Close all tabs
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridEditMenuCloseAllButton()]
+      performAction:grey_tap()];
+
+  // Ensure tabs were closed
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      assertWithMatcher:grey_nil()];
+
+  // Ensure undo button is visible and edit button is not visible
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridRegularTabsEmptyStateView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Undo button
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the Undo button is no longer available after tapping Close All,
 // then creating a new tab, then coming back to the tab grid.
-- (void)testUndoCloseAllNotAvailableAfterNewTabCreation {
-  if ([ChromeEarlGrey isCloseAllTabsConfirmationEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Close All Tabs Confirmation feature flag is on.");
-  }
-
+// Validates this case when Tab Grid Bulk Actions feature is disabled.
+- (void)testUndoCloseAllNotAvailableAfterNewTabCreation_BulkActionsDisabled {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
@@ -206,6 +263,35 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
       selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
       assertWithMatcher:grey_nil()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the Undo button is no longer available after tapping Close All,
+// then creating a new tab, then coming back to the tab grid.
+// Validates this case when Tab Grid Bulk Actions feature is enabled.
+- (void)testUndoCloseAllNotAvailableAfterNewTabCreation {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridEditMenuCloseAllButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Create a new tab then come back to tab grid.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  // Undo is no longer available.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -234,27 +320,17 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests the Copy Link action on a recent tab's context menu.
 - (void)testRecentTabsContextMenuCopyLink {
-  if (![ChromeEarlGrey isNativeContextMenusEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Native Context Menus feature flag is off.");
-  }
-
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
   [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
   [ChromeEarlGrey
-      verifyCopyLinkActionWithText:[NSString stringWithUTF8String:_URL1.spec()
-                                                                      .c_str()]
-                      useNewString:YES];
+      verifyCopyLinkActionWithText:[NSString
+                                       stringWithUTF8String:_URL1.spec()
+                                                                .c_str()]];
 }
 
 // Tests the Open in New Tab action on a recent tab's context menu.
 - (void)testRecentTabsContextMenuOpenInNewTab {
-  if (![ChromeEarlGrey isNativeContextMenusEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Native Context Menus feature flag is off.");
-  }
-
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
   [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
@@ -271,11 +347,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
   }
 
-  if (![ChromeEarlGrey isNativeContextMenusEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Native Context Menus feature flag is off.");
-  }
-
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
   [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
@@ -284,11 +355,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests the Share action on a recent tab's context menu.
 - (void)testRecentTabsContextMenuShare {
-  if (![ChromeEarlGrey isNativeContextMenusEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Native Context Menus feature flag is off.");
-  }
-
   [self prepareRecentTabWithURL:_URL1 response:kResponse1];
   [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
@@ -301,11 +367,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests the Share action on a tab grid item's context menu.
 - (void)testTabGridItemContextMenuShare {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Tab Grid context menu only supported on iOS 13 and later.");
-  }
-
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
@@ -321,11 +382,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests the Add to Reading list action on a tab grid item's context menu.
 - (void)testTabGridItemContextMenuAddToReadingList {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Tab Grid context menu only supported on iOS 13 and later.");
-  }
-
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
@@ -340,11 +396,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests the Add to Bookmarks action on a tab grid item's context menu.
 - (void)testTabGridItemContextMenuAddToBookmarks {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Tab Grid context menu only supported on iOS 13 and later.");
-  }
-
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
@@ -355,15 +406,48 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   [self waitForSnackBarMessage:IDS_IOS_BOOKMARK_PAGE_SAVED
       triggeredByTappingItemWithMatcher:AddToBookmarksButton()];
+
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_TOOLS_MENU_EDIT_BOOKMARK)]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::NavigationBarTitleWithAccessibilityLabelId(
+                     IDS_IOS_BOOKMARK_EDIT_SCREEN_TITLE)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that Add to Bookmarks action is greyed out when editBookmarksEnabled
+// pref is set to false.
+- (void)testTabGridItemContextMenuAddToBookmarkGreyed {
+  [ChromeEarlGreyAppInterface
+      setBoolValue:NO
+       forUserPref:base::SysUTF8ToNSString(
+                       bookmarks::prefs::kEditBookmarksEnabled)];
+
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
+  [[EarlGrey selectElementWithMatcher:AddToBookmarksButton()]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [ChromeEarlGreyAppInterface
+      setBoolValue:YES
+       forUserPref:base::SysUTF8ToNSString(
+                       bookmarks::prefs::kEditBookmarksEnabled)];
 }
 
 // Tests the Share action on a tab grid item's context menu.
 - (void)testTabGridItemContextCloseTab {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Tab Grid context menu only supported on iOS 13 and later.");
-  }
-
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
 
@@ -383,53 +467,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           TabGridRegularTabsEmptyStateView()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-#pragma mark -
-
-// Tests that tapping on "Close All" shows a confirmation dialog.
-// It also tests that tapping on "Close x Tab(s)" on the confirmation dialog
-// displays an empty grid and tapping on "Cancel" doesn't modify the grid.
-- (void)testCloseAllTabsConfirmation {
-  if (![ChromeEarlGrey isCloseAllTabsConfirmationEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Test disabled when Close All Tabs Confirmation feature flag is off.");
-  }
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
-
-  // Taps on "Close All" and Confirm.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:CloseAllTabsConfirmationWithNumberOfTabs(
-                                          1)] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
-      assertWithMatcher:grey_nil()];
-
-  // Checks that "Close All" is grayed out.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
-      assertWithMatcher:grey_not(grey_enabled())];
-
-  // Creates a new tab then come back to tab grid.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
-
-  // Taps on "Close All" and Cancel.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
-      performAction:grey_tap()];
-  if (IsIPadIdiom()) {
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
-        performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
-        performAction:grey_tap()];
-  }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -493,8 +530,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
 // Tests that dragging a tab grid incognito item to the edge opens a new window
 // and that the tab is properly transferred, incuding navigation stack.
-// TODO(crbug.com/1176180): re-enable this test when it is fixed.
-- (void)DISABLED_testIncognitoDragAndDropAtEdgeToCreateNewWindow {
+- (void)testIncognitoDragAndDropAtEdgeToCreateNewWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -548,13 +584,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
-// TODO(crbug.com/1184267): Test is flaky on iPad devices.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"This test is flaky on iPad devices.");
-  }
-#endif
-
   // Setup first window with tabs 1 and 2.
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
@@ -567,6 +596,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   // Open second window.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   // Setup second window with tabs 3 and 4.
@@ -631,9 +661,8 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
       performAction:grey_tap()];
 }
 
-// Tests dragging tab grid item between windows.
-// TODO(crbug.com/1176669): re-enable this test when it is fixed.
-- (void)DISABLED_testDragAndDropIncognitoBetweenWindows {
+// Tests dragging incognito tab grid item between windows.
+- (void)testDragAndDropIncognitoBetweenWindows {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -648,6 +677,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   // Open second window with main ntp.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   [ChromeEarlGrey waitForMainTabCount:1 inWindowWithNumber:1];
@@ -721,6 +751,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   // Open second window.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   // Setup second window with tab 3.
@@ -780,6 +811,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   // Open second window.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   // Setup second window with tab 3.
@@ -850,6 +882,7 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 
   // Open second window.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   // Setup second window with tab 3.
@@ -892,6 +925,324 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(1)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
       performAction:grey_tap()];
+}
+
+#pragma mark - Bulk Actions
+
+// Tests closing a tab in the tab grid edit mode and that edit mode is exited
+// after closing all tabs.
+- (void)testTabGridBulkActionCloseTabs {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectTabsMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap tab to select.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditCloseTabsButton()]
+      performAction:grey_tap()];
+
+  NSString* closeTabsButtonText =
+      base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+          IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION,
+          /*number=*/1));
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                   closeTabsButtonText)]
+      performAction:grey_tap()];
+
+  // Make sure that the tab is no longer present.
+  [[EarlGrey selectElementWithMatcher:TabWithTitle([NSString
+                                          stringWithUTF8String:kTitle1])]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridRegularTabsEmptyStateView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify edit mode is exited.
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests selecting all items in the tab grid edit mode using the "Select all"
+// button.
+- (void)testTabGridBulkActionSelectAll {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectTabsMenuButton()]
+      performAction:grey_tap()];
+
+  // Tap "Select all" and close selected tabs.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditSelectAllButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditCloseTabsButton()]
+      performAction:grey_tap()];
+  NSString* closeTabsButtonText =
+      base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+          IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION,
+          /*number=*/3));
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                   closeTabsButtonText)]
+      performAction:grey_tap()];
+
+  // Make sure that the tab grid is empty.
+  [ChromeEarlGrey waitForMainTabCount:0 inWindowWithNumber:0];
+
+  // Verify edit mode is exited.
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests deselecting all items in the tab grid edit mode using the "Deselect
+// all" button.
+- (void)testTabGridBulkActionDeselectAll {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectTabsMenuButton()]
+      performAction:grey_tap()];
+
+  // Ensure button label is "Select All" and select all items.
+  [[EarlGrey selectElementWithMatcher:SelectAllButton()]
+      performAction:grey_tap()];
+
+  // Deselect all button should be visible when all items are selected.
+  // Tapping deselect all button should deselect all items.
+  [[EarlGrey selectElementWithMatcher:DeselectAllButton()]
+      performAction:grey_tap()];
+
+  // Verify deselection by manually tapping each item (to re-select) and closing
+  // the selected items.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(1)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(2)]
+      performAction:grey_tap()];
+
+  // All tabs should have been re-selected and closing selected tabs should
+  // empty the tab grid.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditCloseTabsButton()]
+      performAction:grey_tap()];
+  NSString* closeTabsButtonText =
+      base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+          IDS_IOS_TAB_GRID_CLOSE_ALL_TABS_CONFIRMATION,
+          /*number=*/3));
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
+                                   closeTabsButtonText)]
+      performAction:grey_tap()];
+
+  // Make sure that the tab grid is empty.
+  [ChromeEarlGrey waitForMainTabCount:0 inWindowWithNumber:0];
+}
+
+// Tests adding items to Bookmarks from the tab grid edit mode.
+- (void)testTabGridBulkActionAddToBookmarks {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectTabsMenuButton()]
+      performAction:grey_tap()];
+
+  // Select the first and last items.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(2)]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditAddToButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:AddToBookmarksButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::NavigationBarTitleWithAccessibilityLabelId(
+                     IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON)]
+      assertWithMatcher:grey_notNil()];
+
+  // Choose "Mobile Bookmarks" folder as the destination.
+  // Duplicate matcher here instead of using +[BookmarkEarlGreyUI
+  // openMobileBookmarks] in order to properly wait for the snackbar message.
+  NSString* snackBarMessage =
+      l10n_util::GetNSStringF(IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER,
+                              base::SysNSStringToUTF16(@"Mobile Bookmarks"));
+  [self waitForSnackBarMessageText:snackBarMessage
+      triggeredByTappingItemWithMatcher:grey_allOf(grey_kindOfClassName(
+                                                       @"UITableViewCell"),
+                                                   grey_descendant(grey_text(
+                                                       @"Mobile Bookmarks")),
+                                                   nil)];
+}
+
+// Tests adding items to the readinglist from the tab grid edit mode.
+- (void)testTabGridBulkActionAddToReadingList {
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectTabsMenuButton()]
+      performAction:grey_tap()];
+
+  // Select the first and last items.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(2)]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditAddToButton()]
+      performAction:grey_tap()];
+
+  [self waitForSnackBarMessage:IDS_IOS_READING_LIST_SNACKBAR_MESSAGE
+      triggeredByTappingItemWithMatcher:AddToReadingListButton()];
+}
+
+// Tests sharing multiple tabs from the tab grid edit mode.
+- (void)testTabGridBulkActionShare {
+  // TODO(crbug.com/1238501): The pasteboard is "not available at this time"
+  // when running on device.
+
+#if !TARGET_OS_SIMULATOR
+  EARL_GREY_TEST_SKIPPED(
+      @"The pasteboard is inaccessible when running on device.");
+#endif
+
+  [ChromeEarlGrey loadURL:_URL1];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse1];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL2];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse2];
+
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:_URL3];
+  [ChromeEarlGrey waitForWebStateContainingText:kResponse3];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:VisibleTabGridEditButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridSelectTabsMenuButton()]
+      performAction:grey_tap()];
+
+  // Select the first and last items.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(2)]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridEditShareButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::CopyActivityButton()]
+      performAction:grey_tap()];
+
+  NSString* URL1String = base::SysUTF8ToNSString(_URL1.spec());
+  NSString* URL3String = base::SysUTF8ToNSString(_URL3.spec());
+
+  // Copying can take a while, wait for it to happen.
+  GREYCondition* copyCondition = [GREYCondition
+      conditionWithName:@"test text copied condition"
+                  block:^BOOL {
+                    NSArray<NSString*>* URLStrings =
+                        UIPasteboard.generalPasteboard.strings;
+                    if (URLStrings.count != 2) {
+                      return false;
+                    }
+
+                    // Strings may appear in either order.
+                    if (([URLStrings[0] isEqualToString:URL1String] &&
+                         [URLStrings[1] isEqualToString:URL3String]) ||
+                        ([URLStrings[0] isEqualToString:URL3String] &&
+                         [URLStrings[1] isEqualToString:URL1String])) {
+                      return true;
+                    }
+
+                    return false;
+                  }];
+  // Wait for copy to happen or timeout after 5 seconds.
+  GREYAssertTrue([copyCondition waitWithTimeout:5], @"Copying URLs failed");
 }
 
 #pragma mark - Helper Methods
@@ -955,12 +1306,43 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   [ChromeEarlGrey watchForButtonsWithLabels:@[ snackBarLabel ]
                                     timeout:kSnackbarAppearanceTimeout];
 
-  // Add the page to the reading list.
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 
   // Wait for the snackbar to appear.
   id<GREYMatcher> snackbar_matcher =
       chrome_test_util::ButtonWithAccessibilityLabelId(messageIdentifier);
+  ConditionBlock wait_for_appearance = ^{
+    return [ChromeEarlGrey watcherDetectedButtonWithLabel:snackBarLabel];
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarAppearanceTimeout, wait_for_appearance),
+             @"Snackbar did not appear.");
+
+  // Wait for the snackbar to disappear.
+  ConditionBlock wait_for_disappearance = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarDisappearanceTimeout, wait_for_disappearance),
+             @"Snackbar did not disappear.");
+}
+
+- (void)waitForSnackBarMessageText:(NSString*)snackBarLabel
+    triggeredByTappingItemWithMatcher:(id<GREYMatcher>)matcher {
+  // Start custom monitor, because there's a chance the snackbar is
+  // already gone by the time we wait for it (and it was like that sometimes).
+  [ChromeEarlGrey watchForButtonsWithLabels:@[ snackBarLabel ]
+                                    timeout:kSnackbarAppearanceTimeout];
+
+  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+
+  // Wait for the snackbar to appear.
+  id<GREYMatcher> snackbar_matcher =
+      chrome_test_util::ButtonWithAccessibilityLabel(snackBarLabel);
   ConditionBlock wait_for_appearance = ^{
     return [ChromeEarlGrey watcherDetectedButtonWithLabel:snackBarLabel];
   };

@@ -20,7 +20,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/av1_loopfilter.h"
@@ -136,7 +135,7 @@ class LoopTestParam : public ::testing::TestWithParam<params_t> {
     mask_ = (1 << bit_depth_) - 1;
   }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
  protected:
   int bit_depth_;
@@ -200,7 +199,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Loop8Test9Param_lbd);
     InitInput<a, b>(s, ref_s, &rnd, *limit, mask_, p, i);                      \
     call_filter(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_,       \
                 ref_loopfilter_op_);                                           \
-    ASM_REGISTER_STATE_CHECK(call_filter(s + 8 + p * 8, p, blimit, limit,      \
+    API_REGISTER_STATE_CHECK(call_filter(s + 8 + p * 8, p, blimit, limit,      \
                                          thresh, bit_depth_, loopfilter_op_)); \
     for (int j = 0; j < kNumCoeffs; ++j) {                                     \
       err_count += ref_s[j] != s[j];                                           \
@@ -248,7 +247,7 @@ TEST_P(Loop8Test6Param_lbd, OperationCheck) { OPCHECK(uint8_t, 8); }
     }                                                                          \
     call_filter(ref_s + 8 + p * 8, p, blimit, limit, thresh, bit_depth_,       \
                 ref_loopfilter_op_);                                           \
-    ASM_REGISTER_STATE_CHECK(call_filter(s + 8 + p * 8, p, blimit, limit,      \
+    API_REGISTER_STATE_CHECK(call_filter(s + 8 + p * 8, p, blimit, limit,      \
                                          thresh, bit_depth_, loopfilter_op_)); \
     for (int j = 0; j < kNumCoeffs; ++j) {                                     \
       err_count += ref_s[j] != s[j];                                           \
@@ -336,7 +335,7 @@ TEST_P(Loop8Test6Param_lbd, DISABLED_Speed) { SPEEDCHECK(uint8_t, 8); }
     InitInput<a, b>(s, ref_s, &rnd, limit, mask_, p, i);                       \
     call_dualfilter(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
                     limit1, thresh1, bit_depth_, ref_loopfilter_op_);          \
-    ASM_REGISTER_STATE_CHECK(                                                  \
+    API_REGISTER_STATE_CHECK(                                                  \
         call_dualfilter(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
                         limit1, thresh1, bit_depth_, loopfilter_op_));         \
     for (int j = 0; j < kNumCoeffs; ++j) {                                     \
@@ -397,7 +396,7 @@ TEST_P(Loop8Test9Param_lbd, OperationCheck) { OPCHECKd(uint8_t, 8); }
     }                                                                          \
     call_dualfilter(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
                     limit1, thresh1, bit_depth_, ref_loopfilter_op_);          \
-    ASM_REGISTER_STATE_CHECK(                                                  \
+    API_REGISTER_STATE_CHECK(                                                  \
         call_dualfilter(s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,   \
                         limit1, thresh1, bit_depth_, loopfilter_op_));         \
     for (int j = 0; j < kNumCoeffs; ++j) {                                     \

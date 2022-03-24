@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/common/extensions/api/chrome_url_overrides.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -68,7 +70,7 @@ class ExtensionWebUITest : public testing::Test {
   }
 
   std::unique_ptr<TestingProfile> profile_;
-  ExtensionService* extension_service_;
+  raw_ptr<ExtensionService> extension_service_;
   content::BrowserTaskEnvironment task_environment_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -86,7 +88,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   manifest.Set(manifest_keys::kName, "ext1")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(manifest_keys::kManifestVersion, 2)
-      .Set(std::string(manifest_keys::kChromeURLOverrides),
+      .Set(api::chrome_url_overrides::ManifestKeys::kChromeUrlOverrides,
            DictionaryBuilder().Set("bookmarks", kOverrideResource).Build());
   scoped_refptr<const Extension> ext_unpacked(
       ExtensionBuilder()
@@ -122,7 +124,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   manifest2.Set(manifest_keys::kName, "ext2")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(manifest_keys::kManifestVersion, 2)
-      .Set(std::string(manifest_keys::kChromeURLOverrides),
+      .Set(api::chrome_url_overrides::ManifestKeys::kChromeUrlOverrides,
            DictionaryBuilder().Set("bookmarks", kOverrideResource2).Build());
   scoped_refptr<const Extension> ext_component(
       ExtensionBuilder()

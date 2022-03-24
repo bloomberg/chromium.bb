@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "device/vr/public/cpp/vr_device_provider.h"
 #include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -19,6 +18,10 @@ class GvrDevice;
 class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
  public:
   GvrDeviceProvider();
+
+  GvrDeviceProvider(const GvrDeviceProvider&) = delete;
+  GvrDeviceProvider& operator=(const GvrDeviceProvider&) = delete;
+
   ~GvrDeviceProvider() override;
 
   void Initialize(
@@ -36,8 +39,6 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
  private:
   std::unique_ptr<GvrDevice> vr_device_;
   bool initialized_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(GvrDeviceProvider);
 };
 
 }  // namespace device

@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -36,7 +35,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 
-import org.chromium.chromecast.base.Observable;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -48,17 +46,30 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastWebContentsActivityTest {
+    /**
+     * ShadowActivity that allows us to intercept calls to setTurnScreenOn.
+     */
     @Implements(Activity.class)
     public static class ExtendedShadowActivity extends ShadowActivity {
         private boolean mTurnScreenOn;
+        private boolean mShowWhenLocked;
 
         public boolean getTurnScreenOn() {
             return mTurnScreenOn;
         }
 
+        public boolean getShowWhenLocked() {
+            return mShowWhenLocked;
+        }
+
         @Implementation
         public void setTurnScreenOn(boolean turnScreenOn) {
             mTurnScreenOn = turnScreenOn;
+        }
+
+        @Implementation
+        public void setShowWhenLocked(boolean showWhenLocked) {
+            mShowWhenLocked = showWhenLocked;
         }
     }
 
@@ -106,17 +117,6 @@ public class CastWebContentsActivityTest {
         mActivity.finishForTesting();
         Intent intent = mShadowActivity.getNextStartedActivity();
         assertNull(intent);
-    }
-
-    @Test
-    public void testReleasesStreamMuteIfNecessaryOnPause() {
-        CastAudioManager mockAudioManager = mock(CastAudioManager.class);
-        when(mockAudioManager.requestAudioFocusWhen(anyObject()))
-                .thenReturn(mock(Observable.class));
-        mActivity.setAudioManagerForTesting(mockAudioManager);
-        mActivityLifecycle.create().start().resume();
-        mActivityLifecycle.pause();
-        verify(mockAudioManager).releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
     }
 
     @Test
@@ -185,6 +185,7 @@ public class CastWebContentsActivityTest {
         mActivityLifecycle.create();
 
         Assert.assertTrue(shadowActivity.getTurnScreenOn());
+        Assert.assertTrue(shadowActivity.getShowWhenLocked());
     }
 
     @Test
@@ -213,6 +214,7 @@ public class CastWebContentsActivityTest {
         mActivityLifecycle.create();
 
         Assert.assertFalse(shadowActivity.getTurnScreenOn());
+        Assert.assertFalse(shadowActivity.getShowWhenLocked());
     }
 
     @Test
@@ -229,12 +231,8 @@ public class CastWebContentsActivityTest {
                                   .getFlag(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON));
     }
 
-    @Test
-    public void testSetsKeepScreenOnFlag() {
-        mActivityLifecycle.create();
-        Assert.assertTrue(Shadows.shadowOf(mActivity.getWindow())
-                                  .getFlag(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
-    }
+    // TODO(guohuideng): Add unit test for PiP when the Robolectric in internal codebase is
+    // ready.
 
     @Test
     public void testStopDoesNotCauseFinish() {

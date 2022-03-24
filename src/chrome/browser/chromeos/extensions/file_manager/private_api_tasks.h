@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/extensions/file_manager/logged_extension_function.h"
 
 namespace base {
 class FilePath;

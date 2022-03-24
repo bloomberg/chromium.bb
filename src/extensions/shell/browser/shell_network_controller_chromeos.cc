@@ -5,10 +5,13 @@
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -103,9 +106,21 @@ void ShellNetworkController::NetworkConnectionStateChanged(
 }
 
 void ShellNetworkController::SetCellularAllowRoaming(bool allow_roaming) {
-  chromeos::NetworkDeviceHandler* device_handler =
-      chromeos::NetworkHandler::Get()->network_device_handler();
-  device_handler->SetCellularAllowRoaming(allow_roaming);
+  chromeos::NetworkHandler* handler = chromeos::NetworkHandler::Get();
+  chromeos::NetworkStateHandler::NetworkStateList network_list;
+
+  base::DictionaryValue properties;
+  properties.SetKey(shill::kCellularAllowRoamingProperty,
+                    base::Value(allow_roaming));
+
+  handler->network_state_handler()->GetVisibleNetworkListByType(
+      chromeos::NetworkTypePattern::Cellular(), &network_list);
+
+  for (const chromeos::NetworkState* network : network_list) {
+    handler->network_configuration_handler()->SetShillProperties(
+        network->path(), properties, base::DoNothing(),
+        chromeos::network_handler::ErrorCallback());
+  }
 }
 
 const chromeos::NetworkState* ShellNetworkController::GetActiveWiFiNetwork() {
@@ -127,9 +142,7 @@ void ShellNetworkController::SetScanningEnabled(bool enabled) {
   VLOG(1) << (enabled ? "Starting" : "Stopping") << " scanning";
   if (enabled) {
     RequestScan();
-    scan_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromSeconds(kScanIntervalSec),
-                      this,
+    scan_timer_.Start(FROM_HERE, base::Seconds(kScanIntervalSec), this,
                       &ShellNetworkController::RequestScan);
   } else {
     scan_timer_.Stop();

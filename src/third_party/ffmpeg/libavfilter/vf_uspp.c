@@ -32,6 +32,7 @@
 #include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavcodec/avcodec.h"
 #include "internal.h"
 #include "qp_table.h"
 #include "avfilter.h"
@@ -51,6 +52,7 @@ typedef struct USPPContext {
     int outbuf_size;
     uint8_t *outbuf;
     AVCodecContext *avctx_enc[BLOCK*BLOCK];
+    AVPacket *pkt;
     AVFrame *frame;
     AVFrame *frame_dec;
     int8_t *non_b_qp_table;
@@ -240,23 +242,24 @@ static void filter(USPPContext *p, uint8_t *dst[3], uint8_t *src[3],
         const int y1c = y1 >> p->vsub;
         const int BLOCKc = BLOCK >> p->hsub;
         int offset;
-        AVPacket pkt = {0};
+        AVPacket *pkt = p->pkt;
         int got_pkt_ptr;
 
-        av_init_packet(&pkt);
-        pkt.data = p->outbuf;
-        pkt.size = p->outbuf_size;
+        av_packet_unref(pkt);
+        pkt->data = p->outbuf;
+        pkt->size = p->outbuf_size;
 
         p->frame->data[0] = p->src[0] + x1   + y1   * p->frame->linesize[0];
         p->frame->data[1] = p->src[1] + x1c  + y1c  * p->frame->linesize[1];
         p->frame->data[2] = p->src[2] + x1c  + y1c  * p->frame->linesize[2];
         p->frame->format  = p->avctx_enc[i]->pix_fmt;
 
-        ret = avcodec_encode_video2(p->avctx_enc[i], &pkt, p->frame, &got_pkt_ptr);
+        ret = avcodec_encode_video2(p->avctx_enc[i], pkt, p->frame, &got_pkt_ptr);
         if (ret < 0) {
             av_log(p->avctx_enc[i], AV_LOG_ERROR, "Encoding failed\n");
             continue;
         }
+        av_packet_unref(pkt);
 
         p->frame_dec = p->avctx_enc[i]->coded_frame;
 
@@ -290,23 +293,15 @@ static void filter(USPPContext *p, uint8_t *dst[3], uint8_t *src[3],
     }
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_NONE
-    };
-
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -373,6 +368,8 @@ static int config_input(AVFilterLink *inlink)
     uspp->outbuf_size = (width + BLOCK) * (height + BLOCK) * 10;
     if (!(uspp->frame = av_frame_alloc()))
         return AVERROR(ENOMEM);
+    if (!(uspp->pkt = av_packet_alloc()))
+        return AVERROR(ENOMEM);
     if (!(uspp->outbuf = av_malloc(uspp->outbuf_size)))
         return AVERROR(ENOMEM);
 
@@ -425,6 +422,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 out = ff_get_video_buffer(outlink, aligned_w, aligned_h);
                 if (!out) {
                     av_frame_free(&in);
+                    if (qp_table != uspp->non_b_qp_table)
+                        av_free(qp_table);
                     return AVERROR(ENOMEM);
                 }
                 av_frame_copy_props(out, in);
@@ -465,6 +464,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     av_freep(&uspp->non_b_qp_table);
     av_freep(&uspp->outbuf);
+    av_packet_free(&uspp->pkt);
     av_frame_free(&uspp->frame);
 }
 
@@ -475,7 +475,6 @@ static const AVFilterPad uspp_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad uspp_outputs[] = {
@@ -483,17 +482,16 @@ static const AVFilterPad uspp_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_uspp = {
+const AVFilter ff_vf_uspp = {
     .name            = "uspp",
     .description     = NULL_IF_CONFIG_SMALL("Apply Ultra Simple / Slow Post-processing filter."),
     .priv_size       = sizeof(USPPContext),
     .uninit          = uninit,
-    .query_formats   = query_formats,
-    .inputs          = uspp_inputs,
-    .outputs         = uspp_outputs,
+    FILTER_INPUTS(uspp_inputs),
+    FILTER_OUTPUTS(uspp_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class      = &uspp_class,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

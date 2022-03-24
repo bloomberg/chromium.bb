@@ -18,7 +18,6 @@ Use 2 triangles with different winding orders:
   - Some primitive topologies (triangle-list, TODO: triangle-strip)
 `;
 
-import { poptions, params } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
@@ -41,20 +40,19 @@ function faceColor(face: 'cw' | 'ccw', frontFace: GPUFrontFace, cullMode: GPUCul
 export const g = makeTestGroup(GPUTest);
 
 g.test('culling')
-  .params(
-    params()
-      .combine(poptions('frontFace', ['ccw', 'cw'] as const))
-      .combine(poptions('cullMode', ['none', 'front', 'back'] as const))
-      .combine(
-        poptions('depthStencilFormat', [
-          null,
-          'depth24plus',
-          'depth32float',
-          'depth24plus-stencil8',
-        ] as const)
-      )
+  .params(u =>
+    u
+      .combine('frontFace', ['ccw', 'cw'] as const)
+      .combine('cullMode', ['none', 'front', 'back'] as const)
+      .beginSubcases()
+      .combine('depthStencilFormat', [
+        null,
+        'depth24plus',
+        'depth32float',
+        'depth24plus-stencil8',
+      ] as const)
       // TODO: test triangle-strip as well
-      .combine(poptions('primitiveTopology', ['triangle-list'] as const))
+      .combine('primitiveTopology', ['triangle-list'] as const)
   )
   .fn(t => {
     const size = 4;
@@ -103,9 +101,9 @@ g.test('culling')
           module: t.device.createShaderModule({
             code: `
               [[stage(vertex)]] fn main(
-                [[builtin(vertex_index)]] VertexIndex : i32
+                [[builtin(vertex_index)]] VertexIndex : u32
                 ) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
                     vec2<f32>(-1.0,  1.0),
                     vec2<f32>(-1.0,  0.0),
                     vec2<f32>( 0.0,  1.0),

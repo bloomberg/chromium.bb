@@ -61,7 +61,6 @@ TESTS = [
     'rtc_pc_unittests',
     'rtc_stats_unittests',
     'rtc_unittests',
-    'slow_tests',
     'system_wrappers_unittests',
     'test_support_unittests',
     'tools_unittests',
@@ -103,7 +102,7 @@ def GenerateIOSSimulatorCommand():
                     [FormatIossimTest(t, is_xctest=True) for t in XC_TESTS] +
                     [FormatIossimTest(t, is_xctest=False) for t in TESTS])
 
-    print 'To get code coverage using iOS simulator just run following commands:'
+    print 'To get code coverage using iOS sim just run following commands:'
     print ''
     print ' '.join(gn_cmd)
     print ''

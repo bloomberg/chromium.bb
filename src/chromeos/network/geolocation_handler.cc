@@ -119,11 +119,10 @@ void GeolocationHandler::HandlePropertyChanged(const std::string& key,
   cellular_enabled_ = false;
   wifi_enabled_ = false;
   for (const auto& entry : technologies->GetList()) {
-    std::string technology;
-    entry.GetAsString(&technology);
-    if (technology == shill::kTypeWifi) {
+    const std::string* technology = entry.GetIfString();
+    if (technology && *technology == shill::kTypeWifi) {
       wifi_enabled_ = true;
-    } else if (technology == shill::kTypeCellular) {
+    } else if (technology && *technology == shill::kTypeCellular) {
       cellular_enabled_ = true;
     }
     if (wifi_enabled_ && cellular_enabled_)
@@ -145,7 +144,7 @@ void GeolocationHandler::RequestGeolocationObjects() {
 
 void GeolocationHandler::GeolocationCallback(
     absl::optional<base::Value> properties) {
-  if (!properties) {
+  if (!properties || !properties->is_dict()) {
     LOG(ERROR) << "Failed to get Geolocation data";
     return;
   }
@@ -198,8 +197,7 @@ void GeolocationHandler::AddAccessPointFromDict(const base::Value& entry) {
   if (age_str) {
     int64_t age_ms;
     if (base::StringToInt64(*age_str, &age_ms)) {
-      wap.timestamp =
-          base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);
+      wap.timestamp = base::Time::Now() - base::Milliseconds(age_ms);
     }
   }
 
@@ -237,8 +235,7 @@ void GeolocationHandler::AddCellTowerFromDict(const base::Value& entry) {
   if (age_str) {
     int64_t age_ms;
     if (base::StringToInt64(*age_str, &age_ms)) {
-      ct.timestamp =
-          base::Time::Now() - base::TimeDelta::FromMilliseconds(age_ms);
+      ct.timestamp = base::Time::Now() - base::Milliseconds(age_ms);
     }
   }
 

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Unit tests for tfdbg v2 dumping callback."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import os
 import shutil
@@ -84,9 +80,8 @@ class DumpingCallbackTest(
       return "/job:localhost/replica:0/task:0/device:CPU:0"
 
   def testInvalidTensorDebugModeCausesError(self):
-    with self.assertRaisesRegexp(
-        ValueError,
-        r"Invalid value in tensor_debug_mode \(\'NONSENSICAL\'\).*"
+    with self.assertRaisesRegex(
+        ValueError, r"Invalid value in tensor_debug_mode \(\'NONSENSICAL\'\).*"
         r"Valid options.*NO_TENSOR.*"):
       dumping_callback.enable_dump_debug_info(
           self.dump_root, tensor_debug_mode="NONSENSICAL")
@@ -125,14 +120,14 @@ class DumpingCallbackTest(
   )
   def testPureEagerOpExecution(self, tensor_debug_mode):
     """Test dumping data from eager op execution: float32."""
-    writer = dumping_callback.enable_dump_debug_info(
-        self.dump_root, tensor_debug_mode=tensor_debug_mode)
 
     x = constant_op.constant(10.0)
     zero = constant_op.constant(0.0)
     one = constant_op.constant(1.0)
     two = constant_op.constant(2.0)
     three = constant_op.constant(3.0)
+    writer = dumping_callback.enable_dump_debug_info(
+        self.dump_root, tensor_debug_mode=tensor_debug_mode)
     # Use Collatz conjecture as a test case.
     while x > one:
       if math_ops.equal(x % two, zero):
@@ -397,8 +392,8 @@ class DumpingCallbackTest(
     def func(x, y):
       return math_ops.logical_not(math_ops.logical_and(x, y))
 
-    x = np.array([[False, False], [True, True]], dtype=np.bool)
-    y = np.array([[False, True], [False, True]], dtype=np.bool)
+    x = np.array([[False, False], [True, True]], dtype=np.bool_)
+    y = np.array([[False, True], [False, True]], dtype=np.bool_)
     self.assertAllEqual(
         self.evaluate(func(x, y)), [[True, True], [True, False]])
 
@@ -463,6 +458,8 @@ class DumpingCallbackTest(
   )
   @test_util.run_in_graph_and_eager_modes
   def testNestedFunctionExecutionWithoutControlFlow(self, tensor_debug_mode):
+    x = constant_op.constant(2.0)
+    y = constant_op.constant(3.0)
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode=tensor_debug_mode)
 
@@ -474,8 +471,6 @@ class DumpingCallbackTest(
     def sin1p_log_sum(x, y):
       return math_ops.sin(1.0 + log_sum(x, y))
 
-    x = constant_op.constant(2.0)
-    y = constant_op.constant(3.0)
     self.assertAllClose(sin1p_log_sum(x, y), np.sin(1.0 + np.log(5.0)))
     writer.FlushNonExecutionFiles()
     writer.FlushExecutionFiles()
@@ -762,6 +757,8 @@ class DumpingCallbackTest(
   )
   @test_util.run_in_graph_and_eager_modes
   def testGraphOpConsumingRelationIsCaptured(self, tensor_debug_mode):
+    x = constant_op.constant([2.0, 2.0])
+    y = constant_op.constant([3.0, 3.0])
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode=tensor_debug_mode)
 
@@ -774,8 +771,6 @@ class DumpingCallbackTest(
       _, indices = array_ops.unique(math_ops.sin(1.0 + log_sum(x, y)))
       return math_ops.reduce_max(indices)
 
-    x = constant_op.constant([2.0, 2.0])
-    y = constant_op.constant([3.0, 3.0])
     maxindex = maxindex_sin1p_log_sum(x, y)
     self.assertAllEqual(maxindex, 0)
     writer.FlushNonExecutionFiles()
@@ -815,6 +810,8 @@ class DumpingCallbackTest(
 
   def testCapturingExecutedGraphIdsOfTwoCompilationsOfSameFunction(self):
     """Test correct executed IDs of two FuncGraphs from the same Py function."""
+    x_float32 = constant_op.constant(np.array(3.5, dtype=np.float32))
+    x_float64 = constant_op.constant(np.array(4.5, dtype=np.float64))
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode="NO_TENSOR")
 
@@ -822,8 +819,6 @@ class DumpingCallbackTest(
     def ceil_times_two(x):
       return math_ops.ceil(x) * 2.0
 
-    x_float32 = np.array(3.5, dtype=np.float32)
-    x_float64 = np.array(4.5, dtype=np.float64)
     # Four executions, with two different FuncGraphs, which should lead
     # to two unique executed graph IDs (see assertion below).
     self.assertAllClose(ceil_times_two(x_float32), 8.0)
@@ -851,6 +846,7 @@ class DumpingCallbackTest(
 
   def testCapturingExecutedGraphIdsOfDuplicateFunctionNames(self):
     """Two FuncGraphs compiled from Python functions with identical names."""
+    x = constant_op.constant(np.array(3.5, dtype=np.float32))
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode="NO_TENSOR")
 
@@ -865,7 +861,6 @@ class DumpingCallbackTest(
     test_object_1 = TestClass()
     test_object_2 = TestClass()
 
-    x = np.array(3.5, dtype=np.float32)
     # Four executions, with two different FuncGraphs, which should lead
     # to two unique executed graph IDs (see assertion below).
     self.assertAllClose(test_object_1.ceil_times_two(x), 8.0)
@@ -897,6 +892,8 @@ class DumpingCallbackTest(
   )
   @test_util.run_in_graph_and_eager_modes
   def testOpRegex(self, op_regex):
+    x = constant_op.constant(2.0)
+    y = constant_op.constant(3.0)
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode="FULL_TENSOR",
         op_regex=op_regex)
@@ -909,8 +906,6 @@ class DumpingCallbackTest(
     def sin1p_log_sum(x, y):
       return math_ops.sin(1.0 + log_sum(x, y))
 
-    x = constant_op.constant(2.0)
-    y = constant_op.constant(3.0)
     self.assertAllClose(
         self.evaluate(sin1p_log_sum(x, y)), np.sin(1.0 + np.log(5.0)))
     writer.FlushNonExecutionFiles()
@@ -947,19 +942,16 @@ class DumpingCallbackTest(
             tensor_values[2], np.log(5.0) + 1.0)  # 2nd AddV2 op.
 
   def testIncorrectTensorDTypeArgFormatLeadsToError(self):
-    with self.assertRaisesRegexp(
-        ValueError,
-        r".*expected.*list.*tuple.*callable.*but received.*\{\}"):
+    with self.assertRaisesRegex(
+        ValueError, r".*expected.*list.*tuple.*callable.*but received.*\{\}"):
       dumping_callback.enable_dump_debug_info(self.dump_root,
                                               tensor_dtypes=dict())
-    with self.assertRaisesRegexp(
-        ValueError,
-        r".*expected.*list.*tuple.*callable.*but received.*"):
+    with self.assertRaisesRegex(
+        ValueError, r".*expected.*list.*tuple.*callable.*but received.*"):
       dumping_callback.enable_dump_debug_info(self.dump_root,
                                               tensor_dtypes="float32")
-    with self.assertRaisesRegexp(
-        ValueError,
-        r".*expected.*list.*tuple.*callable.*but received.*"):
+    with self.assertRaisesRegex(
+        ValueError, r".*expected.*list.*tuple.*callable.*but received.*"):
       dumping_callback.enable_dump_debug_info(
           self.dump_root, tensor_dtypes=dtypes.float32)
     with self.assertRaises(TypeError):
@@ -979,6 +971,7 @@ class DumpingCallbackTest(
   def testTensorDTypesAndOpRegexFilters(self,
                                         tensor_dtypes,
                                         op_regex):
+    xs = constant_op.constant([2., 6., 8., 1., 2.], dtype=dtypes.float32)
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode="FULL_TENSOR",
         tensor_dtypes=tensor_dtypes,
@@ -990,7 +983,6 @@ class DumpingCallbackTest(
       unique_xs, indices = array_ops.unique(xs)
       return math_ops.reduce_sum(unique_xs), indices
 
-    xs = constant_op.constant([2., 6., 8., 1., 2.], dtype=dtypes.float32)
     y, indices = self.evaluate(unique_sum(xs))
     self.assertAllClose(y, 17.)
     self.assertAllEqual(indices, [0, 1, 2, 3, 0])
@@ -1051,6 +1043,8 @@ class DumpingCallbackTest(
   )
   @test_util.run_in_graph_and_eager_modes
   def testFunctionExecutionWithControlFlow(self, tensor_debug_mode):
+    x = constant_op.constant(0.5, dtype=dtypes.float32)
+    times = constant_op.constant(4, dtype=dtypes.int32)
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode=tensor_debug_mode)
 
@@ -1062,8 +1056,6 @@ class DumpingCallbackTest(
         i += 1
       return x
 
-    x = constant_op.constant(0.5, dtype=dtypes.float32)
-    times = constant_op.constant(4, dtype=dtypes.int32)
     self.assertAllClose(self.evaluate(iterative_doubling(x, times)), 8.0)
 
     writer.FlushNonExecutionFiles()
@@ -1143,10 +1135,10 @@ class DumpingCallbackTest(
         self.assertAllClose(mul_values, [1.0, 2.0, 4.0, 8.0])
 
   def testCallingEnableTracingTwiceWithTheSameDumpRootIsIdempotent(self):
+    x = constant_op.constant([10.0, 12.0, 10.0])
     dumping_callback.enable_dump_debug_info(self.dump_root)
     writer = dumping_callback.enable_dump_debug_info(self.dump_root)
 
-    x = constant_op.constant([10.0, 12.0, 10.0])
     for _ in range(2):
       array_ops.unique(x)
 
@@ -1165,11 +1157,11 @@ class DumpingCallbackTest(
         self._verifyStackFrames(stack_frames)
 
   def testCallingEnableTracingTwiceWithDifferentDumpRootsOverwrites(self):
+    x = constant_op.constant([10.0, 12.0, 10.0])
     dumping_callback.enable_dump_debug_info(self.dump_root)
     new_dump_root = self.dump_root + "_new_dump_root"
     writer = dumping_callback.enable_dump_debug_info(new_dump_root)
 
-    x = constant_op.constant([10.0, 12.0, 10.0])
     for _ in range(2):
       array_ops.unique(x)
 
@@ -1220,7 +1212,7 @@ class DumpingCallbackTest(
         # array.
         self.assertAllEqual(tensor_value, [])
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         ValueError, r"already.*NO_TENSOR.*FULL_TENSOR.*not be honored"):
       dumping_callback.enable_dump_debug_info(
           self.dump_root, tensor_debug_mode="FULL_TENSOR")
@@ -1230,11 +1222,11 @@ class DumpingCallbackTest(
       ("FullTensor", "FULL_TENSOR"),
   )
   def testDisableTracingWorks(self, tensor_debug_mode):
+    x = constant_op.constant([10.0, 12.0, 10.0])
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode=tensor_debug_mode)
     dumping_callback.disable_dump_debug_info()
 
-    x = constant_op.constant([10.0, 12.0, 10.0])
     for _ in range(2):
       array_ops.unique(x)
 
@@ -1412,6 +1404,8 @@ class DumpingCallbackTest(
 
   @test_util.run_in_graph_and_eager_modes
   def testNestedContextIsCapturedByGraphOpCreationHistory(self):
+    x = constant_op.constant(2.0, dtype=dtypes.float32)
+    times = constant_op.constant(4, dtype=dtypes.int32)
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode="NO_TENSOR")
 
@@ -1423,8 +1417,6 @@ class DumpingCallbackTest(
         i += 1
       return x
 
-    x = constant_op.constant(2.0, dtype=dtypes.float32)
-    times = constant_op.constant(4, dtype=dtypes.int32)
     # 2 * 2 - 1 = 3; 3 * 2 - 1 = 5; 5 * 2 - 1 = 9; 9 * 2 - 1 = 17.
     self.assertAllClose(self.evaluate(iterative_doubling(x, times)), 17.0)
 
@@ -1451,6 +1443,7 @@ class DumpingCallbackTest(
   @test_util.run_in_graph_and_eager_modes
   def testGraphInputTracingWorksWithConstAndPlaceholderTensors(
       self, tensor_debug_mode):
+    x = constant_op.constant(2.0)
     writer = dumping_callback.enable_dump_debug_info(
         self.dump_root, tensor_debug_mode=tensor_debug_mode)
 
@@ -1458,7 +1451,6 @@ class DumpingCallbackTest(
     def func(x):
       return (x + constant_op.constant(4.0)) / x
 
-    x = constant_op.constant(2.0)
     self.assertAllClose(self.evaluate(func(x)), 3.0)
     writer.FlushNonExecutionFiles()
     writer.FlushExecutionFiles()

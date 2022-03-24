@@ -26,7 +26,7 @@ static constexpr bool DBG = false;
 
 class CpuUtilsTest : public ::testing::Test {
  protected:
-  void SetUp() override { CpuUtils::EnableClockCycleProfiling(true); }
+  void SetUp() override { CpuUtils::EnableClockCycleProfiling(); }
 };
 
 TEST_F(CpuUtilsTest, SetUpTestCase) {}
@@ -60,7 +60,7 @@ TEST_F(CpuUtilsTest, CheckCycleCounterFrequency) {
   CHECK_GT(cpu_frequency, 0);
   CHECK_NE(cpu_frequency, unsigned(CpuUtils::INVALID_FREQUENCY));
 #else
-  const int64 cpu_frequency = CpuUtils::GetCycleCounterFrequency();
+  const int64_t cpu_frequency = CpuUtils::GetCycleCounterFrequency();
   CHECK_GT(cpu_frequency, 0);
   CHECK_NE(cpu_frequency, CpuUtils::INVALID_FREQUENCY);
 #endif

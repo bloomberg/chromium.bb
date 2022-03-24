@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import fnmatch
 import importlib
 import inspect
@@ -174,6 +175,7 @@ def IsDirectlyConstructable(cls):
     # Case |class A(object): pass|.
     return True
   # Case |class (object):| with |__init__| other than |object.__init__|.
+  # pylint: disable=deprecated-method
   args, _, _, defaults = inspect.getargspec(cls.__init__)
   if defaults is None:
     defaults = ()

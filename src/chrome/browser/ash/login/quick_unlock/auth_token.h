@@ -7,17 +7,16 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
-
 class UserContext;
-class QuickUnlockStorageUnitTest;
+}
 
+namespace ash {
 namespace quick_unlock {
 
 // Security token with an identifyier string and a predetermined life time,
@@ -30,6 +29,10 @@ class AuthToken {
   static const int kTokenExpirationSeconds;
 
   explicit AuthToken(const chromeos::UserContext& user_context);
+
+  AuthToken(const AuthToken&) = delete;
+  AuthToken& operator=(const AuthToken&) = delete;
+
   ~AuthToken();
 
   // An unguessable identifier that can be passed to webui to verify the token
@@ -45,7 +48,7 @@ class AuthToken {
   }
 
  private:
-  friend class chromeos::QuickUnlockStorageUnitTest;
+  friend class QuickUnlockStorageUnitTest;
 
   // Expires the token. In particular this makes the identifier string
   // inaccessible from outside the class.
@@ -56,11 +59,17 @@ class AuthToken {
   std::unique_ptr<chromeos::UserContext> user_context_;
 
   base::WeakPtrFactory<AuthToken> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AuthToken);
 };
 
 }  // namespace quick_unlock
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+namespace quick_unlock {
+using ::ash::quick_unlock::AuthToken;
+}
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_AUTH_TOKEN_H_

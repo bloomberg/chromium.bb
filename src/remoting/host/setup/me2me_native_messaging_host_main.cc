@@ -26,15 +26,15 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/gaia_oauth_client.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "remoting/host/base/host_exit_codes.h"
+#include "remoting/host/base/switches.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/host_exit_codes.h"
-#include "remoting/host/logging.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/setup/me2me_native_messaging_host.h"
-#include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
@@ -47,6 +47,8 @@
 #include "base/process/process_info.h"
 #include "base/win/registry.h"
 #include "remoting/host/pairing_registry_delegate_win.h"
+
+#include <windows.h>
 #endif  // defined(OS_WIN)
 
 #if defined(USE_GLIB) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -187,7 +189,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
     read_file = base::File(GetStdHandle(STD_INPUT_HANDLE));
     write_file = base::File(GetStdHandle(STD_OUTPUT_HANDLE));
 
-    // After the native messaging channel starts the native messaging reader
+    // After the native messaging channel starts, the native messaging reader
     // will keep doing blocking read operations on the input named pipe.
     // If any other thread tries to perform any operation on STDIN, it will also
     // block because the input named pipe is synchronous (non-overlapped).

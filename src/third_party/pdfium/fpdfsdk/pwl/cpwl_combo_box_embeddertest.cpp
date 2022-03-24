@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_annotiterator.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/cpdfsdk_widget.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
 #include "fpdfsdk/pwl/cpwl_combo_box.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
@@ -34,17 +34,15 @@ class CPWLComboBoxEditEmbedderTest : public EmbedderTest {
     m_pFormFillEnv =
         CPDFSDKFormFillEnvironmentFromFPDFFormHandle(form_handle());
     CPDFSDK_AnnotIterator iter(m_pFormFillEnv->GetPageViewAtIndex(0),
-                               CPDF_Annot::Subtype::WIDGET);
+                               {CPDF_Annot::Subtype::WIDGET});
 
     // User editable combobox.
-    m_pAnnotEditable = iter.GetFirstAnnot();
+    m_pAnnotEditable = ToCPDFSDKWidget(iter.GetFirstAnnot());
     ASSERT_TRUE(m_pAnnotEditable);
-    ASSERT_EQ(CPDF_Annot::Subtype::WIDGET, m_pAnnotEditable->GetAnnotSubtype());
 
     // Normal combobox with pre-selected value.
-    m_pAnnotNormal = iter.GetNextAnnot(m_pAnnotEditable);
+    m_pAnnotNormal = ToCPDFSDKWidget(iter.GetNextAnnot(m_pAnnotEditable));
     ASSERT_TRUE(m_pAnnotNormal);
-    ASSERT_EQ(CPDF_Annot::Subtype::WIDGET, m_pAnnotNormal->GetAnnotSubtype());
 
     // Read-only combobox.
     CPDFSDK_Annot* pAnnotReadOnly = iter.GetNextAnnot(m_pAnnotNormal);
@@ -52,20 +50,20 @@ class CPWLComboBoxEditEmbedderTest : public EmbedderTest {
     ASSERT_EQ(pAnnotReadOnly, pLastAnnot);
   }
 
-  void FormFillerAndWindowSetup(CPDFSDK_Annot* pAnnotCombobox) {
+  void FormFillerAndWindowSetup(CPDFSDK_Widget* pAnnotCombobox) {
     CFFL_InteractiveFormFiller* pInteractiveFormFiller =
         m_pFormFillEnv->GetInteractiveFormFiller();
     {
-      ObservedPtr<CPDFSDK_Annot> pObserved(pAnnotCombobox);
-      EXPECT_TRUE(pInteractiveFormFiller->OnSetFocus(&pObserved, 0));
+      ObservedPtr<CPDFSDK_Widget> pObserved(pAnnotCombobox);
+      EXPECT_TRUE(pInteractiveFormFiller->OnSetFocus(pObserved, {}));
     }
 
     m_pFormFiller =
-        pInteractiveFormFiller->GetFormFillerForTesting(pAnnotCombobox);
+        pInteractiveFormFiller->GetFormFieldForTesting(pAnnotCombobox);
     ASSERT_TRUE(m_pFormFiller);
 
-    CPWL_Wnd* pWindow = m_pFormFiller->GetPWLWindow(
-        m_pFormFillEnv->GetPageViewAtIndex(0), false);
+    CPWL_Wnd* pWindow =
+        m_pFormFiller->GetPWLWindow(m_pFormFillEnv->GetPageViewAtIndex(0));
     ASSERT_TRUE(pWindow);
     m_pComboBox = static_cast<CPWL_ComboBox*>(pWindow);
   }
@@ -74,15 +72,15 @@ class CPWLComboBoxEditEmbedderTest : public EmbedderTest {
     // Type text starting with 'A' to as many chars as specified by |num_chars|.
     for (int i = 0; i < num_chars; ++i) {
       EXPECT_TRUE(GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(),
-                                              i + 'A', 0));
+                                              i + 'A', {}));
     }
   }
 
   FPDF_PAGE GetPage() const { return m_page; }
   CPWL_ComboBox* GetCPWLComboBox() const { return m_pComboBox; }
-  CFFL_FormFiller* GetCFFLFormFiller() const { return m_pFormFiller; }
-  CPDFSDK_Annot* GetCPDFSDKAnnotNormal() const { return m_pAnnotNormal; }
-  CPDFSDK_Annot* GetCPDFSDKAnnotUserEditable() const {
+  CFFL_FormField* GetCFFLFormFiller() const { return m_pFormFiller; }
+  CPDFSDK_Widget* GetCPDFSDKAnnotNormal() const { return m_pAnnotNormal; }
+  CPDFSDK_Widget* GetCPDFSDKAnnotUserEditable() const {
     return m_pAnnotEditable;
   }
   CPDFSDK_FormFillEnvironment* GetCPDFSDKFormFillEnv() const {
@@ -92,9 +90,9 @@ class CPWLComboBoxEditEmbedderTest : public EmbedderTest {
  private:
   FPDF_PAGE m_page;
   CPWL_ComboBox* m_pComboBox;
-  CFFL_FormFiller* m_pFormFiller;
-  CPDFSDK_Annot* m_pAnnotNormal;
-  CPDFSDK_Annot* m_pAnnotEditable;
+  CFFL_FormField* m_pFormFiller;
+  CPDFSDK_Widget* m_pAnnotNormal;
+  CPDFSDK_Widget* m_pAnnotEditable;
   CPDFSDK_FormFillEnvironment* m_pFormFillEnv;
 };
 
@@ -117,7 +115,7 @@ TEST_F(CPWLComboBoxEditEmbedderTest, GetSelectedTextEmptyAndBasicNormal) {
   EXPECT_STREQ(L"Cherry", GetCPWLComboBox()->GetSelectedText().c_str());
 
   // Verify that combobox text cannot be edited.
-  EXPECT_FALSE(GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotNormal(), 'a', 0));
+  EXPECT_FALSE(GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotNormal(), 'a', {}));
 }
 
 TEST_F(CPWLComboBoxEditEmbedderTest, GetSelectedTextFragmentsNormal) {
@@ -164,11 +162,11 @@ TEST_F(CPWLComboBoxEditEmbedderTest, GetSelectedTextEmptyAndBasicEditable) {
 
   // Type into editable combobox text field and select new text.
   EXPECT_TRUE(
-      GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(), 'a', 0));
+      GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(), 'a', {}));
   EXPECT_TRUE(
-      GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(), 'b', 0));
+      GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(), 'b', {}));
   EXPECT_TRUE(
-      GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(), 'c', 0));
+      GetCFFLFormFiller()->OnChar(GetCPDFSDKAnnotUserEditable(), 'c', {}));
 
   EXPECT_TRUE(GetCPWLComboBox()->GetSelectedText().IsEmpty());
   GetCPWLComboBox()->SetEditSelection(0, 5);
@@ -274,7 +272,7 @@ TEST_F(CPWLComboBoxEditEmbedderTest,
   TypeTextIntoTextField(10);
 
   // Move cursor to beginning of user-editable combobox text field.
-  EXPECT_TRUE(GetCFFLFormFiller()->OnKeyDown(FWL_VKEY_Home, 0));
+  EXPECT_TRUE(GetCFFLFormFiller()->OnKeyDown(FWL_VKEY_Home, {}));
 
   GetCPWLComboBox()->ReplaceSelection(L"Hello");
   EXPECT_STREQ(L"HelloABCDEFGHIJ", GetCPWLComboBox()->GetText().c_str());
@@ -287,7 +285,7 @@ TEST_F(CPWLComboBoxEditEmbedderTest,
 
   // Move cursor to middle of user-editable combobox text field.
   for (int i = 0; i < 5; ++i) {
-    EXPECT_TRUE(GetCFFLFormFiller()->OnKeyDown(FWL_VKEY_Left, 0));
+    EXPECT_TRUE(GetCFFLFormFiller()->OnKeyDown(FWL_VKEY_Left, {}));
   }
 
   GetCPWLComboBox()->ReplaceSelection(L"Hello");

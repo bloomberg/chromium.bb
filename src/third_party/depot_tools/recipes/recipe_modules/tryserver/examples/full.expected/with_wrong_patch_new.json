@@ -45,7 +45,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"master\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"owner\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"John Doe\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }, @@@",

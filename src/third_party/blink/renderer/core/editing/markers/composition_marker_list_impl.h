@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_COMPOSITION_MARKER_LIST_IMPL_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 
 namespace blink {
 
@@ -16,6 +17,9 @@ namespace blink {
 class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
  public:
   CompositionMarkerListImpl() = default;
+  CompositionMarkerListImpl(const CompositionMarkerListImpl&) = delete;
+  CompositionMarkerListImpl& operator=(const CompositionMarkerListImpl&) =
+      delete;
 
   // DocumentMarkerList implementations
   DocumentMarker::MarkerType MarkerType() const final;
@@ -43,8 +47,6 @@ class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositionMarkerListImpl);
 };
 
 }  // namespace blink

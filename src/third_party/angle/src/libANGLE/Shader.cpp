@@ -342,12 +342,11 @@ void Shader::compile(const Context *context)
     mState.mCompileStatus = CompileStatus::COMPILE_REQUESTED;
     mBoundCompiler.set(context, context->getCompiler());
 
-    ShCompileOptions options = (SH_OBJECT_CODE | SH_VARIABLES | SH_EMULATE_GL_DRAW_ID |
-                                SH_EMULATE_GL_BASE_VERTEX_BASE_INSTANCE);
+    ShCompileOptions options = (SH_OBJECT_CODE | SH_VARIABLES | SH_EMULATE_GL_DRAW_ID);
 
     // Add default options to WebGL shaders to prevent unexpected behavior during
     // compilation.
-    if (context->getExtensions().webglCompatibility)
+    if (context->isWebGL())
     {
         options |= SH_INIT_GL_POSITION;
         options |= SH_LIMIT_CALL_STACK_DEPTH;
@@ -355,8 +354,14 @@ void Shader::compile(const Context *context)
         options |= SH_ENFORCE_PACKING_RESTRICTIONS;
         options |= SH_INIT_SHARED_VARIABLES;
     }
+    else
+    {
+        // Per https://github.com/KhronosGroup/WebGL/pull/3278 gl_BaseVertex/gl_BaseInstance are
+        // removed from WebGL
+        options |= SH_EMULATE_GL_BASE_VERTEX_BASE_INSTANCE;
+    }
 
-    // Some targets (eg D3D11 Feature Level 9_3 and below) do not support non-constant loop
+    // Some targets (e.g. D3D11 Feature Level 9_3 and below) do not support non-constant loop
     // indexes in fragment shaders. Shader compilation will fail. To provide a better error
     // message we can instruct the compiler to pre-validate.
     if (mRendererLimitations.shadersRequireIndexedLoopValidation)
@@ -367,6 +372,12 @@ void Shader::compile(const Context *context)
     if (context->getFrontendFeatures().scalarizeVecAndMatConstructorArgs.enabled)
     {
         options |= SH_SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS;
+    }
+
+    if (context->getFrontendFeatures().forceInitShaderVariables.enabled)
+    {
+        options |= SH_INIT_OUTPUT_VARIABLES;
+        options |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
     }
 
     mCurrentMaxComputeWorkGroupInvocations =

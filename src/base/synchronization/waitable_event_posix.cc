@@ -9,6 +9,7 @@
 
 #include "base/check_op.h"
 #include "base/debug/activity_tracker.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -148,7 +149,7 @@ class SyncWaiter : public WaitableEvent::Waiter {
 
  private:
   bool fired_;
-  WaitableEvent* signaling_event_;  // The WaitableEvent which woke us
+  raw_ptr<WaitableEvent> signaling_event_;  // The WaitableEvent which woke us
   base::Lock lock_;
   base::ConditionVariable cv_;
 };
@@ -203,7 +204,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   const TimeTicks end_time =
       wait_delta.is_max() ? TimeTicks::Max()
                           : subtle::TimeTicksNowIgnoringOverride() + wait_delta;
-  for (TimeDelta remaining = wait_delta; remaining > TimeDelta() && !sw.fired();
+  for (TimeDelta remaining = wait_delta; remaining.is_positive() && !sw.fired();
        remaining = end_time.is_max()
                        ? TimeDelta::Max()
                        : end_time - subtle::TimeTicksNowIgnoringOverride()) {

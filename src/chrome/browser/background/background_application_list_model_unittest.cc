@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -92,11 +91,12 @@ static scoped_refptr<Extension> CreateExtension(
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   manifest.SetString(extensions::manifest_keys::kName, name);
-  auto permissions = std::make_unique<base::ListValue>();
+  base::ListValue permissions;
   if (background_permission) {
-    permissions->AppendString("background");
+    permissions.Append("background");
   }
-  manifest.Set(extensions::manifest_keys::kPermissions, std::move(permissions));
+  manifest.SetKey(extensions::manifest_keys::kPermissions,
+                  std::move(permissions));
 
   std::string error;
   scoped_refptr<Extension> extension;
@@ -146,7 +146,7 @@ void RemoveBackgroundPermission(extensions::ExtensionService* service,
 }
 }  // namespace
 
-// Crashes on Mac tryslaves.
+// Crashes on Mac trybots.
 // http://crbug.com/165458
 // Also crashes on Windows under Dr. Memory (https://crbug.com/606779),
 // presumably broken on all platforms.

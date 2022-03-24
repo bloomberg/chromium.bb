@@ -27,12 +27,13 @@ class GetBindGroupLayoutTests : public ValidationTest {
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, shader);
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.layout = nullptr;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
-        return device.CreateRenderPipeline2(&descriptor);
+        return device.CreateRenderPipeline(&descriptor);
     }
 };
 
@@ -66,19 +67,20 @@ TEST_F(GetBindGroupLayoutTests, SameObject) {
         [[block]] struct S3 {
             pos : mat4x4<f32>;
         };
-        [[group(3), binding(0)]] var<storage> storage3 : [[access(read_write)]] S3;
+        [[group(3), binding(0)]] var<storage, read_write> storage3 : S3;
 
         [[stage(fragment)]] fn main() {
             var pos_u : vec4<f32> = uniform2.pos;
             var pos_s : mat4x4<f32> = storage3.pos;
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
     // The same value is returned for the same index.
     EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), pipeline.GetBindGroupLayout(0).Get());
@@ -91,6 +93,21 @@ TEST_F(GetBindGroupLayoutTests, SameObject) {
 
     // BGLs with different visibilities are different objects.
     EXPECT_NE(pipeline.GetBindGroupLayout(0).Get(), pipeline.GetBindGroupLayout(2).Get());
+}
+
+// Test that default BindGroupLayouts cannot be used in the creation of a new PipelineLayout
+TEST_F(GetBindGroupLayoutTests, DefaultBindGroupLayoutPipelineCompatibility) {
+    wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
+        [[block]] struct S {
+            pos : vec4<f32>;
+        };
+        [[group(0), binding(0)]] var<uniform> uniforms : S;
+
+        [[stage(fragment)]] fn main() {
+            var pos : vec4<f32> = uniforms.pos;
+        })");
+
+    ASSERT_DEVICE_ERROR(utils::MakePipelineLayout(device, {pipeline.GetBindGroupLayout(0)}));
 }
 
 // Test that getBindGroupLayout defaults are correct
@@ -121,10 +138,11 @@ TEST_F(GetBindGroupLayoutTests, DefaultShaderStageAndDynamicOffsets) {
     desc.entryCount = 1;
     desc.entries = &binding;
 
-    // Check that visibility and dynamic offsets match
+    // Check that an otherwise compatible bind group layout doesn't match one created as part of a
+    // default pipeline layout.
     binding.buffer.hasDynamicOffset = false;
     binding.visibility = wgpu::ShaderStage::Fragment;
-    EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+    EXPECT_NE(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
 
     // Check that any change in visibility doesn't match.
     binding.visibility = wgpu::ShaderStage::Vertex;
@@ -137,6 +155,131 @@ TEST_F(GetBindGroupLayoutTests, DefaultShaderStageAndDynamicOffsets) {
     binding.buffer.hasDynamicOffset = true;
     binding.visibility = wgpu::ShaderStage::Fragment;
     EXPECT_NE(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+}
+
+TEST_F(GetBindGroupLayoutTests, DefaultTextureSampleType) {
+    // This test works assuming Dawn Native's object deduplication.
+    // Getting the same pointer to equivalent bind group layouts is an implementation detail of Dawn
+    // Native.
+    DAWN_SKIP_TEST_IF(UsesWire());
+
+    wgpu::BindGroupLayout filteringBGL = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+                  wgpu::TextureSampleType::Float},
+                 {1, wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+                  wgpu::SamplerBindingType::Filtering}});
+
+    wgpu::BindGroupLayout nonFilteringBGL = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+                  wgpu::TextureSampleType::UnfilterableFloat},
+                 {1, wgpu::ShaderStage::Vertex | wgpu::ShaderStage::Fragment,
+                  wgpu::SamplerBindingType::Filtering}});
+
+    wgpu::ShaderModule emptyVertexModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[group(0), binding(1)]] var mySampler : sampler;
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            _ = myTexture;
+            _ = mySampler;
+            return vec4<f32>();
+        })");
+
+    wgpu::ShaderModule textureLoadVertexModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[group(0), binding(1)]] var mySampler : sampler;
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            textureLoad(myTexture, vec2<i32>(), 0);
+            _ = mySampler;
+            return vec4<f32>();
+        })");
+
+    wgpu::ShaderModule textureSampleVertexModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[group(0), binding(1)]] var mySampler : sampler;
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            textureSampleLevel(myTexture, mySampler, vec2<f32>(), 0.0);
+            return vec4<f32>();
+        })");
+
+    wgpu::ShaderModule unusedTextureFragmentModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[group(0), binding(1)]] var mySampler : sampler;
+        [[stage(fragment)]] fn main() {
+            _ = myTexture;
+            _ = mySampler;
+        })");
+
+    wgpu::ShaderModule textureLoadFragmentModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[group(0), binding(1)]] var mySampler : sampler;
+        [[stage(fragment)]] fn main() {
+            textureLoad(myTexture, vec2<i32>(), 0);
+            _ = mySampler;
+        })");
+
+    wgpu::ShaderModule textureSampleFragmentModule = utils::CreateShaderModule(device, R"(
+        [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
+        [[group(0), binding(1)]] var mySampler : sampler;
+        [[stage(fragment)]] fn main() {
+            textureSample(myTexture, mySampler, vec2<f32>());
+        })");
+
+    auto BGLFromModules = [this](wgpu::ShaderModule vertexModule,
+                                 wgpu::ShaderModule fragmentModule) {
+        utils::ComboRenderPipelineDescriptor descriptor;
+        descriptor.vertex.module = vertexModule;
+        descriptor.cFragment.module = fragmentModule;
+        descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
+        return device.CreateRenderPipeline(&descriptor).GetBindGroupLayout(0);
+    };
+
+    // Textures not used default to non-filtering
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(emptyVertexModule, unusedTextureFragmentModule).Get(),
+        nonFilteringBGL.Get()));
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(emptyVertexModule, unusedTextureFragmentModule).Get(), filteringBGL.Get()));
+
+    // Textures used with textureLoad default to non-filtering
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(emptyVertexModule, textureLoadFragmentModule).Get(), nonFilteringBGL.Get()));
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(emptyVertexModule, textureLoadFragmentModule).Get(), filteringBGL.Get()));
+
+    // Textures used with textureLoad on both stages default to non-filtering
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureLoadVertexModule, textureLoadFragmentModule).Get(),
+        nonFilteringBGL.Get()));
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureLoadVertexModule, textureLoadFragmentModule).Get(),
+        filteringBGL.Get()));
+
+    // Textures used with textureSample default to filtering
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(emptyVertexModule, textureSampleFragmentModule).Get(),
+        nonFilteringBGL.Get()));
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(emptyVertexModule, textureSampleFragmentModule).Get(), filteringBGL.Get()));
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureSampleVertexModule, unusedTextureFragmentModule).Get(),
+        nonFilteringBGL.Get()));
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureSampleVertexModule, unusedTextureFragmentModule).Get(),
+        filteringBGL.Get()));
+
+    // Textures used with both textureLoad and textureSample default to filtering
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureLoadVertexModule, textureSampleFragmentModule).Get(),
+        nonFilteringBGL.Get()));
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureLoadVertexModule, textureSampleFragmentModule).Get(),
+        filteringBGL.Get()));
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureSampleVertexModule, textureLoadFragmentModule).Get(),
+        nonFilteringBGL.Get()));
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        BGLFromModules(textureSampleVertexModule, textureLoadFragmentModule).Get(),
+        filteringBGL.Get()));
 }
 
 // Test GetBindGroupLayout works with a compute pipeline
@@ -152,14 +295,14 @@ TEST_F(GetBindGroupLayoutTests, ComputePipeline) {
         };
         [[group(0), binding(0)]] var<uniform> uniforms : S;
 
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             var pos : vec4<f32> = uniforms.pos;
         })");
 
     wgpu::ComputePipelineDescriptor descriptor;
     descriptor.layout = nullptr;
-    descriptor.computeStage.module = csModule;
-    descriptor.computeStage.entryPoint = "main";
+    descriptor.compute.module = csModule;
+    descriptor.compute.entryPoint = "main";
 
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&descriptor);
 
@@ -174,7 +317,8 @@ TEST_F(GetBindGroupLayoutTests, ComputePipeline) {
     desc.entryCount = 1;
     desc.entries = &binding;
 
-    EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
 }
 
 // Test that the binding type matches the shader.
@@ -202,12 +346,13 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
             [[block]] struct S {
                 pos : vec4<f32>;
             };
-            [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] S;
+            [[group(0), binding(0)]] var<storage, read_write> ssbo : S;
 
             [[stage(fragment)]] fn main() {
                 var pos : vec4<f32> = ssbo.pos;
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
     {
         binding.buffer.type = wgpu::BufferBindingType::Uniform;
@@ -220,7 +365,8 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
             [[stage(fragment)]] fn main() {
                 var pos : vec4<f32> = uniforms.pos;
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -229,25 +375,27 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
             [[block]] struct S {
                 pos : vec4<f32>;
             };
-            [[group(0), binding(0)]] var<storage> ssbo : [[access(read)]] S;
+            [[group(0), binding(0)]] var<storage, read> ssbo : S;
 
             [[stage(fragment)]] fn main() {
                 var pos : vec4<f32> = ssbo.pos;
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     binding.buffer.type = wgpu::BufferBindingType::Undefined;
     binding.buffer.minBindingSize = 0;
     {
-        binding.texture.sampleType = wgpu::TextureSampleType::Float;
+        binding.texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
 
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -258,7 +406,8 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     binding.texture.sampleType = wgpu::TextureSampleType::Undefined;
@@ -268,10 +417,38 @@ TEST_F(GetBindGroupLayoutTests, BindingType) {
             [[group(0), binding(0)]] var mySampler: sampler;
 
             [[stage(fragment)]] fn main() {
-                let s : sampler = mySampler;
+                _ = mySampler;
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
+}
+
+// Tests that the external texture binding type matches with a texture_external declared in the
+// shader.
+TEST_F(GetBindGroupLayoutTests, ExternalTextureBindingType) {
+    // This test works assuming Dawn Native's object deduplication.
+    // Getting the same pointer to equivalent bind group layouts is an implementation detail of Dawn
+    // Native.
+    DAWN_SKIP_TEST_IF(UsesWire());
+
+    wgpu::BindGroupLayoutEntry binding = {};
+    binding.binding = 0;
+    binding.visibility = wgpu::ShaderStage::Fragment;
+
+    wgpu::BindGroupLayoutDescriptor desc = {};
+    desc.entryCount = 1;
+    desc.entries = &binding;
+
+    binding.nextInChain = &utils::kExternalTextureBindingLayout;
+    wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
+            [[group(0), binding(0)]] var myExternalTexture: texture_external;
+
+            [[stage(fragment)]] fn main() {
+               _ = myExternalTexture;
+            })");
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
 }
 
 // Test that texture view dimension matches the shader.
@@ -284,7 +461,7 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
     wgpu::BindGroupLayoutEntry binding = {};
     binding.binding = 0;
     binding.visibility = wgpu::ShaderStage::Fragment;
-    binding.texture.sampleType = wgpu::TextureSampleType::Float;
+    binding.texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
 
     wgpu::BindGroupLayoutDescriptor desc = {};
     desc.entryCount = 1;
@@ -298,7 +475,8 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -309,7 +487,8 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -320,7 +499,8 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -331,7 +511,8 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -342,7 +523,8 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -353,7 +535,8 @@ TEST_F(GetBindGroupLayoutTests, ViewDimension) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 }
 
@@ -373,14 +556,15 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
     desc.entries = &binding;
 
     {
-        binding.texture.sampleType = wgpu::TextureSampleType::Float;
+        binding.texture.sampleType = wgpu::TextureSampleType::UnfilterableFloat;
         wgpu::RenderPipeline pipeline = RenderPipelineFromFragmentShader(R"(
             [[group(0), binding(0)]] var myTexture : texture_2d<f32>;
 
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -391,7 +575,8 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -402,7 +587,8 @@ TEST_F(GetBindGroupLayoutTests, TextureComponentType) {
             [[stage(fragment)]] fn main() {
                 textureDimensions(myTexture);
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 }
 
@@ -434,7 +620,8 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
             [[stage(fragment)]] fn main() {
                 var pos : vec4<f32> = uniforms.pos;
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -448,7 +635,8 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
             [[stage(fragment)]] fn main() {
                 var pos : vec4<f32> = uniforms.pos;
             })");
-        EXPECT_EQ(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 
     {
@@ -462,7 +650,8 @@ TEST_F(GetBindGroupLayoutTests, BindingIndices) {
             [[stage(fragment)]] fn main() {
                 var pos : vec4<f32> = uniforms.pos;
             })");
-        EXPECT_NE(device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get());
+        EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            device.CreateBindGroupLayout(&desc).Get(), pipeline.GetBindGroupLayout(0).Get()));
     }
 }
 
@@ -491,12 +680,13 @@ TEST_F(GetBindGroupLayoutTests, DuplicateBinding) {
             var pos : vec4<f32> = uniforms.pos;
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
-    device.CreateRenderPipeline2(&descriptor);
+    device.CreateRenderPipeline(&descriptor);
 }
 
 // Test that minBufferSize is set on the BGL and that the max of the min buffer sizes is used.
@@ -563,31 +753,35 @@ TEST_F(GetBindGroupLayoutTests, MinBufferSize) {
     binding.buffer.minBindingSize = 64;
     wgpu::BindGroupLayout bgl64 = device.CreateBindGroupLayout(&desc);
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     // Check with both stages using 4 bytes.
     {
         descriptor.vertex.module = vsModule4;
         descriptor.cFragment.module = fsModule4;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
-        EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bgl4.Get());
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            pipeline.GetBindGroupLayout(0).Get(), bgl4.Get()));
     }
 
     // Check that the max is taken between 4 and 64.
     {
         descriptor.vertex.module = vsModule64;
         descriptor.cFragment.module = fsModule4;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
-        EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bgl64.Get());
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            pipeline.GetBindGroupLayout(0).Get(), bgl64.Get()));
     }
 
     // Check that the order doesn't change that the max is taken.
     {
         descriptor.vertex.module = vsModule4;
         descriptor.cFragment.module = fsModule64;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
-        EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bgl64.Get());
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            pipeline.GetBindGroupLayout(0).Get(), bgl64.Get()));
     }
 }
 
@@ -606,7 +800,7 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     wgpu::ShaderModule vsModuleSampler = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var mySampler: sampler;
         [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
-            let s : sampler = mySampler;
+            _ = mySampler;
             return vec4<f32>();
         })");
 
@@ -617,7 +811,7 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     wgpu::ShaderModule fsModuleSampler = utils::CreateShaderModule(device, R"(
         [[group(0), binding(0)]] var mySampler: sampler;
         [[stage(fragment)]] fn main() {
-            let s : sampler = mySampler;
+            _ = mySampler;
         })");
 
     // Create BGLs with minBufferBindingSize 4 and 64.
@@ -629,37 +823,41 @@ TEST_F(GetBindGroupLayoutTests, StageAggregation) {
     desc.entryCount = 1;
     desc.entries = &binding;
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
+    descriptor.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
     // Check with only the vertex shader using the sampler
     {
         descriptor.vertex.module = vsModuleSampler;
         descriptor.cFragment.module = fsModuleNoSampler;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
         binding.visibility = wgpu::ShaderStage::Vertex;
-        EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get()));
     }
 
     // Check with only the fragment shader using the sampler
     {
         descriptor.vertex.module = vsModuleNoSampler;
         descriptor.cFragment.module = fsModuleSampler;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
         binding.visibility = wgpu::ShaderStage::Fragment;
-        EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get()));
     }
 
     // Check with both shaders using the sampler
     {
         descriptor.vertex.module = vsModuleSampler;
         descriptor.cFragment.module = fsModuleSampler;
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
         binding.visibility = wgpu::ShaderStage::Fragment | wgpu::ShaderStage::Vertex;
-        EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get());
+        EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+            pipeline.GetBindGroupLayout(0).Get(), device.CreateBindGroupLayout(&desc).Get()));
     }
 }
 
@@ -680,18 +878,18 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingType) {
         [[block]] struct S {
             pos : vec4<f32>;
         };
-        [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] S;
+        [[group(0), binding(0)]] var<storage, read_write> ssbo : S;
 
         [[stage(fragment)]] fn main() {
             var pos : vec4<f32> = ssbo.pos;
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }
 
 // Test it is invalid to have conflicting binding texture multisampling in the shaders.
@@ -711,12 +909,12 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureMultisampling) {
             textureDimensions(myTexture);
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }
 
 // Test it is invalid to have conflicting binding texture dimension in the shaders.
@@ -736,12 +934,12 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingViewDimension) {
             textureDimensions(myTexture);
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }
 
 // Test it is invalid to have conflicting binding texture component type in the shaders.
@@ -761,12 +959,12 @@ TEST_F(GetBindGroupLayoutTests, ConflictingBindingTextureComponentType) {
             textureDimensions(myTexture);
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = nullptr;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
 
-    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+    ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
 }
 
 // Test it is an error to query an out of range bind group layout.
@@ -807,10 +1005,14 @@ TEST_F(GetBindGroupLayoutTests, UnusedIndex) {
 
     wgpu::BindGroupLayout emptyBindGroupLayout = device.CreateBindGroupLayout(&desc);
 
-    EXPECT_NE(pipeline.GetBindGroupLayout(0).Get(), emptyBindGroupLayout.Get());  // Used
-    EXPECT_EQ(pipeline.GetBindGroupLayout(1).Get(), emptyBindGroupLayout.Get());  // Not Used.
-    EXPECT_NE(pipeline.GetBindGroupLayout(2).Get(), emptyBindGroupLayout.Get());  // Used.
-    EXPECT_EQ(pipeline.GetBindGroupLayout(3).Get(), emptyBindGroupLayout.Get());  // Not used
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        pipeline.GetBindGroupLayout(0).Get(), emptyBindGroupLayout.Get()));  // Used
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        pipeline.GetBindGroupLayout(1).Get(), emptyBindGroupLayout.Get()));  // Not Used.
+    EXPECT_FALSE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        pipeline.GetBindGroupLayout(2).Get(), emptyBindGroupLayout.Get()));  // Used.
+    EXPECT_TRUE(dawn_native::BindGroupLayoutBindingsEqualForTesting(
+        pipeline.GetBindGroupLayout(3).Get(), emptyBindGroupLayout.Get()));  // Not used
 }
 
 // Test that after explicitly creating a pipeline with a pipeline layout, calling
@@ -853,12 +1055,13 @@ TEST_F(GetBindGroupLayoutTests, Reflection) {
         [[stage(fragment)]] fn main() {
         })");
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.layout = pipelineLayout;
     pipelineDesc.vertex.module = vsModule;
     pipelineDesc.cFragment.module = fsModule;
+    pipelineDesc.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
 
     EXPECT_EQ(pipeline.GetBindGroupLayout(0).Get(), bindGroupLayout.Get());
 
@@ -877,35 +1080,32 @@ TEST_F(GetBindGroupLayoutTests, Reflection) {
 }
 
 // Test that fragment output validation is for the correct entryPoint
-// TODO(dawn:216): Re-enable when we correctly reflect which bindings are used for an entryPoint.
 TEST_F(GetBindGroupLayoutTests, FromCorrectEntryPoint) {
-    DAWN_SKIP_TEST_IF(!HasToggleEnabled("use_tint_generator"));
-
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct Data {
             data : f32;
         };
-        [[group(0), binding(0)]] var<storage> data0 : [[access(read_write)]] Data;
-        [[group(0), binding(1)]] var<storage> data1 : [[access(read_write)]] Data;
+        [[group(0), binding(0)]] var<storage, read_write> data0 : Data;
+        [[group(0), binding(1)]] var<storage, read_write> data1 : Data;
 
-        [[stage(compute)]] fn compute0() {
+        [[stage(compute), workgroup_size(1)]] fn compute0() {
             data0.data = 0.0;
         }
 
-        [[stage(compute)]] fn compute1() {
+        [[stage(compute), workgroup_size(1)]] fn compute1() {
             data1.data = 0.0;
         }
     )");
 
     wgpu::ComputePipelineDescriptor pipelineDesc;
-    pipelineDesc.computeStage.module = module;
+    pipelineDesc.compute.module = module;
 
     // Get each entryPoint's BGL.
-    pipelineDesc.computeStage.entryPoint = "compute0";
+    pipelineDesc.compute.entryPoint = "compute0";
     wgpu::ComputePipeline pipeline0 = device.CreateComputePipeline(&pipelineDesc);
     wgpu::BindGroupLayout bgl0 = pipeline0.GetBindGroupLayout(0);
 
-    pipelineDesc.computeStage.entryPoint = "compute1";
+    pipelineDesc.compute.entryPoint = "compute1";
     wgpu::ComputePipeline pipeline1 = device.CreateComputePipeline(&pipelineDesc);
     wgpu::BindGroupLayout bgl1 = pipeline1.GetBindGroupLayout(0);
 

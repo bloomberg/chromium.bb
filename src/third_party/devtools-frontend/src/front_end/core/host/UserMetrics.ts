@@ -28,41 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
-import * as Common from '../common/common.js';
-
 import {InspectorFrontendHostInstance} from './InspectorFrontendHost.js';
 import {EnumeratedHistogram} from './InspectorFrontendHostAPI.js';
 
 export class UserMetrics {
-  _panelChangedSinceLaunch: boolean;
-  _firedLaunchHistogram: boolean;
-  _launchPanelName: string;
+  #panelChangedSinceLaunch: boolean;
+  #firedLaunchHistogram: boolean;
+  #launchPanelName: string;
   constructor() {
-    this._panelChangedSinceLaunch = false;
-    this._firedLaunchHistogram = false;
-    this._launchPanelName = '';
-  }
-
-  colorFixed(contrastThreshold: string): void {
-    const code = ContrastThresholds[contrastThreshold];
-    if (code === undefined) {
-      console.warn(`Unknown contrast threshold: ${contrastThreshold}`);
-      return;
-    }
-    const size = Object.keys(ContrastThresholds).length + 1;
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ColorPickerFixedColor, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ColorPickerFixedColor, {value: code});
+    this.#panelChangedSinceLaunch = false;
+    this.#firedLaunchHistogram = false;
+    this.#launchPanelName = '';
   }
 
   panelShown(panelName: string): void {
     const code = PanelCodes[panelName] || 0;
     const size = Object.keys(PanelCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.PanelShown, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.PanelShown, {value: code});
     // Store that the user has changed the panel so we know launch histograms should not be fired.
-    this._panelChangedSinceLaunch = true;
+    this.#panelChangedSinceLaunch = true;
   }
 
   /**
@@ -72,16 +56,14 @@ export class UserMetrics {
     const code = PanelCodes[panelName] || 0;
     const size = Object.keys(PanelCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.PanelClosed, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.PanelClosed, {value: code});
     // Store that the user has changed the panel so we know launch histograms should not be fired.
-    this._panelChangedSinceLaunch = true;
+    this.#panelChangedSinceLaunch = true;
   }
 
   sidebarPaneShown(sidebarPaneName: string): void {
     const code = SidebarPaneCodes[sidebarPaneName] || 0;
     const size = Object.keys(SidebarPaneCodes).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.SidebarPaneShown, code, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.SidebarPaneShown, {value: code});
   }
 
   settingsPanelShown(settingsViewId: string): void {
@@ -91,15 +73,14 @@ export class UserMetrics {
   actionTaken(action: Action): void {
     const size = Object.keys(Action).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.ActionTaken, action, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ActionTaken, {value: action});
   }
 
   panelLoaded(panelName: string, histogramName: string): void {
-    if (this._firedLaunchHistogram || panelName !== this._launchPanelName) {
+    if (this.#firedLaunchHistogram || panelName !== this.#launchPanelName) {
       return;
     }
 
-    this._firedLaunchHistogram = true;
+    this.#firedLaunchHistogram = true;
     // Use rAF and setTimeout to ensure the marker is fired after layout and rendering.
     // This will give the most accurate representation of the tool being ready for a user.
     requestAnimationFrame(() => {
@@ -108,40 +89,36 @@ export class UserMetrics {
         performance.mark(histogramName);
         // If the user has switched panel before we finished loading, ignore the histogram,
         // since the launch timings will have been affected and are no longer valid.
-        if (this._panelChangedSinceLaunch) {
+        if (this.#panelChangedSinceLaunch) {
           return;
         }
         // This fires the event for the appropriate launch histogram.
         // The duration is measured as the time elapsed since the time origin of the document.
         InspectorFrontendHostInstance.recordPerformanceHistogram(histogramName, performance.now());
-        Common.EventTarget.fireEvent('DevTools.PanelLoaded', {value: {panelName, histogramName}});
       }, 0);
     });
   }
 
   setLaunchPanel(panelName: string|null): void {
-    this._launchPanelName = (panelName as string);
+    this.#launchPanelName = (panelName as string);
   }
 
   keybindSetSettingChanged(keybindSet: string): void {
     const size = Object.keys(KeybindSetSettings).length + 1;
     const value = KeybindSetSettings[keybindSet] || 0;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.KeybindSetSettingChanged, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.KeybindSetSettingChanged, {value});
   }
 
   keyboardShortcutFired(actionId: string): void {
     const size = Object.keys(KeyboardShortcutAction).length + 1;
     const action = KeyboardShortcutAction[actionId] || KeyboardShortcutAction.OtherShortcut;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.KeyboardShortcutFired, action, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.KeyboardShortcutFired, {value: action});
   }
 
   issuesPanelOpenedFrom(issueOpener: IssueOpener): void {
     const size = Object.keys(IssueOpener).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.IssuesPanelOpenedFrom, issueOpener, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelOpenedFrom, {value: issueOpener});
   }
 
   issuesPanelIssueExpanded(issueExpandedCategory: string|undefined): void {
@@ -158,7 +135,6 @@ export class UserMetrics {
 
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.IssuesPanelIssueExpanded, issueExpanded, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelIssueExpanded, {value: issueExpanded});
   }
 
   issuesPanelResourceOpened(issueCategory: string, type: string): void {
@@ -171,7 +147,6 @@ export class UserMetrics {
     }
 
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssuesPanelResourceOpened, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssuesPanelResourceOpened, {value});
   }
 
   issueCreated(code: string): void {
@@ -181,27 +156,12 @@ export class UserMetrics {
       return;
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.IssueCreated, issueCreated, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.IssueCreated, {value: issueCreated});
   }
 
   dualScreenDeviceEmulated(emulationAction: DualScreenDeviceEmulated): void {
     const size = Object.keys(DualScreenDeviceEmulated).length + 1;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.DualScreenDeviceEmulated, emulationAction, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.DualScreenDeviceEmulated, {value: emulationAction});
-  }
-
-  cssEditorOpened(editorName: string): void {
-    const size = Object.keys(CssEditorOpened).length + 1;
-    const key = editorName;
-    const value = CssEditorOpened[key];
-
-    if (value === undefined) {
-      return;
-    }
-
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.CssEditorOpened, value, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.CssEditorOpened, {value});
   }
 
   experimentEnabledAtLaunch(experimentId: string): void {
@@ -212,7 +172,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.ExperimentEnabledAtLaunch, experiment, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.ExperimentEnabledAtLaunch, {value: experiment});
   }
 
   experimentChanged(experimentId: string, isEnabled: boolean): void {
@@ -223,7 +182,6 @@ export class UserMetrics {
     }
     const actionName = isEnabled ? EnumeratedHistogram.ExperimentEnabled : EnumeratedHistogram.ExperimentDisabled;
     InspectorFrontendHostInstance.recordEnumeratedHistogram(actionName, experiment, size);
-    Common.EventTarget.fireEvent(actionName, {value: experiment});
   }
 
   developerResourceLoaded(developerResourceLoaded: DeveloperResourceLoaded): void {
@@ -233,7 +191,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.DeveloperResourceLoaded, developerResourceLoaded, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.DeveloperResourceLoaded, {value: developerResourceLoaded});
   }
 
   developerResourceScheme(developerResourceScheme: DeveloperResourceScheme): void {
@@ -243,7 +200,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.DeveloperResourceScheme, developerResourceScheme, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.DeveloperResourceScheme, {value: developerResourceScheme});
   }
 
   linearMemoryInspectorRevealedFrom(linearMemoryInspectorRevealedFrom: LinearMemoryInspectorRevealedFrom): void {
@@ -253,8 +209,6 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.LinearMemoryInspectorRevealedFrom, linearMemoryInspectorRevealedFrom, size);
-    Common.EventTarget.fireEvent(
-        EnumeratedHistogram.LinearMemoryInspectorRevealedFrom, {value: linearMemoryInspectorRevealedFrom});
   }
 
   linearMemoryInspectorTarget(linearMemoryInspectorTarget: LinearMemoryInspectorTarget): void {
@@ -264,7 +218,61 @@ export class UserMetrics {
     }
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.LinearMemoryInspectorTarget, linearMemoryInspectorTarget, size);
-    Common.EventTarget.fireEvent(EnumeratedHistogram.LinearMemoryInspectorTarget, {value: linearMemoryInspectorTarget});
+  }
+
+  language(language: Intl.UnicodeBCP47LocaleIdentifier): void {
+    const size = Object.keys(Language).length + 1;
+    const languageCode = Language[language];
+    if (languageCode === undefined) {
+      return;
+    }
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.Language, languageCode, size);
+  }
+
+  showCorsErrorsSettingChanged(show: boolean): void {
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.ConsoleShowsCorsErrors, Number(show), 2);
+  }
+
+  syncSetting(devtoolsSyncSettingEnabled: boolean): void {
+    const size = Object.keys(SyncSetting).length + 1;
+
+    InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
+      let settingValue = SyncSetting.ChromeSyncDisabled;
+      if (syncInfo.isSyncActive && !syncInfo.arePreferencesSynced) {
+        settingValue = SyncSetting.ChromeSyncSettingsDisabled;
+      } else if (syncInfo.isSyncActive && syncInfo.arePreferencesSynced) {
+        settingValue = devtoolsSyncSettingEnabled ? SyncSetting.DevToolsSyncSettingEnabled :
+                                                    SyncSetting.DevToolsSyncSettingDisabled;
+      }
+
+      InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.SyncSetting, settingValue, size);
+    });
+  }
+
+  recordingToggled(value: RecordingToggled): void {
+    const size = Object.keys(RecordingToggled).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingToggled, value, size);
+  }
+
+  recordingReplayFinished(value: RecordingReplayFinished): void {
+    const size = Object.keys(RecordingReplayFinished).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingReplayFinished, value, size);
+  }
+
+  recordingReplayStarted(value: RecordingReplayStarted): void {
+    const size = Object.keys(RecordingReplayStarted).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingReplayStarted, value, size);
+  }
+
+  recordingEdited(value: RecordingEdited): void {
+    const size = Object.keys(RecordingEdited).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingEdited, value, size);
+  }
+
+  recordingExported(value: RecordingExported): void {
+    const size = Object.keys(RecordingExported).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingExported, value, size);
   }
 }
 
@@ -333,7 +341,6 @@ export enum Action {
   PerfPanelTraceExported = 55,
 }
 
-
 export const ContrastThresholds: {
   [x: string]: number,
 } = {
@@ -384,6 +391,7 @@ export const PanelCodes: {
   'issues-pane': 37,
   'settings-keybinds': 38,
   'cssoverview': 39,
+  'chrome_recorder': 40,
 };
 
 export const SidebarPaneCodes: {
@@ -515,6 +523,7 @@ export const KeyboardShortcutAction: {
   'layers.down': 103,
   'layers.left': 104,
   'layers.right': 105,
+  'help.report-translation-issue': 106,
 };
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -536,16 +545,6 @@ export enum DualScreenDeviceEmulated {
   PlatformSupportUsed = 2,  // user starts to use platform dual screen support feature.
 }
 
-
-export const CssEditorOpened: {
-  [x: string]: number,
-} = {
-  'colorPicker': 0,
-  'shadowEditor': 1,
-  'bezierEditor': 2,
-  'fontEditor': 3,
-};
-
 /**
  * This list should contain the currently active Devtools Experiments.
  * Therefore, it is possible that the id's will no longer be continuous
@@ -566,9 +565,6 @@ export const DevtoolsExperiments: {
   'backgroundServicesNotifications': 4,
   'backgroundServicesPaymentHandler': 5,
   'backgroundServicesPushMessaging': 6,
-  'blackboxJSFramesOnTimeline': 7,
-  'cssOverview': 8,
-  'emptySourceMapAutoStepping': 9,
   'inputEventsOnTimelineOverview': 10,
   'liveHeapProfile': 11,
   'protocolMonitor': 13,
@@ -576,9 +572,7 @@ export const DevtoolsExperiments: {
   'recordCoverageWithPerformanceTracing': 16,
   'samplingHeapProfilerTimeline': 17,
   'showOptionToNotTreatGlobalObjectsAsRoots': 18,
-  'sourceDiff': 19,
   'sourceOrderViewer': 20,
-  'spotlight': 21,
   'webauthnPane': 22,
   'timelineEventInitiators': 24,
   'timelineInvalidationTracking': 26,
@@ -589,7 +583,6 @@ export const DevtoolsExperiments: {
   'wasmDWARFDebugging': 31,
   'dualScreenSupport': 32,
   'keyboardShortcutEditor': 35,
-  'recorder': 38,
   'APCA': 39,
   'cspViolationsView': 40,
   'fontEditor': 41,
@@ -597,7 +590,13 @@ export const DevtoolsExperiments: {
   'ignoreListJSFramesOnTimeline': 43,
   'contrastIssues': 44,
   'experimentalCookieFeatures': 45,
-  '__lastValidEnumPosition': 45,
+  'hideIssuesFeature': 48,
+  'reportingApiDebugging': 49,
+  'syncSettings': 50,
+  'groupAndHideIssuesByKind': 51,
+  'cssTypeComponentLength': 52,
+  'preciseChanges': 53,
+  '__lastValidEnumPosition': 53,
 };
 
 export const IssueExpanded: {
@@ -675,7 +674,6 @@ export const IssueCreated: {
   'TrustedWebActivityIssue::kDigitalAssetLinks': 40,
   LowTextContrastIssue: 41,
   'CorsIssue::InsecurePrivateNetwork': 42,
-  'CorsIssue::InsecurePrivateNetworkPreflight': 43,
   'CorsIssue::InvalidHeaders': 44,
   'CorsIssue::WildcardOriginWithCredentials': 45,
   'CorsIssue::PreflightResponseInvalid': 46,
@@ -688,10 +686,11 @@ export const IssueCreated: {
   'CorsIssue::CorsDisabledScheme': 53,
   'CorsIssue::PreflightMissingAllowExternal': 54,
   'CorsIssue::PreflightInvalidAllowExternal': 55,
-  'CorsIssue::InvalidResponse': 56,
   'CorsIssue::NoCorsRedirectModeNotFollow': 57,
   'QuirksModeIssue::QuirksMode': 58,
   'QuirksModeIssue::LimitedQuirksMode': 59,
+  DeprecationIssue: 60,
+  'CorsIssue::PreflightAllowPrivateNetworkError': 61,
 };
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -736,4 +735,143 @@ export enum LinearMemoryInspectorTarget {
   DataView = 2,
   TypedArray = 3,
   WebAssemblyMemory = 4,
+}
+
+export const Language: Record<string, number> = {
+  'af': 1,
+  'am': 2,
+  'ar': 3,
+  'as': 4,
+  'az': 5,
+  'be': 6,
+  'bg': 7,
+  'bn': 8,
+  'bs': 9,
+  'ca': 10,
+  'cs': 11,
+  'cy': 12,
+  'da': 13,
+  'de': 14,
+  'el': 15,
+  'en-GB': 16,
+  'en-US': 17,
+  'es-419': 18,
+  'es': 19,
+  'et': 20,
+  'eu': 21,
+  'fa': 22,
+  'fi': 23,
+  'fil': 24,
+  'fr-CA': 25,
+  'fr': 26,
+  'gl': 27,
+  'gu': 28,
+  'he': 29,
+  'hi': 30,
+  'hr': 31,
+  'hu': 32,
+  'hy': 33,
+  'id': 34,
+  'is': 35,
+  'it': 36,
+  'ja': 37,
+  'ka': 38,
+  'kk': 39,
+  'km': 40,
+  'kn': 41,
+  'ko': 42,
+  'ky': 43,
+  'lo': 44,
+  'lt': 45,
+  'lv': 46,
+  'mk': 47,
+  'ml': 48,
+  'mn': 49,
+  'mr': 50,
+  'ms': 51,
+  'my': 52,
+  'ne': 53,
+  'nl': 54,
+  'no': 55,
+  'or': 56,
+  'pa': 57,
+  'pl': 58,
+  'pt-PT': 59,
+  'pt': 60,
+  'ro': 61,
+  'ru': 62,
+  'si': 63,
+  'sk': 64,
+  'sl': 65,
+  'sq': 66,
+  'sr-Latn': 67,
+  'sr': 68,
+  'sv': 69,
+  'sw': 70,
+  'ta': 71,
+  'te': 72,
+  'th': 73,
+  'tr': 74,
+  'uk': 75,
+  'ur': 76,
+  'uz': 77,
+  'vi': 78,
+  'zh': 79,
+  'zh-HK': 80,
+  'zh-TW': 81,
+  'zu': 82,
+};
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum SyncSetting {
+  ChromeSyncDisabled = 1,
+  ChromeSyncSettingsDisabled = 2,
+  DevToolsSyncSettingDisabled = 3,
+  DevToolsSyncSettingEnabled = 4,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingToggled {
+  RecordingStarted = 1,
+  RecordingFinished = 2,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingReplayFinished {
+  Success = 1,
+  TimeoutErrorSelectors = 2,
+  TimeoutErrorTarget = 3,
+  OtherError = 4,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingReplayStarted {
+  ReplayOnly = 1,
+  ReplayWithPerformanceTracing = 2,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingEdited {
+  SelectorPickerUsed = 1,
+  StepAdded = 2,
+  StepRemoved = 3,
+  SelectorAdded = 4,
+  SelectorRemoved = 5,
+  SelectorPartAdded = 6,
+  SelectorPartEdited = 7,
+  SelectorPartRemoved = 8,
+  TypeChanged = 9,
+  OtherEditing = 10,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingExported {
+  ToPuppeteer = 1,
+  ToJSON = 2,
 }

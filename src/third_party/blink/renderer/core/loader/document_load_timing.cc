@@ -73,8 +73,7 @@ void DocumentLoadTiming::NotifyDocumentTimingChanged() {
 
 void DocumentLoadTiming::EnsureReferenceTimesSet() {
   if (reference_wall_time_.is_zero()) {
-    reference_wall_time_ =
-        base::TimeDelta::FromSecondsD(clock_->Now().ToDoubleT());
+    reference_wall_time_ = base::Seconds(clock_->Now().ToDoubleT());
   }
   if (reference_monotonic_time_.is_null())
     reference_monotonic_time_ = tick_clock_->NowTicks();
@@ -92,8 +91,7 @@ int64_t DocumentLoadTiming::ZeroBasedDocumentTimeToMonotonicTime(
   if (reference_monotonic_time_.is_null())
     return 0;
   base::TimeTicks monotonic_time =
-      reference_monotonic_time_ +
-      base::TimeDelta::FromMillisecondsD(dom_event_time);
+      reference_monotonic_time_ + base::Milliseconds(dom_event_time);
   return monotonic_time.since_origin().InMilliseconds();
 }
 
@@ -277,6 +275,14 @@ void DocumentLoadTiming::MarkCommitNavigationEnd() {
   commit_navigation_end_ = tick_clock_->NowTicks();
   TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "commitNavigationEnd",
                                    commit_navigation_end_, "frame",
+                                   ToTraceValue(GetFrame()));
+  NotifyDocumentTimingChanged();
+}
+
+void DocumentLoadTiming::MarkActivationStart(base::TimeTicks activation_start) {
+  activation_start_ = activation_start;
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "activationtart",
+                                   activation_start, "frame",
                                    ToTraceValue(GetFrame()));
   NotifyDocumentTimingChanged();
 }

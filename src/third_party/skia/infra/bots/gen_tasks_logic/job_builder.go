@@ -124,6 +124,9 @@ func (b *jobBuilder) genTasksForJob() {
 	} else if b.extraConfig("PushAppsFromWASMDockerImage") {
 		b.createPushAppsFromWASMDockerImage()
 		return
+	} else if b.extraConfig("PushBazelAppsFromWASMDockerImage") {
+		b.createPushBazelAppsFromWASMDockerImage()
+		return
 	}
 
 	// Infra tests.
@@ -191,13 +194,13 @@ func (b *jobBuilder) genTasksForJob() {
 			b.g3FrameworkCanary()
 			return
 		} else if b.project("Android") {
-			b.canary("android-master-autoroll")
+			b.canary("android-master-autoroll", "Canary-Android-Topic", "https://googleplex-android-review.googlesource.com/q/topic:")
 			return
 		} else if b.project("Chromium") {
-			b.canary("skia-autoroll")
+			b.canary("skia-autoroll", "Canary-Chromium-CL", "https://chromium-review.googlesource.com/c/")
 			return
 		} else if b.project("Flutter") {
-			b.canary("skia-flutter-autoroll")
+			b.canary("skia-flutter-autoroll", "Canary-Flutter-PR", "https://github.com/flutter/engine/pull/")
 			return
 		}
 	}
@@ -214,13 +217,6 @@ func (b *jobBuilder) genTasksForJob() {
 		return
 	}
 
-	// Fuzz bots (aka CIFuzz). See
-	// https://google.github.io/oss-fuzz/getting-started/continuous-integration/ for more.
-	if b.role("Fuzz") {
-		b.cifuzz()
-		return
-	}
-
 	log.Fatalf("Don't know how to handle job %q", b.Name)
 }
 
@@ -230,7 +226,7 @@ func (b *jobBuilder) finish() {
 		b.trigger(specs.TRIGGER_NIGHTLY)
 	} else if b.frequency("Weekly") {
 		b.trigger(specs.TRIGGER_WEEKLY)
-	} else if b.extraConfig("Flutter", "CommandBuffer") {
+	} else if b.extraConfig("Flutter", "CommandBuffer", "CreateDockerImage") {
 		b.trigger(specs.TRIGGER_MAIN_ONLY)
 	} else if b.frequency("OnDemand") || b.role("Canary") {
 		b.trigger(specs.TRIGGER_ON_DEMAND)

@@ -13,6 +13,7 @@
 #if EIGEN_HAS_CXX11
 #include "MovableScalar.h"
 #endif
+#include "SafeScalar.h"
 
 #include <Eigen/Core>
 
@@ -94,19 +95,24 @@ void rvalue_move(const MatrixType& m)
     MatrixType d = m;
     VERIFY_IS_EQUAL(d, m);
 
-    // rvalue reference is moved
+    // rvalue reference is moved - copy constructor.
     MatrixType e_src(m);
     VERIFY_IS_EQUAL(e_src, m);
     MatrixType e_dst(std::move(e_src));
-    VERIFY_IS_EQUAL(e_src, MatrixType());
     VERIFY_IS_EQUAL(e_dst, m);
 
-    // rvalue reference is moved
+    // rvalue reference is moved - copy constructor.
     MatrixType f_src(m);
     VERIFY_IS_EQUAL(f_src, m);
     MatrixType f_dst = std::move(f_src);
-    VERIFY_IS_EQUAL(f_src, MatrixType());
     VERIFY_IS_EQUAL(f_dst, m);
+    
+    // rvalue reference is moved - copy assignment.
+    MatrixType g_src(m);
+    VERIFY_IS_EQUAL(g_src, m);
+    MatrixType g_dst;
+    g_dst = std::move(g_src);
+    VERIFY_IS_EQUAL(g_dst, m);
 }
 #else
 template <typename MatrixType>
@@ -144,6 +150,8 @@ EIGEN_DECLARE_TEST(rvalue_types)
 
 #if EIGEN_HAS_CXX11
     CALL_SUBTEST_5(rvalue_move(Eigen::Matrix<MovableScalar<float>,1,3>::Random().eval()));
+    CALL_SUBTEST_5(rvalue_move(Eigen::Matrix<SafeScalar<float>,1,3>::Random().eval()));
+    CALL_SUBTEST_5(rvalue_move(Eigen::Matrix<SafeScalar<float>,Eigen::Dynamic,Eigen::Dynamic>::Random(1,3).eval()));
 #endif
   }
 }

@@ -19,7 +19,6 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
-#include "aom_ports/system_state.h"
 #include "aom_ports/aom_once.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_scale/aom_scale.h"
@@ -46,7 +45,9 @@ static void initialize_dec(void) {
 }
 
 static void dec_set_mb_mi(CommonModeInfoParams *mi_params, int width,
-                          int height) {
+                          int height, int mode, BLOCK_SIZE min_partition_size) {
+  (void)mode;
+  (void)min_partition_size;
   // Ensure that the decoded width and height are both multiples of
   // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
   // subsampling is used).
@@ -68,10 +69,6 @@ static void dec_set_mb_mi(CommonModeInfoParams *mi_params, int width,
 
   assert(mi_size_wide[mi_params->mi_alloc_bsize] ==
          mi_size_high[mi_params->mi_alloc_bsize]);
-
-#if CONFIG_LPF_MASK
-  av1_alloc_loop_filter_mask(mi_params);
-#endif
 }
 
 static void dec_setup_mi(CommonModeInfoParams *mi_params) {
@@ -468,7 +465,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     }
 
     release_current_frame(pbi);
-    aom_clear_system_state();
     return -1;
   }
 
@@ -506,8 +502,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     return 1;
   }
 
-  aom_clear_system_state();
-
   if (!cm->show_existing_frame) {
     if (cm->seg.enabled) {
       if (cm->prev_frame &&
@@ -532,7 +526,6 @@ int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,
   if (index >= pbi->num_output_frames) return -1;
   *sd = &pbi->output_frames[index]->buf;
   *grain_params = &pbi->output_frames[index]->film_grain_params;
-  aom_clear_system_state();
   return 0;
 }
 

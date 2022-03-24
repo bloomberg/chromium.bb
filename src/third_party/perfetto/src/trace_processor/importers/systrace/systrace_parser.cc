@@ -17,6 +17,7 @@
 #include "src/trace_processor/importers/systrace/systrace_parser.h"
 
 #include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/common/slice_tracker.h"
@@ -29,6 +30,7 @@ namespace trace_processor {
 SystraceParser::SystraceParser(TraceProcessorContext* ctx)
     : context_(ctx),
       lmk_id_(ctx->storage->InternString("mem.lmk")),
+      oom_score_adj_id_(ctx->storage->InternString("oom_score_adj")),
       screen_state_id_(ctx->storage->InternString("ScreenState")),
       cookie_id_(ctx->storage->InternString("cookie")) {}
 
@@ -59,7 +61,7 @@ void SystraceParser::ParseZeroEvent(int64_t ts,
                                     int64_t value) {
   systrace_utils::SystraceTracePoint point{};
   point.name = name;
-  point.value = static_cast<double>(value);
+  point.value = value;
 
   // Hardcode the tgid to 0 (i.e. no tgid available) because zero events can
   // come from kernel threads and as we group kernel threads into the kthreadd
@@ -108,7 +110,7 @@ void SystraceParser::ParseTracingMarkWrite(int64_t ts,
   // the UI.
   point.tgid = 0;
 
-  point.value = static_cast<double>(value);
+  point.value = value;
   // Some versions of this trace point fill trace_type with one of (B/E/C),
   // others use the trace_begin boolean and only support begin/end events:
   if (trace_type == 0) {
@@ -139,6 +141,7 @@ void SystraceParser::ParseSystracePoint(
       TrackId track_id = context_->track_tracker->InternThreadTrack(utid);
       context_->slice_tracker->Begin(ts, track_id, kNullStringId /* cat */,
                                      name_id);
+      PostProcessSpecialSliceBegin(ts, point.name);
       break;
     }
 
@@ -164,7 +167,7 @@ void SystraceParser::ParseSystracePoint(
     case 'S':
     case 'F': {
       StringId name_id = context_->storage->InternString(point.name);
-      int64_t cookie = static_cast<int64_t>(point.value);
+      int64_t cookie = point.value;
       UniquePid upid =
           context_->process_tracker->GetOrCreateProcess(point.tgid);
 
@@ -223,7 +226,8 @@ void SystraceParser::ParseSystracePoint(
         // Promote ScreenState to its own top level counter.
         TrackId track =
             context_->track_tracker->InternGlobalCounterTrack(screen_state_id_);
-        context_->event_tracker->PushCounter(ts, point.value, track);
+        context_->event_tracker->PushCounter(
+            ts, static_cast<double>(point.value), track);
         return;
       }
 
@@ -243,8 +247,38 @@ void SystraceParser::ParseSystracePoint(
         track_id =
             context_->track_tracker->InternProcessCounterTrack(name_id, upid);
       }
-      context_->event_tracker->PushCounter(ts, point.value, track_id);
+      context_->event_tracker->PushCounter(ts, static_cast<double>(point.value),
+                                           track_id);
     }
+  }
+}
+
+void SystraceParser::PostProcessSpecialSliceBegin(int64_t ts,
+                                                  base::StringView name) {
+  if (name.StartsWith("lmk,")) {
+    // LMK events introduced with http://aosp/1782391 are treated specially
+    // to parse the killed process oom_score_adj out of them.
+    // Format is 'lmk,pid,reason,oom adj,...'
+    std::vector<std::string> toks = base::SplitString(name.ToStdString(), ",");
+    if (toks.size() < 4) {
+      return;
+    }
+    auto killed_pid = base::StringToUInt32(toks[1]);
+    auto oom_score_adj = base::StringToInt32(toks[3]);
+    if (!killed_pid || !oom_score_adj) {
+      return;
+    }
+
+    UniquePid killed_upid =
+        context_->process_tracker->GetOrCreateProcess(*killed_pid);
+    // Add the oom score entry
+    TrackId track = context_->track_tracker->InternProcessCounterTrack(
+        oom_score_adj_id_, killed_upid);
+    context_->event_tracker->PushCounter(ts, *oom_score_adj, track);
+
+    // Add mem.lmk instant event for consistency with other methods.
+    context_->event_tracker->PushInstant(ts, lmk_id_, killed_upid,
+                                         RefType::kRefUpid);
   }
 }
 

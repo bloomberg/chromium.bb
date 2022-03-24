@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 
 namespace chromeos {
@@ -22,6 +22,10 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   using ClientTypeToInputStreamCount = base::flat_map<std::string, uint32_t>;
 
   FakeCrasAudioClient();
+
+  FakeCrasAudioClient(const FakeCrasAudioClient&) = delete;
+  FakeCrasAudioClient& operator=(const FakeCrasAudioClient&) = delete;
+
   ~FakeCrasAudioClient() override;
 
   static FakeCrasAudioClient* Get();
@@ -58,6 +62,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
                        const std::string& hotword_model,
                        VoidDBusMethodCallback callback) override;
   void SetFixA2dpPacketSize(bool enabled) override;
+  void SetFlossEnabled(bool enabled) override;
   void AddActiveInputNode(uint64_t node_id) override;
   void RemoveActiveInputNode(uint64_t node_id) override;
   void AddActiveOutputNode(uint64_t node_id) override;
@@ -134,8 +139,6 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   ClientTypeToInputStreamCount active_input_streams_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCrasAudioClient);
 };
 
 }  // namespace chromeos

@@ -8,13 +8,14 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_profile_loader.h"
+#include "chrome/browser/ash/crosapi/force_installed_tracker_ash.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
-namespace chromeos {
-
+namespace ash {
 class LoginDisplayHost;
-class OobeUI;
 
 // Controller for the kiosk launch process, responsible for loading the kiosk
 // profile, and updating the splash screen UI.
@@ -161,11 +162,14 @@ class KioskLaunchController
   void HandleWebAppInstallFailed();
 
   void OnNetworkWaitTimedOut();
+  void StartTimerToWaitForExtensions();
   void OnExtensionWaitTimedOut();
   void OnTimerFire();
   void CloseSplashScreen();
   void CleanUp();
   void LaunchApp();
+
+  bool auto_launch_ = false;  // Whether current app is being auto-launched.
 
   // Current state of the controller.
   AppState app_state_ = AppState::kCreatingProfile;
@@ -204,15 +208,27 @@ class KioskLaunchController
   // within the allocated time.
   base::OneShotTimer extension_wait_timer_;
 
+  // Observe the installation status of extensions in Ash. This object is
+  // only used when Lacros is disabled.
+  base::ScopedObservation<extensions::ForceInstalledTracker,
+                          extensions::ForceInstalledTracker::Observer>
+      force_installed_observation_for_ash_{this};
+
+  // Observe the installation status of extensions in Lacros. This object is
+  // only used when Lacros is enabled.
+  base::ScopedObservation<crosapi::ForceInstalledTrackerAsh,
+                          extensions::ForceInstalledTracker::Observer>
+      force_installed_observation_for_lacros_{this};
+
   base::WeakPtrFactory<KioskLaunchController> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
-using ::chromeos::KioskLaunchController;
+namespace chromeos {
+using ::ash::KioskLaunchController;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_APP_MODE_KIOSK_LAUNCH_CONTROLLER_H_

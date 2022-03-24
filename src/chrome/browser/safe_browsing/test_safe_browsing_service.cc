@@ -5,13 +5,18 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/browser/safe_browsing/chrome_safe_browsing_blocking_page_factory.h"
+#include "chrome/browser/safe_browsing/chrome_ui_manager_delegate.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/common/url_constants.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/db/test_database_manager.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
+#include "components/safe_browsing/core/browser/db/test_database_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 
@@ -71,7 +76,6 @@ void TestSafeBrowsingService::SetDatabaseManager(
 
 void TestSafeBrowsingService::SetUIManager(
     TestSafeBrowsingUIManager* ui_manager) {
-  ui_manager->SetSafeBrowsingService(this);
   ui_manager_ = ui_manager;
 }
 
@@ -114,7 +118,8 @@ bool TestSafeBrowsingService::CanCreateIncidentReportingService() {
 SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
   DCHECK(!use_v4_local_db_manager_);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  return new TestSafeBrowsingDatabaseManager();
+  return new TestSafeBrowsingDatabaseManager(
+      content::GetUIThreadTaskRunner({}), content::GetIOThreadTaskRunner({}));
 #else
   NOTIMPLEMENTED();
   return nullptr;
@@ -139,17 +144,11 @@ TestSafeBrowsingService::CreateIncidentReportingService() {
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-TestSafeBrowsingService::GetURLLoaderFactory() {
+TestSafeBrowsingService::GetURLLoaderFactory(
+    content::BrowserContext* browser_context) {
   if (use_test_url_loader_factory_)
     return test_shared_loader_factory_;
-  return SafeBrowsingService::GetURLLoaderFactory();
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-TestSafeBrowsingService::GetURLLoaderFactory(Profile* profile) {
-  if (use_test_url_loader_factory_)
-    return test_shared_loader_factory_;
-  return SafeBrowsingService::GetURLLoaderFactory(profile);
+  return SafeBrowsingService::GetURLLoaderFactory(browser_context);
 }
 
 // TestSafeBrowsingServiceFactory functions:
@@ -194,16 +193,17 @@ void TestSafeBrowsingServiceFactory::UseV4LocalDatabaseManager() {
 
 // TestSafeBrowsingUIManager functions:
 TestSafeBrowsingUIManager::TestSafeBrowsingUIManager()
-    : SafeBrowsingUIManager(nullptr) {}
+    : SafeBrowsingUIManager(
+          std::make_unique<ChromeSafeBrowsingUIManagerDelegate>(),
+          std::make_unique<ChromeSafeBrowsingBlockingPageFactory>(),
+          GURL(chrome::kChromeUINewTabURL)) {}
 
 TestSafeBrowsingUIManager::TestSafeBrowsingUIManager(
-    const scoped_refptr<SafeBrowsingService>& service)
-    : SafeBrowsingUIManager(service) {}
-
-void TestSafeBrowsingUIManager::SetSafeBrowsingService(
-    SafeBrowsingService* sb_service) {
-  sb_service_ = sb_service;
-}
+    std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory)
+    : SafeBrowsingUIManager(
+          std::make_unique<ChromeSafeBrowsingUIManagerDelegate>(),
+          std::move(blocking_page_factory),
+          GURL(chrome::kChromeUINewTabURL)) {}
 
 void TestSafeBrowsingUIManager::SendSerializedThreatDetails(
     content::BrowserContext* browser_context,

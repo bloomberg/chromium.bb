@@ -8,10 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,6 +36,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -63,7 +62,7 @@ namespace {
 const FormFieldData* FindFieldById(const FormData& form, base::StringPiece id) {
   auto it = base::ranges::find(form.fields, base::UTF8ToUTF16(id),
                                &FormFieldData::id_attribute);
-  return it != form.fields.end() ? base::to_address(it) : nullptr;
+  return it != form.fields.end() ? &*it : nullptr;
 }
 
 }  // namespace
@@ -82,6 +81,7 @@ constexpr char kAccountCreationFormHTML[] =
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
     "  <INPUT type = 'password' id = 'second_password' size = 5/> "
     "  <INPUT type = 'text' id = 'address'/> "
+    "  <INPUT type = 'text' id = 'hidden' style='display: none;'/> "
     "  <INPUT type = 'button' id = 'dummy'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
@@ -91,6 +91,7 @@ constexpr char kAccountCreationNoForm[] =
     "<INPUT type = 'password' id = 'first_password' size = 5/>"
     "<INPUT type = 'password' id = 'second_password' size = 5/> "
     "<INPUT type = 'text' id = 'address'/> "
+    "<INPUT type = 'text' id = 'hidden' style='display: none;'/> "
     "<INPUT type = 'button' id = 'dummy'/> "
     "<INPUT type = 'submit' value = 'LOGIN' />";
 
@@ -169,13 +170,19 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   PasswordGenerationAgentTest() = default;
 
+  PasswordGenerationAgentTest(const PasswordGenerationAgentTest&) = delete;
+  PasswordGenerationAgentTest& operator=(const PasswordGenerationAgentTest&) =
+      delete;
+
   // ChromeRenderViewTest:
   void RegisterMainFrameRemoteInterfaces() override;
   void SetUp() override;
   void TearDown() override;
 
   void LoadHTMLWithUserGesture(const char* html);
+  WebElement GetElementById(base::StringPiece element_id);
   void FocusField(const char* element_id);
+
   void ExpectAutomaticGenerationAvailable(const char* element_id,
                                           AutomaticGenerationStatus available);
   void ExpectGenerationElementLostFocus(const char* new_element_id);
@@ -183,6 +190,9 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
       bool received,
       const std::u16string& expected_generation_element);
   void SelectGenerationFallbackAndExpect(bool available);
+  void ExpectAttribute(const WebElement& element,
+                       base::StringPiece attribute,
+                       base::StringPiece expected_value);
 
   void BindPasswordManagerDriver(mojo::ScopedInterfaceEndpointHandle handle);
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle);
@@ -194,16 +204,13 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   FakeMojoPasswordManagerDriver fake_driver_;
   testing::StrictMock<FakePasswordGenerationDriver> fake_pw_client_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
 };
 
 void PasswordGenerationAgentTest::RegisterMainFrameRemoteInterfaces() {
   // Because the test cases only involve the main frame in this test,
   // the fake password client is only used for the main frame.
   blink::AssociatedInterfaceProvider* remote_associated_interfaces =
-      view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
+      GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
   remote_associated_interfaces->OverrideBinderForTesting(
       mojom::PasswordGenerationDriver::Name_,
       base::BindRepeating(
@@ -225,14 +232,14 @@ void PasswordGenerationAgentTest::SetUp() {
   password_generation_->RequestPasswordManagerClientForTesting();
   base::RunLoop().RunUntilIdle();  // Executes binding the interfaces.
   // Reject all requests to bind driver/client to anything but the test class:
-  view_->GetMainRenderFrame()
+  GetMainRenderFrame()
       ->GetRemoteAssociatedInterfaces()
       ->OverrideBinderForTesting(
           mojom::PasswordGenerationDriver::Name_,
           base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
             handle.reset();
           }));
-  view_->GetMainRenderFrame()
+  GetMainRenderFrame()
       ->GetRemoteAssociatedInterfaces()
       ->OverrideBinderForTesting(
           mojom::PasswordManagerDriver::Name_,
@@ -259,11 +266,17 @@ void PasswordGenerationAgentTest::LoadHTMLWithUserGesture(const char* html) {
   EXPECT_TRUE(SimulateElementClick("dummy"));
 }
 
-void PasswordGenerationAgentTest::FocusField(const char* element_id) {
+WebElement PasswordGenerationAgentTest::GetElementById(
+    base::StringPiece element_id) {
   WebDocument document = GetMainFrame()->GetDocument();
-  blink::WebElement element =
-      document.GetElementById(blink::WebString::FromUTF8(element_id));
-  ASSERT_FALSE(element.IsNull());
+  WebElement element = document.GetElementById(
+      blink::WebString::FromUTF8(element_id.data(), element_id.size()));
+  CHECK(!element.IsNull());
+  return element;
+}
+
+void PasswordGenerationAgentTest::FocusField(const char* element_id) {
+  GetElementById(element_id);  // Just check the element exists.
   ExecuteJavaScriptForTests(
       base::StringPrintf("document.getElementById('%s').focus();", element_id)
           .c_str());
@@ -286,9 +299,8 @@ void PasswordGenerationAgentTest::ExpectAutomaticGenerationAvailable(
 
   // Check that aria-autocomplete attribute is set correctly.
   if (status == kAvailable) {
-    WebDocument doc = GetMainFrame()->GetDocument();
-    WebElement element = doc.GetElementById(WebString::FromUTF8(element_id));
-    EXPECT_EQ("list", element.GetAttribute("aria-autocomplete"));
+    WebElement element = GetElementById(element_id);
+    ExpectAttribute(element, "aria-autocomplete", "list");
   }
 }
 
@@ -330,6 +342,16 @@ void PasswordGenerationAgentTest::SelectGenerationFallbackAndExpect(
   testing::Mock::VerifyAndClearExpectations(this);
 }
 
+void PasswordGenerationAgentTest::ExpectAttribute(
+    const WebElement& element,
+    base::StringPiece attribute,
+    base::StringPiece expected_value) {
+  WebString actual_value = element.GetAttribute(
+      blink::WebString::FromUTF8(attribute.data(), attribute.size()));
+  ASSERT_FALSE(actual_value.IsNull());
+  EXPECT_EQ(expected_value, actual_value.Ascii());
+}
+
 void PasswordGenerationAgentTest::BindPasswordManagerDriver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   fake_driver_.BindReceiver(
@@ -344,10 +366,17 @@ void PasswordGenerationAgentTest::BindPasswordManagerClient(
           std::move(handle)));
 }
 
+// Tests HTML forms' annotations (e.g. signatures, visibility). The parser's
+// annotations are tested in PasswordManagerBrowserTest.ParserAnnotations.
 class PasswordGenerationAgentTestForHtmlAnnotation
     : public PasswordGenerationAgentTest {
  public:
   PasswordGenerationAgentTestForHtmlAnnotation() = default;
+
+  PasswordGenerationAgentTestForHtmlAnnotation(
+      const PasswordGenerationAgentTestForHtmlAnnotation&) = delete;
+  PasswordGenerationAgentTestForHtmlAnnotation& operator=(
+      const PasswordGenerationAgentTestForHtmlAnnotation&) = delete;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -356,9 +385,6 @@ class PasswordGenerationAgentTestForHtmlAnnotation
   }
 
   void TestAnnotateForm(bool has_form_tag);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTestForHtmlAnnotation);
 };
 
 void PasswordGenerationAgentTestForHtmlAnnotation::TestAnnotateForm(
@@ -374,49 +400,27 @@ void PasswordGenerationAgentTestForHtmlAnnotation::TestAnnotateForm(
   WebDocument document = GetMainFrame()->GetDocument();
 
   const char* kFormSignature =
-      has_form_tag ? "3524919054660658462" : "7671707438749847833";
+      has_form_tag ? "17583149382422306905" : "17876980055561084954";
   if (has_form_tag) {
     // Check the form signature is set in the <form> tag.
-    blink::WebElement form_element =
-        document.GetElementById(blink::WebString::FromUTF8("blah"));
-    ASSERT_FALSE(form_element.IsNull());
-    blink::WebString form_signature =
-        form_element.GetAttribute(blink::WebString::FromUTF8("form_signature"));
-    ASSERT_FALSE(form_signature.IsNull());
-    EXPECT_EQ(kFormSignature, form_signature.Ascii());
+    WebElement form_element = GetElementById("blah");
+    ExpectAttribute(form_element, "form_signature", kFormSignature);
   }
 
   // Check field signatures and form signature are set in the <input>s.
-  blink::WebElement username_element =
-      document.GetElementById(blink::WebString::FromUTF8("username"));
-  ASSERT_FALSE(username_element.IsNull());
-  blink::WebString username_signature = username_element.GetAttribute(
-      blink::WebString::FromUTF8("field_signature"));
-  ASSERT_FALSE(username_signature.IsNull());
-  EXPECT_EQ("239111655", username_signature.Ascii());
-  blink::WebString form_signature_in_username = username_element.GetAttribute(
-      blink::WebString::FromUTF8("form_signature"));
-  EXPECT_EQ(kFormSignature, form_signature_in_username.Ascii());
+  WebElement username_element = GetElementById("username");
+  ExpectAttribute(username_element, "field_signature", "239111655");
+  ExpectAttribute(username_element, "form_signature", kFormSignature);
+  ExpectAttribute(username_element, "visibility_annotation", "true");
 
-  blink::WebElement password_element =
-      document.GetElementById(blink::WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(password_element.IsNull());
-  blink::WebString password_signature = password_element.GetAttribute(
-      blink::WebString::FromUTF8("field_signature"));
-  ASSERT_FALSE(password_signature.IsNull());
-  EXPECT_EQ("3933215845", password_signature.Ascii());
-  blink::WebString form_signature_in_password = password_element.GetAttribute(
-      blink::WebString::FromUTF8("form_signature"));
-  EXPECT_EQ(kFormSignature, form_signature_in_password.Ascii());
+  WebElement password_element = GetElementById("first_password");
+  ExpectAttribute(password_element, "field_signature", "3933215845");
+  ExpectAttribute(password_element, "form_signature", kFormSignature);
+  ExpectAttribute(password_element, "visibility_annotation", "true");
+  ExpectAttribute(password_element, "password_creation_field", "1");
 
-  // Check the generation element is marked.
-  blink::WebString generation_mark = password_element.GetAttribute(
-      blink::WebString::FromUTF8("password_creation_field"));
-  ASSERT_FALSE(generation_mark.IsNull());
-  EXPECT_EQ("1", generation_mark.Utf8());
-
-  blink::WebElement confirmation_password_element =
-      document.GetElementById(blink::WebString::FromUTF8("second_password"));
+  WebElement hidden_element = GetElementById("hidden");
+  ExpectAttribute(hidden_element, "visibility_annotation", "false");
 }
 
 TEST_F(PasswordGenerationAgentTest, HiddenSecondPasswordDetectionTest) {
@@ -972,8 +976,7 @@ TEST_F(PasswordGenerationAgentTest, RevealPassword) {
     fake_pw_client_.Flush();
 
     WebDocument document = GetMainFrame()->GetDocument();
-    blink::WebElement element = document.GetElementById(
-        blink::WebString::FromUTF8(kGenerationElementId));
+    WebElement element = GetElementById(kGenerationElementId);
     ASSERT_FALSE(element.IsNull());
     blink::WebInputElement input = element.To<WebInputElement>();
     EXPECT_TRUE(input.ShouldRevealPassword());
@@ -1012,9 +1015,7 @@ TEST_F(PasswordGenerationAgentTest, JavascriptClearedTheField) {
 TEST_F(PasswordGenerationAgentTest, GenerationFallbackTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
   WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  WebElement element = GetElementById("first_password");
   WebInputElement first_password_element = element.To<WebInputElement>();
   EXPECT_TRUE(first_password_element.Value().IsNull());
   SimulateElementRightClick("first_password");
@@ -1037,9 +1038,7 @@ TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {
   ExpectAutomaticGenerationAvailable("first_password", kAvailable);
 
   WebDocument document = GetMainFrame()->GetDocument();
-  WebElement element =
-      document.GetElementById(WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(element.IsNull());
+  WebElement element = GetElementById("first_password");
   const WebInputElement input_element = element.To<WebInputElement>();
   // Since password isn't generated (just suitable field was detected),
   // |OnFieldAutofilled| wouldn't trigger any actions.
@@ -1089,8 +1088,7 @@ TEST_F(PasswordGenerationAgentTest, PasswordUnmaskedUntilCompleteDeletion) {
 
   // Check that the characters remain unmasked.
   WebDocument document = GetMainFrame()->GetDocument();
-  blink::WebElement element =
-      document.GetElementById(blink::WebString::FromUTF8(kGenerationElementId));
+  WebElement element = GetElementById(kGenerationElementId);
   ASSERT_FALSE(element.IsNull());
   blink::WebInputElement input = element.To<WebInputElement>();
   EXPECT_TRUE(input.ShouldRevealPassword());
@@ -1142,8 +1140,7 @@ TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
 
   // Check that the characters remain unmasked.
   WebDocument document = GetMainFrame()->GetDocument();
-  blink::WebElement element =
-      document.GetElementById(blink::WebString::FromUTF8(kGenerationElementId));
+  WebElement element = GetElementById(kGenerationElementId);
   ASSERT_FALSE(element.IsNull());
   blink::WebInputElement input = element.To<WebInputElement>();
   EXPECT_TRUE(input.ShouldRevealPassword());
@@ -1168,7 +1165,7 @@ TEST_F(PasswordGenerationAgentTest, GenerationAvailableByRendererIds) {
   WebDocument document = GetMainFrame()->GetDocument();
   std::vector<WebInputElement> password_elements;
   for (const char* id : kPasswordElementsIds) {
-    WebElement element = document.GetElementById(WebString::FromUTF8(id));
+    WebElement element = GetElementById(id);
     WebInputElement* input = ToWebInputElement(&element);
     ASSERT_TRUE(input);
     password_elements.push_back(*input);

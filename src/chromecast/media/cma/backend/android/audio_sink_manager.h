@@ -6,10 +6,8 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_ANDROID_AUDIO_SINK_MANAGER_H_
 
 #include <map>
-#include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/media/cma/backend/android/audio_sink_android.h"
 
@@ -21,6 +19,10 @@ namespace media {
 class AudioSinkManager {
  public:
   static AudioSinkManager* Get();
+
+  AudioSinkManager(const AudioSinkManager&) = delete;
+  AudioSinkManager& operator=(const AudioSinkManager&) = delete;
+
   static AudioSinkAndroid::SinkType GetDefaultSinkType();
 
   // Gets the Android audio session ids used for media and communication (TTS)
@@ -70,8 +72,6 @@ class AudioSinkManager {
   std::map<AudioContentType, VolumeInfo> volume_info_;
 
   std::vector<AudioSinkAndroid*> sinks_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioSinkManager);
 };
 
 }  // namespace media

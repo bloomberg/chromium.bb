@@ -16,8 +16,8 @@ template <>
 class BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::FramePolicyDataView, blink::FramePolicy> {
  public:
-  static bool disallow_document_access(const blink::FramePolicy& frame_policy) {
-    return frame_policy.disallow_document_access;
+  static bool is_fenced(const blink::FramePolicy& frame_policy) {
+    return frame_policy.is_fenced;
   }
 
   static const std::vector<blink::ParsedPermissionsPolicyDeclaration>&

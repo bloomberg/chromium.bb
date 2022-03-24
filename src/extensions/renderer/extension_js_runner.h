@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_RENDERER_EXTENSION_JS_RUNNER_H_
 #define EXTENSIONS_RENDERER_EXTENSION_JS_RUNNER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/renderer/bindings/js_runner.h"
+#include "v8/include/v8-forward.h"
 
 namespace extensions {
 class ScriptContext;
@@ -16,6 +16,10 @@ class ScriptContext;
 class ExtensionJSRunner : public JSRunner {
  public:
   explicit ExtensionJSRunner(ScriptContext* script_context);
+
+  ExtensionJSRunner(const ExtensionJSRunner&) = delete;
+  ExtensionJSRunner& operator=(const ExtensionJSRunner&) = delete;
+
   ~ExtensionJSRunner() override;
 
   // JSRunner:
@@ -39,8 +43,6 @@ class ExtensionJSRunner : public JSRunner {
   ScriptContext* const script_context_;
 
   base::WeakPtrFactory<ExtensionJSRunner> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionJSRunner);
 };
 
 }  // namespace extensions

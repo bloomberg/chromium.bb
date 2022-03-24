@@ -19,7 +19,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/system_state.h"
 
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
@@ -354,9 +353,42 @@ static const int rd_layer_depth_factor[7] = {
   160, 160, 160, 160, 192, 208, 224
 };
 
-int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth, int qindex) {
+// Returns the default rd multiplier for inter frames for a given qindex.
+// The function here is a first pass estimate based on data from
+// a previous Vizer run
+static double def_inter_rd_multiplier(int qindex) {
+  return 3.2 + (0.0035 * (double)qindex);
+}
+
+// Returns the default rd multiplier for ARF/Golden Frames for a given qindex.
+// The function here is a first pass estimate based on data from
+// a previous Vizer run
+static double def_arf_rd_multiplier(int qindex) {
+  return 3.25 + (0.0035 * (double)qindex);
+}
+
+// Returns the default rd multiplier for key frames for a given qindex.
+// The function here is a first pass estimate based on data from
+// a previous Vizer run
+static double def_kf_rd_multiplier(int qindex) {
+  return 3.3 + (0.0035 * (double)qindex);
+}
+
+int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth,
+                                        FRAME_UPDATE_TYPE update_type,
+                                        int qindex) {
   const int q = av1_dc_quant_QTX(qindex, 0, bit_depth);
-  int rdmult = (int)(((int64_t)88 * q * q) / 24);
+  int rdmult = q * q;
+  if (update_type == KF_UPDATE) {
+    double def_rd_q_mult = def_kf_rd_multiplier(qindex);
+    rdmult = (int)((double)rdmult * def_rd_q_mult);
+  } else if ((update_type == GF_UPDATE) || (update_type == ARF_UPDATE)) {
+    double def_rd_q_mult = def_arf_rd_multiplier(qindex);
+    rdmult = (int)((double)rdmult * def_rd_q_mult);
+  } else {
+    double def_rd_q_mult = def_inter_rd_multiplier(qindex);
+    rdmult = (int)((double)rdmult * def_rd_q_mult);
+  }
 
   switch (bit_depth) {
     case AOM_BITS_8: break;
@@ -370,9 +402,12 @@ int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth, int qindex) {
 }
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
-  int64_t rdmult = av1_compute_rd_mult_based_on_qindex(
-      cpi->common.seq_params->bit_depth, qindex);
-  if (is_stat_consumption_stage(cpi) &&
+  const aom_bit_depth_t bit_depth = cpi->common.seq_params->bit_depth;
+  const FRAME_UPDATE_TYPE update_type =
+      cpi->ppi->gf_group.update_type[cpi->gf_frame_index];
+  int64_t rdmult =
+      av1_compute_rd_mult_based_on_qindex(bit_depth, update_type, qindex);
+  if (is_stat_consumption_stage(cpi) && !cpi->oxcf.q_cfg.use_fixed_qp_offsets &&
       (cpi->common.current_frame.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
     const int boost_index = AOMMIN(15, (cpi->ppi->p_rc.gfu_boost / 100));
@@ -388,23 +423,45 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   return (int)rdmult;
 }
 
-int av1_get_deltaq_offset(const AV1_COMP *cpi, int qindex, double beta) {
+int av1_get_deltaq_offset(aom_bit_depth_t bit_depth, int qindex, double beta) {
   assert(beta > 0.0);
-  int q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params->bit_depth);
+  int q = av1_dc_quant_QTX(qindex, 0, bit_depth);
   int newq = (int)rint(q / sqrt(beta));
   int orig_qindex = qindex;
+  if (newq == q) {
+    return 0;
+  }
   if (newq < q) {
-    do {
+    while (qindex > 0) {
       qindex--;
-      q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params->bit_depth);
-    } while (newq < q && qindex > 0);
+      q = av1_dc_quant_QTX(qindex, 0, bit_depth);
+      if (newq >= q) {
+        break;
+      }
+    }
   } else {
-    do {
+    while (qindex < MAXQ) {
       qindex++;
-      q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params->bit_depth);
-    } while (newq > q && qindex < MAXQ);
+      q = av1_dc_quant_QTX(qindex, 0, bit_depth);
+      if (newq <= q) {
+        break;
+      }
+    }
   }
   return qindex - orig_qindex;
+}
+
+int av1_adjust_q_from_delta_q_res(int delta_q_res, int prev_qindex,
+                                  int curr_qindex) {
+  curr_qindex = clamp(curr_qindex, delta_q_res, 256 - delta_q_res);
+  const int sign_deltaq_index = curr_qindex - prev_qindex >= 0 ? 1 : -1;
+  const int deltaq_deadzone = delta_q_res / 4;
+  const int qmask = ~(delta_q_res - 1);
+  int abs_deltaq_index = abs(curr_qindex - prev_qindex);
+  abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
+  int adjust_qindex = prev_qindex + sign_deltaq_index * abs_deltaq_index;
+  adjust_qindex = AOMMAX(adjust_qindex, MINQ + 1);
+  return adjust_qindex;
 }
 
 int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
@@ -563,6 +620,9 @@ void av1_fill_coeff_costs(CoeffCosts *coeff_costs, FRAME_CONTEXT *fc,
 
 void av1_fill_mv_costs(const nmv_context *nmvc, int integer_mv, int usehp,
                        MvCosts *mv_costs) {
+  // Avoid accessing 'mv_costs' when it is not allocated.
+  if (mv_costs == NULL) return;
+
   mv_costs->nmv_cost[0] = &mv_costs->nmv_cost_alloc[0][MV_MAX];
   mv_costs->nmv_cost[1] = &mv_costs->nmv_cost_alloc[1][MV_MAX];
   mv_costs->nmv_cost_hp[0] = &mv_costs->nmv_cost_hp_alloc[0][MV_MAX];
@@ -597,10 +657,17 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
       frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1;
   int num_planes = av1_num_planes(cm);
 
-  aom_clear_system_state();
-
   rd->RDMULT = av1_compute_rd_mult(
       cpi, cm->quant_params.base_qindex + cm->quant_params.y_dc_delta_q);
+#if CONFIG_RD_COMMAND
+  if (cpi->oxcf.pass == 2) {
+    const RD_COMMAND *rd_command = &cpi->rd_command;
+    if (rd_command->option_ls[rd_command->frame_index] ==
+        RD_OPTION_SET_Q_RDMULT) {
+      rd->RDMULT = rd_command->rdmult_ls[rd_command->frame_index];
+    }
+  }
+#endif  // CONFIG_RD_COMMAND
 
   av1_set_error_per_bit(&x->errorperbit, rd->RDMULT);
 
@@ -1026,6 +1093,10 @@ void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
     if (this_sad < best_sad) {
       best_sad = this_sad;
     }
+    if (i == 0)
+      x->pred_mv0_sad[ref_frame] = this_sad;
+    else if (i == 1)
+      x->pred_mv1_sad[ref_frame] = this_sad;
   }
 
   // Note the index of the mv that worked best in the reference list.
@@ -1283,12 +1354,29 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_D45_PRED] = 2500;
 }
 
-void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
-                               int (*factor_buf)[MAX_MODES],
-                               int use_adaptive_rd_thresh, BLOCK_SIZE bsize,
-                               THR_MODES best_mode_index) {
+static INLINE void update_thr_fact(int (*factor_buf)[MAX_MODES],
+                                   THR_MODES best_mode_index,
+                                   THR_MODES mode_start, THR_MODES mode_end,
+                                   BLOCK_SIZE min_size, BLOCK_SIZE max_size,
+                                   int max_rd_thresh_factor) {
+  for (THR_MODES mode = mode_start; mode < mode_end; ++mode) {
+    for (BLOCK_SIZE bs = min_size; bs <= max_size; ++bs) {
+      int *const fact = &factor_buf[bs][mode];
+      if (mode == best_mode_index) {
+        *fact -= (*fact >> RD_THRESH_LOG_DEC_FACTOR);
+      } else {
+        *fact = AOMMIN(*fact + RD_THRESH_INC, max_rd_thresh_factor);
+      }
+    }
+  }
+}
+
+void av1_update_rd_thresh_fact(
+    const AV1_COMMON *const cm, int (*factor_buf)[MAX_MODES],
+    int use_adaptive_rd_thresh, BLOCK_SIZE bsize, THR_MODES best_mode_index,
+    THR_MODES inter_mode_start, THR_MODES inter_mode_end,
+    THR_MODES intra_mode_start, THR_MODES intra_mode_end) {
   assert(use_adaptive_rd_thresh > 0);
-  const THR_MODES top_mode = MAX_MODES;
   const int max_rd_thresh_factor = use_adaptive_rd_thresh * RD_THRESH_MAX_FACT;
 
   const int bsize_is_1_to_4 = bsize > cm->seq_params->sb_size;
@@ -1303,16 +1391,10 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
     max_size = AOMMIN(bsize + 2, (int)cm->seq_params->sb_size);
   }
 
-  for (THR_MODES mode = 0; mode < top_mode; ++mode) {
-    for (BLOCK_SIZE bs = min_size; bs <= max_size; ++bs) {
-      int *const fact = &factor_buf[bs][mode];
-      if (mode == best_mode_index) {
-        *fact -= (*fact >> RD_THRESH_LOG_DEC_FACTOR);
-      } else {
-        *fact = AOMMIN(*fact + RD_THRESH_INC, max_rd_thresh_factor);
-      }
-    }
-  }
+  update_thr_fact(factor_buf, best_mode_index, inter_mode_start, inter_mode_end,
+                  min_size, max_size, max_rd_thresh_factor);
+  update_thr_fact(factor_buf, best_mode_index, intra_mode_start, intra_mode_end,
+                  min_size, max_size, max_rd_thresh_factor);
 }
 
 int av1_get_intra_cost_penalty(int qindex, int qdelta,

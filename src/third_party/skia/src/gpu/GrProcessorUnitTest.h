@@ -22,19 +22,12 @@
 class SkMatrix;
 class GrCaps;
 class GrProxyProvider;
-class GrSurfaceDrawContext;
 class GrProcessorTestData;
 class GrTexture;
 class GrXPFactory;
 class GrGeometryProcessor;
 
 namespace GrProcessorUnitTest {
-
-// Used to access the dummy textures in TestCreate procs.
-enum {
-    kSkiaPMTextureIdx = 0,
-    kAlphaTextureIdx = 1,
-};
 
 /** This allows parent FPs to implement a test create with known leaf children in order to avoid
  *  creating an unbounded FP tree which may overflow various shader limits.

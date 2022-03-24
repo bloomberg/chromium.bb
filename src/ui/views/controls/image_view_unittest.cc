@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -47,6 +48,9 @@ class ImageViewTest : public ViewsTestBase,
  public:
   ImageViewTest() = default;
 
+  ImageViewTest(const ImageViewTest&) = delete;
+  ImageViewTest& operator=(const ImageViewTest&) = delete;
+
   // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -84,10 +88,8 @@ class ImageViewTest : public ViewsTestBase,
   Widget* widget() { return &widget_; }
 
  private:
-  ImageView* image_view_ = nullptr;
+  raw_ptr<ImageView> image_view_ = nullptr;
   Widget widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageViewTest);
 };
 
 // Test the image origin of the internal ImageSkia is correct when it is

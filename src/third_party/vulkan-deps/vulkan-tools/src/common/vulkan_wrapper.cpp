@@ -284,6 +284,8 @@ int InitVulkan(void) {
         reinterpret_cast<PFN_vkCreateDisplayPlaneSurfaceKHR>(dlsym(libvulkan, "vkCreateDisplayPlaneSurfaceKHR"));
     vkCreateSharedSwapchainsKHR =
         reinterpret_cast<PFN_vkCreateSharedSwapchainsKHR>(dlsym(libvulkan, "vkCreateSharedSwapchainsKHR"));
+    vkCmdBeginRenderingKHR = reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(dlsym(libvulkan, "vkCmdBeginRenderingKHR"));
+    vkCmdEndRenderingKHR = reinterpret_cast<PFN_vkCmdEndRenderingKHR>(dlsym(libvulkan, "vkCmdEndRenderingKHR"));
     vkGetPhysicalDeviceFeatures2KHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(dlsym(libvulkan, "vkGetPhysicalDeviceFeatures2KHR"));
     vkGetPhysicalDeviceProperties2KHR =
@@ -376,6 +378,7 @@ int InitVulkan(void) {
         dlsym(libvulkan, "vkGetPhysicalDeviceFragmentShadingRatesKHR"));
     vkCmdSetFragmentShadingRateKHR =
         reinterpret_cast<PFN_vkCmdSetFragmentShadingRateKHR>(dlsym(libvulkan, "vkCmdSetFragmentShadingRateKHR"));
+    vkWaitForPresentKHR = reinterpret_cast<PFN_vkWaitForPresentKHR>(dlsym(libvulkan, "vkWaitForPresentKHR"));
     vkGetBufferDeviceAddressKHR =
         reinterpret_cast<PFN_vkGetBufferDeviceAddressKHR>(dlsym(libvulkan, "vkGetBufferDeviceAddressKHR"));
     vkGetBufferOpaqueCaptureAddressKHR =
@@ -412,6 +415,12 @@ int InitVulkan(void) {
     vkCmdCopyImageToBuffer2KHR = reinterpret_cast<PFN_vkCmdCopyImageToBuffer2KHR>(dlsym(libvulkan, "vkCmdCopyImageToBuffer2KHR"));
     vkCmdBlitImage2KHR = reinterpret_cast<PFN_vkCmdBlitImage2KHR>(dlsym(libvulkan, "vkCmdBlitImage2KHR"));
     vkCmdResolveImage2KHR = reinterpret_cast<PFN_vkCmdResolveImage2KHR>(dlsym(libvulkan, "vkCmdResolveImage2KHR"));
+    vkGetDeviceBufferMemoryRequirementsKHR =
+        reinterpret_cast<PFN_vkGetDeviceBufferMemoryRequirementsKHR>(dlsym(libvulkan, "vkGetDeviceBufferMemoryRequirementsKHR"));
+    vkGetDeviceImageMemoryRequirementsKHR =
+        reinterpret_cast<PFN_vkGetDeviceImageMemoryRequirementsKHR>(dlsym(libvulkan, "vkGetDeviceImageMemoryRequirementsKHR"));
+    vkGetDeviceImageSparseMemoryRequirementsKHR = reinterpret_cast<PFN_vkGetDeviceImageSparseMemoryRequirementsKHR>(
+        dlsym(libvulkan, "vkGetDeviceImageSparseMemoryRequirementsKHR"));
     vkCreateAccelerationStructureKHR =
         reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(dlsym(libvulkan, "vkCreateAccelerationStructureKHR"));
     vkDestroyAccelerationStructureKHR =
@@ -735,6 +744,8 @@ PFN_vkCreateDisplayModeKHR vkCreateDisplayModeKHR;
 PFN_vkGetDisplayPlaneCapabilitiesKHR vkGetDisplayPlaneCapabilitiesKHR;
 PFN_vkCreateDisplayPlaneSurfaceKHR vkCreateDisplayPlaneSurfaceKHR;
 PFN_vkCreateSharedSwapchainsKHR vkCreateSharedSwapchainsKHR;
+PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR;
+PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR;
 PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR;
 PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR;
 PFN_vkGetPhysicalDeviceFormatProperties2KHR vkGetPhysicalDeviceFormatProperties2KHR;
@@ -791,6 +802,7 @@ PFN_vkWaitSemaphoresKHR vkWaitSemaphoresKHR;
 PFN_vkSignalSemaphoreKHR vkSignalSemaphoreKHR;
 PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR vkGetPhysicalDeviceFragmentShadingRatesKHR;
 PFN_vkCmdSetFragmentShadingRateKHR vkCmdSetFragmentShadingRateKHR;
+PFN_vkWaitForPresentKHR vkWaitForPresentKHR;
 PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR;
 PFN_vkGetBufferOpaqueCaptureAddressKHR vkGetBufferOpaqueCaptureAddressKHR;
 PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR vkGetDeviceMemoryOpaqueCaptureAddressKHR;
@@ -816,6 +828,9 @@ PFN_vkCmdCopyBufferToImage2KHR vkCmdCopyBufferToImage2KHR;
 PFN_vkCmdCopyImageToBuffer2KHR vkCmdCopyImageToBuffer2KHR;
 PFN_vkCmdBlitImage2KHR vkCmdBlitImage2KHR;
 PFN_vkCmdResolveImage2KHR vkCmdResolveImage2KHR;
+PFN_vkGetDeviceBufferMemoryRequirementsKHR vkGetDeviceBufferMemoryRequirementsKHR;
+PFN_vkGetDeviceImageMemoryRequirementsKHR vkGetDeviceImageMemoryRequirementsKHR;
+PFN_vkGetDeviceImageSparseMemoryRequirementsKHR vkGetDeviceImageSparseMemoryRequirementsKHR;
 PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
@@ -934,6 +949,8 @@ PFN_vkCmdExecuteGeneratedCommandsNV vkCmdExecuteGeneratedCommandsNV;
 PFN_vkCmdBindPipelineShaderGroupNV vkCmdBindPipelineShaderGroupNV;
 PFN_vkCreateIndirectCommandsLayoutNV vkCreateIndirectCommandsLayoutNV;
 PFN_vkDestroyIndirectCommandsLayoutNV vkDestroyIndirectCommandsLayoutNV;
+PFN_vkAcquireDrmDisplayEXT vkAcquireDrmDisplayEXT;
+PFN_vkGetDrmDisplayEXT vkGetDrmDisplayEXT;
 PFN_vkCreatePrivateDataSlotEXT vkCreatePrivateDataSlotEXT;
 PFN_vkDestroyPrivateDataSlotEXT vkDestroyPrivateDataSlotEXT;
 PFN_vkSetPrivateDataEXT vkSetPrivateDataEXT;
@@ -942,12 +959,19 @@ PFN_vkCmdSetFragmentShadingRateEnumNV vkCmdSetFragmentShadingRateEnumNV;
 PFN_vkAcquireWinrtDisplayNV vkAcquireWinrtDisplayNV;
 PFN_vkGetWinrtDisplayNV vkGetWinrtDisplayNV;
 PFN_vkCmdSetVertexInputEXT vkCmdSetVertexInputEXT;
+PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI;
+PFN_vkCmdSubpassShadingHUAWEI vkCmdSubpassShadingHUAWEI;
+PFN_vkCmdBindInvocationMaskHUAWEI vkCmdBindInvocationMaskHUAWEI;
+PFN_vkGetMemoryRemoteAddressNV vkGetMemoryRemoteAddressNV;
 PFN_vkCmdSetPatchControlPointsEXT vkCmdSetPatchControlPointsEXT;
 PFN_vkCmdSetRasterizerDiscardEnableEXT vkCmdSetRasterizerDiscardEnableEXT;
 PFN_vkCmdSetDepthBiasEnableEXT vkCmdSetDepthBiasEnableEXT;
 PFN_vkCmdSetLogicOpEXT vkCmdSetLogicOpEXT;
 PFN_vkCmdSetPrimitiveRestartEnableEXT vkCmdSetPrimitiveRestartEnableEXT;
 PFN_vkCmdSetColorWriteEnableEXT vkCmdSetColorWriteEnableEXT;
+PFN_vkCmdDrawMultiEXT vkCmdDrawMultiEXT;
+PFN_vkCmdDrawMultiIndexedEXT vkCmdDrawMultiIndexedEXT;
+PFN_vkSetDeviceMemoryPriorityEXT vkSetDeviceMemoryPriorityEXT;
 PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR;
 PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR;
 PFN_vkCmdBuildAccelerationStructuresKHR vkCmdBuildAccelerationStructuresKHR;
@@ -992,6 +1016,14 @@ PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA vkGetMemoryZirconHandlePropertiesFU
 #ifdef VK_USE_PLATFORM_FUCHSIA
 PFN_vkImportSemaphoreZirconHandleFUCHSIA vkImportSemaphoreZirconHandleFUCHSIA;
 PFN_vkGetSemaphoreZirconHandleFUCHSIA vkGetSemaphoreZirconHandleFUCHSIA;
+#endif
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+PFN_vkCreateBufferCollectionFUCHSIA vkCreateBufferCollectionFUCHSIA;
+PFN_vkSetBufferCollectionImageConstraintsFUCHSIA vkSetBufferCollectionImageConstraintsFUCHSIA;
+PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA vkSetBufferCollectionBufferConstraintsFUCHSIA;
+PFN_vkDestroyBufferCollectionFUCHSIA vkDestroyBufferCollectionFUCHSIA;
+PFN_vkGetBufferCollectionPropertiesFUCHSIA vkGetBufferCollectionPropertiesFUCHSIA;
 #endif
 
 #ifdef VK_USE_PLATFORM_IOS_MVK

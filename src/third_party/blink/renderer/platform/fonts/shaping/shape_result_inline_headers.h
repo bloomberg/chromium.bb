@@ -60,18 +60,6 @@ struct HarfBuzzRunGlyphData {
   float advance;
 };
 
-// |GlyphOffset| is a simple wrapper of |FloatSize| to allocate |GlyphOffset|
-// with |new GlyphOffset[size]| because of |FloatSize| is declared with
-// |DISALLOW_NEW()|.
-class ShapeResult::GlyphOffset final : public FloatSize {
-  USING_FAST_MALLOC(GlyphOffset);
-
- public:
-  using FloatSize::FloatSize;
-
-  explicit GlyphOffset(const FloatSize& other) : FloatSize(other) {}
-};
-
 struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   USING_FAST_MALLOC(RunInfo);
 
@@ -83,6 +71,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
                                        unsigned start_index,
                                        unsigned num_glyphs,
                                        unsigned num_characters) {
+    CHECK_GT(num_characters, 0u);
     return base::AdoptRef(new RunInfo(font, dir, canvas_rotation, script,
                                       start_index, num_glyphs, num_characters));
   }
@@ -236,27 +225,36 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
   }
 
   void ExpandRangeToIncludePartialGlyphs(int offset, int* from, int* to) const {
-    int start = IsLtr() ? offset : (offset + num_characters_);
     int end = offset + num_characters_;
+    int start;
 
-    for (unsigned i = 0; i < glyph_data_.size(); ++i) {
-      int index = offset + glyph_data_[i].character_index;
-      if (start == index)
-        continue;
-
-      if (IsLtr())
+    if (IsLtr()) {
+      start = offset + num_characters_;
+      for (unsigned i = 0; i < glyph_data_.size(); ++i) {
+        int index = offset + glyph_data_[i].character_index;
+        if (start == index)
+          continue;
         end = index;
-
-      if (end > *from && start < *to) {
-        *from = std::min(*from, start);
-        *to = std::max(*to, end);
-      }
-
-      if (IsLtr())
+        if (end > *from && start < *to) {
+          *from = std::min(*from, start);
+          *to = std::max(*to, end);
+        }
         end = offset + num_characters_;
-      else
+        start = index;
+      }
+    } else {
+      start = offset + num_characters_;
+      for (unsigned i = 0; i < glyph_data_.size(); ++i) {
+        int index = offset + glyph_data_[i].character_index;
+        if (start == index)
+          continue;
+        if (end > *from && start < *to) {
+          *from = std::min(*from, start);
+          *to = std::max(*to, end);
+        }
         end = start;
-      start = index;
+        start = index;
+      }
     }
 
     if (end > *from && start < *to) {
@@ -368,7 +366,7 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
       DCHECK_NE(delta, 0.0f);
       if (!storage_)
         AllocateStorage();
-      storage_[index].SetHeight(storage_[index].Height() + delta);
+      storage_[index].set_y(storage_[index].y() + delta);
     }
 
     void AddWidthAt(unsigned index, float delta) {
@@ -376,13 +374,13 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
       DCHECK_NE(delta, 0.0f);
       if (!storage_)
         AllocateStorage();
-      storage_[index].SetWidth(storage_[index].Width() + delta);
+      storage_[index].set_x(storage_[index].x() + delta);
     }
 
     void SetAt(unsigned index, GlyphOffset offset) {
       DCHECK_LT(index, size());
       if (!storage_) {
-        if (offset.Width() == 0 && offset.Height() == 0)
+        if (offset.IsZero())
           return;
         AllocateStorage();
       }

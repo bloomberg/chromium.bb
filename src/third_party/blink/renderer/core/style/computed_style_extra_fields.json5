@@ -88,13 +88,17 @@
     {
       name: "InForcedColorsMode",
       field_template: "primitive",
+      field_group: "inherited",
       default_value: "false",
       type_name: "bool",
       inherited: true,
     },
-    // Whether we're inside an NG block fragmentation context.
+    // Whether we're inside (or at) a block fragmentation context that may
+    // switch between legacy and NG layout, depending on the contents.
+    // This can be removed when we have got rid of the legacy engine.
+    // See crbug.com/1229581
     {
-      name: "InsideNGFragmentationContext",
+      name: "InsideFragmentationContextWithNondeterministicEngine",
       field_template: "primitive",
       default_value: "false",
       type_name: "bool",
@@ -103,16 +107,6 @@
     // Style has content property with attr() values.
     {
       name: "HasAttrContent",
-      field_template: "monotonic_flag",
-      default_value: "false",
-      custom_copy: true,
-      custom_compare: true,
-    },
-    // Style has applied a non-inherited -internal-light-dark() value from a UA
-    // stylesheet. Since such values have a dependency on the used color-scheme,
-    // we cannot use the MatchedPropertyCache when this flag is set.
-    {
-      name: "HasNonInheritedLightDarkValue",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_copy: true,
@@ -146,6 +140,21 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
+    },
+    // Whether this style is related with :has() pseudo-class
+    {
+      name: "AffectedByHas",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_copy: true,
+      custom_compare: true,
+    },
+    {
+      name: "AncestorsAffectedByHas",
+      field_template: "primitive",
+      default_value: "false",
+      type_name: "bool",
+      inherited: true,
     },
     // A non-inherited property references a variable or @apply is used
     {
@@ -214,6 +223,12 @@
       default_value: "false",
       custom_compare: true,
     },
+    {
+      name: "HasContainerRelativeUnits",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
     // True if this ComputedStyle is the result of CustomStyleForLayoutObject()
     // that uses font metrics in its calculation.
     {
@@ -251,6 +266,18 @@
       type_name: "AtomicString",
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
+    },
+    {
+      name: "CustomHighlightNames",
+      field_template: "external",
+      field_group: "*",
+      include_paths: ["third_party/blink/renderer/platform/wtf/hash_set.h",
+                      "third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
+      type_name: "HashSet<AtomicString>",
+      wrapper_pointer_name: "std::unique_ptr",
+      default_value: "nullptr",
+      computed_style_custom_functions: ["setter", "getter"],
+      custom_copy: true,
     },
     // True if 'underline solid' is the only text decoration on this element.
     {
@@ -493,8 +520,19 @@
       include_paths: ["third_party/blink/renderer/core/style/style_inherited_variables.h"],
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
-      field_group: "InheritedVariables",
+      field_group: "inherited",
       computed_style_custom_functions: ["getter", "setter"],
+    },
+    {
+      name: "HighlightData",
+      inherited: true,
+      field_template: "external",
+      type_name: "StyleHighlightData",
+      include_paths: ["third_party/blink/renderer/core/style/style_highlight_data.h"],
+      default_value: "nullptr",
+      wrapper_pointer_name: "scoped_refptr",
+      field_group: "*",
+      computed_style_custom_functions: ["setter"],
     },
     {
       name: "InitialData",
@@ -645,6 +683,13 @@
       default_value: "false",
     },
     {
+      name: "HasCurrentClipPathAnimation",
+      field_template: "primitive",
+      type_name: "bool",
+      field_group: "*",
+      default_value: "false",
+    },
+    {
       name: "CompositablePaintAnimationChanged",
       field_template: "primitive",
       type_name: "bool",
@@ -727,6 +772,20 @@
       default_value: "false",
     },
     {
+      name: "HasAuthorBorderRadius",
+      field_template: "monotonic_flag",
+      default_value: "false",
+    },
+    // Paired cascade: in highlight pseudo styles, the presence of any highlight
+    // colors affects whether all other highlight color properties default to
+    // initial or the UA default.
+    // https://drafts.csswg.org/css-pseudo-4/#highlight-cascade
+    {
+      name: "HasAuthorHighlightColors",
+      field_template: "monotonic_flag",
+      default_value: "false",
+    },
+    {
       name: "WillChangeProperties",
       field_template: "external",
       type_name: "Vector<CSSPropertyID>",
@@ -753,7 +812,7 @@
       name: "HasAutoColumnWidth",
       field_template: "primitive",
       type_name: "bool",
-      field_group: "*->multi-col",
+      field_group: "*",
       default_value: "true",
       computed_style_custom_functions: ["setter"],
     },
@@ -761,7 +820,7 @@
       name: "HasAutoColumnCount",
       field_template: "primitive",
       type_name: "bool",
-      field_group: "*->multi-col",
+      field_group: "*",
       default_value: "true",
       computed_style_custom_functions: ["setter"],
     },
@@ -856,46 +915,46 @@
     {
       name: "NamedGridAreaRowCount",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
     {
       name: "NamedGridAreaColumnCount",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
     {
       name: "GridAutoRepeatColumns",
       field_template: "external",
-      type_name: "Vector<GridTrackSize>",
+      type_name: "Vector<GridTrackSize, 1>",
       field_group: "*->grid",
-      default_value: "Vector<GridTrackSize>()",
+      default_value: "Vector<GridTrackSize, 1>()",
       include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
                       "third_party/blink/renderer/core/style/grid_track_size.h"],
     },
     {
       name: "GridAutoRepeatRows",
       field_template: "external",
-      type_name: "Vector<GridTrackSize>",
+      type_name: "Vector<GridTrackSize, 1>",
       field_group: "*->grid",
-      default_value: "Vector<GridTrackSize>()",
+      default_value: "Vector<GridTrackSize, 1>()",
       include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
                       "third_party/blink/renderer/core/style/grid_track_size.h"],
     },
     {
       name: "GridAutoRepeatColumnsInsertionPoint",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
     {
       name: "GridAutoRepeatRowsInsertionPoint",
       field_template: "primitive",
-      type_name: "size_t",
+      type_name: "wtf_size_t",
       field_group: "*->grid",
       default_value: "0",
     },
@@ -915,6 +974,22 @@
       keywords: ["no-auto-repeat", "auto-fill", "auto-fit"],
       default_value: "no-auto-repeat",
     },
+    {
+      name: "GridColumnsAxisType",
+      field_template: "keyword",
+      type_name: "GridAxisType",
+      field_group: "*->grid",
+      keywords: ["standalone-axis", "subgridded-axis"],
+      default_value: "standalone-axis",
+    },
+    {
+      name: "GridRowsAxisType",
+      field_template: "keyword",
+      type_name: "GridAxisType",
+      field_group: "*->grid",
+      keywords: ["standalone-axis", "subgridded-axis"],
+      default_value: "standalone-axis",
+    },
     // We only create and store ComputedStyle objects for elements in
     // display:none subtrees if we need it for e.g. getComputedStyle. This flag
     // is true for such ComputedStyle objects.
@@ -927,17 +1002,27 @@
     {
       name: "MayHaveMargin",
       field_template: "monotonic_flag",
+      field_group: "surround",
       default_value: "false",
       custom_compare: true,
     },
     {
       name: "MayHavePadding",
       field_template: "monotonic_flag",
+      field_group: "surround",
       default_value: "false",
       custom_compare: true,
     },
     {
       name: "DarkColorScheme",
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
+      custom_compare: true,
+      inherited: true,
+    },
+    {
+      name: "ColorSchemeForced",
       field_template: "primitive",
       type_name: "bool",
       default_value: "false",
@@ -993,7 +1078,7 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathBaseline",
     },
     {
@@ -1002,7 +1087,7 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathFractionBarThickness",
     },
     {
@@ -1011,7 +1096,7 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathLSpace",
     },
     {
@@ -1020,7 +1105,7 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathRSpace",
     },
     {
@@ -1029,7 +1114,7 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathPaddedVOffset",
     },
     {
@@ -1038,17 +1123,16 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathPaddedDepth",
     },
-
     {
       name: "MathMinSize",
       field_template: "external",
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathMinSize",
     },
     {
@@ -1057,7 +1141,7 @@
       default_value: "Length()",
       include_paths: ["third_party/blink/renderer/platform/geometry/length.h"],
       type_name: "Length",
-      field_group: "*",
+      field_group: "*->math",
       getter: "GetMathMaxSize",
     },
     {
@@ -1077,11 +1161,61 @@
       default_value: "EBaselineShiftType::kLength",
     },
     {
+      // Represents 'dominant-baseline' defined in the css-inline specification,
+      // not in SVG 1.1 specification.
+      // This doesn't have 'use-script', 'no-change', and 'reset-size'.
+      // For now ComputedStyle for non-SVG elemnts always have the initial value
+      // in order to disable the feature.
+      name: "CssDominantBaseline",
+      field_group: "svg",
+      field_template: "primitive",
+      field_size: 4,
+      type_name: "EDominantBaseline",
+      default_value: "EDominantBaseline::kAuto",
+      inherited: true,
+    },
+    {
       name: "DependsOnContainerQueries",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
       default_value: "false",
+    },
+    {
+      name: "BaseData",
+      inherited: false,
+      field_template: "external",
+      type_name: "StyleBaseData",
+      include_paths: ["third_party/blink/renderer/core/style/style_base_data.h"],
+      default_value: "nullptr",
+      wrapper_pointer_name: "scoped_refptr",
+      custom_compare: true,
+      custom_copy: true,
+    },
+    {
+      // https://drafts.csswg.org/css-contain-2/#skips-its-contents
+      name: "SkipsContents",
+      field_template: "monotonic_flag",
+      default_value: "false",
+    },
+    {
+      // https://html.spec.whatwg.org/multipage/interaction.html#inert
+      // The inertness is represented with one of these values:
+      // - 'none' means that the node is not inert (the default).
+      // - 'overridable' means that the node is inert, and descendants will
+      //    inherit by default, but may change their inertness to e.g. 'none'.
+      // - 'forced' means that that the node is inert, and its decendants
+      //   won't be able to change their inertness to something else.
+      // ComputedStyle doesn't directly expose the inertness. Instead, use
+      // IsInert(), SetIsInert(bool), IsForcedInert() or SetIsForcedInert().
+      name: "Inertness",
+      inherited: true,
+      field_template: "keyword",
+      type_name: "Inertness",
+      keywords: ["none", "overridable", "forced"],
+      default_value: "none",
+      field_group: "*",
+      computed_style_custom_functions: ["getter", "setter"],
     },
   ],
 }

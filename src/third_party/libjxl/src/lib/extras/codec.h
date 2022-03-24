@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_EXTRAS_CODEC_H_
 #define LIB_EXTRAS_CODEC_H_
@@ -22,6 +13,7 @@
 
 #include <string>
 
+#include "lib/extras/color_hints.h"
 #include "lib/jxl/base/compiler_specific.h"
 #include "lib/jxl/base/data_parallel.h"
 #include "lib/jxl/base/padded_bytes.h"
@@ -67,13 +59,21 @@ Codec CodecFromExtension(const std::string& extension,
                          size_t* JXL_RESTRICT bits_per_sample);
 
 // Decodes "bytes" and sets io->metadata.m.
-// dec_hints may specify the "color_space" (otherwise, defaults to sRGB).
-Status SetFromBytes(const Span<const uint8_t> bytes, CodecInOut* io,
-                    ThreadPool* pool = nullptr, Codec* orig_codec = nullptr);
+// color_space_hint may specify the color space, otherwise, defaults to sRGB.
+Status SetFromBytes(const Span<const uint8_t> bytes,
+                    const ColorHints& color_hints, CodecInOut* io,
+                    ThreadPool* pool, Codec* orig_codec);
+// Helper function to use no color_space_hint.
+JXL_INLINE Status SetFromBytes(const Span<const uint8_t> bytes, CodecInOut* io,
+                               ThreadPool* pool = nullptr,
+                               Codec* orig_codec = nullptr) {
+  return SetFromBytes(bytes, ColorHints(), io, pool, orig_codec);
+}
 
 // Reads from file and calls SetFromBytes.
-Status SetFromFile(const std::string& pathname, CodecInOut* io,
-                   ThreadPool* pool = nullptr, Codec* orig_codec = nullptr);
+Status SetFromFile(const std::string& pathname, const ColorHints& color_hints,
+                   CodecInOut* io, ThreadPool* pool = nullptr,
+                   Codec* orig_codec = nullptr);
 
 // Replaces "bytes" with an encoding of pixels transformed from c_current
 // color space to c_desired.

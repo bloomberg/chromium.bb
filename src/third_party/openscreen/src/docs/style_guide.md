@@ -5,7 +5,7 @@ which, in turn, defers to the [Google C++ Style Guide](https://google.github.io/
 We also follow the [Chromium C++ Do's and Don'ts](https://sites.google.com/a/chromium.org/dev/developers/coding-style/cpp-dos-and-donts).
 
 C++14 language and library features are allowed in the Open Screen Library
-according to the [C++14 use in Chromium](https://chromium-cpp.appspot.com)
+according to the [C++14 use in Chromium](https://chromium.googlesource.com/chromium/src/+/main/styleguide/c++/c++11.md)
 guidelines.
 
 In general Open Screen follows [You Aren't Gonna Need

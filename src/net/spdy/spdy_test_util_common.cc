@@ -11,11 +11,13 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/notreached.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -47,6 +49,8 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -280,55 +284,15 @@ void StreamReleaserCallback::OnComplete(
   SetResult(result);
 }
 
-MockECSignatureCreator::MockECSignatureCreator(crypto::ECPrivateKey* key)
-    : key_(key) {
-}
-
-bool MockECSignatureCreator::Sign(const uint8_t* data,
-                                  int data_len,
-                                  std::vector<uint8_t>* signature) {
-  std::vector<uint8_t> private_key;
-  if (!key_->ExportPrivateKey(&private_key))
-    return false;
-  std::string head = "fakesignature";
-  std::string tail = "/fakesignature";
-
-  signature->clear();
-  signature->insert(signature->end(), head.begin(), head.end());
-  signature->insert(signature->end(), private_key.begin(), private_key.end());
-  signature->insert(signature->end(), '-');
-  signature->insert(signature->end(), data, data + data_len);
-  signature->insert(signature->end(), tail.begin(), tail.end());
-  return true;
-}
-
-bool MockECSignatureCreator::DecodeSignature(
-    const std::vector<uint8_t>& signature,
-    std::vector<uint8_t>* out_raw_sig) {
-  *out_raw_sig = signature;
-  return true;
-}
-
-MockECSignatureCreatorFactory::MockECSignatureCreatorFactory() {
-  crypto::ECSignatureCreator::SetFactoryForTesting(this);
-}
-
-MockECSignatureCreatorFactory::~MockECSignatureCreatorFactory() {
-  crypto::ECSignatureCreator::SetFactoryForTesting(nullptr);
-}
-
-std::unique_ptr<crypto::ECSignatureCreator>
-MockECSignatureCreatorFactory::Create(crypto::ECPrivateKey* key) {
-  return std::make_unique<MockECSignatureCreator>(key);
-}
-
 SpdySessionDependencies::SpdySessionDependencies()
     : SpdySessionDependencies(
           ConfiguredProxyResolutionService::CreateDirect()) {}
 
 SpdySessionDependencies::SpdySessionDependencies(
     std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
-    : host_resolver(std::make_unique<MockCachingHostResolver>()),
+    : host_resolver(std::make_unique<MockCachingHostResolver>(
+          /*cache_invalidation_num=*/0,
+          MockHostResolverBase::RuleResolver::GetLocalhostResult())),
       cert_verifier(std::make_unique<MockCertVerifier>()),
       transport_security_state(std::make_unique<TransportSecurityState>()),
       ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>()),
@@ -348,12 +312,18 @@ SpdySessionDependencies::SpdySessionDependencies(
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
+      enable_http2_settings_grease(false),
       http2_end_stream_with_data_frame(false),
       net_log(nullptr),
       disable_idle_sockets_close_on_memory_pressure(false),
       enable_early_data(false),
       key_auth_cache_server_entries_by_network_isolation_key(false),
-      enable_priority_update(false) {
+      enable_priority_update(false),
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+      go_away_on_ip_change(true) {
+#else
+      go_away_on_ip_change(false) {
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
@@ -372,8 +342,8 @@ std::unique_ptr<HttpNetworkSession>
 SpdySessionDependencies::SpdyCreateSessionWithSocketFactory(
     SpdySessionDependencies* session_deps,
     ClientSocketFactory* factory) {
-  HttpNetworkSession::Params session_params = CreateSessionParams(session_deps);
-  HttpNetworkSession::Context session_context =
+  HttpNetworkSessionParams session_params = CreateSessionParams(session_deps);
+  HttpNetworkSessionContext session_context =
       CreateSessionContext(session_deps);
   session_context.client_socket_factory = factory;
   auto http_session =
@@ -384,9 +354,9 @@ SpdySessionDependencies::SpdyCreateSessionWithSocketFactory(
 }
 
 // static
-HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
+HttpNetworkSessionParams SpdySessionDependencies::CreateSessionParams(
     SpdySessionDependencies* session_deps) {
-  HttpNetworkSession::Params params;
+  HttpNetworkSessionParams params;
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
@@ -403,6 +373,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->enable_http2_alternative_service;
   params.enable_websocket_over_http2 =
       session_deps->enable_websocket_over_http2;
+  params.enable_http2_settings_grease =
+      session_deps->enable_http2_settings_grease;
   params.greased_http2_frame = session_deps->greased_http2_frame;
   params.http2_end_stream_with_data_frame =
       session_deps->http2_end_stream_with_data_frame;
@@ -412,12 +384,13 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.key_auth_cache_server_entries_by_network_isolation_key =
       session_deps->key_auth_cache_server_entries_by_network_isolation_key;
   params.enable_priority_update = session_deps->enable_priority_update;
+  params.spdy_go_away_on_ip_change = session_deps->go_away_on_ip_change;
   return params;
 }
 
-HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
+HttpNetworkSessionContext SpdySessionDependencies::CreateSessionContext(
     SpdySessionDependencies* session_deps) {
-  HttpNetworkSession::Context context;
+  HttpNetworkSessionContext context;
   context.client_socket_factory = session_deps->socket_factory.get();
   context.host_resolver = session_deps->GetHostResolver();
   context.cert_verifier = session_deps->cert_verifier.get();
@@ -443,7 +416,9 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
 }
 
 SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
-  storage_.set_host_resolver(std::make_unique<MockHostResolver>());
+  storage_.set_host_resolver(std::make_unique<MockHostResolver>(
+      /*default_result=*/MockHostResolverBase::RuleResolver::
+          GetLocalhostResult()));
   storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
   storage_.set_transport_security_state(
       std::make_unique<TransportSecurityState>());
@@ -456,10 +431,10 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_http_server_properties(std::make_unique<HttpServerProperties>());
   storage_.set_quic_context(std::make_unique<QuicContext>());
   storage_.set_job_factory(std::make_unique<URLRequestJobFactory>());
-  HttpNetworkSession::Params session_params;
+  HttpNetworkSessionParams session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;
 
-  HttpNetworkSession::Context session_context;
+  HttpNetworkSessionContext session_context;
   session_context.client_socket_factory = &socket_factory_;
   session_context.host_resolver = host_resolver();
   session_context.cert_verifier = cert_verifier();
@@ -510,7 +485,9 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
           nullptr /* ssl_config_for_proxy */);
   int rv = connection->Init(
       ClientSocketPool::GroupId(
-          key.host_port_pair(), ClientSocketPool::SocketType::kSsl,
+          url::SchemeHostPort(url::kHttpsScheme,
+                              key.host_port_pair().HostForURL(),
+                              key.host_port_pair().port()),
           key.privacy_mode(), NetworkIsolationKey(), SecureDnsPolicy::kAllow),
       socket_params, absl::nullopt /* proxy_annotation_tag */, MEDIUM,
       key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,

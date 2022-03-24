@@ -130,6 +130,8 @@ bool StructTraits<blink::mojom::EventDataView,
     gesture_event->is_source_touch_event_set_blocking =
         gesture_data->is_source_touch_event_set_blocking;
     gesture_event->primary_pointer_type = gesture_data->primary_pointer_type;
+    gesture_event->primary_unique_touch_event_id =
+        gesture_data->primary_unique_touch_event_id;
     gesture_event->SetSourceDevice(gesture_data->source_device);
     gesture_event->unique_touch_event_id = gesture_data->unique_touch_event_id;
 
@@ -372,6 +374,13 @@ StructTraits<blink::mojom::EventDataView,
     return nullptr;
   const blink::WebKeyboardEvent* key_event =
       static_cast<const blink::WebKeyboardEvent*>(event->EventPointer());
+  // Assure char16_t[N] filds are null-terminated before converting
+  // them to std::u16string.
+  CHECK(std::find(std::begin(key_event->text), std::end(key_event->text), 0) <
+        std::end(key_event->text));
+  CHECK(std::find(std::begin(key_event->unmodified_text),
+                  std::end(key_event->unmodified_text),
+                  0) < std::end(key_event->unmodified_text));
   return blink::mojom::KeyData::New(
       key_event->dom_key, key_event->dom_code, key_event->windows_key_code,
       key_event->native_key_code, key_event->is_system_key,
@@ -427,6 +436,8 @@ StructTraits<blink::mojom::EventDataView,
   gesture_data->is_source_touch_event_set_blocking =
       gesture_event->is_source_touch_event_set_blocking;
   gesture_data->primary_pointer_type = gesture_event->primary_pointer_type;
+  gesture_data->primary_unique_touch_event_id =
+      gesture_event->primary_unique_touch_event_id;
   gesture_data->unique_touch_event_id = gesture_event->unique_touch_event_id;
   switch (gesture_event->GetType()) {
     default:

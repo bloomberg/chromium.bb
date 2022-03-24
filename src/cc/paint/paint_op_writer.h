@@ -5,7 +5,7 @@
 #ifndef CC_PAINT_PAINT_OP_WRITER_H_
 #define CC_PAINT_PAINT_OP_WRITER_H_
 
-#include "build/build_config.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
@@ -23,6 +23,7 @@ struct Mailbox;
 
 namespace cc {
 
+class DecodedDrawImage;
 class DrawImage;
 class PaintShader;
 
@@ -59,8 +60,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const SkRect& rect);
   void Write(const SkIRect& rect);
   void Write(const SkRRect& rect);
-
-  void Write(const SkPath& path);
+  void Write(const SkPath& path, UsePaintCache);
   void Write(const sk_sp<SkData>& data);
   void Write(const SkColorSpace* data);
   void Write(const SkSamplingOptions&);
@@ -76,7 +76,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // identically when text is involved.
   void Write(const PaintFlags& flags, const SkM44& current_ctm);
   void Write(const PaintShader* shader,
-             SkFilterQuality quality,
+             PaintFlags::FilterQuality quality,
              const SkM44& current_ctm);
   void Write(const PaintFilter* filter, const SkM44& current_ctm);
 
@@ -84,7 +84,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(PaintCanvas::AnnotationType type) { WriteEnum(type); }
   void Write(SkCanvas::SrcRectConstraint constraint) { WriteEnum(constraint); }
   void Write(SkColorType color_type) { WriteEnum(color_type); }
-  void Write(SkFilterQuality filter_quality) { WriteEnum(filter_quality); }
+  void Write(PaintFlags::FilterQuality filter_quality) {
+    WriteEnum(filter_quality);
+  }
   void Write(SkBlendMode blend_mode) { WriteEnum(blend_mode); }
   void Write(SkTileMode tile_mode) { WriteEnum(tile_mode); }
   void Write(SkFilterMode filter_mode) { WriteEnum(filter_mode); }
@@ -118,10 +120,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // image.
   void Write(const DrawImage& draw_image, SkSize* scale_adjustment);
 
-#if !defined(OS_ANDROID)
   // Serializes the given |skottie| vector graphic.
   void Write(scoped_refptr<SkottieWrapper> skottie);
-#endif
 
  private:
   template <typename T>
@@ -161,11 +161,11 @@ class CC_PAINT_EXPORT PaintOpWriter {
              const SkM44& current_ctm);
   void Write(const LightingPointPaintFilter& filter, const SkM44& current_ctm);
   void Write(const LightingSpotPaintFilter& filter, const SkM44& current_ctm);
+  void Write(const StretchPaintFilter& filter, const SkM44& current_ctm);
 
   void Write(const PaintRecord* record,
              const gfx::Rect& playback_rect,
-             const gfx::SizeF& post_scale,
-             const SkMatrix& post_matrix_for_analysis);
+             const gfx::SizeF& post_scale);
   void Write(const SkRegion& region);
   void WriteImage(const DecodedDrawImage& decoded_draw_image);
   void WriteImage(uint32_t transfer_cache_entry_id, bool needs_mips);
@@ -174,14 +174,14 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void EnsureBytes(size_t required_bytes);
   sk_sp<PaintShader> TransformShaderIfNecessary(
       const PaintShader* original,
-      SkFilterQuality quality,
+      PaintFlags::FilterQuality quality,
       const SkM44& current_ctm,
       uint32_t* paint_image_transfer_cache_entry_id,
       gfx::SizeF* paint_record_post_scale,
       bool* paint_image_needs_mips,
       gpu::Mailbox* mailbox_out);
 
-  char* memory_ = nullptr;
+  raw_ptr<char> memory_ = nullptr;
   size_t size_ = 0u;
   size_t remaining_bytes_ = 0u;
   const PaintOp::SerializeOptions& options_;

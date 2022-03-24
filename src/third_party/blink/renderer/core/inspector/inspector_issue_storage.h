@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_ISSUE_STORAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_ISSUE_STORAGE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -27,6 +27,8 @@ class InspectorIssue;
 class CORE_EXPORT InspectorIssueStorage {
  public:
   InspectorIssueStorage();
+  InspectorIssueStorage(const InspectorIssueStorage&) = delete;
+  InspectorIssueStorage& operator=(const InspectorIssueStorage&) = delete;
 
   void AddInspectorIssue(CoreProbeSink*, InspectorIssue*);
   void AddInspectorIssue(CoreProbeSink*, mojom::blink::InspectorIssueInfoPtr);
@@ -36,8 +38,8 @@ class CORE_EXPORT InspectorIssueStorage {
   void AddInspectorIssue(CoreProbeSink*, AuditsIssue);
 
   void Clear();
-  size_t size() const;
-  protocol::Audits::InspectorIssue* at(size_t index) const;
+  wtf_size_t size() const;
+  protocol::Audits::InspectorIssue* at(wtf_size_t index) const;
 
   virtual ~InspectorIssueStorage();
 
@@ -45,8 +47,6 @@ class CORE_EXPORT InspectorIssueStorage {
   void AddInspectorIssue(CoreProbeSink*,
                          std::unique_ptr<protocol::Audits::InspectorIssue>);
   Deque<std::unique_ptr<protocol::Audits::InspectorIssue>> issues_;
-
-  DISALLOW_COPY_AND_ASSIGN(InspectorIssueStorage);
 };
 
 }  // namespace blink

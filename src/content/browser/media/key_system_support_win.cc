@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/browser/media/service_factory.h"
 #include "media/cdm/win/media_foundation_cdm.h"
+#include "media/mojo/mojom/key_system_support.mojom.h"
 #include "media/mojo/mojom/media_foundation_service.mojom.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "url/gurl.h"
@@ -52,8 +53,7 @@ void GetMediaFoundationServiceHardwareSecureCdmCapability(
   }
 
   // CDM capability is global, use a generic BrowserContext and Site to query.
-  auto& mf_service = GetMediaFoundationService(nullptr, GURL());
-  mf_service.Initialize(cdm_path);
+  auto& mf_service = GetMediaFoundationService(nullptr, GURL(), cdm_path);
   mf_service.IsKeySystemSupported(
       key_system,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(

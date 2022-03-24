@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -34,10 +34,17 @@ class URLRequestContext;
 class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
     : public base::SupportsWeakPtr<DhcpPacFileAdapterFetcher> {
  public:
+  DhcpPacFileAdapterFetcher() = delete;
+
   // |url_request_context| must outlive DhcpPacFileAdapterFetcher.
   // |task_runner| will be used to post tasks to a thread.
   DhcpPacFileAdapterFetcher(URLRequestContext* url_request_context,
                             scoped_refptr<base::TaskRunner> task_runner);
+
+  DhcpPacFileAdapterFetcher(const DhcpPacFileAdapterFetcher&) = delete;
+  DhcpPacFileAdapterFetcher& operator=(const DhcpPacFileAdapterFetcher&) =
+      delete;
+
   virtual ~DhcpPacFileAdapterFetcher();
 
   // Starts a fetch.  On completion (but not cancellation), |callback|
@@ -124,6 +131,9 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
    public:
     DhcpQuery();
 
+    DhcpQuery(const DhcpQuery&) = delete;
+    DhcpQuery& operator=(const DhcpQuery&) = delete;
+
     // This method should run on a worker pool thread, via PostTaskAndReply.
     // After it has run, the |url()| method on this object will return the
     // URL retrieved.
@@ -142,8 +152,6 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
    private:
     // The URL retrieved for the given adapter.
     std::string url_;
-
-    DISALLOW_COPY_AND_ASSIGN(DhcpQuery);
   };
 
   // Virtual methods introduced to allow unit testing.
@@ -184,11 +192,9 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
   // Implements a timeout on the call to the Win32 DHCP API.
   base::OneShotTimer wait_timer_;
 
-  URLRequestContext* const url_request_context_;
+  const raw_ptr<URLRequestContext> url_request_context_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DhcpPacFileAdapterFetcher);
 };
 
 }  // namespace net

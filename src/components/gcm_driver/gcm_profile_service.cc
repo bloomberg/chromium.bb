@@ -6,9 +6,8 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_constants.h"
@@ -17,7 +16,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/gcm_driver/gcm_driver_android.h"
 #else
 #include "base/bind.h"
@@ -43,6 +42,10 @@ class GCMProfileService::IdentityObserver
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GCMDriver* driver);
+
+  IdentityObserver(const IdentityObserver&) = delete;
+  IdentityObserver& operator=(const IdentityObserver&) = delete;
+
   ~IdentityObserver() override;
 
   // signin::IdentityManager::Observer:
@@ -54,8 +57,8 @@ class GCMProfileService::IdentityObserver
   void StartAccountTracker(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
-  GCMDriver* driver_;
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<GCMDriver> driver_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
   std::unique_ptr<GCMAccountTracker> gcm_account_tracker_;
 
   // The account ID that this service is responsible for. Empty when the service
@@ -64,8 +67,6 @@ class GCMProfileService::IdentityObserver
 
   base::WeakPtrFactory<GCMProfileService::IdentityObserver> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(IdentityObserver);
 };
 
 GCMProfileService::IdentityObserver::IdentityObserver(

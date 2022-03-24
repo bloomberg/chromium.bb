@@ -451,6 +451,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredProtect[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredBlob[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionMinPINLength[];
 
 // Maximum number of seconds the browser waits for Bluetooth authenticator to
 // send packets that advertises that the device is in pairing mode before
@@ -487,9 +488,9 @@ enum class PINUVAuthProtocol : uint8_t {
 
 // FidoRequestType enumerates the top-level, user-visable types of requests.
 // These correspond to the create() and get() calls at the Web Platform layer.
-enum class FidoRequestType {
-  kMakeCredential,
-  kGetAssertion,
+enum class FidoRequestType : uint8_t {
+  kMakeCredential = 0,
+  kGetAssertion = 1,
 };
 
 }  // namespace device

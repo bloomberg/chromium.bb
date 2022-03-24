@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_app.h"
@@ -20,6 +20,7 @@
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
@@ -39,6 +40,11 @@ void PopulateValidatedMethodData(
                                    basic_card_specified_networks,
                                    url_payment_method_identifiers,
                                    payment_method_identifiers_set);
+  if (!base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard)) {
+    // Clears the basic-card related items that ParseSupportedMethods() added.
+    supported_card_networks->clear();
+    basic_card_specified_networks->clear();
+  }
   supported_card_networks_set->insert(supported_card_networks->begin(),
                                       supported_card_networks->end());
 }
@@ -66,10 +72,6 @@ void PopulateValidatedMethodData(
       basic_card_specified_networks, supported_card_networks_set,
       url_payment_method_identifiers, payment_method_identifiers_set,
       stringified_method_data);
-}
-
-std::string ToString(bool value) {
-  return value ? "true" : "false";
 }
 
 }  // namespace
@@ -101,16 +103,6 @@ PaymentRequestSpec::PaymentRequestSpec(
       &payment_method_identifiers_set_, &stringified_method_data_);
 
   query_for_quota_ = stringified_method_data_;
-  if (base::Contains(payment_method_identifiers_set_, methods::kBasicCard) &&
-      PaymentsExperimentalFeatures::IsEnabled(
-          features::kStrictHasEnrolledAutofillInstrument)) {
-    query_for_quota_["basic-card-payment-options"] = {
-        base::ReplaceStringPlaceholders(
-            "{payerEmail:$1,payerName:$2,payerPhone:$3,shipping:$4}",
-            {ToString(request_payer_email()), ToString(request_payer_name()),
-             ToString(request_payer_phone()), ToString(request_shipping())},
-            nullptr)};
-  }
 
   app_store_billing_methods_.insert(methods::kGooglePlayBilling);
 }

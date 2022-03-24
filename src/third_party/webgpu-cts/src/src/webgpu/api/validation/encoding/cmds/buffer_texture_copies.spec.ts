@@ -3,12 +3,11 @@ copyTextureToBuffer and copyBufferToTexture validation tests not covered by
 the general image_copy tests, or by destroyed,*.
 
 TODO:
-- Move all the tests here to image_copy/ and test writeTexture() with depth/stencil formats.
+- Move all the tests here to image_copy/.
 `;
 
-import { poptions, params } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
-import { assert } from '../../../../../common/framework/util/util.js';
+import { assert, unreachable } from '../../../../../common/util/util.js';
 import {
   kDepthStencilFormats,
   depthStencilBufferTextureCopySupported,
@@ -25,11 +24,9 @@ class ImageCopyTest extends ValidationTest {
     copySize: GPUExtent3DStrict,
     isSuccess: boolean
   ): void {
-    const encoder = this.device.createCommandEncoder();
+    const { encoder, validateFinishAndSubmit } = this.createEncoder('non-pass');
     encoder.copyBufferToTexture(source, destination, copySize);
-    this.expectValidationError(() => {
-      this.device.queue.submit([encoder.finish()]);
-    }, !isSuccess);
+    validateFinishAndSubmit(isSuccess, true);
   }
 
   testCopyTextureToBuffer(
@@ -38,11 +35,23 @@ class ImageCopyTest extends ValidationTest {
     copySize: GPUExtent3DStrict,
     isSuccess: boolean
   ): void {
-    const encoder = this.device.createCommandEncoder();
+    const { encoder, validateFinishAndSubmit } = this.createEncoder('non-pass');
     encoder.copyTextureToBuffer(source, destination, copySize);
-    this.expectValidationError(() => {
-      this.device.queue.submit([encoder.finish()]);
-    }, !isSuccess);
+    validateFinishAndSubmit(isSuccess, true);
+  }
+
+  testWriteTexture(
+    destination: GPUImageCopyTexture,
+    uploadData: Uint8Array,
+    dataLayout: GPUImageDataLayout,
+    copySize: GPUExtent3DStrict,
+    isSuccess: boolean
+  ): void {
+    this.expectGPUError(
+      'validation',
+      () => this.queue.writeTexture(destination, uploadData, dataLayout, copySize),
+      !isSuccess
+    );
   }
 }
 
@@ -51,13 +60,16 @@ export const g = makeTestGroup(ImageCopyTest);
 g.test('depth_stencil_format,copy_usage_and_aspect')
   .desc(
     `
-  Validate the combination of usage and aspect of each depth stencil format in copyBufferToTexture
-  and copyTextureToBuffer. See https://gpuweb.github.io/gpuweb/#depth-formats for more details.
+  Validate the combination of usage and aspect of each depth stencil format in copyBufferToTexture,
+  copyTextureToBuffer and writeTexture. See https://gpuweb.github.io/gpuweb/#depth-formats for more
+  details.
 `
   )
-  .cases(params().combine(poptions('format', kDepthStencilFormats)))
-  .subcases(() =>
-    params().combine(poptions('aspect', ['all', 'depth-only', 'stencil-only'] as const))
+  .params(u =>
+    u //
+      .combine('format', kDepthStencilFormats)
+      .beginSubcases()
+      .combine('aspect', ['all', 'depth-only', 'stencil-only'] as const)
   )
   .fn(async t => {
     const { format, aspect } = t.params;
@@ -70,8 +82,9 @@ g.test('depth_stencil_format,copy_usage_and_aspect')
       usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
     });
 
+    const uploadBufferSize = 32;
     const buffer = t.device.createBuffer({
-      size: 32,
+      size: uploadBufferSize,
       usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
 
@@ -84,13 +97,28 @@ g.test('depth_stencil_format,copy_usage_and_aspect')
       const success = depthStencilBufferTextureCopySupported('CopyT2B', format, aspect);
       t.testCopyTextureToBuffer({ texture, aspect }, { buffer }, textureSize, success);
     }
+
+    {
+      const success = depthStencilBufferTextureCopySupported('WriteTexture', format, aspect);
+      const uploadData = new Uint8Array(uploadBufferSize);
+      t.testWriteTexture(
+        { texture, aspect },
+        uploadData,
+        {
+          bytesPerRow: textureSize.width,
+          rowsPerImage: textureSize.height,
+        },
+        textureSize,
+        success
+      );
+    }
   });
 
 g.test('depth_stencil_format,copy_buffer_size')
   .desc(
     `
-  Validate the minimum buffer size for each depth stencil format in copyBufferToTexture
-  and copyTextureToBuffer.
+  Validate the minimum buffer size for each depth stencil format in copyBufferToTexture,
+  copyTextureToBuffer and writeTexture.
 
   Given a depth stencil format, a copy aspect ('depth-only' or 'stencil-only'), the copy method
   (buffer-to-texture or texture-to-buffer) and the copy size, validate
@@ -99,23 +127,20 @@ g.test('depth_stencil_format,copy_buffer_size')
   required buffer size.
 `
   )
-  .cases(
-    params()
-      .combine(poptions('format', kDepthStencilFormats))
-      .combine(poptions('aspect', ['depth-only', 'stencil-only'] as const))
-      .combine(poptions('copyType', ['CopyB2T', 'CopyT2B'] as const))
+  .params(u =>
+    u
+      .combine('format', kDepthStencilFormats)
+      .combine('aspect', ['depth-only', 'stencil-only'] as const)
+      .combine('copyType', ['CopyB2T', 'CopyT2B', 'WriteTexture'] as const)
       .filter(param =>
         depthStencilBufferTextureCopySupported(param.copyType, param.format, param.aspect)
       )
-  )
-  .subcases(() =>
-    params().combine(
-      poptions('copySize', [
+      .beginSubcases()
+      .combine('copySize', [
         { width: 8, height: 1, depthOrArrayLayers: 1 },
         { width: 4, height: 4, depthOrArrayLayers: 1 },
         { width: 4, height: 4, depthOrArrayLayers: 3 },
       ])
-    )
   )
   .fn(async t => {
     const { format, aspect, copyType, copySize } = t.params;
@@ -130,7 +155,8 @@ g.test('depth_stencil_format,copy_buffer_size')
     const texelAspectSize = depthStencilFormatAspectSize(format, aspect);
     assert(texelAspectSize > 0);
 
-    const bytesPerRow = align(texelAspectSize * copySize.width, kBytesPerRowAlignment);
+    const bytesPerRowAlignment = copyType === 'WriteTexture' ? 1 : kBytesPerRowAlignment;
+    const bytesPerRow = align(texelAspectSize * copySize.width, bytesPerRowAlignment);
     const rowsPerImage = copySize.height;
     const minimumBufferSize =
       bytesPerRow * (rowsPerImage * copySize.depthOrArrayLayers - 1) +
@@ -159,8 +185,7 @@ g.test('depth_stencil_format,copy_buffer_size')
         copySize,
         false
       );
-    } else {
-      assert(copyType === 'CopyT2B');
+    } else if (copyType === 'CopyT2B') {
       t.testCopyTextureToBuffer(
         { texture, aspect },
         { buffer: bigEnoughBuffer, bytesPerRow, rowsPerImage },
@@ -173,6 +198,32 @@ g.test('depth_stencil_format,copy_buffer_size')
         copySize,
         false
       );
+    } else if (copyType === 'WriteTexture') {
+      const enoughUploadData = new Uint8Array(minimumBufferSize);
+      const smallerUploadData = new Uint8Array(minimumBufferSize - kBufferCopyAlignment);
+      t.testWriteTexture(
+        { texture, aspect },
+        enoughUploadData,
+        {
+          bytesPerRow,
+          rowsPerImage,
+        },
+        copySize,
+        true
+      );
+
+      t.testWriteTexture(
+        { texture, aspect },
+        smallerUploadData,
+        {
+          bytesPerRow,
+          rowsPerImage,
+        },
+        copySize,
+        false
+      );
+    } else {
+      unreachable();
     }
   });
 
@@ -180,19 +231,21 @@ g.test('depth_stencil_format,copy_buffer_offset')
   .desc(
     `
     Validate for every depth stencil formats the buffer offset must be a multiple of 4 in
-    copyBufferToTexture() and copyTextureToBuffer().
+    copyBufferToTexture() and copyTextureToBuffer(), but the offset in writeTexture() doesn't always
+    need to be a multiple of 4.
     `
   )
-  .cases(
-    params()
-      .combine(poptions('format', kDepthStencilFormats))
-      .combine(poptions('aspect', ['depth-only', 'stencil-only'] as const))
-      .combine(poptions('copyType', ['CopyB2T', 'CopyT2B'] as const))
+  .params(u =>
+    u
+      .combine('format', kDepthStencilFormats)
+      .combine('aspect', ['depth-only', 'stencil-only'] as const)
+      .combine('copyType', ['CopyB2T', 'CopyT2B', 'WriteTexture'] as const)
       .filter(param =>
         depthStencilBufferTextureCopySupported(param.copyType, param.format, param.aspect)
       )
+      .beginSubcases()
+      .combine('offset', [1, 2, 4, 6, 8])
   )
-  .subcases(() => poptions('offset', [1, 2, 4, 6, 8]))
   .fn(async t => {
     const { format, aspect, copyType, offset } = t.params;
     await t.selectDeviceForTextureFormatOrSkipTestCase(format);
@@ -208,7 +261,8 @@ g.test('depth_stencil_format,copy_buffer_offset')
     const texelAspectSize = depthStencilFormatAspectSize(format, aspect);
     assert(texelAspectSize > 0);
 
-    const bytesPerRow = align(texelAspectSize * textureSize.width, kBytesPerRowAlignment);
+    const bytesPerRowAlignment = copyType === 'WriteTexture' ? 1 : kBytesPerRowAlignment;
+    const bytesPerRow = align(texelAspectSize * textureSize.width, bytesPerRowAlignment);
     const rowsPerImage = textureSize.height;
     const minimumBufferSize =
       bytesPerRow * (rowsPerImage * textureSize.depthOrArrayLayers - 1) +
@@ -220,7 +274,7 @@ g.test('depth_stencil_format,copy_buffer_offset')
       usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
 
-    const isSuccess = offset % 4 === 0;
+    const isSuccess = copyType === 'WriteTexture' ? true : offset % 4 === 0;
 
     if (copyType === 'CopyB2T') {
       t.testCopyBufferToTexture(
@@ -229,13 +283,27 @@ g.test('depth_stencil_format,copy_buffer_offset')
         textureSize,
         isSuccess
       );
-    } else {
-      assert(copyType === 'CopyT2B');
+    } else if (copyType === 'CopyT2B') {
       t.testCopyTextureToBuffer(
         { texture, aspect },
         { buffer, offset, bytesPerRow, rowsPerImage },
         textureSize,
         isSuccess
       );
+    } else if (copyType === 'WriteTexture') {
+      const uploadData = new Uint8Array(minimumBufferSize + offset);
+      t.testWriteTexture(
+        { texture, aspect },
+        uploadData,
+        {
+          offset,
+          bytesPerRow,
+          rowsPerImage,
+        },
+        textureSize,
+        isSuccess
+      );
+    } else {
+      unreachable();
     }
   });

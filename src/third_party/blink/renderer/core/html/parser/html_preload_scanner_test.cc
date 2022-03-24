@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "base/strings/stringprintf.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
@@ -111,14 +111,28 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
       EXPECT_EQ(url, preload_request_->ResourceURL());
       EXPECT_EQ(base_url, preload_request_->BaseURL().GetString());
       EXPECT_EQ(width, preload_request_->ResourceWidth());
+      EXPECT_EQ(preferences.ShouldSend(
+                    network::mojom::WebClientHintsType::kDpr_DEPRECATED),
+                preload_request_->Preferences().ShouldSend(
+                    network::mojom::WebClientHintsType::kDpr_DEPRECATED));
       EXPECT_EQ(
           preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr),
           preload_request_->Preferences().ShouldSend(
               network::mojom::WebClientHintsType::kDpr));
+      EXPECT_EQ(
+          preferences.ShouldSend(
+              network::mojom::WebClientHintsType::kResourceWidth_DEPRECATED),
+          preload_request_->Preferences().ShouldSend(
+              network::mojom::WebClientHintsType::kResourceWidth_DEPRECATED));
       EXPECT_EQ(preferences.ShouldSend(
                     network::mojom::WebClientHintsType::kResourceWidth),
                 preload_request_->Preferences().ShouldSend(
                     network::mojom::WebClientHintsType::kResourceWidth));
+      EXPECT_EQ(
+          preferences.ShouldSend(
+              network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED),
+          preload_request_->Preferences().ShouldSend(
+              network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED));
       EXPECT_EQ(preferences.ShouldSend(
                     network::mojom::WebClientHintsType::kViewportWidth),
                 preload_request_->Preferences().ShouldSend(
@@ -233,7 +247,6 @@ class HTMLPreloadScannerTest : public PageTestBase {
     data.color_bits_per_component = 24;
     data.monochrome_bits_per_component = 0;
     data.primary_pointer_type = mojom::blink::PointerType::kPointerFineType;
-    data.default_font_size = 16;
     data.three_d_enabled = true;
     data.media_type = media_type_names::kScreen;
     data.strict_mode = true;
@@ -266,7 +279,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
   }
 
   void SetUp() override {
-    PageTestBase::SetUp(IntSize());
+    PageTestBase::SetUp(gfx::Size());
     RunSetUp(kViewportEnabled);
   }
 
@@ -612,17 +625,31 @@ TEST_F(HTMLPreloadScannerTest, testViewportNoContent) {
 }
 
 TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
+  ClientHintsPreferences dpr_DEPRECATED;
   ClientHintsPreferences dpr;
+  ClientHintsPreferences resource_width_DEPRECATED;
   ClientHintsPreferences resource_width;
   ClientHintsPreferences all;
+  ClientHintsPreferences viewport_width_DEPRECATED;
   ClientHintsPreferences viewport_width;
+  dpr_DEPRECATED.SetShouldSend(
+      network::mojom::WebClientHintsType::kDpr_DEPRECATED);
   dpr.SetShouldSend(network::mojom::WebClientHintsType::kDpr);
+  all.SetShouldSend(network::mojom::WebClientHintsType::kDpr_DEPRECATED);
   all.SetShouldSend(network::mojom::WebClientHintsType::kDpr);
+  resource_width_DEPRECATED.SetShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth_DEPRECATED);
   resource_width.SetShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth);
+  all.SetShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth_DEPRECATED);
   all.SetShouldSend(network::mojom::WebClientHintsType::kResourceWidth);
+  viewport_width_DEPRECATED.SetShouldSend(
+      network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED);
   viewport_width.SetShouldSend(
       network::mojom::WebClientHintsType::kViewportWidth);
+  all.SetShouldSend(
+      network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED);
   all.SetShouldSend(network::mojom::WebClientHintsType::kViewportWidth);
   PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
@@ -640,18 +667,38 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='dpr  '><img srcset='bla.gif "
        "320w, blabla.gif 640w'>",
+       "blabla.gif", "http://example.test/", ResourceType::kImage, 0,
+       dpr_DEPRECATED},
+      {"http://example.test",
+       "<meta http-equiv='accept-ch' content='sec-ch-dpr  '><img "
+       "srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0, dpr},
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='bla,dpr  '><img srcset='bla.gif "
        "320w, blabla.gif 640w'>",
+       "blabla.gif", "http://example.test/", ResourceType::kImage, 0,
+       dpr_DEPRECATED},
+      {"http://example.test",
+       "<meta http-equiv='accept-ch' content='bla,sec-ch-dpr  '><img "
+       "srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0, dpr},
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='  width  '><img sizes='100vw' "
        "srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 500,
+       resource_width_DEPRECATED},
+      {"http://example.test",
+       "<meta http-equiv='accept-ch' content='  sec-ch-width  '><img "
+       "sizes='100vw' srcset='bla.gif 320w, blabla.gif 640w'>",
+       "blabla.gif", "http://example.test/", ResourceType::kImage, 500,
        resource_width},
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='  width  , wutever'><img "
+       "sizes='300px' srcset='bla.gif 320w, blabla.gif 640w'>",
+       "blabla.gif", "http://example.test/", ResourceType::kImage, 300,
+       resource_width_DEPRECATED},
+      {"http://example.test",
+       "<meta http-equiv='accept-ch' content='  sec-ch-width  , wutever'><img "
        "sizes='300px' srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 300,
        resource_width},
@@ -659,16 +706,26 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
        "<meta http-equiv='accept-ch' content='  viewport-width  '><img "
        "srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0,
+       viewport_width_DEPRECATED},
+      {"http://example.test",
+       "<meta http-equiv='accept-ch' content='  sec-ch-viewport-width  '><img "
+       "srcset='bla.gif 320w, blabla.gif 640w'>",
+       "blabla.gif", "http://example.test/", ResourceType::kImage, 0,
        viewport_width},
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='  viewport-width  , "
        "wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 0,
+       viewport_width_DEPRECATED},
+      {"http://example.test",
+       "<meta http-equiv='accept-ch' content='  sec-ch-viewport-width  , "
+       "wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>",
+       "blabla.gif", "http://example.test/", ResourceType::kImage, 0,
        viewport_width},
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
-       "wutever, dpr  '><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
-       "640w'>",
+       "wutever, dpr , sec-ch-dpr,sec-ch-viewport-width,   sec-ch-width '><img "
+       "sizes='90vw' srcset='bla.gif 320w, blabla.gif 640w'>",
        "blabla.gif", "http://example.test/", ResourceType::kImage, 450, all},
   };
 
@@ -682,8 +739,13 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
 
 TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   ClientHintsPreferences all;
+  all.SetShouldSend(network::mojom::WebClientHintsType::kDpr_DEPRECATED);
   all.SetShouldSend(network::mojom::WebClientHintsType::kDpr);
+  all.SetShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth_DEPRECATED);
   all.SetShouldSend(network::mojom::WebClientHintsType::kResourceWidth);
+  all.SetShouldSend(
+      network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED);
   all.SetShouldSend(network::mojom::WebClientHintsType::kViewportWidth);
 
   const PreloadScannerTestCase expect_no_client_hint = {
@@ -699,8 +761,8 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   const PreloadScannerTestCase expect_client_hint = {
       "http://example.test",
       "<meta http-equiv='accept-ch' content='  viewport-width  ,width, "
-      "wutever, dpr  '><img sizes='90vw' srcset='bla.gif 320w, blabla.gif "
-      "640w'>",
+      "wutever, dpr,   sec-ch-viewport-width  ,sec-ch-width, wutever2, "
+      "sec-ch-dpr  '><img sizes='90vw' srcset='bla.gif 320w, blabla.gif 640w'>",
       "blabla.gif",
       "http://example.test/",
       ResourceType::kImage,
@@ -1507,6 +1569,184 @@ TEST_F(HTMLPreloadScannerTest, TemplateInteractions) {
        "type='text/css'></template>",
        nullptr, "http://example.test/", ResourceType::kCSSStyleSheet, 0},
   };
+  for (const auto& test : test_cases)
+    Test(test);
+}
+
+// Regression test for https://crbug.com/1181291
+TEST_F(HTMLPreloadScannerTest, JavascriptBaseUrl) {
+  PreloadScannerTestCase test_cases[] = {
+      {"",
+       "<base href='javascript:'><base href='javascript:notallowed'><base "
+       "href='http://example.test/'><link rel=preload href=bla as=SCRIPT>",
+       "bla", "http://example.test/", ResourceType::kScript, 0},
+  };
+
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, OtherRulesBeforeImport) {
+  ScopedCSSCascadeLayersForTest enabled(true);
+
+  PreloadScannerTestCase test_cases[] = {
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @charset "utf-8";
+         @import url("https://example2.test/lib.css");
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @layer foo, bar;
+         @import url("https://example2.test/lib.css");
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @charset "utf-8";
+         @layer foo, bar;
+         @import url("https://example2.test/lib.css");
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+  };
+
+  for (const auto& test : test_cases)
+    Test(test);
+}
+
+TEST_F(HTMLPreloadScannerTest, LayeredImportFeatureDisabled) {
+  ScopedCSSCascadeLayersForTest disabled(false);
+
+  PreloadScannerTestCase test_cases[] = {
+      {"https://example.test",
+       R"HTML(
+       {"https://example.test",
+        R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer;
+        </style>
+        )HTML",
+       nullptr},
+      {"https://example.test",
+       R"HTML(
+       {"https://example.test",
+        R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer(foo);
+        </style>
+        )HTML",
+       nullptr},
+  };
+
+  for (const auto& test : test_cases)
+    Test(test);
+}
+
+TEST_F(HTMLPreloadScannerTest, PreloadLayeredImport) {
+  ScopedCSSCascadeLayersForTest enabled(true);
+
+  PreloadScannerTestCase test_cases[] = {
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @import url("https://example2.test/lib.css") layer
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer;
+        </style>
+        )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer(foo)
+        </style>
+        )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer(foo);
+        </style>
+        )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @layer foo, bar;
+         @import url("https://example2.test/lib.css") layer
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @layer foo, bar;
+         @import url("https://example2.test/lib.css") layer;
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @layer foo, bar;
+         @import url("https://example2.test/lib.css") layer(foo)
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+       <style>
+         @layer foo, bar;
+         @import url("https://example2.test/lib.css") layer(foo);
+       </style>
+       )HTML",
+       "https://example2.test/lib.css", "https://example.test/",
+       ResourceType::kCSSStyleSheet, 0},
+      {"https://example.test",
+       R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer foo;
+        </style>
+        )HTML",
+       nullptr},
+      {"https://example.test",
+       R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer(foo) bar;
+        </style>
+        )HTML",
+       nullptr},
+      {"https://example.test",
+       R"HTML(
+        <style>
+          @import url("https://example2.test/lib.css") layer();
+        </style>
+        )HTML",
+       nullptr},
+  };
+
   for (const auto& test : test_cases)
     Test(test);
 }

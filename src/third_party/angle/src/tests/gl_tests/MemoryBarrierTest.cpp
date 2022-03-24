@@ -1730,9 +1730,12 @@ void MemoryBarrierTestBase::transformFeedbackBitBufferWriteThenCapture(
 
     GLBuffer xfbBuffer;
     GLTexture xfbTextureBuffer;
-    constexpr std::array<float, 4> kInitData = {12.34, 5.6, 78.91, 123.456};
-    createStorageBuffer(writeResource, xfbBuffer, xfbTextureBuffer, sizeof(kInitData) * 6,
-                        kInitData.data());
+    constexpr size_t kOneInstanceDataSize                                       = 4;
+    constexpr size_t kInstanceCount                                             = 6;
+    constexpr std::array<float, kOneInstanceDataSize *kInstanceCount> kInitData = {12.34, 5.6,
+                                                                                   78.91, 123.456};
+    createStorageBuffer(writeResource, xfbBuffer, xfbTextureBuffer,
+                        sizeof(kInitData[0]) * kInitData.size(), kInitData.data());
 
     constexpr std::array<float, 4> kWriteData = {1.5, 3.75, 5.0, 12.125};
     setUniformData(writeProgram, kWriteData);
@@ -1784,9 +1787,12 @@ void MemoryBarrierTestBase::transformFeedbackBitCaptureThenBufferWrite(
 
     GLBuffer xfbBuffer;
     GLTexture xfbTextureBuffer;
-    constexpr std::array<float, 4> kInitData = {12.34, 5.6, 78.91, 123.456};
-    createStorageBuffer(writeResource, xfbBuffer, xfbTextureBuffer, sizeof(kInitData) * 6,
-                        kInitData.data());
+    constexpr size_t kOneInstanceDataSize                                       = 4;
+    constexpr size_t kInstanceCount                                             = 6;
+    constexpr std::array<float, kOneInstanceDataSize *kInstanceCount> kInitData = {12.34, 5.6,
+                                                                                   78.91, 123.456};
+    createStorageBuffer(writeResource, xfbBuffer, xfbTextureBuffer,
+                        sizeof(kInitData[0]) * kInitData.size(), kInitData.data());
 
     // Use the buffer
     GLProgram xfbProgram;
@@ -2513,7 +2519,7 @@ void MemoryBarrierTestBase::textureUpdateBitImageWriteThenCopy(ShaderWritePipeli
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, kTextureSize, kTextureSize);
 
     const std::array<float, 4> kExpectedData = {
-        0, 1.0, writePipeline == ShaderWritePipeline::Graphics ? 1.0 : 0, 1.0};
+        0, 1.0f, writePipeline == ShaderWritePipeline::Graphics ? 1.0f : 0, 1.0f};
     verifyFramebufferAndImageContents(writePipeline, writeResource, texture, kExpectedData);
 }
 

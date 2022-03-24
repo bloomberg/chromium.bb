@@ -25,6 +25,7 @@
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "encode.h"
 #include "internal.h"
 
 /** Maximum RLE code for bulk copy */
@@ -110,7 +111,7 @@ static av_cold int qtrle_encode_init(AVCodecContext *avctx)
 
     s->rlecode_table = av_mallocz(s->logical_width);
     s->skip_table    = av_mallocz(s->logical_width);
-    s->length_table  = av_mallocz_array(s->logical_width + 1, sizeof(int));
+    s->length_table  = av_calloc(s->logical_width + 1, sizeof(*s->length_table));
     if (!s->skip_table || !s->length_table || !s->rlecode_table) {
         av_log(avctx, AV_LOG_ERROR, "Error allocating memory.\n");
         return AVERROR(ENOMEM);
@@ -155,10 +156,14 @@ static void qtrle_encode_line(QtrleEncContext *s, const AVFrame *p, int line, ui
     int sec_lowest_bulk_cost;
     int sec_lowest_bulk_cost_index;
 
-    uint8_t *this_line = p->               data[0] + line*p->               linesize[0] +
-        (width - 1)*s->pixel_size;
-    uint8_t *prev_line = s->previous_frame->data[0] + line * s->previous_frame->linesize[0] +
-        (width - 1)*s->pixel_size;
+    const uint8_t *this_line = p->data[0] + line * p->linesize[0] + width * s->pixel_size;
+    /* There might be no earlier frame if the current frame is a keyframe.
+     * So just use a pointer to the current frame to avoid a check
+     * to avoid NULL - s->pixel_size (which is undefined behaviour). */
+    const uint8_t *prev_line = s->key_frame ? this_line
+                                            : s->previous_frame->data[0]
+                                              + line * s->previous_frame->linesize[0]
+                                              + width * s->pixel_size;
 
     s->length_table[width] = 0;
     skipcount = 0;
@@ -174,6 +179,9 @@ static void qtrle_encode_line(QtrleEncContext *s, const AVFrame *p, int line, ui
     for (i = width - 1; i >= 0; i--) {
 
         int prev_bulk_cost;
+
+        this_line -= s->pixel_size;
+        prev_line -= s->pixel_size;
 
         /* If our lowest bulk cost index is too far away, replace it
          * with the next lowest bulk cost */
@@ -259,10 +267,6 @@ static void qtrle_encode_line(QtrleEncContext *s, const AVFrame *p, int line, ui
         /* These bulk costs increase every iteration */
         lowest_bulk_cost += s->pixel_size;
         sec_lowest_bulk_cost += s->pixel_size;
-        if (this_line >= p->data[0] + s->pixel_size)
-            this_line -= s->pixel_size;
-        if (prev_line >= s->previous_frame->data[0] + s->pixel_size)
-            prev_line -= s->pixel_size;
     }
 
     /* Good! Now we have the best sequence for this line, let's output it. */
@@ -366,10 +370,11 @@ static int qtrle_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     QtrleEncContext * const s = avctx->priv_data;
     int ret;
 
-    if ((ret = ff_alloc_packet2(avctx, pkt, s->max_buf_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, pkt, s->max_buf_size)) < 0)
         return ret;
 
-    if (avctx->gop_size == 0 || (s->avctx->frame_number % avctx->gop_size) == 0) {
+    if (avctx->gop_size == 0 || !s->previous_frame->data[0] ||
+        (s->avctx->frame_number % avctx->gop_size) == 0) {
         /* I-Frame */
         s->key_frame = 1;
     } else {
@@ -387,13 +392,6 @@ static int qtrle_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         return ret;
     }
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->key_frame = s->key_frame;
-    avctx->coded_frame->pict_type = s->key_frame ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     if (s->key_frame)
         pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
@@ -401,7 +399,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     return 0;
 }
 
-AVCodec ff_qtrle_encoder = {
+const AVCodec ff_qtrle_encoder = {
     .name           = "qtrle",
     .long_name      = NULL_IF_CONFIG_SMALL("QuickTime Animation (RLE) video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -413,5 +411,5 @@ AVCodec ff_qtrle_encoder = {
     .pix_fmts       = (const enum AVPixelFormat[]){
         AV_PIX_FMT_RGB24, AV_PIX_FMT_RGB555BE, AV_PIX_FMT_ARGB, AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE
     },
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

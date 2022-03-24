@@ -12,7 +12,7 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -40,6 +40,10 @@ class DriveNotificationManager : public KeyedService,
   explicit DriveNotificationManager(
       invalidation::InvalidationService* invalidation_service,
       const base::TickClock* clock = base::DefaultTickClock::GetInstance());
+
+  DriveNotificationManager(const DriveNotificationManager&) = delete;
+  DriveNotificationManager& operator=(const DriveNotificationManager&) = delete;
+
   ~DriveNotificationManager() override;
 
   // KeyedService override.
@@ -117,7 +121,7 @@ class DriveNotificationManager : public KeyedService,
       const std::string& team_drive_id) const;
   std::string ExtractTeamDriveId(base::StringPiece topic_name) const;
 
-  invalidation::InvalidationService* invalidation_service_;
+  raw_ptr<invalidation::InvalidationService> invalidation_service_;
   base::ObserverList<DriveNotificationObserver>::Unchecked observers_;
 
   // True when Drive File Sync Service is registered for Drive notifications.
@@ -148,8 +152,6 @@ class DriveNotificationManager : public KeyedService,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveNotificationManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DriveNotificationManager);
 };
 
 }  // namespace drive

@@ -9,7 +9,6 @@
 #include <cstdint>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -23,6 +22,10 @@ namespace net {
 class MockDecrypter : public quic::QuicDecrypter {
  public:
   explicit MockDecrypter(quic::Perspective perspective);
+
+  MockDecrypter(const MockDecrypter&) = delete;
+  MockDecrypter& operator=(const MockDecrypter&) = delete;
+
   ~MockDecrypter() override {}
 
   // QuicCrypter implementation
@@ -50,9 +53,6 @@ class MockDecrypter : public quic::QuicDecrypter {
   quic::QuicPacketCount GetIntegrityLimit() const override;
   absl::string_view GetKey() const override;
   absl::string_view GetNoncePrefix() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockDecrypter);
 };
 
 }  // namespace net

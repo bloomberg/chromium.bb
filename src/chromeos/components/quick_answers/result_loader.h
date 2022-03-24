@@ -8,20 +8,18 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/search_result_parsers/search_response_parser.h"
 
 namespace network {
+class SharedURLLoaderFactory;
 class SimpleURLLoader;
 struct ResourceRequest;
-
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
 }  // namespace network
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 
 enum class IntentType;
@@ -32,6 +30,9 @@ class ResultLoader {
   // A delegate interface for the ResultLoader.
   class ResultLoaderDelegate {
    public:
+    using AccessTokenCallback =
+        base::OnceCallback<void(const std::string& access_token)>;
+
     ResultLoaderDelegate(const ResultLoaderDelegate&) = delete;
     ResultLoaderDelegate& operator=(const ResultLoaderDelegate&) = delete;
 
@@ -42,6 +43,9 @@ class ResultLoader {
     // be |nullptr| if no answer found for the selected content.
     virtual void OnQuickAnswerReceived(
         std::unique_ptr<QuickAnswer> quick_answer) {}
+
+    // Request for the access token associated with the active user's profile.
+    virtual void RequestAccessToken(AccessTokenCallback callback) {}
 
    protected:
     ResultLoaderDelegate() = default;
@@ -57,8 +61,9 @@ class ResultLoader {
       std::unique_ptr<network::ResourceRequest> resource_request,
       const std::string& request_body)>;
 
-  ResultLoader(network::mojom::URLLoaderFactory* url_loader_factory,
-               ResultLoaderDelegate* delegate);
+  ResultLoader(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      ResultLoaderDelegate* delegate);
 
   ResultLoader(const ResultLoader&) = delete;
   ResultLoader& operator=(const ResultLoader&) = delete;
@@ -69,7 +74,7 @@ class ResultLoader {
   // Creates ResultLoader based on the |intent_type|.
   static std::unique_ptr<ResultLoader> Create(
       IntentType intent_type,
-      network::mojom::URLLoaderFactory* url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       ResultLoader::ResultLoaderDelegate* delegate);
 
   // Starts downloading of |quick_answers| associated with |selected_text|,
@@ -88,8 +93,10 @@ class ResultLoader {
                                std::unique_ptr<std::string> response_body,
                                ResponseParserCallback complete_callback) = 0;
 
+  ResultLoaderDelegate* delegate() const { return delegate_; }
+
  private:
-  network::mojom::URLLoaderFactory* network_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   ResultLoaderDelegate* const delegate_;
 
@@ -108,6 +115,6 @@ class ResultLoader {
 };
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROMEOS_COMPONENTS_QUICK_ANSWERS_RESULT_LOADER_H_

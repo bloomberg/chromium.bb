@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import symbol
 
 from py_utils.refactor.annotated_symbol import base_symbol
@@ -23,13 +24,12 @@ class Function(base_symbol.AnnotatedSymbol):
       return None
 
     statement = compound_statement.children[0]
-    if statement.type == symbol.funcdef:
+    if statement.type == symbol.funcdef or \
+      (statement.type == symbol.decorated and
+        statement.children[-1].type == symbol.funcdef):
       return cls(statement.type, statement.children)
-    elif (statement.type == symbol.decorated and
-          statement.children[-1].type == symbol.funcdef):
-      return cls(statement.type, statement.children)
-    else:
-      return None
+
+    return None
 
   @property
   def suite(self):

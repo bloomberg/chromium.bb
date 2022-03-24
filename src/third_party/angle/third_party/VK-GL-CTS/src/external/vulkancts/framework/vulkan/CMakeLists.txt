@@ -71,6 +71,7 @@ set(VKUTILNOSHADER_SRCS
 	vkDeviceFeatures.hpp
 	vkDeviceFeatures.cpp
 	vkDeviceFeatures.inl
+	vkDeviceFeatureTest.inl
 	vkDeviceProperties.hpp
 	vkDeviceProperties.cpp
 	vkDeviceProperties.inl
@@ -124,6 +125,10 @@ if (DE_COMPILER_IS_GCC OR DE_COMPILER_IS_CLANG)
 endif ()
 
 set(VKUTIL_LIBS ${VKUTIL_LIBS} SPIRV-Tools SPIRV-Tools-opt)
+
+if(DEQP_HAVE_RENDERDOC_HEADER)
+	add_definitions(-DDEQP_HAVE_RENDERDOC_HEADER=1)
+endif()
 
 PCH(VKUTILNOSHADER_SRCS ../../modules/vulkan/pch.cpp)
 PCH(VKUTIL_SRCS ../../modules/vulkan/pch.cpp)

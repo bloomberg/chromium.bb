@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "extensions/shell/browser/shell_native_app_window.h"
 
 @class ShellNSWindow;
@@ -37,6 +36,10 @@ class ShellNativeAppWindowMac : public ShellNativeAppWindow {
  public:
   ShellNativeAppWindowMac(extensions::AppWindow* app_window,
                           const extensions::AppWindow::CreateParams& params);
+
+  ShellNativeAppWindowMac(const ShellNativeAppWindowMac&) = delete;
+  ShellNativeAppWindowMac& operator=(const ShellNativeAppWindowMac&) = delete;
+
   ~ShellNativeAppWindowMac() override;
 
   // ui::BaseWindow:
@@ -61,8 +64,6 @@ class ShellNativeAppWindowMac : public ShellNativeAppWindow {
   ShellNSWindow* window() const;
 
   base::scoped_nsobject<ShellNativeAppWindowController> window_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellNativeAppWindowMac);
 };
 
 }  // namespace extensions

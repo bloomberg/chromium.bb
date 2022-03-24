@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/devices/x11/xinput_util.h"
 #include "ui/events/event_constants.h"
@@ -150,10 +150,10 @@ void ScopedXI2Event::InitMotionEvent(const gfx::Point& location,
                                      const gfx::Point& root_location,
                                      int flags) {
   x11::MotionNotifyEvent motion_event{
-      .root_x = root_location.x(),
-      .root_y = root_location.y(),
-      .event_x = location.x(),
-      .event_y = location.y(),
+      .root_x = static_cast<int16_t>(root_location.x()),
+      .root_y = static_cast<int16_t>(root_location.y()),
+      .event_x = static_cast<int16_t>(location.x()),
+      .event_y = static_cast<int16_t>(location.y()),
       .state = static_cast<x11::KeyButMask>(XEventState(flags)),
       .same_screen = true,
   };
@@ -169,10 +169,10 @@ void ScopedXI2Event::InitButtonEvent(EventType type,
       .opcode = type == ui::ET_MOUSE_PRESSED ? x11::ButtonEvent::Press
                                              : x11::ButtonEvent::Release,
       .detail = static_cast<x11::Button>(XButtonEventButton(type, flags)),
-      .root_x = location.x(),
-      .root_y = location.y(),
-      .event_x = location.x(),
-      .event_y = location.y(),
+      .root_x = static_cast<int16_t>(location.x()),
+      .root_y = static_cast<int16_t>(location.y()),
+      .event_x = static_cast<int16_t>(location.x()),
+      .event_y = static_cast<int16_t>(location.y()),
       .same_screen = true,
   };
 

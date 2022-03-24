@@ -12,13 +12,17 @@
 #include "src/core/SkColorSpaceXformSteps.h"
 #include "src/core/SkCompressedDataUtils.h"
 #include "src/core/SkConvertPixels.h"
+#include "src/core/SkMathPriv.h"
 #include "src/core/SkMipmap.h"
+#include "src/core/SkRasterPipeline.h"
 #include "src/core/SkTLazy.h"
 #include "src/core/SkTraceEvent.h"
 #include "src/core/SkUtils.h"
+#include "src/gpu/GrCaps.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrPixmap.h"
+#include "src/gpu/GrSwizzle.h"
 
 struct ETC1Block {
     uint32_t fHigh;
@@ -743,19 +747,4 @@ bool GrClearImage(const GrImageInfo& dstInfo, void* dst, size_t dstRB, std::arra
     pipeline.run(0, 0, dstInfo.width(), dstInfo.height());
 
     return true;
-}
-
-GrColorType SkColorTypeAndFormatToGrColorType(const GrCaps* caps,
-                                              SkColorType skCT,
-                                              const GrBackendFormat& format) {
-    GrColorType grCT = SkColorTypeToGrColorType(skCT);
-    // Until we support SRGB in the SkColorType we have to do this manual check here to make sure
-    // we use the correct GrColorType.
-    if (caps->isFormatSRGB(format)) {
-        if (grCT != GrColorType::kRGBA_8888) {
-            return GrColorType::kUnknown;
-        }
-        grCT = GrColorType::kRGBA_8888_SRGB;
-    }
-    return grCT;
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -88,6 +89,10 @@ class NamedFrameCreatedObserver : public content::WebContentsObserver {
                             const std::string& frame_name)
       : WebContentsObserver(web_contents), frame_name_(frame_name) {}
 
+  NamedFrameCreatedObserver(const NamedFrameCreatedObserver&) = delete;
+  NamedFrameCreatedObserver& operator=(const NamedFrameCreatedObserver&) =
+      delete;
+
   content::RenderFrameHost* Wait() {
     if (!frame_) {
       run_loop_.Run();
@@ -107,10 +112,8 @@ class NamedFrameCreatedObserver : public content::WebContentsObserver {
   }
 
   base::RunLoop run_loop_;
-  content::RenderFrameHost* frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> frame_ = nullptr;
   std::string frame_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(NamedFrameCreatedObserver);
 };
 
 bool ValidatePageElement(content::RenderFrameHost* frame,
@@ -151,8 +154,8 @@ void NavigateToFeedAndValidate(net::EmbeddedTestServer* server,
   NamedFrameCreatedObserver subframe_observer(tab, "preview");
 
   // Navigate to the subscribe page directly.
-  ui_test_utils::NavigateToURL(browser,
-                               GetFeedUrl(server, url, true, extension_id));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser, GetFeedUrl(server, url, true, extension_id)));
   ASSERT_TRUE(subframe_observer.Wait() != nullptr);
 
   std::string message;
@@ -161,7 +164,8 @@ void NavigateToFeedAndValidate(net::EmbeddedTestServer* server,
   EXPECT_STREQ(expected_msg.c_str(), message.c_str());
 
   content::RenderFrameHost* frame = content::FrameMatchingPredicate(
-      tab, base::BindRepeating(&content::FrameMatchesName, "preview"));
+      tab->GetPrimaryPage(),
+      base::BindRepeating(&content::FrameMatchesName, "preview"));
   ASSERT_TRUE(ValidatePageElement(
       tab->GetMainFrame(), kScriptFeedTitle, expected_feed_title));
   ASSERT_TRUE(ValidatePageElement(frame, kScriptAnchor, expected_item_title));
@@ -183,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
 
   // Navigate to the feed page.
   GURL feed_url = embedded_test_server()->GetURL(kFeedPageMultiRel);
-  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), feed_url));
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 }

@@ -15,7 +15,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -36,6 +35,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       public FidoCableDevice::Observer {
  public:
   explicit FidoCableDiscovery(std::vector<CableDiscoveryData> discovery_data);
+
+  FidoCableDiscovery(const FidoCableDiscovery&) = delete;
+  FidoCableDiscovery& operator=(const FidoCableDiscovery&) = delete;
+
   ~FidoCableDiscovery() override;
 
   // FidoDeviceDiscovery:
@@ -77,7 +80,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     std::vector<CableEidArray> uuids;
   };
 
-  static const BluetoothUUID& CableAdvertisementUUID();
+  static const BluetoothUUID& GoogleCableUUID();
+  static const BluetoothUUID& FIDOCableUUID();
   static bool IsCableDevice(const BluetoothDevice* device);
 
   // ResultDebugString returns a string containing a hex dump of |eid| and a
@@ -177,8 +181,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   base::flat_set<CableV1DiscoveryEvent> recorded_events_;
 
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FidoCableDiscovery);
 };
 
 }  // namespace device

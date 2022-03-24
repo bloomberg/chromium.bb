@@ -42,6 +42,9 @@ const char kEnableThirdPartyKeyboardWorkaround[] =
 // Enabled the NTP Discover feed.
 const char kEnableDiscoverFeed[] = "enable-discover-feed";
 
+// Enables the upgrade sign-in promo.
+const char kEnableUpgradeSigninPromo[] = "enable-upgrade-signin-promo";
+
 // Installs the URLBlocklist and URLAllowlist handlers.
 const char kInstallURLBlocklistHandlers[] = "install-url-blocklist-handlers";
 

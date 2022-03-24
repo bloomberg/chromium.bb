@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/media_message_center/media_notification_background_ash_impl.h"
 #include "components/media_message_center/media_notification_background_impl.h"
-#include "components/media_message_center/media_notification_constants.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
@@ -105,6 +104,7 @@ const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kToggleCamera:
     case MediaSessionAction::kHangUp:
     case MediaSessionAction::kRaise:
+    case MediaSessionAction::kSetMute:
       NOTREACHED();
       break;
   }
@@ -306,6 +306,9 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
 
+  if (header_row_)
+    header_row_->SetExpandButtonEnabled(GetExpandable());
+
   if (item_)
     item_->SetView(this);
 }
@@ -465,7 +468,8 @@ void MediaNotificationViewImpl::UpdateWithMediaArtwork(
 
   UMA_HISTOGRAM_BOOLEAN(kArtworkHistogramName, has_artwork_);
 
-  UpdateForegroundColor();
+  if (GetWidget())
+    UpdateForegroundColor();
 
   container_->OnMediaArtworkChanged(image);
 
@@ -478,7 +482,8 @@ void MediaNotificationViewImpl::UpdateWithMediaArtwork(
 void MediaNotificationViewImpl::UpdateWithFavicon(const gfx::ImageSkia& icon) {
   GetMediaNotificationBackground()->UpdateFavicon(icon);
 
-  UpdateForegroundColor();
+  if (GetWidget())
+    UpdateForegroundColor();
   SchedulePaint();
 }
 
@@ -488,13 +493,11 @@ void MediaNotificationViewImpl::UpdateWithVectorIcon(
     return;
 
   vector_header_icon_ = &vector_icon;
-  const SkColor foreground =
-      GetMediaNotificationBackground()->GetForegroundColor(*this);
-  header_row_->SetAppIcon(gfx::CreateVectorIcon(
-      *vector_header_icon_, message_center::kSmallImageSizeMD, foreground));
   header_row_->SetAppIconVisible(true);
   header_row_->SetProperty(views::kMarginsKey,
                            kIconMediaNotificationHeaderInsets);
+  if (GetWidget())
+    UpdateForegroundColor();
 }
 
 void MediaNotificationViewImpl::UpdateDeviceSelectorAvailability(
@@ -647,6 +650,7 @@ void MediaNotificationViewImpl::CreateHeaderRow(
   }
 
   header_row->SetAppName(default_app_name_);
+  header_row->SetFocusBehavior(FocusBehavior::NEVER);
 
   if (should_show_icon) {
     header_row->ClearAppIcon();
@@ -739,7 +743,7 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   artist_label_->SetEnabledColor(theme.secondary_text_color);
 
   if (header_row_) {
-    header_row_->SetAccentColor(theme.primary_text_color);
+    header_row_->SetColor(theme.primary_text_color);
     header_row_->SetBackgroundColor(background);
   } else {
     cros_header_label_->SetEnabledColor(theme.primary_text_color);

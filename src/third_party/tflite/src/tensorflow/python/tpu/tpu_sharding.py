@@ -12,14 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
-
 """Helper library for sharding during TPU compilation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorflow.python.framework import tensor_shape
 
@@ -29,11 +23,11 @@ _DEFAULT_SHARD_DIMENSION = 0
 
 # TODO(b/36777903) change other parts of tpu.py to use this class.
 class ShardingPolicy(object):
-  """An object use to hold the sharding policy for a Tensor.
-  """
+  """An object use to hold the sharding policy for a Tensor."""
 
   def __init__(self):
     self._number_of_shards = None
+    self._number_of_partitions = 1
     self._shard_dimension = None
     self._frozen = False
 
@@ -82,15 +76,41 @@ class ShardingPolicy(object):
     if self._frozen:
       if self._number_of_shards != number_of_shards:
         raise ValueError(
-            "Can't set sharding policy to use %d shards since it has been "
-            "frozen to use %d." % (number_of_shards, self._number_of_shards))
+            f"Can't set sharding policy to use {number_of_shards} shards since "
+            f"it has been frozen to use {self._number_of_shards}")
     else:
       if number_of_shards > 0:
         self._number_of_shards = number_of_shards
       else:
         raise ValueError(
-            "Can't set sharding policy to use %s shards; value must be >0" %
-            str(number_of_shards))
+            "Can't set sharding policy to use {number_of_shards} shards; "
+            "value must be > 0")
+
+  @property
+  def number_of_partitions(self):
+    """Returns the number of partitions of the policy or None if unspecified."""
+    return self._number_of_partitions
+
+  def set_number_of_partitions(self, number_of_partitions):
+    """Sets the number of partitions for the current policy.
+
+    If the policy has been frozen then shard_dimension must match the
+    existing setting.
+
+    Args:
+      number_of_partitions: The number of partitions to use in the policy.
+
+    Raises:
+      ValueError: If the policy has been frozen and shard_dimension
+        differs from the frozen value.
+    """
+    if self._frozen:
+      if self._number_of_partitions != number_of_partitions:
+        raise ValueError(
+            f"Can't set number_of_partitions to {number_of_partitions} since "
+            f"it has been frozen to use {self._number_of_partitions}.")
+    else:
+      self._number_of_partitions = number_of_partitions
 
   @property
   def shard_dimension(self):
@@ -134,6 +154,33 @@ class ShardingPolicy(object):
     if other.shard_dimension is not None:
       self.set_shard_dimension(other.shard_dimension)
 
+  def get_unpartitioned_shape(self, shape):
+    """Returns the shape of an unpartitioned Tensor.
+
+    When given the shape of a 'sharded-size' Tensor, returns the shape
+    of the full shape of its unpartitioned Tensor.
+
+    Args:
+      shape: The shape of the sharded Tensor.
+
+    Returns:
+      The shape of the unpartitioned version of the Tensor.
+
+    Raises:
+      ValueError: if shape has unknown sharded dimension
+    """
+    shape = tensor_shape.as_shape(shape)
+    dims = shape.as_list()
+    if (self._shard_dimension is None or self._number_of_partitions is None or
+        not dims):
+      return None
+    if dims[self._shard_dimension] is None:
+      raise ValueError(f"Shape {shape.as_list()} must have a fixed size for "
+                       f"dimension {self._shard_dimension} that is known. ")
+    if self._number_of_partitions > 1:
+      dims[self._shard_dimension] *= self._number_of_partitions
+    return tensor_shape.as_shape(dims)
+
   def get_sharded_shape(self, shape, shard_index=None):
     """Returns the shape of a shard of a full Tensor.
 
@@ -144,8 +191,8 @@ class ShardingPolicy(object):
     Args:
       shape: The shape of the full-size Tensor to be sharded.
       shard_index: The index of the shard whose shape should be returned.
-        shard_index can be None for sharding policies that use the same
-        shape for every shard.
+        shard_index can be None for sharding policies that use the same shape
+        for every shard.
 
     Returns:
       The shape of the sharded version of the Tensor.
@@ -163,29 +210,31 @@ class ShardingPolicy(object):
       return None
     if shard_index is not None:
       if shard_index < 0 or shard_index >= self.number_of_shards:
-        raise ValueError("shard_index %d, but must be in [0,%d)." %
-                         (shard_index, self._number_of_shards))
+        raise ValueError(
+            f"Requested shard_index {shard_index}, but shard_index must be in "
+            f"[0,{self._number_of_shards}).")
     shape = tensor_shape.as_shape(shape)
     if self._number_of_shards == 1:
       # Don't do anything when there's only one shard.
       return shape
     ndims = shape.ndims
     if ndims is None:
-      raise ValueError("shape must be a specified shape not Unknown")
+      raise ValueError(f"Shape {shape} must be a known shape.")
     if ndims <= self._shard_dimension:
-      raise ValueError("shape %s does not contain shard_dimension %d" %
-                       (shape.as_list(), self._shard_dimension))
+      raise ValueError(
+          f"Shape {shape.as_list()} does not contain shard_dimension "
+          f"{self._shard_dimension}")
     dims = shape.as_list()
     if dims[self._shard_dimension] is None:
-      raise ValueError("shape %s must have a fixed size for dimension %d "
-                       "that is known at graph construction time." %
-                       (shape.as_list(), self._shard_dimension))
+      raise ValueError(
+          f"Shape {shape.as_list()} must have a fixed size for dimension "
+          f"{self._shard_dimension} that is known at construction time.")
     if (dims[self._shard_dimension] % self._number_of_shards) != 0:
-      raise ValueError("shape %s cannot be sharded %d ways along dimension %d" %
-                       (shape.as_list(), self._number_of_shards,
-                        self._shard_dimension))
+      raise ValueError(
+          f"Shape {shape.as_list()} cannot be sharded {self._number_of_shards} "
+          f"ways along dimension {self._shard_dimension}")
     dims[self._shard_dimension] //= self._number_of_shards
-    return tensor_shape.as_shape(dims)
+    return tensor_shape.TensorShape(dims)
 
   def _unshard_shape(self, shape):
     """Return the unsharded shape that would generate a given sharded shape.
@@ -207,13 +256,14 @@ class ShardingPolicy(object):
       return shape
     ndims = shape.ndims
     if ndims is None:
-      raise ValueError("shape must be a specified shape not Unknown")
+      raise ValueError(f"Shape {shape} must be statically known.")
     if ndims <= self._shard_dimension:
-      raise ValueError("shape %s does not contain shard_dimension %d" %
-                       (shape.as_list(), self._shard_dimension))
+      raise ValueError(f"Shape {shape.as_list()} does not contain "
+                       f"shard_dimension {self._shard_dimension}. "
+                       f"Rank is too small.")
     dims = shape.as_list()
     dims[self._shard_dimension] *= self._number_of_shards
-    return tensor_shape.as_shape(dims)
+    return tensor_shape.TensorShape(dims)
 
   def get_unsharded_shape(self, shapes):
     """Returns the shape of an unsharded Tensor given a list of shards.
@@ -239,14 +289,14 @@ class ShardingPolicy(object):
     self._fill_default_values()
     if len(shapes) != self.number_of_shards:
       raise ValueError(
-          "shapes is %s but must be a list of length number_of_shards=%d" % (
-              str(shapes), self.number_of_shards))
+          f"Shapes {shapes} is length {len(shapes)} but must be a list of "
+          f"length number_of_shards={self.number_of_shards}")
     unsharded_shapes = [self._unshard_shape(s) for s in shapes]
-    for i in xrange(self.number_of_shards - 1):
+    for i in range(self.number_of_shards - 1):
       if not unsharded_shapes[i].is_compatible_with(
           unsharded_shapes[self.number_of_shards - 1]):
         raise ValueError(
-            "sharded shapes %s are not consistent shards of a full shape "
-            "sharded %d ways along dimension %d" % (
-                str(shapes), self.number_of_shards, self.shard_dimension))
+            f"Sharded shapes {shapes} are not consistent shards of a full shape "
+            f"sharded {self.number_of_shards} ways along "
+            f"dimension {self.shard_dimension}.")
     return unsharded_shapes[0]

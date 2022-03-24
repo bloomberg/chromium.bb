@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -13,6 +13,7 @@
 import check_merge
 from datetime import datetime
 import find_patches
+import config_flag_changes
 import os
 import re
 from robo_lib.errors import UserInstructions
@@ -65,12 +66,22 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
 
   cfg.SetBranchName(branch_name)
 
+def AreThereAnyUntrackedAutorenamesUnderCwd(cfg):
+  """Return true if and only if there are untracked autorename files."""
+  # Note that this only sees files that are somewhere under `pwd`.
+  return shell.output_or_error(["git", "ls-files", "--other",
+                                "--exclude-standard", "*autorename*"]) != ""
 
 def CreateAndCheckoutDatedSushiBranchIfNeeded(cfg):
   """Create a dated branch from origin/master if we're not already on one."""
   if cfg.sushi_branch_name():
     shell.log(f"Already on sushi branch {cfg.sushi_branch_name()}")
     return
+
+  cfg.chdir_to_ffmpeg_home();
+  if AreThereAnyUntrackedAutorenamesUnderCwd(cfg):
+    raise Exception("Untracked autorename files found.  Probably delete them.")
+
   CreateAndCheckoutDatedSushiBranch(cfg)
 
 
@@ -112,7 +123,7 @@ def FindUpstreamMergeParent(cfg):
   for sha1 in sha1s:
     # 'not' is correct -- it returns zero if it is an ancestor => upstream.
     cmd = ["git", "merge-base", "--is-ancestor", sha1, "upstream/master"]
-    if not shell.stdout_fail_ok(cmd):
+    if not shell.run(cmd).returncode:
       return sha1
   raise Exception("No upstream merge parent found.  Is the merge committed?")
 
@@ -148,12 +159,10 @@ def WritePatchesReadme(cfg):
 def WriteConfigChangesFile(cfg):
   """Write a file that summarizes the config changes, for easier reviewing."""
   cfg.chdir_to_ffmpeg_home();
-  # This looks for things that were added / deleted that look like #define or
-  # %define (for asm) ending in 0 or 1, that have changed in any of the configs.
-  os.system("git diff %s --unified=0 -- chromium/config/* |"
-            "grep '^[+-].*[01]$' | sed -e 's/[%%#]define//g' |sort |"
-            "uniq -s 1 >chromium/patches/config_flag_changes.txt" %
-            cfg.origin_merge_base())
+  deltas = config_flag_changes.get_config_flag_changes(cfg)
+  with open('chromium/patches/config_flag_changes.txt', 'w') as f:
+    for delta in deltas:
+      f.write(f'{delta}\n')
 
 def AddAndCommit(cfg, commit_title):
   """Add everything, and commit locally with |commit_title|"""
@@ -247,7 +256,7 @@ def UpdateChromiumReadmeWithUpstream(robo_configuration):
   merge_date = shell.output_or_error(["git", "log", "-1","--date=format:%b %d %Y",
                             "--format=%cd", merge_sha1])
   readme = re.sub(r"(Last Upstream Merge:).*\n",
-                  r"\1 %s, %s" % (merge_sha1, merge_date),
+                  r"\1 %s, %s\n" % (merge_sha1, merge_date),
                   readme)
   with open("README.chromium", "w") as f:
     f.write(readme)
@@ -281,11 +290,20 @@ def IsUploadedForReviewAndLanded(robo_configuration):
   if not IsUploadedForReview(robo_configuration):
     shell.log("Is not uploaded for review")
     return False
+  # Make sure we're up-to-date with origin, to fetch the (hopefully) landed
+  # sushi branch.
+  if robo_configuration.Call(["git", "fetch", "origin"]):
+    raise Exception("Could not fetch from origin")
+
+  branch_name = robo_configuration.sushi_branch_name()
   # See if origin/sushi and local/sushi are the same.  This check by itself
   # isn't sufficient, since it would return true any time the two are in sync.
   diff = shell.output_or_error(["git", "diff",
-               "origin/" + robo_configuration.sushi_branch_name(),
-               robo_configuration.sushi_branch_name()])
+               "origin/" + branch_name, branch_name])
+  if diff:
+    print("WARNING: Local and origin branches differ. Run `git diff origin/" +
+            branch_name + " " + branch_name + "` to see how.")
+
   return not diff
 
 @RequiresCleanWorkingDirectory
@@ -297,6 +315,26 @@ def UploadForReview(robo_configuration):
             "Sushi branch is already uploaded for review!  (try git cl web)")
   shell.log("Uploading sushi branch for review.")
   os.system("git cl upload")
+
+@RequiresCleanWorkingDirectory
+def MergeBackToOriginMaster(robo_configuration):
+  """Once the sushi branch has landed in origin after review, merge it back
+     to origin/master locally and push it."""
+  robo_configuration.chdir_to_ffmpeg_home();
+  if not IsUploadedForReviewAndLanded(robo_configuration):
+    raise Exception("The CL must be reviewed and landed before proceeding.")
+  # TODO: check if the merge has already been done, and fail.  Also, add a
+  # skip_fn to the step in robosushi, so we skip this step cleanly.
+
+  # TODO: actually do stuff.
+  raise Exception("Robosushi can't automativally merge back to master yet. " \
+                  "Please see go/robosushi for what to do next.")
+  # create local_merge_branch tracking origin/master
+  # check out local_merge_branch  # does this make us forget our sushi branch?
+  # git merge sushsi_branch
+  # git push origin local_branch_name
+  # git checkout origin/master (or sushi?)
+  # git branch -R local_merge_branch
 
 @RequiresCleanWorkingDirectory
 def TryFakeDepsRoll(robo_configuration):
@@ -320,3 +358,4 @@ def TryFakeDepsRoll(robo_configuration):
   # TODO: get mad otherwise.
   shell.output_or_error(["roll-deps.py", "third_party/ffmpeg", sha1])
   # TODO: -1 it.
+

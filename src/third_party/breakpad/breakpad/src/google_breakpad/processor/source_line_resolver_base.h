@@ -41,6 +41,7 @@
 #ifndef GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_BASE_H__
 #define GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_BASE_H__
 
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -84,11 +85,15 @@ class SourceLineResolverBase : public SourceLineResolverInterface {
   virtual void UnloadModule(const CodeModule* module);
   virtual bool HasModule(const CodeModule* module);
   virtual bool IsModuleCorrupt(const CodeModule* module);
-  virtual void FillSourceLineInfo(StackFrame* frame);
+  virtual void FillSourceLineInfo(
+      StackFrame* frame,
+      std::deque<std::unique_ptr<StackFrame>>* inlined_frames);
   virtual WindowsFrameInfo* FindWindowsFrameInfo(const StackFrame* frame);
   virtual CFIFrameInfo* FindCFIFrameInfo(const StackFrame* frame);
 
   // Nested structs and classes.
+  struct InlineOrigin;
+  struct Inline;
   struct Line;
   struct Function;
   struct PublicSymbol;

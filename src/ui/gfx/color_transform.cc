@@ -13,22 +13,23 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
-#include "ui/gfx/transform.h"
 
 using std::abs;
 using std::copysign;
+using std::endl;
 using std::exp;
 using std::log;
 using std::max;
 using std::min;
 using std::pow;
 using std::sqrt;
-using std::endl;
 
 namespace gfx {
 
@@ -144,20 +145,20 @@ float ToLinear(ColorSpace::TransferID id, float v) {
 }
 
 Transform GetTransferMatrix(const gfx::ColorSpace& color_space, int bit_depth) {
-  SkMatrix44 transfer_matrix;
+  skia::Matrix44 transfer_matrix;
   color_space.GetTransferMatrix(bit_depth, &transfer_matrix);
   return Transform(transfer_matrix);
 }
 
 Transform GetRangeAdjustMatrix(const gfx::ColorSpace& color_space,
                                int bit_depth) {
-  SkMatrix44 range_adjust_matrix;
+  skia::Matrix44 range_adjust_matrix;
   color_space.GetRangeAdjustMatrix(bit_depth, &range_adjust_matrix);
   return Transform(range_adjust_matrix);
 }
 
 Transform GetPrimaryTransform(const gfx::ColorSpace& color_space) {
-  SkMatrix44 primary_matrix;
+  skia::Matrix44 primary_matrix;
   color_space.GetPrimaryMatrix(&primary_matrix);
   return Transform(primary_matrix);
 }
@@ -173,6 +174,10 @@ class ColorTransformNull;
 class ColorTransformStep {
  public:
   ColorTransformStep() {}
+
+  ColorTransformStep(const ColorTransformStep&) = delete;
+  ColorTransformStep& operator=(const ColorTransformStep&) = delete;
+
   virtual ~ColorTransformStep() {}
   virtual ColorTransformFromLinear* GetFromLinear() { return nullptr; }
   virtual ColorTransformFromBT2020CL* GetFromBT2020CL() { return nullptr; }
@@ -196,18 +201,13 @@ class ColorTransformStep {
                                   std::stringstream* src,
                                   size_t step_index) const = 0;
   virtual void AppendSkShaderSource(std::stringstream* src) const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ColorTransformStep);
 };
 
 class ColorTransformInternal : public ColorTransform {
  public:
   ColorTransformInternal(const ColorSpace& src,
-                         int src_bit_depth,
                          const ColorSpace& dst,
-                         int dst_bit_depth,
-                         Intent intent);
+                         const Options& options);
   ~ColorTransformInternal() override;
 
   gfx::ColorSpace GetSrcColorSpace() const override { return src_; }
@@ -225,9 +225,8 @@ class ColorTransformInternal : public ColorTransform {
 
  private:
   void AppendColorSpaceToColorSpaceTransform(const ColorSpace& src,
-                                             int src_bit_depth,
                                              const ColorSpace& dst,
-                                             int dst_bit_depth);
+                                             const Options& options);
   void Simplify();
 
   std::list<std::unique_ptr<ColorTransformStep>> steps_;
@@ -270,11 +269,10 @@ class ColorTransformMatrix : public ColorTransformStep {
       matrix_.TransformPoint(colors + i);
   }
 
-
   void AppendShaderSource(std::stringstream* hdr,
                           std::stringstream* src,
                           size_t step_index) const override {
-    const SkMatrix44& m = matrix_.matrix();
+    const skia::Matrix44& m = matrix_.matrix();
     *src << "  color = mat3(";
     *src << m.get(0, 0) << ", " << m.get(1, 0) << ", " << m.get(2, 0) << ",";
     *src << endl;
@@ -294,7 +292,7 @@ class ColorTransformMatrix : public ColorTransformStep {
   }
 
   void AppendSkShaderSource(std::stringstream* src) const override {
-    const SkMatrix44& m = matrix_.matrix();
+    const skia::Matrix44& m = matrix_.matrix();
     *src << "  color = half4x4(";
     *src << m.get(0, 0) << ", " << m.get(1, 0) << ", " << m.get(2, 0) << ", 0,";
     *src << endl;
@@ -933,18 +931,146 @@ class ColorTransformFromBT2020CL : public ColorTransformStep {
   }
 };
 
+class ColorTransformPQToneMapToLinear : public ColorTransformStep {
+ public:
+  static float ToLinearToneMap(float v) {
+    v = max(0.0f, v);
+    return min(2.3f * pow(v, 2.8f), v / 5.0f + 0.8f);
+  }
+
+  static float ToLinearPQ(float v) {
+    v = max(0.0f, v);
+    float m1 = (2610.0f / 4096.0f) / 4.0f;
+    float m2 = (2523.0f / 4096.0f) * 128.0f;
+    float c1 = 3424.0f / 4096.0f;
+    float c2 = (2413.0f / 4096.0f) * 32.0f;
+    float c3 = (2392.0f / 4096.0f) * 32.0f;
+    float p = pow(v, 1.0f / m2);
+    v = powf(max(p - c1, 0.0f) / (c2 - c3 * p), 1.0f / m1);
+    v *= 10000.0f / ColorSpace::kDefaultScrgbLinearSdrWhiteLevel;
+    return v;
+  }
+
+  // Assumes BT2020 primaries.
+  static float Luma(const ColorTransform::TriStim& c) {
+    return c.x() * 0.2627f + c.y() * 0.6780f + c.z() * 0.0593f;
+  }
+
+  static ColorTransform::TriStim ClipToWhite(ColorTransform::TriStim* c) {
+    float maximum = max(max(c->x(), c->y()), c->z());
+    if (maximum > 1.0f) {
+      float l = Luma(*c);
+      c->Scale(1.0f / maximum);
+      ColorTransform::TriStim white(1.0f, 1.0f, 1.0f);
+      white.Scale((1.0f - 1.0f / maximum) * l / Luma(white));
+      ColorTransform::TriStim black(0.0f, 0.0f, 0.0f);
+      *c += white - black;
+    }
+    return *c;
+  }
+
+  void Transform(ColorTransform::TriStim* colors, size_t num) const override {
+    for (size_t i = 0; i < num; i++) {
+      ColorTransform::TriStim ret(ToLinearToneMap(colors[i].x()),
+                                  ToLinearToneMap(colors[i].y()),
+                                  ToLinearToneMap(colors[i].z()));
+      if (Luma(ret) > 0.0) {
+        ColorTransform::TriStim smpte2084(ToLinearPQ(colors[i].x()),
+                                          ToLinearPQ(colors[i].y()),
+                                          ToLinearPQ(colors[i].z()));
+        smpte2084.Scale(Luma(ret) / Luma(smpte2084));
+        ret = ClipToWhite(&smpte2084);
+      }
+      colors[i] = ret;
+    }
+  }
+
+  void AppendShaderSource(std::stringstream* hdr,
+                          std::stringstream* src,
+                          size_t step_index) const override {
+    auto sdr_white_level =
+        base::NumberToString(ColorSpace::kDefaultScrgbLinearSdrWhiteLevel);
+    *hdr << "vec3 PQToneMapStep" << step_index << "(vec3 color) {\n"
+         << "  vec3 result = max(color, 0.0);\n"
+         << "  result =\n"
+         << "      min(2.3 * pow(result, vec3(2.8)), result / 5.0 + 0.8);\n"
+         << "  vec3 luma_vec = vec3(0.2627, 0.6780, 0.0593);\n"
+         << "  float luma = dot(result, luma_vec);\n"
+         << "  if (luma > 0.0) {\n"
+         << "    result = max(color, 0.0);\n"
+         << "    float m1 = (2610.0 / 4096.0) / 4.0;\n"
+         << "    float m2 = (2523.0 / 4096.0) * 128.0;\n"
+         << "    float c1 = 3424.0 / 4096.0;\n"
+         << "    float c2 = (2413.0 / 4096.0) * 32.0;\n"
+         << "    float c3 = (2392.0 / 4096.0) * 32.0;\n"
+         << "    vec3 p = pow(max(result, 0.0), vec3(1.0 / m2));\n"
+         << "    result =\n"
+         << "        pow(max(p - c1, 0.0) / (c2 - c3 * p), vec3(1.0 / m1));\n"
+         << "    result *= 10000.0 / " + sdr_white_level + ".0;\n"
+         << "    result *= luma / dot(result, luma_vec);\n"
+         << "    float c_max = max(max(result.x, result.y), result.z);\n"
+         << "    if (c_max > 1.0) {\n"
+         << "      luma = dot(result, luma_vec);\n"
+         << "      float s = 1.0 / c_max;\n"
+         << "      result *= s;\n"
+         << "      vec3 white = vec3(1.0);\n"
+         << "      white *= (1.0 - s) * luma / dot(white, luma_vec);\n"
+         << "      result += white - vec3(0.0);\n"
+         << "    }\n"
+         << "  }\n"
+         << "  return result;\n"
+         << "}\n";
+    *src << "  color.rgb = PQToneMapStep" << step_index << "(color.rgb);\n";
+  }
+
+  void AppendSkShaderSource(std::stringstream* src) const override {
+    auto sdr_white_level =
+        base::NumberToString(ColorSpace::kDefaultScrgbLinearSdrWhiteLevel);
+    *src << "{\n"
+         << "  half4 result = max(color, 0.0);\n"
+         << "  result =\n"
+         << "      min(2.3 * pow(result, half4(2.8)), result / 5.0 + 0.8);\n"
+         << "  half4 luma_vec = half4(0.2627, 0.6780, 0.0593, 0.0);\n"
+         << "  half luma = dot(result, luma_vec);\n"
+         << "  if (luma > 0.0) {\n"
+         << "    result = max(color, 0.0);\n"
+         << "    half m1 = (2610.0 / 4096.0) / 4.0;\n"
+         << "    half m2 = (2523.0 / 4096.0) * 128.0;\n"
+         << "    half c1 = 3424.0 / 4096.0;\n"
+         << "    half c2 = (2413.0 / 4096.0) * 32.0;\n"
+         << "    half c3 = (2392.0 / 4096.0) * 32.0;\n"
+         << "    half4 p = pow(max(result, 0.0), half4(1.0 / m2));\n"
+         << "    result =\n"
+         << "        pow(max(p - c1, 0.0) / (c2 - c3 * p), half4(1.0 / m1));\n"
+         << "    result *= 10000.0 / " + sdr_white_level + ".0;\n"
+         << "    result *= luma / dot(result, luma_vec);\n"
+         << "    half c_max = max(max(result.x, result.y), result.z);\n"
+         << "    if (c_max > 1.0) {\n"
+         << "      luma = dot(result, luma_vec);\n"
+         << "      half s = 1.0 / c_max;\n"
+         << "      result *= s;\n"
+         << "      half4 white = half4(1.0);\n"
+         << "      white *= (1.0 - s) * luma / dot(white, luma_vec);\n"
+         << "      result += white - half4(0.0);\n"
+         << "    }\n"
+         << "  }\n"
+         << "  result.a = color.a;\n"
+         << "  color = result;\n"
+         << "}\n";
+  }
+};
+
 void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     const ColorSpace& src,
-    int src_bit_depth,
     const ColorSpace& dst,
-    int dst_bit_depth) {
+    const Options& options) {
   // ITU-T H.273: If MatrixCoefficients is equal to 0 (Identity) or 8 (YCgCo),
   // range adjustment is performed on R,G,B samples rather than Y,U,V samples.
   const bool src_matrix_is_identity_or_ycgco =
       src.GetMatrixID() == ColorSpace::MatrixID::GBR ||
       src.GetMatrixID() == ColorSpace::MatrixID::YCOCG;
   auto src_range_adjust_matrix = std::make_unique<ColorTransformMatrix>(
-      GetRangeAdjustMatrix(src, src_bit_depth));
+      GetRangeAdjustMatrix(src, options.src_bit_depth));
 
   if (!src_matrix_is_identity_or_ycgco)
     steps_.push_back(std::move(src_range_adjust_matrix));
@@ -954,7 +1080,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     steps_.push_back(std::make_unique<ColorTransformFromBT2020CL>());
   } else {
     steps_.push_back(std::make_unique<ColorTransformMatrix>(
-        Invert(GetTransferMatrix(src, src_bit_depth))));
+        Invert(GetTransferMatrix(src, options.src_bit_depth))));
   }
 
   if (src_matrix_is_identity_or_ycgco)
@@ -971,15 +1097,26 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         src_to_linear_fn, src.HasExtendedSkTransferFn()));
   } else if (src.GetTransferID() == ColorSpace::TransferID::ARIB_STD_B67) {
-    float sdr_white_level = 0.f;
-    src.GetSDRWhiteLevel(&sdr_white_level);
-    steps_.push_back(
-        std::make_unique<ColorTransformHLGToLinear>(sdr_white_level));
+    if (dst.IsHDR()) {
+      float sdr_white_level = 0.f;
+      src.GetSDRWhiteLevel(&sdr_white_level);
+      steps_.push_back(
+          std::make_unique<ColorTransformHLGToLinear>(sdr_white_level));
+    } else {
+      // HLG is designed such that treating it as 2.2 gamma content works well.
+      constexpr skcms_TransferFunction kGamma22 = {2.2, 1, 0, 0, 0, 0, 0};
+      steps_.push_back(
+          std::make_unique<ColorTransformSkTransferFn>(kGamma22, false));
+    }
   } else if (src.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
-    float sdr_white_level = 0.f;
-    src.GetSDRWhiteLevel(&sdr_white_level);
-    steps_.push_back(
-        std::make_unique<ColorTransformPQToLinear>(sdr_white_level));
+    if (dst.IsHDR()) {
+      float sdr_white_level = 0.f;
+      src.GetSDRWhiteLevel(&sdr_white_level);
+      steps_.push_back(
+          std::make_unique<ColorTransformPQToLinear>(sdr_white_level));
+    } else {
+      steps_.push_back(std::make_unique<ColorTransformPQToneMapToLinear>());
+    }
   } else if (src.GetTransferID() == ColorSpace::TransferID::PIECEWISE_HDR) {
     skcms_TransferFunction fn;
     float p, q, r;
@@ -993,7 +1130,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (src.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(std::make_unique<ColorTransformMatrix>(
-        Invert(GetTransferMatrix(src, src_bit_depth))));
+        Invert(GetTransferMatrix(src, options.src_bit_depth))));
   }
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(GetPrimaryTransform(src)));
@@ -1003,7 +1140,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (dst.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
     // BT2020 CL is a special case.
     steps_.push_back(std::make_unique<ColorTransformMatrix>(
-        GetTransferMatrix(dst, dst_bit_depth)));
+        GetTransferMatrix(dst, options.dst_bit_depth)));
   }
 
   skcms_TransferFunction dst_from_linear_fn;
@@ -1037,7 +1174,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
       dst.GetMatrixID() == ColorSpace::MatrixID::GBR ||
       dst.GetMatrixID() == ColorSpace::MatrixID::YCOCG;
   auto dst_range_adjust_matrix = std::make_unique<ColorTransformMatrix>(
-      Invert(GetRangeAdjustMatrix(dst, dst_bit_depth)));
+      Invert(GetRangeAdjustMatrix(dst, options.dst_bit_depth)));
 
   if (dst_matrix_is_identity_or_ycgco)
     steps_.push_back(std::move(dst_range_adjust_matrix));
@@ -1046,7 +1183,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     NOTREACHED();
   } else {
     steps_.push_back(std::make_unique<ColorTransformMatrix>(
-        GetTransferMatrix(dst, dst_bit_depth)));
+        GetTransferMatrix(dst, options.dst_bit_depth)));
   }
 
   if (!dst_matrix_is_identity_or_ycgco)
@@ -1054,18 +1191,15 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
 }
 
 ColorTransformInternal::ColorTransformInternal(const ColorSpace& src,
-                                               int src_bit_depth,
                                                const ColorSpace& dst,
-                                               int dst_bit_depth,
-                                               Intent intent)
+                                               const Options& options)
     : src_(src), dst_(dst) {
   // If no source color space is specified, do no transformation.
   // TODO(ccameron): We may want dst assume sRGB at some point in the future.
   if (!src_.IsValid())
     return;
-  AppendColorSpaceToColorSpaceTransform(src_, src_bit_depth, dst_,
-                                        dst_bit_depth);
-  if (intent != Intent::TEST_NO_OPT)
+  AppendColorSpaceToColorSpaceTransform(src_, dst_, options);
+  if (!options.disable_optimizations)
     Simplify();
 }
 
@@ -1127,12 +1261,17 @@ void ColorTransformInternal::Simplify() {
 // static
 std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
     const ColorSpace& src,
-    int src_bit_depth,
+    const ColorSpace& dst) {
+  Options options;
+  return std::make_unique<ColorTransformInternal>(src, dst, options);
+}
+
+// static
+std::unique_ptr<ColorTransform> ColorTransform::NewColorTransform(
+    const ColorSpace& src,
     const ColorSpace& dst,
-    int dst_bit_depth,
-    Intent intent) {
-  return std::make_unique<ColorTransformInternal>(src, src_bit_depth, dst,
-                                                  dst_bit_depth, intent);
+    const Options& options) {
+  return std::make_unique<ColorTransformInternal>(src, dst, options);
 }
 
 ColorTransform::ColorTransform() {}

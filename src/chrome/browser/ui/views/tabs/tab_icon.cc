@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 
 #include "base/i18n/rtl.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -34,6 +34,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
+#include "ui/views/cascading_property.h"
 #include "url/gurl.h"
 
 namespace {
@@ -53,8 +54,7 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
                                 public gfx::AnimationDelegate {
  public:
   explicit CrashAnimation(TabIcon* target)
-      : gfx::LinearAnimation(base::TimeDelta::FromSeconds(1), 25, this),
-        target_(target) {}
+      : gfx::LinearAnimation(base::Seconds(1), 25, this), target_(target) {}
   CrashAnimation(const CrashAnimation&) = delete;
   CrashAnimation& operator=(const CrashAnimation&) = delete;
   ~CrashAnimation() override = default;
@@ -73,13 +73,13 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
   }
 
  private:
-  TabIcon* target_;
+  raw_ptr<TabIcon> target_;
 };
 
 TabIcon::TabIcon()
     : AnimationDelegateViews(this),
       clock_(base::DefaultTickClock::GetInstance()),
-      favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(250),
+      favicon_fade_in_animation_(base::Milliseconds(250),
                                  gfx::LinearAnimation::kDefaultFrameRate,
                                  this) {
   SetCanProcessEventsWithinSubtree(false);
@@ -159,9 +159,6 @@ void TabIcon::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
 }
 
 void TabIcon::OnPaint(gfx::Canvas* canvas) {
-  // This is used to log to UMA. NO EARLY RETURNS!
-  base::ElapsedTimer paint_timer;
-
   // Compute the bounds adjusted for the hiding fraction.
   gfx::Rect contents_bounds = GetContentsBounds();
 
@@ -185,18 +182,13 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
 
   if (GetShowingLoadingAnimation())
     PaintLoadingAnimation(canvas, icon_bounds);
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "TabStrip.Tab.Icon.PaintDuration", paint_timer.Elapsed(),
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMicroseconds(10000), 50);
 }
 
 void TabIcon::OnThemeChanged() {
   views::View::OnThemeChanged();
   crashed_icon_ = gfx::ImageSkia();  // Force recomputation if crashed.
   if (!themed_favicon_.isNull())
-    themed_favicon_ = ThemeImage(favicon_);
+    themed_favicon_ = ThemeFavicon(favicon_);
 }
 
 void TabIcon::AnimationProgressed(const gfx::Animation* animation) {
@@ -237,8 +229,7 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 
   // Draws the actual attention indicator.
   cc::PaintFlags indicator_flags;
-  indicator_flags.setColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor));
+  indicator_flags.setColor(views::GetCascadingAccentColor(this));
   indicator_flags.setAntiAlias(true);
   canvas->DrawCircle(circle_center, kAttentionIndicatorRadius, indicator_flags);
 }
@@ -246,23 +237,22 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
   TRACE_EVENT0("views", "TabIcon::PaintLoadingAnimation");
 
-  const ui::ThemeProvider* tp = GetThemeProvider();
-
+  const SkColor spinning_color = views::GetCascadingAccentColor(this);
+  const SkColor waiting_color = color_utils::AlphaBlend(
+      spinning_color, views::GetCascadingBackgroundColor(this),
+      gfx::kGoogleGreyAlpha400);
   if (network_state_ == TabNetworkState::kWaiting) {
-    gfx::PaintThrobberWaiting(
-        canvas, bounds,
-        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
-        waiting_state_.elapsed_time, kLoadingAnimationStrokeWidthDp);
+    gfx::PaintThrobberWaiting(canvas, bounds, waiting_color,
+                              waiting_state_.elapsed_time,
+                              kLoadingAnimationStrokeWidthDp);
   } else {
     const base::TimeTicks current_time = clock_->NowTicks();
     if (loading_animation_start_time_.is_null())
       loading_animation_start_time_ = current_time;
 
-    waiting_state_.color =
-        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING);
+    waiting_state_.color = waiting_color;
     gfx::PaintThrobberSpinningAfterWaiting(
-        canvas, bounds,
-        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING),
+        canvas, bounds, spinning_color,
         current_time - loading_animation_start_time_, &waiting_state_,
         kLoadingAnimationStrokeWidthDp);
   }
@@ -273,7 +263,8 @@ const gfx::ImageSkia& TabIcon::GetIconToPaint() {
     if (crashed_icon_.isNull()) {
       // Lazily create a themed sad tab icon.
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      crashed_icon_ = ThemeImage(*rb.GetImageSkiaNamed(IDR_CRASH_SAD_FAVICON));
+      crashed_icon_ =
+          ThemeFavicon(*rb.GetImageSkiaNamed(IDR_CRASH_SAD_FAVICON));
     }
     return crashed_icon_;
   }
@@ -360,7 +351,7 @@ void TabIcon::SetIcon(const gfx::ImageSkia& icon, bool should_themify_favicon) {
   favicon_ = icon;
 
   if (!GetNonDefaultFavicon() || should_themify_favicon) {
-    themed_favicon_ = ThemeImage(icon);
+    themed_favicon_ = ThemeFavicon(icon);
   } else {
     themed_favicon_ = gfx::ImageSkia();
   }
@@ -431,35 +422,13 @@ void TabIcon::RefreshLayer() {
   }
 }
 
-gfx::ImageSkia TabIcon::ThemeImage(const gfx::ImageSkia& source) {
-  // Choose between leaving the image as-is or changing to the toolbar button
-  // icon color.
-  const SkColor original_color =
-      color_utils::CalculateKMeanColorOfBitmap(*source.bitmap());
+gfx::ImageSkia TabIcon::ThemeFavicon(const gfx::ImageSkia& source) {
   const ui::ThemeProvider* tp = GetThemeProvider();
-  const SkColor alternate_color =
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-
-  // Compute the minimum contrast of each color against foreground and
-  // background tabs (for active windows).
-  const SkColor active_tab_background =
-      tp->GetColor(ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE);
-  const SkColor inactive_tab_background =
-      tp->GetColor(ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE);
-  const float original_contrast = std::min(
-      color_utils::GetContrastRatio(original_color, active_tab_background),
-      color_utils::GetContrastRatio(original_color, inactive_tab_background));
-  const float alternate_contrast = std::min(
-      color_utils::GetContrastRatio(alternate_color, active_tab_background),
-      color_utils::GetContrastRatio(alternate_color, inactive_tab_background));
-
-  // Recolor the image if the original has low minimum contrast and recoloring
-  // will improve it.
-  return ((original_contrast < color_utils::kMinimumVisibleContrastRatio) &&
-          (alternate_contrast > original_contrast))
-             ? gfx::ImageSkiaOperations::CreateColorMask(source,
-                                                         alternate_color)
-             : source;
+  return favicon::ThemeFavicon(
+      source, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
+      tp->GetColor(ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE),
+      tp->GetColor(
+          ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE));
 }
 
 BEGIN_METADATA(TabIcon, views::View)

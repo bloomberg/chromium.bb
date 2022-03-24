@@ -42,8 +42,6 @@ source_set("browser") {
     "chrome_root_coordinator.mm",
     "chrome_url_util.h",
     "chrome_url_util.mm",
-    "file_metadata_util.h",
-    "file_metadata_util.mm",
     "install_time_util.h",
     "install_time_util.mm",
     "installation_notifier.h",
@@ -86,7 +84,6 @@ source_set("browser") {
     "//components/strings",
     "//components/sync",
     "//components/translate/core/browser",
-    "//components/ukm/ios:features",
     "//components/unified_consent",
     "//components/url_formatter",
     "//components/variations/net",
@@ -98,6 +95,7 @@ source_set("browser") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/complex_tasks",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/download/background_service",
     "//ios/chrome/browser/itunes_urls",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/ui:feature_flags",
@@ -112,7 +110,6 @@ source_set("browser") {
     "//ios/components/webui:url_constants",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/public",
@@ -150,7 +147,6 @@ source_set("utils") {
     "//components/variations",
     "//ios/chrome/browser/browsing_data:feature_flags",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/infobars:feature_flags",
   ]
 }
 
@@ -183,6 +179,8 @@ source_set("browser_impl") {
     "application_context_impl.mm",
     "ios_chrome_main_parts.h",
     "ios_chrome_main_parts.mm",
+    "ios_thread_profiler.cc",
+    "ios_thread_profiler.h",
   ]
   deps = [
     ":browser",
@@ -193,6 +191,7 @@ source_set("browser_impl") {
     "//components/component_updater",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
+    "//components/crash/core/common:crash_key_lib",
     "//components/crash/core/common:reporter_running_ios",
     "//components/flags_ui",
     "//components/gcm_driver",
@@ -201,16 +200,16 @@ source_set("browser_impl") {
     "//components/language/core/browser",
     "//components/metrics",
     "//components/metrics:child_call_stack_profile_builder",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/metrics_services_manager",
     "//components/net_log",
     "//components/network_time",
     "//components/open_from_clipboard",
     "//components/prefs",
-    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common",
     "//components/sessions",
     "//components/translate/core/browser",
     "//components/ukm",
-    "//components/ukm/ios:features",
     "//components/update_client",
     "//components/variations",
     "//components/variations/field_trial_config",
@@ -231,18 +230,22 @@ source_set("browser_impl") {
     "//ios/chrome/browser/metrics:expired_histograms_array",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/open_from_clipboard",
+    "//ios/chrome/browser/optimization_guide",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/safe_browsing",
     "//ios/chrome/browser/send_tab_to_self",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/update_client",
     "//ios/chrome/common",
     "//ios/chrome/common/app_group",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/app_distribution:app_distribution_api",
     "//ios/web",
     "//ios/web/public/init",
+    "//mojo/public/cpp/bindings",
     "//net",
     "//rlz/buildflags",
     "//services/network:network_service",
@@ -275,8 +278,17 @@ tweak_info_plist("experimental_info_plist") {
   ]
 }
 
+bundle_data("settings_experimental_synctypeslist_plist") {
+  sources =
+      [ "resources/Settings.bundle/ExperimentalSyncTypesListDisabled.plist" ]
+  outputs = [ "{{bundle_resources_dir}}/Settings.bundle/{{source_file_part}}" ]
+}
+
 bundle_data("settings_resources_experimental_plist") {
-  public_deps = [ ":experimental_info_plist" ]
+  public_deps = [
+    ":experimental_info_plist",
+    ":settings_experimental_synctypeslist_plist",
+  ]
   sources = get_target_outputs(":experimental_info_plist")
   outputs = [ "{{bundle_resources_dir}}/Settings.bundle/Experimental.plist" ]
 }

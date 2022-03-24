@@ -12,14 +12,13 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -27,9 +26,6 @@ namespace base {
 
 class MessagePump;
 class RunLoop;
-namespace sequence_manager {
-class TimeDomain;
-}
 
 // IMPORTANT: Instead of creating a base::Thread, consider using
 // base::Create(Sequenced|SingleThread)TaskRunner().
@@ -80,7 +76,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     Options();
     Options(MessagePumpType type, size_t size);
     Options(Options&& other);
-    Options& operator=(const Options&& other) = delete;
+    Options& operator=(Options&& other);
     ~Options();
 
     // Specifies the type of message pump that will be allocated on the thread.
@@ -89,15 +85,10 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
     // An unbound Delegate that will be bound to the thread. Ownership
     // of |delegate| will be transferred to the thread.
-    // TODO(alexclarke): This should be a std::unique_ptr
-    Delegate* delegate = nullptr;
+    std::unique_ptr<Delegate> delegate = nullptr;
 
     // Specifies timer slack for thread message loop.
     TimerSlack timer_slack = TIMER_SLACK_NONE;
-
-    // The time domain to be used by the task queue. This is not compatible with
-    // a non-null |delegate|.
-    sequence_manager::TimeDomain* task_queue_time_domain = nullptr;
 
     // Used to create the MessagePump for the MessageLoop. The callback is Run()
     // on the thread. If message_pump_factory.is_null(), then a MessagePump
@@ -133,6 +124,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Constructor.
   // name is a display string to identify the thread.
   explicit Thread(const std::string& name);
+
+  Thread(const Thread&) = delete;
+  Thread& operator=(const Thread&) = delete;
 
   // Destroys the thread, stopping it if necessary.
   //
@@ -171,7 +165,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Note: This function can't be called on Windows with the loader lock held;
   // i.e. during a DllMain, global object construction or destruction, atexit()
   // callback.
-  bool StartWithOptions(const Options& options);
+  bool StartWithOptions(Options options);
 
   // Starts the thread and wait for the thread to start and run initialization
   // before returning. It's same as calling Start() and then
@@ -340,8 +334,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // This class is not thread-safe, use this to verify access from the owning
   // sequence of the Thread.
   SequenceChecker owning_sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 }  // namespace base

@@ -8,11 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/arc/mojom/app.mojom-forward.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_shortcut_item.h"
-#include "components/arc/mojom/app.mojom-forward.h"
 
 namespace arc {
 
@@ -26,6 +25,10 @@ class ArcAppShortcutsRequest {
       base::OnceCallback<void(std::unique_ptr<apps::AppShortcutItems>)>;
 
   explicit ArcAppShortcutsRequest(GetAppShortcutItemsCallback callback);
+
+  ArcAppShortcutsRequest(const ArcAppShortcutsRequest&) = delete;
+  ArcAppShortcutsRequest& operator=(const ArcAppShortcutsRequest&) = delete;
+
   ~ArcAppShortcutsRequest();
 
   // Starts querying app shortcuts for |package_name|. Results are retruned in
@@ -57,8 +60,6 @@ class ArcAppShortcutsRequest {
   std::vector<std::unique_ptr<IconDecodeRequest>> icon_decode_requests_;
 
   base::WeakPtrFactory<ArcAppShortcutsRequest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAppShortcutsRequest);
 };
 
 }  // namespace arc

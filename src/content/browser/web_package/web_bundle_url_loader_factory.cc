@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/web_package/web_bundle_utils.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/web_package/web_bundle_reader.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "content/public/browser/content_browser_client.h"
@@ -23,6 +24,8 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/constants.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -34,11 +37,11 @@ namespace {
 void AddResponseParseErrorMessageToConsole(
     int frame_tree_node_id,
     const web_package::mojom::BundleResponseParseErrorPtr& error) {
-  WebContents* web_contents =
-      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  if (!web_contents)
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (!frame_tree_node)
     return;
-  web_contents->GetMainFrame()->AddMessageToConsole(
+  frame_tree_node->current_frame_host()->AddMessageToConsole(
       blink::mojom::ConsoleMessageLevel::kError,
       std::string("Failed to read response header of Web Bundle file: ") +
           error->message);
@@ -78,6 +81,10 @@ class WebBundleURLLoaderFactory::EntryLoader final
         base::BindOnce(&EntryLoader::OnResponseReady,
                        weak_factory_.GetWeakPtr()));
   }
+
+  EntryLoader(const EntryLoader&) = delete;
+  EntryLoader& operator=(const EntryLoader&) = delete;
+
   ~EntryLoader() override = default;
 
  private:
@@ -134,7 +141,8 @@ class WebBundleURLLoaderFactory::EntryLoader final
     options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
     options.capacity_num_bytes =
-        std::min(static_cast<uint64_t>(network::kDataPipeDefaultAllocationSize),
+        std::min(base::strict_cast<uint64_t>(
+                     network::features::GetDataPipeDefaultAllocationSize()),
                  response->payload_length);
 
     auto result =
@@ -176,8 +184,6 @@ class WebBundleURLLoaderFactory::EntryLoader final
   absl::optional<net::HttpByteRange> byte_range_;
 
   base::WeakPtrFactory<EntryLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EntryLoader);
 };
 
 WebBundleURLLoaderFactory::WebBundleURLLoaderFactory(

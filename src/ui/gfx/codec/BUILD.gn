@@ -13,14 +13,16 @@ component("codec") {
     "png_codec.h",
     "vector_wstream.cc",
     "vector_wstream.h",
+    "webp_codec.cc",
+    "webp_codec.h",
   ]
 
   deps = [
     "//base",
     "//skia",
     "//third_party/libpng",
-    "//ui/gfx:geometry_skia",
     "//ui/gfx:gfx_export",
+    "//ui/gfx:gfx_skia",
     "//ui/gfx/geometry",
   ]
 

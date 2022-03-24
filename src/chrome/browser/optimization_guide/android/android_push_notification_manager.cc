@@ -141,45 +141,19 @@ void AndroidPushNotificationManager::OnDelegateReady() {
 
   // Quickly check that nothing overflowed. That way we don't risk some
   // notifications being processed just before a purge sweeps everything out.
-  ScopedBooleanHistogramRecorder overflow_recorder(
-      "OptimizationGuide.PushNotifications.DidOverflow");
-  for (int int_opt_type = proto::OptimizationType_MIN;
-       int_opt_type <= proto::OptimizationType_MAX; int_opt_type++) {
-    if (!proto::OptimizationType_IsValid(int_opt_type)) {
-      // Handles parsing to reserved tag numbers.
-      continue;
-    }
-    proto::OptimizationType opt_type =
-        static_cast<proto::OptimizationType>(int_opt_type);
-
-    // TODO(crbug/1199123): Rework this to reduce the number of JNI calls. Maybe
-    // just fetch a list of all overflowed types and all types with
-    // notifications.
-
-    if (OptimizationGuideBridge::DidOptimizationTypeOverflow(opt_type)) {
-      // The whole store will be purged in this case, because checking each
-      // stored hint's optimization types is too expensive and we presume that a
-      // cache overflow likely means native hasn't been started in a long time
-      // so the store is probably mostly expired anyways.
-      OnNeedToPurgeStore();
-
-      overflow_recorder.SetSample(true);
-
-      return;
-    }
+  base::flat_set<proto::OptimizationType> overflowed_types =
+      OptimizationGuideBridge::GetOptTypesThatOverflowedPushNotifications();
+  bool did_overflow = !overflowed_types.empty();
+  base::UmaHistogramBoolean("OptimizationGuide.PushNotifications.DidOverflow",
+                            did_overflow);
+  if (did_overflow) {
+    OnNeedToPurgeStore();
+    return;
   }
-  overflow_recorder.SetSample(false);
 
   size_t cached_notifications_total = 0;
-  for (int int_opt_type = proto::OptimizationType_MIN;
-       int_opt_type <= proto::OptimizationType_MAX; int_opt_type++) {
-    if (!proto::OptimizationType_IsValid(int_opt_type)) {
-      // Handles parsing to reserved tag numbers.
-      continue;
-    }
-    proto::OptimizationType opt_type =
-        static_cast<proto::OptimizationType>(int_opt_type);
-
+  for (proto::OptimizationType opt_type :
+       OptimizationGuideBridge::GetOptTypesWithPushNotifications()) {
     std::vector<proto::HintNotificationPayload> notifications =
         OptimizationGuideBridge::GetCachedNotifications(opt_type);
     cached_notifications_total += notifications.size();
@@ -209,8 +183,7 @@ void AndroidPushNotificationManager::OnDelegateReady() {
 
     // The helper here is used only for tracking success and logging that to
     // metrics. In this case, nothing needs to be done in the event of failure.
-    auto helper =
-        DroppedSuccessCallbackHelper::CreateAndArm(base::DoNothing::Once());
+    auto helper = DroppedSuccessCallbackHelper::CreateAndArm(base::DoNothing());
     helper->SetReportResultHistogram(
         "OptimizationGuide.PushNotifications."
         "CachedNotificationsHandledSuccessfully");
@@ -246,6 +219,7 @@ void AndroidPushNotificationManager::OnNewPushNotification(
       "OptimizationGuide.PushNotifications.GotPushNotification", true);
 
   if (!delegate_) {
+    // Cache the notification into Android shared preference.
     OnNewPushNotificationNotHandled(notification);
     return;
   }
@@ -256,6 +230,12 @@ void AndroidPushNotificationManager::OnNewPushNotification(
   if (!notification.has_key_representation())
     return;
 
+  DispatchPayload(notification);
+  InvalidateHints(notification);
+}
+
+void AndroidPushNotificationManager::InvalidateHints(
+    const proto::HintNotificationPayload& notification) {
   // If the notification can't be handled right now, make sure it gets pushed
   // back to Android to be cached.
   auto helper = DroppedSuccessCallbackHelper::CreateAndArm(base::BindOnce(
@@ -279,9 +259,38 @@ void AndroidPushNotificationManager::OnPurgeCompleted() {
   }
 }
 
+void AndroidPushNotificationManager::DispatchPayload(
+    const proto::HintNotificationPayload& notification) {
+  // No custom payload or optimization type.
+  if (!notification.has_payload() || !notification.has_optimization_type()) {
+    return;
+  }
+
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.PushNotifications.ReceivedNotificationType",
+      notification.optimization_type(),
+      static_cast<optimization_guide::proto::OptimizationType>(
+          optimization_guide::proto::OptimizationType_ARRAYSIZE));
+
+  for (Observer& observer : observers_) {
+    observer.OnNotificationPayload(notification.optimization_type(),
+                                   notification.payload());
+  }
+}
+
 void AndroidPushNotificationManager::OnNewPushNotificationNotHandled(
     const proto::HintNotificationPayload& notification) {
   OptimizationGuideBridge::OnNotificationNotHandledByNative(notification);
+}
+
+void AndroidPushNotificationManager::AddObserver(
+    PushNotificationManager::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AndroidPushNotificationManager::RemoveObserver(
+    PushNotificationManager::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace android

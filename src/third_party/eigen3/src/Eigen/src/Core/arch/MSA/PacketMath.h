@@ -16,6 +16,8 @@
 #include <iostream>
 #include <string>
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -26,10 +28,6 @@ namespace internal {
 
 #ifndef EIGEN_HAS_SINGLE_INSTRUCTION_MADD
 #define EIGEN_HAS_SINGLE_INSTRUCTION_MADD
-#endif
-
-#ifndef EIGEN_HAS_SINGLE_INSTRUCTION_CJMADD
-#define EIGEN_HAS_SINGLE_INSTRUCTION_CJMADD
 #endif
 
 #ifndef EIGEN_ARCH_DEFAULT_NUMBER_OF_REGISTERS

@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -29,6 +28,9 @@ class NET_EXPORT ProxyResolverFactory {
 
   // See |expects_pac_bytes()| for the meaning of |expects_pac_bytes|.
   explicit ProxyResolverFactory(bool expects_pac_bytes);
+
+  ProxyResolverFactory(const ProxyResolverFactory&) = delete;
+  ProxyResolverFactory& operator=(const ProxyResolverFactory&) = delete;
 
   virtual ~ProxyResolverFactory();
 
@@ -51,8 +53,6 @@ class NET_EXPORT ProxyResolverFactory {
 
  private:
   bool expects_pac_bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactory);
 };
 
 }  // namespace net

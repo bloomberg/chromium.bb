@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
@@ -76,7 +77,7 @@ class Delegate : public URLRequest::Delegate {
   void OnAuthRequiredComplete(URLRequest* request,
                               const AuthCredentials* auth_credentials);
 
-  WebSocketStreamRequestImpl* owner_;
+  raw_ptr<WebSocketStreamRequestImpl> owner_;
 };
 
 class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
@@ -96,7 +97,8 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
         url_request_(context->CreateRequest(url,
                                             DEFAULT_PRIORITY,
                                             &delegate_,
-                                            traffic_annotation)),
+                                            traffic_annotation,
+                                            /*is_for_websockets=*/true)),
         connect_delegate_(std::move(connect_delegate)),
         api_delegate_(std::move(api_delegate)) {
     DCHECK_EQ(IsolationInfo::RequestType::kOther,
@@ -160,8 +162,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
 
   void Start(std::unique_ptr<base::OneShotTimer> timer) {
     DCHECK(timer);
-    base::TimeDelta timeout(base::TimeDelta::FromSeconds(
-        kHandshakeTimeoutIntervalInSeconds));
+    base::TimeDelta timeout(base::Seconds(kHandshakeTimeoutIntervalInSeconds));
     timer_ = std::move(timer);
     timer_->Start(FROM_HERE, timeout,
                   base::BindOnce(&WebSocketStreamRequestImpl::OnTimeout,

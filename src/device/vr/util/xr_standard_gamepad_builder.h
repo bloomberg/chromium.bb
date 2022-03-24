@@ -5,9 +5,9 @@
 #define DEVICE_VR_UTIL_XR_STANDARD_GAMEPAD_BUILDER_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/util/gamepad_builder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -17,6 +17,10 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_VR_UTIL) XRStandardGamepadBuilder {
  public:
   XRStandardGamepadBuilder(device::mojom::XRHandedness handedness);
+
+  XRStandardGamepadBuilder(const XRStandardGamepadBuilder&) = delete;
+  XRStandardGamepadBuilder& operator=(const XRStandardGamepadBuilder&) = delete;
+
   virtual ~XRStandardGamepadBuilder();
   void SetPrimaryButton(const GamepadButton& button) {
     primary_button_ = button;
@@ -58,8 +62,6 @@ class COMPONENT_EXPORT(DEVICE_VR_UTIL) XRStandardGamepadBuilder {
   bool has_optional_axes_ = false;
 
   device::mojom::XRHandedness handedness_;
-
-  DISALLOW_COPY_AND_ASSIGN(XRStandardGamepadBuilder);
 };
 
 }  // namespace device

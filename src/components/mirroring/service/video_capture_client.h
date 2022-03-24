@@ -35,6 +35,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
  public:
   VideoCaptureClient(const media::VideoCaptureParams& params,
                      mojo::PendingRemote<media::mojom::VideoCaptureHost> host);
+
+  VideoCaptureClient(const VideoCaptureClient&) = delete;
+  VideoCaptureClient& operator=(const VideoCaptureClient&) = delete;
+
   ~VideoCaptureClient() override;
 
   using FrameDeliverCallback = base::RepeatingCallback<void(
@@ -57,7 +61,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   void RequestRefreshFrame();
 
   // media::mojom::VideoCaptureObserver implementations.
-  void OnStateChanged(media::mojom::VideoCaptureState state) override;
+  void OnStateChanged(media::mojom::VideoCaptureResultPtr result) override;
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
   void OnBufferReady(
@@ -118,8 +122,6 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<VideoCaptureClient> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureClient);
 };
 
 }  // namespace mirroring

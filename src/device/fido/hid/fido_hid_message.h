@@ -16,7 +16,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/hid/fido_hid_packet.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -39,6 +38,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
 
   FidoHidMessage(FidoHidMessage&& that);
   FidoHidMessage& operator=(FidoHidMessage&& other);
+
+  FidoHidMessage(const FidoHidMessage&) = delete;
+  FidoHidMessage& operator=(const FidoHidMessage&) = delete;
+
   ~FidoHidMessage();
 
   bool MessageComplete() const;
@@ -68,8 +71,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidMessage {
   FidoHidDeviceCommand cmd_ = FidoHidDeviceCommand::kMsg;
   base::circular_deque<std::unique_ptr<FidoHidPacket>> packets_;
   size_t remaining_size_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoHidMessage);
 };
 
 }  // namespace device

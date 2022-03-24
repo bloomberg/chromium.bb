@@ -8,15 +8,14 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/containers/mru_cache.h"
-#include "base/macros.h"
+#include "base/containers/lru_cache.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "components/optimization_guide/core/memory_hint.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -37,8 +36,13 @@ class HintCache {
   // Construct the HintCache with an optional backing store and max host-keyed
   // cache size. If a backing store is not provided, all hints will only be
   // stored in-memory.
-  explicit HintCache(OptimizationGuideStore* optimization_guide_store,
-                     int max_host_keyed_memory_cache_size);
+  explicit HintCache(
+      base::WeakPtr<OptimizationGuideStore> optimization_guide_store,
+      int max_host_keyed_memory_cache_size);
+
+  HintCache(const HintCache&) = delete;
+  HintCache& operator=(const HintCache&) = delete;
+
   ~HintCache();
 
   // Initializes the backing store contained within the hint cache, if provided,
@@ -149,7 +153,7 @@ class HintCache {
   bool IsHintStoreAvailable() const;
 
   // Returns the persistent store for |this|.
-  optimization_guide::OptimizationGuideStore* hint_store() {
+  base::WeakPtr<optimization_guide::OptimizationGuideStore> hint_store() {
     return optimization_guide_store_;
   }
 
@@ -161,10 +165,10 @@ class HintCache {
 
  private:
   using HostKeyedHintCache =
-      base::HashingMRUCache<std::string, std::unique_ptr<MemoryHint>>;
+      base::HashingLRUCache<std::string, std::unique_ptr<MemoryHint>>;
 
   using URLKeyedHintCache =
-      base::HashingMRUCache<std::string, std::unique_ptr<MemoryHint>>;
+      base::HashingLRUCache<std::string, std::unique_ptr<MemoryHint>>;
 
   // The callback run after the store finishes initialization. This then runs
   // the callback initially provided by the Initialize() call.
@@ -181,8 +185,8 @@ class HintCache {
       std::unique_ptr<MemoryHint> hint);
 
   // The backing store used with this hint cache. Set during construction. Not
-  // owned. Guaranteed to outlive |this|.
-  OptimizationGuideStore* optimization_guide_store_;
+  // owned.
+  base::WeakPtr<OptimizationGuideStore> optimization_guide_store_;
 
   // The cache of host-keyed hints loaded from the store. Maps store
   // EntryKey to Hint proto. This serves two purposes:
@@ -198,14 +202,12 @@ class HintCache {
   URLKeyedHintCache url_keyed_hint_cache_;
 
   // The clock used to determine if hints have expired.
-  const base::Clock* clock_;
+  raw_ptr<const base::Clock> clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak ptr factory to get weak pointer of |this|.
   base::WeakPtrFactory<HintCache> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HintCache);
 };
 
 }  // namespace optimization_guide

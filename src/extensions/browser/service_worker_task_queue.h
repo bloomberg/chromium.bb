@@ -10,20 +10,24 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/service_worker/worker_id.h"
 #include "extensions/common/activation_sequence.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
+class ServiceWorkerContext;
 }
 
 namespace extensions {
@@ -72,9 +76,14 @@ class Extension;
 //
 // TODO(lazyboy): Clean up queue when extension is unloaded/uninstalled.
 class ServiceWorkerTaskQueue : public KeyedService,
-                               public LazyContextTaskQueue {
+                               public LazyContextTaskQueue,
+                               public content::ServiceWorkerContextObserver {
  public:
   explicit ServiceWorkerTaskQueue(content::BrowserContext* browser_context);
+
+  ServiceWorkerTaskQueue(const ServiceWorkerTaskQueue&) = delete;
+  ServiceWorkerTaskQueue& operator=(const ServiceWorkerTaskQueue&) = delete;
+
   ~ServiceWorkerTaskQueue() override;
 
   // Convenience method to return the ServiceWorkerTaskQueue for a given
@@ -122,9 +131,23 @@ class ServiceWorkerTaskQueue : public KeyedService,
   absl::optional<ActivationSequence> GetCurrentSequence(
       const ExtensionId& extension_id) const;
 
+  // Activates incognito split mode extensions that are activated in |other|
+  // task queue.
+  void ActivateIncognitoSplitModeExtensions(ServiceWorkerTaskQueue* other);
+
+  // content::ServiceWorkerContextObserver:
+  void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
+                              const content::ConsoleMessage& message) override;
+  void OnDestruct(content::ServiceWorkerContext* context) override;
+
   class TestObserver {
    public:
     TestObserver();
+
+    TestObserver(const TestObserver&) = delete;
+    TestObserver& operator=(const TestObserver&) = delete;
+
     virtual ~TestObserver();
 
     // Called when an extension with id |extension_id| is going to be activated.
@@ -136,9 +159,6 @@ class ServiceWorkerTaskQueue : public KeyedService,
         const ExtensionId& extension_id,
         size_t num_pending_tasks,
         blink::ServiceWorkerStatusCode status_code) {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TestObserver);
   };
 
   static void SetObserverForTest(TestObserver* observer);
@@ -194,12 +214,24 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   WorkerState* GetWorkerState(const SequencedContextId& context_id);
 
+  content::ServiceWorkerContext* GetServiceWorkerContext(
+      const ExtensionId& extension_id);
+
+  // Starts and stops observing |service_worker_context|.
+  //
+  // The methods ensure that many:1 relationship of SWContext:SWContextObserver
+  // is preserved correctly.
+  void StartObserving(content::ServiceWorkerContext* service_worker_context);
+  void StopObserving(content::ServiceWorkerContext* service_worker_context);
+
   int next_activation_sequence_ = 0;
+
+  std::multiset<content::ServiceWorkerContext*> observing_worker_contexts_;
 
   // The state of worker of each activated extension.
   std::map<SequencedContextId, WorkerState> worker_state_map_;
 
-  content::BrowserContext* const browser_context_ = nullptr;
+  const raw_ptr<content::BrowserContext> browser_context_ = nullptr;
 
   // A map of Service Worker registrations if this instance is for an
   // off-the-record BrowserContext. These are stored in the ExtensionPrefs
@@ -212,8 +244,6 @@ class ServiceWorkerTaskQueue : public KeyedService,
   std::map<ExtensionId, ActivationSequence> activation_sequences_;
 
   base::WeakPtrFactory<ServiceWorkerTaskQueue> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTaskQueue);
 };
 
 }  // namespace extensions

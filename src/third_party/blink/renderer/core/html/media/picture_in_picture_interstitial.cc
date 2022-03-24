@@ -15,15 +15,15 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
 constexpr base::TimeDelta kPictureInPictureStyleChangeTransitionDuration =
-    base::TimeDelta::FromMilliseconds(200);
+    base::Milliseconds(200);
 constexpr base::TimeDelta kPictureInPictureHiddenAnimationSeconds =
-    base::TimeDelta::FromMilliseconds(300);
+    base::Milliseconds(300);
 
 }  // namespace
 

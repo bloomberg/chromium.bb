@@ -47,11 +47,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.fantasy_font_family_map;
   }
 
-  static const std::map<std::string, std::u16string>&
-  pictograph_font_family_map(const blink::web_pref::WebPreferences& r) {
-    return r.pictograph_font_family_map;
-  }
-
   static uint32_t default_font_size(const blink::web_pref::WebPreferences& r) {
     return r.default_font_size;
   }
@@ -155,11 +150,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.databases_enabled;
   }
 
-  static bool application_cache_enabled(
-      const blink::web_pref::WebPreferences& r) {
-    return r.application_cache_enabled;
-  }
-
   static bool tabs_to_links(const blink::web_pref::WebPreferences& r) {
     return r.tabs_to_links;
   }
@@ -228,9 +218,19 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.accelerated_2d_canvas_enabled;
   }
 
+  static bool canvas_context_lost_in_background_enabled(
+      const blink::web_pref::WebPreferences& r) {
+    return r.canvas_context_lost_in_background_enabled;
+  }
+
   static bool new_canvas_2d_api_enabled(
       const blink::web_pref::WebPreferences& r) {
     return r.new_canvas_2d_api_enabled;
+  }
+
+  static bool canvas_2d_layers_enabled(
+      const blink::web_pref::WebPreferences& r) {
+    return r.canvas_2d_layers_enabled;
   }
 
   static bool antialiased_2d_canvas_disabled(
@@ -765,6 +765,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
   static bool webxr_immersive_ar_allowed(
       const blink::web_pref::WebPreferences& r) {
     return r.webxr_immersive_ar_allowed;
+  }
+
+  static const url::Origin& litepage_subresource_redirect_origin(
+      const blink::web_pref::WebPreferences& r) {
+    return r.litepage_subresource_redirect_origin;
   }
 
   static bool Read(blink::mojom::WebPreferencesDataView r,

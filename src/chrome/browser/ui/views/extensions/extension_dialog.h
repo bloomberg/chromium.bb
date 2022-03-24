@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
@@ -69,6 +69,10 @@ class ExtensionDialog : public views::DialogDelegate,
     absl::optional<SkColor> title_inactive_color;
 #endif
   };
+
+  ExtensionDialog(const ExtensionDialog&) = delete;
+  ExtensionDialog& operator=(const ExtensionDialog&) = delete;
+
   // Create and show a dialog with |url| centered over the provided window.
   // |parent_window| is the parent window to which the pop-up will be attached.
   // |profile| is the profile that the extension is registered with.
@@ -122,7 +126,7 @@ class ExtensionDialog : public views::DialogDelegate,
   // The contained host for the view.
   std::unique_ptr<extensions::ExtensionViewHost> host_;
 
-  ExtensionViewViews* extension_view_ = nullptr;
+  raw_ptr<ExtensionViewViews> extension_view_ = nullptr;
 
   base::ScopedObservation<extensions::ExtensionHost,
                           extensions::ExtensionHostObserver>
@@ -133,9 +137,7 @@ class ExtensionDialog : public views::DialogDelegate,
       process_manager_observation_{this};
 
   // The observer of this popup.
-  ExtensionDialogObserver* observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionDialog);
+  raw_ptr<ExtensionDialogObserver> observer_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_DIALOG_H_

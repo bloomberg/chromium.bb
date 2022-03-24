@@ -36,6 +36,7 @@
 #include "chrome/common/media/cdm_registration.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
@@ -79,13 +80,16 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_PDF)
+#include "components/pdf/common/internal_plugin_helpers.h"
+#endif
+
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "chrome/common/media/cdm_host_file_path.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "chrome/common/media/chrome_media_drm_bridge_client.h"
-#include "components/embedder_support/android/common/url_constants.h"
 #endif
 
 namespace {
@@ -94,8 +98,6 @@ namespace {
 #if BUILDFLAG(ENABLE_PDF)
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
-const char kPDFPluginOutOfProcessMimeType[] =
-    "application/x-google-chrome-pdf";
 const uint32_t kPDFPluginPermissions = ppapi::PERMISSION_PDF |
                                        ppapi::PERMISSION_DEV;
 
@@ -124,9 +126,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   pdf_info.description = kPDFPluginDescription;
   pdf_info.path = base::FilePath(ChromeContentClient::kPDFPluginPath);
   content::WebPluginMimeType pdf_mime_type(
-      kPDFPluginOutOfProcessMimeType,
-      kPDFPluginExtension,
-      kPDFPluginDescription);
+      pdf::kInternalPluginMimeType, kPDFPluginExtension, kPDFPluginDescription);
   pdf_info.mime_types.push_back(pdf_mime_type);
   pdf_info.internal_entry_points.get_interface = g_pdf_get_interface;
   pdf_info.internal_entry_points.initialize_module = g_pdf_initialize_module;
@@ -264,15 +264,10 @@ void ChromeContentClient::AddContentDecryptionModules(
 // Example standard schemes: https://, chrome-extension://, chrome://, file://
 // Example nonstandard schemes: mailto:, data:, javascript:, about:
 static const char* const kChromeStandardURLSchemes[] = {
-    extensions::kExtensionScheme,
-    chrome::kChromeNativeScheme,
-    chrome::kChromeSearchScheme,
-    dom_distiller::kDomDistillerScheme,
+    extensions::kExtensionScheme, chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,  dom_distiller::kDomDistillerScheme,
 #if defined(OS_ANDROID)
-    embedder_support::kAndroidAppScheme,
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    chrome::kCrosScheme,
+    content::kAndroidAppScheme,
 #endif
 };
 
@@ -281,8 +276,10 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
     schemes->standard_schemes.push_back(standard_scheme);
 
 #if defined(OS_ANDROID)
-  schemes->referrer_schemes.push_back(embedder_support::kAndroidAppScheme);
+  schemes->referrer_schemes.push_back(content::kAndroidAppScheme);
 #endif
+
+  schemes->extension_schemes.push_back(extensions::kExtensionScheme);
 
   schemes->savable_schemes.push_back(extensions::kExtensionScheme);
   schemes->savable_schemes.push_back(chrome::kChromeSearchScheme);
@@ -336,7 +333,7 @@ std::u16string ChromeContentClient::GetLocalizedString(
 
 base::StringPiece ChromeContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
@@ -358,7 +355,7 @@ base::FilePath ChromeContentClient::GetChildProcessPath(
     const base::FilePath& helpers_path) {
   std::string helper_name(chrome::kHelperProcessExecutableName);
   if (child_flags == chrome::kChildProcessHelperAlerts) {
-    helper_name += " (Alerts)";
+    helper_name += chrome::kMacHelperSuffixAlerts;
     return helpers_path.Append(helper_name + ".app")
         .Append("Contents")
         .Append("MacOS")
@@ -412,4 +409,13 @@ void ChromeContentClient::ExposeInterfacesToBrowser(
             profiling_client->BindToInterface(std::move(receiver));
           }),
       io_task_runner);
+}
+
+std::u16string ChromeContentClient::GetLocalizedProtocolName(
+    const std::string& protocol) {
+  if (protocol == "mailto")
+    return GetLocalizedString(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
+  if (protocol == "webcal")
+    return GetLocalizedString(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
+  return ContentClient::GetLocalizedProtocolName(protocol);
 }

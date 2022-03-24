@@ -15,7 +15,9 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -47,7 +49,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
   auto devtools_proxy = std::make_unique<SignedExchangeDevToolsProxy>(
       resource_request.url, response_head.Clone(), frame_tree_node_id,
       absl::nullopt /* devtools_navigation_token */,
-      resource_request.report_raw_headers);
+      resource_request.devtools_request_id.has_value());
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, std::move(response_head), std::move(response_body),
       loader_client_receiver_.BindNewPipeAndPassRemote(), std::move(endpoints),

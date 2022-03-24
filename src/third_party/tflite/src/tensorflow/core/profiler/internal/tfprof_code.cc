@@ -82,7 +82,7 @@ class StringTable {
       return idx->second;
     }
     all_strings_.push_back(str);
-    return string_id_.insert(std::pair<string, int64>(str, string_id_.size()))
+    return string_id_.insert(std::pair<string, int64_t>(str, string_id_.size()))
         .first->second;
   }
 
@@ -114,7 +114,7 @@ class FunctionTable {
     func_pb->set_id(function_table_.size());
 
     string file_base(io::Basename(file_path));
-    file_base = file_base.substr(0, file_base.find_last_of("."));
+    file_base = file_base.substr(0, file_base.find_last_of('.'));
     func_pb->set_name(
         string_table_->GetIndex(absl::StrCat(file_base, ":", func_name)));
     func_pb->set_filename(string_table_->GetIndex(file_path));
@@ -291,7 +291,7 @@ class PprofProfileImpl : public PprofProfile {
     Status s = Env::Default()->NewWritableFile(filename, &file);
     if (!s.ok()) return s;
 
-    int32 buf_size = 1024 * 1024;
+    int32_t buf_size = 1024 * 1024;
     io::ZlibOutputBuffer* zlib_output_buffer = new io::ZlibOutputBuffer(
         file.get(), buf_size, buf_size, io::ZlibCompressionOptions::GZIP());
     s = zlib_output_buffer->Init();
@@ -421,21 +421,22 @@ void TFCode::AddNode(TFGraphNode* node) {
   // TODO(xpan): Consider to release CodeDef after TFCode is built. It
   // takes a lot of memory.
   std::set<string> traces;
-  for (int i = 0; i < node->call_stack()->traces().size(); ++i) {
+  for (int i = 0, end = node->call_stack()->traces().size(); i < end; ++i) {
     // Unlike op name, which is globally unique, trace name is only unique
     // w.r.t. it's parent.
     const string& trace = GetTraceString(node->call_stack()->traces().at(i));
     traces.insert(trace);
     pre_code_node = pre_code_node->AddChildren(
         trace, &node->call_stack()->traces().at(i), "");
-    if (i == node->call_stack()->traces().size() - 1) {
+    const int64_t last_index = node->call_stack()->traces().size() - 1;
+    if (i == last_index) {
       pre_code_node->node->AddGraphNode(node);
     }
   }
 }
 
 void TFCode::Build() {
-  int64 unaccounted_nodes = 0;
+  int64_t unaccounted_nodes = 0;
   for (const auto& it : grad_nodes_) {
     const string& forward_name = it.first;
     auto forward_it = forward_nodes_.find(forward_name);
@@ -446,12 +447,13 @@ void TFCode::Build() {
     TFGraphNode* fn = forward_it->second;
     CodeNode* leaf = nullptr;
     CodeNode* pre_code_node = root_.get();
-    for (int i = 0; i < fn->call_stack()->traces().size(); ++i) {
+    for (int i = 0, end = fn->call_stack()->traces().size(); i < end; ++i) {
       const string& trace =
           GetTraceString(fn->call_stack()->traces().at(i)) + kGradientSuffix;
       pre_code_node = pre_code_node->AddChildren(
           trace, &fn->call_stack()->traces().at(i), kGradientSuffix);
-      if (i == fn->call_stack()->traces().size() - 1) {
+      const int64_t last_trace = fn->call_stack()->traces().size() - 1;
+      if (i == last_trace) {
         leaf = pre_code_node;
       }
     }
@@ -629,8 +631,8 @@ std::vector<CodeNode*> TFCode::Account(const std::vector<CodeNode*>& roots,
   return act_nodes;
 }
 
-string TFCode::FormatNodeMemory(CodeNode* node, int64 bytes,
-                                int64 total_bytes) const {
+string TFCode::FormatNodeMemory(CodeNode* node, int64_t bytes,
+                                int64_t total_bytes) const {
   string memory = FormatMemory(total_bytes);
   if (node->account) {
     memory = FormatMemory(bytes) + "/" + memory;
@@ -641,7 +643,7 @@ string TFCode::FormatNodeMemory(CodeNode* node, int64 bytes,
 }
 
 string TFCode::FormatNode(CodeNode* node, const Options& opts,
-                          int64 indent) const {
+                          int64_t indent) const {
   std::vector<string> attrs;
   if (opts.select.find(kShown[0]) != opts.select.end()) {
     attrs.push_back(FormatNodeMemory(node, node->proto().requested_bytes(),

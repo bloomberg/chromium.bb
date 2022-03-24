@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
@@ -39,12 +40,14 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_service_data_map.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
+
+namespace {
 
 // Per the Bluetooth Spec: The name is a user-friendly name associated with the
 // device and consists of a maximum of 248 bytes coded according to the UTF-8
@@ -55,25 +58,22 @@ const char kDeviceNameTooLong[] =
 const char kInactiveDocumentError[] = "Document not active";
 const char kHandleGestureForPermissionRequest[] =
     "Must be handling a user gesture to show a permission request.";
+const char kFencedFrameError[] =
+    "Web Bluetooth is not allowed in a fenced frame tree.";
 
-namespace {
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-// TODO(crbug.com/1181288): Remove the old IDL union version.
-V8BluetoothServiceUUID* ToV8BluetoothServiceUUID(
-    const StringOrUnsignedLong& uuid) {
-  if (uuid.IsString()) {
-    return MakeGarbageCollected<V8BluetoothServiceUUID>(uuid.GetAsString());
-  } else if (uuid.IsUnsignedLong()) {
-    return MakeGarbageCollected<V8BluetoothServiceUUID>(
-        uuid.GetAsUnsignedLong());
+// Does basic checks that are common to all IDL calls, mainly that the window is
+// valid, and the request is not being done from a fenced frame tree. Returns
+// true if exceptions have been flagged, and false otherwise.
+bool IsRequestDenied(LocalDOMWindow* window, ExceptionState& exception_state) {
+  if (!window) {
+    exception_state.ThrowTypeError(kInactiveDocumentError);
+  } else if (window->GetFrame()->IsInFencedFrameTree()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      kFencedFrameError);
   }
-  NOTREACHED();
-  return nullptr;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-}  // namespace
+  return exception_state.HadException();
+}
 
 // Remind developers when they are using Web Bluetooth on unsupported platforms.
 // TODO(https://crbug.com/570344): Remove this method when all platforms are
@@ -90,7 +90,7 @@ void AddUnsupportedPlatformConsoleMessage(ExecutionContext* context) {
 #endif
 }
 
-static void CanonicalizeFilter(
+void CanonicalizeFilter(
     const BluetoothLEScanFilterInit* filter,
     mojom::blink::WebBluetoothLeScanFilterPtr& canonicalized_filter,
     ExceptionState& exception_state) {
@@ -108,14 +108,9 @@ static void CanonicalizeFilter(
       return;
     }
     canonicalized_filter->services.emplace();
-    for (const StringOrUnsignedLong& service : filter->services()) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      const String& validated_service = BluetoothUUID::getService(
-          ToV8BluetoothServiceUUID(service), exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    for (const V8UnionStringOrUnsignedLong* service : filter->services()) {
       const String& validated_service =
           BluetoothUUID::getService(service, exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       if (exception_state.HadException())
         return;
       canonicalized_filter->services->push_back(validated_service);
@@ -153,8 +148,14 @@ static void CanonicalizeFilter(
     }
     canonicalized_filter->manufacturer_data.emplace();
     for (const auto& manufacturer_data : filter->manufacturerData()) {
-      DOMArrayPiece mask_buffer = manufacturer_data->mask();
-      DOMArrayPiece data_prefix_buffer = manufacturer_data->dataPrefix();
+      DOMArrayPiece mask_buffer = manufacturer_data->hasMask()
+                                      ? DOMArrayPiece(manufacturer_data->mask())
+                                      : DOMArrayPiece();
+      DOMArrayPiece data_prefix_buffer =
+          manufacturer_data->hasDataPrefix()
+              ? DOMArrayPiece(manufacturer_data->dataPrefix())
+              : DOMArrayPiece();
+
       if (manufacturer_data->hasMask()) {
         if (mask_buffer.IsDetached()) {
           exception_state.ThrowDOMException(
@@ -213,7 +214,7 @@ static void CanonicalizeFilter(
   }
 }
 
-static void ConvertRequestDeviceOptions(
+void ConvertRequestDeviceOptions(
     const RequestDeviceOptions* options,
     mojom::blink::WebBluetoothRequestDeviceOptionsPtr& result,
     ExecutionContext* execution_context,
@@ -254,15 +255,10 @@ static void ConvertRequestDeviceOptions(
   }
 
   if (options->hasOptionalServices()) {
-    for (const StringOrUnsignedLong& optional_service :
+    for (const V8UnionStringOrUnsignedLong* optional_service :
          options->optionalServices()) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      const String& validated_optional_service = BluetoothUUID::getService(
-          ToV8BluetoothServiceUUID(optional_service), exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       const String& validated_optional_service =
           BluetoothUUID::getService(optional_service, exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       if (exception_state.HadException())
         return;
       result->optional_services.push_back(validated_optional_service);
@@ -277,11 +273,12 @@ static void ConvertRequestDeviceOptions(
   }
 }
 
+}  // namespace
+
 ScriptPromise Bluetooth::getAvailability(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
-  if (!window) {
-    exception_state.ThrowTypeError(kInactiveDocumentError);
+  if (IsRequestDenied(window, exception_state)) {
     return ScriptPromise();
   }
 
@@ -336,8 +333,7 @@ void Bluetooth::RequestDeviceCallback(
 ScriptPromise Bluetooth::getDevices(ScriptState* script_state,
                                     ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
-  if (!window) {
-    exception_state.ThrowTypeError(kInactiveDocumentError);
+  if (IsRequestDenied(window, exception_state)) {
     return ScriptPromise();
   }
 
@@ -359,8 +355,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
                                        const RequestDeviceOptions* options,
                                        ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
-  if (!window) {
-    exception_state.ThrowTypeError(kInactiveDocumentError);
+  if (IsRequestDenied(window, exception_state)) {
     return ScriptPromise();
   }
 
@@ -459,8 +454,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
                                        const BluetoothLEScanOptions* options,
                                        ExceptionState& exception_state) {
   LocalDOMWindow* window = GetSupplementable()->DomWindow();
-  if (!window) {
-    exception_state.ThrowTypeError(kInactiveDocumentError);
+  if (IsRequestDenied(window, exception_state)) {
     return ScriptPromise();
   }
 
@@ -579,14 +573,19 @@ Bluetooth::~Bluetooth() = default;
 BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
     mojom::blink::WebBluetoothDevicePtr device_ptr,
     ExecutionContext* context) {
-  String& id = device_ptr->id;
-  BluetoothDevice* device = device_instance_map_.at(id);
-  if (!device) {
-    device = MakeGarbageCollected<BluetoothDevice>(context,
-                                                   std::move(device_ptr), this);
-    auto result = device_instance_map_.insert(id, device);
-    DCHECK(result.is_new_entry);
+  // TODO(crbug.com/1275634): convert device_instance_map_ to use
+  // WebBluetoothDeviceId as key
+  auto it =
+      device_instance_map_.find(device_ptr->id.DeviceIdInBase64().c_str());
+  if (it != device_instance_map_.end()) {
+    return it->value;
   }
+
+  BluetoothDevice* device = MakeGarbageCollected<BluetoothDevice>(
+      context, std::move(device_ptr), this);
+  auto result = device_instance_map_.insert(
+      device->GetDevice()->id.DeviceIdInBase64().c_str(), device);
+  DCHECK(result.is_new_entry);
   return device;
 }
 

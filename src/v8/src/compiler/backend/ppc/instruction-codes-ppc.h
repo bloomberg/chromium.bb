@@ -11,6 +11,7 @@ namespace compiler {
 
 // PPC-specific opcodes that specify which assembly sequence to emit.
 // Most opcodes specify a single instruction.
+
 #define TARGET_ARCH_OPCODE_LIST(V)   \
   V(PPC_Peek)                        \
   V(PPC_Sync)                        \
@@ -120,7 +121,9 @@ namespace compiler {
   V(PPC_LoadWordU16)                 \
   V(PPC_LoadWordS32)                 \
   V(PPC_LoadWordU32)                 \
+  V(PPC_LoadByteRev32)               \
   V(PPC_LoadWord64)                  \
+  V(PPC_LoadByteRev64)               \
   V(PPC_LoadFloat32)                 \
   V(PPC_LoadDouble)                  \
   V(PPC_LoadSimd128)                 \
@@ -128,23 +131,14 @@ namespace compiler {
   V(PPC_StoreWord8)                  \
   V(PPC_StoreWord16)                 \
   V(PPC_StoreWord32)                 \
+  V(PPC_StoreByteRev32)              \
   V(PPC_StoreWord64)                 \
+  V(PPC_StoreByteRev64)              \
   V(PPC_StoreFloat32)                \
   V(PPC_StoreDouble)                 \
   V(PPC_StoreSimd128)                \
   V(PPC_ByteRev32)                   \
   V(PPC_ByteRev64)                   \
-  V(PPC_CompressSigned)              \
-  V(PPC_CompressPointer)             \
-  V(PPC_CompressAny)                 \
-  V(PPC_AtomicStoreUint8)            \
-  V(PPC_AtomicStoreUint16)           \
-  V(PPC_AtomicStoreWord32)           \
-  V(PPC_AtomicStoreWord64)           \
-  V(PPC_AtomicLoadUint8)             \
-  V(PPC_AtomicLoadUint16)            \
-  V(PPC_AtomicLoadWord32)            \
-  V(PPC_AtomicLoadWord64)            \
   V(PPC_AtomicExchangeUint8)         \
   V(PPC_AtomicExchangeUint16)        \
   V(PPC_AtomicExchangeWord32)        \
@@ -214,7 +208,6 @@ namespace compiler {
   V(PPC_F64x2Ceil)                   \
   V(PPC_F64x2Floor)                  \
   V(PPC_F64x2Trunc)                  \
-  V(PPC_F64x2NearestInt)             \
   V(PPC_F64x2Pmin)                   \
   V(PPC_F64x2Pmax)                   \
   V(PPC_F64x2ConvertLowI32x4S)       \
@@ -243,7 +236,6 @@ namespace compiler {
   V(PPC_F32x4Ceil)                   \
   V(PPC_F32x4Floor)                  \
   V(PPC_F32x4Trunc)                  \
-  V(PPC_F32x4NearestInt)             \
   V(PPC_F32x4Pmin)                   \
   V(PPC_F32x4Pmax)                   \
   V(PPC_F32x4Qfma)                   \

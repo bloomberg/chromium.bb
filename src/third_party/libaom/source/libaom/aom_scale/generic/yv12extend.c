@@ -25,6 +25,7 @@ static void extend_plane(uint8_t *const src, int src_stride, int width,
   assert(src != NULL);
   int i;
   const int linesize = extend_left + extend_right + width;
+  assert(linesize <= src_stride);
 
   /* copy the left and right most columns out */
   uint8_t *src_ptr1 = src;
@@ -66,6 +67,7 @@ static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
                               int extend_bottom, int extend_right) {
   int i;
   const int linesize = extend_left + extend_right + width;
+  assert(linesize <= src_stride);
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
 
   /* copy the left and right most columns out */
@@ -139,8 +141,8 @@ void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf,
 
 static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size,
                          const int num_planes) {
-  const int ss_x = ybf->uv_width < ybf->y_width;
-  const int ss_y = ybf->uv_height < ybf->y_height;
+  const int ss_x = ybf->subsampling_x;
+  const int ss_y = ybf->subsampling_y;
 
   assert(ybf->y_height - ybf->y_crop_height < 16);
   assert(ybf->y_width - ybf->y_crop_width < 16);

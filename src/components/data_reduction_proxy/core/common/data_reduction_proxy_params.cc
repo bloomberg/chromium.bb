@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -15,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
@@ -30,8 +30,6 @@ namespace {
 
 const char kEnabled[] = "Enabled";
 
-const char kExperimentsOption[] = "exp";
-
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(base::FieldTrialList::FindFullName(name), kEnabled,
                           base::CompareCase::SENSITIVE);
@@ -43,8 +41,9 @@ bool CanShowAndroidLowMemoryDevicePromo() {
          base::FeatureList::IsEnabled(
              data_reduction_proxy::features::
                  kDataReductionProxyLowMemoryDevicePromo);
-#endif
+#else
   return false;
+#endif
 }
 
 }  // namespace
@@ -64,38 +63,6 @@ bool IsIncludedInFREPromoFieldTrial() {
     return true;
 
   return CanShowAndroidLowMemoryDevicePromo();
-}
-
-std::string GetDataSaverServerExperimentsOptionName() {
-  return kExperimentsOption;
-}
-
-std::string GetDataSaverServerExperiments() {
-  const std::string cmd_line_experiment =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          data_reduction_proxy::switches::kDataReductionProxyExperiment);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          data_reduction_proxy::switches::
-              kDataReductionProxyServerExperimentsDisabled)) {
-    // Both kDataReductionProxyExperiment and
-    // kDataReductionProxyServerExperimentsDisabled switches can't be set at the
-    // same time.
-    DCHECK(cmd_line_experiment.empty());
-    return std::string();
-  }
-
-  // Experiment set using command line overrides field trial.
-  if (!cmd_line_experiment.empty())
-    return cmd_line_experiment;
-
-  // First check if the feature is enabled.
-  if (!base::FeatureList::IsEnabled(
-          features::kDataReductionProxyServerExperiments)) {
-    return std::string();
-  }
-  return base::GetFieldTrialParamValueByFeature(
-      features::kDataReductionProxyServerExperiments, kExperimentsOption);
 }
 
 }  // namespace params

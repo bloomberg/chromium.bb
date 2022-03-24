@@ -9,9 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -65,19 +68,17 @@ PaymentRequestState::PaymentRequestState(
     base::WeakPtr<Delegate> delegate,
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
-    ContentPaymentRequestDelegate* payment_request_delegate,
-    JourneyLogger* journey_logger)
-    : frame_routing_id_(content::GlobalFrameRoutingId(
-          initiator_render_frame_host->GetProcess()->GetID(),
-          initiator_render_frame_host->GetRoutingID())),
+    base::WeakPtr<ContentPaymentRequestDelegate> payment_request_delegate,
+    base::WeakPtr<JourneyLogger> journey_logger)
+    : frame_routing_id_(initiator_render_frame_host->GetGlobalId()),
       top_origin_(top_level_origin),
       frame_origin_(frame_origin),
       frame_security_origin_(frame_security_origin),
       app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
-      personal_data_manager_(personal_data_manager),
       journey_logger_(journey_logger),
+      personal_data_manager_(personal_data_manager),
       are_requested_methods_supported_(
           !spec_->supported_card_networks().empty()),
       payment_request_delegate_(payment_request_delegate),
@@ -96,13 +97,12 @@ PaymentRequestState::~PaymentRequestState() {}
 
 content::WebContents* PaymentRequestState::GetWebContents() {
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  return rfh && rfh->IsCurrent()
-             ? content::WebContents::FromRenderFrameHost(rfh)
-             : nullptr;
+  return rfh && rfh->IsActive() ? content::WebContents::FromRenderFrameHost(rfh)
+                                : nullptr;
 }
 
-ContentPaymentRequestDelegate* PaymentRequestState::GetPaymentRequestDelegate()
-    const {
+base::WeakPtr<ContentPaymentRequestDelegate>
+PaymentRequestState::GetPaymentRequestDelegate() const {
   return payment_request_delegate_;
 }
 
@@ -135,13 +135,18 @@ content::RenderFrameHost* PaymentRequestState::GetInitiatorRenderFrameHost()
   return content::RenderFrameHost::FromID(frame_routing_id_);
 }
 
+content::GlobalRenderFrameHostId
+PaymentRequestState::GetInitiatorRenderFrameHostId() const {
+  return frame_routing_id_;
+}
+
 const std::vector<mojom::PaymentMethodDataPtr>&
 PaymentRequestState::GetMethodData() const {
   DCHECK(GetSpec());
   return GetSpec()->method_data();
 }
 
-std::unique_ptr<autofill::InternalAuthenticator>
+std::unique_ptr<webauthn::InternalAuthenticator>
 PaymentRequestState::CreateInternalAuthenticator() const {
   return GetPaymentRequestDelegate()->CreateInternalAuthenticator();
 }
@@ -161,9 +166,7 @@ bool PaymentRequestState::IsRequestedAutofillDataAvailable() {
 }
 
 bool PaymentRequestState::MayCrawlForInstallablePaymentApps() {
-  return PaymentsExperimentalFeatures::IsEnabled(
-             features::kAlwaysAllowJustInTimePaymentApp) ||
-         !spec_ || !spec_->supports_basic_card();
+  return !spec_ || !spec_->supports_basic_card();
 }
 
 bool PaymentRequestState::IsOffTheRecord() const {
@@ -171,23 +174,27 @@ bool PaymentRequestState::IsOffTheRecord() const {
 }
 
 void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {
-  if (app->type() == PaymentApp::Type::AUTOFILL) {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kBasicCard);
-  } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
-             base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kGoogle);
-  } else {
-    journey_logger_->SetAvailableMethod(
-        JourneyLogger::PaymentMethodCategory::kOther);
+  if (journey_logger_) {
+    if (app->type() == PaymentApp::Type::AUTOFILL) {
+      journey_logger_->SetAvailableMethod(
+          JourneyLogger::PaymentMethodCategory::kBasicCard);
+    } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
+               base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
+      journey_logger_->SetAvailableMethod(
+          JourneyLogger::PaymentMethodCategory::kGoogle);
+    } else {
+      journey_logger_->SetAvailableMethod(
+          JourneyLogger::PaymentMethodCategory::kOther);
+    }
   }
   available_apps_.emplace_back(std::move(app));
 }
 
 void PaymentRequestState::OnPaymentAppCreationError(
-    const std::string& error_message) {
+    const std::string& error_message,
+    AppCreationFailureReason reason) {
   get_all_payment_apps_error_ = error_message;
+  get_all_payment_apps_error_reason_ = reason;
 }
 
 bool PaymentRequestState::SkipCreatingNativePaymentApps() const {
@@ -346,31 +353,23 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
   if (!spec_)
     return;
 
-  // Don't modify the value of |are_requested_methods_supported_|, because it's
-  // used for canMakePayment().
-  bool supported = are_requested_methods_supported_;
-  if (supported && is_show_user_gesture_ &&
-      base::Contains(spec_->payment_method_identifiers_set(),
-                     methods::kBasicCard) &&
-      !has_non_autofill_app_ && !has_enrolled_instrument_ &&
-      PaymentsExperimentalFeatures::IsEnabled(
-          features::kStrictHasEnrolledAutofillInstrument)) {
-    supported = false;
-    get_all_payment_apps_error_ = errors::kStrictBasicCardShowReject;
-  }
-
-  if (!supported && get_all_payment_apps_error_.empty() &&
+  if (!are_requested_methods_supported_ &&
+      get_all_payment_apps_error_.empty() &&
       base::Contains(spec_->payment_method_identifiers_set(),
                      methods::kGooglePlayBilling) &&
       !IsInTwa()) {
     get_all_payment_apps_error_ = errors::kAppStoreMethodOnlySupportedInTwa;
   }
 
-  std::move(callback).Run(supported, get_all_payment_apps_error_);
+  std::move(callback).Run(are_requested_methods_supported_,
+                          get_all_payment_apps_error_,
+                          get_all_payment_apps_error_reason_);
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {
-  return payment_request_delegate_->GetAuthenticatedEmail();
+  return payment_request_delegate_
+             ? payment_request_delegate_->GetAuthenticatedEmail()
+             : std::string();
 }
 
 void PaymentRequestState::AddObserver(Observer* observer) {
@@ -405,7 +404,7 @@ void PaymentRequestState::OnPaymentAppWindowClosed() {
 void PaymentRequestState::RecordUseStats() {
   if (ShouldShowShippingSection()) {
     DCHECK(selected_shipping_profile_);
-    personal_data_manager_->RecordUseOf(selected_shipping_profile_);
+    personal_data_manager_->RecordUseOf(selected_shipping_profile_.get());
   }
 
   if (ShouldShowContactSection()) {
@@ -415,7 +414,7 @@ void PaymentRequestState::RecordUseStats() {
     // should only be updated once.
     if (!ShouldShowShippingSection() || (selected_shipping_profile_->guid() !=
                                          selected_contact_profile_->guid())) {
-      personal_data_manager_->RecordUseOf(selected_contact_profile_);
+      personal_data_manager_->RecordUseOf(selected_contact_profile_.get());
     }
   }
 
@@ -437,6 +436,9 @@ void PaymentRequestState::SetAvailablePaymentAppForRetry() {
 void PaymentRequestState::AddAutofillPaymentApp(
     bool selected,
     const autofill::CreditCard& card) {
+  if (!base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard))
+    return;
+
   auto app =
       AutofillPaymentAppFactory::ConvertCardToPaymentAppIfSupportedNetwork(
           card, weak_ptr_factory_.GetWeakPtr());
@@ -444,8 +446,10 @@ void PaymentRequestState::AddAutofillPaymentApp(
     return;
 
   available_apps_.push_back(std::move(app));
-  journey_logger_->SetAvailableMethod(
-      JourneyLogger::PaymentMethodCategory::kBasicCard);
+  if (journey_logger_) {
+    journey_logger_->SetAvailableMethod(
+        JourneyLogger::PaymentMethodCategory::kBasicCard);
+  }
 
   if (selected) {
     SetSelectedApp(available_apps_.back()->AsWeakPtr());
@@ -511,11 +515,13 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // merchant.
   is_waiting_for_merchant_validation_ = true;
 
-  // Start the normalization of the shipping address.
-  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
-      *selected_shipping_profile_, /*timeout_seconds=*/2,
-      base::BindOnce(&PaymentRequestState::OnAddressNormalized,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (payment_request_delegate_) {
+    // Start the normalization of the shipping address.
+    payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
+        *selected_shipping_profile_, /*timeout_seconds=*/2,
+        base::BindOnce(&PaymentRequestState::OnAddressNormalized,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void PaymentRequestState::SetSelectedContactProfile(
@@ -548,7 +554,9 @@ autofill::PersonalDataManager* PaymentRequestState::GetPersonalDataManager() {
 }
 
 autofill::RegionDataLoader* PaymentRequestState::GetRegionDataLoader() {
-  return payment_request_delegate_->GetRegionDataLoader();
+  return payment_request_delegate_
+             ? payment_request_delegate_->GetRegionDataLoader()
+             : nullptr;
 }
 
 bool PaymentRequestState::IsPaymentAppInvoked() const {
@@ -556,7 +564,9 @@ bool PaymentRequestState::IsPaymentAppInvoked() const {
 }
 
 autofill::AddressNormalizer* PaymentRequestState::GetAddressNormalizer() {
-  return payment_request_delegate_->GetAddressNormalizer();
+  return payment_request_delegate_
+             ? payment_request_delegate_->GetAddressNormalizer()
+             : nullptr;
 }
 
 bool PaymentRequestState::IsInitialized() const {
@@ -639,9 +649,11 @@ void PaymentRequestState::PopulateProfileCache() {
             ? false
             : profile_comparator()->IsContactInfoComplete(contact_profiles_[0]);
     is_requested_autofill_data_available_ &= has_complete_contact;
-    journey_logger_->SetNumberOfSuggestionsShown(
-        JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size(),
-        has_complete_contact);
+    if (journey_logger_) {
+      journey_logger_->SetNumberOfSuggestionsShown(
+          JourneyLogger::Section::SECTION_CONTACT_INFO,
+          contact_profiles_.size(), has_complete_contact);
+    }
   }
   if (ShouldShowShippingSection()) {
     bool has_complete_shipping =
@@ -649,9 +661,12 @@ void PaymentRequestState::PopulateProfileCache() {
             ? false
             : profile_comparator()->IsShippingComplete(shipping_profiles_[0]);
     is_requested_autofill_data_available_ &= has_complete_shipping;
-    journey_logger_->SetNumberOfSuggestionsShown(
-        JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
-        shipping_profiles_.size(), has_complete_shipping);
+
+    if (journey_logger_) {
+      journey_logger_->SetNumberOfSuggestionsShown(
+          JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
+          shipping_profiles_.size(), has_complete_shipping);
+    }
   }
 }
 
@@ -695,9 +710,11 @@ void PaymentRequestState::SetDefaultProfileSelections() {
 
   SelectDefaultShippingAddressAndNotifyObservers();
 
-  journey_logger_->SetNumberOfSuggestionsShown(
-      JourneyLogger::Section::SECTION_PAYMENT_METHOD, available_apps().size(),
-      selected_app_.get());
+  if (journey_logger_) {
+    journey_logger_->SetNumberOfSuggestionsShown(
+        JourneyLogger::Section::SECTION_PAYMENT_METHOD, available_apps().size(),
+        selected_app_.get());
+  }
 }
 
 void PaymentRequestState::UpdateIsReadyToPayAndNotifyObservers() {
@@ -752,7 +769,9 @@ void PaymentRequestState::OnAddressNormalized(
 }
 
 bool PaymentRequestState::IsInTwa() const {
-  return !payment_request_delegate_->GetTwaPackageName().empty();
+  return payment_request_delegate_
+             ? !payment_request_delegate_->GetTwaPackageName().empty()
+             : false;
 }
 
 bool PaymentRequestState::GetCanMakePaymentValue() const {

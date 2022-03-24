@@ -7,8 +7,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -25,6 +24,10 @@ namespace syncfs_internals {
 class FileMetadataHandler : public content::WebUIMessageHandler {
  public:
   explicit FileMetadataHandler(Profile* profile);
+
+  FileMetadataHandler(const FileMetadataHandler&) = delete;
+  FileMetadataHandler& operator=(const FileMetadataHandler&) = delete;
+
   ~FileMetadataHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -38,10 +41,8 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
   void DidGetFileMetadata(std::string callback_id,
                           const base::ListValue& files);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   base::WeakPtrFactory<FileMetadataHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileMetadataHandler);
 };
 }  // namespace syncfs_internals
 

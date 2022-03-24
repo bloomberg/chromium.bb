@@ -1,5 +1,6 @@
-import { assert } from '../../../../../common/framework/util/util.js';
+import { assert } from '../../../../../common/util/util.js';
 import { GPUTest } from '../../../../gpu_test.js';
+import { checkElementsEqualEither } from '../../../../util/check_contents.js';
 
 const kSize = 4;
 
@@ -53,11 +54,11 @@ export class BufferSyncTest extends GPUTest {
   createStorageWriteComputePipeline(value: number): GPUComputePipeline {
     const wgslCompute = `
       [[block]] struct Data {
-        [[offset(0)]] a : i32;
+        a : i32;
       };
 
-      [[group(0), binding(0)]] var<storage> data : [[access(read_write)]] Data;
-      [[stage(compute)]] fn main() {
+      [[group(0), binding(0)]] var<storage, read_write> data : Data;
+      [[stage(compute), workgroup_size(1)]] fn main() {
         data.a = ${value};
         return;
       }
@@ -84,10 +85,10 @@ export class BufferSyncTest extends GPUTest {
 
       fragment: `
       [[block]] struct Data {
-        [[offset(0)]] a : i32;
+        a : i32;
       };
 
-      [[group(0), binding(0)]] var<storage> data : [[access(read_write)]] Data;
+      [[group(0), binding(0)]] var<storage, read_write> data : Data;
       [[stage(fragment)]] fn frag_main() -> [[location(0)]] vec4<f32> {
         data.a = ${value};
         return vec4<f32>(1.0, 0.0, 0.0, 1.0);
@@ -246,7 +247,7 @@ export class BufferSyncTest extends GPUTest {
   verifyData(buffer: GPUBuffer, expectedValue: number) {
     const bufferData = new Uint32Array(1);
     bufferData[0] = expectedValue;
-    this.expectContents(buffer, bufferData);
+    this.expectGPUBufferValuesEqual(buffer, bufferData);
   }
 
   verifyDataTwoValidValues(buffer: GPUBuffer, expectedValue1: number, expectedValue2: number) {
@@ -254,6 +255,10 @@ export class BufferSyncTest extends GPUTest {
     bufferData1[0] = expectedValue1;
     const bufferData2 = new Uint32Array(1);
     bufferData2[0] = expectedValue2;
-    this.expectContentsTwoValidValues(buffer, bufferData1, bufferData2);
+    this.expectGPUBufferValuesPassCheck(
+      buffer,
+      a => checkElementsEqualEither(a, [bufferData1, bufferData2]),
+      { type: Uint32Array, typedLength: 1 }
+    );
   }
 }

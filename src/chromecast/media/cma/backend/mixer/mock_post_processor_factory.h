@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/macros.h"
 #include "chromecast/media/cma/backend/mixer/post_processing_pipeline.h"
 #include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,6 +27,10 @@ class MockPostProcessor : public PostProcessingPipeline {
                     const std::string& name,
                     const base::Value* filter_description_list,
                     int channels);
+
+  MockPostProcessor(const MockPostProcessor&) = delete;
+  MockPostProcessor& operator=(const MockPostProcessor&) = delete;
+
   ~MockPostProcessor() override;
   MOCK_METHOD5(ProcessFrames,
                double(float* data,
@@ -68,8 +71,6 @@ class MockPostProcessor : public PostProcessingPipeline {
   bool ringing_ = false;
   float* output_buffer_ = nullptr;
   int num_output_channels_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPostProcessor);
 };
 
 class MockPostProcessorFactory : public PostProcessingPipelineFactory {

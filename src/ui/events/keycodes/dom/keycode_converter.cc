@@ -4,8 +4,8 @@
 
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "build/build_config.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -381,6 +381,19 @@ bool KeycodeConverter::IsDomKeyForModifier(DomKey dom_key) {
     default:
       return false;
   }
+}
+
+// static
+bool KeycodeConverter::IsDomKeyNamed(DomKey dom_key) {
+  if (dom_key.IsDeadKey()) {
+    return true;
+  }
+  for (auto& mapping : kDomKeyMappings) {
+    if (mapping.dom_key == dom_key) {
+      return mapping.string != nullptr;
+    }
+  }
+  return false;
 }
 
 // USB keycodes

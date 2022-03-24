@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as CssOverviewModule from '../../../../panels/css_overview/css_overview.js';
-
 
 // The following regexes are used within in the StylesSidebarPropertyRenderer class
 // and will parse both invalid and valid values.
@@ -191,7 +188,8 @@ export const GenericFonts = [
 ];
 
 export async function generateComputedFontArray(): Promise<string[]> {
-  const modelArray = SDK.SDKModel.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
+  const modelArray =
+      SDK.TargetManager.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
   if (modelArray) {
     const cssOverviewModel = modelArray[0];
     if (cssOverviewModel) {

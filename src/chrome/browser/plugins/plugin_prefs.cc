@@ -36,10 +36,11 @@ using content::BrowserThread;
 namespace {
 
 bool IsPDFViewerPlugin(const std::u16string& plugin_name) {
-  return (plugin_name ==
-          base::ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) ||
-         (plugin_name ==
-          base::ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName));
+  // This should only match the external PDF plugin, not the internal PDF
+  // plugin, which is also used for Print Preview. Note that only the PDF viewer
+  // and Print Preview can create the internal PDF plugin in the first place.
+  return plugin_name ==
+         base::ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName);
 }
 
 }  // namespace
@@ -114,7 +115,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
     base::ListValue* saved_plugins_list = update.Get();
-    if (saved_plugins_list && !saved_plugins_list->empty()) {
+    if (saved_plugins_list) {
       for (auto& plugin_value : saved_plugins_list->GetList()) {
         base::DictionaryValue* plugin;
         if (!plugin_value.GetAsDictionary(&plugin)) {

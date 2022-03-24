@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_BASE_TEST_FRAME_TEST_UTIL_H_
 #define FUCHSIA_BASE_TEST_FRAME_TEST_UTIL_H_
 
+#include <fuchsia/mem/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 
 #include "base/strings/string_piece.h"
@@ -18,6 +19,10 @@ namespace cr_fuchsia {
 // otherwise.
 bool LoadUrlAndExpectResponse(
     fuchsia::web::NavigationController* navigation_controller,
+    fuchsia::web::LoadUrlParams load_url_params,
+    base::StringPiece url);
+bool LoadUrlAndExpectResponse(
+    const fuchsia::web::NavigationControllerPtr& navigation_controller,
     fuchsia::web::LoadUrlParams load_url_params,
     base::StringPiece url);
 

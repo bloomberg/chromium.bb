@@ -9,10 +9,9 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/policy/core/common/async_policy_provider.h"
@@ -67,7 +66,7 @@ void BrowserPolicyConnectorIOS::Init(
   InitInternal(local_state, std::move(device_management_service));
 }
 
-bool BrowserPolicyConnectorIOS::IsEnterpriseManaged() const {
+bool BrowserPolicyConnectorIOS::IsDeviceEnterpriseManaged() const {
   NOTREACHED() << "This method is only defined for Chrome OS";
   return false;
 }

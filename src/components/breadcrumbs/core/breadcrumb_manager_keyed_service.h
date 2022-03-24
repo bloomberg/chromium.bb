@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace breadcrumbs {
@@ -22,6 +23,9 @@ class BreadcrumbPersistentStorageManager;
 class BreadcrumbManagerKeyedService : public KeyedService {
  public:
   explicit BreadcrumbManagerKeyedService(bool is_off_the_record);
+  BreadcrumbManagerKeyedService(const BreadcrumbManagerKeyedService&) = delete;
+  BreadcrumbManagerKeyedService& operator=(
+      const BreadcrumbManagerKeyedService&) = delete;
   ~BreadcrumbManagerKeyedService() override;
 
   // Logs a breadcrumb |event| associated with the browser. Prepends the
@@ -69,9 +73,8 @@ class BreadcrumbManagerKeyedService : public KeyedService {
 
   // The current BreadcrumbPersistentStorageManager persisting events logged to
   // |breadcrumb_manager_|, set by StartPersisting. May be null.
-  BreadcrumbPersistentStorageManager* persistent_storage_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(BreadcrumbManagerKeyedService);
+  raw_ptr<BreadcrumbPersistentStorageManager> persistent_storage_manager_ =
+      nullptr;
 };
 
 }  // namespace breadcrumbs

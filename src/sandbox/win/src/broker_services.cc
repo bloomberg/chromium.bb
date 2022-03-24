@@ -10,8 +10,7 @@
 
 #include <utility>
 
-#include "base/check.h"
-#include "base/macros.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/threading/platform_thread.h"
@@ -168,11 +167,11 @@ DWORD WINAPI TargetEventsThread(PVOID param) {
   ::ResetEvent(params->no_targets);
 
   while (true) {
-    DWORD events = 0;
+    DWORD event = 0;
     ULONG_PTR key = 0;
     LPOVERLAPPED ovl = nullptr;
 
-    if (!::GetQueuedCompletionStatus(params->iocp, &events, &key, &ovl,
+    if (!::GetQueuedCompletionStatus(params->iocp, &event, &key, &ovl,
                                      INFINITE)) {
       // This call fails if the port has been closed before we have a
       // chance to service the last packet which is 'exit' anyway so
@@ -185,17 +184,21 @@ DWORD WINAPI TargetEventsThread(PVOID param) {
       // that jobs can send and some of them depend on the job attributes set.
       JobTracker* tracker = reinterpret_cast<JobTracker*>(key);
 
-      // Processes may be added to a job after the process count has
-      // reached zero, leading us to manipulate a freed JobTracker
-      // object or job handle (as the key is no longer valid). We
-      // therefore check if the tracker has already been deleted.
+      // Processes may be added to a job after the process count has reached
+      // zero, leading us to manipulate a freed JobTracker object or job handle
+      // (as the key is no longer valid). We therefore check if the tracker has
+      // already been deleted. Note that Windows may emit notifications after
+      // 'job finished' (active process zero), so not every case is unexpected.
       if (std::find_if(jobs.begin(), jobs.end(), [&](auto&& p) -> bool {
             return p.get() == tracker;
           }) == jobs.end()) {
-        CHECK(false);
+        // CHECK if job already deleted.
+        CHECK_NE(static_cast<int>(event), JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO);
+        // Continue to next notification otherwise.
+        continue;
       }
 
-      switch (events) {
+      switch (event) {
         case JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO: {
           // The job object has signaled that the last process associated
           // with it has terminated. It is safe to free the tracker
@@ -533,11 +536,16 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Create the TargetProcess object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
+  std::vector<base::win::Sid> imp_caps;
+  if (container) {
+    for (const base::win::Sid& sid :
+         container->GetImpersonationCapabilities()) {
+      imp_caps.push_back(sid.Clone());
+    }
+  }
   std::unique_ptr<TargetProcess> target = std::make_unique<TargetProcess>(
       std::move(initial_token), std::move(lockdown_token), job.Get(),
-      thread_pool_,
-      container ? container->GetImpersonationCapabilities()
-                : std::vector<Sid>());
+      thread_pool_, imp_caps);
 
   result = target->Create(exe_path, command_line, std::move(startup_info),
                           &process_info, last_error);

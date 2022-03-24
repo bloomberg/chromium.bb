@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for while loops in XLA."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Tests for case statements in XLA."""
 
 from tensorflow.compiler.tests import xla_test
 from tensorflow.python.eager import def_function
@@ -32,7 +28,7 @@ class CaseTest(xla_test.XLATestCase):
 
   def testCaseBasic(self):
 
-    @def_function.function(experimental_compile=True)
+    @def_function.function(jit_compile=True)
     def switch_case_test(branch_index):
 
       def f1():
@@ -58,7 +54,7 @@ class CaseTest(xla_test.XLATestCase):
 
   def testBranchIsPruned(self):
 
-    @def_function.function(experimental_compile=True)
+    @def_function.function(jit_compile=True)
     def switch_case_test():
       branch_index = array_ops.constant(0)
 

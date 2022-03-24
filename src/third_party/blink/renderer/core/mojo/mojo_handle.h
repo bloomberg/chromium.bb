@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 
 namespace blink {
 
-class ArrayBufferOrArrayBufferView;
 class MojoCreateSharedBufferResult;
 class MojoDiscardDataOptions;
 class MojoDuplicateBufferHandleOptions;
@@ -42,33 +42,18 @@ class CORE_EXPORT MojoHandle final : public ScriptWrappable {
                      V8MojoWatchCallback*);
 
   // MessagePipe handle.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   MojoResult writeMessage(const V8BufferSource* buffer,
                           const HeapVector<Member<MojoHandle>>& handles);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  MojoResult writeMessage(ArrayBufferOrArrayBufferView&,
-                          const HeapVector<Member<MojoHandle>>&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   MojoReadMessageResult* readMessage(const MojoReadMessageFlags*);
 
   // DataPipe handle.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   MojoWriteDataResult* writeData(const V8BufferSource* buffer,
                                  const MojoWriteDataOptions* options);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  MojoWriteDataResult* writeData(const ArrayBufferOrArrayBufferView&,
-                                 const MojoWriteDataOptions*);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   MojoReadDataResult* queryData() const;
   MojoReadDataResult* discardData(unsigned num_bytes,
                                   const MojoDiscardDataOptions*);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   MojoReadDataResult* readData(const V8BufferSource* buffer,
                                const MojoReadDataOptions* options) const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  MojoReadDataResult* readData(ArrayBufferOrArrayBufferView&,
-                               const MojoReadDataOptions*) const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // SharedBuffer handle.
   MojoMapBufferResult* mapBuffer(unsigned offset, unsigned num_bytes);

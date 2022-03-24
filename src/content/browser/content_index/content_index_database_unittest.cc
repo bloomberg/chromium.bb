@@ -9,13 +9,14 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/browser/content_index_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/origin.h"
 
@@ -111,11 +112,14 @@ class ContentIndexDatabaseTest : public ::testing::Test {
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         embedded_worker_test_helper_(base::FilePath() /* in memory */) {}
 
+  ContentIndexDatabaseTest(const ContentIndexDatabaseTest&) = delete;
+  ContentIndexDatabaseTest& operator=(const ContentIndexDatabaseTest&) = delete;
+
   ~ContentIndexDatabaseTest() override = default;
 
   void SetUp() override {
     // Register Service Worker.
-    service_worker_registration_id_ = RegisterServiceWorker();
+    service_worker_registration_id_ = RegisterServiceWorker(origin_);
     ASSERT_NE(service_worker_registration_id_,
               blink::mojom::kInvalidServiceWorkerRegistrationId);
     database_ = std::make_unique<ContentIndexDatabase>(
@@ -141,7 +145,8 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     base::RunLoop run_loop;
     blink::mojom::ContentIndexError error;
     database_->AddEntry(
-        service_worker_registration_id_, origin_, std::move(description),
+        service_worker_registration_id_, origin_,
+        /* is_top_level_context= */ true, std::move(description),
         std::move(icons), launch_url(),
         base::BindOnce(&DatabaseErrorCallback, run_loop.QuitClosure(), &error));
     run_loop.Run();
@@ -165,7 +170,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     base::RunLoop run_loop;
     std::vector<blink::mojom::ContentDescriptionPtr> descriptions;
     database_->GetDescriptions(
-        service_worker_registration_id_,
+        service_worker_registration_id_, origin_,
         base::BindOnce(&GetDescriptionsCallback, run_loop.QuitClosure(),
                        out_error, &descriptions));
     run_loop.Run();
@@ -223,6 +228,11 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     return service_worker_registration_id_;
   }
 
+  void set_service_worker_registration_id(
+      int64_t service_worker_registration_id) {
+    service_worker_registration_id_ = service_worker_registration_id;
+  }
+
   ContentIndexDatabase* database() { return database_.get(); }
 
   BrowserTaskEnvironment& task_environment() { return task_environment_; }
@@ -231,23 +241,23 @@ class ContentIndexDatabaseTest : public ::testing::Test {
 
   GURL launch_url() { return origin_.GetURL(); }
 
- private:
-  int64_t RegisterServiceWorker() {
-    GURL script_url(origin_.GetURL().spec() + "sw.js");
+  int64_t RegisterServiceWorker(const url::Origin& origin) {
+    GURL script_url(origin.GetURL().spec() + "sw.js");
     int64_t service_worker_registration_id =
         blink::mojom::kInvalidServiceWorkerRegistrationId;
 
     {
       blink::mojom::ServiceWorkerRegistrationOptions options;
-      options.scope = origin_.GetURL();
-      storage::StorageKey key(origin_);
+      options.scope = origin.GetURL();
+      blink::StorageKey key(origin);
       base::RunLoop run_loop;
       embedded_worker_test_helper_.context()->RegisterServiceWorker(
           script_url, key, options,
           blink::mojom::FetchClientSettingsObject::New(),
           base::BindOnce(&DidRegisterServiceWorker,
                          &service_worker_registration_id,
-                         run_loop.QuitClosure()));
+                         run_loop.QuitClosure()),
+          /*requesting_frame_id=*/GlobalRenderFrameHostId());
 
       run_loop.Run();
     }
@@ -261,7 +271,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     {
       base::RunLoop run_loop;
       embedded_worker_test_helper_.context()->registry()->FindRegistrationForId(
-          service_worker_registration_id, storage::StorageKey(origin_),
+          service_worker_registration_id, blink::StorageKey(origin),
           base::BindOnce(&DidFindServiceWorkerRegistration,
                          &service_worker_registration_,
                          run_loop.QuitClosure()));
@@ -279,6 +289,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     return service_worker_registration_id;
   }
 
+ private:
   BrowserTaskEnvironment task_environment_;  // Must be first member.
   ContentIndexTestBrowserContext browser_context_;
   url::Origin origin_ = url::Origin::Create(GURL("https://example.com"));
@@ -287,8 +298,6 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   EmbeddedWorkerTestHelper embedded_worker_test_helper_;
   scoped_refptr<ServiceWorkerRegistration> service_worker_registration_;
   std::unique_ptr<ContentIndexDatabase> database_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentIndexDatabaseTest);
 };
 
 TEST_F(ContentIndexDatabaseTest, DatabaseOperations) {
@@ -315,6 +324,24 @@ TEST_F(ContentIndexDatabaseTest, DatabaseOperations) {
   ASSERT_EQ(descriptions.size(), 1u);
   auto expected_description = CreateDescription("id1");
   EXPECT_TRUE(descriptions[0]->Equals(*expected_description));
+}
+
+TEST_F(ContentIndexDatabaseTest, DatabaseOperationsBadSWID) {
+  url::Origin other_origin = url::Origin::Create(GURL("https://other.com"));
+  int64_t other_service_worker_registration_id =
+      RegisterServiceWorker(other_origin);
+  ASSERT_NE(other_service_worker_registration_id,
+            blink::mojom::kInvalidServiceWorkerRegistrationId);
+  set_service_worker_registration_id(other_service_worker_registration_id);
+
+  blink::mojom::ContentIndexError error;
+  auto descriptions = GetDescriptions(&error);
+  EXPECT_TRUE(descriptions.empty());
+  EXPECT_EQ(error, blink::mojom::ContentIndexError::STORAGE_ERROR);
+
+  EXPECT_EQ(AddEntry(CreateDescription("id1")),
+            blink::mojom::ContentIndexError::STORAGE_ERROR);
+  EXPECT_EQ(DeleteEntry("id2"), blink::mojom::ContentIndexError::STORAGE_ERROR);
 }
 
 TEST_F(ContentIndexDatabaseTest, AddDuplicateIdWillOverwrite) {

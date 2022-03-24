@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -50,7 +51,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         translation_declined_(false),
         source_language_index_on_translation_(-1),
         target_language_index_on_translation_(-1),
-        can_blocklist_site_(true) {}
+        can_add_site_to_never_prompt_list(true) {}
 
   TranslateBubbleModel::ViewState GetViewState() const override {
     return view_state_transition_.view_state();
@@ -150,9 +151,13 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
            target_language_index_on_translation_ == target_language_index_;
   }
 
-  bool CanBlocklistSite() override { return can_blocklist_site_; }
+  bool CanAddSiteToNeverPromptList() override {
+    return can_add_site_to_never_prompt_list;
+  }
 
-  void SetCanBlocklistSite(bool value) { can_blocklist_site_ = value; }
+  void SetCanAddSiteToNeverPromptList(bool value) {
+    can_add_site_to_never_prompt_list = value;
+  }
 
   void ReportUIInteraction(translate::UIInteraction ui_interaction) override {}
 
@@ -171,7 +176,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   bool translation_declined_;
   int source_language_index_on_translation_;
   int target_language_index_on_translation_;
-  bool can_blocklist_site_;
+  bool can_add_site_to_never_prompt_list;
 };
 
 }  // namespace
@@ -225,8 +230,8 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
   }
 
   std::unique_ptr<views::Widget> anchor_widget_;
-  MockTranslateBubbleModel* mock_model_;
-  TranslateBubbleView* bubble_;
+  raw_ptr<MockTranslateBubbleModel> mock_model_;
+  raw_ptr<TranslateBubbleView> bubble_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -258,7 +263,7 @@ TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateLanguage) {
 
 TEST_F(TranslateBubbleViewTest, OptionsMenuNeverTranslateSite) {
   // NEVER_TRANSLATE_SITE should only show up for sites that can be blocklisted.
-  mock_model_->SetCanBlocklistSite(true);
+  mock_model_->SetCanAddSiteToNeverPromptList(true);
   CreateAndShowBubble();
 
   EXPECT_FALSE(mock_model_->never_translate_site_);
@@ -346,6 +351,45 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
   EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
 }
 
+TEST_F(TranslateBubbleViewTest, SourceResetButton) {
+  CreateAndShowBubble();
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
+
+  // If there is no change in language selection, the reset button should be
+  // disabled.
+  EXPECT_FALSE(bubble_->advanced_reset_button_source_->GetEnabled());
+
+  // Change the language selection. The reset button should be enabled.
+  bubble_->source_language_combobox_->SetSelectedIndex(10);
+  bubble_->SourceLanguageChanged();
+  EXPECT_EQ(10, bubble_->source_language_combobox_->GetSelectedIndex());
+  EXPECT_TRUE(bubble_->advanced_reset_button_source_->GetEnabled());
+
+  // Press the reset button. Language should change back to initial selection.
+  PressButton(TranslateBubbleView::BUTTON_ID_RESET);
+  EXPECT_EQ(1, bubble_->source_language_combobox_->GetSelectedIndex());
+  EXPECT_FALSE(bubble_->advanced_reset_button_source_->GetEnabled());
+}
+
+TEST_F(TranslateBubbleViewTest, TargetResetButton) {
+  CreateAndShowBubble();
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE);
+
+  // If there is no change in language selection, the reset button should be
+  // disabled.
+  EXPECT_FALSE(bubble_->advanced_reset_button_target_->GetEnabled());
+
+  // Change the language selection. The reset button should be enabled.
+  bubble_->target_language_combobox_->SetSelectedIndex(10);
+  bubble_->TargetLanguageChanged();
+  EXPECT_EQ(10, bubble_->target_language_combobox_->GetSelectedIndex());
+  EXPECT_TRUE(bubble_->advanced_reset_button_target_->GetEnabled());
+
+  // Press the reset button. Language should change back to initial selection.
+  PressButton(TranslateBubbleView::BUTTON_ID_RESET);
+  EXPECT_EQ(2, bubble_->target_language_combobox_->GetSelectedIndex());
+}
+
 TEST_F(TranslateBubbleViewTest, SourceDoneButton) {
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
@@ -411,7 +455,7 @@ TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
 }
 
 TEST_F(TranslateBubbleViewTest, OptionsMenuRespectsBlocklistSite) {
-  mock_model_->SetCanBlocklistSite(false);
+  mock_model_->SetCanAddSiteToNeverPromptList(false);
   CreateAndShowBubble();
 
   TriggerOptionsMenu();

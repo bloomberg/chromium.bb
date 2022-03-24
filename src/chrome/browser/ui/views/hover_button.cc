@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -17,6 +18,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event_constants.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -72,7 +74,7 @@ class IconWrapper : public views::View {
   views::View* icon() { return icon_; }
 
  private:
-  views::View* icon_;
+  raw_ptr<views::View> icon_;
 };
 
 BEGIN_METADATA(IconWrapper, views::View)
@@ -96,11 +98,11 @@ HoverButton::HoverButton(PressedCallback callback, const std::u16string& text)
                            2;
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  views::InkDrop::UseInkDropForFloodFillRipple(ink_drop(),
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                /*highlight_on_hover=*/false,
                                                /*highlight_on_focus=*/true);
-  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
       [](views::View* host) { return GetInkDropColor(host); }, this));
 
   SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
@@ -176,7 +178,7 @@ HoverButton::HoverButton(PressedCallback callback,
   label_wrapper_ = AddChildView(std::move(label_wrapper));
   // Observe |label_wrapper_| bounds changes to ensure the HoverButton tooltip
   // is kept in sync with the size.
-  label_observation_.Observe(label_wrapper_);
+  label_observation_.Observe(label_wrapper_.get());
 
   if (secondary_view) {
     secondary_view->SetCanProcessEventsWithinSubtree(

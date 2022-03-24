@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 
 namespace extensions {
@@ -17,6 +16,10 @@ namespace extensions {
 class AutomationApiHelper : public content::RenderFrameObserver {
  public:
   explicit AutomationApiHelper(content::RenderFrame* render_frame);
+
+  AutomationApiHelper(const AutomationApiHelper&) = delete;
+  AutomationApiHelper& operator=(const AutomationApiHelper&) = delete;
+
   ~AutomationApiHelper() override;
 
  private:
@@ -27,8 +30,6 @@ class AutomationApiHelper : public content::RenderFrameObserver {
   void OnQuerySelector(int acc_obj_id,
                        int request_id,
                        const std::u16string& selector);
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationApiHelper);
 };
 
 }  // namespace extensions

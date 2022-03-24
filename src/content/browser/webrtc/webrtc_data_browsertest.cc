@@ -16,6 +16,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 
 namespace content {
@@ -47,10 +48,6 @@ class MAYBE_WebRtcDataBrowserTest : public WebRtcContentBrowserTestBase {
     MakeTypicalCall(javascript, "/media/peerconnection-call-data.html");
   }
 };
-
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CanSetupLegacyCall) {
-  MakeTypicalPeerConnectionCall("callWithLegacySdp();");
-}
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcDataBrowserTest, CallWithSctpDataOnly) {
   MakeTypicalPeerConnectionCall("callWithSctpDataOnly();");

@@ -76,20 +76,20 @@ class AnnoyingScalar
 
     AnnoyingScalar operator/(const AnnoyingScalar& other) const
     { return AnnoyingScalar((*v)/(*other.v)); }
-    
+
     AnnoyingScalar& operator+=(const AnnoyingScalar& other) { *v += *other.v; return *this; }
     AnnoyingScalar& operator-=(const AnnoyingScalar& other) { *v -= *other.v; return *this; }
     AnnoyingScalar& operator*=(const AnnoyingScalar& other) { *v *= *other.v; return *this; }
     AnnoyingScalar& operator/=(const AnnoyingScalar& other) { *v /= *other.v; return *this; }
     AnnoyingScalar& operator= (const AnnoyingScalar& other) { *v  = *other.v; return *this; }
-  
+
     bool operator==(const AnnoyingScalar& other) const { return *v == *other.v; }
     bool operator!=(const AnnoyingScalar& other) const { return *v != *other.v; }
     bool operator<=(const AnnoyingScalar& other) const { return *v <= *other.v; }
     bool operator< (const AnnoyingScalar& other) const { return *v <  *other.v; }
     bool operator>=(const AnnoyingScalar& other) const { return *v >= *other.v; }
     bool operator> (const AnnoyingScalar& other) const { return *v >  *other.v; }
-    
+  
     float* v;
     float data;
     static int instances;
@@ -126,7 +126,7 @@ template<>
 struct NumTraits<AnnoyingScalar> : NumTraits<float>
 {
   enum {
-    RequireInitialization = true
+    RequireInitialization = 1,
   };
   typedef AnnoyingScalar Real;
   typedef AnnoyingScalar Nested;
@@ -136,12 +136,19 @@ struct NumTraits<AnnoyingScalar> : NumTraits<float>
 
 template<> inline AnnoyingScalar test_precision<AnnoyingScalar>() { return test_precision<float>(); }
 
-namespace internal {
-  template<> double cast(const AnnoyingScalar& x) { return double(*x.v); }
-  template<> float  cast(const AnnoyingScalar& x) { return *x.v; }
+namespace numext {
+template<>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+bool (isfinite)(const AnnoyingScalar& x) {
+  return (numext::isfinite)(*x.v);
+}
 }
 
+namespace internal {
+  template<> EIGEN_STRONG_INLINE double cast(const AnnoyingScalar& x) { return double(*x.v); }
+  template<> EIGEN_STRONG_INLINE float  cast(const AnnoyingScalar& x) { return *x.v; }
 }
+}  // namespace Eigen
 
 AnnoyingScalar get_test_precision(const AnnoyingScalar&)
 { return Eigen::test_precision<AnnoyingScalar>(); }

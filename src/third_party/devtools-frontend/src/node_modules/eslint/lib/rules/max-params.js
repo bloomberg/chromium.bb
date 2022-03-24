@@ -9,9 +9,8 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-const lodash = require("lodash");
-
 const astUtils = require("./utils/ast-utils");
+const { upperCaseFirst } = require("../shared/string-utils");
 
 //------------------------------------------------------------------------------
 // Rule Definition
@@ -23,7 +22,6 @@ module.exports = {
 
         docs: {
             description: "enforce a maximum number of parameters in function definitions",
-            category: "Stylistic Issues",
             recommended: false,
             url: "https://eslint.org/docs/rules/max-params"
         },
@@ -85,7 +83,7 @@ module.exports = {
                     node,
                     messageId: "exceed",
                     data: {
-                        name: lodash.upperFirst(astUtils.getFunctionNameWithKind(node)),
+                        name: upperCaseFirst(astUtils.getFunctionNameWithKind(node)),
                         count: node.params.length,
                         max: numParams
                     }

@@ -4,8 +4,8 @@
 
 #include "ash/system/gesture_education/gesture_education_notification_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
+#include "base/bind.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"

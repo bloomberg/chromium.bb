@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEBSITE_LOGIN_MANAGER_IMPL_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -22,6 +23,10 @@ class WebsiteLoginManagerImpl : public WebsiteLoginManager {
  public:
   WebsiteLoginManagerImpl(password_manager::PasswordManagerClient* client,
                           content::WebContents* web_contents);
+
+  WebsiteLoginManagerImpl(const WebsiteLoginManagerImpl&) = delete;
+  WebsiteLoginManagerImpl& operator=(const WebsiteLoginManagerImpl&) = delete;
+
   ~WebsiteLoginManagerImpl() override;
 
   // From WebsiteLoginManager:
@@ -31,9 +36,20 @@ class WebsiteLoginManagerImpl : public WebsiteLoginManager {
   void GetPasswordForLogin(
       const Login& login,
       base::OnceCallback<void(bool, std::string)> callback) override;
-  std::string GeneratePassword(autofill::FormSignature form_signature,
-                               autofill::FieldSignature field_signature,
-                               uint64_t max_length) override;
+  void DeletePasswordForLogin(const Login& login,
+                              base::OnceCallback<void(bool)> callback) override;
+
+  void GetGetLastTimePasswordUsed(
+      const Login& login,
+      base::OnceCallback<void(absl::optional<base::Time>)> callback) override;
+
+  void EditPasswordForLogin(const Login& login,
+                            const std::string& new_password,
+                            base::OnceCallback<void(bool)> callback) override;
+  absl::optional<std::string> GeneratePassword(
+      autofill::FormSignature form_signature,
+      autofill::FieldSignature field_signature,
+      uint64_t max_length) override;
 
   void PresaveGeneratedPassword(const Login& login,
                                 const std::string& password,
@@ -44,17 +60,26 @@ class WebsiteLoginManagerImpl : public WebsiteLoginManager {
 
   void CommitGeneratedPassword() override;
 
+  void ResetPendingCredentials() override;
+
+  bool ReadyToCommitSubmittedPassword() override;
+
+  bool SaveSubmittedPassword() override;
+
  private:
   class PendingRequest;
   class PendingFetchLoginsRequest;
   class PendingFetchPasswordRequest;
   class UpdatePasswordRequest;
+  class PendingDeletePasswordRequest;
+  class PendingEditPasswordRequest;
+  class PendingFetchLastTimePasswordUseRequest;
 
   void OnRequestFinished(const PendingRequest* request);
 
-  password_manager::PasswordManagerClient* const client_;
+  const raw_ptr<password_manager::PasswordManagerClient> client_;
 
-  content::WebContents* const web_contents_;
+  const raw_ptr<content::WebContents> web_contents_;
 
   // Update password request will be created in PresaveGeneratedPassword and
   // released in CommitGeneratedPassword after committing presaved password to
@@ -67,8 +92,6 @@ class WebsiteLoginManagerImpl : public WebsiteLoginManager {
 
   // Needs to be the last member.
   base::WeakPtrFactory<WebsiteLoginManagerImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebsiteLoginManagerImpl);
 };
 
 }  // namespace autofill_assistant

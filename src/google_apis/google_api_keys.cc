@@ -74,11 +74,8 @@
 #define GOOGLE_CLIENT_SECRET_REMOTING_HOST DUMMY_API_TOKEN
 #endif
 
-// This is really the API key for non-stable channels on Android. It's
-// named after the first feature that used it.
-// TODO(jkrcal,rogerta): Rename this to GOOGLE_API_KEY_ANDROID_NON_STABLE.
-#if !defined(GOOGLE_API_KEY_PHYSICAL_WEB_TEST)
-#define GOOGLE_API_KEY_PHYSICAL_WEB_TEST DUMMY_API_TOKEN
+#if !defined(GOOGLE_API_KEY_ANDROID_NON_STABLE)
+#define GOOGLE_API_KEY_ANDROID_NON_STABLE DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_API_KEY_REMOTING)
@@ -93,6 +90,16 @@
 // API key for the Speech On-Device API (SODA).
 #if !defined(GOOGLE_API_KEY_SODA)
 #define GOOGLE_API_KEY_SODA DUMMY_API_TOKEN
+#endif
+
+// API key for the ReadAloud API.
+#if !defined(GOOGLE_API_KEY_READ_ALOUD)
+#define GOOGLE_API_KEY_READ_ALOUD DUMMY_API_TOKEN
+#endif
+
+// API key for the Fresnel API.
+#if !defined(GOOGLE_API_KEY_FRESNEL)
+#define GOOGLE_API_KEY_FRESNEL DUMMY_API_TOKEN
 #endif
 
 // These are used as shortcuts for developers and users providing
@@ -127,8 +134,8 @@ class APIKeyCache {
 // A special non-stable key is at the moment defined only for Android Chrome.
 #if defined(OS_ANDROID)
     api_key_non_stable_ = CalculateKeyValue(
-        GOOGLE_API_KEY_PHYSICAL_WEB_TEST,
-        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_PHYSICAL_WEB_TEST), nullptr,
+        GOOGLE_API_KEY_ANDROID_NON_STABLE,
+        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_ANDROID_NON_STABLE), nullptr,
         std::string(), environment.get(), command_line, gaia_config);
 #else
     api_key_non_stable_ = api_key_;
@@ -145,6 +152,15 @@ class APIKeyCache {
 
     api_key_soda_ = CalculateKeyValue(
         GOOGLE_API_KEY_SODA, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_SODA),
+        nullptr, std::string(), environment.get(), command_line, gaia_config);
+
+    api_key_read_aloud_ = CalculateKeyValue(
+        GOOGLE_API_KEY_READ_ALOUD,
+        STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_READ_ALOUD), nullptr,
+        std::string(), environment.get(), command_line, gaia_config);
+
+    api_key_fresnel_ = CalculateKeyValue(
+        GOOGLE_API_KEY_FRESNEL, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_FRESNEL),
         nullptr, std::string(), environment.get(), command_line, gaia_config);
 
     metrics_key_ = CalculateKeyValue(
@@ -213,6 +229,8 @@ class APIKeyCache {
   std::string api_key_remoting() const { return api_key_remoting_; }
   std::string api_key_sharing() const { return api_key_sharing_; }
   std::string api_key_soda() const { return api_key_soda_; }
+  std::string api_key_read_aloud() const { return api_key_read_aloud_; }
+  std::string api_key_fresnel() const { return api_key_fresnel_; }
 
   std::string metrics_key() const { return metrics_key_; }
 
@@ -326,6 +344,8 @@ class APIKeyCache {
   std::string api_key_remoting_;
   std::string api_key_sharing_;
   std::string api_key_soda_;
+  std::string api_key_read_aloud_;
+  std::string api_key_fresnel_;
   std::string metrics_key_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
@@ -356,6 +376,14 @@ std::string GetSharingAPIKey() {
 
 std::string GetSodaAPIKey() {
   return g_api_key_cache.Get().api_key_soda();
+}
+
+std::string GetReadAloudAPIKey() {
+  return g_api_key_cache.Get().api_key_read_aloud();
+}
+
+std::string GetFresnelAPIKey() {
+  return g_api_key_cache.Get().api_key_fresnel();
 }
 
 #if defined(OS_IOS) || defined(OS_FUCHSIA)

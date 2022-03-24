@@ -17,10 +17,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kValidatePropertyData[] = {
-    {XFA_Element::Message, 1, 0},
-    {XFA_Element::Picture, 1, 0},
-    {XFA_Element::Script, 1, 0},
-    {XFA_Element::Extras, 1, 0},
+    {XFA_Element::Message, 1, {}},
+    {XFA_Element::Picture, 1, {}},
+    {XFA_Element::Script, 1, {}},
+    {XFA_Element::Extras, 1, {}},
 };
 const CXFA_Node::AttributeData kValidateAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
@@ -43,17 +43,17 @@ constexpr wchar_t kScriptTest[] = L"scriptTest";
 }  // namespace
 
 CXFA_Validate::CXFA_Validate(CXFA_Document* doc, XFA_PacketType packet)
-    : CXFA_Node(
-          doc,
-          packet,
-          (XFA_XDPPACKET_Config | XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
-          XFA_ObjectType::ContentNode,
-          XFA_Element::Validate,
-          kValidatePropertyData,
-          kValidateAttributeData,
-          cppgc::MakeGarbageCollected<CJX_Node>(
-              doc->GetHeap()->GetAllocationHandle(),
-              this)) {}
+    : CXFA_Node(doc,
+                packet,
+                {XFA_XDPPACKET::kConfig, XFA_XDPPACKET::kTemplate,
+                 XFA_XDPPACKET::kForm},
+                XFA_ObjectType::ContentNode,
+                XFA_Element::Validate,
+                kValidatePropertyData,
+                kValidateAttributeData,
+                cppgc::MakeGarbageCollected<CJX_Node>(
+                    doc->GetHeap()->GetAllocationHandle(),
+                    this)) {}
 
 CXFA_Validate::~CXFA_Validate() = default;
 
@@ -62,10 +62,11 @@ XFA_AttributeValue CXFA_Validate::GetFormatTest() {
 }
 
 void CXFA_Validate::SetNullTest(const WideString& wsValue) {
-  Optional<XFA_AttributeValue> item =
+  absl::optional<XFA_AttributeValue> item =
       XFA_GetAttributeValueByName(wsValue.AsStringView());
-  JSObject()->SetEnum(XFA_Attribute::NullTest,
-                      item ? *item : XFA_AttributeValue::Disabled, false);
+  JSObject()->SetEnum(
+      XFA_Attribute::NullTest,
+      item.has_value() ? item.value() : XFA_AttributeValue::Disabled, false);
 }
 
 XFA_AttributeValue CXFA_Validate::GetNullTest() {
@@ -144,8 +145,8 @@ void CXFA_Validate::SetMessageText(const WideString& wsMessageType,
   pTextNode->JSObject()->SetContent(wsMessage, wsMessage, false, false, true);
 }
 
-WideString CXFA_Validate::GetPicture() {
-  CXFA_Picture* pNode = GetChild<CXFA_Picture>(0, XFA_Element::Picture, false);
+WideString CXFA_Validate::GetPicture() const {
+  const auto* pNode = GetChild<CXFA_Picture>(0, XFA_Element::Picture, false);
   return pNode ? pNode->JSObject()->GetContent(false) : WideString();
 }
 

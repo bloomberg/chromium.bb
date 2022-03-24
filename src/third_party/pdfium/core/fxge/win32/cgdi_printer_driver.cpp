@@ -6,6 +6,7 @@
 
 #include "core/fxge/win32/cgdi_printer_driver.h"
 
+#include <math.h>
 #include <windows.h>
 
 #include <algorithm>
@@ -23,6 +24,10 @@
 #include "core/fxge/text_char_pos.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+
+#if defined(PDFIUM_PRINT_TEXT_WITH_GDI)
+#include "core/fxcrt/widestring.h"
+#endif
 
 #if defined(PDFIUM_PRINT_TEXT_WITH_GDI)
 namespace {

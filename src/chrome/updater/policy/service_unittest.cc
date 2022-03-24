@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,10 +107,10 @@ class FakePolicyManager : public PolicyManagerInterface {
 };
 
 TEST(PolicyService, DefaultPolicyValue) {
-  std::unique_ptr<PolicyService> policy_service(GetUpdaterPolicyService());
-  std::vector<std::unique_ptr<PolicyManagerInterface>> managers;
+  PolicyService::PolicyManagerVector managers;
   managers.push_back(GetPolicyManager());
-  policy_service->SetPolicyManagersForTesting(std::move(managers));
+  auto policy_service =
+      base::MakeRefCounted<PolicyService>(std::move(managers));
   EXPECT_EQ(policy_service->source(), "default");
 
   std::string version_prefix;
@@ -120,13 +121,13 @@ TEST(PolicyService, DefaultPolicyValue) {
 }
 
 TEST(PolicyService, SinglePolicyManager) {
-  std::unique_ptr<PolicyService> policy_service(GetUpdaterPolicyService());
   auto manager = std::make_unique<FakePolicyManager>(true, "test_source");
   manager->SetChannel("app1", "test_channel");
   manager->SetUpdatePolicy("app2", 3);
-  std::vector<std::unique_ptr<PolicyManagerInterface>> managers;
+  PolicyService::PolicyManagerVector managers;
   managers.push_back(std::move(manager));
-  policy_service->SetPolicyManagersForTesting(std::move(managers));
+  auto policy_service =
+      base::MakeRefCounted<PolicyService>(std::move(managers));
   EXPECT_EQ(policy_service->source(), "test_source");
 
   PolicyStatus<std::string> app1_channel_status;
@@ -162,11 +163,13 @@ TEST(PolicyService, SinglePolicyManager) {
 }
 
 TEST(PolicyService, MultiplePolicyManagers) {
-  std::unique_ptr<PolicyService> policy_service(GetUpdaterPolicyService());
-  std::vector<std::unique_ptr<PolicyManagerInterface>> managers;
+  PolicyService::PolicyManagerVector managers;
 
   auto manager = std::make_unique<FakePolicyManager>(true, "group_policy");
-  UpdatesSuppressedTimes updates_suppressed_times = {5, 10, 30};
+  UpdatesSuppressedTimes updates_suppressed_times;
+  updates_suppressed_times.start_hour_ = 5;
+  updates_suppressed_times.start_minute_ = 10;
+  updates_suppressed_times.duration_minute_ = 30;
   manager->SetUpdatesSuppressedTimes(updates_suppressed_times);
   manager->SetChannel("app1", "channel_gp");
   manager->SetUpdatePolicy("app2", 1);
@@ -179,7 +182,9 @@ TEST(PolicyService, MultiplePolicyManagers) {
   managers.push_back(std::move(manager));
 
   manager = std::make_unique<FakePolicyManager>(true, "imaginary");
-  updates_suppressed_times = {1, 1, 20};
+  updates_suppressed_times.start_hour_ = 1;
+  updates_suppressed_times.start_minute_ = 1;
+  updates_suppressed_times.duration_minute_ = 20;
   manager->SetUpdatesSuppressedTimes(updates_suppressed_times);
   manager->SetChannel("app1", "channel_imaginary");
   manager->SetUpdatePolicy("app1", 2);
@@ -189,7 +194,8 @@ TEST(PolicyService, MultiplePolicyManagers) {
   // The default policy manager.
   managers.push_back(GetPolicyManager());
 
-  policy_service->SetPolicyManagersForTesting(std::move(managers));
+  auto policy_service =
+      base::MakeRefCounted<PolicyService>(std::move(managers));
   EXPECT_EQ(policy_service->source(),
             "group_policy;device_management;imaginary;default");
 
@@ -199,9 +205,9 @@ TEST(PolicyService, MultiplePolicyManagers) {
   EXPECT_TRUE(suppressed_time_status.conflict_policy());
   EXPECT_EQ(suppressed_time_status.effective_policy().value().source,
             "group_policy");
-  EXPECT_EQ(updates_suppressed_times.start_hour, 5);
-  EXPECT_EQ(updates_suppressed_times.start_minute, 10);
-  EXPECT_EQ(updates_suppressed_times.duration_minute, 30);
+  EXPECT_EQ(updates_suppressed_times.start_hour_, 5);
+  EXPECT_EQ(updates_suppressed_times.start_minute_, 10);
+  EXPECT_EQ(updates_suppressed_times.duration_minute_, 30);
 
   PolicyStatus<std::string> channel_status;
   std::string channel;
@@ -264,18 +270,22 @@ TEST(PolicyService, MultiplePolicyManagers) {
 }
 
 TEST(PolicyService, MultiplePolicyManagers_WithUnmanagedOnes) {
-  std::unique_ptr<PolicyService> policy_service(GetUpdaterPolicyService());
-  std::vector<std::unique_ptr<PolicyManagerInterface>> managers;
+  PolicyService::PolicyManagerVector managers;
 
   auto manager = std::make_unique<FakePolicyManager>(true, "device_management");
-  UpdatesSuppressedTimes updates_suppressed_times = {5, 10, 30};
+  UpdatesSuppressedTimes updates_suppressed_times;
+  updates_suppressed_times.start_hour_ = 5;
+  updates_suppressed_times.start_minute_ = 10;
+  updates_suppressed_times.duration_minute_ = 30;
   manager->SetUpdatesSuppressedTimes(updates_suppressed_times);
   manager->SetChannel("app1", "channel_dm");
   manager->SetUpdatePolicy("app1", 3);
   managers.push_back(std::move(manager));
 
   manager = std::make_unique<FakePolicyManager>(true, "imaginary");
-  updates_suppressed_times = {1, 1, 20};
+  updates_suppressed_times.start_hour_ = 1;
+  updates_suppressed_times.start_minute_ = 1;
+  updates_suppressed_times.duration_minute_ = 20;
   manager->SetUpdatesSuppressedTimes(updates_suppressed_times);
   manager->SetChannel("app1", "channel_imaginary");
   manager->SetUpdatePolicy("app1", 2);
@@ -286,13 +296,16 @@ TEST(PolicyService, MultiplePolicyManagers_WithUnmanagedOnes) {
   managers.push_back(GetPolicyManager());
 
   manager = std::make_unique<FakePolicyManager>(false, "group_policy");
-  updates_suppressed_times = {5, 10, 30};
+  updates_suppressed_times.start_hour_ = 5;
+  updates_suppressed_times.start_minute_ = 10;
+  updates_suppressed_times.duration_minute_ = 30;
   manager->SetUpdatesSuppressedTimes(updates_suppressed_times);
   manager->SetChannel("app1", "channel_gp");
   manager->SetUpdatePolicy("app2", 1);
   managers.push_back(std::move(manager));
 
-  policy_service->SetPolicyManagersForTesting(std::move(managers));
+  auto policy_service =
+      base::MakeRefCounted<PolicyService>(std::move(managers));
   EXPECT_EQ(policy_service->source(), "device_management;imaginary;default");
 
   PolicyStatus<UpdatesSuppressedTimes> suppressed_time_status;
@@ -301,9 +314,9 @@ TEST(PolicyService, MultiplePolicyManagers_WithUnmanagedOnes) {
   EXPECT_TRUE(suppressed_time_status.conflict_policy());
   EXPECT_EQ(suppressed_time_status.effective_policy().value().source,
             "device_management");
-  EXPECT_EQ(updates_suppressed_times.start_hour, 5);
-  EXPECT_EQ(updates_suppressed_times.start_minute, 10);
-  EXPECT_EQ(updates_suppressed_times.duration_minute, 30);
+  EXPECT_EQ(updates_suppressed_times.start_hour_, 5);
+  EXPECT_EQ(updates_suppressed_times.start_minute_, 10);
+  EXPECT_EQ(updates_suppressed_times.duration_minute_, 30);
 
   PolicyStatus<std::string> channel_status;
   std::string channel;

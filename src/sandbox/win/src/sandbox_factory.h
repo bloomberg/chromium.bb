@@ -5,7 +5,6 @@
 #ifndef SANDBOX_WIN_SRC_SANDBOX_FACTORY_H_
 #define SANDBOX_WIN_SRC_SANDBOX_FACTORY_H_
 
-#include "base/macros.h"
 #include "sandbox/win/src/sandbox.h"
 
 // SandboxFactory is a set of static methods to get access to the broker
@@ -35,6 +34,10 @@ namespace sandbox {
 
 class SandboxFactory {
  public:
+  SandboxFactory() = delete;
+  SandboxFactory(const SandboxFactory&) = delete;
+  SandboxFactory& operator=(const SandboxFactory&) = delete;
+
   // Returns the Broker API interface, returns nullptr if this process is the
   // target.
   static BrokerServices* GetBrokerServices();
@@ -42,9 +45,6 @@ class SandboxFactory {
   // Returns the Target API interface, returns nullptr if this process is the
   // broker.
   static TargetServices* GetTargetServices();
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SandboxFactory);
 };
 
 }  // namespace sandbox

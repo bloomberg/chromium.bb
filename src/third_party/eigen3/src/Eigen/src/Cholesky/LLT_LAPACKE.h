@@ -33,6 +33,8 @@
 #ifndef EIGEN_LLT_LAPACKE_H
 #define EIGEN_LLT_LAPACKE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

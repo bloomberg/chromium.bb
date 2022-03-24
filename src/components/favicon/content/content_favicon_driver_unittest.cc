@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -116,7 +115,7 @@ TEST_F(ContentFaviconDriverTest, IgnoreManifestURLBeforeOnLoad) {
       kPageURL, web_contents());
   navigation->SetKeepLoading(true);
   navigation->Commit();
-  absl::optional<GURL> manifest_url = kFakeManifestURL;
+  GURL manifest_url = kFakeManifestURL;
   auto* rfh_tester =
       content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
   rfh_tester->SimulateManifestURLUpdate(manifest_url);
@@ -136,7 +135,7 @@ TEST_F(ContentFaviconDriverTest, UseManifestURLAFterOnLoad) {
   navigation->SetKeepLoading(true);
   navigation->Commit();
   navigation->StopLoading();
-  absl::optional<GURL> manifest_url = kFakeManifestURL;
+  GURL manifest_url = kFakeManifestURL;
   auto* rfh_tester =
       content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
   rfh_tester->SimulateManifestURLUpdate(manifest_url);

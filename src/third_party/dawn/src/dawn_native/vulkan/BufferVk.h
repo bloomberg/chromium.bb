@@ -35,26 +35,34 @@ namespace dawn_native { namespace vulkan {
 
         // Transitions the buffer to be used as `usage`, recording any necessary barrier in
         // `commands`.
-        // TODO(cwallez@chromium.org): coalesce barriers and do them early when possible.
+        // TODO(crbug.com/dawn/851): coalesce barriers and do them early when possible.
         void TransitionUsageNow(CommandRecordingContext* recordingContext, wgpu::BufferUsage usage);
         bool TransitionUsageAndGetResourceBarrier(wgpu::BufferUsage usage,
                                                   VkBufferMemoryBarrier* barrier,
                                                   VkPipelineStageFlags* srcStages,
                                                   VkPipelineStageFlags* dstStages);
 
-        void EnsureDataInitialized(CommandRecordingContext* recordingContext);
-        void EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+        // All the Ensure methods return true if the buffer was initialized to zero.
+        bool EnsureDataInitialized(CommandRecordingContext* recordingContext);
+        bool EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
                                                 uint64_t offset,
                                                 uint64_t size);
-        void EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
+        bool EnsureDataInitializedAsDestination(CommandRecordingContext* recordingContext,
                                                 const CopyTextureToBufferCmd* copy);
+
+        // Dawn API
+        void SetLabelImpl() override;
 
       private:
         ~Buffer() override;
         using BufferBase::BufferBase;
+
         MaybeError Initialize(bool mappedAtCreation);
         void InitializeToZero(CommandRecordingContext* recordingContext);
-        void ClearBuffer(CommandRecordingContext* recordingContext, uint32_t clearValue);
+        void ClearBuffer(CommandRecordingContext* recordingContext,
+                         uint32_t clearValue,
+                         uint64_t offset = 0,
+                         uint64_t size = 0);
 
         MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
         void UnmapImpl() override;

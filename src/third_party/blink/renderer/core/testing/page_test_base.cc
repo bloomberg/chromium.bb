@@ -10,7 +10,6 @@
 #include "base/test/bind.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_font_face_descriptors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_string.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
@@ -52,8 +51,13 @@ void ToSimpleLayoutTree(std::ostream& ostream,
     ostream << *node;
   else
     ostream << "(anonymous)";
-  if (auto* layout_text_fragment = DynamicTo<LayoutTextFragment>(layout_object))
+  if (auto* layout_text_fragment =
+          DynamicTo<LayoutTextFragment>(layout_object)) {
     ostream << " (" << layout_text_fragment->GetText() << ")";
+  } else if (auto* layout_text = DynamicTo<LayoutText>(layout_object)) {
+    if (!layout_object.GetNode())
+      ostream << " " << layout_text->GetText();
+  }
   ostream << std::endl;
   for (auto* child = layout_object.SlowFirstChild(); child;
        child = child->NextSibling()) {
@@ -111,7 +115,7 @@ void PageTestBase::SetUp() {
       settings.SetAcceleratedCompositingEnabled(true);
   });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr, std::move(setter), GetTickClock());
+      gfx::Size(800, 600), nullptr, nullptr, std::move(setter), GetTickClock());
 
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
@@ -124,7 +128,7 @@ void PageTestBase::SetUp() {
   GetPage().SetDefaultPageScaleLimits(1, 4);
 }
 
-void PageTestBase::SetUp(IntSize size) {
+void PageTestBase::SetUp(gfx::Size size) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
   auto setter = base::BindLambdaForTesting([&](Settings& settings) {
     if (enable_compositing_)
@@ -152,7 +156,7 @@ void PageTestBase::SetupPageWithClients(
       settings.SetAcceleratedCompositingEnabled(true);
   });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), chrome_client, local_frame_client, std::move(setter),
+      gfx::Size(800, 600), chrome_client, local_frame_client, std::move(setter),
       GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.
@@ -190,15 +194,9 @@ void PageTestBase::LoadAhem(LocalFrame& frame) {
   Document& document = *frame.DomWindow()->document();
   scoped_refptr<SharedBuffer> shared_buffer =
       test::ReadFromFile(test::CoreTestDataPath("Ahem.ttf"));
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* buffer =
       MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferViewOrString>(
           DOMArrayBuffer::Create(shared_buffer));
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  StringOrArrayBufferOrArrayBufferView buffer =
-      StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
-          DOMArrayBuffer::Create(shared_buffer));
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   FontFace* ahem = FontFace::Create(frame.DomWindow(), "Ahem", buffer,
                                     FontFaceDescriptors::Create());
 

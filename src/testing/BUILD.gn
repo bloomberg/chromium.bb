@@ -11,6 +11,11 @@ executable("empty_main") {
 
 # Targets needed for isolate script to execute.
 group("test_scripts_shared") {
+  data_deps = [
+    # Used for reporting test results to RDB.
+    "//build/util:test_results",
+  ]
+
   data = [
     "//testing/test_env.py",
     "//testing/xvfb.py",
@@ -42,4 +47,11 @@ group("run_perf_test") {
 python_library("run_isolated_script_test") {
   testonly = true
   pydeps_file = "//testing/scripts/run_isolated_script_test.pydeps"
+  data = [ "//.vpython3" ]
+}
+
+python_library("wpt_android_lib") {
+  testonly = true
+  pydeps_file = "//testing/scripts/run_android_wpt.pydeps"
+  data = [ "//.vpython3" ]
 }

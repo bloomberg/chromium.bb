@@ -38,8 +38,6 @@
 #include <stdlib.h>
 
 namespace google_breakpad {
-
-using dwarf2reader::DwarfPointerEncoding;
   
 CFISection& CFISection::CIEHeader(uint64_t code_alignment_factor,
                                   int data_alignment_factor,
@@ -115,7 +113,7 @@ CFISection& CFISection::FDEHeader(Label cie_pointer,
 
 CFISection& CFISection::FinishEntry() {
   assert(entry_length_);
-  Align(address_size_, dwarf2reader::DW_CFA_nop);
+  Align(address_size_, DW_CFA_nop);
   entry_length_->length = Here() - entry_length_->start;
   delete entry_length_;
   entry_length_ = NULL;
@@ -127,24 +125,24 @@ CFISection& CFISection::EncodedPointer(uint64_t address,
                                        DwarfPointerEncoding encoding,
                                        const EncodedPointerBases& bases) {
   // Omitted data is extremely easy to emit.
-  if (encoding == dwarf2reader::DW_EH_PE_omit)
+  if (encoding == DW_EH_PE_omit)
     return *this;
 
-  // If (encoding & dwarf2reader::DW_EH_PE_indirect) != 0, then we assume
+  // If (encoding & DW_EH_PE_indirect) != 0, then we assume
   // that ADDRESS is the address at which the pointer is stored --- in
   // other words, that bit has no effect on how we write the pointer.
-  encoding = DwarfPointerEncoding(encoding & ~dwarf2reader::DW_EH_PE_indirect);
+  encoding = DwarfPointerEncoding(encoding & ~DW_EH_PE_indirect);
 
   // Find the base address to which this pointer is relative. The upper
   // nybble of the encoding specifies this.
   uint64_t base;
   switch (encoding & 0xf0) {
-    case dwarf2reader::DW_EH_PE_absptr:  base = 0;                  break;
-    case dwarf2reader::DW_EH_PE_pcrel:   base = bases.cfi + Size(); break;
-    case dwarf2reader::DW_EH_PE_textrel: base = bases.text;         break;
-    case dwarf2reader::DW_EH_PE_datarel: base = bases.data;         break;
-    case dwarf2reader::DW_EH_PE_funcrel: base = fde_start_address_; break;
-    case dwarf2reader::DW_EH_PE_aligned: base = 0;                  break;
+    case DW_EH_PE_absptr:  base = 0;                  break;
+    case DW_EH_PE_pcrel:   base = bases.cfi + Size(); break;
+    case DW_EH_PE_textrel: base = bases.text;         break;
+    case DW_EH_PE_datarel: base = bases.data;         break;
+    case DW_EH_PE_funcrel: base = fde_start_address_; break;
+    case DW_EH_PE_aligned: base = 0;                  break;
     default: abort();
   };
 
@@ -153,7 +151,7 @@ CFISection& CFISection::EncodedPointer(uint64_t address,
   address -= base;
 
   // Align the pointer, if required.
-  if ((encoding & 0xf0) == dwarf2reader::DW_EH_PE_aligned)
+  if ((encoding & 0xf0) == DW_EH_PE_aligned)
     Align(AddressSize());
 
   // Append ADDRESS to this section in the appropriate form. For the
@@ -161,30 +159,30 @@ CFISection& CFISection::EncodedPointer(uint64_t address,
   // unsigned encodings, because ADDRESS has already been extended to 64
   // bits before it was passed to us.
   switch (encoding & 0x0f) {
-    case dwarf2reader::DW_EH_PE_absptr:
+    case DW_EH_PE_absptr:
       Address(address);
       break;
 
-    case dwarf2reader::DW_EH_PE_uleb128:
+    case DW_EH_PE_uleb128:
       ULEB128(address);
       break;
 
-    case dwarf2reader::DW_EH_PE_sleb128:
+    case DW_EH_PE_sleb128:
       LEB128(address);
       break;
 
-    case dwarf2reader::DW_EH_PE_udata2:
-    case dwarf2reader::DW_EH_PE_sdata2:
+    case DW_EH_PE_udata2:
+    case DW_EH_PE_sdata2:
       D16(address);
       break;
 
-    case dwarf2reader::DW_EH_PE_udata4:
-    case dwarf2reader::DW_EH_PE_sdata4:
+    case DW_EH_PE_udata4:
+    case DW_EH_PE_sdata4:
       D32(address);
       break;
 
-    case dwarf2reader::DW_EH_PE_udata8:
-    case dwarf2reader::DW_EH_PE_sdata8:
+    case DW_EH_PE_udata8:
+    case DW_EH_PE_sdata8:
       D64(address);
       break;
 

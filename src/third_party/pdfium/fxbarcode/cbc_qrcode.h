@@ -7,11 +7,12 @@
 #ifndef FXBARCODE_CBC_QRCODE_H_
 #define FXBARCODE_CBC_QRCODE_H_
 
-#include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/widestring.h"
 #include "fxbarcode/cbc_codebase.h"
 
 class CBC_QRCodeWriter;
+class CFX_Matrix;
+class CFX_RenderDevice;
 
 class CBC_QRCode final : public CBC_CodeBase {
  public:

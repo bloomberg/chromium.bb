@@ -193,6 +193,9 @@ static int mxpeg_decode_frame(AVCodecContext *avctx,
     int start_code;
     int ret;
 
+    if (avctx->skip_frame == AVDISCARD_ALL)
+        return AVERROR_PATCHWELCOME;
+
     buf_ptr = buf;
     buf_end = buf + buf_size;
     jpg->got_picture = 0;
@@ -339,7 +342,7 @@ the_end:
     return buf_ptr - buf;
 }
 
-AVCodec ff_mxpeg_decoder = {
+const AVCodec ff_mxpeg_decoder = {
     .name           = "mxpeg",
     .long_name      = NULL_IF_CONFIG_SMALL("Mobotix MxPEG video"),
     .type           = AVMEDIA_TYPE_VIDEO,

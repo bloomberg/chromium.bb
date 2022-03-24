@@ -23,6 +23,10 @@ class SessionSyncServiceImpl : public SessionSyncService {
  public:
   SessionSyncServiceImpl(version_info::Channel channel,
                          std::unique_ptr<SyncSessionsClient> sessions_client);
+
+  SessionSyncServiceImpl(const SessionSyncServiceImpl&) = delete;
+  SessionSyncServiceImpl& operator=(const SessionSyncServiceImpl&) = delete;
+
   ~SessionSyncServiceImpl() override;
 
   syncer::GlobalIdMapper* GetGlobalIdMapper() const override;
@@ -35,7 +39,6 @@ class SessionSyncServiceImpl : public SessionSyncService {
   base::CallbackListSubscription SubscribeToForeignSessionsChanged(
       const base::RepeatingClosure& cb) override WARN_UNUSED_RESULT;
 
-  // For ProfileSyncService to initialize the controller for SESSIONS.
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
       override;
 
@@ -47,10 +50,6 @@ class SessionSyncServiceImpl : public SessionSyncService {
   // useful for tests.
   OpenTabsUIDelegate* GetUnderlyingOpenTabsUIDelegateForTest();
 
-  SyncSessionsClient* GetSessionsClientForTest() {
-    return sessions_client_.get();
-  }
-
  private:
   void NotifyForeignSessionUpdated();
 
@@ -61,8 +60,6 @@ class SessionSyncServiceImpl : public SessionSyncService {
   std::unique_ptr<SessionSyncBridge> bridge_;
 
   base::RepeatingClosureList foreign_sessions_changed_closure_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionSyncServiceImpl);
 };
 
 }  // namespace sync_sessions

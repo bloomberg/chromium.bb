@@ -14,7 +14,7 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 class CPDF_Array;
@@ -26,11 +26,12 @@ class ScanlineDecoder;
 }
 
 // Indexed by 8-bit char code, contains unicode code points.
-extern const uint16_t PDFDocEncoding[256];
+extern const uint16_t kPDFDocEncoding[256];
 
 bool ValidateDecoderPipeline(const CPDF_Array* pDecoders);
 
-ByteString PDF_EncodeString(const ByteString& src, bool bHex);
+ByteString PDF_EncodeString(const ByteString& src);
+ByteString PDF_HexEncodeString(const ByteString& src);
 WideString PDF_DecodeText(pdfium::span<const uint8_t> span);
 ByteString PDF_EncodeText(const WideString& str);
 
@@ -75,13 +76,13 @@ uint32_t FlateOrLZWDecode(bool bLZW,
                           std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                           uint32_t* dest_size);
 
-// Returns pdfium::nullopt if the filter in |pDict| is the wrong type or an
+// Returns absl::nullopt if the filter in |pDict| is the wrong type or an
 // invalid decoder pipeline.
 // Returns an empty vector if there is no filter, or if the filter is an empty
 // array.
 // Otherwise, returns a vector of decoders.
 using DecoderArray = std::vector<std::pair<ByteString, const CPDF_Object*>>;
-Optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict);
+absl::optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict);
 
 bool PDF_DataDecode(pdfium::span<const uint8_t> src_span,
                     uint32_t estimated_size,

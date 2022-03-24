@@ -5,8 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_NET_CHROME_COOKIE_STORE_IOS_CLIENT_H_
 #define IOS_CHROME_BROWSER_NET_CHROME_COOKIE_STORE_IOS_CLIENT_H_
 
-#include "base/macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
 
 // Chrome implementation of net::CookieStoreIOSClient. This class lives on the
@@ -15,11 +14,12 @@ class ChromeCookieStoreIOSClient : public net::CookieStoreIOSClient {
  public:
   ChromeCookieStoreIOSClient();
 
+  ChromeCookieStoreIOSClient(const ChromeCookieStoreIOSClient&) = delete;
+  ChromeCookieStoreIOSClient& operator=(const ChromeCookieStoreIOSClient&) =
+      delete;
+
   // CookieStoreIOSClient implementation.
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeCookieStoreIOSClient);
 };
 
 #endif  // IOS_CHROME_BROWSER_NET_CHROME_COOKIE_STORE_IOS_CLIENT_H_

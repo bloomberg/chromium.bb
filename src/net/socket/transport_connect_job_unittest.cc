@@ -8,18 +8,18 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/secure_dns_policy.h"
-#include "net/log/test_net_log.h"
+#include "net/log/net_log.h"
 #include "net/socket/connect_job_test_util.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/stream_socket.h"
@@ -27,6 +27,8 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 namespace net {
 namespace {
@@ -38,7 +40,7 @@ class TransportConnectJobTest : public WithTaskEnvironment,
  public:
   TransportConnectJobTest()
       : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        client_socket_factory_(&net_log_),
+        client_socket_factory_(NetLog::Get()),
         common_connect_job_params_(
             &client_socket_factory_,
             &host_resolver_,
@@ -52,20 +54,21 @@ class TransportConnectJobTest : public WithTaskEnvironment,
             nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
-            &net_log_,
+            NetLog::Get(),
             nullptr /* websocket_endpoint_lock_manager */) {}
 
   ~TransportConnectJobTest() override {}
 
   static scoped_refptr<TransportSocketParams> DefaultParams() {
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHostName, 80), NetworkIsolationKey(),
-        SecureDnsPolicy::kAllow, OnHostResolutionCallback());
+        url::SchemeHostPort(url::kHttpScheme, kHostName, 80),
+        NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+        OnHostResolutionCallback());
   }
 
  protected:
-  RecordingTestNetLog net_log_;
-  MockHostResolver host_resolver_;
+  MockHostResolver host_resolver_{/*default_result=*/MockHostResolverBase::
+                                      RuleResolver::GetLocalhostResult()};
   MockTransportClientSocketFactory client_socket_factory_;
   const CommonConnectJobParams common_connect_job_params_;
 };
@@ -178,7 +181,7 @@ TEST_F(TransportConnectJobTest, ConnectionFailure) {
 }
 
 TEST_F(TransportConnectJobTest, HostResolutionTimeout) {
-  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+  const base::TimeDelta kTinyTime = base::Microseconds(1);
 
   // Make request hang.
   host_resolver_.set_ondemand_mode(true);
@@ -200,7 +203,7 @@ TEST_F(TransportConnectJobTest, HostResolutionTimeout) {
 }
 
 TEST_F(TransportConnectJobTest, ConnectionTimeout) {
-  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+  const base::TimeDelta kTinyTime = base::Microseconds(1);
 
   // Half the timeout time. In the async case, spend half the time waiting on
   // host resolution, half on connecting.
@@ -262,6 +265,35 @@ TEST_F(TransportConnectJobTest, ConnectionSuccess) {
   }
 }
 
+// TODO(crbug.com/1206799): Set up `host_resolver_` to require the expected
+// scheme.
+TEST_F(TransportConnectJobTest, HandlesHttpsEndpoint) {
+  TestConnectJobDelegate test_delegate;
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      base::MakeRefCounted<TransportSocketParams>(
+          url::SchemeHostPort(url::kHttpsScheme, kHostName, 80),
+          NetworkIsolationKey(), SecureDnsPolicy::kAllow,
+          OnHostResolutionCallback()),
+      &test_delegate, nullptr /* net_log */);
+  test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
+                                        false /* expect_sync_result */);
+}
+
+// TODO(crbug.com/1206799): Set up `host_resolver_` to require the expected
+// lack of scheme.
+TEST_F(TransportConnectJobTest, HandlesNonStandardEndpoint) {
+  TestConnectJobDelegate test_delegate;
+  TransportConnectJob transport_connect_job(
+      DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+      base::MakeRefCounted<TransportSocketParams>(
+          HostPortPair(kHostName, 80), NetworkIsolationKey(),
+          SecureDnsPolicy::kAllow, OnHostResolutionCallback()),
+      &test_delegate, nullptr /* net_log */);
+  test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
+                                        false /* expect_sync_result */);
+}
+
 TEST_F(TransportConnectJobTest, SecureDnsPolicy) {
   for (auto secure_dns_policy :
        {SecureDnsPolicy::kAllow, SecureDnsPolicy::kDisable}) {
@@ -269,8 +301,9 @@ TEST_F(TransportConnectJobTest, SecureDnsPolicy) {
     TransportConnectJob transport_connect_job(
         DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kHostName, 80), NetworkIsolationKey(),
-            secure_dns_policy, OnHostResolutionCallback()),
+            url::SchemeHostPort(url::kHttpScheme, kHostName, 80),
+            NetworkIsolationKey(), secure_dns_policy,
+            OnHostResolutionCallback()),
         &test_delegate, nullptr /* net_log */);
     test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
                                           false /* expect_sync_result */);
@@ -327,8 +360,8 @@ TEST_F(TransportConnectJobTest, IPv6FallbackSocketIPv6FinishesFirst) {
       MockTransportClientSocketFactory::MOCK_STALLED_FAILING_CLIENT_SOCKET};
 
   client_socket_factory_.set_client_socket_types(case_types, 2);
-  client_socket_factory_.set_delay(base::TimeDelta::FromMilliseconds(
-      TransportConnectJob::kIPv6FallbackTimerInMs + 50));
+  client_socket_factory_.set_delay(
+      base::Milliseconds(TransportConnectJob::kIPv6FallbackTimerInMs + 50));
 
   // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
   host_resolver_.rules()->AddIPLiteralRule(kHostName, "2:abcd::3:4:ff,2.2.2.2",

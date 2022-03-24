@@ -6,7 +6,8 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -56,13 +57,14 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/switches.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #endif
@@ -369,30 +371,22 @@ void ComponentLoader::AddChromeApp() {
 }
 
 void ComponentLoader::AddFileManagerExtension() {
-  AddWithNameAndDescription(
-      IDR_FILEMANAGER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("file_manager")),
-      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_NAME),
-      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_DESCRIPTION));
-}
-
-void ComponentLoader::AddVideoPlayerExtension() {
-  Add(IDR_VIDEO_PLAYER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("video_player")));
+  if (!ash::features::IsFileManagerSwaEnabled()) {
+    AddWithNameAndDescription(
+        IDR_FILEMANAGER_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("file_manager")),
+        l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_NAME),
+        l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_DESCRIPTION));
+  }
 }
 
 void ComponentLoader::AddAudioPlayerExtension() {
-  Add(IDR_AUDIO_PLAYER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("audio_player")));
-}
-
-void ComponentLoader::AddGalleryExtension() {
-  // TODO(crbug.com/1030935): Delete this entirely around M93 when it has has a
-  // chance to be cleaned up.
-  if (extensions::ExtensionPrefs::Get(profile_)
-          ->ShouldInstallObsoleteComponentExtension(
-              file_manager::kGalleryAppId)) {
-    Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
+  // TODO(b/189172062): Guard this with ShouldInstallObsoleteComponentExtension
+  // when the feature is on and stable.
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kMediaAppHandlesAudio)) {
+    Add(IDR_AUDIO_PLAYER_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("audio_player")));
   }
 }
 
@@ -413,31 +407,6 @@ void ComponentLoader::AddKeyboardApp() {
   Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
 }
 
-void ComponentLoader::AddChromeCameraApp() {
-  // Only adding the Chrome App version of camera app for migration purpose.
-  // We should remove this method totally after a few milestones.
-  if (profile_->GetPrefs()->GetBoolean(
-          chromeos::prefs::kHasCameraAppMigratedToSWA)) {
-    return;
-  }
-
-  base::FilePath resources_path;
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddComponentFromDir(resources_path.Append(extension_misc::kCameraAppPath),
-                        extension_misc::kCameraAppId, base::RepeatingClosure());
-  }
-}
-
-void ComponentLoader::AddZipArchiverExtension() {
-  base::FilePath resources_path;
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddWithNameAndDescriptionFromDir(
-        resources_path.Append(extension_misc::kZipArchiverExtensionPath),
-        extension_misc::kZipArchiverExtensionId,
-        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
-        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
-  }
-}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 scoped_refptr<const Extension> ComponentLoader::CreateExtension(
@@ -461,8 +430,6 @@ void ComponentLoader::AddDefaultComponentExtensions(
   // Do not add component extensions that have background pages here -- add them
   // to AddDefaultComponentExtensionsWithBackgroundPages.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  Add(IDR_MOBILE_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (browser_defaults::enable_help_app) {
@@ -552,16 +519,9 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
           switches::kLoadGuestModeTestExtension));
       AddGuestModeTestExtension(path);
     }
-    AddChromeCameraApp();
-    AddVideoPlayerExtension();
     AddAudioPlayerExtension();
     AddFileManagerExtension();
-    AddGalleryExtension();
     AddImageLoaderExtension();
-
-#if BUILDFLAG(ENABLE_NACL)
-    AddZipArchiverExtension();
-#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     if (!base::FeatureList::IsEnabled(
@@ -584,11 +544,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       Add(IDR_WALLPAPERMANAGER_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
     }
-
-    Add(IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
-        base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
-    Add(IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST,
-        base::FilePath(extension_misc::kConnectivityDiagnosticsLauncherPath));
 
     Add(IDR_ARC_SUPPORT_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/arc_support")));

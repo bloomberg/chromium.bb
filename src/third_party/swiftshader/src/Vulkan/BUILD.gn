@@ -72,6 +72,7 @@ swiftshader_source_set("swiftshader_libvulkan_headers") {
     "VkDestroy.hpp",
     "VkDevice.hpp",
     "VkDeviceMemory.hpp",
+    "VkDeviceMemoryExternalHost.hpp",
     "VkEvent.hpp",
     "VkFence.hpp",
     "VkFormat.hpp",
@@ -94,6 +95,7 @@ swiftshader_source_set("swiftshader_libvulkan_headers") {
     "VkShaderModule.hpp",
     "VkSpecializationInfo.hpp",
     "VkStringify.hpp",
+    "VkStructConversion.hpp",
     "VkTimelineSemaphore.hpp",
     "VulkanPlatform.hpp",
   ]
@@ -124,6 +126,7 @@ swiftshader_shared_library("swiftshader_libvulkan") {
     "VkDescriptorUpdateTemplate.cpp",
     "VkDevice.cpp",
     "VkDeviceMemory.cpp",
+    "VkDeviceMemoryExternalHost.cpp",
     "VkFormat.cpp",
     "VkFramebuffer.cpp",
     "VkGetProcAddress.cpp",

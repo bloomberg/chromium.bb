@@ -34,8 +34,9 @@ struct GrVkAlloc {
     GrVkBackendMemory fBackendMemory = 0; // handle to memory allocated via GrVkMemoryAllocator.
 
     enum Flag {
-        kNoncoherent_Flag = 0x1,   // memory must be flushed to device after mapping
-        kMappable_Flag    = 0x2,   // memory is able to be mapped.
+        kNoncoherent_Flag     = 0x1,   // memory must be flushed to device after mapping
+        kMappable_Flag        = 0x2,   // memory is able to be mapped.
+        kLazilyAllocated_Flag = 0x4,   // memory was created with lazy allocation
     };
 
     bool operator==(const GrVkAlloc& that) const {
@@ -108,16 +109,27 @@ struct GrVkImageInfo {
     GrProtected              fProtected = GrProtected::kNo;
     GrVkYcbcrConversionInfo  fYcbcrConversionInfo;
     VkSharingMode            fSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+    bool                     fPartOfSwapchainOrAndroidWindow = false;
+#endif
 
 #if GR_TEST_UTILS
     bool operator==(const GrVkImageInfo& that) const {
-        return fImage == that.fImage && fAlloc == that.fAlloc &&
-               fImageTiling == that.fImageTiling && fImageLayout == that.fImageLayout &&
-               fFormat == that.fFormat && fImageUsageFlags == that.fImageUsageFlags &&
-               fSampleCount == that.fSampleCount && fLevelCount == that.fLevelCount &&
-               fCurrentQueueFamily == that.fCurrentQueueFamily && fProtected == that.fProtected &&
-               fYcbcrConversionInfo == that.fYcbcrConversionInfo &&
-               fSharingMode == that.fSharingMode;
+        bool equal = fImage == that.fImage && fAlloc == that.fAlloc &&
+                     fImageTiling == that.fImageTiling &&
+                     fImageLayout == that.fImageLayout &&
+                     fFormat == that.fFormat &&
+                     fImageUsageFlags == that.fImageUsageFlags &&
+                     fSampleCount == that.fSampleCount &&
+                     fLevelCount == that.fLevelCount &&
+                     fCurrentQueueFamily == that.fCurrentQueueFamily &&
+                     fProtected == that.fProtected &&
+                     fYcbcrConversionInfo == that.fYcbcrConversionInfo &&
+                     fSharingMode == that.fSharingMode;
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+        equal = equal && (fPartOfSwapchainOrAndroidWindow == that.fPartOfSwapchainOrAndroidWindow);
+#endif
+        return equal;
     }
 #endif
 };
@@ -148,8 +160,6 @@ using GrVkGetProc = std::function<PFN_vkVoidFunction(
  * to render offscreen textures which will be sampled in draws added to the passed in
  * VkCommandBuffer. If this is done the SkDrawable is in charge of adding the required memory
  * barriers to the queue for the sampled images since the Skia backend will not do this.
- *
- * The VkImage is informational only and should not be used or modified in any ways.
  */
 struct GrVkDrawableInfo {
     VkCommandBuffer fSecondaryCommandBuffer;
@@ -157,7 +167,21 @@ struct GrVkDrawableInfo {
     VkRenderPass    fCompatibleRenderPass;
     VkFormat        fFormat;
     VkRect2D*       fDrawBounds;
-    VkImage         fImage;
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+    bool            fFromSwapchainOrAndroidWindow;
+#endif
+};
+
+struct GrVkSurfaceInfo {
+    uint32_t fSampleCount = 1;
+    uint32_t fLevelCount = 0;
+    GrProtected fProtected = GrProtected::kNo;
+
+    VkImageTiling fImageTiling = VK_IMAGE_TILING_OPTIMAL;
+    VkFormat fFormat = VK_FORMAT_UNDEFINED;
+    VkImageUsageFlags fImageUsageFlags = 0;
+    GrVkYcbcrConversionInfo fYcbcrConversionInfo;
+    VkSharingMode fSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 };
 
 #endif

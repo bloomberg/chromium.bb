@@ -14,15 +14,10 @@
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace content {
 
 class RenderFrameHost;
 class RenderProcessHost;
-class RenderViewHostDelegate;
 class RenderWidgetHost;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
@@ -40,7 +35,7 @@ class RenderWidgetHost;
 // DEPRECATED: RenderViewHost is being removed as part of the SiteIsolation
 // project. New code should not be added here, but to RenderWidgetHost (if it's
 // about drawing or events), RenderFrameHost (if it's frame specific), or
-// WebContents (if it's page specific).
+// Page (if it's page specific).
 //
 // For context, please see https://crbug.com/467770 and
 // https://www.chromium.org/developers/design-documents/site-isolation.
@@ -70,19 +65,8 @@ class CONTENT_EXPORT RenderViewHost {
   // change.
   virtual int GetRoutingID() = 0;
 
-  // Returns the main frame for this render view.
-  virtual RenderFrameHost* GetMainFrame() = 0;
-
   // Instructs the RenderView to send back updates to the preferred size.
   virtual void EnablePreferredSizeMode() = 0;
-
-  // Tells the renderer to perform the given action on the plugin located at
-  // the given point.
-  virtual void ExecutePluginActionAtLocation(
-      const gfx::Point& location,
-      blink::mojom::PluginActionType action) = 0;
-
-  virtual RenderViewHostDelegate* GetDelegate() = 0;
 
   // Returns true if the RenderView is active and has not crashed.
   virtual bool IsRenderViewLive() = 0;

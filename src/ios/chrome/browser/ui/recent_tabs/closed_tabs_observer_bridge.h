@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 
 // Objective-C protocol equivalent of the sessions::TabRestoreServiceObserver
@@ -25,6 +24,10 @@ namespace recent_tabs {
 class ClosedTabsObserverBridge : public sessions::TabRestoreServiceObserver {
  public:
   explicit ClosedTabsObserverBridge(id<ClosedTabsObserving> owner);
+
+  ClosedTabsObserverBridge(const ClosedTabsObserverBridge&) = delete;
+  ClosedTabsObserverBridge& operator=(const ClosedTabsObserverBridge&) = delete;
+
   ~ClosedTabsObserverBridge() override;
 
   // sessions::TabRestoreServiceObserver implementation.
@@ -34,8 +37,6 @@ class ClosedTabsObserverBridge : public sessions::TabRestoreServiceObserver {
 
  private:
   __weak id<ClosedTabsObserving> owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClosedTabsObserverBridge);
 };
 
 }  // namespace recent_tabs

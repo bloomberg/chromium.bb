@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/uploader.h"
@@ -55,6 +56,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
                              size_t num_collectors,
                              const Params& params,
                              const ScheduleUploadCallback& callback);
+
+  DomainReliabilityScheduler(const DomainReliabilityScheduler&) = delete;
+  DomainReliabilityScheduler& operator=(const DomainReliabilityScheduler&) =
+      delete;
+
   ~DomainReliabilityScheduler();
 
   // If there is no upload pending, schedules an upload based on the provided
@@ -73,7 +79,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   // passed to the upload callback by the Uploader.
   void OnUploadComplete(const DomainReliabilityUploader::UploadResult& result);
 
-  std::unique_ptr<base::Value> GetWebUIData() const;
+  base::Value GetWebUIData() const;
 
   // Disables jitter in BackoffEntries to make scheduling deterministic for
   // unit tests.
@@ -86,7 +92,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
                                      base::TimeTicks* upload_time_out,
                                      size_t* collector_index_out);
 
-  const MockableTime* time_;
+  raw_ptr<const MockableTime> time_;
   Params params_;
   ScheduleUploadCallback callback_;
   net::BackoffEntry::Policy backoff_policy_;
@@ -125,8 +131,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   base::TimeTicks last_upload_end_time_;
   size_t last_upload_collector_index_;
   bool last_upload_success_;
-
-  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityScheduler);
 };
 
 }  // namespace domain_reliability

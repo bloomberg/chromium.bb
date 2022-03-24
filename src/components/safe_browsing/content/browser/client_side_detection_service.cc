@@ -15,22 +15,22 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/client_side_detection_host.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
-#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -46,8 +46,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -152,14 +154,13 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
 }
 
 bool ClientSideDetectionService::IsPrivateIPAddress(
-    const std::string& ip_address) const {
-  net::IPAddress address;
-  if (!address.AssignFromIPLiteral(ip_address)) {
-    // Err on the side of privacy and assume this might be private.
-    return true;
-  }
-
+    const net::IPAddress& address) const {
   return !address.IsPubliclyRoutable();
+}
+
+bool ClientSideDetectionService::IsLocalResource(
+    const net::IPAddress& address) const {
+  return !address.IsValid();
 }
 
 void ClientSideDetectionService::AddClientSideDetectionHost(
@@ -177,13 +178,19 @@ void ClientSideDetectionService::RemoveClientSideDetectionHost(
 
 void ClientSideDetectionService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
+    base::Time start_time,
     std::unique_ptr<std::string> response_body) {
+  base::UmaHistogramTimes("SBClientPhishing.NetworkRequestDuration",
+                          base::Time::Now() - start_time);
+
   std::string data;
   if (response_body)
     data = std::move(*response_body.get());
   int response_code = 0;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
     response_code = url_loader->ResponseInfo()->headers->response_code();
+  RecordHttpResponseOrErrorCode("SBClientPhishing.NetworkResult",
+                                url_loader->NetError(), response_code);
 
   DCHECK(base::Contains(client_phishing_reports_, url_loader));
   HandlePhishingVerdict(url_loader, url_loader->GetFinalURL(),
@@ -253,9 +260,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   base::UmaHistogramBoolean("SBClientPhishing.RequestWithToken",
                             !access_token.empty());
   if (!access_token.empty()) {
-    resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        base::StrCat({kAuthHeaderBearer, access_token}));
+    SetAccessTokenAndClearCookieInResourceRequest(resource_request.get(),
+                                                  access_token);
   }
 
   resource_request->url = GetClientReportUrl(kClientReportPhishingUrl);
@@ -267,7 +273,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&ClientSideDetectionService::OnURLLoaderComplete,
-                     base::Unretained(this), loader.get()));
+                     base::Unretained(this), loader.get(), base::Time::Now()));
 
   // Remember which callback and URL correspond to the current fetcher object.
   std::unique_ptr<ClientPhishingReportInfo> info(new ClientPhishingReportInfo);
@@ -339,11 +345,9 @@ bool ClientSideDetectionService::GetValidCachedResult(const GURL& url,
   const CacheState& cache_state = *it->second;
   if (cache_state.is_phishing
           ? cache_state.timestamp >
-                base::Time::Now() -
-                    base::TimeDelta::FromMinutes(kPositiveCacheIntervalMinutes)
+                base::Time::Now() - base::Minutes(kPositiveCacheIntervalMinutes)
           : cache_state.timestamp >
-                base::Time::Now() -
-                    base::TimeDelta::FromDays(kNegativeCacheIntervalDays)) {
+                base::Time::Now() - base::Days(kNegativeCacheIntervalDays)) {
     *is_phishing = cache_state.is_phishing;
     return true;
   }
@@ -356,11 +360,10 @@ void ClientSideDetectionService::UpdateCache() {
   // could be used for this purpose even if we will not use the entry to
   // satisfy the request from the cache.
   base::TimeDelta positive_cache_interval =
-      std::max(base::TimeDelta::FromMinutes(kPositiveCacheIntervalMinutes),
-               base::TimeDelta::FromDays(kReportsIntervalDays));
-  base::TimeDelta negative_cache_interval =
-      std::max(base::TimeDelta::FromDays(kNegativeCacheIntervalDays),
-               base::TimeDelta::FromDays(kReportsIntervalDays));
+      std::max(base::Minutes(kPositiveCacheIntervalMinutes),
+               base::Days(kReportsIntervalDays));
+  base::TimeDelta negative_cache_interval = std::max(
+      base::Days(kNegativeCacheIntervalDays), base::Days(kReportsIntervalDays));
 
   // Remove elements from the cache that will no longer be used.
   for (auto it = cache_.begin(); it != cache_.end();) {
@@ -388,8 +391,7 @@ int ClientSideDetectionService::GetPhishingNumReports() {
 void ClientSideDetectionService::AddPhishingReport(base::Time timestamp) {
   phishing_report_times_.push_back(timestamp);
 
-  base::Time cutoff =
-      base::Time::Now() - base::TimeDelta::FromDays(kReportsIntervalDays);
+  base::Time cutoff = base::Time::Now() - base::Days(kReportsIntervalDays);
 
   // Erase items older than cutoff because we will never care about them again.
   while (!phishing_report_times_.empty() &&
@@ -401,8 +403,8 @@ void ClientSideDetectionService::AddPhishingReport(base::Time timestamp) {
     return;
 
   base::ListValue time_list;
-  for (const base::Time& timestamp : phishing_report_times_)
-    time_list.Append(base::Value(timestamp.ToDoubleT()));
+  for (const base::Time& report_time : phishing_report_times_)
+    time_list.Append(base::Value(report_time.ToDoubleT()));
   delegate_->GetPrefs()->Set(prefs::kSafeBrowsingCsdPingTimestamps, time_list);
 }
 
@@ -431,7 +433,7 @@ GURL ClientSideDetectionService::GetClientReportUrl(
   return url;
 }
 
-std::string ClientSideDetectionService::GetModelStr() {
+const std::string& ClientSideDetectionService::GetModelStr() {
   return ClientSidePhishingModel::GetInstance()->GetModelStr();
 }
 

@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/components/feature_usage/feature_usage_metrics.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
@@ -61,6 +60,10 @@ const char CellularMetricsLogger::kESimAllConnectionResultHistogram[] =
     "Network.Cellular.ESim.ConnectionResult.All";
 
 // static
+const char CellularMetricsLogger::kESimPolicyAllConnectionResultHistogram[] =
+    "Network.Cellular.ESim.Policy.ConnectionResult.All";
+
+// static
 const char CellularMetricsLogger::kPSimAllConnectionResultHistogram[] =
     "Network.Cellular.PSim.ConnectionResult.All";
 
@@ -82,11 +85,11 @@ const char CellularMetricsLogger::kSimPinChangeSuccessHistogram[] =
 
 // static
 const base::TimeDelta CellularMetricsLogger::kInitializationTimeout =
-    base::TimeDelta::FromSeconds(15);
+    base::Seconds(15);
 
 // static
 const base::TimeDelta CellularMetricsLogger::kDisconnectRequestTimeout =
-    base::TimeDelta::FromSeconds(5);
+    base::Seconds(5);
 
 // static
 CellularMetricsLogger::SimPinOperationResult
@@ -261,15 +264,13 @@ CellularMetricsLogger::ShillErrorToConnectResult(
 class ESimFeatureUsageMetrics
     : public feature_usage::FeatureUsageMetrics::Delegate {
  public:
-  ESimFeatureUsageMetrics(
-      CellularESimProfileHandler* cellular_esim_profile_handler,
-      const base::TickClock* tick_clock)
+  explicit ESimFeatureUsageMetrics(
+      CellularESimProfileHandler* cellular_esim_profile_handler)
       : cellular_esim_profile_handler_(cellular_esim_profile_handler) {
     DCHECK(cellular_esim_profile_handler);
-    DCHECK(tick_clock);
     feature_usage_metrics_ =
         std::make_unique<feature_usage::FeatureUsageMetrics>(
-            kESimUMAFeatureName, this, tick_clock);
+            kESimUMAFeatureName, this);
   }
 
   ~ESimFeatureUsageMetrics() override = default;
@@ -298,8 +299,8 @@ class ESimFeatureUsageMetrics
     feature_usage_metrics_->RecordUsage(success);
   }
 
-  void StartUsage() { feature_usage_metrics_->StartUsage(); }
-  void StopUsage() { feature_usage_metrics_->StopUsage(); }
+  void StartUsage() { feature_usage_metrics_->StartSuccessfulUsage(); }
+  void StopUsage() { feature_usage_metrics_->StopSuccessfulUsage(); }
 
  private:
   CellularESimProfileHandler* cellular_esim_profile_handler_;
@@ -308,13 +309,19 @@ class ESimFeatureUsageMetrics
 
 void CellularMetricsLogger::LogCellularAllConnectionSuccessHistogram(
     CellularMetricsLogger::ShillConnectResult start_connect_result,
-    SimType sim_type) {
+    SimType sim_type,
+    bool is_managed_by_policy) {
   if (sim_type == SimType::kPSim) {
     base::UmaHistogramEnumeration(kPSimAllConnectionResultHistogram,
                                   start_connect_result);
   } else {
     base::UmaHistogramEnumeration(kESimAllConnectionResultHistogram,
                                   start_connect_result);
+    if (is_managed_by_policy) {
+      base::UmaHistogramEnumeration(kESimPolicyAllConnectionResultHistogram,
+                                    start_connect_result);
+    }
+
     // If there is a failure to connect, log a failed usage attempt to
     // FeatureUsageMetrics.
     if (start_connect_result !=
@@ -368,7 +375,7 @@ void CellularMetricsLogger::Init(
 
   if (cellular_esim_profile_handler_) {
     esim_feature_usage_metrics_ = std::make_unique<ESimFeatureUsageMetrics>(
-        cellular_esim_profile_handler_, base::DefaultTickClock::GetInstance());
+        cellular_esim_profile_handler_);
   }
 
   if (LoginState::IsInitialized())
@@ -577,13 +584,18 @@ CellularMetricsLogger::PSimActivationStateToEnum(const std::string& state) {
 
 void CellularMetricsLogger::LogCellularDisconnectionsHistogram(
     ConnectionState connection_state,
-    SimType sim_type) {
+    SimType sim_type,
+    bool is_managed_by_policy) {
   if (sim_type == SimType::kPSim) {
     UMA_HISTOGRAM_ENUMERATION("Network.Cellular.PSim.Disconnections",
                               connection_state);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Network.Cellular.ESim.Disconnections",
                               connection_state);
+    if (is_managed_by_policy) {
+      UMA_HISTOGRAM_ENUMERATION("Network.Cellular.ESim.Policy.Disconnections",
+                                connection_state);
+    }
   }
 }
 
@@ -599,7 +611,8 @@ void CellularMetricsLogger::CheckForShillConnectionFailureMetric(
   if (!network->IsConnectingOrConnected() && connection_info->is_connecting &&
       !connection_info->disconnect_requested) {
     LogCellularAllConnectionSuccessHistogram(
-        ShillErrorToConnectResult(network->GetError()), GetSimType(network));
+        ShillErrorToConnectResult(network->GetError()), GetSimType(network),
+        network->IsManagedByPolicy());
   }
 
   connection_info->is_connecting = network->IsConnectingState();
@@ -620,9 +633,10 @@ void CellularMetricsLogger::CheckForConnectionStateMetric(
   if (new_is_connected) {
     LogCellularAllConnectionSuccessHistogram(
         CellularMetricsLogger::ShillConnectResult::kSuccess,
-        GetSimType(network));
+        GetSimType(network), network->IsManagedByPolicy());
     LogCellularDisconnectionsHistogram(ConnectionState::kConnected,
-                                       GetSimType(network));
+                                       GetSimType(network),
+                                       network->IsManagedByPolicy());
     connection_info->last_disconnect_request_time.reset();
     return;
   }
@@ -647,7 +661,8 @@ void CellularMetricsLogger::CheckForConnectionStateMetric(
     return;
   }
   LogCellularDisconnectionsHistogram(ConnectionState::kDisconnected,
-                                     GetSimType(network));
+                                     GetSimType(network),
+                                     network->IsManagedByPolicy());
 }
 
 void CellularMetricsLogger::CheckForESimProfileStatusMetric() {
@@ -731,18 +746,24 @@ void CellularMetricsLogger::CheckForCellularServiceCountMetric() {
 
   size_t psim_networks = 0;
   size_t esim_profiles = 0;
+  size_t esim_policy_profiles = 0;
 
   for (const auto* network : network_list) {
-    if (GetSimType(network) == SimType::kESim)
-      esim_profiles++;
-    else
+    SimType sim_type = GetSimType(network);
+    if (sim_type == SimType::kPSim) {
       psim_networks++;
+    } else {
+      esim_profiles++;
+      if (network->IsManagedByPolicy())
+        esim_policy_profiles++;
+    }
   }
-
   UMA_HISTOGRAM_COUNTS_100("Network.Cellular.PSim.ServiceAtLogin.Count",
                            psim_networks);
   UMA_HISTOGRAM_COUNTS_100("Network.Cellular.ESim.ServiceAtLogin.Count",
                            esim_profiles);
+  UMA_HISTOGRAM_COUNTS_100("Network.Cellular.ESim.Policy.ServiceAtLogin.Count",
+                           esim_policy_profiles);
   is_service_count_logged_ = true;
 }
 
@@ -775,11 +796,14 @@ void CellularMetricsLogger::CheckForCellularUsageMetrics() {
 
   CellularUsage usage;
   absl::optional<SimType> sim_type;
+  bool is_managed_by_policy = false;
   if (connected_cellular_network.has_value()) {
     usage = is_non_cellular_connected
                 ? CellularUsage::kConnectedWithOtherNetwork
                 : CellularUsage::kConnectedAndOnlyNetwork;
     sim_type = GetSimType(connected_cellular_network.value());
+    is_managed_by_policy =
+        connected_cellular_network.value()->IsManagedByPolicy();
   } else {
     usage = CellularUsage::kNotConnected;
   }
@@ -801,6 +825,15 @@ void CellularMetricsLogger::CheckForCellularUsageMetrics() {
   if (!sim_type.has_value() || *sim_type == SimType::kESim) {
     if (usage != last_esim_cellular_usage_) {
       UMA_HISTOGRAM_ENUMERATION("Network.Cellular.ESim.Usage.Count", usage);
+      // Logs to ESim.Policy.Usage.Count histogram when the current connected
+      // network is managed by policy or previous connected managed cellular
+      // network gets disconnected.
+      if (is_managed_by_policy ||
+          (last_managed_by_policy_ && usage == CellularUsage::kNotConnected)) {
+        UMA_HISTOGRAM_ENUMERATION("Network.Cellular.ESim.Policy.Usage.Count",
+                                  usage);
+      }
+
       if (last_esim_cellular_usage_ ==
           CellularUsage::kConnectedAndOnlyNetwork) {
         const base::TimeDelta usage_duration =
@@ -808,6 +841,10 @@ void CellularMetricsLogger::CheckForCellularUsageMetrics() {
 
         UMA_HISTOGRAM_LONG_TIMES("Network.Cellular.ESim.Usage.Duration",
                                  usage_duration);
+        if (last_managed_by_policy_) {
+          UMA_HISTOGRAM_LONG_TIMES(
+              "Network.Cellular.ESim.Policy.Usage.Duration", usage_duration);
+        }
       }
     }
 
@@ -817,6 +854,7 @@ void CellularMetricsLogger::CheckForCellularUsageMetrics() {
 
     esim_usage_elapsed_timer_ = base::ElapsedTimer();
     last_esim_cellular_usage_ = usage;
+    last_managed_by_policy_ = is_managed_by_policy;
   }
 }
 

@@ -4,10 +4,10 @@
 
 #include "base/files/file_path.h"
 #include "base/values.h"
+#include "chrome/browser/ash/policy/affiliation/affiliation_mixin.h"
+#include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/affiliation_mixin.h"
-#include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/extensions/api/force_installed_affiliated_extension_apitest.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -129,8 +129,8 @@ INSTANTIATE_TEST_SUITE_P(AffiliationCheck,
 IN_PROC_BROWSER_TEST_F(
     ExtensionApiTest,
     EnterpriseDeviceAttributesIsRestrictedToPolicyExtension) {
-  ASSERT_TRUE(RunExtensionTest({.name = "enterprise_device_attributes",
-                                .page_url = "api_not_available.html"},
+  ASSERT_TRUE(RunExtensionTest("enterprise_device_attributes",
+                               {.page_url = "api_not_available.html"},
                                {.ignore_manifest_warnings = true}));
 
   base::FilePath extension_path =

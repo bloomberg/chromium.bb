@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include <stdint.h>
 #include <stdio.h>
@@ -143,10 +134,10 @@ void EnsureUnchanged(const float background, const float foreground,
   jxl::PassesDecoderState state;
   JXL_CHECK(
       jxl::InitializePassesSharedState(frame_header, &state.shared_storage));
-  state.Init();
+  JXL_CHECK(state.Init());
   state.InitForAC(/*pool=*/nullptr);
 
-  state.filter_weights.Init(lf, frame_dim);
+  JXL_CHECK(state.filter_weights.Init(lf, frame_dim));
   FillImage(-0.5f, &state.filter_weights.sigma);
 
   for (size_t idx_image = 0; idx_image < images.size(); ++idx_image) {

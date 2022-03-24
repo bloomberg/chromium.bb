@@ -108,8 +108,7 @@ public:
     return new (Func->allocate<OperandARM32Mem>())
         OperandARM32Mem(Func, Ty, Base, ImmOffset, Mode);
   }
-  /// (2) Reg +/- Reg with an optional shift of some kind and amount. Note that
-  /// this mode is disallowed in the NaCl sandbox.
+  /// (2) Reg +/- Reg with an optional shift of some kind and amount.
   static OperandARM32Mem *create(Cfg *Func, Type Ty, Variable *Base,
                                  Variable *Index, ShiftKind ShiftOp = kNoShift,
                                  uint16_t ShiftAmt = 0,
@@ -584,7 +583,7 @@ private:
     addSource(Src);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 /// Instructions of the form x := op(y), for vector/FP.
@@ -626,7 +625,7 @@ protected:
   }
 
   FPSign Sign = FS_None;
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 template <InstARM32::InstKindARM32 K>
@@ -691,7 +690,7 @@ private:
     addSource(Src);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 /// Base class for load instructions.
@@ -728,7 +727,7 @@ private:
     addSource(Source);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 /// Instructions of the form x := y op z. May have the side-effect of setting
@@ -776,7 +775,7 @@ private:
     addSource(Src1);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
   bool SetFlags;
 };
 
@@ -825,7 +824,7 @@ protected:
     addSource(Src1);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
 
 private:
   static constexpr bool isVectorCompare() {
@@ -907,7 +906,7 @@ private:
     addSource(Src2);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 /// Instructions of the form x := x op1 (y op2 z). E.g., multiply accumulate.
@@ -956,7 +955,7 @@ private:
   }
 
   FPSign Sign = FS_None;
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 /// Instructions of the form x cmpop y (setting flags).
@@ -997,7 +996,7 @@ private:
     addSource(Src1);
   }
 
-  static const char *Opcode;
+  static const char *const Opcode;
 };
 
 using InstARM32Adc = InstARM32ThreeAddrGPR<InstARM32::Adc>;
@@ -1705,6 +1704,90 @@ template <> void InstARM32Movw::emit(const Cfg *Func) const;
 template <> void InstARM32Movt::emit(const Cfg *Func) const;
 template <> void InstARM32Vldr1d::emit(const Cfg *Func) const;
 template <> void InstARM32Vldr1q::emit(const Cfg *Func) const;
+
+// Two-addr ops
+template <> constexpr const char *InstARM32Movt::Opcode = "movt";
+// Unary ops
+template <> constexpr const char *InstARM32Movw::Opcode = "movw";
+template <> constexpr const char *InstARM32Clz::Opcode = "clz";
+template <> constexpr const char *InstARM32Mvn::Opcode = "mvn";
+template <> constexpr const char *InstARM32Rbit::Opcode = "rbit";
+template <> constexpr const char *InstARM32Rev::Opcode = "rev";
+template <>
+constexpr const char *InstARM32Sxt::Opcode = "sxt"; // still requires b/h
+template <>
+constexpr const char *InstARM32Uxt::Opcode = "uxt"; // still requires b/h
+// FP
+template <> constexpr const char *InstARM32Vsqrt::Opcode = "vsqrt";
+// Mov-like ops
+template <> constexpr const char *InstARM32Ldr::Opcode = "ldr";
+template <> constexpr const char *InstARM32Ldrex::Opcode = "ldrex";
+template <> constexpr const char *InstARM32Vldr1d::Opcode = "vldr1d";
+template <> constexpr const char *InstARM32Vldr1q::Opcode = "vldr1q";
+// Three-addr ops
+template <> constexpr const char *InstARM32Adc::Opcode = "adc";
+template <> constexpr const char *InstARM32Add::Opcode = "add";
+template <> constexpr const char *InstARM32And::Opcode = "and";
+template <> constexpr const char *InstARM32Asr::Opcode = "asr";
+template <> constexpr const char *InstARM32Bic::Opcode = "bic";
+template <> constexpr const char *InstARM32Eor::Opcode = "eor";
+template <> constexpr const char *InstARM32Lsl::Opcode = "lsl";
+template <> constexpr const char *InstARM32Lsr::Opcode = "lsr";
+template <> constexpr const char *InstARM32Mul::Opcode = "mul";
+template <> constexpr const char *InstARM32Orr::Opcode = "orr";
+template <> constexpr const char *InstARM32Rsb::Opcode = "rsb";
+template <> constexpr const char *InstARM32Rsc::Opcode = "rsc";
+template <> constexpr const char *InstARM32Sbc::Opcode = "sbc";
+template <> constexpr const char *InstARM32Sdiv::Opcode = "sdiv";
+template <> constexpr const char *InstARM32Sub::Opcode = "sub";
+template <> constexpr const char *InstARM32Udiv::Opcode = "udiv";
+// FP
+template <> constexpr const char *InstARM32Vadd::Opcode = "vadd";
+template <> constexpr const char *InstARM32Vand::Opcode = "vand";
+template <> constexpr const char *InstARM32Vbsl::Opcode = "vbsl";
+template <> constexpr const char *InstARM32Vceq::Opcode = "vceq";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vcge>::Opcode = "vcge";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vcgt>::Opcode = "vcgt";
+template <> constexpr const char *InstARM32Vdiv::Opcode = "vdiv";
+template <> constexpr const char *InstARM32Veor::Opcode = "veor";
+template <> constexpr const char *InstARM32Vmla::Opcode = "vmla";
+template <> constexpr const char *InstARM32Vmls::Opcode = "vmls";
+template <> constexpr const char *InstARM32Vmul::Opcode = "vmul";
+template <> constexpr const char *InstARM32Vmvn::Opcode = "vmvn";
+template <> constexpr const char *InstARM32Vmovl::Opcode = "vmovl";
+template <> constexpr const char *InstARM32Vmovh::Opcode = "vmovh";
+template <> constexpr const char *InstARM32Vmovhl::Opcode = "vmovhl";
+template <> constexpr const char *InstARM32Vmovlh::Opcode = "vmovlh";
+template <> constexpr const char *InstARM32Vorr::Opcode = "vorr";
+template <>
+constexpr const char *InstARM32UnaryopFP<InstARM32::Vneg>::Opcode = "vneg";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vshl>::Opcode = "vshl";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vshr>::Opcode = "vshr";
+template <> constexpr const char *InstARM32Vsub::Opcode = "vsub";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vqadd>::Opcode = "vqadd";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vqsub>::Opcode = "vqsub";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vqmovn2>::Opcode =
+    "vqmovn2";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vmulh>::Opcode = "vmulh";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vmlap>::Opcode = "vmlap";
+template <>
+constexpr const char *InstARM32ThreeAddrFP<InstARM32::Vzip>::Opcode = "vzip";
+// Four-addr ops
+template <> constexpr const char *InstARM32Mla::Opcode = "mla";
+template <> constexpr const char *InstARM32Mls::Opcode = "mls";
+// Cmp-like ops
+template <> constexpr const char *InstARM32Cmn::Opcode = "cmn";
+template <> constexpr const char *InstARM32Cmp::Opcode = "cmp";
+template <> constexpr const char *InstARM32Tst::Opcode = "tst";
 
 } // end of namespace ARM32
 } // end of namespace Ice

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
@@ -99,9 +100,7 @@ void LayoutNGTableRow::StyleDidChange(StyleDifference diff,
   if (LayoutNGTable* table = Table()) {
     if ((old_style && !old_style->BorderVisuallyEqual(StyleRef())) ||
         (old_style && old_style->GetWritingDirection() !=
-                          StyleRef().GetWritingDirection()) ||
-        (diff.TextDecorationOrColorChanged() &&
-         StyleRef().HasBorderColorReferencingCurrentColor())) {
+                          StyleRef().GetWritingDirection())) {
       table->GridBordersChanged();
     }
   }

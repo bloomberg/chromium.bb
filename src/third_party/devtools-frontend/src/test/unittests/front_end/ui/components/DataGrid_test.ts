@@ -6,10 +6,10 @@ import * as Platform from '../../../../../front_end/core/platform/platform.js';
 import * as DataGrid from '../../../../../front_end/ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../../../front_end/ui/lit-html/lit-html.js';
-import {assertElement, assertShadowRoot, dispatchClickEvent, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes} from '../../helpers/DOMHelpers.js';
+import {assertElement, assertShadowRoot, dispatchClickEvent, dispatchFocusOutEvent, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes} from '../../helpers/DOMHelpers.js';
 import {withMutations} from '../../helpers/MutationHelpers.js';
 
-import {assertCurrentFocusedCellIs, emulateUserFocusingCellAt, emulateUserKeyboardNavigation, focusTableCell, getAllRows, getCellByIndexes, getFocusableCell, getHeaderCellForColumnId, getHeaderCells, getValuesOfAllBodyRows, getValuesOfBodyRowByAriaIndex} from './DataGridHelpers.js';
+import {assertCurrentFocusedCellIs, assertSelectedRowIs, emulateUserFocusingCellAt, emulateUserKeyboardNavigation, focusCurrentlyFocusableCell, getAllRows, getCellByIndexes, getFocusableCell, getHeaderCellForColumnId, getHeaderCells, getValuesOfAllBodyRows, getValuesOfBodyRowByAriaIndex} from './DataGridHelpers.js';
 
 const {assert} = chai;
 
@@ -69,7 +69,6 @@ const renderDataGrid = (data: Partial<DataGrid.DataGrid.DataGridData>): DataGrid
   };
   return component;
 };
-
 
 describe('DataGrid', () => {
   describe('rendering and hiding rows/columns', () => {
@@ -337,7 +336,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowRight');
       await coordinator.done();
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 1, row: 1});
@@ -358,7 +357,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 0, row: 1});
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowLeft');
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 0, row: 1});
@@ -368,7 +367,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowDown');
       await coordinator.done();
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 0, row: 2});
@@ -378,7 +377,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       // Go down to row 2
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowDown');
       await coordinator.done();
@@ -407,7 +406,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowUp');
       await coordinator.done();
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 0, row: 1});
@@ -431,7 +430,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows, columns: columnsWithCountryHidden});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowRight');
       await coordinator.done();
       // It's column 2 here because column 1 is hidden
@@ -444,7 +443,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows: rowsWithLondonHidden, columns});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 0, row: 0});
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowDown');
       await coordinator.done();
@@ -458,7 +457,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows: rowsWithMunichHidden, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowDown');
       await coordinator.done();
       // It's 3 here because row 2 is hidden
@@ -471,7 +470,7 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows: rowsWithLondonHidden, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
       assertCurrentFocusedCellIs(component.shadowRoot, {column: 0, row: 2});
     });
 
@@ -479,7 +478,8 @@ describe('DataGrid', () => {
       const component = renderDataGrid({rows: createRows(), columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-      focusTableCell(component.shadowRoot);
+      focusCurrentlyFocusableCell(component.shadowRoot);
+      await coordinator.done();
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowDown');
       await coordinator.done();
       emulateUserKeyboardNavigation(component.shadowRoot, 'ArrowDown');
@@ -504,7 +504,7 @@ describe('DataGrid', () => {
     await coordinator.done();
 
     const columnHeaderClickEvent =
-        getEventPromise<DataGrid.DataGrid.ColumnHeaderClickEvent>(component, 'columnheaderclick');
+        getEventPromise<DataGrid.DataGridEvents.ColumnHeaderClickEvent>(component, 'columnheaderclick');
     const cityColumn = getHeaderCellForColumnId(component.shadowRoot, 'city');
     dispatchClickEvent(cityColumn);
 
@@ -519,17 +519,17 @@ describe('DataGrid', () => {
     await coordinator.done();
 
     const columnHeaderClickEvent =
-        getEventPromise<DataGrid.DataGrid.ColumnHeaderClickEvent>(component, 'columnheaderclick');
+        getEventPromise<DataGrid.DataGridEvents.ColumnHeaderClickEvent>(component, 'columnheaderclick');
     const focusableCell = getFocusableCell(component.shadowRoot);
+    // Check that the focusable cell is the header cell as it's a table with
+    // sortable columns.
+    assert.strictEqual(focusableCell.getAttribute('data-row-index'), '0');
+    assert.strictEqual(focusableCell.getAttribute('data-col-index'), '0');
     focusableCell.focus();
+    await coordinator.done();
+
     const table = component.shadowRoot.querySelector('table');
     assertElement(table, HTMLTableElement);
-    // Navigate up to the column header
-    dispatchKeyDownEvent(table, {key: Platform.KeyboardUtilities.ArrowKey.UP});
-    const newFocusedCell = getFocusableCell(component.shadowRoot);
-    assert.strictEqual(newFocusedCell.getAttribute('data-row-index'), '0');
-    assert.strictEqual(newFocusedCell.getAttribute('data-col-index'), '0');
-
     dispatchKeyDownEvent(table, {key: 'Enter'});
     const clickEvent = await columnHeaderClickEvent;
     assert.deepEqual(clickEvent.data, {column: columns[0], columnIndex: 0});
@@ -541,7 +541,8 @@ describe('DataGrid', () => {
     assertShadowRoot(component.shadowRoot);
     await coordinator.done();
 
-    const bodyCellFocusedEvent = getEventPromise<DataGrid.DataGrid.BodyCellFocusedEvent>(component, 'cellfocused');
+    const bodyCellFocusedEvent =
+        getEventPromise<DataGrid.DataGridEvents.BodyCellFocusedEvent>(component, 'cellfocused');
     const focusableCell = getFocusableCell(component.shadowRoot);
     focusableCell.focus();
     const cellFocusedEvent = await bodyCellFocusedEvent;
@@ -581,91 +582,54 @@ describe('DataGrid', () => {
             assert.deepEqual(newRowValues, ['Berlin', 'Germany', '3.66m']);
           });
     });
+  });
 
-    it('scrolls to the bottom of the table when a row is inserted', async () => {
-      const container = document.createElement('div');
-      container.style.height = '100px';
-
-      const columns = [
-        {id: 'key', title: 'Key', sortable: false, widthWeighting: 1, visible: true, hideable: false},
-        {id: 'value', title: 'Value', sortable: false, widthWeighting: 1, visible: true, hideable: false},
-      ];
-
-      const rows: DataGrid.DataGridUtils.Row[] = [
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'One'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Two'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Three'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Four'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Five'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Six'}]},
-      ];
-      const component = renderDataGrid({rows, columns});
-      container.appendChild(component);
-      renderElementIntoDOM(container);
+  describe('marking a row as selected', () => {
+    it('marks the row as selected when the user clicks on a cell', async () => {
+      const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
-
-      const scrolledElement = component.shadowRoot.querySelector('.wrapping-container');
-      assertElement(scrolledElement, HTMLDivElement);
-      assert.strictEqual(scrolledElement.scrollTop, 0);
-      const newRow = {
-        cells: [
-          {columnId: 'key', value: 'Newly inserted', title: 'Newly inserted'},
-          {columnId: 'value', value: 'row', title: 'row'},
-        ],
-      };
-      component.data = {
-        columns,
-        rows: [...rows, newRow],
-        activeSort: null,
-      };
+      // Ensure no row is selected before the user clicks
+      let selectedRow = component.shadowRoot.querySelector('tr.selected');
+      assert.isNull(selectedRow);
+      // // Focus the very first cell
+      await emulateUserFocusingCellAt(component.shadowRoot, {column: 0, row: 1});
       await coordinator.done();
-      assert.strictEqual(scrolledElement.scrollTop, 63);
+      // // Ensure the row is updated to be marked as selected
+      selectedRow = component.shadowRoot.querySelector('tbody tr.selected');
+      assertElement(selectedRow, HTMLTableRowElement);
     });
 
-    it('does not auto scroll if the user has a cell selected', async () => {
-      const container = document.createElement('div');
-      container.style.height = '100px';
-
-      const columns = [
-        {id: 'key', title: 'Key', sortable: false, widthWeighting: 1, visible: true, hideable: false},
-        {id: 'value', title: 'Value', sortable: false, widthWeighting: 1, visible: true, hideable: false},
-      ];
-
-      const rows: DataGrid.DataGridUtils.Row[] = [
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'One'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Two'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Three'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Four'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Five'}]},
-        {cells: [{columnId: 'key', value: 'Row'}, {columnId: 'value', value: 'Six'}]},
-      ];
-      const component = renderDataGrid({rows, columns});
-      container.appendChild(component);
-      renderElementIntoDOM(container);
+    it('persists over re-renders when not focused', async () => {
+      const rows = createRows();
+      const component = renderDataGrid({rows, columns: columnsWithNoneSortable});
       assertShadowRoot(component.shadowRoot);
       await coordinator.done();
 
-      // Mimic the user tabbing into the table
-      const firstFocusedCell = getFocusableCell(component.shadowRoot);
-      firstFocusedCell.focus();
+      focusCurrentlyFocusableCell(component.shadowRoot);
+      await coordinator.done();
 
-      const scrolledElement = component.shadowRoot.querySelector('.wrapping-container');
-      assertElement(scrolledElement, HTMLDivElement);
+      const wrapper = component.shadowRoot.querySelector('.wrapping-container');
+      if (wrapper) {
+        dispatchFocusOutEvent(wrapper);
+      }
+      await coordinator.done();
+      assertSelectedRowIs(component.shadowRoot, 1);
 
-      const newRow = {
+      rows.push({
         cells: [
-          {columnId: 'key', value: 'Newly inserted'},
-          {columnId: 'value', value: 'row'},
+          {columnId: 'city', value: 'Vienna'},
+          {columnId: 'country', value: 'Austria'},
+          {columnId: 'population', value: '1.92m'},
         ],
-      };
+      });
       component.data = {
-        columns,
-        rows: [...rows, newRow],
+        columns: columnsWithNoneSortable,
+        rows,
         activeSort: null,
       };
       await coordinator.done();
-      assert.strictEqual(scrolledElement.scrollTop, 0);
+      assertSelectedRowIs(component.shadowRoot, 1);
     });
   });
 

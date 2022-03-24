@@ -9,12 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -29,7 +27,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -37,6 +34,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/media_stream_request.h"
@@ -54,6 +52,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
+#endif
+
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
 #endif
 
@@ -137,6 +138,11 @@ class ChromeAppDelegate::NewWindowContentsDelegate
     : public content::WebContentsDelegate {
  public:
   NewWindowContentsDelegate() {}
+
+  NewWindowContentsDelegate(const NewWindowContentsDelegate&) = delete;
+  NewWindowContentsDelegate& operator=(const NewWindowContentsDelegate&) =
+      delete;
+
   ~NewWindowContentsDelegate() override {}
 
   void BecomeOwningDeletageOf(
@@ -151,8 +157,6 @@ class ChromeAppDelegate::NewWindowContentsDelegate
 
  private:
   std::vector<std::unique_ptr<content::WebContents>> owned_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewWindowContentsDelegate);
 };
 
 content::WebContents*
@@ -197,8 +201,10 @@ ChromeAppDelegate::ChromeAppDelegate(Profile* profile, bool keep_alive)
   if (keep_alive) {
     keep_alive_ = std::make_unique<ScopedKeepAlive>(
         KeepAliveOrigin::CHROME_APP_DELEGATE, KeepAliveRestartOption::DISABLED);
-    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
-        profile_, ProfileKeepAliveOrigin::kAppWindow);
+    if (!profile_->IsOffTheRecord()) {
+      profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+          profile_, ProfileKeepAliveOrigin::kAppWindow);
+    }
   }
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,
@@ -220,13 +226,11 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::InitializePrinting(web_contents);
 #endif
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents);
 
   apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::DlpContentTabHelper::CreateForWebContents(web_contents);
+#if defined(OS_CHROMEOS)
+  policy::DlpContentTabHelper::MaybeCreateForWebContents(web_contents);
 #endif
 
   zoom::ZoomController::CreateForWebContents(web_contents);
@@ -234,7 +238,9 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
 
 void ChromeAppDelegate::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
-  if (!chrome::IsRunningInForcedAppMode()) {
+  // Only do this for the primary main frame.
+  if (!chrome::IsRunningInForcedAppMode() &&
+      frame_host->IsInPrimaryMainFrame()) {
     // Due to a bug in the way apps reacted to default zoom changes, some apps
     // can incorrectly have host level zoom settings. These aren't wanted as
     // apps cannot be zoomed, so are removed. This should be removed if apps
@@ -243,14 +249,10 @@ void ChromeAppDelegate::RenderFrameCreated(
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame_host);
     DCHECK(web_contents);
-
-    // Only do this for the initial main frame.
-    if (frame_host == web_contents->GetMainFrame()) {
-      content::HostZoomMap* zoom_map =
-          content::HostZoomMap::GetForWebContents(web_contents);
-      DCHECK(zoom_map);
-      zoom_map->SetZoomLevelForHost(web_contents->GetURL().host(), 0);
-    }
+    content::HostZoomMap* zoom_map =
+        content::HostZoomMap::GetForWebContents(web_contents);
+    DCHECK(zoom_map);
+    zoom_map->SetZoomLevelForHost(web_contents->GetURL().host(), 0);
   }
 }
 
@@ -292,12 +294,6 @@ void ChromeAppDelegate::AddNewContents(
                     : WindowOpenDisposition::NEW_FOREGROUND_TAB;
   chrome::AddWebContents(displayer.browser(), nullptr, std::move(new_contents),
                          target_url, disposition, initial_rect);
-}
-
-content::ColorChooser* ChromeAppDelegate::ShowColorChooser(
-    content::WebContents* web_contents,
-    SkColor initial_color) {
-  return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
 void ChromeAppDelegate::RunFileChooser(
@@ -363,8 +359,8 @@ void ChromeAppDelegate::SetTerminatingCallback(base::OnceClosure callback) {
 void ChromeAppDelegate::OnHide() {
   is_hidden_ = true;
   if (has_been_shown_) {
-    keep_alive_.reset();
     profile_keep_alive_.reset();
+    keep_alive_.reset();
     return;
   }
 
@@ -374,7 +370,7 @@ void ChromeAppDelegate::OnHide() {
       FROM_HERE,
       base::BindOnce(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
                      weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kAppWindowFirstShowTimeoutSeconds));
+      base::Seconds(kAppWindowFirstShowTimeoutSeconds));
 }
 
 void ChromeAppDelegate::OnShow() {
@@ -382,8 +378,10 @@ void ChromeAppDelegate::OnShow() {
   is_hidden_ = false;
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::CHROME_APP_DELEGATE, KeepAliveRestartOption::DISABLED);
-  profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
-      profile_, ProfileKeepAliveOrigin::kAppWindow);
+  if (!profile_->IsOffTheRecord()) {
+    profile_keep_alive_ = std::make_unique<ScopedProfileKeepAlive>(
+        profile_, ProfileKeepAliveOrigin::kAppWindow);
+  }
 }
 
 bool ChromeAppDelegate::TakeFocus(content::WebContents* web_contents,

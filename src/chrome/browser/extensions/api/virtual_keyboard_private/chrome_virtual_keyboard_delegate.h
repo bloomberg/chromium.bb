@@ -8,8 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
@@ -27,6 +25,11 @@ class ChromeVirtualKeyboardDelegate
  public:
   explicit ChromeVirtualKeyboardDelegate(
       content::BrowserContext* browser_context);
+
+  ChromeVirtualKeyboardDelegate(const ChromeVirtualKeyboardDelegate&) = delete;
+  ChromeVirtualKeyboardDelegate& operator=(
+      const ChromeVirtualKeyboardDelegate&) = delete;
+
   ~ChromeVirtualKeyboardDelegate() override;
 
   // TODO(oka): Create ChromeVirtualKeyboardPrivateDelegate class and move all
@@ -72,6 +75,8 @@ class ChromeVirtualKeyboardDelegate
   void OnClipboardHistoryItemsUpdated(
       const std::vector<base::UnguessableToken>& menu_item_ids) override;
 
+  void OnGetHistoryValuesAfterItemsUpdated(base::Value updated_items);
+
   void OnHasInputDevices(OnKeyboardSettingsCallback on_settings_callback,
                          bool has_audio_input_devices);
   void DispatchConfigChangeEvent(
@@ -81,7 +86,6 @@ class ChromeVirtualKeyboardDelegate
   std::unique_ptr<media::AudioSystem> audio_system_;
   base::WeakPtr<ChromeVirtualKeyboardDelegate> weak_this_;
   base::WeakPtrFactory<ChromeVirtualKeyboardDelegate> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ChromeVirtualKeyboardDelegate);
 };
 
 }  // namespace extensions

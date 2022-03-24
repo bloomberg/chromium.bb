@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -18,9 +17,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/synchronous_compositor.mojom-blink.h"
-#include "third_party/blink/public/platform/input/synchronous_input_handler_proxy.h"
 #include "third_party/blink/renderer/platform/widget/compositing/android_webview/synchronous_layer_tree_frame_sink.h"
-#include "ui/gfx/geometry/scroll_offset.h"
+#include "third_party/blink/renderer/platform/widget/input/synchronous_input_handler_proxy.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace power_scheduler {
@@ -39,6 +38,9 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
  public:
   SynchronousCompositorProxy(
       blink::SynchronousInputHandlerProxy* input_handler_proxy);
+  SynchronousCompositorProxy(const SynchronousCompositorProxy&) = delete;
+  SynchronousCompositorProxy& operator=(const SynchronousCompositorProxy&) =
+      delete;
   ~SynchronousCompositorProxy() override;
 
   void Init();
@@ -51,8 +53,8 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
           compositor_request);
 
   // blink::SynchronousInputHandler overrides.
-  void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
-                            const gfx::ScrollOffset& max_scroll_offset,
+  void UpdateRootLayerState(const gfx::PointF& total_scroll_offset,
+                            const gfx::PointF& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,
                             float page_scale_factor,
                             float min_page_scale_factor,
@@ -89,7 +91,7 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
   void SetMemoryPolicy(uint32_t bytes_limit) final;
   void ReclaimResources(uint32_t layer_tree_frame_sink_id,
                         Vector<viz::ReturnedResource> resources) final;
-  void SetScroll(const gfx::ScrollOffset& total_scroll_offset) final;
+  void SetScroll(const gfx::PointF& total_scroll_offset) final;
   void BeginFrame(const viz::BeginFrameArgs& args,
                   const WTF::HashMap<uint32_t, viz::FrameTimingDetails>&
                       timing_details) final;
@@ -140,8 +142,8 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
   uint32_t version_ = 0;
   // |total_scroll_offset_| and |max_scroll_offset_| are in physical pixel when
   // use-zoom-for-dsf is enabled, otherwise in dip.
-  gfx::ScrollOffset total_scroll_offset_;  // Modified by both.
-  gfx::ScrollOffset max_scroll_offset_;
+  gfx::PointF total_scroll_offset_;  // Modified by both.
+  gfx::PointF max_scroll_offset_;
   gfx::SizeF scrollable_size_;
   float page_scale_factor_;
   float min_page_scale_factor_;
@@ -150,8 +152,6 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
   bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;
   uint32_t metadata_version_ = 0u;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorProxy);
 };
 
 }  // namespace blink

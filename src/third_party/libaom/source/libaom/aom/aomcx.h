@@ -18,6 +18,7 @@
  */
 #include "aom/aom.h"
 #include "aom/aom_encoder.h"
+#include "aom/aom_external_partition.h"
 
 /*!\file
  * \brief Provides definitions for using AOM or AV1 encoder algorithm within the
@@ -225,8 +226,8 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to set the sharpness parameter,
    * unsigned int parameter.
    *
-   * This parameter controls the level at which transform coeff RD favours
-   * sharpness in the block.
+   * This parameter controls the level at which rate-distortion optimization of
+   * transform coefficients favours sharpness in the block.
    *
    * Valid range: 0..7. The default is 0. Values 1-7 will avoid eob and skip
    * block optimization and will change rdmult in favour of block sharpness.
@@ -653,7 +654,8 @@ enum aome_enc_control_id {
    * in-loop filter aiming to remove coding artifacts
    *
    * - 0 = disable
-   * - 1 = enable (default)
+   * - 1 = enable for all frames (default)
+   * - 2 = disable for non-reference frames
    */
   AV1E_SET_ENABLE_CDEF = 58,
 
@@ -1112,7 +1114,9 @@ enum aome_enc_control_id {
    *
    * - 0 = deltaq signaling off
    * - 1 = use modulation to maximize objective quality (default)
-   * - 2 = use modulation to maximize perceptual quality
+   * - 2 = use modulation for local test
+   * - 3 = use modulation for key frame perceptual quality optimization
+   * - 4 = use modulation for user rating based perceptual quality optimization
    */
   AV1E_SET_DELTAQ_MODE = 107,
 
@@ -1324,7 +1328,9 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to turn on / off D45 to D203 intra mode
    * usage, int parameter
    *
-   * This will enable or disable usage of D45 to D203 intra modes.
+   * This will enable or disable usage of D45 to D203 intra modes, which are a
+   * subset of directional modes. This control has no effect if directional
+   * modes are disabled (AV1E_SET_ENABLE_DIRECTIONAL_INTRA set to 0).
    *
    * - 0 = disable
    * - 1 = enable (default)
@@ -1346,6 +1352,65 @@ enum aome_enc_control_id {
    */
   AV1E_SET_PARTITION_INFO_PATH = 143,
 
+  /*!\brief Codec control to use an external partition model
+   * A set of callback functions is passed through this control
+   * to let the encoder encode with given partitions.
+   */
+  AV1E_SET_EXTERNAL_PARTITION = 144,
+
+  /*!\brief Codec control function to turn on / off directional intra mode
+   * usage, int parameter
+   *
+   * - 0 = disable
+   * - 1 = enable (default)
+   */
+  AV1E_SET_ENABLE_DIRECTIONAL_INTRA = 145,
+
+  /*!\brief Control to turn on / off transform size search.
+   *
+   * - 0 = disable, transforms always have the largest possible size
+   * - 1 = enable, search for the best transform size for each block (default)
+   */
+  AV1E_SET_ENABLE_TX_SIZE_SEARCH = 146,
+
+  /*!\brief Codec control function to set reference frame compound prediction.
+   * aom_svc_ref_frame_comp_pred_t* parameter
+   */
+  AV1E_SET_SVC_REF_FRAME_COMP_PRED = 147,
+
+  /*!\brief Set --deltaq-mode strength.
+   *
+   * Valid range: [0, 1000]
+   */
+  AV1E_SET_DELTAQ_STRENGTH = 148,
+
+  /*!\brief Codec control to control loop filter
+   *
+   * - 0 = Loop filter is disabled for all frames
+   * - 1 = Loop filter is enabled for all frames
+   * - 2 = Loop filter is disabled for non-reference frames
+   * - 3 = Loop filter is disabled for the frames with low motion
+   */
+  AV1E_SET_LOOPFILTER_CONTROL = 149,
+
+  /*!\brief Codec control function to get the loopfilter chosen by the encoder,
+   * int* parameter
+   */
+  AOME_GET_LOOPFILTER_LEVEL = 150,
+
+  /*!\brief Codec control to automatically turn off several intra coding tools
+   * - 0 = do not use the feature
+   * - 1 = enable the automatic decision to turn off several intra tools
+   */
+  AV1E_SET_AUTO_INTRA_TOOLS_OFF = 151,
+
+  /*!\brief Codec control function to set flag for rate control used by external
+   * encoders.
+   * - 1 = Enable rate control for external encoders. This will disable content
+   * dependency in rate control and cyclic refresh.
+   * - 0 = Default. Disable rate control for external encoders.
+   */
+  AV1E_SET_RTC_EXTERNAL_RC = 152,
   // Any new encoder control IDs should be added above.
   // Maximum allowed encoder control ID is 229.
   // No encoder control ID should be added below.
@@ -1479,6 +1544,13 @@ typedef struct aom_svc_ref_frame_config {
   int ref_idx[7];
   int refresh[8]; /**< Refresh flag for each of the 8 slots. */
 } aom_svc_ref_frame_config_t;
+
+/*!brief Parameters for setting ref frame compound prediction */
+typedef struct aom_svc_ref_frame_comp_pred {
+  // Use compound prediction for the ref_frame pairs GOLDEN_LAST (0),
+  // LAST2_LAST (1), and ALTREF_LAST (2).
+  int use_comp_pred[3]; /**<Compound reference flag. */
+} aom_svc_ref_frame_comp_pred_t;
 
 /*!\cond */
 /*!\brief Encoder control function parameter type
@@ -1735,6 +1807,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_AQ_MODE, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_DELTAQ_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_DELTAQ_MODE
 
+AOM_CTRL_USE_TYPE(AV1E_SET_DELTAQ_STRENGTH, unsigned int)
+#define AOM_CTRL_AV1E_SET_DELTAQ_STRENGTH
+
 AOM_CTRL_USE_TYPE(AV1E_SET_DELTALF_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_DELTALF_MODE
 
@@ -1884,6 +1959,31 @@ AOM_CTRL_USE_TYPE(AV1E_SET_DV_COST_UPD_FREQ, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_PARTITION_INFO_PATH, const char *)
 #define AOM_CTRL_AV1E_SET_PARTITION_INFO_PATH
+
+AOM_CTRL_USE_TYPE(AV1E_SET_EXTERNAL_PARTITION, aom_ext_part_funcs_t *)
+#define AOM_CTRL_AV1E_SET_EXTERNAL_PARTITION
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIRECTIONAL_INTRA, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DIRECTIONAL_INTRA
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TX_SIZE_SEARCH, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_TX_SIZE_SEARCH
+
+AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_COMP_PRED,
+                  aom_svc_ref_frame_comp_pred_t *)
+#define AOME_CTRL_AV1E_SET_SVC_REF_FRAME_COMP_PRED
+
+AOM_CTRL_USE_TYPE(AV1E_SET_LOOPFILTER_CONTROL, int)
+#define AOM_CTRL_AV1E_SET_LOOPFILTER_CONTROL
+
+AOM_CTRL_USE_TYPE(AOME_GET_LOOPFILTER_LEVEL, int *)
+#define AOM_CTRL_AOME_GET_LOOPFILTER_LEVEL
+
+AOM_CTRL_USE_TYPE(AV1E_SET_AUTO_INTRA_TOOLS_OFF, unsigned int)
+#define AOM_CTRL_AV1E_SET_AUTO_INTRA_TOOLS_OFF
+
+AOM_CTRL_USE_TYPE(AV1E_SET_RTC_EXTERNAL_RC, int)
+#define AOM_CTRL_AV1E_SET_RTC_EXTERNAL_RC
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

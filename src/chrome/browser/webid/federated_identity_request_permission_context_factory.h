@@ -11,7 +11,7 @@
 class FederatedIdentityRequestPermissionContext;
 
 // Factory to get or create an instance of
-// FederatedIdentitySharingPermissionContext from a Profile.
+// FederatedIdentityRequestPermissionContext from a Profile.
 class FederatedIdentityRequestPermissionContextFactory
     : public BrowserContextKeyedServiceFactory {
  public:
@@ -31,6 +31,7 @@ class FederatedIdentityRequestPermissionContextFactory
       content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
 };
 
 #endif  // CHROME_BROWSER_WEBID_FEDERATED_IDENTITY_REQUEST_PERMISSION_CONTEXT_FACTORY_H_

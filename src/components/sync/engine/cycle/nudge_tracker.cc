@@ -7,23 +7,22 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/protocol/data_type_progress_marker.pb.h"
 
 namespace syncer {
 
 namespace {
 
 // Nudge delays for local refresh and invalidations. Common to all data types.
-constexpr base::TimeDelta kLocalRefreshDelay =
-    base::TimeDelta::FromMilliseconds(500);
-constexpr base::TimeDelta kRemoteInvalidationDelay =
-    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kLocalRefreshDelay = base::Milliseconds(500);
+constexpr base::TimeDelta kRemoteInvalidationDelay = base::Milliseconds(250);
 
 }  // namespace
 
 NudgeTracker::NudgeTracker() {
-  for (ModelType type : ProtocolTypes()) {
+  for (ModelType type : ModelTypeSet::All()) {
     type_trackers_[type] = std::make_unique<DataTypeTracker>(type);
   }
 }

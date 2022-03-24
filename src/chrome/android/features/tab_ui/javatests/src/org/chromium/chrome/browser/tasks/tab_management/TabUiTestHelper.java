@@ -31,9 +31,12 @@ import android.app.Activity;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.NoMatchingRootException;
 import androidx.test.espresso.NoMatchingViewException;
@@ -75,6 +78,15 @@ import java.util.List;
  * Utilities helper class for tab grid/group tests.
  */
 public class TabUiTestHelper {
+    /**
+     * Apply the necessary theme overlay for activity.
+     * TODO(https://crbug.com/1227875): Move this into a test rule.
+     * @param activity The test activity that will be used to create tab components.
+     */
+    public static void applyThemeOverlays(Activity activity) {
+        activity.setTheme(TabUiThemeProvider.getThemeOverlayStyleResourceId());
+    }
+
     /**
      * Create {@code tabsCount} tabs for {@code cta} in certain tab model based on {@code
      * isIncognito}.
@@ -482,7 +494,8 @@ public class TabUiTestHelper {
             if (fixPendingReadbacks && previousTabIndex != TabModel.INVALID_TAB_INDEX) {
                 // clang-format off
                 TestThreadUtils.runOnUiThreadBlocking(() ->
-                        previousTabModel.setIndex(previousTabIndex, TabSelectionType.FROM_USER)
+                        previousTabModel.setIndex(
+                            previousTabIndex, TabSelectionType.FROM_USER, false)
                 );
                 // clang-format on
             }
@@ -492,14 +505,14 @@ public class TabUiTestHelper {
             if (fixPendingReadbacks) {
                 // clang-format off
                 TestThreadUtils.runOnUiThreadBlocking(() -> currentTabModel.setIndex(
-                        currentTabIndex, TabSelectionType.FROM_USER)
+                        currentTabIndex, TabSelectionType.FROM_USER, false)
                 );
                 // clang-format on
             }
         }
 
         ChromeTabUtils.waitForTabPageLoaded(
-                rule.getActivity().getActivityTab(), null, null, WAIT_TIMEOUT_SECONDS * 10);
+                rule.getActivity().getActivityTab(), null, null, WAIT_TIMEOUT_SECONDS * 3);
 
         assertEquals(numTabs + previousTabCount,
                 rule.getActivity().getTabModelSelector().getModel(isIncognito).getCount());
@@ -592,6 +605,22 @@ public class TabUiTestHelper {
         // Wait for tab list recyclerView to finish animation after tab model switch.
         RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
         waitForStableRecyclerView(recyclerView);
+    }
+
+    /**
+     * Infers whether the tab is currently selected, by making assumptions about what the view state
+     * should look like. This method is fairly fragile to changes in implementation. Note that this
+     * does not handle tab list views correctly.
+     * @param holder The root of the tab {@link View} objects.
+     * @return Whether the tab is currently selected.
+     */
+    public static boolean isTabViewSelected(ViewGroup holder) {
+        View cardView = holder.findViewById(R.id.card_view);
+        final @ColorInt int actualColor =
+                ViewCompat.getBackgroundTintList(cardView).getDefaultColor();
+        final @ColorInt int selectedColor = TabUiThemeProvider.getCardViewBackgroundColor(
+                holder.getContext(), /*isIncognito*/ false, /*isSelected*/ true);
+        return actualColor == selectedColor;
     }
 
     /**

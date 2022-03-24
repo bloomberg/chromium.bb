@@ -17,7 +17,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "crypto/crypto_export.h"
 
@@ -35,6 +34,10 @@ class CRYPTO_EXPORT HMAC {
   };
 
   explicit HMAC(HashAlgorithm hash_alg);
+
+  HMAC(const HMAC&) = delete;
+  HMAC& operator=(const HMAC&) = delete;
+
   ~HMAC();
 
   // Returns the length of digest that this HMAC will create.
@@ -105,8 +108,6 @@ class CRYPTO_EXPORT HMAC {
   HashAlgorithm hash_alg_;
   bool initialized_;
   std::vector<unsigned char> key_;
-
-  DISALLOW_COPY_AND_ASSIGN(HMAC);
 };
 
 }  // namespace crypto

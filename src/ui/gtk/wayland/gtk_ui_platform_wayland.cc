@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "ui/base/glib/glib_cast.h"
 #include "ui/base/linux/linux_ui_delegate.h"
-#include "ui/gtk/gtk_compat.h"
+#include "ui/events/event_utils.h"
+#include "ui/gtk/gtk_util.h"
 
 namespace gtk {
 
@@ -32,15 +34,40 @@ GdkKeymap* GtkUiPlatformWayland::GetGdkKeymap() {
   return nullptr;
 }
 
+GdkModifierType GtkUiPlatformWayland::GetGdkKeyEventState(
+    const ui::KeyEvent& key_event) {
+  const ui::Event::Properties* properties = key_event.properties();
+  if (!properties)
+    return static_cast<GdkModifierType>(0);
+  auto it = properties->find(ui::kPropertyKeyboardState);
+  if (it == properties->end())
+    return static_cast<GdkModifierType>(0);
+  DCHECK_EQ(it->second.size(), 4u);
+  // Stored in little endian.
+  int flags = 0;
+  int bitshift = 0;
+  for (uint8_t value : it->second) {
+    flags |= value << bitshift;
+    bitshift += 8;
+  }
+  return ExtractGdkEventStateFromKeyEventFlags(flags);
+}
+
+int GtkUiPlatformWayland::GetGdkKeyEventGroup(const ui::KeyEvent& key_event) {
+  auto state = GetGdkKeyEventState(key_event);
+  // See XkbGroupForCoreState() in //ui/events/x/x11_event_translation.cc.
+  return (state >> 13) & 0x3;
+}
+
 GdkWindow* GtkUiPlatformWayland::GetGdkWindow(
     gfx::AcceleratedWidget window_id) {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
-bool GtkUiPlatformWayland::SetGtkWidgetTransientFor(
-    GtkWidget* widget,
-    gfx::AcceleratedWidget parent) {
+bool GtkUiPlatformWayland::ExportWindowHandle(
+    gfx::AcceleratedWidget window_id,
+    base::OnceCallback<void(std::string)> callback) {
   if (!gtk::GtkCheckVersion(3, 22)) {
     LOG(WARNING) << "set_transient_for_exported not supported in GTK version "
                  << gtk_get_major_version() << '.' << gtk_get_minor_version()
@@ -48,8 +75,17 @@ bool GtkUiPlatformWayland::SetGtkWidgetTransientFor(
     return false;
   }
 
-  return ui::LinuxUiDelegate::GetInstance()->SetWidgetTransientFor(
-      parent, base::BindOnce(&GtkUiPlatformWayland::OnHandle,
+  return ui::LinuxUiDelegate::GetInstance()->ExportWindowHandle(
+      window_id,
+      base::BindOnce(&GtkUiPlatformWayland::OnHandleForward,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+bool GtkUiPlatformWayland::SetGtkWidgetTransientFor(
+    GtkWidget* widget,
+    gfx::AcceleratedWidget parent) {
+  return ui::LinuxUiDelegate::GetInstance()->ExportWindowHandle(
+      parent, base::BindOnce(&GtkUiPlatformWayland::OnHandleSetTransient,
                              weak_factory_.GetWeakPtr(), widget));
 }
 
@@ -63,8 +99,8 @@ void GtkUiPlatformWayland::ShowGtkWindow(GtkWindow* window) {
   gtk_window_present(window);
 }
 
-void GtkUiPlatformWayland::OnHandle(GtkWidget* widget,
-                                    const std::string& handle) {
+void GtkUiPlatformWayland::OnHandleSetTransient(GtkWidget* widget,
+                                                const std::string& handle) {
   char* parent = const_cast<char*>(handle.c_str());
   if (gtk::GtkCheckVersion(4)) {
     auto* toplevel = GlibCast<GdkToplevel>(
@@ -77,8 +113,14 @@ void GtkUiPlatformWayland::OnHandle(GtkWidget* widget,
   }
 }
 
-int GtkUiPlatformWayland::GetGdkKeyState() {
-  return ui::LinuxUiDelegate::GetInstance()->GetKeyState();
+void GtkUiPlatformWayland::OnHandleForward(
+    base::OnceCallback<void(std::string)> callback,
+    const std::string& handle) {
+  std::move(callback).Run("wayland:" + handle);
+}
+
+bool GtkUiPlatformWayland::PreferGtkIme() {
+  return gtk::GtkCheckVersion(4);
 }
 
 }  // namespace gtk

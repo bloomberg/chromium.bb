@@ -17,6 +17,7 @@
 <translation id="1516966594427080024">ဝင်းဒိုးအသစ်ကို ရုပ်ဖျက်မုဒ်တွင် ဖွင့်ရန်</translation>
 <translation id="152892567002884378">အသံချဲ့ရန်</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> ပြီးနောက် <ph name="ESC" /></translation>
+<translation id="1586324912145647027">မျက်နှာပြင်နေရာ ၁ မှ ၈ သို့သွားနိုင်သည်</translation>
 <translation id="1652741121070700329">ယခင်စကားလုံး၏ အစသို့ ရွှေ့ရန်</translation>
 <translation id="1679841710523778799">တောက်ပမှုကို မြှင့်တင်ရန်</translation>
 <translation id="168356808214100546"><ph name="ALT" /> ကို ဖိထား၍ သင်ဖွင့်လိုသည့် ဝင်းဒိုးရောက်သည်အထိ <ph name="TAB" /> ကို တို့ပြီး လွှတ်လိုက်ပါ။</translation>
@@ -52,7 +53,6 @@
 <translation id="2530339807289914946">ဝဘ်စာမျက်နှာကို အောက်သို့ လှိမ့်ဆင်းကြည့်ရန်</translation>
 <translation id="2530896289327917474">Caret ဖြင့်ရှာကြည့်ခြင်းကို ဖွင့်ရန် သို့မဟုတ် ပိတ်ရန်</translation>
 <translation id="2574014812750545982">စာမျက်နှာ၏ ဇူးမ်ချဲ့ချုံ့အဆင့်ကို ပြန်ညှိရန်</translation>
-<translation id="2596078834055697711">ဝင်းဒိုး မျက်နှာပြင်ပုံ ရိုက်ရန်</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> ပြီးနောက် <ph name="TAB" /> သို့မဟုတ် <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">သင်၏ လက်ရှိစာမျက်နှာကို ပြန်ဖွင့်ရန်</translation>
 <translation id="2764005613199379871">ရှာဖွေမှု လိပ်စာဘားတန်းကို ရွေးရန်</translation>
@@ -67,11 +67,11 @@
 <translation id="3020183492814296499">ဖြတ်လမ်းလင့်ခ်များ</translation>
 <translation id="3084301071537457911">သင်၏ စင်ပေါ်ရှိ အကြောင်းအရာနောက်တစ်ခုကို ထင်သာအောင် ပြုလုပ်ရန်</translation>
 <translation id="309173601632226815">သင်၏ စင်ပေါ်ရှိ launcher ခလုတ်ကို ထင်သာအောင် ပြုလုပ်ရန်</translation>
-<translation id="3105917916468784889">ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ရန်</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">လိပ်စာဘားကို အာရုံစိုက်</translation>
 <translation id="3256109297135787951">သင်၏ စင်ပေါ်ရှိ အရာကို ထင်သာအောင် ပြုလုပ်ထားခြင်းမှ ဖယ်ရှားရန်</translation>
 <translation id="3288816184963444640">လက်ရှိဝင်းဒိုးကို ပိတ်ရန်</translation>
+<translation id="3350805006883559974">လက်ရှိဝင်းဒိုးကို အပေါ်ဆုံးတွင်ပြနိုင်သည်</translation>
 <translation id="3407560819924487926">လုပ်ဆောင်ချက်မန်နေဂျာကို အပေါ်ဆုံးတွင် ပေါ်အောင်ပြုလုပ်ရန်</translation>
 <translation id="3417835166382867856">တဘ်များတွင် ရှာရန်</translation>
 <translation id="3422679037938588196">ယခင်ကထပ်တူကျသည့် သင့်ရှာဖွေမှုသို့ သွားရန်</translation>
@@ -109,7 +109,6 @@
 <translation id="4556221320735744018">ကီးဘုတ်ဖြတ်လမ်းလင့်ခ် အထောက်အကူပြုကိရိယာကို ကြည့်ရန်</translation>
 <translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> သို့မဟုတ် <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">အခြေအနေပြ နေရာကို ဖွင့်ရန် (သင့်အကောင့်ပုံ ပေါ်မည့်နေရာ)</translation>
-<translation id="4642092649622328492">ဖန်သားပြင်ဓာတ်ပုံကို တစ်စိတ်တစ်ပိုင်းသာ ရိုက်ရန်</translation>
 <translation id="4698850295812410683">စတိုင်လပ်စ်ကိရိယာများကို ပြရန်</translation>
 <translation id="4801989101741319327">နောက်စကားလုံး၏ အဆုံးသို့ ရွှေ့ရန်</translation>
 <translation id="4866066940972151697">ညာဘက်ရှိ စားပွဲကို စဖွင့်အသုံးပြုပါ</translation>
@@ -125,11 +124,13 @@
 <translation id="526651782186312376">စာကြောင်း၏ အစကို ရွေးချယ်ရန်</translation>
 <translation id="5316716239522500219">စောင့်ကြည့်မှုများကို ထင်ဟပ်ရန်</translation>
 <translation id="539072479502328326">နေရာတကျအကွက်ဖြင့် ချဲ့ပေးသည့် မှန်ဘီလူးကို အဖွင့်အပိတ် ပြုလုပ်ရန်</translation>
+<translation id="5466615362193675484">လော့ခ်ချသည့်မုဒ် အရွယ်ပြန်ပြင်ရန်အတွက် မီနူးကို ပြောင်းနိုင်သည်</translation>
 <translation id="5541719484267030947">ဝဘ်ကို ဖိဆွဲနေစဉ် <ph name="ESC" /> ကို နှိပ်ပါ</translation>
 <translation id="5554139136362089836">လက်ရှိစာမျက်နှာတွင် ရှာဖွေရန်</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ကို ဖိထားပြီး လင့်ခ်တစ်ခုကို နှိပ်ပါ</translation>
 <translation id="561814908794220892">ဝဘ်စာမျက်နှာကို တဘ်အသစ်တွင် ဖွင့်ရန်</translation>
 <translation id="5620219513321115856">လက်ရှိဖွင့်ထားသည့် ဝင်းဒိုးကို စားပွဲ၏ ညာဘက်သို့ ရွှေ့ပါ</translation>
+<translation id="5699366815052349604">ဖွင့်ထားသောဝင်းဒိုးကို မျက်နှာပြင်နေရာအားလုံးသို့ သတ်မှတ်နိုင်သည်</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> သို့မဟုတ် <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">လင့်ခ်ကို တဘ်အသစ်တွင် ဖွင့်ရန်</translation>
 <translation id="5757474750054631686">ကီးဘုတ်ကို မှိန်အောင် ပြုလုပ်ရန် (နောက်ခံမီးပါသည့် ကီးဘုတ်များသာ)</translation>
@@ -148,6 +149,7 @@
 <translation id="6276708887952587684">စာမျက်နှာ အရင်းအမြစ်အား ကြည့်ရန်</translation>
 <translation id="6321940490215594447">မှတ်တမ်းစာမျက်နှာကို ဖွင့်ရန်</translation>
 <translation id="6340769215862220182">မျက်နှာပြင် ဇူးမ်ဆွဲရန်</translation>
+<translation id="634687982629734605">အောက်ပါတို့အကြား ရွှေ့ရန်− အခြေအနေပြ နေရာ (သင့်အကောင့်ပုံ ပြမည့်နေရာ)၊ Launcher၊ လိပ်စာ ဘား၊ ဝဘ်လိပ်စာ ဘား (မြင်ရလျှင်)၊ ပွင့်နေသည့် ဝဘ်စာမျက်နှာနှင့် ဒေါင်းလုဒ်များ ဘား (မြင်ရလျှင်)။ ရွှေ့နိုင်သော ဒိုင်ယာလော့ကို ပြထားလျှင် ထိုနေရာသို့ ရွှေ့ပြီး ပြသပါ။</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">စာကြောင်း၏ အဆုံးကို ရွေးချယ်ရန်</translation>
 <translation id="6425378783626925378">သင်၏ စင်ပေါ်ရှိ သင်္ကေတ ၁−၈ ကို နှိပ်ရန်</translation>
@@ -191,7 +193,6 @@
 <translation id="8026334261755873520">ဘရောက်လုပ်ထားသည့် အချက်လက်များ ရှင်းလင်းရန်</translation>
 <translation id="8130528849632411619">စာမျက်နှာ၏ အစသို့ သွားရန်</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> သို့မဟုတ် <ph name="E" /></translation>
-<translation id="8232835244134740473">ဤနေရာများအကြား ပြောင်းရန်− အခြေအနေ နေရာ (သင့်အကောင့်ပုံ ပေါ်မည့်နေရာ)၊ Launcher၊ လိပ်စာဘားတန်း၊ စာညှပ်ဘားတန်း (မြင်ရလျှင်)၊ ဖွင့်ထားသည့် ဝဘ်စာမျက်နှာနှင့် ဒေါင်းလုဒ်ဘား (မြင်ရလျှင်)။</translation>
 <translation id="8234414138295101081">မျက်နှာပြင်ကို ၉၀ ဒီဂရီ လှည့်ရန်</translation>
 <translation id="8241665785394195545">ညာဘက်ကွင်း</translation>
 <translation id="8264941229485248811">'ဆော့ဖ်ဝဲအင်ဂျင်နီယာ ကိရိယာများ' စိစစ်ခြင်းစနစ်ကို ပြရန် သို့မဟုတ် ဝှက်ရန်</translation>
@@ -205,10 +206,12 @@
 <translation id="8644639153978066712">Files အက်ပ်အတွင်း ဝှက်ထားသည့် ဖိုင်များကို ပြရန်</translation>
 <translation id="8717459106217102612">ယခင် စကားလုံး သို့မဟုတ် စာလုံးကို ရွေးရန်</translation>
 <translation id="8727232706774971183">သင်၏ အကြောင်းကြားချက်များကို ကြည့်ရန်</translation>
+<translation id="8855548128280178372"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="SEARCH" /><ph name="SEPARATOR2" /> ၁ မှ ၈ အထိ</translation>
 <translation id="8855885154700222542">မျက်နှာပြင်ပြည့် ခလုတ်</translation>
 <translation id="8881584919399569791">လက်ရှိဖွင့်ထားသည့် ဝင်းဒိုးကို စားပွဲ၏ ဘယ်ဘက်သို့ ရွှေ့ပါ</translation>
 <translation id="88986195241502842">စာမျက်နှာ အောက်သို့</translation>
 <translation id="8924883688469390268">ယခင် အသုံးပြုသူသို့ ပြောင်းပါ</translation>
+<translation id="8941626538514548667">ဘရောင်ဇာတွင် ဝဘ်အကြောင်းအရာကို အထူးပြသနိုင်သည်</translation>
 <translation id="8977648847395357314">လိပ်စာဘားတွင် အကြောင်းအရာကို ရွေးပါ</translation>
 <translation id="8982190978301344584">ရနိုင်သည့် IME စာရင်းကို ဖော်ပြသည့် မီနူးကို ပြရန်</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> ၁ မှ ၈</translation>

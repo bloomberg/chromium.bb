@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "device/udev_linux/scoped_udev.h"
@@ -52,6 +51,9 @@ class UdevWatcher {
       Observer* observer,
       const std::vector<Filter>& filters = {});
 
+  UdevWatcher(const UdevWatcher&) = delete;
+  UdevWatcher& operator=(const UdevWatcher&) = delete;
+
   ~UdevWatcher();
 
   // Synchronously enumerates the all devices known to udev, calling
@@ -73,8 +75,6 @@ class UdevWatcher {
   const std::vector<Filter> udev_filters_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_watcher_;
   base::SequenceChecker sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(UdevWatcher);
 };
 
 }  // namespace device

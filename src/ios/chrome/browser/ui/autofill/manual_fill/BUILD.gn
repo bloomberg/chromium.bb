@@ -118,15 +118,15 @@ source_set("manual_fill_ui") {
   ]
   deps = [
     "//base",
+    "//components/password_manager/core/common",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/autofill/manual_fill/resources:mf_arrow_down",
-    "//ios/chrome/browser/ui/autofill/manual_fill/resources:mf_arrow_up",
     "//ios/chrome/browser/ui/autofill/manual_fill/resources:mf_keyboard",
     "//ios/chrome/browser/ui/list_model:list_model",
+    "//ios/chrome/browser/ui/resources:password_key",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view:table_view",
     "//ios/chrome/common/ui/favicon",
@@ -213,7 +213,6 @@ source_set("requesters") {
 }
 
 source_set("eg2_tests") {
-  defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
     "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
@@ -224,7 +223,6 @@ source_set("eg2_tests") {
     "card_view_controller_egtest.mm",
     "fallback_coordinator_egtest.mm",
     "fallback_view_controller_egtest.mm",
-    "keyboard_observer_egtest.mm",
     "password_view_controller_egtest.mm",
   ]
   deps = [

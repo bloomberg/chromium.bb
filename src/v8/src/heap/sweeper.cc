@@ -227,13 +227,6 @@ void Sweeper::EnsureCompleted() {
   sweeping_in_progress_ = false;
 }
 
-void Sweeper::DrainSweepingWorklists() {
-  if (!sweeping_in_progress_) return;
-
-  ForAllSweepingSpaces(
-      [this](AllocationSpace space) { DrainSweepingWorklistForSpace(space); });
-}
-
 void Sweeper::DrainSweepingWorklistForSpace(AllocationSpace space) {
   if (!sweeping_in_progress_) return;
   ParallelSweepSpace(space, 0);
@@ -373,6 +366,7 @@ int Sweeper::RawSweep(
   // Iterate over the page using the live objects and free the memory before
   // the given live object.
   Address free_start = p->area_start();
+  PtrComprCageBase cage_base(heap_->isolate());
   for (auto object_and_size :
        LiveObjectRange<kBlackObjects>(p, marking_state_->bitmap(p))) {
     HeapObject const object = object_and_size.first;
@@ -390,8 +384,8 @@ int Sweeper::RawSweep(
           free_start, free_end, p, non_empty_typed_slots, &free_ranges_map,
           &old_to_new_cleanup);
     }
-    Map map = object.map(kAcquireLoad);
-    DCHECK(map.IsMap());
+    Map map = object.map(cage_base, kAcquireLoad);
+    DCHECK(map.IsMap(cage_base));
     int size = object.SizeFromMap(map);
     live_bytes += size;
     free_start = free_end + size;
@@ -418,8 +412,8 @@ int Sweeper::RawSweep(
   CleanupInvalidTypedSlotsOfFreeRanges(p, free_ranges_map);
   ClearMarkBitsAndHandleLivenessStatistics(p, live_bytes, free_list_mode);
 
-  p->set_concurrent_sweeping_state(Page::ConcurrentSweepingState::kDone);
   if (code_object_registry) code_object_registry->Finalize();
+  p->set_concurrent_sweeping_state(Page::ConcurrentSweepingState::kDone);
   if (free_list_mode == IGNORE_FREE_LIST) return 0;
 
   return static_cast<int>(
@@ -506,8 +500,45 @@ int Sweeper::ParallelSweepPage(
   {
     base::MutexGuard guard(&mutex_);
     swept_list_[GetSweepSpaceIndex(identity)].push_back(page);
+    cv_page_swept_.NotifyAll();
   }
   return max_freed;
+}
+
+void Sweeper::EnsurePageIsSwept(Page* page) {
+  if (!sweeping_in_progress() || page->SweepingDone()) return;
+  AllocationSpace space = page->owner_identity();
+
+  if (IsValidSweepingSpace(space)) {
+    if (TryRemoveSweepingPageSafe(space, page)) {
+      // Page was successfully removed and can now be swept.
+      ParallelSweepPage(page, space);
+    } else {
+      // Some sweeper task already took ownership of that page, wait until
+      // sweeping is finished.
+      base::MutexGuard guard(&mutex_);
+      while (!page->SweepingDone()) {
+        cv_page_swept_.Wait(&mutex_);
+      }
+    }
+  } else {
+    DCHECK(page->InNewSpace());
+    EnsureIterabilityCompleted();
+  }
+
+  CHECK(page->SweepingDone());
+}
+
+bool Sweeper::TryRemoveSweepingPageSafe(AllocationSpace space, Page* page) {
+  base::MutexGuard guard(&mutex_);
+  DCHECK(IsValidSweepingSpace(space));
+  int space_index = GetSweepSpaceIndex(space);
+  SweepingList& sweeping_list = sweeping_list_[space_index];
+  SweepingList::iterator position =
+      std::find(sweeping_list.begin(), sweeping_list.end(), page);
+  if (position == sweeping_list.end()) return false;
+  sweeping_list.erase(position);
+  return true;
 }
 
 void Sweeper::ScheduleIncrementalSweepingTask() {

@@ -40,7 +40,7 @@ namespace tasks {
 
 TaskTabHelper::TaskTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      last_pruned_navigation_entry_index_(-1) {}
+      content::WebContentsUserData<TaskTabHelper>(*web_contents) {}
 
 TaskTabHelper::~TaskTabHelper() {}
 
@@ -218,6 +218,6 @@ jlong JNI_TaskTabHelper_GetRootTaskId(
 }
 #endif  // defined(OS_ANDROID)
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TaskTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TaskTabHelper);
 
 }  // namespace tasks

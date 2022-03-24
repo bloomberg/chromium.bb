@@ -12,11 +12,10 @@
 #include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_math.h"
-#include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
@@ -178,8 +177,9 @@ GWP_ASAN_EXPORT absl::optional<AllocatorSettings> GetAllocatorSettings(
   if (!SampleProcess(feature, boost_sampling))
     return absl::nullopt;
 
-  return AllocatorSettings{max_allocations, max_metadata, total_pages,
-                           alloc_sampling_freq};
+  return AllocatorSettings{
+      static_cast<size_t>(max_allocations), static_cast<size_t>(max_metadata),
+      static_cast<size_t>(total_pages), alloc_sampling_freq};
 }
 
 }  // namespace internal

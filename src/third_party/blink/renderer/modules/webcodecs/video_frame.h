@@ -10,20 +10,23 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_region.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_pixel_format.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_image_source_util.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/webcodecs/plane.h"
+#include "third_party/blink/renderer/modules/webcodecs/allow_shared_buffer_source_util.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 // Note: Don't include "media/base/video_frame.h" here without good reason,
 // since it includes a lot of non-blink types which can pollute the namespace.
+
+namespace base {
+struct Feature;
+}
 
 namespace media {
 class VideoFrame;
@@ -31,16 +34,18 @@ class VideoFrame;
 
 namespace blink {
 
-class ArrayBufferOrArrayBufferView;
 class CanvasImageSource;
+class DOMRectReadOnly;
 class ExceptionState;
 class ExecutionContext;
-class PlaneInit;
 class ScriptPromise;
 class ScriptState;
+class VideoColorSpace;
+class VideoFrameBufferInit;
+class VideoFrameCopyToOptions;
 class VideoFrameInit;
-class VideoFramePlaneInit;
-class VideoFrameReadIntoOptions;
+
+extern const MODULES_EXPORT base::Feature kRemoveWebCodecsSpecViolations;
 
 class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                                         public CanvasImageSource,
@@ -48,64 +53,51 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Creates a VideoFrame with a new VideoFrameHandle wrapping |frame|.
-  VideoFrame(scoped_refptr<media::VideoFrame> frame, ExecutionContext*);
+  // Creates a VideoFrame with a new VideoFrameHandle wrapping |frame|, and
+  // monitored using |monitoring_source_id|.
+  VideoFrame(scoped_refptr<media::VideoFrame> frame,
+             ExecutionContext*,
+             std::string monitoring_source_id = std::string());
 
   // Creates a VideoFrame from an existing handle.
   // All frames sharing |handle| will have their |handle_| invalidated if any of
   // the frames receives a call to close().
   explicit VideoFrame(scoped_refptr<VideoFrameHandle> handle);
 
+  ~VideoFrame() override;
+
   // video_frame.idl implementation.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static VideoFrame* Create(ScriptState* script_state,
                             const V8CanvasImageSource* source,
                             const VideoFrameInit* init,
                             ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static VideoFrame* Create(ScriptState*,
-                            const CanvasImageSourceUnion&,
-                            const VideoFrameInit*,
-                            ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  static VideoFrame* Create(ScriptState*,
-                            const HeapVector<Member<PlaneInit>>&,
-                            const VideoFramePlaneInit*,
+                            const AllowSharedBufferSource*,
+                            const VideoFrameBufferInit*,
                             ExceptionState&);
 
-  String format() const;
-  absl::optional<HeapVector<Member<Plane>>> planes();
-
-  uint32_t codedWidth() const;
-  uint32_t codedHeight() const;
-
-  VideoFrameRegion* codedRegion() const;
-  VideoFrameRegion* visibleRegion() const;
-
-  uint32_t cropLeft(ExecutionContext*) const;
-  uint32_t cropTop(ExecutionContext*) const;
-  uint32_t cropWidth(ExecutionContext*) const;
-  uint32_t cropHeight(ExecutionContext*) const;
-
-  uint32_t displayWidth() const;
-  uint32_t displayHeight() const;
+  absl::optional<V8VideoPixelFormat> format() const;
 
   absl::optional<int64_t> timestamp() const;
   absl::optional<uint64_t> duration() const;
 
-  uint32_t allocationSize(VideoFrameReadIntoOptions* options, ExceptionState&);
+  uint32_t codedWidth() const;
+  uint32_t codedHeight() const;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise readInto(ScriptState* script_state,
-                         const V8BufferSource* destination,
-                         VideoFrameReadIntoOptions* options,
-                         ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ScriptPromise readInto(ScriptState*,
-                         const ArrayBufferOrArrayBufferView& destination,
-                         VideoFrameReadIntoOptions* options,
-                         ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  absl::optional<DOMRectReadOnly*> codedRect();
+  absl::optional<DOMRectReadOnly*> visibleRect();
+
+  uint32_t displayWidth() const;
+  uint32_t displayHeight() const;
+
+  VideoColorSpace* colorSpace();
+
+  uint32_t allocationSize(VideoFrameCopyToOptions* options, ExceptionState&);
+
+  ScriptPromise copyTo(ScriptState* script_state,
+                       const AllowSharedBufferSource* destination,
+                       VideoFrameCopyToOptions* options,
+                       ExceptionState& exception_state);
 
   // Invalidates |handle_|, releasing underlying media::VideoFrame references.
   // This effectively "destroys" all frames sharing the same Handle.
@@ -120,30 +112,41 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   scoped_refptr<VideoFrameHandle> handle() const { return handle_; }
   scoped_refptr<media::VideoFrame> frame() const { return handle_->frame(); }
 
+  bool WouldTaintOrigin() const override;
+
   // GarbageCollected override
   void Trace(Visitor*) const override;
 
  private:
   // CanvasImageSource implementation
-  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               const FloatSize&) override;
-  bool WouldTaintOrigin() const override;
-  FloatSize ElementSize(const FloatSize&,
-                        const RespectImageOrientationEnum) const override;
+  scoped_refptr<Image> GetSourceImageForCanvas(
+      SourceImageStatus*,
+      const gfx::SizeF&,
+      const AlphaDisposition alpha_disposition = kPremultiplyAlpha) override;
+
+  gfx::SizeF ElementSize(const gfx::SizeF&,
+                         const RespectImageOrientationEnum) const override;
   bool IsVideoFrame() const override;
   bool IsOpaque() const override;
   bool IsAccelerated() const override;
 
   // ImageBitmapSource implementation
   static constexpr uint64_t kCpuEfficientFrameSize = 320u * 240u;
-  IntSize BitmapSourceSize() const override;
+  gfx::Size BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  absl::optional<IntRect> crop_rect,
+                                  absl::optional<gfx::Rect> crop_rect,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
+  // Underlying frame
   scoped_refptr<VideoFrameHandle> handle_;
-  HeapVector<Member<Plane>> planes_;
+
+  // Caches
+  int64_t external_allocated_memory_;
+  Member<DOMRectReadOnly> coded_rect_;
+  Member<DOMRectReadOnly> visible_rect_;
+  Member<VideoColorSpace> color_space_;
+  Member<VideoColorSpace> empty_color_space_;
 };
 
 }  // namespace blink

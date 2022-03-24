@@ -21,8 +21,10 @@ class FilteringRanker : public Ranker {
   FilteringRanker& operator=(const FilteringRanker&) = delete;
 
   // Ranker:
-  void Start(const std::u16string& query) override;
-  void Rank(ResultsMap& results, ProviderType provider) override;
+  void Start(const std::u16string& query,
+             ResultsMap& results,
+             CategoriesList& categories) override;
+  void UpdateResultRanks(ResultsMap& results, ProviderType provider) override;
 
  private:
   std::u16string last_query_;

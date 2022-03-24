@@ -28,6 +28,11 @@ using Microsoft::WRL::ComPtr;
 namespace {
 
     class D3D12ResourceTestBase : public DawnTest {
+      protected:
+        std::vector<const char*> GetRequiredFeatures() override {
+            return {"dawn-internal-usages"};
+        }
+
       public:
         void SetUp() override {
             DawnTest::SetUp();
@@ -64,9 +69,9 @@ namespace {
             baseDawnDescriptor.size = {kTestWidth, kTestHeight, 1};
             baseDawnDescriptor.sampleCount = 1;
             baseDawnDescriptor.mipLevelCount = 1;
-            baseDawnDescriptor.usage = wgpu::TextureUsage::Sampled | wgpu::TextureUsage::CopySrc |
-                                       wgpu::TextureUsage::RenderAttachment |
-                                       wgpu::TextureUsage::CopyDst;
+            baseDawnDescriptor.usage =
+                wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc |
+                wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopyDst;
 
             baseD3dDescriptor.Width = kTestWidth;
             baseD3dDescriptor.Height = kTestHeight;
@@ -122,6 +127,7 @@ namespace {
 
             dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
             externalAccessDesc.acquireMutexKey = 0;
+            externalAccessDesc.releaseMutexKey = 1;
             externalAccessDesc.usage = static_cast<WGPUTextureUsageFlags>(dawnDesc->usage);
 
             *dawnTexture = wgpu::Texture::Acquire(
@@ -151,7 +157,7 @@ class D3D12SharedHandleValidation : public D3D12ResourceTestBase {};
 
 // Test a successful wrapping of an D3D12Resource in a texture
 TEST_P(D3D12SharedHandleValidation, Success) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     wgpu::Texture texture;
     ComPtr<ID3D11Texture2D> d3d11Texture;
@@ -160,11 +166,28 @@ TEST_P(D3D12SharedHandleValidation, Success) {
     ASSERT_NE(texture.Get(), nullptr);
 }
 
-// Test an error occurs if the texture descriptor is invalid
+// Test a successful wrapping of an D3D12Resource with DawnTextureInternalUsageDescriptor
+TEST_P(D3D12SharedHandleValidation, SuccessWithInternalUsageDescriptor) {
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+
+    wgpu::DawnTextureInternalUsageDescriptor internalDesc = {};
+    baseDawnDescriptor.nextInChain = &internalDesc;
+    internalDesc.internalUsage = wgpu::TextureUsage::CopySrc;
+    internalDesc.sType = wgpu::SType::DawnTextureInternalUsageDescriptor;
+
+    wgpu::Texture texture;
+    ComPtr<ID3D11Texture2D> d3d11Texture;
+    WrapSharedHandle(&baseDawnDescriptor, &baseD3dDescriptor, &texture, &d3d11Texture);
+
+    ASSERT_NE(texture.Get(), nullptr);
+}
+
+// Test an error occurs if an invalid sType is the nextInChain
 TEST_P(D3D12SharedHandleValidation, InvalidTextureDescriptor) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     wgpu::ChainedStruct chainedDescriptor;
+    chainedDescriptor.sType = wgpu::SType::SurfaceDescriptorFromWindowsSwapChainPanel;
     baseDawnDescriptor.nextInChain = &chainedDescriptor;
 
     wgpu::Texture texture;
@@ -177,7 +200,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidTextureDescriptor) {
 
 // Test an error occurs if the descriptor mip level count isn't 1
 TEST_P(D3D12SharedHandleValidation, InvalidMipLevelCount) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseDawnDescriptor.mipLevelCount = 2;
 
     wgpu::Texture texture;
@@ -190,7 +213,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidMipLevelCount) {
 
 // Test an error occurs if the descriptor depth isn't 1
 TEST_P(D3D12SharedHandleValidation, InvalidDepth) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseDawnDescriptor.size.depthOrArrayLayers = 2;
 
     wgpu::Texture texture;
@@ -203,7 +226,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidDepth) {
 
 // Test an error occurs if the descriptor sample count isn't 1
 TEST_P(D3D12SharedHandleValidation, InvalidSampleCount) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseDawnDescriptor.sampleCount = 4;
 
     wgpu::Texture texture;
@@ -216,7 +239,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidSampleCount) {
 
 // Test an error occurs if the descriptor width doesn't match the texture's
 TEST_P(D3D12SharedHandleValidation, InvalidWidth) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseDawnDescriptor.size.width = kTestWidth + 1;
 
     wgpu::Texture texture;
@@ -229,7 +252,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidWidth) {
 
 // Test an error occurs if the descriptor height doesn't match the texture's
 TEST_P(D3D12SharedHandleValidation, InvalidHeight) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseDawnDescriptor.size.height = kTestHeight + 1;
 
     wgpu::Texture texture;
@@ -242,7 +265,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidHeight) {
 
 // Test an error occurs if the descriptor format isn't compatible with the D3D12 Resource
 TEST_P(D3D12SharedHandleValidation, InvalidFormat) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseDawnDescriptor.format = wgpu::TextureFormat::R8Unorm;
 
     wgpu::Texture texture;
@@ -255,7 +278,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidFormat) {
 
 // Test an error occurs if the number of D3D mip levels is greater than 1.
 TEST_P(D3D12SharedHandleValidation, InvalidNumD3DMipLevels) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseD3dDescriptor.MipLevels = 2;
 
     wgpu::Texture texture;
@@ -268,7 +291,7 @@ TEST_P(D3D12SharedHandleValidation, InvalidNumD3DMipLevels) {
 
 // Test an error occurs if the number of array levels is greater than 1.
 TEST_P(D3D12SharedHandleValidation, InvalidD3DArraySize) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     baseD3dDescriptor.ArraySize = 2;
 
     wgpu::Texture texture;
@@ -296,18 +319,21 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
     }
 
     // Clear a texture on a given device
-    void ClearImage(wgpu::Texture wrappedTexture, const wgpu::Color& clearColor) {
+    void ClearImage(wgpu::Texture wrappedTexture,
+                    const wgpu::Color& clearColor,
+                    wgpu::Device wgpuDevice) {
         wgpu::TextureView wrappedView = wrappedTexture.CreateView();
 
         // Submit a clear operation
         utils::ComboRenderPassDescriptor renderPassDescriptor({wrappedView}, {});
         renderPassDescriptor.cColorAttachments[0].clearColor = clearColor;
 
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::CommandEncoder encoder = wgpuDevice.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
         pass.EndPass();
 
         wgpu::CommandBuffer commands = encoder.Finish();
+        wgpu::Queue queue = wgpuDevice.GetQueue();
         queue.Submit(1, &commands);
     }
 
@@ -361,6 +387,7 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
 
         dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
         externalAccessDesc.acquireMutexKey = 1;
+        externalAccessDesc.releaseMutexKey = 2;
         externalAccessDesc.isInitialized = isInitialized;
         externalAccessDesc.usage = static_cast<WGPUTextureUsageFlags>(dawnDescriptor->usage);
 
@@ -433,7 +460,7 @@ class D3D12SharedHandleUsageTests : public D3D12ResourceTestBase {
 // 2. Copy the wrapped texture to another dawn texture
 // 3. Readback the copied texture and ensure the color matches the original clear color.
 TEST_P(D3D12SharedHandleUsageTests, ClearInD3D11CopyAndReadbackInD3D12) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     const wgpu::Color clearColor{1.0f, 1.0f, 0.0f, 1.0f};
     wgpu::Texture dawnSrcTexture;
@@ -457,7 +484,7 @@ TEST_P(D3D12SharedHandleUsageTests, ClearInD3D11CopyAndReadbackInD3D12) {
 // 1. Create and clear a D3D11 texture
 // 2. Readback the wrapped texture and ensure the color matches the original clear color.
 TEST_P(D3D12SharedHandleUsageTests, ClearInD3D11ReadbackInD3D12) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     const wgpu::Color clearColor{1.0f, 1.0f, 0.0f, 1.0f};
     wgpu::Texture dawnTexture;
@@ -480,9 +507,9 @@ TEST_P(D3D12SharedHandleUsageTests, ClearInD3D11ReadbackInD3D12) {
 TEST_P(D3D12SharedHandleUsageTests, ClearInD3D12ReadbackInD3D11) {
     // TODO(crbug.com/dawn/735): This test appears to hang for
     // D3D12_Microsoft_Basic_Render_Driver_CPU when validation is enabled.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP() && IsBackendValidationEnabled());
 
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     const wgpu::Color d3d11ClearColor{1.0f, 1.0f, 0.0f, 1.0f};
     wgpu::Texture dawnTexture;
@@ -493,7 +520,7 @@ TEST_P(D3D12SharedHandleUsageTests, ClearInD3D12ReadbackInD3D11) {
     ASSERT_NE(dawnTexture.Get(), nullptr);
 
     const wgpu::Color d3d12ClearColor{0.0f, 0.0f, 1.0f, 1.0f};
-    ClearImage(dawnTexture, d3d12ClearColor);
+    ClearImage(dawnTexture, d3d12ClearColor, device);
 
     dawnTexture.Destroy();
 
@@ -510,9 +537,9 @@ TEST_P(D3D12SharedHandleUsageTests, ClearInD3D12ReadbackInD3D11) {
 TEST_P(D3D12SharedHandleUsageTests, ClearTwiceInD3D12ReadbackInD3D11) {
     // TODO(crbug.com/dawn/735): This test appears to hang for
     // D3D12_Microsoft_Basic_Render_Driver_CPU when validation is enabled.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP() && IsBackendValidationEnabled());
 
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     const wgpu::Color d3d11ClearColor{1.0f, 1.0f, 0.0f, 1.0f};
     wgpu::Texture dawnTexture;
@@ -523,10 +550,10 @@ TEST_P(D3D12SharedHandleUsageTests, ClearTwiceInD3D12ReadbackInD3D11) {
     ASSERT_NE(dawnTexture.Get(), nullptr);
 
     const wgpu::Color d3d12ClearColor1{0.0f, 0.0f, 1.0f, 1.0f};
-    ClearImage(dawnTexture, d3d12ClearColor1);
+    ClearImage(dawnTexture, d3d12ClearColor1, device);
 
     const wgpu::Color d3d12ClearColor2{0.0f, 1.0f, 1.0f, 1.0f};
-    ClearImage(dawnTexture, d3d12ClearColor2);
+    ClearImage(dawnTexture, d3d12ClearColor2, device);
 
     dawnTexture.Destroy();
 
@@ -540,7 +567,7 @@ TEST_P(D3D12SharedHandleUsageTests, ClearTwiceInD3D12ReadbackInD3D11) {
 // 2. Import the texture with isInitialized = false
 // 3. Verify clearColor is not visible in wrapped texture
 TEST_P(D3D12SharedHandleUsageTests, UninitializedTextureIsCleared) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     const wgpu::Color clearColor{1.0f, 0.0f, 0.0f, 1.0f};
     wgpu::Texture dawnTexture;
@@ -559,7 +586,7 @@ TEST_P(D3D12SharedHandleUsageTests, UninitializedTextureIsCleared) {
 // 2. Produce two Dawn textures from the external image.
 // 3. Clear each Dawn texture and verify the texture was cleared to a unique color.
 TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     // Create the first Dawn texture then clear it to red.
     wgpu::Texture texture;
@@ -570,7 +597,7 @@ TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
     {
         const wgpu::Color solidRed{1.0f, 0.0f, 0.0f, 1.0f};
         ASSERT_NE(texture.Get(), nullptr);
-        ClearImage(texture.Get(), solidRed);
+        ClearImage(texture.Get(), solidRed, device);
 
         EXPECT_PIXEL_RGBA8_EQ(RGBA8(0xFF, 0, 0, 0xFF), texture.Get(), 0, 0);
     }
@@ -582,6 +609,7 @@ TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
     // Create another Dawn texture then clear it with another color.
     dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
     externalAccessDesc.acquireMutexKey = 1;
+    externalAccessDesc.releaseMutexKey = 2;
     externalAccessDesc.isInitialized = true;
     externalAccessDesc.usage = static_cast<WGPUTextureUsageFlags>(baseDawnDescriptor.usage);
 
@@ -595,7 +623,7 @@ TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
     {
         const wgpu::Color solidBlue{0.0f, 0.0f, 1.0f, 1.0f};
         ASSERT_NE(texture.Get(), nullptr);
-        ClearImage(texture.Get(), solidBlue);
+        ClearImage(texture.Get(), solidBlue, device);
 
         EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 0, 0xFF, 0xFF), texture.Get(), 0, 0);
     }
@@ -603,10 +631,11 @@ TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImage) {
 
 // Produce a new texture with a usage not specified in the external image.
 TEST_P(D3D12SharedHandleUsageTests, ExternalImageUsage) {
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
     externalAccessDesc.acquireMutexKey = 1;
+    externalAccessDesc.releaseMutexKey = 2;
     externalAccessDesc.isInitialized = true;
 
     wgpu::Texture texture;
@@ -616,15 +645,64 @@ TEST_P(D3D12SharedHandleUsageTests, ExternalImageUsage) {
                      &externalImage);
     ASSERT_NE(texture.Get(), nullptr);
 
-    externalAccessDesc.usage = WGPUTextureUsage_Storage;
+    externalAccessDesc.usage = WGPUTextureUsage_StorageBinding;
     texture =
         wgpu::Texture::Acquire(externalImage->ProduceTexture(device.Get(), &externalAccessDesc));
     ASSERT_EQ(texture.Get(), nullptr);
 
-    externalAccessDesc.usage = WGPUTextureUsage_Sampled;
+    externalAccessDesc.usage = WGPUTextureUsage_TextureBinding;
     texture =
         wgpu::Texture::Acquire(externalImage->ProduceTexture(device.Get(), &externalAccessDesc));
     ASSERT_NE(texture.Get(), nullptr);
+}
+
+// Verify two Dawn devices can reuse the same external image.
+TEST_P(D3D12SharedHandleUsageTests, ReuseExternalImageWithMultipleDevices) {
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+
+    wgpu::Texture texture;
+    ComPtr<ID3D11Texture2D> d3d11Texture;
+    std::unique_ptr<dawn_native::d3d12::ExternalImageDXGI> externalImage;
+
+    // Create the Dawn texture then clear it to red using the first (default) device.
+    WrapSharedHandle(&baseDawnDescriptor, &baseD3dDescriptor, &texture, &d3d11Texture,
+                     &externalImage);
+    const wgpu::Color solidRed{1.0f, 0.0f, 0.0f, 1.0f};
+    ASSERT_NE(texture.Get(), nullptr);
+    ClearImage(texture.Get(), solidRed, device);
+
+    EXPECT_PIXEL_RGBA8_EQ(RGBA8(0xFF, 0, 0, 0xFF), texture.Get(), 0, 0);
+
+    // Release the texture so we can re-acquire another one from the same external image.
+    texture.Destroy();
+
+    // Create the Dawn texture then clear it to blue using the second device.
+    dawn_native::d3d12::ExternalImageAccessDescriptorDXGIKeyedMutex externalAccessDesc;
+    externalAccessDesc.acquireMutexKey = 1;
+    externalAccessDesc.releaseMutexKey = 2;
+    externalAccessDesc.usage = static_cast<WGPUTextureUsageFlags>(baseDawnDescriptor.usage);
+
+    wgpu::Device otherDevice = wgpu::Device::Acquire(GetAdapter().CreateDevice());
+
+    wgpu::Texture otherTexture = wgpu::Texture::Acquire(
+        externalImage->ProduceTexture(otherDevice.Get(), &externalAccessDesc));
+
+    ASSERT_NE(otherTexture.Get(), nullptr);
+    const wgpu::Color solidBlue{0.0f, 0.0f, 1.0f, 1.0f};
+    ClearImage(otherTexture.Get(), solidBlue, otherDevice);
+
+    otherTexture.Destroy();
+
+    // Re-create the Dawn texture using the first (default) device.
+    externalAccessDesc.acquireMutexKey = 2;
+    externalAccessDesc.isInitialized = true;
+    texture =
+        wgpu::Texture::Acquire(externalImage->ProduceTexture(device.Get(), &externalAccessDesc));
+    ASSERT_NE(texture.Get(), nullptr);
+
+    // Ensure the texture is still blue.
+
+    EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 0, 0xFF, 0xFF), texture.Get(), 0, 0);
 }
 
 DAWN_INSTANTIATE_TEST(D3D12SharedHandleValidation, D3D12Backend());

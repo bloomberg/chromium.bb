@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/browser/protocol_util.h"
@@ -25,16 +26,13 @@ class ProtocolPageLoadMetricsObserverTest
       page_load_metrics::mojom::PageLoadTiming* timing) {
     page_load_metrics::InitPageLoadTimingForTest(timing);
     timing->navigation_start = base::Time::FromDoubleT(1);
-    timing->parse_timing->parse_start = base::TimeDelta::FromMilliseconds(100);
-    timing->paint_timing->first_paint = base::TimeDelta::FromMilliseconds(200);
-    timing->paint_timing->first_contentful_paint =
-        base::TimeDelta::FromMilliseconds(300);
-    timing->paint_timing->first_meaningful_paint =
-        base::TimeDelta::FromMilliseconds(400);
+    timing->parse_timing->parse_start = base::Milliseconds(100);
+    timing->paint_timing->first_paint = base::Milliseconds(200);
+    timing->paint_timing->first_contentful_paint = base::Milliseconds(300);
+    timing->paint_timing->first_meaningful_paint = base::Milliseconds(400);
     timing->document_timing->dom_content_loaded_event_start =
-        base::TimeDelta::FromMilliseconds(600);
-    timing->document_timing->load_event_start =
-        base::TimeDelta::FromMilliseconds(1000);
+        base::Milliseconds(600);
+    timing->document_timing->load_event_start = base::Milliseconds(1000);
     PopulateRequiredTimingFields(timing);
   }
 
@@ -93,7 +91,7 @@ class ProtocolPageLoadMetricsObserverTest
         prefix + ".DocumentTiming.NavigationToLoadEventFired", 1);
   }
 
-  ProtocolPageLoadMetricsObserver* observer_;
+  raw_ptr<ProtocolPageLoadMetricsObserver> observer_;
 };
 
 TEST_F(ProtocolPageLoadMetricsObserverTest, H11Navigation) {

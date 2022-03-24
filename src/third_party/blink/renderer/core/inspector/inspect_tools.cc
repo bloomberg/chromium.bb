@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/resources/grit/inspector_overlay_resources_map.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -31,10 +32,13 @@
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace blink {
 
 namespace {
+
+static const char kInvalidOverlayCommand[] = "Invalid Overlay command";
 
 InspectorHighlightContrastInfo FetchContrast(Node* node) {
   InspectorHighlightContrastInfo result;
@@ -58,7 +62,7 @@ InspectorHighlightContrastInfo FetchContrast(Node* node) {
 }
 
 Node* HoveredNodeForPoint(LocalFrame* frame,
-                          const IntPoint& point_in_root_frame,
+                          const gfx::Point& point_in_root_frame,
                           bool ignore_pointer_events_none) {
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |
@@ -79,17 +83,17 @@ Node* HoveredNodeForPoint(LocalFrame* frame,
 Node* HoveredNodeForEvent(LocalFrame* frame,
                           const WebGestureEvent& event,
                           bool ignore_pointer_events_none) {
-  return HoveredNodeForPoint(
-      frame, RoundedIntPoint(FloatPoint(event.PositionInRootFrame())),
-      ignore_pointer_events_none);
+  return HoveredNodeForPoint(frame,
+                             gfx::ToRoundedPoint(event.PositionInRootFrame()),
+                             ignore_pointer_events_none);
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
                           const WebMouseEvent& event,
                           bool ignore_pointer_events_none) {
-  return HoveredNodeForPoint(
-      frame, RoundedIntPoint(FloatPoint(event.PositionInRootFrame())),
-      ignore_pointer_events_none);
+  return HoveredNodeForPoint(frame,
+                             gfx::ToRoundedPoint(event.PositionInRootFrame()),
+                             ignore_pointer_events_none);
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
@@ -97,7 +101,7 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
                           bool ignore_pointer_events_none) {
   WebPointerEvent transformed_point = event.WebPointerEventInRootFrame();
   return HoveredNodeForPoint(
-      frame, RoundedIntPoint(FloatPoint(transformed_point.PositionInWidget())),
+      frame, gfx::ToRoundedPoint(transformed_point.PositionInWidget()),
       ignore_pointer_events_none);
 }
 
@@ -399,7 +403,7 @@ void NodeHighlightTool::DrawMatchingSelector() {
   for (unsigned i = 0; i < elements->length(); ++i) {
     Element* element = elements->item(i);
     // Skip elements in locked subtrees.
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*element))
+    if (DisplayLockUtilities::LockedAncestorPreventingPaint(*element))
       continue;
     NodeContentVisibilityState content_visibility_state =
         DetermineSelfContentVisibilityState(element);
@@ -434,7 +438,8 @@ String PersistentTool::GetOverlayName() {
 
 bool PersistentTool::IsEmpty() {
   return !grid_node_highlights_.size() && !flex_container_configs_.size() &&
-         !scroll_snap_configs_.size();
+         !scroll_snap_configs_.size() && !container_query_configs_.size() &&
+         !isolated_element_configs_.size();
 }
 
 void PersistentTool::SetGridConfigs(GridConfigs configs) {
@@ -449,8 +454,16 @@ void PersistentTool::SetScrollSnapConfigs(ScrollSnapConfigs configs) {
   scroll_snap_configs_ = std::move(configs);
 }
 
+void PersistentTool::SetContainerQueryConfigs(ContainerQueryConfigs configs) {
+  container_query_configs_ = std::move(configs);
+}
+
+void PersistentTool::SetIsolatedElementConfigs(IsolatedElementConfigs configs) {
+  isolated_element_configs_ = std::move(configs);
+}
+
 bool PersistentTool::ForwardEventsToOverlay() {
-  return false;
+  return isolated_element_configs_.size();
 }
 
 bool PersistentTool::HideOnHideHighlight() {
@@ -485,6 +498,71 @@ void PersistentTool::Draw(float scale) {
     overlay_->EvaluateInOverlay("drawScrollSnapHighlight",
                                 std::move(highlight));
   }
+  for (auto& entry : container_query_configs_) {
+    std::unique_ptr<protocol::Value> highlight =
+        InspectorContainerQueryHighlight(entry.first.Get(), *(entry.second));
+    if (!highlight)
+      continue;
+    overlay_->EvaluateInOverlay("drawContainerQueryHighlight",
+                                std::move(highlight));
+  }
+  for (wtf_size_t i = 0; i < isolated_element_configs_.size(); ++i) {
+    auto& entry = isolated_element_configs_.at(i);
+    std::unique_ptr<protocol::Value> highlight =
+        InspectorIsolatedElementHighlight(entry.first.Get(), *(entry.second),
+                                          i);
+    if (!highlight)
+      continue;
+    overlay_->EvaluateInOverlay("drawIsolatedElementHighlight",
+                                std::move(highlight));
+  }
+}
+
+// Accepts a message of the following format:
+// {
+//   highlightType: 'grid'|'flex'|'scrollSnap'|'container'|'isolatedElement',
+//   highlightIndex: number,
+//   newWidth: string,
+//   newHeight: string,
+//   resizerType: 'width'|'height'|'bidrection'
+// }
+// If the message is correct, sets the property inline style according to the
+// message.
+void PersistentTool::Dispatch(const ScriptValue& message,
+                              ExceptionState& exception_state) {
+  Dictionary dict(message);
+
+  String highlight_type =
+      dict.Get<IDLString>("highlightType", exception_state).value_or("");
+  int32_t index =
+      dict.Get<IDLLong>("highlightIndex", exception_state).value_or(-1);
+  String new_width =
+      dict.Get<IDLString>("newWidth", exception_state).value_or("");
+  String new_height =
+      dict.Get<IDLString>("newHeight", exception_state).value_or("");
+  String resizer_type =
+      dict.Get<IDLString>("resizerType", exception_state).value_or("");
+
+  if (exception_state.HadException())
+    return;
+
+  Element* element = nullptr;
+  if (highlight_type == "isolatedElement") {
+    if (index < static_cast<int>(isolated_element_configs_.size()) &&
+        index >= 0) {
+      element = isolated_element_configs_.at(index).first.Get();
+    }
+  }
+
+  if (!element) {
+    exception_state.ThrowRangeError("invalid highlightIndex");
+    return;
+  }
+
+  if (resizer_type == "width" || resizer_type == "bidirection")
+    element->SetInlineStyleProperty(CSSPropertyID::kWidth, new_width, true);
+  if (resizer_type == "height" || resizer_type == "bidirection")
+    element->SetInlineStyleProperty(CSSPropertyID::kHeight, new_height, true);
 }
 
 std::unique_ptr<protocol::DictionaryValue>
@@ -670,28 +748,33 @@ String ScreenshotTool::GetOverlayName() {
   return OverlayNames::OVERLAY_SCREENSHOT;
 }
 
-void ScreenshotTool::Dispatch(const String& message) {
-  if (message.IsEmpty())
+void ScreenshotTool::Dispatch(const ScriptValue& message,
+                              ExceptionState& exception_state) {
+  Dictionary dict(message);
+
+  auto x = dict.Get<IDLLong>("x", exception_state);
+  if (exception_state.HadException())
     return;
-  std::vector<uint8_t> cbor;
-  if (message.Is8Bit()) {
-    crdtp::json::ConvertJSONToCBOR(
-        crdtp::span<uint8_t>(message.Characters8(), message.length()), &cbor);
-  } else {
-    crdtp::json::ConvertJSONToCBOR(
-        crdtp::span<uint16_t>(
-            reinterpret_cast<const uint16_t*>(message.Characters16()),
-            message.length()),
-        &cbor);
+  auto y = dict.Get<IDLLong>("y", exception_state);
+  if (exception_state.HadException())
+    return;
+  auto width = dict.Get<IDLLong>("width", exception_state);
+  if (exception_state.HadException())
+    return;
+  auto height = dict.Get<IDLLong>("height", exception_state);
+  if (exception_state.HadException())
+    return;
+
+  if (!x || !y || !width || !height) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      kInvalidOverlayCommand);
+    return;
   }
-  std::unique_ptr<protocol::DOM::Rect> box =
-      protocol::DOM::Rect::FromBinary(cbor.data(), cbor.size());
-  if (!box)
-    return;
+
+  gfx::Point p1(*x, *y);
+  gfx::Point p2(*x + *width, *y + *height);
+
   float scale = 1.0f;
-  // Capture values in the CSS pixels.
-  IntPoint p1(box->getX(), box->getY());
-  IntPoint p2(box->getX() + box->getWidth(), box->getY() + box->getHeight());
 
   if (LocalFrame* frame = overlay_->GetFrame()) {
     float emulation_scale = overlay_->GetFrame()
@@ -699,14 +782,14 @@ void ScreenshotTool::Dispatch(const String& message) {
                                 ->GetChromeClient()
                                 .InputEventsScaleForEmulation();
     // Convert from overlay terms into the absolute.
-    p1.Scale(1 / emulation_scale, 1 / emulation_scale);
-    p2.Scale(1 / emulation_scale, 1 / emulation_scale);
+    p1 = gfx::ScaleToRoundedPoint(p1, 1 / emulation_scale);
+    p2 = gfx::ScaleToRoundedPoint(p2, 1 / emulation_scale);
 
     // Scroll offset in the viewport is in the device pixels, convert before
     // calling ViewportToRootFrame.
     float dip_to_dp = overlay_->WindowToViewportScale();
-    p1.Scale(dip_to_dp, dip_to_dp);
-    p2.Scale(dip_to_dp, dip_to_dp);
+    p1 = gfx::ScaleToRoundedPoint(p1, dip_to_dp);
+    p2 = gfx::ScaleToRoundedPoint(p2, dip_to_dp);
 
     const VisualViewport& visual_viewport =
         frame->GetPage()->GetVisualViewport();
@@ -716,7 +799,7 @@ void ScreenshotTool::Dispatch(const String& message) {
     scale = frame->GetPage()->PageScaleFactor();
     if (const RootFrameViewport* root_frame_viewport =
             frame->View()->GetRootFrameViewport()) {
-      IntSize scroll_offset = FlooredIntSize(
+      gfx::Vector2d scroll_offset = gfx::ToFlooredVector2d(
           root_frame_viewport->LayoutViewport().GetScrollOffset());
       // Accunt for the layout scroll (different from viewport scroll offset).
       p1 += scroll_offset;
@@ -726,17 +809,17 @@ void ScreenshotTool::Dispatch(const String& message) {
 
   // Go back to dip for the protocol.
   float dp_to_dip = 1.f / overlay_->WindowToViewportScale();
-  p1.Scale(dp_to_dip, dp_to_dip);
-  p2.Scale(dp_to_dip, dp_to_dip);
+  p1 = gfx::ScaleToRoundedPoint(p1, dp_to_dip);
+  p2 = gfx::ScaleToRoundedPoint(p2, dp_to_dip);
 
   // Points are in device independent pixels (dip) now.
-  IntRect rect =
-      UnionRectEvenIfEmpty(IntRect(p1, IntSize()), IntRect(p2, IntSize()));
+  gfx::Rect rect = UnionRectsEvenIfEmpty(gfx::Rect(p1, gfx::Size()),
+                                         gfx::Rect(p2, gfx::Size()));
   frontend_->screenshotRequested(protocol::Page::Viewport::create()
-                                     .setX(rect.X())
-                                     .setY(rect.Y())
-                                     .setWidth(rect.Width())
-                                     .setHeight(rect.Height())
+                                     .setX(rect.x())
+                                     .setY(rect.y())
+                                     .setWidth(rect.width())
+                                     .setHeight(rect.height())
                                      .setScale(scale)
                                      .build());
 }
@@ -751,11 +834,21 @@ void PausedInDebuggerTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawPausedInDebuggerMessage", message_);
 }
 
-void PausedInDebuggerTool::Dispatch(const String& message) {
-  if (message == "resume")
-    v8_session_->resume();
-  else if (message == "stepOver")
-    v8_session_->stepOver();
+void PausedInDebuggerTool::Dispatch(const ScriptValue& message,
+                                    ExceptionState& exception_state) {
+  String message_string;
+  if (message.ToString(message_string)) {
+    if (message_string == "resume") {
+      v8_session_->resume();
+      return;
+    }
+    if (message_string == "stepOver") {
+      v8_session_->stepOver();
+      return;
+    }
+  }
+  exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                    kInvalidOverlayCommand);
 }
 
 }  // namespace blink

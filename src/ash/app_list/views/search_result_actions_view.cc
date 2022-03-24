@@ -14,12 +14,12 @@
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
-#include "base/numerics/ranges.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -44,6 +44,10 @@ class SearchResultImageButton : public views::ImageButton {
  public:
   SearchResultImageButton(SearchResultActionsView* parent,
                           const SearchResult::Action& action);
+
+  SearchResultImageButton(const SearchResultImageButton&) = delete;
+  SearchResultImageButton& operator=(const SearchResultImageButton&) = delete;
+
   ~SearchResultImageButton() override {}
 
   // views::ImageButton:
@@ -57,7 +61,7 @@ class SearchResultImageButton : public views::ImageButton {
   // views::ImageButton:
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
-  void SetButtonImage(const gfx::ImageSkia& source, int icon_dimension);
+  void SetButtonImage(const gfx::ImageSkia& source);
 
   int GetButtonRadius() const;
   const char* GetClassName() const override;
@@ -65,8 +69,6 @@ class SearchResultImageButton : public views::ImageButton {
   SearchResultActionsView* parent_;
   const bool visible_on_hover_;
   bool to_be_activate_by_long_press_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultImageButton);
 };
 
 SearchResultImageButton::SearchResultImageButton(
@@ -77,21 +79,21 @@ SearchResultImageButton::SearchResultImageButton(
   // Avoid drawing default dashed focus and draw customized focus in
   // OnPaintBackground();
   SetFocusPainter(nullptr);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
       [](SearchResultImageButton* host) {
         const AppListColorProvider* const color_provider =
             AppListColorProvider::Get();
         const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
         auto highlight = std::make_unique<views::InkDropHighlight>(
             gfx::SizeF(host->size()),
-            color_provider->GetRippleAttributesBaseColor(bg_color));
+            color_provider->GetInkDropBaseColor(bg_color));
         highlight->set_visible_opacity(
-            color_provider->GetRippleAttributesHighlightOpacity(bg_color));
+            color_provider->GetInkDropOpacity(bg_color));
         return highlight;
       },
       this));
-  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+  views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
       [](SearchResultImageButton* host)
           -> std::unique_ptr<views::InkDropRipple> {
         const gfx::Point center = host->GetLocalBounds().CenterPoint();
@@ -103,9 +105,9 @@ SearchResultImageButton::SearchResultImageButton(
         const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
         return std::make_unique<views::FloodFillInkDropRipple>(
             host->size(), host->GetLocalBounds().InsetsFrom(bounds),
-            host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
-            color_provider->GetRippleAttributesBaseColor(bg_color),
-            color_provider->GetRippleAttributesInkDropOpacity(bg_color));
+            views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
+            color_provider->GetInkDropBaseColor(bg_color),
+            color_provider->GetInkDropOpacity(bg_color));
       },
       this));
 
@@ -113,8 +115,7 @@ SearchResultImageButton::SearchResultImageButton(
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 
-  SetButtonImage(action.image,
-                 SharedAppListConfig::instance().search_list_icon_dimension());
+  SetButtonImage(action.image);
 
   SetAccessibleName(action.tooltip_text);
 
@@ -164,12 +165,8 @@ void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {
   }
 }
 
-void SearchResultImageButton::SetButtonImage(const gfx::ImageSkia& source,
-                                             int icon_dimension) {
-  SetImage(views::ImageButton::STATE_NORMAL,
-           gfx::ImageSkiaOperations::CreateResizedImage(
-               source, skia::ImageOperations::RESIZE_BEST,
-               gfx::Size(icon_dimension, icon_dimension)));
+void SearchResultImageButton::SetButtonImage(const gfx::ImageSkia& source) {
+  SetImage(views::ImageButton::STATE_NORMAL, source);
 }
 
 int SearchResultImageButton::GetButtonRadius() const {
@@ -195,7 +192,7 @@ void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
   if (selected_action_.has_value())
     selected_action_.reset();
   subscriptions_.clear();
-  RemoveAllChildViews(true);
+  RemoveAllChildViews();
 
   for (size_t i = 0; i < actions.size(); ++i)
     CreateImageButton(actions[i], i);

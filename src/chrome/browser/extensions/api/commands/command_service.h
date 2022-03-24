@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/common/extensions/command.h"
@@ -91,6 +91,10 @@ class CommandService : public BrowserContextKeyedAPI,
 
   // Constructs a CommandService object for the given profile.
   explicit CommandService(content::BrowserContext* context);
+
+  CommandService(const CommandService&) = delete;
+  CommandService& operator=(const CommandService&) = delete;
+
   ~CommandService() override;
 
   // BrowserContextKeyedAPI implementation.
@@ -219,14 +223,12 @@ class CommandService : public BrowserContextKeyedAPI,
                                      const std::string& command_name);
 
   // A weak pointer to the profile we are associated with. Not owned by us.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observation_{this};
 
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(CommandService);
 };
 
 template <>

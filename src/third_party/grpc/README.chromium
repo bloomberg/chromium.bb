@@ -1,11 +1,15 @@
 Name: grpc
 URL: https://github.com/grpc/grpc
 License: Apache 2.0
-Version: v1.36.1+
-Revision: 3ca079faadfcc1f111b6c9a3f3fb10f4b5c794ea
+Version: v1.41.1+
+Revision: da47e8823754d12f1dd643bc911e80703b557ade
 Security Critical: yes
 
-Steps to upgrade to a new version of GRPC:
+Please note that that the use of gRPC is not generally allowed within Chromium.
+Before integrating with this library, consult with the security team.
+See go/chrome-grpc-advice for more details.
+
+Steps to upgrade to a new version of GRPC, all relative to //third_party/grpc:
 1. Update ../../DEPS to pull origin/grpc/master.
    NOTE: Tagged "official releases" do not work on the buildbots. The master
    branch must be used.
@@ -16,11 +20,10 @@ Steps to upgrade to a new version of GRPC:
 5. Rebuild BUILD.gn by running from the src/ directory:
    tools/buildgen/generate_projects.sh
     (make sure mako_templates python module is installed in your system using
-     command apt-get install python3-mako)
+     command "apt-get install python3-mako")
    This will use the template in templates/BUILD.chromium.gn.template to
    generate src/BUILD.chromium.gn file.
 6. Run: mv third_party/grpc/src/BUILD.chromium.gn third_party/grpc/BUILD.gn
-7. If the new gRPC version adds new dependencies, this may result in linker
-   errors when building due to some of the gRPC Plugins that have been manually
-   disabled. Manually remove these from the BUILD.gn file.
-8. Run: gn format --in-place BUILD.gn
+7. Run: gn format --in-place BUILD.gn
+
+We have a helper script `generate_gn.sh` does step (4), (5), (6), and (7).

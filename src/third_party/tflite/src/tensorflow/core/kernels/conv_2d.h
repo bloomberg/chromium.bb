@@ -16,11 +16,21 @@ limitations under the License.
 #ifndef TENSORFLOW_CORE_KERNELS_CONV_2D_H_
 #define TENSORFLOW_CORE_KERNELS_CONV_2D_H_
 
+#include "absl/strings/string_view.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/kernels/eigen_backward_spatial_convolutions.h"
 #include "tensorflow/core/kernels/eigen_spatial_convolutions.h"
 #include "tensorflow/core/util/tensor_format.h"
+
+// Returns true if TF_CONV2D_USE_FP16_ACCUMULATE == 1, false otherwise.
+static bool Conv2dUseFp16Accumulate() {
+  static bool use_fp16_accumulate = []() {
+    const char* env = std::getenv("TF_CONV2D_USE_FP16_ACCUMULATE");
+    return (env != nullptr) && (absl::string_view(env) == "1");
+  }();
+  return use_fp16_accumulate;
+}
 
 namespace tensorflow {
 namespace functor {
@@ -43,6 +53,9 @@ void SpatialConvolutionFunc(const Device& d, Output output, Input input,
       padding_bottom);
 }
 
+// TODO(ezhulenev): Non-templated `operator()` are required by explicit template
+// instantiations for the GPU device. However they are almost certainly not used
+// in any of the kernel implementation. Check if they can be removed.
 template <typename Device, typename T,
           typename OutputKernel = const Eigen::NoOpOutputKernel>
 struct SpatialConvolution {
@@ -55,12 +68,34 @@ struct SpatialConvolution {
     SpatialConvolutionFunc(d, output, input, filter, row_stride, col_stride,
                            row_dilation, col_dilation, padding, output_kernel);
   }
+
+  template <typename Input, typename Filter, typename Output>
+  void operator()(const Device& d, Output output, Input input, Filter filter,
+                  int row_stride, int col_stride, int row_dilation,
+                  int col_dilation, const Eigen::PaddingType& padding,
+                  const OutputKernel& output_kernel = OutputKernel()) {
+    SpatialConvolutionFunc(d, output, input, filter, row_stride, col_stride,
+                           row_dilation, col_dilation, padding, output_kernel);
+  }
+
   void operator()(const Device& d, typename TTypes<T, 4>::Tensor output,
                   typename TTypes<T, 4>::ConstTensor input,
                   typename TTypes<T, 4>::ConstTensor filter, int row_stride,
                   int col_stride, int row_dilation, int col_dilation,
                   int padding_top, int padding_bottom, int padding_left,
                   int padding_right,
+                  const OutputKernel& output_kernel = OutputKernel()) {
+    SpatialConvolutionFunc(
+        d, output, input, filter, row_stride, col_stride, row_dilation,
+        col_dilation, Eigen::PaddingType::PADDING_VALID, output_kernel,
+        padding_top, padding_bottom, padding_left, padding_right);
+  }
+
+  template <typename Input, typename Filter, typename Output>
+  void operator()(const Device& d, Output output, Input input, Filter filter,
+                  int row_stride, int col_stride, int row_dilation,
+                  int col_dilation, int padding_top, int padding_bottom,
+                  int padding_left, int padding_right,
                   const OutputKernel& output_kernel = OutputKernel()) {
     SpatialConvolutionFunc(
         d, output, input, filter, row_stride, col_stride, row_dilation,
@@ -78,12 +113,38 @@ struct SpatialConvolution<Device, Eigen::half, OutputKernel> {
                   int row_stride, int col_stride, int row_dilation,
                   int col_dilation, const Eigen::PaddingType& padding,
                   const OutputKernel& output_kernel = OutputKernel()) {
-    output.device(d) =
-        Eigen::SpatialConvolution(input.cast<float>(), filter.cast<float>(),
-                                  col_stride, row_stride, padding, col_dilation,
-                                  row_dilation, output_kernel)
-            .template cast<Eigen::half>();
+    if (Conv2dUseFp16Accumulate()) {
+      output.device(d) = Eigen::SpatialConvolution(
+          input, filter, col_stride, row_stride, padding, col_dilation,
+          row_dilation, output_kernel);
+    } else {
+      output.device(d) =
+          Eigen::SpatialConvolution(input.cast<float>(), filter.cast<float>(),
+                                    col_stride, row_stride, padding,
+                                    col_dilation, row_dilation, output_kernel)
+              .template cast<Eigen::half>();
+    }
   }
+
+  template <typename Input, typename Filter, typename Output>
+  void operator()(const Device& d, Output output, Input input, Filter filter,
+                  int row_stride, int col_stride, int row_dilation,
+                  int col_dilation, const Eigen::PaddingType& padding,
+                  const OutputKernel& output_kernel = OutputKernel()) {
+    if (Conv2dUseFp16Accumulate()) {
+      output.device(d) = Eigen::SpatialConvolution(
+          input, filter, col_stride, row_stride, padding, col_dilation,
+          row_dilation, output_kernel);
+    } else {
+      output.device(d) =
+          Eigen::SpatialConvolution(input.template cast<float>(),
+                                    filter.template cast<float>(), col_stride,
+                                    row_stride, padding, col_dilation,
+                                    row_dilation, output_kernel)
+              .template cast<Eigen::half>();
+    }
+  }
+
   void operator()(const Device& d,
                   typename TTypes<Eigen::half, 4>::Tensor output,
                   typename TTypes<Eigen::half, 4>::ConstTensor input,
@@ -92,13 +153,44 @@ struct SpatialConvolution<Device, Eigen::half, OutputKernel> {
                   int col_dilation, int padding_top, int padding_bottom,
                   int padding_left, int padding_right,
                   const OutputKernel& output_kernel = OutputKernel()) {
-    output.device(d) =
-        Eigen::SpatialConvolution(
-            input.cast<float>(), filter.cast<float>(), col_stride, row_stride,
-            Eigen::PaddingType::PADDING_VALID, col_dilation, row_dilation,
-            output_kernel, padding_left, padding_right, padding_top,
-            padding_bottom)
-            .template cast<Eigen::half>();
+    if (Conv2dUseFp16Accumulate()) {
+      output.device(d) = Eigen::SpatialConvolution(
+          input, filter, col_stride, row_stride,
+          Eigen::PaddingType::PADDING_VALID, col_dilation, row_dilation,
+          output_kernel, padding_left, padding_right, padding_top,
+          padding_bottom);
+    } else {
+      output.device(d) =
+          Eigen::SpatialConvolution(
+              input.cast<float>(), filter.cast<float>(), col_stride, row_stride,
+              Eigen::PaddingType::PADDING_VALID, col_dilation, row_dilation,
+              output_kernel, padding_left, padding_right, padding_top,
+              padding_bottom)
+              .template cast<Eigen::half>();
+    }
+  }
+
+  template <typename Input, typename Filter, typename Output>
+  void operator()(const Device& d, Output output, Input input, Filter filter,
+                  int row_stride, int col_stride, int row_dilation,
+                  int col_dilation, int padding_top, int padding_bottom,
+                  int padding_left, int padding_right,
+                  const OutputKernel& output_kernel = OutputKernel()) {
+    if (Conv2dUseFp16Accumulate()) {
+      output.device(d) = Eigen::SpatialConvolution(
+          input, filter, col_stride, row_stride,
+          Eigen::PaddingType::PADDING_VALID, col_dilation, row_dilation,
+          output_kernel, padding_left, padding_right, padding_top,
+          padding_bottom);
+    } else {
+      output.device(d) =
+          Eigen::SpatialConvolution(
+              input.template cast<float>(), filter.template cast<float>(),
+              col_stride, row_stride, Eigen::PaddingType::PADDING_VALID,
+              col_dilation, row_dilation, output_kernel, padding_left,
+              padding_right, padding_top, padding_bottom)
+              .template cast<Eigen::half>();
+    }
   }
 };
 
@@ -309,6 +401,28 @@ struct TransformDepth {
   }
 };
 
+// Note on the use of const reference for the "padding_value" argument
+//
+// In the ROCm TF build,
+// ++ the call(s) to the functor are in the files (conv_*.cc) that are compiled
+//    by the "CPU" compiler, while the
+// ++ the GPUDevice specific template instantiations are in the files that are
+//     compiled by the "GPU" compiler.
+//
+// For T == Eigen::half, the value of the "padding_value" argument (when it was
+// pass-by-value) was getting corrupted, leading to regressions in the
+// convolution unit tests.
+//
+// I do not understand the exact reason for the this, but based on similar past
+// issues, it is likely due to a combination of
+// ++ an ABI incompatibility between the "old" CPU compiler (gcc 5.4 for
+//    Ubuntu 16.04, gcc 7.5 for Ubuntu 18.04) and the "new" ROCm GPU compiler
+//    (hipclang which is based on latest clang), AND
+// ++ Eigen::half having the same size but different internals on the CPU and
+//    GPU sides (unsigned short on CPU, union {unsigned short, _Float16} on GPU
+//
+// Changing the "padding value" argument to be a const reference type seems to
+// suppress the bug
 template <typename Device, typename T, typename IndexType, int NDIMS>
 struct PadInput {
   void operator()(const Device& d,
@@ -316,7 +430,7 @@ struct PadInput {
                   const std::array<int, NDIMS - 2>& padding_left,
                   const std::array<int, NDIMS - 2>& padding_right,
                   typename TTypes<T, NDIMS, IndexType>::Tensor out,
-                  TensorFormat format) {
+                  TensorFormat format, const T& padding_value) {
     Eigen::array<Eigen::IndexPair<IndexType>, NDIMS> padding;
     padding[GetTensorDimIndex<NDIMS - 2>(format, 'N')] = {0, 0};
     for (int i = 0; i < NDIMS - 2; ++i) {
@@ -324,7 +438,7 @@ struct PadInput {
           padding_left[i], padding_right[i]};
     }
     padding[GetTensorDimIndex<NDIMS - 2>(format, 'C')] = {0, 0};
-    out.device(d) = in.pad(padding);
+    out.device(d) = in.pad(padding, padding_value);
   }
 };
 
@@ -355,7 +469,7 @@ struct NCHWToNHWC {
 template <typename Device, typename T, bool conjugate = false>
 struct SwapDimension1And2InTensor3 {
   void operator()(const Device& d, const T* in,
-                  const gtl::ArraySlice<int64>& input_dims, T* out);
+                  const gtl::ArraySlice<int64_t>& input_dims, T* out);
 };
 
 // Converts a tensor from:
@@ -365,7 +479,7 @@ struct SwapDimension1And2InTensor3 {
 template <typename Device, typename T, bool conjugate = false>
 struct SwapDimension0And2InTensor3 {
   void operator()(const Device& d, const T* in,
-                  const gtl::ArraySlice<int64>& input_dims, T* out);
+                  const gtl::ArraySlice<int64_t>& input_dims, T* out);
 };
 
 // Transforms back filter from OIHW or OHWI to HWOI format to reverse effect of

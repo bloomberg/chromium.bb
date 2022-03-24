@@ -9,7 +9,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -37,6 +36,10 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   };
 
   explicit FingerprintChromeOS();
+
+  FingerprintChromeOS(const FingerprintChromeOS&) = delete;
+  FingerprintChromeOS& operator=(const FingerprintChromeOS&) = delete;
+
   ~FingerprintChromeOS() override;
 
   // mojom::Fingerprint:
@@ -112,8 +115,6 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   FingerprintSession opened_session_ = FingerprintSession::NONE;
 
   base::WeakPtrFactory<FingerprintChromeOS> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FingerprintChromeOS);
 };
 
 }  // namespace device

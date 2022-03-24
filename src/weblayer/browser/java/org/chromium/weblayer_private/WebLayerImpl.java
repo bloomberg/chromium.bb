@@ -57,9 +57,12 @@ import org.chromium.components.browser_ui.photo_picker.DecoderServiceHost;
 import org.chromium.components.browser_ui.photo_picker.ImageDecoder;
 import org.chromium.components.browser_ui.photo_picker.PhotoPickerDelegateBase;
 import org.chromium.components.browser_ui.photo_picker.PhotoPickerDialog;
+import org.chromium.components.browser_ui.share.ClipboardImageFileProvider;
+import org.chromium.components.browser_ui.share.ShareImageFileUtils;
+import org.chromium.components.component_updater.ComponentLoaderPolicyBridge;
+import org.chromium.components.component_updater.EmbeddedComponentLoader;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.components.embedder_support.application.FirebaseConfig;
-import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.payments.PaymentDetailsUpdateService;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
@@ -69,6 +72,7 @@ import org.chromium.content_public.browser.ContactsPickerListener;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PhotoPicker;
 import org.chromium.ui.base.PhotoPickerListener;
 import org.chromium.ui.base.ResourceBundle;
@@ -100,6 +104,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -131,6 +136,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     // resources. If this value changes make sure to change _SHARED_LIBRARY_HARDCODED_ID in
     // //build/android/gyp/util/protoresources.py and WebViewChromiumFactoryProvider.java.
     private static final int REQUIRED_PACKAGE_IDENTIFIER = 36;
+
+    // 0 results in using the default value.
+    private static int sMaxNavigationsForInstanceState = 0;
 
     private final ProfileManager mProfileManager = new ProfileManager();
 
@@ -206,6 +214,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
         NetworkChangeNotifier.init();
         NetworkChangeNotifier.registerToReceiveNotificationsAlways();
+
+        // Native and variations has to be loaded before this.
+        loadComponents();
 
         // This issues JNI calls which require native code to be loaded.
         MetricsServiceClient.init();
@@ -338,6 +349,17 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 return dialog;
             }
         });
+
+        Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
+
+        // Clear previously shared images from disk in the background.
+        new BackgroundOnlyAsyncTask<Void>() {
+            @Override
+            protected Void doInBackground() {
+                ShareImageFileUtils.clearSharedImages();
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         performDexFixIfNecessary(packageInfo);
 
@@ -527,6 +549,16 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         return ObjectWrapper.wrap(ContextUtils.getApplicationContext());
     }
 
+    public static int getMaxNavigationsPerTabForInstanceState() {
+        try {
+            return (WebLayerFactoryImpl.getClientMajorVersion() >= 98)
+                    ? sClient.getMaxNavigationsPerTabForInstanceState()
+                    : 0;
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public static Intent createIntent() {
         if (sClient == null) {
             throw new IllegalStateException("WebLayer should have been initialized already.");
@@ -617,13 +649,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 .append(context.getPackageManager().getApplicationLabel(
                         context.getApplicationInfo()))
                 .toString();
-    }
-
-    public static boolean isLocationPermissionManaged(Origin origin) {
-        if (origin == null) {
-            return false;
-        }
-        return WebLayerImplJni.get().isLocationPermissionManaged(origin.toString());
     }
 
     /**
@@ -959,6 +984,23 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         });
     }
 
+    /**
+     * Load components files from {@link
+     * org.chromium.android_webview.services.ComponentsProviderService}.
+     */
+    private static void loadComponents() {
+        ComponentLoaderPolicyBridge[] componentPolicies =
+                WebLayerImplJni.get().getComponentLoaderPolicies();
+        // Don't connect to the service if there are no components to load.
+        if (componentPolicies.length == 0) {
+            return;
+        }
+        final Intent intent = new Intent();
+        intent.setClassName(WebViewFactory.getLoadedPackageInfo().packageName,
+                EmbeddedComponentLoader.AW_COMPONENTS_PROVIDER_SERVICE);
+        new EmbeddedComponentLoader(Arrays.asList(componentPolicies)).connect(intent);
+    }
+
     @NativeMethods
     interface Natives {
         void setRemoteDebuggingEnabled(boolean enabled);
@@ -966,6 +1008,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         void setIsWebViewCompatMode(boolean value);
         String getUserAgentString();
         void registerExternalExperimentIDs(int[] experimentIDs);
-        boolean isLocationPermissionManaged(String origin);
+        ComponentLoaderPolicyBridge[] getComponentLoaderPolicies();
     }
 }

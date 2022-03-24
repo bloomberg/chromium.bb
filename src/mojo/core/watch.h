@@ -5,7 +5,6 @@
 #ifndef MOJO_CORE_WATCH_H_
 #define MOJO_CORE_WATCH_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/core/atomic_flag.h"
@@ -33,6 +32,9 @@ class Watch : public base::RefCountedThreadSafe<Watch> {
         uintptr_t context,
         MojoHandleSignals signals,
         MojoTriggerCondition condition);
+
+  Watch(const Watch&) = delete;
+  Watch& operator=(const Watch&) = delete;
 
   // Notifies the Watch of a potential state change.
   //
@@ -117,8 +119,6 @@ class Watch : public base::RefCountedThreadSafe<Watch> {
 
   // Guarded by |notification_lock_|.
   bool is_cancelled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(Watch);
 };
 
 }  // namespace core

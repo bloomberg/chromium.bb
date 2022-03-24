@@ -6,13 +6,11 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_TEST_SERVICE_WORKER_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
@@ -22,6 +20,12 @@ namespace content {
 class BackgroundFetchTestServiceWorker : public FakeServiceWorker {
  public:
   explicit BackgroundFetchTestServiceWorker(EmbeddedWorkerTestHelper* helper);
+
+  BackgroundFetchTestServiceWorker(const BackgroundFetchTestServiceWorker&) =
+      delete;
+  BackgroundFetchTestServiceWorker& operator=(
+      const BackgroundFetchTestServiceWorker&) = delete;
+
   ~BackgroundFetchTestServiceWorker() override;
 
   // Toggles whether the named Service Worker event should fail.
@@ -90,8 +94,6 @@ class BackgroundFetchTestServiceWorker : public FakeServiceWorker {
   base::OnceClosure fetched_event_closure_;
 
   blink::mojom::BackgroundFetchRegistrationPtr last_registration_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchTestServiceWorker);
 };
 
 }  // namespace content

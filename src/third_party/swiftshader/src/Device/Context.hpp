@@ -20,6 +20,7 @@
 #include "Stream.hpp"
 #include "System/Types.hpp"
 #include "Vulkan/VkDescriptorSet.hpp"
+#include "Vulkan/VkFormat.hpp"
 
 #include <vector>
 
@@ -51,12 +52,12 @@ private:
 
 struct Attachments
 {
-	ImageView *renderTarget[sw::RENDERTARGETS] = {};
+	ImageView *colorBuffer[sw::MAX_COLOR_BUFFERS] = {};
 	ImageView *depthBuffer = nullptr;
 	ImageView *stencilBuffer = nullptr;
 
-	bool isColorClamped(int index) const;
-	VkFormat renderTargetInternalFormat(int index) const;
+	VkFormat colorFormat(int index) const;
+	VkFormat depthFormat() const;
 };
 
 struct Inputs
@@ -186,73 +187,68 @@ struct GraphicsState
 
 	int colorWriteActive(int index, const Attachments &attachments) const;
 	bool depthWriteActive(const Attachments &attachments) const;
-	bool depthBufferActive(const Attachments &attachments) const;
+	bool depthTestActive(const Attachments &attachments) const;
 	bool stencilActive(const Attachments &attachments) const;
-	bool depthBoundsTestActive() const;
+	bool depthBoundsTestActive(const Attachments &attachments) const;
 
 private:
 	inline bool hasDynamicState(VkDynamicState dynamicState) const { return (dynamicStateFlags & (1 << dynamicState)) != 0; }
 
-	VkBlendFactor sourceBlendFactor(int index) const;
-	VkBlendFactor destBlendFactor(int index) const;
-	VkBlendOp blendOperation(int index, const Attachments &attachments) const;
-
-	VkBlendFactor sourceBlendFactorAlpha(int index) const;
-	VkBlendFactor destBlendFactorAlpha(int index) const;
-	VkBlendOp blendOperationAlpha(int index, const Attachments &attachments) const;
+	VkBlendFactor blendFactor(VkBlendOp blendOperation, VkBlendFactor blendFactor) const;
+	VkBlendOp blendOperation(VkBlendOp blendOperation, VkBlendFactor sourceBlendFactor, VkBlendFactor destBlendFactor, vk::Format format) const;
 
 	bool alphaBlendActive(int index, const Attachments &attachments, bool fragmentContainsKill) const;
 	bool colorWriteActive(const Attachments &attachments) const;
 
-	const PipelineLayout *pipelineLayout;
-	const bool robustBufferAccess = true;
+	const PipelineLayout *pipelineLayout = nullptr;
+	const bool robustBufferAccess = false;
 	uint32_t dynamicStateFlags = 0;
-	VkPrimitiveTopology topology;
+	VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
-	VkProvokingVertexModeEXT provokingVertexMode;
+	VkProvokingVertexModeEXT provokingVertexMode = VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT;
 
-	bool stencilEnable;
-	VkStencilOpState frontStencil;
-	VkStencilOpState backStencil;
-
-	// Pixel processor states
-	VkCullModeFlags cullMode;
-	VkFrontFace frontFace;
-	VkPolygonMode polygonMode;
-	VkLineRasterizationModeEXT lineRasterizationMode;
-
-	float constantDepthBias;
-	float slopeDepthBias;
-	float depthBiasClamp;
-	float minDepthBounds;
-	float maxDepthBounds;
-	bool depthRangeUnrestricted;
+	bool stencilEnable = false;
+	VkStencilOpState frontStencil = {};
+	VkStencilOpState backStencil = {};
 
 	// Pixel processor states
-	bool rasterizerDiscard;
-	bool depthBoundsTestEnable;
-	bool depthBufferEnable;
-	VkCompareOp depthCompareMode;
-	bool depthWriteEnable;
-	bool depthClampEnable;
-	bool depthClipEnable;
+	VkCullModeFlags cullMode = 0;
+	VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
+	VkLineRasterizationModeEXT lineRasterizationMode = VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
 
-	float lineWidth;
+	float constantDepthBias = 0.0f;
+	float slopeDepthBias = 0.0f;
+	float depthBiasClamp = 0.0f;
+	float minDepthBounds = 0.0f;
+	float maxDepthBounds = 0.0f;
+	bool depthRangeUnrestricted = false;
 
-	int colorWriteMask[sw::RENDERTARGETS];  // RGBA
-	unsigned int multiSampleMask;
-	int sampleCount;
-	bool alphaToCoverage;
+	// Pixel processor states
+	bool rasterizerDiscard = false;
+	bool depthBoundsTestEnable = false;
+	bool depthTestEnable = false;
+	VkCompareOp depthCompareMode = VK_COMPARE_OP_NEVER;
+	bool depthWriteEnable = false;
+	bool depthClampEnable = false;
+	bool depthClipEnable = false;
+
+	float lineWidth = 0.0f;
+
+	int colorWriteMask[sw::MAX_COLOR_BUFFERS] = {};  // RGBA
+	unsigned int multiSampleMask = 0;
+	int sampleCount = 0;
+	bool alphaToCoverage = false;
 
 	bool sampleShadingEnable = false;
 	float minSampleShading = 0.0f;
 
 	bool primitiveRestartEnable = false;
-	VkRect2D scissor;
-	VkViewport viewport;
-	sw::float4 blendConstants;
+	VkRect2D scissor = {};
+	VkViewport viewport = {};
+	sw::float4 blendConstants = {};
 
-	BlendState blendState[sw::RENDERTARGETS];
+	BlendState blendState[sw::MAX_COLOR_BUFFERS] = {};
 };
 
 }  // namespace vk

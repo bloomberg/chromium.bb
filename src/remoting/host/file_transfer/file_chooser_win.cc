@@ -19,11 +19,11 @@
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_message_utils.h"
+#include "remoting/host/base/host_exit_codes.h"
+#include "remoting/host/base/switches.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/chromoting_param_traits_impl.h"
 #include "remoting/host/file_transfer/file_chooser_common_win.h"
-#include "remoting/host/host_exit_codes.h"
-#include "remoting/host/switches.h"
 
 namespace remoting {
 
@@ -100,6 +100,9 @@ class FileChooserWindows : public FileChooser,
   FileChooserWindows(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
                      ResultCallback callback);
 
+  FileChooserWindows(const FileChooserWindows&) = delete;
+  FileChooserWindows& operator=(const FileChooserWindows&) = delete;
+
   ~FileChooserWindows() override;
 
   // FileChooser implementation.
@@ -115,8 +118,6 @@ class FileChooserWindows : public FileChooser,
   base::Process process_;
   base::win::ObjectWatcher object_watcher_;
   ScopedHandle pipe_read_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileChooserWindows);
 };
 
 FileChooserWindows::FileChooserWindows(

@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -23,6 +22,7 @@
 #include "components/payments/core/features.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/webdata_services/web_data_service_wrapper_factory.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -63,6 +63,11 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
          features::kWebPaymentsJustInTimePaymentApp},
         {});
   }
+
+  ServiceWorkerPaymentAppFinderBrowserTest(
+      const ServiceWorkerPaymentAppFinderBrowserTest&) = delete;
+  ServiceWorkerPaymentAppFinderBrowserTest& operator=(
+      const ServiceWorkerPaymentAppFinderBrowserTest&) = delete;
 
   ~ServiceWorkerPaymentAppFinderBrowserTest() override {}
 
@@ -112,8 +117,8 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
   // back via domAutomationController.
   void InstallPaymentAppInScopeForMethod(const std::string& scope,
                                          const std::string& method_name) {
-    ui_test_utils::NavigateToURL(browser(),
-                                 alicepay_.GetURL("alicepay.com", scope));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), alicepay_.GetURL("alicepay.com", scope)));
     std::string contents;
     std::string script = "install('" + method_name + "');";
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -175,8 +180,8 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
         "https://larry.example.com/",
         larry_example_.GetURL("larry.example.com", "/"));
 
-    ui_test_utils::NavigateToURL(browser(),
-                                 alicepay_.GetURL("chromium.org", "/"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), alicepay_.GetURL("chromium.org", "/")));
 
     auto* finder = ServiceWorkerPaymentAppFinder::GetOrCreateForCurrentDocument(
         browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
@@ -192,9 +197,9 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     finder->GetAllPaymentApps(
         url::Origin::Create(GURL("https://chromium.org")),
-        WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
-            Profile::FromBrowserContext(context),
-            ServiceAccessType::EXPLICIT_ACCESS),
+        webdata_services::WebDataServiceWrapperFactory::
+            GetPaymentManifestWebDataServiceForBrowserContext(
+                context, ServiceAccessType::EXPLICIT_ACCESS),
         std::move(method_data),
         /*may_crawl_for_installable_payment_apps=*/true,
         base::BindOnce(
@@ -358,8 +363,6 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
   std::string error_message_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFinderBrowserTest);
 };
 
 // A payment app has to be installed first.

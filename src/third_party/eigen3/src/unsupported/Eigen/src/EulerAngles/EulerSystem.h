@@ -10,10 +10,12 @@
 #ifndef EIGEN_EULERSYSTEM_H
 #define EIGEN_EULERSYSTEM_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen
 {
   // Forward declarations
-  template <typename _Scalar, class _System>
+  template <typename Scalar_, class _System>
   class EulerAngles;
   
   namespace internal
@@ -272,7 +274,7 @@ namespace Eigen
         res.gamma() = -res.gamma();
     }
     
-    template <typename _Scalar, class _System>
+    template <typename Scalar_, class _System>
     friend class Eigen::EulerAngles;
     
     template<typename System,

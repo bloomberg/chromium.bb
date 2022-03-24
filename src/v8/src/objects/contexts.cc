@@ -17,7 +17,7 @@ namespace internal {
 Handle<ScriptContextTable> ScriptContextTable::Extend(
     Handle<ScriptContextTable> table, Handle<Context> script_context) {
   Handle<ScriptContextTable> result;
-  int used = table->synchronized_used();
+  int used = table->used(kAcquireLoad);
   int length = table->length();
   CHECK(used >= 0 && length > 0 && used < length);
   if (used + kFirstContextSlotIndex == length) {
@@ -31,9 +31,8 @@ Handle<ScriptContextTable> ScriptContextTable::Extend(
     result = table;
   }
   DCHECK(script_context->IsScriptContext());
-  result->set(used + kFirstContextSlotIndex, *script_context);
-
-  result->synchronized_set_used(used + 1);
+  result->set(used + kFirstContextSlotIndex, *script_context, kReleaseStore);
+  result->set_used(used + 1, kReleaseStore);
   return result;
 }
 
@@ -48,17 +47,14 @@ void Context::Initialize(Isolate* isolate) {
 }
 
 bool ScriptContextTable::Lookup(Isolate* isolate, ScriptContextTable table,
-                                String name, LookupResult* result) {
+                                String name, VariableLookupResult* result) {
   DisallowGarbageCollection no_gc;
   // Static variables cannot be in script contexts.
-  IsStaticFlag is_static_flag;
-  for (int i = 0; i < table.synchronized_used(); i++) {
+  for (int i = 0; i < table.used(kAcquireLoad); i++) {
     Context context = table.get_context(i);
     DCHECK(context.IsScriptContext());
-    result->is_repl_mode = context.scope_info().IsReplModeScope();
-    int slot_index = ScopeInfo::ContextSlotIndex(
-        context.scope_info(), name, &result->mode, &result->init_flag,
-        &result->maybe_assigned_flag, &is_static_flag);
+    int slot_index =
+        ScopeInfo::ContextSlotIndex(context.scope_info(), name, result);
 
     if (slot_index >= 0) {
       result->context_index = i;
@@ -69,7 +65,7 @@ bool ScriptContextTable::Lookup(Isolate* isolate, ScriptContextTable table,
   return false;
 }
 
-bool Context::is_declaration_context() {
+bool Context::is_declaration_context() const {
   if (IsFunctionContext() || IsNativeContext() || IsScriptContext() ||
       IsModuleContext()) {
     return true;
@@ -81,7 +77,7 @@ bool Context::is_declaration_context() {
   return scope_info().is_declaration_scope();
 }
 
-Context Context::declaration_context() {
+Context Context::declaration_context() const {
   Context current = *this;
   while (!current.is_declaration_context()) {
     current = current.previous();
@@ -89,7 +85,7 @@ Context Context::declaration_context() {
   return current;
 }
 
-Context Context::closure_context() {
+Context Context::closure_context() const {
   Context current = *this;
   while (!current.IsFunctionContext() && !current.IsScriptContext() &&
          !current.IsModuleContext() && !current.IsNativeContext() &&
@@ -99,7 +95,7 @@ Context Context::closure_context() {
   return current;
 }
 
-JSObject Context::extension_object() {
+JSObject Context::extension_object() const {
   DCHECK(IsNativeContext() || IsFunctionContext() || IsBlockContext() ||
          IsEvalContext() || IsCatchContext());
   HeapObject object = extension();
@@ -109,17 +105,13 @@ JSObject Context::extension_object() {
   return JSObject::cast(object);
 }
 
-JSReceiver Context::extension_receiver() {
+JSReceiver Context::extension_receiver() const {
   DCHECK(IsNativeContext() || IsWithContext() || IsEvalContext() ||
          IsFunctionContext() || IsBlockContext());
   return IsWithContext() ? JSReceiver::cast(extension()) : extension_object();
 }
 
-ScopeInfo Context::scope_info() {
-  return ScopeInfo::cast(get(SCOPE_INFO_INDEX));
-}
-
-SourceTextModule Context::module() {
+SourceTextModule Context::module() const {
   Context current = *this;
   while (!current.IsModuleContext()) {
     current = current.previous();
@@ -127,11 +119,11 @@ SourceTextModule Context::module() {
   return SourceTextModule::cast(current.extension());
 }
 
-JSGlobalObject Context::global_object() {
+JSGlobalObject Context::global_object() const {
   return JSGlobalObject::cast(native_context().extension());
 }
 
-Context Context::script_context() {
+Context Context::script_context() const {
   Context current = *this;
   while (!current.IsScriptContext()) {
     current = current.previous();
@@ -139,7 +131,7 @@ Context Context::script_context() {
   return current;
 }
 
-JSGlobalProxy Context::global_proxy() {
+JSGlobalProxy Context::global_proxy() const {
   return native_context().global_proxy_object();
 }
 
@@ -224,18 +216,19 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
         // Try other script contexts.
         ScriptContextTable script_contexts =
             context->global_object().native_context().script_context_table();
-        ScriptContextTable::LookupResult r;
+        VariableLookupResult r;
         if (ScriptContextTable::Lookup(isolate, script_contexts, *name, &r)) {
-          Context context = script_contexts.get_context(r.context_index);
+          Context script_context = script_contexts.get_context(r.context_index);
           if (FLAG_trace_contexts) {
             PrintF("=> found property in script context %d: %p\n",
-                   r.context_index, reinterpret_cast<void*>(context.ptr()));
+                   r.context_index,
+                   reinterpret_cast<void*>(script_context.ptr()));
           }
           *index = r.slot_index;
           *variable_mode = r.mode;
           *init_flag = r.init_flag;
           *attributes = GetAttributesForMode(r.mode);
-          return handle(context, isolate);
+          return handle(script_context, isolate);
         }
       }
 
@@ -292,13 +285,9 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
       // Use serialized scope information of functions and blocks to search
       // for the context index.
       ScopeInfo scope_info = context->scope_info();
-      VariableMode mode;
-      InitializationFlag flag;
-      MaybeAssignedFlag maybe_assigned_flag;
-      IsStaticFlag is_static_flag;
+      VariableLookupResult lookup_result;
       int slot_index =
-          ScopeInfo::ContextSlotIndex(scope_info, *name, &mode, &flag,
-                                      &maybe_assigned_flag, &is_static_flag);
+          ScopeInfo::ContextSlotIndex(scope_info, *name, &lookup_result);
       DCHECK(slot_index < 0 || slot_index >= MIN_CONTEXT_SLOTS);
       if (slot_index >= 0) {
         // Re-direct lookup to the ScriptContextTable in case we find a hole in
@@ -314,12 +303,12 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
 
         if (FLAG_trace_contexts) {
           PrintF("=> found local in context slot %d (mode = %hhu)\n",
-                 slot_index, static_cast<uint8_t>(mode));
+                 slot_index, static_cast<uint8_t>(lookup_result.mode));
         }
         *index = slot_index;
-        *variable_mode = mode;
-        *init_flag = flag;
-        *attributes = GetAttributesForMode(mode);
+        *variable_mode = lookup_result.mode;
+        *init_flag = lookup_result.init_flag;
+        *attributes = GetAttributesForMode(lookup_result.mode);
         return context;
       }
 
@@ -380,9 +369,9 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
       }
 
       // Check blocklist. Names that are listed, cannot be resolved further.
-      Object blocklist = context->get(BLOCK_LIST_INDEX);
-      if (blocklist.IsStringSet() &&
-          StringSet::cast(blocklist).Has(isolate, name)) {
+      ScopeInfo scope_info = context->scope_info();
+      if (scope_info.HasLocalsBlockList() &&
+          scope_info.LocalsBlockList().Has(isolate, name)) {
         if (FLAG_trace_contexts) {
           PrintF(" - name is blocklisted. Aborting.\n");
         }
@@ -392,9 +381,9 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
       // Check the original context, but do not follow its context chain.
       Object obj = context->get(WRAPPED_CONTEXT_INDEX);
       if (obj.IsContext()) {
-        Handle<Context> context(Context::cast(obj), isolate);
+        Handle<Context> wrapped_context(Context::cast(obj), isolate);
         Handle<Object> result =
-            Context::Lookup(context, name, DONT_FOLLOW_CHAINS, index,
+            Context::Lookup(wrapped_context, name, DONT_FOLLOW_CHAINS, index,
                             attributes, init_flag, variable_mode);
         if (!result.is_null()) return result;
       }
@@ -415,24 +404,9 @@ Handle<Object> Context::Lookup(Handle<Context> context, Handle<String> name,
 void NativeContext::AddOptimizedCode(Code code) {
   DCHECK(CodeKindCanDeoptimize(code.kind()));
   DCHECK(code.next_code_link().IsUndefined());
-  code.set_next_code_link(get(OPTIMIZED_CODE_LIST));
-  set(OPTIMIZED_CODE_LIST, code, UPDATE_WEAK_WRITE_BARRIER, kReleaseStore);
-}
-
-void NativeContext::SetOptimizedCodeListHead(Object head) {
-  set(OPTIMIZED_CODE_LIST, head, UPDATE_WEAK_WRITE_BARRIER, kReleaseStore);
-}
-
-Object NativeContext::OptimizedCodeListHead() {
-  return get(OPTIMIZED_CODE_LIST);
-}
-
-void NativeContext::SetDeoptimizedCodeListHead(Object head) {
-  set(DEOPTIMIZED_CODE_LIST, head, UPDATE_WEAK_WRITE_BARRIER, kReleaseStore);
-}
-
-Object NativeContext::DeoptimizedCodeListHead() {
-  return get(DEOPTIMIZED_CODE_LIST);
+  code.set_next_code_link(OptimizedCodeListHead());
+  set(OPTIMIZED_CODE_LIST, ToCodeT(code), UPDATE_WEAK_WRITE_BARRIER,
+      kReleaseStore);
 }
 
 Handle<Object> Context::ErrorMessageForCodeGenerationFromStrings() {
@@ -444,7 +418,7 @@ Handle<Object> Context::ErrorMessageForCodeGenerationFromStrings() {
 }
 
 #define COMPARE_NAME(index, type, name) \
-  if (string->IsOneByteEqualTo(StaticCharVector(#name))) return index;
+  if (string->IsOneByteEqualTo(base::StaticCharVector(#name))) return index;
 
 int Context::IntrinsicIndexForName(Handle<String> string) {
   NATIVE_CONTEXT_INTRINSIC_FUNCTIONS(COMPARE_NAME);
@@ -468,6 +442,47 @@ int Context::IntrinsicIndexForName(const unsigned char* unsigned_string,
 }
 
 #undef COMPARE_NAME
+
+#ifdef VERIFY_HEAP
+namespace {
+// TODO(v8:12298): Fix js-context-specialization cctests to set up full
+// native contexts instead of using dummy internalized strings as
+// extensions.
+bool IsContexExtensionTestObject(HeapObject extension) {
+  return extension.IsInternalizedString() &&
+         String::cast(extension).length() == 1;
+}
+}  // namespace
+
+void Context::VerifyExtensionSlot(HeapObject extension) {
+  CHECK(scope_info().HasContextExtensionSlot());
+  // Early exit for potentially uninitialized contexfts.
+  if (extension.IsUndefined()) return;
+  if (extension.IsJSContextExtensionObject()) {
+    CHECK((IsBlockContext() && scope_info().is_declaration_scope()) ||
+          IsFunctionContext());
+  } else if (IsModuleContext()) {
+    CHECK(extension.IsSourceTextModule());
+  } else if (IsDebugEvaluateContext() || IsWithContext()) {
+    CHECK(extension.IsJSReceiver() ||
+          (IsWithContext() && IsContexExtensionTestObject(extension)));
+  } else if (IsNativeContext()) {
+    CHECK(extension.IsJSGlobalObject() ||
+          IsContexExtensionTestObject(extension));
+  } else if (IsScriptContext()) {
+    // Host-defined options can be stored on the context for classic scripts.
+    CHECK(extension.IsFixedArray());
+  }
+}
+#endif  // VERIFY_HEAP
+
+void Context::set_extension(HeapObject object, WriteBarrierMode mode) {
+  DCHECK(scope_info().HasContextExtensionSlot());
+#ifdef VERIFY_HEAP
+  VerifyExtensionSlot(object);
+#endif
+  set(EXTENSION_INDEX, object, mode);
+}
 
 #ifdef DEBUG
 
@@ -547,7 +562,15 @@ void NativeContext::RunPromiseHook(PromiseHookType type,
 
   Handle<Object> receiver = isolate->global_proxy();
 
-  if (Execution::Call(isolate, hook, receiver, argc, argv).is_null()) {
+  StackLimitCheck check(isolate);
+  bool failed = false;
+  if (check.HasOverflowed()) {
+    isolate->StackOverflow();
+    failed = true;
+  } else {
+    failed = Execution::Call(isolate, hook, receiver, argc, argv).is_null();
+  }
+  if (failed) {
     DCHECK(isolate->has_pending_exception());
     Handle<Object> exception(isolate->pending_exception(), isolate);
 

@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "base/check_op.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/util/values/values_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
@@ -45,6 +43,7 @@ void VideoFrameMetadata::MergeMetadataFrom(
   MERGE_FIELD(hw_protected, metadata_source);
   MERGE_FIELD(overlay_plane_id, metadata_source);
   MERGE_FIELD(power_efficient, metadata_source);
+  MERGE_FIELD(texture_origin_is_top_left, metadata_source);
   MERGE_FIELD(device_scale_factor, metadata_source);
   MERGE_FIELD(page_scale_factor, metadata_source);
   MERGE_FIELD(root_scroll_offset_x, metadata_source);
@@ -57,7 +56,9 @@ void VideoFrameMetadata::MergeMetadataFrom(
   MERGE_FIELD(receive_time, metadata_source);
   MERGE_FIELD(wallclock_frame_duration, metadata_source);
   MERGE_FIELD(maximum_composition_delay_in_frames, metadata_source);
-  MERGE_FIELD(hw_protected_validation_id, metadata_source);
+#if BUILDFLAG(USE_VAAPI)
+  MERGE_FIELD(hw_va_protected_session_id, metadata_source);
+#endif
 }
 
 }  // namespace media

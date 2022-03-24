@@ -17,6 +17,9 @@ class GURL;
 class LookalikeUrlBlockingPage
     : public security_interstitials::IOSSecurityInterstitialPage {
  public:
+  LookalikeUrlBlockingPage(const LookalikeUrlBlockingPage&) = delete;
+  LookalikeUrlBlockingPage& operator=(const LookalikeUrlBlockingPage&) = delete;
+
   ~LookalikeUrlBlockingPage() override;
 
   // Creates a lookalike URL blocking page.
@@ -31,15 +34,15 @@ class LookalikeUrlBlockingPage
  protected:
   // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
-  void PopulateInterstitialStrings(
-      base::DictionaryValue* load_time_data) const override;
+  void PopulateInterstitialStrings(base::Value* load_time_data) const override;
   bool ShouldDisplayURL() const override;
 
  private:
-  void HandleScriptCommand(const base::DictionaryValue& message,
-                           const GURL& origin_url,
-                           bool user_is_interacting,
-                           web::WebFrame* sender_frame) override;
+  void HandleCommand(
+      security_interstitials::SecurityInterstitialCommand command,
+      const GURL& origin_url,
+      bool user_is_interacting,
+      web::WebFrame* sender_frame) override;
 
   web::WebState* web_state_ = nullptr;
   std::unique_ptr<LookalikeUrlControllerClient> controller_;
@@ -48,8 +51,6 @@ class LookalikeUrlBlockingPage
   const GURL safe_url_;
   ukm::SourceId source_id_;
   LookalikeUrlMatchType match_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(LookalikeUrlBlockingPage);
 };
 
 #endif  // IOS_COMPONENTS_SECURITY_INTERSTITIALS_LOOKALIKES_LOOKALIKE_URL_BLOCKING_PAGE_H_

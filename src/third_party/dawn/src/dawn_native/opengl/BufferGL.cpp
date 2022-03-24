@@ -35,9 +35,8 @@ namespace dawn_native { namespace opengl {
 
     Buffer::Buffer(Device* device, const BufferDescriptor* descriptor)
         : BufferBase(device, descriptor) {
-        // TODO(cwallez@chromium.org): Have a global "zero" buffer instead of creating a new 4-byte
-        // buffer?
-        uint64_t size = GetAppliedSize();
+        // Allocate at least 4 bytes so clamped accesses are always in bounds.
+        mAllocatedSize = std::max(GetSize(), uint64_t(4u));
 
         device->gl.GenBuffers(1, &mBuffer);
         device->gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
@@ -46,10 +45,12 @@ namespace dawn_native { namespace opengl {
         // BufferBase::MapAtCreation().
         if (device->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting) &&
             !descriptor->mappedAtCreation) {
-            std::vector<uint8_t> clearValues(size, 1u);
-            device->gl.BufferData(GL_ARRAY_BUFFER, size, clearValues.data(), GL_STATIC_DRAW);
+            std::vector<uint8_t> clearValues(mAllocatedSize, 1u);
+            device->gl.BufferData(GL_ARRAY_BUFFER, mAllocatedSize, clearValues.data(),
+                                  GL_STATIC_DRAW);
         } else {
-            device->gl.BufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
+            // Buffers start zeroed if you pass nullptr to glBufferData.
+            device->gl.BufferData(GL_ARRAY_BUFFER, mAllocatedSize, nullptr, GL_STATIC_DRAW);
         }
     }
 
@@ -60,60 +61,53 @@ namespace dawn_native { namespace opengl {
         }
     }
 
-    Buffer::~Buffer() {
-        DestroyInternal();
-    }
+    Buffer::~Buffer() = default;
 
     GLuint Buffer::GetHandle() const {
         return mBuffer;
     }
 
-    uint64_t Buffer::GetAppliedSize() const {
-        // TODO(cwallez@chromium.org): Have a global "zero" buffer instead of creating a new 4-byte
-        // buffer?
-        return std::max(GetSize(), uint64_t(4u));
-    }
-
-    void Buffer::EnsureDataInitialized() {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+    bool Buffer::EnsureDataInitialized() {
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         InitializeToZero();
+        return true;
     }
 
-    void Buffer::EnsureDataInitializedAsDestination(uint64_t offset, uint64_t size) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+    bool Buffer::EnsureDataInitializedAsDestination(uint64_t offset, uint64_t size) {
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         if (IsFullBufferRange(offset, size)) {
             SetIsDataInitialized();
-        } else {
-            InitializeToZero();
+            return false;
         }
+
+        InitializeToZero();
+        return true;
     }
 
-    void Buffer::EnsureDataInitializedAsDestination(const CopyTextureToBufferCmd* copy) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+    bool Buffer::EnsureDataInitializedAsDestination(const CopyTextureToBufferCmd* copy) {
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         if (IsFullBufferOverwrittenInTextureToBufferCopy(copy)) {
             SetIsDataInitialized();
-        } else {
-            InitializeToZero();
+            return false;
         }
+
+        InitializeToZero();
+        return true;
     }
 
     void Buffer::InitializeToZero() {
-        ASSERT(GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse));
-        ASSERT(!IsDataInitialized());
+        ASSERT(NeedsInitialization());
 
-        const uint64_t size = GetAppliedSize();
+        const uint64_t size = GetAllocatedSize();
         Device* device = ToBackend(GetDevice());
 
         const std::vector<uint8_t> clearValues(size, 0u);
@@ -151,7 +145,7 @@ namespace dawn_native { namespace opengl {
 
         EnsureDataInitialized();
 
-        // TODO(cwallez@chromium.org): this does GPU->CPU synchronization, we could require a high
+        // This does GPU->CPU synchronization, we could require a high
         // version of OpenGL that would let us map the buffer unsynchronized.
         gl.BindBuffer(GL_ARRAY_BUFFER, mBuffer);
         void* mappedData = nullptr;
@@ -182,6 +176,7 @@ namespace dawn_native { namespace opengl {
     }
 
     void Buffer::DestroyImpl() {
+        BufferBase::DestroyImpl();
         ToBackend(GetDevice())->gl.DeleteBuffers(1, &mBuffer);
         mBuffer = 0;
     }

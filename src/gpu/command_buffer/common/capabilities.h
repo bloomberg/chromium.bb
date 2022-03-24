@@ -193,8 +193,6 @@ struct GPU_EXPORT Capabilities {
 
   bool chromium_gpu_fence = false;
 
-  bool unpremultiply_and_dither_copy = false;
-
   bool separate_stencil_ref_mask_writemask = false;
 
   bool use_gpu_fences_for_overlay_planes = false;
@@ -202,6 +200,9 @@ struct GPU_EXPORT Capabilities {
   bool chromium_nonblocking_readback = false;
 
   bool mesa_framebuffer_flip_y = false;
+
+  // Clients should use SharedImageInterface instead.
+  bool disable_legacy_mailbox = false;
 
   int major_version = 2;
   int minor_version = 0;

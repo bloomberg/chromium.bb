@@ -5,9 +5,9 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -95,10 +95,10 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ExternalConnectionFail) {
   for (size_t i = 0; i < base::size(kURLs); ++i) {
     GURL url(kURLs[i]);
     LoadFailObserver observer(contents);
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     EXPECT_TRUE(observer.failed_load());
-    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, observer.error_code());
-    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, observer.resolve_error_info().error);
+    EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.error_code());
+    EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.resolve_error_info().error);
     EXPECT_EQ(url, observer.validated_url());
   }
 }
@@ -119,7 +119,13 @@ class SingleProcessBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SingleProcessBrowserTest, Test) {
+// TODO(https://crbug.com/1231009): Flaky / times out on windows bots.
+#if defined(OS_WIN)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(SingleProcessBrowserTest, MAYBE_Test) {
   // Should not crash.
 }
 

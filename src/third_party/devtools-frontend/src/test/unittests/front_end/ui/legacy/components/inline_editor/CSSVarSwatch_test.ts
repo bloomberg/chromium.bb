@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertNotNull} from '../../../../../../../front_end/core/platform/platform.js';
+import {assertNotNullOrUndefined} from '../../../../../../../front_end/core/platform/platform.js';
 import * as InlineEditor from '../../../../../../../front_end/ui/legacy/components/inline_editor/inline_editor.js';
 import {assertShadowRoot, renderElementIntoDOM} from '../../../../helpers/DOMHelpers.js';
 
 const {assert} = chai;
 
-function assertSwatch(swatch: InlineEditor.CSSVarSwatchImpl.CSSVarSwatch, expected: {
+function assertSwatch(swatch: InlineEditor.CSSVarSwatch.CSSVarSwatch, expected: {
   valueTooltip: string|null,
   linkTooltip: string,
   isDefined: boolean,
@@ -17,10 +17,10 @@ function assertSwatch(swatch: InlineEditor.CSSVarSwatchImpl.CSSVarSwatch, expect
 }) {
   assertShadowRoot(swatch.shadowRoot);
   const container = swatch.shadowRoot.querySelector('span');
-  assertNotNull(container);
+  assertNotNullOrUndefined(container);
 
   const link = container.querySelector('.css-var-link');
-  assertNotNull(link);
+  assertNotNullOrUndefined(link);
 
   assert.strictEqual(
       container.getAttribute('title'), expected.valueTooltip || '', 'The computed values appears as a tooltip');
@@ -33,14 +33,14 @@ function assertSwatch(swatch: InlineEditor.CSSVarSwatchImpl.CSSVarSwatch, expect
 
 describe('CSSVarSwatch', () => {
   it('can be instantiated successfully', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
 
     assert.instanceOf(component, HTMLElement, 'The swatch is an instance of HTMLElement');
   });
 
   it('renders a simple var function', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var(--test)',
@@ -58,7 +58,7 @@ describe('CSSVarSwatch', () => {
   });
 
   it('renders a var function with an undefined property', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var(--undefined)',
@@ -76,7 +76,7 @@ describe('CSSVarSwatch', () => {
   });
 
   it('renders a var function with an undefined property but a fallback value', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var(--undefined, 3px)',
@@ -94,7 +94,7 @@ describe('CSSVarSwatch', () => {
   });
 
   it('renders a var() function with an color property but a fallback value', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var(--undefined-color, green)',
@@ -112,7 +112,7 @@ describe('CSSVarSwatch', () => {
   });
 
   it('render the var() function and the fallback value contains spaces', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var(--undefined-color,    green   )',
@@ -130,7 +130,7 @@ describe('CSSVarSwatch', () => {
   });
 
   it('renders a var() function with an color property', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var(--test, green)',
@@ -148,7 +148,7 @@ describe('CSSVarSwatch', () => {
   });
 
   it('renders a var() function with spaces', () => {
-    const component = new InlineEditor.CSSVarSwatchImpl.CSSVarSwatch();
+    const component = new InlineEditor.CSSVarSwatch.CSSVarSwatch();
     renderElementIntoDOM(component);
     component.data = {
       text: 'var( --test     )',

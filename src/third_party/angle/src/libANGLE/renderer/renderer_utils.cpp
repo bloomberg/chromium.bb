@@ -461,20 +461,6 @@ bool ShouldUseDebugLayers(const egl::AttributeMap &attribs)
 #endif  // defined(ANGLE_ENABLE_ASSERTS)
 }
 
-bool ShouldUseVirtualizedContexts(const egl::AttributeMap &attribs, bool defaultValue)
-{
-    EGLAttrib virtualizedContextRequest =
-        attribs.get(EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE, EGL_DONT_CARE);
-    if (defaultValue)
-    {
-        return (virtualizedContextRequest != EGL_FALSE);
-    }
-    else
-    {
-        return (virtualizedContextRequest == EGL_TRUE);
-    }
-}
-
 void CopyImageCHROMIUM(const uint8_t *sourceData,
                        size_t sourceRowPitch,
                        size_t sourcePixelBytes,
@@ -968,10 +954,6 @@ void LogFeatureStatus(const angle::FeatureSetBase &features,
         {
             INFO() << "Feature: " << name << (enabled ? " enabled" : " disabled");
         }
-        else
-        {
-            WARN() << "Feature: " << name << " is not a valid feature name.";
-        }
     }
 }
 
@@ -1045,6 +1027,7 @@ void GetSamplePosition(GLsizei sampleCount, size_t index, GLfloat *xy)
     {                                                                                          \
         if (ANGLE_NOOP_DRAW(instanced))                                                        \
         {                                                                                      \
+            ANGLE_TRY(contextImpl->handleNoopDrawEvent());                                     \
             continue;                                                                          \
         }                                                                                      \
         ANGLE_SET_DRAW_ID_UNIFORM(hasDrawID)(drawID);                                          \
@@ -1071,6 +1054,32 @@ angle::Result MultiDrawArraysGeneral(ContextImpl *contextImpl,
     else
     {
         MULTI_DRAW_BLOCK(ARRAYS, _, _, 0, 0, 0)
+    }
+
+    return angle::Result::Continue;
+}
+
+angle::Result MultiDrawArraysIndirectGeneral(ContextImpl *contextImpl,
+                                             const gl::Context *context,
+                                             gl::PrimitiveMode mode,
+                                             const void *indirect,
+                                             GLsizei drawcount,
+                                             GLsizei stride)
+{
+    const GLubyte *indirectPtr = static_cast<const GLubyte *>(indirect);
+
+    for (auto count = 0; count < drawcount; count++)
+    {
+        ANGLE_TRY(contextImpl->drawArraysIndirect(
+            context, mode, reinterpret_cast<const gl::DrawArraysIndirectCommand *>(indirectPtr)));
+        if (stride == 0)
+        {
+            indirectPtr += sizeof(gl::DrawArraysIndirectCommand);
+        }
+        else
+        {
+            indirectPtr += stride;
+        }
     }
 
     return angle::Result::Continue;
@@ -1115,6 +1124,34 @@ angle::Result MultiDrawElementsGeneral(ContextImpl *contextImpl,
     else
     {
         MULTI_DRAW_BLOCK(ELEMENTS, _, _, 0, 0, 0)
+    }
+
+    return angle::Result::Continue;
+}
+
+angle::Result MultiDrawElementsIndirectGeneral(ContextImpl *contextImpl,
+                                               const gl::Context *context,
+                                               gl::PrimitiveMode mode,
+                                               gl::DrawElementsType type,
+                                               const void *indirect,
+                                               GLsizei drawcount,
+                                               GLsizei stride)
+{
+    const GLubyte *indirectPtr = static_cast<const GLubyte *>(indirect);
+
+    for (auto count = 0; count < drawcount; count++)
+    {
+        ANGLE_TRY(contextImpl->drawElementsIndirect(
+            context, mode, type,
+            reinterpret_cast<const gl::DrawElementsIndirectCommand *>(indirectPtr)));
+        if (stride == 0)
+        {
+            indirectPtr += sizeof(gl::DrawElementsIndirectCommand);
+        }
+        else
+        {
+            indirectPtr += stride;
+        }
     }
 
     return angle::Result::Continue;
@@ -1279,6 +1316,8 @@ angle::FormatID ConvertToSRGB(angle::FormatID formatID)
     {
         case angle::FormatID::R8_UNORM:
             return angle::FormatID::R8_UNORM_SRGB;
+        case angle::FormatID::R8G8_UNORM:
+            return angle::FormatID::R8G8_UNORM_SRGB;
         case angle::FormatID::R8G8B8_UNORM:
             return angle::FormatID::R8G8B8_UNORM_SRGB;
         case angle::FormatID::R8G8B8A8_UNORM:
@@ -1340,6 +1379,8 @@ angle::FormatID ConvertToLinear(angle::FormatID formatID)
     {
         case angle::FormatID::R8_UNORM_SRGB:
             return angle::FormatID::R8_UNORM;
+        case angle::FormatID::R8G8_UNORM_SRGB:
+            return angle::FormatID::R8G8_UNORM;
         case angle::FormatID::R8G8B8_UNORM_SRGB:
             return angle::FormatID::R8G8B8_UNORM;
         case angle::FormatID::R8G8B8A8_UNORM_SRGB:

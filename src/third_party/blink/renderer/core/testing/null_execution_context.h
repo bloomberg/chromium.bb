@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_NULL_EXECUTION_CONTEXT_H_
 
 #include <memory>
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -47,13 +47,14 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   void SetUpSecurityContextForTesting();
 
-  ResourceFetcher* Fetcher() const override { return nullptr; }
+  ResourceFetcher* Fetcher() override { return nullptr; }
   bool CrossOriginIsolatedCapability() const override { return false; }
   bool DirectSocketCapability() const override { return false; }
   FrameOrWorkerScheduler* GetScheduler() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   void CountUse(mojom::WebFeature) override {}
+  void CountDeprecation(mojom::WebFeature) override {}
 
   const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const override;
 

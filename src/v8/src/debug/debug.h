@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "src/base/enum-set.h"
 #include "src/codegen/source-position-table.h"
 #include "src/common/globals.h"
 #include "src/debug/debug-interface.h"
@@ -16,6 +17,7 @@
 #include "src/execution/isolate.h"
 #include "src/handles/handles.h"
 #include "src/objects/debug-objects.h"
+#include "src/objects/shared-function-info.h"
 
 namespace v8 {
 namespace internal {
@@ -28,27 +30,29 @@ class JavaScriptFrame;
 class JSGeneratorObject;
 class StackFrame;
 
-// Step actions. NOTE: These values are in macros.py as well.
+// Step actions.
 enum StepAction : int8_t {
   StepNone = -1,  // Stepping not prepared.
   StepOut = 0,    // Step out of the current function.
-  StepNext = 1,   // Step to the next statement in the current function.
-  StepIn = 2,     // Step into new functions invoked or the next statement
+  StepOver = 1,   // Step to the next statement in the current function.
+  StepInto = 2,   // Step into new functions invoked or the next statement
                   // in the current function.
-  LastStepAction = StepIn
+  LastStepAction = StepInto
 };
 
 // Type of exception break. NOTE: These values are in macros.py as well.
 enum ExceptionBreakType { BreakException = 0, BreakUncaughtException = 1 };
 
+// Type of debug break. NOTE: The order matters for the predicates
+// below inside BreakLocation, so be careful when adding / removing.
 enum DebugBreakType {
   NOT_DEBUG_BREAK,
   DEBUGGER_STATEMENT,
+  DEBUG_BREAK_AT_ENTRY,
   DEBUG_BREAK_SLOT,
   DEBUG_BREAK_SLOT_AT_CALL,
   DEBUG_BREAK_SLOT_AT_RETURN,
   DEBUG_BREAK_SLOT_AT_SUSPEND,
-  DEBUG_BREAK_AT_ENTRY,
 };
 
 enum IgnoreBreakMode {
@@ -66,24 +70,18 @@ class BreakLocation {
                                     JavaScriptFrame* frame,
                                     std::vector<BreakLocation>* result_out);
 
-  inline bool IsSuspend() const { return type_ == DEBUG_BREAK_SLOT_AT_SUSPEND; }
-  inline bool IsReturn() const { return type_ == DEBUG_BREAK_SLOT_AT_RETURN; }
-  inline bool IsReturnOrSuspend() const {
-    return type_ >= DEBUG_BREAK_SLOT_AT_RETURN;
-  }
-  inline bool IsCall() const { return type_ == DEBUG_BREAK_SLOT_AT_CALL; }
-  inline bool IsDebugBreakSlot() const { return type_ >= DEBUG_BREAK_SLOT; }
-  inline bool IsDebuggerStatement() const {
-    return type_ == DEBUGGER_STATEMENT;
-  }
-  inline bool IsDebugBreakAtEntry() const {
-    bool result = type_ == DEBUG_BREAK_AT_ENTRY;
-    return result;
-  }
+  bool IsSuspend() const { return type_ == DEBUG_BREAK_SLOT_AT_SUSPEND; }
+  bool IsReturn() const { return type_ == DEBUG_BREAK_SLOT_AT_RETURN; }
+  bool IsReturnOrSuspend() const { return type_ >= DEBUG_BREAK_SLOT_AT_RETURN; }
+  bool IsCall() const { return type_ == DEBUG_BREAK_SLOT_AT_CALL; }
+  bool IsDebugBreakSlot() const { return type_ >= DEBUG_BREAK_SLOT; }
+  bool IsDebuggerStatement() const { return type_ == DEBUGGER_STATEMENT; }
+  bool IsDebugBreakAtEntry() const { return type_ == DEBUG_BREAK_AT_ENTRY; }
 
   bool HasBreakPoint(Isolate* isolate, Handle<DebugInfo> debug_info) const;
 
-  inline int position() const { return position_; }
+  int generator_suspend_id() { return generator_suspend_id_; }
+  int position() const { return position_; }
 
   debug::BreakLocationType type() const;
 
@@ -92,12 +90,14 @@ class BreakLocation {
 
  private:
   BreakLocation(Handle<AbstractCode> abstract_code, DebugBreakType type,
-                int code_offset, int position, int generator_obj_reg_index)
+                int code_offset, int position, int generator_obj_reg_index,
+                int generator_suspend_id)
       : abstract_code_(abstract_code),
         code_offset_(code_offset),
         type_(type),
         position_(position),
-        generator_obj_reg_index_(generator_obj_reg_index) {
+        generator_obj_reg_index_(generator_obj_reg_index),
+        generator_suspend_id_(generator_suspend_id) {
     DCHECK_NE(NOT_DEBUG_BREAK, type_);
   }
 
@@ -105,7 +105,8 @@ class BreakLocation {
       : code_offset_(0),
         type_(type),
         position_(position),
-        generator_obj_reg_index_(0) {}
+        generator_obj_reg_index_(0),
+        generator_suspend_id_(-1) {}
 
   static int BreakIndexFromCodeOffset(Handle<DebugInfo> debug_info,
                                       Handle<AbstractCode> abstract_code,
@@ -119,6 +120,7 @@ class BreakLocation {
   DebugBreakType type_;
   int position_;
   int generator_obj_reg_index_;
+  int generator_suspend_id_;
 
   friend class BreakIterator;
 };
@@ -214,7 +216,8 @@ class V8_EXPORT_PRIVATE Debug {
   Debug& operator=(const Debug&) = delete;
 
   // Debug event triggers.
-  void OnDebugBreak(Handle<FixedArray> break_points_hit, StepAction stepAction);
+  void OnDebugBreak(Handle<FixedArray> break_points_hit, StepAction stepAction,
+                    debug::BreakReasons break_reasons = {});
 
   base::Optional<Object> OnThrow(Handle<Object> exception)
       V8_WARN_UNUSED_RESULT;
@@ -222,7 +225,8 @@ class V8_EXPORT_PRIVATE Debug {
   void OnCompileError(Handle<Script> script);
   void OnAfterCompile(Handle<Script> script);
 
-  void HandleDebugBreak(IgnoreBreakMode ignore_break_mode);
+  void HandleDebugBreak(IgnoreBreakMode ignore_break_mode,
+                        debug::BreakReasons break_reasons);
 
   // The break target may not be the top-most frame, since we may be
   // breaking before entering a function that cannot contain break points.
@@ -246,6 +250,7 @@ class V8_EXPORT_PRIVATE Debug {
                                 Handle<String> condition, int* id);
   void RemoveBreakpoint(int id);
 #if V8_ENABLE_WEBASSEMBLY
+  void SetOnEntryBreakpointForWasmScript(Handle<Script> script, int* id);
   void RemoveBreakpointForWasmScript(Handle<Script> script, int id);
 
   void RecordWasmScriptWithBreakpoints(Handle<Script> script);
@@ -446,6 +451,9 @@ class V8_EXPORT_PRIVATE Debug {
   MaybeHandle<FixedArray> CheckBreakPoints(Handle<DebugInfo> debug_info,
                                            BreakLocation* location,
                                            bool* has_break_points = nullptr);
+  MaybeHandle<FixedArray> GetHitBreakpointsAtCurrentStatement(
+      JavaScriptFrame* frame, bool* hasBreakpoints);
+
   bool IsMutedAtCurrentLocation(JavaScriptFrame* frame);
   // Check whether a BreakPoint object is hit. Evaluate condition depending
   // on whether this is a regular break location or a break at function entry.
@@ -553,7 +561,7 @@ class V8_EXPORT_PRIVATE Debug {
 
 #if V8_ENABLE_WEBASSEMBLY
   // This is a global handle, lazily initialized.
-  Handle<WeakArrayList> wasm_scripts_with_breakpoints_;
+  Handle<WeakArrayList> wasm_scripts_with_break_points_;
 #endif  // V8_ENABLE_WEBASSEMBLY
 
   Isolate* isolate_;

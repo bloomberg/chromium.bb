@@ -8,6 +8,7 @@
 
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_value.h"
+#include "v8/include/v8-primitive.h"
 #include "xfa/fxfa/parser/cxfa_occur.h"
 
 CJX_Occur::CJX_Occur(CXFA_Occur* node) : CJX_Node(node) {}
@@ -30,6 +31,7 @@ void CJX_Occur::max(v8::Isolate* pIsolate,
   occur->SetMax(fxv8::ReentrantToInt32Helper(pIsolate, *pValue));
 }
 
+// NOLINTNEXTLINE(build/include_what_you_use)
 void CJX_Occur::min(v8::Isolate* pIsolate,
                     v8::Local<v8::Value>* pValue,
                     bool bSetting,

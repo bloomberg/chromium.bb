@@ -6,10 +6,14 @@
 #define MEDIA_BASE_VIDEO_ENCODER_H_
 
 #include "base/callback.h"
+#include "base/time/time.h"
+#include "media/base/bitrate.h"
 #include "media/base/media_export.h"
 #include "media/base/status.h"
+#include "media/base/svc_scalability_mode.h"
 #include "media/base/video_codecs.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -30,6 +34,7 @@ struct MEDIA_EXPORT VideoEncoderOutput {
   base::TimeDelta timestamp;
   bool key_frame = false;
   int temporal_id = 0;
+  gfx::ColorSpace color_space;
 };
 
 class MEDIA_EXPORT VideoEncoder {
@@ -39,19 +44,22 @@ class MEDIA_EXPORT VideoEncoder {
     bool produce_annexb = false;
   };
 
+  enum class LatencyMode { Realtime, Quality };
+
   struct MEDIA_EXPORT Options {
     Options();
     Options(const Options&);
     ~Options();
-    absl::optional<uint64_t> bitrate;
+    absl::optional<Bitrate> bitrate;
     absl::optional<double> framerate;
 
     gfx::Size frame_size;
 
     absl::optional<int> keyframe_interval = 10000;
 
-    // Requested number of SVC temporal layers.
-    int temporal_layers = 1;
+    LatencyMode latency_mode = LatencyMode::Realtime;
+
+    absl::optional<SVCScalabilityMode> scalability_mode;
 
     // Only used for H264 encoding.
     AvcOptions avc;
@@ -70,6 +78,15 @@ class MEDIA_EXPORT VideoEncoder {
 
   // Callback to report success and errors in encoder calls.
   using StatusCB = base::OnceCallback<void(Status error)>;
+
+  struct PendingEncode {
+    PendingEncode();
+    PendingEncode(PendingEncode&&);
+    ~PendingEncode();
+    StatusCB done_callback;
+    scoped_refptr<VideoFrame> frame;
+    bool key_frame;
+  };
 
   VideoEncoder();
   VideoEncoder(const VideoEncoder&) = delete;

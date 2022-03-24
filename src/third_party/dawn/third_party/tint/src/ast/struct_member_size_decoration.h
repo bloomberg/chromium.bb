@@ -16,6 +16,7 @@
 #define SRC_AST_STRUCT_MEMBER_SIZE_DECORATION_H_
 
 #include <stddef.h>
+#include <string>
 
 #include "src/ast/decoration.h"
 
@@ -27,33 +28,23 @@ class StructMemberSizeDecoration
     : public Castable<StructMemberSizeDecoration, Decoration> {
  public:
   /// constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this decoration
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param size the size value
-  StructMemberSizeDecoration(ProgramID program_id,
-                             const Source& source,
-                             uint32_t size);
+  StructMemberSizeDecoration(ProgramID pid, const Source& src, uint32_t size);
   ~StructMemberSizeDecoration() override;
 
-  /// @returns the size value
-  uint32_t size() const { return size_; }
-
-  /// Outputs the decoration to the given stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// @returns the WGSL name for the decoration
+  std::string Name() const override;
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  StructMemberSizeDecoration* Clone(CloneContext* ctx) const override;
+  const StructMemberSizeDecoration* Clone(CloneContext* ctx) const override;
 
- private:
-  uint32_t const size_;
+  /// The size value
+  const uint32_t size;
 };
 
 }  // namespace ast

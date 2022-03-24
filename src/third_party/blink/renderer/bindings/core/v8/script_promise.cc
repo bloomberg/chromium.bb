@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -63,6 +62,9 @@ class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
                        CreateRejectFunction(script_state));
     }
   }
+
+  PromiseAllHandler(const PromiseAllHandler&) = delete;
+  PromiseAllHandler& operator=(const PromiseAllHandler&) = delete;
 
   virtual void Trace(Visitor* visitor) const {
     visitor->Trace(resolver_);
@@ -160,8 +162,6 @@ class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
   // This is cleared when owners of this handler, that is, given promises are
   // settled.
   HeapVector<ScriptValue> values_;
-
-  DISALLOW_COPY_AND_ASSIGN(PromiseAllHandler);
 };
 
 }  // namespace

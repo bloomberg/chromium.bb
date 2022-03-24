@@ -19,13 +19,13 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -35,12 +35,14 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/shared_associated_remote.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
 
-struct GPUCommandBufferConsoleMessage;
 class GURL;
 
 namespace base {
@@ -67,7 +69,7 @@ class GpuMemoryBufferManager;
 // CommandBufferStub.
 class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                                           public gpu::GpuControl,
-                                          public IPC::Listener {
+                                          public mojom::CommandBufferClient {
  public:
   class DeletionObserver {
    public:
@@ -83,6 +85,10 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int32_t stream_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  CommandBufferProxyImpl(const CommandBufferProxyImpl&) = delete;
+  CommandBufferProxyImpl& operator=(const CommandBufferProxyImpl&) = delete;
+
   ~CommandBufferProxyImpl() override;
 
   // Connect to a command buffer in the GPU process.
@@ -92,9 +98,12 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                            const gpu::ContextCreationAttribs& attribs,
                            const GURL& active_url);
 
-  // IPC::Listener implementation:
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelError() override;
+  void OnDisconnect();
+
+  // Asks the GPU side to bind an associated interface which will share message
+  // ordering with this command buffer. Used by media clients for interfaces not
+  // defined at the GPU layer.
+  void BindMediaReceiver(mojo::GenericPendingAssociatedReceiver receiver);
 
   // CommandBuffer implementation:
   State GetLastState() override;
@@ -157,6 +166,10 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   const scoped_refptr<GpuChannelHost>& channel() const { return channel_; }
 
+  mojom::GpuChannel& GetGpuChannel() const {
+    return channel()->GetGpuChannel();
+  }
+
   const base::UnsafeSharedMemoryRegion& GetSharedStateRegion() const {
     return shared_state_shm_;
   }
@@ -175,25 +188,24 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
 
   void OrderingBarrierHelper(int32_t put_offset);
 
-  // Send an IPC message over the GPU channel. This is private to fully
-  // encapsulate the channel; all callers of this function must explicitly
-  // verify that the context has not been lost.
-  bool Send(IPC::Message* msg) EXCLUSIVE_LOCKS_REQUIRED(last_state_lock_);
-
   std::pair<base::UnsafeSharedMemoryRegion, base::WritableSharedMemoryMapping>
   AllocateAndMapSharedMemory(size_t size);
 
-  // Message handlers:
+  // mojom::CommandBufferClient:
+  void OnConsoleMessage(const std::string& message) override;
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
   void OnDestroyed(gpu::error::ContextLostReason reason,
-                   gpu::error::Error error);
-  void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
-  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic);
-  void OnSignalAck(uint32_t id, const CommandBuffer::State& state);
-  void OnSwapBuffersCompleted(const SwapBuffersCompleteParams& params);
+                   gpu::error::Error error) override;
+  void OnSwapBuffersCompleted(const SwapBuffersCompleteParams& params) override;
   void OnBufferPresented(uint64_t swap_id,
-                         const gfx::PresentationFeedback& feedback);
-  void OnGetGpuFenceHandleComplete(uint32_t gpu_fence_id, gfx::GpuFenceHandle);
-  void OnReturnData(const std::vector<uint8_t>& data);
+                         const gfx::PresentationFeedback& feedback) override;
+  void OnReturnData(const std::vector<uint8_t>& data) override;
+  void OnSignalAck(uint32_t id, const CommandBuffer::State& state) override;
+
+  void OnGetGpuFenceHandleComplete(
+      uint32_t gpu_fence_id,
+      base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback,
+      gfx::GpuFenceHandle);
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.
@@ -251,17 +263,17 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   // There should be a lock_ if this is going to be used across multiple
   // threads, or we guarantee it is used by a single thread by using a thread
   // checker if no lock_ is set.
-  base::Lock* lock_ = nullptr;
+  raw_ptr<base::Lock> lock_ = nullptr;
   base::ThreadChecker lockless_thread_checker_;
 
   // Client that wants to listen for important events on the GpuControl.
-  gpu::GpuControlClient* gpu_control_client_ = nullptr;
+  raw_ptr<gpu::GpuControlClient> gpu_control_client_ = nullptr;
 
   // Unowned list of DeletionObservers.
   base::ObserverList<DeletionObserver>::Unchecked deletion_observers_;
 
   scoped_refptr<GpuChannelHost> channel_;
-  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  raw_ptr<GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   bool disconnected_ = false;
   const int channel_id_;
   const int32_t route_id_;
@@ -270,6 +282,9 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   uint32_t last_flush_id_ = 0;
   int32_t last_put_offset_ = -1;
   bool has_buffer_ = false;
+
+  mojo::SharedAssociatedRemote<mojom::CommandBuffer> command_buffer_;
+  mojo::AssociatedReceiver<mojom::CommandBufferClient> client_receiver_{this};
 
   // Next generated fence sync.
   uint64_t next_fence_sync_release_ = 1;
@@ -286,17 +301,11 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
 
   // Cache pointer to EnsureWorkVisibleDuration custom UMA histogram.
-  base::HistogramBase* uma_histogram_ensure_work_visible_duration_ = nullptr;
-
-  using GetGpuFenceTaskMap =
-      base::flat_map<uint32_t,
-                     base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>>;
-  GetGpuFenceTaskMap get_gpu_fence_tasks_;
+  raw_ptr<base::HistogramBase> uma_histogram_ensure_work_visible_duration_ =
+      nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread_;
   base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };
 
 }  // namespace gpu

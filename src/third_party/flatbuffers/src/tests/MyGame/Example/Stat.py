@@ -10,12 +10,16 @@ class Stat(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsStat(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = Stat()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsStat(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     @classmethod
     def StatBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
         return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x4D\x4F\x4E\x53", size_prefixed=size_prefixed)
@@ -46,11 +50,20 @@ class Stat(object):
         return 0
 
 def StatStart(builder): builder.StartObject(3)
+def Start(builder):
+    return StatStart(builder)
 def StatAddId(builder, id): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(id), 0)
+def AddId(builder, id):
+    return StatAddId(builder, id)
 def StatAddVal(builder, val): builder.PrependInt64Slot(1, val, 0)
+def AddVal(builder, val):
+    return StatAddVal(builder, val)
 def StatAddCount(builder, count): builder.PrependUint16Slot(2, count, 0)
+def AddCount(builder, count):
+    return StatAddCount(builder, count)
 def StatEnd(builder): return builder.EndObject()
-
+def End(builder):
+    return StatEnd(builder)
 
 class StatT(object):
 

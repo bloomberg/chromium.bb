@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -86,6 +86,12 @@ class SafeBrowsingPrivateEventRouter
   static const char kKeyMalwareCategory[];
   static const char kKeyEvidenceLockerFilePath[];
   static const char kKeyScanId[];
+  static const char kKeyIsFederated[];
+  static const char kKeyFederatedOrigin[];
+  static const char kKeyLoginUserName[];
+  static const char kKeyPasswordBreachIdentities[];
+  static const char kKeyPasswordBreachIdentitiesUrl[];
+  static const char kKeyPasswordBreachIdentitiesUsername[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
@@ -93,7 +99,9 @@ class SafeBrowsingPrivateEventRouter
   static const char kKeyInterstitialEvent[];
   static const char kKeySensitiveDataEvent[];
   static const char kKeyUnscannedFileEvent[];
-  static const char* kAllEvents[6];
+  static const char kKeyLoginEvent[];
+  static const char kKeyPasswordBreachEvent[];
+  static const char* kAllEvents[8];
 
   static const char kKeyUnscannedReason[];
 
@@ -104,6 +112,11 @@ class SafeBrowsingPrivateEventRouter
   static const char kTriggerWebContentUpload[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
+
+  SafeBrowsingPrivateEventRouter(const SafeBrowsingPrivateEventRouter&) =
+      delete;
+  SafeBrowsingPrivateEventRouter& operator=(
+      const SafeBrowsingPrivateEventRouter&) = delete;
 
   ~SafeBrowsingPrivateEventRouter() override;
 
@@ -215,6 +228,15 @@ class SafeBrowsingPrivateEventRouter
       const std::string& scan_id,
       const int64_t content_size);
 
+  void OnLoginEvent(const GURL& url,
+                    bool is_federated,
+                    const url::Origin& federated_origin,
+                    const std::u16string& username);
+
+  void OnPasswordBreach(
+      const std::string& trigger,
+      const std::vector<std::pair<GURL, std::u16string>>& identities);
+
   // Returns true if enterprise real-time reporting should be initialized,
   // checking both the feature flag. This function is public so that it can
   // called in tests.
@@ -322,15 +344,15 @@ class SafeBrowsingPrivateEventRouter
 
   void RemoveDmTokenFromRejectedSet(const std::string& dm_token);
 
-  content::BrowserContext* context_;
-  signin::IdentityManager* identity_manager_ = nullptr;
-  EventRouter* event_router_ = nullptr;
+  raw_ptr<content::BrowserContext> context_;
+  raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
+  raw_ptr<EventRouter> event_router_ = nullptr;
 
   // The cloud policy clients used to upload browser events and profile events
   // to the cloud. These clients are never used to fetch policies. These
   // pointers are not owned by the class.
-  policy::CloudPolicyClient* browser_client_ = nullptr;
-  policy::CloudPolicyClient* profile_client_ = nullptr;
+  raw_ptr<policy::CloudPolicyClient> browser_client_ = nullptr;
+  raw_ptr<policy::CloudPolicyClient> profile_client_ = nullptr;
 
   // The private clients are used on platforms where we cannot just get a
   // client and we create our own (used through the above client pointers).
@@ -343,7 +365,6 @@ class SafeBrowsingPrivateEventRouter
       rejected_dm_token_timers_;
 
   base::WeakPtrFactory<SafeBrowsingPrivateEventRouter> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);
 };
 
 }  // namespace extensions

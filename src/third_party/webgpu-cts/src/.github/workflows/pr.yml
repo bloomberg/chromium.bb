@@ -2,9 +2,7 @@ name: Pull Request CI
 
 on:
   pull_request:
-    branches:
-      - main
-      - glsl-dependent
+    branches: [main]
 
 jobs:
   build:
@@ -23,7 +21,7 @@ jobs:
       - run: npm test
       - run: |
           mkdir deploy-build/
-          cp -r README.md src standalone out deploy-build/
+          cp -r README.md src standalone out docs deploy-build/
       - uses: actions/upload-artifact@v2
         with:
           name: pr-artifact

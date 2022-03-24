@@ -2,22 +2,22 @@ export const description = `API Operation Tests for RenderPass StoreOp.
 
   Test Coverage:
 
-  - Tests that color and depth-stencil store operations {'clear', 'store'} work correctly for a
+  - Tests that color and depth-stencil store operations {'discard', 'store'} work correctly for a
     render pass with both a color attachment and depth-stencil attachment.
       TODO: use depth24plus-stencil8
 
-  - Tests that store operations {'clear', 'store'} work correctly for a render pass with multiple
+  - Tests that store operations {'discard', 'store'} work correctly for a render pass with multiple
     color attachments.
       TODO: test with more interesting loadOp values
 
-  - Tests that store operations {'clear', 'store'} work correctly for a render pass with a color
+  - Tests that store operations {'discard', 'store'} work correctly for a render pass with a color
     attachment for:
       - All renderable color formats
       - mip level set to {'0', mip > '0'}
       - array layer set to {'0', layer > '1'} for 2D textures
       TODO: depth slice set to {'0', slice > '0'} for 3D textures
 
-  - Tests that store operations {'clear', 'store'} work correctly for a render pass with a
+  - Tests that store operations {'discard', 'store'} work correctly for a render pass with a
     depth-stencil attachment for:
       - All renderable depth-stencil formats
       - mip level set to {'0', mip > '0'}
@@ -27,10 +27,9 @@ export const description = `API Operation Tests for RenderPass StoreOp.
       TODO: depth slice set to {'0', slice > '0'} for 3D textures
       TODO: test with more interesting loadOp values`;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import {
-  kEncodableTextureFormatInfo,
+  kTextureFormatInfo,
   kEncodableTextureFormats,
   kSizedDepthStencilFormats,
 } from '../../../capability_info.js';
@@ -48,7 +47,7 @@ const kNumColorAttachments: NumColorAttachments[] = [1, 2, 3, 4];
 // Test with a zero and non-zero array layer.
 const kArrayLayers: number[] = [0, 1];
 
-const kStoreOps: GPUStoreOp[] = ['clear', 'store'];
+const kStoreOps: GPUStoreOp[] = ['discard', 'store'];
 
 const kHeight = 2;
 const kWidth = 2;
@@ -58,10 +57,10 @@ export const g = makeTestGroup(GPUTest);
 // Tests a render pass with both a color and depth stencil attachment to ensure store operations are
 // set independently.
 g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
-  .params(
-    params()
-      .combine(poptions('colorStoreOperation', kStoreOps))
-      .combine(poptions('depthStencilStoreOperation', kStoreOps))
+  .params(u =>
+    u //
+      .combine('colorStoreOperation', kStoreOps)
+      .combine('depthStencilStoreOperation', kStoreOps)
   )
   .fn(t => {
     // Create a basic color attachment.
@@ -108,7 +107,7 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
 
     // Check that the correct store operation occurred.
     let expectedColorValue: PerTexelComponent<number> = {};
-    if (t.params.colorStoreOperation === 'clear') {
+    if (t.params.colorStoreOperation === 'discard') {
       // If colorStoreOp was clear, the texture should now contain {0.0, 0.0, 0.0, 0.0}.
       expectedColorValue = { R: 0.0, G: 0.0, B: 0.0, A: 0.0 };
     } else if (t.params.colorStoreOperation === 'store') {
@@ -122,7 +121,7 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
 
     // Check that the correct store operation occurred.
     let expectedDepthValue: PerTexelComponent<number> = {};
-    if (t.params.depthStencilStoreOperation === 'clear') {
+    if (t.params.depthStencilStoreOperation === 'discard') {
       // If depthStencilStoreOperation was clear, the texture's depth component should be 0.0, and
       // the stencil component should be 0.0.
       expectedDepthValue = { Depth: 0.0 };
@@ -140,17 +139,18 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
 // Tests that render pass color attachment store operations work correctly for all renderable color
 // formats, mip levels and array layers.
 g.test('render_pass_store_op,color_attachment_only')
-  .params(
-    params()
-      .combine(poptions('colorFormat', kEncodableTextureFormats))
+  .params(u =>
+    u
+      .combine('colorFormat', kEncodableTextureFormats)
       // Filter out any non-renderable formats
       .filter(({ colorFormat }) => {
-        const info = kEncodableTextureFormatInfo[colorFormat];
+        const info = kTextureFormatInfo[colorFormat];
         return info.color && info.renderable;
       })
-      .combine(poptions('storeOperation', kStoreOps))
-      .combine(poptions('mipLevel', kMipLevel))
-      .combine(poptions('arrayLayer', kArrayLayers))
+      .combine('storeOperation', kStoreOps)
+      .beginSubcases()
+      .combine('mipLevel', kMipLevel)
+      .combine('arrayLayer', kArrayLayers)
   )
   .fn(t => {
     const colorAttachment = t.device.createTexture({
@@ -186,7 +186,7 @@ g.test('render_pass_store_op,color_attachment_only')
 
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
-    if (t.params.storeOperation === 'clear') {
+    if (t.params.storeOperation === 'discard') {
       // If colorStoreOp was clear, the texture should now contain {0.0, 0.0, 0.0, 0.0}.
       expectedValue = { R: 0.0, G: 0.0, B: 0.0, A: 0.0 };
     } else if (t.params.storeOperation === 'store') {
@@ -204,11 +204,12 @@ g.test('render_pass_store_op,color_attachment_only')
 
 // Test with multiple color attachments to ensure each attachment's storeOp is set independently.
 g.test('render_pass_store_op,multiple_color_attachments')
-  .params(
-    params()
-      .combine(poptions('colorAttachments', kNumColorAttachments))
-      .combine(poptions('storeOperation1', kStoreOps))
-      .combine(poptions('storeOperation2', kStoreOps))
+  .params(u =>
+    u
+      .combine('storeOperation1', kStoreOps)
+      .combine('storeOperation2', kStoreOps)
+      .beginSubcases()
+      .combine('colorAttachments', kNumColorAttachments)
   )
   .fn(t => {
     const kColorFormat: GPUTextureFormat = 'rgba8unorm';
@@ -246,7 +247,7 @@ g.test('render_pass_store_op,multiple_color_attachments')
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
     for (let i = 0; i < t.params.colorAttachments; i++) {
-      if (renderPassColorAttachments[i].storeOp === 'clear') {
+      if (renderPassColorAttachments[i].storeOp === 'discard') {
         // If colorStoreOp was clear, the texture should now contain {0.0, 0.0, 0.0, 0.0}.
         expectedValue = { R: 0.0, G: 0.0, B: 0.0, A: 0.0 };
       } else if (renderPassColorAttachments[i].storeOp === 'store') {
@@ -271,12 +272,13 @@ formats, mip levels and array layers.
 TODO: Also test unsized depth/stencil formats
   `
   )
-  .params(
-    params()
-      .combine(poptions('depthStencilFormat', kSizedDepthStencilFormats)) // TODO
-      .combine(poptions('storeOperation', kStoreOps))
-      .combine(poptions('mipLevel', kMipLevel))
-      .combine(poptions('arrayLayer', kArrayLayers))
+  .params(u =>
+    u
+      .combine('depthStencilFormat', kSizedDepthStencilFormats) // TODO
+      .combine('storeOperation', kStoreOps)
+      .beginSubcases()
+      .combine('mipLevel', kMipLevel)
+      .combine('arrayLayer', kArrayLayers)
   )
   .fn(t => {
     const depthStencilAttachment = t.device.createTexture({
@@ -312,7 +314,7 @@ TODO: Also test unsized depth/stencil formats
     t.device.queue.submit([encoder.finish()]);
 
     let expectedValue: PerTexelComponent<number> = {};
-    if (t.params.storeOperation === 'clear') {
+    if (t.params.storeOperation === 'discard') {
       // If depthStencilStoreOperation was clear, the texture's depth component should be 0.0,
       expectedValue = { Depth: 0.0 };
     } else if (t.params.storeOperation === 'store') {

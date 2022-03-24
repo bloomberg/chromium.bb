@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -54,6 +54,8 @@ class SharingUiController {
   virtual sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature()
       const = 0;
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
+  // If true, shows a loading icon on omnibox when sending out the message.
+  virtual bool ShouldShowLoadingIcon() const;
   virtual std::u16string GetTextForTooltipAndAccessibleName() const = 0;
   // Get the name of the feature to be used as a prefix for the metric name.
   virtual SharingFeatureName GetFeatureMetricsPrefix() const = 0;
@@ -132,9 +134,9 @@ class SharingUiController {
                       const absl::optional<url::Origin>& initiating_origin,
                       std::vector<SharingApp> apps);
 
-  SharingDialog* dialog_ = nullptr;
-  content::WebContents* web_contents_ = nullptr;
-  SharingService* sharing_service_ = nullptr;
+  raw_ptr<SharingDialog> dialog_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
+  raw_ptr<SharingService> sharing_service_ = nullptr;
 
   bool is_loading_ = false;
   SharingSendMessageResult send_result_ = SharingSendMessageResult::kSuccessful;

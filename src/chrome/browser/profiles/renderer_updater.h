@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/renderer_configuration.mojom-forward.h"
@@ -30,7 +31,7 @@ class RenderProcessHost;
 // The RendererUpdater is responsible for updating renderers about state change.
 class RendererUpdater : public KeyedService,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-                        public chromeos::OAuth2LoginManager::Observer,
+                        public ash::OAuth2LoginManager::Observer,
 #endif
                         public signin::IdentityManager::Observer {
  public:
@@ -53,10 +54,10 @@ class RendererUpdater : public KeyedService,
   GetRendererConfiguration(content::RenderProcessHost* render_process_host);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // chromeos::OAuth2LoginManager::Observer:
+  // ash::OAuth2LoginManager::Observer:
   void OnSessionRestoreStateChanged(
       Profile* user_profile,
-      chromeos::OAuth2LoginManager::SessionRestoreState state) override;
+      ash::OAuth2LoginManager::SessionRestoreState state) override;
 #endif
 
   // IdentityManager::Observer:
@@ -71,10 +72,10 @@ class RendererUpdater : public KeyedService,
       mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>*
           renderer_configuration);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   PrefChangeRegistrar pref_change_registrar_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::OAuth2LoginManager* oauth2_login_manager_;
+  ash::OAuth2LoginManager* oauth2_login_manager_;
   bool merge_session_running_;
   std::vector<mojo::Remote<chrome::mojom::ChromeOSListener>>
       chromeos_listeners_;
@@ -88,7 +89,7 @@ class RendererUpdater : public KeyedService,
   base::ScopedObservation<signin::IdentityManager,
                           signin::IdentityManager::Observer>
       identity_manager_observation_{this};
-  signin::IdentityManager* identity_manager_;
+  raw_ptr<signin::IdentityManager> identity_manager_;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_RENDERER_UPDATER_H_

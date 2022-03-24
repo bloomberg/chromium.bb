@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/media_query.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -29,23 +30,53 @@ TEST(MediaConditionParserTest, Basic) {
       {"(min-width: 100px) and print", "not all"},
       {"(min-width: 100px) and (max-width: 900px)", nullptr},
       {"(min-width: [100px) and (max-width: 900px)", "not all"},
-      {"not (min-width: 900px)", "not all and (min-width: 900px)"},
+      {"not (min-width: 900px)", "not (min-width: 900px)"},
       {"not (blabla)", "not all"},
+      {"", ""},
+      {" ", ""},
+      {",(min-width: 500px)", "not all"},
+      {"(min-width: 500px),", "not all"},
+      {"(width: 1px) and (width: 2px), (width: 3px)", "not all"},
+      {"(width: 1px) and (width: 2px), screen", "not all"},
+      {"(min-width: 500px), (min-width: 500px)", "not all"},
+      {"not (min-width: 500px), not (min-width: 500px)", "not all"},
+      {"(width: 1px), screen", "not all"},
+      {"screen, (width: 1px)", "not all"},
+      {"screen, (width: 1px), print", "not all"},
+
       {nullptr, nullptr}  // Do not remove the terminator line.
   };
 
-  // FIXME: We should test comma-seperated media conditions
   for (unsigned i = 0; test_cases[i].input; ++i) {
+    SCOPED_TRACE(test_cases[i].input);
     CSSTokenizer tokenizer(test_cases[i].input);
     const auto tokens = tokenizer.TokenizeToEOF();
     scoped_refptr<MediaQuerySet> media_condition_query_set =
         MediaQueryParser::ParseMediaCondition(CSSParserTokenRange(tokens),
                                               nullptr);
-    ASSERT_EQ(media_condition_query_set->QueryVector().size(), (unsigned)1);
-    String query_text = media_condition_query_set->QueryVector()[0]->CssText();
+    String query_text = media_condition_query_set->MediaText();
     const char* expected_text =
         test_cases[i].output ? test_cases[i].output : test_cases[i].input;
-    ASSERT_EQ(expected_text, query_text);
+    EXPECT_EQ(String(expected_text), query_text);
+  }
+}
+
+// Support for the 'not' keyword for ParseMediaCondition predates the
+// CSSMediaQueries4 flag, so enabling/disabling that flag must not affect
+// 'not' parsing.
+TEST(MediaConditionParserTest, NotKeyword_CSSMediaQueries4) {
+  String input = "not (min-width: 500px)";
+  CSSTokenizer tokenizer(input);
+  const auto tokens = tokenizer.TokenizeToEOF();
+
+  Vector<bool> flag_values = {true, false};
+  for (bool flag : flag_values) {
+    ScopedCSSMediaQueries4ForTest media_queries_4_flag(flag);
+
+    scoped_refptr<MediaQuerySet> media_condition_query_set =
+        MediaQueryParser::ParseMediaCondition(CSSParserTokenRange(tokens),
+                                              nullptr);
+    EXPECT_EQ(input, media_condition_query_set->MediaText());
   }
 }
 

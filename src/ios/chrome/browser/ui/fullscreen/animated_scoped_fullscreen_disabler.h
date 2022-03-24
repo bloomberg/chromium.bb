@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_ANIMATED_SCOPED_FULLSCREEN_DISABLER_H_
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_ANIMATED_SCOPED_FULLSCREEN_DISABLER_H_
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 
 class FullscreenController;
@@ -18,6 +17,12 @@ class AnimatedScopedFullscreenDisablerObserver;
 class AnimatedScopedFullscreenDisabler {
  public:
   explicit AnimatedScopedFullscreenDisabler(FullscreenController* controller);
+
+  AnimatedScopedFullscreenDisabler(const AnimatedScopedFullscreenDisabler&) =
+      delete;
+  AnimatedScopedFullscreenDisabler& operator=(
+      const AnimatedScopedFullscreenDisabler&) = delete;
+
   ~AnimatedScopedFullscreenDisabler();
 
   // Adds and removes AnimatedScopedFullscreenDisablerObservers.
@@ -37,8 +42,6 @@ class AnimatedScopedFullscreenDisabler {
       observer_list_container_;
   // Whether this disabler is contributing to |controller_|'s disabled counter.
   bool disabling_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimatedScopedFullscreenDisabler);
 };
 
 // Obsever class for listening to animated fullscreen disabling events.

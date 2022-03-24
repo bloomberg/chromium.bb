@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "extensions/common/constants.h"
@@ -24,6 +23,11 @@ namespace {
 class ExtensionBrowsertestUtilTest : public ShellApiTest {
  public:
   ExtensionBrowsertestUtilTest() = default;
+
+  ExtensionBrowsertestUtilTest(const ExtensionBrowsertestUtilTest&) = delete;
+  ExtensionBrowsertestUtilTest& operator=(const ExtensionBrowsertestUtilTest&) =
+      delete;
+
   ~ExtensionBrowsertestUtilTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -43,8 +47,6 @@ class ExtensionBrowsertestUtilTest : public ShellApiTest {
 
  private:
   scoped_refptr<const Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBrowsertestUtilTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsertestUtilTest,

@@ -6,12 +6,11 @@
 #define NET_SOCKET_CLIENT_SOCKET_HANDLE_H_
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
@@ -51,6 +50,10 @@ class NET_EXPORT ClientSocketHandle {
   };
 
   ClientSocketHandle();
+
+  ClientSocketHandle(const ClientSocketHandle&) = delete;
+  ClientSocketHandle& operator=(const ClientSocketHandle&) = delete;
+
   ~ClientSocketHandle();
 
   // Initializes a ClientSocketHandle object, which involves talking to the
@@ -145,11 +148,6 @@ class NET_EXPORT ClientSocketHandle {
   bool GetLoadTimingInfo(bool is_reused,
                          LoadTimingInfo* load_timing_info) const;
 
-  // Dumps memory allocation stats into |stats|. |stats| can be assumed as being
-  // default initialized upon entry. Implementation overrides fields in
-  // |stats|.
-  void DumpMemoryStats(StreamSocket::SocketMemoryStats* stats) const;
-
   // Used by ClientSocketPool to initialize the ClientSocketHandle.
   //
   // SetSocket() may also be used if this handle is used as simply for
@@ -233,8 +231,8 @@ class NET_EXPORT ClientSocketHandle {
   void ResetErrorState();
 
   bool is_initialized_;
-  ClientSocketPool* pool_;
-  HigherLayeredPool* higher_pool_;
+  raw_ptr<ClientSocketPool> pool_;
+  raw_ptr<HigherLayeredPool> higher_pool_;
   std::unique_ptr<StreamSocket> socket_;
   ClientSocketPool::GroupId group_id_;
   SocketReuseType reuse_type_;
@@ -251,8 +249,6 @@ class NET_EXPORT ClientSocketHandle {
 
   // Timing information is set when a connection is successfully established.
   LoadTimingInfo::ConnectTiming connect_timing_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientSocketHandle);
 };
 
 }  // namespace net

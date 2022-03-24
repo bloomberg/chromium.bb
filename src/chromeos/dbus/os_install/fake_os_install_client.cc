@@ -21,8 +21,23 @@ bool FakeOsInstallClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void FakeOsInstallClient::StartOsInstall(StartOsInstallCallback callback) {
-  std::move(callback).Run(absl::nullopt);
+OsInstallClient::TestInterface* FakeOsInstallClient::GetTestInterface() {
+  return this;
+}
+
+void FakeOsInstallClient::StartOsInstall() {
+  NotifyObservers(Status::InProgress, /*service_log=*/"");
+}
+
+void FakeOsInstallClient::UpdateStatus(Status status) {
+  NotifyObservers(status, /*service_log=*/"");
+}
+
+void FakeOsInstallClient::NotifyObservers(Status status,
+                                          const std::string& service_log) {
+  for (auto& observer : observers_) {
+    observer.StatusChanged(status, service_log);
+  }
 }
 
 }  // namespace chromeos

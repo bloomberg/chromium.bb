@@ -25,11 +25,15 @@ class GamepadButton {
   GamepadButton() = default;
   GamepadButton(bool pressed, bool touched, double value)
       : used(true), pressed(pressed), touched(touched), value(value) {}
+  bool operator==(const GamepadButton& other) const {
+    return this->used == other.used && this->pressed == other.pressed &&
+           this->touched == other.touched && this->value == other.value;
+  }
   // Whether the button is actually reported by the gamepad at all.
   bool used{false};
   bool pressed{false};
   bool touched{false};
-  double value{0.};
+  double value{0.0};
 };
 
 enum class GamepadHapticActuatorType { kVibration = 0, kDualRumble = 1 };
@@ -110,6 +114,7 @@ class COMPONENT_EXPORT(GAMEPAD_PUBLIC) Gamepad {
 
   Gamepad();
   Gamepad(const Gamepad& other);
+  Gamepad& operator=(const Gamepad& other);
 
   // If src is too long, then the contents of id will be truncated to
   // kIdLengthCap-1. id will be null-terminated and any extra space in the

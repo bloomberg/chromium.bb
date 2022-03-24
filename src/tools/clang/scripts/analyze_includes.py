@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2021 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,12 +8,13 @@ It produces the .js file that accompanies include-analysis.html.
 
 Usage:
 
-$ gn gen --args="show_includes=true symbol_level=0" out/Debug
+$ gn gen --args="show_includes=true symbol_level=0 enable_precompiled_headers=false" out/Debug
 $ autoninja -C out/Debug -v chrome | tee /tmp/build_log
 $ analyze_includes.py --target=chrome --revision=$(git rev-parse --short HEAD) \
     --json-out=/tmp/include-analysis.js /tmp/build_log
 
-(If you have goma access, add use_goma=true to the gn args.)
+(If you have goma access, add use_goma=true to the gn args, but not on Windows
+due to crbug.com/1223741#c9)
 
 The script takes roughly half an hour on a fast machine for the chrome build
 target, which is considered fast enough for batch job purposes for now.
@@ -26,11 +27,11 @@ $ autoninja -C out/Debug -v chrome | analyze_includes.py - 2>/dev/null
 build_size 270237664463
 """
 
-from __future__ import print_function
 import argparse
 import json
 import os
 import re
+import pathlib
 import sys
 import unittest
 from collections import defaultdict
@@ -51,10 +52,25 @@ def parse_build(build_log):
   # invocations depending on -D flags. For such cases, includes[file] will be
   # the union of those includes.
 
+  # Normalize paths.
+  normalized = {}
+
+  def norm(fn):
+    if not fn in normalized:
+      x = fn.replace('\\\\', '\\')
+      # Use Path.resolve() rather than path.realpath() to get the canonical
+      # upper/lower-case version of the path on Windows.
+      p = pathlib.Path(os.path.join(build_dir, x)).resolve()
+      x = os.path.relpath(p)
+      x = x.replace(os.path.sep, '/')
+      normalized[fn] = x
+    return normalized[fn]
+
   # ninja: Entering directory `out/foo'
   ENTER_DIR_RE = re.compile(r'ninja: Entering directory `(.*?)\'$')
   # ...clang... -c foo.cc -o foo.o ...
-  COMPILE_RE = re.compile(r'.*clang.* -c (\S*)')
+  # ...clang-cl.exe /c foo.cc /Fofoo.o ...
+  COMPILE_RE = re.compile(r'.*clang.* [/-]c (\S*)')
   # . a.h
   # .. b.h
   # . c.h
@@ -65,11 +81,17 @@ def parse_build(build_log):
     if m:
       prev_depth = len(file_stack) - 1
       depth = len(m.group(1))
-      filename = m.group(2)
+      filename = norm(m.group(2))
       includes.setdefault(filename, set())
 
       if depth > prev_depth:
-        assert depth == prev_depth + 1
+        if sys.platform != 'win32':
+          # TODO(crbug.com/1223741): Always assert.
+          assert depth == prev_depth + 1
+        elif depth > prev_depth + 1:
+          # Until the bug is fixed, skip these includes.
+          print('missing include under ', file_stack[0])
+          continue
       else:
         for _ in range(prev_depth - depth + 1):
           file_stack.pop()
@@ -80,7 +102,7 @@ def parse_build(build_log):
 
     m = COMPILE_RE.match(line)
     if m:
-      filename = m.group(1)
+      filename = norm(m.group(1))
       roots.add(filename)
       file_stack = [filename]
       includes.setdefault(filename, set())
@@ -90,18 +112,6 @@ def parse_build(build_log):
     if m:
       build_dir = m.group(1)
       continue
-
-  # Normalize paths.
-  normalized = {}
-
-  def n(fn):
-    if not fn in normalized:
-      x = os.path.relpath(os.path.realpath(os.path.join(build_dir, fn)))
-      normalized[fn] = x
-    return normalized[fn]
-
-  roots = set([n(x) for x in roots])
-  includes = dict([(n(k), set([n(x) for x in v])) for k, v in includes.items()])
 
   return roots, includes
 
@@ -355,12 +365,27 @@ def analyze(target, revision, build_log_file, json_file):
 
 
   log('Computing added sizes...')
-  added_sizes = {name: 0 for name in includes}
+
+  # Split each src -> dst edge in includes into src -> (src,dst) -> dst, so that
+  # we can compute how much each include graph edge adds to the size by doing
+  # dominance analysis on the (src,dst) nodes.
+  augmented_includes = {}
+  for src in includes:
+    augmented_includes[src] = set()
+    for dst in includes[src]:
+      augmented_includes[src].add((src, dst))
+      augmented_includes[(src, dst)] = {dst}
+
+  added_sizes = {node: 0 for node in augmented_includes}
   for r in roots:
-    doms = compute_doms(r, includes)
-    for n in doms:
-      for d in doms[n]:
-        added_sizes[d] += sizes[n]
+    doms = compute_doms(r, augmented_includes)
+    for node in doms:
+      if not node in sizes:
+        # Skip the (src,dst) pseudo nodes.
+        continue
+      for dom in doms[node]:
+        added_sizes[dom] += sizes[node]
+
 
   # Assign a number to each filename for tighter JSON representation.
   names = []
@@ -385,11 +410,13 @@ def analyze(target, revision, build_log_file, json_file):
           'date': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'),
           'files': names,
           'roots': [nr(x) for x in sorted(roots)],
-          'includes': [[nr(x) for x in includes[n]] for n in names],
+          'includes': [[nr(x) for x in sorted(includes[n])] for n in names],
           'included_by': [[nr(x) for x in included_by[n]] for n in names],
           'sizes': [sizes[n] for n in names],
           'tsizes': [trans_sizes[n] for n in names],
           'asizes': [added_sizes[n] for n in names],
+          'esizes': [[added_sizes[(s, d)] for d in sorted(includes[s])]
+                     for s in names],
           'prevalence': [prevalence[n] for n in names],
       }, json_file)
 

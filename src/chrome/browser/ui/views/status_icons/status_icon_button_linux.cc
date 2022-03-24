@@ -14,9 +14,9 @@
 #include "ui/base/wm_role_names_linux.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/transform.h"
 
 namespace {
 
@@ -128,7 +128,7 @@ void StatusIconButtonLinux::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->Transform(transform);
 
   cc::PaintFlags flags;
-  flags.setFilterQuality(kHigh_SkFilterQuality);
+  flags.setFilterQuality(cc::PaintFlags::FilterQuality::kHigh);
   canvas->DrawImageInt(image, 0, 0, image.width(), image.height(), 0, 0,
                        image.width(), image.height(), true, flags);
 }

@@ -22,30 +22,27 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/shell.h"
-#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
 constexpr char kGetScreens[] = R"(
   (async () => {
-    try { const screens = await self.getScreens(); } catch {}
+    try {
+      const screenDetails = await self.getScreenDetails();
+    } catch {
+      return 'error';
+    }
     return (await navigator.permissions.query({name:'window-placement'})).state;
   })();
 )";
 
-#if !defined(OS_WIN)
-// TODO(enne): Remove this in http://crbug.com/1205676
-constexpr char kDeprecatedIsMultiscreen[] = R"(
+constexpr char kCheckPermission[] = R"(
   (async () => {
-    try {
-      return await window.isMultiScreen()
-    } catch (e) {
-      return 'error';
-    }
+    return (await navigator.permissions.query({name:'window-placement'})).state;
   })();
 )";
-#endif  // !defined(OS_WIN)
 
 // Tests of WindowPlacementPermissionContext behavior.
 class WindowPlacementPermissionContextTest : public InProcessBrowserTest {
@@ -53,7 +50,6 @@ class WindowPlacementPermissionContextTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "WindowPlacement");
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -71,6 +67,21 @@ class WindowPlacementPermissionContextTest : public InProcessBrowserTest {
     net::test_server::RegisterDefaultHandlers(https_test_server_.get());
     content::SetupCrossSiteRedirector(https_test_server_.get());
     ASSERT_TRUE(https_test_server_->Start());
+  }
+
+  // Awaits expiry of the navigator.userActivation signal on the active tab.
+  void WaitForUserActivationExpiry() {
+    const std::string await_activation_expiry_script = R"(
+      (async () => {
+        while (navigator.userActivation.isActive)
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        return navigator.userActivation.isActive;
+      })();
+    )";
+    auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(false, EvalJs(tab, await_activation_expiry_script,
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+    EXPECT_FALSE(tab->HasRecentInteractiveInputEvent());
   }
 
   net::EmbeddedTestServer* https_test_server() {
@@ -115,28 +126,67 @@ class MultiscreenWindowPlacementPermissionContextTest
   absl::optional<display::test::ScopedScreenOverride> screen_override_;
 };
 
+// Tests gesture requirements (a gesture is only needed to prompt the user).
+IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest, GestureToPrompt) {
+  const GURL url(https_test_server()->GetURL("a.test", "/empty.html"));
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Auto-dismiss the permission request, iff the prompt is shown.
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(tab);
+  permission_request_manager->set_auto_response_for_test(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
+
+  // Calling getScreenDetails() without a gesture or pre-existing permission
+  // will not prompt the user, and leaves the permission in the default "prompt"
+  // state.
+  EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
+  EXPECT_EQ("error",
+            EvalJs(tab, kGetScreens, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_EQ("prompt", EvalJs(tab, kCheckPermission,
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // Calling getScreenDetails() with a gesture will show the prompt, and
+  // auto-accept.
+  EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
+  EXPECT_EQ("granted", EvalJs(tab, kGetScreens));
+  EXPECT_TRUE(tab->GetMainFrame()->HasTransientUserActivation());
+
+  // Calling getScreenDetails() without a gesture, but with pre-existing
+  // permission, will succeed, since it does not need to prompt the user.
+  WaitForUserActivationExpiry();
+  EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
+  EXPECT_EQ("granted",
+            EvalJs(tab, kGetScreens, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
+}
+
 // Tests user activation after dimissing and denying the permission request.
 IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest, DismissAndDeny) {
   const GURL url(https_test_server()->GetURL("a.test", "/empty.html"));
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
-
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(tab);
 
-  // Auto-dismiss the permission request; user activation should not be granted.
-  permission_request_manager->set_auto_response_for_test(
-      permissions::PermissionRequestManager::DISMISS);
-  EXPECT_EQ("prompt",
-            EvalJs(tab, kGetScreens, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  // Dismiss the prompt after activation expires, expect no activation.
+  ExecuteScriptAsync(tab, "getScreenDetails()");
+  WaitForUserActivationExpiry();
+  ASSERT_TRUE(permission_request_manager->IsRequestInProgress());
+  permission_request_manager->Dismiss();
+  EXPECT_EQ("prompt", EvalJs(tab, kCheckPermission,
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
 
-  // Auto-deny the permission request; user activation should not be granted.
-  permission_request_manager->set_auto_response_for_test(
-      permissions::PermissionRequestManager::DENY_ALL);
-  EXPECT_EQ("denied",
-            EvalJs(tab, kGetScreens, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  // Deny the prompt after activation expires, expect no activation.
+  ExecuteScriptAsync(tab, "getScreenDetails()");
+  WaitForUserActivationExpiry();
+  ASSERT_TRUE(permission_request_manager->IsRequestInProgress());
+  permission_request_manager->Deny();
+  EXPECT_EQ("denied", EvalJs(tab, kCheckPermission,
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
 }
 
@@ -146,15 +196,16 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest, Accept) {
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
-
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(tab);
 
-  // Auto-accept the permission request; user activation should be granted.
-  permission_request_manager->set_auto_response_for_test(
-      permissions::PermissionRequestManager::ACCEPT_ALL);
-  EXPECT_EQ("granted",
-            EvalJs(tab, kGetScreens, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  // Accept the prompt after activation expires, expect an activation signal.
+  ExecuteScriptAsync(tab, "getScreenDetails()");
+  WaitForUserActivationExpiry();
+  ASSERT_TRUE(permission_request_manager->IsRequestInProgress());
+  permission_request_manager->Accept();
+  EXPECT_EQ("granted", EvalJs(tab, kCheckPermission,
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_TRUE(tab->GetMainFrame()->HasTransientUserActivation());
 }
 
@@ -172,9 +223,12 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest,
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(tab);
 
-  permission_request_manager->set_auto_response_for_test(
-      permissions::PermissionRequestManager::ACCEPT_ALL);
-  EXPECT_EQ("granted", EvalJs(child, kGetScreens,
+  // Accept the prompt after activation expires, expect an activation signal.
+  ExecuteScriptAsync(child, "getScreenDetails()");
+  WaitForUserActivationExpiry();
+  ASSERT_TRUE(permission_request_manager->IsRequestInProgress());
+  permission_request_manager->Accept();
+  EXPECT_EQ("granted", EvalJs(child, kCheckPermission,
                               content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_TRUE(tab->GetMainFrame()->HasTransientUserActivation());
   EXPECT_TRUE(child->GetMainFrame()->HasTransientUserActivation());
@@ -200,13 +254,12 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest,
   // PermissionRequestManager will accept any window placement permission
   // dialogs that appear. However, the window-placement permission is not
   // explicitly allowed on the iframe, so requests made by the child frame will
-  // be automatically denied before a prompt might be issued
+  // be automatically denied before a prompt might be issued.
   permission_request_manager->set_auto_response_for_test(
       permissions::PermissionRequestManager::ACCEPT_ALL);
-  EXPECT_EQ("denied", EvalJs(child, kGetScreens,
+  EXPECT_EQ("error", EvalJs(child, kGetScreens));
+  EXPECT_EQ("denied", EvalJs(child, kCheckPermission,
                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  EXPECT_FALSE(tab->GetMainFrame()->HasTransientUserActivation());
-  EXPECT_FALSE(child->GetMainFrame()->HasTransientUserActivation());
 }
 
 IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest,
@@ -233,9 +286,12 @@ IN_PROC_BROWSER_TEST_F(WindowPlacementPermissionContextTest,
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(tab);
 
-  permission_request_manager->set_auto_response_for_test(
-      permissions::PermissionRequestManager::ACCEPT_ALL);
-  EXPECT_EQ("granted", EvalJs(child, kGetScreens,
+  // Accept the prompt after activation expires, expect an activation signal.
+  ExecuteScriptAsync(child, "getScreenDetails()");
+  WaitForUserActivationExpiry();
+  ASSERT_TRUE(permission_request_manager->IsRequestInProgress());
+  permission_request_manager->Accept();
+  EXPECT_EQ("granted", EvalJs(child, kCheckPermission,
                               content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_TRUE(tab->GetMainFrame()->HasTransientUserActivation());
   EXPECT_TRUE(child->GetMainFrame()->HasTransientUserActivation());
@@ -260,12 +316,6 @@ IN_PROC_BROWSER_TEST_F(MultiscreenWindowPlacementPermissionContextTest,
                          content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_EQ(true, EvalJs(child, R"(window.screen.isExtended)",
                          content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-
-  // TODO(enne): Remove this in http://crbug.com/1205676
-  EXPECT_EQ(true, EvalJs(tab, kDeprecatedIsMultiscreen,
-                         content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  EXPECT_EQ(true, EvalJs(child, kDeprecatedIsMultiscreen,
-                         content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Verify that window.screen.isExtended returns false in a cross-origin
@@ -286,12 +336,6 @@ IN_PROC_BROWSER_TEST_F(MultiscreenWindowPlacementPermissionContextTest,
                          content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_EQ(false, EvalJs(child, R"(window.screen.isExtended)",
                           content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-
-  // TODO(enne): Remove this in http://crbug.com/1205676
-  EXPECT_EQ(true, EvalJs(tab, kDeprecatedIsMultiscreen,
-                         content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  EXPECT_EQ("error", EvalJs(child, kDeprecatedIsMultiscreen,
-                            content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Verify that window.screen.isExtended returns true in a cross-origin
@@ -318,12 +362,6 @@ IN_PROC_BROWSER_TEST_F(MultiscreenWindowPlacementPermissionContextTest,
   EXPECT_EQ(true, EvalJs(tab, R"(window.screen.isExtended)",
                          content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_EQ(true, EvalJs(child, R"(window.screen.isExtended)",
-                         content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-
-  // TODO(enne): Remove this in http://crbug.com/1205676
-  EXPECT_EQ(true, EvalJs(tab, kDeprecatedIsMultiscreen,
-                         content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-  EXPECT_EQ(true, EvalJs(child, kDeprecatedIsMultiscreen,
                          content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 

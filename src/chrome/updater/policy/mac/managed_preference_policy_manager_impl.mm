@@ -4,6 +4,7 @@
 
 #import "chrome/updater/policy/mac/managed_preference_policy_manager_impl.h"
 
+#include "base/enterprise_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
@@ -116,11 +117,11 @@ int TranslateUpdatePolicyValue(int update_policy_from_managed_preferences) {
         [policyDict objectForKey:kDownloadPreferenceKey]);
     _defaultUpdatePolicy = updater::TranslateUpdatePolicyValue(
         updater::ReadPolicyInteger(policyDict[kUpdateDefaultKey]));
-    _updatesSuppressed.start_hour =
+    _updatesSuppressed.start_hour_ =
         updater::ReadPolicyInteger(policyDict[kUpdatesSuppressedStartHourKey]);
-    _updatesSuppressed.start_minute = updater::ReadPolicyInteger(
+    _updatesSuppressed.start_minute_ = updater::ReadPolicyInteger(
         policyDict[kUpdatesSuppressedStartMinuteKey]);
-    _updatesSuppressed.duration_minute = updater::ReadPolicyInteger(
+    _updatesSuppressed.duration_minute_ = updater::ReadPolicyInteger(
         policyDict[kUpdatesSuppressedDurationMinuteKey]);
   }
   return self;
@@ -216,7 +217,7 @@ int TranslateUpdatePolicyValue(int update_policy_from_managed_preferences) {
 
 - (instancetype)initWithDictionary:(CRUUpdatePolicyDictionary*)policies {
   if (([super init])) {
-    _managed = (policies.count > 0);
+    _managed = policies.count > 0 && base::IsMachineExternallyManaged();
 
     // Always create a global policy instance for default values.
     _globalPolicy.reset([[CRUManagedPreferenceGlobalPolicySettings alloc]

@@ -30,7 +30,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_NODE_OBJECT_H_
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -46,7 +45,14 @@ class Node;
 class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
   AXNodeObject(Node*, AXObjectCacheImpl&);
+
+  AXNodeObject(const AXNodeObject&) = delete;
+  AXNodeObject& operator=(const AXNodeObject&) = delete;
+
   ~AXNodeObject() override;
+
+  static absl::optional<String> GetCSSAltText(const Node*);
+
   void Trace(Visitor*) const override;
 
  protected:
@@ -61,7 +67,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // The ARIA role, not taking the native role into account.
   ax::mojom::blink::Role aria_role_;
 
-  static absl::optional<String> GetCSSAltText(const Node*);
   AXObjectInclusion ShouldIncludeBasedOnSemantics(
       IgnoredReasons* = nullptr) const;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
@@ -78,7 +83,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                             AXObject::AXObjectVector&) const;
 
   Element* MenuItemElementForMenu() const;
-  Element* MouseButtonListener() const;
   HTMLElement* CorrespondingControlForLabelElement() const;
 
   //
@@ -96,7 +100,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsHovered() const final;
   bool IsImageButton() const;
   bool IsInputImage() const final;
-  bool IsInPageLinkTarget() const override;
+  bool IsLineBreakingObject() const override;
   bool IsLoaded() const override;
   bool IsMultiSelectable() const override;
   bool IsNativeImage() const final;
@@ -114,6 +118,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AccessibilityGrabbedState IsGrabbed() const override;
   AccessibilityExpanded IsExpanded() const override;
   AccessibilitySelectedState IsSelected() const override;
+  bool IsSelectedFromFocusSupported() const override;
   bool IsSelectedFromFocus() const override;
   bool IsRequired() const final;
   bool IsControl() const override;
@@ -150,7 +155,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
       ax::mojom::blink::TextDecorationStyle* text_strikethrough_style,
       ax::mojom::blink::TextDecorationStyle* text_underline_style) const final;
 
-  String ImageDataUrl(const IntSize& max_size) const final;
+  String ImageDataUrl(const gfx::Size& max_size) const final;
   int TextOffsetInFormattingContext(int offset) const override;
 
   // Object attributes.
@@ -160,8 +165,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Properties of interactive elements.
   ax::mojom::blink::AriaCurrentState GetAriaCurrentState() const final;
   ax::mojom::blink::InvalidState GetInvalidState() const final;
-  // Only used when invalidState() returns InvalidStateOther.
-  String AriaInvalidValue() const final;
   bool ValueForRange(float* out_value) const override;
   bool MaxValueForRange(float* out_value) const override;
   bool MinValueForRange(float* out_value) const override;
@@ -171,6 +174,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String GetValueForControl() const override;
   String SlowGetValueForControlIncludingContentEditable() const override;
   String TextFromDescendants(AXObjectSet& visited,
+                             const AXObject* aria_label_or_description_root,
                              bool recursive) const override;
 
   // ARIA attributes.
@@ -192,7 +196,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String GetName(ax::mojom::blink::NameFrom&,
                  AXObjectVector* name_objects) const override;
   String TextAlternative(bool recursive,
-                         bool in_aria_labelled_by_traversal,
+                         const AXObject* aria_label_or_description_root,
                          AXObjectSet& visited,
                          ax::mojom::blink::NameFrom&,
                          AXRelatedObjectVector*,
@@ -204,13 +208,17 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                      ax::mojom::blink::DescriptionFrom&,
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
+  String SVGDescription(ax::mojom::blink::NameFrom,
+                        ax::mojom::blink::DescriptionFrom&,
+                        DescriptionSources*,
+                        AXRelatedObjectVector*) const;
   String Placeholder(ax::mojom::blink::NameFrom) const override;
   String Title(ax::mojom::blink::NameFrom) const override;
 
   // Location
   void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,
-                         SkMatrix44& out_container_transform,
+                         skia::Matrix44& out_container_transform,
                          bool* clips_children = nullptr) const override;
 
   void AddChildren() override;
@@ -266,7 +274,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
       HeapVector<Member<AXObject>>& owned_children) const;
 
   // Inline text boxes.
-  void LoadInlineTextBoxesRecursive() override;
+  void LoadInlineTextBoxes() override;
+  void ForceAddInlineTextBoxChildren() override;
 
   //
   // Layout object specific methods.
@@ -291,7 +300,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String PlaceholderFromNativeAttribute() const;
   String GetValueContributionToName() const;
   bool UseNameFromSelectedOption() const;
-  bool SelectionShouldFollowFocus() const;
   virtual bool IsTabItemSelected() const;
 
   void AddChildrenImpl();
@@ -312,14 +320,13 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void CheckValidChild(AXObject* child);
 #endif
 
+  ax::mojom::blink::TextPosition GetTextPositionFromRole() const;
   ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
 
   static bool IsNameFromLabelElement(HTMLElement* control);
   static bool IsRedundantLabel(HTMLLabelElement* label);
 
   Member<Node> node_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXNodeObject);
 };
 
 }  // namespace blink

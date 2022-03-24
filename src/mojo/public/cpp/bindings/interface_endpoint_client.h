@@ -16,12 +16,13 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
@@ -59,6 +60,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
                           scoped_refptr<base::SequencedTaskRunner> task_runner,
                           uint32_t interface_version,
                           const char* interface_name);
+
+  InterfaceEndpointClient(const InterfaceEndpointClient&) = delete;
+  InterfaceEndpointClient& operator=(const InterfaceEndpointClient&) = delete;
+
   ~InterfaceEndpointClient() override;
 
   // Sets the error handler to receive notifications when an error is
@@ -85,6 +90,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   // Returns true if this endpoint has any pending callbacks.
   bool has_pending_responders() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::AutoLock lock(async_responders_lock_);
     return !async_responders_.empty() || !sync_responses_.empty();
   }
 
@@ -192,6 +198,20 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   }
 #endif
 
+  // This allows the endpoint to be reset from a sequence other than the one on
+  // which it was bound. This should only be used with caution, and it is
+  // critical that the calling sequence cannot run tasks concurrently with the
+  // bound sequence. There's no practical way for this to be asserted, so we
+  // have to take your word for it. If this constraint is not upheld, there will
+  // be data races internal to the bindings object which can lead to UAFs or
+  // surprise message dispatches.
+  void ResetFromAnotherSequenceUnsafe();
+
+  // Tells the client to forget about a pending async request for which it still
+  // hasn't seen a response. Called by the router, possibly from other threads.
+  // The router lock must be held when calling this.
+  void ForgetAsyncRequest(uint64_t request_id);
+
  private:
   // Maps from the id of a response to the MessageReceiver that handles the
   // response.
@@ -201,15 +221,16 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   struct SyncResponseInfo {
    public:
     explicit SyncResponseInfo(bool* in_response_received);
+
+    SyncResponseInfo(const SyncResponseInfo&) = delete;
+    SyncResponseInfo& operator=(const SyncResponseInfo&) = delete;
+
     ~SyncResponseInfo();
 
     Message response;
 
     // Points to a stack-allocated variable.
-    bool* response_received;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SyncResponseInfo);
+    raw_ptr<bool> response_received;
   };
 
   using SyncResponseMap = std::map<uint64_t, std::unique_ptr<SyncResponseInfo>>;
@@ -219,15 +240,18 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   class HandleIncomingMessageThunk : public MessageReceiver {
    public:
     explicit HandleIncomingMessageThunk(InterfaceEndpointClient* owner);
+
+    HandleIncomingMessageThunk(const HandleIncomingMessageThunk&) = delete;
+    HandleIncomingMessageThunk& operator=(const HandleIncomingMessageThunk&) =
+        delete;
+
     ~HandleIncomingMessageThunk() override;
 
     // MessageReceiver implementation:
     bool Accept(Message* message) override;
 
    private:
-    InterfaceEndpointClient* const owner_;
-
-    DISALLOW_COPY_AND_ASSIGN(HandleIncomingMessageThunk);
+    const raw_ptr<InterfaceEndpointClient> owner_;
   };
 
   void InitControllerIfNecessary();
@@ -269,13 +293,18 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
 
   ScopedInterfaceEndpointHandle handle_;
   std::unique_ptr<AssociatedGroup> associated_group_;
+  // `controller_` is not a raw_ptr<...> for performance reasons (based on
+  // analysis of sampling profiler data).
   InterfaceEndpointController* controller_ = nullptr;
 
+  // `incoming_receiver_` is not a raw_ptr<...> for performance reasons (based
+  // on analysis of sampling profiler data).
   MessageReceiverWithResponderStatus* const incoming_receiver_ = nullptr;
   HandleIncomingMessageThunk thunk_{this};
   MessageDispatcher dispatcher_;
 
-  AsyncResponderMap async_responders_;
+  mutable base::Lock async_responders_lock_;
+  AsyncResponderMap async_responders_ GUARDED_BY(async_responders_lock_);
   SyncResponseMap sync_responses_;
 
   uint64_t next_request_id_ = 1;
@@ -300,8 +329,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfaceEndpointClient
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<InterfaceEndpointClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InterfaceEndpointClient);
 };
 
 }  // namespace mojo

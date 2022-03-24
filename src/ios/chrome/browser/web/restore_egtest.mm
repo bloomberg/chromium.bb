@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <objc/runtime.h>
+
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -12,6 +15,7 @@
 #include "ios/net/url_test_util.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/web/common/features.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -134,6 +138,12 @@ bool WaitForOmniboxContaining(std::string text) {
 
 @implementation RestoreTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config = [super appConfigurationForTestCase];
+  config.features_disabled.push_back(kStartSurface);
+  return config;
+}
+
 - (net::EmbeddedTestServer*)secondTestServer {
   if (!_secondTestServer) {
     _secondTestServer = std::make_unique<net::EmbeddedTestServer>();
@@ -235,9 +245,10 @@ bool WaitForOmniboxContaining(std::string text) {
 
 - (void)triggerRestore {
   [ChromeEarlGrey saveSessionImmediately];
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
-      disabled:{}
-      relaunchPolicy:ForceRelaunchByCleanShutdown];
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{}
+                                  disabled:{kStartSurface}
+                            relaunchPolicy:ForceRelaunchByCleanShutdown];
 }
 
 - (void)loadTestPages {

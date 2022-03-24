@@ -11,8 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -142,10 +142,10 @@ class RTCRtpTransceiverImplTest : public ::testing::Test {
                                 webrtc_transceiver->receiver().get(),
                                 std::move(receiver_track_ref),
                                 std::move(receiver_stream_ids)),
-        blink::ToBaseOptional(webrtc_transceiver->mid()),
+        blink::ToAbslOptional(webrtc_transceiver->mid()),
         webrtc_transceiver->stopped(), webrtc_transceiver->direction(),
-        blink::ToBaseOptional(webrtc_transceiver->current_direction()),
-        blink::ToBaseOptional(webrtc_transceiver->fired_direction()), {});
+        blink::ToAbslOptional(webrtc_transceiver->current_direction()),
+        blink::ToAbslOptional(webrtc_transceiver->fired_direction()), {});
   }
 
  protected:

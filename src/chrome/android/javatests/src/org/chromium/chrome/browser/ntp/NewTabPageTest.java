@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.ComponentCallbacks2;
 import android.graphics.Canvas;
@@ -73,7 +73,6 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -103,8 +102,7 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
 @Features.DisableFeatures({ChromeFeatureList.EXPLORE_SITES, ChromeFeatureList.QUERY_TILES,
-        ChromeFeatureList.VIDEO_TUTORIALS, ChromeFeatureList.DEPRECATE_MENAGERIE_API})
-@Features.EnableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY_PROMOS})
+        ChromeFeatureList.VIDEO_TUTORIALS})
 public class NewTabPageTest {
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;
@@ -116,8 +114,7 @@ public class NewTabPageTest {
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
     @Rule
-    public AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(new FakeProfileDataSource());
+    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
     @Rule
     public final DisableAnimationsTestRule mNoAnimationRule = new DisableAnimationsTestRule();
 
@@ -199,8 +196,7 @@ public class NewTabPageTest {
     @SmallTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
     public void testRender_SignInPromoWithAccount() throws Exception {
-        mAccountManagerTestRule.addAccount(mAccountManagerTestRule.createProfileDataFromName(
-                AccountManagerTestRule.TEST_ACCOUNT_EMAIL));
+        mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         // Scroll to the sign in promo in case it is not visible.
         onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
@@ -279,7 +275,7 @@ public class NewTabPageTest {
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(urlBar, true);
 
-        InstrumentationRegistry.getInstrumentation().sendStringSync(UrlConstants.CHROME_BLANK_URL);
+        InstrumentationRegistry.getInstrumentation().sendStringSync(UrlConstants.VERSION_URL);
         LocationBarLayout locationBar =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
@@ -409,12 +405,14 @@ public class NewTabPageTest {
             OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
             final CallbackHelper loadedCallback = new CallbackHelper();
-            mTab.addObserver(new EmptyTabObserver() {
-                @Override
-                public void onPageLoadFinished(Tab tab, GURL url) {
-                    loadedCallback.notifyCalled();
-                    tab.removeObserver(this);
-                }
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                mTab.addObserver(new EmptyTabObserver() {
+                    @Override
+                    public void onPageLoadFinished(Tab tab, GURL url) {
+                        loadedCallback.notifyCalled();
+                        tab.removeObserver(this);
+                    }
+                });
             });
 
             final View v = urlBar;

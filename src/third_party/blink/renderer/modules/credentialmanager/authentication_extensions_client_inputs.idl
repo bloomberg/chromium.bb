@@ -23,6 +23,9 @@ dictionary AuthenticationExtensionsClientInputs {
   USVString credentialProtectionPolicy;
   boolean enforceCredentialProtectionPolicy = false;
 
+  // https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-minpinlength-extension
+  boolean minPinLength;
+
   // https://w3c.github.io/webauthn/#sctn-authenticator-credential-properties-extension
   [RuntimeEnabled=WebAuthenticationResidentKeyRequirement] boolean credProps = false;
 
@@ -32,4 +35,10 @@ dictionary AuthenticationExtensionsClientInputs {
   // https://fidoalliance.org/specs/fido-v2.1-rd-20201208/fido-client-to-authenticator-protocol-v2.1-rd-20201208.html#sctn-credBlob-extension
   BufferSource credBlob;
   boolean getCredBlob;
+
+  // Legacy compatibility extension for U2F migration https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A.
+  boolean googleLegacyAppidSupport;
+
+  // https://github.com/w3c/secure-payment-confirmation
+  [RuntimeEnabled=SecurePaymentConfirmation] AuthenticationExtensionsPaymentInputs payment;
 };

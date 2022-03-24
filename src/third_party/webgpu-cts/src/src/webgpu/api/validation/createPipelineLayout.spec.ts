@@ -4,7 +4,6 @@ createPipelineLayout validation tests.
 TODO: review existing tests, write descriptions, and make sure tests are complete.
 `;
 
-import { poptions, params } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { bufferBindingTypeInfo, kBufferBindingTypes } from '../../capability_info.js';
 
@@ -22,10 +21,10 @@ g.test('number_of_dynamic_buffers_exceeds_the_maximum_value')
 
 TODO(#230): Update to enforce per-stage and per-pipeline-layout limits on BGLs as well.`
   )
-  .params(
-    params()
-      .combine(poptions('visibility', [0, 2, 4, 6]))
-      .combine(poptions('type', kBufferBindingTypes))
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('visibility', [0, 2, 4, 6])
+      .combine('type', kBufferBindingTypes)
   )
   .fn(async t => {
     const { type, visibility } = t.params;
@@ -103,3 +102,42 @@ g.test('number_of_bind_group_layouts_exceeds_the_maximum_value').fn(async t => {
     t.device.createPipelineLayout(badPipelineLayoutDescriptor);
   });
 });
+
+g.test('bind_group_layouts,device_mismatch')
+  .desc(
+    `
+    Tests createPipelineLayout cannot be called with bind group layouts created from another device
+    Test with two layouts to make sure all layouts can be validated:
+    - layout0 and layout1 from same device
+    - layout0 and layout1 from different device
+    `
+  )
+  .paramsSubcasesOnly([
+    { layout0Mismatched: false, layout1Mismatched: false }, // control case
+    { layout0Mismatched: true, layout1Mismatched: false },
+    { layout0Mismatched: false, layout1Mismatched: true },
+  ])
+  .fn(async t => {
+    const { layout0Mismatched, layout1Mismatched } = t.params;
+
+    const mismatched = layout0Mismatched || layout1Mismatched;
+
+    if (mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const bglDescriptor: GPUBindGroupLayoutDescriptor = {
+      entries: [],
+    };
+
+    const layout0 = layout0Mismatched
+      ? t.mismatchedDevice.createBindGroupLayout(bglDescriptor)
+      : t.device.createBindGroupLayout(bglDescriptor);
+    const layout1 = layout1Mismatched
+      ? t.mismatchedDevice.createBindGroupLayout(bglDescriptor)
+      : t.device.createBindGroupLayout(bglDescriptor);
+
+    t.expectValidationError(() => {
+      t.device.createPipelineLayout({ bindGroupLayouts: [layout0, layout1] });
+    }, mismatched);
+  });

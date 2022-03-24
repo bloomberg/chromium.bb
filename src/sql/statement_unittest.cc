@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_piece_forward.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
@@ -124,6 +125,75 @@ TEST_F(SQLStatementTest, Reset) {
 
   s.Reset(true);
   ASSERT_FALSE(s.Step());
+}
+
+TEST_F(SQLStatementTest, BindBlob) {
+  ASSERT_TRUE(db_.Execute("CREATE TABLE blobs (b BLOB NOT NULL)"));
+
+  const std::vector<std::vector<uint8_t>> values = {
+      {},
+      {0x01},
+      {0x41, 0x42, 0x43, 0x44},
+  };
+
+  Statement insert(db_.GetUniqueStatement("INSERT INTO blobs VALUES(?)"));
+  for (const std::vector<uint8_t>& value : values) {
+    insert.BindBlob(0, value);
+    ASSERT_TRUE(insert.Run());
+    insert.Reset(/* clear_bound_vars= */ true);
+  }
+
+  Statement select(db_.GetUniqueStatement("SELECT b FROM blobs"));
+  for (const std::vector<uint8_t>& value : values) {
+    ASSERT_TRUE(select.Step());
+    std::vector<uint8_t> column_value;
+    EXPECT_TRUE(select.ColumnBlobAsVector(0, &column_value));
+    EXPECT_EQ(value, column_value);
+  }
+  EXPECT_FALSE(select.Step());
+}
+
+TEST_F(SQLStatementTest, BindString) {
+  ASSERT_TRUE(db_.Execute("CREATE TABLE strings (s TEXT NOT NULL)"));
+
+  const std::vector<std::string> values = {
+      "",
+      "a",
+      "\x01",
+      std::string("\x00", 1),
+      "abcd",
+      "\x01\x02\x03\x04",
+      std::string("\x01Test", 5),
+      std::string("\x00Test", 5),
+  };
+
+  Statement insert(db_.GetUniqueStatement("INSERT INTO strings VALUES(?)"));
+  for (const std::string& value : values) {
+    insert.BindString(0, value);
+    ASSERT_TRUE(insert.Run());
+    insert.Reset(/* clear_bound_vars= */ true);
+  }
+
+  Statement select(db_.GetUniqueStatement("SELECT s FROM strings"));
+  for (const std::string& value : values) {
+    ASSERT_TRUE(select.Step());
+    EXPECT_EQ(value, select.ColumnString(0));
+  }
+  EXPECT_FALSE(select.Step());
+}
+
+TEST_F(SQLStatementTest, BindString_NullData) {
+  ASSERT_TRUE(db_.Execute("CREATE TABLE strings (s TEXT NOT NULL)"));
+
+  Statement insert(db_.GetUniqueStatement("INSERT INTO strings VALUES(?)"));
+  insert.BindString(0, base::StringPiece(nullptr, 0));
+  ASSERT_TRUE(insert.Run());
+
+  Statement select(db_.GetUniqueStatement("SELECT s FROM strings"));
+  ASSERT_TRUE(select.Step());
+  EXPECT_EQ(std::string(), select.ColumnString(0));
+
+  EXPECT_FALSE(select.Step());
 }
 
 }  // namespace

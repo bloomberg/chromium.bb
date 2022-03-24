@@ -35,14 +35,14 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -151,7 +151,7 @@ Value ChromePolicyConversionsClient::GetExtensionPolicies(
   for (const scoped_refptr<const extensions::Extension>& extension :
        *extension_set) {
     // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->HasPath(
+    if (!extension->manifest()->FindPath(
             extensions::manifest_keys::kStorageManagedSchema)) {
       continue;
     }
@@ -192,8 +192,8 @@ Value ChromePolicyConversionsClient::GetDeviceLocalAccountPolicies() {
   bool current_user_policies_enabled = GetUserPoliciesEnabled();
   EnableUserPolicies(true);
 
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   DCHECK(connector);  // always not-null.
 
   auto* device_local_account_policy_service =
@@ -263,13 +263,13 @@ Value ChromePolicyConversionsClient::GetIdentityFields() {
   Value identity_fields(Value::Type::DICTIONARY);
   if (!GetDeviceInfoEnabled())
     return Value();
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector) {
     LOG(ERROR) << "Cannot dump identity fields, no policy connector";
     return Value();
   }
-  if (connector->IsEnterpriseManaged()) {
+  if (connector->IsDeviceEnterpriseManaged()) {
     identity_fields.SetKey("enrollment_domain",
                            Value(connector->GetEnterpriseEnrollmentDomain()));
 

@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "extensions/browser/event_router.h"
 
 namespace extensions {
@@ -18,6 +19,10 @@ class TestEventRouterObserver : public EventRouter::TestObserver {
   using EventMap = std::map<std::string, std::unique_ptr<Event>>;
 
   explicit TestEventRouterObserver(EventRouter* event_router);
+
+  TestEventRouterObserver(const TestEventRouterObserver&) = delete;
+  TestEventRouterObserver& operator=(const TestEventRouterObserver&) = delete;
+
   ~TestEventRouterObserver() override;
 
   // Clears all recorded events.
@@ -33,9 +38,7 @@ class TestEventRouterObserver : public EventRouter::TestObserver {
 
   EventMap events_;
   EventMap dispatched_events_;
-  EventRouter* event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEventRouterObserver);
+  raw_ptr<EventRouter> event_router_;
 };
 
 }  // namespace extensions

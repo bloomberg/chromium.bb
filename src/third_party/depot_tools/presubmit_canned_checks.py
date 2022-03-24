@@ -41,16 +41,34 @@ OFF_BY_DEFAULT_LINT_FILTERS = [
 # - build/c++11         : Include file and feature blocklists are
 #                         google3-specific
 # - runtime/references  : No longer banned by Google style guide
+# - whitespace/...      : Most whitespace issues handled by clang-format
 OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS = [
-  '-build/c++11',
-  '-runtime/references',
+    '-build/c++11',
+    '-runtime/references',
+    '-whitespace/braces',
+    '-whitespace/comma',
+    '-whitespace/end_of_line',
+    '-whitespace/forcolon',
+    '-whitespace/indent',
+    '-whitespace/line_length',
+    '-whitespace/newline',
+    '-whitespace/operators',
+    '-whitespace/parens',
+    '-whitespace/semicolon',
+    '-whitespace/tab',
 ]
 
 ### Description checks
 
 def CheckChangeHasBugField(input_api, output_api):
   """Requires that the changelist have a Bug: field."""
-  if input_api.change.BugsFromDescription():
+  bugs = input_api.change.BugsFromDescription()
+  if bugs:
+    if any(b.startswith('b/') for b in bugs):
+      return [
+          output_api.PresubmitNotifyResult(
+              'Buganizer bugs should be prefixed with b:, not b/.')
+      ]
     return []
   else:
     return [output_api.PresubmitNotifyResult(
@@ -103,6 +121,22 @@ def CheckChangeWasUploaded(input_api, output_api):
   return []
 
 
+def CheckDescriptionUsesColonInsteadOfEquals(input_api, output_api):
+  """Checks that the CL description uses a colon after 'Bug' and 'Fixed' tags
+  instead of equals.
+
+  crbug.com only interprets the lines "Bug: xyz" and "Fixed: xyz" but not
+  "Bug=xyz" or "Fixed=xyz".
+  """
+  text = input_api.change.DescriptionText()
+  if input_api.re.search(r'^(Bug|Fixed)=',
+                         text,
+                         flags=input_api.re.IGNORECASE
+                         | input_api.re.MULTILINE):
+    return [output_api.PresubmitError('Use Bug:/Fixed: instead of Bug=/Fixed=')]
+  return []
+
+
 ### Content checks
 
 
@@ -137,13 +171,16 @@ def CheckAuthorizedAuthor(input_api, output_api, bot_allowlist=None):
   if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
              for valid in valid_authors):
     input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
-    return [error_type(
-        ('%s is not in AUTHORS file. If you are a new contributor, please visit'
-        '\n'
-        'https://www.chromium.org/developers/contributing-code and read the '
-        '"Legal" section\n'
-        'If you are a chromite, verify the contributor signed the CLA.') %
-        author)]
+    return [
+      error_type((
+        # pylint: disable=line-too-long
+        '%s is not in AUTHORS file. If you are a new contributor, please visit\n'
+        'https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/contributing.md#Legal-stuff\n'
+        # pylint: enable=line-too-long
+        'and read the "Legal stuff" section\n'
+        'If you are a chromite, verify that the contributor signed the CLA.') %
+          author)
+    ]
   return []
 
 
@@ -567,10 +604,10 @@ def CheckLicense(input_api, output_api, license_re=None, project_name=None,
   # The (c) is deprecated, but tolerate it until it's removed from all files.
   license_re = license_re or (
       r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
-        r'All rights reserved\.\n'
+        r'All rights reserved\.\r?\n'
       r'.*? Use of this source code is governed by a BSD-style license that '
-        r'can be\n'
-      r'.*? found in the LICENSE file\.(?: \*/)?\n'
+        r'can be\r?\n'
+      r'.*? found in the LICENSE file\.(?: \*/)?\r?\n'
   ) % {
       'year': years_re,
       'project': project_name,
@@ -579,7 +616,7 @@ def CheckLicense(input_api, output_api, license_re=None, project_name=None,
   license_re = input_api.re.compile(license_re, input_api.re.MULTILINE)
   bad_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
-    contents = input_api.ReadFile(f, 'rb')
+    contents = input_api.ReadFile(f, 'r')
     if accept_empty_files and not contents:
       continue
     if not license_re.search(contents):
@@ -648,6 +685,7 @@ def GetUnitTestsInDirectory(input_api,
                             env=None,
                             run_on_python2=True,
                             run_on_python3=True,
+                            skip_shebang_check=False,
                             allowlist=None,
                             blocklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
@@ -682,13 +720,17 @@ def GetUnitTestsInDirectory(input_api,
           'Out of %d files, found none that matched c=%r, s=%r in directory %s'
           % (found, files_to_check, files_to_skip, directory))
     ]
-  return GetUnitTests(
-      input_api, output_api, unit_tests, env, run_on_python2, run_on_python3)
+  return GetUnitTests(input_api, output_api, unit_tests, env, run_on_python2,
+                      run_on_python3, skip_shebang_check)
 
 
-def GetUnitTests(
-    input_api, output_api, unit_tests, env=None, run_on_python2=True,
-    run_on_python3=True):
+def GetUnitTests(input_api,
+                 output_api,
+                 unit_tests,
+                 env=None,
+                 run_on_python2=True,
+                 run_on_python3=True,
+                 skip_shebang_check=False):
   """Runs all unit tests in a directory.
 
   On Windows, sys.executable is used for unit tests ending with ".py".
@@ -721,19 +763,32 @@ def GetUnitTests(
           kwargs=kwargs,
           message=message_type))
     else:
-      if has_py3_shebang(unit_test) and run_on_python3:
+      test_run = False
+      # TODO(crbug.com/1223478): The intent for this line was to run the test
+      # on python3 if the file has a shebang OR if it was explicitly requested
+      # to run on python3. Since tests have been broken since this landed, we
+      # introduced the |skip_shebang_check| argument to work around the issue
+      # until every caller in Chromium has been fixed.
+      if (skip_shebang_check or has_py3_shebang(unit_test)) and run_on_python3:
         results.append(input_api.Command(
             name=unit_test,
             cmd=cmd,
             kwargs=kwargs,
             message=message_type,
             python3=True))
+        test_run = True
       if run_on_python2:
         results.append(input_api.Command(
             name=unit_test,
             cmd=cmd,
             kwargs=kwargs,
             message=message_type))
+        test_run = True
+      if not test_run:
+        output_api.PresubmitPromptWarning(
+            "Some python tests were not run. You may need to add\n"
+            "skip_shebang_check=True for python3 tests.",
+            items=unit_test)
   return results
 
 
@@ -743,7 +798,8 @@ def GetUnitTestsRecursively(input_api,
                             files_to_check,
                             files_to_skip,
                             run_on_python2=True,
-                            run_on_python3=True):
+                            run_on_python3=True,
+                            skip_shebang_check=False):
   """Gets all files in the directory tree (git repo) that match files_to_check.
 
   Restricts itself to only find files within the Change's source repo, not
@@ -769,9 +825,12 @@ def GetUnitTestsRecursively(input_api,
           % (found, files_to_check, files_to_skip, directory))
     ]
 
-  return GetUnitTests(input_api, output_api, tests,
+  return GetUnitTests(input_api,
+                      output_api,
+                      tests,
                       run_on_python2=run_on_python2,
-                      run_on_python3=run_on_python3)
+                      run_on_python3=run_on_python3,
+                      skip_shebang_check=skip_shebang_check)
 
 
 def GetPythonUnitTests(input_api, output_api, unit_tests):
@@ -887,15 +946,22 @@ def GetPylint(input_api,
               files_to_skip=None,
               disabled_warnings=None,
               extra_paths_list=None,
-              pylintrc=None):
+              pylintrc=None,
+              version='1.5'):
   """Run pylint on python files.
 
   The default files_to_check enforces looking only at *.py files.
+
+  Currently only pylint version '1.5', '2.6' and '2.7' are supported.
   """
 
   files_to_check = tuple(files_to_check or (r'.*\.py$', ))
   files_to_skip = tuple(files_to_skip or input_api.DEFAULT_FILES_TO_SKIP)
   extra_paths_list = extra_paths_list or []
+
+  assert version in ('1.5', '2.6', '2.7'), \
+      'Unsupported pylint version: ' + version
+  python2 = (version == '1.5')
 
   if input_api.is_committing:
     error_type = output_api.PresubmitError
@@ -936,7 +1002,7 @@ def GetPylint(input_api,
     return []
   files.sort()
 
-  input_api.logging.info('Running pylint on %d files', len(files))
+  input_api.logging.info('Running pylint %s on %d files', version, len(files))
   input_api.logging.debug('Running pylint on: %s', files)
   env = input_api.environ.copy()
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(extra_paths_list)
@@ -947,7 +1013,7 @@ def GetPylint(input_api,
     # Windows needs help running python files so we explicitly specify
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
-    tool = input_api.os_path.join(_HERE, 'pylint')
+    tool = input_api.os_path.join(_HERE, 'pylint-' + version)
     kwargs = {'env': env}
     if input_api.platform == 'win32':
       # On Windows, scripts on the current directory take precedence over PATH.
@@ -975,12 +1041,15 @@ def GetPylint(input_api,
       description += ' on %d cores' % input_api.cpu_count
 
     kwargs['stdin'] = '\n'.join(args + flist)
+    if input_api.sys.version_info.major != 2:
+      kwargs['stdin'] = kwargs['stdin'].encode('utf-8')
 
     return input_api.Command(
         name='Pylint (%s)' % description,
         cmd=cmd,
         kwargs=kwargs,
-        message=error_type)
+        message=error_type,
+        python3=not python2)
 
   # Always run pylint and pass it all the py files at once.
   # Passing py files one at time is slower and can produce
@@ -1670,7 +1739,9 @@ def CheckChangedLUCIConfigs(input_api, output_api):
         out_f = output_api.PresubmitError
       else:
         out_f = output_api.PresubmitNotifyResult
-      outputs.append(out_f('Config validation: %s' % msg['text']))
+      outputs.append(
+          out_f('Config validation for %s: %s' % ([str(obj['path'])
+                                                   for obj in f], msg['text'])))
   return outputs
 
 
@@ -1707,12 +1778,15 @@ def CheckLucicfgGenOutput(input_api, output_api, entry_script):
         output_api.PresubmitError)
   ]
 
-def CheckJsonParses(input_api, output_api):
-  """Verifies that all JSON files at least parse as valid JSON."""
+def CheckJsonParses(input_api, output_api, file_filter=None):
+  """Verifies that all JSON files at least parse as valid JSON. By default,
+  file_filter will look for all files that end with .json"""
   import json
+  if file_filter is None:
+    file_filter = lambda x: x.LocalPath().endswith('.json')
   affected_files = input_api.AffectedFiles(
       include_deletes=False,
-      file_filter=lambda x: x.LocalPath().endswith('.json'))
+      file_filter=file_filter)
   warnings = []
   for f in affected_files:
     with open(f.AbsoluteLocalPath()) as j:

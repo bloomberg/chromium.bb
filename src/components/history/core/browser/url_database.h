@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/query_parser/query_parser.h"
@@ -47,6 +45,9 @@ class URLDatabase {
   // Must call CreateURLTable() and CreateURLIndexes() before using to make
   // sure the database is initialized.
   URLDatabase();
+
+  URLDatabase(const URLDatabase&) = delete;
+  URLDatabase& operator=(const URLDatabase&) = delete;
 
   // This object must be destroyed on the thread where all accesses are
   // happening to avoid thread-safety problems.
@@ -118,6 +119,10 @@ class URLDatabase {
   class URLEnumeratorBase {
    public:
     URLEnumeratorBase();
+
+    URLEnumeratorBase(const URLEnumeratorBase&) = delete;
+    URLEnumeratorBase& operator=(const URLEnumeratorBase&) = delete;
+
     virtual ~URLEnumeratorBase();
 
    private:
@@ -125,8 +130,6 @@ class URLDatabase {
 
     bool initialized_;
     sql::Statement statement_;
-
-    DISALLOW_COPY_AND_ASSIGN(URLEnumeratorBase);
   };
 
   // A basic enumerator to enumerate urls
@@ -134,11 +137,11 @@ class URLDatabase {
    public:
     URLEnumerator();
 
+    URLEnumerator(const URLEnumerator&) = delete;
+    URLEnumerator& operator=(const URLEnumerator&) = delete;
+
     // Retrieves the next url. Returns false if no more urls are available.
     bool GetNextURL(URLRow* r);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(URLEnumerator);
   };
 
   // Initializes the given enumerator to enumerator all URLs in the database.
@@ -184,14 +187,14 @@ class URLDatabase {
 
   // Performs a brute force search over the database to find any URLs or titles
   // which match the `query` string, using the default text matching algorithm.
-  // Returns any matches in `results`.
-  bool GetTextMatches(const std::u16string& query, URLRows* results);
+  // Returns any matches.
+  URLRows GetTextMatches(const std::u16string& query);
 
   // Same as GetTextMatches, using `algorithm` as the text matching
   // algorithm.
-  bool GetTextMatchesWithAlgorithm(const std::u16string& query,
-                                   query_parser::MatchingAlgorithm algorithm,
-                                   URLRows* results);
+  URLRows GetTextMatchesWithAlgorithm(
+      const std::u16string& query,
+      query_parser::MatchingAlgorithm algorithm);
 
   // Keyword Search Terms ------------------------------------------------------
 
@@ -238,13 +241,6 @@ class URLDatabase {
 
   // Deletes any search corresponding to `url_id`.
   bool DeleteKeywordSearchTermForURL(URLID url_id);
-
-  // This is a cover for VisitDatabase::GetVisitsForURL(). It's here to avoid
-  // changing a ton of callback code that currently takes a UrlDatabase.
-  //
-  // TODO(https://crbug.com/1141501): this is for an experiment, and will be
-  // removed once data is collected from experiment.
-  virtual bool GetVisitsForUrl2(URLID url_id, VisitVector* visits);
 
  protected:
   friend class VisitDatabase;
@@ -301,7 +297,7 @@ class URLDatabase {
 
   // Convenience to fill a URLRow. Must be in sync with the fields in
   // kHistoryURLRowFields.
-  static void FillURLRow(const sql::Statement& s, URLRow* i);
+  static void FillURLRow(sql::Statement& s, URLRow* i);
 
   // Returns the database for the functions in this interface. The descendant of
   // this class implements these functions to return its objects.
@@ -316,8 +312,6 @@ class URLDatabase {
   // True if InitKeywordSearchTermsTable() has been invoked. Not all subclasses
   // have keyword search terms.
   bool has_keyword_search_terms_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLDatabase);
 };
 
 // The fields and order expected by FillURLRow(). ID is guaranteed to be first

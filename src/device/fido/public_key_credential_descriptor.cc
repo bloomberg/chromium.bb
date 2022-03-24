@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
 namespace device {
@@ -42,22 +43,15 @@ PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor() = default;
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     CredentialType credential_type,
     std::vector<uint8_t> id)
-    : PublicKeyCredentialDescriptor(
-          credential_type,
-          std::move(id),
-          {FidoTransportProtocol::kUsbHumanInterfaceDevice,
-           FidoTransportProtocol::kBluetoothLowEnergy,
-           FidoTransportProtocol::kNearFieldCommunication,
-           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-           FidoTransportProtocol::kInternal}) {}
+    : PublicKeyCredentialDescriptor(credential_type, std::move(id), {}) {}
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     CredentialType credential_type,
     std::vector<uint8_t> id,
     base::flat_set<FidoTransportProtocol> transports)
-    : credential_type_(credential_type),
-      id_(std::move(id)),
-      transports_(std::move(transports)) {}
+    : credential_type(credential_type),
+      id(std::move(id)),
+      transports(std::move(transports)) {}
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     const PublicKeyCredentialDescriptor& other) = default;
@@ -75,15 +69,18 @@ PublicKeyCredentialDescriptor::~PublicKeyCredentialDescriptor() = default;
 
 bool PublicKeyCredentialDescriptor::operator==(
     const PublicKeyCredentialDescriptor& other) const {
-  return credential_type_ == other.credential_type_ && id_ == other.id_ &&
-         transports_ == other.transports_;
+  return credential_type == other.credential_type && id == other.id &&
+         transports == other.transports;
 }
 
 cbor::Value AsCBOR(const PublicKeyCredentialDescriptor& desc) {
   cbor::Value::MapValue cbor_descriptor_map;
-  cbor_descriptor_map[cbor::Value(kCredentialIdKey)] = cbor::Value(desc.id());
+  cbor_descriptor_map[cbor::Value(kCredentialIdKey)] = cbor::Value(desc.id);
   cbor_descriptor_map[cbor::Value(kCredentialTypeKey)] =
-      cbor::Value(CredentialTypeToString(desc.credential_type()));
+      cbor::Value(CredentialTypeToString(desc.credential_type));
+  // Transports are omitted from CBOR serialization. They aren't useful for
+  // security keys to process. Some existing devices even refuse to parse them
+  // (see https://crbug.com/1270757).
   return cbor::Value(std::move(cbor_descriptor_map));
 }
 

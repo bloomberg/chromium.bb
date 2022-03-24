@@ -13,14 +13,15 @@
 #include "include/core/SkString.h"
 #include "include/gpu/GrDirectContext.h"
 
+#include "src/core/SkCanvasPriv.h"
 #include "src/core/SkConvertPixels.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 
 #include "tools/gpu/ProxyUtils.h"
 
@@ -46,9 +47,16 @@ static GrSurfaceProxyView create_view(GrDirectContext* dContext,
                     GrMipLevel mipLevel = {src.getPixels(), src.rowBytes(), nullptr};
                     auto colorType = SkColorTypeToGrColorType(src.colorType());
 
-                    return rp->createTexture(src.dimensions(), desc.fFormat, colorType,
-                                             desc.fRenderable, desc.fSampleCnt, desc.fBudgeted,
-                                             desc.fFit, desc.fProtected, mipLevel);
+                    return rp->createTexture(src.dimensions(),
+                                             desc.fFormat,
+                                             desc.fTextureType,
+                                             colorType,
+                                             desc.fRenderable,
+                                             desc.fSampleCnt,
+                                             desc.fBudgeted,
+                                             desc.fFit,
+                                             desc.fProtected,
+                                             mipLevel);
                 },
                 format, GrRenderable::kNo, 1, GrProtected::kNo, *dContext->priv().caps(),
                 GrSurfaceProxy::UseAllocator::kYes);
@@ -138,7 +146,7 @@ static SkBitmap create_bitmap(SkIRect contentRect, SkISize fullSize, GrSurfaceOr
 }
 
 static void draw_texture(const GrCaps* caps,
-                         GrSurfaceDrawContext* sdc,
+                         skgpu::v1::SurfaceDrawContext* sdc,
                          const GrSurfaceProxyView& src,
                          const SkIRect& srcRect,
                          const SkIRect& drawRect,
@@ -198,10 +206,15 @@ protected:
         return DrawResult::kOk;
     }
 
-    void onDraw(GrRecordingContext* rContext, GrSurfaceDrawContext* sdc,
-                SkCanvas* canvas) override {
+    DrawResult onDraw(GrRecordingContext* rContext, SkCanvas* canvas, SkString* errorMsg) override {
         SkSamplingOptions sampling(SkFilterMode::kNearest, SkMipmapMode::kNone);
         SkPaint p;
+
+        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+        if (!sdc) {
+            *errorMsg = kErrorMsg_DrawSkippedGpuOnly;
+            return DrawResult::kSkip;
+        }
 
         int y = kPad;
         for (auto yMode : { SkTileMode::kClamp, SkTileMode::kRepeat,
@@ -230,21 +243,22 @@ protected:
             y += 2*kContentSize+kPad;
         }
 
+        return DrawResult::kOk;
     }
 
 private:
-    static constexpr int kLeftContentOffset = 8;
-    static constexpr int kTopContentOffset = 16;
-    static constexpr int kRightContentPadding = 24;
-    static constexpr int kBottomContentPadding = 80;
+    inline static constexpr int kLeftContentOffset = 8;
+    inline static constexpr int kTopContentOffset = 16;
+    inline static constexpr int kRightContentPadding = 24;
+    inline static constexpr int kBottomContentPadding = 80;
 
-    static constexpr int kPad = 4; // on-screen padding between cells
+    inline static constexpr int kPad = 4; // on-screen padding between cells
 
-    static constexpr int kContentSize = 32;
+    inline static constexpr int kContentSize = 32;
 
     // Each cell in this GM's grid is a square - 2*kContentSize on a side
-    static constexpr int kTotalWidth = (2*kContentSize+kPad) * kSkTileModeCount + kPad;
-    static constexpr int kTotalHeight = (2*kContentSize+kPad) * kSkTileModeCount + kPad;
+    inline static constexpr int kTotalWidth = (2*kContentSize+kPad) * kSkTileModeCount + kPad;
+    inline static constexpr int kTotalHeight = (2*kContentSize+kPad) * kSkTileModeCount + kPad;
 
     GrSurfaceOrigin    fOrigin;
     SkIRect            fContentRect;

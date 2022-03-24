@@ -49,20 +49,18 @@ using chrome_test_util::ShareButton;
 using chrome_test_util::DeleteButton;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::OpenLinkInIncognitoButton;
+using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
 
 namespace chrome_test_util {
-
-id<GREYMatcher> StarButton() {
-  return ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
-}
 
 id<GREYMatcher> BookmarksContextMenuEditButton() {
   // Making sure the edit button we're selecting is not on the bottom bar via
   // exclusion by accessibility ID and ancestry.
   return grey_allOf(
-      EditButton([ChromeEarlGrey isNativeContextMenusEnabled]),
+      EditButton(), grey_userInteractionEnabled(),
       grey_not(grey_accessibilityID(kBookmarkHomeTrailingButtonIdentifier)),
+      grey_not(TabGridEditButton()),
       grey_not(grey_ancestor(
           grey_accessibilityID(kBookmarkHomeTrailingButtonIdentifier))),
       nil);
@@ -122,6 +120,16 @@ id<GREYMatcher> SearchIconButton() {
 - (void)openBookmarks {
   // Opens the bookmark manager.
   [ChromeEarlGreyUI openToolsMenu];
+  [ChromeEarlGreyUI tapToolsMenuButton:BookmarksMenuButton()];
+
+  // Assert the menu is gone.
+  [[EarlGrey selectElementWithMatcher:BookmarksMenuButton()]
+      assertWithMatcher:grey_nil()];
+}
+
+- (void)openBookmarksInWindowWithNumber:(int)windowNumber {
+  // Opens the bookmark manager.
+  [ChromeEarlGreyUI openToolsMenuInWindowWithNumber:windowNumber];
   [ChromeEarlGreyUI tapToolsMenuButton:BookmarksMenuButton()];
 
   // Assert the menu is gone.
@@ -250,63 +258,43 @@ id<GREYMatcher> SearchIconButton() {
 }
 
 - (void)verifyContextMenuForSingleURLWithEditEnabled:(BOOL)editEnabled {
-  if ([ChromeEarlGrey isNativeContextMenusEnabled]) {
-    [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
-        assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:OpenLinkInIncognitoButton(YES)]
-        assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:CopyLinkButton(YES)]
-        assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:ShareButton()]
-        assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:OpenLinkInIncognitoButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:CopyLinkButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:ShareButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 
-    // Some actions need to be disabled when users cannot edit a given bookmark.
-    id<GREYMatcher> matcher =
-        editEnabled ? grey_sufficientlyVisible()
-                    : grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            BookmarksContextMenuEditButton()]
-        assertWithMatcher:matcher];
-    [[EarlGrey selectElementWithMatcher:DeleteButton()]
-        assertWithMatcher:matcher];
-
-    return;
-  }
-
-  // Action Sheets are used as context menus on iOS 12.
-  [self verifyActionSheetsForSingleURLWithEditEnabled:editEnabled];
+  // Some actions need to be disabled when users cannot edit a given bookmark.
+  id<GREYMatcher> matcher =
+      editEnabled ? grey_sufficientlyVisible()
+                  : grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          BookmarksContextMenuEditButton()]
+      assertWithMatcher:matcher];
+  [[EarlGrey selectElementWithMatcher:DeleteButton()]
+      assertWithMatcher:matcher];
 }
 
 - (void)verifyContextMenuForSingleFolderWithEditEnabled:(BOOL)editEnabled {
-  if ([ChromeEarlGrey isNativeContextMenusEnabled]) {
-    // Edit and Move need to be disabled when users cannot edit a given
-    // bookmark.
-    id<GREYMatcher> matcher =
-        editEnabled ? grey_sufficientlyVisible()
-                    : grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            BookmarksContextMenuEditButton()]
-        assertWithMatcher:matcher];
-    [[EarlGrey selectElementWithMatcher:MoveButton()]
-        assertWithMatcher:matcher];
-    return;
-  }
-
-  // Action Sheets are used as context menus on iOS 12.
-  [self verifyActionSheetsForSingleFolderWithEditEnabled:editEnabled];
+  // Edit and Move need to be disabled when users cannot edit a given
+  // bookmark.
+  id<GREYMatcher> matcher =
+      editEnabled ? grey_sufficientlyVisible()
+                  : grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          BookmarksContextMenuEditButton()]
+      assertWithMatcher:matcher];
+  [[EarlGrey selectElementWithMatcher:MoveButton()] assertWithMatcher:matcher];
 }
 
 - (void)dismissContextMenu {
-  if ([ChromeEarlGrey isNativeContextMenusEnabled]) {
-    // Since there are is no cancel action on the iOS 13 context menus, dismiss
-    // by tapping elsewhere (on the key window).
-    [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
-        performAction:grey_tap()];
-    return;
-  }
-
-  // Action Sheets are used as context menus on iOS 12.
-  [self dismissActionSheets];
+  // Since there are is no cancel action on the iOS 13 context menus, dismiss
+  // by tapping elsewhere (on the key window).
+  [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
+      performAction:grey_tap()];
 }
 
 - (void)verifyActionSheetsForSingleURLWithEditEnabled:(BOOL)editEnabled {
@@ -453,12 +441,28 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+- (void)verifyEmptyBackgroundIsAbsent {
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kTableViewIllustratedEmptyViewID)]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_BOOKMARK_EMPTY_TITLE))]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_BOOKMARK_EMPTY_MESSAGE))]
+      assertWithMatcher:grey_nil()];
+}
+
 - (void)verifyEmptyState {
   [self verifyEmptyBackgroundAppears];
 
-  // TODO(crbug.com/1126982): Fix the search bar issue on iOS 12.4.
   // The search bar should not be visible when the illustrated empty state is
   // shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityTrait(
+                                          UIAccessibilityTraitSearchField)]
+      assertWithMatcher:grey_nil()];
 }
 
 - (void)verifyBookmarkFolderIsSeen:(NSString*)bookmarkFolder {
@@ -678,9 +682,12 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarkEarlGreyUI starCurrentTab];
 
   // Set the bookmark name.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_ACTION_EDIT)]
-      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_userInteractionEnabled(),
+                                          grey_not(TabGridEditButton()),
+                                          ButtonWithAccessibilityLabelId(
+                                              IDS_IOS_BOOKMARK_ACTION_EDIT),
+                                          nil)] performAction:grey_tap()];
 
   NSString* titleIdentifier = @"Title Field_textField";
   [[EarlGrey

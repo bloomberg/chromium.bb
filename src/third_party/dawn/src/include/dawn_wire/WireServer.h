@@ -91,14 +91,18 @@ namespace dawn_wire {
                 ReadHandle();
                 virtual ~ReadHandle();
 
-                // Get the required serialization size for SerializeInitialData
-                virtual size_t SerializeInitialDataSize(const void* data, size_t dataLength) = 0;
+                // Return the size of the command serialized if
+                // SerializeDataUpdate is called with the same offset/size args
+                virtual size_t SizeOfSerializeDataUpdate(size_t offset, size_t size) = 0;
 
-                // Initialize the handle data.
-                // Serialize into |serializePointer| so the client can update handle data.
-                virtual void SerializeInitialData(const void* data,
-                                                  size_t dataLength,
-                                                  void* serializePointer) = 0;
+                // Gets called when a MapReadCallback resolves.
+                // Serialize the data update for the range (offset, offset + size) into
+                // |serializePointer| to the client There could be nothing to be serialized (if
+                // using shared memory)
+                virtual void SerializeDataUpdate(const void* data,
+                                                 size_t offset,
+                                                 size_t size,
+                                                 void* serializePointer) = 0;
 
               private:
                 ReadHandle(const ReadHandle&) = delete;
@@ -112,12 +116,17 @@ namespace dawn_wire {
 
                 // Set the target for writes from the client. DeserializeFlush should copy data
                 // into the target.
-                void SetTarget(void* data, size_t dataLength);
+                void SetTarget(void* data);
+                // Set Staging data length for OOB check
+                void SetDataLength(size_t dataLength);
 
                 // This function takes in the serialized result of
-                // client::MemoryTransferService::WriteHandle::SerializeFlush.
-                virtual bool DeserializeFlush(const void* deserializePointer,
-                                              size_t deserializeSize) = 0;
+                // client::MemoryTransferService::WriteHandle::SerializeDataUpdate.
+                // Needs to check potential offset/size OOB and overflow
+                virtual bool DeserializeDataUpdate(const void* deserializePointer,
+                                                   size_t deserializeSize,
+                                                   size_t offset,
+                                                   size_t size) = 0;
 
               protected:
                 void* mTargetData = nullptr;

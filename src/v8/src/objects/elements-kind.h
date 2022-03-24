@@ -58,6 +58,23 @@ namespace internal {
   V(BigUint64, rab_gsab_biguint64, RAB_GSAB_BIGUINT64, uint64_t)           \
   V(BigInt64, rab_gsab_bigint64, RAB_GSAB_BIGINT64, int64_t)
 
+// Like RAB_GSAB_TYPED_ARRAYS but has an additional parameter for
+// for the corresponding non-RAB/GSAB ElementsKind.
+#define RAB_GSAB_TYPED_ARRAYS_WITH_NON_RAB_GSAB_ELEMENTS_KIND(V)         \
+  V(RabGsabUint8, rab_gsab_uint8, RAB_GSAB_UINT8, uint8_t, UINT8)        \
+  V(RabGsabInt8, rab_gsab_int8, RAB_GSAB_INT8, int8_t, INT8)             \
+  V(RabGsabUint16, rab_gsab_uint16, RAB_GSAB_UINT16, uint16_t, UINT16)   \
+  V(RabGsabInt16, rab_gsab_int16, RAB_GSAB_INT16, int16_t, INT16)        \
+  V(RabGsabUint32, rab_gsab_uint32, RAB_GSAB_UINT32, uint32_t, UINT32)   \
+  V(RabGsabInt32, rab_gsab_int32, RAB_GSAB_INT32, int32_t, INT32)        \
+  V(RabGsabFloat32, rab_gsab_float32, RAB_GSAB_FLOAT32, float, FLOAT32)  \
+  V(RabGsabFloat64, rab_gsab_float64, RAB_GSAB_FLOAT64, double, FLOAT64) \
+  V(RabGsabUint8Clamped, rab_gsab_uint8_clamped, RAB_GSAB_UINT8_CLAMPED, \
+    uint8_t, UINT8_CLAMPED)                                              \
+  V(RabGsabBigUint64, rab_gsab_biguint64, RAB_GSAB_BIGUINT64, uint64_t,  \
+    BIGUINT64)                                                           \
+  V(RabGsabBigInt64, rab_gsab_bigint64, RAB_GSAB_BIGINT64, int64_t, BIGINT64)
+
 enum ElementsKind : uint8_t {
   // The "fast" kind for elements that only contain SMI values. Must be first
   // to make it possible to efficiently check maps for this kind.
@@ -103,6 +120,10 @@ enum ElementsKind : uint8_t {
   TYPED_ARRAYS(TYPED_ARRAY_ELEMENTS_KIND)
       RAB_GSAB_TYPED_ARRAYS(TYPED_ARRAY_ELEMENTS_KIND)
 #undef TYPED_ARRAY_ELEMENTS_KIND
+
+  // WasmObject elements kind. The actual elements type is read from the
+  // respective WasmTypeInfo.
+  WASM_ARRAY_ELEMENTS,
 
   // Sentinel ElementsKind for objects with no elements.
   NO_ELEMENTS,
@@ -191,6 +212,16 @@ inline bool IsRabGsabTypedArrayElementsKind(ElementsKind kind) {
 inline bool IsTypedArrayOrRabGsabTypedArrayElementsKind(ElementsKind kind) {
   return base::IsInRange(kind, FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND,
                          LAST_RAB_GSAB_FIXED_TYPED_ARRAY_ELEMENTS_KIND);
+}
+
+inline bool IsBigIntTypedArrayElementsKind(ElementsKind kind) {
+  return kind == BIGINT64_ELEMENTS || kind == BIGUINT64_ELEMENTS ||
+         kind == RAB_GSAB_BIGINT64_ELEMENTS ||
+         kind == RAB_GSAB_BIGUINT64_ELEMENTS;
+}
+
+inline bool IsWasmArrayElementsKind(ElementsKind kind) {
+  return kind == WASM_ARRAY_ELEMENTS;
 }
 
 inline bool IsTerminalElementsKind(ElementsKind kind) {
@@ -331,6 +362,14 @@ inline ElementsKind GetCorrespondingRabGsabElementsKind(
   DCHECK(IsTypedArrayElementsKind(typed_array_kind));
   return ElementsKind(typed_array_kind - FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND +
                       FIRST_RAB_GSAB_FIXED_TYPED_ARRAY_ELEMENTS_KIND);
+}
+
+inline ElementsKind GetCorrespondingNonRabGsabElementsKind(
+    ElementsKind typed_array_kind) {
+  DCHECK(IsRabGsabTypedArrayElementsKind(typed_array_kind));
+  return ElementsKind(typed_array_kind -
+                      FIRST_RAB_GSAB_FIXED_TYPED_ARRAY_ELEMENTS_KIND +
+                      FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND);
 }
 
 inline bool UnionElementsKindUptoPackedness(ElementsKind* a_out,

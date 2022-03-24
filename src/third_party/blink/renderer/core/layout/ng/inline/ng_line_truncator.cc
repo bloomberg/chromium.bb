@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_truncator.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_info.h"
@@ -50,7 +51,7 @@ void NGLineTruncator::SetupEllipsis() {
   ellipsis_text_ =
       ellipsis_font_data_ && ellipsis_font_data_->GlyphForCharacter(
                                  kHorizontalEllipsisCharacter)
-          ? String(&kHorizontalEllipsisCharacter, 1)
+          ? String(&kHorizontalEllipsisCharacter, 1u)
           : String(u"...");
   HarfBuzzShaper shaper(ellipsis_text_);
   ellipsis_shape_result_ =
@@ -138,8 +139,7 @@ LayoutUnit NGLineTruncator::TruncateLine(LayoutUnit line_width,
   absl::optional<NGLogicalLineItem> truncated_child;
   if (IsLtr(line_direction_)) {
     NGLogicalLineItem* first_child = line_box->FirstInFlowChild();
-    for (auto it = line_box->rbegin(); it != line_box->rend(); it++) {
-      auto& child = *it;
+    for (auto& child : base::Reversed(*line_box)) {
       if (EllipsizeChild(line_width, ellipsis_width_, &child == first_child,
                          &child, &truncated_child)) {
         ellipsized_child = &child;
@@ -165,7 +165,8 @@ LayoutUnit NGLineTruncator::TruncateLine(LayoutUnit line_width,
   if (truncated_child) {
     // In order to preserve layout information before truncated, hide the
     // original fragment and insert a truncated one.
-    size_t child_index_to_truncate = ellipsized_child - line_box->begin();
+    unsigned child_index_to_truncate =
+        base::checked_cast<unsigned>(ellipsized_child - line_box->begin());
     line_box->InsertChild(child_index_to_truncate + 1,
                           std::move(*truncated_child));
     box_states->ChildInserted(child_index_to_truncate + 1);
@@ -291,7 +292,8 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
     } else {
       PlaceEllipsisNextTo(line_box, &line[new_index]);
       available_width_right +=
-          available_width_left - line[new_index].inline_size;
+          available_width_left -
+          line[new_index].inline_size.ClampNegativeToZero();
     }
 
     // Find truncation point at the right.
@@ -355,8 +357,8 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
       line[new_index].rect.offset.inline_offset +=
           line[index_right].inline_size - line[new_index].inline_size;
       PlaceEllipsisNextTo(line_box, &line[new_index]);
-      available_width_left +=
-          available_width_right - line[new_index].inline_size;
+      available_width_left += available_width_right -
+                              line[new_index].inline_size.ClampNegativeToZero();
     }
     LayoutUnit ellipsis_offset = line[line.size() - 1].InlineOffset();
 
@@ -410,7 +412,12 @@ void NGLineTruncator::HideChild(NGLogicalLineItem* child) {
     if (fragment.HasOutOfFlowPositionedDescendants())
       return;
 
-    child->layout_result = fragment.CloneAsHiddenForPaint();
+    // Truncate this object. Atomic inline is monolithic.
+    DCHECK(fragment.IsMonolithic());
+    LayoutObject* layout_object = fragment.GetMutableLayoutObject();
+    DCHECK(layout_object);
+    DCHECK(layout_object->IsAtomicInlineLevel());
+    layout_object->SetIsTruncated(true);
     return;
   }
 

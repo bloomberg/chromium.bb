@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -18,6 +19,11 @@
 class CollectedCookiesViewsTest : public InProcessBrowserTest {
  public:
   CollectedCookiesViewsTest() = default;
+
+  CollectedCookiesViewsTest(const CollectedCookiesViewsTest&) = delete;
+  CollectedCookiesViewsTest& operator=(const CollectedCookiesViewsTest&) =
+      delete;
+
   ~CollectedCookiesViewsTest() override = default;
 
   // InProcessBrowserTest:
@@ -29,18 +35,17 @@ class CollectedCookiesViewsTest : public InProcessBrowserTest {
         ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
     // Load a page with cookies.
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/cookie1.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/cookie1.html")));
 
     // Spawn a cookies dialog.
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     CollectedCookiesViews::CreateAndShowForWebContents(web_contents);
-    cookies_dialog_ = static_cast<CollectedCookiesViews*>(
-        web_contents->GetUserData(CollectedCookiesViews::UserDataKey()));
+    cookies_dialog_ = CollectedCookiesViews::GetDialogForTesting(web_contents);
   }
 
   // Closing dialog with modified data will shows infobar.
-  void SetDialogChanged() { cookies_dialog_->status_changed_ = true; }
+  void SetDialogChanged() { cookies_dialog_->set_status_changed_for_testing(); }
 
   void CloseCookiesDialog() { cookies_dialog_->GetWidget()->Close(); }
 
@@ -54,9 +59,7 @@ class CollectedCookiesViewsTest : public InProcessBrowserTest {
   }
 
  private:
-  CollectedCookiesViews* cookies_dialog_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CollectedCookiesViewsTest);
+  raw_ptr<CollectedCookiesViews> cookies_dialog_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(CollectedCookiesViewsTest, CloseDialog) {
@@ -79,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesViewsTest, ChangeAndNavigateAway) {
   SetDialogChanged();
 
   // Navigation in the owning tab will close dialog.
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/cookie2.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/cookie2.html")));
 
   EXPECT_EQ(0u, infobar_count());
 }

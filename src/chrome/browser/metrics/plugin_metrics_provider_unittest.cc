@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
@@ -38,6 +37,11 @@ content::WebPluginInfo CreateFakePluginInfo(
 }
 
 class PluginMetricsProviderTest : public ::testing::Test {
+ public:
+  PluginMetricsProviderTest(const PluginMetricsProviderTest&) = delete;
+  PluginMetricsProviderTest& operator=(const PluginMetricsProviderTest&) =
+      delete;
+
  protected:
   PluginMetricsProviderTest()
       : prefs_(new TestingPrefServiceSimple) {
@@ -50,8 +54,6 @@ class PluginMetricsProviderTest : public ::testing::Test {
 
  private:
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginMetricsProviderTest);
 };
 
 }  // namespace
@@ -173,23 +175,23 @@ TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {
   content::ChildProcessData child_process_data1(
       content::PROCESS_TYPE_PPAPI_PLUGIN);
   child_process_data1.name = u"p1";
-  provider.BrowserChildProcessHostConnected(child_process_data1);
+  provider.BrowserChildProcessLaunchedAndConnected(child_process_data1);
   provider.BrowserChildProcessCrashed(child_process_data1,
                                       abnormal_termination_info);
 
   // A disconnect should not generate a crash event.
-  provider.BrowserChildProcessHostConnected(child_process_data1);
+  provider.BrowserChildProcessLaunchedAndConnected(child_process_data1);
   provider.BrowserChildProcessHostDisconnected(child_process_data1);
 
   content::ChildProcessData child_process_data2(
       content::PROCESS_TYPE_PPAPI_PLUGIN);
   child_process_data2.name = u"p2";
-  provider.BrowserChildProcessHostConnected(child_process_data2);
+  provider.BrowserChildProcessLaunchedAndConnected(child_process_data2);
   provider.BrowserChildProcessCrashed(child_process_data2,
                                       abnormal_termination_info);
 
   // A kill should generate a crash event
-  provider.BrowserChildProcessHostConnected(child_process_data2);
+  provider.BrowserChildProcessLaunchedAndConnected(child_process_data2);
   provider.BrowserChildProcessKilled(child_process_data2,
                                      abnormal_termination_info);
 

@@ -16,6 +16,7 @@
 #include "ash/public/cpp/screen_backlight.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/cpp/test/test_shelf_item_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -26,7 +27,6 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
@@ -40,6 +40,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
@@ -169,9 +170,9 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
 
 void LoggedInSpokenFeedbackTest::StablizeChromeVoxState() {
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html;charset=utf-8,<button "
-                                      "autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,<button "
+                        "autofocus>Click me</button>")));
   });
   sm_.ExpectSpeech("Click me");
 }
@@ -242,9 +243,11 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
   });
   sm_.ExpectSpeech(
       "Quick Settings, Press search plus left to access the notification "
-      "center., window");
+      "center.");
 
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_LEFT); });
+
   // If you are hitting this in the course of changing the UI, please fix. This
   // item needs a label.
   sm_.ExpectSpeech("List item");
@@ -263,7 +266,6 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
         browser()->profile(), extension_misc::kChromeVoxExtensionId,
         "CommandHandler.onCommand('showKbExplorerPage');");
   });
-  sm_.ExpectSpeech("ChromeVox Learn Mode");
   sm_.ExpectSpeechPattern(
       "Press a qwerty key, refreshable braille key, or touch gesture to learn "
       "*");
@@ -301,7 +303,6 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
         browser()->profile(), extension_misc::kChromeVoxExtensionId,
         "CommandHandler.onCommand('showKbExplorerPage');");
   });
-  sm_.ExpectSpeech("ChromeVox Learn Mode");
   sm_.ExpectSpeechPattern(
       "Press a qwerty key, refreshable braille key, or touch gesture to learn "
       "*");
@@ -365,8 +366,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
   EnableChromeVox();
 
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("data:text/html;charset=utf-8,<p>unused</p>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,<p>unused</p>")));
   });
 
   sm_.Call([this]() { SendKeyPressWithControl(ui::VKEY_L); });
@@ -425,9 +426,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
   // pinned apps in user preference will be removed.
   EnableChromeVox();
   sm_.Call([controller, title]() {
-    controller->CreateAppShortcutItem(ShelfID("FakeApp"),
-                                      controller->shelf_model()->item_count(),
-                                      base::ASCIIToUTF16(title));
+    controller->InsertAppItem(
+        std::make_unique<AppShortcutShelfItemController>(ShelfID("FakeApp")),
+        ash::STATUS_CLOSED, controller->shelf_model()->item_count(),
+        ash::TYPE_PINNED_APP, base::ASCIIToUTF16(title));
   });
 
   // Focus on the shelf.
@@ -471,8 +473,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
     for (int i = 0; i < insert_app_num; i++) {
       std::string app_title = title + base::NumberToString(i);
       std::string app_id = id + base::NumberToString(i);
-      controller->CreateAppShortcutItem(ShelfID(app_id), base_index + i,
-                                        base::ASCIIToUTF16(app_title));
+      controller->InsertAppItem(
+          std::make_unique<AppShortcutShelfItemController>(ShelfID(app_id)),
+          ash::STATUS_CLOSED, base_index + i, ash::TYPE_PINNED_APP,
+          base::ASCIIToUTF16(app_title));
     }
 
     // Enable the function of speaking text under mouse.
@@ -504,26 +508,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SpeakingTextUnderMouseForShelfItem) {
   sm_.Replay();
 }
 
-class ShelfNotificationBadgeSpokenFeedbackTest : public SpokenFeedbackTest {
- protected:
-  ShelfNotificationBadgeSpokenFeedbackTest() {
-    scoped_features_.InitWithFeatures({::features::kNotificationIndicator}, {});
-  }
-  ~ShelfNotificationBadgeSpokenFeedbackTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
-
-INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
-                         ShelfNotificationBadgeSpokenFeedbackTest,
-                         ::testing::Values(kTestAsNormalUser,
-                                           kTestAsGuestUser));
-
 // Verifies that an announcement is triggered when focusing a ShelfItem with a
 // notification badge shown.
-IN_PROC_BROWSER_TEST_P(ShelfNotificationBadgeSpokenFeedbackTest,
-                       ShelfNotificationBadgeAnnouncement) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfNotificationBadgeAnnouncement) {
   EnableChromeVox();
 
   // Create and add a test app to the shelf model.
@@ -531,7 +518,8 @@ IN_PROC_BROWSER_TEST_P(ShelfNotificationBadgeSpokenFeedbackTest,
   item.id = ShelfID("TestApp");
   item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
-  ShelfModel::Get()->Add(item);
+  ShelfModel::Get()->Add(item,
+                         std::make_unique<TestShelfItemDelegate>(item.id));
 
   // Set the notification badge to be shown for the test app.
   ShelfModel::Get()->UpdateItemNotification("TestApp", /*has_badge=*/true);
@@ -585,7 +573,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   item.app_status = AppStatus::kPaused;
-  ShelfModel::Get()->Add(item);
+  ShelfModel::Get()->Add(item,
+                         std::make_unique<TestShelfItemDelegate>(item.id));
 
   // Focus on the shelf.
   sm_.Call(
@@ -635,7 +624,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   item.title = u"TestAppTitle";
   item.type = ShelfItemType::TYPE_APP;
   item.app_status = AppStatus::kBlocked;
-  ShelfModel::Get()->Add(item);
+  ShelfModel::Get()->Add(item,
+                         std::make_unique<TestShelfItemDelegate>(item.id));
 
   // Focus on the shelf.
   sm_.Call(
@@ -667,7 +657,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   });
   sm_.ExpectSpeech(
       "Quick Settings, Press search plus left to access the notification "
-      "center., window");
+      "center.");
   sm_.Replay();
 }
 
@@ -682,13 +672,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   });
   sm_.ExpectSpeech(
       "Quick Settings, Press search plus left to access the notification "
-      "center., window");
+      "center.");
 
-  // Avatar button.
-  sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
-  sm_.ExpectSpeech(GetParam() == kTestAsGuestUser ? "Guest" : "");
-  sm_.ExpectSpeech("Button");
-
+  // Avatar button. Disabled for guest account.
+  if (GetParam() != kTestAsGuestUser) {
+    sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
+    sm_.ExpectSpeech("Button");
+  }
   // Exit button.
   sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
   sm_.ExpectSpeech(GetParam() == kTestAsGuestUser ? "Exit guest" : "Sign out");
@@ -737,9 +727,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, VolumeSlider) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
   EnableChromeVox();
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html;charset=utf-8,<button "
-                                      "autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,<button "
+                        "autofocus>Click me</button>")));
   });
 
   sm_.ExpectSpeech("Click me");
@@ -762,13 +752,35 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
   sm_.Replay();
 }
 
+// Verify that enable chromeVox won't end overview.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableChromeVoxOnOverviewMode) {
+  sm_.Call([this]() {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,<button "
+                        "autofocus>Click me</button>")));
+  });
+
+  sm_.Call([this]() {
+    (PerformAcceleratorAction(AcceleratorAction::TOGGLE_OVERVIEW));
+  });
+
+  EnableChromeVox();
+
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
+  sm_.ExpectSpeechPattern(
+      "Chrom* - data:text slash html;charset equal utf-8, less than button "
+      "autofocus greater than Click me less than slash button greater than");
+
+  sm_.Replay();
+}
+
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxFindInPage) {
   EnableChromeVox();
 
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html;charset=utf-8,<button "
-                                      "autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,<button "
+                        "autofocus>Click me</button>")));
   });
 
   sm_.ExpectSpeech("Click me");
@@ -791,10 +803,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   EnableChromeVox();
 
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html;charset=utf-8,"
-                                      "<h1>Title</h1>"
-                                      "<button autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,"
+                        "<h1>Title</h1>"
+                        "<button autofocus>Click me</button>")));
   });
   sm_.ExpectSpeech("Click me");
 
@@ -819,9 +831,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
   EnableChromeVox();
 
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html;charset=utf-8,<button "
-                                      "autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html;charset=utf-8,<button "
+                        "autofocus>Click me</button>")));
   });
   sm_.ExpectSpeech("Click me");
 
@@ -843,8 +855,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
 // sending js commands above. This variant may be subject to flakes as it
 // depends on more of the UI events stack and sticky mode invocation has a
 // timing element to it.
-// Consistently failing on ChromiumOS MSan. http://crbug.com/1182542
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+// Consistently failing on ChromiumOS MSan and ASan. http://crbug.com/1182542
+#if defined(OS_CHROMEOS) && \
+    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
 #define MAYBE_ChromeVoxStickyModeRawKeys DISABLED_ChromeVoxStickyModeRawKeys
 #else
 #define MAYBE_ChromeVoxStickyModeRawKeys ChromeVoxStickyModeRawKeys
@@ -868,7 +881,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxStickyModeRawKeys) {
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
+// TODO(crbug.com/752427): Test is flaky.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TouchExploreStatusTray) {
   EnableChromeVox();
 
   base::SimpleTestTickClock clock;
@@ -893,7 +907,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, tray_center, base::TimeTicks::Now(),
@@ -931,14 +945,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, gfx::Point(1280, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move2(
         ui::ET_TOUCH_MOVED, gfx::Point(1280, 400), base::TimeTicks::Now(),
@@ -991,14 +1005,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, gfx::Point(1080, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move2(
         ui::ET_TOUCH_MOVED, gfx::Point(1080, 400), base::TimeTicks::Now(),
@@ -1069,14 +1083,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_press);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move(
         ui::ET_TOUCH_MOVED, gfx::Point(1580, 300), base::TimeTicks::Now(),
         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     generator_ptr->Dispatch(&touch_move);
 
-    clock_ptr->Advance(base::TimeDelta::FromSeconds(1));
+    clock_ptr->Advance(base::Seconds(1));
 
     ui::TouchEvent touch_move2(
         ui::ET_TOUCH_MOVED, gfx::Point(1580, 400), base::TimeTicks::Now(),
@@ -1095,7 +1109,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextTabRecovery) {
   EnableChromeVox();
 
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
         browser(), GURL("data:text/html;charset=utf-8,"
                         "<button id='b1' autofocus>11</button>"
                         "<button>22</button>"
@@ -1110,7 +1124,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextTabRecovery) {
                         "  document.getElementById('console').innerText = "
                         "'button lost focus';"
                         "});"
-                        "</script>"));
+                        "</script>")));
   });
   sm_.ExpectSpeech("Button");
 
@@ -1138,8 +1152,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
                        MoveByCharacterPhoneticSpeechAndHints) {
   EnableChromeVox();
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("data:text/html,<button autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html,<button autofocus>Click me</button>")));
   });
   sm_.ExpectSpeech("Click me");
   sm_.ExpectSpeech("Button");
@@ -1201,8 +1215,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
   EnableChromeVox();
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("data:text/html,<button autofocus>Click me</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html,<button autofocus>Click me</button>")));
   });
 
   sm_.ExpectSpeech("Click me");
@@ -1233,9 +1247,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SmartStickyMode) {
   EnableChromeVox();
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html,<p>start</p><input "
-                                      "autofocus type='text'><p>end</p>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html,<p>start</p><input "
+                        "autofocus type='text'><p>end</p>")));
   });
 
   // The input is autofocused.
@@ -1356,9 +1370,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
 
   // Try to darken screen and check the dialog is shown.
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
-  sm_.ExpectSpeech("Continue");
-  sm_.ExpectSpeech("default");
-  sm_.ExpectSpeech("Button");
   sm_.ExpectSpeech("Turn off screen?");
   sm_.ExpectSpeech("Dialog");
   sm_.ExpectSpeech(
@@ -1367,6 +1378,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.ExpectSpeech(
       "You can always turn the screen back on by pressing Search plus "
       "Brightness up.");
+  sm_.ExpectSpeech("Continue");
+  sm_.ExpectSpeech("default");
+  sm_.ExpectSpeech("Button");
 
   sm_.Call([]() {
     // Accept the dialog and see that the screen is darkened.
@@ -1414,8 +1428,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_Tutorial) {
   EnableChromeVox();
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(
-        browser(), GURL("data:text/html,<button autofocus>Testing</button>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html,<button autofocus>Testing</button>")));
   });
   sm_.Call([this]() {
     SendKeyPressWithSearch(ui::VKEY_O);
@@ -1440,9 +1454,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_Tutorial) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ClipboardCopySpeech) {
   EnableChromeVox();
   sm_.Call([this]() {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html,<input autofocus "
-                                      "type='text' value='Foo'></input>"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("data:text/html,<input autofocus "
+                        "type='text' value='Foo'></input>")));
   });
 
   // The input is autofocused.
@@ -1484,6 +1498,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ClipboardCopySpeech) {
 class OobeSpokenFeedbackTest : public OobeBaseTest {
  protected:
   OobeSpokenFeedbackTest() = default;
+
+  OobeSpokenFeedbackTest(const OobeSpokenFeedbackTest&) = delete;
+  OobeSpokenFeedbackTest& operator=(const OobeSpokenFeedbackTest&) = delete;
+
   ~OobeSpokenFeedbackTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1497,15 +1515,12 @@ class OobeSpokenFeedbackTest : public OobeBaseTest {
   }
 
   test::SpeechMonitor sm_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OobeSpokenFeedbackTest);
 };
 
 IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  AccessibilityManager::Get()->EnableSpokenFeedbackWithTutorial();
 
   // If ChromeVox is started in OOBE, the tutorial is automatically opened.
   sm_.ExpectSpeech("Welcome to ChromeVox!");
@@ -1519,13 +1534,13 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
         nullptr, ui::VKEY_ESCAPE, false, false, false, false));
   });
 
-  if (ash::features::IsNewOobeLayoutEnabled()) {
-    // The Get started button gets initial focus.
-    sm_.ExpectSpeech("Get started");
-  } else {
-    // The Let's go button gets initial focus.
-    sm_.ExpectSpeech("Let's go");
-  }
+  sm_.ExpectSpeech("Get started");
+
+  sm_.Call([]() {
+    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+        nullptr, ui::VKEY_TAB, false, false, false, false));
+  });
+  sm_.ExpectSpeech("Pause animation");
 
   sm_.Call([]() {
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
@@ -1583,7 +1598,7 @@ class SigninToUserProfileSwitchTest : public OobeSpokenFeedbackTest {
 // TODO(crbug.com/1184714): Fix flakiness.
 IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   // Force sync screen.
-  auto reset = WizardController::ForceBrandedBuildForTesting(true);
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
   sm_.ExpectSpeechPattern("*");
 
@@ -1601,8 +1616,9 @@ IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
         nullptr, ui::VKEY_ESCAPE, false, false, false, false));
   });
 
-  std::string button_title =
-      features::IsSplitSettingsSyncEnabled() ? "Got it" : "Accept and continue";
+  std::string button_title = features::IsSyncConsentOptionalEnabled()
+                                 ? "Got it"
+                                 : "Accept and continue";
   sm_.ExpectSpeech(button_title);
 
   // Check that profile switched to the active user.

@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -248,9 +248,6 @@ void FidoRequestHandlerBase::AuthenticatorRemoved(
   // CancelOngoingTasks().
   auto authenticator_it = active_authenticators_.find(authenticator->GetId());
   if (authenticator_it == active_authenticators_.end()) {
-    NOTREACHED();
-    FIDO_LOG(ERROR) << "AuthenticatorRemoved() for unknown authenticator "
-                    << authenticator->GetId();
     return;
   }
   DCHECK_EQ(authenticator_it->second, authenticator);

@@ -5,14 +5,21 @@
 #ifndef COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SEGMENTATION_PLATFORM_SERVICE_IMPL_H_
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SEGMENTATION_PLATFORM_SERVICE_IMPL_H_
 
-#include "components/segmentation_platform/public/segmentation_platform_service.h"
-
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/optimization_guide/proto/models.pb.h"
+#include "components/segmentation_platform/internal/platform_options.h"
+#include "components/segmentation_platform/internal/service_proxy_impl.h"
+#include "components/segmentation_platform/public/segmentation_platform_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Clock;
@@ -49,7 +56,24 @@ class SegmentSelectorImpl;
 class SignalDatabaseImpl;
 class SignalFilterProcessor;
 class SignalStorageConfig;
+class SegmentScoreProvider;
 class UserActionSignalHandler;
+
+// Qualifiers used to indicate service status. One or more qualifiers can
+// be used at a time.
+enum class ServiceStatus {
+  // Server not yet initialized.
+  kUninitialized = 0,
+
+  // Segmentation information DB is initialized.
+  kSegmentationInfoDbInitialized = 1,
+
+  // Signal database is initialized.
+  kSignalDbInitialized = 1 << 1,
+
+  // Signal storage config is initialized.
+  kSignalStorageConfigInitialized = 1 << 2,
+};
 
 // The internal implementation of the SegmentationPlatformService.
 class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
@@ -61,7 +85,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
       PrefService* pref_service,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::Clock* clock,
-      std::unique_ptr<Config> config);
+      std::vector<std::unique_ptr<Config>> configs);
 
   // For testing only.
   SegmentationPlatformServiceImpl(
@@ -75,7 +99,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
       PrefService* pref_service,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::Clock* clock,
-      std::unique_ptr<Config> config);
+      std::vector<std::unique_ptr<Config>> configs);
 
   ~SegmentationPlatformServiceImpl() override;
 
@@ -89,6 +113,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   void GetSelectedSegment(const std::string& segmentation_key,
                           SegmentSelectionCallback callback) override;
   void EnableMetrics(bool signal_collection_allowed) override;
+  ServiceProxy* GetServiceProxy() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SegmentationPlatformServiceImplTest,
@@ -106,12 +131,18 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // short amount of time has passed since initialization happened.
   void OnExecuteDatabaseMaintenanceTasks();
 
-  optimization_guide::OptimizationGuideModelProvider* model_provider_;
+  // Called when service status changes.
+  void OnServiceStatusChanged();
+
+  raw_ptr<optimization_guide::OptimizationGuideModelProvider> model_provider_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
+  const PlatformOptions platform_options_;
 
   // Config.
-  std::unique_ptr<Config> config_;
+  std::vector<std::unique_ptr<Config>> configs_;
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+      all_segment_ids_;
 
   // Databases.
   std::unique_ptr<SegmentInfoDatabase> segment_info_database_;
@@ -127,7 +158,11 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // Segment selection.
   // TODO(shaktisahu): Determine safe destruction ordering between
   // SegmentSelectorImpl and ModelExecutionSchedulerImpl.
-  std::unique_ptr<SegmentSelectorImpl> segment_selector_;
+  base::flat_map<std::string, std::unique_ptr<SegmentSelectorImpl>>
+      segment_selectors_;
+
+  // Segment results.
+  std::unique_ptr<SegmentScoreProvider> segment_score_provider_;
 
   // Model execution scheduling logic.
   std::unique_ptr<ModelExecutionSchedulerImpl> model_execution_scheduler_;
@@ -142,6 +177,8 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   absl::optional<bool> segment_info_database_initialized_;
   absl::optional<bool> signal_database_initialized_;
   absl::optional<bool> signal_storage_config_initialized_;
+
+  std::unique_ptr<ServiceProxyImpl> proxy_;
 
   base::WeakPtrFactory<SegmentationPlatformServiceImpl> weak_ptr_factory_{this};
 };

@@ -19,8 +19,9 @@ limitations under the License.
 #include <Python.h>
 
 #include "pybind11/pybind11.h"
-#include "tensorflow/c/tf_status.h"
+#include "tensorflow/c/tf_status_internal.h"
 #include "tensorflow/core/lib/core/status.h"
+#include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/protobuf/error_codes.pb.h"
 #include "tensorflow/python/lib/core/py_exception_registry.h"
 
@@ -49,6 +50,20 @@ inline PyObject* TFStatusToPyExc(const TF_Status* status) {
   return CodeToPyExc(TF_GetCode(status));
 }
 
+inline pybind11::dict StatusPayloadToDict(const Status& status) {
+  pybind11::dict dict;
+  const auto& payloads = errors::GetPayloads(status);
+  for (auto& pair : payloads) {
+    dict[PyBytes_FromString(pair.first.c_str())] =
+        PyBytes_FromString(pair.second.c_str());
+  }
+  return dict;
+}
+
+inline pybind11::dict TFStatusPayloadToDict(TF_Status* status) {
+  return StatusPayloadToDict(status->status);
+}
+
 }  // namespace internal
 
 inline void MaybeRaiseFromStatus(const Status& status) {
@@ -59,12 +74,25 @@ inline void MaybeRaiseFromStatus(const Status& status) {
   }
 }
 
+inline void SetRegisteredErrFromStatus(const tensorflow::Status& status) {
+  PyErr_SetObject(PyExceptionRegistry::Lookup(status.code()),
+                  pybind11::make_tuple(pybind11::none(), pybind11::none(),
+                                       status.error_message(),
+                                       internal::StatusPayloadToDict(status))
+                      .ptr());
+}
+
+inline void SetRegisteredErrFromTFStatus(TF_Status* status) {
+  PyErr_SetObject(PyExceptionRegistry::Lookup(TF_GetCode(status)),
+                  pybind11::make_tuple(pybind11::none(), pybind11::none(),
+                                       TF_Message(status),
+                                       internal::TFStatusPayloadToDict(status))
+                      .ptr());
+}
+
 inline void MaybeRaiseRegisteredFromStatus(const tensorflow::Status& status) {
   if (!status.ok()) {
-    PyErr_SetObject(PyExceptionRegistry::Lookup(status.code()),
-                    pybind11::make_tuple(pybind11::none(), pybind11::none(),
-                                         status.error_message())
-                        .ptr());
+    SetRegisteredErrFromStatus(status);
     throw pybind11::error_already_set();
   }
 }
@@ -74,11 +102,7 @@ inline void MaybeRaiseRegisteredFromStatusWithGIL(
   if (!status.ok()) {
     // Acquire GIL for throwing exception.
     pybind11::gil_scoped_acquire acquire;
-
-    PyErr_SetObject(PyExceptionRegistry::Lookup(status.code()),
-                    pybind11::make_tuple(pybind11::none(), pybind11::none(),
-                                         status.error_message())
-                        .ptr());
+    SetRegisteredErrFromStatus(status);
     throw pybind11::error_already_set();
   }
 }
@@ -94,10 +118,7 @@ inline void MaybeRaiseFromTFStatus(TF_Status* status) {
 inline void MaybeRaiseRegisteredFromTFStatus(TF_Status* status) {
   TF_Code code = TF_GetCode(status);
   if (code != TF_OK) {
-    PyErr_SetObject(PyExceptionRegistry::Lookup(code),
-                    pybind11::make_tuple(pybind11::none(), pybind11::none(),
-                                         TF_Message(status))
-                        .ptr());
+    SetRegisteredErrFromTFStatus(status);
     throw pybind11::error_already_set();
   }
 }
@@ -107,11 +128,7 @@ inline void MaybeRaiseRegisteredFromTFStatusWithGIL(TF_Status* status) {
   if (code != TF_OK) {
     // Acquire GIL for throwing exception.
     pybind11::gil_scoped_acquire acquire;
-
-    PyErr_SetObject(PyExceptionRegistry::Lookup(code),
-                    pybind11::make_tuple(pybind11::none(), pybind11::none(),
-                                         TF_Message(status))
-                        .ptr());
+    SetRegisteredErrFromTFStatus(status);
     throw pybind11::error_already_set();
   }
 }

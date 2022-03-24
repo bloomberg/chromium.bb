@@ -13,12 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
+from tensorflow.python.framework import config
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
@@ -35,7 +32,12 @@ class SquareLinearOperatorCompositionTest(
     linear_operator_test_util.SquareLinearOperatorDerivedClassTest):
   """Most tests done in the base class LinearOperatorDerivedClassTest."""
 
+  def tearDown(self):
+    config.enable_tensor_float_32_execution(self.tf32_keep_)
+
   def setUp(self):
+    self.tf32_keep_ = config.tensor_float_32_execution_enabled()
+    config.enable_tensor_float_32_execution(False)
     # Increase from 1e-6 to 1e-4 and 2e-4.
     self._atol[dtypes.float32] = 2e-4
     self._atol[dtypes.complex64] = 1e-4
@@ -113,7 +115,7 @@ class SquareLinearOperatorCompositionTest(
     self.assertFalse(operator.is_positive_definite)
     self.assertTrue(operator.is_non_singular)
 
-    with self.assertRaisesRegexp(ValueError, "always non-singular"):
+    with self.assertRaisesRegex(ValueError, "always non-singular"):
       linalg.LinearOperatorComposition(
           [operator_1, operator_2], is_non_singular=False)
 
@@ -131,11 +133,11 @@ class SquareLinearOperatorCompositionTest(
         linalg.LinearOperatorFullMatrix(rng.rand(2, 3, 3)),
         linalg.LinearOperatorFullMatrix(rng.rand(2, 3, 3).astype(np.float32))
     ]
-    with self.assertRaisesRegexp(TypeError, "same dtype"):
+    with self.assertRaisesRegex(TypeError, "same dtype"):
       linalg.LinearOperatorComposition(operators)
 
   def test_empty_operators_raises(self):
-    with self.assertRaisesRegexp(ValueError, "non-empty"):
+    with self.assertRaisesRegex(ValueError, "non-empty"):
       linalg.LinearOperatorComposition([])
 
 
@@ -143,7 +145,12 @@ class NonSquareLinearOperatorCompositionTest(
     linear_operator_test_util.NonSquareLinearOperatorDerivedClassTest):
   """Most tests done in the base class LinearOperatorDerivedClassTest."""
 
+  def tearDown(self):
+    config.enable_tensor_float_32_execution(self.tf32_keep_)
+
   def setUp(self):
+    self.tf32_keep_ = config.tensor_float_32_execution_enabled()
+    config.enable_tensor_float_32_execution(False)
     # Increase from 1e-6 to 1e-4
     self._atol[dtypes.float32] = 1e-4
     self._atol[dtypes.complex64] = 1e-4
@@ -203,7 +210,7 @@ class NonSquareLinearOperatorCompositionTest(
     ]
     operator = linalg.LinearOperatorComposition(operators)
     with self.cached_session():
-      self.assertAllEqual((2, 3, 5), operator.shape_tensor().eval())
+      self.assertAllEqual((2, 3, 5), operator.shape_tensor())
 
   @test_util.run_deprecated_v1
   def test_shape_tensors_when_only_dynamically_available(self):

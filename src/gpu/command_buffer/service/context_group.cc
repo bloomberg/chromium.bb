@@ -12,6 +12,8 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -563,7 +565,7 @@ class WeakPtrEquals {
   }
 
  private:
-  T* const t_;
+  const raw_ptr<T> t_;
 };
 
 }  // namespace anonymous

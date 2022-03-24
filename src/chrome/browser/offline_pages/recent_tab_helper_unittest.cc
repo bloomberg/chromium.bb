@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
@@ -68,7 +69,7 @@ class TestDelegate: public RecentTabHelper::Delegate {
   void set_is_custom_tab(bool is_custom_tab) { is_custom_tab_ = is_custom_tab; }
 
  private:
-  OfflinePageTestArchiver::Observer* observer_;  // observer owns this.
+  raw_ptr<OfflinePageTestArchiver::Observer> observer_;  // observer owns this.
   int tab_id_;
   bool tab_id_result_;
 
@@ -87,6 +88,10 @@ class RecentTabHelperTest
       public OfflinePageTestArchiver::Observer {
  public:
   RecentTabHelperTest();
+
+  RecentTabHelperTest(const RecentTabHelperTest&) = delete;
+  RecentTabHelperTest& operator=(const RecentTabHelperTest&) = delete;
+
   ~RecentTabHelperTest() override {}
 
   void SetUp() override;
@@ -159,9 +164,9 @@ class RecentTabHelperTest
 
   void OnGetAllPagesDone(const std::vector<OfflinePageItem>& result);
 
-  RecentTabHelper* recent_tab_helper_;   // Owned by WebContents.
-  OfflinePageModel* model_;              // Keyed service.
-  TestDelegate* default_test_delegate_;  // Created at SetUp.
+  raw_ptr<RecentTabHelper> recent_tab_helper_;   // Owned by WebContents.
+  raw_ptr<OfflinePageModel> model_;              // Keyed service.
+  raw_ptr<TestDelegate> default_test_delegate_;  // Created at SetUp.
   size_t page_added_count_;
   size_t model_removed_count_;
   std::vector<OfflinePageItem> all_pages_;
@@ -176,8 +181,6 @@ class RecentTabHelperTest
       mocked_main_runner_;
 
   base::WeakPtrFactory<RecentTabHelperTest> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RecentTabHelperTest);
 };
 
 TestDelegate::TestDelegate(
@@ -271,7 +274,7 @@ void RecentTabHelperTest::RunUntilIdle() {
 }
 
 void RecentTabHelperTest::FastForwardSnapshotController() {
-  constexpr base::TimeDelta kLongDelay = base::TimeDelta::FromSeconds(100);
+  constexpr base::TimeDelta kLongDelay = base::Seconds(100);
   (*mocked_main_runner_)->FastForwardBy(kLongDelay);
 }
 

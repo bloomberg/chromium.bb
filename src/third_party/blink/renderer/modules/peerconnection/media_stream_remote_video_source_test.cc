@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "media/base/video_frame.h"
@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/webrtc/track_observer.h"
@@ -58,7 +58,10 @@ class MediaStreamRemoteVideoSourceUnderTest
  public:
   explicit MediaStreamRemoteVideoSourceUnderTest(
       std::unique_ptr<blink::TrackObserver> observer)
-      : MediaStreamRemoteVideoSource(std::move(observer)) {}
+      : MediaStreamRemoteVideoSource(
+            scheduler::GetSingleThreadTaskRunnerForTesting(),
+            std::move(observer),
+            /*metronome_provider=*/nullptr) {}
   using MediaStreamRemoteVideoSource::EncodedSinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::StartSourceImpl;
@@ -397,7 +400,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
       kCaptureTime + webrtc::TimeDelta::Millis(ntp_offset);
   // Expected capture time.
   base::TimeTicks kExpectedCaptureTime =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(kCaptureTime.ms());
+      base::TimeTicks() + base::Milliseconds(kCaptureTime.ms());
 
   webrtc::RtpPacketInfos::vector_type packet_infos;
   for (int i = 0; i < 4; ++i) {
@@ -407,8 +410,8 @@ TEST_F(MediaStreamRemoteVideoSourceTest,
   }
   // Expected receive time should be the same as the last arrival time.
   base::TimeTicks kExpectedReceiveTime =
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-                              kProcessingStart.us() - (10000 - 3 * 30));
+      base::TimeTicks() +
+      base::Microseconds(kProcessingStart.us() - (10000 - 3 * 30));
 
   webrtc::VideoFrame input_frame =
       webrtc::VideoFrame::Builder()
@@ -477,18 +480,17 @@ TEST_F(MediaStreamRemoteVideoSourceTest, ReferenceTimeEqualsTimestampUs) {
   scoped_refptr<media::VideoFrame> output_frame = sink.last_frame();
   EXPECT_TRUE(output_frame);
 
-  EXPECT_FLOAT_EQ(
-      (*output_frame->metadata().reference_time -
-       (base::TimeTicks() + base::TimeDelta::FromMicroseconds(kTimestampUs)))
-          .InMillisecondsF(),
-      0.0f);
+  EXPECT_FLOAT_EQ((*output_frame->metadata().reference_time -
+                   (base::TimeTicks() + base::Microseconds(kTimestampUs)))
+                      .InMillisecondsF(),
+                  0.0f);
   track->RemoveSink(&sink);
 }
 
 TEST_F(MediaStreamRemoteVideoSourceTest, BaseTimeTicksAndRtcMicrosAreTheSame) {
   base::TimeTicks first_chromium_timestamp = base::TimeTicks::Now();
   base::TimeTicks webrtc_timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(rtc::TimeMicros());
+      base::TimeTicks() + base::Microseconds(rtc::TimeMicros());
   base::TimeTicks second_chromium_timestamp = base::TimeTicks::Now();
 
   // Test that the timestamps are correctly ordered, which they can only be if

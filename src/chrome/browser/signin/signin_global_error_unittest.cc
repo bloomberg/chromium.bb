@@ -10,7 +10,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -59,7 +60,8 @@ class SigninGlobalErrorTest : public testing::Test {
 
     AccountInfo account_info =
         identity_test_env_profile_adaptor_->identity_test_env()
-            ->MakePrimaryAccountAvailable(kTestEmail);
+            ->MakePrimaryAccountAvailable(kTestEmail,
+                                          signin::ConsentLevel::kSync);
     ProfileAttributesEntry* entry =
         profile_manager_.profile_attributes_storage()
             ->GetProfileAttributesWithPath(profile()->GetPath());
@@ -95,13 +97,13 @@ class SigninGlobalErrorTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
 
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
 
-  SigninGlobalError* global_error_;
-  SigninErrorController* error_controller_;
+  raw_ptr<SigninGlobalError> global_error_;
+  raw_ptr<SigninErrorController> error_controller_;
 };
 
 TEST_F(SigninGlobalErrorTest, Basic) {

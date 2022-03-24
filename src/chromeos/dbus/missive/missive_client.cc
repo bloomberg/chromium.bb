@@ -5,18 +5,21 @@
 #include "chromeos/dbus/missive/missive_client.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/missive/fake_missive_client.h"
 #include "components/reporting/proto/interface.pb.h"
-#include "components/reporting/proto/record.pb.h"
-#include "components/reporting/proto/record_constants.pb.h"
-#include "components/reporting/storage/missive_storage_module.h"
-#include "components/reporting/storage/missive_storage_module_delegate_impl.h"
+#include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/proto/synced/record_constants.pb.h"
 #include "components/reporting/util/status.h"
+#include "components/reporting/util/statusor.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -24,11 +27,9 @@
 
 namespace chromeos {
 
-using reporting::MissiveStorageModule;
-using reporting::MissiveStorageModuleDelegateImpl;
 using reporting::Priority;
 using reporting::Record;
-using reporting::SequencingInformation;
+using reporting::SequenceInformation;
 using reporting::SignedEncryptionInfo;
 using reporting::Status;
 
@@ -36,42 +37,31 @@ namespace {
 
 MissiveClient* g_instance = nullptr;
 
-// Amount of time we wait for a response before timing out. The default value is
-// 25 seconds.
-const int kTimeoutMs = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-
 class MissiveClientImpl : public MissiveClient {
  public:
   MissiveClientImpl() = default;
-  ~MissiveClientImpl() override = default;
-
   MissiveClientImpl(const MissiveClientImpl& other) = delete;
   MissiveClientImpl& operator=(const MissiveClientImpl& other) = delete;
-  void Init(dbus::Bus* const bus) {
-    DCHECK(!missive_service_proxy_);
-    auto missive_storage_module_delegate =
-        std::make_unique<MissiveStorageModuleDelegateImpl>(
-            base::BindRepeating(&MissiveClientImpl::AddRecord,
-                                weak_ptr_factory_.GetWeakPtr()),
-            base::BindRepeating(&MissiveClientImpl::Flush,
-                                weak_ptr_factory_.GetWeakPtr()),
-            base::BindRepeating(&MissiveClientImpl::ReportSuccess,
-                                weak_ptr_factory_.GetWeakPtr()),
-            base::BindRepeating(&MissiveClientImpl::UpdateEncryptionKey,
-                                weak_ptr_factory_.GetWeakPtr()));
-    missive_storage_module_ = MissiveStorageModule::Create(
-        std::move(missive_storage_module_delegate));
+  ~MissiveClientImpl() override = default;
 
+  void Init(dbus::Bus* const bus) {
+    origin_task_runner_ = bus->GetOriginTaskRunner();
+
+    DCHECK(!missive_service_proxy_);
     missive_service_proxy_ =
         bus->GetObjectProxy(missive::kMissiveServiceName,
                             dbus::ObjectPath(missive::kMissiveServicePath));
+    missive_service_proxy_->SetNameOwnerChangedCallback(base::BindRepeating(
+        &MissiveClientImpl::OwnerChanged, weak_ptr_factory_.GetWeakPtr()));
+    missive_service_proxy_->WaitForServiceToBeAvailable(base::BindOnce(
+        &MissiveClientImpl::ServerAvailable, weak_ptr_factory_.GetWeakPtr()));
   }
 
- private:
-  void AddRecord(const reporting::Priority priority,
-                 reporting::Record record,
-                 base::OnceCallback<void(reporting::Status)>
-                     completion_callback) override {
+  void EnqueueRecord(const reporting::Priority priority,
+                     reporting::Record record,
+                     base::OnceCallback<void(reporting::Status)>
+                         completion_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
     reporting::EnqueueRecordRequest request;
     *request.mutable_record() = std::move(record);
     request.set_priority(priority);
@@ -81,17 +71,76 @@ class MissiveClientImpl : public MissiveClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    missive_service_proxy_->CallMethod(
-        &method_call, kTimeoutMs,
-        base::BindOnce(&MissiveClientImpl::HandleAddRecordResponse,
+    MaybeMakeCall(
+        &method_call,
+        base::BindOnce(&MissiveClientImpl::HandleEnqueueRecordResponse,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(completion_callback)));
   }
 
-  void HandleAddRecordResponse(
+  void Flush(const reporting::Priority priority,
+             base::OnceCallback<void(reporting::Status)> completion_callback)
+      override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    reporting::FlushPriorityRequest request;
+    request.set_priority(priority);
+    dbus::MethodCall method_call(missive::kMissiveServiceInterface,
+                                 missive::kFlushPriority);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    MaybeMakeCall(&method_call,
+                  base::BindOnce(&MissiveClientImpl::HandleFlushResponse,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 std::move(completion_callback)));
+  }
+
+  void UpdateEncryptionKey(
+      const reporting::SignedEncryptionInfo& encryption_info) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    reporting::UpdateEncryptionKeyRequest request;
+    *request.mutable_signed_encryption_info() = std::move(encryption_info);
+    dbus::MethodCall method_call(missive::kMissiveServiceInterface,
+                                 missive::kUpdateEncryptionKey);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    MaybeMakeCall(&method_call, base::DoNothing());
+    return;
+  }
+
+  void ReportSuccess(const reporting::SequenceInformation& sequence_information,
+                     bool force_confirm) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    reporting::ConfirmRecordUploadRequest request;
+    *request.mutable_sequence_information() = std::move(sequence_information);
+    request.set_force_confirm(force_confirm);
+    dbus::MethodCall method_call(missive::kMissiveServiceInterface,
+                                 missive::kConfirmRecordUpload);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    MaybeMakeCall(&method_call, base::DoNothing());
+  }
+
+  MissiveClient::TestInterface* GetTestInterface() override { return nullptr; }
+
+  base::WeakPtr<MissiveClient> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  void HandleEnqueueRecordResponse(
       base::OnceCallback<void(reporting::Status)> completion_callback,
-      dbus::Response* response) {
-    dbus::MessageReader reader(response);
+      reporting::StatusOr<dbus::Response*> response_or_status) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+
+    if (!response_or_status.ok()) {
+      std::move(completion_callback).Run(response_or_status.status());
+      return;
+    }
+
+    dbus::MessageReader reader(response_or_status.ValueOrDie());
     reporting::EnqueueRecordResponse response_body;
     reader.PopArrayOfBytesAsProto(&response_body);
 
@@ -100,27 +149,17 @@ class MissiveClientImpl : public MissiveClient {
     std::move(completion_callback).Run(status);
   }
 
-  void Flush(const reporting::Priority priority,
-             base::OnceCallback<void(reporting::Status)> completion_callback)
-      override {
-    reporting::FlushPriorityRequest request;
-    request.set_priority(priority);
-    dbus::MethodCall method_call(missive::kMissiveServiceInterface,
-                                 missive::kFlushPriority);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(request);
-
-    missive_service_proxy_->CallMethod(
-        &method_call, kTimeoutMs,
-        base::BindOnce(&MissiveClientImpl::HandleFlushResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       std::move(completion_callback)));
-  }
-
   void HandleFlushResponse(
       base::OnceCallback<void(reporting::Status)> completion_callback,
-      dbus::Response* response) {
-    dbus::MessageReader reader(response);
+      reporting::StatusOr<dbus::Response*> response_or_status) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+
+    if (!response_or_status.ok()) {
+      std::move(completion_callback).Run(response_or_status.status());
+      return;
+    }
+
+    dbus::MessageReader reader(response_or_status.ValueOrDie());
     reporting::FlushPriorityResponse response_body;
     reader.PopArrayOfBytesAsProto(&response_body);
 
@@ -129,41 +168,60 @@ class MissiveClientImpl : public MissiveClient {
     std::move(completion_callback).Run(status);
   }
 
-  void ReportSuccess(
-      const reporting::SequencingInformation& sequencing_information,
-      bool force_confirm) override {
-    reporting::ConfirmRecordUploadRequest request;
-    *request.mutable_sequencing_information() =
-        std::move(sequencing_information);
-    request.set_force_confirm(force_confirm);
-    dbus::MethodCall method_call(missive::kMissiveServiceInterface,
-                                 missive::kConfirmRecordUpload);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(request);
-
-    missive_service_proxy_->CallMethod(&method_call, kTimeoutMs,
-                                       base::DoNothing());
+  void MaybeMakeCall(
+      dbus::MethodCall* call,
+      base::OnceCallback<void(reporting::StatusOr<dbus::Response*>)>
+          completion_callback) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    // Bail out, if missive daemon is not available over dBus.
+    if (!is_available_) {
+      std::move(completion_callback)
+          .Run(Status(reporting::error::UNAVAILABLE,
+                      "Missive is not available"));
+      return;
+    }
+    // Make a dBus call.
+    missive_service_proxy_->CallMethod(
+        call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&MissiveClientImpl::CallResponded,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(completion_callback)));
   }
 
-  void UpdateEncryptionKey(
-      const reporting::SignedEncryptionInfo& encryption_info) override {
-    // TODO(1174889): Uncomment the following code once system_api has been
-    // updated with kUpdateEncryptionKey.
-    // reporting::UpdateEncryptKeyRequest request;
-    // *request.mutable_signed_encryption_info() = std::move(encryption_info);
-    // dbus::MethodCall method_call(missive::MissiveServiceInterface,
-    //                              missive::kUpdateEncryptionKey);
-    // dbus::MessageWriter writer(&method_call);
-    // writer.AppendProtoAsArrayOfBytes(request);
-
-    // missive_service_proxy_->CallMethod(
-    //     &method_call, kTimeoutMs, base::DoNothing());
-    return;
+  void CallResponded(
+      base::OnceCallback<void(reporting::StatusOr<dbus::Response*>)>
+          completion_callback,
+      dbus::Response* response) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    if (!response) {
+      std::move(completion_callback)
+          .Run(Status(reporting::error::UNAVAILABLE,
+                      "Missive has not responded"));
+      return;
+    }
+    std::move(completion_callback).Run(response);
   }
 
-  dbus::ObjectProxy* missive_service_proxy_ = nullptr;
+  void OwnerChanged(const std::string& old_owner,
+                    const std::string& new_owner) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    is_available_ = !new_owner.empty();
+    LOG(WARNING) << missive::kMissiveServiceInterface
+                 << " changed owner, is_available=" << is_available_;
+  }
 
-  // Must be last class member.
+  void ServerAvailable(bool service_is_available) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(origin_checker_);
+    is_available_ = service_is_available;
+    LOG(WARNING) << missive::kMissiveServiceInterface
+                 << " became available, is_available=" << is_available_;
+  }
+
+  scoped_refptr<dbus::ObjectProxy> missive_service_proxy_;
+
+  bool is_available_{false};
+
+  // Weak pointer factory - must be last member of the class.
   base::WeakPtrFactory<MissiveClientImpl> weak_ptr_factory_{this};
 };
 
@@ -177,6 +235,11 @@ MissiveClient::MissiveClient() {
 MissiveClient::~MissiveClient() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
+}
+
+scoped_refptr<base::SequencedTaskRunner> MissiveClient::origin_task_runner()
+    const {
+  return origin_task_runner_;
 }
 
 // static
@@ -199,11 +262,6 @@ void MissiveClient::Shutdown() {
 // static
 MissiveClient* MissiveClient::Get() {
   return g_instance;
-}
-
-scoped_refptr<MissiveStorageModule> MissiveClient::GetMissiveStorageModule() {
-  DCHECK(g_instance);
-  return g_instance->missive_storage_module_;
 }
 
 }  // namespace chromeos

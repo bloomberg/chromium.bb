@@ -6,6 +6,9 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+
 namespace blink {
 
 ServiceWorkerContentSettingsProxy::ServiceWorkerContentSettingsProxy(
@@ -19,6 +22,7 @@ bool ServiceWorkerContentSettingsProxy::AllowStorageAccessSync(
     StorageType storage_type) {
   bool result = false;
   if (storage_type == StorageType::kIndexedDB) {
+    SCOPED_UMA_HISTOGRAM_TIMER("ServiceWorker.AllowIndexedDBTime");
     GetService()->AllowIndexedDB(&result);
     return result;
   } else if (storage_type == StorageType::kFileSystem) {

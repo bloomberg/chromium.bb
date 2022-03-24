@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
@@ -20,6 +20,10 @@ namespace sandbox {
 class NamedPipeDispatcher : public Dispatcher {
  public:
   explicit NamedPipeDispatcher(PolicyBase* policy_base);
+
+  NamedPipeDispatcher(const NamedPipeDispatcher&) = delete;
+  NamedPipeDispatcher& operator=(const NamedPipeDispatcher&) = delete;
+
   ~NamedPipeDispatcher() override {}
 
   // Dispatcher interface.
@@ -37,8 +41,7 @@ class NamedPipeDispatcher : public Dispatcher {
                        uint32_t in_buffer_size,
                        uint32_t default_timeout);
 
-  PolicyBase* policy_base_;
-  DISALLOW_COPY_AND_ASSIGN(NamedPipeDispatcher);
+  raw_ptr<PolicyBase> policy_base_;
 };
 
 }  // namespace sandbox

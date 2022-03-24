@@ -16,6 +16,23 @@
 
 namespace segmentation_platform {
 
+namespace {
+
+void ClearKeyPrefix(SignalKeyInternal::Prefix* prefix) {
+  DCHECK(prefix);
+  prefix->kind = 0;
+  prefix->name_hash = 0;
+}
+
+void ClearKey(SignalKeyInternal* key) {
+  DCHECK(key);
+  ClearKeyPrefix(&key->prefix);
+  key->time_range_end_sec = 0;
+  key->time_range_start_sec = 0;
+}
+
+}  // namespace
+
 std::string SignalKeyInternalToBinary(const SignalKeyInternal& input) {
   char output[sizeof(SignalKeyInternal)];
   base::BigEndianWriter writer(output, sizeof(output));
@@ -30,10 +47,13 @@ std::string SignalKeyInternalToBinary(const SignalKeyInternal& input) {
   return std::string(output, sizeof(output));
 }
 
-void SignalKeyInternalFromBinary(const std::string& input,
+bool SignalKeyInternalFromBinary(const std::string& input,
                                  SignalKeyInternal* output) {
-  CHECK_EQ(input.size(), sizeof(SignalKeyInternal));
-  base::BigEndianReader reader(input.data(), input.size());
+  if (input.size() != sizeof(SignalKeyInternal)) {
+    ClearKey(output);
+    return false;
+  }
+  auto reader = base::BigEndianReader::FromStringPiece(input);
   reader.ReadBytes(&output->prefix.kind, sizeof(output->prefix.kind));
   reader.Skip(sizeof(SignalKeyInternal::Prefix::padding));
   reader.ReadU64(&output->prefix.name_hash);
@@ -42,6 +62,7 @@ void SignalKeyInternalFromBinary(const std::string& input,
   base::ReadBigEndian(reader.ptr(), &output->time_range_start_sec);
   reader.Skip(sizeof(SignalKeyInternal::time_range_start_sec));
   CHECK_EQ(0UL, reader.remaining());
+  return true;
 }
 
 std::string SignalKeyInternalToDebugString(const SignalKeyInternal& input) {
@@ -62,14 +83,18 @@ std::string SignalKeyInternalPrefixToBinary(
   return output_str;
 }
 
-void SignalKeyInternalPrefixFromBinary(const std::string& input,
+bool SignalKeyInternalPrefixFromBinary(const std::string& input,
                                        SignalKeyInternal::Prefix* output) {
-  CHECK_EQ(input.size(), sizeof(SignalKeyInternal::Prefix));
-  base::BigEndianReader reader(input.data(), input.size());
+  if (input.size() != sizeof(SignalKeyInternal::Prefix)) {
+    ClearKeyPrefix(output);
+    return false;
+  }
+  auto reader = base::BigEndianReader::FromStringPiece(input);
   reader.ReadBytes(&output->kind, sizeof(output->kind));
   reader.Skip(sizeof(SignalKeyInternal::Prefix::padding));
   reader.ReadU64(&output->name_hash);
   CHECK_EQ(0UL, reader.remaining());
+  return true;
 }
 
 std::string SignalKeyInternalPrefixToDebugString(

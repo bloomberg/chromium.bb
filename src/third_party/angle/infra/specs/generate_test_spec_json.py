@@ -22,7 +22,46 @@ sys.path.insert(0, TESTING_BBOT_DIR)
 import generate_buildbot_json
 
 # Add custom mixins here.
-ADDITIONAL_MIXINS = {}
+ADDITIONAL_MIXINS = {
+    'angle_skia_gold_test': {
+        '$mixin_append': {
+            'args': [
+                '--git-revision=${got_angle_revision}',
+                # BREAK GLASS IN CASE OF EMERGENCY
+                # Uncommenting this argument will bypass all interactions with Skia
+                # Gold in any tests that use it. This is meant as a temporary
+                # emergency stop in case of a Gold outage that's affecting the bots.
+                # '--bypass-skia-gold-functionality',
+            ],
+            'precommit_args': [
+                '--gerrit-issue=${patch_issue}',
+                '--gerrit-patchset=${patch_set}',
+                '--buildbucket-id=${buildbucket_build_id}',
+            ],
+        }
+    },
+
+    # TODO(jmadill): De-duplicate when landed in Chrome. http://crbug.com/1236818
+    'angle_linux_nvidia_gtx_1660_stable': {
+        'swarming': {
+            'dimensions': {
+                'gpu': '10de:2184-440.100',
+                'os': 'Ubuntu-18.04.5|Ubuntu-18.04.6',
+                'pool': 'chromium.tests.gpu',
+            },
+        },
+    },
+    'angle_win10_nvidia_gtx_1660_stable': {
+        'swarming': {
+            'dimensions': {
+                'gpu': '10de:2184-27.21.14.5638',
+                'os': 'Windows-10-18363',
+                'pool': 'chromium.tests.gpu',
+            },
+        },
+    },
+}
+
 MIXIN_FILE_NAME = os.path.join(THIS_DIR, 'mixins.pyl')
 MIXINS_PYL_TEMPLATE = """\
 # GENERATED FILE - DO NOT EDIT.
@@ -86,13 +125,12 @@ def main():
             assert isinstance(test, dict)
             seen_mixins = seen_mixins.union(test.get('mixins', set()))
 
-    found_mixins = {}
+    found_mixins = ADDITIONAL_MIXINS.copy()
     for mixin in seen_mixins:
+        if mixin in found_mixins:
+            continue
         assert (mixin in chromium_generator.mixins)
         found_mixins[mixin] = chromium_generator.mixins[mixin]
-
-    for mixin_name, mixin in ADDITIONAL_MIXINS.items():
-        found_mixins[mixin_name] = mixin
 
     pp = pprint.PrettyPrinter(indent=2)
 

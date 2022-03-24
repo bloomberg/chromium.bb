@@ -8,6 +8,7 @@
 
 #include <list>
 
+#include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_image.h"
@@ -27,6 +28,9 @@ class NativeImageBufferEGL : public NativeImageBuffer {
  public:
   static scoped_refptr<NativeImageBufferEGL> Create(GLuint texture_id);
 
+  NativeImageBufferEGL(const NativeImageBufferEGL&) = delete;
+  NativeImageBufferEGL& operator=(const NativeImageBufferEGL&) = delete;
+
  private:
   NativeImageBufferEGL(EGLDisplay display, EGLImageKHR image);
   ~NativeImageBufferEGL() override;
@@ -44,13 +48,11 @@ class NativeImageBufferEGL : public NativeImageBuffer {
     explicit ClientInfo(gl::GLImage* client);
     ~ClientInfo();
 
-    gl::GLImage* client;
+    raw_ptr<gl::GLImage> client;
     bool needs_wait_before_read;
   };
   std::list<ClientInfo> client_infos_;
-  gl::GLImage* write_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeImageBufferEGL);
+  raw_ptr<gl::GLImage> write_client_;
 };
 
 scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
@@ -144,14 +146,15 @@ class NativeImageBufferStub : public NativeImageBuffer {
  public:
   NativeImageBufferStub() = default;
 
+  NativeImageBufferStub(const NativeImageBufferStub&) = delete;
+  NativeImageBufferStub& operator=(const NativeImageBufferStub&) = delete;
+
  private:
   ~NativeImageBufferStub() override = default;
   void AddClient(gl::GLImage* client) override {}
   void RemoveClient(gl::GLImage* client) override {}
   bool IsClient(gl::GLImage* client) override { return true; }
   void BindToTexture(GLenum target) const override {}
-
-  DISALLOW_COPY_AND_ASSIGN(NativeImageBufferStub);
 };
 
 }  // anonymous namespace

@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_ASH_WEB_APPLICATIONS_HELP_APP_HELP_APP_UI_DELEGATE_H_
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_HELP_APP_HELP_APP_UI_DELEGATE_H_
 
-#include "chromeos/components/help_app_ui/help_app_ui_delegate.h"
+#include "ash/webui/help_app_ui/help_app_ui_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class WebUI;
-}
+}  // namespace content
+
+namespace ash {
 
 /**
  * Implementation of the HelpAppUiDelegate interface. Provides the help app
@@ -25,13 +27,15 @@ class ChromeHelpAppUIDelegate : public HelpAppUIDelegate {
 
   // HelpAppUIDelegate:
   absl::optional<std::string> OpenFeedbackDialog() override;
-  void PopulateLoadTimeData(content::WebUIDataSource* source) override;
   void ShowParentalControls() override;
   PrefService* GetLocalState() override;
   void MaybeShowDiscoverNotification() override;
+  void MaybeShowReleaseNotesNotification() override;
 
  private:
   content::WebUI* web_ui_;  // Owns |this|.
 };
+
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_WEB_APPLICATIONS_HELP_APP_HELP_APP_UI_DELEGATE_H_

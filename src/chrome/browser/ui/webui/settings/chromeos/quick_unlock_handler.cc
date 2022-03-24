@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
@@ -22,11 +22,11 @@ QuickUnlockHandler::QuickUnlockHandler(Profile* profile,
 QuickUnlockHandler::~QuickUnlockHandler() = default;
 
 void QuickUnlockHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "RequestPinLoginState",
       base::BindRepeating(&QuickUnlockHandler::HandleRequestPinLoginState,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "RequestQuickUnlockDisabledByPolicy",
       base::BindRepeating(
           &QuickUnlockHandler::HandleQuickUnlockDisabledByPolicy,
@@ -36,7 +36,7 @@ void QuickUnlockHandler::RegisterMessages() {
 void QuickUnlockHandler::OnJavascriptAllowed() {
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
-      ::prefs::kQuickUnlockModeAllowlist,
+      prefs::kQuickUnlockModeAllowlist,
       base::BindRepeating(
           &QuickUnlockHandler::UpdateQuickUnlockDisabledByPolicy,
           weak_ptr_factory_.GetWeakPtr()));
@@ -67,9 +67,9 @@ void QuickUnlockHandler::OnPinLoginAvailable(bool is_available) {
 }
 
 void QuickUnlockHandler::UpdateQuickUnlockDisabledByPolicy() {
-  FireWebUIListener("quick-unlock-disabled-by-policy-changed",
-                    base::Value(chromeos::quick_unlock::IsPinDisabledByPolicy(
-                        pref_service_)));
+  FireWebUIListener(
+      "quick-unlock-disabled-by-policy-changed",
+      base::Value(quick_unlock::IsPinDisabledByPolicy(pref_service_)));
 }
 
 }  // namespace settings

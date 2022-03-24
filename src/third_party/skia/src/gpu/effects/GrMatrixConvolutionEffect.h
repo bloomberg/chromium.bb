@@ -17,7 +17,7 @@ public:
     // A little bit less than the minimum # uniforms required by DX9SM2 (32).
     // Allows for a 5x5 kernel (or 28x1, for that matter).
     // Must be a multiple of 4, since we upload these in vec4s.
-    static constexpr int kMaxUniformSize = 28;
+    inline static constexpr int kMaxUniformSize = 28;
 
     static std::unique_ptr<GrFragmentProcessor> Make(GrRecordingContext*,
                                                      GrSurfaceProxyView srcView,
@@ -31,22 +31,13 @@ public:
                                                      bool convolveAlpha,
                                                      const GrCaps&);
 
-    const SkIRect& bounds() const { return fBounds; }
-    SkISize kernelSize() const { return fKernel.size(); }
-    SkVector kernelOffset() const { return fKernelOffset; }
-    bool kernelIsSampled() const { return fKernel.isSampled(); }
-    const float *kernel() const { return fKernel.array().data(); }
-    float kernelSampleGain() const { return fKernel.biasAndGain().fGain; }
-    float kernelSampleBias() const { return fKernel.biasAndGain().fBias; }
-    float gain() const { return fGain; }
-    float bias() const { return fBias; }
-    bool convolveAlpha() const { return fConvolveAlpha; }
-
     const char* name() const override { return "MatrixConvolution"; }
 
     std::unique_ptr<GrFragmentProcessor> clone() const override;
 
 private:
+    class Impl;
+
     /**
      * Small kernels are represented as float-arrays and uploaded as uniforms.
      * Large kernels go over the uniform limit and are uploaded as textures and sampled.
@@ -110,13 +101,12 @@ private:
 
     explicit GrMatrixConvolutionEffect(const GrMatrixConvolutionEffect&);
 
-    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
+    std::unique_ptr<ProgramImpl> onMakeProgramImpl() const override;
 
-    void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
     bool onIsEqual(const GrFragmentProcessor&) const override;
 
-    SkIRect          fBounds;
     KernelWrapper    fKernel;
     float            fGain;
     float            fBias;

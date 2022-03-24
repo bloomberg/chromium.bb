@@ -11,12 +11,13 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
@@ -26,9 +27,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_protobufs.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -53,6 +54,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -65,7 +67,6 @@ constexpr std::pair<int, int> kAutofillExperimentRanges[] = {
     {3314445, 3314448}, {3314854, 3314883},
 };
 
-const size_t kMaxQueryGetSize = 1400;  // 1.25 KiB
 const size_t kAutofillDownloadManagerMaxFormCacheSize = 16;
 const size_t kMaxFieldsPerQueryRequest = 100;
 
@@ -163,8 +164,7 @@ GURL GetAutofillServerURL() {
 }
 
 base::TimeDelta GetThrottleResetPeriod() {
-  return base::TimeDelta::FromDays(
-      std::max(1, kAutofillUploadThrottlingPeriodInDays.Get()));
+  return base::Days(std::max(1, kAutofillUploadThrottlingPeriodInDays.Get()));
 }
 
 // Returns true if |id| is within |kAutofillExperimentRanges|.
@@ -380,6 +380,10 @@ std::ostream& operator<<(std::ostream& out,
       out << "\n type: " << field.type();
     if (field.generation_type())
       out << "\n generation_type: " << field.generation_type();
+    if (field.single_username_vote_type()) {
+      out << "\n single_username_vote_type: "
+          << field.single_username_vote_type();
+    }
   }
   return out;
 }
@@ -387,7 +391,7 @@ std::ostream& operator<<(std::ostream& out,
 std::string FieldTypeToString(int type) {
   return base::StrCat(
       {base::NumberToString(type), std::string("/"),
-       AutofillType(static_cast<ServerFieldType>(type)).ToString()});
+       AutofillType(ToSafeServerFieldType(type, UNKNOWN_TYPE)).ToString()});
 }
 
 LogBuffer& operator<<(LogBuffer& out,
@@ -414,6 +418,24 @@ LogBuffer& operator<<(LogBuffer& out,
     out << Tr{} << "passwords_revealed:" << upload.passwords_revealed();
   if (upload.has_has_form_tag())
     out << Tr{} << "has_form_tag:" << upload.has_form_tag();
+
+  if (upload.has_single_username_data()) {
+    LogBuffer single_username_data;
+    single_username_data << Tag{"span"} << "[";
+    single_username_data
+        << Tr{} << "username_form_signature:"
+        << upload.single_username_data().username_form_signature();
+    single_username_data
+        << Tr{} << "username_field_signature:"
+        << upload.single_username_data().username_field_signature();
+    single_username_data << Tr{} << "value_type:"
+                         << static_cast<int>(
+                                upload.single_username_data().value_type());
+    single_username_data << Tr{} << "prompt_edit:"
+                         << static_cast<int>(
+                                upload.single_username_data().prompt_edit());
+    out << Tr{} << "single_username_data" << std::move(single_username_data);
+  }
 
   out << Tr{} << "form_signature:" << upload.form_signature();
   for (const auto& field : upload.field()) {
@@ -774,40 +796,13 @@ size_t AutofillDownloadManager::GetPayloadLength(
 
 std::tuple<GURL, std::string> AutofillDownloadManager::GetRequestURLAndMethod(
     const FormRequestData& request_data) const {
-  std::string method("POST");
-  std::string query_str;
-
-  if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-    if (request_data.payload.length() <= kMaxQueryGetSize) {
-      method = "GET";
-      std::string base64_payload;
-      base::Base64UrlEncode(request_data.payload,
-                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                            &base64_payload);
-      base::StrAppend(&query_str, {"q=", base64_payload});
-    }
-    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method", (method == "GET") ? 0 : 1);
-  }
-
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query_str);
-
-  GURL url = autofill_server_url_
-                 .Resolve(RequestTypeToString(request_data.request_type))
-                 .ReplaceComponents(replacements);
-  return std::make_tuple(std::move(url), std::move(method));
-}
-
-std::tuple<GURL, std::string>
-AutofillDownloadManager::GetRequestURLAndMethodForApi(
-    const FormRequestData& request_data) const {
   // ID of the resource to add to the API request URL. Nothing will be added if
   // |resource_id| is empty.
   std::string resource_id;
   std::string method = "POST";
 
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-    if (GetPayloadLength(request_data.payload) <= kMaxAPIQueryGetSize) {
+    if (GetPayloadLength(request_data.payload) <= kMaxQueryGetSize) {
       resource_id = request_data.payload;
       method = "GET";
       UMA_HISTOGRAM_BOOLEAN("Autofill.Query.ApiUrlIsTooLong", false);
@@ -836,7 +831,7 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   // Get the URL and method to use for this request.
   std::string method;
   GURL request_url;
-  std::tie(request_url, method) = GetRequestURLAndMethodForApi(request_data);
+  std::tie(request_url, method) = GetRequestURLAndMethod(request_data);
 
   // Track the URL length for GET queries because the URL length can be in the
   // thousands when rich metadata is enabled.
@@ -958,7 +953,7 @@ int AutofillDownloadManager::GetMaxServerAttempts() {
   // statically on first use to avoid re-parsing the param on each retry
   // opportunity.
   static const int max_attempts =
-      base::ClampToRange(kAutofillMaxServerAttempts.Get(), 1, 20);
+      base::clamp(kAutofillMaxServerAttempts.Get(), 1, 20);
   return max_attempts;
 }
 

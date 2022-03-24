@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/raw_ptr.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/public/dns_query_type.h"
@@ -52,12 +53,6 @@ class NET_EXPORT_PRIVATE DnsResponseResultExtractor {
   // May have the side effect of recording metrics about DnsResponses as they
   // are parsed, so while not an absolute requirement, any given DnsResponse
   // should only be used and extracted from at most once.
-  //
-  // Note that for INTEGRITY or HTTPS, this will ignore errors and pretend it
-  // successfully parsed a no-result response.
-  // TODO(crbug.com/1138620): Cleanup this "helpfulness" and let
-  // HostResolverManager handle whether or not errors should be fatal due to
-  // experimentation.
   ExtractionError ExtractDnsResults(DnsQueryType query_type,
                                     HostCache::Entry* out_results) const;
 
@@ -66,7 +61,7 @@ class NET_EXPORT_PRIVATE DnsResponseResultExtractor {
   static HostCache::Entry CreateEmptyResult(DnsQueryType query_type);
 
  private:
-  const DnsResponse* const response_;
+  const raw_ptr<const DnsResponse> response_;
 };
 
 }  // namespace net

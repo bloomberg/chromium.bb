@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_processing_event.h"
@@ -486,7 +487,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
     case 0:
       // Choose an appropriate size.  For an AudioContext that is not closed, we
       // need to choose an appropriate size based on the callback buffer size.
-      if (context.HasRealtimeConstraint() && !context.IsContextClosed()) {
+      if (context.HasRealtimeConstraint() && !context.IsContextCleared()) {
         RealtimeAudioDestinationHandler& destination_handler =
             static_cast<RealtimeAudioDestinationHandler&>(
                 context.destination()->GetAudioDestinationHandler());
@@ -624,7 +625,7 @@ void ScriptProcessorNode::DispatchEvent(double playback_time,
 
 bool ScriptProcessorNode::HasPendingActivity() const {
   // To prevent the node from leaking after the context is closed.
-  if (context()->IsContextClosed())
+  if (context()->IsContextCleared())
     return false;
 
   // If |onaudioprocess| event handler is defined, the node should not be

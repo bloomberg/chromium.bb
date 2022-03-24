@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
@@ -85,13 +86,14 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
   if (allow_default_instance &&
       SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
           isolation_context_, url_info.url, site_info)) {
-    scoped_refptr<SiteInstanceImpl> site_instance = default_site_instance_;
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        default_site_instance_.get();
     if (!site_instance) {
       site_instance = new SiteInstanceImpl(this);
 
       // Note: |default_site_instance_| will get set inside this call
       // via RegisterSiteInstance().
-      site_instance->SetSiteInfoToDefault();
+      site_instance->SetSiteInfoToDefault(site_info.storage_partition_config());
       DCHECK_EQ(default_site_instance_, site_instance.get());
     }
 
@@ -107,6 +109,19 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
 void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
   DCHECK(site_instance->browsing_instance_.get() == this);
   DCHECK(site_instance->HasSite());
+
+  // Verify that the SiteInstance's StoragePartitionConfig matches this
+  // BrowsingInstance's StoragePartitionConfig if it already has one.
+  const StoragePartitionConfig& storage_partition_config =
+      site_instance->GetSiteInfo().storage_partition_config();
+  if (storage_partition_config_.has_value()) {
+    // We should only use a single StoragePartition within a BrowsingInstance.
+    // If we're attempting to use multiple, something has gone wrong with the
+    // logic at upper layers.
+    CHECK_EQ(storage_partition_config_.value(), storage_partition_config);
+  } else {
+    storage_partition_config_ = storage_partition_config;
+  }
 
   // Explicitly prevent the default SiteInstance from being added since
   // the map is only supposed to contain instances that map to a single site.
@@ -170,8 +185,69 @@ BrowsingInstance::~BrowsingInstance() {
 
 SiteInfo BrowsingInstance::ComputeSiteInfoForURL(
     const UrlInfo& url_info) const {
-  return SiteInfo::Create(isolation_context_, url_info,
-                          web_exposed_isolation_info_);
+  // If a StoragePartitionConfig is specified in both `url_info` and this
+  // BrowsingInstance, make sure they match.
+  if (url_info.storage_partition_config.has_value() &&
+      storage_partition_config_.has_value()) {
+    CHECK_EQ(storage_partition_config_.value(),
+             url_info.storage_partition_config.value());
+  }
+  // If no StoragePartitionConfig was set in `url_info`, create a new UrlInfo
+  // that inherit's this BrowsingInstance's StoragePartitionConfig.
+  UrlInfo url_info_with_partition =
+      url_info.storage_partition_config.has_value()
+          ? url_info
+          : UrlInfo(UrlInfoInit(url_info).WithStoragePartitionConfig(
+                storage_partition_config_));
+
+  url_info_with_partition.web_exposed_isolation_info =
+      web_exposed_isolation_info_;
+  return SiteInfo::Create(isolation_context_, url_info_with_partition);
+}
+
+int BrowsingInstance::EstimateOriginAgentClusterOverhead() {
+  DCHECK(SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled());
+
+  std::set<SiteInfo> site_info_set;
+  std::set<SiteInfo> site_info_set_no_oac;
+
+  // The following computes an estimate of how many additional processes have
+  // been created to deal with OriginAgentCluster (OAC) headers. When OAC
+  // headers forces an additional process, that corresponds to the SiteInfo's
+  // is_origin_keyed_ flag being set. To compute the estimate, we use the set of
+  // unique SiteInstances (each represented by a unique SiteInfo) in each
+  // BrowsingInstance as a proxy for the set of different RenderProcesses. We
+  // start with the total count of SiteInfos, then we create a new set of
+  // SiteInfos created by resetting the is_origin_keyed_ flag on each of the
+  // SiteInfos (along with any corresponding adjustments to the site_url_ and
+  // process_lock_url_ to reflect the possible conversion from origin to site).
+  // The assumption here is that SiteInfos that forced a new process due to OAC
+  // may no longer be unique once these values are reset, and as such the new
+  // set will have less elements than the original set, with the difference
+  // being the count of extra SiteInstances due to OAC. There are cases where
+  // ignoring the OAC header would still result in an extra process, e.g. when
+  // the SiteInfo's origin appears in the command-line origin isolation list.
+  //
+  // The estimate is computed using several simplifying assumptions:
+  // 1) We only consider HTTPS SiteInfos to compute the additional SiteInfos.
+  // This assumption should generally be valid, since we don't apply
+  // is_origin_keyed_ to non-HTTPS schemes.
+  // 2) We assume that SiteInfos from multiple BrowsingInstances aren't
+  // coalesced into a single RenderProcess.  While this isn't true in general,
+  // it is difficult in practice to account for, so we don't try to.
+  for (auto& entry : site_instance_map_) {
+    const SiteInfo& site_info = entry.first;
+    GURL process_lock_url = site_info.process_lock_url();
+    if (!process_lock_url.SchemeIs(url::kHttpsScheme))
+      continue;
+
+    site_info_set.insert(site_info);
+    site_info_set_no_oac.insert(
+        site_info.GetNonOriginKeyedEquivalentForMetrics(isolation_context_));
+  }
+  DCHECK_GE(site_info_set.size(), site_info_set_no_oac.size());
+  int result = site_info_set.size() - site_info_set_no_oac.size();
+  return result;
 }
 
 }  // namespace content

@@ -28,7 +28,6 @@ namespace plugin_vm {
 namespace {
 
 const char kDiskImageImportCommandUuid[] = "3922722bd7394acf85bf4d5a330d4a47";
-const char kPluginVmLicenseKey[] = "LICENSE_KEY";
 const char kDomain[] = "example.com";
 const char kDeviceId[] = "device_id";
 
@@ -43,7 +42,7 @@ class FakeShelfItemDelegate : public ash::ShelfItemDelegate {
                       int32_t event_flags,
                       int64_t display_id) override {}
   void Close() override {
-    ChromeShelfController::instance()->CloseItem(
+    ChromeShelfController::instance()->ReplaceWithAppShortcutOrRemove(
         ash::ShelfID(kPluginVmShelfAppId));
   }
 };
@@ -138,10 +137,10 @@ PluginVmTestHelper::~PluginVmTestHelper() = default;
 void PluginVmTestHelper::SetPolicyRequirementsToAllowPluginVm() {
   testing_profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmAllowed,
                                            true);
+  testing_profile_->GetPrefs()->SetString(plugin_vm::prefs::kPluginVmUserId,
+                                          "fake-id");
   testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
-      chromeos::kPluginVmAllowed, true);
-  testing_profile_->ScopedCrosSettingsTestHelper()->SetString(
-      chromeos::kPluginVmLicenseKey, kPluginVmLicenseKey);
+      ash::kPluginVmAllowed, true);
 }
 
 void PluginVmTestHelper::SetUserRequirementsToAllowPluginVm() {
@@ -190,8 +189,8 @@ void PluginVmTestHelper::OpenShelfItem() {
   // Similar logic to AppServiceAppWindowShelfController, for handling pins
   // and spinners.
   if (shelf_controller->GetItem(shelf_id)) {
-    shelf_controller->shelf_model()->SetShelfItemDelegate(shelf_id,
-                                                          std::move(delegate));
+    shelf_controller->shelf_model()->ReplaceShelfItemDelegate(
+        shelf_id, std::move(delegate));
     shelf_controller->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   } else {
     shelf_controller->CreateAppItem(std::move(delegate), ash::STATUS_RUNNING);

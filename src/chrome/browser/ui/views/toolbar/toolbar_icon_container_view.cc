@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -19,6 +20,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
@@ -99,7 +101,7 @@ class ToolbarIconContainerView::WidgetRestoreObserver
 
  private:
   bool was_collapsed_ = true;
-  ToolbarIconContainerView* const toolbar_icon_container_view_;
+  const raw_ptr<ToolbarIconContainerView> toolbar_icon_container_view_;
   base::ScopedObservation<views::View, views::ViewObserver> scoped_observation_{
       this};
 };
@@ -128,23 +130,27 @@ ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
 ToolbarIconContainerView::~ToolbarIconContainerView() {
   // As childred might be Observers of |this|, we need to destroy them before
   // destroying |observers_|.
-  RemoveAllChildViews(true);
+  RemoveAllChildViews();
 }
 
-void ToolbarIconContainerView::AddMainButton(views::Button* main_button) {
-  DCHECK(!main_button_);
-  main_button_ = main_button;
-  ObserveButton(main_button_);
-  AddChildView(main_button_);
+void ToolbarIconContainerView::AddMainItem(views::View* item) {
+  DCHECK(!main_item_);
+  main_item_ = item;
+  auto* const main_button = views::Button::AsButton(item);
+  if (main_button)
+    ObserveButton(main_button);
+
+  AddChildView(main_item_.get());
 }
 
 void ToolbarIconContainerView::ObserveButton(views::Button* button) {
   // We don't care about the main button being highlighted.
-  if (button != main_button_) {
+  if (button != main_item_) {
     subscriptions_.push_back(
-        button->ink_drop()->AddHighlightedChangedCallback(base::BindRepeating(
-            &ToolbarIconContainerView::OnButtonHighlightedChanged,
-            base::Unretained(this), base::Unretained(button))));
+        views::InkDrop::Get(button)->AddHighlightedChangedCallback(
+            base::BindRepeating(
+                &ToolbarIconContainerView::OnButtonHighlightedChanged,
+                base::Unretained(this), base::Unretained(button))));
   }
   subscriptions_.push_back(button->AddStateChangedCallback(base::BindRepeating(
       &ToolbarIconContainerView::UpdateHighlight, base::Unretained(this))));
@@ -176,12 +182,12 @@ bool ToolbarIconContainerView::GetHighlighted() const {
   if (!uses_highlight_)
     return false;
 
-  if (IsMouseHovered() && (!main_button_ || !main_button_->IsMouseHovered()))
+  if (IsMouseHovered() && (!main_item_ || !main_item_->IsMouseHovered()))
     return true;
 
   // Focused, pressed or hovered children should trigger the highlight.
   for (const views::View* child : children()) {
-    if (child == main_button_)
+    if (child == main_item_)
       continue;
     if (child->HasFocus())
       return true;
@@ -275,7 +281,7 @@ void ToolbarIconContainerView::UpdateHighlight() {
 
 void ToolbarIconContainerView::OnButtonHighlightedChanged(
     views::Button* button) {
-  if (button->ink_drop()->GetHighlighted())
+  if (views::InkDrop::Get(button)->GetHighlighted())
     highlighted_buttons_.insert(button);
   else
     highlighted_buttons_.erase(button);

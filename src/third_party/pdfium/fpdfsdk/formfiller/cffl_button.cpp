@@ -7,11 +7,12 @@
 #include "fpdfsdk/formfiller/cffl_button.h"
 
 #include "core/fpdfdoc/cpdf_formcontrol.h"
+#include "fpdfsdk/cpdfsdk_widget.h"
 #include "third_party/base/check.h"
 
-CFFL_Button::CFFL_Button(CPDFSDK_FormFillEnvironment* pFormFillEnv,
+CFFL_Button::CFFL_Button(CFFL_InteractiveFormFiller* pFormFiller,
                          CPDFSDK_Widget* pWidget)
-    : CFFL_FormFiller(pFormFillEnv, pWidget) {}
+    : CFFL_FormField(pFormFiller, pWidget) {}
 
 CFFL_Button::~CFFL_Button() = default;
 
@@ -28,10 +29,10 @@ void CFFL_Button::OnMouseExit(CPDFSDK_PageView* pPageView) {
 }
 
 bool CFFL_Button::OnLButtonDown(CPDFSDK_PageView* pPageView,
-                                CPDFSDK_Annot* pAnnot,
-                                uint32_t nFlags,
+                                CPDFSDK_Widget* pWidget,
+                                Mask<FWL_EVENTFLAG> nFlags,
                                 const CFX_PointF& point) {
-  if (!pAnnot->GetRect().Contains(point))
+  if (!pWidget->GetRect().Contains(point))
     return false;
 
   m_bMouseDown = true;
@@ -41,10 +42,10 @@ bool CFFL_Button::OnLButtonDown(CPDFSDK_PageView* pPageView,
 }
 
 bool CFFL_Button::OnLButtonUp(CPDFSDK_PageView* pPageView,
-                              CPDFSDK_Annot* pAnnot,
-                              uint32_t nFlags,
+                              CPDFSDK_Widget* pWidget,
+                              Mask<FWL_EVENTFLAG> nFlags,
                               const CFX_PointF& point) {
-  if (!pAnnot->GetRect().Contains(point))
+  if (!pWidget->GetRect().Contains(point))
     return false;
 
   m_bMouseDown = false;
@@ -53,50 +54,51 @@ bool CFFL_Button::OnLButtonUp(CPDFSDK_PageView* pPageView,
 }
 
 bool CFFL_Button::OnMouseMove(CPDFSDK_PageView* pPageView,
-                              uint32_t nFlags,
+                              Mask<FWL_EVENTFLAG> nFlags,
                               const CFX_PointF& point) {
   return true;
 }
 
 void CFFL_Button::OnDraw(CPDFSDK_PageView* pPageView,
-                         CPDFSDK_Annot* pAnnot,
+                         CPDFSDK_Widget* pWidget,
                          CFX_RenderDevice* pDevice,
                          const CFX_Matrix& mtUser2Device) {
   DCHECK(pPageView);
-  CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pAnnot);
   CPDF_FormControl* pCtrl = pWidget->GetFormControl();
-  if (pCtrl->GetHighlightingMode() != CPDF_FormControl::Push) {
-    pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Normal,
-                            nullptr);
+  if (pCtrl->GetHighlightingMode() != CPDF_FormControl::kPush) {
+    pWidget->DrawAppearance(pDevice, mtUser2Device,
+                            CPDF_Annot::AppearanceMode::kNormal);
     return;
   }
   if (m_bMouseDown) {
-    if (pWidget->IsWidgetAppearanceValid(CPDF_Annot::Down)) {
-      pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Down,
-                              nullptr);
+    if (pWidget->IsWidgetAppearanceValid(CPDF_Annot::AppearanceMode::kDown)) {
+      pWidget->DrawAppearance(pDevice, mtUser2Device,
+                              CPDF_Annot::AppearanceMode::kDown);
     } else {
-      pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Normal,
-                              nullptr);
+      pWidget->DrawAppearance(pDevice, mtUser2Device,
+                              CPDF_Annot::AppearanceMode::kNormal);
     }
     return;
   }
   if (m_bMouseIn) {
-    if (pWidget->IsWidgetAppearanceValid(CPDF_Annot::Rollover)) {
-      pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Rollover,
-                              nullptr);
+    if (pWidget->IsWidgetAppearanceValid(
+            CPDF_Annot::AppearanceMode::kRollover)) {
+      pWidget->DrawAppearance(pDevice, mtUser2Device,
+                              CPDF_Annot::AppearanceMode::kRollover);
     } else {
-      pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Normal,
-                              nullptr);
+      pWidget->DrawAppearance(pDevice, mtUser2Device,
+                              CPDF_Annot::AppearanceMode::kNormal);
     }
     return;
   }
 
-  pWidget->DrawAppearance(pDevice, mtUser2Device, CPDF_Annot::Normal, nullptr);
+  pWidget->DrawAppearance(pDevice, mtUser2Device,
+                          CPDF_Annot::AppearanceMode::kNormal);
 }
 
 void CFFL_Button::OnDrawDeactive(CPDFSDK_PageView* pPageView,
-                                 CPDFSDK_Annot* pAnnot,
+                                 CPDFSDK_Widget* pWidget,
                                  CFX_RenderDevice* pDevice,
                                  const CFX_Matrix& mtUser2Device) {
-  OnDraw(pPageView, pAnnot, pDevice, mtUser2Device);
+  OnDraw(pPageView, pWidget, pDevice, mtUser2Device);
 }

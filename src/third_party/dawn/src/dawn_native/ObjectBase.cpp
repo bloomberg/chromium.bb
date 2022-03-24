@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include "dawn_native/ObjectBase.h"
+#include "dawn_native/Device.h"
+
+#include <mutex>
 
 namespace dawn_native {
 
@@ -32,6 +35,56 @@ namespace dawn_native {
 
     bool ObjectBase::IsError() const {
         return GetRefCountPayload() == kErrorPayload;
+    }
+
+    ApiObjectBase::ApiObjectBase(DeviceBase* device, const char* label) : ObjectBase(device) {
+        if (label) {
+            mLabel = label;
+        }
+    }
+
+    ApiObjectBase::ApiObjectBase(DeviceBase* device, ErrorTag tag) : ObjectBase(device, tag) {
+    }
+
+    ApiObjectBase::ApiObjectBase(DeviceBase* device, LabelNotImplementedTag tag)
+        : ObjectBase(device) {
+    }
+
+    ApiObjectBase::~ApiObjectBase() {
+        ASSERT(!IsAlive());
+    }
+
+    void ApiObjectBase::APISetLabel(const char* label) {
+        mLabel = label;
+        SetLabelImpl();
+    }
+
+    const std::string& ApiObjectBase::GetLabel() const {
+        return mLabel;
+    }
+
+    void ApiObjectBase::SetLabelImpl() {
+    }
+
+    bool ApiObjectBase::IsAlive() const {
+        return IsInList();
+    }
+
+    void ApiObjectBase::DeleteThis() {
+        Destroy();
+        RefCounted::DeleteThis();
+    }
+
+    void ApiObjectBase::TrackInDevice() {
+        ASSERT(GetDevice() != nullptr);
+        GetDevice()->TrackObject(this);
+    }
+
+    void ApiObjectBase::Destroy() {
+        const std::lock_guard<std::mutex> lock(*GetDevice()->GetObjectListMutex(GetType()));
+        if (RemoveFromList()) {
+            DestroyImpl();
+        }
     }
 
 }  // namespace dawn_native

@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_GLOBAL_ERROR_H_
 
 #include <set>
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -22,6 +21,10 @@ class SigninGlobalError : public GlobalErrorWithStandardBubble,
  public:
   SigninGlobalError(SigninErrorController* error_controller,
                     Profile* profile);
+
+  SigninGlobalError(const SigninGlobalError&) = delete;
+  SigninGlobalError& operator=(const SigninGlobalError&) = delete;
+
   ~SigninGlobalError() override;
 
   // Returns true if there is an authentication error.
@@ -52,12 +55,10 @@ class SigninGlobalError : public GlobalErrorWithStandardBubble,
   void OnErrorChanged() override;
 
   // The Profile this service belongs to.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // The SigninErrorController that provides auth status.
-  SigninErrorController* error_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(SigninGlobalError);
+  raw_ptr<SigninErrorController> error_controller_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_GLOBAL_ERROR_H_

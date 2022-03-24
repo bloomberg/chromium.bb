@@ -10,6 +10,8 @@
 #ifndef EIGEN_SELFADJOINTRANK2UPTADE_H
 #define EIGEN_SELFADJOINTRANK2UPTADE_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {
@@ -80,8 +82,8 @@ EIGEN_DEVICE_FUNC SelfAdjointView<MatrixType,UpLo>& SelfAdjointView<MatrixType,U
   if (IsRowMajor)
     actualAlpha = numext::conj(actualAlpha);
 
-  typedef typename internal::remove_all<typename internal::conj_expr_if<IsRowMajor ^ UBlasTraits::NeedToConjugate,_ActualUType>::type>::type UType;
-  typedef typename internal::remove_all<typename internal::conj_expr_if<IsRowMajor ^ VBlasTraits::NeedToConjugate,_ActualVType>::type>::type VType;
+  typedef typename internal::remove_all<typename internal::conj_expr_if<int(IsRowMajor) ^ int(UBlasTraits::NeedToConjugate), _ActualUType>::type>::type UType;
+  typedef typename internal::remove_all<typename internal::conj_expr_if<int(IsRowMajor) ^ int(VBlasTraits::NeedToConjugate), _ActualVType>::type>::type VType;
   internal::selfadjoint_rank2_update_selector<Scalar, Index, UType, VType,
     (IsRowMajor ? int(UpLo==Upper ? Lower : Upper) : UpLo)>
     ::run(_expression().const_cast_derived().data(),_expression().outerStride(),UType(actualU),VType(actualV),actualAlpha);

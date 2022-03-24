@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
@@ -20,6 +20,20 @@ namespace policy {
 using ::ash::AccessibilityManager;
 using ::ash::MagnificationManager;
 using ::ash::MagnifierType;
+
+namespace {
+
+void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  keyboard_client->SetEnableFlag(flag);
+}
+
+void ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  keyboard_client->ClearEnableFlag(flag);
+}
+
+}  // namespace
 
 class AccessibilityPolicyTest : public PolicyTest {};
 
@@ -339,7 +353,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CursorHighlightEnabled) {
   EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, CaretHighlightEnabled) {
+// https://crbug.com/1225510
+#if defined(OS_CHROMEOS)
+#define MAYBE_CaretHighlightEnabled DISABLED_CaretHighlightEnabled
+#else
+#define MAYBE_CaretHighlightEnabled CaretHighlightEnabled
+#endif
+
+IN_PROC_BROWSER_TEST_F(AccessibilityPolicyTest, MAYBE_CaretHighlightEnabled) {
   // Verifies that the caret highlight accessibility feature can be controlled
   // through policy.
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();

@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -84,7 +84,7 @@ std::unique_ptr<TileService> CreateTileService(
       task_runner);
   auto tile_store = std::make_unique<TileStore>(std::move(tile_db));
   auto tile_manager =
-      TileManager::Create(std::move(tile_store), clock, accepted_language);
+      TileManager::Create(std::move(tile_store), accepted_language);
 
   // Create fetcher.
   auto tile_fetcher = TileFetcher::Create(

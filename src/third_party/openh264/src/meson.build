@@ -1,6 +1,6 @@
 project('openh264', ['c', 'cpp'],
   version : '2.1.0',
-  meson_version : '>= 0.47',
+  meson_version : '>= 0.50',
   default_options : [ 'warning_level=1',
                       'buildtype=debugoptimized' ])
 
@@ -35,8 +35,6 @@ encoder_inc = include_directories([
   join_paths('codec', 'encoder', 'core', 'inc'),
   join_paths('codec', 'encoder', 'plus', 'inc'),
 ])
-
-nasm = find_program('nasm', 'nasm.exe')
 
 system = host_machine.system()
 cpu_family = host_machine.cpu_family()
@@ -92,7 +90,7 @@ if ['linux', 'android', 'ios', 'darwin'].contains(system)
     add_project_arguments('-DHAVE_NEON_ARM64', language: 'cpp')
     casm_inc = include_directories(join_paths('codec', 'common', 'arm64'))
   else
-    error ('FIXME: unhandled CPU family @0@ for @1@'.format(cpu_family, system))
+    error('FIXME: unhandled CPU family @0@ for @1@'.format(cpu_family, system))
   endif
 
   if ['ios', 'darwin', 'android'].contains(system)
@@ -102,18 +100,38 @@ elif system == 'windows'
   if cpu_family == 'x86'
     asm_format = 'win32'
     asm_args += ['-DPREFIX', '-DX86_32']
+    asm_inc = join_paths(meson.current_source_dir(), 'codec', 'common', 'x86', '')
   elif cpu_family == 'x86_64'
     asm_format = 'win64'
     asm_args += ['-DWIN64']
+    asm_inc = join_paths(meson.current_source_dir(), 'codec', 'common', 'x86', '')
+  elif cpu_family == 'arm'
+    if cpp.get_argument_syntax() == 'msvc'
+      asm_format = 'armasm'
+      asm_args += ['-nologo', '-DHAVE_NEON', '-ignore', '4509']
+      asm_cmds = ['armasm']
+    else
+      asm_format = 'clang'
+      asm_args += ['-DHAVE_NEON', '-mimplicit-it=always']
+      asm_cmds = cpp.cmd_array()
+    endif
+    asm_inc = join_paths(meson.current_source_dir(), 'codec', 'common', 'arm', '')
+  elif cpu_family == 'aarch64'
+    asm_format = 'armasm'
+    asm_args += ['-nologo', '-DHAVE_NEON_AARCH64']
+    asm_inc = join_paths(meson.current_source_dir(), 'codec', 'common', 'arm64', '')
   else
-    error ('FIXME: unhandled CPU family @0@ for Windows'.format(cpu_family))
+    error('FIXME: unhandled CPU family @0@ for Windows'.format(cpu_family))
   endif
-  asm_inc = join_paths(meson.current_source_dir(), 'codec', 'common', 'x86', '')
 else
-  error ('FIXME: Unhandled system @0@'.format(system))
+  error('FIXME: Unhandled system @0@'.format(system))
 endif
 
-if ['x86', 'x86_64'].contains(cpu_family)
+use_asm_gen = false
+if cpu_family in ['x86', 'x86_64']
+  nasm = find_program('nasm')
+
+  use_asm_gen = true
   asm_gen = generator(nasm,
     output : '@BASENAME@.o',
     arguments : [
@@ -121,6 +139,43 @@ if ['x86', 'x86_64'].contains(cpu_family)
       '-i', asm_inc,
       '@INPUT@',
       '-o', '@OUTPUT@'] + asm_args)
+elif system == 'windows'
+  if  cpu_family == 'arm'
+    # For ARM, gas-preprocessor is needed for converting the asm to be
+    # buildable as thumb even with Clang.
+    use_asm_gen = true
+    gasprep = find_program('gas-preprocessor.pl')
+    asm_gen = generator(gasprep,
+      output : '@BASENAME@.obj',
+      arguments : [
+        '-as-type', asm_format,
+        '-force-thumb',
+        '--'
+        ] + asm_cmds + [
+        '-I' + asm_inc] + asm_args + [
+        '@INPUT@',
+        '-c', '-o', '@OUTPUT@'])
+  elif cpu_family == 'aarch64'
+    # For ARM64, Clang can build the assembly as-is without needing to use
+    # either gas-preprocessor or armasm64.
+    if cpp.get_argument_syntax() == 'msvc'
+      use_asm_gen = true
+      gasprep = find_program('gas-preprocessor.pl')
+      asm_gen = generator(gasprep,
+        output : '@BASENAME@.obj',
+        arguments : [
+          '-as-type', asm_format,
+          '-arch', 'aarch64',
+          '--',
+          'armasm64',
+          '-I' + asm_inc] + asm_args + [
+          '@INPUT@',
+          '-c', '-o', '@OUTPUT@'])
+    endif
+  else
+    # Windows only supports x86, x86_64, arm, arm64
+    error('unreachable code')
+  endif
 endif
 
 api_headers = []

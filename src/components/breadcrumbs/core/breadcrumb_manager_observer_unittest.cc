@@ -6,9 +6,11 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/breadcrumbs/core/breadcrumb_manager.h"
+#include "components/breadcrumbs/core/breadcrumb_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -18,7 +20,7 @@ namespace {
 
 class FakeBreadcrumbManagerObserver : public BreadcrumbManagerObserver {
  public:
-  FakeBreadcrumbManagerObserver() {}
+  FakeBreadcrumbManagerObserver() = default;
   ~FakeBreadcrumbManagerObserver() override = default;
 
   FakeBreadcrumbManagerObserver(const FakeBreadcrumbManagerObserver&) = delete;
@@ -36,10 +38,11 @@ class FakeBreadcrumbManagerObserver : public BreadcrumbManagerObserver {
     old_events_removed_last_received_manager_ = manager;
   }
 
-  BreadcrumbManager* event_added_last_received_manager_ = nullptr;
+  raw_ptr<BreadcrumbManager> event_added_last_received_manager_ = nullptr;
   std::string event_added_last_received_event_;
 
-  BreadcrumbManager* old_events_removed_last_received_manager_ = nullptr;
+  raw_ptr<BreadcrumbManager> old_events_removed_last_received_manager_ =
+      nullptr;
 };
 
 }  // namespace
@@ -55,7 +58,7 @@ class BreadcrumbManagerObserverTest : public PlatformTest {
   base::test::TaskEnvironment task_env_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  BreadcrumbManager manager_;
+  BreadcrumbManager manager_{GetStartTime()};
   FakeBreadcrumbManagerObserver observer_;
 };
 
@@ -65,7 +68,7 @@ TEST_F(BreadcrumbManagerObserverTest, EventAdded) {
   ASSERT_FALSE(observer_.event_added_last_received_manager_);
   ASSERT_TRUE(observer_.event_added_last_received_event_.empty());
 
-  std::string event = "event";
+  const std::string event = "event";
   manager_.AddEvent(event);
 
   EXPECT_EQ(&manager_, observer_.event_added_last_received_manager_);
@@ -79,11 +82,11 @@ TEST_F(BreadcrumbManagerObserverTest, EventAdded) {
 TEST_F(BreadcrumbManagerObserverTest, OldEventsRemoved) {
   ASSERT_FALSE(observer_.old_events_removed_last_received_manager_);
 
-  std::string event = "event";
+  const std::string event = "event";
   manager_.AddEvent(event);
-  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
+  task_env_.FastForwardBy(base::Hours(1));
   manager_.AddEvent(event);
-  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
+  task_env_.FastForwardBy(base::Hours(1));
   manager_.AddEvent(event);
 
   EXPECT_EQ(&manager_, observer_.old_events_removed_last_received_manager_);

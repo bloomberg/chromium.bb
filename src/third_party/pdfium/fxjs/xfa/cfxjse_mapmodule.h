@@ -11,8 +11,8 @@
 
 #include <map>
 
-#include "core/fxcrt/fx_string.h"
-#include "third_party/base/optional.h"
+#include "core/fxcrt/widestring.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CXFA_Measurement;
 
@@ -27,9 +27,9 @@ class CFXJSE_MapModule {
   void SetValue(uint32_t key, int32_t value);
   void SetString(uint32_t key, const WideString& wsString);
   void SetMeasurement(uint32_t key, const CXFA_Measurement& measurement);
-  Optional<int32_t> GetValue(uint32_t key) const;
-  Optional<WideString> GetString(uint32_t key) const;
-  Optional<CXFA_Measurement> GetMeasurement(uint32_t key) const;
+  absl::optional<int32_t> GetValue(uint32_t key) const;
+  absl::optional<WideString> GetString(uint32_t key) const;
+  absl::optional<CXFA_Measurement> GetMeasurement(uint32_t key) const;
   bool HasKey(uint32_t key) const;
   void RemoveKey(uint32_t key);
   void MergeDataFrom(const CFXJSE_MapModule* pSrc);

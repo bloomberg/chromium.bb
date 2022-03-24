@@ -13,7 +13,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "printing/metafile.h"
 
 namespace base {
@@ -28,7 +30,7 @@ class Size;
 namespace printing {
 
 // Simple wrapper class that manage an EMF data stream and its virtual HDC.
-class COMPONENT_EXPORT(PRINTING) Emf : public Metafile {
+class COMPONENT_EXPORT(PRINTING_METAFILE) Emf : public Metafile {
  public:
   class Record;
   class Enumerator;
@@ -68,6 +70,8 @@ class COMPONENT_EXPORT(PRINTING) Emf : public Metafile {
 
   uint32_t GetDataSize() const override;
   bool GetData(void* buffer, uint32_t size) const override;
+  bool ShouldCopySharedMemoryRegionData() const override;
+  mojom::MetafileDataType GetDataType() const override;
 
   // Should be passed to Playback to keep the exact same size.
   gfx::Rect GetPageBounds(unsigned int page_number) const override;
@@ -101,16 +105,16 @@ class COMPONENT_EXPORT(PRINTING) Emf : public Metafile {
 struct Emf::EnumerationContext {
   EnumerationContext();
 
-  HANDLETABLE* handle_table;
+  raw_ptr<HANDLETABLE> handle_table;
   int objects_count;
   HDC hdc;
-  const XFORM* base_matrix;
+  raw_ptr<const XFORM> base_matrix;
   int dc_on_page_start;
 };
 
 // One EMF record. It keeps pointers to the EMF buffer held by Emf::emf_.
 // The entries become invalid once Emf::CloseEmf() is called.
-class COMPONENT_EXPORT(PRINTING) Emf::Record {
+class COMPONENT_EXPORT(PRINTING_METAFILE) Emf::Record {
  public:
   // Plays the record.
   bool Play(EnumerationContext* context) const;
@@ -134,7 +138,7 @@ class COMPONENT_EXPORT(PRINTING) Emf::Record {
 // Retrieves individual records out of a Emf buffer. The main use is to skip
 // over records that are unsupported on a specific printer or to play back
 // only a part of an EMF buffer.
-class COMPONENT_EXPORT(PRINTING) Emf::Enumerator {
+class COMPONENT_EXPORT(PRINTING_METAFILE) Emf::Enumerator {
  public:
   // Iterator type used for iterating the records.
   typedef std::vector<Record>::const_iterator const_iterator;

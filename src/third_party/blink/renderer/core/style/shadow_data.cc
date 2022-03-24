@@ -22,7 +22,6 @@
 
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 
-#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 #include "third_party/blink/renderer/platform/graphics/color_blend.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
@@ -34,7 +33,7 @@ bool ShadowData::operator==(const ShadowData& o) const {
 }
 
 ShadowData ShadowData::NeutralValue() {
-  return ShadowData(FloatPoint(0, 0), 0, 0, ShadowStyle::kNormal,
+  return ShadowData(gfx::PointF(0, 0), 0, 0, ShadowStyle::kNormal,
                     StyleColor(Color::kTransparent));
 }
 

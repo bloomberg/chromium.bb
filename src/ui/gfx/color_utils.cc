@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ostream>
 
 #include "base/check_op.h"
 #include "base/notreached.h"
@@ -64,7 +65,172 @@ float Linearize(float eight_bit_component) {
                                  : pow((component + 0.055f) / 1.055f, 2.4f);
 }
 
+constexpr size_t kNumGoogleColors = 10;
+constexpr SkColor kGrey[kNumGoogleColors] = {
+    gfx::kGoogleGrey050, gfx::kGoogleGrey100, gfx::kGoogleGrey200,
+    gfx::kGoogleGrey300, gfx::kGoogleGrey400, gfx::kGoogleGrey500,
+    gfx::kGoogleGrey600, gfx::kGoogleGrey700, gfx::kGoogleGrey800,
+    gfx::kGoogleGrey900,
+};
+
+constexpr SkColor kRed[kNumGoogleColors] = {
+    gfx::kGoogleRed050, gfx::kGoogleRed100, gfx::kGoogleRed200,
+    gfx::kGoogleRed300, gfx::kGoogleRed400, gfx::kGoogleRed500,
+    gfx::kGoogleRed600, gfx::kGoogleRed700, gfx::kGoogleRed800,
+    gfx::kGoogleRed900,
+};
+
+constexpr SkColor kOrange[kNumGoogleColors] = {
+    gfx::kGoogleOrange050, gfx::kGoogleOrange100, gfx::kGoogleOrange200,
+    gfx::kGoogleOrange300, gfx::kGoogleOrange400, gfx::kGoogleOrange500,
+    gfx::kGoogleOrange600, gfx::kGoogleOrange700, gfx::kGoogleOrange800,
+    gfx::kGoogleOrange900,
+};
+
+constexpr SkColor kYellow[kNumGoogleColors] = {
+    gfx::kGoogleYellow050, gfx::kGoogleYellow100, gfx::kGoogleYellow200,
+    gfx::kGoogleYellow300, gfx::kGoogleYellow400, gfx::kGoogleYellow500,
+    gfx::kGoogleYellow600, gfx::kGoogleYellow700, gfx::kGoogleYellow800,
+    gfx::kGoogleYellow900,
+};
+
+constexpr SkColor kGreen[kNumGoogleColors] = {
+    gfx::kGoogleGreen050, gfx::kGoogleGreen100, gfx::kGoogleGreen200,
+    gfx::kGoogleGreen300, gfx::kGoogleGreen400, gfx::kGoogleGreen500,
+    gfx::kGoogleGreen600, gfx::kGoogleGreen700, gfx::kGoogleGreen800,
+    gfx::kGoogleGreen900,
+};
+
+constexpr SkColor kBlue[kNumGoogleColors] = {
+    gfx::kGoogleBlue050, gfx::kGoogleBlue100, gfx::kGoogleBlue200,
+    gfx::kGoogleBlue300, gfx::kGoogleBlue400, gfx::kGoogleBlue500,
+    gfx::kGoogleBlue600, gfx::kGoogleBlue700, gfx::kGoogleBlue800,
+    gfx::kGoogleBlue900,
+};
+
+constexpr SkColor kPurple[kNumGoogleColors] = {
+    gfx::kGooglePurple050, gfx::kGooglePurple100, gfx::kGooglePurple200,
+    gfx::kGooglePurple300, gfx::kGooglePurple400, gfx::kGooglePurple500,
+    gfx::kGooglePurple600, gfx::kGooglePurple700, gfx::kGooglePurple800,
+    gfx::kGooglePurple900,
+};
+
+constexpr SkColor kPink[kNumGoogleColors] = {
+    gfx::kGooglePink050, gfx::kGooglePink100, gfx::kGooglePink200,
+    gfx::kGooglePink300, gfx::kGooglePink400, gfx::kGooglePink500,
+    gfx::kGooglePink600, gfx::kGooglePink700, gfx::kGooglePink800,
+    gfx::kGooglePink900,
+};
+
+SkColor PickGoogleColor(const SkColor (&colors)[kNumGoogleColors],
+                        SkColor background_color,
+                        float target_contrast,
+                        float min_contrast) {
+  // Traverse from the least-contrasty color to the most.  First, start at the
+  // "side" (light or dark) containing the background color.
+  size_t start = 0, end = kNumGoogleColors - 1;
+  int increment = 1;
+  const float background_luminance = GetRelativeLuminance(background_color);
+  if (background_luminance < g_luminance_midpoint) {
+    std::swap(start, end);
+    increment = -increment;
+  }
+  // Skip forward until contrast begins to increase, i.e. we're moving from the
+  // background color toward the endpoint with maximum contrast.
+  const auto contrast_ratio = [&](size_t index) {
+    return GetContrastRatio(GetRelativeLuminance(colors[index]),
+                            background_luminance);
+  };
+  while (contrast_ratio(start) > contrast_ratio(start + increment)) {
+    start += increment;
+    DCHECK_NE(start, end);  // `colors` must all lie on one side of the midpoint
+  }
+
+  // Now seek the color with the closest contrast to the target that's over the
+  // minimum.
+  //
+  // If our target contrast ratio is e.g. 4:1, a ratio of 2:1 is "as far away"
+  // as a ratio of 8:1; namely, both are a factor of 2 off.  For this reason, we
+  // can't simply compare contrast ratios by subtracting them and looking for
+  // the smallest difference.  Instead, compute the ratio of the two contrast
+  // ratios in question (as larger/smaller, so the ratio will always be >= 1);
+  // then when this ratio is closest to 1, we have the contrast ratio closest to
+  // our target.
+  const auto ratio_of_ratios = [&](float contrast) {
+    float min, max;
+    std::tie(min, max) = std::minmax(contrast, target_contrast);
+    return max / min;
+  };
+  absl::optional<size_t> best_index;
+  absl::optional<float> best_ratio;
+  for (size_t i = start; i != end; i += increment) {
+    const float contrast = contrast_ratio(i);
+    if (contrast < min_contrast)
+      continue;  // Haven't yet reached min contrast
+    const float ratio = ratio_of_ratios(contrast);
+    if (best_ratio && ratio > *best_ratio)
+      return colors[*best_index];  // Past the optimum point
+    best_index = i;
+    best_ratio = ratio;
+  }
+  return colors[(best_ratio &&
+                 ratio_of_ratios(contrast_ratio(end)) > *best_ratio)
+                    ? *best_index
+                    : end];
+}
+
 }  // namespace
+
+SkColor PickGoogleColor(SkColor color,
+                        SkColor background_color,
+                        float min_contrast) {
+  const float target_contrast = GetContrastRatio(color, background_color);
+
+  const auto pick_color = [&](const SkColor(&colors)[kNumGoogleColors]) {
+    return PickGoogleColor(colors, background_color, target_contrast,
+                           min_contrast);
+  };
+
+  HSL hsl;
+  SkColorToHSL(color, &hsl);
+  if (hsl.s < 0.1) {
+    // Low saturation, let this be a grey.
+    return pick_color(kGrey);
+  }
+
+  // Map hue to angles for readability.
+  const float color_angle = hsl.h * 360;
+
+  // Hues in comments below are accent colors from MacOS 11.3.1 light mode as
+  // point of reference.
+  // TODO(pbos): Complement this with more Google colors and verify the hue
+  // ranges, this currently knows about enough colors to pick a corresponding
+  // color correctly from MacOS accent colors.
+  // RED: 357.654
+  if (color_angle < 20)
+    return pick_color(kRed);
+  // ORANGE: 28.0687
+  if (color_angle < 40)
+    return pick_color(kOrange);
+  // YELLOW: 44.4156
+  if (color_angle < 70)
+    return pick_color(kYellow);
+  // GREEN: 105.484
+  if (color_angle < 160)
+    return pick_color(kGreen);
+  // BLUE: 214.672
+  if (color_angle < 250)
+    return pick_color(kBlue);
+  // PURPLE: 299.362
+  if (color_angle < 310)
+    return pick_color(kPurple);
+  // PINK: 331.685
+  if (color_angle < 345)
+    return pick_color(kPink);
+
+  // End of hue wheel is red.
+  return pick_color(kRed);
+}
 
 float GetContrastRatio(SkColor color_a, SkColor color_b) {
   return GetContrastRatio(GetRelativeLuminance(color_a),
@@ -271,7 +437,7 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, float alpha) {
 
 SkColor GetResultingPaintColor(SkColor foreground, SkColor background) {
   return AlphaBlend(SkColorSetA(foreground, SK_AlphaOPAQUE), background,
-                    SkAlpha{SkColorGetA(foreground)});
+                    static_cast<SkAlpha>(SkColorGetA(foreground)));
 }
 
 bool IsDark(SkColor color) {

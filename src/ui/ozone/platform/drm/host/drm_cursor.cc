@@ -12,8 +12,8 @@
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom.h"
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/ozone/common/bitmap_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 
@@ -29,6 +29,10 @@ using mojom::CursorType;
 class NullProxy : public DrmCursorProxy {
  public:
   NullProxy() {}
+
+  NullProxy(const NullProxy&) = delete;
+  NullProxy& operator=(const NullProxy&) = delete;
+
   ~NullProxy() override {}
 
   void CursorSet(gfx::AcceleratedWidget window,
@@ -37,9 +41,6 @@ class NullProxy : public DrmCursorProxy {
                  base::TimeDelta frame_delay) override {}
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override {}
   void InitializeOnEvdevIfNecessary() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NullProxy);
 };
 
 }  // namespace
@@ -76,7 +77,7 @@ gfx::Point DrmCursor::GetBitmapLocationLocked() {
 }
 
 void DrmCursor::SetCursor(gfx::AcceleratedWidget window,
-                          scoped_refptr<BitmapCursorOzone> platform_cursor) {
+                          scoped_refptr<BitmapCursor> platform_cursor) {
   TRACE_EVENT0("drmcursor", "DrmCursor::SetCursor");
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(window, gfx::kNullAcceleratedWidget);

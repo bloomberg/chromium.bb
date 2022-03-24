@@ -16,3 +16,14 @@
         margin-top: 15px !important;
     }
 }
+
+#parent-div {
+    width: 100px;
+    container-type: size;
+}
+
+@container size(min-width: 50px) {
+    #inspected {
+        padding-right: 10px;
+    }
+}

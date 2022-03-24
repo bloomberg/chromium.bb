@@ -8,12 +8,16 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/supports_user_data.h"
-#include "components/content_creation/notes/core/templates/note_template.h"
+#include "base/task/sequenced_task_runner.h"
+
+class PrefService;
 
 namespace content_creation {
+
+class NoteTemplate;
 
 using GetTemplatesCallback =
     base::OnceCallback<void(std::vector<NoteTemplate>)>;
@@ -22,7 +26,7 @@ using GetTemplatesCallback =
 // offered to the user.
 class TemplateStore {
  public:
-  explicit TemplateStore();
+  explicit TemplateStore(PrefService* pref_service);
   virtual ~TemplateStore();
 
   // Not copyable or movable.
@@ -45,6 +49,8 @@ class TemplateStore {
 
   // Task runner delegating tasks to the ThreadPool.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  raw_ptr<PrefService> pref_service_;
 
   base::WeakPtrFactory<TemplateStore> weak_ptr_factory_{this};
 };

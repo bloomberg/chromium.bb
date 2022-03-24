@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/gfx/aw_attaching_to_window_recorder.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/root_frame_sink.h"
@@ -16,6 +15,7 @@
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -36,8 +36,10 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace android_webview {
 
@@ -65,11 +67,11 @@ class BrowserViewRendererUserData : public base::SupportsUserData::Data {
     BrowserViewRendererUserData* data =
         static_cast<BrowserViewRendererUserData*>(
             web_contents->GetUserData(kBrowserViewRendererUserDataKey));
-    return data ? data->bvr_ : NULL;
+    return data ? data->bvr_.get() : NULL;
   }
 
  private:
-  BrowserViewRenderer* bvr_;
+  raw_ptr<BrowserViewRenderer> bvr_;
 };
 
 }  // namespace
@@ -115,17 +117,14 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false),
-      recorder_(base::MakeRefCounted<AwAttachingToWindowRecorder>()) {
+      offscreen_pre_raster_(false) {
   begin_frame_source_ = std::make_unique<BeginFrameSourceWebView>();
   root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
       ui_task_runner_, this, begin_frame_source_.get());
   UpdateBeginFrameSource();
-  recorder_->Start();
 }
 
 BrowserViewRenderer::~BrowserViewRenderer() {
-  recorder_->OnDestroyed();
   DCHECK(compositor_map_.empty());
   DCHECK(!current_compositor_frame_consumer_);
 
@@ -252,7 +251,7 @@ content::SynchronousCompositor* BrowserViewRenderer::FindCompositor(
   return compositor_iterator->second;
 }
 
-void BrowserViewRenderer::PrepareToDraw(const gfx::Vector2d& scroll,
+void BrowserViewRenderer::PrepareToDraw(const gfx::Point& scroll,
                                         const gfx::Rect& global_visible_rect) {
   last_on_draw_scroll_offset_ = scroll;
   last_on_draw_global_visible_rect_ = global_visible_rect;
@@ -436,14 +435,12 @@ sk_sp<SkPicture> BrowserViewRenderer::CapturePicture(int width,
     {
       // Reset scroll back to the origin, will go back to the old
       // value when scroll_reset is out of scope.
-      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_unscaled_,
-                                                   gfx::Vector2dF());
-      compositor_->DidChangeRootLayerScrollOffset(
-          gfx::ScrollOffset(scroll_offset_unscaled_));
+      base::AutoReset<gfx::PointF> scroll_reset(&scroll_offset_unscaled_,
+                                                gfx::PointF());
+      compositor_->DidChangeRootLayerScrollOffset(scroll_offset_unscaled_);
       CompositeSW(rec_canvas, /*software_canvas=*/false);
     }
-    compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset_unscaled_));
+    compositor_->DidChangeRootLayerScrollOffset(scroll_offset_unscaled_);
   }
   return recorder.finishRecordingAsPicture();
 }
@@ -527,7 +524,6 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
   if (offscreen_pre_raster_)
     ComputeTileRectAndUpdateMemoryPolicy();
   UpdateBeginFrameSource();
-  recorder_->OnAttachedToWindow();
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
@@ -655,18 +651,18 @@ void BrowserViewRenderer::SetDipScale(float dip_scale) {
   CHECK_GT(dip_scale_, 0.f);
 }
 
-gfx::Vector2d BrowserViewRenderer::max_scroll_offset() const {
+gfx::Point BrowserViewRenderer::max_scroll_offset() const {
   DCHECK_GT(dip_scale_, 0.f);
   float scale = content::IsUseZoomForDSFEnabled()
                     ? page_scale_factor_
                     : dip_scale_ * page_scale_factor_;
-  return gfx::ToCeiledVector2d(
-      gfx::ScaleVector2d(max_scroll_offset_unscaled_, scale));
+  return gfx::ToCeiledPoint(
+      gfx::ScalePoint(max_scroll_offset_unscaled_, scale));
 }
 
-void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
-  gfx::Vector2d max_offset = max_scroll_offset();
-  gfx::Vector2dF scroll_offset_unscaled;
+void BrowserViewRenderer::ScrollTo(const gfx::Point& scroll_offset) {
+  gfx::Point max_offset = max_scroll_offset();
+  gfx::PointF scroll_offset_unscaled;
   // To preserve the invariant that scrolling to the maximum physical pixel
   // value also scrolls to the maximum dip pixel value we transform the physical
   // offset into the dip offset by using a proportion (instead of dividing by
@@ -702,14 +698,13 @@ void BrowserViewRenderer::ScrollTo(const gfx::Vector2d& scroll_offset) {
                        scroll_offset_unscaled.y());
 
   if (compositor_)
-    compositor_->DidChangeRootLayerScrollOffset(
-        gfx::ScrollOffset(scroll_offset_unscaled));
+    compositor_->DidChangeRootLayerScrollOffset(scroll_offset_unscaled);
 }
 
 void BrowserViewRenderer::RestoreScrollAfterTransition(
-    const gfx::Vector2d& scroll_offset) {
+    const gfx::Point& scroll_offset) {
   // Determine if the clipped scroll offset.
-  gfx::Vector2d clipped_offset = scroll_offset;
+  gfx::Point clipped_offset = scroll_offset;
   clipped_offset.SetToMin(max_scroll_offset());
 
   // If the scroll will be clipped due to the max scroll then we haven't
@@ -738,13 +733,13 @@ void BrowserViewRenderer::DidUpdateContent(
 }
 
 void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
-    const gfx::Vector2dF& scroll_offset_unscaled) {
+    const gfx::PointF& scroll_offset_unscaled) {
   if (scroll_offset_unscaled_ == scroll_offset_unscaled)
     return;
   scroll_offset_unscaled_ = scroll_offset_unscaled;
 
-  gfx::Vector2d max_offset = max_scroll_offset();
-  gfx::Vector2d scroll_offset;
+  gfx::Point max_offset = max_scroll_offset();
+  gfx::Point scroll_offset;
   // For an explanation as to why this is done this way see the comment in
   // BrowserViewRenderer::ScrollTo.
   if (max_scroll_offset_unscaled_.x()) {
@@ -769,8 +764,8 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
 
 void BrowserViewRenderer::UpdateRootLayerState(
     content::SynchronousCompositor* compositor,
-    const gfx::Vector2dF& total_scroll_offset,
-    const gfx::Vector2dF& total_max_scroll_offset,
+    const gfx::PointF& total_scroll_offset,
+    const gfx::PointF& total_max_scroll_offset,
     const gfx::SizeF& scrollable_size,
     float page_scale_factor,
     float min_page_scale_factor,
@@ -821,7 +816,7 @@ void BrowserViewRenderer::UpdateRootLayerState(
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 BrowserViewRenderer::RootLayerStateAsValue(
-    const gfx::Vector2dF& total_scroll_offset,
+    const gfx::PointF& total_scroll_offset,
     const gfx::SizeF& scrollable_size_dip) {
   std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());

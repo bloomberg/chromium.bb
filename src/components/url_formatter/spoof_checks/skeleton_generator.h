@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece_forward.h"
 
 #include "third_party/icu/source/common/unicode/uniset.h"
@@ -45,6 +46,11 @@ class SkeletonGenerator {
   // removal is a slow operation and should be avoided when possible.
   bool ShouldRemoveDiacriticsFromLabel(const icu::UnicodeString& label) const;
 
+  // Removes diacritics from |hostname| and returns the new string if the input
+  // only contains Latin-Greek-Cyrillic characters. Otherwise, returns the
+  // input string.
+  std::u16string MaybeRemoveDiacritics(base::StringPiece16 hostname);
+
  private:
   // Adds an additional mapping from |src_char| to |mapped_char| when generating
   // skeletons: If |host| contains |src_char|, |skeletons| will contain a new
@@ -54,13 +60,14 @@ class SkeletonGenerator {
                           int32_t src_char,
                           int32_t mapped_char,
                           Skeletons* skeletons);
+  void MaybeRemoveDiacritics(icu::UnicodeString& hostname);
 
   icu::UnicodeSet lgc_letters_n_ascii_;
 
   std::unique_ptr<icu::Transliterator> diacritic_remover_;
   std::unique_ptr<icu::Transliterator> extra_confusable_mapper_;
 
-  const USpoofChecker* checker_;
+  raw_ptr<const USpoofChecker> checker_;
 };
 
 #endif  // COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_SKELETON_GENERATOR_H_

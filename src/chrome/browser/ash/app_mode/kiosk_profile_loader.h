@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -42,9 +41,9 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
 
   KioskProfileLoader(const AccountId& app_account_id,
                      KioskAppType app_type,
-                     bool use_guest_mount,
                      Delegate* delegate);
-
+  KioskProfileLoader(const KioskProfileLoader&) = delete;
+  KioskProfileLoader& operator=(const KioskProfileLoader&) = delete;
   ~KioskProfileLoader() override;
 
   // Starts profile load. Calls delegate on success or failure.
@@ -69,13 +68,10 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
 
   const AccountId account_id_;
   const KioskAppType app_type_;
-  bool use_guest_mount_;
   Delegate* delegate_;
   int failed_mount_attempts_;
   std::unique_ptr<CryptohomedChecker> cryptohomed_checker_;
   std::unique_ptr<LoginPerformer> login_performer_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskProfileLoader);
 };
 
 }  // namespace ash

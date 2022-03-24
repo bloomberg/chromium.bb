@@ -11,15 +11,16 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/launch.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_result.h"
 #include "base/test/launcher/test_results_tracker.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -125,6 +126,10 @@ class TestLauncher {
   TestLauncher(TestLauncherDelegate* launcher_delegate,
                size_t parallel_jobs,
                size_t retry_limit = 1U);
+
+  TestLauncher(const TestLauncher&) = delete;
+  TestLauncher& operator=(const TestLauncher&) = delete;
+
   // virtual to mock in testing.
   virtual ~TestLauncher();
 
@@ -224,6 +229,8 @@ class TestLauncher {
   // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
   // file to get additional information about test run (status,
   // error-messages, stack-traces and file/line for failures).
+  // |thread_id| is the actual worker thread that launching the child process.
+  // |process_num| is a sequence number of the process executed in the run.
   // |leaked_items| is the number of files and/or directories remaining in the
   // child process's temporary directory upon its termination.
   void ProcessTestResults(const std::vector<std::string>& test_names,
@@ -232,6 +239,8 @@ class TestLauncher {
                           TimeDelta elapsed_time,
                           int exit_code,
                           bool was_timeout,
+                          PlatformThreadId thread_id,
+                          int process_num,
                           int leaked_items);
 
   std::vector<std::string> CollectTests();
@@ -242,7 +251,7 @@ class TestLauncher {
   // is running on the correct thread.
   ThreadChecker thread_checker_;
 
-  TestLauncherDelegate* launcher_delegate_;
+  raw_ptr<TestLauncherDelegate> launcher_delegate_;
 
   // Support for outer sharding, just like gtest does.
   int32_t total_shards_;  // Total number of outer shards, at least one.
@@ -283,6 +292,9 @@ class TestLauncher {
   // Maximum number of retries per iteration.
   size_t retry_limit_;
 
+  // Maximum number of output bytes per test.
+  size_t output_bytes_limit_;
+
   // If true will not early exit nor skip retries even if too many tests are
   // broken.
   bool force_run_broken_tests_;
@@ -302,7 +314,7 @@ class TestLauncher {
   StdioRedirect print_test_stdio_;
 
   // Skip disabled tests unless explicitly requested.
-  bool skip_diabled_tests_;
+  bool skip_disabled_tests_;
 
   // Stop test iterations due to failure.
   bool stop_on_failure_;
@@ -320,8 +332,6 @@ class TestLauncher {
   // 1 if gtest_repeat is not specified or gtest_break_on_failure is specified.
   // Otherwise it matches gtest_repeat value.
   int repeats_per_iteration_ = 1;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLauncher);
 };
 
 // Return the number of parallel jobs to use, or 0U in case of error.
@@ -330,6 +340,11 @@ size_t NumParallelJobs(unsigned int cores_per_job);
 // Extract part from |full_output| that applies to |result|.
 std::string GetTestOutputSnippet(const TestResult& result,
                                  const std::string& full_output);
+
+// Truncates a snippet to approximately the allowed length, while trying to
+// retain fatal messages. Exposed for testing only.
+std::string TruncateSnippetFocused(const base::StringPiece snippet,
+                                   size_t byte_limit);
 
 }  // namespace base
 

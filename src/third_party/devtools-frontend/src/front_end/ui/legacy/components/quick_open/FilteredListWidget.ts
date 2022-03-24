@@ -4,13 +4,16 @@
 
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-/* eslint-disable rulesdir/no_underscored_properties */
 
+import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as Diff from '../../../../third_party/diff/diff.js';
+import * as TextPrompt from '../../../../ui/components/text_prompt/text_prompt.js';
 import * as UI from '../../legacy.js';
+
+import filteredListWidgetStyles from './filteredListWidget.css.js';
 
 const UIStrings = {
   /**
@@ -29,73 +32,71 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/quick_open/FilteredListWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl.ListDelegate<number> {
-  _promptHistory: string[];
-  _scoringTimer: number;
-  _filterTimer: number;
-  _loadTimeout: number;
-  _refreshListWithCurrentResult!: (() => void)|undefined;
-  _dialog!: UI.Dialog.Dialog|undefined;
-  _query!: string|undefined;
-  _promptElement: HTMLElement;
-  _prompt: UI.TextPrompt.TextPrompt;
-  _bottomElementsContainer: HTMLElement;
-  _progressElement: HTMLElement;
-  _progressBarElement: HTMLElement;
-  _items: UI.ListModel.ListModel<number>;
-  _list: UI.ListControl.ListControl<number>;
-  _itemElementsContainer: HTMLDivElement;
-  _notFoundElement: HTMLElement;
-  _prefix: string;
-  _provider: Provider|null;
-  _queryChangedCallback?: (arg0: string) => void;
+export class FilteredListWidget extends Common.ObjectWrapper.eventMixin<EventTypes, typeof UI.Widget.VBox>(
+    UI.Widget.VBox) implements UI.ListControl.ListDelegate<number> {
+  private promptHistory: string[];
+  private scoringTimer: number;
+  private filterTimer: number;
+  private loadTimeout: number;
+  private refreshListWithCurrentResult!: (() => void)|undefined;
+  private dialog!: UI.Dialog.Dialog|undefined;
+  private query = '';
+  private readonly inputBoxElement: TextPrompt.TextPrompt.TextPrompt;
+  private readonly hintElement: HTMLElement;
+  private readonly bottomElementsContainer: HTMLElement;
+  private readonly progressElement: HTMLElement;
+  private progressBarElement: HTMLElement;
+  private readonly items: UI.ListModel.ListModel<number>;
+  private list: UI.ListControl.ListControl<number>;
+  private readonly itemElementsContainer: HTMLDivElement;
+  private notFoundElement: HTMLElement;
+  private prefix = '';
+  private provider: Provider|null;
+  private readonly queryChangedCallback?: (arg0: string) => void;
 
   constructor(provider: Provider|null, promptHistory?: string[], queryChangedCallback?: ((arg0: string) => void)) {
     super(true);
-    this._promptHistory = promptHistory || [];
+    this.promptHistory = promptHistory || [];
 
-    this._scoringTimer = 0;
-    this._filterTimer = 0;
-    this._loadTimeout = 0;
+    this.scoringTimer = 0;
+    this.filterTimer = 0;
+    this.loadTimeout = 0;
 
     this.contentElement.classList.add('filtered-list-widget');
-    const listener = (this._onKeyDown.bind(this) as (arg0: Event) => void);
+    const listener = (this.onKeyDown.bind(this) as (arg0: Event) => void);
     this.contentElement.addEventListener('keydown', listener, true);
     UI.ARIAUtils.markAsCombobox(this.contentElement);
-    this.registerRequiredCSS('ui/legacy/components/quick_open/filteredListWidget.css', {enableLegacyPatching: false});
 
-    this._promptElement = this.contentElement.createChild('div', 'filtered-list-widget-input');
-    UI.ARIAUtils.setAccessibleName(this._promptElement, i18nString(UIStrings.quickOpenPrompt));
-    this._promptElement.setAttribute('spellcheck', 'false');
-    this._promptElement.setAttribute('contenteditable', 'plaintext-only');
-    this._prompt = new UI.TextPrompt.TextPrompt();
-    this._prompt.initialize(() => Promise.resolve([]));
-    const promptProxy = this._prompt.attach(this._promptElement);
-    promptProxy.addEventListener('input', this._onInput.bind(this), false);
-    promptProxy.classList.add('filtered-list-widget-prompt-element');
+    this.inputBoxElement = new TextPrompt.TextPrompt.TextPrompt();
+    this.inputBoxElement.data = {ariaLabel: i18nString(UIStrings.quickOpenPrompt), prefix: '', suggestion: ''};
+    this.inputBoxElement.addEventListener(
+        TextPrompt.TextPrompt.PromptInputEvent.eventName, this.onInput.bind(this), false);
+    this.contentElement.appendChild(this.inputBoxElement);
 
-    this._bottomElementsContainer = this.contentElement.createChild('div', 'vbox');
-    this._progressElement = this._bottomElementsContainer.createChild('div', 'filtered-list-widget-progress');
-    this._progressBarElement = this._progressElement.createChild('div', 'filtered-list-widget-progress-bar');
+    this.hintElement = this.contentElement.createChild('div', 'filtered-list-widget-hint');
 
-    this._items = new UI.ListModel.ListModel();
-    this._list = new UI.ListControl.ListControl(this._items, this, UI.ListControl.ListMode.EqualHeightItems);
-    this._itemElementsContainer = this._list.element;
-    this._itemElementsContainer.classList.add('container');
-    this._bottomElementsContainer.appendChild(this._itemElementsContainer);
-    this._itemElementsContainer.addEventListener('click', this._onClick.bind(this), false);
-    UI.ARIAUtils.markAsListBox(this._itemElementsContainer);
-    UI.ARIAUtils.setControls(this._promptElement, this._itemElementsContainer);
-    UI.ARIAUtils.setAutocomplete(this._promptElement, UI.ARIAUtils.AutocompleteInteractionModel.list);
+    this.bottomElementsContainer = this.contentElement.createChild('div', 'vbox');
+    this.progressElement = this.bottomElementsContainer.createChild('div', 'filtered-list-widget-progress');
+    this.progressBarElement = this.progressElement.createChild('div', 'filtered-list-widget-progress-bar');
 
-    this._notFoundElement = this._bottomElementsContainer.createChild('div', 'not-found-text');
-    this._notFoundElement.classList.add('hidden');
+    this.items = new UI.ListModel.ListModel();
+    this.list = new UI.ListControl.ListControl(this.items, this, UI.ListControl.ListMode.EqualHeightItems);
+    this.itemElementsContainer = this.list.element;
+    this.itemElementsContainer.classList.add('container');
+    this.bottomElementsContainer.appendChild(this.itemElementsContainer);
+    this.itemElementsContainer.addEventListener('click', this.onClick.bind(this), false);
+    this.itemElementsContainer.addEventListener('mouseover', this.onMouseOver.bind(this), false);
+    UI.ARIAUtils.markAsListBox(this.itemElementsContainer);
+    UI.ARIAUtils.setControls(this.inputBoxElement, this.itemElementsContainer);
+    UI.ARIAUtils.setAutocomplete(this.inputBoxElement, UI.ARIAUtils.AutocompleteInteractionModel.list);
 
-    this.setDefaultFocusedElement(this._promptElement);
+    this.notFoundElement = this.bottomElementsContainer.createChild('div', 'not-found-text');
+    this.notFoundElement.classList.add('hidden');
 
-    this._prefix = '';
-    this._provider = provider;
-    this._queryChangedCallback = queryChangedCallback;
+    this.setDefaultFocusedElement(this.inputBoxElement);
+
+    this.provider = provider;
+    this.queryChangedCallback = queryChangedCallback;
   }
 
   static highlightRanges(element: Element, query: string, caseInsensitive?: boolean): boolean {
@@ -134,15 +135,23 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
     return false;
   }
 
-  setPlaceholder(placeholder: string, ariaPlaceholder?: string): void {
-    this._prompt.setPlaceholder(placeholder, ariaPlaceholder);
+  setCommandPrefix(commandPrefix: string): void {
+    this.inputBoxElement.setPrefix(commandPrefix);
+  }
+
+  setCommandSuggestion(suggestion: string): void {
+    this.inputBoxElement.setSuggestion(suggestion);
+  }
+
+  setHintElement(hint: string): void {
+    this.hintElement.textContent = hint;
   }
 
   /**
    * Sets the text prompt's accessible title. By default, it is "Quick open prompt".
    */
   setPromptTitle(title: string): void {
-    UI.ARIAUtils.setAccessibleName(this._promptElement, title);
+    UI.ARIAUtils.setAccessibleName(this.inputBoxElement, title);
   }
 
   showAsDialog(dialogTitle?: string): void {
@@ -150,120 +159,122 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
       dialogTitle = i18nString(UIStrings.quickOpen);
     }
 
-    this._dialog = new UI.Dialog.Dialog();
-    UI.ARIAUtils.setAccessibleName(this._dialog.contentElement, dialogTitle);
-    this._dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
-    this._dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight);
-    this._dialog.setContentPosition(null, 22);
-    this.show(this._dialog.contentElement);
+    this.dialog = new UI.Dialog.Dialog();
+    UI.ARIAUtils.setAccessibleName(this.dialog.contentElement, dialogTitle);
+    this.dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
+    this.dialog.setSizeBehavior(UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight);
+    this.dialog.setContentPosition(null, 22);
+    this.dialog.contentElement.style.setProperty('border-radius', '4px');
+    this.show(this.dialog.contentElement);
     UI.ARIAUtils.setExpanded(this.contentElement, true);
-    this._dialog.once('hidden').then(() => {
-      this.dispatchEventToListeners('hidden');
+    this.dialog.once(UI.Dialog.Events.Hidden).then(() => {
+      this.dispatchEventToListeners(Events.Hidden);
     });
     // @ts-ignore
-    this._dialog.show();
+    this.dialog.show();
   }
 
   setPrefix(prefix: string): void {
-    this._prefix = prefix;
+    this.prefix = prefix;
   }
 
   setProvider(provider: Provider|null): void {
-    if (provider === this._provider) {
+    if (provider === this.provider) {
       return;
     }
 
-    if (this._provider) {
-      this._provider.detach();
+    if (this.provider) {
+      this.provider.detach();
     }
-    this._clearTimers();
+    this.clearTimers();
 
-    this._provider = provider;
+    this.provider = provider;
     if (this.isShowing()) {
-      this._attachProvider();
+      this.attachProvider();
     }
   }
 
   setQuerySelectedRange(startIndex: number, endIndex: number): void {
-    this._prompt.setSelectedRange(startIndex, endIndex);
+    this.inputBoxElement.setSelectedRange(startIndex, endIndex);
   }
 
-  _attachProvider(): void {
-    this._items.replaceAll([]);
-    this._list.invalidateItemHeight();
-    if (this._provider) {
-      this._provider.setRefreshCallback(this._itemsLoaded.bind(this, this._provider));
-      this._provider.attach();
+  private attachProvider(): void {
+    this.items.replaceAll([]);
+    this.list.invalidateItemHeight();
+    if (this.provider) {
+      this.provider.setRefreshCallback(this.itemsLoaded.bind(this, this.provider));
+      this.provider.attach();
     }
-    this._itemsLoaded(this._provider);
+    this.itemsLoaded(this.provider);
   }
 
-  _value(): string {
-    return this._prompt.text().trim();
-  }
-
-  _cleanValue(): string {
-    return this._value().substring(this._prefix.length);
+  private cleanValue(): string {
+    return this.query.substring(this.prefix.length);
   }
 
   wasShown(): void {
-    this._attachProvider();
+    this.registerCSSFiles([filteredListWidgetStyles]);
+    this.attachProvider();
   }
 
   willHide(): void {
-    if (this._provider) {
-      this._provider.detach();
+    if (this.provider) {
+      this.provider.detach();
     }
-    this._clearTimers();
+    this.clearTimers();
     UI.ARIAUtils.setExpanded(this.contentElement, false);
   }
 
-  _clearTimers(): void {
-    clearTimeout(this._filterTimer);
-    clearTimeout(this._scoringTimer);
-    clearTimeout(this._loadTimeout);
-    this._filterTimer = 0;
-    this._scoringTimer = 0;
-    this._loadTimeout = 0;
-    this._refreshListWithCurrentResult = undefined;
+  private clearTimers(): void {
+    clearTimeout(this.filterTimer);
+    clearTimeout(this.scoringTimer);
+    clearTimeout(this.loadTimeout);
+    this.filterTimer = 0;
+    this.scoringTimer = 0;
+    this.loadTimeout = 0;
+    this.refreshListWithCurrentResult = undefined;
   }
 
-  _onEnter(_event: Event): void {
-    if (!this._provider) {
+  private onEnter(event: Event): void {
+    if (!this.provider) {
       return;
     }
-    const selectedIndexInProvider = this._provider.itemCount() ? this._list.selectedItem() : null;
+    event.preventDefault();
+    const selectedIndexInProvider = this.provider.itemCount() ? this.list.selectedItem() : null;
 
-    this._selectItem(selectedIndexInProvider);
-    if (this._dialog) {
-      this._dialog.hide();
+    this.selectItem(selectedIndexInProvider);
+    if (this.dialog) {
+      this.dialog.hide();
     }
   }
 
-  _itemsLoaded(provider: Provider|null): void {
-    if (this._loadTimeout || provider !== this._provider) {
+  private itemsLoaded(provider: Provider|null): void {
+    if (this.loadTimeout || provider !== this.provider) {
       return;
     }
-    this._loadTimeout = window.setTimeout(this._updateAfterItemsLoaded.bind(this), 0);
+    this.loadTimeout = window.setTimeout(this.updateAfterItemsLoaded.bind(this), 0);
   }
 
-  _updateAfterItemsLoaded(): void {
-    this._loadTimeout = 0;
-    this._filterItems();
+  private updateAfterItemsLoaded(): void {
+    this.loadTimeout = 0;
+    this.filterItems();
   }
 
   createElementForItem(item: number): Element {
-    const itemElement = document.createElement('div');
-    const renderAsTwoRows = this._provider && this._provider.renderAsTwoRows();
+    const wrapperElement = document.createElement('div');
+    wrapperElement.className = 'filtered-list-widget-item-wrapper';
+
+    const itemElement = wrapperElement.createChild('div');
+    const renderAsTwoRows = this.provider && this.provider.renderAsTwoRows();
     itemElement.className = 'filtered-list-widget-item ' + (renderAsTwoRows ? 'two-rows' : 'one-row');
     const titleElement = itemElement.createChild('div', 'filtered-list-widget-title');
     const subtitleElement = itemElement.createChild('div', 'filtered-list-widget-subtitle');
     subtitleElement.textContent = '\u200B';
-    if (this._provider) {
-      this._provider.renderItem(item, this._cleanValue(), titleElement, subtitleElement);
+    if (this.provider) {
+      this.provider.renderItem(item, this.cleanValue(), titleElement, subtitleElement);
     }
     UI.ARIAUtils.markAsOption(itemElement);
-    return itemElement;
+    return wrapperElement;
   }
 
   heightForItem(_item: number): number {
@@ -282,77 +293,90 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
     if (toElement) {
       toElement.classList.add('selected');
     }
-    UI.ARIAUtils.setActiveDescendant(this._promptElement, toElement);
+    UI.ARIAUtils.setActiveDescendant(this.inputBoxElement, toElement);
   }
 
-  _onClick(event: Event): void {
-    const item = this._list.itemForNode((event.target as Node | null));
+  private onClick(event: Event): void {
+    const item = this.list.itemForNode((event.target as Node | null));
     if (item === null) {
       return;
     }
 
     event.consume(true);
-    this._selectItem(item);
-    if (this._dialog) {
-      this._dialog.hide();
+    this.selectItem(item);
+    if (this.dialog) {
+      this.dialog.hide();
     }
+  }
+
+  private onMouseOver(event: Event): void {
+    const item = this.list.itemForNode((event.target as Node | null));
+    if (item === null) {
+      return;
+    }
+    this.list.selectItem(item);
   }
 
   setQuery(query: string): void {
-    this._prompt.focus();
-    this._prompt.setText(query);
-    this._queryChanged();
-    this._prompt.autoCompleteSoon(true);
-    this._scheduleFilter();
+    this.query = query;
+    this.inputBoxElement.focus();
+    this.inputBoxElement.setText(query);
+    this.queryChanged();
+    this.scheduleFilter();
   }
 
-  _tabKeyPressed(): boolean {
-    const userEnteredText = this._prompt.text();
+  private tabKeyPressed(): boolean {
+    const userEnteredText = this.query;
     let completion;
-    for (let i = this._promptHistory.length - 1; i >= 0; i--) {
-      if (this._promptHistory[i] !== userEnteredText && this._promptHistory[i].startsWith(userEnteredText)) {
-        completion = this._promptHistory[i];
+    for (let i = this.promptHistory.length - 1; i >= 0; i--) {
+      if (this.promptHistory[i] !== userEnteredText && this.promptHistory[i].startsWith(userEnteredText)) {
+        completion = this.promptHistory[i];
         break;
       }
     }
-    if (!completion) {
-      return false;
+    // If there is an auto-completion, press 'tab' first time will show the auto-completion, second time will rewrite
+    // the query. Otherwise it will select the next item.
+    if (completion) {
+      const selection = this.inputBoxElement.getComponentSelection();
+      if (selection && selection.toString().trim() !== '') {
+        this.setQuery(completion);
+        return true;
+      }
+      this.inputBoxElement.focus();
+      this.inputBoxElement.setText(completion);
+      this.setQuerySelectedRange(userEnteredText.length, completion.length);
+      return true;
     }
-    this._prompt.focus();
-    this._prompt.setText(completion);
-    this._prompt.setDOMSelection(userEnteredText.length, completion.length);
-    this._scheduleFilter();
-    return true;
+    return this.list.selectNextItem(true, false);
   }
 
-  _itemsFilteredForTest(): void {
+  private itemsFilteredForTest(): void {
     // Sniffed in tests.
   }
 
-  _filterItems(): void {
-    this._filterTimer = 0;
-    if (this._scoringTimer) {
-      clearTimeout(this._scoringTimer);
-      this._scoringTimer = 0;
+  private filterItems(): void {
+    this.filterTimer = 0;
+    if (this.scoringTimer) {
+      clearTimeout(this.scoringTimer);
+      this.scoringTimer = 0;
 
-      if (this._refreshListWithCurrentResult) {
-        this._refreshListWithCurrentResult();
+      if (this.refreshListWithCurrentResult) {
+        this.refreshListWithCurrentResult();
       }
     }
 
-    if (!this._provider) {
-      this._bottomElementsContainer.classList.toggle('hidden', true);
-      this._itemsFilteredForTest();
+    if (!this.provider) {
+      this.bottomElementsContainer.classList.toggle('hidden', true);
+      this.itemsFilteredForTest();
       return;
     }
 
-    this._bottomElementsContainer.classList.toggle('hidden', false);
+    this.bottomElementsContainer.classList.toggle('hidden', false);
 
-    this._progressBarElement.style.transform = 'scaleX(0)';
-    this._progressBarElement.classList.remove('filtered-widget-progress-fade', 'hidden');
+    this.progressBarElement.style.transform = 'scaleX(0)';
+    this.progressBarElement.classList.remove('filtered-widget-progress-fade', 'hidden');
 
-    const query = this._provider.rewriteQuery(this._cleanValue());
-    this._query = query;
+    const query = this.provider.rewriteQuery(this.cleanValue());
 
     const filterRegex = query ? Platform.StringUtilities.filterRegex(query) : null;
 
@@ -365,7 +389,7 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
     const overflowItems: number[] = [];
     const scoreStartTime = window.performance.now();
 
-    const maxWorkItems = Platform.NumberUtilities.clamp(10, 500, (this._provider.itemCount() / 10) | 0);
+    const maxWorkItems = Platform.NumberUtilities.clamp(10, 500, (this.provider.itemCount() / 10) | 0);
 
     scoreItems.call(this, 0);
 
@@ -374,21 +398,21 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
     }
 
     function scoreItems(this: FilteredListWidget, fromIndex: number): void {
-      if (!this._provider) {
+      if (!this.provider) {
         return;
       }
-      this._scoringTimer = 0;
+      this.scoringTimer = 0;
       let workDone = 0;
       let i;
 
-      for (i = fromIndex; i < this._provider.itemCount() && workDone < maxWorkItems; ++i) {
+      for (i = fromIndex; i < this.provider.itemCount() && workDone < maxWorkItems; ++i) {
         // Filter out non-matching items quickly.
-        if (filterRegex && !filterRegex.test(this._provider.itemKeyAt(i))) {
+        if (filterRegex && !filterRegex.test(this.provider.itemKeyAt(i))) {
           continue;
         }
 
         // Score item.
-        const score = this._provider.itemScoreAt(i, query);
+        const score = this.provider.itemScoreAt(i, query);
         if (query) {
           workDone++;
         }
@@ -416,61 +440,62 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
         }
       }
 
-      this._refreshListWithCurrentResult = this._refreshList.bind(this, bestItems, overflowItems, filteredItems);
+      this.refreshListWithCurrentResult = this.refreshList.bind(this, bestItems, overflowItems, filteredItems);
 
       // Process everything in chunks.
-      if (i < this._provider.itemCount()) {
-        this._scoringTimer = window.setTimeout(scoreItems.bind(this, i), 0);
+      if (i < this.provider.itemCount()) {
+        this.scoringTimer = window.setTimeout(scoreItems.bind(this, i), 0);
         if (window.performance.now() - scoreStartTime > 50) {
-          this._progressBarElement.style.transform = 'scaleX(' + i / this._provider.itemCount() + ')';
+          this.progressBarElement.style.transform = 'scaleX(' + i / this.provider.itemCount() + ')';
         }
         return;
       }
       if (window.performance.now() - scoreStartTime > 100) {
-        this._progressBarElement.style.transform = 'scaleX(1)';
-        this._progressBarElement.classList.add('filtered-widget-progress-fade');
+        this.progressBarElement.style.transform = 'scaleX(1)';
+        this.progressBarElement.classList.add('filtered-widget-progress-fade');
       } else {
-        this._progressBarElement.classList.add('hidden');
+        this.progressBarElement.classList.add('hidden');
       }
-      this._refreshListWithCurrentResult();
+      this.refreshListWithCurrentResult();
     }
   }
 
-  _refreshList(bestItems: number[], overflowItems: number[], filteredItems: number[]): void {
-    this._refreshListWithCurrentResult = undefined;
+  private refreshList(bestItems: number[], overflowItems: number[], filteredItems: number[]): void {
+    this.refreshListWithCurrentResult = undefined;
     filteredItems = [...bestItems, ...overflowItems, ...filteredItems];
-    this._updateNotFoundMessage(Boolean(filteredItems.length));
-    const oldHeight = this._list.element.offsetHeight;
-    this._items.replaceAll(filteredItems);
+    this.updateNotFoundMessage(Boolean(filteredItems.length));
+    const oldHeight = this.list.element.offsetHeight;
+    this.items.replaceAll(filteredItems);
     if (filteredItems.length) {
-      this._list.selectItem(filteredItems[0]);
+      this.list.selectItem(filteredItems[0]);
     }
-    if (this._list.element.offsetHeight !== oldHeight) {
-      this._list.viewportResized();
+    if (this.list.element.offsetHeight !== oldHeight) {
+      this.list.viewportResized();
     }
-    this._itemsFilteredForTest();
+    this.itemsFilteredForTest();
   }
 
-  _updateNotFoundMessage(hasItems: boolean): void {
-    this._list.element.classList.toggle('hidden', !hasItems);
-    this._notFoundElement.classList.toggle('hidden', hasItems);
-    if (!hasItems && this._provider) {
-      this._notFoundElement.textContent = this._provider.notFoundText(this._cleanValue());
-      UI.ARIAUtils.alert(this._notFoundElement.textContent);
+  private updateNotFoundMessage(hasItems: boolean): void {
+    this.list.element.classList.toggle('hidden', !hasItems);
+    this.notFoundElement.classList.toggle('hidden', hasItems);
+    if (!hasItems && this.provider) {
+      this.notFoundElement.textContent = this.provider.notFoundText(this.cleanValue());
+      UI.ARIAUtils.alert(this.notFoundElement.textContent);
     }
   }
 
-  _onInput(): void {
-    this._queryChanged();
-    this._scheduleFilter();
+  private onInput(event: TextPrompt.TextPrompt.PromptInputEvent): void {
+    this.query = event.data;
+    this.queryChanged();
+    this.scheduleFilter();
   }
 
-  _queryChanged(): void {
-    if (this._queryChangedCallback) {
-      this._queryChangedCallback(this._value());
+  private async queryChanged(): Promise<void> {
+    if (this.queryChangedCallback) {
+      await this.queryChangedCallback(this.query);
     }
-    if (this._provider) {
-      this._provider.queryChanged(this._cleanValue());
+    if (this.provider) {
+      this.provider.queryChanged(this.cleanValue());
     }
   }
 
@@ -478,26 +503,26 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
     return false;
   }
 
-  _onKeyDown(keyboardEvent: KeyboardEvent): void {
+  private onKeyDown(keyboardEvent: KeyboardEvent): void {
     let handled = false;
     switch (keyboardEvent.key) {
-      case 'Enter':
-        this._onEnter(keyboardEvent);
+      case Platform.KeyboardUtilities.ENTER_KEY:
+        this.onEnter(keyboardEvent);
         return;
-      case 'Tab':
-        handled = this._tabKeyPressed();
+      case Platform.KeyboardUtilities.TAB_KEY:
+        handled = this.tabKeyPressed();
         break;
-      case 'ArrowUp':
-        handled = this._list.selectPreviousItem(true, false);
+      case Platform.KeyboardUtilities.ArrowKey.UP:
+        handled = this.list.selectPreviousItem(true, false);
         break;
-      case 'ArrowDown':
-        handled = this._list.selectNextItem(true, false);
+      case Platform.KeyboardUtilities.ArrowKey.DOWN:
+        handled = this.list.selectNextItem(true, false);
         break;
-      case 'PageUp':
-        handled = this._list.selectItemPreviousPage(false);
+      case Platform.KeyboardUtilities.PageKey.UP:
+        handled = this.list.selectItemPreviousPage(false);
         break;
-      case 'PageDown':
-        handled = this._list.selectItemNextPage(false);
+      case Platform.KeyboardUtilities.PageKey.DOWN:
+        handled = this.list.selectItemNextPage(false);
         break;
     }
     if (handled) {
@@ -505,31 +530,39 @@ export class FilteredListWidget extends UI.Widget.VBox implements UI.ListControl
     }
   }
 
-  _scheduleFilter(): void {
-    if (this._filterTimer) {
+  private scheduleFilter(): void {
+    if (this.filterTimer) {
       return;
     }
-    this._filterTimer = window.setTimeout(this._filterItems.bind(this), 0);
+    this.filterTimer = window.setTimeout(this.filterItems.bind(this), 0);
   }
 
-  _selectItem(itemIndex: number|null): void {
-    this._promptHistory.push(this._value());
-    if (this._promptHistory.length > 100) {
-      this._promptHistory.shift();
+  private selectItem(itemIndex: number|null): void {
+    this.promptHistory.push(this.query);
+    if (this.promptHistory.length > 100) {
+      this.promptHistory.shift();
     }
-    if (this._provider) {
-      this._provider.selectItem(itemIndex, this._cleanValue());
+    if (this.provider) {
+      this.provider.selectItem(itemIndex, this.cleanValue());
     }
   }
 }
 
+export const enum Events {
+  Hidden = 'hidden',
+}
+
+export type EventTypes = {
+  [Events.Hidden]: void,
+};
+
 export class Provider {
-  _refreshCallback!: () => void;
+  private refreshCallback!: () => void;
   constructor() {
   }
 
   setRefreshCallback(refreshCallback: () => void): void {
-    this._refreshCallback = refreshCallback;
+    this.refreshCallback = refreshCallback;
   }
 
   attach(): void {
@@ -558,8 +591,8 @@ export class Provider {
   }
 
   refresh(): void {
-    if (this._refreshCallback) {
-      this._refreshCallback();
+    if (this.refreshCallback) {
+      this.refreshCallback();
     }
   }
 
@@ -587,7 +620,9 @@ export function getRegisteredProviders(): ProviderRegistration[] {
   return registeredProviders;
 }
 export interface ProviderRegistration {
-  provider: () => Promise<Provider>;
-  title?: (() => string);
   prefix: string;
+  iconName: string;
+  provider: () => Promise<Provider>;
+  titlePrefix: (() => string);
+  titleSuggestion?: (() => string);
 }

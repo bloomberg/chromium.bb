@@ -19,6 +19,7 @@
 #include "av1/encoder/block.h"
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/cost.h"
+#include "av1/encoder/ratectrl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -191,7 +192,17 @@ struct TileDataEnc;
 struct AV1_COMP;
 struct macroblock;
 
-int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth, int qindex);
+/*!\brief Compute rdmult based on q index and frame update type
+ *
+ * \param[in]       bit_depth       bit depth
+ * \param[in]       update_type     frame update type
+ * \param[in]       qindex          q index
+ *
+ * \return rdmult
+ */
+int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth,
+                                        FRAME_UPDATE_TYPE update_type,
+                                        int qindex);
 
 int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
@@ -228,7 +239,11 @@ void av1_set_rd_speed_thresholds(struct AV1_COMP *cpi);
 
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
                                int (*fact)[MAX_MODES], int rd_thresh,
-                               BLOCK_SIZE bsize, THR_MODES best_mode_index);
+                               BLOCK_SIZE bsize, THR_MODES best_mode_index,
+                               THR_MODES inter_mode_start,
+                               THR_MODES inter_mode_end,
+                               THR_MODES intra_mode_start,
+                               THR_MODES intra_mode_end);
 
 static INLINE void reset_thresh_freq_fact(MACROBLOCK *const x) {
   for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
@@ -283,42 +298,12 @@ static INLINE void get_rd_opt_coeff_thresh(
   }
 }
 
-// Used to reset the state of tx/mb rd hash information
-static INLINE void reset_hash_records(TxfmSearchInfo *const txfm_info,
-                                      int use_inter_txb_hash) {
-  int32_t record_idx;
-  if (!txfm_info->txb_rd_records) return;
-  // Reset the state for use_inter_txb_hash
-  if (use_inter_txb_hash) {
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_8X8[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_8X8[record_idx].index_start =
-              0;
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_16X16[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_16X16[record_idx]
-              .index_start = 0;
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_32X32[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_32X32[record_idx]
-              .index_start = 0;
-    for (record_idx = 0;
-         record_idx < ((MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)); record_idx++)
-      txfm_info->txb_rd_records->txb_rd_record_64X64[record_idx].num =
-          txfm_info->txb_rd_records->txb_rd_record_64X64[record_idx]
-              .index_start = 0;
-  }
-
-  // Reset the state for use_intra_txb_hash
-  txfm_info->txb_rd_records->txb_rd_record_intra.num =
-      txfm_info->txb_rd_records->txb_rd_record_intra.index_start = 0;
+// Used to reset the state of mb rd hash information
+static INLINE void reset_mb_rd_record(MB_RD_RECORD *const mb_rd_record) {
+  if (!mb_rd_record) return;
 
   // Reset the state for use_mb_rd_hash
-  txfm_info->txb_rd_records->mb_rd_record.num =
-      txfm_info->txb_rd_records->mb_rd_record.index_start = 0;
+  mb_rd_record->num = mb_rd_record->index_start = 0;
 }
 
 void av1_setup_pred_block(const MACROBLOCKD *xd,
@@ -346,7 +331,18 @@ void av1_fill_dv_costs(const nmv_context *ndvc, IntraBCMVCosts *dv_costs);
 
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 
-int av1_get_deltaq_offset(const struct AV1_COMP *cpi, int qindex, double beta);
+int av1_get_deltaq_offset(aom_bit_depth_t bit_depth, int qindex, double beta);
+
+/*!\brief Adjust current superblock's q_index based on delta q resolution
+ *
+ * \param[in]       delta_q_res       delta q resolution
+ * \param[in]       prev_qindex       previous superblock's q index
+ * \param[in]       curr_qindex       current superblock's q index
+ *
+ * \return the current superblock's adjusted q_index
+ */
+int av1_adjust_q_from_delta_q_res(int delta_q_res, int prev_qindex,
+                                  int curr_qindex);
 
 #ifdef __cplusplus
 }  // extern "C"

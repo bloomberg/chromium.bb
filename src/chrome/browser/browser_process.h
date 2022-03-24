@@ -16,7 +16,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -35,15 +34,19 @@ class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefService;
 class ProfileManager;
+class SerialPolicyAllowedPorts;
+class StartupData;
 class StatusTray;
 class SystemNetworkContextManager;
-class WatchDogThread;
 class WebRtcLogUploader;
-class StartupData;
 
 #if !defined(OS_ANDROID)
 class IntranetRedirectDetector;
 #endif
+
+namespace breadcrumbs {
+class BreadcrumbPersistentStorageManager;
+}
 
 namespace network {
 class NetworkQualityTracker;
@@ -111,6 +114,10 @@ class TabManager;
 class BrowserProcess {
  public:
   BrowserProcess();
+
+  BrowserProcess(const BrowserProcess&) = delete;
+  BrowserProcess& operator=(const BrowserProcess&) = delete;
+
   virtual ~BrowserProcess();
 
   // Invoked when the user is logging out/shutting down. When logging off we may
@@ -156,9 +163,6 @@ class BrowserProcess {
   // Returns a NetworkQualityTracker that can be used to subscribe for
   // network quality change events.
   virtual network::NetworkQualityTracker* network_quality_tracker() = 0;
-
-  // Returns the thread that is used for health check of all browser threads.
-  virtual WatchDogThread* watchdog_thread() = 0;
 
   // Starts and manages the policy system.
   virtual policy::ChromeBrowserPolicyConnector* browser_policy_connector() = 0;
@@ -260,10 +264,18 @@ class BrowserProcess {
   virtual resource_coordinator::ResourceCoordinatorParts*
   resource_coordinator_parts() = 0;
 
+#if !defined(OS_ANDROID)
+  // Returns the object which keeps track of serial port permissions configured
+  // through the policy engine.
+  virtual SerialPolicyAllowedPorts* serial_policy_allowed_ports() = 0;
+#endif
+
   virtual BuildState* GetBuildState() = 0;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
+  // Returns the BreadcrumbPersistentStorageManager writing breadcrumbs to disk,
+  // or nullptr if breadcrumbs logging is disabled.
+  virtual breadcrumbs::BreadcrumbPersistentStorageManager*
+  GetBreadcrumbPersistentStorageManager() = 0;
 };
 
 extern BrowserProcess* g_browser_process;

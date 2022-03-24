@@ -48,7 +48,7 @@ TEST_F(LexerTest, Skips_Whitespace) {
   EXPECT_TRUE(t.IsEof());
 }
 
-TEST_F(LexerTest, Skips_Comments) {
+TEST_F(LexerTest, Skips_Comments_Line) {
   Source::FileContent content(R"(//starts with comment
 ident1 //ends with comment
 // blank line
@@ -75,6 +75,59 @@ ident1 //ends with comment
   EXPECT_TRUE(t.IsEof());
 }
 
+TEST_F(LexerTest, Skips_Comments_Block) {
+  Source::FileContent content(R"(/* comment
+text */ident)");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_TRUE(t.IsIdentifier());
+  EXPECT_EQ(t.source().range.begin.line, 2u);
+  EXPECT_EQ(t.source().range.begin.column, 8u);
+  EXPECT_EQ(t.source().range.end.line, 2u);
+  EXPECT_EQ(t.source().range.end.column, 13u);
+  EXPECT_EQ(t.to_str(), "ident");
+
+  t = l.next();
+  EXPECT_TRUE(t.IsEof());
+}
+
+TEST_F(LexerTest, Skips_Comments_Block_Nested) {
+  Source::FileContent content(R"(/* comment
+text // nested line comments are ignored /* more text
+/////**/ */*/ident)");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_TRUE(t.IsIdentifier());
+  EXPECT_EQ(t.source().range.begin.line, 3u);
+  EXPECT_EQ(t.source().range.begin.column, 14u);
+  EXPECT_EQ(t.source().range.end.line, 3u);
+  EXPECT_EQ(t.source().range.end.column, 19u);
+  EXPECT_EQ(t.to_str(), "ident");
+
+  t = l.next();
+  EXPECT_TRUE(t.IsEof());
+}
+
+TEST_F(LexerTest, Skips_Comments_Block_Unterminated) {
+  // I had to break up the /* because otherwise the clang readability check
+  // errored out saying it could not find the end of a multi-line comment.
+  Source::FileContent content(R"(
+  /)"
+                              R"(*
+abcd)");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(), "unterminated block comment");
+  EXPECT_EQ(t.source().range.begin.line, 2u);
+  EXPECT_EQ(t.source().range.begin.column, 3u);
+  EXPECT_EQ(t.source().range.end.line, 2u);
+  EXPECT_EQ(t.source().range.end.column, 4u);
+}
+
 struct FloatData {
   const char* input;
   float result;
@@ -90,7 +143,7 @@ TEST_P(FloatTest, Parse) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsFloatLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kFloatLiteral));
   EXPECT_EQ(t.to_f32(), params.result);
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
@@ -102,23 +155,65 @@ TEST_P(FloatTest, Parse) {
 }
 INSTANTIATE_TEST_SUITE_P(LexerTest,
                          FloatTest,
-                         testing::Values(FloatData{"0.0", 0.0f},
-                                         FloatData{"0.", 0.0f},
-                                         FloatData{".0", 0.0f},
-                                         FloatData{"5.7", 5.7f},
-                                         FloatData{"5.", 5.f},
-                                         FloatData{".7", .7f},
-                                         FloatData{"-0.0", 0.0f},
-                                         FloatData{"-.0", 0.0f},
-                                         FloatData{"-0.", 0.0f},
-                                         FloatData{"-5.7", -5.7f},
-                                         FloatData{"-5.", -5.f},
-                                         FloatData{"-.7", -.7f},
-                                         FloatData{"0.2e+12", 0.2e12f},
-                                         FloatData{"1.2e-5", 1.2e-5f},
-                                         FloatData{"2.57e23", 2.57e23f},
-                                         FloatData{"2.5e+0", 2.5f},
-                                         FloatData{"2.5e-0", 2.5f}));
+                         testing::Values(
+                             // No decimal, with 'f' suffix
+                             FloatData{"0f", 0.0f},
+                             FloatData{"1f", 1.0f},
+                             FloatData{"-0f", 0.0f},
+                             FloatData{"-1f", -1.0f},
+
+                             // Zero, with decimal.
+                             FloatData{"0.0", 0.0f},
+                             FloatData{"0.", 0.0f},
+                             FloatData{".0", 0.0f},
+                             FloatData{"-0.0", 0.0f},
+                             FloatData{"-0.", 0.0f},
+                             FloatData{"-.0", 0.0f},
+                             // Zero, with decimal and 'f' suffix
+                             FloatData{"0.0f", 0.0f},
+                             FloatData{"0.f", 0.0f},
+                             FloatData{".0f", 0.0f},
+                             FloatData{"-0.0f", 0.0f},
+                             FloatData{"-0.f", 0.0f},
+                             FloatData{"-.0", 0.0f},
+
+                             // Non-zero with decimal
+                             FloatData{"5.7", 5.7f},
+                             FloatData{"5.", 5.f},
+                             FloatData{".7", .7f},
+                             FloatData{"-5.7", -5.7f},
+                             FloatData{"-5.", -5.f},
+                             FloatData{"-.7", -.7f},
+                             // Non-zero with decimal and 'f' suffix
+                             FloatData{"5.7f", 5.7f},
+                             FloatData{"5.f", 5.f},
+                             FloatData{".7f", .7f},
+                             FloatData{"-5.7f", -5.7f},
+                             FloatData{"-5.f", -5.f},
+                             FloatData{"-.7f", -.7f},
+
+                             // No decimal, with exponent
+                             FloatData{"1e5", 1e5f},
+                             FloatData{"1E5", 1e5f},
+                             FloatData{"1e-5", 1e-5f},
+                             FloatData{"1E-5", 1e-5f},
+                             // No decimal, with exponent and 'f' suffix
+                             FloatData{"1e5f", 1e5f},
+                             FloatData{"1E5f", 1e5f},
+                             FloatData{"1e-5f", 1e-5f},
+                             FloatData{"1E-5f", 1e-5f},
+                             // With decimal and exponents
+                             FloatData{"0.2e+12", 0.2e12f},
+                             FloatData{"1.2e-5", 1.2e-5f},
+                             FloatData{"2.57e23", 2.57e23f},
+                             FloatData{"2.5e+0", 2.5f},
+                             FloatData{"2.5e-0", 2.5f},
+                             // With decimal and exponents and 'f' suffix
+                             FloatData{"0.2e+12f", 0.2e12f},
+                             FloatData{"1.2e-5f", 1.2e-5f},
+                             FloatData{"2.57e23f", 2.57e23f},
+                             FloatData{"2.5e+0f", 2.5f},
+                             FloatData{"2.5e-0f", 2.5f}));
 
 using FloatTest_Invalid = testing::TestWithParam<const char*>;
 TEST_P(FloatTest_Invalid, Handles) {
@@ -126,17 +221,41 @@ TEST_P(FloatTest_Invalid, Handles) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_FALSE(t.IsFloatLiteral());
+  EXPECT_FALSE(t.Is(Token::Type::kFloatLiteral));
 }
-INSTANTIATE_TEST_SUITE_P(LexerTest,
-                         FloatTest_Invalid,
-                         testing::Values(".",
-                                         "-.",
-                                         "2.5e+256",
-                                         "-2.5e+127",
-                                         "2.5e-300",
-                                         "2.5e 12",
-                                         "2.5e+ 123"));
+INSTANTIATE_TEST_SUITE_P(
+    LexerTest,
+    FloatTest_Invalid,
+    testing::Values(".",
+                    "-.",
+                    // Need a mantissa digit
+                    ".e5",
+                    ".E5",
+                    // Need exponent digits
+                    ".e",
+                    ".e+",
+                    ".e-",
+                    ".E",
+                    ".e+",
+                    ".e-",
+                    // Overflow
+                    "2.5e+256",
+                    "-2.5e+127",
+                    // Magnitude smaller than smallest positive f32.
+                    "2.5e-300",
+                    "-2.5e-300",
+                    // Decimal exponent must immediately
+                    // follow the 'e'.
+                    "2.5e 12",
+                    "2.5e +12",
+                    "2.5e -12",
+                    "2.5e+ 123",
+                    "2.5e- 123",
+                    "2.5E 12",
+                    "2.5E +12",
+                    "2.5E -12",
+                    "2.5E+ 123",
+                    "2.5E- 123"));
 
 using IdentifierTest = testing::TestWithParam<const char*>;
 TEST_P(IdentifierTest, Parse) {
@@ -151,10 +270,35 @@ TEST_P(IdentifierTest, Parse) {
   EXPECT_EQ(t.source().range.end.column, 1u + strlen(GetParam()));
   EXPECT_EQ(t.to_str(), GetParam());
 }
-INSTANTIATE_TEST_SUITE_P(
-    LexerTest,
-    IdentifierTest,
-    testing::Values("test01", "_test_", "test_", "_test", "_01", "_test01"));
+INSTANTIATE_TEST_SUITE_P(LexerTest,
+                         IdentifierTest,
+                         testing::Values("a",
+                                         "test",
+                                         "test01",
+                                         "test_",
+                                         "_test",
+                                         "test_01",
+                                         "ALLCAPS",
+                                         "MiXeD_CaSe",
+                                         "abcdefghijklmnopqrstuvwxyz",
+                                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                                         "alldigits_0123456789"));
+
+TEST_F(LexerTest, IdentifierTest_SingleUnderscoreDoesNotMatch) {
+  Source::FileContent content("_");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_FALSE(t.IsIdentifier());
+}
+
+TEST_F(LexerTest, IdentifierTest_DoesNotStartWithDoubleUnderscore) {
+  Source::FileContent content("__test");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_FALSE(t.IsIdentifier());
+}
 
 TEST_F(LexerTest, IdentifierTest_DoesNotStartWithNumber) {
   Source::FileContent content("01test");
@@ -180,7 +324,7 @@ TEST_P(IntegerTest_HexSigned, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsSintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kSintLiteral));
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
   EXPECT_EQ(t.source().range.end.line, 1u);
@@ -203,7 +347,7 @@ TEST_F(LexerTest, IntegerTest_HexSignedTooLarge) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  ASSERT_TRUE(t.IsError());
+  ASSERT_TRUE(t.Is(Token::Type::kError));
   EXPECT_EQ(t.to_str(), "i32 (0x80000000) too large");
 }
 
@@ -212,8 +356,29 @@ TEST_F(LexerTest, IntegerTest_HexSignedTooSmall) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  ASSERT_TRUE(t.IsError());
+  ASSERT_TRUE(t.Is(Token::Type::kError));
   EXPECT_EQ(t.to_str(), "i32 (-0x8000000F) too small");
+}
+
+TEST_F(LexerTest, IntegerTest_HexSignedTooManyDigits) {
+  {
+    Source::FileContent content("-0x100000000000000000000000");
+    Lexer l("test.wgsl", &content);
+
+    auto t = l.next();
+    ASSERT_TRUE(t.Is(Token::Type::kError));
+    EXPECT_EQ(t.to_str(),
+              "integer literal (-0x10000000...) has too many digits");
+  }
+  {
+    Source::FileContent content("0x100000000000000");
+    Lexer l("test.wgsl", &content);
+
+    auto t = l.next();
+    ASSERT_TRUE(t.Is(Token::Type::kError));
+    EXPECT_EQ(t.to_str(),
+              "integer literal (0x10000000...) has too many digits");
+  }
 }
 
 struct HexUnsignedIntData {
@@ -231,7 +396,7 @@ TEST_P(IntegerTest_HexUnsigned, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsUintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kUintLiteral));
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
   EXPECT_EQ(t.source().range.end.line, 1u);
@@ -252,13 +417,13 @@ INSTANTIATE_TEST_SUITE_P(
                     HexUnsignedIntData{"0xFFFFFFFFu",
                                        std::numeric_limits<uint32_t>::max()}));
 
-TEST_F(LexerTest, IntegerTest_HexUnsignedTooLarge) {
-  Source::FileContent content("0xffffffffffu");
+TEST_F(LexerTest, IntegerTest_HexUnsignedTooManyDigits) {
+  Source::FileContent content("0x1000000000000000000000u");
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  ASSERT_TRUE(t.IsError());
-  EXPECT_EQ(t.to_str(), "u32 (0xffffffffff) too large");
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(), "integer literal (0x10000000...) has too many digits");
 }
 
 struct UnsignedIntData {
@@ -276,7 +441,7 @@ TEST_P(IntegerTest_Unsigned, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsUintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kUintLiteral));
   EXPECT_EQ(t.to_u32(), params.result);
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
@@ -289,6 +454,15 @@ INSTANTIATE_TEST_SUITE_P(LexerTest,
                                          UnsignedIntData{"123u", 123u},
                                          UnsignedIntData{"4294967295u",
                                                          4294967295u}));
+
+TEST_F(LexerTest, IntegerTest_UnsignedTooManyDigits) {
+  Source::FileContent content("10000000000000000000000u");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(), "integer literal (1000000000...) has too many digits");
+}
 
 struct SignedIntData {
   const char* input;
@@ -305,7 +479,7 @@ TEST_P(IntegerTest_Signed, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsSintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kSintLiteral));
   EXPECT_EQ(t.to_i32(), params.result);
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
@@ -322,18 +496,32 @@ INSTANTIATE_TEST_SUITE_P(
                     SignedIntData{"2147483647", 2147483647},
                     SignedIntData{"-2147483648", -2147483648LL}));
 
+TEST_F(LexerTest, IntegerTest_SignedTooManyDigits) {
+  Source::FileContent content("-10000000000000000");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(), "integer literal (-1000000000...) has too many digits");
+}
+
 using IntegerTest_Invalid = testing::TestWithParam<const char*>;
 TEST_P(IntegerTest_Invalid, Parses) {
   Source::FileContent content(GetParam());
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_FALSE(t.IsSintLiteral());
-  EXPECT_FALSE(t.IsUintLiteral());
+  EXPECT_FALSE(t.Is(Token::Type::kSintLiteral));
+  EXPECT_FALSE(t.Is(Token::Type::kUintLiteral));
 }
 INSTANTIATE_TEST_SUITE_P(LexerTest,
                          IntegerTest_Invalid,
-                         testing::Values("2147483648", "4294967296u"));
+                         testing::Values("2147483648",
+                                         "4294967296u",
+                                         "01234",
+                                         "0000",
+                                         "-00",
+                                         "00u"));
 
 struct TokenData {
   const char* input;
@@ -387,14 +575,18 @@ INSTANTIATE_TEST_SUITE_P(
                     TokenData{"%", Token::Type::kMod},
                     TokenData{"!=", Token::Type::kNotEqual},
                     TokenData{"-", Token::Type::kMinus},
+                    TokenData{"--", Token::Type::kMinusMinus},
                     TokenData{".", Token::Type::kPeriod},
                     TokenData{"+", Token::Type::kPlus},
+                    TokenData{"++", Token::Type::kPlusPlus},
                     TokenData{"|", Token::Type::kOr},
                     TokenData{"||", Token::Type::kOrOr},
                     TokenData{"(", Token::Type::kParenLeft},
                     TokenData{")", Token::Type::kParenRight},
                     TokenData{";", Token::Type::kSemicolon},
                     TokenData{"*", Token::Type::kStar},
+                    TokenData{"~", Token::Type::kTilde},
+                    TokenData{"_", Token::Type::kUnderscore},
                     TokenData{"^", Token::Type::kXor}));
 
 using KeywordTest = testing::TestWithParam<TokenData>;
@@ -423,7 +615,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"bool", Token::Type::kBool},
         TokenData{"break", Token::Type::kBreak},
         TokenData{"case", Token::Type::kCase},
-        TokenData{"const", Token::Type::kConst},
         TokenData{"continue", Token::Type::kContinue},
         TokenData{"continuing", Token::Type::kContinuing},
         TokenData{"default", Token::Type::kDefault},
@@ -475,7 +666,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"if", Token::Type::kIf},
         TokenData{"image", Token::Type::kImage},
         TokenData{"import", Token::Type::kImport},
-        TokenData{"in", Token::Type::kIn},
         TokenData{"let", Token::Type::kLet},
         TokenData{"loop", Token::Type::kLoop},
         TokenData{"mat2x2", Token::Type::kMat2x2},
@@ -487,7 +677,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"mat4x2", Token::Type::kMat4x2},
         TokenData{"mat4x3", Token::Type::kMat4x3},
         TokenData{"mat4x4", Token::Type::kMat4x4},
-        TokenData{"out", Token::Type::kOut},
         TokenData{"private", Token::Type::kPrivate},
         TokenData{"ptr", Token::Type::kPtr},
         TokenData{"return", Token::Type::kReturn},
@@ -508,6 +697,8 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"texture_depth_cube", Token::Type::kTextureDepthCube},
         TokenData{"texture_depth_cube_array",
                   Token::Type::kTextureDepthCubeArray},
+        TokenData{"texture_depth_multisampled_2d",
+                  Token::Type::kTextureDepthMultisampled2d},
         TokenData{"texture_multisampled_2d",
                   Token::Type::kTextureMultisampled2d},
         TokenData{"texture_storage_1d", Token::Type::kTextureStorage1d},
@@ -523,38 +714,7 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"vec2", Token::Type::kVec2},
         TokenData{"vec3", Token::Type::kVec3},
         TokenData{"vec4", Token::Type::kVec4},
-        TokenData{"void", Token::Type::kVoid},
         TokenData{"workgroup", Token::Type::kWorkgroup}));
-
-using KeywordTest_Reserved = testing::TestWithParam<const char*>;
-TEST_P(KeywordTest_Reserved, Parses) {
-  auto* keyword = GetParam();
-  Source::FileContent content(keyword);
-  Lexer l("test.wgsl", &content);
-
-  auto t = l.next();
-  EXPECT_TRUE(t.IsReservedKeyword());
-  EXPECT_EQ(t.to_str(), keyword);
-}
-INSTANTIATE_TEST_SUITE_P(LexerTest,
-                         KeywordTest_Reserved,
-                         testing::Values("asm",
-                                         "bf16",
-                                         "do",
-                                         "enum",
-                                         "f16",
-                                         "f64",
-                                         "handle",
-                                         "i8",
-                                         "i16",
-                                         "i64",
-                                         "premerge",
-                                         "typedef",
-                                         "u8",
-                                         "u16",
-                                         "u64",
-                                         "unless",
-                                         "regardless"));
 
 }  // namespace
 }  // namespace wgsl

@@ -24,12 +24,10 @@
 
 namespace {
 
-const base::Time t0 =
-    base::Time::UnixEpoch() + base::TimeDelta::FromDays(365 * 50);
+const base::Time t0 = base::Time::UnixEpoch() + base::Days(365 * 50);
 
 // Copied from nearby_share_certificate_manager_impl.cc.
-constexpr base::TimeDelta kListPublicCertificatesTimeout =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kListPublicCertificatesTimeout = base::Seconds(30);
 
 const char kPageTokenPrefix[] = "page_token_";
 const char kSecretIdPrefix[] = "secret_id_";
@@ -661,12 +659,11 @@ TEST_F(NearbyShareCertificateManagerImplTest,
   size_t num_expected_calls = 0;
   for (bool did_device_name_change : {true, false}) {
     for (bool did_full_name_change : {true, false}) {
-      for (bool did_icon_url_change : {true, false}) {
+      for (bool did_icon_change : {true, false}) {
         local_device_data_manager_->NotifyLocalDeviceDataChanged(
-            did_device_name_change, did_full_name_change, did_icon_url_change);
+            did_device_name_change, did_full_name_change, did_icon_change);
 
-        if (did_device_name_change || did_full_name_change ||
-            did_icon_url_change) {
+        if (did_device_name_change || did_full_name_change || did_icon_change) {
           ++num_expected_calls;
           EXPECT_TRUE(cert_store_->GetPrivateCertificates()->empty());
         }

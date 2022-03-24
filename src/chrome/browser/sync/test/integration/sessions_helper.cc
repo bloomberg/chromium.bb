@@ -13,13 +13,12 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -166,7 +165,7 @@ void MoveTab(int from_browser_index, int to_browser_index, int tab_index) {
       test()
           ->GetBrowser(from_browser_index)
           ->tab_strip_model()
-          ->DetachWebContentsAt(tab_index);
+          ->DetachWebContentsAtForInsertion(tab_index);
 
   TabStripModel* target_strip =
       test()->GetBrowser(to_browser_index)->tab_strip_model();
@@ -326,35 +325,30 @@ bool CompareSyncedSessions(const sync_sessions::SyncedSession* lhs,
 }
 
 void SortSyncedSessions(SyncedSessionVector* sessions) {
-  std::sort(sessions->begin(), sessions->end(),
-            CompareSyncedSessions);
+  std::sort(sessions->begin(), sessions->end(), CompareSyncedSessions);
 }
 
 bool NavigationEquals(const sessions::SerializedNavigationEntry& expected,
                       const sessions::SerializedNavigationEntry& actual) {
   if (expected.virtual_url() != actual.virtual_url()) {
-    LOG(ERROR) << "Expected url " << expected.virtual_url()
-               << ", actual " << actual.virtual_url();
+    LOG(ERROR) << "Expected url " << expected.virtual_url() << ", actual "
+               << actual.virtual_url();
     return false;
   }
   if (expected.referrer_url() != actual.referrer_url()) {
-    LOG(ERROR) << "Expected referrer "
-               << expected.referrer_url()
-               << ", actual "
+    LOG(ERROR) << "Expected referrer " << expected.referrer_url() << ", actual "
                << actual.referrer_url();
     return false;
   }
   if (expected.title() != actual.title()) {
-    LOG(ERROR) << "Expected title " << expected.title()
-               << ", actual " << actual.title();
+    LOG(ERROR) << "Expected title " << expected.title() << ", actual "
+               << actual.title();
     return false;
   }
   if (!ui::PageTransitionTypeIncludingQualifiersIs(expected.transition_type(),
                                                    actual.transition_type())) {
-    LOG(ERROR) << "Expected transition "
-               << expected.transition_type()
-               << ", actual "
-               << actual.transition_type();
+    LOG(ERROR) << "Expected transition " << expected.transition_type()
+               << ", actual " << actual.transition_type();
     return false;
   }
   return true;
@@ -364,10 +358,8 @@ bool WindowsMatch(const ScopedWindowMap& win1, const ScopedWindowMap& win2) {
   sessions::SessionTab* client0_tab;
   sessions::SessionTab* client1_tab;
   if (win1.size() != win2.size()) {
-    LOG(ERROR) << "Win size doesn't match, win1 size: "
-        << win1.size()
-        << ", win2 size: "
-        << win2.size();
+    LOG(ERROR) << "Win size doesn't match, win1 size: " << win1.size()
+               << ", win2 size: " << win2.size();
     return false;
   }
   for (auto i = win1.begin(); i != win1.end(); ++i) {

@@ -5,11 +5,10 @@
 #ifndef CHROMEOS_SERVICES_LIBASSISTANT_AUDIO_AUDIO_STREAM_HANDLER_H_
 #define CHROMEOS_SERVICES_LIBASSISTANT_AUDIO_AUDIO_STREAM_HANDLER_H_
 
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
-#include "libassistant/shared/public/platform_audio_output.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -26,6 +25,10 @@ class AudioStreamHandler
       base::OnceCallback<void(const assistant_client::OutputStreamFormat&)>;
 
   AudioStreamHandler();
+
+  AudioStreamHandler(const AudioStreamHandler&) = delete;
+  AudioStreamHandler& operator=(const AudioStreamHandler&) = delete;
+
   ~AudioStreamHandler() override;
 
   void StartAudioDecoder(
@@ -98,8 +101,6 @@ class AudioStreamHandler
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AudioStreamHandler> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };
 
 }  // namespace libassistant

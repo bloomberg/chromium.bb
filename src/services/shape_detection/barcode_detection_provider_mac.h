@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision_api.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
@@ -26,6 +25,11 @@ class BarcodeDetectionProviderMac
  public:
   BarcodeDetectionProviderMac();
   explicit BarcodeDetectionProviderMac(std::unique_ptr<VisionAPIInterface>);
+
+  BarcodeDetectionProviderMac(const BarcodeDetectionProviderMac&) = delete;
+  BarcodeDetectionProviderMac& operator=(const BarcodeDetectionProviderMac&) =
+      delete;
+
   ~BarcodeDetectionProviderMac() override;
 
   // Binds BarcodeDetection provider receiver to the implementation of
@@ -38,9 +42,6 @@ class BarcodeDetectionProviderMac
       mojom::BarcodeDetectorOptionsPtr options) override;
   void EnumerateSupportedFormats(
       EnumerateSupportedFormatsCallback callback) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BarcodeDetectionProviderMac);
 
   absl::optional<std::vector<mojom::BarcodeFormat>> supported_formats_;
   std::unique_ptr<VisionAPIInterface> vision_api_;

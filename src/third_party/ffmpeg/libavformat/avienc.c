@@ -66,6 +66,7 @@ typedef struct AVIIndex {
 
 typedef struct AVIContext {
     const AVClass *class;
+    AVPacket *empty_packet;
     int64_t riff_start, movi_list, odml_list;
     int64_t frames_hdr_all;
     int riff_id;
@@ -236,7 +237,6 @@ static void write_odml_master(AVFormatContext *s, int stream_index)
     AVCodecParameters *par = st->codecpar;
     AVIStream *avist = st->priv_data;
     unsigned char tag[5];
-    int j;
 
     /* Starting to lay out AVI OpenDML master index.
         * We want to make it JUNK entry for now, since we'd
@@ -249,10 +249,8 @@ static void write_odml_master(AVFormatContext *s, int stream_index)
     avio_wl32(pb, 0);   /* nEntriesInUse (will fill out later on) */
     ffio_wfourcc(pb, avi_stream2fourcc(tag, stream_index, par->codec_type));
                         /* dwChunkId */
-    avio_wl64(pb, 0);   /* dwReserved[3] */
-    avio_wl32(pb, 0);   /* Must be 0.    */
-    for (j = 0; j < avi->master_index_max_size * 2; j++)
-        avio_wl64(pb, 0);
+    ffio_fill(pb, 0, 3 * 4 /* dwReserved[3] */
+                     + 16LL * avi->master_index_max_size);
     ff_end_tag(pb, avist->indexes.indx_start);
 }
 
@@ -273,6 +271,8 @@ static int avi_write_header(AVFormatContext *s)
                ">"AV_STRINGIFY(AVI_MAX_STREAM_COUNT)" streams\n");
         return AVERROR(EINVAL);
     }
+
+    avi->empty_packet = ffformatcontext(s)->pkt;
 
     for (n = 0; n < s->nb_streams; n++) {
         s->streams[n]->priv_data = av_mallocz(sizeof(AVIStream));
@@ -346,10 +346,7 @@ static int avi_write_header(AVFormatContext *s)
         avio_wl32(pb, 0);
         avio_wl32(pb, 0);
     }
-    avio_wl32(pb, 0); /* reserved */
-    avio_wl32(pb, 0); /* reserved */
-    avio_wl32(pb, 0); /* reserved */
-    avio_wl32(pb, 0); /* reserved */
+    ffio_fill(pb, 0, 4 * 4); /* reserved */
 
     /* stream list */
     for (i = 0; i < n; i++) {
@@ -564,8 +561,7 @@ static int avi_write_header(AVFormatContext *s)
         ffio_wfourcc(pb, "odml");
         ffio_wfourcc(pb, "dmlh");
         avio_wl32(pb, 248);
-        for (i = 0; i < 248; i += 4)
-            avio_wl32(pb, 0);
+        ffio_fill(pb, 0, 248);
         ff_end_tag(pb, avi->odml_list);
     }
 
@@ -581,8 +577,7 @@ static int avi_write_header(AVFormatContext *s)
     /* some padding for easier tag editing */
     if (padding) {
         list2 = ff_start_tag(pb, "JUNK");
-        for (i = padding; i > 0; i -= 4)
-            avio_wl32(pb, 0);
+        ffio_fill(pb, 0, FFALIGN((uint32_t)padding, 4));
         ff_end_tag(pb, list2);
     }
 
@@ -739,24 +734,21 @@ static int avi_write_idx1(AVFormatContext *s)
 
 static int write_skip_frames(AVFormatContext *s, int stream_index, int64_t dts)
 {
+    AVIContext *avi = s->priv_data;
     AVIStream *avist    = s->streams[stream_index]->priv_data;
     AVCodecParameters *par = s->streams[stream_index]->codecpar;
 
     ff_dlog(s, "dts:%s packet_count:%d stream_index:%d\n", av_ts2str(dts), avist->packet_count, stream_index);
     while (par->block_align == 0 && dts != AV_NOPTS_VALUE &&
            dts > avist->packet_count && par->codec_id != AV_CODEC_ID_XSUB && avist->packet_count) {
-        AVPacket empty_packet;
 
         if (dts - avist->packet_count > 60000) {
             av_log(s, AV_LOG_ERROR, "Too large number of skipped frames %"PRId64" > 60000\n", dts - avist->packet_count);
             return AVERROR(EINVAL);
         }
 
-        av_init_packet(&empty_packet);
-        empty_packet.size         = 0;
-        empty_packet.data         = NULL;
-        empty_packet.stream_index = stream_index;
-        avi_write_packet_internal(s, &empty_packet);
+        avi->empty_packet->stream_index = stream_index;
+        avi_write_packet_internal(s, avi->empty_packet);
         ff_dlog(s, "dup dts:%s packet_count:%d\n", av_ts2str(dts), avist->packet_count);
     }
 
@@ -1005,7 +997,7 @@ static const AVClass avi_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_avi_muxer = {
+const AVOutputFormat ff_avi_muxer = {
     .name           = "avi",
     .long_name      = NULL_IF_CONFIG_SMALL("AVI (Audio Video Interleaved)"),
     .mime_type      = "video/x-msvideo",

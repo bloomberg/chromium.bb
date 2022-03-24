@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -58,7 +58,7 @@ using animation_test_helpers::EnsureInterpolatedValueCached;
 class AnimationKeyframeEffectModel : public PageTestBase {
  protected:
   void SetUp() override {
-    PageTestBase::SetUp(IntSize());
+    PageTestBase::SetUp(gfx::Size());
     GetDocument().UpdateStyleAndLayoutTree();
     element = GetDocument().CreateElementForBinding("foo");
     GetDocument().body()->appendChild(element);
@@ -81,9 +81,10 @@ class AnimationKeyframeEffectModel : public PageTestBase {
         To<InterpolableLength>(typed_value->GetInterpolableValue());
     // Lengths are computed in logical units, which are quantized to 64ths of
     // a pixel.
-    EXPECT_NEAR(expected_value,
-                length.CreateCSSValue(kValueRangeAll)->GetDoubleValue(),
-                /*abs_error=*/0.02);
+    EXPECT_NEAR(
+        expected_value,
+        length.CreateCSSValue(Length::ValueRange::kAll)->GetDoubleValue(),
+        /*abs_error=*/0.02);
   }
 
   void ExpectNonInterpolableValue(const String& expected_value,
@@ -108,7 +109,7 @@ class AnimationKeyframeEffectModel : public PageTestBase {
   Persistent<Element> element;
 };
 
-const AnimationTimeDelta kDuration = AnimationTimeDelta::FromSecondsD(1);
+const AnimationTimeDelta kDuration = ANIMATION_TIME_DELTA_FROM_SECONDS(1);
 
 StringKeyframeVector KeyframesAtZeroAndOne(CSSPropertyID property,
                                            const String& zero_value,

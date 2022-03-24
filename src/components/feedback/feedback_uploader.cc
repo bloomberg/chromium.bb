@@ -17,6 +17,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace feedback {
 
@@ -39,11 +40,11 @@ constexpr int kHttpPostFailServerError = 500;
 // backoff delay is applied on successive failures.
 // This value can be overriden by tests by calling
 // FeedbackUploader::SetMinimumRetryDelayForTesting().
-base::TimeDelta g_minimum_retry_delay = base::TimeDelta::FromMinutes(60);
+base::TimeDelta g_minimum_retry_delay = base::Minutes(60);
 
 // If a new report is queued to be dispatched immediately while another is being
 // dispatched, this is the time to wait for the on-going dispatching to finish.
-base::TimeDelta g_dispatching_wait_delay = base::TimeDelta::FromSeconds(4);
+base::TimeDelta g_dispatching_wait_delay = base::Seconds(4);
 
 GURL GetFeedbackPostGURL() {
   const base::CommandLine& command_line =
@@ -177,7 +178,7 @@ void FeedbackUploader::DispatchReport() {
           data:
             "The free-form text that user has entered and useful debugging "
             "logs (UI logs, Chrome logs, kernel logs, auto update engine logs, "
-            "ARC++ logs, etc.). The logs are anonymized to remove any "
+            "ARC++ logs, etc.). The logs are redacted to remove any "
             "user-private data. The user can view the system information "
             "before sending, and choose to send the feedback report without "
             "system information and the logs (unchecking 'Send system "
@@ -190,7 +191,11 @@ void FeedbackUploader::DispatchReport() {
           setting:
             "This feature cannot be disabled by settings and is only activated "
             "by direct user request."
-          policy_exception_justification: "Not implemented."
+          chrome_policy {
+            UserFeedbackAllowed {
+              UserFeedbackAllowed: false
+            }
+          }
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = feedback_post_url_;

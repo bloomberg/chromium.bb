@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accessibility_controller.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -13,13 +13,13 @@
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/extension_load_waiter_one_shot.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
@@ -43,7 +43,12 @@ class SwitchAccessTest : public InProcessBrowserTest {
                           const std::set<int>& next_key_codes,
                           const std::set<int>& previous_key_codes) {
     AccessibilityManager* manager = AccessibilityManager::Get();
+
+    extensions::ExtensionHostTestHelper host_helper(
+        manager->profile(), extension_misc::kSwitchAccessExtensionId);
     manager->SetSwitchAccessEnabled(true);
+    host_helper.WaitForHostCompletedFirstLoad();
+
     manager->SetSwitchAccessKeysForTest(
         select_key_codes,
         prefs::kAccessibilitySwitchAccessSelectDeviceKeyCodes);
@@ -85,13 +90,6 @@ class SwitchAccessTest : public InProcessBrowserTest {
     std::string script;
     ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))
         << test_support_path;
-
-    // Wait for the extension to load.
-    base::RunLoop loop;
-    ExtensionLoadWaiterOneShot waiter;
-    waiter.WaitForExtension(extension_misc::kSwitchAccessExtensionId,
-                            loop.QuitClosure());
-    loop.Run();
 
     std::string result =
         extensions::browsertest_util::ExecuteScriptInBackgroundPage(
@@ -199,12 +197,13 @@ class SwitchAccessTest : public InProcessBrowserTest {
   std::unique_ptr<ExtensionConsoleErrorObserver> console_observer_;
 };
 
-IN_PROC_BROWSER_TEST_F(SwitchAccessTest, ConsumesKeyEvents) {
+// Flaky. See https://crbug.com/1224254.
+IN_PROC_BROWSER_TEST_F(SwitchAccessTest, DISABLED_ConsumesKeyEvents) {
   EnableSwitchAccess({'1', 'A'} /* select */, {'2', 'B'} /* next */,
                      {'3', 'C'} /* previous */);
   // Load a webpage with a text box.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("data:text/html;charset=utf-8,<input type=text id=in>"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;charset=utf-8,<input type=text id=in>")));
 
   // Put focus in the text box.
   SendVirtualKeyPress(ui::KeyboardCode::VKEY_TAB);
@@ -227,7 +226,8 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest, NavigateGroupings) {
                      {'3', 'C'} /* previous */);
 
   // Load a webpage with two groups of controls.
-  ui_test_utils::NavigateToURL(browser(), GURL(R"HTML(data:text/html,
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(R"HTML(data:text/html,
       <div role="group" aria-label="Top">
         <button autofocus>Northwest</button>
         <button>Northeast</button>
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest, NavigateGroupings) {
         <button>Southwest</button>
         <button>Southeast</button>
       </div>
-      )HTML"));
+      )HTML")));
 
   // Wait for switch access to focus on the first button.
   WaitForFocusRing("primary", "button", "Northwest");
@@ -278,9 +278,9 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest, NavigateButtonsInTextFieldMenu) {
                      {'3', 'C'} /* previous */);
 
   // Load a webpage with a text box.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      GURL("data:text/html,<input autofocus aria-label=MyTextField>"));
+      GURL("data:text/html,<input autofocus aria-label=MyTextField>")));
 
   // Wait for switch access to focus on the text field.
   WaitForFocusRing("primary", "textField", "MyTextField");
@@ -334,9 +334,9 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest, TypeIntoVirtualKeyboard) {
                      {'3', 'C'} /* previous */);
 
   // Load a webpage with a text box.
-  ui_test_utils::NavigateToURL(
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
-      GURL("data:text/html,<input autofocus aria-label=MyTextField>"));
+      GURL("data:text/html,<input autofocus aria-label=MyTextField>")));
 
   // Wait for switch access to focus on the text field.
   WaitForFocusRing("primary", "textField", "MyTextField");
@@ -363,16 +363,18 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest, TypeIntoVirtualKeyboard) {
   // js-based tests that have the ability to ask the text field for its value.
 }
 
-// Disabled due to high flake rate; https://crbug.com/1216246.
-IN_PROC_BROWSER_TEST_F(SwitchAccessTest,
-                       DISABLED_PointScanClickWhenMouseEventsEnabled) {
+IN_PROC_BROWSER_TEST_F(SwitchAccessTest, PointScanClickWhenMouseEventsEnabled) {
   EnableSwitchAccess({'1', 'A'} /* select */, {'2', 'B'} /* next */,
                      {'3', 'C'} /* previous */);
 
   // Load a webpage with a checkbox.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("data:text/html,<input type=checkbox title='checkbox'"
-                      "style='width: 800px; height: 800px;'>"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html,<input autofocus type=checkbox title='checkbox'"
+           "style='width: 800px; height: 800px;'>")));
+
+  // Wait for switch access to focus on the checkbox.
+  WaitForFocusRing("primary", "checkBox", "checkbox");
 
   // Enable mouse events (within root window containing checkbox).
   EnableMouseEvents(600, 600);
@@ -393,16 +395,19 @@ IN_PROC_BROWSER_TEST_F(SwitchAccessTest,
   ASSERT_TRUE(IsMouseEventsEnabled(600, 600));
 }
 
-// Test is flaky: https://crbug.com/1216048.
 IN_PROC_BROWSER_TEST_F(SwitchAccessTest,
-                       DISABLED_PointScanClickWhenMouseEventsDisabled) {
+                       PointScanClickWhenMouseEventsDisabled) {
   EnableSwitchAccess({'1', 'A'} /* select */, {'2', 'B'} /* next */,
                      {'3', 'C'} /* previous */);
 
   // Load a webpage with a checkbox.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("data:text/html,<input type=checkbox title='checkbox'"
-                      "style='width: 800px; height: 800px;'>"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html,<input autofocus type=checkbox title='checkbox'"
+           "style='width: 800px; height: 800px;'>")));
+
+  // Wait for switch access to focus on the checkbox.
+  WaitForFocusRing("primary", "checkBox", "checkbox");
 
   // Disable mouse events (within root window containing checkbox).
   DisableMouseEvents(600, 600);

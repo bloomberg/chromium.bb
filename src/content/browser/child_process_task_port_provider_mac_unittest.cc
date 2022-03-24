@@ -42,8 +42,6 @@ class MockChildProcess : public mojom::ChildProcess {
                void(mojo::PendingReceiver<
                     tracing::mojom::BackgroundTracingAgentProvider>));
   MOCK_METHOD0(CrashHungProcess, void());
-  MOCK_METHOD1(BootstrapLegacyIpc,
-               void(mojo::PendingReceiver<IPC::mojom::ChannelBootstrap>));
   MOCK_METHOD2(RunServiceDeprecated,
                void(const std::string&, mojo::ScopedMessagePipeHandle));
   MOCK_METHOD1(BindServiceInterface,
@@ -51,6 +49,7 @@ class MockChildProcess : public mojom::ChildProcess {
   MOCK_METHOD1(BindReceiver, void(mojo::GenericPendingReceiver receiver));
   MOCK_METHOD1(EnableSystemTracingService,
                void(mojo::PendingRemote<tracing::mojom::SystemTracingService>));
+  MOCK_METHOD1(SetPseudonymizationSalt, void(uint32_t salt));
 };
 
 class ChildProcessTaskPortProviderTest : public testing::Test,

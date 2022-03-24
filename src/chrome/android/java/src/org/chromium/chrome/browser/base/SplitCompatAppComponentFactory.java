@@ -55,36 +55,22 @@ public class SplitCompatAppComponentFactory extends AppComponentFactory {
         return super.instantiateReceiver(getComponentClassLoader(cl, className), className, intent);
     }
 
-    private ClassLoader getComponentClassLoader(ClassLoader cl, String className) {
-        Context context = ContextUtils.getApplicationContext();
-        if (context == null) {
+    private static ClassLoader getComponentClassLoader(ClassLoader cl, String className) {
+        Context appContext = ContextUtils.getApplicationContext();
+        if (appContext == null) {
             Log.e(TAG, "Unexpected null Context when instantiating component: %s", className);
             return cl;
         }
 
-        ClassLoader chromeClassLoader = context.getClassLoader();
-        if (!cl.equals(chromeClassLoader) && isComponentInChromeSplit(className)) {
+        ClassLoader baseClassLoader = SplitCompatAppComponentFactory.class.getClassLoader();
+        ClassLoader chromeClassLoader = appContext.getClassLoader();
+        if (!cl.equals(chromeClassLoader)
+                && !SplitCompatUtils.canLoadClass(baseClassLoader, className)
+                && SplitCompatUtils.canLoadClass(chromeClassLoader, className)) {
             Log.w(TAG, "Mismatched ClassLoaders between Application and component: %s", className);
             return chromeClassLoader;
         }
 
         return cl;
-    }
-
-    private boolean isComponentInChromeSplit(String className) {
-        // First, try using this class's ClassLoader, which only has classes from the base module.
-        try {
-            Class.forName(className, false, getClass().getClassLoader());
-            return false;
-        } catch (ClassNotFoundException e) {
-        }
-
-        // Next, try using the chrome ClassLoader. If the class is found, it is in the chrome split.
-        try {
-            Class.forName(className, false, ContextUtils.getApplicationContext().getClassLoader());
-            return true;
-        } catch (ClassNotFoundException e) {
-        }
-        return false;
     }
 }

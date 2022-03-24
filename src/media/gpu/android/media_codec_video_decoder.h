@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
+#include "gpu/command_buffer/service/ref_counted_lock.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android/media_crypto_context.h"
@@ -39,14 +41,16 @@ struct PendingDecode {
   static PendingDecode CreateEos();
   PendingDecode(scoped_refptr<DecoderBuffer> buffer,
                 VideoDecoder::DecodeCB decode_cb);
+
+  PendingDecode(const PendingDecode&) = delete;
+  PendingDecode& operator=(const PendingDecode&) = delete;
+
   PendingDecode(PendingDecode&& other);
+
   ~PendingDecode();
 
   scoped_refptr<DecoderBuffer> buffer;
   VideoDecoder::DecodeCB decode_cb;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PendingDecode);
 };
 
 // An Android VideoDecoder that delegates to MediaCodec.
@@ -60,9 +64,14 @@ struct PendingDecode {
 // playbacks that need them.
 // TODO: Lazy initialization should be handled at a higher layer of the media
 // stack for both simplicity and cross platform support.
-class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
+class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final
+    : public VideoDecoder,
+      public gpu::RefCountedLockHelperDrDc {
  public:
   static std::vector<SupportedVideoDecoderConfig> GetSupportedConfigs();
+
+  MediaCodecVideoDecoder(const MediaCodecVideoDecoder&) = delete;
+  MediaCodecVideoDecoder& operator=(const MediaCodecVideoDecoder&) = delete;
 
   ~MediaCodecVideoDecoder() override;
   static void DestroyAsync(std::unique_ptr<MediaCodecVideoDecoder>);
@@ -76,7 +85,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       AndroidOverlayMojoFactoryCB overlay_factory_cb,
       RequestOverlayInfoCB request_overlay_info_cb,
-      std::unique_ptr<VideoFrameFactory> video_frame_factory);
+      std::unique_ptr<VideoFrameFactory> video_frame_factory,
+      scoped_refptr<gpu::RefCountedLock> drdc_lock);
 
   // VideoDecoder implementation:
   VideoDecoderType GetDecoderType() const override;
@@ -105,7 +115,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       AndroidOverlayMojoFactoryCB overlay_factory_cb,
       RequestOverlayInfoCB request_overlay_info_cb,
-      std::unique_ptr<VideoFrameFactory> video_frame_factory);
+      std::unique_ptr<VideoFrameFactory> video_frame_factory,
+      scoped_refptr<gpu::RefCountedLock> drdc_lock);
 
   // Set up |cdm_context| as part of initialization.  Guarantees that |init_cb|
   // will be called depending on the outcome, though not necessarily before this
@@ -266,7 +277,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
   std::unique_ptr<CodecWrapper> codec_;
   base::ElapsedTimer idle_timer_;
   base::RepeatingTimer pump_codec_timer_;
-  CodecAllocator* codec_allocator_;
+  raw_ptr<CodecAllocator> codec_allocator_;
 
   // The current target surface that |codec_| should be rendering to. It
   // reflects the latest surface choice by |surface_chooser_|. If the codec is
@@ -296,7 +307,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
   // An optional factory callback for creating mojo AndroidOverlays.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
-  DeviceInfo* device_info_;
+  raw_ptr<DeviceInfo> device_info_;
   bool enable_threaded_texture_mailboxes_;
 
   // Most recently cached frame information, so that we can dispatch it without
@@ -307,7 +318,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
   // CDM related stuff.
 
   // Owned by CDM which is external to this decoder.
-  MediaCryptoContext* media_crypto_context_ = nullptr;
+  raw_ptr<MediaCryptoContext> media_crypto_context_ = nullptr;
 
   // To keep the CdmContext event callback registered.
   std::unique_ptr<CallbackRegistration> event_cb_registration_;
@@ -331,6 +342,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
   // Width, in pixels, of the resolution that we last told the codec about.
   int last_width_ = 0;
 
+  // KEY_MAX_INPUT_SIZE configured for the current codec.
+  size_t max_input_size_ = 0;
+
   // Optional crypto object from the Cdm.
   base::android::ScopedJavaGlobalRef<jobject> media_crypto_;
 
@@ -342,8 +356,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
   base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_{this};
   base::WeakPtrFactory<MediaCodecVideoDecoder> codec_allocator_weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaCodecVideoDecoder);
 };
 
 }  // namespace media

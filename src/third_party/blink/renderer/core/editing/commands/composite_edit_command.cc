@@ -84,7 +84,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -869,7 +869,9 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
     return ReplaceTextInNode(text_node, start, end - start, string);
   }
 
-  Vector<InlineTextBox*> sorted_text_boxes;
+  HeapVector<Member<InlineTextBox>> sorted_text_boxes;
+  ClearCollectionScope<HeapVector<Member<InlineTextBox>>> scope(
+      &sorted_text_boxes);
   wtf_size_t sorted_text_boxes_position = 0;
 
   for (InlineTextBox* text_box : text_layout_object->TextBoxes())
@@ -881,7 +883,7 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
     std::sort(sorted_text_boxes.begin(), sorted_text_boxes.end(),
               InlineTextBox::CompareByStart);
   InlineTextBox* box = sorted_text_boxes.IsEmpty()
-                           ? 0
+                           ? nullptr
                            : sorted_text_boxes[sorted_text_boxes_position];
 
   unsigned removed = 0;
@@ -2129,6 +2131,8 @@ void CompositeEditCommand::AppliedEditing() {
         EnsureUndoStep()->EndingSelection());
     last_edit_command->GetUndoStep()->SetSelectionIsDirectional(
         GetUndoStep()->SelectionIsDirectional());
+    editor.GetUndoStack().DidSetEndingSelection(
+        last_edit_command->GetUndoStep());
     last_edit_command->AppendCommandToUndoStep(this);
   } else {
     // Only register a new undo command if the command passed in is

@@ -10,8 +10,14 @@ import logging
 import numbers
 import os
 import posixpath
+import sys
 import time
 import six
+
+if sys.version_info.major == 3:
+  DEFAULT_MODE = 'w+'
+else:
+  DEFAULT_MODE = 'w+b'
 
 
 PASS = 'PASS'
@@ -42,10 +48,9 @@ def ContentTypeFromExt(name):
   _, ext = posixpath.splitext(name)
   if ext in _CONTENT_TYPES:
     return _CONTENT_TYPES[ext]
-  else:
-    logging.info('Unable to infer content type for artifact: %s', name)
-    logging.info('Falling back to: %s', _DEFAULT_CONTENT_TYPE)
-    return _DEFAULT_CONTENT_TYPE
+  logging.info('Unable to infer content type for artifact: %s', name)
+  logging.info('Falling back to: %s', _DEFAULT_CONTENT_TYPE)
+  return _DEFAULT_CONTENT_TYPE
 
 
 class _Artifact(object):
@@ -202,17 +207,15 @@ class StoryRun(object):
   def test_path(self):
     if self._test_prefix is not None:
       return '/'.join([self._test_prefix, self.story.name])
-    else:
-      return self.story.name
+    return self.story.name
 
   @property
   def status(self):
     if self.failed:
       return FAIL
-    elif self.skipped:
+    if self.skipped:
       return SKIP
-    else:
-      return PASS
+    return PASS
 
   @property
   def ok(self):
@@ -268,7 +271,7 @@ class StoryRun(object):
     return local_path
 
   @contextlib.contextmanager
-  def CreateArtifact(self, name, content_type=None):
+  def CreateArtifact(self, name, content_type=None, mode=DEFAULT_MODE):
     """Create an artifact.
 
     Args:
@@ -293,7 +296,7 @@ class StoryRun(object):
     if content_type is None:
       content_type = ContentTypeFromExt(name)
 
-    with open(local_path, 'w+b') as file_obj:
+    with open(local_path, mode) as file_obj:
       # We want to keep track of all artifacts (e.g. logs) even in the case
       # of an exception in the client code, so we create a record for
       # this artifact before yielding the file handle.
@@ -374,5 +377,4 @@ def _ParseTbmMetric(metric):
     if version not in ('tbmv2', 'tbmv3'):
       raise ValueError('Invalid metric name: %s' % metric)
     return (version, name)
-  else:
-    return ('tbmv2', metric)
+  return ('tbmv2', metric)

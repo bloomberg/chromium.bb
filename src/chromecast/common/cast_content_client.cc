@@ -12,8 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_paths.h"
@@ -21,7 +20,6 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "components/cast/common/constants.h"
 #include "content/public/common/cdm_info.h"
-#include "content/public/common/user_agent.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
@@ -63,37 +61,6 @@ namespace shell {
 
 namespace {
 
-#if defined(OS_ANDROID)
-std::string BuildAndroidOsInfo() {
-  int32_t os_major_version = 0;
-  int32_t os_minor_version = 0;
-  int32_t os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
-
-  std::string android_version_str;
-  base::StringAppendF(
-      &android_version_str, "%d.%d", os_major_version, os_minor_version);
-  if (os_bugfix_version != 0)
-    base::StringAppendF(&android_version_str, ".%d", os_bugfix_version);
-
-  std::string android_info_str;
-  // Append the build ID.
-  std::string android_build_id = base::SysInfo::GetAndroidBuildID();
-  if (android_build_id.size() > 0)
-    android_info_str += "; Build/" + android_build_id;
-
-  std::string os_info;
-  base::StringAppendF(
-      &os_info,
-      "Android %s%s",
-      android_version_str.c_str(),
-      android_info_str.c_str());
-  return os_info;
-}
-#endif
-
 #if BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
 // Copied from chrome_content_client.cc
 std::unique_ptr<content::CdmInfo> CreateWidevineCdmInfo(
@@ -103,7 +70,7 @@ std::unique_ptr<content::CdmInfo> CreateWidevineCdmInfo(
   return std::make_unique<content::CdmInfo>(
       kWidevineKeySystem, content::CdmInfo::Robustness::kSoftwareSecure,
       std::move(capability), /*supports_sub_key_systems=*/false,
-      kWidevineCdmDisplayName, kWidevineCdmGuid, version, cdm_library_path,
+      kWidevineCdmDisplayName, kWidevineCdmType, version, cdm_library_path,
       kWidevineCdmFileSystemId);
 }
 
@@ -154,29 +121,8 @@ content::CdmInfo* GetBundledWidevine() {
   return s_cdm_info->get();
 }
 #endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
-}  // namespace
 
-std::string GetUserAgent() {
-  std::string product = "Chrome/" PRODUCT_VERSION;
-  std::string os_info;
-  base::StringAppendF(
-      &os_info,
-      "%s%s",
-#if defined(OS_ANDROID)
-      "Linux; ",
-      BuildAndroidOsInfo().c_str()
-#elif BUILDFLAG(USE_ANDROID_USER_AGENT)
-                      "Linux; ", "Android"
-#else
-      "X11; ",
-      content::BuildOSCpuInfo(content::IncludeAndroidBuildNumber::Exclude,
-                              content::IncludeAndroidModel::Include)
-          .c_str()
-#endif
-      );
-  return content::BuildUserAgentFromOSAndProduct(os_info, product) + " CrKey/" +
-         kFrozenCrKeyValue;
-}
+}  // namespace
 
 CastContentClient::~CastContentClient() {
 }
@@ -206,7 +152,7 @@ std::u16string CastContentClient::GetLocalizedString(int message_id) {
 
 base::StringPiece CastContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }

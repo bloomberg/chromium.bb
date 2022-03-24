@@ -14,6 +14,7 @@
 
 import {produce} from 'immer';
 
+import {assertExists} from '../base/logging';
 import {SLICE_TRACK_KIND} from '../tracks/chrome_slices/common';
 import {HEAP_PROFILE_TRACK_KIND} from '../tracks/heap_profile/common';
 import {
@@ -22,8 +23,8 @@ import {
 import {THREAD_STATE_TRACK_KIND} from '../tracks/thread_state/common';
 
 import {StateActions} from './actions';
+import {createEmptyState} from './empty_state';
 import {
-  createEmptyState,
   SCROLLING_TRACK_GROUP,
   State,
   TraceUrlSource,
@@ -80,13 +81,6 @@ function pinnedAndScrollingTracks(
   });
   return state;
 }
-
-test('navigate', () => {
-  const after = produce(createEmptyState(), draft => {
-    StateActions.navigate(draft, {route: '/foo'});
-  });
-  expect(after.route).toBe('/foo');
-});
 
 test('add scrolling tracks', () => {
   const once = produce(createEmptyState(), draft => {
@@ -278,7 +272,6 @@ test('open trace', () => {
   expect(engineKeys.length).toBe(1);
   expect((after.engines[engineKeys[0]].source as TraceUrlSource).url)
       .toBe('https://example.com/bar');
-  expect(after.route).toBe('/viewer');
   expect(after.recordConfig).toBe(recordConfig);
 });
 
@@ -311,7 +304,6 @@ test('open second trace from file', () => {
       .toBe('https://example.com/foo');
   expect(thrice.pinnedTracks.length).toBe(0);
   expect(thrice.scrollingTracks.length).toBe(0);
-  expect(thrice.route).toBe('/viewer');
 });
 
 test('setEngineReady with missing engine is ignored', () => {
@@ -425,4 +417,30 @@ test('sortTracksByTidThenName', () => {
   });
 
   expect(after.trackGroups['g'].tracks).toEqual(['a', 'a', 'c', 'b']);
+});
+
+test('perf samples open flamegraph', () => {
+  const state = createEmptyState();
+  const perfType = 'perf';
+
+  const afterSelectingPerf = produce(state, draft => {
+    StateActions.selectPerfSamples(
+        draft, {id: 0, upid: 0, ts: 0, type: perfType});
+  });
+
+  expect(assertExists(afterSelectingPerf.currentFlamegraphState).type)
+      .toBe(perfType);
+});
+
+test('heap profile opens flamegraph', () => {
+  const state = createEmptyState();
+  const heapType = 'graph';
+
+  const afterSelectingPerf = produce(state, draft => {
+    StateActions.selectHeapProfile(
+        draft, {id: 0, upid: 0, ts: 0, type: heapType});
+  });
+
+  expect(assertExists(afterSelectingPerf.currentFlamegraphState).type)
+      .toBe(heapType);
 });

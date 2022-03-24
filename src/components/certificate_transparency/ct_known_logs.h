@@ -14,6 +14,14 @@
 
 namespace certificate_transparency {
 
+struct PreviousOperatorEntry {
+  // Name of the previous operator.
+  const char* const name;
+  // Time when the operator stopped operating this log, expressed as a TimeDelta
+  // from the Unix Epoch.
+  const base::TimeDelta end_time;
+};
+
 struct CTLogInfo {
   // The DER-encoded SubjectPublicKeyInfo for the log.  Note that this is not
   // the same as a "log ID": a log ID is the SHA-256 hash of this value.
@@ -23,7 +31,15 @@ struct CTLogInfo {
   // The user-friendly log name.
   // Note: This will not be translated.
   const char* const log_name;
+  // The current operator of the log.
+  const char* const current_operator;
+  // Previous operators (if any) of the log, ordered in chronological order.
+  const PreviousOperatorEntry* previous_operators;
+  const size_t previous_operators_length;
 };
+
+// Returns the time at which the log list was last updated.
+base::Time GetLogListTimestamp();
 
 // Returns information about all known logs, which includes those that are
 // presently qualified for inclusion and logs which were previously qualified,

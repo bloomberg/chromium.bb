@@ -5,6 +5,7 @@
 #ifndef V8_EXECUTION_FRAMES_H_
 #define V8_EXECUTION_FRAMES_H_
 
+#include "include/v8-initialization.h"
 #include "src/base/bounds.h"
 #include "src/codegen/safepoint-table.h"
 #include "src/common/globals.h"
@@ -47,6 +48,8 @@ namespace v8 {
 namespace internal {
 namespace wasm {
 class WasmCode;
+struct JumpBuffer;
+class StackMemory;
 }  // namespace wasm
 
 // Forward declarations.
@@ -99,6 +102,7 @@ class StackHandler {
   IF_WASM(V, WASM, WasmFrame)                                             \
   IF_WASM(V, WASM_TO_JS, WasmToJsFrame)                                   \
   IF_WASM(V, JS_TO_WASM, JsToWasmFrame)                                   \
+  IF_WASM(V, RETURN_PROMISE_ON_SUSPEND, ReturnPromiseOnSuspendFrame)      \
   IF_WASM(V, WASM_DEBUG_BREAK, WasmDebugBreakFrame)                       \
   IF_WASM(V, C_WASM_ENTRY, CWasmEntryFrame)                               \
   IF_WASM(V, WASM_EXIT, WasmExitFrame)                                    \
@@ -122,7 +126,7 @@ class StackFrame {
  public:
 #define DECLARE_TYPE(type, ignore) type,
   enum Type {
-    NONE = 0,
+    NO_FRAME_TYPE = 0,
     STACK_FRAME_TYPE_LIST(DECLARE_TYPE) NUMBER_OF_TYPES,
     // Used by FrameScope to indicate that the stack frame is constructed
     // manually and the FrameScope does not need to emit code.
@@ -175,7 +179,9 @@ class StackFrame {
     intptr_t type = marker >> kSmiTagSize;
     // TODO(petermarshall): There is a bug in the arm simulators that causes
     // invalid frame markers.
-#if defined(USE_SIMULATOR) && (V8_TARGET_ARCH_ARM64 || V8_TARGET_ARCH_ARM)
+#if (defined(USE_SIMULATOR) &&                        \
+     (V8_TARGET_ARCH_ARM64 || V8_TARGET_ARCH_ARM)) || \
+    V8_TARGET_ARCH_RISCV64
     if (static_cast<uintptr_t>(type) >= Type::NUMBER_OF_TYPES) {
       // Appease UBSan.
       return Type::NUMBER_OF_TYPES;
@@ -712,7 +718,8 @@ class ConstructEntryFrame : public EntryFrame {
   friend class StackFrameIteratorBase;
 };
 
-// Exit frames are used to exit JavaScript execution and go to C.
+// Exit frames are used to exit JavaScript execution and go to C, or to switch
+// out of the current stack for wasm stack-switching.
 class ExitFrame : public TypedFrame {
  public:
   Type type() const override { return EXIT; }
@@ -1042,6 +1049,19 @@ class JsToWasmFrame : public StubFrame {
   friend class StackFrameIteratorBase;
 };
 
+class ReturnPromiseOnSuspendFrame : public ExitFrame {
+ public:
+  Type type() const override { return RETURN_PROMISE_ON_SUSPEND; }
+  void Iterate(RootVisitor* v) const override;
+  static void GetStateForJumpBuffer(wasm::JumpBuffer* jmpbuf, State* state);
+
+ protected:
+  inline explicit ReturnPromiseOnSuspendFrame(StackFrameIteratorBase* iterator);
+
+ private:
+  friend class StackFrameIteratorBase;
+};
+
 class CWasmEntryFrame : public StubFrame {
  public:
   Type type() const override { return C_WASM_ENTRY; }
@@ -1218,6 +1238,11 @@ class StackFrameIterator : public StackFrameIteratorBase {
   V8_EXPORT_PRIVATE explicit StackFrameIterator(Isolate* isolate);
   // An iterator that iterates over a given thread's stack.
   V8_EXPORT_PRIVATE StackFrameIterator(Isolate* isolate, ThreadLocalTop* t);
+#if V8_ENABLE_WEBASSEMBLY
+  // An iterator that iterates over a given wasm stack segment.
+  V8_EXPORT_PRIVATE StackFrameIterator(Isolate* isolate,
+                                       wasm::StackMemory* stack);
+#endif
 
   StackFrameIterator(const StackFrameIterator&) = delete;
   StackFrameIterator& operator=(const StackFrameIterator&) = delete;
@@ -1232,6 +1257,9 @@ class StackFrameIterator : public StackFrameIteratorBase {
  private:
   // Go back to the first frame.
   void Reset(ThreadLocalTop* top);
+#if V8_ENABLE_WEBASSEMBLY
+  void Reset(ThreadLocalTop* top, wasm::StackMemory* stack);
+#endif
 };
 
 // Iterator that supports iterating through all JavaScript frames.
@@ -1273,9 +1301,14 @@ class V8_EXPORT_PRIVATE StackTraceFrameIterator {
 #endif  // V8_ENABLE_WEBASSEMBLY
   inline JavaScriptFrame* javascript_frame() const;
 
+  // Use this instead of FrameSummary::GetTop(javascript_frame) to keep
+  // filtering behavior consistent with the rest of StackTraceFrameIterator.
+  FrameSummary GetTopValidFrame() const;
+
  private:
   StackFrameIterator iterator_;
-  bool IsValidFrame(StackFrame* frame) const;
+  static bool IsValidFrame(StackFrame* frame);
+  static bool IsValidJSFunction(JSFunction f);
 };
 
 class SafeStackFrameIterator : public StackFrameIteratorBase {

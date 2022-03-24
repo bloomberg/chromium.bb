@@ -27,6 +27,12 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
  public:
   AutofillKeyboardAccessoryAdapter(
       base::WeakPtr<AutofillPopupController> controller);
+
+  AutofillKeyboardAccessoryAdapter(const AutofillKeyboardAccessoryAdapter&) =
+      delete;
+  AutofillKeyboardAccessoryAdapter& operator=(
+      const AutofillKeyboardAccessoryAdapter&) = delete;
+
   ~AutofillKeyboardAccessoryAdapter() override;
 
   // Interface describing the minimal capabilities for the native view.
@@ -54,6 +60,10 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
     view_ = std::move(view);
   }
 
+  base::WeakPtr<AutofillKeyboardAccessoryAdapter> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   // AutofillPopupView implementation.
   void Show() override;
@@ -68,7 +78,8 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   void AcceptSuggestion(int index) override;
   int GetLineCount() const override;
   const autofill::Suggestion& GetSuggestionAt(int row) const override;
-  const std::u16string& GetSuggestionValueAt(int row) const override;
+  std::u16string GetSuggestionMainTextAt(int row) const override;
+  std::u16string GetSuggestionMinorTextAt(int row) const override;
   const std::u16string& GetSuggestionLabelAt(int row) const override;
   bool GetRemovalConfirmationText(int index,
                                   std::u16string* title,
@@ -106,8 +117,6 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
 
   base::WeakPtrFactory<AutofillKeyboardAccessoryAdapter> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillKeyboardAccessoryAdapter);
 };
 
 }  // namespace autofill

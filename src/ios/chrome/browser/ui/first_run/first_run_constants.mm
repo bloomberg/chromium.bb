@@ -13,4 +13,16 @@ namespace first_run {
 NSString* const kUMAMetricsButtonAccessibilityIdentifier =
     @"UMAMetricsButtonAccessibilityIdentifier";
 
+NSString* const kFirstRunWelcomeScreenAccessibilityIdentifier =
+    @"firstRunWelcomeScreenAccessibilityIdentifier";
+
+NSString* const kFirstRunSignInScreenAccessibilityIdentifier =
+    @"firstRunSignInScreenAccessibilityIdentifier";
+
+NSString* const kFirstRunSyncScreenAccessibilityIdentifier =
+    @"firstRunSyncScreenAccessibilityIdentifier";
+
+NSString* const kFirstRunDefaultBrowserScreenAccessibilityIdentifier =
+    @"firstRunDefaultBrowserScreenAccessibilityIdentifier";
+
 }  // first_run

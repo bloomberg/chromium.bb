@@ -5,8 +5,9 @@
 #ifndef UI_COMPOSITOR_TEST_DIRECT_LAYER_TREE_FRAME_SINK_H_
 #define UI_COMPOSITOR_TEST_DIRECT_LAYER_TREE_FRAME_SINK_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -96,9 +97,9 @@ class DirectLayerTreeFrameSink : public cc::LayerTreeFrameSink,
 
   bool needs_begin_frames_ = false;
   const viz::FrameSinkId frame_sink_id_;
-  viz::FrameSinkManagerImpl* frame_sink_manager_;
+  raw_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
-  viz::Display* display_;
+  raw_ptr<viz::Display> display_;
   gfx::Size last_swap_frame_size_;
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;

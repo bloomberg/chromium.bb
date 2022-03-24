@@ -10,18 +10,18 @@
 #include <string>
 #include <utility>
 
-#include "ash/components/account_manager/account_manager.h"
-#include "ash/components/account_manager/account_manager_ash.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/account_manager_core/account_manager_facade_impl.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
+#include "components/account_manager_core/mock_account_manager_facade.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -40,8 +40,8 @@ namespace signin {
 
 namespace {
 
+using ::account_manager::AccountManager;
 using ::account_manager::AccountManagerFacade;
-using ::ash::AccountManager;
 
 constexpr char kGaiaId[] = "gaia-id";
 constexpr char kGaiaToken[] = "gaia-token";
@@ -50,6 +50,10 @@ constexpr char kUserEmail[] = "user@gmail.com";
 class AccessTokenConsumer : public OAuth2AccessTokenConsumer {
  public:
   AccessTokenConsumer() = default;
+
+  AccessTokenConsumer(const AccessTokenConsumer&) = delete;
+  AccessTokenConsumer& operator=(const AccessTokenConsumer&) = delete;
+
   ~AccessTokenConsumer() override = default;
 
   void OnGetTokenSuccess(const TokenResponse& token_response) override {
@@ -60,11 +64,12 @@ class AccessTokenConsumer : public OAuth2AccessTokenConsumer {
     ++num_access_token_fetch_failure_;
   }
 
+  std::string GetConsumerName() const override {
+    return "profile_oauth2_token_service_delegate_chromeos_unittest";
+  }
+
   int num_access_token_fetch_success_ = 0;
   int num_access_token_fetch_failure_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessTokenConsumer);
 };
 
 class TestOAuth2TokenServiceObserver
@@ -180,30 +185,17 @@ class MockProfileOAuth2TokenServiceObserver
   ProfileOAuth2TokenServiceDelegate* const delegate_;
 };
 
-class MockAccountManagerFacadeObserver : public AccountManagerFacade::Observer {
- public:
-  MockAccountManagerFacadeObserver() = default;
-  MockAccountManagerFacadeObserver(const MockAccountManagerFacadeObserver&) =
-      delete;
-  MockAccountManagerFacadeObserver& operator=(
-      const MockAccountManagerFacadeObserver&) = delete;
-  ~MockAccountManagerFacadeObserver() override = default;
-
-  MOCK_METHOD(void,
-              OnAccountUpserted,
-              (const account_manager::Account& account),
-              (override));
-  MOCK_METHOD(void,
-              OnAccountRemoved,
-              (const account_manager::Account& account),
-              (override));
-};
-
 }  // namespace
 
 class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
  public:
   ProfileOAuth2TokenServiceDelegateChromeOSTest() {}
+
+  ProfileOAuth2TokenServiceDelegateChromeOSTest(
+      const ProfileOAuth2TokenServiceDelegateChromeOSTest&) = delete;
+  ProfileOAuth2TokenServiceDelegateChromeOSTest& operator=(
+      const ProfileOAuth2TokenServiceDelegateChromeOSTest&) = delete;
+
   ~ProfileOAuth2TokenServiceDelegateChromeOSTest() override = default;
 
  protected:
@@ -219,20 +211,15 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
     account_manager_.SetPrefService(&pref_service_);
     task_environment_.RunUntilIdle();
 
-    account_manager_ash_ =
-        std::make_unique<crosapi::AccountManagerAsh>(&account_manager_);
+    account_manager_mojo_service_ =
+        std::make_unique<crosapi::AccountManagerMojoService>(&account_manager_);
     account_manager_facade_ =
-        CreateAccountManagerFacade(account_manager_ash_.get());
+        CreateAccountManagerFacade(account_manager_mojo_service_.get());
 
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
     account_info_ = CreateAccountInfoTestFixture(kGaiaId, kUserEmail);
     account_tracker_service_.SeedAccountInfo(account_info_);
-    gaia_account_key_ = {account_info_.gaia,
-                         account_manager::AccountType::kGaia};
-    ad_account_key_ = {"object-guid",
-                       account_manager::AccountType::kActiveDirectory};
-
     delegate_ = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
         &account_tracker_service_,
         network::TestNetworkConnectionTracker::GetInstance(),
@@ -240,6 +227,14 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
 
     LoadCredentialsAndWaitForCompletion(
         account_info_.account_id /* primary_account_id */);
+  }
+
+  account_manager::AccountKey gaia_account_key() const {
+    return {account_info_.gaia, account_manager::AccountType::kGaia};
+  }
+
+  account_manager::AccountKey ad_account_key() const {
+    return {"object-guid", account_manager::AccountType::kActiveDirectory};
   }
 
   AccountInfo CreateAccountInfoTestFixture(const std::string& gaia_id,
@@ -253,7 +248,6 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
     account_info.hosted_domain = "example.com";
     account_info.locale = "en";
     account_info.picture_url = "https://example.com";
-    account_info.is_child_account = false;
     account_info.account_id = account_tracker_service_.PickAccountIdForAccount(
         account_info.gaia, account_info.email);
 
@@ -284,7 +278,7 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
       const ::account_manager::AccountKey& account_key,
       const std::string& raw_email,
       const std::string& token) {
-    ASSERT_EQ(account_key.account_type, account_manager::AccountType::kGaia);
+    ASSERT_EQ(account_key.account_type(), account_manager::AccountType::kGaia);
 
     // `ProfileOAuth2TokenServiceDelegateChromeOS` asynchronously obtains error
     // statuses for Gaia accounts, so we have to wait for a notification from
@@ -299,7 +293,7 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
 
   void RemoveAccountAndWaitForCompletion(
       const ::account_manager::AccountKey& account_key) {
-    ASSERT_EQ(account_key.account_type, account_manager::AccountType::kGaia);
+    ASSERT_EQ(account_key.account_type(), account_manager::AccountType::kGaia);
     MockProfileOAuth2TokenServiceObserver observer(delegate_.get());
     base::RunLoop run_loop;
     EXPECT_CALL(observer, OnRefreshTokenRevoked(testing::_))
@@ -312,9 +306,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
       const ::account_manager::AccountKey& account_key,
       const std::string& raw_email,
       const std::string& token) {
-    ASSERT_EQ(account_key.account_type,
+    ASSERT_EQ(account_key.account_type(),
               account_manager::AccountType::kActiveDirectory);
-    MockAccountManagerFacadeObserver observer;
+    account_manager::MockAccountManagerFacadeObserver observer;
     account_manager_facade_->AddObserver(&observer);
 
     base::RunLoop run_loop;
@@ -328,9 +322,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
 
   void RemoveActiveDirectoryAccountAndWaitForCompletion(
       const ::account_manager::AccountKey& account_key) {
-    ASSERT_EQ(account_key.account_type,
+    ASSERT_EQ(account_key.account_type(),
               account_manager::AccountType::kActiveDirectory);
-    MockAccountManagerFacadeObserver observer;
+    account_manager::MockAccountManagerFacadeObserver observer;
     account_manager_facade_->AddObserver(&observer);
 
     base::RunLoop run_loop;
@@ -343,24 +337,25 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
   }
 
   std::unique_ptr<AccountManagerFacade> CreateAccountManagerFacade(
-      crosapi::AccountManagerAsh* account_manager_ash) {
-    DCHECK(account_manager_ash);
+      crosapi::AccountManagerMojoService* account_manager_mojo_service) {
+    DCHECK(account_manager_mojo_service);
     mojo::Remote<crosapi::mojom::AccountManager> remote;
-    account_manager_ash->BindReceiver(remote.BindNewPipeAndPassReceiver());
+    account_manager_mojo_service->BindReceiver(
+        remote.BindNewPipeAndPassReceiver());
     return std::make_unique<account_manager::AccountManagerFacadeImpl>(
         std::move(remote),
-        std::numeric_limits<uint32_t>::max() /* remote_version */);
+        /*remote_version=*/std::numeric_limits<uint32_t>::max(),
+        /*account_manager_for_tests=*/nullptr);
   }
 
   base::test::TaskEnvironment task_environment_;
 
   base::ScopedTempDir tmp_dir_;
   AccountInfo account_info_;
-  account_manager::AccountKey gaia_account_key_;
-  account_manager::AccountKey ad_account_key_;
   AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
-  std::unique_ptr<crosapi::AccountManagerAsh> account_manager_ash_;
+  std::unique_ptr<crosapi::AccountManagerMojoService>
+      account_manager_mojo_service_;
   std::unique_ptr<account_manager::AccountManagerFacade>
       account_manager_facade_;
   std::unique_ptr<ProfileOAuth2TokenServiceDelegateChromeOS> delegate_;
@@ -369,9 +364,6 @@ class ProfileOAuth2TokenServiceDelegateChromeOSTest : public testing::Test {
           [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<TestSigninClient> client_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceDelegateChromeOSTest);
 };
 
 // Refresh tokens should load successfully for non-regular (Signin and Lock
@@ -406,7 +398,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
   EXPECT_FALSE(
       base::Contains(delegate_->GetAccounts(), account_info_.account_id));
 
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, kUserEmail, kGaiaToken);
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), kUserEmail, kGaiaToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_TRUE(
@@ -422,7 +414,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
   EXPECT_FALSE(
       base::Contains(delegate_->GetAccounts(), account_info_.account_id));
 
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, kUserEmail,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), kUserEmail,
                                     AccountManager::kInvalidToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
@@ -472,7 +464,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        ObserversAreNotifiedOnCredentialsInsertion) {
   TestOAuth2TokenServiceObserver observer(delegate_.get());
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
 
   EXPECT_EQ(1UL, observer.account_ids_.size());
@@ -483,7 +475,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        ObserversDoNotSeeCachedErrorsOnCredentialsUpdate) {
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
 
   // Deliberately add an error.
@@ -492,7 +484,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
   delegate_->UpdateAuthError(account_info_.account_id, error);
 
   // Update credentials. The delegate will check if see cached errors.
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     "new-token");
 }
 
@@ -500,11 +492,11 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        ObserversDoNotSeeCachedErrorsOnAccountRemoval) {
   auto error =
       GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
   // Deliberately add an error.
   delegate_->UpdateAuthError(account_info_.account_id, error);
-  RemoveAccountAndWaitForCompletion(gaia_account_key_);
+  RemoveAccountAndWaitForCompletion(gaia_account_key());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             delegate_->GetAuthError(account_info_.account_id));
 }
@@ -512,7 +504,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        DummyTokensArePreEmptivelyRejected) {
   TestOAuth2TokenServiceObserver observer(delegate_.get());
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     AccountManager::kInvalidToken);
 
   const GoogleServiceAuthError error =
@@ -531,7 +523,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        ObserversAreNotifiedOnCredentialsUpdate) {
   TestOAuth2TokenServiceObserver observer(delegate_.get());
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
 
   EXPECT_EQ(1UL, observer.account_ids_.size());
@@ -544,14 +536,14 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        ObserversAreNotNotifiedIfCredentialsAreNotUpdated) {
   TestOAuth2TokenServiceObserver observer(delegate_.get());
 
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
   observer.account_ids_.clear();
   observer.last_err_account_id_ = CoreAccountId();
   // UpsertAccountAndWaitForCompletion can't be used here, as it uses an
   // observer to wait for completion. Observers aren't called in this flow, so
   // UpsertAccountAndWaitForCompletion would hang here.
-  account_manager_.UpsertAccount(gaia_account_key_, account_info_.email,
+  account_manager_.UpsertAccount(gaia_account_key(), account_info_.email,
                                  kGaiaToken);
   task_environment_.RunUntilIdle();
 
@@ -562,7 +554,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
   TestOAuth2TokenServiceObserver observer(delegate_.get());
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
 
   EXPECT_EQ(1UL, observer.batch_change_records_.size());
@@ -600,10 +592,10 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
                              immediate_callback_runner_);
   account_manager.SetPrefService(&pref_service_);
 
-  auto account_manager_ash =
-      std::make_unique<crosapi::AccountManagerAsh>(&account_manager);
+  auto account_manager_mojo_service =
+      std::make_unique<crosapi::AccountManagerMojoService>(&account_manager);
   auto account_manager_facade =
-      CreateAccountManagerFacade(account_manager_ash.get());
+      CreateAccountManagerFacade(account_manager_mojo_service.get());
 
   // Register callbacks before AccountManager has been fully initialized.
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
@@ -634,7 +626,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
   // Insert an Active Directory account into AccountManager.
   UpsertActiveDirectoryAccountAndWaitForCompletion(
-      ad_account_key_, kUserEmail, AccountManager::kActiveDirectoryDummyToken);
+      ad_account_key(), kUserEmail, AccountManager::kActiveDirectoryDummyToken);
 
   // OAuth delegate should not return Active Directory accounts.
   EXPECT_TRUE(delegate_->GetAccounts().empty());
@@ -644,7 +636,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        GetAccountsReturnsGaiaAccounts) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, kUserEmail, kGaiaToken);
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), kUserEmail, kGaiaToken);
 
   std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
@@ -657,7 +649,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        GetAccountsReturnsGaiaAccountsWithInvalidTokens) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, kUserEmail,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), kUserEmail,
                                     AccountManager::kInvalidToken);
 
   std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
@@ -675,17 +667,18 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
   // Insert 2 Gaia accounts and 1 Active Directory Account. Of the 2 Gaia
   // accounts, 1 has a valid refresh token and 1 has a dummy token.
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, kUserEmail, kGaiaToken);
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), kUserEmail, kGaiaToken);
 
   account_manager::AccountKey gaia_account_key2{
       "random-gaia-id", account_manager::AccountType::kGaia};
   account_tracker_service_.SeedAccountInfo(
-      CreateAccountInfoTestFixture(gaia_account_key2.id, kUserEmail2));
+      CreateAccountInfoTestFixture(gaia_account_key2.id(), kUserEmail2));
   UpsertAccountAndWaitForCompletion(gaia_account_key2, kUserEmail2,
                                     AccountManager::kInvalidToken);
 
   UpsertActiveDirectoryAccountAndWaitForCompletion(
-      ad_account_key_, kUserEmail3, AccountManager::kActiveDirectoryDummyToken);
+      ad_account_key(), kUserEmail3,
+      AccountManager::kActiveDirectoryDummyToken);
 
   // Verify.
   const std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
@@ -701,7 +694,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        UpdateCredentialsSucceeds) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
 
   std::vector<CoreAccountId> accounts = delegate_->GetAccounts();
@@ -711,11 +704,11 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        ObserversAreNotifiedOnAccountRemoval) {
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
 
   TestOAuth2TokenServiceObserver observer(delegate_.get());
-  RemoveAccountAndWaitForCompletion(gaia_account_key_);
+  RemoveAccountAndWaitForCompletion(gaia_account_key());
 
   EXPECT_EQ(1UL, observer.batch_change_records_.size());
   EXPECT_EQ(1UL, observer.batch_change_records_[0].size());
@@ -732,9 +725,9 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
   // `UpsertAccount` will asynchronously send a notification through
   // `AccountManagerFacade`, so `RemoveAccount` should remove the account before
   // `ProfileOAuth2TokenServiceDelegateChromeOS` can add this account.
-  account_manager_.UpsertAccount(gaia_account_key_, account_info_.email,
+  account_manager_.UpsertAccount(gaia_account_key(), account_info_.email,
                                  kGaiaToken);
-  account_manager_.RemoveAccount(gaia_account_key_);
+  account_manager_.RemoveAccount(gaia_account_key());
 
   task_environment_.RunUntilIdle();
 
@@ -744,7 +737,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        PreexistingAccountRemovedRightAfterAccountTokenUpdate) {
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
   EXPECT_EQ(1UL, delegate_->GetAccounts().size());
 
@@ -756,9 +749,9 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
   EXPECT_CALL(observer, OnRefreshTokenRevoked(account_info_.account_id))
       .WillOnce(base::test::RunClosure(run_loop.QuitClosure()));
 
-  account_manager_.UpsertAccount(gaia_account_key_, account_info_.email,
+  account_manager_.UpsertAccount(gaia_account_key(), account_info_.email,
                                  AccountManager::kInvalidToken);
-  account_manager_.RemoveAccount(gaia_account_key_);
+  account_manager_.RemoveAccount(gaia_account_key());
 
   run_loop.Run();
 
@@ -790,7 +783,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        BackOffIsTriggerredForTransientErrors) {
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
   auto transient_error = GoogleServiceAuthError(
       GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
@@ -829,7 +822,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
        BackOffIsResetOnNetworkChange) {
-  UpsertAccountAndWaitForCompletion(gaia_account_key_, account_info_.email,
+  UpsertAccountAndWaitForCompletion(gaia_account_key(), account_info_.email,
                                     kGaiaToken);
   auto transient_error = GoogleServiceAuthError(
       GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);

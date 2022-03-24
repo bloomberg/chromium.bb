@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_once_callback.h"
@@ -42,6 +41,10 @@ class FuzzedSocket : public TransportClientSocket {
   // |data_provider| is used as to determine behavior of the FuzzedSocket. It
   // must remain valid until after the FuzzedSocket is destroyed.
   FuzzedSocket(FuzzedDataProvider* data_provider, net::NetLog* net_log);
+
+  FuzzedSocket(const FuzzedSocket&) = delete;
+  FuzzedSocket& operator=(const FuzzedSocket&) = delete;
+
   ~FuzzedSocket() override;
 
   // If set to true, the socket will fuzz the result of the Connect() call.
@@ -132,8 +135,6 @@ class FuzzedSocket : public TransportClientSocket {
   IPEndPoint remote_address_;
 
   base::WeakPtrFactory<FuzzedSocket> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FuzzedSocket);
 };
 
 }  // namespace net

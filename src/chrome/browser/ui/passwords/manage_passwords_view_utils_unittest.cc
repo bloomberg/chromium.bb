@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -32,6 +32,9 @@ class ScopedResourceOverride {
       : had_shared_instance_(ui::ResourceBundle::HasSharedInstance()),
         bundle_(GetOrCreateSharedInstance()),
         app_locale_(g_browser_process->GetApplicationLocale()) {}
+
+  ScopedResourceOverride(const ScopedResourceOverride&) = delete;
+  ScopedResourceOverride& operator=(const ScopedResourceOverride&) = delete;
 
   ~ScopedResourceOverride() {
     if (had_shared_instance_) {
@@ -59,8 +62,6 @@ class ScopedResourceOverride {
   const bool had_shared_instance_;  // Was there a shared bundle before?
   ui::ResourceBundle& bundle_;      // The shared bundle.
   const std::string app_locale_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedResourceOverride);
 };
 
 const struct {

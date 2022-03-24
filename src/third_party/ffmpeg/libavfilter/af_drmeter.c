@@ -53,36 +53,6 @@ static const AVOption drmeter_options[] = {
 
 AVFILTER_DEFINE_CLASS(drmeter);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_FLT,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
-    if (ret < 0)
-        return ret;
-
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
-    if (ret < 0)
-        return ret;
-
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
-}
-
 static int config_output(AVFilterLink *outlink)
 {
     DRMeterContext *s = outlink->src->priv;
@@ -167,6 +137,11 @@ static void print_stats(AVFilterContext *ctx)
         float chdr, secondpeak, rmssum = 0;
         int i, j, first = 0;
 
+        if (!p->nb_samples) {
+            av_log(ctx, AV_LOG_INFO, "No data, dynamic range not meassurable\n");
+            return;
+        }
+
         finish_block(p);
 
         for (i = 0; i <= 10000; i++) {
@@ -209,7 +184,6 @@ static const AVFilterPad drmeter_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad drmeter_outputs[] = {
@@ -218,16 +192,15 @@ static const AVFilterPad drmeter_outputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_af_drmeter = {
+const AVFilter ff_af_drmeter = {
     .name          = "drmeter",
     .description   = NULL_IF_CONFIG_SMALL("Measure audio dynamic range."),
-    .query_formats = query_formats,
     .priv_size     = sizeof(DRMeterContext),
     .priv_class    = &drmeter_class,
     .uninit        = uninit,
-    .inputs        = drmeter_inputs,
-    .outputs       = drmeter_outputs,
+    FILTER_INPUTS(drmeter_inputs),
+    FILTER_OUTPUTS(drmeter_outputs),
+    FILTER_SAMPLEFMTS(AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_FLT),
 };

@@ -18,22 +18,63 @@ constexpr auto CallInterfaceDescriptor::DefaultRegisterArray() {
   return registers;
 }
 
-// static
-constexpr auto RecordWriteDescriptor::registers() {
-  return RegisterArray(arg_reg_1, arg_reg_2, arg_reg_3, arg_reg_4,
-                       kReturnRegister0);
+#if DEBUG
+template <typename DerivedDescriptor>
+void StaticCallInterfaceDescriptor<DerivedDescriptor>::
+    VerifyArgumentRegisterCount(CallInterfaceDescriptorData* data,
+                                int nof_expected_args) {
+  RegList allocatable_regs = data->allocatable_registers();
+  if (nof_expected_args >= 1) DCHECK(allocatable_regs | arg_reg_1.bit());
+  if (nof_expected_args >= 2) DCHECK(allocatable_regs | arg_reg_2.bit());
+  if (nof_expected_args >= 3) DCHECK(allocatable_regs | arg_reg_3.bit());
+  if (nof_expected_args >= 4) DCHECK(allocatable_regs | arg_reg_4.bit());
+  // Additional arguments are passed on the stack.
 }
+#endif  // DEBUG
+
+// static
+constexpr auto WriteBarrierDescriptor::registers() {
+#if V8_TARGET_OS_WIN
+  return RegisterArray(rdi, r8, rcx, rax, r9, rdx, rsi);
+#else
+  return RegisterArray(rdi, rbx, rdx, rcx, rax, rsi);
+#endif  // V8_TARGET_OS_WIN
+}
+
+#ifdef V8_IS_TSAN
+// static
+constexpr auto TSANStoreDescriptor::registers() {
+  return RegisterArray(arg_reg_1, arg_reg_2, kReturnRegister0);
+}
+
+// static
+constexpr auto TSANLoadDescriptor::registers() {
+  return RegisterArray(arg_reg_1, kReturnRegister0);
+}
+#endif  // V8_IS_TSAN
 
 // static
 constexpr auto DynamicCheckMapsDescriptor::registers() {
+#if V8_TARGET_OS_WIN
   return RegisterArray(kReturnRegister0, arg_reg_1, arg_reg_2, arg_reg_3,
                        kRuntimeCallFunctionRegister, kContextRegister);
+#else
+  STATIC_ASSERT(kContextRegister == arg_reg_2);
+  return RegisterArray(kReturnRegister0, arg_reg_1, arg_reg_2, arg_reg_3,
+                       kRuntimeCallFunctionRegister);
+#endif  // V8_TARGET_OS_WIN
 }
 
 // static
-constexpr auto EphemeronKeyBarrierDescriptor::registers() {
-  return RegisterArray(arg_reg_1, arg_reg_2, arg_reg_3, arg_reg_4,
-                       kReturnRegister0);
+constexpr auto DynamicCheckMapsWithFeedbackVectorDescriptor::registers() {
+#if V8_TARGET_OS_WIN
+  return RegisterArray(kReturnRegister0, arg_reg_1, arg_reg_2, arg_reg_3,
+                       kRuntimeCallFunctionRegister, kContextRegister);
+#else
+  STATIC_ASSERT(kContextRegister == arg_reg_2);
+  return RegisterArray(kReturnRegister0, arg_reg_1, arg_reg_2, arg_reg_3,
+                       kRuntimeCallFunctionRegister);
+#endif  // V8_TARGET_OS_WIN
 }
 
 // static
@@ -101,7 +142,7 @@ constexpr auto CallTrampolineDescriptor::registers() {
 
 // static
 constexpr auto CallVarargsDescriptor::registers() {
-  // rax : number of arguments (on the stack, not including receiver)
+  // rax : number of arguments (on the stack)
   // rdi : the target to call
   // rcx : arguments list length (untagged)
   // rbx : arguments list (FixedArray)
@@ -119,13 +160,13 @@ constexpr auto CallForwardVarargsDescriptor::registers() {
 // static
 constexpr auto CallFunctionTemplateDescriptor::registers() {
   // rdx: the function template info
-  // rcx: number of arguments (on the stack, not including receiver)
+  // rcx: number of arguments (on the stack)
   return RegisterArray(rdx, rcx);
 }
 
 // static
 constexpr auto CallWithSpreadDescriptor::registers() {
-  // rax : number of arguments (on the stack, not including receiver)
+  // rax : number of arguments (on the stack)
   // rdi : the target to call
   // rbx : the object to spread
   return RegisterArray(rdi, rax, rbx);
@@ -140,7 +181,7 @@ constexpr auto CallWithArrayLikeDescriptor::registers() {
 
 // static
 constexpr auto ConstructVarargsDescriptor::registers() {
-  // rax : number of arguments (on the stack, not including receiver)
+  // rax : number of arguments (on the stack)
   // rdi : the target to call
   // rdx : the new target
   // rcx : arguments list length (untagged)
@@ -159,7 +200,7 @@ constexpr auto ConstructForwardVarargsDescriptor::registers() {
 
 // static
 constexpr auto ConstructWithSpreadDescriptor::registers() {
-  // rax : number of arguments (on the stack, not including receiver)
+  // rax : number of arguments (on the stack)
   // rdi : the target to call
   // rdx : the new target
   // rbx : the object to spread
@@ -223,7 +264,7 @@ constexpr auto InterpreterDispatchDescriptor::registers() {
 
 // static
 constexpr auto InterpreterPushArgsThenCallDescriptor::registers() {
-  return RegisterArray(rax,   // argument count (not including receiver)
+  return RegisterArray(rax,   // argument count
                        rbx,   // address of first argument
                        rdi);  // the target callable to be call
 }
@@ -231,7 +272,7 @@ constexpr auto InterpreterPushArgsThenCallDescriptor::registers() {
 // static
 constexpr auto InterpreterPushArgsThenConstructDescriptor::registers() {
   return RegisterArray(
-      rax,   // argument count (not including receiver)
+      rax,   // argument count
       rcx,   // address of first argument
       rdi,   // constructor to call
       rdx,   // new target

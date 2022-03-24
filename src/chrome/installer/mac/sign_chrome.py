@@ -12,19 +12,6 @@ sys.path.append(os.path.dirname(__file__))
 from signing import config_factory, commands, logger, model, pipeline
 
 
-def _link_stdout_and_stderr():
-    """This script's output is entirely log messages and debugging information,
-    so there is not a useful distinction between stdout and stderr. Because some
-    subcommands this script runs output to one stream or the other, link the
-    two streams so that any buffering done by Python, or the invoker of this
-    script, does not get incorrectly interleaved.
-    """
-    stdout_fileno = sys.stdout.fileno()
-    sys.stdout.close()
-    sys.stdout = sys.stderr
-    os.dup2(sys.stderr.fileno(), stdout_fileno)
-
-
 def create_config(config_args, development):
     """Creates the |model.CodeSignConfig| for the signing operations.
 
@@ -59,6 +46,10 @@ def create_config(config_args, development):
                 # Self-signed or ad-hoc signed signing identities won't pass
                 # spctl assessment so don't do it.
                 return False
+
+            @property
+            def inject_get_task_allow_entitlement(self):
+                return True
 
         config_class = DevelopmentCodeSignConfig
 
@@ -130,8 +121,6 @@ def main():
         help='Defaults to False. Submit the signed application and DMG to '
         'Apple for notarization.')
     group.add_argument('--no-notarize', dest='notarize', action='store_false')
-
-    _link_stdout_and_stderr()
 
     parser.set_defaults(notarize=False)
     args = parser.parse_args()

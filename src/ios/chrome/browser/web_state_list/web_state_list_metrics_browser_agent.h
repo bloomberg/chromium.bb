@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_BROWSER_AGENT_H_
 #define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_BROWSER_AGENT_H_
 
-#include "base/macros.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
@@ -22,6 +21,11 @@ class WebStateListMetricsBrowserAgent
       public web::WebStateObserver,
       public BrowserUserData<WebStateListMetricsBrowserAgent> {
  public:
+  WebStateListMetricsBrowserAgent(const WebStateListMetricsBrowserAgent&) =
+      delete;
+  WebStateListMetricsBrowserAgent& operator=(
+      const WebStateListMetricsBrowserAgent&) = delete;
+
   ~WebStateListMetricsBrowserAgent() override;
 
   // Creates the WebStateListMetricsBrowserAgent associating it with |browser|.
@@ -75,8 +79,6 @@ class WebStateListMetricsBrowserAgent
   bool metric_collection_paused_ = false;
 
   std::unique_ptr<AllWebStateObservationForwarder> web_state_forwarder_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebStateListMetricsBrowserAgent);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_STATE_LIST_METRICS_BROWSER_AGENT_H_

@@ -9,8 +9,6 @@
 namespace skia {
 namespace text {
 
-class Processor;
-
 class TextMetrics {
 
 public:
@@ -29,6 +27,8 @@ public:
 
   TextMetrics(const TextMetrics&) = default;
 
+  TextMetrics& operator=(const TextMetrics&) = default;
+
   void merge(TextMetrics tail) {
       this->fAscent = std::min(this->fAscent, tail.fAscent);
       this->fDescent = std::max(this->fDescent, tail.fDescent);
@@ -45,9 +45,12 @@ public:
       return this->fDescent - this->fAscent + this->fLeading;
   }
 
-SkScalar baseline() const {
-      return - this->fAscent + this->fLeading / 2;
-  }
+    SkScalar baseline() const {
+          return - this->fAscent + this->fLeading / 2;
+    }
+
+    SkScalar above() const { return - this->fAscent + this->fLeading / 2; }
+    SkScalar below() const { return this->fDescent + this->fLeading / 2; }
 
 private:
     SkScalar fAscent;
@@ -79,7 +82,7 @@ private:
 class Stretch {
 public:
 
-    Stretch() : fGlyphStart(), fGlyphEnd(), fWidth(0), fTextRange(0, 0), fTextMetrics() { }
+    Stretch() : fGlyphStart(), fGlyphEnd(), fWidth(0), fTextRange(EMPTY_RANGE), fTextMetrics() { }
 
     Stretch(GlyphPos glyphStart, size_t textIndex, const TextMetrics& metrics)
         : fGlyphStart(glyphStart)
@@ -88,20 +91,23 @@ public:
         , fTextRange(textIndex, textIndex)
         , fTextMetrics(metrics) { }
 
+    Stretch(RunIndex runIndex, GlyphRange glyphRange, TextRange textRange, SkScalar width, const TextMetrics& metrics)
+        : fGlyphStart(runIndex, glyphRange.fStart)
+        , fGlyphEnd(runIndex, glyphRange.fEnd)
+        , fWidth(width)
+        , fTextRange(textRange)
+        , fTextMetrics(metrics) { }
+
     Stretch(const Stretch&) = default;
     Stretch(Stretch&&) = default;
     Stretch& operator=(Stretch&&) = default;
     Stretch& operator=(const Stretch&) = default;
 
     bool isEmpty() const {
-        if (this->fGlyphStart.isEmpty()) {
-            SkASSERT(this->fGlyphEnd.isEmpty());
+        if (fGlyphStart.isEmpty() || fGlyphEnd.isEmpty()) {
             return true;
         } else {
-            SkASSERT(!this->fGlyphEnd.isEmpty());
-            return false;
-            //return (this->fGlyphStart.runIndex() == this->fGlyphEnd.runIndex() &&
-            //        this->fGlyphStart.glyphIndex() == this->fGlyphEnd.glyphIndex());
+            return fGlyphStart == fGlyphEnd;
         }
     }
 
@@ -163,13 +169,27 @@ private:
     TextMetrics fTextMetrics;
 };
 
-class Line {
+class LogicalLine {
 public:
-    Line(Processor* processor, const Stretch& stretch, const Stretch& spaces);
-    ~Line() = default;
+    LogicalLine(const Stretch& stretch, const Stretch& spaces, SkScalar verticalOffset, bool hardLineBreak);
+    ~LogicalLine() = default;
+
+    TextMetrics getMetrics() const { return fTextMetrics; }
+    GlyphPos glyphStart() const { return fTextStart; }
+    GlyphPos glyphEnd() const { return fTextEnd; }
+    GlyphPos glyphTrailingEnd() const { return fWhitespacesEnd; }
+    SkScalar width() const { return fTextWidth; }
+    SkScalar withWithTrailingSpaces() const { return fTextWidth + fSpacesWidth; }
+    SkScalar horizontalOffset() const { return fHorizontalOffset; }
+    SkScalar verticalOffset() const { return fVerticalOffset; }
+    SkScalar height() const { return fTextMetrics.height(); }
+    SkScalar baseline() const { return fTextMetrics.baseline(); }
+    TextRange text() const { return fText; }
+    TextRange whitespaces() const { return fWhitespaces; }
+    bool isHardLineBreak() const { return fHardLineBreak; }
 
 private:
-    friend class Processor;
+    friend class WrappedText;
 
     GlyphPos fTextStart;
     GlyphPos fTextEnd;
@@ -178,9 +198,10 @@ private:
     TextRange fWhitespaces;
     SkScalar fTextWidth;
     SkScalar fSpacesWidth;
+    SkScalar fHorizontalOffset;
+    SkScalar fVerticalOffset;
     TextMetrics fTextMetrics;
-    SkSTArray<1, size_t, true> fRunsInVisualOrder;
-    Processor* fProcessor;
+    bool fHardLineBreak;
 };
 
 } // namespace text

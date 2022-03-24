@@ -252,6 +252,27 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunHttpsLatencyRoutineCallback
           callback) = 0;
 
+  // Requests that cros_healthd runs the ARC HTTP routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunArcHttpRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunArcHttpRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the ARC PING routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunArcPingRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunArcPingRoutineCallback
+          callback) = 0;
+
+  // Requests that cros_healthd runs the ARC DNS resolution routine. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void RunArcDnsResolutionRoutine(
+      mojom::CrosHealthdDiagnosticsService::RunArcDnsResolutionRoutineCallback
+          callback) = 0;
+
   // Requests that cros_healthd runs the video conferencing routine. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.
@@ -287,6 +308,26 @@ class ServiceConnection {
       mojo::PendingRemote<
           chromeos::network_health::mojom::NetworkEventsObserver>
           pending_observer) = 0;
+
+  // Subscribes to cros_healthd's audio-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddAudioObserver(
+      mojo::PendingRemote<mojom::CrosHealthdAudioObserver>
+          pending_observer) = 0;
+
+  // Subscribes to cros_healthd's Thunderbolt-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddThunderboltObserver(
+      mojo::PendingRemote<mojom::CrosHealthdThunderboltObserver>
+          pending_observer) = 0;
+
+  // Subscribes to cros_healthd's USB-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddUsbObserver(
+      mojo::PendingRemote<mojom::CrosHealthdUsbObserver> pending_observer) = 0;
 
   // Gathers pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
@@ -328,6 +369,9 @@ class ServiceConnection {
   virtual void SetBindNetworkDiagnosticsRoutinesCallback(
       BindNetworkDiagnosticsRoutinesCallback callback) = 0;
 
+  // Fetch touchpad stack driver library name.
+  virtual std::string FetchTouchpadLibraryName() = 0;
+
   // Calls FlushForTesting method on all mojo::Remote objects owned by
   // ServiceConnection. This method can be used for example to gracefully
   // observe destruction of the cros_healthd client.
@@ -340,5 +384,12 @@ class ServiceConnection {
 
 }  // namespace cros_healthd
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+namespace cros_healthd {
+using ::chromeos::cros_healthd::ServiceConnection;
+}  // namespace cros_healthd
+}  // namespace ash
 
 #endif  // CHROMEOS_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_

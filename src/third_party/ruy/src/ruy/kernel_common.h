@@ -22,7 +22,6 @@ limitations under the License.
 
 #include "ruy/apply_multiplier.h"
 #include "ruy/check_macros.h"
-#include "ruy/common.h"
 #include "ruy/mat.h"
 #include "ruy/matrix.h"
 #include "ruy/mul_params.h"
@@ -37,141 +36,18 @@ limitations under the License.
 namespace ruy {
 
 template <Path ThePath, typename LhsScalar, typename RhsScalar,
-          typename DstScalar, typename MulParamsType>
-struct Kernel {};
+          typename AccumScalar, typename DstScalar>
+struct Kernel;
 
-template <Path ThePath, typename LhsScalar, typename RhsScalar,
-          typename DstScalar, typename MulParamsType>
-void RunKernelTyped(Tuning tuning, const PMat<LhsScalar>& lhs,
-                    const PMat<RhsScalar>& rhs, const MulParamsType& mul_params,
-                    int start_row, int start_col, int end_row, int end_col,
-                    Mat<DstScalar>* dst) {
-  using Kernel =
-      Kernel<ThePath, LhsScalar, RhsScalar, DstScalar, MulParamsType>;
-  Kernel kernel(tuning);
-  using LhsLayout = typename Kernel::LhsLayout;
-  using RhsLayout = typename Kernel::RhsLayout;
-  // end_row and end_col may be larger than dst dimensions.
-  // that is because kernels write directly to the destination matrix, whose
-  // dimensions may not be a multiple of the kernel dimensions, and we try to
-  // keep this annoyance localized as an implementation detail in kernels,
-  // by allowing to pass rounded-up values down as far as possible.
-  // These assertions encode the contract.
-  RUY_DCHECK_LE(0, start_row);
-  RUY_DCHECK_LE(start_row, end_row);
-  RUY_DCHECK_LT(end_row, dst->layout.rows + LhsLayout::kCols);
-  RUY_DCHECK_EQ((end_row - start_row) % LhsLayout::kCols, 0);
-  RUY_DCHECK_LE(0, start_col);
-  RUY_DCHECK_LE(start_col, end_col);
-  RUY_DCHECK_LT(end_col, dst->layout.cols + RhsLayout::kCols);
-  RUY_DCHECK_EQ((end_col - start_col) % RhsLayout::kCols, 0);
-#if RUY_OPT(FAT_KERNEL)
-  kernel.Run(lhs, rhs, mul_params, start_row, start_col, end_row, end_col, dst);
-#else
-  for (int col = start_col; col < end_col; col += RhsLayout::kCols) {
-    int block_end_col = std::min(col + RhsLayout::kCols, end_col);
-    for (int row = start_row; row < end_row; row += LhsLayout::kCols) {
-      int block_end_row = std::min(row + LhsLayout::kCols, end_row);
-      kernel.Run(lhs, rhs, mul_params, row, col, block_end_row, block_end_col,
-                 dst);
-    }
-  }
-#endif
-}
-
-// Main entry point for kernels.
-template <Path ThePath, typename LhsScalar, typename RhsScalar,
-          typename DstScalar, typename MulParamsType>
-void RunKernel(Tuning tuning, const SidePair<PEMat>& src, void* mul_params,
-               const SidePair<int>& start, const SidePair<int>& end,
-               EMat* dst) {
-  Mat<DstScalar> mdst = UneraseType<DstScalar>(*dst);
-  RunKernelTyped<ThePath, LhsScalar, RhsScalar, DstScalar, MulParamsType>(
-      tuning, UneraseType<LhsScalar>(src[Side::kLhs]),
-      UneraseType<RhsScalar>(src[Side::kRhs]),
-      *static_cast<const MulParamsType*>(mul_params), start[Side::kLhs],
-      start[Side::kRhs], end[Side::kLhs], end[Side::kRhs], &mdst);
-}
-
-template <typename LhsScalar, typename RhsScalar, typename DstScalar,
-          typename MulParamsType>
-struct Kernel<Path::kStandardCpp, LhsScalar, RhsScalar, DstScalar,
-              MulParamsType> {
-  using AccumScalar = typename MulParamsType::AccumScalar;
-  using LhsLayout = typename MulParamsType::StandardCppKernelLhsLayout;
-  using RhsLayout = typename MulParamsType::StandardCppKernelRhsLayout;
-  explicit Kernel(Tuning) {}
-  void Run(const PMat<LhsScalar>& lhs, const PMat<RhsScalar>& rhs,
-           const MulParamsType& mul_params, int start_row, int start_col,
-           int end_row, int end_col, Mat<DstScalar>* dst) const {
-    // See the comment in RunKernelTyped. end_row may be larger than
-    // dst->layout.rows. It's the responsibility of the kernel to avoid
-    // overrunning dst boundaries, which we do here by computing
-    // clamped_end_row.
-    int clamped_end_row = std::min(end_row, dst->layout.rows);
-    int clamped_end_col = std::min(end_col, dst->layout.cols);
-    RUY_DCHECK_LE(0, start_row);
-    RUY_DCHECK_LE(start_row, clamped_end_row);
-    RUY_DCHECK_LE(clamped_end_row, dst->layout.rows);
-    RUY_DCHECK_LE(clamped_end_row, end_row);
-    RUY_DCHECK_LE(end_row - clamped_end_row, LhsLayout::kCols);
-    RUY_DCHECK_LE(0, start_col);
-    RUY_DCHECK_LE(start_col, clamped_end_col);
-    RUY_DCHECK_LE(clamped_end_col, dst->layout.cols);
-    RUY_DCHECK_LE(clamped_end_col, end_col);
-    RUY_DCHECK_LE(end_col - clamped_end_col, RhsLayout::kCols);
-    profiler::ScopeLabel label("Kernel (Standard Cpp)");
-    const int depth = lhs.layout.rows;
-    for (int i = start_row; i < clamped_end_row; i++) {
-      for (int j = start_col; j < clamped_end_col; j++) {
-        using AccumScalar = typename MulParamsType::AccumScalar;
-        AccumScalar accum = 0;
-        for (int k = 0; k < depth; k++) {
-          AccumScalar lhs_val = Element(lhs, k, i);
-          AccumScalar rhs_val = Element(rhs, k, j);
-          accum += lhs_val * rhs_val;
-        }
-        if (mul_params.bias()) {
-          accum += mul_params.bias()[i];
-        }
-        if (lhs.zero_point) {
-          accum -= lhs.zero_point * rhs.sums[j];
-        }
-        if (rhs.zero_point) {
-          accum -= rhs.zero_point * lhs.sums[i];
-        }
-        if (lhs.zero_point && rhs.zero_point) {
-          accum += lhs.zero_point * rhs.zero_point * depth;
-        }
-        ApplyMultiplier(mul_params, i, &accum);
-        accum += dst->zero_point;
-        accum = std::min<AccumScalar>(accum, mul_params.clamp_max());
-        accum = std::max<AccumScalar>(accum, mul_params.clamp_min());
-        *ElementPtr(dst, i, j) = static_cast<DstScalar>(accum);
-      }
-    }
-  }
-};
-
-#define RUY_INHERIT_KERNEL(PARENT, CHILD)                                 \
-  template <typename LhsScalar, typename RhsScalar, typename DstScalar,   \
-            typename MulParamsType>                                       \
-  struct Kernel<CHILD, LhsScalar, RhsScalar, DstScalar, MulParamsType>    \
-      : Kernel<PARENT, LhsScalar, RhsScalar, DstScalar, MulParamsType> {  \
-    explicit Kernel(Tuning tuning)                                        \
-        : Kernel<PARENT, LhsScalar, RhsScalar, DstScalar, MulParamsType>( \
-              tuning) {}                                                  \
+#define RUY_INHERIT_KERNEL(PARENT, CHILD)                               \
+  template <typename LhsScalar, typename RhsScalar, typename DstScalar, \
+            typename AccumScalar>                                       \
+  struct Kernel<CHILD, LhsScalar, RhsScalar, AccumScalar, DstScalar>    \
+      : Kernel<PARENT, LhsScalar, RhsScalar, AccumScalar, DstScalar> {  \
+    explicit Kernel(Tuning tuning)                                      \
+        : Kernel<PARENT, LhsScalar, RhsScalar, AccumScalar, DstScalar>( \
+              tuning) {}                                                \
   };
-
-#if RUY_PLATFORM_NEON
-RUY_INHERIT_KERNEL(Path::kStandardCpp, Path::kNeon)
-RUY_INHERIT_KERNEL(Path::kNeon, Path::kNeonDotprod)
-#elif RUY_PLATFORM_X86
-RUY_INHERIT_KERNEL(Path::kStandardCpp, Path::kSse42)
-RUY_INHERIT_KERNEL(Path::kSse42, Path::kAvx2)
-RUY_INHERIT_KERNEL(Path::kAvx2, Path::kAvx512)
-RUY_INHERIT_KERNEL(Path::kAvx512, Path::kAvxVnni)
-#endif
 
 // KernelParams are shared across 32-bit and 64-bit NEON code, and x86 code.
 //
@@ -185,6 +61,7 @@ RUY_INHERIT_KERNEL(Path::kAvx512, Path::kAvxVnni)
 #define RUY_ASM_FLAG_HAS_RHS_SUMS 0x4
 #define RUY_ASM_FLAG_HAS_PERCHANNEL 0x8
 #define RUY_ASM_FLAG_NEEDS_LEFT_SHIFT 0x10
+#define RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL 0x20
 
 #define RUY_ASM_TYPE_ID_UINT8 1
 #define RUY_ASM_TYPE_ID_INT8 2
@@ -283,6 +160,9 @@ void MakeKernelParams8bit(const PMat<std::int8_t>& lhs,
     params->rhs_sums = rhs.sums;
     params->flags |= RUY_ASM_FLAG_HAS_RHS_SUMS;
   }
+  if (mul_params.channel_dimension() == ChannelDimension::kCol) {
+    params->flags |= RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL;
+  }
   params->start_row = start_row;
   params->start_col = start_col;
   params->last_row = end_row - LhsCols;
@@ -295,16 +175,15 @@ void MakeKernelParams8bit(const PMat<std::int8_t>& lhs,
   params->dst_zero_point = dst->zero_point;
   params->depth = depth;
   params->prod_zp_depth = lhs.zero_point * rhs.zero_point * depth;
+  params->flags |= RUY_ASM_FLAG_NEEDS_LEFT_SHIFT;
   if (mul_params.multiplier_fixedpoint_perchannel()) {
-    params->flags |= RUY_ASM_FLAG_NEEDS_LEFT_SHIFT;
+    // Temporary release-assert to debug some crashes in an application.
+    RUY_CHECK(mul_params.multiplier_exponent_perchannel());
     params->flags |= RUY_ASM_FLAG_HAS_PERCHANNEL;
     params->multiplier_fixedpoint =
         mul_params.multiplier_fixedpoint_perchannel();
     params->multiplier_exponent = mul_params.multiplier_exponent_perchannel();
   } else {
-    if (mul_params.multiplier_exponent() > 0) {
-      params->flags |= RUY_ASM_FLAG_NEEDS_LEFT_SHIFT;
-    }
     params->multiplier_fixedpoint = params->multiplier_fixedpoint_buf;
     params->multiplier_exponent = params->multiplier_exponent_buf;
     for (int i = 0; i < LhsCols; i++) {
@@ -323,6 +202,11 @@ void MakeKernelParams8bit(const PMat<std::int8_t>& lhs,
   params->dst_type_id = DstTypeId<DstScalar>::kValue;
   params->dst_base_ptr =
       dst->data.get() + start_col * dst->layout.stride + start_row;
+
+  // Temporary release-asserts to debug some crashes in an application.
+  RUY_CHECK(params->multiplier_fixedpoint);
+  RUY_CHECK(params->multiplier_exponent);
+  RUY_CHECK(params->bias);
 }
 
 template <int LhsCols, int RhsCols>
@@ -371,6 +255,9 @@ inline void MakeKernelParamsFloat(const PMat<float>& lhs,
   if (mul_params.bias()) {
     params->bias = mul_params.bias();
     flags |= RUY_ASM_FLAG_HAS_BIAS;
+  }
+  if (mul_params.channel_dimension() == ChannelDimension::kCol) {
+    flags |= RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL;
   }
   params->flags = flags;
   params->start_row = start_row;

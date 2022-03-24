@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -51,6 +51,9 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       network::NetworkConnectionTrackerGetter
           network_connection_tracker_getter);
+  CloudPolicyRefreshScheduler(const CloudPolicyRefreshScheduler&) = delete;
+  CloudPolicyRefreshScheduler& operator=(const CloudPolicyRefreshScheduler&) =
+      delete;
   ~CloudPolicyRefreshScheduler() override;
 
   base::Time last_refresh() const { return last_refresh_; }
@@ -127,15 +130,15 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // requested.
   void OnPolicyRefreshed(bool success);
 
-  CloudPolicyClient* client_;
-  CloudPolicyStore* store_;
-  CloudPolicyService* service_;
+  raw_ptr<CloudPolicyClient> client_;
+  raw_ptr<CloudPolicyStore> store_;
+  raw_ptr<CloudPolicyService> service_;
 
   // For scheduling delayed tasks.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // For listening for network connection changes.
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   // The delayed refresh callback.
   base::CancelableOnceClosure refresh_callback_;
@@ -171,8 +174,6 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   base::Time creation_time_;
 
   base::WeakPtrFactory<CloudPolicyRefreshScheduler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPolicyRefreshScheduler);
 };
 
 }  // namespace policy

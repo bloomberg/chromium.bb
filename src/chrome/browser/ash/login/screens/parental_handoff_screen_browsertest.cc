@@ -26,7 +26,6 @@
 #include "chrome/browser/ash/login/test/wizard_controller_screen_exit_waiter.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/parental_handoff_screen_handler.h"
@@ -65,8 +64,6 @@ class ParentalHandoffScreenBrowserTest : public OobeBaseTest {
 
   ParentalHandoffScreen* GetParentalHandoffScreen();
 
-  void ExitSyncConsentScreen();
-
   void SkipToParentalHandoffScreen();
 
   const absl::optional<ParentalHandoffScreen::Result>& result() const {
@@ -86,7 +83,7 @@ class ParentalHandoffScreenBrowserTest : public OobeBaseTest {
 
   ParentalHandoffScreen::ScreenExitCallback original_callback_;
 
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
 
   base::test::ScopedFeatureList feature_list_;
 
@@ -101,14 +98,11 @@ class ParentalHandoffScreenBrowserTest : public OobeBaseTest {
 };
 
 ParentalHandoffScreenBrowserTest::ParentalHandoffScreenBrowserTest() {
-  feature_list_.InitWithFeatures(
-      {supervised_users::kEduCoexistenceFlowV2, kFamilyLinkOobeHandoff},
-      {} /*disable_features*/);
+  feature_list_.InitWithFeatures({kFamilyLinkOobeHandoff},
+                                 {} /*disable_features*/);
 }
 
 void ParentalHandoffScreenBrowserTest::SetUpOnMainThread() {
-  is_google_branded_build_ =
-      WizardController::ForceBrandedBuildForTesting(true);
   assistant_is_enabled_ =
       AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(false);
   ParentalHandoffScreen* screen = GetParentalHandoffScreen();
@@ -117,6 +111,7 @@ void ParentalHandoffScreenBrowserTest::SetUpOnMainThread() {
       base::BindRepeating(&ParentalHandoffScreenBrowserTest::HandleScreenExit,
                           base::Unretained(this)));
   OobeBaseTest::SetUpOnMainThread();
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
 }
 
 void ParentalHandoffScreenBrowserTest::WaitForScreenExit() {
@@ -133,29 +128,9 @@ ParentalHandoffScreenBrowserTest::GetParentalHandoffScreen() {
       ->GetScreen<ParentalHandoffScreen>();
 }
 
-void ParentalHandoffScreenBrowserTest::ExitSyncConsentScreen() {
-  test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent"})->Wait();
-
-  const std::string button_name = features::IsSplitSettingsSyncEnabled()
-                                      ? "acceptButton"
-                                      : "settingsSaveAndContinueButton";
-  test::OobeJS().ExpectEnabledPath({"sync-consent", button_name});
-  test::OobeJS().CreateFocusWaiter({"sync-consent", button_name})->Wait();
-  test::OobeJS().TapOnPath({"sync-consent", button_name});
-
-  OobeScreenExitWaiter waiter(SyncConsentScreenView::kScreenId);
-  waiter.Wait();
-}
-
 void ParentalHandoffScreenBrowserTest::SkipToParentalHandoffScreen() {
-  WizardController* wizard = WizardController::default_controller();
-
-  // Wait for sync consent screen and exit from it.
-  OobeScreenWaiter sync_consent_waiter(SyncConsentScreenView ::kScreenId);
-  sync_consent_waiter.Wait();
-  EXPECT_EQ(wizard->current_screen()->screen_id(),
-            SyncConsentScreenView::kScreenId);
-  ExitSyncConsentScreen();
+  LoginDisplayHost::default_host()->StartWizard(
+      ParentalHandoffScreenView::kScreenId);
 }
 
 void ParentalHandoffScreenBrowserTest::HandleScreenExit(
@@ -167,7 +142,9 @@ void ParentalHandoffScreenBrowserTest::HandleScreenExit(
 }
 
 IN_PROC_BROWSER_TEST_F(ParentalHandoffScreenBrowserTest, RegularUserLogin) {
+  OobeScreenExitWaiter signin_screen_exit_waiter(GetFirstSigninScreen());
   login_manager_mixin().LoginAsNewRegularUser();
+  signin_screen_exit_waiter.Wait();
   SkipToParentalHandoffScreen();
 
   // Wait for exit from parental handoff screen.
@@ -191,24 +168,13 @@ class ParentalHandoffScreenChildBrowserTest
   }
 
   void LoginAsNewChildUser() {
-    WizardController::default_controller()
-        ->get_wizard_context_for_testing()
+    LoginDisplayHost::default_host()
+        ->GetWizardContextForTesting()
         ->sign_in_as_child = true;
     login_manager_mixin().LoginAsNewChildUser();
 
     WizardControllerExitWaiter(UserCreationView::kScreenId).Wait();
-    WizardControllerExitWaiter(LocaleSwitchView::kScreenId).Wait();
-    base::RunLoop().RunUntilIdle();
-
-    ASSERT_EQ(
-        WizardController::default_controller()->current_screen()->screen_id(),
-        EduCoexistenceLoginScreen::kScreenId);
-
-    // Current screen is EduCoexistenceLoginScreen. Close it.
-    GetEduCoexistenceLoginDialog()->Close();
-
     SkipToParentalHandoffScreen();
-
     OobeScreenWaiter parental_handoff_waiter(
         ParentalHandoffScreenView::kScreenId);
     parental_handoff_waiter.Wait();

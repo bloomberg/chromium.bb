@@ -6,8 +6,9 @@
 #define COMPONENTS_PAYMENTS_CORE_JOURNEY_LOGGER_H_
 
 #include <string>
+#include <vector>
 
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -253,6 +254,10 @@ class JourneyLogger {
   };
 
   JourneyLogger(bool is_incognito, ukm::SourceId payment_request_source_id);
+
+  JourneyLogger(const JourneyLogger&) = delete;
+  JourneyLogger& operator=(const JourneyLogger&) = delete;
+
   ~JourneyLogger();
 
   // Sets the number of suggestions shown for the specified section.
@@ -327,6 +332,8 @@ class JourneyLogger {
 
   // Sets the UKM source id of the selected app when it gets invoked.
   void SetPaymentAppUkmSourceId(ukm::SourceId payment_app_source_id);
+
+  base::WeakPtr<JourneyLogger> GetWeakPtr();
 
  private:
   // Records that an event occurred.
@@ -410,7 +417,7 @@ class JourneyLogger {
   ukm::SourceId payment_request_source_id_;
   ukm::SourceId payment_app_source_id_ = ukm::kInvalidSourceId;
 
-  DISALLOW_COPY_AND_ASSIGN(JourneyLogger);
+  base::WeakPtrFactory<JourneyLogger> weak_ptr_factory_{this};
 };
 
 }  // namespace payments

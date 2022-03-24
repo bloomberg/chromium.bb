@@ -81,6 +81,11 @@ bool ExternalImageSiblingImpl11::isYUV() const
     return mYUV;
 }
 
+bool ExternalImageSiblingImpl11::hasProtectedContent() const
+{
+    return mHasProtectedContent;
+}
+
 gl::Extents ExternalImageSiblingImpl11::getSize() const
 {
     return gl::Extents(mWidth, mHeight, 1);
@@ -153,7 +158,7 @@ angle::Result ExternalImageSiblingImpl11::createRenderTarget(const gl::Context *
         }
 
         ANGLE_TRY(mRenderer->allocateResource(context11, rtvDesc, mTexture.get(), &rtv));
-        rtv.setDebugName("getAttachmentRenderTarget.RTV");
+        rtv.setInternalName("getAttachmentRenderTarget.RTV");
     }
 
     d3d11::SharedSRV srv;
@@ -193,7 +198,7 @@ angle::Result ExternalImageSiblingImpl11::createRenderTarget(const gl::Context *
         }
 
         ANGLE_TRY(mRenderer->allocateResource(context11, srvDesc, mTexture.get(), &srv));
-        srv.setDebugName("getAttachmentRenderTarget.SRV");
+        srv.setInternalName("getAttachmentRenderTarget.SRV");
     }
     d3d11::SharedSRV blitSrv = srv.makeCopy();
 

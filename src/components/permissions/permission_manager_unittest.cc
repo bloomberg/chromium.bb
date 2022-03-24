@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
@@ -146,7 +145,8 @@ class PermissionManagerTest : public content::RenderViewHostTestHarness {
 
   void CheckPermissionStatus(PermissionType type, PermissionStatus expected) {
     EXPECT_EQ(expected, GetPermissionControllerDelegate()->GetPermissionStatus(
-                            type, url_.GetOrigin(), url_.GetOrigin()));
+                            type, url_.DeprecatedGetOriginAsURL(),
+                            url_.DeprecatedGetOriginAsURL()));
   }
 
   void CheckPermissionResult(ContentSettingsType type,
@@ -154,7 +154,8 @@ class PermissionManagerTest : public content::RenderViewHostTestHarness {
                              PermissionStatusSource expected_status_source) {
     PermissionResult result =
         GetPermissionControllerDelegate()->GetPermissionStatus(
-            type, url_.GetOrigin(), url_.GetOrigin());
+            type, url_.DeprecatedGetOriginAsURL(),
+            url_.DeprecatedGetOriginAsURL());
     EXPECT_EQ(expected_status, result.content_setting);
     EXPECT_EQ(expected_status_source, result.source);
   }
@@ -683,7 +684,7 @@ TEST_F(PermissionManagerTest, InsecureOriginIsNotOverridable) {
 
 TEST_F(PermissionManagerTest, MissingContextIsNotOverridable) {
   // Permissions that are not implemented should be denied overridability.
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   EXPECT_FALSE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
           PermissionType::PROTECTED_MEDIA_IDENTIFIER,

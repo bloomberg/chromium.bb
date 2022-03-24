@@ -18,10 +18,10 @@
 #include "chrome/browser/ash/hats/hats_dialog.h"
 #include "chrome/browser/ash/hats/hats_finch_helper.h"
 #include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -38,6 +38,7 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/strings/grit/ui_strings.h"
 
+namespace ash {
 namespace {
 
 const char kNotificationOriginUrl[] = "chrome://hats";
@@ -46,10 +47,10 @@ const char kNotifierHats[] = "ash.hats";
 
 // Minimum amount of time before the notification is displayed again after a
 // user has interacted with it.
-constexpr base::TimeDelta kHatsThreshold = base::TimeDelta::FromDays(90);
+constexpr base::TimeDelta kHatsThreshold = base::Days(90);
 
 // The threshold for a Googler is less.
-constexpr base::TimeDelta kHatsGooglerThreshold = base::TimeDelta::FromDays(30);
+constexpr base::TimeDelta kHatsGooglerThreshold = base::Days(30);
 
 // Returns true if the given |profile| interacted with HaTS by either
 // dismissing the notification or taking the survey within a given
@@ -68,35 +69,52 @@ bool DidShowSurveyToProfileRecently(Profile* profile,
 // OOBE. This is an indirect measure of whether the owner has used the device
 // for at least |new_device_threshold| time.
 bool IsNewDevice(base::TimeDelta new_device_threshold) {
-  return chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation() <=
+  return StartupUtils::GetTimeSinceOobeFlagFileCreation() <=
          new_device_threshold;
 }
 
-// Returns true if the |kForceHappinessTrackingSystem| flag is enabled.
-bool IsTestingEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kForceHappinessTrackingSystem);
+// Returns true if the |kForceHappinessTrackingSystem| flag is enabled for the
+// current survey.
+bool IsTestingEnabled(const HatsConfig& hats_config) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(
+          chromeos::switches::kForceHappinessTrackingSystem)) {
+    auto switch_value = command_line->GetSwitchValueASCII(
+        chromeos::switches::kForceHappinessTrackingSystem);
+    return switch_value.empty() || hats_config.feature.name == switch_value;
+  }
+
+  return false;
 }
 
 }  // namespace
-
-namespace ash {
 
 // static
 const char HatsNotificationController::kNotificationId[] = "hats_notification";
 
 HatsNotificationController::HatsNotificationController(
     Profile* profile,
-    const HatsConfig& hats_config)
-    : profile_(profile), hats_config_(hats_config) {
+    const HatsConfig& hats_config,
+    const base::flat_map<std::string, std::string>& product_specific_data)
+    : profile_(profile),
+      hats_config_(hats_config),
+      product_specific_data_(product_specific_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&IsNewDevice, hats_config.hatsNewDeviceThreshold),
+      base::BindOnce(&IsNewDevice, hats_config.new_device_threshold),
       base::BindOnce(&HatsNotificationController::Initialize,
                      weak_pointer_factory_.GetWeakPtr()));
 }
+
+HatsNotificationController::HatsNotificationController(
+    Profile* profile,
+    const HatsConfig& hats_config)
+    : HatsNotificationController(profile,
+                                 hats_config,
+                                 base::flat_map<std::string, std::string>()) {}
 
 HatsNotificationController::~HatsNotificationController() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -110,7 +128,7 @@ HatsNotificationController::~HatsNotificationController() {
 void HatsNotificationController::Initialize(bool is_new_device) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (is_new_device && !IsTestingEnabled()) {
+  if (is_new_device && !IsTestingEnabled(hats_config_)) {
     // This device has been chosen for a survey, but it is too new. Instead
     // of showing the user the survey, just mark it as completed.
     UpdateLastInteractionTime();
@@ -130,7 +148,7 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(
     const HatsConfig& hats_config) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (IsTestingEnabled())
+  if (IsTestingEnabled(hats_config))
     return true;
 
   // Do not show the survey if the HaTS feature is disabled for the device. This
@@ -148,8 +166,8 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(
     return false;
 
   const bool is_enterprise_enrolled = g_browser_process->platform_part()
-                                          ->browser_policy_connector_chromeos()
-                                          ->IsEnterpriseManaged();
+                                          ->browser_policy_connector_ash()
+                                          ->IsDeviceEnterpriseManaged();
 
   // Do not show survey if this is a non dogfood enterprise enrolled device.
   if (is_enterprise_enrolled &&
@@ -188,7 +206,8 @@ void HatsNotificationController::Click(
 
   UpdateLastInteractionTime();
 
-  hats_dialog_ = HatsDialog::CreateAndShow(hats_config_);
+  hats_dialog_ =
+      HatsDialog::CreateAndShow(hats_config_, product_specific_data_);
 
   state_ = HatsState::kNotificationClicked;
 
@@ -222,7 +241,7 @@ void HatsNotificationController::OnPortalDetectionCompleted(
   if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
     // Create and display the notification for the user.
     if (!notification_) {
-      notification_ = ash::CreateSystemNotification(
+      notification_ = CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY),

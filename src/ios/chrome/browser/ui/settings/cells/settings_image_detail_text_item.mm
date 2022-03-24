@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,10 +31,14 @@
   cell.detailTextLabel.text = self.detailText;
   cell.image = self.image;
 
+  if (self.attributedText) {
+    cell.textLabel.attributedText = self.attributedText;
+  }
+
   if (self.detailTextColor) {
     cell.detailTextLabel.textColor = self.detailTextColor;
   } else {
-    cell.detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
+    cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   }
 
   if (self.imageViewTintColor) {
@@ -43,10 +47,6 @@
 
   if (self.image && self.alignImageWithFirstLineOfText) {
     [cell alignImageWithFirstLineOfText:YES];
-  }
-
-  if (self.image && self.leftAlignImage) {
-    [cell setImageViewContentMode:UIViewContentModeLeft];
   }
 }
 

@@ -171,8 +171,8 @@ void ApplyQueryResults(MdnsMessage* message,
 
     // Add A and AAAA records associated with an added SRV record to the
     // additional records section.
-    const int max = message->additional_records().size();
-    for (int i = 0; i < max; i++) {
+    const size_t max = message->additional_records().size();
+    for (size_t i = 0; i < max; i++) {
       if (message->additional_records()[i].dns_type() != DnsType::kSRV) {
         continue;
       }

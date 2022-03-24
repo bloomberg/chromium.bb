@@ -5,7 +5,6 @@
 #ifndef PPAPI_PROXY_MOCK_RESOURCE_H_
 #define PPAPI_PROXY_MOCK_RESOURCE_H_
 
-#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/resource.h"
 
@@ -15,10 +14,11 @@ namespace proxy {
 class MockResource : public ppapi::Resource {
  public:
   MockResource(const ppapi::HostResource& resource);
-  virtual ~MockResource();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockResource);
+  MockResource(const MockResource&) = delete;
+  MockResource& operator=(const MockResource&) = delete;
+
+  virtual ~MockResource();
 };
 
 }  // namespace proxy

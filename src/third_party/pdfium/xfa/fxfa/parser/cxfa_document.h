@@ -7,20 +7,24 @@
 #ifndef XFA_FXFA_PARSER_CXFA_DOCUMENT_H_
 #define XFA_FXFA_PARSER_CXFA_DOCUMENT_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 #include <vector>
 
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "core/fxcrt/widestring.h"
 #include "fxjs/gc/heap.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/member.h"
 #include "v8/include/cppgc/persistent.h"
 #include "v8/include/cppgc/visitor.h"
 #include "xfa/fxfa/fxfa.h"
+#include "xfa/fxfa/fxfa_basic.h"
 #include "xfa/fxfa/parser/cxfa_localemgr.h"
 #include "xfa/fxfa/parser/cxfa_nodeowner.h"
 
@@ -68,7 +72,7 @@ class CXFA_Document final : public cppgc::GarbageCollected<CXFA_Document> {
 
     virtual void Trace(cppgc::Visitor* visitor) const;
     virtual void SetForceRelayout() = 0;
-    virtual void AddChangedContainer(CXFA_Node* pContainer) = 0;
+    virtual void SetHasChangedContainer() = 0;
 
     void SetDocument(CXFA_Document* pDocument) { m_pDocument = pDocument; }
     CXFA_Document* GetDocument() const { return m_pDocument; }
@@ -142,6 +146,19 @@ class CXFA_Document final : public cppgc::GarbageCollected<CXFA_Document> {
   void SetPendingNodesUnusedAndUnbound();
 
  private:
+  friend class CXFA_DocumentTest_ParseXFAVersion_Test;
+  friend class CXFA_DocumentTest_ParseUseHref_Test;
+  friend class CXFA_DocumentTest_ParseUse_Test;
+
+  static XFA_VERSION ParseXFAVersion(const WideString& wsTemplateNS);
+  static void ParseUseHref(const WideString& wsUseVal,
+                           WideStringView& wsURI,
+                           WideStringView& wsID,
+                           WideStringView& wsSOM);
+  static void ParseUse(const WideString& wsUseVal,
+                       WideStringView& wsID,
+                       WideStringView& wsSOM);
+
   CXFA_Document(CXFA_FFNotify* notify,
                 cppgc::Heap* heap,
                 LayoutProcessorIface* pLayout);
@@ -162,7 +179,7 @@ class CXFA_Document final : public cppgc::GarbageCollected<CXFA_Document> {
   std::map<uint32_t, cppgc::Member<CXFA_Node>> m_rgGlobalBinding;
   std::vector<cppgc::Member<CXFA_Node>> m_pPendingPageSet;
   XFA_VERSION m_eCurVersionMode = XFA_VERSION_DEFAULT;
-  Optional<bool> m_Interactive;
+  absl::optional<bool> m_Interactive;
   bool m_bStrictScoping = false;
   bool m_bScripting = false;
 };

@@ -7,11 +7,11 @@
 #include "debug-helper-internal.h"
 #include "heap-constants.h"
 #include "include/v8-internal.h"
-#include "src/common/external-pointer.h"
 #include "src/execution/frame-constants.h"
 #include "src/execution/frames.h"
 #include "src/execution/isolate-utils.h"
 #include "src/objects/string-inl.h"
+#include "src/security/external-pointer.h"
 #include "src/strings/unicode-inl.h"
 #include "torque-generated/class-debug-readers.h"
 #include "torque-generated/debug-macros.h"
@@ -509,7 +509,7 @@ class AddInfoVisitor : public TqObjectVisitor {
     // On JSObject instances, this value is the start of in-object properties.
     // The constructor function index option is only for primitives.
     auto start_offset =
-        map.GetInObjectPropertiesStartOrConstructorFunctionIndexValue(
+        map.GetInobjectPropertiesStartOrConstructorFunctionIndexValue(
             accessor_);
 
     // The total size of the object in memory. This may include over-allocated

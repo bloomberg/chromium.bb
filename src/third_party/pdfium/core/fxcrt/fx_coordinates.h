@@ -7,9 +7,9 @@
 #ifndef CORE_FXCRT_FX_COORDINATES_H_
 #define CORE_FXCRT_FX_COORDINATES_H_
 
-#include <algorithm>
+#include <stdint.h>
 
-#include "core/fxcrt/fx_system.h"
+#include <algorithm>
 
 #ifndef NDEBUG
 #include <iosfwd>
@@ -148,29 +148,8 @@ class CFX_VTemplate final : public CFX_PTemplate<BaseType> {
                 const CFX_PTemplate<BaseType>& point2)
       : CFX_PTemplate<BaseType>(point2.x - point1.x, point2.y - point1.y) {}
 
-  float Length() const { return sqrt(x * x + y * y); }
-  void Normalize() {
-    float fLen = Length();
-    if (fLen < 0.0001f)
-      return;
-
-    x /= fLen;
-    y /= fLen;
-  }
-  void Translate(BaseType dx, BaseType dy) {
-    x += dx;
-    y += dy;
-  }
-  void Scale(BaseType sx, BaseType sy) {
-    x *= sx;
-    y *= sy;
-  }
-  void Rotate(float fRadian) {
-    float cosValue = cos(fRadian);
-    float sinValue = sin(fRadian);
-    x = x * cosValue - y * sinValue;
-    y = x * sinValue + y * cosValue;
-  }
+  float Length() const;
+  void Normalize();
 };
 using CFX_Vector = CFX_VTemplate<int32_t>;
 using CFX_VectorF = CFX_VTemplate<float>;
@@ -193,6 +172,7 @@ struct FX_RECT {
   void Normalize();
   void Intersect(const FX_RECT& src);
   void Intersect(int l, int t, int r, int b) { Intersect(FX_RECT(l, t, r, b)); }
+  FX_RECT SwappedClipBox(int width, int height, bool bFlipX, bool bFlipY) const;
 
   void Offset(int dx, int dy) {
     left += dx;
@@ -223,10 +203,8 @@ class CFX_FloatRect {
   constexpr CFX_FloatRect(float l, float b, float r, float t)
       : left(l), bottom(b), right(r), top(t) {}
 
-  explicit CFX_FloatRect(const float* pArray)
-      : CFX_FloatRect(pArray[0], pArray[1], pArray[2], pArray[3]) {}
-
   explicit CFX_FloatRect(const FX_RECT& rect);
+  explicit CFX_FloatRect(const CFX_PointF& point);
 
   static CFX_FloatRect GetBBox(const CFX_PointF* pPoints, int nPoints);
 
@@ -255,12 +233,6 @@ class CFX_FloatRect {
 
   CFX_FloatRect GetCenterSquare() const;
 
-  void InitRect(const CFX_PointF& point) {
-    left = point.x;
-    right = point.x;
-    bottom = point.y;
-    top = point.y;
-  }
   void UpdateRect(const CFX_PointF& point);
 
   float Width() const { return right - left; }
@@ -302,6 +274,11 @@ class CFX_FloatRect {
   // Rounds LBRT values.
   FX_RECT ToRoundedFxRect() const;
 
+  bool operator==(const CFX_FloatRect& other) const {
+    return left == other.left && right == other.right && top == other.top &&
+           bottom == other.bottom;
+  }
+
   float left = 0.0f;
   float bottom = 0.0f;
   float right = 0.0f;
@@ -338,6 +315,8 @@ class CFX_RectF {
 
   // NOLINTNEXTLINE(runtime/explicit)
   CFX_RectF(const CFX_RectF& other) = default;
+
+  CFX_RectF& operator=(const CFX_RectF& other) = default;
 
   CFX_RectF& operator+=(const PointType& p) {
     left += p.x;

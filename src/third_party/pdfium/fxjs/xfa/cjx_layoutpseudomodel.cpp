@@ -14,8 +14,9 @@
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_engine.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 #include "v8/include/cppgc/allocation.h"
+#include "v8/include/v8-object.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 #include "xfa/fxfa/layout/cxfa_layoutitem.h"
@@ -70,18 +71,21 @@ void CJX_LayoutPseudoModel::ready(v8::Isolate* pIsolate,
   if (!pNotify)
     return;
   if (bSetting) {
-    ThrowException(WideString::FromASCII("Unable to set ready value."));
+    ThrowException(pIsolate,
+                   WideString::FromASCII("Unable to set ready value."));
     return;
   }
 
-  int32_t iStatus = pNotify->GetLayoutStatus();
-  *pValue = fxv8::NewBooleanHelper(pIsolate, iStatus >= 2);
+  CXFA_FFDocView::LayoutStatus iStatus = pNotify->GetLayoutStatus();
+  const bool bReady = iStatus != CXFA_FFDocView::LayoutStatus::kNone &&
+                      iStatus != CXFA_FFDocView::LayoutStatus::kStart;
+  *pValue = fxv8::NewBooleanHelper(pIsolate, bReady);
 }
 
-CJS_Result CJX_LayoutPseudoModel::HWXY(
+CJS_Result CJX_LayoutPseudoModel::DoHWXYInternal(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params,
-    XFA_LAYOUTMODEL_HWXY layoutModel) {
+    HWXY layoutModel) {
   if (params.empty() || params.size() > 3)
     return CJS_Result::Failure(JSMessage::kParamError);
 
@@ -112,18 +116,18 @@ CJS_Result CJX_LayoutPseudoModel::HWXY(
     return CJS_Result::Success(runtime->NewNumber(0.0));
 
   CXFA_Measurement measure;
-  CFX_RectF rtRect = pLayoutItem->GetRect(true);
+  CFX_RectF rtRect = pLayoutItem->GetRelativeRect();
   switch (layoutModel) {
-    case XFA_LAYOUTMODEL_H:
+    case HWXY::kH:
       measure.Set(rtRect.height, XFA_Unit::Pt);
       break;
-    case XFA_LAYOUTMODEL_W:
+    case HWXY::kW:
       measure.Set(rtRect.width, XFA_Unit::Pt);
       break;
-    case XFA_LAYOUTMODEL_X:
+    case HWXY::kX:
       measure.Set(rtRect.left, XFA_Unit::Pt);
       break;
-    case XFA_LAYOUTMODEL_Y:
+    case HWXY::kY:
       measure.Set(rtRect.top, XFA_Unit::Pt);
       break;
   }
@@ -140,44 +144,44 @@ CJS_Result CJX_LayoutPseudoModel::HWXY(
 CJS_Result CJX_LayoutPseudoModel::h(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return HWXY(runtime, params, XFA_LAYOUTMODEL_H);
+  return DoHWXYInternal(runtime, params, HWXY::kH);
 }
 
 CJS_Result CJX_LayoutPseudoModel::w(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return HWXY(runtime, params, XFA_LAYOUTMODEL_W);
+  return DoHWXYInternal(runtime, params, HWXY::kW);
 }
 
 CJS_Result CJX_LayoutPseudoModel::x(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return HWXY(runtime, params, XFA_LAYOUTMODEL_X);
+  return DoHWXYInternal(runtime, params, HWXY::kX);
 }
 
 CJS_Result CJX_LayoutPseudoModel::y(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return HWXY(runtime, params, XFA_LAYOUTMODEL_Y);
+  return DoHWXYInternal(runtime, params, HWXY::kY);
 }
 
-CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime,
-                                                    bool bNumbered) {
+CJS_Result CJX_LayoutPseudoModel::AllPageCount(CFX_V8* runtime) {
+  auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(GetDocument());
+  return CJS_Result::Success(runtime->NewNumber(pDocLayout->CountPages()));
+}
+
+CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime) {
   auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(GetDocument());
   int32_t iPageCount = 0;
   int32_t iPageNum = pDocLayout->CountPages();
-  if (bNumbered) {
-    for (int32_t i = 0; i < iPageNum; i++) {
-      CXFA_ViewLayoutItem* pLayoutPage = pDocLayout->GetPage(i);
-      if (!pLayoutPage)
-        continue;
+  for (int32_t i = 0; i < iPageNum; i++) {
+    CXFA_ViewLayoutItem* pLayoutPage = pDocLayout->GetPage(i);
+    if (!pLayoutPage)
+      continue;
 
-      CXFA_Node* pMasterPage = pLayoutPage->GetMasterPage();
-      if (pMasterPage->JSObject()->GetInteger(XFA_Attribute::Numbered))
-        iPageCount++;
-    }
-  } else {
-    iPageCount = iPageNum;
+    CXFA_Node* pMasterPage = pLayoutPage->GetMasterPage();
+    if (pMasterPage->JSObject()->GetInteger(XFA_Attribute::Numbered))
+      iPageCount++;
   }
   return CJS_Result::Success(runtime->NewNumber(iPageCount));
 }
@@ -185,7 +189,7 @@ CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime,
 CJS_Result CJX_LayoutPseudoModel::pageCount(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return NumberedPageCount(runtime, true);
+  return NumberedPageCount(runtime);
 }
 
 CJS_Result CJX_LayoutPseudoModel::pageSpan(
@@ -385,7 +389,7 @@ CJS_Result CJX_LayoutPseudoModel::pageContent(
 CJS_Result CJX_LayoutPseudoModel::absPageCount(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return NumberedPageCount(runtime, false);
+  return AllPageCount(runtime);
 }
 
 CJS_Result CJX_LayoutPseudoModel::absPageCountInBatch(
@@ -408,9 +412,8 @@ CJS_Result CJX_LayoutPseudoModel::relayout(
   CXFA_Form* pFormRoot =
       pRootNode->GetFirstChildByClass<CXFA_Form>(XFA_Element::Form);
   if (pFormRoot) {
-    CXFA_Node* pContentRootNode = pFormRoot->GetFirstChild();
-    if (pContentRootNode)
-      pLayoutProcessor->AddChangedContainer(pContentRootNode);
+    if (pFormRoot->GetFirstChild())
+      pLayoutProcessor->SetHasChangedContainer();
   }
   pLayoutProcessor->SetForceRelayout();
   return CJS_Result::Success();
@@ -455,7 +458,7 @@ CJS_Result CJX_LayoutPseudoModel::relayoutPageArea(
 CJS_Result CJX_LayoutPseudoModel::sheetCount(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return NumberedPageCount(runtime, false);
+  return AllPageCount(runtime);
 }
 
 CJS_Result CJX_LayoutPseudoModel::absPage(

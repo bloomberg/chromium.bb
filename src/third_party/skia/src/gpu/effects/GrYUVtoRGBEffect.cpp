@@ -12,10 +12,9 @@
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrYUVATextureProxies.h"
 #include "src/gpu/effects/GrMatrixEffect.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-#include "src/sksl/SkSLCPP.h"
 #include "src/sksl/SkSLUtil.h"
 
 static void border_colors(const GrYUVATextureProxies& yuvaProxies, float planeBorders[4][4]) {
@@ -37,6 +36,8 @@ std::unique_ptr<GrFragmentProcessor> GrYUVtoRGBEffect::Make(const GrYUVATextureP
                                                             const SkMatrix& localMatrix,
                                                             const SkRect* subset,
                                                             const SkRect* domain) {
+    SkASSERT(!subset || SkRect::Make(yuvaProxies.yuvaInfo().dimensions()).contains(*subset));
+
     int numPlanes = yuvaProxies.yuvaInfo().numPlanes();
     if (!yuvaProxies.isValid()) {
         return nullptr;
@@ -52,6 +53,7 @@ std::unique_ptr<GrFragmentProcessor> GrYUVtoRGBEffect::Make(const GrYUVATextureP
     bool snap[2] = {false, false};
     std::unique_ptr<GrFragmentProcessor> planeFPs[SkYUVAInfo::kMaxPlanes];
     for (int i = 0; i < numPlanes; ++i) {
+        bool useSubset = SkToBool(subset);
         GrSurfaceProxyView view = yuvaProxies.makeView(i);
         SkMatrix planeMatrix = yuvaProxies.yuvaInfo().originMatrix();
         // The returned matrix is a view matrix but we need a local matrix.
@@ -65,10 +67,6 @@ std::unique_ptr<GrFragmentProcessor> GrYUVtoRGBEffect::Make(const GrYUVATextureP
         float scaleX = 1.f;
         float scaleY = 1.f;
         if (ssx > 1 || ssy > 1) {
-            // JPEG chroma subsampling of odd dimensions produces U and V planes with the ceiling of
-            // the image size divided by the subsampling factor (2). Our API for creating YUVA
-            // doesn't capture the intended subsampling (and we should fix that). This fixes up 2x
-            // subsampling for images with odd widths/heights (e.g. JPEG 420 or 422).
             scaleX = 1.f/ssx;
             scaleY = 1.f/ssy;
             // We would want to add a translation to this matrix to handle other sitings.
@@ -80,12 +78,33 @@ std::unique_ptr<GrFragmentProcessor> GrYUVtoRGBEffect::Make(const GrYUVATextureP
                                subset->fTop   *scaleY,
                                subset->fRight *scaleX,
                                subset->fBottom*scaleY};
+            } else {
+                planeSubset = SkRect::Make(view.dimensions());
             }
             if (domain) {
                 planeDomain = {domain->fLeft  *scaleX,
                                domain->fTop   *scaleY,
                                domain->fRight *scaleX,
                                domain->fBottom*scaleY};
+            }
+            // If the image is not a multiple of the subsampling then the subsampled plane needs to
+            // be tiled at less than its full width/height. This only matters when the mode is not
+            // clamp.
+            if (samplerState.wrapModeX() != GrSamplerState::WrapMode::kClamp) {
+                int dx = (ssx*view.width() - yuvaProxies.yuvaInfo().width());
+                float maxRight = view.width() - dx*scaleX;
+                if (planeSubset.fRight > maxRight) {
+                    planeSubset.fRight = maxRight;
+                    useSubset = true;
+                }
+            }
+            if (samplerState.wrapModeY() != GrSamplerState::WrapMode::kClamp) {
+                int dy = (ssy*view.height() - yuvaProxies.yuvaInfo().height());
+                float maxBottom = view.height() - dy*scaleY;
+                if (planeSubset.fBottom > maxBottom) {
+                    planeSubset.fBottom = maxBottom;
+                    useSubset = true;
+                }
             }
             // This promotion of nearest to linear filtering for UV planes exists to mimic
             // libjpeg[-turbo]'s do_fancy_upsampling option. We will filter the subsampled plane,
@@ -114,7 +133,7 @@ std::unique_ptr<GrFragmentProcessor> GrYUVtoRGBEffect::Make(const GrYUVATextureP
                 planeDomain = *domain;
             }
         }
-        if (subset) {
+        if (useSubset) {
             if (makeLinearWithSnap) {
                 // The plane is subsampled and we have an overall subset on the image. We're
                 // emulating do_fancy_upsampling using linear filtering but snapping look ups to the
@@ -218,11 +237,9 @@ SkString GrYUVtoRGBEffect::onDumpInfo() const {
 }
 #endif
 
-std::unique_ptr<GrGLSLFragmentProcessor> GrYUVtoRGBEffect::onMakeProgramImpl() const {
-    class GrGLSLYUVtoRGBEffect : public GrGLSLFragmentProcessor {
+std::unique_ptr<GrFragmentProcessor::ProgramImpl> GrYUVtoRGBEffect::onMakeProgramImpl() const {
+    class Impl : public ProgramImpl {
     public:
-        GrGLSLYUVtoRGBEffect() {}
-
         void emitCode(EmitArgs& args) override {
             GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
             const GrYUVtoRGBEffect& yuvEffect = args.fFp.cast<GrYUVtoRGBEffect>();
@@ -316,10 +333,10 @@ std::unique_ptr<GrGLSLFragmentProcessor> GrYUVtoRGBEffect::onMakeProgramImpl() c
         UniformHandle fColorSpaceTranslateVar;
     };
 
-    return std::make_unique<GrGLSLYUVtoRGBEffect>();
+    return std::make_unique<Impl>();
 }
-void GrYUVtoRGBEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
-                                             GrProcessorKeyBuilder* b) const {
+
+void GrYUVtoRGBEffect::onAddToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
     uint32_t packed = 0;
     int i = 0;
     for (auto [plane, channel] : fLocations) {
@@ -354,14 +371,9 @@ bool GrYUVtoRGBEffect::onIsEqual(const GrFragmentProcessor& other) const {
 }
 
 GrYUVtoRGBEffect::GrYUVtoRGBEffect(const GrYUVtoRGBEffect& src)
-        : GrFragmentProcessor(kGrYUVtoRGBEffect_ClassID, src.optimizationFlags())
+        : GrFragmentProcessor(src)
         , fLocations((src.fLocations))
         , fYUVColorSpace(src.fYUVColorSpace) {
-    this->cloneAndRegisterAllChildProcessors(src);
-    if (src.fSnap[0] || src.fSnap[1]) {
-        this->setUsesSampleCoordsDirectly();
-    }
-
     std::copy_n(src.fSnap, 2, fSnap);
 }
 

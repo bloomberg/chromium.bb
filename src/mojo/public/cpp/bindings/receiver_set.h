@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -65,6 +64,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ReceiverSetState {
         std::unique_ptr<MessageFilter> filter,
         RepeatingConnectionErrorWithReasonCallback disconnect_handler) = 0;
     virtual void FlushForTesting() = 0;
+    virtual void ResetWithReason(uint32_t custom_reason_code,
+                                 const std::string& description) = 0;
   };
 
   class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Entry {
@@ -80,6 +81,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ReceiverSetState {
     class DispatchFilter;
 
     void WillDispatch();
+    void DidDispatchOrReject();
     void OnDisconnect(uint32_t custom_reason_code,
                       const std::string& description);
 
@@ -115,6 +117,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ReceiverSetState {
   ReportBadMessageCallback GetBadMessageCallback();
   ReceiverId Add(std::unique_ptr<ReceiverState> receiver);
   bool Remove(ReceiverId id);
+  bool RemoveWithReason(ReceiverId id,
+                        uint32_t custom_reason_code,
+                        const std::string& description);
   void FlushForTesting();
   void SetDispatchContext(const void* context, ReceiverId receiver_id);
   void OnDisconnect(ReceiverId id,
@@ -231,6 +236,12 @@ class ReceiverSetBase {
   // disconnected. No further messages or disconnection notifications will be
   // scheduled or executed for the removed receiver.
   bool Remove(ReceiverId id) { return state_.Remove(id); }
+  // Similar to the method above, but also specifies a disconnect reason.
+  bool RemoveWithReason(ReceiverId id,
+                        uint32_t custom_reason_code,
+                        const std::string& description) {
+    return state_.RemoveWithReason(id, custom_reason_code, description);
+  }
 
   // Unbinds and takes all receivers in this set.
   std::vector<PendingType> TakeReceivers() {
@@ -249,6 +260,14 @@ class ReceiverSetBase {
   // ReceiverSet will not schedule or execute any further method invocations or
   // disconnection notifications until a new receiver is added to the set.
   void Clear() { state_.entries().clear(); }
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ClearWithReason(uint32_t custom_reason_code,
+                       const std::string& description) {
+    for (auto& entry : state_.entries())
+      entry.second->receiver().ResetWithReason(custom_reason_code, description);
+
+    Clear();
+  }
 
   // Predicate to test if a receiver exists in the set.
   //
@@ -321,7 +340,7 @@ class ReceiverSetBase {
       return nullptr;
 
     ReceiverEntry& entry = static_cast<ReceiverEntry&>(it->second->receiver());
-    return entry.SwapImplForTesting(new_impl);
+    return entry.SwapImplForTesting(std::move(new_impl));
   }
 
  private:
@@ -354,8 +373,13 @@ class ReceiverSetBase {
 
     void FlushForTesting() override { receiver_.FlushForTesting(); }
 
+    void ResetWithReason(uint32_t custom_reason_code,
+                         const std::string& description) override {
+      receiver_.ResetWithReason(custom_reason_code, description);
+    }
+
     ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
-      return receiver_.SwapImplForTesting(new_impl);
+      return receiver_.SwapImplForTesting(std::move(new_impl));
     }
 
     PendingType Unbind() { return receiver_.Unbind(); }

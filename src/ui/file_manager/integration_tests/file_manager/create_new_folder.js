@@ -1,15 +1,20 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-'use strict';
+
+import {RootPath, TestEntryInfo} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {recursiveExpand, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {BASIC_DRIVE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 
 /**
  * Constants for interacting with the directory tree on the LHS of Files app.
  * When we are not in guest mode, we fill Google Drive with the basic entry set
  * which causes an extra tree-item to be added.
  */
-const TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"]';
-const TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"]';
+export const TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"]';
+export const TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"]';
 
 /**
  * Selects the first item in the file list.
@@ -91,8 +96,7 @@ async function createNewFolder(appId, initialEntrySet, selector) {
   chrome.test.assertTrue('renaming' in elements[0].attributes);
 
   // Type the test folder name.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, [textInput, 'Test Folder Name']);
+  await remoteCall.inputText(appId, textInput, 'Test Folder Name');
 
   // Press the Enter key.
   key = [textInput, 'Enter', false, false, false];

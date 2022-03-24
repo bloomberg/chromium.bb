@@ -8,18 +8,22 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/policy/core/common/management/management_service.h"
-#include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_test_utils.h"
@@ -27,6 +31,7 @@
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_test_utils.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/test/browser_test.h"
@@ -64,11 +69,11 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
       const std::string& new_email,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
   void ShowEnterpriseAccountConfirmation(
-      const std::string& email,
+      const AccountInfo& account_info,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
   void ShowSyncConfirmation(
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
-          callback) override {}
+          callback) override;
   void ShowSyncDisabledConfirmation(
       bool is_managed_account,
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
@@ -76,7 +81,7 @@ class TestDiceTurnSyncOnHelperDelegate : public DiceTurnSyncOnHelper::Delegate {
   void ShowSyncSettings() override;
   void SwitchToProfile(Profile* new_profile) override;
 
-  UserPolicySigninServiceTest* test_fixture_;
+  raw_ptr<UserPolicySigninServiceTest> test_fixture_;
 };
 
 std::string GetTestPolicy() {
@@ -125,6 +130,8 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
 
   Profile* profile() { return browser()->profile(); }
 
+  const CoreAccountId& account_id() { return account_info_.account_id; }
+
   policy::PolicyService* GetPolicyService() {
     return profile()->GetProfilePolicyConnector()->policy_service();
   }
@@ -165,9 +172,17 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
 
   // DiceTurnSyncOnHelperDelegate calls:
   void OnShowEnterpriseAccountConfirmation(
-      const std::string& email,
+      const AccountInfo& account_info,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) {
     std::move(callback).Run(DiceTurnSyncOnHelper::SIGNIN_CHOICE_CONTINUE);
+  }
+
+  void OnShowSyncConfirmation(
+      base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
+          callback) {
+    sync_confirmation_callback_ = std::move(callback);
+    if (sync_confirmation_shown_closure_)
+      std::move(sync_confirmation_shown_closure_).Run();
   }
 
   void OnShowSyncDisabledConfirmation(
@@ -306,22 +321,6 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
   bool policy_hanging_ = false;
   int dice_helper_created_count_ = 0;
   int dice_helper_deleted_count_ = 0;
-
-  // The sync service and waits for policies to load before starting for
-  // enterprise users, managed devices and browsers. This means that services
-  // depending on it might have to wait too. By setting the management
-  // authorities to none by default, we assume that the default test is on an
-  // unmanaged device and browser thus we avoid unnecessarily waiting for
-  // policies to load. Tests expecting either an enterprise user, a managed
-  // device or browser should add the appropriate management authorities.
-  policy::ScopedManagementServiceOverrideForTesting browser_management_ =
-      policy::ScopedManagementServiceOverrideForTesting(
-          policy::ManagementTarget::BROWSER,
-          base::flat_set<policy::EnterpriseManagementAuthority>());
-  policy::ScopedManagementServiceOverrideForTesting platform_management_ =
-      policy::ScopedManagementServiceOverrideForTesting(
-          policy::ManagementTarget::PLATFORM,
-          base::flat_set<policy::EnterpriseManagementAuthority>());
 };
 
 TestDiceTurnSyncOnHelperDelegate::TestDiceTurnSyncOnHelperDelegate(
@@ -345,10 +344,16 @@ void TestDiceTurnSyncOnHelperDelegate::ShowMergeSyncDataConfirmation(
 }
 
 void TestDiceTurnSyncOnHelperDelegate::ShowEnterpriseAccountConfirmation(
-    const std::string& email,
+    const AccountInfo& account_info,
     DiceTurnSyncOnHelper::SigninChoiceCallback callback) {
-  test_fixture_->OnShowEnterpriseAccountConfirmation(email,
+  test_fixture_->OnShowEnterpriseAccountConfirmation(account_info,
                                                      std::move(callback));
+}
+
+void TestDiceTurnSyncOnHelperDelegate::ShowSyncConfirmation(
+    base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
+        callback) {
+  test_fixture_->OnShowSyncConfirmation(std::move(callback));
 }
 
 void TestDiceTurnSyncOnHelperDelegate::ShowSyncDisabledConfirmation(
@@ -439,4 +444,71 @@ IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceTest, ConcurrentSignin) {
   ConfirmSync(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   // Policy is still applied.
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
+}
+
+class UserPolicySigninServiceSyncNotRequiredTest
+    : public UserPolicySigninServiceTest {
+ public:
+  UserPolicySigninServiceSyncNotRequiredTest() {
+    DiceTurnSyncOnHelper::SetShowSyncEnabledUiForTesting(true);
+    feature_list.InitAndEnableFeature(kAccountPoliciesLoadedWithoutSync);
+  }
+
+  ~UserPolicySigninServiceSyncNotRequiredTest() override {
+    DiceTurnSyncOnHelper::SetShowSyncEnabledUiForTesting(false);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+// crbug.com/1230268 not working on Lacros.
+// TODO(crbug.com/1254962): flaky on Mac builders
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_MAC)
+#define MAYBE_AcceptManagementDeclineSync DISABLED_AcceptManagementDeclineSync
+#else
+#define MAYBE_AcceptManagementDeclineSync AcceptManagementDeclineSync
+#endif
+IN_PROC_BROWSER_TEST_F(UserPolicySigninServiceSyncNotRequiredTest,
+                       MAYBE_AcceptManagementDeclineSync) {
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
+
+  // Signin and show sync confirmation dialog.
+  CreateDiceTurnOnSyncHelper();
+  WaitForSyncConfirmation();
+
+  // Policies are applied even before the user confirms.
+  EXPECT_TRUE(
+      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
+          signin::ConsentLevel::kSync));
+  WaitForPrefValue(profile()->GetPrefs(), prefs::kShowHomeButton,
+                   base::Value(true));
+
+  // Cancel sync.
+  ConfirmSync(LoginUIService::ABORT_SYNC);
+
+  EXPECT_TRUE(
+      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
+          signin::ConsentLevel::kSignin));
+  EXPECT_FALSE(
+      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
+          signin::ConsentLevel::kSync));
+  EXPECT_TRUE(
+      chrome::enterprise_util::UserAcceptedAccountManagement(profile()));
+  EXPECT_TRUE(chrome::enterprise_util::ProfileCanBeManaged(profile()));
+  // Policy is still applied.
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kShowHomeButton));
+
+  // Signout
+  auto* accounts_mutator =
+      IdentityManagerFactory::GetForProfile(profile())->GetAccountsMutator();
+  accounts_mutator->RemoveAccount(
+      account_id(), signin_metrics::SourceForRefreshTokenOperation::
+                        kDiceResponseHandler_Signout);
+  EXPECT_FALSE(
+      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount(
+          signin::ConsentLevel::kSignin));
+  EXPECT_FALSE(
+      chrome::enterprise_util::UserAcceptedAccountManagement(profile()));
+  EXPECT_FALSE(chrome::enterprise_util::ProfileCanBeManaged(profile()));
 }

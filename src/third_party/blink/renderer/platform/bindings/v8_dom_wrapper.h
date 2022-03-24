@@ -31,14 +31,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 #include "third_party/blink/renderer/platform/bindings/custom_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
@@ -112,11 +111,6 @@ inline void V8DOMWrapper::SetNativeInfoInternal(
   void* values[] = {wrappable, const_cast<WrapperTypeInfo*>(wrapper_type_info)};
   wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                              values);
-  // The following write barrier is necessary as V8 might not see the newly
-  // created object during garbage collection, e.g., when the object is black
-  // allocated.
-  UnifiedHeapMarkingVisitor::WriteBarrier(isolate, wrapper, wrapper_type_info,
-                                          wrappable);
 }
 
 inline void V8DOMWrapper::ClearNativeInfo(v8::Isolate* isolate,
@@ -158,37 +152,6 @@ class V8WrapperInstantiationScope {
   STACK_ALLOCATED();
 
  public:
-  V8WrapperInstantiationScope(v8::Local<v8::Object> creation_context,
-                              v8::Isolate* isolate,
-                              const WrapperTypeInfo* type)
-      : context_(isolate->GetCurrentContext()),
-        try_catch_(isolate),
-        type_(type) {
-    // creationContext should not be empty. Because if we have an
-    // empty creationContext, we will end up creating
-    // a new object in the context currently entered. This is wrong.
-    CHECK(!creation_context.IsEmpty());
-    v8::Local<v8::Context> context_for_wrapper =
-        creation_context->CreationContext();
-
-    // For performance, we enter the context only if the currently running
-    // context is different from the context that we are about to enter.
-    if (context_for_wrapper == context_)
-      return;
-
-    if (!BindingSecurityForPlatform::ShouldAllowWrapperCreationOrThrowException(
-            isolate->GetCurrentContext(), context_for_wrapper, type_)) {
-      DCHECK(try_catch_.HasCaught());
-      try_catch_.ReThrow();
-      access_check_failed_ = true;
-      return;
-    }
-
-    did_enter_context_ = true;
-    context_ = context_for_wrapper;
-    context_->Enter();
-  }
-
   // This is an overload of constructor for CreateWrapperV2.
   V8WrapperInstantiationScope(ScriptState* script_state,
                               const WrapperTypeInfo* type)

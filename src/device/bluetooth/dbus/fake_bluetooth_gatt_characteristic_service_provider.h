@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
@@ -31,6 +30,12 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
       const std::string& uuid,
       const std::vector<std::string>& flags,
       const dbus::ObjectPath& service_path);
+
+  FakeBluetoothGattCharacteristicServiceProvider(
+      const FakeBluetoothGattCharacteristicServiceProvider&) = delete;
+  FakeBluetoothGattCharacteristicServiceProvider& operator=(
+      const FakeBluetoothGattCharacteristicServiceProvider&) = delete;
+
   ~FakeBluetoothGattCharacteristicServiceProvider() override;
 
   // BluetoothGattCharacteristicServiceProvider override.
@@ -82,8 +87,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
 
   // The delegate that method calls are passed on to.
   std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBluetoothGattCharacteristicServiceProvider);
 };
 
 }  // namespace bluez

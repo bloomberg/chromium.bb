@@ -12,8 +12,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kXslPropertyData[] = {
-    {XFA_Element::Uri, 1, 0},
-    {XFA_Element::Debug, 1, 0},
+    {XFA_Element::Uri, 1, {}},
+    {XFA_Element::Debug, 1, {}},
 };
 
 const CXFA_Node::AttributeData kXslAttributeData[] = {
@@ -26,7 +26,7 @@ const CXFA_Node::AttributeData kXslAttributeData[] = {
 CXFA_Xsl::CXFA_Xsl(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Xsl,
                 kXslPropertyData,

@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
@@ -48,6 +48,10 @@ class DownloadPrefs {
     MALICIOUS_FILES = 4,
   };
   explicit DownloadPrefs(Profile* profile);
+
+  DownloadPrefs(const DownloadPrefs&) = delete;
+  DownloadPrefs& operator=(const DownloadPrefs&) = delete;
+
   ~DownloadPrefs();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -145,7 +149,7 @@ class DownloadPrefs {
 
   void UpdateAllowedURLsForOpenByPolicy();
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   BooleanPrefMember prompt_for_download_;
 #if defined(OS_ANDROID)
@@ -184,8 +188,6 @@ class DownloadPrefs {
   // If this is true, SanitizeDownloadTargetPath will always return the passed
   // path verbatim.
   bool skip_sanitize_download_target_path_for_testing_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadPrefs);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PREFS_H_

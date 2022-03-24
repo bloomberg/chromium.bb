@@ -25,7 +25,7 @@ EnumNameTable<SenderMessage::Type, 4> kMessageTypeNames{
 
 SenderMessage::Type GetMessageType(const Json::Value& root) {
   std::string type;
-  if (!json::ParseAndValidateString(root[kMessageType], &type)) {
+  if (!json::TryParseString(root[kMessageType], &type)) {
     return SenderMessage::Type::kUnknown;
   }
 
@@ -44,17 +44,16 @@ ErrorOr<SenderMessage> SenderMessage::Parse(const Json::Value& value) {
   }
 
   SenderMessage message;
-  if (!json::ParseAndValidateInt(value[kSequenceNumber],
-                                 &(message.sequence_number))) {
+  if (!json::TryParseInt(value[kSequenceNumber], &(message.sequence_number))) {
     message.sequence_number = -1;
   }
 
   message.type = GetMessageType(value);
   switch (message.type) {
     case Type::kOffer: {
-      ErrorOr<Offer> offer = Offer::Parse(value[kOfferMessageBody]);
-      if (offer.is_value()) {
-        message.body = std::move(offer.value());
+      Offer offer;
+      if (Offer::TryParse(value[kOfferMessageBody], &offer).ok()) {
+        message.body = std::move(offer);
         message.valid = true;
       }
     } break;
@@ -62,7 +61,7 @@ ErrorOr<SenderMessage> SenderMessage::Parse(const Json::Value& value) {
     case Type::kRpc: {
       std::string rpc_body;
       std::vector<uint8_t> rpc;
-      if (json::ParseAndValidateString(value[kRpcMessageBody], &rpc_body) &&
+      if (json::TryParseString(value[kRpcMessageBody], &rpc_body) &&
           base64::Decode(rpc_body, &rpc)) {
         message.body = rpc;
         message.valid = true;

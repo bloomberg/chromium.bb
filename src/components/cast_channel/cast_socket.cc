@@ -17,9 +17,9 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/cast_channel/cast_auth_util.h"
@@ -149,7 +149,7 @@ void CastSocketImpl::set_id(int id) {
 }
 
 bool CastSocketImpl::keep_alive() const {
-  return open_params_.liveness_timeout > base::TimeDelta();
+  return open_params_.liveness_timeout.is_positive();
 }
 
 bool CastSocketImpl::audio_only() const {
@@ -447,7 +447,7 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
           logger_);
     }
     auth_delegate_ = new AuthTransportDelegate(this);
-    transport_->SetReadDelegate(base::WrapUnique(auth_delegate_));
+    transport_->SetReadDelegate(base::WrapUnique(auth_delegate_.get()));
     SetConnectState(ConnectionState::AUTH_CHALLENGE_SEND);
   } else if (result == net::ERR_CONNECTION_TIMED_OUT) {
     SetConnectState(ConnectionState::FINISHED);

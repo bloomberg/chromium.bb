@@ -22,6 +22,12 @@
 namespace payments {
 
 class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
+ public:
+  PaymentMethodViewControllerTest(const PaymentMethodViewControllerTest&) =
+      delete;
+  PaymentMethodViewControllerTest& operator=(
+      const PaymentMethodViewControllerTest&) = delete;
+
  protected:
   PaymentMethodViewControllerTest()
       : gpay_server_(net::EmbeddedTestServer::TYPE_HTTPS),
@@ -58,8 +64,6 @@ class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
  private:
   net::EmbeddedTestServer gpay_server_;
   net::EmbeddedTestServer kylepay_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentMethodViewControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
@@ -73,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
   InvokePaymentRequestUI();
   OpenPaymentMethodScreen();
 
-  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  PaymentRequest* request = GetPaymentRequests().front();
   EXPECT_EQ(1U, request->state()->available_apps().size());
 
   views::View* list_view = dialog_view()->GetViewByID(
@@ -111,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
   InvokePaymentRequestUI();
   OpenPaymentMethodScreen();
 
-  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  PaymentRequest* request = GetPaymentRequests().front();
   EXPECT_EQ(2U, request->state()->available_apps().size());
   EXPECT_EQ(request->state()->available_apps().front().get(),
             request->state()->selected_app());

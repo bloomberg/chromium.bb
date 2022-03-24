@@ -34,6 +34,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
@@ -64,16 +65,18 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // ChromeClient methods:
   WebViewImpl* GetWebView() const override;
   void ChromeDestroyed() override;
-  void SetWindowRect(const IntRect&, LocalFrame&) override;
-  IntRect RootWindowRect(LocalFrame&) override;
+  void SetWindowRect(const gfx::Rect&, LocalFrame&) override;
+  gfx::Rect RootWindowRect(LocalFrame&) override;
+  void DidAccessInitialMainDocument() override;
   void FocusPage() override;
   void DidFocusPage() override;
   bool CanTakeFocus(mojom::blink::FocusType) override;
   void TakeFocus(mojom::blink::FocusType) override;
   void SetKeyboardFocusURL(Element* new_focus_element) override;
   void BeginLifecycleUpdates(LocalFrame& main_frame) override;
-  void StartDeferringCommits(LocalFrame& main_frame,
-                             base::TimeDelta timeout) override;
+  bool StartDeferringCommits(LocalFrame& main_frame,
+                             base::TimeDelta timeout,
+                             cc::PaintHoldingReason reason) override;
   void StopDeferringCommits(LocalFrame& main_frame,
                             cc::PaintHoldingCommitTrigger) override;
   void StartDragging(LocalFrame*,
@@ -91,7 +94,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                              bool& consumed_user_gesture) override;
   void Show(const blink::LocalFrameToken& opener_frame_token,
             NavigationPolicy navigation_policy,
-            const IntRect& initial_rect,
+            const gfx::Rect& initial_rect,
             bool user_gesture) override;
   void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
                      const gfx::Vector2dF& accumulated_overscroll,
@@ -133,15 +136,15 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool TabsToLinks() override;
   void InvalidateContainer() override;
   void ScheduleAnimation(const LocalFrameView*, base::TimeDelta delay) override;
-  IntRect ViewportToScreen(const IntRect&,
-                           const LocalFrameView*) const override;
+  gfx::Rect ViewportToScreen(const gfx::Rect&,
+                             const LocalFrameView*) const override;
   float WindowToViewportScalar(LocalFrame*, const float) const override;
-  const ScreenInfo& GetScreenInfo(LocalFrame&) const override;
-  const ScreenInfos& GetScreenInfos(LocalFrame&) const override;
+  const display::ScreenInfo& GetScreenInfo(LocalFrame&) const override;
+  const display::ScreenInfos& GetScreenInfos(LocalFrame&) const override;
   void OverrideVisibleRectForMainFrame(LocalFrame& frame,
-                                       IntRect* paint_rect) const override;
+                                       gfx::Rect* paint_rect) const override;
   float InputEventsScaleForEmulation() const override;
-  void ContentsSizeChanged(LocalFrame*, const IntSize&) const override;
+  void ContentsSizeChanged(LocalFrame*, const gfx::Size&) const override;
   bool DoubleTapToZoomEnabled() const override;
   void EnablePreferredSizeChangedMode() override;
   void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
@@ -158,6 +161,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                  const String&,
                                  TextDirection,
                                  const gfx::Rect&) override;
+  void ClearKeyboardTriggeredTooltip(LocalFrame&) override;
   void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const override;
   void PrintDelegate(LocalFrame*) override;
@@ -176,9 +180,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void SetEventListenerProperties(LocalFrame*,
                                   cc::EventListenerClass,
                                   cc::EventListenerProperties) override;
-  cc::EventListenerProperties EventListenerProperties(
-      LocalFrame*,
-      cc::EventListenerClass) const override;
   // Informs client about the existence of handlers for scroll events so
   // appropriate scroll optimizations can be chosen.
   void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;

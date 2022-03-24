@@ -39,8 +39,7 @@ const char* EventName(VideoEncoder::EncoderEvent event) {
 }
 
 // Default timeout used when waiting for events.
-constexpr base::TimeDelta kDefaultEventWaitTimeout =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kDefaultEventWaitTimeout = base::Seconds(30);
 
 // Default initial size used for |video_encoder_events_|.
 constexpr size_t kDefaultEventListSize = 512;
@@ -159,13 +158,12 @@ void VideoEncoder::Flush() {
   encoder_client_->Flush();
 }
 
-void VideoEncoder::UpdateBitrate(uint32_t bitrate, uint32_t framerate) {
+void VideoEncoder::UpdateBitrate(const VideoBitrateAllocation& bitrate,
+                                 uint32_t framerate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(4);
 
-  VideoBitrateAllocation bitrate_allocation;
-  ASSERT_TRUE(bitrate_allocation.SetBitrate(0, 0, bitrate));
-  encoder_client_->UpdateBitrate(bitrate_allocation, framerate);
+  encoder_client_->UpdateBitrate(bitrate, framerate);
 }
 
 void VideoEncoder::ForceKeyFrame() {

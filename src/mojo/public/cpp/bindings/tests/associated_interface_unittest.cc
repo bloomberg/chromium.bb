@@ -12,7 +12,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -117,12 +119,12 @@ class AssociatedInterfaceTest : public testing::Test {
   void CreateRouterPair(scoped_refptr<MultiplexRouter>* router0,
                         scoped_refptr<MultiplexRouter>* router1) {
     MessagePipe pipe;
-    *router0 = MultiplexRouter::Create(std::move(pipe.handle0),
-                                       MultiplexRouter::MULTI_INTERFACE, true,
-                                       main_runner_);
-    *router1 = MultiplexRouter::Create(std::move(pipe.handle1),
-                                       MultiplexRouter::MULTI_INTERFACE, false,
-                                       main_runner_);
+    *router0 = MultiplexRouter::CreateAndStartReceiving(
+        std::move(pipe.handle0), MultiplexRouter::MULTI_INTERFACE, true,
+        main_runner_);
+    *router1 = MultiplexRouter::CreateAndStartReceiving(
+        std::move(pipe.handle1), MultiplexRouter::MULTI_INTERFACE, false,
+        main_runner_);
   }
 
   void CreateIntegerSenderWithExistingRouters(
@@ -255,7 +257,7 @@ class TestSender {
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  TestSender* next_sender_;
+  raw_ptr<TestSender> next_sender_;
   int32_t max_value_to_send_;
 
   AssociatedRemote<IntegerSender> remote_;
@@ -394,22 +396,22 @@ TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
   run_loop.Run();
 
   for (size_t i = 0; i < 4; ++i) {
-    base::RunLoop run_loop;
+    base::RunLoop run_loop2;
     senders[i].task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TestSender::TearDown, base::Unretained(&senders[i])),
-        run_loop.QuitClosure());
-    run_loop.Run();
+        run_loop2.QuitClosure());
+    run_loop2.Run();
   }
 
   for (size_t i = 0; i < 2; ++i) {
-    base::RunLoop run_loop;
+    base::RunLoop run_loop2;
     receivers[i].task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TestReceiver::TearDown,
                        base::Unretained(&receivers[i])),
-        run_loop.QuitClosure());
-    run_loop.Run();
+        run_loop2.QuitClosure());
+    run_loop2.Run();
   }
 
   EXPECT_EQ(static_cast<size_t>(kMaxValue / 2), receivers[0].values().size());
@@ -475,22 +477,22 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
   run_loop.Run();
 
   for (size_t i = 0; i < 4; ++i) {
-    base::RunLoop run_loop;
+    base::RunLoop run_loop2;
     senders[i].task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TestSender::TearDown, base::Unretained(&senders[i])),
-        run_loop.QuitClosure());
-    run_loop.Run();
+        run_loop2.QuitClosure());
+    run_loop2.Run();
   }
 
   for (size_t i = 0; i < 2; ++i) {
-    base::RunLoop run_loop;
+    base::RunLoop run_loop2;
     receivers[i].task_runner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&TestReceiver::TearDown,
                        base::Unretained(&receivers[i])),
-        run_loop.QuitClosure());
-    run_loop.Run();
+        run_loop2.QuitClosure());
+    run_loop2.Run();
   }
 
   EXPECT_EQ(static_cast<size_t>(kMaxValue / 2), receivers[0].values().size());

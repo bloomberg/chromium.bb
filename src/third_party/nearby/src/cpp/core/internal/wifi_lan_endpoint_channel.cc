@@ -23,37 +23,22 @@ namespace location {
 namespace nearby {
 namespace connections {
 
-namespace {
-
-OutputStream* GetOutputStreamOrNull(WifiLanSocket& socket) {
-  if (socket.GetRemoteWifiLanService().IsValid())
-    return &socket.GetOutputStream();
-  return nullptr;
-}
-
-InputStream* GetInputStreamOrNull(WifiLanSocket& socket) {
-  if (socket.GetRemoteWifiLanService().IsValid())
-    return &socket.GetInputStream();
-  return nullptr;
-}
-
-}  // namespace
-
 WifiLanEndpointChannel::WifiLanEndpointChannel(const std::string& channel_name,
                                                WifiLanSocket socket)
-    : BaseEndpointChannel(channel_name, GetInputStreamOrNull(socket),
-                          GetOutputStreamOrNull(socket)),
-      wifi_lan_socket_(std::move(socket)) {}
+    : BaseEndpointChannel(channel_name, &socket.GetInputStream(),
+                          &socket.GetOutputStream()),
+      socket_(std::move(socket)) {}
 
 proto::connections::Medium WifiLanEndpointChannel::GetMedium() const {
   return proto::connections::Medium::WIFI_LAN;
 }
 
 void WifiLanEndpointChannel::CloseImpl() {
-  auto status = wifi_lan_socket_.Close();
+  auto status = socket_.Close();
   if (!status.Ok()) {
-    NEARBY_LOG(INFO, "Failed to close WifiLan socket: exception=%d",
-               status.value);
+    NEARBY_LOGS(INFO)
+        << "Failed to close underlying socket for WifiLanEndpointChannel "
+        << GetName() << " : exception = " << status.value;
   }
 }
 

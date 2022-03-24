@@ -101,7 +101,7 @@ void CaptureDeleteBuffers_buffersPacked(const State &glState,
                                         const BufferID *buffers,
                                         ParamCapture *paramCapture)
 {
-    CaptureMemory(buffers, sizeof(BufferID) * n, paramCapture);
+    CaptureArray(buffers, n, paramCapture);
 }
 
 void CaptureDeleteFramebuffers_framebuffersPacked(const State &glState,
@@ -110,7 +110,7 @@ void CaptureDeleteFramebuffers_framebuffersPacked(const State &glState,
                                                   const FramebufferID *framebuffers,
                                                   ParamCapture *paramCapture)
 {
-    CaptureMemory(framebuffers, sizeof(FramebufferID) * n, paramCapture);
+    CaptureArray(framebuffers, n, paramCapture);
 }
 
 void CaptureDeleteRenderbuffers_renderbuffersPacked(const State &glState,
@@ -119,7 +119,7 @@ void CaptureDeleteRenderbuffers_renderbuffersPacked(const State &glState,
                                                     const RenderbufferID *renderbuffers,
                                                     ParamCapture *paramCapture)
 {
-    CaptureMemory(renderbuffers, sizeof(RenderbufferID) * n, paramCapture);
+    CaptureArray(renderbuffers, n, paramCapture);
 }
 
 void CaptureDeleteTextures_texturesPacked(const State &glState,
@@ -128,7 +128,7 @@ void CaptureDeleteTextures_texturesPacked(const State &glState,
                                           const TextureID *textures,
                                           ParamCapture *paramCapture)
 {
-    CaptureMemory(textures, sizeof(TextureID) * n, paramCapture);
+    CaptureArray(textures, n, paramCapture);
 }
 
 void CaptureDrawElements_indices(const State &glState,
@@ -704,8 +704,16 @@ void CaptureTexImage2D_pixels(const State &glState,
     (void)internalFormatInfo.computeSkipBytes(type, srcRowPitch, srcDepthPitch, unpack, false,
                                               &srcSkipBytes);
 
-    size_t captureSize = srcRowPitch * height + srcSkipBytes;
-    CaptureMemory(pixels, captureSize, paramCapture);
+    // For the last row of pixels, we don't round up to the unpack alignment. This often affects
+    // 1x1 sized textures because they may be 1 or 2 bytes wide with an alignment of 4 bytes.
+    size_t allRowSizeMinusLastRowSize = height == 0 ? 0 : (srcRowPitch * (height - 1));
+    size_t lastRowSize                = width * internalFormatInfo.pixelBytes;
+    size_t captureSize                = allRowSizeMinusLastRowSize + lastRowSize + srcSkipBytes;
+
+    if (captureSize > 0)
+    {
+        CaptureMemory(pixels, captureSize, paramCapture);
+    }
 }
 
 void CaptureTexParameterfv_params(const State &glState,

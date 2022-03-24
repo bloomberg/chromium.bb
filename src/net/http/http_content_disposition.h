@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -54,6 +53,10 @@ class NET_EXPORT HttpContentDisposition {
 
   HttpContentDisposition(const std::string& header,
                          const std::string& referrer_charset);
+
+  HttpContentDisposition(const HttpContentDisposition&) = delete;
+  HttpContentDisposition& operator=(const HttpContentDisposition&) = delete;
+
   ~HttpContentDisposition();
 
   bool is_attachment() const { return type() == ATTACHMENT; }
@@ -72,8 +75,6 @@ class NET_EXPORT HttpContentDisposition {
   Type type_;
   std::string filename_;
   int parse_result_flags_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpContentDisposition);
 };
 
 }  // namespace net

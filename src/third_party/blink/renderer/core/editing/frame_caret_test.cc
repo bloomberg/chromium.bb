@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/frame_caret.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/editing/commands/typing_command.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
@@ -30,15 +31,20 @@ class FrameCaretTest : public EditingTestBase {
   ScopedWebTestMode web_test_mode_{false};
 };
 
-TEST_F(FrameCaretTest, BlinkAfterTyping) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222649
+#define MAYBE_BlinkAfterTyping DISABLED_BlinkAfterTyping
+#else
+#define MAYBE_BlinkAfterTyping BlinkAfterTyping
+#endif
+TEST_F(FrameCaretTest, MAYBE_BlinkAfterTyping) {
   FrameCaret& caret = Selection().FrameCaretForTesting();
   scoped_refptr<scheduler::FakeTaskRunner> task_runner =
       base::MakeRefCounted<scheduler::FakeTaskRunner>();
   task_runner->SetTime(0);
   caret.RecreateCaretBlinkTimerForTesting(task_runner.get());
   const double kInterval = 10;
-  LayoutTheme::GetTheme().SetCaretBlinkInterval(
-      base::TimeDelta::FromSecondsD(kInterval));
+  LayoutTheme::GetTheme().SetCaretBlinkInterval(base::Seconds(kInterval));
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   GetDocument().body()->setInnerHTML("<textarea>");

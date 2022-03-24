@@ -1,15 +1,19 @@
     <style include="cr-shared-style settings-shared">
       :host {
-        background-color: var(--cr-card-background-color);
-        box-shadow: var(--cr-card-shadow);
         box-sizing: border-box;
         display: block;
         left: 0;
-        min-height: calc(100vh - var(--cr-toolbar-height));
+        min-height: calc(100vh - var(--cr-toolbar-height) -
+            var(--cr-toolbar-padding-top, 0px));
         padding-bottom: 60px;
         position: absolute;
         right: 0;
         top: 0;
+      }
+
+      :host(:not(.multi-card)) {
+        background-color: var(--cr-card-background-color);
+        box-shadow: var(--cr-card-shadow);
       }
 
       #headerLine {

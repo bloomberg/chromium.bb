@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -18,12 +17,15 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
@@ -36,6 +38,12 @@ namespace translate {
 class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
   TranslateBubbleViewBrowserTest() {}
+
+  TranslateBubbleViewBrowserTest(const TranslateBubbleViewBrowserTest&) =
+      delete;
+  TranslateBubbleViewBrowserTest& operator=(
+      const TranslateBubbleViewBrowserTest&) = delete;
+
   ~TranslateBubbleViewBrowserTest() override {}
 
   void SetUp() override {
@@ -49,6 +57,9 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(
         switches::kTranslateScriptURL,
         embedded_test_server()->GetURL("/mock_translate_script.js").spec());
+    // TODO(crbug.com/1258185): Migrate to better mechanism for testing around
+    // language detection.
+    command_line->AppendSwitch(::switches::kOverrideLanguageDetection);
   }
 
   void SetUpOnMainThread() override {
@@ -63,7 +74,7 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
  protected:
   void NavigateAndWaitForLanguageDetection(const GURL& url,
                                            const std::string& expected_lang) {
-    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     while (expected_lang !=
            ChromeTranslateClient::FromWebContents(
@@ -76,9 +87,6 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
           ->Wait();
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
@@ -155,6 +163,40 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest, AlertAccessibleEvent) {
 
   // TODO(crbug.com/1082217): This should produce one event instead of two.
   EXPECT_LT(0, counter.GetCount(ax::mojom::Event::kAlert));
+}
+
+class TranslateBubbleVisualTest
+    : public SupportsTestDialog<TranslateBubbleViewBrowserTest> {
+ public:
+  TranslateBubbleVisualTest(const TranslateBubbleVisualTest&) = delete;
+  TranslateBubbleVisualTest& operator=(const TranslateBubbleVisualTest&) =
+      delete;
+
+ protected:
+  TranslateBubbleVisualTest() = default;
+
+  // TestBrowserDialog:
+  void ShowUi(const std::string& name) override {
+    GURL french_url = GURL(embedded_test_server()->GetURL("/french_page.html"));
+    NavigateAndWaitForLanguageDetection(french_url, "fr");
+    DCHECK(TranslateBubbleView::GetCurrentBubble());
+    TranslateBubbleView::GetCurrentBubble()->SwitchView(state_);
+  }
+
+  void set_state(TranslateBubbleModel::ViewState state) { state_ = state; }
+
+ private:
+  TranslateBubbleModel::ViewState state_;
+};
+
+IN_PROC_BROWSER_TEST_F(TranslateBubbleVisualTest, InvokeUi_error) {
+  set_state(TranslateBubbleModel::ViewState::VIEW_STATE_ERROR);
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(TranslateBubbleVisualTest, InvokeUi_advanced) {
+  set_state(TranslateBubbleModel::ViewState::VIEW_STATE_SOURCE_LANGUAGE);
+  ShowAndVerifyUi();
 }
 
 }  // namespace translate

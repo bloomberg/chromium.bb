@@ -13,8 +13,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "remoting/base/util.h"
 #include "remoting/client/client_context.h"
 #include "remoting/codec/video_decoder.h"
@@ -160,7 +160,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(
                      std::move(frame)),
       base::BindOnce(&SoftwareVideoRenderer::RenderFrame,
                      weak_factory_.GetWeakPtr(), std::move(frame_stats),
-                     base::AdaptCallbackForRepeating(done_runner.Release())));
+                     done_runner.Release()));
 }
 
 void SoftwareVideoRenderer::RenderFrame(

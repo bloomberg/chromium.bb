@@ -8,7 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/test_child_modal_parent.h"
 #include "ash/wm/window_util.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -379,6 +379,11 @@ class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   TouchTrackerWindowDelegate()
       : received_touch_(false), last_event_type_(ui::ET_UNKNOWN) {}
+
+  TouchTrackerWindowDelegate(const TouchTrackerWindowDelegate&) = delete;
+  TouchTrackerWindowDelegate& operator=(const TouchTrackerWindowDelegate&) =
+      delete;
+
   ~TouchTrackerWindowDelegate() override = default;
 
   void reset() {
@@ -399,8 +404,6 @@ class TouchTrackerWindowDelegate : public aura::test::TestWindowDelegate {
 
   bool received_touch_;
   ui::EventType last_event_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchTrackerWindowDelegate);
 };
 
 // Modality should prevent events from being passed to transient window tree

@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_EXTENSIONS_CAST_EXTENSION_SYSTEM_FACTORY_H_
 #define CHROMECAST_BROWSER_EXTENSIONS_CAST_EXTENSION_SYSTEM_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "extensions/browser/extension_system_provider.h"
 
@@ -20,6 +19,10 @@ class CastExtensionSystemFactory : public ExtensionSystemProvider {
 
   static CastExtensionSystemFactory* GetInstance();
 
+  CastExtensionSystemFactory(const CastExtensionSystemFactory&) = delete;
+  CastExtensionSystemFactory& operator=(const CastExtensionSystemFactory&) =
+      delete;
+
  private:
   friend struct base::DefaultSingletonTraits<CastExtensionSystemFactory>;
 
@@ -32,8 +35,6 @@ class CastExtensionSystemFactory : public ExtensionSystemProvider {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionSystemFactory);
 };
 
 }  // namespace extensions

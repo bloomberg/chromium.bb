@@ -5,13 +5,29 @@
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 
 #include <memory>
+#include <set>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
+#include "chrome/browser/ash/input_method/mock_input_method_engine.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/language/core/common/locale_util.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_web_ui.h"
-#include "ui/accessibility/accessibility_switches.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "ui/accessibility/accessibility_features.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
+
+using ::testing::Contains;
+using ::testing::Not;
 
 namespace chromeos {
 namespace settings {
@@ -25,14 +41,18 @@ class TestAccessibilityHandler : public AccessibilityHandler {
 
 class AccessibilityHandlerTest : public InProcessBrowserTest {
  public:
-  AccessibilityHandlerTest() = default;
+  AccessibilityHandlerTest()
+      : mock_ime_engine_handler_(
+            std::make_unique<input_method::MockInputMethodEngine>()) {}
   AccessibilityHandlerTest(const AccessibilityHandlerTest&) = delete;
   AccessibilityHandlerTest& operator=(const AccessibilityHandlerTest&) = delete;
   ~AccessibilityHandlerTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilityDictationOffline);
+    scoped_feature_list_.InitWithFeatures(
+        {::features::kExperimentalAccessibilityDictationOffline,
+         features::kOnDeviceSpeechRecognition},
+        {});
   }
 
   void SetUpOnMainThread() override {
@@ -41,9 +61,17 @@ class AccessibilityHandlerTest : public InProcessBrowserTest {
     handler_->RegisterMessages();
     handler_->AllowJavascriptForTesting();
     base::RunLoop().RunUntilIdle();
+
+    // Set the Dictation locale for tests.
+    SetDictationLocale("en-US");
   }
 
-  void TearDownOnMainThread() override { handler_.reset(); }
+  void TearDownOnMainThread() override {
+    handler_->DisallowJavascript();
+    handler_.reset();
+  }
+
+  size_t GetNumWebUICalls() { return web_ui_.call_data().size(); }
 
   void AssertWebUICalls(unsigned int num) {
     ASSERT_EQ(num, web_ui_.call_data().size());
@@ -55,14 +83,13 @@ class AccessibilityHandlerTest : public InProcessBrowserTest {
     for (auto it = web_ui_.call_data().rbegin();
          it != web_ui_.call_data().rend(); ++it) {
       const content::TestWebUI::CallData* data = it->get();
-      std::string listener;
-      std::string listener_argument;
-      data->arg1()->GetAsString(&listener);
-      if (!data->arg2()->GetAsString(&listener_argument)) {
+      std::string listener = data->arg1()->GetString();
+      if (!data->arg2()->is_string()) {
         // Only look for listeners with a single string argument. Continue
         // silently if we find anything else.
         continue;
       }
+      std::string listener_argument = data->arg2()->GetString();
 
       if (data->function_name() == "cr.webUIListenerCallback" &&
           listener == expected_listener &&
@@ -74,62 +101,210 @@ class AccessibilityHandlerTest : public InProcessBrowserTest {
     return false;
   }
 
-  void AddSodaInstallerObserver() { handler_->MaybeAddSodaInstallerObserver(); }
+  bool GetWebUIListenerArgumentListValue(const std::string& expected_listener,
+                                         base::Value::ConstListView* argument) {
+    for (auto it = web_ui_.call_data().rbegin();
+         it != web_ui_.call_data().rend(); ++it) {
+      const content::TestWebUI::CallData* data = it->get();
+      std::string listener;
+      data->arg1()->GetAsString(&listener);
+      if (data->function_name() == "cr.webUIListenerCallback" &&
+          listener == expected_listener) {
+        if (!data->arg2()->is_list())
+          return false;
+        *argument = data->arg2()->GetList();
+        return true;
+      }
+    }
 
-  void OnSodaInstalled() { handler_->OnSodaInstalled(); }
+    return false;
+  }
 
-  void OnSodaProgress(int progress) { handler_->OnSodaProgress(progress); }
+  void MaybeAddDictationLocales() { handler_->MaybeAddDictationLocales(); }
 
-  void OnSodaError() { handler_->OnSodaError(); }
+  void SetDictationLocale(const std::string& locale) {
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetString(
+        prefs::kAccessibilityDictationLocale, locale);
+  }
+
+  speech::SodaInstaller* soda_installer() {
+    return speech::SodaInstaller::GetInstance();
+  }
+
+  speech::LanguageCode en_us() { return speech::LanguageCode::kEnUs; }
+  speech::LanguageCode fr_fr() { return speech::LanguageCode::kFrFr; }
+
+  std::unique_ptr<input_method::MockInputMethodEngine> mock_ime_engine_handler_;
 
  private:
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestAccessibilityHandler> handler_;
   content::TestWebUI web_ui_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// A sanity check that ensures that |handler_| can be used to call into
-// AccessibilityHandler and produce the expected results.
-// This also verifies that the correct string is sent to the JavaScript end
-// of the web UI.
-IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaInstalledTestApi) {
-  AssertWebUICalls(0);
-  OnSodaInstalled();
-  AssertWebUICalls(1);
+// Ensures that AccessibilityHandler listens to SODA download state changes, and
+// fires the correct listener when SODA AND the language pack matching the
+// Dictation locale are installed.
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaInstalledNotification) {
+  SetDictationLocale("fr-FR");
+  size_t num_calls = GetNumWebUICalls();
+  // Pretend that the SODA binary was installed. We still need to wait for the
+  // correct language pack before doing anything.
+  soda_installer()->NotifySodaInstalledForTesting();
+  AssertWebUICalls(num_calls);
+  soda_installer()->NotifyOnSodaLanguagePackInstalledForTesting(en_us());
+  AssertWebUICalls(num_calls);
+  soda_installer()->NotifyOnSodaLanguagePackInstalledForTesting(fr_fr());
+  AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
-      "dictation-setting-subtitle-changed", "Speech files downloaded"));
+      "dictation-locale-menu-subtitle-changed",
+      "French (France) is processed locally and works offline"));
 }
 
 // Verifies that the correct string is sent to the JavaScript end of the web UI.
-IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaProgressTestApi) {
-  AssertWebUICalls(0);
-  OnSodaProgress(50);
-  AssertWebUICalls(1);
+// Ensures we only notify the user of progress for the language pack matching
+// the Dictation locale.
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaProgressNotification) {
+  size_t num_calls = GetNumWebUICalls();
+  // Do not give updates for the SODA binary.
+  soda_installer()->NotifySodaDownloadProgressForTesting(50);
+  AssertWebUICalls(num_calls);
+  soda_installer()->NotifyOnSodaLanguagePackProgressForTesting(50, fr_fr());
+  AssertWebUICalls(num_calls);
+  soda_installer()->NotifyOnSodaLanguagePackProgressForTesting(50, en_us());
+  AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
-      "dictation-setting-subtitle-changed",
+      "dictation-locale-menu-subtitle-changed",
       "Downloading speech recognition files… 50%"));
 }
 
-// Verifies that the correct string is sent to the JavaScript end of the web UI.
-IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaErrorTestApi) {
-  AssertWebUICalls(0);
-  OnSodaError();
-  AssertWebUICalls(1);
+// Verifies that the correct string is sent to the JavaScript end of the web UI
+// when the SODA binary fails to download.
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaErrorNotification) {
+  size_t num_calls = GetNumWebUICalls();
+  soda_installer()->NotifySodaErrorForTesting();
+  AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
-      "dictation-setting-subtitle-changed",
-      "Can't download speech files. Dictation will continue to work by sending "
-      "your voice to Google."));
+      "dictation-locale-menu-subtitle-changed",
+      "Couldn’t download English (United States) speech files. Download will "
+      "be attempted later. Speech is sent to Google for processing until "
+      "download is completed."));
 }
 
-// Ensures that AccessibilityHandler listens to SODA download state and fires
-// the correct listener when SODA is installed.
-IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaInstalledNotification) {
-  AssertWebUICalls(0);
-  AddSodaInstallerObserver();
-  speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
-  AssertWebUICalls(1);
+// Verifies that the correct listener is fired when the language pack matching
+// the Dictation locale fails to download.
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest,
+                       OnSodaLanguageErrorNotification) {
+  size_t num_calls = GetNumWebUICalls();
+  // Do nothing if the failed language pack is different than the Dictation
+  // locale.
+  soda_installer()->NotifyOnSodaLanguagePackErrorForTesting(fr_fr());
+  AssertWebUICalls(num_calls);
+  // Fire the correct listener when the language pack matching the Dictation
+  // locale fails.
+  soda_installer()->NotifyOnSodaLanguagePackErrorForTesting(en_us());
+  AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
-      "dictation-setting-subtitle-changed", "Speech files downloaded"));
+      "dictation-locale-menu-subtitle-changed",
+      "Couldn’t download English (United States) speech files. Download will "
+      "be attempted later. Speech is sent to Google for processing until "
+      "download is completed."));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, DictationLocalesCalculation) {
+  input_method::InputMethodManager* ime_manager =
+      input_method::InputMethodManager::Get();
+
+  struct {
+    std::string application_locale;
+    std::vector<std::string> ime_locales;
+    std::string preferred_languages;
+    std::set<base::StringPiece> expected_recommended_prefixes;
+  } kTestCases[] = {
+      {"en-US", {}, "", {"en"}},
+      {"en", {}, "", {"en"}},
+      {"fr", {}, "", {"fr"}},
+      {"en", {"en", "en-US"}, "", {"en"}},
+      {"en", {"en", "en-US"}, "en", {"en"}},
+      {"en", {"en", "es"}, "", {"en", "es"}},
+      {"en", {"fr", "es", "fr-FR"}, "", {"en", "es", "fr"}},
+      {"it-IT", {"ar", "is-IS", "uk"}, "", {"it", "ar", "is", "uk"}},
+      {"en", {"fr", "es", "fr-FR"}, "en-US,it-IT", {"en", "es", "fr", "it"}},
+      {"en", {}, "en-US,it-IT,uk", {"en", "it", "uk"}},
+  };
+  for (const auto& testcase : kTestCases) {
+    // Set application locale.
+    g_browser_process->SetApplicationLocale(testcase.application_locale);
+
+    // Set up fake IMEs.
+    auto state =
+        ime_manager->CreateNewState(ProfileManager::GetActiveUserProfile());
+    ime_manager->SetState(state);
+    input_method::InputMethodDescriptors imes;
+    for (auto& locale : testcase.ime_locales) {
+      std::string id = "fake-ime-extension-" + locale;
+      input_method::InputMethodDescriptor descriptor(id, locale, std::string(),
+                                                     std::string(), {locale},
+                                                     false, GURL(), GURL());
+      imes.push_back(descriptor);
+    }
+    ime_manager->GetInputMethodUtil()->ResetInputMethods(imes);
+
+    for (auto& descriptor : imes) {
+      state->AddInputMethodExtension(descriptor.id(), {descriptor},
+                                     mock_ime_engine_handler_.get());
+      ASSERT_TRUE(state->EnableInputMethod(descriptor.id()));
+    }
+
+    // Set up fake preferred languages.
+    browser()->profile()->GetPrefs()->SetString(
+        language::prefs::kPreferredLanguages, testcase.preferred_languages);
+
+    MaybeAddDictationLocales();
+
+    base::Value::ConstListView argument;
+    ASSERT_TRUE(
+        GetWebUIListenerArgumentListValue("dictation-locales-set", &argument));
+    for (auto& it : argument) {
+      const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(it);
+      base::StringPiece language_code =
+          language::SplitIntoMainAndTail(*(dict->FindStringPath("value")))
+              .first;
+      // Only expect some locales to be recommended based on application and
+      // IME languages.
+      if (*(dict->FindBoolPath("recommended"))) {
+        EXPECT_THAT(testcase.expected_recommended_prefixes,
+                    Contains(language_code));
+      } else {
+        EXPECT_THAT(testcase.expected_recommended_prefixes,
+                    Not(Contains(language_code)));
+      }
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest,
+                       DictationLocalesOfflineAndInstalled) {
+  speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
+  MaybeAddDictationLocales();
+  base::Value::ConstListView argument;
+  ASSERT_TRUE(
+      GetWebUIListenerArgumentListValue("dictation-locales-set", &argument));
+
+  for (auto& it : argument) {
+    const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(it);
+    const std::string locale = *(dict->FindStringPath("value"));
+    bool works_offline = dict->FindBoolKey("worksOffline").value();
+    bool installed = dict->FindBoolKey("installed").value();
+    if (locale == speech::kUsEnglishLocale) {
+      ASSERT_TRUE(works_offline);
+      ASSERT_TRUE(installed);
+    } else {
+      ASSERT_FALSE(works_offline);
+      ASSERT_FALSE(installed);
+    }
+  }
 }
 
 }  // namespace settings

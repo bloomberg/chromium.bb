@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/stl_util.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -37,6 +36,10 @@ constexpr float kOverlayOpacity = 0.8f;
 class CocoaScrollBarThumb : public BaseScrollBarThumb {
  public:
   explicit CocoaScrollBarThumb(CocoaScrollBar* scroll_bar);
+
+  CocoaScrollBarThumb(const CocoaScrollBarThumb&) = delete;
+  CocoaScrollBarThumb& operator=(const CocoaScrollBarThumb&) = delete;
+
   ~CocoaScrollBarThumb() override;
 
   // Returns true if the thumb is in hovered state.
@@ -59,8 +62,6 @@ class CocoaScrollBarThumb : public BaseScrollBarThumb {
  private:
   // The CocoaScrollBar that owns us.
   CocoaScrollBar* cocoa_scroll_bar_;  // weak.
-
-  DISALLOW_COPY_AND_ASSIGN(CocoaScrollBarThumb);
 };
 
 CocoaScrollBarThumb::CocoaScrollBarThumb(CocoaScrollBar* scroll_bar)
@@ -142,7 +143,7 @@ void CocoaScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
 CocoaScrollBar::CocoaScrollBar(bool horizontal)
     : ScrollBar(horizontal),
       hide_scrollbar_timer_(FROM_HERE,
-                            base::TimeDelta::FromMilliseconds(500),
+                            base::Milliseconds(500),
                             base::BindRepeating(&CocoaScrollBar::HideScrollbar,
                                                 base::Unretained(this))),
       thickness_animation_(this),
@@ -153,7 +154,7 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
   bridge_.reset([[ViewsScrollbarBridge alloc] initWithDelegate:this]);
   scroller_style_ = [ViewsScrollbarBridge getPreferredScrollerStyle];
 
-  thickness_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(240));
+  thickness_animation_.SetSlideDuration(base::Milliseconds(240));
 
   SetPaintToLayer();
   has_scrolltrack_ = scroller_style_ == NSScrollerStyleLegacy;
@@ -424,6 +425,7 @@ ui::NativeTheme::ExtraParams CocoaScrollBar::GetPainterParams() const {
   }
   params.scrollbar_extra.is_overlay =
       GetScrollerStyle() == NSScrollerStyleOverlay;
+  params.scrollbar_extra.scale_from_dip = 1.0f;
   return params;
 }
 
@@ -446,7 +448,7 @@ void CocoaScrollBar::HideScrollbar() {
   did_start_dragging_ = false;
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(240));
+  animation.SetTransitionDuration(base::Milliseconds(240));
   animation.AddObserver(this);
   layer()->SetOpacity(0.0f);
 }

@@ -121,6 +121,7 @@ enum MediaStatusState;
 
 // This defines a mojo transport format for media::EncryptionPattern
 // See media/base/encryption_pattern.h for description.
+[Stable]
 struct EncryptionPattern {
   uint32 crypt_byte_block;
   uint32 skip_byte_block;
@@ -129,6 +130,28 @@ struct EncryptionPattern {
 // See media/base/encryption_scheme.h for description.
 [Native]
 enum EncryptionScheme;
+
+// See media::EncryptionType for descriptions.
+enum EncryptionType {
+  kNone,
+  kClear,
+  kEncrypted,
+  kEncryptedWithClearLead,
+};
+
+// See media/base/svc_scalability_mode.h for description.
+// This mojo enum only list hardware codec supported scalability mode.
+enum SVCScalabilityMode {
+  // kUnsupportedMode is used to handle the enum differ of C++ and Mojo
+  // SVCScalabilityMode in ToMojom, should not be used in other place.
+  kUnsupportedMode,
+  kL1T2,
+  kL1T3,
+  kL2T2Key,
+  kL2T3Key,
+  kL3T2Key,
+  kL3T3Key,
+};
 
 // This defines a mojo transport format for media::VideoColorSpace.
 // See media/base/video_color_space.h for description.
@@ -151,19 +174,22 @@ struct VideoColorSpace {
   RangeID range;
 };
 
-
 // This defines a mojo transport format for media::AudioDecoderConfig.
 // See media/base/audio_decoder_config.h for descriptions.
+// TODO(crbug.com/1232205): Support `channels_` set by SetChannelsForDiscrete().
 struct AudioDecoderConfig {
   AudioCodec codec;
-  AudioCodecProfile profile;
   SampleFormat sample_format;
   ChannelLayout channel_layout;
   int32 samples_per_second;
   array<uint8> extra_data;
+  EncryptionScheme encryption_scheme;
   mojo_base.mojom.TimeDelta seek_preroll;
   int32 codec_delay;
-  EncryptionScheme encryption_scheme;
+  AudioCodecProfile profile;
+  ChannelLayout target_output_channel_layout;
+  bool should_discard_decoder_delay;
+  array<uint8> aac_extra_data;
 };
 
 // This defines a mojo transport format for media::VideoDecoderConfig.
@@ -186,6 +212,15 @@ struct VideoDecoderConfig {
 // Native struct media::SubsampleEntry;
 [Native]
 struct SubsampleEntry;
+
+// See media::CdmSessionClosedReason for descriptions.
+enum CdmSessionClosedReason {
+  kInternalError,
+  kClose,
+  kReleaseAcknowledged,
+  kHardwareContextReset,
+  kResourceEvicted,
+};
 
 // This defines a mojo transport format for media::DecryptConfig.
 // See media/base/decrypt_config.h for descriptions.
@@ -311,6 +346,8 @@ struct VideoFrameMetadata {
 
   bool power_efficient;
 
+  bool texture_origin_is_top_left;
+
   bool has_device_scale_factor;
   double device_scale_factor;
 
@@ -337,8 +374,6 @@ struct VideoFrameMetadata {
   mojo_base.mojom.TimeTicks? receive_time;
 
   mojo_base.mojom.TimeDelta? wallclock_frame_duration;
-
-  uint32 hw_protected_validation_id;
 };
 
 // This defines a mojo transport format for media::VideoFrame.
@@ -438,26 +473,33 @@ struct PredictionTargets {
 };
 
 // See media/base/pipeline_status.h for descriptions.
-struct AudioDecoderInfo {
+struct AudioPipelineInfo {
   AudioDecoderType decoder_type;
   bool is_platform_decoder = false;
   bool has_decrypting_demuxer_stream = false;
+  EncryptionType encryption_type;
 };
 
 // See media/base/pipeline_status.h for descriptions.
-struct VideoDecoderInfo {
+struct VideoPipelineInfo {
   VideoDecoderType decoder_type;
   bool is_platform_decoder = false;
   bool has_decrypting_demuxer_stream = false;
+  EncryptionType encryption_type;
 };
 
 // See media/base/status.h for descriptions.
-struct Status {
-  StatusCode code;
-  string? message;
+struct StatusData {
+  string group;
+  uint16 code;
+  string message;
   array<mojo_base.mojom.Value> frames;
-  array<media.mojom.Status> causes;
-  mojo_base.mojom.Value? data;
+  array<StatusData> causes;
+  mojo_base.mojom.Value data;
+};
+
+struct Status {
+  StatusData? internal;
 };
 
 // Types of media stream, categorised by the media stream's source.
@@ -477,4 +519,20 @@ enum MediaStreamType {
 enum InputStreamErrorCode {
   kUnknown = 0,
   kSystemPermissions = 1,
+  kDeviceInUse = 2,
+};
+
+// See media/base/renderer_factory_selector.h for description.
+enum RendererType {
+  kDefault = 0,          // DefaultRendererFactory
+  kMojo = 1,             // MojoRendererFactory
+  kMediaPlayer = 2,      // MediaPlayerRendererClientFactory
+  kCourier = 3,          // CourierRendererFactory
+  kFlinging = 4,         // FlingingRendererClientFactory
+  kCast = 5,             // CastRendererClientFactory
+  kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
+  // kFuchsia = 7,       // Deprecated
+  kRemoting = 8,         // RemotingRendererFactory for remoting::Receiver
+  kCastStreaming = 9,    // CastStreamingRendererFactory
+  kContentEmbedderDefined = 10,  // Defined by the content embedder
 };

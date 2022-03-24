@@ -5,6 +5,7 @@
 #include "components/download/public/common/in_progress_download_manager.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -54,6 +55,7 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       entry.download_info->in_progress_info;
   if (!in_progress_info)
     return nullptr;
+
   return std::make_unique<DownloadItemImpl>(
       delegate, entry.download_info->guid, entry.download_info->id,
       in_progress_info->current_path, in_progress_info->target_path,
@@ -69,7 +71,9 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->interrupt_reason, in_progress_info->paused,
       in_progress_info->metered, false, base::Time(),
       in_progress_info->transient, in_progress_info->received_slices,
-      in_progress_info->download_schedule, std::move(download_entry));
+      in_progress_info->reroute_info, in_progress_info->download_schedule,
+      in_progress_info->range_request_from, in_progress_info->range_request_to,
+      std::move(download_entry));
 }
 
 void OnUrlDownloadHandlerCreated(
@@ -258,6 +262,10 @@ void InProgressDownloadManager::DownloadUrl(
     std::unique_ptr<DownloadUrlParameters> params) {
   if (!CanDownload(params.get()))
     return;
+
+  download::RecordDownloadCountWithSource(
+      download::DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
+      params->download_source());
 
   // Start the new download, the download should be saved to the file path
   // specifcied in the |params|.

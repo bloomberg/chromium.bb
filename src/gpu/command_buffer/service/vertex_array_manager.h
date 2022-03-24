@@ -9,7 +9,6 @@
 
 #include <unordered_map>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_gles2_export.h"
@@ -24,6 +23,10 @@ class VertexAttribManager;
 class GPU_GLES2_EXPORT VertexArrayManager {
  public:
   VertexArrayManager();
+
+  VertexArrayManager(const VertexArrayManager&) = delete;
+  VertexArrayManager& operator=(const VertexArrayManager&) = delete;
+
   ~VertexArrayManager();
 
   // Must call before destruction.
@@ -68,8 +71,6 @@ class GPU_GLES2_EXPORT VertexArrayManager {
   unsigned int vertex_attrib_manager_count_;
 
   bool have_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(VertexArrayManager);
 };
 
 }  // namespace gles2

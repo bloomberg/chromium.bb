@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -35,6 +36,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display/aggregated_frame.h"
@@ -61,6 +63,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/delegated_ink_point.h"
+#include "ui/gfx/mojom/delegated_ink_point_renderer.mojom.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -84,7 +87,9 @@ class TestDisplayScheduler : public DisplayScheduler {
  public:
   explicit TestDisplayScheduler(BeginFrameSource* begin_frame_source,
                                 base::SingleThreadTaskRunner* task_runner)
-      : DisplayScheduler(begin_frame_source, task_runner, 1) {}
+      : DisplayScheduler(begin_frame_source,
+                         task_runner,
+                         PendingSwapParams(1)) {}
 
   ~TestDisplayScheduler() override = default;
 
@@ -150,7 +155,7 @@ size_t NumVisibleRects(const QuadList& quads) {
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
-      : manager_(&shared_bitmap_manager_),
+      : manager_(FrameSinkManagerImpl::InitParams(&shared_bitmap_manager_)),
         support_(
             std::make_unique<CompositorFrameSinkSupport>(nullptr,
                                                          &manager_,
@@ -274,10 +279,10 @@ class DisplayTest : public testing::Test {
   scoped_refptr<base::NullTaskRunner> task_runner_;
   std::unique_ptr<BeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
-  TestSoftwareOutputDevice* software_output_device_ = nullptr;
-  FakeOutputSurface* output_surface_ = nullptr;
-  FakeSkiaOutputSurface* skia_output_surface_ = nullptr;
-  TestDisplayScheduler* scheduler_ = nullptr;
+  raw_ptr<TestSoftwareOutputDevice> software_output_device_ = nullptr;
+  raw_ptr<FakeOutputSurface> output_surface_ = nullptr;
+  raw_ptr<FakeSkiaOutputSurface> skia_output_surface_ = nullptr;
+  raw_ptr<TestDisplayScheduler> scheduler_ = nullptr;
 };
 
 // Check that frame is damaged and swapped only under correct conditions.
@@ -314,7 +319,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_FALSE(scheduler_->swapped());
   EXPECT_EQ(0u, output_surface_->num_sent_frames());
   EXPECT_EQ(gfx::ColorSpace(), output_surface_->last_reshape_color_space());
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
   EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
   EXPECT_TRUE(scheduler_->swapped());
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
@@ -338,7 +343,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
     display_->SetDisplayColorSpaces(color_spaces_2);
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(2u, output_surface_->num_sent_frames());
@@ -366,7 +371,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler_->reset_swapped_for_test();
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     display_->SetDisplayColorSpaces(color_spaces_2);
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(3u, output_surface_->num_sent_frames());
@@ -390,7 +395,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(3u, output_surface_->num_sent_frames());
   }
@@ -415,7 +420,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(3u, output_surface_->num_sent_frames());
   }
@@ -436,7 +441,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
@@ -453,7 +458,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     base::RunLoop copy_run_loop;
     bool copy_called = false;
     pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
-        CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+        CopyOutputRequest::ResultFormat::RGBA,
+        CopyOutputRequest::ResultDestination::kSystemMemory,
         base::BindOnce(&CopyCallback, &copy_called,
                        copy_run_loop.QuitClosure())));
     pass->id = CompositorRenderPassId{1u};
@@ -464,7 +470,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
     copy_run_loop.Run();
@@ -489,7 +495,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
   }
@@ -538,7 +544,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_TRUE(scheduler_->damaged());
 
     scheduler_->reset_swapped_for_test();
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(7u, output_surface_->num_sent_frames());
     EXPECT_EQ(gfx::Size(100, 100),
@@ -570,7 +576,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
       CompositorFrameBuilder().AddRenderPass(kOutputRect, kDamageRect).Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame1));
 
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
   EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
 
@@ -591,7 +597,8 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
                                .Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame2));
 
-  EXPECT_TRUE(display_->DrawAndSwap(base::TimeTicks::Now()));
+  EXPECT_TRUE(
+      display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now()));
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
   EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
 
@@ -600,7 +607,8 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   CompositorFrame frame3 =
       CompositorFrameBuilder().AddRenderPass(kOutputRect, kDamageRect).Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame3));
-  EXPECT_TRUE(display_->DrawAndSwap(base::TimeTicks::Now()));
+  EXPECT_TRUE(
+      display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now()));
 
   // Verify whether or not LatencyInfo was dropped.
   size_t expected_size = 0;
@@ -683,7 +691,7 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
   }
 
   // DrawAndSwap() should trigger a swap at current size.
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
   EXPECT_TRUE(scheduler_->swapped());
   scheduler_->reset_swapped_for_test();
 
@@ -744,11 +752,12 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       auto bd_pass = CompositorRenderPass::Create();
       cc::FilterOperations backdrop_filters;
       backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
-      bd_pass->SetAll(render_pass_id_generator.GenerateNextId(),
-                      sub_surface_rect, no_damage, gfx::Transform(),
-                      cc::FilterOperations(), backdrop_filters,
-                      gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
-                      SubtreeCaptureId(), false, false, false, false);
+      bd_pass->SetAll(
+          render_pass_id_generator.GenerateNextId(), sub_surface_rect,
+          no_damage, gfx::Transform(), cc::FilterOperations(), backdrop_filters,
+          gfx::RRectF(gfx::RectF(sub_surface_rect), 0), SubtreeCaptureId(),
+          sub_surface_rect.size(), SharedElementResourceId(), false, false,
+          false, false, false);
       pass_list.push_back(std::move(bd_pass));
 
       CompositorFrame frame = CompositorFrameBuilder()
@@ -817,7 +826,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       SubmitCompositorFrame(&pass_list, local_surface_id);
 
       scheduler_->reset_swapped_for_test();
-      display_->DrawAndSwap(base::TimeTicks::Now());
+      display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
       EXPECT_TRUE(scheduler_->swapped());
       EXPECT_EQ(frame_num, output_surface_->num_sent_frames());
       EXPECT_EQ(display_size, software_output_device_->viewport_pixel_size());
@@ -3530,7 +3539,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
 
     pass_list.push_back(std::move(pass));
     SubmitCompositorFrame(&pass_list, local_surface_id);
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     RunUntilIdle();
   }
 
@@ -3544,7 +3553,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     RunUntilIdle();
 
     // Both frames with frame-tokens 1 and 2 requested presentation-feedback.
@@ -3562,7 +3571,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     RunUntilIdle();
   }
 }
@@ -3608,7 +3617,7 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   UpdateBeginFrameTime(support_.get(), frame_time);
 
   // Drawing should unthrottle begin-frames.
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
   frame_time = base::TimeTicks::Now();
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
@@ -3634,7 +3643,7 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
 
   // Instead of doing a draw, forward time by ~1 seconds. That should unthrottle
   // the begin-frame.
-  frame_time += base::TimeDelta::FromSecondsD(1.1);
+  frame_time += base::Seconds(1.1);
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
 }
 
@@ -3677,7 +3686,7 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
 
   // This only draws the first surface, so we should only be able to send one
   // more BeginFrame.
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
   frame_time = base::TimeTicks::Now();
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
@@ -3691,7 +3700,7 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
   // Now the last surface is drawn. This should unblock us to submit
   // kUndrawnFrameLimit+1 frames again.
   display_->SetLocalSurfaceId(id_allocator_.GetCurrentLocalSurfaceId(), 1.f);
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
   id_allocator_.GenerateId();
   for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
        ++i) {
@@ -3756,7 +3765,7 @@ TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
           .SetActivationDependencies({sub_surface_id2})
           .SetDeadline(FrameDeadline(base::TimeTicks::Now(),
                                      std::numeric_limits<uint32_t>::max(),
-                                     base::TimeDelta::FromSeconds(1), false))
+                                     base::Seconds(1), false))
           .Build();
   support_->SubmitCompositorFrame(id_allocator_.GetCurrentLocalSurfaceId(),
                                   std::move(frame));
@@ -3808,7 +3817,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings(),
                                        /*release_fence=*/gfx::GpuFenceHandle());
     display_->DidReceivePresentationFeedback({base::TimeTicks::Now(), {}, 0});
@@ -3828,11 +3837,11 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings(),
                                        /*release_fence=*/gfx::GpuFenceHandle());
     display_->DidReceivePresentationFeedback(
-        {base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1), {}, 0});
+        {base::TimeTicks::Now() - base::Seconds(1), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(
                     "Graphics.PresentationTimestamp.InvalidFromFuture"),
                 testing::IsEmpty());
@@ -3853,11 +3862,11 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings(),
                                        /*release_fence=*/gfx::GpuFenceHandle());
     display_->DidReceivePresentationFeedback(
-        {base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(1),
+        {base::TimeTicks::Now() + base::Milliseconds(1),
          {},
          gfx::PresentationFeedback::kHWClock});
     EXPECT_THAT(histograms.GetAllSamples(
@@ -3876,11 +3885,11 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings(),
                                        /*release_fence=*/gfx::GpuFenceHandle());
     display_->DidReceivePresentationFeedback(
-        {base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(1), {}, 0});
+        {base::TimeTicks::Now() + base::Milliseconds(1), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(
                     "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
                 testing::IsEmpty());
@@ -3900,11 +3909,11 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     display_->DidReceiveSwapBuffersAck(GetTestSwapTimings(),
                                        /*release_fence=*/gfx::GpuFenceHandle());
     display_->DidReceivePresentationFeedback(
-        {base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1), {}, 0});
+        {base::TimeTicks::Now() + base::Seconds(1), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(
                     "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
                 testing::IsEmpty());
@@ -4439,7 +4448,7 @@ TEST_F(DisplayTest, DisplayTransformHint) {
     frame.metadata.display_transform_hint = test.display_transform_hint;
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     EXPECT_EQ(++expected_frame_sent, output_surface_->num_sent_frames());
     EXPECT_EQ(test.expected_size,
               software_output_device_->viewport_pixel_size());
@@ -4468,7 +4477,8 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     base::RunLoop copy_run_loop;
     bool copy_called = false;
     pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
-        CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+        CopyOutputRequest::ResultFormat::RGBA,
+        CopyOutputRequest::ResultDestination::kSystemMemory,
         base::BindOnce(&CopyCallback, &copy_called,
                        copy_run_loop.QuitClosure())));
     pass->id = CompositorRenderPassId{1u};
@@ -4479,7 +4489,7 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
     EXPECT_TRUE(scheduler_->damaged());
 
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
 
     copy_run_loop.Run();
 
@@ -4496,9 +4506,9 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
 
 class SkiaDelegatedInkRendererTest : public DisplayTest {
  public:
+  void SetUp() override { EnablePrediction(); }
+
   void SetUpRenderers() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kDrawPredictedInkPoint, switches::kDraw1Point12Ms);
     // First set up the display to use the Skia renderer.
     RendererSettings settings;
     settings.use_skia_renderer = true;
@@ -4511,6 +4521,16 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
     ink_renderer_ = renderer.get();
     display_->renderer_for_testing()->SetDelegatedInkPointRendererSkiaForTest(
         std::move(renderer));
+  }
+
+  void EnablePrediction() {
+    base::FieldTrialParams params;
+    params["predicted_points"] = ::features::kDraw1Point12Ms;
+    base::test::ScopedFeatureList::FeatureAndParams prediction_params = {
+        features::kDrawPredictedInkPoint, params};
+
+    feature_list_.Reset();
+    feature_list_.InitWithFeaturesAndParameters({prediction_params}, {});
   }
 
   DelegatedInkPointRendererBase* ink_renderer() {
@@ -4551,7 +4571,7 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
     point.Offset(10, 10);
 
     base::TimeTicks timestamp = ink_points_[pointer_id].back().timestamp();
-    timestamp += base::TimeDelta::FromMilliseconds(5);
+    timestamp += base::Milliseconds(5);
 
     CreateAndStoreDelegatedInkPoint(point, timestamp, pointer_id);
   }
@@ -4671,10 +4691,12 @@ class SkiaDelegatedInkRendererTest : public DisplayTest {
   }
 
  protected:
-  DelegatedInkPointRendererSkiaForTest* ink_renderer_ = nullptr;
+  raw_ptr<DelegatedInkPointRendererSkiaForTest> ink_renderer_ = nullptr;
 
   // Stub client kept in scope to prevent access violations during DrawAndSwap.
   StubDisplayClient client_;
+
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   std::unordered_map<int32_t, std::vector<gfx::DelegatedInkPoint>> ink_points_;
@@ -4726,7 +4748,7 @@ TEST_F(SkiaDelegatedInkRendererTest, SkiaDelegatedInkRendererFilteringPoints) {
   base::TimeDelta bucket_without_prediction =
       last_ink_point(kPointerId).timestamp() - metadata.timestamp();
   FinalizePathAndCheckHistograms(bucket_without_prediction,
-                                 base::TimeDelta::FromMilliseconds(0));
+                                 base::Milliseconds(0));
 
   EXPECT_EQ(kInitialDelegatedPoints - kInkPointForMetadata,
             StoredPointsForPointerId(kPointerId));
@@ -4764,8 +4786,7 @@ TEST_F(SkiaDelegatedInkRendererTest, SkiaDelegatedInkRendererFilteringPoints) {
   // due to not finding a matching pointer ID to predict with.
   const int kExpectedPoints = StoredPointsForPointerId(kPointerId);
   SendMetadata(metadata);
-  FinalizePathAndCheckHistograms(base::TimeDelta::FromMilliseconds(0),
-                                 base::TimeDelta::Min());
+  FinalizePathAndCheckHistograms(base::Milliseconds(0), base::TimeDelta::Min());
   EXPECT_EQ(kExpectedPoints, StoredPointsForPointerId(kPointerId));
 }
 
@@ -4786,7 +4807,7 @@ TEST_F(SkiaDelegatedInkRendererTest,
     // result in multiple pointer ids having identical DelegatedInkPoints
     CreateAndStoreDelegatedInkPoint(gfx::PointF(i * 5, i * 10), timestamp,
                                     kPointerIds[i]);
-    timestamp += base::TimeDelta::FromMilliseconds(5);
+    timestamp += base::Milliseconds(5);
   }
 
   EXPECT_EQ(static_cast<int>(kPointerIds.size()), UniqueStoredPointerIds());
@@ -4825,11 +4846,10 @@ TEST_F(SkiaDelegatedInkRendererTest,
   FinalizePathAndCheckHistograms(
       bucket_without_prediction,
       bucket_without_prediction +
-          base::TimeDelta::FromMilliseconds(
-              kPredictionConfigs[PredictionConfig::k1Point12Ms]
-                  .milliseconds_into_future_per_point *
-              kPredictionConfigs[PredictionConfig::k1Point12Ms]
-                  .points_to_predict));
+          base::Milliseconds(kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                                 .milliseconds_into_future_per_point *
+                             kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                                 .points_to_predict));
 
   // Confirm the size, first, and last points of the first pointer ID are what
   // we expect.
@@ -4853,8 +4873,7 @@ TEST_F(SkiaDelegatedInkRendererTest,
   SendMetadata(gfx::DelegatedInkMetadata(
       gfx::PointF(100, 100), 5.6f, SK_ColorBLACK, base::TimeTicks::Min(),
       gfx::RectF(), base::TimeTicks::Min(), /*hovering*/ false));
-  FinalizePathAndCheckHistograms(base::TimeDelta::FromMilliseconds(0),
-                                 base::TimeDelta::Min());
+  FinalizePathAndCheckHistograms(base::Milliseconds(0), base::TimeDelta::Min());
   EXPECT_EQ(kNumPointsForPointerId0 - kInkPointForMetadata,
             StoredPointsForPointerId(kPointerIds[0]));
   for (uint64_t i = 1; i < kPointerIds.size(); ++i) {
@@ -4867,10 +4886,9 @@ TEST_F(SkiaDelegatedInkRendererTest,
   // will still exist as they contains the predictors as well.
   SendMetadata(gfx::DelegatedInkMetadata(
       gfx::PointF(100, 100), 5.6f, SK_ColorBLACK,
-      base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(1000),
-      gfx::RectF(), base::TimeTicks::Now(), /*hovering*/ false));
-  FinalizePathAndCheckHistograms(base::TimeDelta::FromMilliseconds(0),
-                                 base::TimeDelta::Min());
+      base::TimeTicks::Now() + base::Milliseconds(1000), gfx::RectF(),
+      base::TimeTicks::Now(), /*hovering*/ false));
+  FinalizePathAndCheckHistograms(base::Milliseconds(0), base::TimeDelta::Min());
   for (int i : kPointerIds)
     EXPECT_EQ(0, StoredPointsForPointerId(i));
 }
@@ -4889,14 +4907,11 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
   const int32_t kPointerId = 17;
   CreateAndStoreDelegatedInkPoint(gfx::PointF(20, 19), timestamp, kPointerId);
   CreateAndStoreDelegatedInkPoint(
-      gfx::PointF(15, 19), timestamp + base::TimeDelta::FromMilliseconds(8),
-      kPointerId);
+      gfx::PointF(15, 19), timestamp + base::Milliseconds(8), kPointerId);
   CreateAndStoreDelegatedInkPoint(
-      gfx::PointF(16, 28), timestamp + base::TimeDelta::FromMilliseconds(16),
-      kPointerId);
+      gfx::PointF(16, 28), timestamp + base::Milliseconds(16), kPointerId);
   CreateAndStoreDelegatedInkPoint(
-      gfx::PointF(29, 35), timestamp + base::TimeDelta::FromMilliseconds(24),
-      kPointerId);
+      gfx::PointF(29, 35), timestamp + base::Milliseconds(24), kPointerId);
 
   // Provide a metadata so that points can be drawn, based on the first ink
   // point that was sent.
@@ -4909,16 +4924,14 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
   // *WithPrediction should be able to predict here, so it should contain 1 in
   // the bucket that is |kNumberOfMillisecondsIntoFutureToPredictPerPoint| *
   // |kNumberOfPointsToPredict| into the future from 24 ms bucket.
-  base::TimeDelta bucket_without_prediction =
-      base::TimeDelta::FromMilliseconds(24);
+  base::TimeDelta bucket_without_prediction = base::Milliseconds(24);
   FinalizePathAndCheckHistograms(
       bucket_without_prediction,
       bucket_without_prediction +
-          base::TimeDelta::FromMilliseconds(
-              kPredictionConfigs[PredictionConfig::k1Point12Ms]
-                  .milliseconds_into_future_per_point *
-              kPredictionConfigs[PredictionConfig::k1Point12Ms]
-                  .points_to_predict));
+          base::Milliseconds(kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                                 .milliseconds_into_future_per_point *
+                             kPredictionConfigs[PredictionConfig::k1Point12Ms]
+                                 .points_to_predict));
 
   // Now provide metadata that matches the final ink point provided, so that
   // everything earlier is filtered out. Then the *WithoutPrediction histogram
@@ -4926,10 +4939,10 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
   // still be able to predict points, so it should have counted one.
   MakeAndSendMetadataFromStoredInkPoint(/*index*/ 3, kDiameter, SK_ColorBLACK,
                                         gfx::RectF());
-  bucket_without_prediction = base::TimeDelta::FromMilliseconds(0);
+  bucket_without_prediction = base::Milliseconds(0);
   FinalizePathAndCheckHistograms(
       bucket_without_prediction,
-      base::TimeDelta::FromMilliseconds(
+      base::Milliseconds(
           kPredictionConfigs[PredictionConfig::k1Point12Ms]
               .milliseconds_into_future_per_point *
           kPredictionConfigs[PredictionConfig::k1Point12Ms].points_to_predict));
@@ -4944,13 +4957,54 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
   timestamp = base::TimeTicks::Now();
   CreateAndStoreDelegatedInkPoint(gfx::PointF(85, 56), timestamp, kPointerId);
   CreateAndStoreDelegatedInkPoint(
-      gfx::PointF(96, 70), timestamp + base::TimeDelta::FromMilliseconds(2),
-      kPointerId);
+      gfx::PointF(96, 70), timestamp + base::Milliseconds(2), kPointerId);
   CreateAndStoreDelegatedInkPoint(
-      gfx::PointF(112, 94), timestamp + base::TimeDelta::FromMilliseconds(10),
-      kPointerId);
+      gfx::PointF(112, 94), timestamp + base::Milliseconds(10), kPointerId);
   FinalizePathAndCheckHistograms(base::TimeDelta::Min(),
                                  base::TimeDelta::Min());
+}
+
+// Confirm that a delegated ink trail will still be drawn if the point and
+// metadata are close enough.
+TEST_F(SkiaDelegatedInkRendererTest, DrawTrailWhenMetadataIsCloseEnough) {
+  SetUpRenderers();
+
+  // Insert 3 points, then create a metadata that is not exactly the same as
+  // the first point, but within DelegatedInkPointRendererBase::kEpsilon of
+  // the point so that a trail is drawn.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  base::TimeTicks timestamp2 = timestamp + base::Milliseconds(8);
+  gfx::PointF point(45.f, 78.f);
+  gfx::PointF point2(68.f, 89.f);
+  const int32_t kPointerId = 17;
+  CreateAndStoreDelegatedInkPoint(point, timestamp, kPointerId);
+  CreateAndStoreDelegatedInkPoint(point2, timestamp2, kPointerId);
+  CreateAndStoreDelegatedInkPoint(
+      gfx::PointF(80.f, 70.f), timestamp2 + base::Milliseconds(8), kPointerId);
+
+  gfx::DelegatedInkMetadata metadata(
+      gfx::PointF(point.x() - 0.03f, point.y() + 0.03f), 45.f, SK_ColorBLACK,
+      timestamp, gfx::RectF(0, 0, 100, 100), base::TimeTicks::Now(),
+      /*hovering*/ false);
+  SendMetadata(metadata);
+
+  // If the metadata was close enough, then a trail should be drawn with all
+  // three points.
+  ink_renderer()->FinalizePathForDraw();
+  EXPECT_EQ(GetPathPointCount(), 3);
+
+  // Now send a metadata with a point that is slightly further away from the
+  // second point, such that the distance between them is greater than the
+  // kEpsilon value to confirm that if it gets too far away we won't use it for
+  // drawing.
+  metadata = gfx::DelegatedInkMetadata(
+      gfx::PointF(point2.x() - 0.03f, point2.y() + 0.04f), 45.f, SK_ColorBLACK,
+      timestamp2, gfx::RectF(0, 0, 100, 100), base::TimeTicks::Now(),
+      /*hovering*/ false);
+  SendMetadata(metadata);
+
+  ink_renderer()->FinalizePathForDraw();
+  EXPECT_EQ(GetPathPointCount(), 0);
 }
 
 enum class DelegatedInkType { kPlatformInk, kSkiaInk };
@@ -5047,7 +5101,7 @@ TEST_P(DelegatedInkDisplayTest, MetadataOnlySentToSkiaRendererOrOutputSurface) {
 
   SubmitCompositorFrameWithInkMetadata(
       &pass_list, id_allocator_.GetCurrentLocalSurfaceId(), metadata);
-  display_->DrawAndSwap(base::TimeTicks::Now());
+  display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
 
   // Confirm that the metadata correctly made it to either the skia output
   // surface, or the delegated ink renderer.
@@ -5094,6 +5148,44 @@ TEST_P(DelegatedInkDisplayTest,
     EXPECT_TRUE(ink_renderer());
     EXPECT_TRUE(ink_renderer_remote.is_bound());
   }
+}
+
+enum class UnsupportedRendererType { kSoftware, kGL };
+
+class UnsupportedRendererDelegatedInkTest
+    : public DisplayTest,
+      public testing::WithParamInterface<UnsupportedRendererType> {};
+
+struct UnsupportedRendererDelegatedInkTestPassToString {
+  std::string operator()(
+      const testing::TestParamInfo<UnsupportedRendererType> type) const {
+    return type.param == UnsupportedRendererType::kSoftware ? "SoftwareRenderer"
+                                                            : "GLRenderer";
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(DelegatedInkTrails,
+                         UnsupportedRendererDelegatedInkTest,
+                         testing::Values(UnsupportedRendererType::kSoftware,
+                                         UnsupportedRendererType::kGL),
+                         UnsupportedRendererDelegatedInkTestPassToString());
+
+// Confirm that trying to use delegated ink trails on an unsupported renderer
+// (anything other than SkiaRenderer) silently fails.
+TEST_P(UnsupportedRendererDelegatedInkTest,
+       DelegatedInkSilentlyFailsOnUnsupportedRenderers) {
+  if (GetParam() == UnsupportedRendererType::kSoftware)
+    SetUpSoftwareDisplay(RendererSettings());
+  else
+    SetUpGpuDisplay(RendererSettings());
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  // Should silently bail early from here. Test will crash if we actually try to
+  // initialize the delegated ink point renderer.
+  mojo::Remote<gfx::mojom::DelegatedInkPointRenderer> ink_renderer_remote;
+  display_->InitDelegatedInkPointRendererReceiver(
+      ink_renderer_remote.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace viz

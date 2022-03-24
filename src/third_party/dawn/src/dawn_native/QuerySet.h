@@ -25,11 +25,13 @@ namespace dawn_native {
 
     MaybeError ValidateQuerySetDescriptor(DeviceBase* device, const QuerySetDescriptor* descriptor);
 
-    class QuerySetBase : public ObjectBase {
+    class QuerySetBase : public ApiObjectBase {
       public:
         QuerySetBase(DeviceBase* device, const QuerySetDescriptor* descriptor);
 
         static QuerySetBase* MakeError(DeviceBase* device);
+
+        ObjectType GetType() const override;
 
         wgpu::QueryType GetQueryType() const;
         uint32_t GetQueryCount() const;
@@ -44,13 +46,14 @@ namespace dawn_native {
 
       protected:
         QuerySetBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+
+        // Constructor used only for mocking and testing.
+        QuerySetBase(DeviceBase* device);
+        void DestroyImpl() override;
+
         ~QuerySetBase() override;
 
-        void DestroyInternal();
-
       private:
-        virtual void DestroyImpl() = 0;
-
         MaybeError ValidateDestroy() const;
 
         wgpu::QueryType mQueryType;

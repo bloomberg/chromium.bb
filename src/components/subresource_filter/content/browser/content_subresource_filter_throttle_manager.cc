@@ -10,13 +10,14 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/notreached.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_web_contents_helper.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/profile_interaction_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
@@ -26,15 +27,17 @@
 #include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace subresource_filter {
@@ -43,7 +46,9 @@ namespace {
 
 bool ShouldInheritOpenerActivation(content::NavigationHandle* navigation_handle,
                                    content::RenderFrameHost* frame_host) {
-  if (!navigation_handle->IsInMainFrame()) {
+  // TODO(bokan): Add and use GetOpener associated with `frame_host`'s Page.
+  // https://crbug.com/1230153.
+  if (!navigation_handle->IsInPrimaryMainFrame()) {
     return false;
   }
 
@@ -82,35 +87,46 @@ bool ShouldInheritParentActivation(
 
 }  // namespace
 
-const char ContentSubresourceFilterThrottleManager::
-    kContentSubresourceFilterThrottleManagerWebContentsUserDataKey[] =
-        "content_subresource_filter_throttle_manager";
+// static
+const int ContentSubresourceFilterThrottleManager::kUserDataKey;
 
 // static
-void ContentSubresourceFilterThrottleManager::CreateForWebContents(
-    content::WebContents* web_contents,
+void ContentSubresourceFilterThrottleManager::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::SubresourceFilterHost>
+        pending_receiver,
+    content::RenderFrameHost* render_frame_host) {
+  if (auto* manager = FromPage(render_frame_host->GetPage()))
+    manager->receiver_.Bind(render_frame_host, std::move(pending_receiver));
+}
+
+// static
+std::unique_ptr<ContentSubresourceFilterThrottleManager>
+ContentSubresourceFilterThrottleManager::CreateForNewPage(
     SubresourceFilterProfileContext* profile_context,
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
-    VerifiedRulesetDealer::Handle* dealer_handle) {
+    VerifiedRulesetDealer::Handle* dealer_handle,
+    ContentSubresourceFilterWebContentsHelper& web_contents_helper,
+    content::NavigationHandle& initiating_navigation_handle) {
   if (!base::FeatureList::IsEnabled(kSafeBrowsingSubresourceFilter))
-    return;
+    return nullptr;
 
-  if (FromWebContents(web_contents))
-    return;
-
-  web_contents->SetUserData(
-      kContentSubresourceFilterThrottleManagerWebContentsUserDataKey,
-      std::make_unique<ContentSubresourceFilterThrottleManager>(
-          profile_context, database_manager, dealer_handle, web_contents));
+  return std::make_unique<ContentSubresourceFilterThrottleManager>(
+      profile_context, database_manager, dealer_handle, web_contents_helper,
+      initiating_navigation_handle);
 }
 
 // static
 ContentSubresourceFilterThrottleManager*
-ContentSubresourceFilterThrottleManager::FromWebContents(
-    content::WebContents* web_contents) {
-  return static_cast<ContentSubresourceFilterThrottleManager*>(
-      web_contents->GetUserData(
-          kContentSubresourceFilterThrottleManagerWebContentsUserDataKey));
+ContentSubresourceFilterThrottleManager::FromPage(content::Page& page) {
+  return ContentSubresourceFilterWebContentsHelper::GetThrottleManager(page);
+}
+
+// static
+ContentSubresourceFilterThrottleManager*
+ContentSubresourceFilterThrottleManager::FromNavigationHandle(
+    content::NavigationHandle& navigation_handle) {
+  return ContentSubresourceFilterWebContentsHelper::GetThrottleManager(
+      navigation_handle);
 }
 
 ContentSubresourceFilterThrottleManager::
@@ -119,28 +135,19 @@ ContentSubresourceFilterThrottleManager::
         scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
             database_manager,
         VerifiedRulesetDealer::Handle* dealer_handle,
-        content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      receiver_(web_contents, this),
+        ContentSubresourceFilterWebContentsHelper& web_contents_helper,
+        content::NavigationHandle& initiating_navigation_handle)
+    : receiver_(initiating_navigation_handle.GetWebContents(), this),
       dealer_handle_(dealer_handle),
       database_manager_(std::move(database_manager)),
       profile_interaction_manager_(
           std::make_unique<subresource_filter::ProfileInteractionManager>(
-              web_contents,
-              profile_context)) {
-  SubresourceFilterObserverManager::CreateForWebContents(web_contents);
-  scoped_observation_.Observe(
-      SubresourceFilterObserverManager::FromWebContents(web_contents));
-}
+              profile_context)),
+      web_contents_helper_(web_contents_helper) {}
 
 ContentSubresourceFilterThrottleManager::
-    ~ContentSubresourceFilterThrottleManager() {}
-
-void ContentSubresourceFilterThrottleManager::OnSubresourceFilterGoingAway() {
-  // Stop observing here because the observer manager could be destroyed by the
-  // time this class is destroyed.
-  DCHECK(scoped_observation_.IsObserving());
-  scoped_observation_.Reset();
+    ~ContentSubresourceFilterThrottleManager() {
+  web_contents_helper_.WillDestroyThrottleManager(this);
 }
 
 void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
@@ -151,8 +158,10 @@ void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
 
 void ContentSubresourceFilterThrottleManager::FrameDeleted(
     int frame_tree_node_id) {
+  // TODO(bokan): This will be called for frame tree nodes that don't belong to
+  // this frame tree node as well since we can't tell outside of //content
+  // which page a FTN belongs to.
   ad_frames_.erase(frame_tree_node_id);
-  navigated_frames_.erase(frame_tree_node_id);
   navigation_load_policies_.erase(frame_tree_node_id);
   tracked_ad_evidence_.erase(frame_tree_node_id);
 }
@@ -160,8 +169,10 @@ void ContentSubresourceFilterThrottleManager::FrameDeleted(
 // Pull the AsyncDocumentSubresourceFilter and its associated
 // mojom::ActivationState out of the activation state computing throttle. Store
 // it for later filtering of subframe navigations.
-void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
+void ContentSubresourceFilterThrottleManager::ReadyToCommitInFrameNavigation(
     content::NavigationHandle* navigation_handle) {
+  ready_to_commit_navigations_.insert(navigation_handle->GetNavigationId());
+
   content::RenderFrameHost* frame_host =
       navigation_handle->GetRenderFrameHost();
 
@@ -170,7 +181,8 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   // Update the ad status of a frame given the new navigation. This may tag or
   // untag a frame as an ad.
   if (!navigation_handle->IsInMainFrame()) {
-    blink::FrameAdEvidence& ad_evidence = EnsureFrameAdEvidence(frame_host);
+    blink::FrameAdEvidence& ad_evidence =
+        EnsureFrameAdEvidence(navigation_handle);
     DCHECK_EQ(ad_evidence.parent_is_ad(),
               base::Contains(ad_frames_,
                              frame_host->GetParent()->GetFrameTreeNodeId()));
@@ -227,8 +239,9 @@ ContentSubresourceFilterThrottleManager::ActivationStateForNextCommittedLoad(
   return filter->activation_state();
 }
 
-void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
+void ContentSubresourceFilterThrottleManager::DidFinishInFrameNavigation(
+    content::NavigationHandle* navigation_handle,
+    bool is_initial_navigation) {
   ActivationStateComputingNavigationThrottle* throttle = nullptr;
   auto throttle_it =
       ongoing_activation_throttles_.find(navigation_handle->GetNavigationId());
@@ -239,28 +252,38 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
     ongoing_activation_throttles_.erase(throttle_it);
   }
 
+  bool passed_through_ready_to_commit =
+      ready_to_commit_navigations_.erase(navigation_handle->GetNavigationId());
+
   // Do nothing if the navigation finished in the same document.
   if (navigation_handle->IsSameDocument()) {
     return;
   }
 
-  int frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
-
-  // Cannot get the RFH from |navigation_handle| if there's no committed load.
-  content::RenderFrameHost* frame_host =
-      navigation_handle->HasCommitted()
-          ? navigation_handle->GetRenderFrameHost()
-          : navigation_handle->GetWebContents()
-                ->UnsafeFindFrameByFrameTreeNodeId(frame_tree_node_id);
-  if (!frame_host) {
-    DCHECK(!navigation_handle->HasCommitted());
+  // Do nothing if the frame was destroyed.
+  if (navigation_handle->IsWaitingToCommit() &&
+      navigation_handle->GetRenderFrameHost()->GetLifecycleState() ==
+          content::RenderFrameHost::LifecycleState::kPendingDeletion) {
     return;
   }
 
+  content::RenderFrameHost* frame_host =
+      (navigation_handle->HasCommitted() ||
+       navigation_handle->IsWaitingToCommit())
+          ? navigation_handle->GetRenderFrameHost()
+          : content::RenderFrameHost::FromID(
+                navigation_handle->GetPreviousRenderFrameHostId());
+  if (!frame_host)
+    return;
+
+  RecordExperimentalUmaHistogramsForNavigation(navigation_handle,
+                                               passed_through_ready_to_commit);
+
+  const int frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
+
   // Do nothing if the navigation was uncommitted and this frame has had a
-  // previous navigation. We will keep using the existing activation.
-  bool is_initial_navigation =
-      navigated_frames_.insert(frame_tree_node_id).second;
+  // previous navigation. We will keep using the previous page's throttle
+  // manager and this one will be deleted.
   if (!is_initial_navigation && !navigation_handle->HasCommitted()) {
     return;
   }
@@ -275,7 +298,7 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
         !navigation_handle->GetURL().IsAboutBlank()) &&
       !navigation_handle->IsWaitingToCommit() &&
       !base::Contains(ad_frames_, frame_tree_node_id)) {
-    EnsureFrameAdEvidence(frame_host).set_is_complete();
+    EnsureFrameAdEvidence(navigation_handle).set_is_complete();
 
     // Initial synchronous navigations to about:blank should only be tagged by
     // the renderer. Currently, an aborted initial load to a URL matching the
@@ -285,10 +308,10 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
     // update the DCHECK to verify that the evidence doesn't indicate a subframe
     // (regardless of the URL).
     DCHECK(!(navigation_handle->GetURL().IsAboutBlank() &&
-             EnsureFrameAdEvidence(frame_host).IndicatesAdSubframe()));
+             EnsureFrameAdEvidence(navigation_handle).IndicatesAdSubframe()));
   } else {
     DCHECK(navigation_handle->IsInMainFrame() ||
-           EnsureFrameAdEvidence(frame_host).is_complete());
+           EnsureFrameAdEvidence(navigation_handle).is_complete());
   }
 
   bool did_inherit_opener_activation;
@@ -319,6 +342,52 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
   DestroyRulesetHandleIfNoLongerUsed();
 }
 
+void ContentSubresourceFilterThrottleManager::
+    RecordExperimentalUmaHistogramsForNavigation(
+        content::NavigationHandle* navigation_handle,
+        bool passed_through_ready_to_commit) {
+  // For subframe navigations that pass through ready to commit, we record
+  // whether they eventually committed. We also break this out by whether the
+  // navigation matches the restricted navigation heuristic and by ad status.
+  // The observed frequency will reveal the scope of current mishandling of such
+  // navigations by Ad Tagging. Navigations to URLs that inherit activation
+  // (e.g. about:srcdoc) are excluded as no load policy would be calculated.
+  // Navigations with dead RenderFrames are also excluded as any load policy
+  // sent to the renderer won't be used.
+  // TODO(alexmt): Remove once frequency is determined.
+  if (!passed_through_ready_to_commit || navigation_handle->IsInMainFrame() ||
+      ShouldInheritActivation(navigation_handle->GetURL()) ||
+      !navigation_handle->GetRenderFrameHost()->IsRenderFrameLive()) {
+    return;
+  }
+
+  base::UmaHistogramBoolean(
+      "SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2",
+      navigation_handle->HasCommitted());
+  blink::mojom::FilterListResult latest_filter_list_result =
+      EnsureFrameAdEvidence(navigation_handle).latest_filter_list_result();
+  bool is_same_domain_to_main_frame =
+      net::registry_controlled_domains::SameDomainOrHost(
+          navigation_handle->GetURL(),
+          navigation_handle->GetRenderFrameHost()
+              ->GetOutermostMainFrame()
+              ->GetLastCommittedURL(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  bool is_restricted_navigation =
+      latest_filter_list_result ==
+          blink::mojom::FilterListResult::kMatchedAllowingRule ||
+      (latest_filter_list_result ==
+           blink::mojom::FilterListResult::kMatchedNoRules &&
+       is_same_domain_to_main_frame);
+  if (is_restricted_navigation &&
+      base::Contains(ad_frames_, navigation_handle->GetFrameTreeNodeId())) {
+    base::UmaHistogramBoolean(
+        "SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2."
+        "RestrictedAdFrameNavigation",
+        navigation_handle->HasCommitted());
+  }
+}
+
 AsyncDocumentSubresourceFilter*
 ContentSubresourceFilterThrottleManager::FilterForFinishedNavigation(
     content::NavigationHandle* navigation_handle,
@@ -344,9 +413,7 @@ ContentSubresourceFilterThrottleManager::FilterForFinishedNavigation(
   if (ShouldInheritOpenerActivation(navigation_handle, frame_host)) {
     content::RenderFrameHost* opener_rfh =
         navigation_handle->GetWebContents()->GetOpener();
-    if (auto* opener_throttle_manager =
-            ContentSubresourceFilterThrottleManager::FromWebContents(
-                content::WebContents::FromRenderFrameHost(opener_rfh))) {
+    if (auto* opener_throttle_manager = FromPage(opener_rfh->GetPage())) {
       activation_to_inherit =
           opener_throttle_manager->GetFrameActivationState(opener_rfh);
       did_inherit_opener_activation = true;
@@ -381,9 +448,12 @@ ContentSubresourceFilterThrottleManager::FilterForFinishedNavigation(
     return nullptr;
   }
 
+  // Safe to pass unowned |frame_host| pointer since the filter that owns this
+  // callback is owned in the frame_host_filter_map_ which will be removed when
+  // the RenderFrameHost is deleted.
   base::OnceClosure disallowed_callback(base::BindOnce(
       &ContentSubresourceFilterThrottleManager::MaybeShowNotification,
-      weak_ptr_factory_.GetWeakPtr()));
+      weak_ptr_factory_.GetWeakPtr(), frame_host));
   filter->set_first_disallowed_load_callback(std::move(disallowed_callback));
 
   AsyncDocumentSubresourceFilter* raw_ptr = filter.get();
@@ -414,6 +484,22 @@ void ContentSubresourceFilterThrottleManager::DidFinishLoad(
   if (!statistics_ || render_frame_host->GetParent())
     return;
   statistics_->OnDidFinishLoad();
+}
+
+void ContentSubresourceFilterThrottleManager::DidBecomePrimaryPage() {
+  DCHECK(page_);
+  DCHECK(page_->IsPrimary());
+  // If we tried to notify while non-primary, we didn't show UI so do that now
+  // that the page became primary. This also leads to reattempting notification
+  // if a page transitioned from primary to non-primary and back (BFCache).
+  if (current_committed_load_has_notified_disallowed_load_)
+    profile_interaction_manager_->MaybeShowNotification();
+}
+
+void ContentSubresourceFilterThrottleManager::OnPageCreated(
+    content::Page& page) {
+  page_ = &page;
+  profile_interaction_manager_->DidCreatePage(*page_);
 }
 
 // Sets the desired page-level |activation_state| for the currently ongoing
@@ -456,17 +542,12 @@ void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(
   int frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
   navigation_load_policies_[frame_tree_node_id] = load_policy;
 
-  // TODO(crbug.com/843646): Use an API that NavigationHandle supports rather
-  // than trying to infer what the NavigationHandle is doing.
-  content::RenderFrameHost* starting_rfh =
-      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
-          navigation_handle->GetFrameTreeNodeId());
-  DCHECK(starting_rfh);
-
-  blink::FrameAdEvidence& ad_evidence = EnsureFrameAdEvidence(starting_rfh);
+  blink::FrameAdEvidence& ad_evidence =
+      EnsureFrameAdEvidence(navigation_handle);
   DCHECK_EQ(ad_evidence.parent_is_ad(),
-            base::Contains(ad_frames_,
-                           starting_rfh->GetParent()->GetFrameTreeNodeId()));
+            base::Contains(
+                ad_frames_,
+                navigation_handle->GetParentFrame()->GetFrameTreeNodeId()));
 
   ad_evidence.UpdateFilterListResult(
       InterpretLoadPolicyAsEvidence(load_policy));
@@ -503,23 +584,30 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
 }
 
 bool ContentSubresourceFilterThrottleManager::IsFrameTaggedAsAd(
+    int frame_tree_node_id) const {
+  return base::Contains(ad_frames_, frame_tree_node_id);
+}
+
+bool ContentSubresourceFilterThrottleManager::IsRenderFrameHostTaggedAsAd(
     content::RenderFrameHost* frame_host) const {
-  return frame_host &&
-         base::Contains(ad_frames_, frame_host->GetFrameTreeNodeId());
+  if (!frame_host)
+    return false;
+
+  return IsFrameTaggedAsAd(frame_host->GetFrameTreeNodeId());
 }
 
 absl::optional<LoadPolicy>
 ContentSubresourceFilterThrottleManager::LoadPolicyForLastCommittedNavigation(
-    content::RenderFrameHost* frame_host) const {
-  if (!frame_host)
-    return absl::nullopt;
-  auto it = navigation_load_policies_.find(frame_host->GetFrameTreeNodeId());
+    int frame_tree_node_id) const {
+  auto it = navigation_load_policies_.find(frame_tree_node_id);
   if (it == navigation_load_policies_.end())
     return absl::nullopt;
   return it->second;
 }
 
 void ContentSubresourceFilterThrottleManager::OnReloadRequested() {
+  DCHECK(page_);
+  DCHECK(page_->IsPrimary());
   profile_interaction_manager_->OnReloadRequested();
 }
 
@@ -607,22 +695,28 @@ ContentSubresourceFilterThrottleManager::GetFrameFilter(
   return it->second.get();
 }
 
-void ContentSubresourceFilterThrottleManager::MaybeShowNotification() {
+void ContentSubresourceFilterThrottleManager::MaybeShowNotification(
+    content::RenderFrameHost* frame_host) {
+  DCHECK(page_);
+  DCHECK_EQ(&frame_host->GetPage(), page_);
+
   if (current_committed_load_has_notified_disallowed_load_)
     return;
 
-  // This shouldn't happen normally, but in the rare case that an IPC from a
-  // previous page arrives late we should guard against it.
-  auto it = frame_host_filter_map_.find(web_contents()->GetMainFrame());
+  auto it = frame_host_filter_map_.find(frame_host->GetMainFrame());
   if (it == frame_host_filter_map_.end() ||
       it->second->activation_state().activation_level !=
           mojom::ActivationLevel::kEnabled) {
     return;
   }
 
-  profile_interaction_manager_->MaybeShowNotification();
-
   current_committed_load_has_notified_disallowed_load_ = true;
+
+  // Non-primary pages shouldn't affect UI. When the page becomes primary we'll
+  // check |current_committed_load_has_notified_disallowed_load_| and try
+  // again.
+  if (page_->IsPrimary())
+    profile_interaction_manager_->MaybeShowNotification();
 }
 
 VerifiedRuleset::Handle*
@@ -664,23 +758,18 @@ void ContentSubresourceFilterThrottleManager::SetIsAdSubframe(
   if (is_ad_subframe == base::Contains(ad_frames_, frame_tree_node_id))
     return;
 
-  blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
   if (is_ad_subframe) {
     ad_frames_.insert(frame_tree_node_id);
-
-    bool parent_is_ad = base::Contains(
-        ad_frames_, render_frame_host->GetParent()->GetFrameTreeNodeId());
-    ad_frame_type = parent_is_ad ? blink::mojom::AdFrameType::kChildAd
-                                 : blink::mojom::AdFrameType::kRootAd;
   } else {
     ad_frames_.erase(frame_tree_node_id);
   }
 
-  // Replicate ad frame type to this frame's proxies, so that it can be looked
-  // up in any process involved in rendering the current page.
-  render_frame_host->UpdateAdFrameType(ad_frame_type);
+  // Replicate `is_ad_subframe` to this frame's proxies, so that it can be
+  // looked up in any process involved in rendering the current page.
+  render_frame_host->UpdateIsAdSubframe(is_ad_subframe);
 
-  SubresourceFilterObserverManager::FromWebContents(web_contents())
+  SubresourceFilterObserverManager::FromWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host))
       ->NotifyIsAdSubframeChanged(render_frame_host, is_ad_subframe);
 }
 
@@ -720,7 +809,7 @@ ContentSubresourceFilterThrottleManager::GetAdEvidenceForFrame(
 }
 
 void ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource() {
-  MaybeShowNotification();
+  MaybeShowNotification(receiver_.GetCurrentTargetFrame());
 }
 
 void ContentSubresourceFilterThrottleManager::FrameIsAdSubframe() {
@@ -758,13 +847,34 @@ void ContentSubresourceFilterThrottleManager::OnSubframeWasCreatedByAdScript(
 
 blink::FrameAdEvidence&
 ContentSubresourceFilterThrottleManager::EnsureFrameAdEvidence(
-    content::RenderFrameHost* frame_host) {
-  DCHECK(frame_host);
-  DCHECK(frame_host->GetParent());
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(!navigation_handle->IsInMainFrame());
+  auto frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
+  auto parent_frame_tree_node_id =
+      navigation_handle->GetParentFrame()->GetFrameTreeNodeId();
+  return EnsureFrameAdEvidence(frame_tree_node_id, parent_frame_tree_node_id);
+}
+
+blink::FrameAdEvidence&
+ContentSubresourceFilterThrottleManager::EnsureFrameAdEvidence(
+    content::RenderFrameHost* render_frame_host) {
+  auto frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
+  auto parent_frame_tree_node_id =
+      render_frame_host->GetParent()->GetFrameTreeNodeId();
+  return EnsureFrameAdEvidence(frame_tree_node_id, parent_frame_tree_node_id);
+}
+
+blink::FrameAdEvidence&
+ContentSubresourceFilterThrottleManager::EnsureFrameAdEvidence(
+    int frame_tree_node_id,
+    int parent_frame_tree_node_id) {
+  DCHECK_NE(frame_tree_node_id, content::RenderFrameHost::kNoFrameTreeNodeId);
+  DCHECK_NE(parent_frame_tree_node_id,
+            content::RenderFrameHost::kNoFrameTreeNodeId);
   return tracked_ad_evidence_
-      .emplace(frame_host->GetFrameTreeNodeId(),
-               /*parent_is_ad=*/base::Contains(
-                   ad_frames_, frame_host->GetParent()->GetFrameTreeNodeId()))
+      .emplace(frame_tree_node_id,
+               /*parent_is_ad=*/base::Contains(ad_frames_,
+                                               parent_frame_tree_node_id))
       .first->second;
 }
 

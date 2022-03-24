@@ -12,10 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -37,6 +35,7 @@
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/system_trust_store.h"
+#include "net/cert/ocsp_revocation_status.h"
 #include "net/cert/pem.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -90,10 +89,6 @@ namespace net {
 
 namespace {
 
-const char kTLSFeatureExtensionHistogram[] =
-    "Net.Certificate.TLSFeatureExtensionWithPrivateRoot";
-const char kTLSFeatureExtensionOCSPHistogram[] =
-    "Net.Certificate.TLSFeatureExtensionWithPrivateRootHasOCSP";
 const char kTrustAnchorVerifyHistogram[] = "Net.Certificate.TrustAnchor.Verify";
 const char kTrustAnchorVerifyOutOfDateHistogram[] =
     "Net.Certificate.TrustAnchor.VerifyOutOfDate";
@@ -104,6 +99,12 @@ class MockCertVerifyProc : public CertVerifyProc {
  public:
   explicit MockCertVerifyProc(const CertVerifyResult& result)
       : result_(result) {}
+  MockCertVerifyProc(const CertVerifyResult& result, int error)
+      : result_(result), error_(error) {}
+
+  MockCertVerifyProc(const MockCertVerifyProc&) = delete;
+  MockCertVerifyProc& operator=(const MockCertVerifyProc&) = delete;
+
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
 
@@ -122,8 +123,7 @@ class MockCertVerifyProc : public CertVerifyProc {
                      const NetLogWithSource& net_log) override;
 
   const CertVerifyResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCertVerifyProc);
+  const int error_ = OK;
 };
 
 int MockCertVerifyProc::VerifyInternal(
@@ -138,7 +138,7 @@ int MockCertVerifyProc::VerifyInternal(
     const NetLogWithSource& net_log) {
   *verify_result = result_;
   verify_result->verified_cert = cert;
-  return OK;
+  return error_;
 }
 
 // This enum identifies a concrete implemenation of CertVerifyProc.
@@ -1308,7 +1308,8 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
 
     // NOTE: The signature is NOT recomputed over TBSCertificate -- for these
     // tests it isn't needed.
-    return X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
+    return X509Certificate::CreateFromBytes(
+        base::as_bytes(base::make_span(cert_der)));
   }
 
   static scoped_refptr<X509Certificate> CreateChain(
@@ -1518,6 +1519,72 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
   }
 }
 
+// Integration test for CertVerifyProc::HasTooLongValidity.
+// There isn't a way to add test entries to the known roots list for testing
+// the full CertVerifyProc implementations, but HasTooLongValidity is checked
+// by the outer CertVerifyProc::Verify. Thus the test can mock the
+// VerifyInternal result to pretend there was a successful verification with
+// is_issued_by_known_root and see that Verify overrides that with error.
+TEST(CertVerifyProcTest, VerifyCertValidityTooLong) {
+  scoped_refptr<X509Certificate> cert(ImportCertFromFile(
+      GetTestCertsDirectory(), "900_days_after_2019_07_01.pem"));
+  ASSERT_TRUE(cert);
+
+  {
+    // Locally trusted cert should be ok.
+    CertVerifyResult dummy_result;
+    dummy_result.is_issued_by_known_root = false;
+    auto verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
+    CertVerifyResult verify_result;
+    int error = verify_proc->Verify(
+        cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        /*sct_list=*/std::string(), 0, CRLSet::BuiltinCRLSet().get(),
+        CertificateList(), &verify_result, NetLogWithSource());
+    EXPECT_THAT(error, IsOk());
+    EXPECT_EQ(0u, verify_result.cert_status & CERT_STATUS_ALL_ERRORS);
+  }
+
+  {
+    // Publicly trusted cert that was otherwise okay should get changed to
+    // ERR_CERT_VALIDITY_TOO_LONG.
+    CertVerifyResult dummy_result;
+    dummy_result.is_issued_by_known_root = true;
+    auto verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
+    CertVerifyResult verify_result;
+    int error = verify_proc->Verify(
+        cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        /*sct_list=*/std::string(), 0, CRLSet::BuiltinCRLSet().get(),
+        CertificateList(), &verify_result, NetLogWithSource());
+    EXPECT_THAT(error, IsError(ERR_CERT_VALIDITY_TOO_LONG));
+    // TODO(mattm): generate a dedicated cert or use CertBuilder so that this
+    // test doesn't also hit CERT_STATUS_NON_UNIQUE_NAME.
+    EXPECT_EQ(CERT_STATUS_VALIDITY_TOO_LONG | CERT_STATUS_NON_UNIQUE_NAME,
+              verify_result.cert_status & CERT_STATUS_ALL_ERRORS);
+  }
+
+  {
+    // Publicly trusted cert that had some other error should retain the
+    // original error, but CERT_STATUS_VALIDITY_TOO_LONG should be added to
+    // cert_status.
+    CertVerifyResult dummy_result;
+    dummy_result.is_issued_by_known_root = true;
+    dummy_result.cert_status = CERT_STATUS_AUTHORITY_INVALID;
+    auto verify_proc = base::MakeRefCounted<MockCertVerifyProc>(
+        dummy_result, ERR_CERT_AUTHORITY_INVALID);
+    CertVerifyResult verify_result;
+    int error = verify_proc->Verify(
+        cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        /*sct_list=*/std::string(), 0, CRLSet::BuiltinCRLSet().get(),
+        CertificateList(), &verify_result, NetLogWithSource());
+    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
+    // TODO(mattm): generate a dedicated cert or use CertBuilder so that this
+    // test doesn't also hit CERT_STATUS_NON_UNIQUE_NAME.
+    EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID | CERT_STATUS_VALIDITY_TOO_LONG |
+                  CERT_STATUS_NON_UNIQUE_NAME,
+              verify_result.cert_status & CERT_STATUS_ALL_ERRORS);
+  }
+}
+
 TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert_chain = CreateCertificateChainFromFile(
@@ -1587,7 +1654,7 @@ TEST_P(CertVerifyProcInternalTest, PublicKeyHashes) {
 
   std::vector<std::string> expected_public_key_hashes = {
       // Target
-      "sha256/DZMTp9cNNYkzUG6baDB6T306ekLUYJpeEEtYpaeQpYE=",
+      "sha256/Ru/08Ru275Zlf42sbI6lqi2OUun3r4YgrrK/vJ3+Yzk=",
 
       // Intermediate
       "sha256/D9u0epgvPYlG9YiVp7V+IMT+xhUpB5BhsS/INjDXc4Y=",
@@ -1989,7 +2056,7 @@ TEST_P(CertVerifyProcInternalTest, VerifyReturnChainFiltersUnrelatedCerts) {
   scoped_refptr<X509Certificate> unrelated_certificate =
       ImportCertFromFile(certs_dir, "duplicate_cn_1.pem");
   scoped_refptr<X509Certificate> unrelated_certificate2 =
-      ImportCertFromFile(certs_dir, "aia-cert.pem");
+      ImportCertFromFile(certs_dir, "google.single.pem");
   ASSERT_NE(static_cast<X509Certificate*>(nullptr),
             unrelated_certificate.get());
   ASSERT_NE(static_cast<X509Certificate*>(nullptr),
@@ -2114,7 +2181,6 @@ TEST_P(CertVerifyProcInternalTest,
   if (base::Time::Now() > chain->valid_expiry()) {
     FAIL() << "This test uses a certificate chain which is now expired. Please "
               "disable and file a bug against mattm.";
-    return;
   }
 
   std::string sct_list;
@@ -2586,9 +2652,8 @@ TEST_P(CertVerifyProcInternalTest, ValidityDayPlus5MinutesBeforeNotBefore) {
   std::unique_ptr<CertBuilder> leaf, intermediate, root;
   CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
   ASSERT_TRUE(leaf && intermediate && root);
-  base::Time not_before = base::Time::Now() + base::TimeDelta::FromDays(1) +
-                          base::TimeDelta::FromMinutes(5);
-  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  base::Time not_before = base::Time::Now() + base::Days(1) + base::Minutes(5);
+  base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
 
   // Trust the root and build a chain to verify that includes the intermediate.
@@ -2610,8 +2675,8 @@ TEST_P(CertVerifyProcInternalTest, ValidityDayBeforeNotBefore) {
   std::unique_ptr<CertBuilder> leaf, intermediate, root;
   CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
   ASSERT_TRUE(leaf && intermediate && root);
-  base::Time not_before = base::Time::Now() + base::TimeDelta::FromDays(1);
-  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  base::Time not_before = base::Time::Now() + base::Days(1);
+  base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
 
   // Trust the root and build a chain to verify that includes the intermediate.
@@ -2633,8 +2698,8 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotBefore) {
   std::unique_ptr<CertBuilder> leaf, intermediate, root;
   CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
   ASSERT_TRUE(leaf && intermediate && root);
-  base::Time not_before = base::Time::Now() + base::TimeDelta::FromMinutes(5);
-  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  base::Time not_before = base::Time::Now() + base::Minutes(5);
+  base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
 
   // Trust the root and build a chain to verify that includes the intermediate.
@@ -2656,8 +2721,8 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotBefore) {
   std::unique_ptr<CertBuilder> leaf, intermediate, root;
   CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
   ASSERT_TRUE(leaf && intermediate && root);
-  base::Time not_before = base::Time::Now() - base::TimeDelta::FromSeconds(1);
-  base::Time not_after = base::Time::Now() + base::TimeDelta::FromDays(30);
+  base::Time not_before = base::Time::Now() - base::Seconds(1);
+  base::Time not_after = base::Time::Now() + base::Days(30);
   leaf->SetValidity(not_before, not_after);
 
   // Trust the root and build a chain to verify that includes the intermediate.
@@ -2679,8 +2744,8 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustBeforeNotAfter) {
   std::unique_ptr<CertBuilder> leaf, intermediate, root;
   CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
   ASSERT_TRUE(leaf && intermediate && root);
-  base::Time not_before = base::Time::Now() - base::TimeDelta::FromDays(30);
-  base::Time not_after = base::Time::Now() + base::TimeDelta::FromMinutes(5);
+  base::Time not_before = base::Time::Now() - base::Days(30);
+  base::Time not_after = base::Time::Now() + base::Minutes(5);
   leaf->SetValidity(not_before, not_after);
 
   // Trust the root and build a chain to verify that includes the intermediate.
@@ -2702,8 +2767,8 @@ TEST_P(CertVerifyProcInternalTest, ValidityJustAfterNotAfter) {
   std::unique_ptr<CertBuilder> leaf, intermediate, root;
   CertBuilder::CreateSimpleChain(&leaf, &intermediate, &root);
   ASSERT_TRUE(leaf && intermediate && root);
-  base::Time not_before = base::Time::Now() - base::TimeDelta::FromDays(30);
-  base::Time not_after = base::Time::Now() - base::TimeDelta::FromSeconds(1);
+  base::Time not_before = base::Time::Now() - base::Days(30);
+  base::Time not_after = base::Time::Now() - base::Seconds(1);
   leaf->SetValidity(not_before, not_after);
 
   // Trust the root and build a chain to verify that includes the intermediate.
@@ -3427,6 +3492,16 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
     }
   } else {
     EXPECT_NE(OK, error);
+    if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID &&
+        error == ERR_CERT_AUTHORITY_INVALID) {
+      // Newer Android versions reject the chain due to the SHA1 intermediate,
+      // but do not build the correct chain by AIA. Since only the partial
+      // chain is returned, CertVerifyProc does not mark it as SHA1 as it does
+      // not examine the last cert in the chain. Therefore, if
+      // ERR_CERT_AUTHORITY_INVALID is returned, don't check the rest of the
+      // statuses. See https://crbug.com/1191795.
+      return;
+    }
     EXPECT_TRUE(verify_result.cert_status &
                 CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
     EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
@@ -4068,6 +4143,137 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
+// Tests that an EV cert verification with successful online OCSP revocation
+// checks is marked as CERT_STATUS_IS_EV.
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       EVOnlineOCSPRevocationCheckingGood) {
+  if (!SupportsEV()) {
+    LOG(INFO) << "Skipping test as EV verification is not yet supported";
+    return;
+  }
+
+  const char kEVTestCertPolicy[] = "1.2.3.4";
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kEVTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+
+  EmbeddedTestServer ocsp_test_server(EmbeddedTestServer::TYPE_HTTPS);
+  ocsp_test_server.SetSSLConfig(cert_config);
+  EXPECT_TRUE(ocsp_test_server.Start());
+
+  scoped_refptr<X509Certificate> root =
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
+  ASSERT_TRUE(root.get());
+
+  scoped_refptr<X509Certificate> chain = ocsp_test_server.GetCertificate();
+  ASSERT_TRUE(chain.get());
+
+  // Consider the root of the test chain a valid EV root for the test policy.
+  ScopedTestEVPolicy scoped_test_ev_policy(
+      EVRootCAMetadata::GetInstance(),
+      X509Certificate::CalculateFingerprint256(root->cert_buffer()),
+      kEVTestCertPolicy);
+
+  CertVerifyResult verify_result;
+  int flags = 0;
+  int error =
+      Verify(chain.get(), ocsp_test_server.host_port_pair().host(), flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsOk());
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_IS_EV);
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+// Tests that an EV cert verification with that could not retrieve online OCSP
+// revocation information is verified but not marked as CERT_STATUS_IS_EV.
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       EVOnlineOCSPRevocationCheckingSoftFail) {
+  if (!SupportsEV()) {
+    LOG(INFO) << "Skipping test as EV verification is not yet supported";
+    return;
+  }
+
+  const char kEVTestCertPolicy[] = "1.2.3.4";
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kEVTestCertPolicy};
+  // Retrieving OCSP status returns an error.
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInternalError);
+
+  EmbeddedTestServer ocsp_test_server(EmbeddedTestServer::TYPE_HTTPS);
+  ocsp_test_server.SetSSLConfig(cert_config);
+  EXPECT_TRUE(ocsp_test_server.Start());
+
+  scoped_refptr<X509Certificate> root =
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
+  ASSERT_TRUE(root.get());
+
+  scoped_refptr<X509Certificate> chain = ocsp_test_server.GetCertificate();
+  ASSERT_TRUE(chain.get());
+
+  // Consider the root of the test chain a valid EV root for the test policy.
+  ScopedTestEVPolicy scoped_test_ev_policy(
+      EVRootCAMetadata::GetInstance(),
+      X509Certificate::CalculateFingerprint256(root->cert_buffer()),
+      kEVTestCertPolicy);
+
+  CertVerifyResult verify_result;
+  int flags = 0;
+  int error =
+      Verify(chain.get(), ocsp_test_server.host_port_pair().host(), flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsOk());
+  EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_IS_EV);
+}
+
+// Tests that an EV cert verification with online OCSP returning affirmatively
+// revoked is not marked as CERT_STATUS_IS_EV. On some platforms verification
+// will fail with ERR_CERT_REVOKED.
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       EVOnlineOCSPRevocationCheckingRevoked) {
+  if (!SupportsEV()) {
+    LOG(INFO) << "Skipping test as EV verification is not yet supported";
+    return;
+  }
+
+  const char kEVTestCertPolicy[] = "1.2.3.4";
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kEVTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::REVOKED,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+
+  EmbeddedTestServer ocsp_test_server(EmbeddedTestServer::TYPE_HTTPS);
+  ocsp_test_server.SetSSLConfig(cert_config);
+  EXPECT_TRUE(ocsp_test_server.Start());
+
+  scoped_refptr<X509Certificate> root =
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
+  ASSERT_TRUE(root.get());
+
+  scoped_refptr<X509Certificate> chain = ocsp_test_server.GetCertificate();
+  ASSERT_TRUE(chain.get());
+
+  // Consider the root of the test chain a valid EV root for the test policy.
+  ScopedTestEVPolicy scoped_test_ev_policy(
+      EVRootCAMetadata::GetInstance(),
+      X509Certificate::CalculateFingerprint256(root->cert_buffer()),
+      kEVTestCertPolicy);
+
+  CertVerifyResult verify_result;
+  int flags = 0;
+  int error =
+      Verify(chain.get(), ocsp_test_server.host_port_pair().host(), flags,
+             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN)
+    EXPECT_THAT(error, IsOk());
+  else
+    EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_IS_EV);
+}
+
 TEST(CertVerifyProcTest, RejectsMD2) {
   scoped_refptr<X509Certificate> cert(
       ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
@@ -4491,114 +4697,6 @@ TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSanLeadingAndTrailingDot) {
 // Should not match the dNSName SAN
 TEST_F(CertVerifyProcNameTest, DoesntMatchDnsSanTrailingDot) {
   VerifyCertName(".test.example", false);
-}
-
-// Tests that CertVerifyProc records a histogram correctly when a
-// certificate chaining to a private root contains the TLS feature
-// extension and does not have a stapled OCSP response.
-TEST(CertVerifyProcTest, HasTLSFeatureExtensionUMA) {
-  base::HistogramTester histograms;
-  scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), "tls_feature_extension.pem"));
-  ASSERT_TRUE(cert);
-  CertVerifyResult result;
-  result.is_issued_by_known_root = false;
-  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
-
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 0);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 0);
-
-  int flags = 0;
-  CertVerifyResult verify_result;
-  int error = verify_proc->Verify(
-      cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &verify_result, NetLogWithSource());
-  EXPECT_EQ(OK, error);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 1);
-  histograms.ExpectBucketCount(kTLSFeatureExtensionHistogram, true, 1);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 1);
-  histograms.ExpectBucketCount(kTLSFeatureExtensionOCSPHistogram, false, 1);
-}
-
-// Tests that CertVerifyProc records a histogram correctly when a
-// certificate chaining to a private root contains the TLS feature
-// extension and does have a stapled OCSP response.
-TEST(CertVerifyProcTest, HasTLSFeatureExtensionWithStapleUMA) {
-  base::HistogramTester histograms;
-  scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), "tls_feature_extension.pem"));
-  ASSERT_TRUE(cert);
-  CertVerifyResult result;
-  result.is_issued_by_known_root = false;
-  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
-
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 0);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 0);
-
-  int flags = 0;
-  CertVerifyResult verify_result;
-  int error = verify_proc->Verify(
-      cert.get(), "127.0.0.1", "dummy response", /*sct_list=*/std::string(),
-      flags, CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result,
-      NetLogWithSource());
-  EXPECT_EQ(OK, error);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 1);
-  histograms.ExpectBucketCount(kTLSFeatureExtensionHistogram, true, 1);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 1);
-  histograms.ExpectBucketCount(kTLSFeatureExtensionOCSPHistogram, true, 1);
-}
-
-// Tests that CertVerifyProc records a histogram correctly when a
-// certificate chaining to a private root does not contain the TLS feature
-// extension.
-TEST(CertVerifyProcTest, DoesNotHaveTLSFeatureExtensionUMA) {
-  base::HistogramTester histograms;
-  scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
-  ASSERT_TRUE(cert);
-  CertVerifyResult result;
-  result.is_issued_by_known_root = false;
-  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
-
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 0);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 0);
-
-  int flags = 0;
-  CertVerifyResult verify_result;
-  int error = verify_proc->Verify(
-      cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &verify_result, NetLogWithSource());
-  EXPECT_EQ(OK, error);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 1);
-  histograms.ExpectBucketCount(kTLSFeatureExtensionHistogram, false, 1);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 0);
-}
-
-// Tests that CertVerifyProc does not record a histogram when a
-// certificate contains the TLS feature extension but chains to a public
-// root.
-TEST(CertVerifyProcTest, HasTLSFeatureExtensionWithPublicRootUMA) {
-  base::HistogramTester histograms;
-  scoped_refptr<X509Certificate> cert(
-      ImportCertFromFile(GetTestCertsDirectory(), "tls_feature_extension.pem"));
-  ASSERT_TRUE(cert);
-  CertVerifyResult result;
-  result.is_issued_by_known_root = true;
-  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
-
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 0);
-
-  int flags = 0;
-  CertVerifyResult verify_result;
-  int error = verify_proc->Verify(
-      cert.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &verify_result, NetLogWithSource());
-  EXPECT_EQ(OK, error);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionHistogram, 0);
-  histograms.ExpectTotalCount(kTLSFeatureExtensionOCSPHistogram, 0);
 }
 
 // Test that trust anchors are appropriately recorded via UMA.

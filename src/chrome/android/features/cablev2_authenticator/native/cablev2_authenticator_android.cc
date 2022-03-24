@@ -6,6 +6,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -21,7 +22,9 @@
 #include "device/fido/cable/v2_registration.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 
 // These "headers" actually contain several function definitions and thus can
@@ -43,6 +46,117 @@ using base::android::ToJavaIntArray;
 
 namespace {
 
+namespace protobuf {
+
+// WireType enumerates the protobuf wire types. See
+// https://developers.google.com/protocol-buffers/docs/encoding#structure
+enum class WireType {
+  kVarint = 0,
+  kLengthPrefixed = 2,
+};
+
+// EncodeTag encodes a protobuf tag and type into the identifier value used on
+// the wire. See
+// https://developers.google.com/protocol-buffers/docs/encoding#structure
+constexpr uint64_t EncodeTag(uint64_t tag_number, WireType type) {
+  return tag_number << 3 | static_cast<uint8_t>(type);
+}
+
+// Some tag numbers used in a protobuf that cannot be included here but which
+// we wish to generate messages for.
+constexpr uint64_t kTagRequestId = 1;
+constexpr uint64_t kTagEventType = 2;
+constexpr uint64_t kTagTunnelId = 11;
+constexpr uint64_t kTagChromeLog = 501;
+constexpr uint64_t kTagEvent = 1;
+constexpr uint64_t kTagResult = 2;
+
+// cbb_add_varint encodes |v| as a base128 varint as described at
+// https://developers.google.com/protocol-buffers/docs/encoding#varints.
+bool cbb_add_varint(CBB* cbb, uint64_t v) {
+  for (;;) {
+    const uint64_t next_v = v >> 7;
+    const bool is_last_byte = (next_v == 0);
+    const uint8_t b = (v & 0x7f) | (is_last_byte ? 0 : 0x80);
+
+    if (!CBB_add_u8(cbb, b)) {
+      return false;
+    }
+
+    if (is_last_byte) {
+      return true;
+    }
+    v = next_v;
+  }
+}
+
+enum class Type {
+  kEvent,
+  kResult,
+};
+
+// LogEvent logs an event on a server-linked transaction with the given
+// |tunnel_id|. The semantics of |value| are specific to the |type| of the
+// logged event.
+void LogEvent(
+    JNIEnv* env,
+    base::span<const uint8_t, device::cablev2::kTunnelIdSize> tunnel_id,
+    Type type,
+    unsigned value) {
+  uint64_t tag;
+  switch (type) {
+    case Type::kEvent:
+      tag = kTagEvent;
+      break;
+    case Type::kResult:
+      tag = kTagResult;
+      break;
+  }
+
+  // An inner protobuf is serialised first in order to get its length for the
+  // outer message.
+  bssl::ScopedCBB inner_cbb;
+  uint8_t* inner_bytes;
+  size_t inner_length;
+  if (!CBB_init(inner_cbb.get(), 16) ||
+      !cbb_add_varint(inner_cbb.get(), EncodeTag(tag, WireType::kVarint)) ||
+      !cbb_add_varint(inner_cbb.get(), value) ||
+      !CBB_finish(inner_cbb.get(), &inner_bytes, &inner_length)) {
+    return;
+  }
+  bssl::UniquePtr<uint8_t> inner_bytes_storage(inner_bytes);
+
+  bssl::ScopedCBB cbb;
+  uint8_t* bytes;
+  size_t length;
+  if (!CBB_init(cbb.get(), 32) ||
+      // Protobuf entries are (tag, value) pairs.
+      !cbb_add_varint(cbb.get(), EncodeTag(kTagRequestId, WireType::kVarint)) ||
+      !cbb_add_varint(cbb.get(), 0) ||
+
+      !cbb_add_varint(cbb.get(), EncodeTag(kTagEventType, WireType::kVarint)) ||
+      !cbb_add_varint(cbb.get(), kTagChromeLog) ||
+
+      !cbb_add_varint(cbb.get(),
+                      EncodeTag(kTagTunnelId, WireType::kLengthPrefixed)) ||
+      !cbb_add_varint(cbb.get(), tunnel_id.size()) ||
+      !CBB_add_bytes(cbb.get(), tunnel_id.data(), tunnel_id.size()) ||
+
+      !cbb_add_varint(cbb.get(),
+                      EncodeTag(kTagChromeLog, WireType::kLengthPrefixed)) ||
+      !cbb_add_varint(cbb.get(), inner_length) ||
+      !CBB_add_bytes(cbb.get(), inner_bytes, inner_length) ||
+
+      !CBB_finish(cbb.get(), &bytes, &length)) {
+    return;
+  }
+  bssl::UniquePtr<uint8_t> bytes_storage(bytes);
+
+  Java_CableAuthenticator_logEvent(env, ToJavaByteArray(env, bytes, length));
+}
+
+}  // namespace protobuf
+
 // CableV2MobileEvent enumerates several steps that occur during a caBLEv2
 // transaction. Do not change the assigned value since they are used in
 // histograms, only append new values. Keep synced with enums.xml.
@@ -61,13 +175,17 @@ enum class CableV2MobileEvent {
   kInteractionReady = 11,
   kLinkingNotRequested = 12,
   kUSBSuccess = 13,
+  kStoppedWhileAwaitingTunnelServerConnection = 14,
+  kStoppedWhileAwaitingHandshake = 15,
+  kStoppedWhileAwaitingRequest = 16,
+  kStoppedWhileAuthenticating = 17,
+  kStrayGetAssertionResponse = 18,
+  kGetAssertionStarted = 19,
+  kGetAssertionComplete = 20,
+  kFirstTransactionDone = 21,
 
-  kMaxValue = 13,
+  kMaxValue = 21,
 };
-
-void RecordEvent(CableV2MobileEvent event) {
-  base::UmaHistogramEnumeration("WebAuthentication.CableV2.MobileEvent", event);
-}
 
 // CableV2MobileResult enumerates the outcome of a caBLEv2 transction. Do not
 // change the assigned value since they are used in histograms, only append new
@@ -84,14 +202,10 @@ enum class CableV2MobileResult {
   kInternalError = 8,
   kInvalidQR = 9,
   kInvalidServerLink = 10,
+  kEOFWhileProcessing = 11,
 
-  kMaxValue = 10,
+  kMaxValue = 11,
 };
-
-void RecordResult(CableV2MobileResult result) {
-  base::UmaHistogramEnumeration("WebAuthentication.CableV2.MobileResult",
-                                result);
-}
 
 // JavaByteArrayToSpan returns a span that aliases |data|. Be aware that the
 // reference for |data| must outlive the span.
@@ -141,9 +255,18 @@ struct GlobalData {
   // reserved so that functions can still return that to indicate an error.
   jlong instance_num = 1;
 
+  // metrics_enabled records whether the user opted into metrics and crash
+  // reporting. If so then logging of events related to server-link
+  // transactions is permitted.
+  bool metrics_enabled = false;
+
   absl::optional<std::array<uint8_t, device::cablev2::kRootSecretSize>>
       root_secret;
   network::mojom::NetworkContext* network_context = nullptr;
+
+  // event_to_record_if_stopped contains an event to record with UMA if the
+  // activity is stopped. This is updated as a transaction progresses.
+  absl::optional<CableV2MobileEvent> event_to_record_if_stopped;
 
   // registration is a non-owning pointer to the global |Registration|.
   device::cablev2::authenticator::Registration* registration = nullptr;
@@ -163,16 +286,18 @@ struct GlobalData {
   // completed.
   absl::optional<device::cablev2::authenticator::Platform::GetAssertionCallback>
       pending_get_assertion_callback;
+  absl::optional<base::TimeTicks> get_assertion_start_time;
 
   // usb_callback holds the callback that receives data from a USB connection.
   absl::optional<
       base::RepeatingCallback<void(absl::optional<base::span<const uint8_t>>)>>
       usb_callback;
 
-  // pending_event holds a cloud message while we are waiting for the user to
-  // tap on the notification.
-  std::unique_ptr<device::cablev2::authenticator::Registration::Event>
-      pending_event;
+  // server_link_tunnel_id contains the derived tunnel ID for server–link
+  // transactions. May be |nullopt| if the current transaction is not
+  // server-linked. This is used as an event ID when logging.
+  absl::optional<std::array<uint8_t, device::cablev2::kTunnelIdSize>>
+      server_link_tunnel_id;
 };
 
 // GetGlobalData returns a pointer to the unique |GlobalData| for the address
@@ -184,12 +309,34 @@ GlobalData& GetGlobalData() {
 
 void ResetGlobalData() {
   GlobalData& global_data = GetGlobalData();
+  global_data.metrics_enabled = false;
   global_data.current_transaction.reset();
   global_data.pending_make_credential_callback.reset();
   global_data.pending_get_assertion_callback.reset();
+  global_data.get_assertion_start_time.reset();
   global_data.usb_callback.reset();
-  // pending_event is not reset because a notification might still exist that
-  // depends on it.
+  global_data.server_link_tunnel_id.reset();
+}
+
+void RecordEvent(const GlobalData* global_data, CableV2MobileEvent event) {
+  base::UmaHistogramEnumeration("WebAuthentication.CableV2.MobileEvent", event);
+
+  if (global_data && global_data->metrics_enabled &&
+      global_data->server_link_tunnel_id.has_value()) {
+    protobuf::LogEvent(global_data->env, *global_data->server_link_tunnel_id,
+                       protobuf::Type::kEvent, static_cast<unsigned>(event));
+  }
+}
+
+void RecordResult(const GlobalData* global_data, CableV2MobileResult result) {
+  base::UmaHistogramEnumeration("WebAuthentication.CableV2.MobileResult",
+                                result);
+
+  if (global_data && global_data->metrics_enabled &&
+      global_data->server_link_tunnel_id.has_value()) {
+    protobuf::LogEvent(global_data->env, *global_data->server_link_tunnel_id,
+                       protobuf::Type::kResult, static_cast<unsigned>(result));
+  }
 }
 
 // AndroidBLEAdvert wraps a Java |BLEAdvert| object so that
@@ -212,7 +359,7 @@ class AndroidBLEAdvert
   }
 
  private:
-  JNIEnv* const env_;
+  const raw_ptr<JNIEnv> env_;
   const ScopedJavaGlobalRef<jobject> advert_;
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -262,7 +409,9 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
     GlobalData& global_data = GetGlobalData();
     DCHECK(!global_data.pending_get_assertion_callback);
     global_data.pending_get_assertion_callback = std::move(params->callback);
+    global_data.get_assertion_start_time = base::TimeTicks::Now();
 
+    RecordEvent(&global_data, CableV2MobileEvent::kGetAssertionStarted);
     Java_CableAuthenticator_getAssertion(
         env_, cable_authenticator_,
         ConvertUTF8ToJavaString(env_, params->rp_id),
@@ -274,11 +423,14 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     LOG(ERROR) << __func__ << " " << static_cast<int>(status);
 
+    GlobalData& global_data = GetGlobalData();
     CableV2MobileEvent event;
     switch (status) {
       case Status::TUNNEL_SERVER_CONNECT:
         event = CableV2MobileEvent::kTunnelServerConnected;
         tunnel_server_connect_time_.emplace();
+        global_data.event_to_record_if_stopped =
+            CableV2MobileEvent::kStoppedWhileAwaitingHandshake;
         break;
       case Status::HANDSHAKE_COMPLETE:
         if (tunnel_server_connect_time_) {
@@ -288,15 +440,23 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
           tunnel_server_connect_time_.reset();
         }
         event = CableV2MobileEvent::kHandshakeCompleted;
+        global_data.event_to_record_if_stopped =
+            CableV2MobileEvent::kStoppedWhileAwaitingRequest;
         break;
       case Status::REQUEST_RECEIVED:
         event = CableV2MobileEvent::kRequestReceived;
+        global_data.event_to_record_if_stopped =
+            CableV2MobileEvent::kStoppedWhileAuthenticating;
         break;
       case Status::CTAP_ERROR:
         event = CableV2MobileEvent::kCTAPError;
         break;
+      case Status::FIRST_TRANSACTION_DONE:
+        global_data.event_to_record_if_stopped.reset();
+        event = CableV2MobileEvent::kFirstTransactionDone;
+        break;
     }
-    RecordEvent(event);
+    RecordEvent(&global_data, event);
 
     if (!cable_authenticator_) {
       return;
@@ -309,12 +469,17 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
   void OnCompleted(absl::optional<Error> maybe_error) override {
     LOG(ERROR) << __func__ << " "
                << (maybe_error ? static_cast<int>(*maybe_error) : -1);
+    GlobalData& global_data = GetGlobalData();
+    global_data.event_to_record_if_stopped.reset();
 
     CableV2MobileResult result = CableV2MobileResult::kSuccess;
     if (maybe_error) {
       switch (*maybe_error) {
         case Error::UNEXPECTED_EOF:
           result = CableV2MobileResult::kUnexpectedEOF;
+          break;
+        case Error::EOF_WHILE_PROCESSING:
+          result = CableV2MobileResult::kEOFWhileProcessing;
           break;
         case Error::TUNNEL_SERVER_CONNECT_FAILED:
           result = CableV2MobileResult::kTunnelServerConnectFailed;
@@ -338,14 +503,16 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
         case Error::SERVER_LINK_WRONG_LENGTH:
         case Error::SERVER_LINK_NOT_ON_CURVE:
         case Error::NO_SCREENLOCK:
+        case Error::NO_BLUETOOTH_PERMISSION:
+        case Error::QR_URI_ERROR:
           result = CableV2MobileResult::kInternalError;
           break;
       }
     }
-    RecordResult(result);
+    RecordResult(&global_data, result);
 
     if (is_usb_ && result == CableV2MobileResult::kSuccess) {
-      RecordEvent(CableV2MobileEvent::kUSBSuccess);
+      RecordEvent(nullptr, CableV2MobileEvent::kUSBSuccess);
     }
 
     // The transaction might fail before interactive mode, thus
@@ -372,7 +539,7 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
   }
 
  private:
-  JNIEnv* const env_;
+  const raw_ptr<JNIEnv> env_;
   ScopedJavaGlobalRef<jobject> cable_authenticator_;
   absl::optional<base::ElapsedTimer> tunnel_server_connect_time_;
 
@@ -426,7 +593,7 @@ class USBTransport : public device::cablev2::authenticator::Transport {
     }
   }
 
-  JNIEnv* const env_;
+  const raw_ptr<JNIEnv> env_;
   const ScopedJavaGlobalRef<jobject> usb_device_;
   base::RepeatingCallback<void(Update)> callback_;
   base::WeakPtrFactory<USBTransport> weak_factory_{this};
@@ -437,12 +604,13 @@ class USBTransport : public device::cablev2::authenticator::Transport {
 // These functions are the entry points for CableAuthenticator.java and
 // BLEHandler.java calling into C++.
 
-static void JNI_CableAuthenticator_Setup(
-    JNIEnv* env,
-    jlong registration_long,
-    jlong network_context_long,
-    const JavaParamRef<jbyteArray>& secret) {
+static void JNI_CableAuthenticator_Setup(JNIEnv* env,
+                                         jlong registration_long,
+                                         jlong network_context_long,
+                                         const JavaParamRef<jbyteArray>& secret,
+                                         jboolean metrics_enabled) {
   GlobalData& global_data = GetGlobalData();
+  global_data.metrics_enabled = metrics_enabled;
 
   // The root_secret may not be provided when triggered for server-link. It
   // won't be used in that case either, but we need to be able to grab it if
@@ -455,6 +623,9 @@ static void JNI_CableAuthenticator_Setup(
            global_data.root_secret->size());
   }
 
+  // If starting a new transaction, don't record anything if stopped.
+  global_data.event_to_record_if_stopped.reset();
+
   // This function can be called multiple times and must be idempotent. The
   // |env| member of |global_data| is used to flag whether setup has
   // already occurred.
@@ -462,7 +633,7 @@ static void JNI_CableAuthenticator_Setup(
     return;
   }
 
-  RecordEvent(CableV2MobileEvent::kSetup);
+  RecordEvent(&global_data, CableV2MobileEvent::kSetup);
   global_data.env = env;
 
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
@@ -484,9 +655,8 @@ static jlong JNI_CableAuthenticator_StartUSB(
     JNIEnv* env,
     const JavaParamRef<jobject>& cable_authenticator,
     const JavaParamRef<jobject>& usb_device) {
-  RecordEvent(CableV2MobileEvent::kUSB);
-
   GlobalData& global_data = GetGlobalData();
+  RecordEvent(&global_data, CableV2MobileEvent::kUSB);
 
   auto transport = std::make_unique<USBTransport>(
       env, ScopedJavaGlobalRef<jobject>(usb_device));
@@ -507,24 +677,26 @@ static jlong JNI_CableAuthenticator_StartQR(
     JNIEnv* env,
     const JavaParamRef<jobject>& cable_authenticator,
     const JavaParamRef<jstring>& authenticator_name,
-    const JavaParamRef<jstring>& qr_url,
+    const JavaParamRef<jstring>& qr_uri,
     jboolean link) {
-  RecordEvent(CableV2MobileEvent::kQRRead);
-
   GlobalData& global_data = GetGlobalData();
-  const std::string& qr_string = ConvertJavaStringToUTF8(qr_url);
+  RecordEvent(&global_data, CableV2MobileEvent::kQRRead);
+
+  const std::string& qr_string = ConvertJavaStringToUTF8(qr_uri);
   absl::optional<device::cablev2::qr::Components> decoded_qr(
       device::cablev2::qr::Parse(qr_string));
   if (!decoded_qr) {
     FIDO_LOG(ERROR) << "Failed to decode QR: " << qr_string;
-    RecordResult(CableV2MobileResult::kInvalidQR);
+    RecordResult(&global_data, CableV2MobileResult::kInvalidQR);
     return 0;
   }
 
   if (!link) {
-    RecordEvent(CableV2MobileEvent::kLinkingNotRequested);
+    RecordEvent(&global_data, CableV2MobileEvent::kLinkingNotRequested);
   }
 
+  global_data.event_to_record_if_stopped =
+      CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
   global_data.current_transaction =
       device::cablev2::authenticator::TransactFromQRCode(
           std::make_unique<AndroidPlatform>(env, cable_authenticator,
@@ -541,8 +713,6 @@ static jlong JNI_CableAuthenticator_StartServerLink(
     JNIEnv* env,
     const JavaParamRef<jobject>& cable_authenticator,
     const JavaParamRef<jbyteArray>& server_link_data_java) {
-  RecordEvent(CableV2MobileEvent::kServerLink);
-
   constexpr size_t kDataSize =
       device::kP256X962Length + device::cablev2::kQRSecretSize;
   const absl::optional<base::span<const uint8_t, kDataSize>> server_link_data =
@@ -555,54 +725,68 @@ static jlong JNI_CableAuthenticator_StartServerLink(
   std::array<uint8_t, device::cablev2::kRootSecretSize> dummy_root_secret = {0};
   std::string dummy_authenticator_name = "";
   GlobalData& global_data = GetGlobalData();
-  global_data
-      .current_transaction = device::cablev2::authenticator::TransactFromQRCode(
-      std::make_unique<AndroidPlatform>(env, cable_authenticator,
-                                        /*is_usb=*/false),
-      global_data.network_context, dummy_root_secret, dummy_authenticator_name,
+  global_data.event_to_record_if_stopped =
+      CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
+  const base::span<const uint8_t, device::cablev2::kQRSecretSize> qr_secret =
       server_link_data
-          ->subspan<device::kP256X962Length, device::cablev2::kQRSecretSize>(),
-      server_link_data->subspan<0, device::kP256X962Length>(), absl::nullopt);
+          ->subspan<device::kP256X962Length, device::cablev2::kQRSecretSize>();
+  global_data.server_link_tunnel_id =
+      device::cablev2::Derive<device::cablev2::kTunnelIdSize>(
+          qr_secret, base::span<uint8_t>(),
+          device::cablev2::DerivedValueType::kTunnelID);
+  RecordEvent(&global_data, CableV2MobileEvent::kServerLink);
+
+  global_data.current_transaction =
+      device::cablev2::authenticator::TransactFromQRCode(
+          std::make_unique<AndroidPlatform>(env, cable_authenticator,
+                                            /*is_usb=*/false),
+          global_data.network_context, dummy_root_secret,
+          dummy_authenticator_name, qr_secret,
+          server_link_data->subspan<0, device::kP256X962Length>(),
+          absl::nullopt);
 
   return ++global_data.instance_num;
 }
 
 static jlong JNI_CableAuthenticator_StartCloudMessage(
     JNIEnv* env,
-    const JavaParamRef<jobject>& cable_authenticator) {
-  RecordEvent(CableV2MobileEvent::kCloudMessage);
-
+    const JavaParamRef<jobject>& cable_authenticator,
+    const JavaParamRef<jbyteArray>& serialized_event) {
   GlobalData& global_data = GetGlobalData();
-  DCHECK(global_data.pending_event);
-  std::unique_ptr<device::cablev2::authenticator::Registration::Event> event =
-      std::move(global_data.pending_event);
+  RecordEvent(&global_data, CableV2MobileEvent::kCloudMessage);
 
-  absl::optional<base::span<const uint8_t>> maybe_contact_id;
-  if (event->source ==
-      device::cablev2::authenticator::Registration::Type::LINKING) {
-    // If the event if from linking then the contact_id must be ready because
-    // the |RegistrationState| will hold the event until it is.
-    maybe_contact_id = *global_data.registration->contact_id();
+  auto event =
+      device::cablev2::authenticator::Registration::Event::FromSerialized(
+          JavaByteArrayToSpan(env, serialized_event));
+  if (!event) {
+    LOG(ERROR) << "Failed to parse event";
+    return 0;
   }
+
+  DCHECK((event->source ==
+          device::cablev2::authenticator::Registration::Type::LINKING) ==
+         event->contact_id.has_value());
 
   // There is deliberately no check for |!global_data.current_transaction|
   // because multiple Cloud messages may come in from different paired devices.
   // Only the most recent is processed.
+  global_data.event_to_record_if_stopped =
+      CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
   global_data.current_transaction =
       device::cablev2::authenticator::TransactFromFCM(
           std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                             /*is_usb=*/false),
           global_data.network_context, *global_data.root_secret,
           event->routing_id, event->tunnel_id, event->pairing_id,
-          event->client_nonce, maybe_contact_id);
+          event->client_nonce, event->contact_id);
 
   return ++global_data.instance_num;
 }
 
 static void JNI_CableAuthenticator_Unlink(JNIEnv* env) {
-  RecordEvent(CableV2MobileEvent::kUnlink);
-
   GlobalData& global_data = GetGlobalData();
+  RecordEvent(&global_data, CableV2MobileEvent::kUnlink);
+
   global_data.registration->RotateContactID();
 }
 
@@ -613,39 +797,12 @@ static void JNI_CableAuthenticator_Stop(JNIEnv* env, jlong instance_num) {
   }
 }
 
-static jboolean JNI_CableAuthenticator_OnCloudMessage(JNIEnv* env,
-                                                      jlong event_long) {
-  static_assert(sizeof(jlong) >= sizeof(void*), "");
-  std::unique_ptr<device::cablev2::authenticator::Registration::Event> event(
-      reinterpret_cast<device::cablev2::authenticator::Registration::Event*>(
-          event_long));
-  DCHECK(event->source ==
-             device::cablev2::authenticator::Registration::Type::SYNC ||
-         base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
-
-  bool ret;
-  switch (event->request_type) {
-    case device::FidoRequestType::kMakeCredential:
-      ret = true;
-      break;
-
-    case device::FidoRequestType::kGetAssertion:
-      ret = false;
-      break;
-  }
-
-  GlobalData& global_data = GetGlobalData();
-  global_data.pending_event = std::move(event);
-
-  return ret;
-}
-
 static int JNI_CableAuthenticator_ValidateServerLinkData(
     JNIEnv* env,
     const JavaParamRef<jbyteArray>& jdata) {
   base::span<const uint8_t> data = JavaByteArrayToSpan(env, jdata);
   if (data.size() != device::kP256X962Length + device::cablev2::kQRSecretSize) {
-    RecordResult(CableV2MobileResult::kInvalidServerLink);
+    RecordResult(nullptr, CableV2MobileResult::kInvalidServerLink);
     return static_cast<int>(device::cablev2::authenticator::Platform::Error::
                                 SERVER_LINK_WRONG_LENGTH);
   }
@@ -656,12 +813,35 @@ static int JNI_CableAuthenticator_ValidateServerLinkData(
   bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
   if (!EC_POINT_oct2point(p256.get(), point.get(), x962.data(), x962.size(),
                           /*ctx=*/nullptr)) {
-    RecordResult(CableV2MobileResult::kInvalidServerLink);
+    RecordResult(nullptr, CableV2MobileResult::kInvalidServerLink);
     return static_cast<int>(device::cablev2::authenticator::Platform::Error::
                                 SERVER_LINK_NOT_ON_CURVE);
   }
 
   return 0;
+}
+
+static int JNI_CableAuthenticator_ValidateQRURI(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& qr_uri) {
+  const std::string& qr_string = ConvertJavaStringToUTF8(qr_uri);
+  if (!device::cablev2::qr::Parse(qr_string)) {
+    RecordResult(nullptr, CableV2MobileResult::kInvalidQR);
+    return static_cast<int>(
+        device::cablev2::authenticator::Platform::Error::QR_URI_ERROR);
+  }
+
+  return 0;
+}
+
+static void JNI_CableAuthenticator_OnActivityStop(JNIEnv* env,
+                                                  jlong instance_num) {
+  GlobalData& global_data = GetGlobalData();
+  if (global_data.event_to_record_if_stopped &&
+      global_data.instance_num == instance_num) {
+    RecordEvent(&global_data, *global_data.event_to_record_if_stopped);
+    global_data.event_to_record_if_stopped.reset();
+  }
 }
 
 static void JNI_CableAuthenticator_OnAuthenticatorAttestationResponse(
@@ -687,8 +867,24 @@ static void JNI_CableAuthenticator_OnAuthenticatorAssertionResponse(
     const JavaParamRef<jbyteArray>& jauthenticator_data,
     const JavaParamRef<jbyteArray>& jsignature) {
   GlobalData& global_data = GetGlobalData();
+  RecordEvent(&global_data, CableV2MobileEvent::kGetAssertionComplete);
+
+  // TODO: |get_assertion_start_time| should always be present in this case.
+  // But, at the time of writing, we are seeing some odd numbers in UMA metrics
+  // and aren't sure what's going on. Thus there's an if to avoid introducing
+  // a crash. If the number of records for this histogram are comparible to
+  // the number of recorded starts, then this can be removed.
+  DCHECK(global_data.get_assertion_start_time);
+  if (global_data.get_assertion_start_time) {
+    const base::TimeDelta duration =
+        base::TimeTicks::Now() - global_data.get_assertion_start_time.value();
+    base::UmaHistogramMediumTimes("WebAuthentication.CableV2.GetAssertionTime",
+                                  duration);
+    global_data.get_assertion_start_time.reset();
+  }
 
   if (!global_data.pending_get_assertion_callback) {
+    RecordEvent(&global_data, CableV2MobileEvent::kStrayGetAssertionResponse);
     return;
   }
   auto callback = std::move(*global_data.pending_get_assertion_callback);

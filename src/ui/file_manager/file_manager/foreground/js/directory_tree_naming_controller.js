@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {DirectoryTree, DirectoryItem} from './ui/directory_tree.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {AlertDialog} from 'chrome://resources/js/cr/ui/dialogs.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {util} from '../../common/js/util.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {AlertDialog} from 'chrome://resources/js/cr/ui/dialogs.m.js';
+
+import {util} from '../../common/js/util.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+
+import {DirectoryModel} from './directory_model.js';
+import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
 
 /**
  * Naming controller for directory tree.
  */
-/* #export */ class DirectoryTreeNamingController {
+export class DirectoryTreeNamingController {
   /**
    * @param {!DirectoryModel} directoryModel
    * @param {!DirectoryTree} directoryTree
-   * @param {!cr.ui.dialogs.AlertDialog} alertDialog
+   * @param {!AlertDialog} alertDialog
    */
   constructor(directoryModel, directoryTree, alertDialog) {
     /** @private @const {!DirectoryModel} */
@@ -25,7 +27,7 @@
     /** @private @const {!DirectoryTree} */
     this.directoryTree_ = directoryTree;
 
-    /** @private @const {!cr.ui.dialogs.AlertDialog} */
+    /** @private @const {!AlertDialog} */
     this.alertDialog_ = alertDialog;
 
     /** @private {?DirectoryItem} */
@@ -40,13 +42,6 @@
     /** @private {?VolumeInfo} */
     this.volumeInfo_ = null;
 
-    /**
-     * Controls if a context menu is shown for the rename input, so it shouldn't
-     * commit the new name.
-     * @private {boolean}
-     */
-    this.showingContextMenu_ = false;
-
     /** @private @const {!HTMLInputElement} */
     this.inputElement_ = /** @type {!HTMLInputElement} */
         (document.createElement('input'));
@@ -59,9 +54,6 @@
       // directory item and current directory is changed to editing item.
       event.stopPropagation();
     });
-    this.inputElement_.addEventListener(
-        'contextmenu', this.onContextMenu_.bind(this));
-    this.inputElement_.addEventListener('focus', this.onFocus_.bind(this));
   }
 
   /**
@@ -122,22 +114,13 @@
     this.editing_ = true;
   }
 
-  /** @private */
-  onContextMenu_() {
-    this.showingContextMenu_ = true;
-  }
-
-  /** @private */
-  onFocus_() {
-    this.showingContextMenu_ = false;
-  }
-
   /**
    * Commits rename.
    * @private
    */
   commitRename_() {
-    if (!this.editing_ || this.showingContextMenu_) {
+    const contextMenu = this.inputElement_.contextMenu;
+    if (!this.editing_ || (contextMenu && !contextMenu.hidden)) {
       return;
     }
     this.editing_ = false;

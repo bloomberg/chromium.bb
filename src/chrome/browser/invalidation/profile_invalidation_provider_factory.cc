@@ -34,8 +34,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/files/file_path.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/device_identity/device_identity_provider.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "components/user_manager/user_manager.h"
@@ -119,11 +119,11 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<IdentityProvider> identity_provider;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (user_manager::UserManager::IsInitialized() &&
       user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      connector->IsEnterpriseManaged()) {
+      connector->IsDeviceEnterpriseManaged()) {
     identity_provider = std::make_unique<DeviceIdentityProvider>(
         DeviceOAuth2TokenServiceFactory::Get());
   }

@@ -28,7 +28,7 @@ from collections import namedtuple
 from platform import system, machine
 
 # The format for the deps below is the following:
-# (target_folder, source_url, sha1, target_platform)
+# (target_folder, source_url, sha1, target_os, target_arch)
 # |source_url| can be either a git repo or a http url.
 # If a git repo, |checksum| is the SHA1 committish that will be checked out.
 # If a http url, |checksum| is the SHA256 of the downloaded file.
@@ -121,13 +121,13 @@ BUILD_DEPS_TOOLCHAIN_HOST = [
     # tools/clang/scripts/update.py.
     Dependency(
         'buildtools/linux64/clang.tgz',
-        'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-12-init-5035-gd0abc757-3.tgz',
-        'b0c3015209b6d624844ad230064eb5c9b4429a2eafd4854981e73217c563d93d',
+        'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-llvmorg-14-init-3191-g0e03450a-1.tgz',
+        'dd7479d43ce61401e057a5dee8b7e32bc2bd0d0e15d4f46c6858daf9170c9978',
         'linux', 'x64'),
     Dependency(
         'buildtools/win/clang.tgz',
-        'https://commondatastorage.googleapis.com/chromium-browser-clang/Win/clang-llvmorg-12-init-5035-gd0abc757-3.tgz',
-        'b2854d871a466e3a060469b5edb24ca355ef64576d38778f64acbd3c6d7cf530',
+        'https://commondatastorage.googleapis.com/chromium-browser-clang/Win/clang-llvmorg-14-init-3191-g0e03450a-1.tgz',
+        '4292d191742e7120200c63224f02e1f2f2a7be8b57c0f18edf6ca0955bdd43df',
         'windows', 'x64'),
 ]
 
@@ -143,7 +143,8 @@ BUILD_DEPS_HOST = [
         'buildtools/protobuf',
         'https://chromium.googlesource.com/external/github.com/google/protobuf.git',
         '6a59a2ad1f61d9696092f79b6d74368b4d7970a3',  # refs/tags/v3.9.0
-        'all', 'all'),
+        'all',
+        'all'),
 
     # libc++, libc++abi and libunwind for Linux where we need to rebuild the C++
     # lib from sources. Keep the SHA1s in sync with Chrome's src/buildtools/DEPS.
@@ -193,7 +194,8 @@ BUILD_DEPS_HOST = [
         'buildtools/sqlite_src',
         'https://chromium.googlesource.com/external/github.com/sqlite/sqlite.git',
         'ee3686eb50c0e3dbb087c9a0976f7e37e1b014ae',  # refs/tags/version-3.32.3.
-        'all', 'all'),
+        'all',
+        'all'),
 
     # JsonCpp for legacy json import. Used only by the trace processor in
     # standalone builds.
@@ -201,7 +203,8 @@ BUILD_DEPS_HOST = [
         'buildtools/jsoncpp',
         'https://chromium.googlesource.com/external/github.com/open-source-parsers/jsoncpp.git',
         '6aba23f4a8628d599a9ef7fa4811c4ff6e4070e2',  # refs/tags/1.9.3.
-        'all', 'all'),
+        'all',
+        'all'),
 
     # These dependencies are for libunwindstack, which is used by src/profiling.
     Dependency('buildtools/android-core',
@@ -210,7 +213,7 @@ BUILD_DEPS_HOST = [
     Dependency(
         'buildtools/android-unwinding',
         'https://android.googlesource.com/platform/system/unwinding.git',
-        '5150e1292ec6b16e4717e86b9e3cfb855eec18a3', 'all', 'all'),
+        '734cc2f1d45d5e0269654cb5b8fdecfc93dd2ad3', 'all', 'all'),
     Dependency('buildtools/android-logging',
                'https://android.googlesource.com/platform/system/logging.git',
                '7b36b566c9113fc703d68f76e8f40c0c2432481c', 'all', 'all'),
@@ -231,18 +234,17 @@ BUILD_DEPS_HOST = [
                'https://android.googlesource.com/platform/bionic.git',
                '332065d57e734b65f56474d136d22d767e36cbcd', 'all', 'all'),
 
-    # Example traces for regression tests.
-    Dependency(
-        'test/data.zip',
-        'https://storage.googleapis.com/perfetto/test-data-20210518-223638.zip',
-        'a9119ae4828fae92c9ec8449e3fd91d753e60b60fa59611fb8e6c0dd6ed69b13',
-        'all', 'all',
-    ),
-
     # Linenoise, used only by trace_processor in standalone builds.
     Dependency('buildtools/linenoise',
                'https://fuchsia.googlesource.com/third_party/linenoise.git',
                'c894b9e59f02203dbe4e2be657572cf88c4230c3', 'all', 'all'),
+
+    # Bloaty, used to investigate binary size
+    Dependency(
+        'buildtools/bloaty.zip',
+        'https://storage.googleapis.com/perfetto/bloaty-1.1-b3b829de35babc2fe831b9488ad2e50bca939412-mac.zip',
+        '2d301bd72a20e3f42888c9274ceb4dca76c103608053572322412c2c65ab8cb8',
+        'darwin', 'x64'),
 ]
 
 # Dependencies required to build Android code.
@@ -294,7 +296,7 @@ TEST_DEPS_ANDROID = [
 # This variable is updated by tools/roll-catapult-trace-viewer.
 CATAPULT_SHA256 = 'b30108e05268ce6c65bb4126b65f6bfac165d17f5c1fd285046e7e6fd76c209f'
 
-TYPEFACES_SHA256 = 'b3f0f14eeecd4555ae94f897ec246b2c6e046ce0ea417407553f5767e7812575'
+TYPEFACES_SHA256 = 'f5f78f8f4395db65cdf5fdc1bf51da65f2161e6d61a305091d6ea54d3094a1f0'
 
 UI_DEPS = [
     Dependency(
@@ -327,10 +329,30 @@ UI_DEPS = [
         TYPEFACES_SHA256, TYPEFACES_SHA256, 'all', 'all')
 ]
 
+# Sysroots required to cross-compile Linux targets (linux-arm{,64}).
+# These are taken from Chromium's build/linux/sysroot_scripts/sysroots.json.
+BUILD_DEPS_LINUX_CROSS_SYSROOTS = [
+    Dependency(
+        'buildtools/debian_sid_arm-sysroot.tgz',
+        'https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/11d6f690ca49e8ba01a1d8c5346cedad2cf308fd/debian_sid_arm_sysroot.tar.xz',
+        'ff192fe073d140d836c9ca1e68f7200d558bb9aa6c5c8f4f76f794f82890f99a',
+        'linux', 'all'),
+    Dependency(
+        'buildtools/debian_sid_arm64-sysroot.tgz',
+        'https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/2befe8ce3e88be6080e4fb7e6d412278ea6a7625/debian_sid_arm64_sysroot.tar.xz',
+        'e4389eab2fe363f3fbdfa4d3ce9d94457d78fd2c0e62171a7534867623eadc90',
+        'linux', 'all'),
+]
+
+ALL_DEPS = (
+    BUILD_DEPS_HOST + BUILD_DEPS_ANDROID + BUILD_DEPS_LINUX_CROSS_SYSROOTS +
+    TEST_DEPS_ANDROID + UI_DEPS)
+
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UI_DIR = os.path.join(ROOT_DIR, 'ui')
 TOOLS_DIR = os.path.join(ROOT_DIR, 'tools')
 NODE_MODULES_STATUS_FILE = os.path.join(UI_DIR, 'node_modules', '.last_install')
+TEST_DATA_SCRIPT = os.path.join(TOOLS_DIR, 'test_data')
 
 
 def DownloadURL(url, out_file):
@@ -398,8 +420,7 @@ def RmtreeIfExists(path):
       not os.path.abspath(path).startswith(test_path)):
     # Safety check to prevent that some merge confilct ends up doing some
     # rm -rf / or similar.
-    logging.fatal(
-      'Cannot remove %s: outside of buildtools and test/data', path)
+    logging.fatal('Cannot remove %s: outside of buildtools and test/data', path)
     sys.exit(1)
   logging.info('Removing %s' % path)
   shutil.rmtree(path, onerror=del_read_only_for_windows)
@@ -428,9 +449,9 @@ def InstallNodeModules(force_clean=False):
     logging.info('Clearing %s', node_modules)
     subprocess.check_call(['git', 'clean', '-qxffd', node_modules],
                           cwd=ROOT_DIR)
-  logging.info("Running npm install in {0}".format(UI_DIR))
-  subprocess.check_call(
-      [os.path.join(TOOLS_DIR, 'npm'), 'install', '--no-save'], cwd=UI_DIR)
+  logging.info("Running `npm ci` in {0}".format(UI_DIR))
+  # `npm ci` is like `npm install` but respects package-lock.json.
+  subprocess.check_call([os.path.join(TOOLS_DIR, 'npm'), 'ci'], cwd=UI_DIR)
   # pbjs has the bad habit of installing extra packages on its first run. Run
   # it here, so we avoid fetches while building.
   node_bin = os.path.join(TOOLS_DIR, 'node')
@@ -455,40 +476,57 @@ def CheckNodeModules():
 
 
 def CheckHashes():
-  for deps in [BUILD_DEPS_HOST, BUILD_DEPS_ANDROID, TEST_DEPS_ANDROID, UI_DEPS]:
-    for dep in deps:
-      if dep.source_url.endswith('.git'):
-        continue
-      logging.info('Downloading %s from %s', dep.target_platform,
-                   dep.source_url)
-      with tempfile.NamedTemporaryFile(delete=False) as f:
-        f.close()
-        DownloadURL(dep.source_url, f.name)
-        actual_checksum = HashLocalFile(f.name)
-        os.unlink(f.name)
-        if (actual_checksum != dep.checksum):
-          logging.fatal('SHA-256 mismatch for {} expected {} was {}'.format(
-              dep.source_url, dep.checksum, actual_checksum))
+  for dep in ALL_DEPS:
+    if dep.source_url.endswith('.git'):
+      continue
+    logging.info('Downloading %s for %s-%s', dep.source_url, dep.target_os,
+                 dep.target_arch)
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+      f.close()
+      DownloadURL(dep.source_url, f.name)
+      actual_checksum = HashLocalFile(f.name)
+      os.unlink(f.name)
+      if (actual_checksum != dep.checksum):
+        logging.fatal('SHA-256 mismatch for {} expected {} was {}'.format(
+            dep.source_url, dep.checksum, actual_checksum))
 
 
 def Main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--android', action='store_true')
-  parser.add_argument('--ui', action='store_true')
+  parser.add_argument(
+      '--android',
+      action='store_true',
+      help='NDK and emulator images target_os="android"')
+  parser.add_argument(
+      '--linux-arm',
+      action='store_true',
+      help='Debian sysroots for target_os="linux" target_cpu="arm|arm64"')
+  parser.add_argument(
+      '--ui',
+      action='store_true',
+      help='Node and NPM packages to Build the Web-based UI via ./ui/build')
   parser.add_argument('--check-only')
   parser.add_argument('--filter', default='')
   parser.add_argument('--verify', help='Check all URLs', action='store_true')
-  parser.add_argument('--no-toolchain', help='Do not download toolchain',
-                      action='store_true')
+  parser.add_argument(
+      '--no-toolchain', help='Do not download toolchain', action='store_true')
   args = parser.parse_args()
   if args.verify:
     CheckHashes()
     return 0
+
+  target_os = system().lower()
+  if args.ui and target_os == 'windows':
+    print('Building the UI on Windows is unsupported')
+    return 1
+
   deps = BUILD_DEPS_HOST
   if not args.no_toolchain:
     deps += BUILD_DEPS_TOOLCHAIN_HOST
   if args.android:
     deps += BUILD_DEPS_ANDROID + TEST_DEPS_ANDROID
+  if args.linux_arm:
+    deps += BUILD_DEPS_LINUX_CROSS_SYSROOTS
   if args.ui:
     deps += UI_DEPS
   deps_updated = False
@@ -498,7 +536,6 @@ def Main():
     RmtreeIfExists(os.path.join(ROOT_DIR, old_dir))
 
   for dep in deps:
-    target_os = system().lower()
     target_arch = GetArch()
     matches_os = dep.target_os == 'all' or target_os == dep.target_os
     matches_arch = dep.target_arch == 'all' or target_arch == dep.target_arch
@@ -575,15 +612,25 @@ def Main():
     else:
       InstallNodeModules(force_clean=nodejs_updated)
 
+  cur_python_interpreter = sys.executable
+  test_data_synced = 0 == subprocess.call(
+      [cur_python_interpreter, TEST_DATA_SCRIPT, 'status', '--quiet'])
   if args.check_only:
-    if not deps_updated:
+    if not deps_updated and test_data_synced:
       with open(args.check_only, 'w') as f:
         f.write('OK')  # The content is irrelevant, just keep GN happy.
       return 0
-    argz = ' '.join([x for x in sys.argv[1:] if not x.startswith('--check-only')])
+    argz = ' '.join(
+        [x for x in sys.argv[1:] if not x.startswith('--check-only')])
     print('\033[91mBuild deps are stale. ' +
           'Please run tools/install-build-deps %s\033[0m' % argz)
     return 1
+
+  if not test_data_synced:
+    cmd = [cur_python_interpreter, TEST_DATA_SCRIPT, 'download', '--overwrite']
+    if not sys.stdout.isatty():
+      cmd += ['--verbose']  # For CI bots
+    subprocess.check_call(cmd)
 
   if deps_updated:
     # Stale binary files may be compiled against old sysroot headers that aren't

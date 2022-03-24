@@ -117,7 +117,12 @@ class DfsHloVisitorBase {
   virtual Status HandleTriangularSolve(HloInstructionPtr hlo) = 0;
   virtual Status HandleCholesky(HloInstructionPtr hlo) = 0;
   virtual Status HandleAllGather(HloInstructionPtr hlo) = 0;
+  virtual Status HandleAllGatherStart(HloInstructionPtr hlo) = 0;
+  virtual Status HandleAllGatherDone(HloInstructionPtr hlo) = 0;
   virtual Status HandleAllReduce(HloInstructionPtr hlo) = 0;
+  virtual Status HandleReduceScatter(HloInstructionPtr hlo) = 0;
+  virtual Status HandleAllReduceStart(HloInstructionPtr hlo) = 0;
+  virtual Status HandleAllReduceDone(HloInstructionPtr hlo) = 0;
   virtual Status HandleAllToAll(HloInstructionPtr hlo) = 0;
   virtual Status HandleCollectivePermute(HloInstructionPtr hlo) = 0;
   virtual Status HandleCollectivePermuteStart(HloInstructionPtr hlo) = 0;
@@ -148,6 +153,9 @@ class DfsHloVisitorBase {
     return HandleElementwiseBinary(hlo);
   }
   virtual Status HandleRound(HloInstructionPtr hlo) {
+    return HandleElementwiseUnary(hlo);
+  }
+  virtual Status HandleLogistic(HloInstructionPtr hlo) {
     return HandleElementwiseUnary(hlo);
   }
   virtual Status HandleSign(HloInstructionPtr hlo) {
@@ -242,6 +250,7 @@ class DfsHloVisitorBase {
   virtual Status HandleBitcast(HloInstructionPtr hlo) = 0;
   virtual Status HandleBroadcast(HloInstructionPtr hlo) = 0;
   virtual Status HandleReshape(HloInstructionPtr hlo) = 0;
+  virtual Status HandleDynamicReshape(HloInstructionPtr hlo) = 0;
   virtual Status HandleTranspose(HloInstructionPtr hlo) = 0;
   virtual Status HandleParameter(HloInstructionPtr hlo) = 0;
   virtual Status HandleFusion(HloInstructionPtr hlo) = 0;

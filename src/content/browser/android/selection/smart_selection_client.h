@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {
@@ -26,6 +26,10 @@ class SmartSelectionClient {
   SmartSelectionClient(JNIEnv* env,
                        const base::android::JavaRef<jobject>& obj,
                        WebContents* web_contents);
+
+  SmartSelectionClient(const SmartSelectionClient&) = delete;
+  SmartSelectionClient& operator=(const SmartSelectionClient&) = delete;
+
   ~SmartSelectionClient();
 
   // Sends asynchronius request to retrieve the text.
@@ -49,11 +53,9 @@ class SmartSelectionClient {
 
   // WebContents is used to find the relevant RenderFrameHost that can send
   // the request for the text.
-  WebContents* web_contents_;
+  raw_ptr<WebContents> web_contents_;
 
   base::WeakPtrFactory<SmartSelectionClient> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SmartSelectionClient);
 };
 
 }  // namespace content

@@ -10,9 +10,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -52,6 +51,10 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
                        const base::FilePath& profile_data_directory,
                        bool in_process,
                        bool external_plugin);
+
+  BrowserPpapiHostImpl(const BrowserPpapiHostImpl&) = delete;
+  BrowserPpapiHostImpl& operator=(const BrowserPpapiHostImpl&) = delete;
+
   ~BrowserPpapiHostImpl() override;
 
   // BrowserPpapiHost.
@@ -112,8 +115,8 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     ~HostMessageFilter() override;
 
     // Non owning pointers cleared in OnHostDestroyed()
-    ppapi::host::PpapiHost* ppapi_host_;
-    BrowserPpapiHostImpl* browser_ppapi_host_impl_;
+    raw_ptr<ppapi::host::PpapiHost> ppapi_host_;
+    raw_ptr<BrowserPpapiHostImpl> browser_ppapi_host_impl_;
   };
 
   struct InstanceData {
@@ -142,8 +145,6 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   std::unordered_map<PP_Instance, std::unique_ptr<InstanceData>> instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserPpapiHostImpl);
 };
 
 }  // namespace content

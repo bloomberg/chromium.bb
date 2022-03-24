@@ -192,8 +192,8 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages,
   // Explicitly allow memory ranges the crash_handler needs to read. This is
   // required for WebView because it has a stricter set of privacy constraints
   // on what it reads from the crashing process.
-  for (auto& region : GetInternalMemoryRegions())
-    crash_reporter::AllowMemoryRange(region.first, region.second);
+  for (auto& memory_region : GetInternalMemoryRegions())
+    crash_reporter::AllowMemoryRange(memory_region.first, memory_region.second);
 #endif
 }
 
@@ -260,7 +260,7 @@ void* GuardedPageAllocator::Allocate(size_t size,
   size_t offset;
   if (free_slot & 1)
     // Return right-aligned allocation to detect overflows.
-    offset = state_.page_size - base::bits::Align(size, align);
+    offset = state_.page_size - base::bits::AlignUp(size, align);
   else
     // Return left-aligned allocation to detect underflows.
     offset = 0;

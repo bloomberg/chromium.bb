@@ -20,6 +20,14 @@ namespace libwebm {
 
 const std::size_t Webm2Pes::kMaxPayloadSize = 32768;
 
+namespace {
+
+std::string ToString(const char* str) {
+  return std::string((str == nullptr) ? "" : str);
+}
+
+}  // namespace
+
 //
 // PesOptionalHeader methods.
 //
@@ -382,9 +390,10 @@ bool Webm2Pes::InitWebmParser() {
        ++track_index) {
     const mkvparser::Track* track = tracks->GetTrackByIndex(track_index);
     if (track && track->GetType() == mkvparser::Track::kVideo) {
-      if (std::string(track->GetCodecId()) == std::string("V_VP8")) {
+      const std::string codec_id = ToString(track->GetCodecId());
+      if (codec_id == std::string("V_VP8")) {
         codec_ = VideoFrame::kVP8;
-      } else if (std::string(track->GetCodecId()) == std::string("V_VP9")) {
+      } else if (codec_id == std::string("V_VP9")) {
         codec_ = VideoFrame::kVP9;
       } else {
         fprintf(stderr, "Webm2Pes: Codec must be VP8 or VP9.\n");

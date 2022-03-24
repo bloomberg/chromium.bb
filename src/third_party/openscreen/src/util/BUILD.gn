@@ -129,6 +129,7 @@ source_set("unittests") {
     "json/json_value_unittest.cc",
     "saturate_cast_unittest.cc",
     "simple_fraction_unittest.cc",
+    "std_util_unittest.cc",
     "stringprintf_unittest.cc",
     "trace_logging/scoped_trace_operations_unittest.cc",
     "url_unittest.cc",

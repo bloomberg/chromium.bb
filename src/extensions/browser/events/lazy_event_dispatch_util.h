@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EVENTS_LAZY_EVENT_DISPATCH_UTIL_H_
 #define EXTENSIONS_BROWSER_EVENTS_LAZY_EVENT_DISPATCH_UTIL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "extensions/browser/extension_registry.h"
@@ -40,6 +41,10 @@ class LazyEventDispatchUtil : public ExtensionRegistryObserver {
   };
 
   explicit LazyEventDispatchUtil(content::BrowserContext* browser_context);
+
+  LazyEventDispatchUtil(const LazyEventDispatchUtil&) = delete;
+  LazyEventDispatchUtil& operator=(const LazyEventDispatchUtil&) = delete;
+
   ~LazyEventDispatchUtil() override;
 
   void AddObserver(Observer* observer);
@@ -62,12 +67,10 @@ class LazyEventDispatchUtil : public ExtensionRegistryObserver {
   void RemovePendingOnInstallInfoFromPref(const ExtensionId& extension_id);
   void StorePendingOnInstallInfoToPref(const Extension* extension);
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
   base::ObserverList<Observer>::Unchecked observers_;
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LazyEventDispatchUtil);
 };
 
 }  // namespace extensions

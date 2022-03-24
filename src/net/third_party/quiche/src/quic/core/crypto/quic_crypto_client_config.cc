@@ -33,7 +33,6 @@
 #include "quic/platform/api/quic_client_stats.h"
 #include "quic/platform/api/quic_hostname_utils.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_map_util.h"
 
 namespace quic {
 
@@ -440,7 +439,9 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 
   out->SetVector(kPDMD, QuicTagVector{kX509});
 
-  if (common_cert_sets) {
+  if (GetQuicRestartFlag(quic_no_common_cert_set)) {
+    // Client only. No flag count.
+  } else if (common_cert_sets) {
     out->SetStringPiece(kCCS, common_cert_sets->GetCommonHashes());
   }
 
@@ -802,12 +803,12 @@ SessionCache* QuicCryptoClientConfig::session_cache() const {
   return session_cache_.get();
 }
 
-ProofSource* QuicCryptoClientConfig::proof_source() const {
+ClientProofSource* QuicCryptoClientConfig::proof_source() const {
   return proof_source_.get();
 }
 
 void QuicCryptoClientConfig::set_proof_source(
-    std::unique_ptr<ProofSource> proof_source) {
+    std::unique_ptr<ClientProofSource> proof_source) {
   proof_source_ = std::move(proof_source);
 }
 
@@ -848,22 +849,23 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
 
   QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
                                 server_id.privacy_mode_enabled());
-  if (!QuicContainsKey(canonical_server_map_, suffix_server_id)) {
+  auto it = canonical_server_map_.lower_bound(suffix_server_id);
+  if (it == canonical_server_map_.end() || it->first != suffix_server_id) {
     // This is the first host we've seen which matches the suffix, so make it
-    // canonical.
-    canonical_server_map_[suffix_server_id] = server_id;
+    // canonical.  Use |it| as position hint for faster insertion.
+    canonical_server_map_.insert(
+        it, std::make_pair(std::move(suffix_server_id), std::move(server_id)));
     return false;
   }
 
-  const QuicServerId& canonical_server_id =
-      canonical_server_map_[suffix_server_id];
+  const QuicServerId& canonical_server_id = it->second;
   CachedState* canonical_state = cached_states_[canonical_server_id].get();
   if (!canonical_state->proof_valid()) {
     return false;
   }
 
   // Update canonical version to point at the "most recent" entry.
-  canonical_server_map_[suffix_server_id] = server_id;
+  it->second = server_id;
 
   server_state->InitializeFrom(*canonical_state);
   return true;

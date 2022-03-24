@@ -5,10 +5,11 @@
 #ifndef UI_NATIVE_THEME_THEMED_VECTOR_ICON_H_
 #define UI_NATIVE_THEME_THEMED_VECTOR_ICON_H_
 
+#include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/image_model.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/color/color_id.h"
 #include "ui/native_theme/native_theme_export.h"
 
 namespace gfx {
@@ -18,11 +19,13 @@ struct VectorIcon;
 
 namespace ui {
 
+class ColorProvider;
+
 class NATIVE_THEME_EXPORT ThemedVectorIcon {
  public:
   ThemedVectorIcon();
   explicit ThemedVectorIcon(const gfx::VectorIcon* icon,
-                            int color_id = NativeTheme::kColorId_MenuIconColor,
+                            ColorId color_id = kColorMenuIcon,
                             int icon_size = 0,
                             const gfx::VectorIcon* badge = nullptr);
   explicit ThemedVectorIcon(const VectorIconModel& vector_icon_model);
@@ -39,20 +42,23 @@ class NATIVE_THEME_EXPORT ThemedVectorIcon {
   ThemedVectorIcon(ThemedVectorIcon&&);
   ThemedVectorIcon& operator=(ThemedVectorIcon&&);
 
+  ~ThemedVectorIcon();
+
   void clear() { icon_ = nullptr; }
   bool empty() const { return !icon_; }
-  gfx::ImageSkia GetImageSkia(const NativeTheme* theme) const;
-  gfx::ImageSkia GetImageSkia(const NativeTheme* theme, int icon_size) const;
+  gfx::ImageSkia GetImageSkia(const ColorProvider* color_provider) const;
+  gfx::ImageSkia GetImageSkia(const ColorProvider* color_provider,
+                              int icon_size) const;
   gfx::ImageSkia GetImageSkia(SkColor color) const;
 
  private:
-  SkColor GetColor(const NativeTheme* theme) const;
+  SkColor GetColor(const ColorProvider* color_provider) const;
   gfx::ImageSkia GetImageSkia(SkColor color, int icon_size) const;
 
-  const gfx::VectorIcon* icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon> icon_ = nullptr;
   int icon_size_ = 0;
-  absl::variant<int, SkColor> color_ = gfx::kPlaceholderColor;
-  const gfx::VectorIcon* badge_ = nullptr;
+  absl::variant<ColorId, SkColor> color_ = gfx::kPlaceholderColor;
+  raw_ptr<const gfx::VectorIcon> badge_ = nullptr;
 };
 
 }  // namespace ui

@@ -20,6 +20,7 @@
 #include "dawn_native/Device.h"
 #include "dawn_native/DynamicUploader.h"
 #include "dawn_native/ErrorData.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/Queue.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
@@ -63,11 +64,10 @@ namespace dawn_native {
                         mFakeMappedData =
                             std::unique_ptr<uint8_t[]>(AllocNoThrow<uint8_t>(descriptor->size));
                     }
+                    // Since error buffers in this case may allocate memory, we need to track them
+                    // for destruction on the device.
+                    TrackInDevice();
                 }
-            }
-
-            void ClearMappedData() {
-                mFakeMappedData.reset();
             }
 
           private:
@@ -82,14 +82,13 @@ namespace dawn_native {
             MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override {
                 UNREACHABLE();
             }
+
             void* GetMappedPointerImpl() override {
                 return mFakeMappedData.get();
             }
+
             void UnmapImpl() override {
-                UNREACHABLE();
-            }
-            void DestroyImpl() override {
-                UNREACHABLE();
+                mFakeMappedData.reset();
             }
 
             std::unique_ptr<uint8_t[]> mFakeMappedData;
@@ -98,29 +97,30 @@ namespace dawn_native {
     }  // anonymous namespace
 
     MaybeError ValidateBufferDescriptor(DeviceBase*, const BufferDescriptor* descriptor) {
-        if (descriptor->nextInChain != nullptr) {
-            return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
-        }
-
+        DAWN_INVALID_IF(descriptor->nextInChain != nullptr, "nextInChain must be nullptr");
         DAWN_TRY(ValidateBufferUsage(descriptor->usage));
 
         wgpu::BufferUsage usage = descriptor->usage;
 
         const wgpu::BufferUsage kMapWriteAllowedUsages =
             wgpu::BufferUsage::MapWrite | wgpu::BufferUsage::CopySrc;
-        if (usage & wgpu::BufferUsage::MapWrite && (usage & kMapWriteAllowedUsages) != usage) {
-            return DAWN_VALIDATION_ERROR("Only CopySrc is allowed with MapWrite");
-        }
+        DAWN_INVALID_IF(
+            usage & wgpu::BufferUsage::MapWrite && !IsSubset(usage, kMapWriteAllowedUsages),
+            "Buffer usages (%s) is invalid. If a buffer usage contains %s the only other allowed "
+            "usage is %s.",
+            usage, wgpu::BufferUsage::MapWrite, wgpu::BufferUsage::CopySrc);
 
         const wgpu::BufferUsage kMapReadAllowedUsages =
             wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
-        if (usage & wgpu::BufferUsage::MapRead && (usage & kMapReadAllowedUsages) != usage) {
-            return DAWN_VALIDATION_ERROR("Only CopyDst is allowed with MapRead");
-        }
+        DAWN_INVALID_IF(
+            usage & wgpu::BufferUsage::MapRead && !IsSubset(usage, kMapReadAllowedUsages),
+            "Buffer usages (%s) is invalid. If a buffer usage contains %s the only other allowed "
+            "usage is %s.",
+            usage, wgpu::BufferUsage::MapRead, wgpu::BufferUsage::CopyDst);
 
-        if (descriptor->mappedAtCreation && descriptor->size % 4 != 0) {
-            return DAWN_VALIDATION_ERROR("size must be aligned to 4 when mappedAtCreation is true");
-        }
+        DAWN_INVALID_IF(descriptor->mappedAtCreation && descriptor->size % 4 != 0,
+                        "Buffer is mapped at creation but its size (%u) is not a multiple of 4.",
+                        descriptor->size);
 
         return {};
     }
@@ -128,7 +128,7 @@ namespace dawn_native {
     // Buffer
 
     BufferBase::BufferBase(DeviceBase* device, const BufferDescriptor* descriptor)
-        : ObjectBase(device),
+        : ApiObjectBase(device, descriptor->label),
           mSize(descriptor->size),
           mUsage(descriptor->usage),
           mState(BufferState::Unmapped) {
@@ -138,19 +138,31 @@ namespace dawn_native {
             mUsage |= kReadOnlyStorageBuffer;
         }
 
-        // TODO(hao.x.li@intel.com): This is just a workaround to make QueryResolve buffer pass the
-        // binding group validation when used as an internal resource. Instead the buffer made with
-        // QueryResolve usage would implicitly get StorageInternal usage which is only compatible
-        // with StorageBufferInternal binding type in BGL, not StorageBuffer binding type.
+        // The query resolve buffer need to be used as a storage buffer in the internal compute
+        // pipeline which does timestamp uint conversion for timestamp query, it requires the buffer
+        // has Storage usage in the binding group. Implicitly add an InternalStorage usage which is
+        // only compatible with InternalStorageBuffer binding type in BGL. It shouldn't be
+        // compatible with StorageBuffer binding type and the query resolve buffer cannot be bound
+        // as storage buffer if it's created without Storage usage.
         if (mUsage & wgpu::BufferUsage::QueryResolve) {
-            mUsage |= wgpu::BufferUsage::Storage;
+            mUsage |= kInternalStorageBuffer;
         }
+
+        // We also add internal storage usage for Indirect buffers for some transformations before
+        // DispatchIndirect calls on the backend (e.g. validations, support of [[num_workgroups]] on
+        // D3D12), since these transformations involve binding them as storage buffers for use in a
+        // compute pass.
+        if (mUsage & wgpu::BufferUsage::Indirect) {
+            mUsage |= kInternalStorageBuffer;
+        }
+
+        TrackInDevice();
     }
 
     BufferBase::BufferBase(DeviceBase* device,
                            const BufferDescriptor* descriptor,
                            ObjectBase::ErrorTag tag)
-        : ObjectBase(device, tag), mSize(descriptor->size), mState(BufferState::Unmapped) {
+        : ApiObjectBase(device, tag), mSize(descriptor->size), mState(BufferState::Unmapped) {
         if (descriptor->mappedAtCreation) {
             mState = BufferState::MappedAtCreation;
             mMapOffset = 0;
@@ -158,11 +170,26 @@ namespace dawn_native {
         }
     }
 
+    BufferBase::BufferBase(DeviceBase* device, BufferState state)
+        : ApiObjectBase(device, kLabelNotImplemented), mState(state) {
+        TrackInDevice();
+    }
+
     BufferBase::~BufferBase() {
+        ASSERT(mState == BufferState::Unmapped || mState == BufferState::Destroyed);
+    }
+
+    void BufferBase::DestroyImpl() {
         if (mState == BufferState::Mapped) {
-            ASSERT(!IsError());
-            CallMapCallback(mLastMapID, WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
+            UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
+        } else if (mState == BufferState::MappedAtCreation) {
+            if (mStagingBuffer != nullptr) {
+                mStagingBuffer.reset();
+            } else if (mSize != 0) {
+                UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
+            }
         }
+        mState = BufferState::Destroyed;
     }
 
     // static
@@ -170,9 +197,20 @@ namespace dawn_native {
         return new ErrorBuffer(device, descriptor);
     }
 
+    ObjectType BufferBase::GetType() const {
+        return ObjectType::Buffer;
+    }
+
     uint64_t BufferBase::GetSize() const {
         ASSERT(!IsError());
         return mSize;
+    }
+
+    uint64_t BufferBase::GetAllocatedSize() const {
+        ASSERT(!IsError());
+        // The backend must initialize this value.
+        ASSERT(mAllocatedSize != 0);
+        return mAllocatedSize;
     }
 
     wgpu::BufferUsage BufferBase::GetUsage() const {
@@ -183,13 +221,29 @@ namespace dawn_native {
     MaybeError BufferBase::MapAtCreation() {
         DAWN_TRY(MapAtCreationInternal());
 
+        void* ptr;
+        size_t size;
+        if (mSize == 0) {
+            return {};
+        } else if (mStagingBuffer) {
+            // If there is a staging buffer for initialization, clear its contents directly.
+            // It should be exactly as large as the buffer allocation.
+            ptr = mStagingBuffer->GetMappedPointer();
+            size = mStagingBuffer->GetSize();
+            ASSERT(size == GetAllocatedSize());
+        } else {
+            // Otherwise, the buffer is directly mappable on the CPU.
+            ptr = GetMappedPointerImpl();
+            size = GetAllocatedSize();
+        }
+
         DeviceBase* device = GetDevice();
         if (device->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            memset(GetMappedRange(0, mSize), uint8_t(0u), mSize);
+            memset(ptr, uint8_t(0u), size);
             SetIsDataInitialized();
             device->IncrementLazyClearCountForTesting();
         } else if (device->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting)) {
-            memset(GetMappedRange(0, mSize), uint8_t(1u), mSize);
+            memset(ptr, uint8_t(1u), size);
         }
 
         return {};
@@ -197,27 +251,32 @@ namespace dawn_native {
 
     MaybeError BufferBase::MapAtCreationInternal() {
         ASSERT(!IsError());
-        mState = BufferState::MappedAtCreation;
         mMapOffset = 0;
         mMapSize = mSize;
 
-        // 0-sized buffers are not supposed to be written to, Return back any non-null pointer.
-        // Handle 0-sized buffers first so we don't try to map them in the backend.
-        if (mSize == 0) {
-            return {};
+        // 0-sized buffers are not supposed to be written to. Return back any non-null pointer.
+        // Skip handling 0-sized buffers so we don't try to map them in the backend.
+        if (mSize != 0) {
+            // Mappable buffers don't use a staging buffer and are just as if mapped through
+            // MapAsync.
+            if (IsCPUWritableAtCreation()) {
+                DAWN_TRY(MapAtCreationImpl());
+            } else {
+                // If any of these fail, the buffer will be deleted and replaced with an error
+                // buffer. The staging buffer is used to return mappable data to inititalize the
+                // buffer contents. Allocate one as large as the real buffer size so that every byte
+                // is initialized.
+                // TODO(crbug.com/dawn/828): Suballocate and reuse memory from a larger staging
+                // buffer so we don't create many small buffers.
+                DAWN_TRY_ASSIGN(mStagingBuffer,
+                                GetDevice()->CreateStagingBuffer(GetAllocatedSize()));
+            }
         }
 
-        // Mappable buffers don't use a staging buffer and are just as if mapped through MapAsync.
-        if (IsCPUWritableAtCreation()) {
-            DAWN_TRY(MapAtCreationImpl());
-        } else {
-            // If any of these fail, the buffer will be deleted and replaced with an
-            // error buffer.
-            // TODO(enga): Suballocate and reuse memory from a larger staging buffer so we don't
-            // create many small buffers.
-            DAWN_TRY_ASSIGN(mStagingBuffer, GetDevice()->CreateStagingBuffer(GetSize()));
-        }
-
+        // Only set the state to mapped at creation if we did no fail any point in this helper.
+        // Otherwise, if we override the default unmapped state before succeeding to create a
+        // staging buffer, we will have issues when we try to destroy the buffer.
+        mState = BufferState::MappedAtCreation;
         return {};
     }
 
@@ -226,13 +285,14 @@ namespace dawn_native {
 
         switch (mState) {
             case BufferState::Destroyed:
-                return DAWN_VALIDATION_ERROR("Destroyed buffer used in a submit");
+                return DAWN_FORMAT_VALIDATION_ERROR("%s used in submit while destroyed.", this);
             case BufferState::Mapped:
             case BufferState::MappedAtCreation:
-                return DAWN_VALIDATION_ERROR("Buffer used in a submit while mapped");
+                return DAWN_FORMAT_VALIDATION_ERROR("%s used in submit while mapped.", this);
             case BufferState::Unmapped:
                 return {};
         }
+        UNREACHABLE();
     }
 
     void BufferBase::CallMapCallback(MapRequestID mapID, WGPUBufferMapAsyncStatus status) {
@@ -259,12 +319,14 @@ namespace dawn_native {
         // Handle the defaulting of size required by WebGPU, even if in webgpu_cpp.h it is not
         // possible to default the function argument (because there is the callback later in the
         // argument list)
-        if (size == 0 && offset < mSize) {
+        if ((size == wgpu::kWholeMapSize) && (offset <= mSize)) {
             size = mSize - offset;
         }
 
         WGPUBufferMapAsyncStatus status;
-        if (GetDevice()->ConsumedError(ValidateMapAsync(mode, offset, size, &status))) {
+        if (GetDevice()->ConsumedError(ValidateMapAsync(mode, offset, size, &status),
+                                       "calling %s.MapAsync(%s, %u, %u, ...).", this, mode, offset,
+                                       size)) {
             if (callback) {
                 callback(status, userdata);
             }
@@ -314,38 +376,19 @@ namespace dawn_native {
     }
 
     void BufferBase::APIDestroy() {
-        if (IsError()) {
-            // It is an error to call Destroy() on an ErrorBuffer, but we still need to reclaim the
-            // fake mapped staging data.
-            static_cast<ErrorBuffer*>(this)->ClearMappedData();
-            mState = BufferState::Destroyed;
-        }
-        if (GetDevice()->ConsumedError(ValidateDestroy())) {
-            return;
-        }
-        ASSERT(!IsError());
-
-        if (mState == BufferState::Mapped) {
-            UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
-        } else if (mState == BufferState::MappedAtCreation) {
-            if (mStagingBuffer != nullptr) {
-                mStagingBuffer.reset();
-            } else if (mSize != 0) {
-                ASSERT(IsCPUWritableAtCreation());
-                UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
-            }
-        }
-
-        DestroyInternal();
+        Destroy();
     }
 
     MaybeError BufferBase::CopyFromStagingBuffer() {
         ASSERT(mStagingBuffer);
-        if (GetSize() == 0) {
+        if (mSize == 0) {
+            // Staging buffer is not created if zero size.
+            ASSERT(mStagingBuffer == nullptr);
             return {};
         }
 
-        DAWN_TRY(GetDevice()->CopyFromStagingToBuffer(mStagingBuffer.get(), 0, this, 0, GetSize()));
+        DAWN_TRY(GetDevice()->CopyFromStagingToBuffer(mStagingBuffer.get(), 0, this, 0,
+                                                      GetAllocatedSize()));
 
         DynamicUploader* uploader = GetDevice()->GetDynamicUploader();
         uploader->ReleaseStagingBuffer(std::move(mStagingBuffer));
@@ -354,6 +397,9 @@ namespace dawn_native {
     }
 
     void BufferBase::APIUnmap() {
+        if (GetDevice()->ConsumedError(ValidateUnmap(), "calling %s.Unmap().", this)) {
+            return;
+        }
         Unmap();
     }
 
@@ -362,17 +408,6 @@ namespace dawn_native {
     }
 
     void BufferBase::UnmapInternal(WGPUBufferMapAsyncStatus callbackStatus) {
-        if (IsError()) {
-            // It is an error to call Unmap() on an ErrorBuffer, but we still need to reclaim the
-            // fake mapped staging data.
-            static_cast<ErrorBuffer*>(this)->ClearMappedData();
-            mState = BufferState::Unmapped;
-        }
-        if (GetDevice()->ConsumedError(ValidateUnmap())) {
-            return;
-        }
-        ASSERT(!IsError());
-
         if (mState == BufferState::Mapped) {
             // A map request can only be called once, so this will fire only if the request wasn't
             // completed before the Unmap.
@@ -383,43 +418,15 @@ namespace dawn_native {
 
             mMapCallback = nullptr;
             mMapUserdata = 0;
-
         } else if (mState == BufferState::MappedAtCreation) {
             if (mStagingBuffer != nullptr) {
                 GetDevice()->ConsumedError(CopyFromStagingBuffer());
             } else if (mSize != 0) {
-                ASSERT(IsCPUWritableAtCreation());
                 UnmapImpl();
             }
         }
 
         mState = BufferState::Unmapped;
-    }
-
-    MaybeError BufferBase::ValidateMap(wgpu::BufferUsage requiredUsage,
-                                       WGPUBufferMapAsyncStatus* status) const {
-        *status = WGPUBufferMapAsyncStatus_DeviceLost;
-        DAWN_TRY(GetDevice()->ValidateIsAlive());
-
-        *status = WGPUBufferMapAsyncStatus_Error;
-        DAWN_TRY(GetDevice()->ValidateObject(this));
-
-        switch (mState) {
-            case BufferState::Mapped:
-            case BufferState::MappedAtCreation:
-                return DAWN_VALIDATION_ERROR("Buffer is already mapped");
-            case BufferState::Destroyed:
-                return DAWN_VALIDATION_ERROR("Buffer is destroyed");
-            case BufferState::Unmapped:
-                break;
-        }
-
-        if (!(mUsage & requiredUsage)) {
-            return DAWN_VALIDATION_ERROR("Buffer needs the correct map usage bit");
-        }
-
-        *status = WGPUBufferMapAsyncStatus_Success;
-        return {};
     }
 
     MaybeError BufferBase::ValidateMapAsync(wgpu::MapMode mode,
@@ -432,44 +439,41 @@ namespace dawn_native {
         *status = WGPUBufferMapAsyncStatus_Error;
         DAWN_TRY(GetDevice()->ValidateObject(this));
 
-        if (offset % 8 != 0) {
-            return DAWN_VALIDATION_ERROR("offset must be a multiple of 8");
-        }
+        DAWN_INVALID_IF(uint64_t(offset) > mSize,
+                        "Mapping offset (%u) is larger than the size (%u) of %s.", offset, mSize,
+                        this);
 
-        if (size % 4 != 0) {
-            return DAWN_VALIDATION_ERROR("size must be a multiple of 4");
-        }
+        DAWN_INVALID_IF(offset % 8 != 0, "Offset (%u) must be a multiple of 8.", offset);
+        DAWN_INVALID_IF(size % 4 != 0, "Size (%u) must be a multiple of 4.", size);
 
-        if (uint64_t(offset) > mSize || uint64_t(size) > mSize - uint64_t(offset)) {
-            return DAWN_VALIDATION_ERROR("size + offset must fit in the buffer");
-        }
+        DAWN_INVALID_IF(uint64_t(size) > mSize - uint64_t(offset),
+                        "Mapping range (offset:%u, size: %u) doesn't fit in the size (%u) of %s.",
+                        offset, size, mSize, this);
 
         switch (mState) {
             case BufferState::Mapped:
             case BufferState::MappedAtCreation:
-                return DAWN_VALIDATION_ERROR("Buffer is already mapped");
+                return DAWN_FORMAT_VALIDATION_ERROR("%s is already mapped.", this);
             case BufferState::Destroyed:
-                return DAWN_VALIDATION_ERROR("Buffer is destroyed");
+                return DAWN_FORMAT_VALIDATION_ERROR("%s is destroyed.", this);
             case BufferState::Unmapped:
                 break;
         }
 
         bool isReadMode = mode & wgpu::MapMode::Read;
         bool isWriteMode = mode & wgpu::MapMode::Write;
-        if (!(isReadMode ^ isWriteMode)) {
-            return DAWN_VALIDATION_ERROR("Exactly one of Read or Write mode must be set");
-        }
+        DAWN_INVALID_IF(!(isReadMode ^ isWriteMode), "Map mode (%s) is not one of %s or %s.", mode,
+                        wgpu::MapMode::Write, wgpu::MapMode::Read);
 
         if (mode & wgpu::MapMode::Read) {
-            if (!(mUsage & wgpu::BufferUsage::MapRead)) {
-                return DAWN_VALIDATION_ERROR("The buffer must have the MapRead usage");
-            }
+            DAWN_INVALID_IF(!(mUsage & wgpu::BufferUsage::MapRead),
+                            "The buffer usages (%s) do not contain %s.", mUsage,
+                            wgpu::BufferUsage::MapRead);
         } else {
             ASSERT(mode & wgpu::MapMode::Write);
-
-            if (!(mUsage & wgpu::BufferUsage::MapWrite)) {
-                return DAWN_VALIDATION_ERROR("The buffer must have the MapWrite usage");
-            }
+            DAWN_INVALID_IF(!(mUsage & wgpu::BufferUsage::MapWrite),
+                            "The buffer usages (%s) do not contain %s.", mUsage,
+                            wgpu::BufferUsage::MapWrite);
         }
 
         *status = WGPUBufferMapAsyncStatus_Success;
@@ -512,11 +516,11 @@ namespace dawn_native {
             case BufferState::Destroyed:
                 return false;
         }
+        UNREACHABLE();
     }
 
     MaybeError BufferBase::ValidateUnmap() const {
         DAWN_TRY(GetDevice()->ValidateIsAlive());
-        DAWN_TRY(GetDevice()->ValidateObject(this));
 
         switch (mState) {
             case BufferState::Mapped:
@@ -525,26 +529,20 @@ namespace dawn_native {
                 // even if it did not have a mappable usage.
                 return {};
             case BufferState::Unmapped:
-                return DAWN_VALIDATION_ERROR("Buffer is unmapped");
+                return DAWN_FORMAT_VALIDATION_ERROR("%s is unmapped.", this);
             case BufferState::Destroyed:
-                return DAWN_VALIDATION_ERROR("Buffer is destroyed");
+                return DAWN_FORMAT_VALIDATION_ERROR("%s is destroyed.", this);
         }
-    }
-
-    MaybeError BufferBase::ValidateDestroy() const {
-        DAWN_TRY(GetDevice()->ValidateObject(this));
-        return {};
-    }
-
-    void BufferBase::DestroyInternal() {
-        if (mState != BufferState::Destroyed) {
-            DestroyImpl();
-        }
-        mState = BufferState::Destroyed;
+        UNREACHABLE();
     }
 
     void BufferBase::OnMapRequestCompleted(MapRequestID mapID, WGPUBufferMapAsyncStatus status) {
         CallMapCallback(mapID, status);
+    }
+
+    bool BufferBase::NeedsInitialization() const {
+        return !mIsDataInitialized &&
+               GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse);
     }
 
     bool BufferBase::IsDataInitialized() const {
@@ -558,4 +556,5 @@ namespace dawn_native {
     bool BufferBase::IsFullBufferRange(uint64_t offset, uint64_t size) const {
         return offset == 0 && size == GetSize();
     }
+
 }  // namespace dawn_native

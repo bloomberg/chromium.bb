@@ -22,6 +22,22 @@ enum class PowerMode {
   // The vsync signal is observed, but no frames are produced/submitted.
   kNopAnimation,
 
+  // Like kMainThreadAnimation, but the animation affects only a small screen
+  // area (see FrameProductionPowerModeVoter).
+  kSmallMainThreadAnimation,
+
+  // Like kAnimation, but the animation affects only a small screen area (see
+  // FrameProductionPowerModeVoter).
+  kSmallAnimation,
+
+  // Like kMainThreadAnimation, but the animation affects only a medium screen
+  // area (see FrameProductionPowerModeVoter).
+  kMediumMainThreadAnimation,
+
+  // Like kAnimation, but the animation affects only a medium screen area (see
+  // FrameProductionPowerModeVoter).
+  kMediumAnimation,
+
   // The process is playing audio.
   kAudible,
 
@@ -32,6 +48,10 @@ enum class PowerMode {
   // PowerMode to override kNopAnimation votes in cases where the main thread
   // takes a long time to produce a new frame.
   kMainThreadAnimation,
+
+  // The process is executing a script at the browser's request. Mainly relevant
+  // for background work in WebView/WebLayer.
+  kScriptExecution,
 
   // A page or tab associated with the process is loading.
   kLoading,

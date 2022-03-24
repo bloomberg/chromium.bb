@@ -29,3 +29,18 @@ TEST(AomImageTest, AomImgWrapInvalidAlign) {
   unsigned int align = 31;
   EXPECT_EQ(aom_img_wrap(&img, format, kWidth, kHeight, align, buf), nullptr);
 }
+
+TEST(AomImageTest, AomImgSetRectOverflow) {
+  const int kWidth = 128;
+  const int kHeight = 128;
+  unsigned char buf[kWidth * kHeight * 3];
+
+  aom_image_t img;
+  aom_img_fmt_t format = AOM_IMG_FMT_I444;
+  unsigned int align = 32;
+  EXPECT_EQ(aom_img_wrap(&img, format, kWidth, kHeight, align, buf), &img);
+
+  EXPECT_EQ(aom_img_set_rect(&img, 0, 0, kWidth, kHeight, 0), 0);
+  // This would result in overflow because -1 is cast to UINT_MAX.
+  EXPECT_NE(aom_img_set_rect(&img, -1, -1, kWidth, kHeight, 0), 0);
+}

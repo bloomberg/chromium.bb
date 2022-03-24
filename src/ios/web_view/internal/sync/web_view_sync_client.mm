@@ -14,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/demographics/user_demographics.h"
@@ -27,12 +26,12 @@
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
 #import "ios/web_view/internal/sync/web_view_sync_invalidations_service_factory.h"
+#include "ios/web_view/internal/sync/web_view_trusted_vault_client.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -83,8 +82,8 @@ std::unique_ptr<WebViewSyncClient> WebViewSyncClient::Create(
 WebViewSyncClient::WebViewSyncClient(
     autofill::AutofillWebDataService* profile_web_data_service,
     autofill::AutofillWebDataService* account_web_data_service,
-    password_manager::PasswordStore* profile_password_store,
-    password_manager::PasswordStore* account_password_store,
+    password_manager::PasswordStoreInterface* profile_password_store,
+    password_manager::PasswordStoreInterface* account_password_store,
     PrefService* pref_service,
     signin::IdentityManager* identity_manager,
     syncer::ModelTypeStoreService* model_type_store_service,
@@ -104,12 +103,12 @@ WebViewSyncClient::WebViewSyncClient(
   component_factory_ =
       std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
           this, version_info::Channel::STABLE,
-          prefs::kSavingBrowserHistoryDisabled,
           base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
           profile_web_data_service_->GetDBTaskRunner(),
           profile_web_data_service_, account_web_data_service_,
           profile_password_store_, account_password_store_,
           /*bookmark_sync_service=*/nullptr);
+  trusted_vault_client_ = std::make_unique<WebViewTrustedVaultClient>();
 }
 
 WebViewSyncClient::~WebViewSyncClient() {}
@@ -162,10 +161,6 @@ WebViewSyncClient::GetSendTabToSelfSyncService() {
   return nullptr;
 }
 
-base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
-  return base::DoNothing();
-}
-
 syncer::DataTypeController::TypeVector
 WebViewSyncClient::CreateDataTypeControllers(
     syncer::SyncService* sync_service) {
@@ -187,7 +182,7 @@ WebViewSyncClient::GetSyncInvalidationsService() {
 }
 
 syncer::TrustedVaultClient* WebViewSyncClient::GetTrustedVaultClient() {
-  return nullptr;
+  return trusted_vault_client_.get();
 }
 
 scoped_refptr<syncer::ExtensionsActivity>

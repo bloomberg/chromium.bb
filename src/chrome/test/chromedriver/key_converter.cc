@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -580,32 +580,33 @@ Status ConvertKeysToKeyEvents(const std::u16string& client_keys,
     // Create the key events.
     int number_modifiers = base::size(kModifiers);
     bool necessary_modifiers[number_modifiers];
-    for (int i = 0; i < number_modifiers; ++i) {
-      necessary_modifiers[i] =
-          all_modifiers & kModifiers[i].mask &&
-          !(sticky_modifiers & kModifiers[i].mask);
-      if (necessary_modifiers[i]) {
+    for (int j = 0; j < number_modifiers; ++j) {
+      necessary_modifiers[j] = all_modifiers & kModifiers[j].mask &&
+                               !(sticky_modifiers & kModifiers[j].mask);
+      if (necessary_modifiers[j]) {
         KeyEventBuilder builder;
         key_events.push_back(builder.SetType(kRawKeyDownEventType)
-                                   ->SetKeyCode(kModifiers[i].key_code)
-                                   ->SetModifiers(sticky_modifiers)
-                                   ->Build());
+                                 ->SetKeyCode(kModifiers[j].key_code)
+                                 ->SetModifiers(sticky_modifiers)
+                                 ->Build());
       }
     }
 
-    KeyEventBuilder builder;
-    builder.SetModifiers(all_modifiers)
-        ->SetText(unmodified_text, modified_text)
-        ->SetKeyCode(key_code)
-        ->Generate(&key_events);
+    {
+      KeyEventBuilder builder;
+      builder.SetModifiers(all_modifiers)
+          ->SetText(unmodified_text, modified_text)
+          ->SetKeyCode(key_code)
+          ->Generate(&key_events);
+    }
 
-    for (int i = 2; i > -1; --i) {
-      if (necessary_modifiers[i]) {
+    for (int j = 2; j > -1; --j) {
+      if (necessary_modifiers[j]) {
         KeyEventBuilder builder;
         key_events.push_back(builder.SetType(kKeyUpEventType)
-                                   ->SetKeyCode(kModifiers[i].key_code)
-                                   ->SetModifiers(sticky_modifiers)
-                                   ->Build());
+                                 ->SetKeyCode(kModifiers[j].key_code)
+                                 ->SetModifiers(sticky_modifiers)
+                                 ->Build());
       }
     }
   }
@@ -755,7 +756,7 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
   if (is_key_down)
     pressed->SetBoolean(key, true);
   else
-    pressed->Remove(key, nullptr);
+    pressed->RemoveKey(key);
 
   KeyEventBuilder builder;
   builder.SetKeyCode(key_code)

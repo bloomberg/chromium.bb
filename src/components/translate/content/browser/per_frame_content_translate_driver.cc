@@ -13,12 +13,13 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/services/language_detection/public/mojom/language_detection.mojom.h"
 #include "components/translate/content/browser/content_record_page_language.h"
 #include "components/translate/content/browser/content_translate_util.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
@@ -127,9 +128,9 @@ void PerFrameContentTranslateDriver::PendingRequestStats::Report() {
 }
 
 PerFrameContentTranslateDriver::PerFrameContentTranslateDriver(
-    content::NavigationController* nav_controller,
+    content::WebContents& web_contents,
     language::UrlLanguageHistogram* url_language_histogram)
-    : ContentTranslateDriver(nav_controller,
+    : ContentTranslateDriver(web_contents,
                              url_language_histogram,
                              /*translate_model_service=*/nullptr) {}
 
@@ -267,10 +268,23 @@ void PerFrameContentTranslateDriver::DidFinishNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
+  // Continue to process the navigation only if it is for frames in the primary
+  // page. It should be kept in sync with the implementation in
+  // ContentTranslateDriver::DidFinishNavigation.
+  if (!navigation_handle->GetRenderFrameHost()->GetPage().IsPrimary())
+    return;
+
   InitiateTranslationIfReload(navigation_handle);
 
-  if (navigation_handle->IsInMainFrame())
+  if (navigation_handle->IsPrerenderedPageActivation()) {
+    // Set it to NULL time, and do not report the LanguageDeterminedDuration
+    // metric in this case.
+    // The browser defers the RegisterPage() message on a prerendering page, so
+    // this kind of data is noisy and should be filtered out.
+    finish_navigation_time_ = base::TimeTicks();
+  } else if (navigation_handle->IsInPrimaryMainFrame()) {
     finish_navigation_time_ = base::TimeTicks::Now();
+  }
 
   // Let the LanguageState clear its state.
   const bool reload =
@@ -288,8 +302,9 @@ void PerFrameContentTranslateDriver::DidFinishNavigation(
        IsAutoHrefTranslateAllOriginsEnabled());
 
   translate_manager()->GetLanguageState()->DidNavigate(
-      navigation_handle->IsSameDocument(), navigation_handle->IsInMainFrame(),
-      reload, navigation_handle->GetHrefTranslate(), navigation_from_google);
+      navigation_handle->IsSameDocument(),
+      navigation_handle->IsInPrimaryMainFrame(), reload,
+      navigation_handle->GetHrefTranslate(), navigation_from_google);
 }
 
 void PerFrameContentTranslateDriver::DOMContentLoaded(

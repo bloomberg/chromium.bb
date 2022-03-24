@@ -9,10 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
@@ -35,7 +32,9 @@ namespace content {
 
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
+class FencedFrame;
 class FrameTreeNode;
+class FrameAutoAttacher;
 class NavigationRequest;
 class RenderFrameHostImpl;
 
@@ -64,14 +63,18 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // whether DevToolsAgentHost has actually been created.
   static bool ShouldCreateDevToolsForHost(RenderFrameHostImpl* rfh);
 
-  // This method is called when new frame is created for a portal or local root
-  // navigation.
-  static scoped_refptr<DevToolsAgentHost> CreateForLocalRootOrPortalNavigation(
-      NavigationRequest* request);
+  // This method is called when new frame is created for an emebedded page
+  // (portal or fenced frame) or local root navigation.
+  static scoped_refptr<DevToolsAgentHost>
+  CreateForLocalRootOrEmbeddedPageNavigation(NavigationRequest* request);
   static scoped_refptr<DevToolsAgentHost> FindForDangling(
       FrameTreeNode* frame_tree_node);
 
-  static void WebContentsMainFrameCreated(WebContents* web_contents);
+  RenderFrameDevToolsAgentHost(const RenderFrameDevToolsAgentHost&) = delete;
+  RenderFrameDevToolsAgentHost& operator=(const RenderFrameDevToolsAgentHost&) =
+      delete;
+
+  static void AttachToWebContents(WebContents* web_contents);
 
 #if defined(OS_ANDROID)
   static void SignalSynchronousSwapCompositorFrame(
@@ -83,6 +86,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void OnNavigationRequestWillBeSent(
       const NavigationRequest& navigation_request);
+  void UpdatePortals();
+  void DidCreateFencedFrame(FencedFrame* fenced_frame);
 
   // DevToolsAgentHost overrides.
   void DisconnectWebContents() override;
@@ -124,6 +129,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void DetachSession(DevToolsSession* session) override;
   void InspectElement(RenderFrameHost* frame_host, int x, int y) override;
   void UpdateRendererChannel(bool force) override;
+  protocol::TargetAutoAttacher* auto_attacher() override;
 
   // WebContentsObserver overrides.
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
@@ -163,6 +169,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
+  std::unique_ptr<FrameAutoAttacher> auto_attacher_;
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
   base::flat_set<NavigationRequest*> navigation_requests_;
@@ -173,8 +180,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   FrameTreeNode* frame_tree_node_;
 
   double page_scale_factor_ = 1;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };
 
 // Returns the ancestor FrameTreeNode* for which a RenderFrameDevToolsAgentHost

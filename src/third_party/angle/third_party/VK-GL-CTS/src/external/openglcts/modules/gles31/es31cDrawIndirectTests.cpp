@@ -675,7 +675,6 @@ protected:
 		{
 			throw std::runtime_error("Invalid drawSizeX!");
 		}
-		break;
 		default:
 		{
 			float drawStepX = 2.0f / static_cast<float>(drawSizeX);
@@ -796,7 +795,6 @@ protected:
 			break;
 		default:
 			throw std::runtime_error("Unknown primitive type!");
-			break;
 		}
 	}
 
@@ -814,16 +812,12 @@ protected:
 		{
 		case GL_READ_WRITE:
 			return "GL_READ_WRITE";
-			break;
 		case GL_READ_ONLY:
 			return "GL_READ_ONLY";
-			break;
 		case GL_WRITE_ONLY:
 			return "GL_WRITE_ONLY";
-			break;
 		default:
 			throw std::runtime_error("Invalid access type!");
-			break;
 		}
 	}
 };
@@ -6211,7 +6205,7 @@ struct CNegativeNoVAOArrays : public DrawIndirectBase
 
 		glGenBuffers(1, &_bufferIndirect);
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, _bufferIndirect);
-		glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(DrawElementsIndirectCommand), &indirectArrays, GL_STATIC_DRAW);
+		glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(DrawArraysIndirectCommand), &indirectArrays, GL_STATIC_DRAW);
 
 		DIResult result;
 		glDrawArraysIndirect(GL_TRIANGLES, 0);
@@ -6404,7 +6398,7 @@ struct CNegativeNoVBOArrays : public DrawIndirectBase
 
 		glGenBuffers(1, &_bufferIndirect);
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, _bufferIndirect);
-		glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(DrawElementsIndirectCommand), &indirectArrays, GL_STATIC_DRAW);
+		glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(DrawArraysIndirectCommand), &indirectArrays, GL_STATIC_DRAW);
 
 		DIResult result;
 		glDrawArraysIndirect(GL_TRIANGLES, 0);

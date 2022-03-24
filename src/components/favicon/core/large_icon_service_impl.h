@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -37,6 +37,10 @@ class LargeIconServiceImpl : public LargeIconService {
       int desired_size_in_dip_for_server_requests,
       favicon_base::IconType icon_type_for_server_requests,
       const std::string& google_server_client_param);
+
+  LargeIconServiceImpl(const LargeIconServiceImpl&) = delete;
+  LargeIconServiceImpl& operator=(const LargeIconServiceImpl&) = delete;
+
   ~LargeIconServiceImpl() override;
 
   // LargeIconService Implementation.
@@ -94,7 +98,7 @@ class LargeIconServiceImpl : public LargeIconService {
       favicon_base::GoogleFaviconServerCallback callback,
       bool can_set_on_demand_favicon);
 
-  FaviconService* const favicon_service_;
+  const raw_ptr<FaviconService> favicon_service_;
 
   const std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
@@ -108,8 +112,6 @@ class LargeIconServiceImpl : public LargeIconService {
   GURL server_url_;
 
   base::WeakPtrFactory<LargeIconServiceImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LargeIconServiceImpl);
 };
 
 }  // namespace favicon

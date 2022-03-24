@@ -15,11 +15,6 @@
 
 """Tests for tensorflow.python.client.session.Session's partial run APIs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorflow.python.client import session
 from tensorflow.python.framework import constant_op
@@ -89,18 +84,18 @@ class PartialRunTest(test_util.TensorFlowTestCase):
     inputs = []
     outputs = []
     a = constant_op.constant(2.0, dtypes.float32)
-    for i in xrange(steps):
+    for i in range(steps):
       inputs.append(array_ops.placeholder(dtypes.float32, shape=[]))
       a = math_ops.multiply(a, inputs[i])
       outputs.append(a)
 
     h = sess.partial_run_setup(outputs, inputs)
-    for i in xrange(steps):
+    for i in range(steps):
       res = sess.partial_run(h, outputs[i], feed_dict={inputs[i]: 1.0})
     self.assertEqual(2.0, res)
 
     feed_dict = {}
-    for i in xrange(steps):
+    for i in range(steps):
       feed_dict[inputs[i]] = 1.0
     res = sess.run(outputs, feed_dict)
     self.assertEqual(steps, len(res))
@@ -119,8 +114,8 @@ class PartialRunTest(test_util.TensorFlowTestCase):
     x = array_ops.placeholder(dtypes.float32, shape=())
     fetches = [x * 2, x * 3]
     handle = sess.partial_run_setup(fetches=fetches, feeds=[])
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 'You must feed a value for placeholder'):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                'You must feed a value for placeholder'):
       sess.partial_run(handle, fetches[0])
 
   def RunTestPartialRunUnspecifiedFeed(self, sess):
@@ -130,8 +125,8 @@ class PartialRunTest(test_util.TensorFlowTestCase):
     r1 = math_ops.add(a, b)
 
     h = sess.partial_run_setup([r1], [a, b])
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 'was not specified in partial_run_setup.$'):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                'was not specified in partial_run_setup.$'):
       sess.partial_run(h, r1, feed_dict={a: 1, b: 2, c: 3})
 
   def RunTestPartialRunUnspecifiedFetch(self, sess):
@@ -142,8 +137,8 @@ class PartialRunTest(test_util.TensorFlowTestCase):
     r2 = math_ops.multiply(a, c)
 
     h = sess.partial_run_setup([r1], [a, b, c])
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 'was not specified in partial_run_setup.$'):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                'was not specified in partial_run_setup.$'):
       sess.partial_run(h, r2, feed_dict={a: 1, c: 3})
 
   def RunTestPartialRunAlreadyFed(self, sess):
@@ -155,8 +150,8 @@ class PartialRunTest(test_util.TensorFlowTestCase):
 
     h = sess.partial_run_setup([r1, r2], [a, b, c])
     sess.partial_run(h, r1, feed_dict={a: 1, b: 2})
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 'has already been fed.$'):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                'has already been fed.$'):
       sess.partial_run(h, r2, feed_dict={a: 1, c: 3})
 
   def RunTestPartialRunAlreadyFetched(self, sess):
@@ -168,8 +163,8 @@ class PartialRunTest(test_util.TensorFlowTestCase):
 
     h = sess.partial_run_setup([r1, r2], [a, b, c])
     sess.partial_run(h, r1, feed_dict={a: 1, b: 2})
-    with self.assertRaisesRegexp(errors.InvalidArgumentError,
-                                 'has already been fetched.$'):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                'has already been fetched.$'):
       sess.partial_run(h, r1, feed_dict={c: 3})
 
   def RunTestPartialRunEmptyFetches(self, sess):
@@ -185,7 +180,7 @@ class PartialRunTest(test_util.TensorFlowTestCase):
   def testInvalidPartialRunSetup(self):
     sess = session.Session()
     x = array_ops.placeholder(dtypes.float32, shape=[])
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         errors.InvalidArgumentError,
         'specify at least one target to fetch or execute.'):
       sess.partial_run_setup(fetches=[], feeds=[x])

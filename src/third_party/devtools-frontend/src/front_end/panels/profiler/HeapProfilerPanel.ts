@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -52,7 +50,7 @@ export class HeapProfilerPanel extends ProfilesPanel implements UI.ContextMenu.P
     if (!object.objectId) {
       return;
     }
-    const objectId = (object.objectId as string);
+    const objectId = object.objectId;
 
     const heapProfiles = instance.heapSnapshotProfileType.getProfiles();
     if (!heapProfiles.length) {
@@ -86,6 +84,7 @@ export class HeapProfilerPanel extends ProfilesPanel implements UI.ContextMenu.P
   }
 
   wasShown(): void {
+    super.wasShown();
     UI.Context.Context.instance().setFlavor(HeapProfilerPanel, this);
     // Record the memory tool load time.
     Host.userMetrics.panelLoaded('heap_profiler', 'DevTools.Launch.HeapProfiler');

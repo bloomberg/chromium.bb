@@ -13,19 +13,9 @@
 // limitations under the License.
 
 #include "src/ast/vector.h"
-#include "src/ast/access_control.h"
-#include "src/ast/alias.h"
-#include "src/ast/array.h"
-#include "src/ast/bool.h"
-#include "src/ast/f32.h"
+
 #include "src/ast/i32.h"
-#include "src/ast/matrix.h"
-#include "src/ast/pointer.h"
-#include "src/ast/sampler.h"
-#include "src/ast/struct.h"
 #include "src/ast/test_helper.h"
-#include "src/ast/texture.h"
-#include "src/ast/u32.h"
 
 namespace tint {
 namespace ast {
@@ -36,14 +26,8 @@ using AstVectorTest = TestHelper;
 TEST_F(AstVectorTest, Creation) {
   auto* i32 = create<I32>();
   auto* v = create<Vector>(i32, 2);
-  EXPECT_EQ(v->type(), i32);
-  EXPECT_EQ(v->size(), 2u);
-}
-
-TEST_F(AstVectorTest, TypeName) {
-  auto* i32 = create<I32>();
-  auto* v = create<Vector>(i32, 3);
-  EXPECT_EQ(v->type_name(), "__vec_3__i32");
+  EXPECT_EQ(v->type, i32);
+  EXPECT_EQ(v->width, 2u);
 }
 
 TEST_F(AstVectorTest, FriendlyName) {

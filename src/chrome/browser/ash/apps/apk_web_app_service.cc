@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 
+#include <map>
 #include <utility>
 
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/session/connection_holder.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
@@ -13,16 +16,14 @@
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -86,7 +87,7 @@ ApkWebAppService::ApkWebAppService(Profile* profile)
   if (arc_app_list_prefs_)
     arc_app_list_prefs_observer_.Observe(arc_app_list_prefs_);
 
-  provider_ = web_app::WebAppProvider::Get(profile);
+  provider_ = web_app::WebAppProvider::GetDeprecated(profile);
   DCHECK(provider_);
   registrar_observer_.Observe(&provider_->registrar());
 }
@@ -108,8 +109,9 @@ bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& app_id) {
 
 bool ApkWebAppService::IsWebAppInstalledFromArc(
     const web_app::AppId& web_app_id) {
-  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
-      profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
+  web_app::WebAppRegistrar& registrar = provider_->registrar();
+  const web_app::WebApp* app = registrar.GetAppById(web_app_id);
+  return app ? app->IsWebAppStoreInstalledApp() : false;
 }
 
 absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
@@ -129,8 +131,8 @@ absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
 
 absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
     const GURL& url) {
-  web_app::AppRegistrar& registrar =
-      web_app::WebAppProvider::Get(profile_)->registrar();
+  web_app::WebAppRegistrar& registrar =
+      web_app::WebAppProvider::GetDeprecated(profile_)->registrar();
   absl::optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(url);
   if (!app_id)
     return absl::nullopt;
@@ -192,7 +194,8 @@ void ApkWebAppService::UpdateShelfPin(
   // Compute the current app id. It may have changed if the package has been
   // updated from an Android app to a web app, or vice versa.
   if (!package_info->web_app_info.is_null()) {
-    new_app_id = web_app::GenerateAppIdFromURL(
+    new_app_id = web_app::GenerateAppId(
+        /*manifest_id=*/absl::nullopt,
         GURL(package_info->web_app_info->start_url));
   } else {
     // Get the first app in the package. If there are multiple apps in the
@@ -269,7 +272,7 @@ void ApkWebAppService::OnPackageInstalled(
   // Search the pref dict for any |web_app_id| that has a value matching the
   // provided package name.
   std::string web_app_id;
-  for (const auto& it : web_apps_to_apks->DictItems()) {
+  for (const auto it : web_apps_to_apks->DictItems()) {
     const base::Value* v =
         it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
 
@@ -346,7 +349,7 @@ void ApkWebAppService::OnPackageRemoved(const std::string& package_name,
   // Search the pref dict for any |web_app_id| that has a value matching the
   // provided package name. We need to uninstall that |web_app_id|.
   std::string web_app_id;
-  for (const auto& it : web_apps_to_apks->DictItems()) {
+  for (const auto it : web_apps_to_apks->DictItems()) {
     const base::Value* v =
         it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
 
@@ -380,7 +383,8 @@ void ApkWebAppService::OnPackageListInitialRefreshed() {
   if (!instance)
     return;
 
-  for (const auto& it : web_apps_to_apks->DictItems()) {
+  std::map<std::string, std::string> app_ids_and_packages_to_remove;
+  for (const auto it : web_apps_to_apks->DictItems()) {
     const base::Value* v =
         it.second.FindKeyOfType(kShouldRemoveKey, base::Value::Type::BOOLEAN);
 
@@ -388,22 +392,30 @@ void ApkWebAppService::OnPackageListInitialRefreshed() {
     if (!v || !v->GetBool())
       continue;
 
-    // Without a package name, the dictionary isn't useful. Remove it.
+    // Without a package name, the dictionary isn't useful, so set it for
+    // removal.
     const std::string& web_app_id = it.first;
+    std::string package_name;
     v = it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
-    if (!v) {
-      web_apps_to_apks->RemoveKey(web_app_id);
-      continue;
+    if (v) {
+      package_name = v->GetString();
     }
 
-    // Remove the web app id from prefs, otherwise the corresponding call to
-    // OnPackageRemoved will start an uninstallation cycle. Take a copy of the
-    // string otherwise deleting |v| will erase the object underling
-    // a reference.
-    std::string package_name = v->GetString();
-    web_apps_to_apks->RemoveKey(web_app_id);
-    instance->UninstallPackage(package_name);
+    app_ids_and_packages_to_remove.insert({web_app_id, package_name});
   }
+
+  // Remove the web app id from prefs before uninstalling, otherwise the
+  // corresponding call to OnPackageRemoved will start an uninstallation cycle.
+  for (const auto& app_id_and_package_name : app_ids_and_packages_to_remove) {
+    web_apps_to_apks->RemoveKey(app_id_and_package_name.first);
+    const std::string& package_name = app_id_and_package_name.second;
+    if (!package_name.empty())
+      instance->UninstallPackage(package_name);
+  }
+}
+
+void ApkWebAppService::OnArcAppListPrefsDestroyed() {
+  arc_app_list_prefs_observer_.Reset();
 }
 
 void ApkWebAppService::OnWebAppWillBeUninstalled(

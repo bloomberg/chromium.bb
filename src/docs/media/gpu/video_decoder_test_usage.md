@@ -24,7 +24,7 @@ Wildcards can be used to run specific sets of tests:
 * Run all VP9 profile 2 tests: `tast run $HOST video.DecodeAccelVP92*`
 
 Check the
-[tast video folder](https://chromium.googlesource.com/chromiumos/platform/tast-tests/+/refs/heads/master/src/chromiumos/tast/local/bundles/cros/video/)
+[tast video folder](https://chromium.googlesource.com/chromiumos/platform/tast-tests/+/refs/heads/main/src/chromiumos/tast/local/bundles/cros/video/)
 for a list of all available tests.
 See the
 [Tast quickstart guide](https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/docs/quickstart.md)
@@ -63,6 +63,8 @@ Multiple command line arguments can be given to the command:
                          e.g. --vmodule=*media/gpu*=2.
 
     --disable_validator  disable frame validation.
+    --use-legacy         use the legacy VDA-based video decoders.
+                         (enabled by default)
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
     --use_vd_vda         use the new VD-based video decoders with a wrapper

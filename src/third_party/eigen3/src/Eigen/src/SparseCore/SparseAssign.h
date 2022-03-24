@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSEASSIGN_H
 #define EIGEN_SPARSEASSIGN_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 template<typename Derived>    

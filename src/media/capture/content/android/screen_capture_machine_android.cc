@@ -21,9 +21,13 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
-ScreenCaptureMachineAndroid::ScreenCaptureMachineAndroid() {}
+ScreenCaptureMachineAndroid::ScreenCaptureMachineAndroid() = default;
 
-ScreenCaptureMachineAndroid::~ScreenCaptureMachineAndroid() {}
+ScreenCaptureMachineAndroid::~ScreenCaptureMachineAndroid() {
+  if (j_capture_.obj() != nullptr) {
+    Java_ScreenCapture_onNativeDestroyed(AttachCurrentThread(), j_capture_);
+  }
+}
 
 // static
 ScopedJavaLocalRef<jobject>
@@ -47,7 +51,7 @@ void ScreenCaptureMachineAndroid::OnRGBAFrameAvailable(
   const uint64_t absolute_micro =
       timestamp / base::Time::kNanosecondsPerMicrosecond;
   const base::TimeTicks start_time =
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(absolute_micro);
+      base::TimeTicks() + base::Microseconds(absolute_micro);
   scoped_refptr<VideoFrame> frame;
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
 
@@ -122,7 +126,7 @@ void ScreenCaptureMachineAndroid::OnI420FrameAvailable(
   const uint64_t absolute_micro =
       timestamp / base::Time::kNanosecondsPerMicrosecond;
   const base::TimeTicks start_time =
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(absolute_micro);
+      base::TimeTicks() + base::Microseconds(absolute_micro);
   scoped_refptr<VideoFrame> frame;
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
 

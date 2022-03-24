@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/browser/notifications/notification_platform_bridge_delegate.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
@@ -59,7 +59,7 @@ crosapi::mojom::NotificationPtr ToMojo(
   mojo_note->origin_url = notification.origin_url();
   if (!notification.icon().IsEmpty())
     mojo_note->icon = notification.icon().AsImageSkia();
-  mojo_note->priority = base::ClampToRange(notification.priority(), -2, 2);
+  mojo_note->priority = base::clamp(notification.priority(), -2, 2);
   mojo_note->require_interaction = notification.never_timeout();
   mojo_note->timestamp = notification.timestamp();
   if (!notification.image().IsEmpty())
@@ -76,11 +76,12 @@ crosapi::mojom::NotificationPtr ToMojo(
     mojo_item->message = item.message;
     mojo_note->items.push_back(std::move(mojo_item));
   }
-  mojo_note->progress = base::ClampToRange(notification.progress(), -1, 100);
+  mojo_note->progress = base::clamp(notification.progress(), -1, 100);
   mojo_note->progress_status = notification.progress_status();
   for (const auto& button : notification.buttons()) {
     auto mojo_button = crosapi::mojom::ButtonInfo::New();
     mojo_button->title = button.title;
+    mojo_button->placeholder = button.placeholder;
     mojo_note->buttons.push_back(std::move(mojo_button));
   }
   mojo_note->pinned = notification.pinned();
@@ -131,11 +132,11 @@ class NotificationPlatformBridgeLacros::RemoteNotificationDelegate
     bridge_delegate_->HandleNotificationClicked(notification_id_);
   }
 
-  void OnNotificationButtonClicked(uint32_t button_index) override {
-    // Chrome OS does not support inline reply.
+  void OnNotificationButtonClicked(
+      uint32_t button_index,
+      const absl::optional<::std::u16string>& reply) override {
     bridge_delegate_->HandleNotificationButtonClicked(
-        notification_id_, base::checked_cast<int>(button_index),
-        /*reply=*/absl::nullopt);
+        notification_id_, base::checked_cast<int>(button_index), reply);
   }
 
   void OnNotificationSettingsButtonClicked() override {
@@ -176,11 +177,9 @@ void NotificationPlatformBridgeLacros::Display(
   // the notification ID. Lacros does not support Chrome OS multi-signin, so we
   // don't need to handle inactive user notification blockers in ash.
 
-  // Clean up any old notification with the same ID before creating the new one.
-  remote_notifications_.erase(notification.id());
-
   auto pending_notification = std::make_unique<RemoteNotificationDelegate>(
       notification.id(), bridge_delegate_, weak_factory_.GetWeakPtr());
+  // Display the notification, or update an existing one with the same ID.
   (*message_center_remote_)
       ->DisplayNotification(ToMojo(notification),
                             pending_notification->BindNotificationDelegate());
@@ -207,7 +206,9 @@ void NotificationPlatformBridgeLacros::GetDisplayed(
 
 void NotificationPlatformBridgeLacros::SetReadyCallback(
     NotificationBridgeReadyCallback callback) {
-  std::move(callback).Run(!!message_center_remote_);
+  // Always return success even if |message_center_remote_| is not valid as we
+  // don't have another way of displaying notifications on ChromeOS via Lacros.
+  std::move(callback).Run(/*success=*/true);
 }
 
 void NotificationPlatformBridgeLacros::DisplayServiceShutDown(

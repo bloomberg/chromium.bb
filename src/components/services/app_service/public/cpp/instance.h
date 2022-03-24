@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/aura/window.h"
 
@@ -26,63 +27,55 @@ enum InstanceState {
 };
 
 // Instance is used to represent an App Instance, or a running app.
+// `instance_id_` is the unique id for instance. For any two instances, if the
+// instance id is the same, the app id must be the same, well, the window might
+// be different. For example, When a web app opened in tab is pulled to a new
+// Lacros window, the window might be changed. Instance should exist on Ash side
+// only.
 class Instance {
  public:
-  // InstanceKey is the unique key for the instance.
-  class InstanceKey {
-   public:
-    explicit InstanceKey(aura::Window* window);
-    ~InstanceKey() = default;
-    aura::Window* Window() const { return window_; }
-    bool operator<(const InstanceKey& other) const;
-    bool operator==(const InstanceKey& other) const;
-    bool operator!=(const InstanceKey& other) const;
-
-   private:
-    // window_ is owned by ash and will be deleted when the user closes the
-    // window. Instance itself doesn't observe the window. The window's observer
-    // is responsible to delete Instance from InstanceRegistry when the window
-    // is destroyed.
-    aura::Window* window_;
-  };
-
   Instance(const std::string& app_id,
-           std::unique_ptr<InstanceKey> instance_key);
-  ~Instance();
+           const base::UnguessableToken& instance_id,
+           aura::Window* window);
 
   Instance(const Instance&) = delete;
   Instance& operator=(const Instance&) = delete;
+  ~Instance();
 
   std::unique_ptr<Instance> Clone();
 
   void SetLaunchId(const std::string& launch_id) { launch_id_ = launch_id; }
   void UpdateState(InstanceState state, const base::Time& last_updated_time);
-  void SetBrowserContext(content::BrowserContext* browser_context);
+  void SetBrowserContext(content::BrowserContext* browser_context) {
+    browser_context_ = browser_context;
+  }
+  void SetWindow(aura::Window* window) { window_ = window; }
 
   const std::string& AppId() const { return app_id_; }
-  const InstanceKey& GetInstanceKey() const { return *instance_key_; }
-  aura::Window* Window() const { return instance_key_->Window(); }
+  const base::UnguessableToken& InstanceId() const { return instance_id_; }
+  aura::Window* Window() const { return window_; }
   const std::string& LaunchId() const { return launch_id_; }
   InstanceState State() const { return state_; }
   const base::Time& LastUpdatedTime() const { return last_updated_time_; }
   content::BrowserContext* BrowserContext() const { return browser_context_; }
 
  private:
-  std::string app_id_;
-  std::unique_ptr<InstanceKey> instance_key_;
+  friend class InstanceRegistry;
+  friend class InstanceTest;
+
+  const std::string app_id_;
+
+  // The unique id for instance.
+  base::UnguessableToken instance_id_;
+
+  aura::Window* window_ = nullptr;
+
   std::string launch_id_;
-  InstanceState state_;
+  InstanceState state_ = InstanceState::kUnknown;
   base::Time last_updated_time_;
   content::BrowserContext* browser_context_ = nullptr;
 };
 
 }  // namespace apps
-
-std::ostream& operator<<(std::ostream& os,
-                         const apps::Instance::InstanceKey& instance_key);
-
-struct InstanceKeyHash {
-  size_t operator()(const apps::Instance::InstanceKey& key) const;
-};
 
 #endif  // COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INSTANCE_H_

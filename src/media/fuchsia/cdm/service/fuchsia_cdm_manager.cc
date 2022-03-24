@@ -6,6 +6,7 @@
 
 #include <fuchsia/media/drm/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/fpromise/promise.h>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -41,7 +42,7 @@ struct CdmDirectoryInfo {
 // addition of most-recently-modified calculation, and inclusion of directory
 // node sizes toward the total.
 CdmDirectoryInfo GetCdmDirectoryInfo(const base::FilePath& path) {
-  int64_t directory_size = 0;
+  uint64_t directory_size = 0;
   base::Time last_used;
   base::FileEnumerator enumerator(
       path, true /* recursive */,
@@ -216,8 +217,8 @@ class FuchsiaCdmManager::KeySystemClient {
 
     key_system_->AddDataStore(
         data_store_id, std::move(params),
-        [this, data_store_id,
-         storage_path](fit::result<void, fuchsia::media::drm::Error> result) {
+        [this, data_store_id, storage_path](
+            fpromise::result<void, fuchsia::media::drm::Error> result) {
           if (result.is_error()) {
             DLOG(ERROR) << "Failed to add data store " << data_store_id
                         << ", path: " << storage_path;

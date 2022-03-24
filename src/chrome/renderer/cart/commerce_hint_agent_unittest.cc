@@ -214,6 +214,7 @@ const char* kVisitCart[] = {
     "https://www.wayfair.com/session/public/basket.php",
     "https://www.wayfair.com/v/checkout/basket/add_and_show",
     "https://www.wayfair.com/v/checkout/basket/show",
+    "https://www.webstaurantstore.com/viewcart.cfm",
     "https://www.weightwatchers.com/us/shop/checkout/cart",
     "https://www.westelm.com/shoppingcart/",
     "https://www.wiley.com/en-us/cart",
@@ -777,6 +778,19 @@ TEST(CommerceHintAgentTest, IsAddToCart) {
   }
 }
 
+TEST(CommerceHintAgentTest, IsAddToCart_SkipLengthLimit) {
+  std::string str = "a";
+  for (int i = 0; i < 12; ++i) {
+    str += str;
+  }
+  // This is equal to length limit in CommerceHintAgent.
+  EXPECT_EQ(str.size(), 4096U);
+
+  str += "/add-to-cart";
+  EXPECT_FALSE(CommerceHintAgent::IsAddToCart(str));
+  EXPECT_TRUE(CommerceHintAgent::IsAddToCart(str, true));
+}
+
 TEST(CommerceHintAgentTest, IsVisitCart) {
   for (auto* str : kVisitCart) {
     EXPECT_TRUE(CommerceHintAgent::IsVisitCart(GURL(str))) << str;
@@ -915,7 +929,7 @@ float BenchmarkShouldSkipAddToCart(const GURL& url) {
   const base::TimeTicks end = base::TimeTicks::Now();
   float elapsed_us =
       static_cast<float>((end - now).InMicroseconds()) / kTestIterations;
-  LOG(INFO) << "ShouldSkip(" << url.spec().size()
+  LOG(INFO) << "ShouldSkipAddToCart(" << url.spec().size()
             << " chars) took: " << elapsed_us << " µs";
   return elapsed_us;
 }
@@ -965,7 +979,7 @@ TEST(CommerceHintAgentTest, MAYBE_RegexBenchmark) {
     elapsed_us = BenchmarkIsVisitCheckout(url);
     // Typical value is ~10us.
     // Without capping the length, it would take at least 2000us.
-    EXPECT_LT(elapsed_us, 50.0 * slow_factor);
+    EXPECT_LT(elapsed_us, 100.0 * slow_factor);
 
     elapsed_us = BenchmarkIsPurchase(basic_url, str);
     // Typical value is ~0.1us.

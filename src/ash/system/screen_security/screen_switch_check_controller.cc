@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/message_box_view.h"
@@ -36,6 +37,10 @@ class CancelCastingDialog : public views::DialogDelegateView {
     SetCancelCallback(base::BindOnce(&CancelCastingDialog::OnDialogCancelled,
                                      base::Unretained(this)));
   }
+
+  CancelCastingDialog(const CancelCastingDialog&) = delete;
+  CancelCastingDialog& operator=(const CancelCastingDialog&) = delete;
+
   ~CancelCastingDialog() override = default;
 
   void OnDialogCancelled() { std::move(callback_).Run(false); }
@@ -52,8 +57,6 @@ class CancelCastingDialog : public views::DialogDelegateView {
 
  private:
   base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CancelCastingDialog);
 };
 
 }  // namespace

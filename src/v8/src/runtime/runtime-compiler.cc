@@ -45,7 +45,8 @@ Object CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
   // As a post-condition of CompileOptimized, the function *must* be compiled,
   // i.e. the installed Code object must not be the CompileLazy builtin.
   DCHECK(function->is_compiled());
-  return function->code();
+  // TODO(v8:11880): avoid roundtrips between cdc and code.
+  return ToCodeT(function->code());
 }
 
 }  // namespace
@@ -75,7 +76,8 @@ RUNTIME_FUNCTION(Runtime_CompileLazy) {
     return ReadOnlyRoots(isolate).exception();
   }
   DCHECK(function->is_compiled());
-  return function->code();
+  // TODO(v8:11880): avoid roundtrips between cdc and code.
+  return ToCodeT(function->code());
 }
 
 RUNTIME_FUNCTION(Runtime_InstallBaselineCode) {
@@ -83,13 +85,13 @@ RUNTIME_FUNCTION(Runtime_InstallBaselineCode) {
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
   Handle<SharedFunctionInfo> sfi(function->shared(), isolate);
-  DCHECK(sfi->HasBaselineData());
+  DCHECK(sfi->HasBaselineCode());
   IsCompiledScope is_compiled_scope(*sfi, isolate);
   DCHECK(!function->HasAvailableOptimizedCode());
   DCHECK(!function->HasOptimizationMarker());
   DCHECK(!function->has_feedback_vector());
   JSFunction::EnsureFeedbackVector(function, &is_compiled_scope);
-  Code baseline_code = sfi->baseline_data().baseline_code();
+  CodeT baseline_code = sfi->baseline_code(kAcquireLoad);
   function->set_code(baseline_code);
   return baseline_code;
 }
@@ -125,7 +127,8 @@ RUNTIME_FUNCTION(Runtime_FunctionFirstExecution) {
   function->feedback_vector().ClearOptimizationMarker();
   // Return the code to continue execution, we don't care at this point whether
   // this is for lazy compilation or has been eagerly complied.
-  return function->code();
+  // TODO(v8:11880): avoid roundtrips between cdc and code.
+  return ToCodeT(function->code());
 }
 
 RUNTIME_FUNCTION(Runtime_HealOptimizedCodeSlot) {
@@ -138,7 +141,8 @@ RUNTIME_FUNCTION(Runtime_HealOptimizedCodeSlot) {
   function->feedback_vector().EvictOptimizedCodeMarkedForDeoptimization(
       function->raw_feedback_cell(), function->shared(),
       "Runtime_HealOptimizedCodeSlot");
-  return function->code();
+  // TODO(v8:11880): avoid roundtrips between cdc and code.
+  return ToCodeT(function->code());
 }
 
 RUNTIME_FUNCTION(Runtime_InstantiateAsmJs) {
@@ -171,9 +175,8 @@ RUNTIME_FUNCTION(Runtime_InstantiateAsmJs) {
   }
   shared->set_is_asm_wasm_broken(true);
 #endif
-  DCHECK(function->code() ==
-         isolate->builtins()->builtin(Builtins::kInstantiateAsmJs));
-  function->set_code(isolate->builtins()->builtin(Builtins::kCompileLazy));
+  DCHECK_EQ(function->code(), *BUILTIN_CODE(isolate, InstantiateAsmJs));
+  function->set_code(*BUILTIN_CODE(isolate, CompileLazy));
   DCHECK(!isolate->has_pending_exception());
   return Smi::zero();
 }
@@ -241,6 +244,8 @@ RUNTIME_FUNCTION(Runtime_VerifyType) {
 
 static bool IsSuitableForOnStackReplacement(Isolate* isolate,
                                             Handle<JSFunction> function) {
+  // Don't OSR during serialization.
+  if (isolate->serializer_enabled()) return false;
   // Keep track of whether we've succeeded in optimizing.
   if (function->shared().optimization_disabled()) return false;
   // TODO(chromium:1031479): Currently, OSR triggering mechanism is tied to the
@@ -293,7 +298,7 @@ BytecodeOffset DetermineEntryAndDisarmOSRForUnoptimized(
 }  // namespace
 
 RUNTIME_FUNCTION(Runtime_CompileForOnStackReplacement) {
-  HandleScope scope(isolate);
+  HandleScope handle_scope(isolate);
   DCHECK_EQ(0, args.length());
 
   // Only reachable when OST is enabled.

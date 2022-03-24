@@ -34,13 +34,13 @@ then
 fi
 
 # We pull asciidoc to get the right version
-BRANCH=8.6.9
-ASCIIDOC_HASH=2ff8681
-if [[ ! -d asciidoc || $(cd asciidoc && git rev-parse --short HEAD) != $ASCIIDOC_HASH ]]
+BRANCH=9.1.0
+ASCIIDOC_HASH=9705d428439530104ce55d0ba12e8ef9d1b57ad1
+if [[ ! -d asciidoc || $(cd asciidoc && git rev-parse HEAD) != $ASCIIDOC_HASH ]]
 then
   echo Cloning asciidoc
   rm -rf asciidoc
-  git clone --branch $BRANCH https://github.com/asciidoc/asciidoc asciidoc
+  git clone --branch $BRANCH https://github.com/asciidoc-py/asciidoc-py asciidoc
   (cd asciidoc && ln -s asciidoc.py asciidoc)
 fi
 echo Asciidoc up to date at $ASCIIDOC_HASH \($BRANCH\)
@@ -48,42 +48,32 @@ echo Asciidoc up to date at $ASCIIDOC_HASH \($BRANCH\)
 export PATH=`pwd`/asciidoc:$PATH
 
 # We pull ansi2hash to convert demo script output
-BRANCH=1.0.6
-ANSI2HTML_HASH=6282ab7a24a5a7eab2e0b23bb0055234c533a6e9
+BRANCH=1.6.0
+ANSI2HTML_HASH=1ca0e862dda765c55e9124bf50a06a3e2f769521
 if [[ ! -d ansi2html || $(git -C ansi2html rev-parse HEAD) != $ANSI2HTML_HASH ]]
 then
   echo Cloning ansi2html
   rm -rf ansi2html
   git clone  --single-branch --branch $BRANCH --depth 1 \
-    https://github.com/ralphbean/ansi2html.git 2> /dev/null
-  curl https://bitbucket.org/gutworth/six/raw/a875ac34c777fe801569c6c5299bf1a35aa578cd/six.py > \
-    ansi2html/ansi2html/six.py
-  ed ansi2html/ansi2html/converter.py <<EOF
-/version_str
-s/pkg.*$/'cool version bro'
-wq
-EOF
+    https://github.com/pycontribs/ansi2html.git 2> /dev/null
 fi
 
 echo ansi2html up to date at $ANSI2HTML_HASH \($BRANCH\)
 
 # We pull git to get its documentation toolchain
-BRANCH=v1.9.0
-GITHASH=5f95c9f850b19b368c43ae399cc831b17a26a5ac
+BRANCH=v2.32.0
+GITHASH=ebf3c04b262aa27fbb97f8a0156c2347fecafafb
 if [[ ! -d git || $(git -C git rev-parse HEAD) != $GITHASH ]]
 then
   echo Cloning git
   rm -rf git
   git clone --single-branch --branch $BRANCH --depth 1 \
     https://kernel.googlesource.com/pub/scm/git/git.git  2> /dev/null
-
-  # Replace the 'source' and 'package' strings.
-  ed git/Documentation/asciidoc.conf <<EOF
+ed git/Documentation/Makefile <<EOF
 H
-81
-s/Git/depot_tools
-+2
+141
 s/Git Manual/Chromium depot_tools Manual
+s/Git/depot_tools
 wq
 EOF
 
@@ -222,6 +212,7 @@ done
 
 if [[ ${#HTML_TARGETS} == 0 && ${#MAN1_TARGETS} == 0 && ${#MAN7_TARGETS} == 0 ]]
 then
+  echo No targets to build
   exit
 fi
 
@@ -238,7 +229,7 @@ fi
 (
   export GIT_DIR="$(git rev-parse --git-dir)" &&
   cd git/Documentation &&
-  make -j"$JOBS" "${MAN1_TARGETS[@]}" "${MAN7_TARGETS[@]}" "${HTML_TARGETS[@]}"
+  GIT_EDITOR=true make -j"$JOBS" "${MAN1_TARGETS[@]}" "${MAN7_TARGETS[@]}" "${HTML_TARGETS[@]}" 
 )
 
 for x in "${HTML_TARGETS[@]}"

@@ -10,6 +10,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "components/media_router/browser/logger_impl.h"
 #include "components/media_router/common/discovery/media_sink_service_base.h"
 #include "components/media_router/common/providers/cast/cast_media_source.h"
 #include "components/media_router/common/test/test_helper.h"
@@ -44,6 +45,10 @@ class CastAppDiscoveryServiceTest : public testing::Test {
         .WillByDefault(testing::Return(&socket_));
     task_runner_->RunPendingTasks();
   }
+
+  CastAppDiscoveryServiceTest(const CastAppDiscoveryServiceTest&) = delete;
+  CastAppDiscoveryServiceTest& operator=(const CastAppDiscoveryServiceTest&) =
+      delete;
 
   ~CastAppDiscoveryServiceTest() override { task_runner_->RunPendingTasks(); }
 
@@ -81,9 +86,6 @@ class CastAppDiscoveryServiceTest : public testing::Test {
   CastMediaSource source_a_1_;
   CastMediaSource source_a_2_;
   CastMediaSource source_b_1_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastAppDiscoveryServiceTest);
 };
 
 TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinks) {
@@ -202,7 +204,7 @@ TEST_F(CastAppDiscoveryServiceTest, Refresh) {
   EXPECT_CALL(message_handler_, RequestAppAvailability(_, "BBBBBBBB", _));
   AddOrUpdateSink(sink2);
 
-  clock_.Advance(base::TimeDelta::FromSeconds(30));
+  clock_.Advance(base::Seconds(30));
 
   // Request app availability for app B for both sinks.
   // App A on |sink2| is not requested due to timing threshold.
@@ -217,7 +219,7 @@ TEST_F(CastAppDiscoveryServiceTest, Refresh) {
       });
   app_discovery_service_->Refresh();
 
-  clock_.Advance(base::TimeDelta::FromSeconds(31));
+  clock_.Advance(base::Seconds(31));
 
   EXPECT_CALL(message_handler_, RequestAppAvailability(_, "AAAAAAAA", _));
   app_discovery_service_->Refresh();
@@ -326,4 +328,24 @@ TEST_F(CastAppDiscoveryServiceTest, AvailabilityUnknownOrUnavailable) {
   AddOrUpdateSink(sink1);
 }
 
+TEST_F(CastAppDiscoveryServiceTest, BindLogger) {
+  std::unique_ptr<LoggerImpl> logger_1 = std::make_unique<LoggerImpl>();
+  mojo::PendingRemote<mojom::Logger> pending_remote_1;
+  logger_1->Bind(pending_remote_1.InitWithNewPipeAndPassReceiver());
+  app_discovery_service_->BindLogger(std::move(pending_remote_1));
+
+  // Trying to bind another pending remote no-ops instead of causing
+  // a DCHECK failure from binding to a remote that's already bound.
+  std::unique_ptr<LoggerImpl> logger_2 = std::make_unique<LoggerImpl>();
+  mojo::PendingRemote<mojom::Logger> pending_remote_2;
+  logger_2->Bind(pending_remote_2.InitWithNewPipeAndPassReceiver());
+  app_discovery_service_->BindLogger(std::move(pending_remote_2));
+
+  // Trying to bind a disconnected receiver should work.
+  logger_1.reset();
+  std::unique_ptr<LoggerImpl> logger_3 = std::make_unique<LoggerImpl>();
+  mojo::PendingRemote<mojom::Logger> pending_remote_3;
+  logger_3->Bind(pending_remote_3.InitWithNewPipeAndPassReceiver());
+  app_discovery_service_->BindLogger(std::move(pending_remote_3));
+}
 }  // namespace media_router

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/jpeg/jpeg_data.h"
 
@@ -18,6 +9,8 @@
 
 namespace jxl {
 namespace jpeg {
+
+#if JPEGXL_ENABLE_TRANSCODE_JPEG
 
 namespace {
 enum JPEGComponentType : uint32_t {
@@ -402,6 +395,8 @@ Status JPEGData::VisitFields(Visitor* visitor) {
   return true;
 }
 
+#endif  // JPEGXL_ENABLE_TRANSCODE_JPEG
+
 void JPEGData::CalculateMcuSize(const JPEGScanInfo& scan, int* MCUs_per_row,
                                 int* MCU_rows) const {
   const bool is_interleaved = (scan.num_components > 1);
@@ -422,6 +417,8 @@ void JPEGData::CalculateMcuSize(const JPEGScanInfo& scan, int* MCUs_per_row,
   *MCUs_per_row = DivCeil(width * h_group, 8 * max_h_samp_factor);
   *MCU_rows = DivCeil(height * v_group, 8 * max_v_samp_factor);
 }
+
+#if JPEGXL_ENABLE_TRANSCODE_JPEG
 
 Status SetJPEGDataFromICC(const PaddedBytes& icc, jpeg::JPEGData* jpeg_data) {
   size_t icc_pos = 0;
@@ -444,6 +441,8 @@ Status SetJPEGDataFromICC(const PaddedBytes& icc, jpeg::JPEGData* jpeg_data) {
   }
   return true;
 }
+
+#endif  // JPEGXL_ENABLE_TRANSCODE_JPEG
 
 }  // namespace jpeg
 }  // namespace jxl

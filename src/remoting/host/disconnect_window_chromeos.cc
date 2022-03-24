@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
 
@@ -19,14 +18,15 @@ namespace {
 class DisconnectWindowAura : public HostWindow {
  public:
   DisconnectWindowAura();
+
+  DisconnectWindowAura(const DisconnectWindowAura&) = delete;
+  DisconnectWindowAura& operator=(const DisconnectWindowAura&) = delete;
+
   ~DisconnectWindowAura() override;
 
   // HostWindow interface.
   void Start(const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisconnectWindowAura);
 };
 
 DisconnectWindowAura::DisconnectWindowAura() = default;

@@ -861,6 +861,9 @@ deqp_khr_common_sources = [
   "$deqp_path/external/openglcts/modules/common/glcAggressiveShaderOptimizationsTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcBlendEquationAdvancedTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcBlendEquationAdvancedTests.hpp",
+  "$deqp_path/external/openglcts/modules/common/glcCompressedFormatTests.cpp",
+  "$deqp_path/external/openglcts/modules/common/glcCompressedFormatTests.hpp",
+  "$deqp_path/external/openglcts/modules/common/glcCompressedFormatTests_data.inl",
   "$deqp_path/external/openglcts/modules/common/glcConfigList.cpp",
   "$deqp_path/external/openglcts/modules/common/glcConfigList.hpp",
   "$deqp_path/external/openglcts/modules/common/glcConfigListCase.cpp",
@@ -901,8 +904,6 @@ deqp_khr_common_sources = [
   "$deqp_path/external/openglcts/modules/common/glcMultipleContextsTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcNearestEdgeTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcNearestEdgeTests.hpp",
-  "$deqp_path/external/openglcts/modules/common/glcNoDefaultContextPackage.cpp",
-  "$deqp_path/external/openglcts/modules/common/glcNoDefaultContextPackage.hpp",
   "$deqp_path/external/openglcts/modules/common/glcNoErrorTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcNoErrorTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcPackedDepthStencilTests.cpp",
@@ -947,8 +948,6 @@ deqp_khr_common_sources = [
   "$deqp_path/external/openglcts/modules/common/glcShaderRenderCase.hpp",
   "$deqp_path/external/openglcts/modules/common/glcShaderStructTests.cpp",
   "$deqp_path/external/openglcts/modules/common/glcShaderStructTests.hpp",
-  "$deqp_path/external/openglcts/modules/common/glcShaderSwitchTests.cpp",
-  "$deqp_path/external/openglcts/modules/common/glcShaderSwitchTests.hpp",
   "$deqp_path/external/openglcts/modules/common/glcSpirvUtils.cpp",
   "$deqp_path/external/openglcts/modules/common/glcSpirvUtils.hpp",
   "$deqp_path/external/openglcts/modules/common/glcTestCase.cpp",
@@ -1194,13 +1193,8 @@ deqp_khr_gles31_sources = [
   "$deqp_path/external/openglcts/modules/gles31/es31cTextureStorageMultisampleTexStorage2DMultisampleTests.hpp",
   "$deqp_path/external/openglcts/modules/gles31/es31cTextureStorageMultisampleTexStorage3DMultisampleTests.cpp",
   "$deqp_path/external/openglcts/modules/gles31/es31cTextureStorageMultisampleTexStorage3DMultisampleTests.hpp",
-
-  #  "$deqp_path/external/openglcts/modules/gles31/es31cVertexAttribBindingTests.cpp",
+  "$deqp_path/external/openglcts/modules/gles31/es31cVertexAttribBindingTests.cpp",
   "$deqp_path/external/openglcts/modules/gles31/es31cVertexAttribBindingTests.hpp",
-
-  # Overrides
-  # 5500: Override to prevent right-shifts by too large a value
-  "deqp_support/es31cVertexAttribBindingTests_override.cpp",
 ]
 
 deqp_khr_gles32_sources = [
@@ -1211,6 +1205,12 @@ deqp_khr_gles32_sources = [
 ]
 
 deqp_khr_glesext_sources = [
+  "$deqp_path/external/openglcts/modules/glesext/disjoint_timer_query/esextcDisjointTimerQueryBase.cpp",
+  "$deqp_path/external/openglcts/modules/glesext/disjoint_timer_query/esextcDisjointTimerQueryBase.hpp",
+  "$deqp_path/external/openglcts/modules/glesext/disjoint_timer_query/esextcDisjointTimerQueryHandleReuse.cpp",
+  "$deqp_path/external/openglcts/modules/glesext/disjoint_timer_query/esextcDisjointTimerQueryHandleReuse.hpp",
+  "$deqp_path/external/openglcts/modules/glesext/disjoint_timer_query/esextcDisjointTimerQueryTests.cpp",
+  "$deqp_path/external/openglcts/modules/glesext/disjoint_timer_query/esextcDisjointTimerQueryTests.hpp",
   "$deqp_path/external/openglcts/modules/glesext/draw_buffers_indexed/esextcDrawBuffersIndexedBase.cpp",
   "$deqp_path/external/openglcts/modules/glesext/draw_buffers_indexed/esextcDrawBuffersIndexedBase.hpp",
   "$deqp_path/external/openglcts/modules/glesext/draw_buffers_indexed/esextcDrawBuffersIndexedBlending.cpp",
@@ -2017,6 +2017,9 @@ deqp_libtester_sources = [
   "deqp_support/tcuANGLENativeDisplayFactory.h",
 
   # TODO(jmadill): integrate with dEQP
+  "$angle_root/third_party/renderdoc/src/renderdoc_app.h",
   "deqp_support/tcuRandomOrderExecutor.cpp",
   "deqp_support/tcuRandomOrderExecutor.h",
+  "test_utils/RenderDoc.cpp",
+  "test_utils/RenderDoc.h",
 ]

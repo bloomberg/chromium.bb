@@ -6,7 +6,6 @@
 #define CORE_FXCRT_UNOWNED_PTR_H_
 
 #include <functional>
-#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -60,7 +59,10 @@ class UnownedPtr {
   // NOLINTNEXTLINE(runtime/explicit)
   constexpr UnownedPtr(std::nullptr_t ptr) noexcept {}
 
-  ~UnownedPtr() { ProbeForLowSeverityLifetimeIssue(); }
+  ~UnownedPtr() {
+    ProbeForLowSeverityLifetimeIssue();
+    m_pObj = nullptr;
+  }
 
   void Reset(T* obj = nullptr) {
     ProbeForLowSeverityLifetimeIssue();

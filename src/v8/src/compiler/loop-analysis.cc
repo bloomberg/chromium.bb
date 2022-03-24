@@ -5,11 +5,16 @@
 #include "src/compiler/loop-analysis.h"
 
 #include "src/codegen/tick-counter.h"
+#include "src/compiler/common-operator.h"
 #include "src/compiler/graph.h"
 #include "src/compiler/node-marker.h"
 #include "src/compiler/node-properties.h"
 #include "src/compiler/node.h"
 #include "src/zone/zone.h"
+
+#if V8_ENABLE_WEBASSEMBLY
+#include "src/wasm/wasm-code-manager.h"
+#endif
 
 namespace v8 {
 namespace internal {
@@ -543,8 +548,9 @@ LoopTree* LoopFinder::BuildLoopTree(Graph* graph, TickCounter* tick_counter,
   return loop_tree;
 }
 
+#if V8_ENABLE_WEBASSEMBLY
 // static
-ZoneUnorderedSet<Node*>* LoopFinder::FindUnnestedLoopFromHeader(
+ZoneUnorderedSet<Node*>* LoopFinder::FindSmallUnnestedLoopFromHeader(
     Node* loop_header, Zone* zone, size_t max_size) {
   auto* visited = zone->New<ZoneUnorderedSet<Node*>>(zone);
   std::vector<Node*> queue;
@@ -580,6 +586,39 @@ ZoneUnorderedSet<Node*>* LoopFinder::FindUnnestedLoopFromHeader(
                   loop_header);
         // All uses are outside the loop, do nothing.
         break;
+      case IrOpcode::kTailCall:
+      case IrOpcode::kJSWasmCall:
+      case IrOpcode::kJSCall:
+        // Call nodes are considered to have unbounded size, i.e. >max_size,
+        // with the exception of certain wasm builtins.
+        return nullptr;
+      case IrOpcode::kCall: {
+        Node* callee = node->InputAt(0);
+        if (callee->opcode() != IrOpcode::kRelocatableInt32Constant &&
+            callee->opcode() != IrOpcode::kRelocatableInt64Constant) {
+          return nullptr;
+        }
+        intptr_t info =
+            OpParameter<RelocatablePtrConstantInfo>(callee->op()).value();
+        using WasmCode = v8::internal::wasm::WasmCode;
+        constexpr intptr_t unrollable_builtins[] = {
+            WasmCode::kWasmStackGuard,
+            WasmCode::kWasmTableGet,
+            WasmCode::kWasmTableSet,
+            WasmCode::kWasmTableGrow,
+            WasmCode::kWasmThrow,
+            WasmCode::kWasmRethrow,
+            WasmCode::kWasmRethrowExplicitContext,
+            WasmCode::kWasmRefFunc,
+            WasmCode::kWasmAllocateRtt,
+            WasmCode::kWasmAllocateFreshRtt};
+        if (std::count(unrollable_builtins,
+                       unrollable_builtins + arraysize(unrollable_builtins),
+                       info) == 0) {
+          return nullptr;
+        }
+        V8_FALLTHROUGH;
+      }
       default:
         for (Node* use : node->uses()) {
           if (visited->count(use) == 0) queue.push_back(use);
@@ -614,6 +653,7 @@ ZoneUnorderedSet<Node*>* LoopFinder::FindUnnestedLoopFromHeader(
 
   return visited;
 }
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 bool LoopFinder::HasMarkedExits(LoopTree* loop_tree,
                                 const LoopTree::Loop* loop) {
@@ -637,7 +677,6 @@ bool LoopFinder::HasMarkedExits(LoopTree* loop_tree,
         }
         if (unmarked_exit) {
           if (FLAG_trace_turbo_loop) {
-            Node* loop_node = loop_tree->GetLoopControl(loop);
             PrintF(
                 "Cannot peel loop %i. Loop exit without explicit mark: Node %i "
                 "(%s) is inside loop, but its use %i (%s) is outside.\n",

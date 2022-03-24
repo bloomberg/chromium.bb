@@ -25,6 +25,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/reference/depthwiseconv_float.h"
 #include "tensorflow/lite/kernels/internal/reference/depthwiseconv_uint8.h"
 #include "tensorflow/lite/kernels/internal/reference/reference_ops.h"
+#include "tensorflow/lite/kernels/internal/reference/tanh.h"
 #include "tensorflow/lite/kernels/internal/types.h"
 
 namespace tflite {
@@ -844,49 +845,6 @@ inline void Logistic(const RuntimeShape& input_shape, const int16* input_data,
   Logistic(params, input_shape, input_data, output_shape, output_data);
 }
 
-inline void Tanh(const TanhParams& params, const RuntimeShape& input_shape,
-                 const uint8* input_data, const RuntimeShape& output_shape,
-                 uint8* output_data) {
-  const int32 input_zero_point = params.input_zero_point;
-  const int32 input_range_radius = params.input_range_radius;
-  const int32 input_multiplier = params.input_multiplier;
-  const int input_left_shift = params.input_left_shift;
-  const int32 output_zero_point = 128;
-  const int flat_size = MatchingFlatSize(input_shape, output_shape);
-
-  for (int i = 0; i < flat_size; i++) {
-    const uint8 input_val_u8 = input_data[i];
-    const int32 input_val_centered =
-        static_cast<int32>(input_val_u8) - input_zero_point;
-    uint8 output_val;
-    if (input_val_centered <= -input_range_radius) {
-      output_val = 0;
-    } else if (input_val_centered >= input_range_radius) {
-      output_val = 255;
-    } else {
-      const int32 input_val_rescaled =
-          MultiplyByQuantizedMultiplierGreaterThanOne(
-              input_val_centered, input_multiplier, input_left_shift);
-      using FixedPoint4 = gemmlowp::FixedPoint<int32, 4>;
-      using FixedPoint0 = gemmlowp::FixedPoint<int32, 0>;
-      const FixedPoint4 input_val_f4 = FixedPoint4::FromRaw(input_val_rescaled);
-      const FixedPoint0 output_val_f0 = gemmlowp::tanh(input_val_f4);
-      // Convert from Q0.31 to Q24.7.
-      using gemmlowp::RoundingDivideByPOT;
-      int32 output_val_s32 = RoundingDivideByPOT(output_val_f0.raw(), 24);
-      output_val_s32 += output_zero_point;
-      if (output_val_s32 == 256) {
-        output_val_s32 = 255;
-      }
-      // Reinterpret as Q0.7, encoded in uint8.
-      TFLITE_DCHECK_GE(output_val_s32, 0);
-      TFLITE_DCHECK_LE(output_val_s32, 255);
-      output_val = static_cast<uint8>(output_val_s32);
-    }
-    output_data[i] = output_val;
-  }
-}
-
 inline void Tanh(const uint8* input_data, const RuntimeShape& input_shape,
                  int32 input_zero_point, int32 input_range_radius,
                  int32 input_multiplier, int input_left_shift,
@@ -937,6 +895,7 @@ inline void Gather(const T* input_data, const Dims<4>& input_dims,
                    const Dims<4>& output_dims) {
   tflite::GatherParams op_params;
   op_params.axis = 4 - input_rank;
+  op_params.batch_dims = 0;
 
   Gather(op_params, DimsToShape(input_dims), input_data,
          DimsToShape(coords_dims), coords_data, DimsToShape(output_dims),
@@ -1528,7 +1487,7 @@ void Sub(const T* input1_data, const Dims<4>& input1_dims, const T* input2_data,
       output_data);
 }
 
-inline void AveragePool(const float* input_data, const Dims<4>& input_dims,
+inline bool AveragePool(const float* input_data, const Dims<4>& input_dims,
                         int stride_width, int stride_height, int pad_width,
                         int pad_height, int kwidth, int kheight,
                         float output_activation_min,
@@ -1543,8 +1502,8 @@ inline void AveragePool(const float* input_data, const Dims<4>& input_dims,
   params.padding_values.width = pad_width;
   params.float_activation_min = output_activation_min;
   params.float_activation_max = output_activation_max;
-  AveragePool(params, DimsToShape(input_dims), input_data,
-              DimsToShape(output_dims), output_data);
+  return AveragePool(params, DimsToShape(input_dims), input_data,
+                     DimsToShape(output_dims), output_data);
 }
 
 // Transitional version that will be moved shortly to legacy_reference_ops, as
@@ -1603,29 +1562,31 @@ inline void BroadcastMul(const uint8* input1_data, const Dims<4>& input1_dims,
 
 // legacy, for compatibility with old checked-in code
 template <FusedActivationFunctionType Ac>
-void AveragePool(const float* input_data, const Dims<4>& input_dims,
+bool AveragePool(const float* input_data, const Dims<4>& input_dims,
                  int stride_width, int stride_height, int pad_width,
                  int pad_height, int kwidth, int kheight, float* output_data,
                  const Dims<4>& output_dims) {
   float output_activation_min, output_activation_max;
   GetActivationMinMax(Ac, &output_activation_min, &output_activation_max);
 
-  AveragePool(input_data, input_dims, stride_width, stride_height, pad_width,
-              pad_height, kwidth, kheight, output_activation_min,
-              output_activation_max, output_data, output_dims);
+  return AveragePool(input_data, input_dims, stride_width, stride_height,
+                     pad_width, pad_height, kwidth, kheight,
+                     output_activation_min, output_activation_max, output_data,
+                     output_dims);
 }
 
 // legacy, for compatibility with old checked-in code
 template <FusedActivationFunctionType Ac>
-void AveragePool(const float* input_data, const Dims<4>& input_dims, int stride,
+bool AveragePool(const float* input_data, const Dims<4>& input_dims, int stride,
                  int pad_width, int pad_height, int filter_width,
                  int filter_height, float* output_data,
                  const Dims<4>& output_dims) {
-  AveragePool<Ac>(input_data, input_dims, stride, stride, pad_width, pad_height,
-                  filter_width, filter_height, output_data, output_dims);
+  return AveragePool<Ac>(input_data, input_dims, stride, stride, pad_width,
+                         pad_height, filter_width, filter_height, output_data,
+                         output_dims);
 }
 
-inline void AveragePool(const uint8* input_data, const Dims<4>& input_dims,
+inline bool AveragePool(const uint8* input_data, const Dims<4>& input_dims,
                         int stride_width, int stride_height, int pad_width,
                         int pad_height, int filter_width, int filter_height,
                         int32 output_activation_min,
@@ -1640,13 +1601,13 @@ inline void AveragePool(const uint8* input_data, const Dims<4>& input_dims,
   params.padding_values.width = pad_width;
   params.quantized_activation_min = output_activation_min;
   params.quantized_activation_max = output_activation_max;
-  AveragePool(params, DimsToShape(input_dims), input_data,
-              DimsToShape(output_dims), output_data);
+  return AveragePool(params, DimsToShape(input_dims), input_data,
+                     DimsToShape(output_dims), output_data);
 }
 
 // legacy, for compatibility with old checked-in code
 template <FusedActivationFunctionType Ac>
-void AveragePool(const uint8* input_data, const Dims<4>& input_dims,
+bool AveragePool(const uint8* input_data, const Dims<4>& input_dims,
                  int stride_width, int stride_height, int pad_width,
                  int pad_height, int filter_width, int filter_height,
                  int32 output_activation_min, int32 output_activation_max,
@@ -1660,21 +1621,23 @@ void AveragePool(const uint8* input_data, const Dims<4>& input_dims,
     TFLITE_DCHECK_EQ(output_activation_min, 0);
     TFLITE_DCHECK_EQ(output_activation_max, 255);
   }
-  AveragePool(input_data, input_dims, stride_width, stride_height, pad_width,
-              pad_height, filter_width, filter_height, output_activation_min,
-              output_activation_max, output_data, output_dims);
+  return AveragePool(input_data, input_dims, stride_width, stride_height,
+                     pad_width, pad_height, filter_width, filter_height,
+                     output_activation_min, output_activation_max, output_data,
+                     output_dims);
 }
 
 // legacy, for compatibility with old checked-in code
 template <FusedActivationFunctionType Ac>
-void AveragePool(const uint8* input_data, const Dims<4>& input_dims, int stride,
+bool AveragePool(const uint8* input_data, const Dims<4>& input_dims, int stride,
                  int pad_width, int pad_height, int filter_width,
                  int filter_height, int32 output_activation_min,
                  int32 output_activation_max, uint8* output_data,
                  const Dims<4>& output_dims) {
-  AveragePool<Ac>(input_data, input_dims, stride, stride, pad_width, pad_height,
-                  filter_width, filter_height, output_activation_min,
-                  output_activation_max, output_data, output_dims);
+  return AveragePool<Ac>(input_data, input_dims, stride, stride, pad_width,
+                         pad_height, filter_width, filter_height,
+                         output_activation_min, output_activation_max,
+                         output_data, output_dims);
 }
 
 inline void MaxPool(const float* input_data, const Dims<4>& input_dims,

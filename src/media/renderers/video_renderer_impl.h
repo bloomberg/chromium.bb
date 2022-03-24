@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
@@ -61,6 +61,10 @@ class MEDIA_EXPORT VideoRendererImpl
       bool drop_frames,
       MediaLog* media_log,
       std::unique_ptr<GpuMemoryBufferVideoFramePool> gmb_pool);
+
+  VideoRendererImpl(const VideoRendererImpl&) = delete;
+  VideoRendererImpl& operator=(const VideoRendererImpl&) = delete;
+
   ~VideoRendererImpl() override;
 
   // VideoRenderer implementation.
@@ -206,7 +210,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // might deadlock. Do not call Start() or Stop() on the sink directly, use
   // StartSink() and StopSink() to ensure background rendering is started.  Only
   // access these values on |task_runner_|.
-  VideoRendererSink* const sink_;
+  const raw_ptr<VideoRendererSink> sink_;
   bool sink_started_;
 
   // Stores the last decoder config that was passed to
@@ -217,7 +221,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // Used for accessing data members.
   base::Lock lock_;
 
-  RendererClient* client_;
+  raw_ptr<RendererClient> client_;
 
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   // Ensure this is destructed after |algorithm_| for optimal memory release
@@ -229,9 +233,9 @@ class MEDIA_EXPORT VideoRendererImpl
   std::unique_ptr<VideoDecoderStream> video_decoder_stream_;
 
   // Passed in during Initialize().
-  DemuxerStream* demuxer_stream_;
+  raw_ptr<DemuxerStream> demuxer_stream_;
 
-  MediaLog* media_log_;
+  raw_ptr<MediaLog> media_log_;
 
   // Flag indicating low-delay mode.
   bool low_delay_;
@@ -286,7 +290,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // last call to |statistics_cb_|. These must be accessed under lock.
   PipelineStatistics stats_;
 
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // Algorithm for selecting which frame to render; manages frames and all
   // timing related information. Ensure this is destructed before
@@ -357,8 +361,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // want to discard video frames that might be received after the stream has
   // been reset.
   base::WeakPtrFactory<VideoRendererImpl> cancel_on_flush_weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };
 
 }  // namespace media

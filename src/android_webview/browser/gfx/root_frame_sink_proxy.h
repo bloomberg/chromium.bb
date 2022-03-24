@@ -6,8 +6,8 @@
 #define ANDROID_WEBVIEW_BROWSER_GFX_ROOT_FRAME_SINK_PROXY_H_
 
 #include "android_webview/browser/gfx/root_frame_sink.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 
 namespace viz {
@@ -34,6 +34,10 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       RootFrameSinkProxyClient* client,
       viz::BeginFrameSource* begin_frame_source);
+
+  RootFrameSinkProxy(const RootFrameSinkProxy&) = delete;
+  RootFrameSinkProxy& operator=(const RootFrameSinkProxy&) = delete;
+
   ~RootFrameSinkProxy() override;
 
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
@@ -74,10 +78,10 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
 
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
-  RootFrameSinkProxyClient* const client_;
+  const raw_ptr<RootFrameSinkProxyClient> client_;
   std::unique_ptr<RootFrameSinkClient> root_frame_sink_client_;
   scoped_refptr<RootFrameSink> without_gpu_;
-  viz::BeginFrameSource* const begin_frame_source_;
+  const raw_ptr<viz::BeginFrameSource> begin_frame_source_;
   bool had_input_event_ = false;
   bool observing_bfs_ = false;
 
@@ -86,8 +90,6 @@ class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
 
   base::WeakPtrFactory<RootFrameSinkProxy> weak_ptr_factory_{this};
   base::WeakPtrFactory<RootFrameSinkProxy> weak_ptr_factory_on_viz_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RootFrameSinkProxy);
 };
 
 }  // namespace android_webview

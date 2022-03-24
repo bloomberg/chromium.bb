@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_API_SYSTEM_MEMORY_MEMORY_INFO_PROVIDER_H_
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "extensions/browser/api/system_info/system_info_provider.h"
 #include "extensions/common/api/system_memory.h"
 
@@ -14,6 +13,9 @@ namespace extensions {
 
 class MemoryInfoProvider : public SystemInfoProvider {
  public:
+  MemoryInfoProvider(const MemoryInfoProvider&) = delete;
+  MemoryInfoProvider& operator=(const MemoryInfoProvider&) = delete;
+
   static MemoryInfoProvider* Get();
 
   const api::system_memory::MemoryInfo& memory_info() const { return info_; }
@@ -40,8 +42,6 @@ class MemoryInfoProvider : public SystemInfoProvider {
 
   static base::LazyInstance<scoped_refptr<MemoryInfoProvider>>::DestructorAtExit
       provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryInfoProvider);
 };
 
 }  // namespace extensions

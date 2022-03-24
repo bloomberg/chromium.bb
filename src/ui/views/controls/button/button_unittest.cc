@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,15 +58,17 @@ namespace {
 class TestContextMenuController : public ContextMenuController {
  public:
   TestContextMenuController() = default;
+
+  TestContextMenuController(const TestContextMenuController&) = delete;
+  TestContextMenuController& operator=(const TestContextMenuController&) =
+      delete;
+
   ~TestContextMenuController() override = default;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(View* source,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
 };
 
 class TestButton : public Button {
@@ -76,6 +78,9 @@ class TestButton : public Button {
                                    &pressed_)) {
     SetHasInkDropActionOnClick(has_ink_drop_action_on_click);
   }
+
+  TestButton(const TestButton&) = delete;
+  TestButton& operator=(const TestButton&) = delete;
 
   ~TestButton() override = default;
 
@@ -108,15 +113,13 @@ class TestButton : public Button {
   bool canceled_ = false;
 
   KeyClickAction custom_key_click_action_ = KeyClickAction::kNone;
-
-  DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
 
 class TestButtonObserver {
  public:
   explicit TestButtonObserver(Button* button) {
     highlighted_changed_subscription_ =
-        button->ink_drop()->AddHighlightedChangedCallback(base::BindRepeating(
+        InkDrop::Get(button)->AddHighlightedChangedCallback(base::BindRepeating(
             [](TestButtonObserver* obs) { obs->highlighted_changed_ = true; },
             base::Unretained(this)));
     state_changed_subscription_ =
@@ -124,6 +127,10 @@ class TestButtonObserver {
             [](TestButtonObserver* obs) { obs->state_changed_ = true; },
             base::Unretained(this)));
   }
+
+  TestButtonObserver(const TestButtonObserver&) = delete;
+  TestButtonObserver& operator=(const TestButtonObserver&) = delete;
+
   ~TestButtonObserver() = default;
 
   void Reset() {
@@ -140,15 +147,14 @@ class TestButtonObserver {
 
   base::CallbackListSubscription highlighted_changed_subscription_;
   base::CallbackListSubscription state_changed_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestButtonObserver);
 };
 
 TestInkDrop* AddTestInkDrop(TestButton* button) {
   auto owned_ink_drop = std::make_unique<TestInkDrop>();
   TestInkDrop* ink_drop = owned_ink_drop.get();
-  button->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  InkDropHostTestApi(button->ink_drop()).SetInkDrop(std::move(owned_ink_drop));
+  InkDrop::Get(button)->SetMode(views::InkDropHost::InkDropMode::ON);
+  InkDropHostTestApi(InkDrop::Get(button))
+      .SetInkDrop(std::move(owned_ink_drop));
   return ink_drop;
 }
 
@@ -157,6 +163,10 @@ TestInkDrop* AddTestInkDrop(TestButton* button) {
 class ButtonTest : public ViewsTestBase {
  public:
   ButtonTest() = default;
+
+  ButtonTest(const ButtonTest&) = delete;
+  ButtonTest& operator=(const ButtonTest&) = delete;
+
   ~ButtonTest() override = default;
 
   void SetUp() override {
@@ -192,7 +202,7 @@ class ButtonTest : public ViewsTestBase {
 
   void CreateButtonWithObserver() {
     button_ = widget()->SetContentsView(std::make_unique<TestButton>(false));
-    button_->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    InkDrop::Get(button_)->SetMode(views::InkDropHost::InkDropMode::ON);
     button_observer_ = std::make_unique<TestButtonObserver>(button_);
   }
 
@@ -207,10 +217,9 @@ class ButtonTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<Widget> widget_;
-  TestButton* button_;
+  raw_ptr<TestButton> button_;
   std::unique_ptr<TestButtonObserver> button_observer_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-  DISALLOW_COPY_AND_ASSIGN(ButtonTest);
 };
 
 // Iterate through the metadata for Button to ensure it all works.
@@ -846,19 +855,19 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
 TEST_F(ButtonTest, ChangingHighlightStateNotifiesCallback) {
   CreateButtonWithObserver();
   EXPECT_FALSE(button_observer()->highlighted_changed());
-  EXPECT_FALSE(button()->ink_drop()->GetHighlighted());
+  EXPECT_FALSE(InkDrop::Get(button())->GetHighlighted());
 
   button()->SetHighlighted(/*bubble_visible=*/true);
   EXPECT_TRUE(button_observer()->highlighted_changed());
-  EXPECT_TRUE(button()->ink_drop()->GetHighlighted());
+  EXPECT_TRUE(InkDrop::Get(button())->GetHighlighted());
 
   button_observer()->Reset();
   EXPECT_FALSE(button_observer()->highlighted_changed());
-  EXPECT_TRUE(button()->ink_drop()->GetHighlighted());
+  EXPECT_TRUE(InkDrop::Get(button())->GetHighlighted());
 
   button()->SetHighlighted(/*bubble_visible=*/false);
   EXPECT_TRUE(button_observer()->highlighted_changed());
-  EXPECT_FALSE(button()->ink_drop()->GetHighlighted());
+  EXPECT_FALSE(InkDrop::Get(button())->GetHighlighted());
 }
 
 // Verifies that button state changes trigger property change callbacks.

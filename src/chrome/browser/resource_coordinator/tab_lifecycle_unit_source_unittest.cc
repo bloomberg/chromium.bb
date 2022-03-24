@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -44,21 +44,26 @@ namespace resource_coordinator {
 
 namespace {
 
-constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kShortDelay = base::Seconds(1);
 
 class MockLifecycleUnitSourceObserver : public LifecycleUnitSourceObserver {
  public:
   MockLifecycleUnitSourceObserver() = default;
 
-  MOCK_METHOD1(OnLifecycleUnitCreated, void(LifecycleUnit*));
+  MockLifecycleUnitSourceObserver(const MockLifecycleUnitSourceObserver&) =
+      delete;
+  MockLifecycleUnitSourceObserver& operator=(
+      const MockLifecycleUnitSourceObserver&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitSourceObserver);
+  MOCK_METHOD1(OnLifecycleUnitCreated, void(LifecycleUnit*));
 };
 
 class MockTabLifecycleObserver : public TabLifecycleObserver {
  public:
   MockTabLifecycleObserver() = default;
+
+  MockTabLifecycleObserver(const MockTabLifecycleObserver&) = delete;
+  MockTabLifecycleObserver& operator=(const MockTabLifecycleObserver&) = delete;
 
   MOCK_METHOD3(OnDiscardedStateChange,
                void(content::WebContents* contents,
@@ -66,14 +71,15 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
                     bool is_discarded));
   MOCK_METHOD2(OnAutoDiscardableStateChange,
                void(content::WebContents* contents, bool is_auto_discardable));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTabLifecycleObserver);
 };
 
 class MockLifecycleUnitObserver : public LifecycleUnitObserver {
  public:
   MockLifecycleUnitObserver() = default;
+
+  MockLifecycleUnitObserver(const MockLifecycleUnitObserver&) = delete;
+  MockLifecycleUnitObserver& operator=(const MockLifecycleUnitObserver&) =
+      delete;
 
   MOCK_METHOD3(OnLifecycleUnitStateChanged,
                void(LifecycleUnit* lifecycle_unit,
@@ -83,9 +89,6 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
                void(LifecycleUnit* lifecycle_unit,
                     content::Visibility visibility));
   MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit* lifecycle_unit));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitObserver);
 };
 
 bool IsFocused(LifecycleUnit* lifecycle_unit) {
@@ -93,6 +96,11 @@ bool IsFocused(LifecycleUnit* lifecycle_unit) {
 }
 
 class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
+ public:
+  TabLifecycleUnitSourceTest(const TabLifecycleUnitSourceTest&) = delete;
+  TabLifecycleUnitSourceTest& operator=(const TabLifecycleUnitSourceTest&) =
+      delete;
+
  protected:
   TabLifecycleUnitSourceTest()
       : ChromeRenderViewHostTestHarness(
@@ -259,7 +267,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     // Detach the non-active tab. Verify that it can no longer be discarded.
     ExpectCanDiscardTrueAllReasons(first_lifecycle_unit);
     std::unique_ptr<content::WebContents> owned_contents =
-        tab_strip_model_->DetachWebContentsAt(0);
+        tab_strip_model_->DetachWebContentsAtForInsertion(0);
     ExpectCanDiscardFalseTrivialAllReasons(first_lifecycle_unit);
 
     // Create a second tab strip.
@@ -397,7 +405,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                     .GetPendingEntry());
   }
 
-  TabLifecycleUnitSource* source_ = nullptr;
+  raw_ptr<TabLifecycleUnitSource> source_ = nullptr;
   ::testing::StrictMock<MockLifecycleUnitSourceObserver> source_observer_;
   ::testing::StrictMock<MockTabLifecycleObserver> tab_observer_;
   std::unique_ptr<TabStripModel> tab_strip_model_;
@@ -417,8 +425,6 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
  private:
   TestTabStripModelDelegate tab_strip_model_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSourceTest);
 };
 
 }  // namespace
@@ -524,7 +530,7 @@ TEST_F(TabLifecycleUnitSourceTest, DetachAndDeleteWebContents) {
   // Detach and destroy the non-active tab. Verify that the LifecycleUnit is
   // destroyed.
   std::unique_ptr<content::WebContents> web_contents =
-      tab_strip_model_->DetachWebContentsAt(0);
+      tab_strip_model_->DetachWebContentsAtForInsertion(0);
   EXPECT_CALL(observer, OnLifecycleUnitDestroyed(first_lifecycle_unit));
   web_contents.reset();
   ::testing::Mock::VerifyAndClear(&observer);

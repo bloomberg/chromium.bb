@@ -9,17 +9,18 @@
 // its coordinator.
 @protocol SyncErrorSettingsCommandHandler <NSObject>
 
-// Restarts the authentication flow.
-- (void)restartAuthenticationFlow;
-
 // Opens the reauth sync dialog.
 - (void)openReauthDialogAsSyncIsInAuthError;
 
 // Opens the passphrase dialog.
 - (void)openPassphraseDialog;
 
-// Opens the trusted vault reauthentication dialog.
-- (void)openTrustedVaultReauth;
+// Opens the trusted vault reauthentication dialog for fetch keys.
+- (void)openTrustedVaultReauthForFetchKeys;
+
+// Opens the trusted vault reauthentication degraded recoverability dialog (to
+// enroll additional recovery factors).
+- (void)openTrustedVaultReauthForDegradedRecoverability;
 
 @end
 

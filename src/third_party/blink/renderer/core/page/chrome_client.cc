@@ -23,7 +23,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -39,9 +38,10 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/display/screen_info.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -53,42 +53,42 @@ void ChromeClient::InstallSupplements(LocalFrame& frame) {
   CoreInitializer::GetInstance().InstallSupplements(frame);
 }
 
-IntRect ChromeClient::CalculateWindowRectWithAdjustment(
-    const IntRect& pending_rect,
+gfx::Rect ChromeClient::CalculateWindowRectWithAdjustment(
+    const gfx::Rect& pending_rect,
     LocalFrame& frame,
     LocalFrame& requesting_frame) {
-  IntRect screen(GetScreenInfo(frame).available_rect);
-  IntRect window = pending_rect;
+  gfx::Rect screen = GetScreenInfo(frame).available_rect;
+  gfx::Rect window = pending_rect;
 
-  IntSize minimum_size = MinimumWindowSize();
-  IntSize size_for_constraining_move = minimum_size;
+  gfx::Size minimum_size = MinimumWindowSize();
+  gfx::Size size_for_constraining_move = minimum_size;
   // Let size 0 pass through, since that indicates default size, not minimum
   // size.
-  if (window.Width()) {
-    int width = std::max(minimum_size.Width(), window.Width());
+  if (window.width()) {
+    int width = std::max(minimum_size.width(), window.width());
     // If the Window Placement experiment is enabled, the window could be placed
     // on another screen, and so it should not be limited by the current screen.
     // This relies on the embedder clamping bounds to the target screen for now.
     // TODO(http://crbug.com/897300): Implement multi-screen clamping in Blink.
     if (!RuntimeEnabledFeatures::WindowPlacementEnabled(
             requesting_frame.DomWindow())) {
-      width = std::min(width, screen.Width());
+      width = std::min(width, screen.width());
     }
-    window.SetWidth(width);
-    size_for_constraining_move.SetWidth(window.Width());
+    window.set_width(width);
+    size_for_constraining_move.set_width(window.width());
   }
-  if (window.Height()) {
-    int height = std::max(minimum_size.Height(), window.Height());
+  if (window.height()) {
+    int height = std::max(minimum_size.height(), window.height());
     // If the Window Placement experiment is enabled, the window could be placed
     // on another screen, and so it should not be limited by the current screen.
     // This relies on the embedder clamping bounds to the target screen for now.
     // TODO(http://crbug.com/897300): Implement multi-screen clamping in Blink.
     if (!RuntimeEnabledFeatures::WindowPlacementEnabled(
             requesting_frame.DomWindow())) {
-      height = std::min(height, screen.Height());
+      height = std::min(height, screen.height());
     }
-    window.SetHeight(height);
-    size_for_constraining_move.SetHeight(window.Height());
+    window.set_height(height);
+    size_for_constraining_move.set_height(window.height());
   }
 
   // If the Window Placement experiment is enabled, the window could be placed
@@ -98,14 +98,14 @@ IntRect ChromeClient::CalculateWindowRectWithAdjustment(
   if (!RuntimeEnabledFeatures::WindowPlacementEnabled(
           requesting_frame.DomWindow())) {
     // Constrain the window position within the valid screen area.
-    window.SetX(
-        std::max(screen.X(),
-                 std::min(window.X(),
-                          screen.MaxX() - size_for_constraining_move.Width())));
-    window.SetY(std::max(
-        screen.Y(),
-        std::min(window.Y(),
-                 screen.MaxY() - size_for_constraining_move.Height())));
+    window.set_x(std::max(
+        screen.x(),
+        std::min(window.x(),
+                 screen.right() - size_for_constraining_move.width())));
+    window.set_y(std::max(
+        screen.y(),
+        std::min(window.y(),
+                 screen.bottom() - size_for_constraining_move.height())));
   }
 
   // Coarsely measure whether coordinates may be requesting another screen.
@@ -117,9 +117,10 @@ IntRect ChromeClient::CalculateWindowRectWithAdjustment(
   return window;
 }
 
-void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,
+void ChromeClient::SetWindowRectWithAdjustment(const gfx::Rect& pending_rect,
                                                LocalFrame& frame) {
-  IntRect rect = CalculateWindowRectWithAdjustment(pending_rect, frame, frame);
+  gfx::Rect rect =
+      CalculateWindowRectWithAdjustment(pending_rect, frame, frame);
   SetWindowRect(rect, frame);
 }
 
@@ -293,7 +294,7 @@ void ChromeClient::ElementFocusedFromKeypress(LocalFrame& frame,
     tooltip_text = element->DefaultToolTip();
 
   LayoutObject* layout_object = element->GetLayoutObject();
-  if (!tooltip_text.IsNull() && layout_object) {
+  if (layout_object) {
     TextDirection tooltip_direction = layout_object->StyleRef().Direction();
     UpdateTooltipFromKeyboard(frame, tooltip_text, tooltip_direction,
                               element->BoundsInViewport());
@@ -319,10 +320,28 @@ bool ChromeClient::Print(LocalFrame* frame) {
     UseCounter::Count(frame->DomWindow(),
                       WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
+    return false;
+  }
+
+  // print() returns quietly during prerendering.
+  // https://wicg.github.io/nav-speculation/prerendering.html#patch-modals
+  if (frame->GetDocument()->IsPrerendering()) {
+    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kJavaScript,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Ignored call to 'print()' during prerendering."));
+    return false;
+  }
+
+  if (frame->IsInFencedFrameTree()) {
+    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Ignored call to 'print()'. The document is in a fenced frame."));
     return false;
   }
 

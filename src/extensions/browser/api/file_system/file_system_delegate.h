@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -50,6 +49,13 @@ class FileSystemDelegate {
   virtual ~FileSystemDelegate() {}
 
   virtual base::FilePath GetDefaultDirectory() = 0;
+
+  // If policies set downloads as managed, and `extension` respects the
+  // downloads policies, then return the managed directory to use for save-as
+  // operations.
+  virtual base::FilePath GetManagedSaveAsDirectory(
+      content::BrowserContext* browser_context,
+      const Extension& extension) = 0;
 
   // Shows a dialog to prompt the user to select files/directories. Returns
   // false if the dialog cannot be shown, i.e. there is no valid WebContents.

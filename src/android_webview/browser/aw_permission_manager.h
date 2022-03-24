@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/id_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/permission_controller_delegate.h"
 
@@ -21,6 +20,10 @@ class LastRequestResultCache;
 class AwPermissionManager : public content::PermissionControllerDelegate {
  public:
   AwPermissionManager();
+
+  AwPermissionManager(const AwPermissionManager&) = delete;
+  AwPermissionManager& operator=(const AwPermissionManager&) = delete;
+
   ~AwPermissionManager() override;
 
   // PermissionControllerDelegate implementation.
@@ -87,8 +90,6 @@ class AwPermissionManager : public content::PermissionControllerDelegate {
   std::unique_ptr<LastRequestResultCache> result_cache_;
 
   base::WeakPtrFactory<AwPermissionManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AwPermissionManager);
 };
 
 } // namespace android_webview

@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/sync/model/sync_data.h"
@@ -28,7 +28,7 @@ class Value;
 namespace sync_pb {
 class EntitySpecifics;
 class PreferenceSpecifics;
-}
+}  // namespace sync_pb
 
 namespace sync_preferences {
 
@@ -46,6 +46,10 @@ class PrefModelAssociator : public syncer::SyncableService {
   PrefModelAssociator(const PrefModelAssociatorClient* client,
                       syncer::ModelType type,
                       PersistentPrefStore* user_pref_store);
+
+  PrefModelAssociator(const PrefModelAssociator&) = delete;
+  PrefModelAssociator& operator=(const PrefModelAssociator&) = delete;
+
   ~PrefModelAssociator() override;
 
   // See description above field for details.
@@ -206,7 +210,7 @@ class PrefModelAssociator : public syncer::SyncableService {
   PreferenceSet legacy_model_type_preferences_;
 
   // The PrefService we are syncing to.
-  PrefServiceSyncable* pref_service_ = nullptr;
+  raw_ptr<PrefServiceSyncable> pref_service_ = nullptr;
 
   // Sync's syncer::SyncChange handler. We push all our changes through this.
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
@@ -225,13 +229,11 @@ class PrefModelAssociator : public syncer::SyncableService {
       base::ObserverList<SyncedPrefObserver>::Unchecked;
   std::unordered_map<std::string, std::unique_ptr<SyncedPrefObserverList>>
       synced_pref_observers_;
-  const PrefModelAssociatorClient* client_;  // Weak.
+  raw_ptr<const PrefModelAssociatorClient> client_;  // Weak.
 
-  PersistentPrefStore* const user_pref_store_;
+  const raw_ptr<PersistentPrefStore> user_pref_store_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };
 
 }  // namespace sync_preferences

@@ -12,7 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/no_destructor.h"
 #include "chromecast/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_tree_serializer.h"
@@ -21,11 +22,6 @@
 #include "ui/views/accessibility/ax_tree_source_views.h"
 
 class AXRootObjWrapper;
-
-namespace base {
-template <typename T>
-class NoDestructor;
-}  // namespace base
 
 namespace extensions {
 class AutomationEventRouterInterface;
@@ -46,6 +42,9 @@ class AutomationManagerAura : public ui::AXActionHandler,
  public:
   // Get the single instance of this class.
   static AutomationManagerAura* GetInstance();
+
+  AutomationManagerAura(const AutomationManagerAura&) = delete;
+  AutomationManagerAura& operator=(const AutomationManagerAura&) = delete;
 
   // Enable automation support for views.
   void Enable();
@@ -121,8 +120,6 @@ class AutomationManagerAura : public ui::AXActionHandler,
   std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
 
   views::AXAuraObjCache cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };
 
 #endif  // CHROMECAST_BROWSER_UI_AURA_ACCESSIBILITY_AUTOMATION_MANAGER_AURA_H_

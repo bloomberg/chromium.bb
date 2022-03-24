@@ -71,6 +71,7 @@ enum {
   // but was increased to simplify the SIMD loads in
   // ConvolveCompoundScale2D_NEON() and ConvolveScale2D_NEON().
   kConvolveBorderRight = 8,
+  kConvolveScaleBorderRight = 15,
   kConvolveBorderBottom = 4,
   kSubPixelTaps = 8,
   kWienerFilterBits = 7,
@@ -522,6 +523,10 @@ enum ObuType : int8_t {
   kObuTileList = 8,
   kObuPadding = 15,
 };
+
+constexpr BitMaskSet kPredictionModeSmoothMask(kPredictionModeSmooth,
+                                               kPredictionModeSmoothHorizontal,
+                                               kPredictionModeSmoothVertical);
 
 //------------------------------------------------------------------------------
 // ToString()

@@ -576,8 +576,12 @@ Type OperationTyper::NumberSilenceNaN(Type type) {
   return type;
 }
 
-Type OperationTyper::SpeculativeBigIntAsUintN(Type type) {
-  return Type::BigInt();
+Type OperationTyper::SpeculativeBigIntAsIntN(Type) {
+  return Type::SignedBigInt64();
+}
+
+Type OperationTyper::SpeculativeBigIntAsUintN(Type) {
+  return Type::UnsignedBigInt64();
 }
 
 Type OperationTyper::CheckBigInt(Type type) { return Type::BigInt(); }
@@ -1114,6 +1118,7 @@ Type OperationTyper::NumberPow(Type lhs, Type rhs) {
 SPECULATIVE_NUMBER_BINOP(NumberAdd)
 SPECULATIVE_NUMBER_BINOP(NumberSubtract)
 SPECULATIVE_NUMBER_BINOP(NumberMultiply)
+SPECULATIVE_NUMBER_BINOP(NumberPow)
 SPECULATIVE_NUMBER_BINOP(NumberDivide)
 SPECULATIVE_NUMBER_BINOP(NumberModulus)
 SPECULATIVE_NUMBER_BINOP(NumberBitwiseOr)

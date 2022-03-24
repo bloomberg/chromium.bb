@@ -14,9 +14,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/offline_pages/measurements/proto/system_state.pb.h"
 #include "components/offline_items_collection/core/launch_location.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -53,9 +54,23 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   static std::string GetEncodedOriginApp(
       const content::WebContents* web_contents);
 
+  // Gets the persisted metrics created by the
+  // OfflineMeasurementsBackgroundTask.
+  static offline_measurements_system_state::proto::SystemStateList
+  GetSystemStateListFromOfflineMeasurementsAsString();
+
+  // Reports the persisted metrics created by the
+  // OfflineMeasurementsBackgroundTask to UMA. Note that after the metrics are
+  // reported to UMA the persisted state is cleared.
+  static void ReportOfflineMeasurementMetricsToUma();
+
   OfflinePageBridge(JNIEnv* env,
                     SimpleFactoryKey* key,
                     OfflinePageModel* offline_page_model);
+
+  OfflinePageBridge(const OfflinePageBridge&) = delete;
+  OfflinePageBridge& operator=(const OfflinePageBridge&) = delete;
+
   ~OfflinePageBridge() override;
 
   // OfflinePageModel::Observer implementation.
@@ -252,13 +267,11 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   // Not owned.
-  SimpleFactoryKey* key_;
+  raw_ptr<SimpleFactoryKey> key_;
   // Not owned.
-  OfflinePageModel* offline_page_model_;
+  raw_ptr<OfflinePageModel> offline_page_model_;
 
   base::WeakPtrFactory<OfflinePageBridge> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageBridge);
 };
 
 }  // namespace android

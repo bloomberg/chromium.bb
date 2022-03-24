@@ -7,8 +7,10 @@
 
 #include "platform/FeaturesVk.h"
 #include "test_utils/ANGLETest.h"
+#include "test_utils/MultiThreadSteps.h"
 #include "test_utils/gl_raii.h"
 #include "util/EGLWindow.h"
+#include "util/test_utils.h"
 
 #include <atomic>
 #include <mutex>
@@ -39,6 +41,19 @@ class MultithreadingTest : public ANGLETest
     }
     bool hasGLSyncExtension() const { return IsGLExtensionEnabled("GL_OES_EGL_sync"); }
 
+    EGLContext createMultithreadedContext(EGLWindow *window, EGLContext shareCtx)
+    {
+        EGLint attribs[] = {EGL_CONTEXT_VIRTUALIZATION_GROUP_ANGLE, mVirtualizationGroup++,
+                            EGL_NONE};
+        if (!IsEGLDisplayExtensionEnabled(getEGLWindow()->getDisplay(),
+                                          "EGL_ANGLE_context_virtualization"))
+        {
+            attribs[0] = EGL_NONE;
+        }
+
+        return window->createContext(shareCtx, attribs);
+    }
+
     void runMultithreadedGLTest(
         std::function<void(EGLSurface surface, size_t threadIndex)> testBody,
         size_t threadCount)
@@ -68,7 +83,7 @@ class MultithreadingTest : public ANGLETest
                     surface = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
                     EXPECT_EGL_SUCCESS();
 
-                    ctx = window->createContext(EGL_NO_CONTEXT);
+                    ctx = createMultithreadedContext(window, EGL_NO_CONTEXT);
                     EXPECT_NE(EGL_NO_CONTEXT, ctx);
 
                     EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));
@@ -96,6 +111,8 @@ class MultithreadingTest : public ANGLETest
             thread.join();
         }
     }
+
+    std::atomic<EGLint> mVirtualizationGroup;
 };
 
 class MultithreadingTestES3 : public MultithreadingTest
@@ -193,9 +210,6 @@ TEST_P(MultithreadingTest, MultiContextClear)
 {
     ANGLE_SKIP_TEST_IF(!platformSupportsMultithreading());
 
-    // http://anglebug.com/5945: ES3_Vulkan_NoVirtual flaky on linux-clang-rel NVIDIA
-    ANGLE_SKIP_TEST_IF(IsVulkan() && IsLinux() && IsNVIDIA());
-
     auto testBody = [](EGLSurface surface, size_t thread) {
         constexpr size_t kIterationsPerThread = 32;
         for (size_t iteration = 0; iteration < kIterationsPerThread; iteration++)
@@ -235,8 +249,8 @@ TEST_P(MultithreadingTest, MultiContextDeleteDraw)
         // 5000 is chosen here as it reliably reproduces the former crash.
         for (int i = 0; i < 5000; i++)
         {
-            EGLContext ctx1 = window->createContext(EGL_NO_CONTEXT);
-            EGLContext ctx2 = window->createContext(EGL_NO_CONTEXT);
+            EGLContext ctx1 = createMultithreadedContext(window, EGL_NO_CONTEXT);
+            EGLContext ctx2 = createMultithreadedContext(window, EGL_NO_CONTEXT);
 
             EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, ctx2));
             EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, ctx1));
@@ -254,7 +268,7 @@ TEST_P(MultithreadingTest, MultiContextDeleteDraw)
         EGLSurface surface = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
         EXPECT_EGL_SUCCESS();
 
-        auto ctx = window->createContext(EGL_NO_CONTEXT);
+        auto ctx = createMultithreadedContext(window, EGL_NO_CONTEXT);
         EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));
 
         constexpr size_t kIterationsPerThread = 512;
@@ -346,8 +360,6 @@ TEST_P(MultithreadingTest, MultiContextDrawWithSwapBuffers)
 
     // http://anglebug.com/5099
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
-    // http://anglebug.com/5099
-    ANGLE_SKIP_TEST_IF(IsWindows() && isSwiftshader());
 
     EGLWindow *window = getEGLWindow();
     EGLDisplay dpy    = window->getDisplay();
@@ -472,7 +484,7 @@ TEST_P(MultithreadingTest, MultiCreateContext)
         threads[threadIdx] = std::thread([&, threadIdx]() {
             contexts[threadIdx] = EGL_NO_CONTEXT;
             {
-                contexts[threadIdx] = window->createContext(EGL_NO_CONTEXT);
+                contexts[threadIdx] = createMultithreadedContext(window, EGL_NO_CONTEXT);
                 EXPECT_NE(EGL_NO_CONTEXT, contexts[threadIdx]);
 
                 barrier++;
@@ -514,7 +526,7 @@ void MultithreadingTestES3::textureThreadFunction(bool useDraw)
     EXPECT_EGL_SUCCESS();
     EXPECT_NE(EGL_NO_SURFACE, surface);
 
-    ctx = window->createContext(window->getContext());
+    ctx = createMultithreadedContext(window, window->getContext());
     EXPECT_NE(EGL_NO_CONTEXT, ctx);
 
     EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));
@@ -621,6 +633,8 @@ void MultithreadingTestES3::mainThreadDraw(bool useDraw)
     constexpr int kNumIterations = 5;
     constexpr int kNumDraws      = 5;
 
+    mDrawGreen = false;
+
     std::thread textureThread(&MultithreadingTestES3::textureThreadFunction, this, true);
 
     ANGLE_GL_PROGRAM(texProgram, essl1_shaders::vs::Texture2D(), essl1_shaders::fs::Texture2D());
@@ -713,7 +727,7 @@ void MultithreadingTestES3::mainThreadDraw(bool useDraw)
 TEST_P(MultithreadingTestES3, MultithreadFenceDraw)
 {
     // http://anglebug.com/5418
-    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsVulkan());
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsVulkan() && (IsIntel() || IsSwiftshaderDevice()));
 
     // Have the secondary thread use glDrawArrays()
     mainThreadDraw(true);
@@ -770,24 +784,137 @@ TEST_P(MultithreadingTest, NoFlushNoContextReturnsTimeout)
     EXPECT_EGL_TRUE(eglDestroySyncKHR(dpy, sync));
 }
 
+// Test that waiting on sync object that hasn't been flushed yet, but is later flushed by another
+// thread, correctly returns when the fence is signalled without a timeout.
+TEST_P(MultithreadingTest, CreateFenceThreadAClientWaitSyncThreadBDelayedFlush)
+{
+    ANGLE_SKIP_TEST_IF(!platformSupportsMultithreading());
+    ANGLE_SKIP_TEST_IF(!hasFenceSyncExtension() || !hasGLSyncExtension());
+    // TODO: Fails on Pixel 4 with OpenGLES backend.
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+
+    EGLWindow *window = getEGLWindow();
+    EGLDisplay dpy    = window->getDisplay();
+    EGLConfig config  = window->getConfig();
+    EGLSurface surface;
+    EGLContext context;
+    constexpr EGLint kPBufferSize = 256;
+    // Initialize the pbuffer and context
+    EGLint pbufferAttributes[] = {
+        EGL_WIDTH, kPBufferSize, EGL_HEIGHT, kPBufferSize, EGL_NONE, EGL_NONE,
+    };
+
+    // Create 2 surfaces, one for each thread
+    surface = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
+    EXPECT_EGL_SUCCESS();
+    // Create 2 shared contexts, one for each thread
+    context = window->createContext(EGL_NO_CONTEXT, nullptr);
+    EXPECT_NE(EGL_NO_CONTEXT, context);
+    // Sync object
+    EGLSyncKHR sync = EGL_NO_SYNC_KHR;
+
+    // Synchronization tools to ensure the two threads are interleaved as designed by this test.
+    std::mutex mutex;
+    std::condition_variable condVar;
+
+    enum class Step
+    {
+        Start,
+        Thread0Clear,
+        Thread1CreateFence,
+        Thread0ClientWaitSync,
+        Thread1Flush,
+        Finish,
+        Abort,
+    };
+    Step currentStep = Step::Start;
+
+    std::thread thread0 = std::thread([&]() {
+        ThreadSynchronization<Step> threadSynchronization(&currentStep, &mutex, &condVar);
+
+        ASSERT_TRUE(threadSynchronization.waitForStep(Step::Start));
+
+        EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+
+        // Do work.
+        glClearColor(1.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Wait for thread 1 to clear.
+        threadSynchronization.nextStep(Step::Thread0Clear);
+        ASSERT_TRUE(threadSynchronization.waitForStep(Step::Thread1CreateFence));
+
+        // Wait on the sync object, but do *not* flush it, since the other thread will flush.
+        constexpr GLuint64 kTimeout = 2'000'000'000;  // 1 second
+        threadSynchronization.nextStep(Step::Thread0ClientWaitSync);
+        ASSERT_EQ(EGL_CONDITION_SATISFIED_KHR, eglClientWaitSyncKHR(dpy, sync, 0, kTimeout));
+
+        ASSERT_TRUE(threadSynchronization.waitForStep(Step::Finish));
+    });
+
+    std::thread thread1 = std::thread([&]() {
+        ThreadSynchronization<Step> threadSynchronization(&currentStep, &mutex, &condVar);
+
+        // Wait for thread 0 to clear.
+        ASSERT_TRUE(threadSynchronization.waitForStep(Step::Thread0Clear));
+
+        EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, context));
+
+        // Do work.
+        glClearColor(0.0, 1.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        sync = eglCreateSyncKHR(dpy, EGL_SYNC_FENCE_KHR, nullptr);
+        EXPECT_NE(sync, EGL_NO_SYNC_KHR);
+
+        // Wait for the thread 0 to eglClientWaitSyncKHR().
+        threadSynchronization.nextStep(Step::Thread1CreateFence);
+        ASSERT_TRUE(threadSynchronization.waitForStep(Step::Thread0ClientWaitSync));
+
+        // Wait a little to give thread 1 time to wait on the sync object before flushing it.
+        angle::Sleep(500);
+        glFlush();
+
+        // Clean up
+        EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+
+        threadSynchronization.nextStep(Step::Finish);
+    });
+
+    thread0.join();
+    thread1.join();
+
+    // Clean up
+    if (surface != EGL_NO_SURFACE)
+    {
+        eglDestroySurface(dpy, surface);
+    }
+    if (context != EGL_NO_CONTEXT)
+    {
+        eglDestroyContext(dpy, context);
+    }
+
+    ASSERT_NE(currentStep, Step::Abort);
+}
+
 // TODO(geofflang): Test sharing a program between multiple shared contexts on multiple threads
 
 ANGLE_INSTANTIATE_TEST(MultithreadingTest,
-                       WithNoVirtualContexts(ES2_OPENGL()),
-                       WithNoVirtualContexts(ES3_OPENGL()),
-                       WithNoVirtualContexts(ES2_OPENGLES()),
-                       WithNoVirtualContexts(ES3_OPENGLES()),
-                       WithNoVirtualContexts(ES3_VULKAN()),
-                       WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()),
-                       WithNoVirtualContexts(ES2_D3D11()),
-                       WithNoVirtualContexts(ES3_D3D11()));
+                       ES2_OPENGL(),
+                       ES3_OPENGL(),
+                       ES2_OPENGLES(),
+                       ES3_OPENGLES(),
+                       ES3_VULKAN(),
+                       ES3_VULKAN_SWIFTSHADER(),
+                       ES2_D3D11(),
+                       ES3_D3D11());
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MultithreadingTestES3);
 ANGLE_INSTANTIATE_TEST(MultithreadingTestES3,
-                       WithNoVirtualContexts(ES3_OPENGL()),
-                       WithNoVirtualContexts(ES3_OPENGLES()),
-                       WithNoVirtualContexts(ES3_VULKAN()),
-                       WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()),
-                       WithNoVirtualContexts(ES3_D3D11()));
+                       ES3_OPENGL(),
+                       ES3_OPENGLES(),
+                       ES3_VULKAN(),
+                       ES3_VULKAN_SWIFTSHADER(),
+                       ES3_D3D11());
 
 }  // namespace angle

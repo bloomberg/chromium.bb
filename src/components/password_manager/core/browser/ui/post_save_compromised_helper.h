@@ -9,18 +9,20 @@
 
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
-#include "components/password_manager/core/browser/ui/insecure_credentials_reader.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 
 namespace password_manager {
 
-class PasswordStore;
+class PasswordStoreInterface;
 
 // Helps to choose a compromised credential bubble after a password was saved.
-class PostSaveCompromisedHelper {
+class PostSaveCompromisedHelper
+    : public password_manager::PasswordStoreConsumer {
  public:
   enum class BubbleType {
     // No follow-up bubble should be shown.
@@ -40,7 +42,7 @@ class PostSaveCompromisedHelper {
   // |current_username| is the username that was just saved or updated.
   PostSaveCompromisedHelper(base::span<const InsecureCredential> compromised,
                             const std::u16string& current_username);
-  ~PostSaveCompromisedHelper();
+  ~PostSaveCompromisedHelper() override;
 
   PostSaveCompromisedHelper(const PostSaveCompromisedHelper&) = delete;
   PostSaveCompromisedHelper& operator=(const PostSaveCompromisedHelper&) =
@@ -48,8 +50,8 @@ class PostSaveCompromisedHelper {
 
   // Asynchronously queries the password stores for the compromised credentials
   // and notifies |callback| with the result of analysis.
-  void AnalyzeLeakedCredentials(PasswordStore* profile_store,
-                                PasswordStore* account_store,
+  void AnalyzeLeakedCredentials(PasswordStoreInterface* profile_store,
+                                PasswordStoreInterface* account_store,
                                 PrefService* prefs,
                                 BubbleCallback callback);
 
@@ -57,8 +59,12 @@ class PostSaveCompromisedHelper {
   size_t compromised_count() const { return compromised_count_; }
 
  private:
-  void OnGetAllInsecureCredentials(
-      std::vector<InsecureCredential> insecure_credentials);
+  // PasswordStoreConsumer:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
+      override;
+
+  void AnalyzeLeakedCredentialsInternal();
 
   // Contains the entry for the currently leaked credentials if it was leaked.
   absl::optional<InsecureCredential> current_leak_;
@@ -69,7 +75,12 @@ class PostSaveCompromisedHelper {
   // Count of compromised credentials after the callback was executed.
   size_t compromised_count_ = 0;
 
-  std::unique_ptr<InsecureCredentialsReader> insecure_credentials_reader_;
+  // Closure which is released after both PasswordStores reply with results.
+  base::RepeatingClosure forms_received_;
+
+  std::vector<std::unique_ptr<PasswordForm>> passwords_;
+
+  base::WeakPtrFactory<PostSaveCompromisedHelper> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

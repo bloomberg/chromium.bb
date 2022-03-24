@@ -11,6 +11,7 @@
 
 #include "base/strings/string_util.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace fake_server {
@@ -29,7 +30,7 @@ class EntityBuilderFactory {
   explicit EntityBuilderFactory(const std::string& cache_guid);
   virtual ~EntityBuilderFactory();
 
-  const BookmarkEntityBuilder NewBookmarkEntityBuilder(
+  BookmarkEntityBuilder NewBookmarkEntityBuilder(
       const std::string& title,
       absl::optional<std::string> originator_client_item_id = absl::nullopt);
 

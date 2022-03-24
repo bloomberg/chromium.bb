@@ -10,14 +10,14 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include "chromeos/services/libassistant/abortable_task_list.h"
-#include "chromeos/services/libassistant/assistant_manager_observer.h"
+#include "chromeos/services/libassistant/grpc/assistant_client_observer.h"
 #include "chromeos/services/libassistant/public/mojom/settings_controller.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace chromeos {
 namespace libassistant {
 
-class SettingsController : public AssistantManagerObserver,
+class SettingsController : public AssistantClientObserver,
                            public mojom::SettingsController {
  public:
   SettingsController();
@@ -33,25 +33,18 @@ class SettingsController : public AssistantManagerObserver,
   void SetListeningEnabled(bool value) override;
   void SetLocale(const std::string& value) override;
   void SetSpokenFeedbackEnabled(bool value) override;
+  void SetDarkModeEnabled(bool value) override;
   void SetHotwordEnabled(bool value) override;
   void GetSettings(const std::string& selector,
+                   bool include_header,
                    GetSettingsCallback callback) override;
   void UpdateSettings(const std::string& settings,
                       UpdateSettingsCallback callback) override;
 
-  // AssistantManagerObserver:
-  void OnAssistantManagerCreated(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnAssistantManagerStarted(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnDestroyingAssistantManager(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
+  // AssistantClientObserver:
+  void OnAssistantClientStarted(AssistantClient* assistant_client) override;
+  void OnAssistantClientRunning(AssistantClient* assistant_client) override;
+  void OnDestroyingAssistantClient(AssistantClient* assistant_client) override;
 
  private:
   class DeviceSettingsUpdater;
@@ -62,7 +55,8 @@ class SettingsController : public AssistantManagerObserver,
   void UpdateAuthenticationTokens(
       const absl::optional<std::vector<mojom::AuthenticationTokenPtr>>& tokens);
   void UpdateInternalOptions(const absl::optional<std::string>& locale,
-                             absl::optional<bool> spoken_feedback_enabled);
+                             absl::optional<bool> spoken_feedback_enabled,
+                             absl::optional<bool> dark_mode_enabled);
   void UpdateDeviceSettings(const absl::optional<std::string>& locale,
                             absl::optional<bool> hotword_enabled);
 
@@ -73,14 +67,13 @@ class SettingsController : public AssistantManagerObserver,
   // Contains all pending callbacks for get/update setting requests.
   AbortableTaskList pending_response_waiters_;
 
-  // Set in |OnAssistantManagerCreated| and unset in
-  // |OnDestroyingAssistantManager|.
-  assistant_client::AssistantManagerInternal* assistant_manager_internal_ =
-      nullptr;
-  assistant_client::AssistantManager* assistant_manager_ = nullptr;
+  // Set in |OnAssistantClientCreated| and unset in
+  // |OnDestroyingAssistantClient|.
+  AssistantClient* assistant_client_ = nullptr;
 
   absl::optional<bool> hotword_enabled_;
   absl::optional<bool> spoken_feedback_enabled_;
+  absl::optional<bool> dark_mode_enabled_;
   absl::optional<bool> listening_enabled_;
   absl::optional<std::string> locale_;
   absl::optional<std::vector<mojom::AuthenticationTokenPtr>>

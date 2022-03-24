@@ -25,6 +25,8 @@ constexpr uint32_t kRTSize = 1;
 enum class DrawMode {
     NonIndexed,
     Indexed,
+    NonIndexedIndirect,
+    IndexedIndirect,
 };
 
 enum class CheckIndex : uint32_t {
@@ -32,12 +34,12 @@ enum class CheckIndex : uint32_t {
     Instance = 0x0000002,
 };
 
-namespace wgpu {
+namespace dawn {
     template <>
     struct IsDawnBitmask<CheckIndex> {
         static constexpr bool enable = true;
     };
-}  // namespace wgpu
+}  // namespace dawn
 
 class FirstIndexOffsetTests : public DawnTest {
   public:
@@ -48,11 +50,8 @@ class FirstIndexOffsetTests : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-
-        // WGSL doesn't have the ability to tag attributes as "flat". "flat" is required on u32
-        // attributes for correct runtime behavior under Vulkan and codegen under OpenGL(ES).
-        // TODO(tint:451): Remove once resolved by spec/tint
-        DAWN_SKIP_TEST_IF(IsVulkan() || IsOpenGL() || IsOpenGLES());
+        // TODO(tint:451): Remove once "flat" is supported under OpenGL(ES).
+        DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
     }
 
   private:
@@ -98,19 +97,19 @@ void FirstIndexOffsetTests::TestImpl(DrawMode mode,
 
     if ((checkIndex & CheckIndex::Vertex) != 0) {
         vertexInputs << "  [[builtin(vertex_index)]] vertex_index : u32;\n";
-        vertexOutputs << "  [[location(1)]] vertex_index : u32;\n";
+        vertexOutputs << "  [[location(1), interpolate(flat)]] vertex_index : u32;\n";
         vertexBody << "  output.vertex_index = input.vertex_index;\n";
 
-        fragmentInputs << "  [[location(1)]] vertex_index : u32;\n";
-        fragmentBody << "  idx_vals.vertex_index = input.vertex_index;\n";
+        fragmentInputs << "  [[location(1), interpolate(flat)]] vertex_index : u32;\n";
+        fragmentBody << "  _ = atomicMin(&idx_vals.vertex_index, input.vertex_index);\n";
     }
     if ((checkIndex & CheckIndex::Instance) != 0) {
         vertexInputs << "  [[builtin(instance_index)]] instance_index : u32;\n";
-        vertexOutputs << "  [[location(2)]] instance_index : u32;\n";
+        vertexOutputs << "  [[location(2), interpolate(flat)]] instance_index : u32;\n";
         vertexBody << "  output.instance_index = input.instance_index;\n";
 
-        fragmentInputs << "  [[location(2)]] instance_index : u32;\n";
-        fragmentBody << "  idx_vals.instance_index = input.instance_index;\n";
+        fragmentInputs << "  [[location(2), interpolate(flat)]] instance_index : u32;\n";
+        fragmentBody << "  _ = atomicMin(&idx_vals.instance_index, input.instance_index);\n";
     }
 
     std::string vertexShader = R"(
@@ -129,10 +128,10 @@ struct VertexOutputs {
 
     std::string fragmentShader = R"(
 [[block]] struct IndexVals {
-  vertex_index : u32;
-  instance_index : u32;
+  vertex_index : atomic<u32>;
+  instance_index : atomic<u32>;
 };
-[[group(0), binding(0)]] var<storage> idx_vals : [[access(read_write)]] IndexVals;
+[[group(0), binding(0)]] var<storage, read_write> idx_vals : IndexVals;
 
 struct FragInputs {
 )" + fragmentInputs.str() + R"(
@@ -145,7 +144,7 @@ struct FragInputs {
 
     constexpr uint32_t kComponentsPerVertex = 4;
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, vertexShader.c_str());
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, fragmentShader.c_str());
     pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::PointList;
@@ -154,36 +153,80 @@ struct FragInputs {
     pipelineDesc.cBuffers[0].attributeCount = 1;
     pipelineDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
     pipelineDesc.cTargets[0].format = renderPass.colorFormat;
+    pipelineDesc.cTargets[0].writeMask = wgpu::ColorWriteMask::None;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
 
     std::vector<float> vertexData(firstVertex * kComponentsPerVertex);
+    vertexData.insert(vertexData.end(), {0, 0, 0, 1});
     vertexData.insert(vertexData.end(), {0, 0, 0, 1});
     wgpu::Buffer vertices = utils::CreateBufferFromData(
         device, vertexData.data(), vertexData.size() * sizeof(float), wgpu::BufferUsage::Vertex);
     wgpu::Buffer indices =
         utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {0});
+
+    const uint32_t bufferInitialVertex = checkIndex & CheckIndex::Vertex ? std::numeric_limits<uint32_t>::max() : 0;
+    const uint32_t bufferInitialInstance = checkIndex & CheckIndex::Instance ? std::numeric_limits<uint32_t>::max() : 0;
     wgpu::Buffer buffer = utils::CreateBufferFromData(
-        device, wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::Storage, {0u, 0u});
+        device, wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::Storage, {bufferInitialVertex, bufferInitialInstance});
+
+    wgpu::Buffer indirectBuffer;
+    switch (mode) {
+    case DrawMode::NonIndexed:
+    case DrawMode::Indexed:
+        break;
+    case DrawMode::NonIndexedIndirect:
+        // With DrawIndirect firstInstance is reserved and must be 0 according to spec.
+        ASSERT_EQ(firstInstance, 0u);
+        indirectBuffer = utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Indirect, {1, 1, firstVertex, firstInstance});
+        break;
+    case DrawMode::IndexedIndirect:
+        // With DrawIndexedIndirect firstInstance is reserved and must be 0 according to spec.
+        ASSERT_EQ(firstInstance, 0u);
+        indirectBuffer = utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Indirect, {1, 1, 0, firstVertex, firstInstance});
+        break;
+    default:
+        FAIL();
+    }
+
+    wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0), {{0, buffer}});
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
     pass.SetPipeline(pipeline);
     pass.SetVertexBuffer(0, vertices);
-    pass.SetBindGroup(0,
-                      utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0), {{0, buffer}}));
-    if (mode == DrawMode::Indexed) {
+    pass.SetBindGroup(0, bindGroup);
+    // Do a first draw to make sure the offset values are correctly updated on the next draw.
+    // We should only see the values from the second draw.
+    pass.Draw(1, 1, firstVertex + 1, firstInstance + 1);
+    switch (mode) {
+    case DrawMode::NonIndexed:
+        pass.Draw(1, 1, firstVertex, firstInstance);
+        break;
+    case DrawMode::Indexed:
         pass.SetIndexBuffer(indices, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(1, 1, 0, firstVertex, firstInstance);
-
-    } else {
-        pass.Draw(1, 1, firstVertex, firstInstance);
+        break;
+    case DrawMode::NonIndexedIndirect:
+        pass.DrawIndirect(indirectBuffer, 0);
+        break;
+    case DrawMode::IndexedIndirect:
+        pass.SetIndexBuffer(indices, wgpu::IndexFormat::Uint32);
+        pass.DrawIndexedIndirect(indirectBuffer, 0);
+        break;
+    default:
+        FAIL();
     }
     pass.EndPass();
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     std::array<uint32_t, 2> expected = {firstVertex, firstInstance};
+    // TODO(dawn:548): remove this once builtins are emulated for indirect draws.
+    // Until then the expected values should always be {0, 0}.
+    if (IsD3D12() && (mode == DrawMode::NonIndexedIndirect || mode == DrawMode::IndexedIndirect)) {
+        expected = {0, 0};
+    }
     EXPECT_BUFFER_U32_RANGE_EQ(expected.data(), buffer, 0, expected.size());
 }
 
@@ -218,8 +261,20 @@ TEST_P(FirstIndexOffsetTests, IndexedBothOffset) {
     TestBothIndices(DrawMode::Indexed, 7, 11);
 }
 
+// There are no instance_index tests because the spec forces it to be 0.
+
+// Test that vertex_index starts at 7 when drawn using DrawIndirect()
+TEST_P(FirstIndexOffsetTests, NonIndexedIndirectVertexOffset) {
+    TestVertexIndex(DrawMode::NonIndexedIndirect, 7);
+}
+
+// Test that vertex_index starts at 7 when drawn using DrawIndexedIndirect()
+TEST_P(FirstIndexOffsetTests, IndexedIndirectVertex) {
+    TestVertexIndex(DrawMode::IndexedIndirect, 7);
+}
+
 DAWN_INSTANTIATE_TEST(FirstIndexOffsetTests,
-                      D3D12Backend({"use_tint_generator"}),
+                      D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
                       OpenGLESBackend(),

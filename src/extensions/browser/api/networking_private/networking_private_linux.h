@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -34,6 +33,9 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   typedef std::vector<std::string> GuidList;
 
   NetworkingPrivateLinux();
+
+  NetworkingPrivateLinux(const NetworkingPrivateLinux&) = delete;
+  NetworkingPrivateLinux& operator=(const NetworkingPrivateLinux&) = delete;
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,
@@ -86,7 +88,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                                    const std::string& network_id,
                                    VoidCallback success_callback,
                                    FailureCallback failure_callback) override;
-  std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  base::Value GetEnabledNetworkTypes() override;
   std::unique_ptr<DeviceStateList> GetDeviceStateList() override;
   std::unique_ptr<base::DictionaryValue> GetGlobalPolicy() override;
   std::unique_ptr<base::DictionaryValue> GetCertificateLists() override;
@@ -264,8 +266,6 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   // Observers to Network Events.
   base::ObserverList<NetworkingPrivateDelegateObserver>::Unchecked
       network_events_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateLinux);
 };
 
 }  // namespace extensions

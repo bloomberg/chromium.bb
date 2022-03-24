@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "gpu/command_buffer/service/skia_utils.h"
-#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace viz {
@@ -107,10 +106,14 @@ void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
 
   DCHECK(!backbuffer_estimated_size_);
   if (backend_texture_.backend() == GrBackendApi::kVulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
     GrVkImageInfo vk_image_info;
     bool result = backend_texture_.getVkImageInfo(&vk_image_info);
     DCHECK(result);
     backbuffer_estimated_size_ = vk_image_info.fAlloc.fSize;
+#else
+    DCHECK(false);
+#endif
   } else {
     auto info = SkImageInfo::Make(size_.width(), size_.height(),
                                   kSurfaceColorType, kUnpremul_SkAlphaType);
@@ -131,11 +134,12 @@ void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
 }
 
 SkSurface* SkiaOutputDeviceOffscreen::BeginPaint(
+    bool allocate_frame_buffer,
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  DCHECK(!allocate_frame_buffer);
   DCHECK(backend_texture_.isValid());
   if (!sk_surface_) {
-    SkSurfaceProps surface_props =
-        skia::LegacyDisplayGlobals::GetSkSurfaceProps();
+    SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
     sk_surface_ = SkSurface::MakeFromBackendTexture(
         context_state_->gr_context(), backend_texture_,
         capabilities_.output_surface_origin == gfx::SurfaceOrigin::kTopLeft

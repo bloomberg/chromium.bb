@@ -1,4 +1,5 @@
-/* Copyright 2016 The Chromium Authors. All rights reserved.
+/*
+ * Copyright 2016 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11,6 +12,16 @@
   overflow-x: hidden;
   margin-top: 31px;
   z-index: 200;
+}
+
+.-theme-with-dark-background .network-waterfall-v-scroll {
+  /**
+  * Waterfall scrollbars are implemented as overflowing elements on top of the
+  * scrollable content. The actual content is a viewport without scrollbars.
+  * When using a dark theme, we should inform Blink that the content is dark,
+  * so that the native scrollbars are colored accordingly.
+  */
+  background: rgb(0 0 0 / 1%);
 }
 
 .network-waterfall-v-scroll.small {

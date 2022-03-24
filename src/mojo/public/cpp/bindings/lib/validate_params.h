@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
-
 namespace mojo {
 namespace internal {
 
@@ -49,6 +47,9 @@ class ContainerValidateParams {
       : expected_num_elements(in_expected_num_elements),
         validate_enum_func(in_validate_enum_func) {}
 
+  ContainerValidateParams(const ContainerValidateParams&) = delete;
+  ContainerValidateParams& operator=(const ContainerValidateParams&) = delete;
+
   ~ContainerValidateParams() {
     if (element_validate_params)
       delete element_validate_params;
@@ -65,6 +66,9 @@ class ContainerValidateParams {
 
   // Validation information for the map key array. May contain other
   // ArrayValidateParams e.g. if the keys are strings.
+  //
+  // `key_validate_params` is not a raw_ptr<...> for performance reasons:
+  // On-stack pointee (i.e. not covered by BackupRefPtr protection).
   ContainerValidateParams* key_validate_params = nullptr;
 
   // For arrays: validation information for elements. It is either a pointer to
@@ -73,13 +77,13 @@ class ContainerValidateParams {
   //
   // For maps: validation information for the whole value array. May contain
   // other ArrayValidateParams e.g. if the values are arrays or maps.
+  //
+  // `element_validate_params` is not a raw_ptr<...> for performance reasons:
+  // On-stack pointee (i.e. not covered by BackupRefPtr protection).
   ContainerValidateParams* element_validate_params = nullptr;
 
   // Validation function for enum elements.
   ValidateEnumFunc validate_enum_func = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContainerValidateParams);
 };
 
 }  // namespace internal

@@ -6,7 +6,7 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -28,12 +28,14 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 namespace net {
 
 namespace {
 
-const char kCertData[] = {
+const uint8_t kCertData[] = {
 #include "net/data/ssl/certificates/wildcard.inc"
 };
 
@@ -53,13 +55,13 @@ const int kCertVerifyFlags = 0;
 
 // Static initialization for persistent factory data
 struct Env {
-  Env() : host_port_pair(kServerHostName, kServerPort) {
+  Env() : scheme_host_port(url::kHttpsScheme, kServerHostName, kServerPort) {
     quic_context.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
     ssl_config_service = std::make_unique<SSLConfigServiceDefaults>();
     crypto_client_stream_factory.set_use_mock_crypter(true);
     cert_verifier = std::make_unique<MockCertVerifier>();
     verify_details.cert_verify_result.verified_cert =
-        X509Certificate::CreateFromBytes(kCertData, base::size(kCertData));
+        X509Certificate::CreateFromBytes(kCertData);
     CHECK(verify_details.cert_verify_result.verified_cert);
     verify_details.cert_verify_result.is_issued_by_known_root = true;
   }
@@ -67,7 +69,7 @@ struct Env {
   std::unique_ptr<SSLConfigService> ssl_config_service;
   ProofVerifyDetailsChromium verify_details;
   MockCryptoClientStreamFactory crypto_client_stream_factory;
-  HostPortPair host_port_pair;
+  url::SchemeHostPort scheme_host_port;
   NetLogWithSource net_log;
   std::unique_ptr<CertVerifier> cert_verifier;
   TransportSecurityState transport_security_state;
@@ -147,7 +149,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   quic::QuicEnableVersion(version);
 
   request.Request(
-      env->host_port_pair, version, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
+      env->scheme_host_port, version, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
       SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow,
       true /* use_dns_aliases */, kCertVerifyFlags, GURL(kUrl), env->net_log,
       &net_error_details,

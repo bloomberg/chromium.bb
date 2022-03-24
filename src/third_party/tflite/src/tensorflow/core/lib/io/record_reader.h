@@ -45,7 +45,7 @@ struct RecordReaderOptions {
   // If buffer_size is non-zero, then all reads must be sequential, and no
   // skipping around is permitted. (Note: this is the same behavior as reading
   // compressed files.) Consider using SequentialRecordReader.
-  int64 buffer_size = 0;
+  int64_t buffer_size = 0;
 
   static RecordReaderOptions CreateRecordReaderOptions(
       const string& compression_type);
@@ -74,9 +74,9 @@ class RecordReader {
 
   // Statistics (sizes are in units of bytes)
   struct Stats {
-    int64 file_size = -1;
-    int64 data_size = -1;
-    int64 entries = -1;  // Number of values
+    int64_t file_size = -1;
+    int64_t data_size = -1;
+    int64_t entries = -1;  // Number of values
   };
 
   // Metadata for the TFRecord file.
@@ -97,6 +97,13 @@ class RecordReader {
   // OUT_OF_RANGE for end of file, or something else for an error.
   Status ReadRecord(uint64* offset, tstring* record);
 
+  // Skip num_to_skip record starting at "*offset" and update *offset
+  // to point to the offset of the next num_to_skip + 1 record.
+  // Return OK on success, OUT_OF_RANGE for end of file, or something
+  // else for an error. "*num_skipped" records the number of records that
+  // are actually skipped. It should be equal to num_to_skip on success.
+  Status SkipRecords(uint64* offset, int num_to_skip, int* num_skipped);
+
   // Return the metadata of the Record file.
   //
   // The current implementation scans the file to completion,
@@ -110,6 +117,7 @@ class RecordReader {
 
  private:
   Status ReadChecksummed(uint64 offset, size_t n, tstring* result);
+  Status PositionInputStream(uint64 offset);
 
   RecordReaderOptions options_;
   std::unique_ptr<InputStreamInterface> input_stream_;
@@ -133,13 +141,21 @@ class SequentialRecordReader {
 
   virtual ~SequentialRecordReader() = default;
 
-  // Reads the next record in the file into *record. Returns OK on success,
+  // Read the next record in the file into *record. Returns OK on success,
   // OUT_OF_RANGE for end of file, or something else for an error.
   Status ReadRecord(tstring* record) {
     return underlying_.ReadRecord(&offset_, record);
   }
 
-  // Returns the current offset in the file.
+  // Skip the next num_to_skip record in the file. Return OK on success,
+  // OUT_OF_RANGE for end of file, or something else for an error.
+  // "*num_skipped" records the number of records that are actually skipped.
+  // It should be equal to num_to_skip on success.
+  Status SkipRecords(int num_to_skip, int* num_skipped) {
+    return underlying_.SkipRecords(&offset_, num_to_skip, num_skipped);
+  }
+
+  // Return the current offset in the file.
   uint64 TellOffset() { return offset_; }
 
   // Seek to this offset within the file and set this offset as the current

@@ -278,6 +278,15 @@ void BbrSender::ApplyConnectionOptions(
   if (ContainsQuicTag(connection_options, kBSAO)) {
     sampler_.EnableOverestimateAvoidance();
   }
+  if (ContainsQuicTag(connection_options, kBBRA)) {
+    sampler_.SetStartNewAggregationEpochAfterFullRound(true);
+  }
+  if (GetQuicReloadableFlag(quic_bbr_use_send_rate_in_max_ack_height_tracker) &&
+      ContainsQuicTag(connection_options, kBBRB)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_bbr_use_send_rate_in_max_ack_height_tracker, 1, 2);
+    sampler_.SetLimitMaxAckHeightTrackerBySendRate(true);
+  }
 }
 
 void BbrSender::AdjustNetworkParameters(const NetworkParams& params) {

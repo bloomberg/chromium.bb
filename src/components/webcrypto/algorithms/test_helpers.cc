@@ -10,11 +10,11 @@
 
 #include "base/base64url.h"
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -422,10 +422,10 @@ absl::optional<base::DictionaryValue> GetJwkDictionary(
 
   // ---- ext
   // always expect ext == true in this case
-  bool ext_value;
-  if (!dict.GetBoolean("ext", &ext_value))
-    return ::testing::AssertionFailure() << "Missing 'ext'";
+  absl::optional<bool> ext_value = dict.FindBoolKey("ext");
   if (!ext_value)
+    return ::testing::AssertionFailure() << "Missing 'ext'";
+  if (!ext_value.value())
     return ::testing::AssertionFailure()
            << "Expected 'ext' to be true but found false";
 

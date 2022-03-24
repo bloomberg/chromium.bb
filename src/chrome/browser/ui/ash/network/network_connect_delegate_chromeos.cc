@@ -8,15 +8,14 @@
 #include "chrome/browser/ui/ash/network/enrollment_dialog_view.h"
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
-#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/mobile_setup_dialog.h"
 
 namespace {
 
 bool IsUIAvailable() {
   // UI is available when screen is unlocked.
-  return !chromeos::ScreenLocker::default_screen_locker() ||
-         !chromeos::ScreenLocker::default_screen_locker()->locked();
+  return !ash::ScreenLocker::default_screen_locker() ||
+         !ash::ScreenLocker::default_screen_locker()->locked();
 }
 
 }  // namespace
@@ -51,7 +50,8 @@ void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  chromeos::cellular_setup::OpenCellularSetupDialog(network_id);
+  SystemTrayClientImpl::Get()->ShowSettingsCellularSetup(
+      /*show_psim_flow=*/true);
 }
 
 void NetworkConnectDelegateChromeOS::ShowCarrierAccountDetail(

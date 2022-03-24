@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -43,6 +43,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamReader
                           const FileSystemURL& url,
                           int64_t initial_offset,
                           const base::Time& expected_modification_time);
+
+  SandboxFileStreamReader(const SandboxFileStreamReader&) = delete;
+  SandboxFileStreamReader& operator=(const SandboxFileStreamReader&) = delete;
+
   ~SandboxFileStreamReader() override;
 
   // FileStreamReader overrides.
@@ -62,7 +66,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamReader
   void OnRead(int rv);
   void OnGetLength(int64_t rv);
 
-  net::IOBuffer* read_buf_;
+  raw_ptr<net::IOBuffer> read_buf_;
   int read_buf_len_;
   net::CompletionOnceCallback read_callback_;
   net::Int64CompletionOnceCallback get_length_callback_;
@@ -74,8 +78,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamReader
   scoped_refptr<ShareableFileReference> snapshot_ref_;
   bool has_pending_create_snapshot_;
   base::WeakPtrFactory<SandboxFileStreamReader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxFileStreamReader);
 };
 
 }  // namespace storage

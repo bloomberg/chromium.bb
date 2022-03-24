@@ -13,6 +13,7 @@
 #include "include/private/SkTPin.h"
 #include "include/private/SkTemplates.h"
 #include "modules/skshaper/include/SkShaper.h"
+#include "modules/skunicode/include/SkUnicode.h"
 #include "src/core/SkTLazy.h"
 #include "src/core/SkTextBlobPriv.h"
 #include "src/utils/SkUTF.h"
@@ -30,8 +31,6 @@ SkRect ComputeBlobBounds(const sk_sp<SkTextBlob>& blob) {
     }
 
     SkAutoSTArray<16, SkRect> glyphBounds;
-
-    SkTextBlobRunIterator it(blob.get());
 
     for (SkTextBlobRunIterator it(blob.get()); !it.done(); it.next()) {
         glyphBounds.reset(SkToInt(it.glyphCount()));
@@ -332,7 +331,7 @@ private:
         return fDesc.fAscent ? fDesc.fAscent : fFirstLineAscent;
     }
 
-    static constexpr SkGlyphID kMissingGlyphID = 0;
+    inline static constexpr SkGlyphID kMissingGlyphID = 0;
 
     const Shaper::TextDesc&   fDesc;
     const SkRect&             fBox;
@@ -448,18 +447,47 @@ Shaper::Result ShapeToFit(const SkString& txt, const Shaper::TextDesc& orig_desc
     return best_result;
 }
 
+
+// Applies capitalization rules.
+class AdjustedText {
+public:
+    AdjustedText(const SkString& txt, const Shaper::TextDesc& desc)
+        : fText(txt) {
+        switch (desc.fCapitalization) {
+        case Shaper::Capitalization::kNone:
+            break;
+        case Shaper::Capitalization::kUpperCase:
+#ifdef SK_UNICODE_AVAILABLE
+            if (auto skuni = SkUnicode::Make()) {
+                *fText.writable() = skuni->toUpper(*fText);
+            }
+#endif
+            break;
+        }
+    }
+
+    operator const SkString&() const { return *fText; }
+
+private:
+    SkTCopyOnFirstWrite<SkString> fText;
+};
+
 } // namespace
 
-Shaper::Result Shaper::Shape(const SkString& txt, const TextDesc& desc, const SkPoint& point,
+Shaper::Result Shaper::Shape(const SkString& orig_txt, const TextDesc& desc, const SkPoint& point,
                              const sk_sp<SkFontMgr>& fontmgr) {
+    const AdjustedText txt(orig_txt, desc);
+
     return (desc.fResize == ResizePolicy::kScaleToFit ||
             desc.fResize == ResizePolicy::kDownscaleToFit) // makes no sense in point mode
             ? Result()
             : ShapeImpl(txt, desc, SkRect::MakeEmpty().makeOffset(point.x(), point.y()), fontmgr);
 }
 
-Shaper::Result Shaper::Shape(const SkString& txt, const TextDesc& desc, const SkRect& box,
+Shaper::Result Shaper::Shape(const SkString& orig_txt, const TextDesc& desc, const SkRect& box,
                              const sk_sp<SkFontMgr>& fontmgr) {
+    const AdjustedText txt(orig_txt, desc);
+
     switch(desc.fResize) {
     case ResizePolicy::kNone:
         return ShapeImpl(txt, desc, box, fontmgr);

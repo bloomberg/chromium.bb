@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
@@ -89,6 +88,9 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
       CreateSurfaceLayerBridgeCB create_bridge_callback,
       std::unique_ptr<WebVideoFrameSubmitter> submitter_,
       WebMediaPlayer::SurfaceLayerMode surface_layer_mode);
+
+  WebMediaPlayerMS(const WebMediaPlayerMS&) = delete;
+  WebMediaPlayerMS& operator=(const WebMediaPlayerMS&) = delete;
 
   ~WebMediaPlayerMS() override;
 
@@ -174,10 +176,10 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void OnFrameShown() override;
   void OnIdleTimeout() override;
 
-  void OnFirstFrameReceived(media::VideoRotation video_rotation,
+  void OnFirstFrameReceived(media::VideoTransformation video_transform,
                             bool is_opaque);
   void OnOpacityChanged(bool is_opaque);
-  void OnRotationChanged(media::VideoRotation video_rotation);
+  void OnTransformChanged(media::VideoTransformation video_transform);
 
   // WebMediaStreamObserver implementation
   void TrackAdded(const WebString& track_id) override;
@@ -193,6 +195,9 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void RequestVideoFrameCallback() override;
   std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
   GetVideoFramePresentationMetadata() override;
+
+  void RegisterFrameSinkHierarchy() override;
+  void UnregisterFrameSinkHierarchy() override;
 
  private:
   friend class WebMediaPlayerMSTest;
@@ -355,8 +360,6 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
 
   base::WeakPtr<WebMediaPlayerMS> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerMS> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };
 
 }  // namespace blink

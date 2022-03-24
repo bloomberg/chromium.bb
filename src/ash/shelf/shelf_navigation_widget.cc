@@ -25,12 +25,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/animation_throughput_reporter.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/throughput_tracker.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
@@ -41,7 +42,7 @@ namespace {
 
 // The duration of the back button opacity animation.
 constexpr base::TimeDelta kButtonOpacityAnimationDuration =
-    base::TimeDelta::FromMilliseconds(50);
+    base::Milliseconds(50);
 
 // Returns the bounds for the first button shown in this view (the back
 // button in tablet mode, the home button otherwise).
@@ -247,6 +248,10 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
                                         public views::WidgetDelegate {
  public:
   Delegate(Shelf* shelf, ShelfView* shelf_view);
+
+  Delegate(const Delegate&) = delete;
+  Delegate& operator=(const Delegate&) = delete;
+
   ~Delegate() override;
 
   // Initializes the view.
@@ -288,14 +293,11 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   ui::Layer opaque_background_;
 
   Shelf* shelf_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
     : opaque_background_(ui::LAYER_SOLID_COLOR), shelf_(shelf) {
   SetOwnedByWidget(true);
-  set_owned_by_client();
 
   set_allow_deactivate_on_esc(true);
 
@@ -340,7 +342,7 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
 
   opaque_background_.SetVisible(true);
 
-  int radius = ShelfConfig::Get()->control_border_radius();
+  float radius = ShelfConfig::Get()->control_border_radius();
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
   if (opaque_background_.rounded_corner_radii() != rounded_corners)
     opaque_background_.SetRoundedCornerRadius(rounded_corners);
@@ -531,7 +533,7 @@ void ShelfNavigationWidget::CalculateTargetBounds() {
                      nav_size.width());
   }
   target_bounds_ = gfx::Rect(nav_origin, nav_size);
-  clip_rect_ = CalculateClipRect();
+  clip_rect_after_rtl_ = CalculateClipRectAfterRTL();
 }
 
 gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
@@ -567,7 +569,7 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   // Use the same duration for all parts of the upcoming animation.
   const base::TimeDelta animation_duration =
       animate ? ShelfConfig::Get()->shelf_animation_duration()
-              : base::TimeDelta::FromMilliseconds(0);
+              : base::Milliseconds(0);
 
   const HotseatState target_hotseat_state =
       layout_manager->CalculateHotseatState(layout_manager->visibility_state(),
@@ -599,7 +601,7 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   }
 
   if (update_bounds)
-    GetLayer()->SetClipRect(clip_rect_);
+    GetLayer()->SetClipRect(clip_rect_after_rtl_);
 
   views::View* const back_button = delegate_->back_button();
   UpdateButtonVisibility(back_button, back_button_shown, animate,
@@ -657,7 +659,7 @@ void ShelfNavigationWidget::UpdateTargetBoundsForGesture(int shelf_position) {
 }
 
 gfx::Rect ShelfNavigationWidget::GetVisibleBounds() const {
-  return gfx::Rect(target_bounds_.origin(), clip_rect_.size());
+  return gfx::Rect(target_bounds_.origin(), clip_rect_after_rtl_.size());
 }
 
 void ShelfNavigationWidget::PrepareForGettingFocus(bool last_element) {
@@ -716,11 +718,16 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
   button->layer()->SetOpacity(visible ? 1.0f : 0.0f);
 }
 
-gfx::Rect ShelfNavigationWidget::CalculateClipRect() const {
-  if (Shell::Get()->IsInTabletMode())
-    return gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
+gfx::Rect ShelfNavigationWidget::CalculateClipRectAfterRTL() const {
+  gfx::Rect bounds_before_rtl;
+  if (Shell::Get()->IsInTabletMode()) {
+    bounds_before_rtl =
+        gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
+  } else {
+    bounds_before_rtl = gfx::Rect(target_bounds_.size());
+  }
 
-  return gfx::Rect(target_bounds_.size());
+  return GetRootView()->GetMirroredRect(bounds_before_rtl);
 }
 
 gfx::Size ShelfNavigationWidget::CalculateIdealSize(

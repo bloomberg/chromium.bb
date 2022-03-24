@@ -2,15 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/pgo/pgo.gni")
+import("//build/config/devtools.gni")
 import("//components/viz/common/debugger/viz_debugger.gni")
 import("//third_party/inspector_protocol/inspector_protocol.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
-# Android and Fuchsia do not support DevTools front-end.
-if (!is_android && !is_fuchsia) {
+# Android does not support DevTools front-end.
+if (!is_android) {
+  source_set("devtools_resources_extern") {
+    sources = [ "devtools_resources.cc" ]
+
+    # This is to remove unnecessary dependency from compiles of targets depends
+    # on this target to grit action.
+    public = []
+
+    deps = [ ":devtools_resources" ]
+  }
   grit("devtools_resources") {
-    source = "$root_gen_dir/third_party/devtools-frontend/src/front_end/devtools_resources.grd"
+    source = "$root_gen_dir/$devtools_grd_location"
 
     # Required because the .grd is generated.
     enable_input_discovery_for_gn_analyze = false
@@ -39,8 +50,9 @@ if (!is_android && !is_fuchsia) {
   }
 }
 
-# Here we concatenate the viz_debugger.pdl into our browser protocol.
-# This technique is nearly identical to what is done for cros_protocol.pdl in chrome/browser/devtools
+# Here we concatenate the viz_debugger.pdl and native_profiling.pdl
+# into our browser protocol. This technique is nearly identical to what is
+# done for cros_protocol.pdl in chrome/browser/devtools
 _concatenated_protocol_path =
     "$root_gen_dir/content/browser/devtools/protocol.json"
 action("concatenate_protocols") {
@@ -58,6 +70,12 @@ action("concatenate_protocols") {
     _visual_debugger_pdl = "//components/viz/common/debugger/viz_debugger.pdl"
     inputs += [ _visual_debugger_pdl ]
     args += [ rebase_path(_visual_debugger_pdl, root_build_dir) ]
+  }
+
+  if (use_clang_profiling_inside_sandbox && chrome_pgo_phase == 1) {
+    native_profiling_pdl = "//content/browser/native_profiling.pdl"
+    inputs += [ native_profiling_pdl ]
+    args += [ rebase_path(native_profiling_pdl, root_build_dir) ]
   }
 
   args += [ rebase_path(output_file, root_build_dir) ]
@@ -138,6 +156,13 @@ inspector_protocol_generate("protocol_sources") {
     outputs += [
       "protocol/visual_debugger.cc",
       "protocol/visual_debugger.h",
+    ]
+  }
+
+  if (chrome_pgo_phase == 1) {
+    outputs += [
+      "protocol/native_profiling.cc",
+      "protocol/native_profiling.h",
     ]
   }
 }

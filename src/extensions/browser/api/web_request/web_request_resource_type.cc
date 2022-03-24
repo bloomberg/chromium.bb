@@ -5,9 +5,9 @@
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "url/gurl.h"
@@ -32,6 +32,8 @@ constexpr struct {
     {"csp_report", WebRequestResourceType::CSP_REPORT},
     {"media", WebRequestResourceType::MEDIA},
     {"websocket", WebRequestResourceType::WEB_SOCKET},
+    {"webtransport", WebRequestResourceType::WEB_TRANSPORT},
+    {"webbundle", WebRequestResourceType::WEBBUNDLE},
     {"other", WebRequestResourceType::OTHER},
 };
 
@@ -62,6 +64,7 @@ WebRequestResourceType ToWebRequestResourceType(
       return WebRequestResourceType::MAIN_FRAME;
     case network::mojom::RequestDestination::kIframe:
     case network::mojom::RequestDestination::kFrame:
+    case network::mojom::RequestDestination::kFencedframe:
       return WebRequestResourceType::SUB_FRAME;
     case network::mojom::RequestDestination::kStyle:
     case network::mojom::RequestDestination::kXslt:
@@ -90,10 +93,11 @@ WebRequestResourceType ToWebRequestResourceType(
       if (request.keepalive)
         return WebRequestResourceType::PING;
       return WebRequestResourceType::OTHER;
+    case network::mojom::RequestDestination::kWebBundle:
+      return WebRequestResourceType::WEBBUNDLE;
     case network::mojom::RequestDestination::kAudioWorklet:
     case network::mojom::RequestDestination::kManifest:
     case network::mojom::RequestDestination::kPaintWorklet:
-    case network::mojom::RequestDestination::kWebBundle:
       return WebRequestResourceType::OTHER;
   }
   NOTREACHED();

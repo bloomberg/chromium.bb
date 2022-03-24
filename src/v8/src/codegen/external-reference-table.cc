@@ -6,6 +6,7 @@
 
 #include "src/builtins/accessors.h"
 #include "src/codegen/external-reference.h"
+#include "src/execution/isolate.h"
 #include "src/ic/stub-cache.h"
 #include "src/logging/counters.h"
 
@@ -289,9 +290,11 @@ void ExternalReferenceTable::AddStubCache(Isolate* isolate, int* index) {
 }
 
 Address ExternalReferenceTable::GetStatsCounterAddress(StatsCounter* counter) {
-  int* address = counter->Enabled()
-                     ? counter->GetInternalPointer()
-                     : reinterpret_cast<int*>(&dummy_stats_counter_);
+  if (!counter->Enabled()) {
+    return reinterpret_cast<Address>(&dummy_stats_counter_);
+  }
+  std::atomic<int>* address = counter->GetInternalPointer();
+  STATIC_ASSERT(sizeof(address) == sizeof(Address));
   return reinterpret_cast<Address>(address);
 }
 

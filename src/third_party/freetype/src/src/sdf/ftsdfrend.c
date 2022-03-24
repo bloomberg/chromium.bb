@@ -142,7 +142,7 @@
 
     if ( ft_strcmp( property_name, "spread" ) == 0 )
     {
-      FT_Int*  val = (FT_Int*)value;
+      FT_UInt*  val = (FT_UInt*)value;
 
 
       *val = render->spread;
@@ -278,9 +278,6 @@
     /* check whether render mode is correct */
     if ( mode != FT_RENDER_MODE_SDF )
     {
-      FT_ERROR(( "[sdf] ft_sdf_render:"
-                 " sdf module only render when"
-                 " using `FT_RENDER_MODE_SDF'\n" ));
       error = FT_THROW( Cannot_Render_Glyph );
       goto Exit;
     }
@@ -293,7 +290,7 @@
     }
 
     /* preset the bitmap using the glyph's outline;         */
-    /* the sdf bitmap is similar to an antialiased bitmap   */
+    /* the sdf bitmap is similar to an anti-aliased bitmap  */
     /* with a slightly bigger size and different pixel mode */
     if ( ft_glyphslot_preset_bitmap( slot, FT_RENDER_MODE_NORMAL, origin ) )
     {
@@ -301,8 +298,15 @@
       goto Exit;
     }
 
+    /* the rows and pitch must be valid after presetting the */
+    /* bitmap using outline                                  */
     if ( !bitmap->rows || !bitmap->pitch )
+    {
+      FT_ERROR(( "ft_sdf_render: failed to preset bitmap\n" ));
+
+      error = FT_THROW( Cannot_Render_Glyph );
       goto Exit;
+    }
 
     /* the padding will simply be equal to the `spread' */
     x_pad = sdf_module->spread;
@@ -313,9 +317,9 @@
     bitmap->width += x_pad * 2;
 
     /* ignore the pitch, pixel mode and set custom */
-    bitmap->pixel_mode = FT_PIXEL_MODE_GRAY16;
-    bitmap->pitch      = bitmap->width * 2;
-    bitmap->num_grays  = 65535;
+    bitmap->pixel_mode = FT_PIXEL_MODE_GRAY;
+    bitmap->pitch      = (int)( bitmap->width );
+    bitmap->num_grays  = 255;
 
     /* allocate new buffer */
     if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, bitmap->pitch ) )
@@ -323,8 +327,11 @@
 
     slot->internal->flags |= FT_GLYPH_OWN_BITMAP;
 
-    x_shift  = 64 * -( slot->bitmap_left - x_pad );
-    y_shift  = 64 * -( slot->bitmap_top + y_pad );
+    slot->bitmap_top  += y_pad;
+    slot->bitmap_left -= x_pad;
+
+    x_shift  = 64 * -slot->bitmap_left;
+    y_shift  = 64 * -slot->bitmap_top;
     y_shift += 64 * (FT_Int)bitmap->rows;
 
     if ( origin )
@@ -350,6 +357,10 @@
     error = render->raster_render( render->raster,
                                    (const FT_Raster_Params*)&params );
 
+    /* transform the outline back to the original state */
+    if ( x_shift || y_shift )
+      FT_Outline_Translate( outline, -x_shift, -y_shift );
+
   Exit:
     if ( !error )
     {
@@ -361,9 +372,6 @@
       FT_FREE( bitmap->buffer );
       slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
     }
-
-    if ( x_shift || y_shift )
-      FT_Outline_Translate( outline, -x_shift, -y_shift );
 
     return error;
   }
@@ -487,8 +495,6 @@
     /* check whether slot format is correct before rendering */
     if ( slot->format != render->glyph_format )
     {
-      FT_ERROR(( "ft_bsdf_render: slot format must be a bitmap\n" ));
-
       error = FT_THROW( Invalid_Glyph_Format );
       goto Exit;
     }
@@ -496,8 +502,6 @@
     /* check whether render mode is correct */
     if ( mode != FT_RENDER_MODE_SDF )
     {
-      FT_ERROR(( "ft_bsdf_render: need `FT_RENDER_MODE_SDF' mode\n" ));
-
       error = FT_THROW( Cannot_Render_Glyph );
       goto Exit;
     }
@@ -510,8 +514,24 @@
       goto Exit;
     }
 
-    if ( !bitmap->rows || !bitmap->pitch )
+    /* Do not generate SDF if the bitmap is not owned by the       */
+    /* glyph: it might be that the source buffer is already freed. */
+    if ( !( slot->internal->flags & FT_GLYPH_OWN_BITMAP ) )
+    {
+      FT_ERROR(( "ft_bsdf_render: can't generate SDF from"
+                 " unowned source bitmap\n" ));
+
+      error = FT_THROW( Invalid_Argument );
       goto Exit;
+    }
+
+    if ( !bitmap->rows || !bitmap->pitch )
+    {
+      FT_ERROR(( "ft_bsdf_render: invalid bitmap size\n" ));
+
+      error = FT_THROW( Invalid_Argument );
+      goto Exit;
+    }
 
     FT_Bitmap_New( &target );
 
@@ -520,13 +540,13 @@
     y_pad = sdf_module->spread;
 
     /* apply padding, which extends to all directions */
-    target.rows  = bitmap->rows + y_pad * 2;
+    target.rows  = bitmap->rows  + y_pad * 2;
     target.width = bitmap->width + x_pad * 2;
 
     /* set up the target bitmap */
-    target.pixel_mode = FT_PIXEL_MODE_GRAY16;
-    target.pitch      = target.width * 2;
-    target.num_grays  = 65535;
+    target.pixel_mode = FT_PIXEL_MODE_GRAY;
+    target.pitch      = (int)( target.width );
+    target.num_grays  = 255;
 
     if ( FT_ALLOC_MULT( target.buffer, target.rows, target.pitch ) )
       goto Exit;
@@ -553,6 +573,8 @@
       }
 
       slot->bitmap           = target;
+      slot->bitmap_top      += y_pad;
+      slot->bitmap_left     -= x_pad;
       slot->internal->flags |= FT_GLYPH_OWN_BITMAP;
     }
     else if ( target.buffer )

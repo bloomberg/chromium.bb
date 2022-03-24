@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/base/telemetry_log_writer.h"
 
@@ -267,7 +267,7 @@ void ClientTelemetryLogger::RefreshSessionIdIfOutdated() {
     return;
   }
 
-  base::TimeDelta max_age = base::TimeDelta::FromDays(kMaxSessionIdAgeDays);
+  base::TimeDelta max_age = base::Days(kMaxSessionIdAgeDays);
   if (base::TimeTicks::Now() - session_id_generation_time_ > max_age) {
     // Log the old session ID.
     ChromotingEvent event = MakeSessionIdOldEvent();

@@ -39,7 +39,7 @@
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/using_std_string.h"
 
-namespace dwarf2reader {
+namespace google_breakpad {
 
 DIEDispatcher::~DIEDispatcher() {
   while (!die_handlers_.empty()) {
@@ -196,4 +196,4 @@ void DIEDispatcher::ProcessAttributeSignature(uint64_t offset,
   current.handler_->ProcessAttributeSignature(attr, form, signature);
 }
 
-} // namespace dwarf2reader
+} // namespace google_breakpad

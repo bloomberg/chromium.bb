@@ -123,7 +123,6 @@ class BrowserBackend(app_backend.AppBackend):
 
   def PullMinidumps(self):
     """Pulls any minidumps off a test device if necessary."""
-    pass
 
   def CollectDebugData(self, log_level):
     """Collects various information that may be useful for debugging.
@@ -181,7 +180,7 @@ class BrowserBackend(app_backend.AppBackend):
       log_level: The logging level to use from the logging module, e.g.
           logging.ERROR.
       suffix: The suffix to prepend to the names of any created artifacts.
-      start_time: If set, prepend elaped time to screenshot path.
+      start_time: If set, prepend elapsed time to screenshot path.
           Should be time at which the test started, as a datetime.
           This is done here because it may take a nonzero amount of time
           to take a screenshot.
@@ -460,7 +459,7 @@ class BrowserBackend(app_backend.AppBackend):
       self, behavior, downloadPath, timeout): # pylint: disable=unused-argument
     raise exceptions.StoryActionError('Set download behavior not supported')
 
-  def GetUIDevtoolsBackend(self, port): # pylint: disable=unused-argument
+  def GetUIDevtoolsBackend(self):
     raise exceptions.StoryActionError('UI Devtools not supported')
 
   def GetWindowForTarget(self, target_id): # pylint: disable=unused-argument

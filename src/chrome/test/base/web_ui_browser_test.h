@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/base/devtools_listener.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -19,7 +20,35 @@
 
 namespace {
 class WebUITestMessageHandler;
-class WebUICoverageObserver;
+
+// Observes new DevToolsAgentHost's and ensures code coverage is enabled and
+// can be collected.
+class WebUICoverageObserver : public content::DevToolsAgentHostObserver {
+ public:
+  explicit WebUICoverageObserver(base::FilePath devtools_code_coverage_dir);
+  ~WebUICoverageObserver() override;
+
+  bool CoverageEnabled();
+  void CollectCoverage(const std::string& test_name);
+
+ protected:
+  // content::DevToolsAgentHostObserver
+  bool ShouldForceDevToolsAgentHostCreation() override;
+  void DevToolsAgentHostCreated(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostAttached(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostNavigated(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostDetached(content::DevToolsAgentHost* host) override;
+  void DevToolsAgentHostCrashed(content::DevToolsAgentHost* host,
+                                base::TerminationStatus status) override;
+
+ private:
+  using DevToolsAgentMap =  // agent hosts: have a unique devtools listener
+      std::map<content::DevToolsAgentHost*,
+               std::unique_ptr<coverage::DevToolsListener>>;
+  base::FilePath devtools_code_coverage_dir_;
+  DevToolsAgentMap devtools_agent_;
+};
+
 }  // namespace
 
 namespace base {
@@ -97,12 +126,6 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   // handler mocking.
   virtual void BrowsePreload(const GURL& browse_to);
 
-  // Called by javascript-generated test bodies to browse to a page and preload
-  // the javascript for the given |preload_test_fixture| and
-  // |preload_test_name|. chrome.send will be overridden to allow javascript
-  // handler mocking.
-  void BrowsePrintPreload(const GURL& browse_to);
-
  protected:
   // URL to dummy WebUI page for testing framework.
   static const std::string kDummyURL;
@@ -144,6 +167,9 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
     test_handler_ = std::move(test_handler);
   }
 
+  // Handles collection of code coverage.
+  std::unique_ptr<WebUICoverageObserver> coverage_handler_;
+
  private:
   // Loads all libraries added with AddLibrary(), and calls |function_name| with
   // |function_arguments|. When |is_test| is true, the framework wraps
@@ -163,8 +189,8 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
   // Tracks the frames for which we've preloaded libraries.
   //
-  // We use `GlobalFrameRoutingId` because in certain cases, e.g. COOP/COEP, the
-  // frame gets swapped during the navigation and we get two calls to
+  // We use `GlobalRenderFrameHostId` because in certain cases, e.g. COOP/COEP,
+  // the frame gets swapped during the navigation and we get two calls to
   // `WebContentsObserver::RenderFrameCreated()` (where we preload libraries).
   //
   // In the COOP/COEP case, `RenderFrameCreated()` is called for a speculative
@@ -173,7 +199,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   // we'll create a different RFH for that SiteInstance and dispatch
   // `RenderFrameCreated()` for that RFH (and throw away the old speculative
   // RFH).
-  std::set<content::GlobalFrameRoutingId> libraries_preloaded_for_frames_;
+  std::set<content::GlobalRenderFrameHostId> libraries_preloaded_for_frames_;
 
   // Saves the states of |test_fixture| and |test_name| for calling
   // PreloadJavascriptLibraries().
@@ -182,13 +208,11 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.
-  content::WebUI* override_selected_web_ui_ = nullptr;
+  raw_ptr<content::WebUI> override_selected_web_ui_ = nullptr;
 
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
   std::unique_ptr<content::ScopedWebUIControllerFactoryRegistration>
       factory_registration_;
-
-  std::unique_ptr<WebUICoverageObserver> coverage_handler_;
 };
 
 class WebUIBrowserTest : public BaseWebUIBrowserTest {
@@ -198,9 +222,11 @@ class WebUIBrowserTest : public BaseWebUIBrowserTest {
 
   void SetupHandlers() override;
 
+  void CollectCoverage(const std::string& test_name);
+
  private:
   // Owned by |test_handler_| in BaseWebUIBrowserTest.
-  WebUITestMessageHandler* const test_message_handler_;
+  const raw_ptr<WebUITestMessageHandler> test_message_handler_;
 };
 
 #endif  // CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_

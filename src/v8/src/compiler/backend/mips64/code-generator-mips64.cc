@@ -95,7 +95,6 @@ class MipsOperandConverter final : public InstructionOperandConverter {
             constant.ToDelayedStringConstant());
       case Constant::kRpoNumber:
         UNREACHABLE();  // TODO(titzer): RPO immediates on mips?
-        break;
     }
     UNREACHABLE();
   }
@@ -160,6 +159,8 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
 #endif  // V8_ENABLE_WEBASSEMBLY
         must_save_lr_(!gen->frame_access_state()->has_frame()),
         zone_(gen->zone()) {
+    DCHECK(!AreAliased(object, index, scratch0, scratch1));
+    DCHECK(!AreAliased(value, index, scratch0, scratch1));
   }
 
   void Generate() final {
@@ -184,12 +185,13 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       // A direct call to a wasm runtime stub defined in this module.
       // Just encode the stub index. This will be patched when the code
       // is added to the native module and copied into wasm code space.
-      __ CallRecordWriteStub(object_, scratch1_, remembered_set_action,
-                             save_fp_mode, wasm::WasmCode::kRecordWrite);
+      __ CallRecordWriteStubSaveRegisters(object_, scratch1_,
+                                          remembered_set_action, save_fp_mode,
+                                          StubCallMode::kCallWasmRuntimeStub);
 #endif  // V8_ENABLE_WEBASSEMBLY
     } else {
-      __ CallRecordWriteStub(object_, scratch1_, remembered_set_action,
-                             save_fp_mode);
+      __ CallRecordWriteStubSaveRegisters(object_, scratch1_,
+                                          remembered_set_action, save_fp_mode);
     }
     if (must_save_lr_) {
       __ Pop(ra);
@@ -316,16 +318,6 @@ FPUCondition FlagsConditionToConditionCmpFPU(bool* predicate,
       break;
   }
   UNREACHABLE();
-}
-
-void EmitWordLoadPoisoningIfNeeded(CodeGenerator* codegen,
-                                   InstructionCode opcode, Instruction* instr,
-                                   MipsOperandConverter const& i) {
-  const MemoryAccessMode access_mode = AccessModeField::decode(opcode);
-  if (access_mode == kMemoryAccessPoisoned) {
-    Register value = i.OutputRegister();
-    codegen->tasm()->And(value, value, kSpeculationPoisonRegister);
-  }
 }
 
 }  // namespace
@@ -574,31 +566,6 @@ void CodeGenerator::BailoutIfDeoptimized() {
           RelocInfo::CODE_TARGET, ne, kScratchReg, Operand(zero_reg));
 }
 
-void CodeGenerator::GenerateSpeculationPoisonFromCodeStartRegister() {
-  // Calculate a mask which has all bits set in the normal case, but has all
-  // bits cleared if we are speculatively executing the wrong PC.
-  //    difference = (current - expected) | (expected - current)
-  //    poison = ~(difference >> (kBitsPerSystemPointer - 1))
-  __ ComputeCodeStartAddress(kScratchReg);
-  __ Move(kSpeculationPoisonRegister, kScratchReg);
-  __ subu(kSpeculationPoisonRegister, kSpeculationPoisonRegister,
-          kJavaScriptCallCodeStartRegister);
-  __ subu(kJavaScriptCallCodeStartRegister, kJavaScriptCallCodeStartRegister,
-          kScratchReg);
-  __ or_(kSpeculationPoisonRegister, kSpeculationPoisonRegister,
-         kJavaScriptCallCodeStartRegister);
-  __ sra(kSpeculationPoisonRegister, kSpeculationPoisonRegister,
-         kBitsPerSystemPointer - 1);
-  __ nor(kSpeculationPoisonRegister, kSpeculationPoisonRegister,
-         kSpeculationPoisonRegister);
-}
-
-void CodeGenerator::AssembleRegisterArgumentPoisoning() {
-  __ And(kJSFunctionRegister, kJSFunctionRegister, kSpeculationPoisonRegister);
-  __ And(kContextRegister, kContextRegister, kSpeculationPoisonRegister);
-  __ And(sp, sp, kSpeculationPoisonRegister);
-}
-
 // Assembles an instruction after register allocation, producing machine code.
 CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     Instruction* instr) {
@@ -743,7 +710,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       bool isWasmCapiFunction =
           linkage()->GetIncomingDescriptor()->IsWasmCapiFunction();
       // from start_call to return address.
-      int offset = __ root_array_available() ? 76 : 88;
+      int offset = __ root_array_available() ? 64 : 112;
 #endif  // V8_ENABLE_WEBASSEMBLY
 #if V8_HOST_ARCH_MIPS64
       if (FLAG_debug_code) {
@@ -800,19 +767,17 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kArchBinarySearchSwitch:
       AssembleArchBinarySearchSwitch(instr);
       break;
-      break;
     case kArchTableSwitch:
       AssembleArchTableSwitch(instr);
       break;
-    case kArchAbortCSAAssert:
+    case kArchAbortCSADcheck:
       DCHECK(i.InputRegister(0) == a0);
       {
         // We don't actually want to generate a pile of code for this, so just
         // claim there is a stack frame, without generating one.
-        FrameScope scope(tasm(), StackFrame::NONE);
-        __ Call(
-            isolate()->builtins()->builtin_handle(Builtins::kAbortCSAAssert),
-            RelocInfo::CODE_TARGET);
+        FrameScope scope(tasm(), StackFrame::NO_FRAME_TYPE);
+        __ Call(isolate()->builtins()->code_handle(Builtin::kAbortCSADcheck),
+                RelocInfo::CODE_TARGET);
       }
       __ stop();
       break;
@@ -862,7 +827,8 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ TruncateDoubleToI(isolate(), zone(), i.OutputRegister(),
                            i.InputDoubleRegister(0), DetermineStubCallMode());
       break;
-    case kArchStoreWithWriteBarrier: {
+    case kArchStoreWithWriteBarrier:  // Fall through.
+    case kArchAtomicStoreWithWriteBarrier: {
       RecordWriteMode mode =
           static_cast<RecordWriteMode>(MiscField::decode(instr->opcode()));
       Register object = i.InputRegister(0);
@@ -874,7 +840,14 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
                                                    scratch0, scratch1, mode,
                                                    DetermineStubCallMode());
       __ Daddu(kScratchReg, object, index);
-      __ Sd(value, MemOperand(kScratchReg));
+      if (arch_opcode == kArchStoreWithWriteBarrier) {
+        __ Sd(value, MemOperand(kScratchReg));
+      } else {
+        DCHECK_EQ(kArchAtomicStoreWithWriteBarrier, arch_opcode);
+        __ sync();
+        __ Sd(value, MemOperand(kScratchReg));
+        __ sync();
+      }
       if (mode > RecordWriteMode::kValueIsPointer) {
         __ JumpIfSmi(value, ool->exit());
       }
@@ -889,40 +862,15 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
           frame_access_state()->GetFrameOffset(i.InputInt32(0));
       Register base_reg = offset.from_stack_pointer() ? sp : fp;
       __ Daddu(i.OutputRegister(), base_reg, Operand(offset.offset()));
-      int alignment = i.InputInt32(1);
-      DCHECK(alignment == 0 || alignment == 4 || alignment == 8 ||
-             alignment == 16);
-      if (FLAG_debug_code && alignment > 0) {
+      if (FLAG_debug_code) {
         // Verify that the output_register is properly aligned
         __ And(kScratchReg, i.OutputRegister(),
                Operand(kSystemPointerSize - 1));
         __ Assert(eq, AbortReason::kAllocationIsNotDoubleAligned, kScratchReg,
                   Operand(zero_reg));
       }
-      if (alignment == 2 * kSystemPointerSize) {
-        Label done;
-        __ Daddu(kScratchReg, base_reg, Operand(offset.offset()));
-        __ And(kScratchReg, kScratchReg, Operand(alignment - 1));
-        __ BranchShort(&done, eq, kScratchReg, Operand(zero_reg));
-        __ Daddu(i.OutputRegister(), i.OutputRegister(), kSystemPointerSize);
-        __ bind(&done);
-      } else if (alignment > 2 * kSystemPointerSize) {
-        Label done;
-        __ Daddu(kScratchReg, base_reg, Operand(offset.offset()));
-        __ And(kScratchReg, kScratchReg, Operand(alignment - 1));
-        __ BranchShort(&done, eq, kScratchReg, Operand(zero_reg));
-        __ li(kScratchReg2, alignment);
-        __ Dsubu(kScratchReg2, kScratchReg2, Operand(kScratchReg));
-        __ Daddu(i.OutputRegister(), i.OutputRegister(), kScratchReg2);
-        __ bind(&done);
-      }
-
       break;
     }
-    case kArchWordPoisonOnSpeculation:
-      __ And(i.OutputRegister(), i.InputRegister(0),
-             kSpeculationPoisonRegister);
-      break;
     case kIeee754Float64Acos:
       ASSEMBLE_IEEE754_UNOP(acos);
       break;
@@ -1084,14 +1032,12 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     case kMips64And32:
         __ And(i.OutputRegister(), i.InputRegister(0), i.InputOperand(1));
-        __ sll(i.OutputRegister(), i.OutputRegister(), 0x0);
       break;
     case kMips64Or:
       __ Or(i.OutputRegister(), i.InputRegister(0), i.InputOperand(1));
       break;
     case kMips64Or32:
         __ Or(i.OutputRegister(), i.InputRegister(0), i.InputOperand(1));
-        __ sll(i.OutputRegister(), i.OutputRegister(), 0x0);
       break;
     case kMips64Nor:
       if (instr->InputAt(1)->IsRegister()) {
@@ -1104,11 +1050,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kMips64Nor32:
       if (instr->InputAt(1)->IsRegister()) {
         __ Nor(i.OutputRegister(), i.InputRegister(0), i.InputOperand(1));
-        __ sll(i.OutputRegister(), i.OutputRegister(), 0x0);
       } else {
         DCHECK_EQ(0, i.InputOperand(1).immediate());
         __ Nor(i.OutputRegister(), i.InputRegister(0), zero_reg);
-        __ sll(i.OutputRegister(), i.OutputRegister(), 0x0);
       }
       break;
     case kMips64Xor:
@@ -1155,23 +1099,19 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     case kMips64Shr:
       if (instr->InputAt(1)->IsRegister()) {
-        __ sll(i.InputRegister(0), i.InputRegister(0), 0x0);
         __ srlv(i.OutputRegister(), i.InputRegister(0), i.InputRegister(1));
       } else {
         int64_t imm = i.InputOperand(1).immediate();
-        __ sll(i.OutputRegister(), i.InputRegister(0), 0x0);
-        __ srl(i.OutputRegister(), i.OutputRegister(),
+        __ srl(i.OutputRegister(), i.InputRegister(0),
                static_cast<uint16_t>(imm));
       }
       break;
     case kMips64Sar:
       if (instr->InputAt(1)->IsRegister()) {
-        __ sll(i.InputRegister(0), i.InputRegister(0), 0x0);
         __ srav(i.OutputRegister(), i.InputRegister(0), i.InputRegister(1));
       } else {
         int64_t imm = i.InputOperand(1).immediate();
-        __ sll(i.OutputRegister(), i.InputRegister(0), 0x0);
-        __ sra(i.OutputRegister(), i.OutputRegister(),
+        __ sra(i.OutputRegister(), i.InputRegister(0),
                static_cast<uint16_t>(imm));
       }
       break;
@@ -1665,30 +1605,24 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     case kMips64Lbu:
       __ Lbu(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Lb:
       __ Lb(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Sb:
       __ Sb(i.InputOrZeroRegister(2), i.MemoryOperand());
       break;
     case kMips64Lhu:
       __ Lhu(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Ulhu:
       __ Ulhu(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Lh:
       __ Lh(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Ulh:
       __ Ulh(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Sh:
       __ Sh(i.InputOrZeroRegister(2), i.MemoryOperand());
@@ -1698,27 +1632,21 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       break;
     case kMips64Lw:
       __ Lw(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Ulw:
       __ Ulw(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Lwu:
       __ Lwu(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Ulwu:
       __ Ulwu(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Ld:
       __ Ld(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Uld:
       __ Uld(i.OutputRegister(), i.MemoryOperand());
-      EmitWordLoadPoisoningIfNeeded(this, opcode, instr, i);
       break;
     case kMips64Sw:
       __ Sw(i.InputOrZeroRegister(2), i.MemoryOperand());
@@ -1938,149 +1866,172 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ StoreLane(sz, src, i.InputUint8(1), i.MemoryOperand(2));
       break;
     }
-    case kWord32AtomicLoadInt8:
+    case kAtomicLoadInt8:
+      DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32);
       ASSEMBLE_ATOMIC_LOAD_INTEGER(Lb);
       break;
-    case kWord32AtomicLoadUint8:
+    case kAtomicLoadUint8:
       ASSEMBLE_ATOMIC_LOAD_INTEGER(Lbu);
       break;
-    case kWord32AtomicLoadInt16:
+    case kAtomicLoadInt16:
+      DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32);
       ASSEMBLE_ATOMIC_LOAD_INTEGER(Lh);
       break;
-    case kWord32AtomicLoadUint16:
+    case kAtomicLoadUint16:
       ASSEMBLE_ATOMIC_LOAD_INTEGER(Lhu);
       break;
-    case kWord32AtomicLoadWord32:
-      ASSEMBLE_ATOMIC_LOAD_INTEGER(Lw);
-      break;
-    case kMips64Word64AtomicLoadUint8:
-      ASSEMBLE_ATOMIC_LOAD_INTEGER(Lbu);
-      break;
-    case kMips64Word64AtomicLoadUint16:
-      ASSEMBLE_ATOMIC_LOAD_INTEGER(Lhu);
-      break;
-    case kMips64Word64AtomicLoadUint32:
-      ASSEMBLE_ATOMIC_LOAD_INTEGER(Lwu);
+    case kAtomicLoadWord32:
+      if (AtomicWidthField::decode(opcode) == AtomicWidth::kWord32)
+        ASSEMBLE_ATOMIC_LOAD_INTEGER(Lw);
+      else
+        ASSEMBLE_ATOMIC_LOAD_INTEGER(Lwu);
       break;
     case kMips64Word64AtomicLoadUint64:
       ASSEMBLE_ATOMIC_LOAD_INTEGER(Ld);
       break;
-    case kWord32AtomicStoreWord8:
+    case kAtomicStoreWord8:
       ASSEMBLE_ATOMIC_STORE_INTEGER(Sb);
       break;
-    case kWord32AtomicStoreWord16:
+    case kAtomicStoreWord16:
       ASSEMBLE_ATOMIC_STORE_INTEGER(Sh);
       break;
-    case kWord32AtomicStoreWord32:
+    case kAtomicStoreWord32:
       ASSEMBLE_ATOMIC_STORE_INTEGER(Sw);
       break;
-    case kMips64Word64AtomicStoreWord8:
-      ASSEMBLE_ATOMIC_STORE_INTEGER(Sb);
-      break;
-    case kMips64Word64AtomicStoreWord16:
-      ASSEMBLE_ATOMIC_STORE_INTEGER(Sh);
-      break;
-    case kMips64Word64AtomicStoreWord32:
-      ASSEMBLE_ATOMIC_STORE_INTEGER(Sw);
-      break;
+    case kMips64StoreCompressTagged:
     case kMips64Word64AtomicStoreWord64:
       ASSEMBLE_ATOMIC_STORE_INTEGER(Sd);
       break;
-    case kWord32AtomicExchangeInt8:
+    case kAtomicExchangeInt8:
+      DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32);
       ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Ll, Sc, true, 8, 32);
       break;
-    case kWord32AtomicExchangeUint8:
-      ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 8, 32);
+    case kAtomicExchangeUint8:
+      switch (AtomicWidthField::decode(opcode)) {
+        case AtomicWidth::kWord32:
+          ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 8, 32);
+          break;
+        case AtomicWidth::kWord64:
+          ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 8, 64);
+          break;
+      }
       break;
-    case kWord32AtomicExchangeInt16:
+    case kAtomicExchangeInt16:
+      DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32);
       ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Ll, Sc, true, 16, 32);
       break;
-    case kWord32AtomicExchangeUint16:
-      ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 16, 32);
+    case kAtomicExchangeUint16:
+      switch (AtomicWidthField::decode(opcode)) {
+        case AtomicWidth::kWord32:
+          ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 16, 32);
+          break;
+        case AtomicWidth::kWord64:
+          ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 16, 64);
+          break;
+      }
       break;
-    case kWord32AtomicExchangeWord32:
-      ASSEMBLE_ATOMIC_EXCHANGE_INTEGER(Ll, Sc);
-      break;
-    case kMips64Word64AtomicExchangeUint8:
-      ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 8, 64);
-      break;
-    case kMips64Word64AtomicExchangeUint16:
-      ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 16, 64);
-      break;
-    case kMips64Word64AtomicExchangeUint32:
-      ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 32, 64);
+    case kAtomicExchangeWord32:
+      switch (AtomicWidthField::decode(opcode)) {
+        case AtomicWidth::kWord32:
+          ASSEMBLE_ATOMIC_EXCHANGE_INTEGER(Ll, Sc);
+          break;
+        case AtomicWidth::kWord64:
+          ASSEMBLE_ATOMIC_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 32, 64);
+          break;
+      }
       break;
     case kMips64Word64AtomicExchangeUint64:
       ASSEMBLE_ATOMIC_EXCHANGE_INTEGER(Lld, Scd);
       break;
-    case kWord32AtomicCompareExchangeInt8:
+    case kAtomicCompareExchangeInt8:
+      DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32);
       ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Ll, Sc, true, 8, 32);
       break;
-    case kWord32AtomicCompareExchangeUint8:
-      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 8, 32);
+    case kAtomicCompareExchangeUint8:
+      switch (AtomicWidthField::decode(opcode)) {
+        case AtomicWidth::kWord32:
+          ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 8, 32);
+          break;
+        case AtomicWidth::kWord64:
+          ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 8, 64);
+          break;
+      }
       break;
-    case kWord32AtomicCompareExchangeInt16:
+    case kAtomicCompareExchangeInt16:
+      DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32);
       ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Ll, Sc, true, 16, 32);
       break;
-    case kWord32AtomicCompareExchangeUint16:
-      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 16, 32);
+    case kAtomicCompareExchangeUint16:
+      switch (AtomicWidthField::decode(opcode)) {
+        case AtomicWidth::kWord32:
+          ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Ll, Sc, false, 16, 32);
+          break;
+        case AtomicWidth::kWord64:
+          ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 16, 64);
+          break;
+      }
       break;
-    case kWord32AtomicCompareExchangeWord32:
-      __ sll(i.InputRegister(2), i.InputRegister(2), 0);
-      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER(Ll, Sc);
-      break;
-    case kMips64Word64AtomicCompareExchangeUint8:
-      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 8, 64);
-      break;
-    case kMips64Word64AtomicCompareExchangeUint16:
-      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 16, 64);
-      break;
-    case kMips64Word64AtomicCompareExchangeUint32:
-      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 32, 64);
+    case kAtomicCompareExchangeWord32:
+      switch (AtomicWidthField::decode(opcode)) {
+        case AtomicWidth::kWord32:
+          __ sll(i.InputRegister(2), i.InputRegister(2), 0);
+          ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER(Ll, Sc);
+          break;
+        case AtomicWidth::kWord64:
+          ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER_EXT(Lld, Scd, false, 32, 64);
+          break;
+      }
       break;
     case kMips64Word64AtomicCompareExchangeUint64:
       ASSEMBLE_ATOMIC_COMPARE_EXCHANGE_INTEGER(Lld, Scd);
       break;
-#define ATOMIC_BINOP_CASE(op, inst)                         \
-  case kWord32Atomic##op##Int8:                             \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, true, 8, inst, 32);   \
-    break;                                                  \
-  case kWord32Atomic##op##Uint8:                            \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, false, 8, inst, 32);  \
-    break;                                                  \
-  case kWord32Atomic##op##Int16:                            \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, true, 16, inst, 32);  \
-    break;                                                  \
-  case kWord32Atomic##op##Uint16:                           \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, false, 16, inst, 32); \
-    break;                                                  \
-  case kWord32Atomic##op##Word32:                           \
-    ASSEMBLE_ATOMIC_BINOP(Ll, Sc, inst);                    \
+#define ATOMIC_BINOP_CASE(op, inst32, inst64)                          \
+  case kAtomic##op##Int8:                                              \
+    DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32); \
+    ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, true, 8, inst32, 32);            \
+    break;                                                             \
+  case kAtomic##op##Uint8:                                             \
+    switch (AtomicWidthField::decode(opcode)) {                        \
+      case AtomicWidth::kWord32:                                       \
+        ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, false, 8, inst32, 32);       \
+        break;                                                         \
+      case AtomicWidth::kWord64:                                       \
+        ASSEMBLE_ATOMIC_BINOP_EXT(Lld, Scd, false, 8, inst64, 64);     \
+        break;                                                         \
+    }                                                                  \
+    break;                                                             \
+  case kAtomic##op##Int16:                                             \
+    DCHECK_EQ(AtomicWidthField::decode(opcode), AtomicWidth::kWord32); \
+    ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, true, 16, inst32, 32);           \
+    break;                                                             \
+  case kAtomic##op##Uint16:                                            \
+    switch (AtomicWidthField::decode(opcode)) {                        \
+      case AtomicWidth::kWord32:                                       \
+        ASSEMBLE_ATOMIC_BINOP_EXT(Ll, Sc, false, 16, inst32, 32);      \
+        break;                                                         \
+      case AtomicWidth::kWord64:                                       \
+        ASSEMBLE_ATOMIC_BINOP_EXT(Lld, Scd, false, 16, inst64, 64);    \
+        break;                                                         \
+    }                                                                  \
+    break;                                                             \
+  case kAtomic##op##Word32:                                            \
+    switch (AtomicWidthField::decode(opcode)) {                        \
+      case AtomicWidth::kWord32:                                       \
+        ASSEMBLE_ATOMIC_BINOP(Ll, Sc, inst32);                         \
+        break;                                                         \
+      case AtomicWidth::kWord64:                                       \
+        ASSEMBLE_ATOMIC_BINOP_EXT(Lld, Scd, false, 32, inst64, 64);    \
+        break;                                                         \
+    }                                                                  \
+    break;                                                             \
+  case kMips64Word64Atomic##op##Uint64:                                \
+    ASSEMBLE_ATOMIC_BINOP(Lld, Scd, inst64);                           \
     break;
-      ATOMIC_BINOP_CASE(Add, Addu)
-      ATOMIC_BINOP_CASE(Sub, Subu)
-      ATOMIC_BINOP_CASE(And, And)
-      ATOMIC_BINOP_CASE(Or, Or)
-      ATOMIC_BINOP_CASE(Xor, Xor)
-#undef ATOMIC_BINOP_CASE
-#define ATOMIC_BINOP_CASE(op, inst)                           \
-  case kMips64Word64Atomic##op##Uint8:                        \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Lld, Scd, false, 8, inst, 64);  \
-    break;                                                    \
-  case kMips64Word64Atomic##op##Uint16:                       \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Lld, Scd, false, 16, inst, 64); \
-    break;                                                    \
-  case kMips64Word64Atomic##op##Uint32:                       \
-    ASSEMBLE_ATOMIC_BINOP_EXT(Lld, Scd, false, 32, inst, 64); \
-    break;                                                    \
-  case kMips64Word64Atomic##op##Uint64:                       \
-    ASSEMBLE_ATOMIC_BINOP(Lld, Scd, inst);                    \
-    break;
-      ATOMIC_BINOP_CASE(Add, Daddu)
-      ATOMIC_BINOP_CASE(Sub, Dsubu)
-      ATOMIC_BINOP_CASE(And, And)
-      ATOMIC_BINOP_CASE(Or, Or)
-      ATOMIC_BINOP_CASE(Xor, Xor)
+      ATOMIC_BINOP_CASE(Add, Addu, Daddu)
+      ATOMIC_BINOP_CASE(Sub, Subu, Dsubu)
+      ATOMIC_BINOP_CASE(And, And, And)
+      ATOMIC_BINOP_CASE(Or, Or, Or)
+      ATOMIC_BINOP_CASE(Xor, Xor, Xor)
 #undef ATOMIC_BINOP_CASE
     case kMips64AssertEqual:
       __ Assert(eq, static_cast<AbortReason>(i.InputOperand(2).immediate()),
@@ -3870,7 +3821,6 @@ void AssembleBranchToLabels(CodeGenerator* gen, TurboAssembler* tasm,
         break;
       default:
         UNSUPPORTED_COND(instr->arch_opcode(), condition);
-        break;
     }
   } else if (instr->arch_opcode() == kMips64MulOvf) {
     // Overflow occurs if overflow register is not zero
@@ -3883,7 +3833,6 @@ void AssembleBranchToLabels(CodeGenerator* gen, TurboAssembler* tasm,
         break;
       default:
         UNSUPPORTED_COND(kMipsMulOvf, condition);
-        break;
     }
   } else if (instr->arch_opcode() == kMips64Cmp) {
     cc = FlagsConditionToConditionCmp(condition);
@@ -3921,104 +3870,6 @@ void CodeGenerator::AssembleArchBranch(Instruction* instr, BranchInfo* branch) {
 
   AssembleBranchToLabels(this, tasm(), instr, branch->condition, tlabel, flabel,
                          branch->fallthru);
-}
-
-void CodeGenerator::AssembleBranchPoisoning(FlagsCondition condition,
-                                            Instruction* instr) {
-  // TODO(jarin) Handle float comparisons (kUnordered[Not]Equal).
-  if (condition == kUnorderedEqual || condition == kUnorderedNotEqual) {
-    return;
-  }
-
-  MipsOperandConverter i(this, instr);
-  condition = NegateFlagsCondition(condition);
-
-  switch (instr->arch_opcode()) {
-    case kMips64Cmp: {
-      __ LoadZeroOnCondition(kSpeculationPoisonRegister, i.InputRegister(0),
-                             i.InputOperand(1),
-                             FlagsConditionToConditionCmp(condition));
-    }
-      return;
-    case kMips64Tst: {
-      switch (condition) {
-        case kEqual:
-          __ LoadZeroIfConditionZero(kSpeculationPoisonRegister, kScratchReg);
-          break;
-        case kNotEqual:
-          __ LoadZeroIfConditionNotZero(kSpeculationPoisonRegister,
-                                        kScratchReg);
-          break;
-        default:
-          UNREACHABLE();
-      }
-    }
-      return;
-    case kMips64Dadd:
-    case kMips64Dsub: {
-      // Check for overflow creates 1 or 0 for result.
-      __ dsrl32(kScratchReg, i.OutputRegister(), 31);
-      __ srl(kScratchReg2, i.OutputRegister(), 31);
-      __ xor_(kScratchReg2, kScratchReg, kScratchReg2);
-      switch (condition) {
-        case kOverflow:
-          __ LoadZeroIfConditionNotZero(kSpeculationPoisonRegister,
-                                        kScratchReg2);
-          break;
-        case kNotOverflow:
-          __ LoadZeroIfConditionZero(kSpeculationPoisonRegister, kScratchReg2);
-          break;
-        default:
-          UNSUPPORTED_COND(instr->arch_opcode(), condition);
-      }
-    }
-      return;
-    case kMips64DaddOvf:
-    case kMips64DsubOvf: {
-      // Overflow occurs if overflow register is negative
-      __ Slt(kScratchReg2, kScratchReg, zero_reg);
-      switch (condition) {
-        case kOverflow:
-          __ LoadZeroIfConditionNotZero(kSpeculationPoisonRegister,
-                                        kScratchReg2);
-          break;
-        case kNotOverflow:
-          __ LoadZeroIfConditionZero(kSpeculationPoisonRegister, kScratchReg2);
-          break;
-        default:
-          UNSUPPORTED_COND(instr->arch_opcode(), condition);
-      }
-    }
-      return;
-    case kMips64MulOvf: {
-      // Overflow occurs if overflow register is not zero
-      switch (condition) {
-        case kOverflow:
-          __ LoadZeroIfConditionNotZero(kSpeculationPoisonRegister,
-                                        kScratchReg);
-          break;
-        case kNotOverflow:
-          __ LoadZeroIfConditionZero(kSpeculationPoisonRegister, kScratchReg);
-          break;
-        default:
-          UNSUPPORTED_COND(instr->arch_opcode(), condition);
-      }
-    }
-      return;
-    case kMips64CmpS:
-    case kMips64CmpD: {
-      bool predicate;
-      FlagsConditionToConditionCmpFPU(&predicate, condition);
-      if (predicate) {
-        __ LoadZeroIfFPUCondition(kSpeculationPoisonRegister);
-      } else {
-        __ LoadZeroIfNotFPUCondition(kSpeculationPoisonRegister);
-      }
-    }
-      return;
-    default:
-      UNREACHABLE();
-  }
 }
 
 #undef UNSUPPORTED_COND
@@ -4296,7 +4147,6 @@ void CodeGenerator::FinishFrame(Frame* frame) {
   const RegList saves = call_descriptor->CalleeSavedRegisters();
   if (saves != 0) {
     int count = base::bits::CountPopulation(saves);
-    DCHECK_EQ(kNumCalleeSaved, count + 1);
     frame->AllocateSavedCalleeRegisterSlots(count);
   }
 }
@@ -4324,23 +4174,14 @@ void CodeGenerator::AssembleConstructFrame() {
     } else {
       __ StubPrologue(info()->GetOutputStackFrameType());
 #if V8_ENABLE_WEBASSEMBLY
-      if (call_descriptor->IsWasmFunctionCall()) {
+      if (call_descriptor->IsWasmFunctionCall() ||
+          call_descriptor->IsWasmImportWrapper() ||
+          call_descriptor->IsWasmCapiFunction()) {
         __ Push(kWasmInstanceRegister);
-      } else if (call_descriptor->IsWasmImportWrapper() ||
-                 call_descriptor->IsWasmCapiFunction()) {
-        // Wasm import wrappers are passed a tuple in the place of the instance.
-        // Unpack the tuple into the instance and the target callable.
-        // This must be done here in the codegen because it cannot be expressed
-        // properly in the graph.
-        __ ld(kJSFunctionRegister,
-              FieldMemOperand(kWasmInstanceRegister, Tuple2::kValue2Offset));
-        __ ld(kWasmInstanceRegister,
-              FieldMemOperand(kWasmInstanceRegister, Tuple2::kValue1Offset));
-        __ Push(kWasmInstanceRegister);
-        if (call_descriptor->IsWasmCapiFunction()) {
-          // Reserve space for saving the PC later.
-          __ Dsubu(sp, sp, Operand(kSystemPointerSize));
-        }
+      }
+      if (call_descriptor->IsWasmCapiFunction()) {
+        // Reserve space for saving the PC later.
+        __ Dsubu(sp, sp, Operand(kSystemPointerSize));
       }
 #endif  // V8_ENABLE_WEBASSEMBLY
     }
@@ -4360,7 +4201,6 @@ void CodeGenerator::AssembleConstructFrame() {
     __ RecordComment("-- OSR entrypoint --");
     osr_pc_offset_ = __ pc_offset();
     required_slots -= osr_helper()->UnoptimizedFrameSlots();
-    ResetSpeculationPoison();
   }
 
   const RegList saves = call_descriptor->CalleeSavedRegisters();
@@ -4369,7 +4209,7 @@ void CodeGenerator::AssembleConstructFrame() {
   if (required_slots > 0) {
     DCHECK(frame_access_state()->has_frame());
 #if V8_ENABLE_WEBASSEMBLY
-    if (info()->IsWasm() && required_slots > 128) {
+    if (info()->IsWasm() && required_slots * kSystemPointerSize > 4 * KB) {
       // For WebAssembly functions with big frames we have to do the stack
       // overflow check before we construct the frame. Otherwise we may not
       // have enough space on the stack to call the runtime for the stack
@@ -4379,7 +4219,7 @@ void CodeGenerator::AssembleConstructFrame() {
       // If the frame is bigger than the stack, we throw the stack overflow
       // exception unconditionally. Thereby we can avoid the integer overflow
       // check in the condition code.
-      if ((required_slots * kSystemPointerSize) < (FLAG_stack_size * 1024)) {
+      if (required_slots * kSystemPointerSize < FLAG_stack_size * KB) {
         __ Ld(
              kScratchReg,
              FieldMemOperand(kWasmInstanceRegister,
@@ -4391,12 +4231,11 @@ void CodeGenerator::AssembleConstructFrame() {
       }
 
       __ Call(wasm::WasmCode::kWasmStackOverflow, RelocInfo::WASM_STUB_CALL);
-      // We come from WebAssembly, there are no references for the GC.
+      // The call does not return, hence we can ignore any references and just
+      // define an empty safepoint.
       ReferenceMap* reference_map = zone()->New<ReferenceMap>(zone());
       RecordSafepoint(reference_map);
-      if (FLAG_debug_code) {
-        __ stop();
-      }
+      if (FLAG_debug_code) __ stop();
 
       __ bind(&done);
     }
@@ -4422,7 +4261,6 @@ void CodeGenerator::AssembleConstructFrame() {
   if (saves != 0) {
     // Save callee-saved registers.
     __ MultiPush(saves);
-    DCHECK_EQ(kNumCalleeSaved, base::bits::CountPopulation(saves) + 1);
   }
 
   if (returns != 0) {
@@ -4499,22 +4337,22 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
   if (drop_jsargs) {
     // We must pop all arguments from the stack (including the receiver). This
     // number of arguments is given by max(1 + argc_reg, parameter_slots).
-    __ Daddu(t0, t0, Operand(1));  // Also pop the receiver.
+    if (!kJSArgcIncludesReceiver) {
+      __ Daddu(t0, t0, Operand(1));  // Also pop the receiver.
+    }
     if (parameter_slots > 1) {
       __ li(kScratchReg, parameter_slots);
       __ slt(kScratchReg2, t0, kScratchReg);
       __ movn(t0, kScratchReg, kScratchReg2);
     }
-    __ dsll(t0, t0, kSystemPointerSizeLog2);
-    __ Daddu(sp, sp, t0);
+    __ Dlsa(sp, sp, t0, kSystemPointerSizeLog2);
   } else if (additional_pop_count->IsImmediate()) {
     int additional_count = g.ToConstant(additional_pop_count).ToInt32();
     __ Drop(parameter_slots + additional_count);
   } else {
     Register pop_reg = g.ToRegister(additional_pop_count);
     __ Drop(parameter_slots);
-    __ dsll(pop_reg, pop_reg, kSystemPointerSizeLog2);
-    __ Daddu(sp, sp, pop_reg);
+    __ Dlsa(sp, sp, pop_reg, kSystemPointerSizeLog2);
   }
   __ Ret();
 }
@@ -4590,7 +4428,6 @@ void CodeGenerator::AssembleMove(InstructionOperand* source,
           UNREACHABLE();
         case Constant::kRpoNumber:
           UNREACHABLE();  // TODO(titzer): loading RPO numbers on mips64.
-          break;
       }
       if (destination->IsStackSlot()) __ Sd(dst, g.ToMemOperand(destination));
     } else if (src.type() == Constant::kFloat32) {

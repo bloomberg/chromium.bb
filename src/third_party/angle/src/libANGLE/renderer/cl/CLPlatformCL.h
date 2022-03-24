@@ -18,36 +18,36 @@ class CLPlatformCL : public CLPlatformImpl
   public:
     ~CLPlatformCL() override;
 
-    cl_platform_id getNative();
+    cl_platform_id getNative() const;
 
-    CLContextImpl::Ptr createContext(CLDeviceImpl::List &&deviceImplList,
-                                     cl::ContextErrorCB notify,
-                                     void *userData,
+    Info createInfo() const override;
+    CLDeviceImpl::CreateDatas createDevices() const override;
+
+    CLContextImpl::Ptr createContext(cl::Context &context,
+                                     const cl::DevicePtrs &devices,
                                      bool userSync,
-                                     cl_int *errcodeRet) override;
+                                     cl_int &errorCode) override;
 
-    CLContextImpl::Ptr createContextFromType(cl_device_type deviceType,
-                                             cl::ContextErrorCB notify,
-                                             void *userData,
+    CLContextImpl::Ptr createContextFromType(cl::Context &context,
+                                             cl::DeviceType deviceType,
                                              bool userSync,
-                                             cl_int *errcodeRet) override;
+                                             cl_int &errorCode) override;
 
-    static InitList GetPlatforms(bool isIcd);
+    cl_int unloadCompiler() override;
+
+    static void Initialize(CreateFuncs &createFuncs, bool isIcd);
 
   private:
-    CLPlatformCL(cl_platform_id platform, cl_version version, CLDeviceImpl::PtrList &devices);
+    CLPlatformCL(const cl::Platform &platform, cl_platform_id native);
 
-    static Info GetInfo(cl_platform_id platform);
-
-    const cl_platform_id mPlatform;
-    const cl_version mVersion;
+    const cl_platform_id mNative;
 
     friend class CLContextCL;
 };
 
-inline cl_platform_id CLPlatformCL::getNative()
+inline cl_platform_id CLPlatformCL::getNative() const
 {
-    return mPlatform;
+    return mNative;
 }
 
 }  // namespace rx

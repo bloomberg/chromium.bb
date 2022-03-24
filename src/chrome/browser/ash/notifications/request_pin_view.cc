@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/components/security_token_pin/error_generator.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/string_util.h"
@@ -16,12 +17,12 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/security_token_pin/error_generator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"

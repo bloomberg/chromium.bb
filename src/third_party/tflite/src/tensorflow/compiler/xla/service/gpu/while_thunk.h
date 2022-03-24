@@ -19,7 +19,6 @@ limitations under the License.
 #include <vector>
 
 #include "tensorflow/compiler/xla/service/gpu/buffer_allocations.h"
-#include "tensorflow/compiler/xla/service/gpu/hlo_execution_profiler.h"
 #include "tensorflow/compiler/xla/service/gpu/sequential_thunk.h"
 #include "tensorflow/compiler/xla/service/gpu/thunk.h"
 #include "tensorflow/compiler/xla/service/hlo_instruction.h"
@@ -39,14 +38,13 @@ namespace gpu {
 class WhileThunk : public Thunk {
  public:
   // Constructs a WhileThunk to compute while instruction 'hlo'.
-  WhileThunk(const BufferAllocation::Slice& condition_result_buffer_index,
+  WhileThunk(ThunkInfo thunk_info,
+             const BufferAllocation::Slice& condition_result_buffer_index,
              std::unique_ptr<ThunkSequence> condition_thunk_sequence,
-             std::unique_ptr<ThunkSequence> body_thunk_sequence,
-             const HloInstruction* hlo);
+             std::unique_ptr<ThunkSequence> body_thunk_sequence);
   WhileThunk(const WhileThunk&) = delete;
   WhileThunk& operator=(const WhileThunk&) = delete;
 
-  void ComputeAnnotations() override;
   Status Initialize(const GpuExecutable& executable,
                     se::StreamExecutor* executor) override;
   Status ExecuteOnStream(const ExecuteParams& params) override;

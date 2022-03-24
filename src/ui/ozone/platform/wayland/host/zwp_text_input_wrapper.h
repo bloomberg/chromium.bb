@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 namespace gfx {
 class Rect;
@@ -20,7 +19,6 @@ class Range;
 
 namespace ui {
 
-class WaylandConnection;
 class WaylandWindow;
 
 // Client interface which handles wayland text input callbacks
@@ -48,13 +46,25 @@ class ZWPTextInputWrapperClient {
   virtual void OnCommitString(base::StringPiece text) = 0;
 
   // Called when client needs to delete all or part of the text surrounding
-  // the cursor
+  // the cursor. |index| and |length| are expected to be a byte offset of |text|
+  // passed via ZWPTextInputWrapper::SetSurroundingText.
   virtual void OnDeleteSurroundingText(int32_t index, uint32_t length) = 0;
 
   // Notify when a key event was sent. Key events should not be used
   // for normal text input operations, which should be done with
   // commit_string, delete_surrounding_text, etc.
   virtual void OnKeysym(uint32_t key, uint32_t state, uint32_t modifiers) = 0;
+
+  // Called when a new preedit region is specified. The region is specified
+  // by |index| and |length| on the surrounding text sent do wayland compositor
+  // in advance. |index| is relative to the current caret position, and |length|
+  // is the preedit length. Both are measured in UTF-8 bytes.
+  // |spans| are representing the text spanning for the new preedit. All its
+  // indices and length are relative to the beginning of the new preedit,
+  // and measured in UTF-8 bytes.
+  virtual void OnSetPreeditRegion(int32_t index,
+                                  uint32_t length,
+                                  const std::vector<SpanStyle>& spans) = 0;
 };
 
 // A wrapper around different versions of wayland text input protocols.
@@ -65,9 +75,6 @@ class ZWPTextInputWrapper {
  public:
   virtual ~ZWPTextInputWrapper() = default;
 
-  virtual void Initialize(WaylandConnection* connection,
-                          ZWPTextInputWrapperClient* client) = 0;
-
   virtual void Reset() = 0;
 
   virtual void Activate(WaylandWindow* window) = 0;
@@ -77,8 +84,10 @@ class ZWPTextInputWrapper {
   virtual void HideInputPanel() = 0;
 
   virtual void SetCursorRect(const gfx::Rect& rect) = 0;
-  virtual void SetSurroundingText(const std::u16string& text,
+  virtual void SetSurroundingText(const std::string& text,
                                   const gfx::Range& selection_range) = 0;
+  virtual void SetContentType(uint32_t content_hint,
+                              uint32_t content_purpose) = 0;
 };
 
 }  // namespace ui

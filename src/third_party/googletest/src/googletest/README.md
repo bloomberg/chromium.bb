@@ -25,7 +25,7 @@ When building GoogleTest as a standalone project, the typical workflow starts
 with
 
 ```
-git clone https://github.com/google/googletest.git -b release-1.10.0
+git clone https://github.com/google/googletest.git -b release-1.11.0
 cd googletest        # Main directory of the cloned repository.
 mkdir build          # Create a directory to hold the build output.
 cd build
@@ -203,7 +203,9 @@ add
     -DGTEST_DONT_DEFINE_FOO=1
 
 to the compiler flags to tell GoogleTest to change the macro's name from `FOO`
-to `GTEST_FOO`. Currently `FOO` can be `FAIL`, `SUCCEED`, or `TEST`. For
+to `GTEST_FOO`. Currently `FOO` can be `ASSERT_EQ`, `ASSERT_FALSE`, `ASSERT_GE`,
+`ASSERT_GT`, `ASSERT_LE`, `ASSERT_LT`, `ASSERT_NE`, `ASSERT_TRUE`,
+`EXPECT_FALSE`, `EXPECT_TRUE`, `FAIL`, `SUCCEED`, `TEST`, or `TEST_F`. For
 example, with `-DGTEST_DONT_DEFINE_TEST=1`, you'll need to write
 
     GTEST_TEST(SomeTest, DoesThis) { ... }

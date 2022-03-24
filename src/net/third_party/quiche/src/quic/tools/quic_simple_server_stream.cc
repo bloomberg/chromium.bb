@@ -18,7 +18,6 @@
 #include "quic/platform/api/quic_bug_tracker.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/tools/quic_simple_server_session.h"
 #include "spdy/core/spdy_protocol.h"
 
@@ -39,11 +38,9 @@ QuicSimpleServerStream::QuicSimpleServerStream(
 }
 
 QuicSimpleServerStream::QuicSimpleServerStream(
-    PendingStream* pending,
-    QuicSpdySession* session,
-    StreamType type,
+    PendingStream* pending, QuicSpdySession* session,
     QuicSimpleServerBackend* quic_simple_server_backend)
-    : QuicSpdyServerStreamBase(pending, session, type),
+    : QuicSpdyServerStreamBase(pending, session),
       content_length_(-1),
       generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
@@ -59,10 +56,13 @@ void QuicSimpleServerStream::OnInitialHeadersComplete(
     size_t frame_len,
     const QuicHeaderList& header_list) {
   QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len, header_list);
-  if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length_,
+  // QuicSpdyStream::OnInitialHeadersComplete() may have already sent error
+  // response.
+  if (!response_sent_ &&
+      !SpdyUtils::CopyAndValidateHeaders(header_list, &content_length_,
                                          &request_headers_)) {
     QUIC_DVLOG(1) << "Invalid headers";
-    SendErrorResponse();
+      SendErrorResponse();
   }
   ConsumeHeaderList();
   if (!fin && !response_sent_) {
@@ -155,13 +155,13 @@ void QuicSimpleServerStream::SendResponse() {
     return;
   }
 
-  if (!QuicContainsKey(request_headers_, ":authority")) {
+  if (!request_headers_.contains(":authority")) {
     QUIC_DVLOG(1) << "Request headers do not contain :authority.";
     SendErrorResponse();
     return;
   }
 
-  if (!QuicContainsKey(request_headers_, ":path")) {
+  if (!request_headers_.contains(":path")) {
     // CONNECT and other CONNECT-like methods (such as CONNECT-UDP) do not all
     // require :path to be present.
     auto it = request_headers_.find(":method");
@@ -347,6 +347,9 @@ void QuicSimpleServerStream::SendErrorResponse() {
 
 void QuicSimpleServerStream::SendErrorResponse(int resp_code) {
   QUIC_DVLOG(1) << "Stream " << id() << " sending error response.";
+  if (!reading_stopped()) {
+    StopReading();
+  }
   Http2HeaderBlock headers;
   if (resp_code <= 0) {
     headers[":status"] = "500";
@@ -412,6 +415,11 @@ void QuicSimpleServerStream::SendHeadersAndBodyAndTrailers(
   QUIC_DLOG(INFO) << "Stream " << id() << " writing trailers (fin = true): "
                   << response_trailers.DebugString();
   WriteTrailers(std::move(response_trailers), nullptr);
+}
+
+void QuicSimpleServerStream::OnInvalidHeaders() {
+  QUIC_DVLOG(1) << "Invalid headers";
+  SendErrorResponse(400);
 }
 
 const char* const QuicSimpleServerStream::kErrorResponseBody = "bad";

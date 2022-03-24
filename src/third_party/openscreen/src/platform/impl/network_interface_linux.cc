@@ -168,13 +168,14 @@ std::vector<InterfaceInfo> GetLinkInfo() {
     request.header.nlmsg_pid = 0;
     request.msg.ifi_family = AF_UNSPEC;
     struct iovec iov = {&request, request.header.nlmsg_len};
-    struct msghdr msg = {&peer,
-                         sizeof(peer),
-                         &iov,
-                         /* msg_iovlen */ 1,
-                         /* msg_control */ nullptr,
-                         /* msg_controllen */ 0,
-                         /* msg_flags */ 0};
+    struct msghdr msg = {};
+    msg.msg_name = &peer;
+    msg.msg_namelen = sizeof(peer);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = nullptr;
+    msg.msg_controllen = 0;
+    msg.msg_flags = 0;
     if (sendmsg(fd.get(), &msg, 0) < 0) {
       OSP_LOG_ERROR << "netlink sendmsg() failed: " << errno << " - "
                     << strerror(errno);
@@ -187,14 +188,16 @@ std::vector<InterfaceInfo> GetLinkInfo() {
     char buf[kNetlinkRecvmsgBufSize];
     struct iovec iov = {buf, sizeof(buf)};
     struct sockaddr_nl source_address;
-    struct msghdr msg;
+    struct msghdr msg = {};
     struct nlmsghdr* netlink_header;
 
-    msg = {&source_address,           sizeof(source_address), &iov,
-           /* msg_iovlen */ 1,
-           /* msg_control */ nullptr,
-           /* msg_controllen */ 0,
-           /* msg_flags */ 0};
+    msg.msg_name = &source_address;
+    msg.msg_namelen = sizeof(source_address);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1,
+    msg.msg_control = nullptr,
+    msg.msg_controllen = 0,
+    msg.msg_flags = 0;
 
     bool done = false;
     while (!done) {
@@ -269,13 +272,14 @@ void PopulateSubnetsOrClearList(std::vector<InterfaceInfo>* info_list) {
     request.header.nlmsg_pid = 0;
     request.msg.ifa_family = AF_UNSPEC;
     struct iovec iov = {&request, request.header.nlmsg_len};
-    struct msghdr msg = {&peer,
-                         sizeof(peer),
-                         &iov,
-                         /* msg_iovlen */ 1,
-                         /* msg_control */ nullptr,
-                         /* msg_controllen */ 0,
-                         /* msg_flags */ 0};
+    struct msghdr msg = {};
+    msg.msg_name = &peer;
+    msg.msg_namelen = sizeof(peer);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = nullptr;
+    msg.msg_controllen = 0;
+    msg.msg_flags = 0;
     if (sendmsg(fd.get(), &msg, 0) < 0) {
       OSP_LOG_ERROR << "sendmsg failed: " << errno << " - " << strerror(errno);
       info_list->clear();
@@ -287,14 +291,16 @@ void PopulateSubnetsOrClearList(std::vector<InterfaceInfo>* info_list) {
     char buf[kNetlinkRecvmsgBufSize];
     struct iovec iov = {buf, sizeof(buf)};
     struct sockaddr_nl source_address;
-    struct msghdr msg;
+    struct msghdr msg = {};
     struct nlmsghdr* netlink_header;
 
-    msg = {&source_address,           sizeof(source_address), &iov,
-           /* msg_iovlen */ 1,
-           /* msg_control */ nullptr,
-           /* msg_controllen */ 0,
-           /* msg_flags */ 0};
+    msg.msg_name = &source_address;
+    msg.msg_namelen = sizeof(source_address);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_control = nullptr;
+    msg.msg_controllen = 0;
+    msg.msg_flags = 0;
     bool done = false;
     while (!done) {
       size_t len = recvmsg(fd.get(), &msg, 0);

@@ -209,6 +209,9 @@ typedef __uint128_t uint128_t;
 #define OPENSSL_SSE2
 #endif
 
+
+// Pointer utility functions.
+
 // buffers_alias returns one if |a| and |b| alias and zero otherwise.
 static inline int buffers_alias(const uint8_t *a, size_t a_len,
                                 const uint8_t *b, size_t b_len) {
@@ -219,6 +222,23 @@ static inline int buffers_alias(const uint8_t *a, size_t a_len,
   uintptr_t a_u = (uintptr_t)a;
   uintptr_t b_u = (uintptr_t)b;
   return a_u + a_len > b_u && b_u + b_len > a_u;
+}
+
+// align_pointer returns |ptr|, advanced to |alignment|. |alignment| must be a
+// power of two, and |ptr| must have at least |alignment - 1| bytes of scratch
+// space.
+static inline void *align_pointer(void *ptr, size_t alignment) {
+  // |alignment| must be a power of two.
+  assert(alignment != 0 && (alignment & (alignment - 1)) == 0);
+  // Instead of aligning |ptr| as a |uintptr_t| and casting back, compute the
+  // offset and advance in pointer space. C guarantees that casting from pointer
+  // to |uintptr_t| and back gives the same pointer, but general
+  // integer-to-pointer conversions are implementation-defined. GCC does define
+  // it in the useful way, but this makes fewer assumptions.
+  uintptr_t offset = (0u - (uintptr_t)ptr) & (alignment - 1);
+  ptr = (char *)ptr + offset;
+  assert(((uintptr_t)ptr & (alignment - 1)) == 0);
+  return ptr;
 }
 
 
@@ -472,8 +492,9 @@ OPENSSL_EXPORT void CRYPTO_once(CRYPTO_once_t *once, void (*init)(void));
 // Reference counting.
 
 // Automatically enable C11 atomics if implemented.
-#if !defined(OPENSSL_C11_ATOMIC) && !defined(__STDC_NO_ATOMICS__) && \
-    defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#if !defined(OPENSSL_C11_ATOMIC) && defined(OPENSSL_THREADS) &&   \
+    !defined(__STDC_NO_ATOMICS__) && defined(__STDC_VERSION__) && \
+    __STDC_VERSION__ >= 201112L
 #define OPENSSL_C11_ATOMIC
 #endif
 
@@ -866,6 +887,45 @@ static inline crypto_word_t CRYPTO_load_word_le(const void *in) {
 
 static inline void CRYPTO_store_word_le(void *out, crypto_word_t v) {
   OPENSSL_memcpy(out, &v, sizeof(v));
+}
+
+
+// Bit rotation functions.
+//
+// Note these functions use |(-shift) & 31|, etc., because shifting by the bit
+// width is undefined. Both Clang and GCC recognize this pattern as a rotation,
+// but MSVC does not. Instead, we call MSVC's built-in functions.
+
+static inline uint32_t CRYPTO_rotl_u32(uint32_t value, int shift) {
+#if defined(_MSC_VER)
+  return _rotl(value, shift);
+#else
+  return (value << shift) | (value >> ((-shift) & 31));
+#endif
+}
+
+static inline uint32_t CRYPTO_rotr_u32(uint32_t value, int shift) {
+#if defined(_MSC_VER)
+  return _rotr(value, shift);
+#else
+  return (value >> shift) | (value << ((-shift) & 31));
+#endif
+}
+
+static inline uint64_t CRYPTO_rotl_u64(uint64_t value, int shift) {
+#if defined(_MSC_VER)
+  return _rotl64(value, shift);
+#else
+  return (value << shift) | (value >> ((-shift) & 63));
+#endif
+}
+
+static inline uint64_t CRYPTO_rotr_u64(uint64_t value, int shift) {
+#if defined(_MSC_VER)
+  return _rotr64(value, shift);
+#else
+  return (value >> shift) | (value << ((-shift) & 63));
+#endif
 }
 
 

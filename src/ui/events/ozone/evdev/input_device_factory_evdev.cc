@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,6 +37,10 @@
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_feedback.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
+#endif
+
+#if defined(USE_LIBINPUT)
+#include "ui/events/ozone/evdev/libinput_event_converter.h"
 #endif
 
 #ifndef EVIOCSCLOCKID
@@ -95,6 +98,14 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
     const OpenInputDeviceParams& params,
     base::ScopedFD fd,
     const EventDeviceInfo& devinfo) {
+#if defined(USE_LIBINPUT)
+  // Use LibInputEventConverter for odd touchpads
+  if (devinfo.UseLibinput()) {
+    return LibInputEventConverter::Create(params.path, params.id, devinfo,
+                                          params.cursor, params.dispatcher);
+  }
+#endif
+
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
@@ -381,6 +392,10 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
   SetBoolPropertyForOneType(DT_TOUCHPAD, "Tap Paused",
                             input_device_settings_.tap_to_click_paused);
 
+  SetBoolPropertyForOneType(
+      DT_ALL, "Event Logging Enable",
+      base::FeatureList::IsEnabled(ui::kEnableInputEventLogging));
+
   for (const auto& it : converters_) {
     EventConverterEvdev* converter = it.second.get();
 
@@ -400,6 +415,8 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
           input_device_settings_.enable_internal_keyboard_filter,
           input_device_settings_.internal_keyboard_allowed_keys);
     }
+
+    converter->ApplyDeviceSettings(input_device_settings_);
 
     converter->SetTouchEventLoggingEnabled(
         input_device_settings_.touch_event_logging_enabled);
@@ -445,6 +462,26 @@ void InputDeviceFactoryEvdev::StopVibration(int id) {
     if (it.second->id() == id) {
       it.second->StopVibration();
       return;
+    }
+  }
+}
+
+void InputDeviceFactoryEvdev::PlayHapticTouchpadEffect(
+    ui::HapticTouchpadEffect effect,
+    ui::HapticTouchpadEffectStrength strength) {
+  for (const auto& it : converters_) {
+    if (it.second->HasHapticTouchpad()) {
+      it.second->PlayHapticTouchpadEffect(effect, strength);
+    }
+  }
+}
+
+void InputDeviceFactoryEvdev::SetHapticTouchpadEffectForNextButtonRelease(
+    ui::HapticTouchpadEffect effect,
+    ui::HapticTouchpadEffectStrength strength) {
+  for (const auto& it : converters_) {
+    if (it.second->HasHapticTouchpad()) {
+      it.second->SetHapticTouchpadEffectForNextButtonRelease(effect, strength);
     }
   }
 }
@@ -574,13 +611,16 @@ void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
 
 void InputDeviceFactoryEvdev::NotifyTouchpadDevicesUpdated() {
   std::vector<InputDevice> touchpads;
-  for (auto it = converters_.begin(); it != converters_.end(); ++it) {
-    if (it->second->HasTouchpad()) {
-      touchpads.push_back(it->second->input_device());
+  bool has_haptic_touchpad = false;
+  for (const auto& it : converters_) {
+    if (it.second->HasTouchpad()) {
+      if (it.second->HasHapticTouchpad())
+        has_haptic_touchpad = true;
+      touchpads.push_back(it.second->input_device());
     }
   }
 
-  dispatcher_->DispatchTouchpadDevicesUpdated(touchpads);
+  dispatcher_->DispatchTouchpadDevicesUpdated(touchpads, has_haptic_touchpad);
 }
 
 void InputDeviceFactoryEvdev::NotifyGamepadDevicesUpdated() {

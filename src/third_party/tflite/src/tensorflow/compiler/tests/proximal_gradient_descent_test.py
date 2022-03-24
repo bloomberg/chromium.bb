@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Proximal Gradient Descent optimizer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.compiler.tests import xla_test
@@ -40,7 +36,7 @@ class ProximalGradientDescentOptimizerTest(xla_test.XLATestCase):
       opt = proximal_gradient_descent.ProximalGradientDescentOptimizer(
           3.0, l1_regularization_strength=0.0, l2_regularization_strength=0.0)
       update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
 
       self.assertAllClose([0.0, 0.0], self.evaluate(var0))
       self.assertAllClose([0.0, 0.0], self.evaluate(var1))
@@ -62,7 +58,7 @@ class ProximalGradientDescentOptimizerTest(xla_test.XLATestCase):
       opt = proximal_gradient_descent.ProximalGradientDescentOptimizer(
           3.0, l1_regularization_strength=0.0, l2_regularization_strength=0.0)
       update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
 
       self.assertAllClose([1.0, 2.0], self.evaluate(var0))
       self.assertAllClose([4.0, 3.0], self.evaluate(var1))
@@ -84,7 +80,7 @@ class ProximalGradientDescentOptimizerTest(xla_test.XLATestCase):
       opt = proximal_gradient_descent.ProximalGradientDescentOptimizer(
           3.0, l1_regularization_strength=0.001, l2_regularization_strength=0.0)
       update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
 
       self.assertAllClose([1.0, 2.0], self.evaluate(var0))
       self.assertAllClose([4.0, 3.0], self.evaluate(var1))
@@ -106,7 +102,7 @@ class ProximalGradientDescentOptimizerTest(xla_test.XLATestCase):
       opt = proximal_gradient_descent.ProximalGradientDescentOptimizer(
           3.0, l1_regularization_strength=0.001, l2_regularization_strength=2.0)
       update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
 
       self.assertAllClose([1.0, 2.0], self.evaluate(var0))
       self.assertAllClose([4.0, 3.0], self.evaluate(var1))
@@ -125,7 +121,7 @@ class ProximalGradientDescentOptimizerTest(xla_test.XLATestCase):
     grads1 = constant_op.constant([0.01, 0.02])
 
     update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-    variables.global_variables_initializer().run()
+    self.evaluate(variables.global_variables_initializer())
 
     self.assertAllClose([1.0, 2.0], self.evaluate(var0))
     self.assertAllClose([3.0, 4.0], self.evaluate(var1))

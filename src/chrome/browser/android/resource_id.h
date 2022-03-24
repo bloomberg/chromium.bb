@@ -41,8 +41,21 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SAFETYTIP_SHIELD,
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SAVE_PASSWORD,
                     R.drawable.ic_vpn_key_blue)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MOBILE_FRIENDLY,
+                    R.drawable.infobar_mobile_friendly)
 LINK_RESOURCE_ID(IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER,
                  R.drawable.google_pay_with_divider)
+
+// Android only messages (an alternative UI to infobars)
+DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_VIDEOCAM,
+                    R.drawable.ic_videocam_24dp)
+DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_STORAGE,
+                    R.drawable.ic_storage)
+DECLARE_RESOURCE_ID(IDR_ANDORID_MESSAGE_PERMISSION_CAMERA,
+                    R.drawable.ic_photo_camera_black)
+DECLARE_RESOURCE_ID(IDR_ANDROID_MESSAGE_SETTINGS, R.drawable.settings_cog)
+DECLARE_RESOURCE_ID(IDR_ANDROID_MESSAGE_SAFETY_CHECK, R.drawable.safety_check)
+DECLARE_RESOURCE_ID(IDR_ANDROID_MESSAGE_SHIELD, R.drawable.shield)
 
 // Autofill popup and keyboard accessory images.
 // We use Android's |VectorDrawableCompat| for the following images that are
@@ -69,6 +82,8 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_HTTPS_INVALID_WARNING,
                     R.drawable.ic_warning_red_16dp)
 DECLARE_RESOURCE_ID(IDR_ANDROID_AUTOFILL_OFFER_TAG_GREEN,
                     R.drawable.ic_offer_tag)
+
+DECLARE_RESOURCE_ID(IDR_SEND_TAB_TO_SELF, R.drawable.send_tab)
 
 // We display settings and edit icon for keyboard accessory using Android's
 // |VectorDrawableCompat|. We do not display these icons for autofill popup.

@@ -18,8 +18,8 @@ import argparse
 import os
 import os.path
 import re
-import sys
 import subprocess
+import sys
 
 
 def build_valid_guard(fpath):
@@ -48,9 +48,12 @@ class GuardValidator(object):
         self.endif_re = re.compile(r'#endif  // ([A-Z][A-Z_1-9]*)')
         self.failed = False
 
+    def _is_c_core_header(self, fpath):
+        return 'include' in fpath and not ('grpc++' in fpath or 'grpcpp'
+                                           in fpath or 'event_engine' in fpath)
+
     def fail(self, fpath, regexp, fcontents, match_txt, correct, fix):
-        c_core_header = 'include' in fpath and not ('grpc++' in fpath or
-                                                    'grpcpp' in fpath)
+        c_core_header = self._is_c_core_header(fpath)
         self.failed = True
         invalid_guards_msg_template = (
             '{0}: Missing preprocessor guards (RE {1}). '
@@ -63,15 +66,15 @@ class GuardValidator(object):
                         if c_core_header else '#endif  // {2}')
         if not match_txt:
             print(
-                invalid_guards_msg_template.format(fpath, regexp.pattern,
-                                                   build_valid_guard(fpath)))
+                (invalid_guards_msg_template.format(fpath, regexp.pattern,
+                                                    build_valid_guard(fpath))))
             return fcontents
 
-        print(('{}: Wrong preprocessor guards (RE {}):'
-               '\n\tFound {}, expected {}').format(fpath, regexp.pattern,
-                                                   match_txt, correct))
+        print((('{}: Wrong preprocessor guards (RE {}):'
+                '\n\tFound {}, expected {}').format(fpath, regexp.pattern,
+                                                    match_txt, correct)))
         if fix:
-            print('Fixing {}...\n'.format(fpath))
+            print(('Fixing {}...\n'.format(fpath)))
             fixed_fcontents = re.sub(match_txt, correct, fcontents)
             if fixed_fcontents:
                 self.failed = False
@@ -81,15 +84,14 @@ class GuardValidator(object):
         return fcontents
 
     def check(self, fpath, fix):
-        c_core_header = 'include' in fpath and not ('grpc++' in fpath or
-                                                    'grpcpp' in fpath)
+        c_core_header = self._is_c_core_header(fpath)
         valid_guard = build_valid_guard(fpath)
 
         fcontents = load(fpath)
 
         match = self.ifndef_re.search(fcontents)
         if not match:
-            print('something drastically wrong with: %s' % fpath)
+            print(('something drastically wrong with: %s' % fpath))
             return False  # failed
         if match.lastindex is None:
             # No ifndef. Request manual addition with hints
@@ -149,8 +151,8 @@ class GuardValidator(object):
                     flines[-1], '', '', False)
         elif match.group(1) != running_guard:
             # Is the #endif guard the same as the #ifndef and #define guards?
-            fcontents = self.fail(fpath, endif_re, fcontents, match.group(1),
-                                  valid_guard, fix)
+            fcontents = self.fail(fpath, self.endif_re, fcontents,
+                                  match.group(1), valid_guard, fix)
             if fix:
                 save(fpath, fcontents)
 

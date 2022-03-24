@@ -24,16 +24,16 @@ void CFWL_DateTimeEdit::OnProcessMessage(CFWL_Message* pMessage) {
   }
 
   CFWL_MessageMouse* pMouse = static_cast<CFWL_MessageMouse*>(pMessage);
-  if (pMouse->m_dwCmd == FWL_MouseCommand::LeftButtonDown ||
-      pMouse->m_dwCmd == FWL_MouseCommand::RightButtonDown) {
-    if ((m_Properties.m_dwStates & FWL_WGTSTATE_Focused) == 0)
-      m_Properties.m_dwStates |= FWL_WGTSTATE_Focused;
+  if (pMouse->m_dwCmd == CFWL_MessageMouse::MouseCommand::kLeftButtonDown ||
+      pMouse->m_dwCmd == CFWL_MessageMouse::MouseCommand::kRightButtonDown) {
+    if ((m_Properties.m_dwStates & FWL_STATE_WGT_Focused) == 0)
+      m_Properties.m_dwStates |= FWL_STATE_WGT_Focused;
 
     CFWL_DateTimePicker* pDateTime =
         static_cast<CFWL_DateTimePicker*>(GetOuter());
     if (pDateTime->IsMonthCalendarVisible()) {
       CFX_RectF rtInvalidate = pDateTime->GetWidgetRect();
-      pDateTime->ShowMonthCalendar(false);
+      pDateTime->HideMonthCalendar();
       rtInvalidate.Offset(-rtInvalidate.left, -rtInvalidate.top);
       pDateTime->RepaintRect(rtInvalidate);
     }

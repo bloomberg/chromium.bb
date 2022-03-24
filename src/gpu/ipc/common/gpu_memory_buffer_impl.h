@@ -6,7 +6,6 @@
 #define GPU_IPC_COMMON_GPU_MEMORY_BUFFER_IMPL_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/gpu_export.h"
@@ -21,6 +20,9 @@ namespace gpu {
 class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   using DestructionCallback = base::OnceCallback<void(const gpu::SyncToken&)>;
+
+  GpuMemoryBufferImpl(const GpuMemoryBufferImpl&) = delete;
+  GpuMemoryBufferImpl& operator=(const GpuMemoryBufferImpl&) = delete;
 
   ~GpuMemoryBufferImpl() override;
 
@@ -57,9 +59,6 @@ class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Unmap() operations to avoid corrupt mutation across multiple threads.
   base::Lock map_lock_;
   uint32_t map_count_ GUARDED_BY(map_lock_) = 0u;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);
 };
 
 }  // namespace gpu

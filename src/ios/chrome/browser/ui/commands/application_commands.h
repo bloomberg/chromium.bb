@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/ios/block_types.h"
 #include "ios/public/provider/chrome/browser/user_feedback/user_feedback_sender.h"
 
 class GURL;
@@ -15,7 +16,7 @@ class GURL;
 @class StartVoiceSearchCommand;
 @class UIViewController;
 namespace syncer {
-enum class KeyRetrievalTriggerForUMA;
+enum class TrustedVaultUserActionTriggerForUMA;
 }  // namespace syncer
 
 // This protocol groups commands that are part of ApplicationCommands, but
@@ -82,6 +83,10 @@ enum class KeyRetrievalTriggerForUMA;
 // Dismisses all modal dialogs.
 - (void)dismissModalDialogs;
 
+// Dismisses all modal dialogs with a completion block that is called when
+// modals are dismissed (animations done).
+- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion;
+
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Settings UI, presenting from |baseViewController|.
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController;
@@ -91,19 +96,28 @@ enum class KeyRetrievalTriggerForUMA;
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController;
 
-- (void)showLocationPermissionsFromViewController:
-    (UIViewController*)baseViewController;
-
 // Presents the Trusted Vault reauth dialog.
 // |baseViewController| presents the sign-in.
-// |retrievalTrigger| UI elements where the trusted vault reauth has been
-// triggered.
+// |trigger| UI elements where the trusted vault reauth has been triggered.
 - (void)
-    showTrustedVaultReauthenticationFromViewController:
+    showTrustedVaultReauthForFetchKeysFromViewController:
         (UIViewController*)baseViewController
-                                      retrievalTrigger:
-                                          (syncer::KeyRetrievalTriggerForUMA)
-                                              retrievalTrigger;
+                                                 trigger:
+                                                     (syncer::
+                                                          TrustedVaultUserActionTriggerForUMA)
+                                                         trigger;
+
+// Presents the Trusted Vault degraded recoverability (to enroll additional
+// recovery factors).
+// |baseViewController| presents the sign-in.
+// |trigger| UI elements where the trusted vault reauth has been triggered.
+- (void)
+    showTrustedVaultReauthForDegradedRecoverabilityFromViewController:
+        (UIViewController*)baseViewController
+                                                              trigger:
+                                                                  (syncer::
+                                                                       TrustedVaultUserActionTriggerForUMA)
+                                                                      trigger;
 
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;

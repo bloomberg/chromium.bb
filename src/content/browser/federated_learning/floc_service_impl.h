@@ -5,18 +5,16 @@
 #ifndef CONTENT_BROWSER_FEDERATED_LEARNING_FLOC_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_FEDERATED_LEARNING_FLOC_SERVICE_IMPL_H_
 
-#include "content/common/content_export.h"
-#include "content/public/browser/frame_service_base.h"
+#include "content/public/browser/document_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/federated_learning/floc.mojom.h"
 
 namespace content {
 
 class RenderFrameHost;
-class RenderFrameHostImpl;
 
-class CONTENT_EXPORT FlocServiceImpl final
-    : public FrameServiceBase<blink::mojom::FlocService> {
+class FlocServiceImpl final
+    : public DocumentService<blink::mojom::FlocService> {
  public:
   FlocServiceImpl(RenderFrameHost* render_frame_host,
                   mojo::PendingReceiver<blink::mojom::FlocService> receiver);
@@ -29,10 +27,8 @@ class CONTENT_EXPORT FlocServiceImpl final
   void GetInterestCohort(GetInterestCohortCallback callback) override;
 
  private:
-  // |this| can only be destroyed by FrameServiceBase.
+  // |this| can only be destroyed by DocumentService.
   ~FlocServiceImpl() override;
-
-  RenderFrameHostImpl* const render_frame_host_;
 };
 
 }  // namespace content

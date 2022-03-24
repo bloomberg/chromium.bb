@@ -42,8 +42,8 @@ class MaybeUtf8 {
         // strings, the bytes we get from SeqOneByteString are not. buf_ is
         // guaranteed to be null terminated.
         DisallowGarbageCollection no_gc;
-        base::Memcpy(
-            buf_, Handle<SeqOneByteString>::cast(string)->GetChars(no_gc), len);
+        memcpy(buf_, Handle<SeqOneByteString>::cast(string)->GetChars(no_gc),
+               len);
       }
     } else {
       Local<v8::String> local = Utils::ToLocal(string);
@@ -61,7 +61,7 @@ class MaybeUtf8 {
  private:
   void AllocateSufficientSpace(int len) {
     if (len + 1 > MAX_STACK_LENGTH) {
-      allocated_.reset(new uint8_t[len + 1]);
+      allocated_ = std::make_unique<uint8_t[]>(len + 1);
       buf_ = allocated_.get();
     }
   }
@@ -72,7 +72,7 @@ class MaybeUtf8 {
   // the MAX_STACK_LENGTH should be more than enough.
   uint8_t* buf_;
   uint8_t data_[MAX_STACK_LENGTH];
-  std::unique_ptr<uint8_t> allocated_;
+  std::unique_ptr<uint8_t[]> allocated_;
 };
 
 #if !defined(V8_USE_PERFETTO)
@@ -123,7 +123,7 @@ BUILTIN(IsTraceCategoryEnabled) {
   return isolate->heap()->ToBoolean(enabled);
 }
 
-// Builtins::kTrace(phase, category, name, id, data) : bool
+// Builtin::kTrace(phase, category, name, id, data) : bool
 BUILTIN(Trace) {
   HandleScope handle_scope(isolate);
 

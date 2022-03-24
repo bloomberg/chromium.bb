@@ -11,7 +11,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "base/version.h"
 #include "components/version_info/channel.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -26,10 +26,11 @@ enum class RefreshTaskId {
   kRefreshWebFeed,
 };
 
-// Information about the Chrome build.
+// Information about the Chrome build and feature flags.
 struct ChromeInfo {
   version_info::Channel channel{};
   base::Version version;
+  bool start_surface = false;
 };
 // Device display metrics.
 struct DisplayMetrics {
@@ -39,9 +40,9 @@ struct DisplayMetrics {
 };
 
 // A unique ID for an ephemeral change.
-using EphemeralChangeId = util::IdTypeU32<class EphemeralChangeIdClass>;
-using SurfaceId = util::IdTypeU32<class SurfaceIdClass>;
-using ImageFetchId = util::IdTypeU32<class ImageFetchIdClass>;
+using EphemeralChangeId = base::IdTypeU32<class EphemeralChangeIdClass>;
+using SurfaceId = base::IdTypeU32<class SurfaceIdClass>;
+using ImageFetchId = base::IdTypeU32<class ImageFetchIdClass>;
 
 // A map of trial names (key) to group names (value) that is
 // sent from the server.
@@ -61,7 +62,10 @@ struct NetworkResponseInfo {
   std::string bless_nonce;
   GURL base_request_url;
   size_t response_body_bytes = 0;
+  size_t encoded_size_bytes = 0;
   bool was_signed_in = false;
+  base::TimeTicks fetch_time_ticks;
+  base::TimeTicks loader_start_time_ticks;
 };
 
 std::ostream& operator<<(std::ostream& os, const NetworkResponseInfo& o);
@@ -119,7 +123,6 @@ class WebFeedPageInformation {
  private:
   GURL url_;
   std::vector<GURL> rss_urls_;
-  // TODO(crbug/1152592): There will be additional optional information.
 };
 std::ostream& operator<<(std::ostream& os, const WebFeedPageInformation& value);
 
@@ -133,27 +136,42 @@ enum class WebFeedSubscriptionStatus {
 };
 std::ostream& operator<<(std::ostream& out, WebFeedSubscriptionStatus value);
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.feed.webfeed
+enum class WebFeedAvailabilityStatus {
+  kStateUnspecified = 0,
+  kInactive = 1,
+  kActive = 2,
+  kWaitingForContent = 4,
+};
+std::ostream& operator<<(std::ostream& out, WebFeedAvailabilityStatus value);
+
 // Information about a web feed.
 struct WebFeedMetadata {
   WebFeedMetadata();
   WebFeedMetadata(const WebFeedMetadata&);
   WebFeedMetadata(WebFeedMetadata&&);
+  ~WebFeedMetadata();
   WebFeedMetadata& operator=(const WebFeedMetadata&);
   WebFeedMetadata& operator=(WebFeedMetadata&&);
 
   // Unique ID of the web feed. Empty if the client knows of no web feed.
   std::string web_feed_id;
   // Whether the subscribed Web Feed has content available for fetching.
-  bool is_active = false;
+  WebFeedAvailabilityStatus availability_status =
+      WebFeedAvailabilityStatus::kStateUnspecified;
   // Whether the Web Feed is recommended by the web feeds service.
   bool is_recommended = false;
   std::string title;
   GURL publisher_url;
   WebFeedSubscriptionStatus subscription_status =
       WebFeedSubscriptionStatus::kUnknown;
+  GURL favicon_url;
 };
 std::ostream& operator<<(std::ostream& out, const WebFeedMetadata& value);
 
+// This must be kept in sync with WebFeedSubscriptionRequestStatus in enums.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.feed.webfeed
 enum class WebFeedSubscriptionRequestStatus {
   kUnknown = 0,
@@ -162,9 +180,12 @@ enum class WebFeedSubscriptionRequestStatus {
   kFailedTooManySubscriptions = 3,
   kFailedUnknownError = 4,
   kAbortWebFeedSubscriptionPendingClearAll = 5,
+  kMaxValue = kAbortWebFeedSubscriptionPendingClearAll,
 };
 std::ostream& operator<<(std::ostream& out,
                          WebFeedSubscriptionRequestStatus value);
+
+using NetworkRequestId = base::IdTypeU32<class NetworkRequestIdClass>;
 
 }  // namespace feed
 

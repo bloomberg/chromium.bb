@@ -5,14 +5,12 @@
 
 import sys
 
-# pylint: disable=relative-import
 import test_runner
 
 
 def main():
   runner = test_runner.TestRunner('corpus')
   runner.SetEnforceExpectedImages(True)
-  runner.SetOneShotRenderer(True)
   return runner.Run()
 
 

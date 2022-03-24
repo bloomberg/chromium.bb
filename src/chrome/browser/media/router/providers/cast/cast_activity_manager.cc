@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -584,8 +585,8 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
   // This condition seems to always be true in practice, but if it's not, we
   // still try to handle them gracefully below.
   //
-  // TODO(jrw): Replace DCHECK with an UMA metric.
-  DCHECK(existing_session_id);
+  // TODO(jrw): Replace VLOG_IF with an UMA metric.
+  VLOG_IF(1, !existing_session_id) << "No existing_session_id.";
 
   // If |existing_session_id| is empty, then most likely it's due to a pending
   // launch. Check the app ID to see if the existing activity should be
@@ -770,8 +771,8 @@ void CastActivityManager::NotifyOnRoutesUpdated(
     const std::vector<MediaRoute>& routes) {
   // Note: joinable_route_ids is empty as we are deprecating the join feature
   // in the Harmony UI.
-  media_router_->OnRoutesUpdated(MediaRouteProviderId::CAST, routes, source_id,
-                                 std::vector<MediaRoute::Id>());
+  media_router_->OnRoutesUpdated(mojom::MediaRouteProviderId::CAST, routes,
+                                 source_id, std::vector<MediaRoute::Id>());
 }
 
 void CastActivityManager::HandleLaunchSessionResponse(

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -202,7 +203,7 @@ void ServiceWorkerInstalledScriptsSender::Abort(
 
       // Delete the registration data since the data was corrupted.
       if (owner_->context()) {
-        ServiceWorkerRegistration* registration =
+        scoped_refptr<ServiceWorkerRegistration> registration =
             owner_->context()->GetLiveRegistration(owner_->registration_id());
         DCHECK(registration);
         // Check if the registation is still alive. The registration may have

@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -151,7 +151,7 @@ class ScopedPluginRegister {
   }
 
  private:
-  content::PluginService* plugin_service_;
+  raw_ptr<content::PluginService> plugin_service_;
 };
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
@@ -167,6 +167,11 @@ class BlockedSchemeNavigationBrowserTest
 #else
   BlockedSchemeNavigationBrowserTest() {}
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+  BlockedSchemeNavigationBrowserTest(
+      const BlockedSchemeNavigationBrowserTest&) = delete;
+  BlockedSchemeNavigationBrowserTest& operator=(
+      const BlockedSchemeNavigationBrowserTest&) = delete;
 
  protected:
   void SetUpOnMainThread() override {
@@ -449,8 +454,9 @@ class BlockedSchemeNavigationBrowserTest
     EXPECT_TRUE(
         new_shell->web_contents()->GetLastCommittedURL().spec().empty());
     // No navigation should commit.
-    EXPECT_FALSE(
-        new_shell->web_contents()->GetController().GetLastCommittedEntry());
+    NavigationEntry* current_entry =
+        new_shell->web_contents()->GetController().GetLastCommittedEntry();
+    EXPECT_TRUE(!current_entry || current_entry->IsInitialEntry());
     // Original page shouldn't navigate away.
     EXPECT_EQ(original_url, shell()->web_contents()->GetLastCommittedURL());
   }
@@ -560,8 +566,6 @@ class BlockedSchemeNavigationBrowserTest
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
   GURL data_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlockedSchemeNavigationBrowserTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -629,12 +633,16 @@ class DataUrlNavigationBrowserTestWithFeatureFlag
     scoped_feature_list_.InitAndEnableFeature(
         features::kAllowContentInitiatedDataUrlNavigations);
   }
+
+  DataUrlNavigationBrowserTestWithFeatureFlag(
+      const DataUrlNavigationBrowserTestWithFeatureFlag&) = delete;
+  DataUrlNavigationBrowserTestWithFeatureFlag& operator=(
+      const DataUrlNavigationBrowserTestWithFeatureFlag&) = delete;
+
   ~DataUrlNavigationBrowserTestWithFeatureFlag() override {}
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataUrlNavigationBrowserTestWithFeatureFlag);
 };
 
 // Tests that a content initiated navigation to a data URL is allowed if
@@ -851,7 +859,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 
 // Test window.open to a data URL with binary mimetype.
 IN_PROC_BROWSER_TEST_F(BlockedSchemeNavigationBrowserTest,
-                       DataUrl_OctetStream_WindowOpen) {
+                       MAYBE_DataUrl_OctetStream_WindowOpen) {
   Navigate(embedded_test_server()->GetURL(
       base::StringPrintf("/data_url_navigations.html")));
   // Navigations to data URLs with unknown mime types should end up as

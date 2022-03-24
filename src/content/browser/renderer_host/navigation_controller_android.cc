@@ -13,13 +13,16 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
+#include "content/browser/attribution_reporting/attribution_host_utils.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
+#include "content/common/url_utils.h"
 #include "content/public/android/content_jni_headers/NavigationControllerImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body_android.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/data_url.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/android/gurl_android.h"
@@ -67,7 +70,8 @@ JNI_NavigationControllerImpl_CreateJavaNavigationEntry(
 
   return content::Java_NavigationControllerImpl_createNavigationEntry(
       env, index, j_url, j_virtual_url, j_original_url, j_referrer_url, j_title,
-      j_bitmap, entry->GetTransitionType(), j_timestamp);
+      j_bitmap, entry->GetTransitionType(), j_timestamp,
+      entry->IsInitialEntry());
 }
 
 static void JNI_NavigationControllerImpl_AddNavigationEntryToHistory(
@@ -84,6 +88,10 @@ static void JNI_NavigationControllerImpl_AddNavigationEntryToHistory(
 class MapData : public base::SupportsUserData::Data {
  public:
   MapData() = default;
+
+  MapData(const MapData&) = delete;
+  MapData& operator=(const MapData&) = delete;
+
   ~MapData() override = default;
 
   static MapData* Get(content::NavigationEntry* entry) {
@@ -107,8 +115,6 @@ class MapData : public base::SupportsUserData::Data {
 
  private:
   base::flat_map<std::string, std::u16string> map_;
-
-  DISALLOW_COPY_AND_ASSIGN(MapData);
 };
 
 }  // namespace
@@ -244,7 +250,12 @@ void NavigationControllerAndroid::LoadUrl(
     const JavaParamRef<jobject>& j_initiator_origin,
     jboolean has_user_gesture,
     jboolean should_clear_history_list,
-    jlong input_start) {
+    jlong input_start,
+    const JavaParamRef<jstring>& source_package_name,
+    const JavaParamRef<jstring>& attribution_source_event_id,
+    const JavaParamRef<jstring>& attribution_destination,
+    const JavaParamRef<jstring>& attribution_report_to,
+    jlong attribution_expiry) {
   DCHECK(url);
   NavigationController::LoadURLParams params(
       GURL(ConvertJavaStringToUTF8(env, url)));
@@ -306,6 +317,22 @@ void NavigationControllerAndroid::LoadUrl(
 
   if (input_start != 0)
     params.input_start = base::TimeTicks::FromUptimeMillis(input_start);
+
+  if (source_package_name) {
+    DCHECK(!params.initiator_origin);
+    // At the moment, source package name is only used for attribution.
+    DCHECK(attribution_source_event_id);
+    params.initiator_origin = OriginFromAndroidPackageName(
+        ConvertJavaStringToUTF8(env, source_package_name));
+
+    params.impression = attribution_host_utils::ParseImpressionFromApp(
+        ConvertJavaStringToUTF8(env, attribution_source_event_id),
+        ConvertJavaStringToUTF8(env, attribution_destination),
+        attribution_report_to
+            ? ConvertJavaStringToUTF8(env, attribution_report_to)
+            : "",
+        attribution_expiry);
+  }
 
   navigation_controller_->LoadURLWithParams(params);
 }

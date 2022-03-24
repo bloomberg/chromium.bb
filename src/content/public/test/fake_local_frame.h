@@ -34,6 +34,9 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
 
   void Init(blink::AssociatedInterfaceProvider* provider);
 
+  // Flushes mojo messages on `receiver_`.
+  void FlushMessages();
+
   // blink::mojom::LocalFrame:
   void GetTextSurroundingSelection(
       uint32_t max_length,
@@ -70,6 +73,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) override;
   void MediaPlayerActionAt(const gfx::Point& location,
                            blink::mojom::MediaPlayerActionPtr action) override;
+  void PluginActionAt(const gfx::Point& location,
+                      blink::mojom::PluginActionType action) override;
   void AdvanceFocusInFrame(blink::mojom::FocusType focus_type,
                            const absl::optional<blink::RemoteFrameToken>&
                                source_frame_token) override;
@@ -77,7 +82,6 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation) override;
   void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override;
-  void OnScreensChange() override;
   void PostMessageEvent(
       const absl::optional<blink::RemoteFrameToken>& source_frame_token,
       const std::u16string& source_origin,
@@ -124,7 +128,6 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       const GURL& url_before_redirects,
       bool had_redirect,
       network::mojom::SourceLocationPtr source_location) override;
-  void ActivateForPrerendering() override;
   void BindDevToolsAgent(
       mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver)
@@ -135,7 +138,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
 #endif
   void HandleRendererDebugURL(const GURL& url) override;
   void GetCanonicalUrlForSharing(
-      GetCanonicalUrlForSharingCallback callback) override;
+      base::OnceCallback<void(const absl::optional<GURL>&)> callback) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

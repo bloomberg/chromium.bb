@@ -36,6 +36,10 @@ using ::chromeos::kFrameInactiveColorKey;
 class HeaderView::HeaderContentView : public views::View {
  public:
   HeaderContentView(HeaderView* header_view) : header_view_(header_view) {}
+
+  HeaderContentView(const HeaderContentView&) = delete;
+  HeaderContentView& operator=(const HeaderContentView&) = delete;
+
   ~HeaderContentView() override = default;
 
   // views::View:
@@ -54,7 +58,6 @@ class HeaderView::HeaderContentView : public views::View {
   HeaderView* header_view_;
   views::PaintInfo::ScaleType scale_type_ =
       views::PaintInfo::ScaleType::kScaleWithEdgeSnapping;
-  DISALLOW_COPY_AND_ASSIGN(HeaderContentView);
 };
 
 HeaderView::HeaderView(views::Widget* target_widget,
@@ -68,15 +71,18 @@ HeaderView::HeaderView(views::Widget* target_widget,
           target_widget_));
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
 
-  aura::Window* window = target_widget->GetNativeWindow();
   frame_header_ = std::make_unique<DefaultFrameHeader>(
       target_widget,
       (frame_view ? static_cast<views::View*>(frame_view) : this),
       caption_button_container_);
+}
 
+void HeaderView::Init() {
   UpdateBackButton();
-
+  UpdateCenterButton();
   frame_header_->UpdateFrameColors();
+
+  aura::Window* window = target_widget_->GetNativeWindow();
   window_observation_.Observe(window);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -140,6 +146,7 @@ void HeaderView::UpdateCaptionButtons() {
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
 
   UpdateBackButton();
+  UpdateCenterButton();
 
   Layout();
 }
@@ -218,6 +225,14 @@ void HeaderView::OnWindowDestroying(aura::Window* window) {
   window_observation_.Reset();
   // A HeaderView may outlive the target widget.
   target_widget_ = nullptr;
+}
+
+void HeaderView::OnDisplayMetricsChanged(const display::Display& display,
+                                         uint32_t changed_metrics) {
+  if ((changed_metrics & chromeos::TabletState::DISPLAY_METRIC_ROTATION) &&
+      frame_header_) {
+    frame_header_->LayoutHeader();
+  }
 }
 
 views::View* HeaderView::avatar_icon() const {
@@ -321,6 +336,21 @@ void HeaderView::UpdateBackButton() {
   } else {
     delete back_button;
     frame_header_->SetBackButton(nullptr);
+  }
+}
+
+void HeaderView::UpdateCenterButton() {
+  bool is_center_button_visible = caption_button_container_->model()->IsVisible(
+      views::CAPTION_BUTTON_ICON_CENTER);
+  auto* center_button = frame_header_->GetCenterButton();
+  if (!center_button)
+    return;
+  if (is_center_button_visible) {
+    if (!center_button->parent())
+      AddChildView(center_button);
+    center_button->SetVisible(true);
+  } else {
+    center_button->SetVisible(false);
   }
 }
 

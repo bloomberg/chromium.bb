@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"
@@ -45,6 +44,9 @@ class FakeNetworkDispatcher
 
   FakeNetworkDispatcher();
 
+  FakeNetworkDispatcher(const FakeNetworkDispatcher&) = delete;
+  FakeNetworkDispatcher& operator=(const FakeNetworkDispatcher&) = delete;
+
   rtc::IPAddress AllocateAddress();
 
   // Must be called on the thread that the |node| works on.
@@ -67,8 +69,6 @@ class FakeNetworkDispatcher
 
   // A counter used to allocate unique addresses in AllocateAddress().
   int allocated_address_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeNetworkDispatcher);
 };
 
 }  // namespace remoting

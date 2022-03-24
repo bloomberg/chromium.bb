@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
@@ -48,6 +47,8 @@ class CORE_EXPORT FetchResponseData final
                     network::mojom::FetchResponseSource,
                     uint16_t,
                     AtomicString);
+  FetchResponseData(const FetchResponseData&) = delete;
+  FetchResponseData& operator=(const FetchResponseData&) = delete;
 
   FetchResponseData* CreateBasicFilteredResponse() const;
   FetchResponseData* CreateCorsFilteredResponse(
@@ -84,6 +85,7 @@ class CORE_EXPORT FetchResponseData final
     return cors_exposed_header_names_;
   }
   bool HasRangeRequested() const { return has_range_requested_; }
+  bool RequestIncludeCredentials() const;
 
   int64_t GetPadding() const { return padding_; }
   void SetPadding(int64_t padding) { padding_ = padding; }
@@ -126,6 +128,7 @@ class CORE_EXPORT FetchResponseData final
   }
   void SetAuthChallengeInfo(
       const absl::optional<net::AuthChallengeInfo>& auth_challenge_info);
+  void SetRequestIncludeCredentials(bool request_include_credentials);
 
   // If the type is Default, replaces |buffer_|.
   // If the type is Basic or CORS, replaces |buffer_| and
@@ -166,13 +169,16 @@ class CORE_EXPORT FetchResponseData final
   HTTPHeaderSet cors_exposed_header_names_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   AtomicString alpn_negotiated_protocol_;
-  bool was_fetched_via_spdy_;
-  bool has_range_requested_;
   // |auth_challenge_info_| is a std::unique_ptr instead of absl::optional
   // |because this member is empty in most cases.
   std::unique_ptr<net::AuthChallengeInfo> auth_challenge_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
+  bool was_fetched_via_spdy_ : 1;
+  bool has_range_requested_ : 1;
+  // The request's |includeCredentials| value from the "HTTP-network fetch"
+  // algorithm.
+  // See: https://fetch.spec.whatwg.org/#concept-http-network-fetch
+  bool request_include_credentials_ : 1;
 };
 
 }  // namespace blink

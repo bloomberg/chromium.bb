@@ -16,14 +16,14 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/SurfaceContext.h"
 
 void TestReadPixels(skiatest::Reporter* reporter,
                     GrDirectContext* dContext,
-                    GrSurfaceContext* srcContext,
+                    skgpu::SurfaceContext* srcContext,
                     uint32_t expectedPixelValues[],
                     const char* testName) {
     int pixelCnt = srcContext->width() * srcContext->height();
@@ -50,7 +50,7 @@ void TestReadPixels(skiatest::Reporter* reporter,
 
 void TestWritePixels(skiatest::Reporter* reporter,
                      GrDirectContext* dContext,
-                     GrSurfaceContext* dstContext,
+                     skgpu::SurfaceContext* dstContext,
                      bool expectedToWork,
                      const char* testName) {
     SkImageInfo ii = SkImageInfo::Make(dstContext->dimensions(),
@@ -92,9 +92,8 @@ void TestCopyFromSurface(skiatest::Reporter* reporter,
     SkASSERT(copy && copy->asTextureProxy());
     auto swizzle = dContext->priv().caps()->getReadSwizzle(copy->backendFormat(), colorType);
     GrSurfaceProxyView view(std::move(copy), origin, swizzle);
-    auto dstContext = GrSurfaceContext::Make(dContext,
-                                             std::move(view),
-                                             {colorType, kPremul_SkAlphaType, nullptr});
+    auto dstContext = dContext->priv().makeSC(std::move(view),
+                                              {colorType, kPremul_SkAlphaType, nullptr});
     SkASSERT(dstContext);
 
     TestReadPixels(reporter, dContext, dstContext.get(), expectedPixelValues, testName);
@@ -160,8 +159,8 @@ bool ComparePixels(const GrCPixmap& a,
                    const float tolRGBA[4],
                    std::function<ComparePixmapsErrorReporter>& error) {
     if (a.dimensions() != b.dimensions()) {
-        static constexpr float kDummyDiffs[4] = {};
-        error(-1, -1, kDummyDiffs);
+        static constexpr float kEmptyDiffs[4] = {};
+        error(-1, -1, kEmptyDiffs);
         return false;
     }
 
@@ -253,6 +252,28 @@ void CheckSingleThreadedProxyRefs(skiatest::Reporter* reporter,
     REPORTER_ASSERT(reporter, proxy->refCntGreaterThan(expectedProxyRefs - 1) &&
                               !proxy->refCntGreaterThan(expectedProxyRefs));
     REPORTER_ASSERT(reporter, actualBackingRefs == expectedBackingRefs);
+}
+
+std::unique_ptr<skgpu::SurfaceContext> CreateSurfaceContext(GrRecordingContext* rContext,
+                                                            const GrImageInfo& info,
+                                                            SkBackingFit fit,
+                                                            GrSurfaceOrigin origin,
+                                                            GrRenderable renderable,
+                                                            int sampleCount,
+                                                            GrMipmapped mipmapped,
+                                                            GrProtected isProtected,
+                                                            SkBudgeted budgeted) {
+    GrBackendFormat format = rContext->priv().caps()->getDefaultBackendFormat(info.colorType(),
+                                                                              renderable);
+    return rContext->priv().makeSC(info,
+                                   format,
+                                   fit,
+                                   origin,
+                                   renderable,
+                                   sampleCount,
+                                   mipmapped,
+                                   isProtected,
+                                   budgeted);
 }
 
 #include "src/utils/SkCharToGlyphCache.h"

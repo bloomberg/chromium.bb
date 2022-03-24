@@ -28,13 +28,13 @@
 #include "src/core/SkMaskGamma.h"
 #include "src/core/SkStrikeCache.h"
 #include "src/core/SkTypefaceCache.h"
-#include "src/core/SkUtils.h"
 #include "src/sfnt/SkOTTable_OS_2.h"
 #include "src/sfnt/SkOTTable_maxp.h"
 #include "src/sfnt/SkOTTable_name.h"
 #include "src/sfnt/SkOTUtils.h"
 #include "src/sfnt/SkSFNTHeader.h"
 #include "src/utils/SkMatrix22.h"
+#include "src/utils/SkUTF.h"
 #include "src/utils/win/SkHRESULT.h"
 
 #include <tchar.h>
@@ -287,6 +287,7 @@ protected:
     void onGetFamilyName(SkString* familyName) const override;
     bool onGetPostScriptName(SkString*) const override { return false; }
     SkTypeface::LocalizedStrings* onCreateFamilyNameIterator() const override;
+    bool onGlyphMaskNeedsCurrentColor() const override { return false; }
     int onGetVariationDesignPosition(SkFontArguments::VariationPosition::Coordinate coordinates[],
                                      int coordinateCount) const override
     {
@@ -564,9 +565,9 @@ public:
 
 protected:
     bool generateAdvance(SkGlyph* glyph) override;
-    void generateMetrics(SkGlyph* glyph) override;
+    void generateMetrics(SkGlyph* glyph, SkArenaAlloc*) override;
     void generateImage(const SkGlyph& glyph) override;
-    bool generatePath(SkGlyphID glyph, SkPath* path) override;
+    bool generatePath(const SkGlyph& glyph, SkPath* path) override;
     void generateFontMetrics(SkFontMetrics*) override;
 
 private:
@@ -801,7 +802,7 @@ bool SkScalerContext_GDI::generateAdvance(SkGlyph* glyph) {
     return false;
 }
 
-void SkScalerContext_GDI::generateMetrics(SkGlyph* glyph) {
+void SkScalerContext_GDI::generateMetrics(SkGlyph* glyph, SkArenaAlloc* alloc) {
     SkASSERT(fDDC);
 
     glyph->fMaskFormat = fRec.fMaskFormat;
@@ -843,6 +844,9 @@ void SkScalerContext_GDI::generateMetrics(SkGlyph* glyph) {
         // Apply matrix to advance.
         glyph->fAdvanceY = -SkFIXEDToFloat(fMat22.eM12) * glyph->fAdvanceX;
         glyph->fAdvanceX *= SkFIXEDToFloat(fMat22.eM11);
+
+        // These do not have an outline path at all.
+        glyph->setPath(alloc, nullptr, false);
 
         return;
     }
@@ -1530,11 +1534,13 @@ DWORD SkScalerContext_GDI::getGDIGlyphPath(SkGlyphID glyph, UINT flags,
     return total_size;
 }
 
-bool SkScalerContext_GDI::generatePath(SkGlyphID glyph, SkPath* path) {
+bool SkScalerContext_GDI::generatePath(const SkGlyph& glyph, SkPath* path) {
     SkASSERT(path);
     SkASSERT(fDDC);
 
     path->reset();
+
+    SkGlyphID glyphID = glyph.getGlyphID();
 
     // Out of all the fonts on a typical Windows box,
     // 25% of glyphs require more than 2KB.
@@ -1550,7 +1556,7 @@ bool SkScalerContext_GDI::generatePath(SkGlyphID glyph, SkPath* path) {
         format |= GGO_UNHINTED;
     }
     SkAutoSTMalloc<BUFFERSIZE, uint8_t> glyphbuf(BUFFERSIZE);
-    DWORD total_size = getGDIGlyphPath(glyph, format, &glyphbuf);
+    DWORD total_size = getGDIGlyphPath(glyphID, format, &glyphbuf);
     if (0 == total_size) {
         return false;
     }
@@ -1559,11 +1565,10 @@ bool SkScalerContext_GDI::generatePath(SkGlyphID glyph, SkPath* path) {
         SkGDIGeometrySink sink(path);
         sink.process(glyphbuf, total_size);
     } else {
-        //GDI only uses hinted outlines when axis aligned.
-        UINT format = GGO_NATIVE | GGO_GLYPH_INDEX;
-
         SkAutoSTMalloc<BUFFERSIZE, uint8_t> hintedGlyphbuf(BUFFERSIZE);
-        DWORD hinted_total_size = getGDIGlyphPath(glyph, format, &hintedGlyphbuf);
+        //GDI only uses hinted outlines when axis aligned.
+        DWORD hinted_total_size = getGDIGlyphPath(glyphID, GGO_NATIVE | GGO_GLYPH_INDEX,
+                                                  &hintedGlyphbuf);
         if (0 == hinted_total_size) {
             return false;
         }
@@ -1722,7 +1727,7 @@ std::unique_ptr<SkAdvancedTypefaceMetrics> LogFontTypeface::onGetAdvancedMetrics
     return info;
 }
 
-//Dummy representation of a Base64 encoded GUID from create_unique_font_name.
+//Placeholder representation of a Base64 encoded GUID from create_unique_font_name.
 #define BASE64_GUID_ID "XXXXXXXXXXXXXXXXXXXXXXXX"
 //Length of GUID representation from create_id, including nullptr terminator.
 #define BASE64_GUID_ID_LEN SK_ARRAY_COUNT(BASE64_GUID_ID)

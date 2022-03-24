@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.eager import context
 from tensorflow.python.eager import custom_device_testutil
 from tensorflow.python.framework import constant_op
@@ -41,7 +37,7 @@ class CustomDeviceTest(test.TestCase):
     # There was no copy onto the device. Actually I'm not sure how to trigger
     # that from Python.
     self.assertFalse(custom_device_testutil.FlagValue(arrived_flag))
-    with self.assertRaisesRegexp(errors.InternalError, 'Trying to copy'):
+    with self.assertRaisesRegex(errors.InternalError, 'Trying to copy'):
       y.numpy()
 
 

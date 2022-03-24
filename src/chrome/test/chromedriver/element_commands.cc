@@ -8,6 +8,9 @@
 
 #include <cmath>
 #include <memory>
+#include <set>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -117,7 +120,7 @@ Status FocusToElement(
     if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
       return Status(kElementNotVisible);
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+    base::PlatformThread::Sleep(base::Milliseconds(100));
   }
 
   bool is_enabled = false;
@@ -198,6 +201,62 @@ Status ExecuteFindChildElement(int interval_ms,
       interval_ms, true, &element_id, session, web_view, params, value);
 }
 
+Status ExecuteFindChildElementFromShadowRoot(
+    int interval_ms,
+    Session* session,
+    WebView* web_view,
+    const std::string& shadow_root_id,
+    const base::DictionaryValue& params,
+    std::unique_ptr<base::Value>* value) {
+  return FindShadowElement(interval_ms, true, &shadow_root_id, session,
+                           web_view, params, value);
+}
+
+Status ExecuteFindChildElementsFromShadowRoot(
+    int interval_ms,
+    Session* session,
+    WebView* web_view,
+    const std::string& shadow_root_id,
+    const base::DictionaryValue& params,
+    std::unique_ptr<base::Value>* value) {
+  return FindShadowElement(interval_ms, false, &shadow_root_id, session,
+                           web_view, params, value);
+}
+
+Status ExecuteGetElementShadowRoot(Session* session,
+                                   WebView* web_view,
+                                   const std::string& element_id,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+
+  if (status.IsError())
+    return status;
+
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+
+  std::string currentFrameId = session->GetCurrentFrameId();
+
+  status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                  "function(elem) { return elem.shadowRoot; }",
+                                  args, value);
+
+  if (status.IsError()) {
+    if (status.message().find("no such shadow root") != std::string::npos) {
+      return Status(kNoSuchShadowRoot);
+    }
+
+    return status;
+  }
+
+  if (value->get()->is_none()) {
+    return Status(kNoSuchShadowRoot);
+  }
+
+  return status;
+}
+
 Status ExecuteFindChildElements(int interval_ms,
                                 Session* session,
                                 WebView* web_view,
@@ -235,8 +294,8 @@ Status ExecuteClickElement(Session* session,
       if (status.IsError())
         return status;
       std::string element_type;
-      if (get_element_type->GetAsString(&element_type))
-        element_type = base::ToLowerASCII(element_type);
+      if (get_element_type->is_string())
+        element_type = base::ToLowerASCII(get_element_type->GetString());
       if (element_type == "file")
         return Status(kInvalidArgument);
     }
@@ -362,7 +421,7 @@ Status ExecuteFlick(Session* session,
     if (status.IsError())
       return status;
     base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(1000 / kFlickTouchEventsPerSecond));
+        base::Milliseconds(1000 / kFlickTouchEventsPerSecond));
   }
   return web_view->DispatchTouchEvent(
       TouchEvent(kTouchEnd, location.x + xoffset, location.y + yoffset), false);
@@ -381,7 +440,6 @@ Status ExecuteClearElement(Session* session,
   status = GetElementTagName(session, web_view, element_id, &tag_name);
   if (status.IsError())
     return status;
-  std::string element_type;
   bool is_input_control = false;
 
   if (tag_name == "input") {
@@ -390,8 +448,10 @@ Status ExecuteClearElement(Session* session,
                                  &get_element_type);
     if (status.IsError())
       return status;
-    if (get_element_type->GetAsString(&element_type))
-      element_type = base::ToLowerASCII(element_type);
+
+    std::string element_type;
+    if (get_element_type->is_string())
+      element_type = base::ToLowerASCII(get_element_type->GetString());
 
     is_input_control =
         inputControlTypes.find(element_type) != inputControlTypes.end();
@@ -439,7 +499,7 @@ Status ExecuteClearElement(Session* session,
     if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
       return Status(kElementNotVisible);
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+    base::PlatformThread::Sleep(base::Milliseconds(50));
   }
   static bool isClearWarningNotified = false;
   if (!isClearWarningNotified) {
@@ -471,7 +531,8 @@ Status ExecuteSendKeysToElement(Session* session,
   base::ListValue key_list_local;
   const base::Value* text = nullptr;
   if (session->w3c_compliant) {
-    if (!params.Get("text", &text) || !text->is_string())
+    text = params.FindKey("text");
+    if (text == nullptr || !text->is_string())
       return Status(kInvalidArgument, "'text' must be a string");
     key_list_local.Set(0, std::make_unique<base::Value>(text->Clone()));
     key_list = &key_list_local;
@@ -491,8 +552,8 @@ Status ExecuteSendKeysToElement(Session* session,
   if (status.IsError())
     return status;
   std::string element_type;
-  if (get_element_type->GetAsString(&element_type))
-    element_type = base::ToLowerASCII(element_type);
+  if (get_element_type->is_string())
+    element_type = base::ToLowerASCII(get_element_type->GetString());
   bool is_file = element_type == "file";
   bool is_nontypeable = nontypeableControlTypes.find(element_type) !=
                         nontypeableControlTypes.end();
@@ -505,11 +566,11 @@ Status ExecuteSendKeysToElement(Session* session,
     }
     // Compress array into a single string.
     std::string paths_string;
-    for (size_t i = 0; i < key_list->GetSize(); ++i) {
-      std::string path_part;
-      if (!key_list->GetString(i, &path_part))
+    for (const base::Value& i : key_list->GetList()) {
+      const std::string* path_part = i.GetIfString();
+      if (!path_part)
         return Status(kInvalidArgument, "'value' is invalid");
-      paths_string.append(path_part);
+      paths_string.append(*path_part);
     }
 
     // w3c spec specifies empty path_part should throw invalidArgument error
@@ -558,7 +619,7 @@ Status ExecuteSendKeysToElement(Session* session,
     DCHECK(text != nullptr);
     base::ListValue args;
     args.Append(CreateElement(element_id));
-    args.AppendString(text->GetString());
+    args.Append(text->GetString());
     std::unique_ptr<base::Value> result;
     // Set value to text as given by user; if this does not match the defined
     // format for the input type, results are not defined
@@ -716,7 +777,7 @@ Status ExecuteGetElementProperty(Session* session,
   std::string name;
   if (!params.GetString("name", &name))
     return Status(kInvalidArgument, "missing 'name'");
-  args.AppendString(name);
+  args.Append(name);
 
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
@@ -911,24 +972,27 @@ Status ExecuteGetElementRect(Session* session,
     return Status(kUnknownError, "could not convert to DictionaryValue");
 
   // grab values
-  double x, y, width, height;
-  if (!location_dict->GetDouble("x", &x))
+  absl::optional<double> maybe_x = location_dict->FindDoubleKey("x");
+  if (!maybe_x.has_value())
     return Status(kUnknownError, "x coordinate is missing in element location");
 
-  if (!location_dict->GetDouble("y", &y))
+  absl::optional<double> maybe_y = location_dict->FindDoubleKey("y");
+  if (!maybe_y.has_value())
     return Status(kUnknownError, "y coordinate is missing in element location");
 
-  if (!size_dict->GetDouble("height", &height))
+  absl::optional<double> maybe_height = size_dict->FindDoubleKey("height");
+  if (!maybe_height.has_value())
     return Status(kUnknownError, "height is missing in element size");
 
-  if (!size_dict->GetDouble("width", &width))
+  absl::optional<double> maybe_width = size_dict->FindDoubleKey("width");
+  if (!maybe_width.has_value())
     return Status(kUnknownError, "width is missing in element size");
 
   base::DictionaryValue ret;
-  ret.SetDouble("x", x);
-  ret.SetDouble("y", y);
-  ret.SetDouble("width", width);
-  ret.SetDouble("height", height);
+  ret.SetDoubleKey("x", maybe_x.value());
+  ret.SetDoubleKey("y", maybe_y.value());
+  ret.SetDoubleKey("width", maybe_width.value());
+  ret.SetDoubleKey("height", maybe_height.value());
   value->reset(ret.DeepCopy());
   return Status(kOk);
 }
@@ -986,7 +1050,7 @@ Status ExecuteGetElementAttribute(Session* session,
     return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  args.AppendString(attribute_name);
+  args.Append(attribute_name);
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       booleanAttributes.count(base::ToLowerASCII(attribute_name))
@@ -1092,16 +1156,16 @@ Status ExecuteElementScreenshot(Session* session,
   // element, but its x and y are relative to containing frame. We replace them
   // with the x and y relative to top-level document origin, as expected by
   // CaptureScreenshot.
-  clip_dict->SetDouble("x", location.x + scroll_left);
-  clip_dict->SetDouble("y", location.y + scroll_top);
-  clip_dict->SetDouble("scale", 1 / device_pixel_ratio);
+  clip_dict->SetDoubleKey("x", location.x + scroll_left);
+  clip_dict->SetDoubleKey("y", location.y + scroll_top);
+  clip_dict->SetDoubleKey("scale", 1 / device_pixel_ratio);
   // Crop screenshot by viewport if element is larger than viewport
-  clip_dict->SetDouble("height",
-                       std::min(viewport_height - location.y,
-                                clip_dict->FindKey("height")->GetDouble()));
-  clip_dict->SetDouble("width",
-                       std::min(viewport_width - location.x,
-                                clip_dict->FindKey("width")->GetDouble()));
+  clip_dict->SetDoubleKey("height",
+                          std::min(viewport_height - location.y,
+                                   clip_dict->FindKey("height")->GetDouble()));
+  clip_dict->SetDoubleKey("width",
+                          std::min(viewport_width - location.x,
+                                   clip_dict->FindKey("width")->GetDouble()));
   base::DictionaryValue screenshot_params;
   screenshot_params.SetDictionary("clip", std::move(clip_dict));
 

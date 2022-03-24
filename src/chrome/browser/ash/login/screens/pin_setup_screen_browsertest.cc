@@ -52,8 +52,7 @@ class PinSetupScreenTest
     FakeUserDataAuthClient::Get()->set_supports_low_entropy_credentials(false);
 
     if (GetParam() == user_manager::USER_TYPE_CHILD) {
-      fake_gaia_ =
-          std::make_unique<FakeGaiaMixin>(&mixin_host_, embedded_test_server());
+      fake_gaia_ = std::make_unique<FakeGaiaMixin>(&mixin_host_);
       policy_server_ =
           std::make_unique<LocalPolicyTestServerMixin>(&mixin_host_);
       user_policy_mixin_ = std::make_unique<UserPolicyMixin>(
@@ -105,7 +104,8 @@ class PinSetupScreenTest
   void ShowPinSetupScreen() {
     // Force the sync screen to be shown so that we don't jump to PIN setup
     // screen (consuming auth session) in unbranded build
-    auto autoreset = WizardController::ForceBrandedBuildForTesting(true);
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
 
     LogIn();
     OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
@@ -252,24 +252,14 @@ class PinForLoginSetupScreenTest : public PinSetupScreenTest {
   ~PinForLoginSetupScreenTest() override = default;
 };
 
-class PinSetupForFamilyLink : public PinForLoginSetupScreenTest {
- protected:
-  PinSetupForFamilyLink() : PinForLoginSetupScreenTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kPinSetupForFamilyLink);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 INSTANTIATE_TEST_SUITE_P(All,
-                         PinSetupForFamilyLink,
+                         PinForLoginSetupScreenTest,
                          ::testing::Values(user_manager::USER_TYPE_REGULAR,
                                            user_manager::USER_TYPE_CHILD));
 
 // Tests that PIN setup is shown to Family Link users (but not to regular users)
 // on clamshell devices that support low entropy credentials.
-IN_PROC_BROWSER_TEST_P(PinSetupForFamilyLink, ClamshellMode) {
+IN_PROC_BROWSER_TEST_P(PinForLoginSetupScreenTest, ClamshellMode) {
   ShowPinSetupScreen();
 
   if (GetParam() == user_manager::USER_TYPE_CHILD) {
@@ -306,7 +296,7 @@ IN_PROC_BROWSER_TEST_P(PinSetupForFamilyLink, ClamshellMode) {
 
 // Tests that PIN setup is shown to Family Link and regular users in tablet
 // mode.
-IN_PROC_BROWSER_TEST_P(PinSetupForFamilyLink, TabletMode) {
+IN_PROC_BROWSER_TEST_P(PinForLoginSetupScreenTest, TabletMode) {
   ShellTestApi().SetTabletModeEnabledForTest(true);
   ShowPinSetupScreen();
 
@@ -339,7 +329,8 @@ class PinSetupForManagedUsers : public PinForLoginSetupScreenTest {
   void ManagedLogIn() {
     // Force the sync screen to be shown so that we don't jump to PIN setup
     // screen (consuming auth session) in unbranded build
-    auto autoreset = WizardController::ForceBrandedBuildForTesting(true);
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
     policy_reset_ = PinSetupScreen::SetForceNoSkipBecauseOfPolicyForTests(true);
     user_policy_mixin_->RequestPolicyUpdate();
     fake_gaia_->SetupFakeGaiaForLogin(
@@ -359,8 +350,7 @@ class PinSetupForManagedUsers : public PinForLoginSetupScreenTest {
     scoped_feature_list_.InitAndEnableFeature(
         features::kPinSetupForManagedUsers);
     policy_server_ = std::make_unique<LocalPolicyTestServerMixin>(&mixin_host_);
-    fake_gaia_ =
-        std::make_unique<FakeGaiaMixin>(&mixin_host_, embedded_test_server());
+    fake_gaia_ = std::make_unique<FakeGaiaMixin>(&mixin_host_);
     user_policy_mixin_ = std::make_unique<UserPolicyMixin>(
         &mixin_host_, managed_test_user_.account_id, policy_server_.get());
   }

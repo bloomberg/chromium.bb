@@ -62,6 +62,8 @@
 
 #endif  // EIGEN_AVOID_THREAD_LOCAL
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

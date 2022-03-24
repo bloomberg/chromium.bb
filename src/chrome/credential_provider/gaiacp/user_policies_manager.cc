@@ -38,7 +38,7 @@ const char kGcpwServiceFetchUserPoliciesQueryTemplate[] =
 
 // Default timeout when trying to make requests to the GCPW service.
 const base::TimeDelta kDefaultFetchPoliciesRequestTimeout =
-    base::TimeDelta::FromMilliseconds(5000);
+    base::Milliseconds(5000);
 
 // Path elements for the path where the policies are stored on disk.
 constexpr wchar_t kGcpwPoliciesDirectory[] = L"Policies";
@@ -55,8 +55,7 @@ const wchar_t kCloudPoliciesEnabledRegKey[] = L"cloud_policies_enabled";
 const char kPolicyFetchResponseKeyName[] = "policies";
 
 // The period of refreshing cloud policies.
-const base::TimeDelta kCloudPoliciesExecutionPeriod =
-    base::TimeDelta::FromHours(1);
+const base::TimeDelta kCloudPoliciesExecutionPeriod = base::Hours(1);
 
 // True when cloud policies feature is enabled.
 bool g_cloud_policies_enabled = false;
@@ -242,7 +241,7 @@ HRESULT UserPoliciesManager::FetchAndStorePolicies(
 
   uint32_t open_flags = base::File::FLAG_CREATE_ALWAYS |
                         base::File::FLAG_WRITE |
-                        base::File::FLAG_EXCLUSIVE_WRITE;
+                        base::File::FLAG_WIN_EXCLUSIVE_WRITE;
   std::unique_ptr<base::File> policy_file = GetOpenedFileForUser(
       sid, open_flags, kGcpwPoliciesDirectory, kGcpwUserPolicyFileName);
   if (!policy_file) {

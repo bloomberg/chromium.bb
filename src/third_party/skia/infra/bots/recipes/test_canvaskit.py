@@ -4,6 +4,7 @@
 
 # Recipe which runs the Canvaskit tests using docker
 
+PYTHON_VERSION_COMPATIBILITY = "PY3"
 
 DEPS = [
   'checkout',
@@ -31,16 +32,22 @@ def RunSteps(api):
   checkout_root = api.path['start_dir']
   out_dir = api.vars.swarming_out_dir
 
-  # The karma script is configured to look in ./npm_build/bin/ for
+  # The karma script is configured to look in ./build/ for
   # the test files to load, so we must copy them there (see Set up for docker).
   copy_dest = checkout_root.join('skia', 'modules', 'canvaskit',
-                                 'npm_build', 'bin')
+                                 'build')
   api.file.ensure_directory('mkdirs copy_dest', copy_dest, mode=0o777)
   base_dir = api.vars.build_dir
-  copies = {
-    base_dir.join('canvaskit.js'): copy_dest.join('canvaskit.js'),
-    base_dir.join('canvaskit.wasm'):    copy_dest.join('canvaskit.wasm'),
-  }
+  copies = [
+    {
+      'src': base_dir.join('canvaskit.js'),
+      'dst': copy_dest.join('canvaskit.js'),
+    },
+    {
+      'src': base_dir.join('canvaskit.wasm'),
+      'dst': copy_dest.join('canvaskit.wasm'),
+    },
+  ]
   recursive_read = [checkout_root.join('skia')]
 
   args = [

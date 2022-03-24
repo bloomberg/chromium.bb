@@ -82,8 +82,12 @@ bool read_pixels_from_texture(GrTexture* texture, GrColorType colorType, char* d
     if (supportedRead.fColorType != colorType) {
         size_t tmpRowBytes = GrColorTypeBytesPerPixel(supportedRead.fColorType) * w;
         std::unique_ptr<char[]> tmpPixels(new char[tmpRowBytes * h]);
-        if (!gpu->readPixels(texture, 0, 0, w, h, colorType, supportedRead.fColorType,
-                             tmpPixels.get(), tmpRowBytes)) {
+        if (!gpu->readPixels(texture,
+                             SkIRect::MakeWH(w, h),
+                             colorType,
+                             supportedRead.fColorType,
+                             tmpPixels.get(),
+                             tmpRowBytes)) {
             return false;
         }
         GrImageInfo tmpInfo(supportedRead.fColorType, kUnpremul_SkAlphaType, nullptr, w, h);
@@ -92,7 +96,12 @@ bool read_pixels_from_texture(GrTexture* texture, GrColorType colorType, char* d
         return GrConvertPixels(GrPixmap(dstInfo,             dst,    rowBytes),
                                GrPixmap(tmpInfo, tmpPixels.get(), tmpRowBytes));
     }
-    return gpu->readPixels(texture, 0, 0, w, h, colorType, supportedRead.fColorType, dst, rowBytes);
+    return gpu->readPixels(texture,
+                           SkIRect::MakeWH(w, h),
+                           colorType,
+                           supportedRead.fColorType,
+                           dst,
+                           rowBytes);
 }
 
 void basic_transfer_to_test(skiatest::Reporter* reporter,
@@ -114,19 +123,19 @@ void basic_transfer_to_test(skiatest::Reporter* reporter,
     GrGpu* gpu = dContext->priv().getGpu();
 
     static constexpr SkISize kTexDims = {16, 16};
-    int srcBufferWidth = caps->writePixelsRowBytesSupport() ? 20 : 16;
+    int srcBufferWidth = caps->transferPixelsToRowBytesSupport() ? 20 : 16;
     const int kBufferHeight = 16;
 
     sk_sp<GrTexture> tex =
-            resourceProvider->createTexture(kTexDims, backendFormat, renderable, 1,
-                                            GrMipmapped::kNo, SkBudgeted::kNo, GrProtected::kNo);
+            resourceProvider->createTexture(kTexDims, backendFormat, GrTextureType::k2D, renderable,
+                                            1, GrMipmapped::kNo, SkBudgeted::kNo, GrProtected::kNo);
     if (!tex) {
         ERRORF(reporter, "Could not create texture");
         return;
     }
 
     // We validate the results using GrGpu::readPixels, so exit if this is not supported.
-    // TODO: Do this through GrSurfaceContext once it works for all color types or support
+    // TODO: Do this through SurfaceContext once it works for all color types or support
     // kCopyToTexture2D here.
     if (GrCaps::SurfaceReadPixelsSupport::kSupported !=
         caps->surfaceSupportsReadPixels(tex.get())) {
@@ -143,7 +152,10 @@ void basic_transfer_to_test(skiatest::Reporter* reporter,
     // either of which may differ from 'colorType'.
     GrCaps::SupportedWrite allowedSrc =
             caps->supportedWritePixelsColorType(colorType, tex->backendFormat(), colorType);
-    size_t srcRowBytes = GrAlignTo(GrColorTypeBytesPerPixel(allowedSrc.fColorType) * srcBufferWidth,
+    if (!allowedSrc.fOffsetAlignmentForTransferBuffer) {
+        return;
+    }
+    size_t srcRowBytes = SkAlignTo(GrColorTypeBytesPerPixel(allowedSrc.fColorType) * srcBufferWidth,
                                    caps->transferBufferAlignment());
 
     std::unique_ptr<char[]> srcData(new char[kTexDims.fHeight * srcRowBytes]);
@@ -170,8 +182,13 @@ void basic_transfer_to_test(skiatest::Reporter* reporter,
     // transfer full data
 
     bool result;
-    result = gpu->transferPixelsTo(tex.get(), 0, 0, kTexDims.fWidth, kTexDims.fHeight, colorType,
-                                   allowedSrc.fColorType, buffer, 0, srcRowBytes);
+    result = gpu->transferPixelsTo(tex.get(),
+                                   SkIRect::MakeSize(kTexDims),
+                                   colorType,
+                                   allowedSrc.fColorType,
+                                   buffer,
+                                   0,
+                                   srcRowBytes);
     REPORTER_ASSERT(reporter, result);
 
     size_t dstRowBytes = GrColorTypeBytesPerPixel(colorType) * kTexDims.fWidth;
@@ -203,7 +220,7 @@ void basic_transfer_to_test(skiatest::Reporter* reporter,
     // transfer partial data
 
     // We're relying on this cap to write partial texture data
-    if (!caps->writePixelsRowBytesSupport()) {
+    if (!caps->transferPixelsToRowBytesSupport()) {
         return;
     }
     // We keep a 1 to 1 correspondence between pixels in the buffer and the entire texture. We
@@ -237,8 +254,13 @@ void basic_transfer_to_test(skiatest::Reporter* reporter,
     memcpy(data, srcData.get(), size);
     buffer->unmap();
 
-    result = gpu->transferPixelsTo(tex.get(), left, top, width, height, colorType,
-                                   allowedSrc.fColorType, buffer, offset, srcRowBytes);
+    result = gpu->transferPixelsTo(tex.get(),
+                                   SkIRect::MakeXYWH(left, top, width, height),
+                                   colorType,
+                                   allowedSrc.fColorType,
+                                   buffer,
+                                   offset,
+                                   srcRowBytes);
     if (!result) {
         ERRORF(reporter, "Could not transfer pixels to texture, color type: %d",
                static_cast<int>(colorType));
@@ -291,8 +313,9 @@ void basic_transfer_from_test(skiatest::Reporter* reporter, const sk_gpu_test::C
     GrMipLevel data;
     data.fPixels = textureData.get();
     data.fRowBytes = textureDataRowBytes;
-    sk_sp<GrTexture> tex = resourceProvider->createTexture(kTexDims, format, colorType, renderable,
-                                                           1, SkBudgeted::kNo, GrMipMapped::kNo,
+    sk_sp<GrTexture> tex = resourceProvider->createTexture(kTexDims, format, GrTextureType::k2D,
+                                                           colorType, renderable, 1,
+                                                           SkBudgeted::kNo, GrMipMapped::kNo,
                                                            GrProtected::kNo, &data);
     if (!tex) {
         return;
@@ -312,11 +335,14 @@ void basic_transfer_from_test(skiatest::Reporter* reporter, const sk_gpu_test::C
     // Create the transfer buffer.
     auto allowedRead =
             caps->supportedReadPixelsColorType(colorType, tex->backendFormat(), colorType);
+    if (!allowedRead.fOffsetAlignmentForTransferBuffer) {
+        return;
+    }
     GrImageInfo readInfo(allowedRead.fColorType, kUnpremul_SkAlphaType, nullptr, kTexDims);
 
     size_t bpp = GrColorTypeBytesPerPixel(allowedRead.fColorType);
-    size_t fullBufferRowBytes = GrAlignTo(kTexDims.fWidth * bpp, caps->transferBufferAlignment());
-    size_t partialBufferRowBytes = GrAlignTo(kPartialWidth * bpp, caps->transferBufferAlignment());
+    size_t fullBufferRowBytes = SkAlignTo(kTexDims.fWidth * bpp, caps->transferBufferAlignment());
+    size_t partialBufferRowBytes = SkAlignTo(kPartialWidth * bpp, caps->transferBufferAlignment());
     size_t offsetAlignment = allowedRead.fOffsetAlignmentForTransferBuffer;
     SkASSERT(offsetAlignment);
 
@@ -340,8 +366,12 @@ void basic_transfer_from_test(skiatest::Reporter* reporter, const sk_gpu_test::C
 
     //////////////////////////
     // transfer full data
-    bool result = gpu->transferPixelsFrom(tex.get(), 0, 0, kTexDims.fWidth, kTexDims.fHeight,
-                                          colorType, allowedRead.fColorType, buffer, 0);
+    bool result = gpu->transferPixelsFrom(tex.get(),
+                                          SkIRect::MakeSize(kTexDims),
+                                          colorType,
+                                          allowedRead.fColorType,
+                                          buffer,
+                                          0);
     if (!result) {
         ERRORF(reporter, "transferPixelsFrom failed.");
         return;
@@ -382,9 +412,13 @@ void basic_transfer_from_test(skiatest::Reporter* reporter, const sk_gpu_test::C
 
     ///////////////////////
     // Now test a partial read at an offset into the buffer.
-    result = gpu->transferPixelsFrom(tex.get(), kPartialLeft, kPartialTop, kPartialWidth,
-                                     kPartialHeight, colorType, allowedRead.fColorType,
-                                     buffer, partialReadOffset);
+    result = gpu->transferPixelsFrom(
+            tex.get(),
+            SkIRect::MakeXYWH(kPartialLeft, kPartialTop, kPartialWidth, kPartialHeight),
+            colorType,
+            allowedRead.fColorType,
+            buffer,
+            partialReadOffset);
     if (!result) {
         ERRORF(reporter, "transferPixelsFrom failed.");
         return;

@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -51,6 +50,10 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
 
   PlatformChannel();
   PlatformChannel(PlatformChannel&& other);
+
+  PlatformChannel(const PlatformChannel&) = delete;
+  PlatformChannel& operator=(const PlatformChannel&) = delete;
+
   ~PlatformChannel();
 
   PlatformChannel& operator=(PlatformChannel&& other);
@@ -114,8 +117,6 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
  private:
   PlatformChannelEndpoint local_endpoint_;
   PlatformChannelEndpoint remote_endpoint_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformChannel);
 };
 
 }  // namespace mojo

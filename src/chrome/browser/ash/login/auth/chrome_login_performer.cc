@@ -7,24 +7,23 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_user_login_flow.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "components/account_id/account_id.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace ash {
 
 ChromeLoginPerformer::ChromeLoginPerformer(Delegate* delegate)
-    : LoginPerformer(base::ThreadTaskRunnerHandle::Get(), delegate) {}
+    : LoginPerformer(delegate) {}
 
 ChromeLoginPerformer::~ChromeLoginPerformer() {}
 
@@ -95,8 +94,8 @@ void ChromeLoginPerformer::RunOnlineAllowlistCheck(
     base::OnceClosure success_callback,
     base::OnceClosure failure_callback) {
   // On cloud managed devices, reconfirm login permission with the server.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   if (connector->IsCloudManaged() && wildcard_match &&
       !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {
     wildcard_login_checker_ = std::make_unique<policy::WildcardLoginChecker>();
@@ -130,8 +129,8 @@ void ChromeLoginPerformer::SetupEasyUnlockUserFlow(
 
 bool ChromeLoginPerformer::CheckPolicyForUser(const AccountId& account_id) {
   // Login is not allowed if policy could not be loaded for the account.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   policy::DeviceLocalAccountPolicyService* policy_service =
       connector->GetDeviceLocalAccountPolicyService();
   return policy_service &&

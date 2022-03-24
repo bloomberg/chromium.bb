@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -209,8 +209,6 @@ class CounterContentData final : public ContentData {
   const AtomicString& Separator() const { return separator_; }
   const TreeScope* GetTreeScope() const { return tree_scope_; }
 
-  EListStyleType ToDeprecatedListStyleTypeEnum() const;
-
   void Trace(Visitor*) const override;
 
  private:
@@ -312,6 +310,20 @@ inline bool operator==(const ContentData& a, const ContentData& b) {
   }
 
   return !ptr_a && !ptr_b;
+}
+
+// In order for an image to be rendered from the content property on an actual
+// element, there can be at most one piece of image content data, followed by
+// some optional alternative text.
+inline bool ShouldUseContentDataForElement(const ContentData* content_data) {
+  if (!content_data)
+    return false;
+  if (!content_data->IsImage())
+    return false;
+  if (content_data->Next() && !content_data->Next()->IsAltText())
+    return false;
+
+  return true;
 }
 
 }  // namespace blink

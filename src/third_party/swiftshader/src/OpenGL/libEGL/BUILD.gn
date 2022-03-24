@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import("//build/config/ui.gni")
+import("//build/config/ozone.gni")
 import("../../swiftshader.gni")
 
 # Need a separate config to ensure the warnings are added to the end.
@@ -32,17 +33,14 @@ config("swiftshader_libEGL_private_config") {
       "-Wno-sign-compare",
       "-Wno-unused-function",
     ]
-    if (!is_clang) {
-      cflags += [ "-Wno-unused-but-set-variable" ]
-    }
 
     if (is_mac) {
-      cflags += [ "-fvisibility=protected" ]
+      cflags += [ "-fvisibility=default" ]
       defines += [ "EGLAPI=__attribute__((no_sanitize(\"function\")))" ]
     } else if (is_clang) {
       defines += [ "EGLAPI=__attribute__((visibility(\"protected\"))) __attribute__((no_sanitize(\"function\")))" ]
     } else {
-      defines += [ "EGLAPI= " ]
+      defines += [ "EGLAPI=__attribute__((visibility(\"protected\")))" ]
     }
   }
 }
@@ -72,6 +70,8 @@ swiftshader_shared_library("swiftshader_libEGL") {
     ]
   }
 
+  defines = []
+
   if (is_mac) {
     sources += [ "OSXUtils.mm" ]
     frameworks = [
@@ -83,15 +83,16 @@ swiftshader_shared_library("swiftshader_libEGL") {
     ldflags = [
       "-Wl,-install_name,@rpath/libswiftshader_libEGL.dylib",
       "-Wl,-exported_symbols_list," +
-          rebase_path("libEGL.exports", root_build_dir),
+          rebase_path("libEGL_deprecated.exports", root_build_dir),
     ]
   } else if (is_linux || is_chromeos) {
-    if (use_x11) {
+    if (ozone_platform_x11) {
       sources += [ "../../Main/libX11.cpp" ]
+      defines += [ "SWIFTSHADER_USE_X11" ]
     }
-    inputs = [ "libEGL.lds" ]
+    inputs = [ "libEGL_deprecated.lds" ]
     ldflags =
-        [ "-Wl,--version-script=" + rebase_path("libEGL.lds", root_build_dir) ]
+        [ "-Wl,--version-script=" + rebase_path("libEGL_deprecated.lds", root_build_dir) ]
   }
 
   configs = [ ":swiftshader_libEGL_private_config" ]

@@ -2,11 +2,12 @@ export const description = `
 Tests for queries/filtering, loading, and running.
 `;
 
-import { TestFileLoader, SpecFile } from '../common/framework/file_loader.js';
 import { Fixture } from '../common/framework/fixture.js';
-import { Logger } from '../common/framework/logging/logger.js';
-import { Status } from '../common/framework/logging/result.js';
-import { parseQuery } from '../common/framework/query/parseQuery.js';
+import { makeTestGroup } from '../common/framework/test_group.js';
+import { TestFileLoader, SpecFile } from '../common/internal/file_loader.js';
+import { Logger } from '../common/internal/logging/logger.js';
+import { Status } from '../common/internal/logging/result.js';
+import { parseQuery } from '../common/internal/query/parseQuery.js';
 import {
   TestQuery,
   TestQuerySingleCase,
@@ -14,11 +15,11 @@ import {
   TestQueryMultiTest,
   TestQueryMultiFile,
   TestQueryWithExpectation,
-} from '../common/framework/query/query.js';
-import { makeTestGroup, makeTestGroupForUnitTesting } from '../common/framework/test_group.js';
-import { TestSuiteListing, TestSuiteListingEntry } from '../common/framework/test_suite_listing.js';
-import { ExpandThroughLevel, TestTreeLeaf } from '../common/framework/tree.js';
-import { assert, objectEquals } from '../common/framework/util/util.js';
+} from '../common/internal/query/query.js';
+import { makeTestGroupForUnitTesting } from '../common/internal/test_group.js';
+import { TestSuiteListing, TestSuiteListingEntry } from '../common/internal/test_suite_listing.js';
+import { ExpandThroughLevel, TestTreeLeaf } from '../common/internal/tree.js';
+import { assert, objectEquals } from '../common/util/util.js';
 
 import { UnitTest } from './unit_test.js';
 
@@ -63,10 +64,10 @@ const specsData: { [k: string]: SpecFile } = {
     g: (() => {
       const g = makeTestGroupForUnitTesting(UnitTest);
       g.test('wye')
-        .cases([{}, { x: 1 }])
+        .paramsSimple([{}, { x: 1 }])
         .fn(() => {});
       g.test('zed')
-        .cases([
+        .paramsSimple([
           { a: 1, b: 2, _c: 0 },
           { b: 3, a: 1, _c: 0 },
         ])
@@ -82,7 +83,7 @@ const specsData: { [k: string]: SpecFile } = {
         t.debug('OK');
       });
       g.test('bleh')
-        .cases([{ a: 1 }])
+        .paramsSimple([{ a: 1 }])
         .fn(t => {
           t.debug('OK');
           t.debug('OK');
@@ -227,7 +228,7 @@ g.test('end2end').fn(async t => {
   const l = await t.load('suite2:foof:*');
   assert(l.length === 3, 'listing length');
 
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
 
   await runTestcase(
     t,
@@ -265,7 +266,7 @@ g.test('end2end').fn(async t => {
 });
 
 g.test('expectations,single_case').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const zedCases = await t.load('suite1:baz:zed:*');
 
   // Single-case. Covers one case.
@@ -300,7 +301,7 @@ g.test('expectations,single_case').fn(async t => {
 });
 
 g.test('expectations,single_case,none').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const zedCases = await t.load('suite1:baz:zed:*');
   // Single-case. Doesn't cover any cases.
   const zedExpectationsSkipA1B0 = [
@@ -334,7 +335,7 @@ g.test('expectations,single_case,none').fn(async t => {
 });
 
 g.test('expectations,multi_case').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const zedCases = await t.load('suite1:baz:zed:*');
   // Multi-case, not all cases covered.
   const zedExpectationsSkipB3 = [
@@ -368,7 +369,7 @@ g.test('expectations,multi_case').fn(async t => {
 });
 
 g.test('expectations,multi_case_all').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const zedCases = await t.load('suite1:baz:zed:*');
   // Multi-case, all cases covered.
   const zedExpectationsSkipA1 = [
@@ -402,7 +403,7 @@ g.test('expectations,multi_case_all').fn(async t => {
 });
 
 g.test('expectations,multi_case_none').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const zedCases = await t.load('suite1:baz:zed:*');
   // Multi-case, no params, all cases covered.
   const zedExpectationsSkipZed = [
@@ -436,7 +437,7 @@ g.test('expectations,multi_case_none').fn(async t => {
 });
 
 g.test('expectations,multi_test').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const suite1Cases = await t.load('suite1:*');
 
   // Multi-test, all cases covered.
@@ -471,7 +472,7 @@ g.test('expectations,multi_test').fn(async t => {
 });
 
 g.test('expectations,multi_test,none').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const suite1Cases = await t.load('suite1:*');
 
   // Multi-test, no cases covered.
@@ -506,7 +507,7 @@ g.test('expectations,multi_test,none').fn(async t => {
 });
 
 g.test('expectations,multi_file').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const suite1Cases = await t.load('suite1:*');
 
   // Multi-file
@@ -541,7 +542,7 @@ g.test('expectations,multi_file').fn(async t => {
 });
 
 g.test('expectations,catches_failure').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const suite2Cases = await t.load('suite2:*');
 
   // Catches failure
@@ -577,7 +578,7 @@ g.test('expectations,catches_failure').fn(async t => {
 });
 
 g.test('expectations,skip_dominates_failure').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const suite2Cases = await t.load('suite2:*');
 
   const expectedFailures = [
@@ -604,7 +605,7 @@ g.test('expectations,skip_dominates_failure').fn(async t => {
 });
 
 g.test('expectations,skip_inside_failure').fn(async t => {
-  const log = new Logger(true);
+  const log = new Logger({ overrideDebugMode: true });
   const suite2Cases = await t.load('suite2:*');
 
   const expectedFailures = [

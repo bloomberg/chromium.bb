@@ -14,7 +14,7 @@
 
 #include "src/ast/multisampled_texture.h"
 
-#include "src/ast/access_control.h"
+#include "src/ast/access.h"
 #include "src/ast/alias.h"
 #include "src/ast/array.h"
 #include "src/ast/bool.h"
@@ -50,19 +50,13 @@ TEST_F(AstMultisampledTextureTest, IsTexture) {
 TEST_F(AstMultisampledTextureTest, Dim) {
   auto* f32 = create<F32>();
   auto* s = create<MultisampledTexture>(TextureDimension::k3d, f32);
-  EXPECT_EQ(s->dim(), TextureDimension::k3d);
+  EXPECT_EQ(s->dim, TextureDimension::k3d);
 }
 
 TEST_F(AstMultisampledTextureTest, Type) {
   auto* f32 = create<F32>();
   auto* s = create<MultisampledTexture>(TextureDimension::k3d, f32);
-  EXPECT_EQ(s->type(), f32);
-}
-
-TEST_F(AstMultisampledTextureTest, TypeName) {
-  auto* f32 = create<F32>();
-  auto* s = create<MultisampledTexture>(TextureDimension::k3d, f32);
-  EXPECT_EQ(s->type_name(), "__multisampled_texture_3d__f32");
+  EXPECT_EQ(s->type, f32);
 }
 
 TEST_F(AstMultisampledTextureTest, FriendlyName) {

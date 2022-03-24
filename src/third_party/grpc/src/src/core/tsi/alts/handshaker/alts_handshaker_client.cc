@@ -18,9 +18,9 @@
 
 #include <grpc/support/port_platform.h>
 
-#include <list>
-
 #include "src/core/tsi/alts/handshaker/alts_handshaker_client.h"
+
+#include <list>
 
 #include "upb/upb.hpp"
 
@@ -117,10 +117,7 @@ static void handshaker_client_send_buffer_destroy(
 
 static bool is_handshake_finished_properly(grpc_gcp_HandshakerResp* resp) {
   GPR_ASSERT(resp != nullptr);
-  if (grpc_gcp_HandshakerResp_result(resp)) {
-    return true;
-  }
-  return false;
+  return grpc_gcp_HandshakerResp_result(resp) != nullptr;
 }
 
 static void alts_grpc_handshaker_client_unref(
@@ -181,8 +178,7 @@ static void handle_response_done(alts_grpc_handshaker_client* client,
                                  const unsigned char* bytes_to_send,
                                  size_t bytes_to_send_size,
                                  tsi_handshaker_result* result) {
-  recv_message_result* p =
-      static_cast<recv_message_result*>(gpr_zalloc(sizeof(*p)));
+  recv_message_result* p = grpc_core::Zalloc<recv_message_result>();
   p->status = status;
   p->bytes_to_send = bytes_to_send;
   p->bytes_to_send_size = bytes_to_send_size;
@@ -442,7 +438,7 @@ static tsi_result make_grpc_call(alts_handshaker_client* c, bool is_start) {
   }
 }
 
-static void on_status_received(void* arg, grpc_error* error) {
+static void on_status_received(void* arg, grpc_error_handle error) {
   alts_grpc_handshaker_client* client =
       static_cast<alts_grpc_handshaker_client*>(arg);
   if (client->handshake_status_code != GRPC_STATUS_OK) {
@@ -454,7 +450,7 @@ static void on_status_received(void* arg, grpc_error* error) {
             "alts_grpc_handshaker_client:%p on_status_received "
             "status:%d details:|%s| error:|%s|",
             client, client->handshake_status_code, status_details,
-            grpc_error_string(error));
+            grpc_error_std_string(error).c_str());
     gpr_free(status_details);
   }
   maybe_complete_tsi_next(client, true /* receive_status_finished */,
@@ -645,7 +641,7 @@ static void handshaker_client_shutdown(alts_handshaker_client* c) {
   }
 }
 
-static void handshaker_call_unref(void* arg, grpc_error* /* error */) {
+static void handshaker_call_unref(void* arg, grpc_error_handle /* error */) {
   grpc_call* call = static_cast<grpc_call*>(arg);
   grpc_call_unref(call);
 }
@@ -841,7 +837,8 @@ void alts_handshaker_client_ref_for_testing(alts_handshaker_client* c) {
 }
 
 void alts_handshaker_client_on_status_received_for_testing(
-    alts_handshaker_client* c, grpc_status_code status, grpc_error* error) {
+    alts_handshaker_client* c, grpc_status_code status,
+    grpc_error_handle error) {
   // We first make sure that the handshake queue has been initialized
   // here because there are tests that use this API that mock out
   // other parts of the alts_handshaker_client in such a way that the
@@ -852,7 +849,7 @@ void alts_handshaker_client_on_status_received_for_testing(
       reinterpret_cast<alts_grpc_handshaker_client*>(c);
   client->handshake_status_code = status;
   client->handshake_status_details = grpc_empty_slice();
-  grpc_core::Closure::Run(DEBUG_LOCATION, &client->on_status_received, error);
+  Closure::Run(DEBUG_LOCATION, &client->on_status_received, error);
 }
 
 }  // namespace internal

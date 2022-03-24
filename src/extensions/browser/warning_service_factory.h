@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_WARNING_SERVICE_FACTORY_H_
 #define EXTENSIONS_BROWSER_WARNING_SERVICE_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -15,6 +14,9 @@ class WarningService;
 
 class WarningServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
+  WarningServiceFactory(const WarningServiceFactory&) = delete;
+  WarningServiceFactory& operator=(const WarningServiceFactory&) = delete;
+
   static WarningService* GetForBrowserContext(content::BrowserContext* context);
   static WarningServiceFactory* GetInstance();
 
@@ -29,8 +31,6 @@ class WarningServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(WarningServiceFactory);
 };
 
 }  // namespace extensions

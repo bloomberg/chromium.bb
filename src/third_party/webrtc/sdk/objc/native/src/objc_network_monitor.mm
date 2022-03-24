@@ -27,6 +27,7 @@ ObjCNetworkMonitor::ObjCNetworkMonitor() {
 }
 
 ObjCNetworkMonitor::~ObjCNetworkMonitor() {
+  [network_monitor_ stop];
   network_monitor_ = nil;
 }
 
@@ -50,6 +51,7 @@ void ObjCNetworkMonitor::Stop() {
     return;
   }
   safety_flag_->SetNotAlive();
+  [network_monitor_ stop];
   network_monitor_ = nil;
   started_ = false;
 }
@@ -87,7 +89,7 @@ void ObjCNetworkMonitor::OnPathUpdate(
   thread_->PostTask(ToQueuedTask(safety_flag_, [this, adapter_type_by_name] {
     RTC_DCHECK_RUN_ON(thread_);
     adapter_type_by_name_ = adapter_type_by_name;
-    SignalNetworksChanged();
+    InvokeNetworksChangedCallback();
   }));
 }
 

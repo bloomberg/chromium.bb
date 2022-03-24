@@ -6,7 +6,7 @@
  *
  * Other contributors:
  *   Robert O'Callahan <roc+@cs.cmu.edu>
- *   David Baron <dbaron@fas.harvard.edu>
+ *   David Baron <dbaron@dbaron.org>
  *   Christian Biesinger <cbiesinger@web.de>
  *   Randall Jesup <rjesup@wgate.com>
  *   Roland Mainz <roland.mainz@informatik.med.uni-giessen.de>
@@ -63,7 +63,6 @@ class PaintLayer;
 
 enum PaintLayerFlag {
   kPaintLayerNoFlag = 0,
-  kPaintLayerHaveTransparency = 1,
   kPaintLayerPaintingOverlayOverflowControls = 1 << 3,
   kPaintLayerPaintingCompositingBackgroundPhase = 1 << 4,
   kPaintLayerPaintingCompositingForegroundPhase = 1 << 5,
@@ -135,8 +134,6 @@ inline String PaintLayerFlagsToDebugString(PaintLayerFlags flags) {
       append("kPaintLayerPaintingCompositingDecorationPhase");
   }
 
-  if (flags & kPaintLayerHaveTransparency)
-    append("kPaintLayerHaveTransparency");
   if (flags & kPaintLayerPaintingOverlayOverflowControls)
     append("kPaintLayerPaintingOverlayOverflowControls");
   if (flags & kPaintLayerPaintingCompositingScrollingPhase)

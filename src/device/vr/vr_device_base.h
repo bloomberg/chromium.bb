@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -17,6 +16,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
+struct CHROME_LUID;
+
 namespace device {
 
 // Represents one of the platform's VR devices. Owned by the respective
@@ -24,6 +25,10 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_VR_BASE) VRDeviceBase : public mojom::XRRuntime {
  public:
   explicit VRDeviceBase(mojom::XRDeviceId id);
+
+  VRDeviceBase(const VRDeviceBase&) = delete;
+  VRDeviceBase& operator=(const VRDeviceBase&) = delete;
+
   ~VRDeviceBase() override;
 
   // XRRuntime implementation
@@ -61,8 +66,10 @@ class COMPONENT_EXPORT(DEVICE_VR_BASE) VRDeviceBase : public mojom::XRRuntime {
   void SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info);
   void OnVisibilityStateChanged(mojom::XRVisibilityState visibility_state);
   void SetArBlendModeSupported(bool is_ar_blend_mode_supported);
+  void SetSupportedFeatures(
+      const std::vector<mojom::XRSessionFeature>& features);
 #if defined(OS_WIN)
-  void SetLuid(const LUID& luid);
+  void SetLuid(const CHROME_LUID& luid);
 #endif
 
   mojom::VRDisplayInfoPtr display_info_;
@@ -77,8 +84,6 @@ class COMPONENT_EXPORT(DEVICE_VR_BASE) VRDeviceBase : public mojom::XRRuntime {
   device::mojom::XRDeviceData device_data_;
 
   mojo::Receiver<mojom::XRRuntime> runtime_receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VRDeviceBase);
 };
 
 }  // namespace device

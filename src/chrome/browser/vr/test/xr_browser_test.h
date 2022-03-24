@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/environment.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -39,15 +40,13 @@ namespace vr {
 class XrBrowserTestBase : public InProcessBrowserTest {
  public:
   static constexpr base::TimeDelta kPollCheckIntervalShort =
-      base::TimeDelta::FromMilliseconds(50);
+      base::Milliseconds(50);
   static constexpr base::TimeDelta kPollCheckIntervalLong =
-      base::TimeDelta::FromMilliseconds(100);
-  static constexpr base::TimeDelta kPollTimeoutShort =
-      base::TimeDelta::FromMilliseconds(1000);
+      base::Milliseconds(100);
+  static constexpr base::TimeDelta kPollTimeoutShort = base::Milliseconds(1000);
   static constexpr base::TimeDelta kPollTimeoutMedium =
-      base::TimeDelta::FromMilliseconds(5000);
-  static constexpr base::TimeDelta kPollTimeoutLong =
-      base::TimeDelta::FromMilliseconds(10000);
+      base::Milliseconds(5000);
+  static constexpr base::TimeDelta kPollTimeoutLong = base::Milliseconds(10000);
   static constexpr char kOpenXrConfigPathEnvVar[] = "XR_RUNTIME_JSON";
   static constexpr char kOpenXrConfigPathVal[] =
       "./mock_vr_clients/bin/openxr/openxr.json";
@@ -70,6 +69,10 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   };
 
   XrBrowserTestBase();
+
+  XrBrowserTestBase(const XrBrowserTestBase&) = delete;
+  XrBrowserTestBase& operator=(const XrBrowserTestBase&) = delete;
+
   ~XrBrowserTestBase() override;
 
   void SetUp() override;
@@ -150,7 +153,8 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   void AssertNoJavaScriptErrors(content::WebContents* web_contents);
 
   Browser* browser() {
-    return browser_ == nullptr ? InProcessBrowserTest::browser() : browser_;
+    return browser_ == nullptr ? InProcessBrowserTest::browser()
+                               : browser_.get();
   }
 
   void SetBrowser(Browser* browser) { browser_ = browser; }
@@ -230,12 +234,11 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   // HTML files, initializing and starting the server if necessary.
   net::EmbeddedTestServer* GetEmbeddedServer();
 
-  Browser* browser_ = nullptr;
+  raw_ptr<Browser> browser_ = nullptr;
   std::unique_ptr<net::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList scoped_feature_list_;
   bool test_skipped_at_startup_ = false;
   bool javascript_failed_ = false;
-  DISALLOW_COPY_AND_ASSIGN(XrBrowserTestBase);
 };
 
 }  // namespace vr

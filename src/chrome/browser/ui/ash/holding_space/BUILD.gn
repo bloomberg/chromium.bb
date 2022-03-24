@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
+assert(is_chromeos_ash)
+
 source_set("browser_tests") {
   testonly = true
 
@@ -17,8 +21,10 @@ source_set("browser_tests") {
     ":test_support",
     "//ash:test_support",
     "//ash/public/cpp",
+    "//ash/public/cpp/holding_space:test_support",
     "//base/test:test_support",
     "//chrome/browser",
+    "//chrome/browser/ash/crosapi",
     "//chrome/browser/chromeos",
     "//chrome/browser/chromeos:test_support",
     "//chrome/browser/extensions",

@@ -4,9 +4,11 @@
 
 #include "net/cookies/test_cookie_access_delegate.h"
 
+#include "base/containers/contains.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/same_party_context.h"
 
 namespace net {
 
@@ -34,11 +36,11 @@ bool TestCookieAccessDelegate::ShouldIgnoreSameSiteRestrictions(
   return true;
 }
 
-bool TestCookieAccessDelegate::IsContextSamePartyWithSite(
+SamePartyContext TestCookieAccessDelegate::ComputeSamePartyContext(
     const net::SchemefulSite& site,
-    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
-  return false;
+  return SamePartyContext();
 }
 
 FirstPartySetsContextType
@@ -52,6 +54,16 @@ TestCookieAccessDelegate::ComputeFirstPartySetsContextType(
 bool TestCookieAccessDelegate::IsInNontrivialFirstPartySet(
     const net::SchemefulSite& site) const {
   return false;
+}
+
+absl::optional<net::SchemefulSite>
+TestCookieAccessDelegate::FindFirstPartySetOwner(
+    const net::SchemefulSite& site) const {
+  for (const auto& all_sets_iter : first_party_sets_) {
+    if (base::Contains(all_sets_iter.second, site))
+      return all_sets_iter.first;
+  }
+  return absl::nullopt;
 }
 
 base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>

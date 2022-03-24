@@ -7,8 +7,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/strings/string_piece.h"
@@ -49,6 +48,10 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
  public:
   // |rules| cannot be NULL.
   explicit FocusController(FocusRules* rules);
+
+  FocusController(const FocusController&) = delete;
+  FocusController& operator=(const FocusController&) = delete;
+
   ~FocusController() override;
 
   // Overridden from ActivationClient:
@@ -88,7 +91,8 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   // Internal implementation that coordinates window focus and activation
   // changes.
   void FocusAndActivateWindow(ActivationChangeObserver::ActivationReason reason,
-                              aura::Window* window);
+                              aura::Window* window,
+                              bool no_stacking);
 
   // Internal implementation that sets the focused window, fires events etc.
   // This function must be called with a valid focusable window.
@@ -102,10 +106,12 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   // refers to the actual window to be activated, which may be different.
   // Returns true if activation should proceed, or false if activation was
   // interrupted, e.g. by the destruction of the window gaining activation
-  // during the process, and therefore activation should be aborted.
+  // during the process, and therefore activation should be aborted. If
+  // |no_stacking| is true, the activated window is not stacked.
   bool SetActiveWindow(ActivationChangeObserver::ActivationReason reason,
                        aura::Window* requested_window,
-                       aura::Window* activatable_window);
+                       aura::Window* activatable_window,
+                       bool no_stacking);
 
   // Stack the |active_window_| on top of the window stack. This function is
   // called when activating a window or re-activating the current active window.
@@ -123,8 +129,8 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   void WindowFocusedFromInputEvent(aura::Window* window,
                                    const ui::Event* event);
 
-  aura::Window* active_window_ = nullptr;
-  aura::Window* focused_window_ = nullptr;
+  raw_ptr<aura::Window> active_window_ = nullptr;
+  raw_ptr<aura::Window> focused_window_ = nullptr;
 
   bool updating_focus_ = false;
 
@@ -141,7 +147,8 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       observation_manager_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(FocusController);
+  // When true, windows can be activated (but not raised) without clicking.
+  bool focus_follows_cursor_ = false;
 };
 
 }  // namespace wm

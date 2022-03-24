@@ -23,7 +23,6 @@ using SVGContainerPainterTest = PaintControllerPaintTest;
 INSTANTIATE_PAINT_TEST_SUITE_P(SVGContainerPainterTest);
 
 TEST_P(SVGContainerPainterTest, FilterPaintProperties) {
-  ScopedCompositeSVGForTest enable_feature(true);
   SetBodyInnerHTML(R"HTML(
     <style>
       #container, #before, #after { will-change: transform; }
@@ -37,43 +36,30 @@ TEST_P(SVGContainerPainterTest, FilterPaintProperties) {
     </svg>
   )HTML");
 
-  const auto* root = GetLayoutObjectByElementId("svg");
-
   const DisplayItem::Type kSVGEffectPaintPhaseForeground =
       static_cast<DisplayItem::Type>(DisplayItem::kSVGEffectPaintPhaseFirst +
                                      5);
 
   const auto* before = GetLayoutObjectByElementId("before");
-  PaintChunk::Id before_id(*before, kSVGEffectPaintPhaseForeground);
+  PaintChunk::Id before_id(before->Id(), kSVGEffectPaintPhaseForeground);
   const auto& before_properties = before->FirstFragment().ContentsProperties();
 
   const auto* rect = GetLayoutObjectByElementId("rect");
-  PaintChunk::Id rect_id(*rect, DisplayItem::kHitTest);
+  PaintChunk::Id rect_id(rect->Id(), DisplayItem::kHitTest);
   const auto* container = GetLayoutObjectByElementId("container");
   // Because the rect doesn't create paint properties, it uses the container's.
   const auto& container_properties =
       container->FirstFragment().ContentsProperties();
 
   const auto* after = GetLayoutObjectByElementId("after");
-  PaintChunk::Id after_id(*after, kSVGEffectPaintPhaseForeground);
+  PaintChunk::Id after_id(after->Id(), kSVGEffectPaintPhaseForeground);
   const auto& after_properties = after->FirstFragment().ContentsProperties();
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_THAT(ContentPaintChunks(),
-                ElementsAre(VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
-                            IsPaintChunk(1, 2, before_id, before_properties),
-                            IsPaintChunk(2, 3, rect_id, container_properties),
-                            IsPaintChunk(3, 4, after_id, after_properties)));
-  } else {
-    const auto* svg_paint_layer = To<LayoutSVGRoot>(root)->Layer();
-    const auto* svg_graphics_layer =
-        svg_paint_layer->GetCompositedLayerMapping()->MainGraphicsLayer();
-
-    EXPECT_THAT(svg_graphics_layer->GetPaintController().PaintChunks(),
-                ElementsAre(IsPaintChunk(0, 1, before_id, before_properties),
-                            IsPaintChunk(1, 2, rect_id, container_properties),
-                            IsPaintChunk(2, 3, after_id, after_properties)));
-  }
+  EXPECT_THAT(ContentPaintChunks(),
+              ElementsAre(VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
+                          IsPaintChunk(1, 2, before_id, before_properties),
+                          IsPaintChunk(2, 3, rect_id, container_properties),
+                          IsPaintChunk(3, 4, after_id, after_properties)));
 }
 
 }  // namespace blink

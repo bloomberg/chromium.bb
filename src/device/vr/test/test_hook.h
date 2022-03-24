@@ -7,7 +7,7 @@
 
 #include "base/check.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 #include <cstdint>
 
@@ -28,6 +28,10 @@ enum XrButtonId {
   kDpadRight = 5,
   kDpadDown = 6,
   kA = 7,
+  kB = 8,
+  kX = 9,
+  kY = 10,
+  kThumbRest = 11,
   kProximitySensor = 31,
   kAxisTrackpad = 32,
   kAxisTrigger = 33,

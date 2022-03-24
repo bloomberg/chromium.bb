@@ -27,18 +27,21 @@
 
 #include <stdlib.h>
 #include <wchar.h>
+
 #include <memory>
 
-#include "src/init/v8.h"
-
+#include "include/v8-function.h"
+#include "include/v8-local-handle.h"
 #include "include/v8-profiler.h"
-#include "include/v8.h"
+#include "include/v8-script.h"
 #include "src/api/api-inl.h"
 #include "src/codegen/compilation-cache.h"
 #include "src/codegen/compiler.h"
+#include "src/codegen/script-details.h"
 #include "src/diagnostics/disasm.h"
 #include "src/heap/factory.h"
 #include "src/heap/spaces.h"
+#include "src/init/v8.h"
 #include "src/interpreter/interpreter.h"
 #include "src/objects/allocation-site-inl.h"
 #include "src/objects/objects-inl.h"
@@ -67,12 +70,12 @@ static void SetGlobalProperty(const char* name, Object value) {
 
 static Handle<JSFunction> Compile(const char* source) {
   Isolate* isolate = CcTest::i_isolate();
-  Handle<String> source_code = isolate->factory()->NewStringFromUtf8(
-      CStrVector(source)).ToHandleChecked();
+  Handle<String> source_code = isolate->factory()
+                                   ->NewStringFromUtf8(base::CStrVector(source))
+                                   .ToHandleChecked();
   Handle<SharedFunctionInfo> shared =
       Compiler::GetSharedFunctionInfoForScript(
-          isolate, source_code, Compiler::ScriptDetails(),
-          v8::ScriptOriginOptions(), nullptr, nullptr,
+          isolate, source_code, ScriptDetails(),
           v8::ScriptCompiler::kNoCompileOptions,
           ScriptCompiler::kNoCacheNoReason, NOT_NATIVES_CODE)
           .ToHandleChecked();
@@ -83,14 +86,16 @@ static Handle<JSFunction> Compile(const char* source) {
 
 static double Inc(Isolate* isolate, int x) {
   const char* source = "result = %d + 1;";
-  EmbeddedVector<char, 512> buffer;
+  base::EmbeddedVector<char, 512> buffer;
   SNPrintF(buffer, source, x);
 
   Handle<JSFunction> fun = Compile(buffer.begin());
   if (fun.is_null()) return -1;
 
   Handle<JSObject> global(isolate->context().global_object(), isolate);
-  Execution::Call(isolate, fun, global, 0, nullptr).Check();
+  Execution::CallScript(isolate, fun, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
   return GetGlobalProperty("result")->Number();
 }
 
@@ -109,7 +114,9 @@ static double Add(Isolate* isolate, int x, int y) {
   SetGlobalProperty("x", Smi::FromInt(x));
   SetGlobalProperty("y", Smi::FromInt(y));
   Handle<JSObject> global(isolate->context().global_object(), isolate);
-  Execution::Call(isolate, fun, global, 0, nullptr).Check();
+  Execution::CallScript(isolate, fun, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
   return GetGlobalProperty("result")->Number();
 }
 
@@ -127,7 +134,9 @@ static double Abs(Isolate* isolate, int x) {
 
   SetGlobalProperty("x", Smi::FromInt(x));
   Handle<JSObject> global(isolate->context().global_object(), isolate);
-  Execution::Call(isolate, fun, global, 0, nullptr).Check();
+  Execution::CallScript(isolate, fun, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
   return GetGlobalProperty("result")->Number();
 }
 
@@ -146,7 +155,9 @@ static double Sum(Isolate* isolate, int n) {
 
   SetGlobalProperty("n", Smi::FromInt(n));
   Handle<JSObject> global(isolate->context().global_object(), isolate);
-  Execution::Call(isolate, fun, global, 0, nullptr).Check();
+  Execution::CallScript(isolate, fun, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
   return GetGlobalProperty("result")->Number();
 }
 
@@ -165,9 +176,11 @@ TEST(Print) {
   const char* source = "for (n = 0; n < 100; ++n) print(n, 1, 2);";
   Handle<JSFunction> fun = Compile(source);
   if (fun.is_null()) return;
-  Handle<JSObject> global(CcTest::i_isolate()->context().global_object(),
-                          fun->GetIsolate());
-  Execution::Call(CcTest::i_isolate(), fun, global, 0, nullptr).Check();
+  auto isolate = CcTest::i_isolate();
+  Handle<JSObject> global(isolate->context().global_object(), isolate);
+  Execution::CallScript(isolate, fun, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
 }
 
 
@@ -197,9 +210,11 @@ TEST(Stuff) {
 
   Handle<JSFunction> fun = Compile(source);
   CHECK(!fun.is_null());
-  Handle<JSObject> global(CcTest::i_isolate()->context().global_object(),
-                          fun->GetIsolate());
-  Execution::Call(CcTest::i_isolate(), fun, global, 0, nullptr).Check();
+  auto isolate = CcTest::i_isolate();
+  Handle<JSObject> global(isolate->context().global_object(), isolate);
+  Execution::CallScript(isolate, fun, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
   CHECK_EQ(511.0, GetGlobalProperty("r")->Number());
 }
 
@@ -213,7 +228,9 @@ TEST(UncaughtThrow) {
   CHECK(!fun.is_null());
   Isolate* isolate = fun->GetIsolate();
   Handle<JSObject> global(isolate->context().global_object(), isolate);
-  CHECK(Execution::Call(isolate, fun, global, 0, nullptr).is_null());
+  CHECK(Execution::CallScript(isolate, fun, global,
+                              isolate->factory()->empty_fixed_array())
+            .is_null());
   CHECK_EQ(42.0, isolate->pending_exception().Number());
 }
 
@@ -239,7 +256,9 @@ TEST(C2JSFrames) {
 
   // Run the generated code to populate the global object with 'foo'.
   Handle<JSObject> global(isolate->context().global_object(), isolate);
-  Execution::Call(isolate, fun0, global, 0, nullptr).Check();
+  Execution::CallScript(isolate, fun0, global,
+                        isolate->factory()->empty_fixed_array())
+      .Check();
 
   Handle<Object> fun1 =
       JSReceiver::GetProperty(isolate, isolate->global_object(), "foo")
@@ -247,7 +266,7 @@ TEST(C2JSFrames) {
   CHECK(fun1->IsJSFunction());
 
   Handle<Object> argv[] = {
-      isolate->factory()->InternalizeString(StaticCharVector("hello"))};
+      isolate->factory()->InternalizeString(base::StaticCharVector("hello"))};
   Execution::Call(isolate,
                   Handle<JSFunction>::cast(fun1),
                   global,
@@ -280,7 +299,7 @@ TEST(GetScriptLineNumber) {
   const char function_f[] = "function f() {}";
   const int max_rows = 1000;
   const int buffer_size = max_rows + sizeof(function_f);
-  ScopedVector<char> buffer(buffer_size);
+  base::ScopedVector<char> buffer(buffer_size);
   memset(buffer.begin(), '\n', buffer_size - 1);
   buffer[buffer_size - 1] = '\0';
 
@@ -422,7 +441,7 @@ TEST(OptimizedCodeSharing1) {
   }
 }
 
-TEST(CompileFunctionInContext) {
+TEST(CompileFunction) {
   if (i::FLAG_always_opt) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
@@ -435,8 +454,8 @@ TEST(CompileFunctionInContext) {
       "x = r * cos(PI);"
       "y = r * sin(PI / 2);"));
   v8::Local<v8::Function> fun =
-      v8::ScriptCompiler::CompileFunctionInContext(env.local(), &script_source,
-                                                   0, nullptr, 1, &math)
+      v8::ScriptCompiler::CompileFunction(env.local(), &script_source, 0,
+                                          nullptr, 1, &math)
           .ToLocalChecked();
   CHECK(!fun.IsEmpty());
 
@@ -459,8 +478,7 @@ TEST(CompileFunctionInContext) {
   CHECK_EQ(10.0, y->NumberValue(env.local()).FromJust());
 }
 
-
-TEST(CompileFunctionInContextComplex) {
+TEST(CompileFunctionComplex) {
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   LocalContext env;
@@ -477,8 +495,8 @@ TEST(CompileFunctionInContextComplex) {
       env->Global()->Get(env.local(), v8_str("b")).ToLocalChecked());
   v8::ScriptCompiler::Source script_source(v8_str("result = x + y + z"));
   v8::Local<v8::Function> fun =
-      v8::ScriptCompiler::CompileFunctionInContext(env.local(), &script_source,
-                                                   0, nullptr, 2, ext)
+      v8::ScriptCompiler::CompileFunction(env.local(), &script_source, 0,
+                                          nullptr, 2, ext)
           .ToLocalChecked();
   CHECK(!fun.IsEmpty());
   fun->Call(env.local(), env->Global(), 0, nullptr).ToLocalChecked();
@@ -489,8 +507,7 @@ TEST(CompileFunctionInContextComplex) {
   CHECK_EQ(52.0, result->NumberValue(env.local()).FromJust());
 }
 
-
-TEST(CompileFunctionInContextArgs) {
+TEST(CompileFunctionArgs) {
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   LocalContext env;
@@ -501,8 +518,8 @@ TEST(CompileFunctionInContextArgs) {
   v8::ScriptCompiler::Source script_source(v8_str("result = x + abc"));
   v8::Local<v8::String> arg = v8_str("abc");
   v8::Local<v8::Function> fun =
-      v8::ScriptCompiler::CompileFunctionInContext(env.local(), &script_source,
-                                                   1, &arg, 1, ext)
+      v8::ScriptCompiler::CompileFunction(env.local(), &script_source, 1, &arg,
+                                          1, ext)
           .ToLocalChecked();
   CHECK_EQ(1, fun->Get(env.local(), v8_str("length"))
                   .ToLocalChecked()
@@ -518,8 +535,7 @@ TEST(CompileFunctionInContextArgs) {
   CHECK_EQ(65.0, result->NumberValue(env.local()).FromJust());
 }
 
-
-TEST(CompileFunctionInContextComments) {
+TEST(CompileFunctionComments) {
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   LocalContext env;
@@ -532,8 +548,8 @@ TEST(CompileFunctionInContextComments) {
   v8::ScriptCompiler::Source script_source(source);
   v8::Local<v8::String> arg = CompileRun("'a\\u4e00'").As<v8::String>();
   v8::Local<v8::Function> fun =
-      v8::ScriptCompiler::CompileFunctionInContext(env.local(), &script_source,
-                                                   1, &arg, 1, ext)
+      v8::ScriptCompiler::CompileFunction(env.local(), &script_source, 1, &arg,
+                                          1, ext)
           .ToLocalChecked();
   CHECK(!fun.IsEmpty());
   v8::Local<v8::Value> arg_value = v8::Number::New(CcTest::isolate(), 42.0);
@@ -545,19 +561,18 @@ TEST(CompileFunctionInContextComments) {
   CHECK_EQ(65.0, result->NumberValue(env.local()).FromJust());
 }
 
-
-TEST(CompileFunctionInContextNonIdentifierArgs) {
+TEST(CompileFunctionNonIdentifierArgs) {
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   LocalContext env;
   v8::ScriptCompiler::Source script_source(v8_str("result = 1"));
   v8::Local<v8::String> arg = v8_str("b }");
-  CHECK(v8::ScriptCompiler::CompileFunctionInContext(
-            env.local(), &script_source, 1, &arg, 0, nullptr)
-            .IsEmpty());
+  CHECK(
+      v8::ScriptCompiler::CompileFunction(env.local(), &script_source, 1, &arg)
+          .IsEmpty());
 }
 
-TEST(CompileFunctionInContextRenderCallSite) {
+TEST(CompileFunctionRenderCallSite) {
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   LocalContext env;
@@ -582,8 +597,7 @@ TEST(CompileFunctionInContextRenderCallSite) {
   {
     v8::ScriptCompiler::Source script_source(v8_str(source1));
     v8::Local<v8::Function> fun =
-        v8::ScriptCompiler::CompileFunctionInContext(
-            env.local(), &script_source, 0, nullptr, 0, nullptr)
+        v8::ScriptCompiler::CompileFunction(env.local(), &script_source)
             .ToLocalChecked();
     CHECK(!fun.IsEmpty());
     v8::Local<v8::Value> result =
@@ -596,8 +610,7 @@ TEST(CompileFunctionInContextRenderCallSite) {
   {
     v8::ScriptCompiler::Source script_source(v8_str(source2));
     v8::Local<v8::Function> fun =
-        v8::ScriptCompiler::CompileFunctionInContext(
-            env.local(), &script_source, 0, nullptr, 0, nullptr)
+        v8::ScriptCompiler::CompileFunction(env.local(), &script_source)
             .ToLocalChecked();
     v8::Local<v8::Value> result =
         fun->Call(env.local(), env->Global(), 0, nullptr).ToLocalChecked();
@@ -608,7 +621,7 @@ TEST(CompileFunctionInContextRenderCallSite) {
   }
 }
 
-TEST(CompileFunctionInContextQuirks) {
+TEST(CompileFunctionQuirks) {
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   LocalContext env;
@@ -619,8 +632,7 @@ TEST(CompileFunctionInContextQuirks) {
     static const char* expect = "abcd";
     v8::ScriptCompiler::Source script_source(v8_str(source));
     v8::Local<v8::Function> fun =
-        v8::ScriptCompiler::CompileFunctionInContext(
-            env.local(), &script_source, 0, nullptr, 0, nullptr)
+        v8::ScriptCompiler::CompileFunction(env.local(), &script_source)
             .ToLocalChecked();
     v8::Local<v8::Value> result =
         fun->Call(env.local(), env->Global(), 0, nullptr).ToLocalChecked();
@@ -633,8 +645,7 @@ TEST(CompileFunctionInContextQuirks) {
     static const char* source = "'use strict'; var a = 077";
     v8::ScriptCompiler::Source script_source(v8_str(source));
     v8::TryCatch try_catch(CcTest::isolate());
-    CHECK(v8::ScriptCompiler::CompileFunctionInContext(
-              env.local(), &script_source, 0, nullptr, 0, nullptr)
+    CHECK(v8::ScriptCompiler::CompileFunction(env.local(), &script_source)
               .IsEmpty());
     CHECK(try_catch.HasCaught());
   }
@@ -642,30 +653,27 @@ TEST(CompileFunctionInContextQuirks) {
     static const char* source = "{ let x; { var x } }";
     v8::ScriptCompiler::Source script_source(v8_str(source));
     v8::TryCatch try_catch(CcTest::isolate());
-    CHECK(v8::ScriptCompiler::CompileFunctionInContext(
-              env.local(), &script_source, 0, nullptr, 0, nullptr)
+    CHECK(v8::ScriptCompiler::CompileFunction(env.local(), &script_source)
               .IsEmpty());
     CHECK(try_catch.HasCaught());
   }
 }
 
-TEST(CompileFunctionInContextScriptOrigin) {
+TEST(CompileFunctionScriptOrigin) {
   CcTest::InitializeVM();
   v8::Isolate* isolate = CcTest::isolate();
   v8::HandleScope scope(isolate);
   LocalContext env;
   v8::ScriptOrigin origin(isolate, v8_str("test"), 22, 41);
   v8::ScriptCompiler::Source script_source(v8_str("throw new Error()"), origin);
-  Local<ScriptOrModule> script;
   v8::Local<v8::Function> fun =
-      v8::ScriptCompiler::CompileFunctionInContext(
-          env.local(), &script_source, 0, nullptr, 0, nullptr,
-          v8::ScriptCompiler::CompileOptions::kNoCompileOptions,
-          v8::ScriptCompiler::NoCacheReason::kNoCacheNoReason, &script)
+      v8::ScriptCompiler::CompileFunction(env.local(), &script_source)
           .ToLocalChecked();
   CHECK(!fun.IsEmpty());
+  v8::Local<v8::UnboundScript> script =
+      fun->GetUnboundScript().ToLocalChecked();
   CHECK(!script.IsEmpty());
-  CHECK(script->GetResourceName()->StrictEquals(v8_str("test")));
+  CHECK(script->GetScriptName()->StrictEquals(v8_str("test")));
   v8::TryCatch try_catch(CcTest::isolate());
   CcTest::isolate()->SetCaptureStackTraceForUncaughtExceptions(true);
   CHECK(fun->Call(env.local(), env->Global(), 0, nullptr).IsEmpty());
@@ -680,7 +688,7 @@ TEST(CompileFunctionInContextScriptOrigin) {
   CHECK_EQ(42 + strlen("throw "), static_cast<unsigned>(frame->GetColumn()));
 }
 
-void TestCompileFunctionInContextToStringImpl() {
+void TestCompileFunctionToStringImpl() {
 #define CHECK_NOT_CAUGHT(__local_context__, try_catch, __op__)             \
   do {                                                                     \
     const char* op = (__op__);                                             \
@@ -707,12 +715,11 @@ void TestCompileFunctionInContextToStringImpl() {
       v8::Local<v8::String> params[] = {v8_str("event")};
       v8::TryCatch try_catch(CcTest::isolate());
       v8::MaybeLocal<v8::Function> maybe_fun =
-          v8::ScriptCompiler::CompileFunctionInContext(
-              env.local(), &script_source, arraysize(params), params, 0,
-              nullptr);
+          v8::ScriptCompiler::CompileFunction(env.local(), &script_source,
+                                              arraysize(params), params);
 
       CHECK_NOT_CAUGHT(env.local(), try_catch,
-                       "v8::ScriptCompiler::CompileFunctionInContext");
+                       "v8::ScriptCompiler::CompileFunction");
 
       v8::Local<v8::Function> fun = maybe_fun.ToLocalChecked();
       CHECK(!fun.IsEmpty());
@@ -733,11 +740,10 @@ void TestCompileFunctionInContextToStringImpl() {
 
       v8::TryCatch try_catch(CcTest::isolate());
       v8::MaybeLocal<v8::Function> maybe_fun =
-          v8::ScriptCompiler::CompileFunctionInContext(
-              env.local(), &script_source, 0, nullptr, 0, nullptr);
+          v8::ScriptCompiler::CompileFunction(env.local(), &script_source);
 
       CHECK_NOT_CAUGHT(env.local(), try_catch,
-                       "v8::ScriptCompiler::CompileFunctionInContext");
+                       "v8::ScriptCompiler::CompileFunction");
 
       v8::Local<v8::Function> fun = maybe_fun.ToLocalChecked();
       CHECK(!fun.IsEmpty());
@@ -758,11 +764,10 @@ void TestCompileFunctionInContextToStringImpl() {
 
       v8::TryCatch try_catch(CcTest::isolate());
       v8::MaybeLocal<v8::Function> maybe_fun =
-          v8::ScriptCompiler::CompileFunctionInContext(
-              env.local(), &script_source, 0, nullptr, 0, nullptr);
+          v8::ScriptCompiler::CompileFunction(env.local(), &script_source);
 
       CHECK_NOT_CAUGHT(env.local(), try_catch,
-                       "v8::ScriptCompiler::CompileFunctionInContext");
+                       "v8::ScriptCompiler::CompileFunction");
 
       v8::Local<v8::Function> fun = maybe_fun.ToLocalChecked();
       CHECK(!fun.IsEmpty());
@@ -782,9 +787,7 @@ void TestCompileFunctionInContextToStringImpl() {
 #undef CHECK_NOT_CAUGHT
 }
 
-TEST(CompileFunctionInContextFunctionToString) {
-  TestCompileFunctionInContextToStringImpl();
-}
+TEST(CompileFunctionFunctionToString) { TestCompileFunctionToStringImpl(); }
 
 TEST(InvocationCount) {
   if (FLAG_lite_mode) return;

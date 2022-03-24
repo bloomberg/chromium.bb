@@ -13,9 +13,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/object_watcher.h"
@@ -135,7 +136,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
   printing::ScopedPrinterHandle printer_;  // The printer being watched
   // Returned by FindFirstPrinterChangeNotifier.
   printing::ScopedPrinterChangeHandle printer_change_;
-  Delegate* delegate_ = nullptr;  // Delegate to notify
+  raw_ptr<Delegate> delegate_ = nullptr;  // Delegate to notify
   std::string printer_info_;      // For crash reporting.
 };
 
@@ -144,6 +145,9 @@ class PrintServerWatcherWin
     public PrintSystemWatcherWin::Delegate {
  public:
   PrintServerWatcherWin() {}
+
+  PrintServerWatcherWin(const PrintServerWatcherWin&) = delete;
+  PrintServerWatcherWin& operator=(const PrintServerWatcherWin&) = delete;
 
   // PrintSystem::PrintServerWatcher implementation.
   bool StartWatching(
@@ -170,10 +174,8 @@ class PrintServerWatcherWin
   ~PrintServerWatcherWin() override {}
 
  private:
-  PrintSystem::PrintServerWatcher::Delegate* delegate_ = nullptr;
+  raw_ptr<PrintSystem::PrintServerWatcher::Delegate> delegate_ = nullptr;
   PrintSystemWatcherWin watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintServerWatcherWin);
 };
 
 class PrinterWatcherWin
@@ -182,6 +184,9 @@ class PrinterWatcherWin
  public:
   explicit PrinterWatcherWin(const std::string& printer_name)
       : printer_name_(printer_name) {}
+
+  PrinterWatcherWin(const PrinterWatcherWin&) = delete;
+  PrinterWatcherWin& operator=(const PrinterWatcherWin&) = delete;
 
   // PrintSystem::PrinterWatcher implementation.
   bool StartWatching(PrintSystem::PrinterWatcher::Delegate* delegate) override {
@@ -219,15 +224,16 @@ class PrinterWatcherWin
 
  private:
   const std::string printer_name_;
-  PrintSystem::PrinterWatcher::Delegate* delegate_ = nullptr;
+  raw_ptr<PrintSystem::PrinterWatcher::Delegate> delegate_ = nullptr;
   PrintSystemWatcherWin watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrinterWatcherWin);
 };
 
 class JobSpoolerWin : public PrintSystem::JobSpooler {
  public:
   JobSpoolerWin() : core_(base::MakeRefCounted<Core>()) {}
+
+  JobSpoolerWin(const JobSpoolerWin&) = delete;
+  JobSpoolerWin& operator=(const JobSpoolerWin&) = delete;
 
   // PrintSystem::JobSpooler implementation.
   bool Spool(const std::string& print_ticket,
@@ -258,6 +264,9 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
                public base::win::ObjectWatcher::Delegate {
    public:
     Core() {}
+
+    Core(const Core&) = delete;
+    Core& operator=(const Core&) = delete;
 
     bool Spool(const std::string& print_ticket,
                const std::string& print_ticket_mime_type,
@@ -374,6 +383,10 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
      public:
       explicit PrintJobCanceler(Microsoft::WRL::ComPtr<IXpsPrintJob>* job_ptr)
           : job_ptr_(job_ptr) {}
+
+      PrintJobCanceler(const PrintJobCanceler&) = delete;
+      PrintJobCanceler& operator=(const PrintJobCanceler&) = delete;
+
       ~PrintJobCanceler() {
         if (job_ptr_ && job_ptr_->Get()) {
           (*job_ptr_)->Cancel();
@@ -384,9 +397,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       void reset() { job_ptr_ = nullptr; }
 
      private:
-      Microsoft::WRL::ComPtr<IXpsPrintJob>* job_ptr_;
-
-      DISALLOW_COPY_AND_ASSIGN(PrintJobCanceler);
+      raw_ptr<Microsoft::WRL::ComPtr<IXpsPrintJob>> job_ptr_;
     };
 
     void PrintJobDone(bool success) {
@@ -503,18 +514,14 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     }
 
     PlatformJobId job_id_ = -1;
-    PrintSystem::JobSpooler::Delegate* delegate_ = nullptr;
+    raw_ptr<PrintSystem::JobSpooler::Delegate> delegate_ = nullptr;
     int saved_dc_ = 0;
     base::win::ScopedCreateDC printer_dc_;
     base::win::ScopedHandle job_progress_event_;
     base::win::ObjectWatcher job_progress_watcher_;
     Microsoft::WRL::ComPtr<IXpsPrintJob> xps_print_job_;
-
-    DISALLOW_COPY_AND_ASSIGN(Core);
   };
   scoped_refptr<Core> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin);
 };
 
 // A helper class to handle the response from the utility process to the
@@ -609,6 +616,9 @@ class PrintSystemWin : public PrintSystem {
  public:
   PrintSystemWin();
 
+  PrintSystemWin(const PrintSystemWin&) = delete;
+  PrintSystemWin& operator=(const PrintSystemWin&) = delete;
+
   // PrintSystem implementation.
   PrintSystemResult Init() override;
   PrintSystem::PrintSystemResult EnumeratePrinters(
@@ -637,8 +647,6 @@ class PrintSystemWin : public PrintSystem {
   std::string GetPrinterDriverInfo(const std::string& printer_name) const;
 
   scoped_refptr<printing::PrintBackend> print_backend_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintSystemWin);
 };
 
 PrintSystemWin::PrintSystemWin()

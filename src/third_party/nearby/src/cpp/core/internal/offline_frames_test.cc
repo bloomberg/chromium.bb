@@ -19,10 +19,11 @@
 #include <utility>
 #include <vector>
 
-#include "proto/connections/offline_wire_formats.pb.h"
-#include "platform/base/byte_array.h"
+#include "absl/strings/string_view.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "platform/base/byte_array.h"
+#include "proto/connections/offline_wire_formats.pb.h"
 
 namespace location {
 namespace nearby {
@@ -55,9 +56,10 @@ TEST(OfflineFramesTest, CanParseMessageFromBytes) {
     auto* sub_frame = v1_frame->mutable_connection_request();
 
     v1_frame->set_type(V1Frame::CONNECTION_REQUEST);
-    sub_frame->set_endpoint_id(kEndpointId);
-    sub_frame->set_endpoint_name(kEndpointName);
-    sub_frame->set_endpoint_info(kEndpointName);
+    // OSS matchers don't like implicitly comparing string_views to strings.
+    sub_frame->set_endpoint_id(std::string(kEndpointId));
+    sub_frame->set_endpoint_name(std::string(kEndpointName));
+    sub_frame->set_endpoint_info(std::string(kEndpointName));
     sub_frame->set_nonce(kNonce);
     sub_frame->set_keep_alive_interval_millis(kKeepAliveIntervalMillis);
     sub_frame->set_keep_alive_timeout_millis(kKeepAliveTimeoutMillis);
@@ -92,10 +94,7 @@ TEST(OfflineFramesTest, CanGenerateConnectionRequest) {
         endpoint_name: "XYZ"
         endpoint_info: "XYZ"
         nonce: 1234
-        medium_metadata: <
-          supports_5_ghz: true
-          bssid: "FF:FF:FF:FF:FF:FF"
-        >
+        medium_metadata: < supports_5_ghz: true bssid: "FF:FF:FF:FF:FF:FF" >
         mediums: MDNS
         mediums: BLUETOOTH
         mediums: WIFI_HOTSPOT
@@ -106,7 +105,7 @@ TEST(OfflineFramesTest, CanGenerateConnectionRequest) {
         mediums: WIFI_DIRECT
         mediums: WEB_RTC
         keep_alive_interval_millis: 1000
-        keep_alive_timeout_millis : 5000
+        keep_alive_timeout_millis: 5000
       >
     >)pb";
   ByteArray bytes = ForConnectionRequest(
@@ -126,10 +125,7 @@ TEST(OfflineFramesTest, CanGenerateConnectionResponse) {
     version: V1
     v1: <
       type: CONNECTION_RESPONSE
-      connection_response: <
-        status: 1
-        response: REJECT
-      >
+      connection_response: < status: 1 response: REJECT >
     >)pb";
   ByteArray bytes = ForConnectionResponse(1);
   auto response = FromBytes(bytes);

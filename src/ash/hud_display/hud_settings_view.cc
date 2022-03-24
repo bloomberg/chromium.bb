@@ -17,6 +17,7 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -25,7 +26,9 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_throbber.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -35,6 +38,12 @@
 namespace ash {
 namespace hud_display {
 namespace {
+
+constexpr SkColor kHUDDisabledButtonColor =
+    SkColorSetA(kHUDDefaultColor, 0xFF * 0.5);
+
+// Thickness of border around settings.
+constexpr int kHUDSettingsBorderWidth = 1;
 
 ui::ScopedAnimationDurationScaleMode* scoped_animation_duration_scale_mode =
     nullptr;
@@ -150,6 +159,10 @@ class AnimationSpeedSlider : public views::Slider {
   AnimationSpeedSlider(const base::flat_set<float>& values,
                        views::SliderListener* listener = nullptr)
       : views::Slider(listener) {
+    // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+    // able to submit accessibility checks, but this focusable View needs to
+    // add a name so that the screen reader knows what to announce.
+    SetProperty(views::kSkipAccessibilityPaintChecks, true);
     SetAllowedValues(&values);
   }
 
@@ -248,7 +261,7 @@ AnimationSpeedControl::AnimationSpeedControl() {
   auto add_speed_point = [](AnimationSpeedControl* self, views::View* container,
                             std::vector<float>& multipliers, float multiplier,
                             const std::u16string& text) {
-    const int kLabelBorderWidth = 3;
+    constexpr int kLabelBorderWidth = 3;
     views::Label* label = container->AddChildView(
         std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL));
     label->SetAutoColorReadabilityEnabled(false);
@@ -325,7 +338,7 @@ void AnimationSpeedControl::Layout() {
     label->SetPreferredSize(max_size);
 
   gfx::Size hints_total_size = hints_container_->GetPreferredSize();
-  // Slider should negin in the middle of the first label, and end in the
+  // Slider should begin in the middle of the first label, and end in the
   // middle of the last label. But ripple overlays border, so we set total
   // width to match the total hints width and adjust border to make slider
   // correct size.
@@ -374,7 +387,7 @@ class HUDActionButton : public views::LabelButton {
   void DisableWithSpinner() {
     DCHECK(!spinner_refresh_timer_.IsRunning());
     SetEnabled(false);
-    constexpr base::TimeDelta interval = base::TimeDelta::FromSecondsD(0.5);
+    constexpr base::TimeDelta interval = base::Seconds(0.5);
     spinner_created_ = base::Time::Now();
     spinner_refresh_timer_.Start(
         FROM_HERE, interval,
@@ -418,7 +431,8 @@ HUDSettingsView::HUDSettingsView(HUDDisplayView* hud_display) {
           views::BoxLayout::Orientation::kVertical));
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
-  SetBorder(views::CreateSolidBorder(1, kHUDDefaultColor));
+  SetBorder(
+      views::CreateSolidBorder(kHUDSettingsBorderWidth, kHUDDefaultColor));
 
   // We want the HUD to be draggable when clicked on the whitespace, so we do
   // not want the buttons to extend past the minimum size. To overcome the

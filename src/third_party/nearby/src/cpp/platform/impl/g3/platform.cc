@@ -17,13 +17,17 @@
 #include <atomic>
 #include <memory>
 
+#include "absl/base/integral_types.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
+#include "absl/time/time.h"
 #include "platform/api/atomic_boolean.h"
 #include "platform/api/atomic_reference.h"
 #include "platform/api/ble_v2.h"
 #include "platform/api/bluetooth_adapter.h"
 #include "platform/api/bluetooth_classic.h"
 #include "platform/api/condition_variable.h"
-#include "platform/api/count_down_latch.h"
+#include "platform/impl/shared/count_down_latch.h"
 #include "platform/api/log_message.h"
 #include "platform/api/mutex.h"
 #include "platform/api/scheduled_executor.h"
@@ -38,7 +42,6 @@
 #include "platform/impl/g3/bluetooth_adapter.h"
 #include "platform/impl/g3/bluetooth_classic.h"
 #include "platform/impl/g3/condition_variable.h"
-#include "platform/impl/g3/count_down_latch.h"
 #include "platform/impl/g3/log_message.h"
 #include "platform/impl/g3/multi_thread_executor.h"
 #include "platform/impl/g3/mutex.h"
@@ -47,10 +50,6 @@
 #include "platform/impl/g3/webrtc.h"
 #include "platform/impl/g3/wifi_lan.h"
 #include "platform/impl/shared/file.h"
-#include "absl/base/integral_types.h"
-#include "absl/memory/memory.h"
-#include "absl/strings/str_cat.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {
@@ -82,8 +81,8 @@ ImplementationPlatform::CreateScheduledExecutor() {
   return absl::make_unique<g3::ScheduledExecutor>();
 }
 
-std::unique_ptr<AtomicUint32>
-ImplementationPlatform::CreateAtomicUint32(std::uint32_t value) {
+std::unique_ptr<AtomicUint32> ImplementationPlatform::CreateAtomicUint32(
+    std::uint32_t value) {
   return absl::make_unique<g3::AtomicUint32>(value);
 }
 
@@ -94,7 +93,7 @@ ImplementationPlatform::CreateBluetoothAdapter() {
 
 std::unique_ptr<CountDownLatch> ImplementationPlatform::CreateCountDownLatch(
     std::int32_t count) {
-  return absl::make_unique<g3::CountDownLatch>(count);
+  return absl::make_unique<shared::CountDownLatch>(count);
 }
 
 std::unique_ptr<AtomicBoolean> ImplementationPlatform::CreateAtomicBoolean(

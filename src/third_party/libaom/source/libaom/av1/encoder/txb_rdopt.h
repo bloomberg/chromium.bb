@@ -47,7 +47,7 @@ extern "C" {
  * \param[in]    sharpness      When sharpness > 0, the function will be less
  * aggressive towards lowering the magnitude of coefficients.
  * In this way, the transform block will contain more high-frequency
- * coefficients and therefore, will preserve the sharpness of the reconstructed
+ * coefficients and therefore will preserve the sharpness of the reconstructed
  * block.
  */
 int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,

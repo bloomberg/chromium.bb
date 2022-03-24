@@ -81,6 +81,7 @@ void FakeServiceController::Initialize(
 
   authentication_tokens_ =
       std::move(libassistant_config_->authentication_tokens);
+  dark_mode_enabled_ = libassistant_config_->dark_mode_enabled;
 }
 
 void FakeServiceController::Start() {
@@ -115,6 +116,10 @@ void FakeServiceController::SetAuthenticationTokens(
   authentication_tokens_ = std::move(tokens);
 }
 
+void FakeServiceController::SetDarkModeEnabled(bool value) {
+  dark_mode_enabled_ = value;
+}
+
 void FakeServiceController::UpdateSettings(const std::string& settings,
                                            UpdateSettingsCallback callback) {
   // Callback must be called to satisfy the mojom contract.
@@ -122,6 +127,7 @@ void FakeServiceController::UpdateSettings(const std::string& settings,
 }
 
 void FakeServiceController::GetSettings(const std::string& selector,
+                                        bool include_header,
                                         GetSettingsCallback callback) {
   // Callback must be called to satisfy the mojom contract.
   std::move(callback).Run(std::string());

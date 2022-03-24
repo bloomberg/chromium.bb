@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../core/sdk/sdk.js';
 
 export const enum Category {
@@ -18,7 +16,6 @@ export const enum Category {
   GeneratedContent = 'Generated Content',
   Other = 'Other',
 }
-
 
 export const DefaultCategoryOrder = [
   Category.Layout,
@@ -203,7 +200,7 @@ export const categorizePropertyName = (propertyName: string): Category[] => {
     return categories;
   }
 
-  const shorthands = cssMetadata.shorthands(canonicalName);
+  const shorthands = cssMetadata.getShorthands(canonicalName);
   if (shorthands) {
     for (const shorthand of shorthands) {
       const shorthandCategories = matchCategoriesByPropertyName(shorthand);

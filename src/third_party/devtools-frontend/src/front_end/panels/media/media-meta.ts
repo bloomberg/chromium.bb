@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Media from './media.js';
 
 const UIStrings = {
@@ -30,8 +28,6 @@ let loadedMediaModule: (typeof Media|undefined);
 
 async function loadMediaModule(): Promise<typeof Media> {
   if (!loadedMediaModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/media');
     loadedMediaModule = await import('./media.js');
   }
   return loadedMediaModule;

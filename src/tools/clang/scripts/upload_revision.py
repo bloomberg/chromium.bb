@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -31,22 +31,24 @@ COMMIT_FOOTER = \
 '''
 Bug: TODO. Remove the Tricium: line below when filling this in.
 Tricium: skip
+Cq-Include-Trybots: chromium/try:android-asan
 Cq-Include-Trybots: chromium/try:chromeos-amd64-generic-cfi-thin-lto-rel
 Cq-Include-Trybots: chromium/try:dawn-win10-x86-deps-rel
 Cq-Include-Trybots: chromium/try:linux-chromeos-dbg
-Cq-Include-Trybots: chromium/try:linux_angle_deqp_rel_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_cfi_rel_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_chromeos_msan_rel_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_compile_dbg_32_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_msan_rel_ng
-Cq-Include-Trybots: chromium/try:mac-arm64-rel,mac_chromium_asan_rel_ng
+Cq-Include-Trybots: chromium/try:mac11-arm64-rel,mac_chromium_asan_rel_ng
 Cq-Include-Trybots: chromium/try:win-asan,win7-rel
 Cq-Include-Trybots: chromium/try:android-official,fuchsia-official
 Cq-Include-Trybots: chromium/try:mac-official,linux-official
 Cq-Include-Trybots: chromium/try:win-official,win32-official
+Cq-Include-Trybots: chromium/try:linux-swangle-try-x64,win-swangle-try-x86
 Cq-Include-Trybots: chrome/try:iphone-device,ipad-device
 Cq-Include-Trybots: chrome/try:linux-chromeos-chrome
 Cq-Include-Trybots: chrome/try:win-chrome,win64-chrome,mac-chrome
+Cq-Include-Trybots: chrome/try:linux-pgo,mac-pgo,win32-pgo,win64-pgo
 '''
 
 is_win = sys.platform.startswith('win32')

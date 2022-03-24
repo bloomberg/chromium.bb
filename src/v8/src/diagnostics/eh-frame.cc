@@ -27,14 +27,12 @@ void EhFrameWriter::WriteInitialStateInCie() { UNIMPLEMENTED(); }
 
 int EhFrameWriter::RegisterToDwarfCode(Register) {
   UNIMPLEMENTED();
-  return -1;
 }
 
 #ifdef ENABLE_DISASSEMBLER
 
 const char* EhFrameDisassembler::DwarfRegisterCodeToString(int) {
   UNIMPLEMENTED();
-  return nullptr;
 }
 
 #endif
@@ -587,7 +585,6 @@ void EhFrameDisassembler::DumpDwarfDirectives(std::ostream& stream,
         break;
       default:
         UNREACHABLE();
-        return;
     }
   }
 }

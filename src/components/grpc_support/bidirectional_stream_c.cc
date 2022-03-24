@@ -13,11 +13,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/grpc_support/bidirectional_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -39,11 +39,14 @@ namespace {
 class HeadersArray : public bidirectional_stream_header_array {
  public:
   explicit HeadersArray(const spdy::Http2HeaderBlock& header_block);
+
+  HeadersArray(const HeadersArray&) = delete;
+  HeadersArray& operator=(const HeadersArray&) = delete;
+
   ~HeadersArray();
 
  private:
   base::StringPairs headers_strings_;
-  DISALLOW_COPY_AND_ASSIGN(HeadersArray);
 };
 
 HeadersArray::HeadersArray(const spdy::Http2HeaderBlock& header_block)
@@ -120,11 +123,11 @@ class BidirectionalStreamAdapter
   void DestroyOnNetworkThread();
 
   // None of these objects are owned by |this|.
-  net::URLRequestContextGetter* request_context_getter_;
-  grpc_support::BidirectionalStream* bidirectional_stream_;
+  raw_ptr<net::URLRequestContextGetter> request_context_getter_;
+  raw_ptr<grpc_support::BidirectionalStream> bidirectional_stream_;
   // C side
   std::unique_ptr<bidirectional_stream> c_stream_;
-  bidirectional_stream_callback* c_callback_;
+  raw_ptr<bidirectional_stream_callback> c_callback_;
 };
 
 BidirectionalStreamAdapter::BidirectionalStreamAdapter(

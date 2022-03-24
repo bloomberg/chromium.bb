@@ -14,10 +14,6 @@
 # ==============================================================================
 """Functional tests for XLA TensorArray Ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.compiler.tests import xla_test
@@ -247,7 +243,7 @@ class TensorArrayTest(xla_test.XLATestCase):
             dtype=tf_dtype, tensor_array_name="foo", size=3)
         lengths = constant_op.constant([1, 1, 1])
         w0 = ta.split(
-            convert([[1.0, 101.0], [2.0, 201.0], [3.0, 301.0]]),
+            convert([[1.0, 101.0], [2.0, 121.0], [3.0, 127.0]]),
             lengths=lengths)
         r0 = w0.read(0)
         r1 = w0.read(1)
@@ -256,8 +252,8 @@ class TensorArrayTest(xla_test.XLATestCase):
 
       d0, d1, d2 = self.evaluate(xla.compile(fn))
       self.assertAllEqual(convert([[1.0, 101.0]]), d0)
-      self.assertAllEqual(convert([[2.0, 201.0]]), d1)
-      self.assertAllEqual(convert([[3.0, 301.0]]), d2)
+      self.assertAllEqual(convert([[2.0, 121.0]]), d1)
+      self.assertAllEqual(convert([[3.0, 127.0]]), d2)
 
   @test_util.disable_control_flow_v2("b/122315872 (split)")
   def testTensorArraySplitRead(self):
@@ -393,9 +389,8 @@ class TensorArrayTest(xla_test.XLATestCase):
       # Test writing the wrong datatype.
       # TODO(b/129870929): Remove InvalidArgumentError/second regexp after all
       # callers provide proper init dtype.
-      with self.assertRaisesRegexp(
-          (ValueError, errors.InvalidArgumentError),
-          r"("
+      with self.assertRaisesRegex(
+          (ValueError, errors.InvalidArgumentError), r"("
           r"conversion requested dtype float32 for Tensor with dtype int32"
           r"|"
           r"TensorArray dtype is float but op has dtype int32"
@@ -509,7 +504,7 @@ class TensorArrayTest(xla_test.XLATestCase):
         return w2_grad.read(2)
 
       # Assert that aggregation works correctly
-      self.assertAllEqual(c(12.00), xla.compile(fn)[0].eval())
+      self.assertAllEqual(c(12.00), xla.compile(fn)[0])
 
       def fn():
         ta = tensor_array_ops.TensorArray(
@@ -802,7 +797,7 @@ class TensorArrayTest(xla_test.XLATestCase):
   #     state0_grad = gradients_impl.gradients([vout], [state0], [grad_val])[0]
   #     var_grad = gradients_impl.gradients([vout], [var], [grad_val])[0]
 
-  #     variables.global_variables_initializer().run()
+  #     self.evaluate(variables.global_variables_initializer())
   #     state0_t, var_t, v0_t, vout_t, v0_grad_t, var_grad_t, state0_grad_t = (
   #         self.evaluate([state0, var, v0, vout, v0_grad, var_grad, state0_grad])
   #     )
@@ -1034,7 +1029,7 @@ class TensorArrayTest(xla_test.XLATestCase):
             dtype=tf_dtype, tensor_array_name="foo", size=10)
 
         indices = constant_op.constant([1, 8])
-        value = constant_op.constant(convert([[1.0, -1.0], [10.0, -10.0]]))
+        value = constant_op.constant(convert([[1.0, 5.0], [10.0, 20.0]]))
 
         w = ta.scatter(indices, value)
         r0 = w.read(id0)
@@ -1044,8 +1039,8 @@ class TensorArrayTest(xla_test.XLATestCase):
 
       # Test aggregation of read
       read_vals = session.run(xla.compile(fn), feed_dict={id0: 1, id1: 8})
-      self.assertAllEqual(convert([1.0, -1.0]), read_vals[0])
-      self.assertAllEqual(convert([10.0, -10.0]), read_vals[1])
+      self.assertAllEqual(convert([1.0, 5.0]), read_vals[0])
+      self.assertAllEqual(convert([10.0, 20.0]), read_vals[1])
 
   @test_util.disable_control_flow_v2("b/122315734 (scatter)")
   def testTensorArrayScatterRead(self):
@@ -1151,7 +1146,7 @@ class TensorArrayTest(xla_test.XLATestCase):
 
         return [read0, read1, size0, size1, v0, v1]
 
-      variables.global_variables_initializer().run()
+      self.evaluate(variables.global_variables_initializer())
 
       read0_v, read1_v, size0_v, size1_v, v0, v1 = self.evaluate(
           xla.compile(fn))

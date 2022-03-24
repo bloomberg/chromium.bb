@@ -40,11 +40,13 @@ DebugOptions DefaultDebugOptionsIgnoringFlags() {
   opts.set_xla_gpu_asm_extra_flags("");
   opts.set_xla_eliminate_hlo_implicit_broadcast(true);
   opts.set_xla_dump_hlo_as_html(false);
+  opts.set_xla_dump_fusion_visualization(false);
   opts.set_xla_dump_include_timestamp(true);
   opts.set_xla_dump_max_hlo_modules(-1);
-#ifdef INTEL_MKL
+  opts.set_xla_dump_module_metadata(false);
+#ifdef ENABLE_MKL
   opts.set_xla_cpu_use_mkl_dnn(true);
-#endif  // INTEL_MKL
+#endif  // ENABLE_MKL
   opts.set_xla_gpu_max_kernel_unroll_factor(4);
   // Set cudnn batchnorm off by default; it does not provide a performance win
   // on average.
@@ -66,14 +68,17 @@ DebugOptions DefaultDebugOptionsIgnoringFlags() {
   // By default, copy TF's Eigen style min_max behavior with nans.
   opts.set_xla_cpu_enable_fast_min_max(true);
 
+  opts.set_xla_gpu_enable_cudnn_frontend(true);
   opts.set_xla_gpu_enable_fast_min_max(true);
+  opts.set_xla_gpu_strict_conv_algorithm_picker(true);
 
   opts.set_xla_allow_excess_precision(true);
   opts.set_xla_force_host_platform_device_count(1);
-  opts.set_xla_gpu_deterministic_reductions(false);
-  opts.set_xla_cpu_enable_xprof_traceme(true);
+  opts.set_xla_gpu_all_reduce_combine_threshold_bytes(30 * 1024 * 1024);
+  opts.set_xla_cpu_enable_xprof_traceme(false);
   opts.set_xla_gpu_unsafe_fallback_to_driver_on_ptxas_not_found(false);
-
+  opts.set_xla_multiheap_size_constraint_per_heap(-1);
+  opts.set_xla_detailed_logging_and_dumping(true);
   return opts;
 }
 
@@ -82,7 +87,7 @@ static DebugOptions* flag_values;
 static std::vector<tensorflow::Flag>* flag_objects;
 
 // Maps pass -> initial fuel values (parsed when AllocateFlags was run).
-static absl::flat_hash_map<string, int64>* initial_fuel;
+static absl::flat_hash_map<string, int64_t>* initial_fuel;
 
 // Maps pass -> whether fuel was ever consumed for that pass.
 static absl::node_hash_map<string, std::atomic<bool>>* fuel_ever_consumed;
@@ -91,11 +96,11 @@ static absl::node_hash_map<string, std::atomic<bool>>* fuel_ever_consumed;
 //
 // All threads start off using this global fuel pool, but ResetThreadLocalFuel()
 // switches them to a thread-local fuel pool.
-static absl::node_hash_map<string, std::atomic<int64>>* global_fuel;
+static absl::node_hash_map<string, std::atomic<int64_t>>* global_fuel;
 
 // If we're using thread-local fuel, this stores it.
 static thread_local std::unique_ptr<
-    absl::node_hash_map<string, std::atomic<int64>>>
+    absl::node_hash_map<string, std::atomic<int64_t>>>
     thread_fuel;  // NOLINT (global variable with nontrivial destructor)
 
 // Logs a warning if a pass's fuel was never consumed, on the theory that this
@@ -130,8 +135,15 @@ static void AllocateFlags() {
 
   // Returns a lambda that calls "member_setter" on "flag_values" with the
   // argument passed in to the lambda.
-  auto int32_setter_for = [](void (DebugOptions::*member_setter)(int32)) {
-    return [member_setter](int32 value) {
+  auto int32_setter_for = [](void (DebugOptions::*member_setter)(int32_t)) {
+    return [member_setter](int32_t value) {
+      (flag_values->*member_setter)(value);
+      return true;
+    };
+  };
+
+  auto int64_setter_for = [](void (DebugOptions::*member_setter)(int64_t)) {
+    return [member_setter](int64_t value) {
       (flag_values->*member_setter)(value);
       return true;
     };
@@ -170,6 +182,12 @@ static void AllocateFlags() {
     return true;
   };
 
+  // Custom "sub-parser" lambda for xla_gpu_llvm_ir_file.
+  auto setter_for_xla_gpu_llvm_ir_file = [](const string& value) {
+    flag_values->add_xla_gpu_llvm_ir_file(value);
+    return true;
+  };
+
   // Custom "sub-parser" lambda for xla_backend_extra_options.
   auto setter_for_xla_backend_extra_options =
       [](string comma_separated_values) {
@@ -184,9 +202,9 @@ static void AllocateFlags() {
   // locking on the fuel global variables.  This means that it's
   // illegal/undefined behavior to modify this flag value while the compiler is
   // running.
-  initial_fuel = new absl::flat_hash_map<string, int64>();
+  initial_fuel = new absl::flat_hash_map<string, int64_t>();
   fuel_ever_consumed = new absl::node_hash_map<string, std::atomic<bool>>();
-  global_fuel = new absl::node_hash_map<string, std::atomic<int64>>();
+  global_fuel = new absl::node_hash_map<string, std::atomic<int64_t>>();
   auto setter_for_xla_fuel = [](string xla_fuel_value) {
     initial_fuel->clear();
     global_fuel->clear();
@@ -203,7 +221,7 @@ static void AllocateFlags() {
       }
       const auto& pass = pass_and_fuel[0];
       const auto& fuel_str = pass_and_fuel[1];
-      int64 fuel;
+      int64_t fuel;
       if (!absl::SimpleAtoi(fuel_str, &fuel)) {
         LOG(ERROR) << absl::StreamFormat(
             "Illegal value for --xla_fuel. Saw %s, but expected token %s to be "
@@ -229,7 +247,6 @@ static void AllocateFlags() {
   };
 
   flag_objects = new std::vector<tensorflow::Flag>();
-  flag_objects->reserve(55);
   // Don't use an initializer list for initializing the vector; this would
   // create a temporary copy, and exceeds the stack space when compiling with
   // certain configurations.
@@ -368,7 +385,15 @@ static void AllocateFlags() {
       "If non-empty, specifies a file containing ptx to use. The filename "
       "prefix must have the same pattern as PTX dumped by XLA. This allows to "
       "match one specific module. General workflow. Get the generated module "
-      "ptx from XLA. Modify it. Then pass it back via this option."));
+      "ptx from XLA, modify it, then pass it back via this option."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_llvm_ir_file", setter_for_xla_gpu_llvm_ir_file, "",
+      "If non-empty, specifies a file containing textual LLVM IR to use. The "
+      "filename prefix must have the same pattern as LLVM dumped by XLA "
+      "(i.e. module_0001.ir-no-opt.ll -> module_0001.MY_NEW_FILE.ll). This "
+      "allows to match one specific module. General workflow. Get the not "
+      "optimized LLVM IR from XLA, modify it, then pass it back via this "
+      "option."));
   flag_objects->push_back(tensorflow::Flag(
       "xla_test_all_output_layouts",
       bool_setter_for(&DebugOptions::set_xla_test_all_output_layouts),
@@ -410,6 +435,12 @@ static void AllocateFlags() {
       flag_values->xla_gpu_crash_on_verification_failures(),
       "Crashes the program on extra verification failures, e.g. cuDNN cross "
       "checking failures"));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_strict_conv_algorithm_picker",
+      bool_setter_for(&DebugOptions::set_xla_gpu_strict_conv_algorithm_picker),
+      flag_values->xla_gpu_strict_conv_algorithm_picker(),
+      "Upgrades warnings to failures when all algorithms fail conv "
+      "autotuning."));
   flag_objects->push_back(tensorflow::Flag(
       "xla_gpu_autotune_level",
       int32_setter_for(&DebugOptions::set_xla_gpu_autotune_level),
@@ -483,6 +514,15 @@ static void AllocateFlags() {
       "default; you need to add a plugin which calls "
       "RegisterGraphToURLRenderer()."));
   flag_objects->push_back(tensorflow::Flag(
+      "xla_dump_fusion_visualization",
+      bool_setter_for(&DebugOptions::set_xla_dump_fusion_visualization),
+      flag_values->xla_dump_fusion_visualization(),
+      "Tries to generate HLO fusion visualization as an HTML page to the "
+      "directory specified by --xla_dump_to). This is not implemented by "
+      "default; you need to add a plugin which calls "
+      "RegisterGraphToURLRenderer(). Generates a file per computation. "
+      "Currently only implemented for the GPU backend."));
+  flag_objects->push_back(tensorflow::Flag(
       "xla_dump_hlo_snapshots",
       bool_setter_for(&DebugOptions::set_xla_dump_hlo_snapshots),
       flag_values->xla_dump_hlo_snapshots(),
@@ -513,6 +553,17 @@ static void AllocateFlags() {
       "Max number of hlo module dumps in a directory. Set to < 0 for "
       "unbounded."));
   flag_objects->push_back(tensorflow::Flag(
+      "xla_dump_module_metadata",
+      bool_setter_for(&DebugOptions::set_xla_dump_module_metadata),
+      flag_values->xla_dump_module_metadata(),
+      "Dumps HloModuleMetadata as text protos to the directory specified "
+      "by --xla_dump_to."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_dump_compress_protos",
+      bool_setter_for(&DebugOptions::set_xla_dump_compress_protos),
+      flag_values->xla_dump_compress_protos(),
+      "Gzip-compress protos dumped by --xla_dump_hlo_as_proto."));
+  flag_objects->push_back(tensorflow::Flag(
       "xla_hlo_graph_addresses",
       bool_setter_for(&DebugOptions::set_xla_hlo_graph_addresses),
       flag_values->xla_hlo_graph_addresses(),
@@ -533,18 +584,18 @@ static void AllocateFlags() {
       "xla_gpu_force_conv_nchw",
       bool_setter_for(&DebugOptions::set_xla_gpu_force_conv_nchw),
       flag_values->xla_gpu_force_conv_nchw(),
-      "For cuDNN convolutions, always NCHW layouts."));
+      "For cuDNN convolutions, always use NCHW layouts."));
   flag_objects->push_back(tensorflow::Flag(
-      "xla_gpu_algorithm_blacklist_path",
-      string_setter_for(&DebugOptions::set_xla_gpu_algorithm_blacklist_path),
-      flag_values->xla_gpu_algorithm_blacklist_path(),
-      "An AlgorithmBlacklist text proto file as a blacklist of convolutions to "
+      "xla_gpu_force_conv_nhwc",
+      bool_setter_for(&DebugOptions::set_xla_gpu_force_conv_nhwc),
+      flag_values->xla_gpu_force_conv_nhwc(),
+      "For cuDNN convolutions, always use NHWC layouts."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_algorithm_denylist_path",
+      string_setter_for(&DebugOptions::set_xla_gpu_algorithm_denylist_path),
+      flag_values->xla_gpu_algorithm_denylist_path(),
+      "An AlgorithmDenylist text proto file as a denylist of convolutions to "
       "avoid to use."));
-  flag_objects->push_back(tensorflow::Flag(
-      "xla_gpu_deterministic_reductions",
-      bool_setter_for(&DebugOptions::set_xla_gpu_deterministic_reductions),
-      flag_values->xla_gpu_deterministic_reductions(),
-      "Always run deterministic reductions on GPU"));
   flag_objects->push_back(tensorflow::Flag(
       "xla_tpu_detect_nan",
       bool_setter_for(&DebugOptions::set_xla_tpu_detect_nan),
@@ -571,8 +622,74 @@ static void AllocateFlags() {
       "that falling back to the driver can have drawbacks like using more "
       "memory and/or other bugs during compilation, so we recommend setting "
       "this flag to false."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_multiheap_size_constraint_per_heap",
+      int32_setter_for(
+          &DebugOptions::set_xla_multiheap_size_constraint_per_heap),
+      flag_values->xla_multiheap_size_constraint_per_heap(),
+      "Generates multiple heaps (i.e., temp buffers) with a size "
+      "constraint on each heap to avoid Out-of-Memory due to memory "
+      "fragmentation. The constraint is soft, so it works with tensors "
+      "larger than the given constraint size. -1 corresponds to no "
+      "constraints."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_force_compilation_parallelism",
+      int32_setter_for(
+          &DebugOptions::set_xla_gpu_force_compilation_parallelism),
+      flag_values->xla_gpu_force_compilation_parallelism(),
+      "Overrides normal multi-threaded compilation settting to use this many "
+      "threads. Setting to 0 (the default value) means no enforcement."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_deterministic_ops",
+      bool_setter_for(&DebugOptions::set_xla_gpu_deterministic_ops),
+      flag_values->xla_gpu_deterministic_ops(),
+      "Guarantees run-to-run determinism on GPU."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_enable_async_all_reduce",
+      bool_setter_for(&DebugOptions::set_xla_gpu_enable_async_all_reduce),
+      flag_values->xla_gpu_enable_async_all_reduce(),
+      "Converts synchronous all-reduce ops into asynchronous."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_all_reduce_combine_threshold_bytes",
+      int64_setter_for(
+          &DebugOptions::set_xla_gpu_all_reduce_combine_threshold_bytes),
+      flag_values->xla_gpu_all_reduce_combine_threshold_bytes(),
+      "Size threshold (in bytes) for the GPU all-reduce combiner."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_all_reduce_contiguous",
+      bool_setter_for(&DebugOptions::set_xla_gpu_all_reduce_contiguous),
+      flag_values->xla_gpu_all_reduce_contiguous(),
+      "Combine all-reduces into a single operation over a contiguous buffer."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_all_reduce_blueconnect_num_devices_per_host",
+      int32_setter_for(
+          &DebugOptions::
+              set_xla_gpu_all_reduce_blueconnect_num_devices_per_host),
+      flag_values->xla_gpu_all_reduce_blueconnect_num_devices_per_host(),
+      "Number of devices per host for first stage of BlueConnect decomposition "
+      "pass. The pass will attempt to decompose all-reduces ops into a "
+      "ReduceScatter-AllReduce-AllGather sequence, with the initial "
+      "ReduceScatter being performed over all of the devices in the same host. "
+      "Set to < 1 to disable all-reduce decomposition."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_gpu_enable_cudnn_frontend",
+      bool_setter_for(&DebugOptions::set_xla_gpu_enable_cudnn_frontend),
+      flag_values->xla_gpu_enable_cudnn_frontend(),
+      "Use the cuDNN frontend API for convolutions when possible."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_dump_disable_metadata",
+      bool_setter_for(&DebugOptions::set_xla_dump_disable_metadata),
+      flag_values->xla_dump_disable_metadata(),
+      "Disable dumping HLO metadata in HLO dumps."));
+  flag_objects->push_back(tensorflow::Flag(
+      "xla_dump_hlo_pipeline_re",
+      string_setter_for(&DebugOptions::set_xla_dump_hlo_pipeline_re),
+      flag_values->xla_dump_hlo_pipeline_re(),
+      "If specified, dumps HLO before and after optimization passes in the "
+      "pass pipelines that match this regular expression."));
+
   ParseFlagsFromEnvAndDieIfUnknown("XLA_FLAGS", *flag_objects);
-}
+}  // NOLINT(readability/fn_size)
 
 void AppendDebugOptionsFlags(std::vector<tensorflow::Flag>* flag_list) {
   absl::call_once(flags_init, &AllocateFlags);
@@ -588,7 +705,7 @@ xla::DebugOptions GetDebugOptionsFromFlags() {
 void ResetThreadLocalFuel() {
   absl::call_once(flags_init, &AllocateFlags);
 
-  thread_fuel.reset(new absl::node_hash_map<string, std::atomic<int64>>());
+  thread_fuel.reset(new absl::node_hash_map<string, std::atomic<int64_t>>());
   CHECK(initial_fuel != nullptr);
   for (const auto& kv : *initial_fuel) {
     thread_fuel->emplace(kv.first, kv.second);
@@ -608,11 +725,11 @@ bool ConsumeFuel(absl::string_view pass, bool* just_ran_out) {
   if (it == fuel_pool->end()) {
     return true;
   }
-  std::atomic<int64>& remaining_fuel = it->second;
+  std::atomic<int64_t>& remaining_fuel = it->second;
   std::atomic<bool>& fuel_has_been_consumed = fuel_ever_consumed->at(pass);
   fuel_has_been_consumed = true;
 
-  int64 remaining = remaining_fuel.fetch_sub(1);
+  int64_t remaining = remaining_fuel.fetch_sub(1);
   if (just_ran_out != nullptr) {
     *just_ran_out = remaining == 0;
   }

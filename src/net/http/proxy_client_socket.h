@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
@@ -27,6 +26,10 @@ class NetLogWithSource;
 class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
  public:
   ProxyClientSocket() {}
+
+  ProxyClientSocket(const ProxyClientSocket&) = delete;
+  ProxyClientSocket& operator=(const ProxyClientSocket&) = delete;
+
   ~ProxyClientSocket() override {}
 
   // Returns the HttpResponseInfo (including HTTP Headers) from
@@ -77,9 +80,6 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
   // construction, this method should be called to strip everything
   // but the auth header from the redirect response.
   static void SanitizeProxyAuth(HttpResponseInfo& response);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProxyClientSocket);
 };
 
 }  // namespace net

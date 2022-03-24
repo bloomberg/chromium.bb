@@ -21,7 +21,6 @@
 
 #include "aom_ports/mem.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "test/function_equivalence_test.h"
@@ -52,10 +51,7 @@ class SumSquaresTest : public ::testing::TestWithParam<TestFuncs> {
     ASSERT_TRUE(src_ != NULL);
   }
 
-  virtual void TearDown() {
-    libaom_test::ClearSystemState();
-    aom_free(src_);
-  }
+  virtual void TearDown() { aom_free(src_); }
   void RunTest(int isRandom);
   void RunSpeedTest();
 
@@ -103,7 +99,7 @@ void SumSquaresTest::RunTest(int isRandom) {
     }
     const uint64_t res_ref = params_.ref_func(src_, stride, width, height);
     uint64_t res_tst;
-    ASM_REGISTER_STATE_CHECK(res_tst =
+    API_REGISTER_STATE_CHECK(res_tst =
                                  params_.tst_func(src_, stride, width, height));
 
     if (!failed) {
@@ -208,7 +204,7 @@ TEST_P(SumSquares1DTest, RandomValues) {
 
     const uint64_t ref_res = params_.ref_func(src, N);
     uint64_t tst_res;
-    ASM_REGISTER_STATE_CHECK(tst_res = params_.tst_func(src, N));
+    API_REGISTER_STATE_CHECK(tst_res = params_.tst_func(src, N));
 
     ASSERT_EQ(ref_res, tst_res);
   }
@@ -229,7 +225,7 @@ TEST_P(SumSquares1DTest, ExtremeValues) {
 
     const uint64_t ref_res = params_.ref_func(src, N);
     uint64_t tst_res;
-    ASM_REGISTER_STATE_CHECK(tst_res = params_.tst_func(src, N));
+    API_REGISTER_STATE_CHECK(tst_res = params_.tst_func(src, N));
 
     ASSERT_EQ(ref_res, tst_res);
   }
@@ -268,7 +264,6 @@ class SSETest : public ::testing::TestWithParam<SSETestParam> {
   }
 
   virtual void TearDown() {
-    libaom_test::ClearSystemState();
     aom_free(src_);
     aom_free(ref_);
   }
@@ -453,10 +448,7 @@ class SSE_Sum_Test : public ::testing::TestWithParam<SSE_SumTestParam> {
     ASSERT_TRUE(src_ != NULL);
   }
 
-  virtual void TearDown() {
-    libaom_test::ClearSystemState();
-    aom_free(src_);
-  }
+  virtual void TearDown() { aom_free(src_); }
   void RunTest(int isRandom, int width, int height, int run_times);
 
   void GenRandomData(int width, int height, int stride) {
@@ -599,10 +591,7 @@ class Lowbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
     ASSERT_TRUE(src_ != NULL);
   }
 
-  virtual void TearDown() {
-    libaom_test::ClearSystemState();
-    aom_free(src_);
-  }
+  virtual void TearDown() { aom_free(src_); }
   void RunTest(int isRandom);
   void RunSpeedTest();
 
@@ -651,7 +640,7 @@ void Lowbd2dVarTest::RunTest(int isRandom) {
 
     const uint64_t res_ref = params_.ref_func(src_, stride, width, height);
     uint64_t res_tst;
-    ASM_REGISTER_STATE_CHECK(res_tst =
+    API_REGISTER_STATE_CHECK(res_tst =
                                  params_.tst_func(src_, stride, width, height));
 
     if (!failed) {
@@ -730,10 +719,7 @@ class Highbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
     ASSERT_TRUE(src_ != NULL);
   }
 
-  virtual void TearDown() {
-    libaom_test::ClearSystemState();
-    aom_free(src_);
-  }
+  virtual void TearDown() { aom_free(src_); }
   void RunTest(int isRandom);
   void RunSpeedTest();
 
@@ -783,7 +769,7 @@ void Highbd2dVarTest::RunTest(int isRandom) {
     const uint64_t res_ref =
         params_.ref_func(CONVERT_TO_BYTEPTR(src_), stride, width, height);
     uint64_t res_tst;
-    ASM_REGISTER_STATE_CHECK(
+    API_REGISTER_STATE_CHECK(
         res_tst =
             params_.tst_func(CONVERT_TO_BYTEPTR(src_), stride, width, height));
 

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -34,6 +35,7 @@
 #include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/test/scoped_views_test_helper.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -96,8 +98,9 @@ class BookmarkContextMenuTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  views::ScopedViewsTestHelper views_test_helper_;
   std::unique_ptr<TestingProfile> profile_;
-  BookmarkModel* model_;
+  raw_ptr<BookmarkModel> model_;
   TestingPageNavigator navigator_;
 
  private:

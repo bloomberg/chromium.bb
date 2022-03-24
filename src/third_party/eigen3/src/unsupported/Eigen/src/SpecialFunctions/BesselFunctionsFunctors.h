@@ -11,6 +11,8 @@
 #ifndef EIGEN_BESSELFUNCTIONS_FUNCTORS_H
 #define EIGEN_BESSELFUNCTIONS_FUNCTORS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

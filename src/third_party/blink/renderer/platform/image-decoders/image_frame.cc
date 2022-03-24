@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
 
@@ -168,11 +169,11 @@ void ImageFrame::SetStatus(Status status) {
   }
 }
 
-void ImageFrame::ZeroFillFrameRect(const IntRect& rect) {
+void ImageFrame::ZeroFillFrameRect(const gfx::Rect& rect) {
   if (rect.IsEmpty())
     return;
 
-  bitmap_.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
+  bitmap_.eraseArea(gfx::RectToSkIRect(rect), SkColorSetARGB(0, 0, 0, 0));
   SetHasAlpha(true);
 }
 
@@ -183,9 +184,9 @@ static void BlendRGBAF16Buffer(ImageFrame::PixelDataF16* dst,
   // Source is always unpremul, but the blending result might be premul or
   // unpremul, depending on the alpha type of the destination pixel passed to
   // this function.
-  SkImageInfo info =
-      SkImageInfo::Make(num_pixels, 1, kRGBA_F16_SkColorType, dst_alpha_type,
-                        SkColorSpace::MakeSRGBLinear());
+  SkImageInfo info = SkImageInfo::Make(base::checked_cast<int>(num_pixels), 1,
+                                       kRGBA_F16_SkColorType, dst_alpha_type,
+                                       SkColorSpace::MakeSRGBLinear());
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterDirect(info, dst, info.minRowBytes());
 

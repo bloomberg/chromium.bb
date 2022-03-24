@@ -6,7 +6,7 @@
  * State of progress items.
  * @const @enum {string}
  */
-/* #export */ const ProgressItemState = {
+export const ProgressItemState = {
   PROGRESSING: 'progressing',
   COMPLETED: 'completed',
   ERROR: 'error',
@@ -18,7 +18,7 @@ Object.freeze(ProgressItemState);
  * Type of progress items.
  * @const @enum {string}
  */
-/* #export */ const ProgressItemType = {
+export const ProgressItemType = {
   // The item is file copy operation.
   COPY: 'copy',
   // The item is file move operation.
@@ -44,7 +44,7 @@ Object.freeze(ProgressItemType);
 /**
  * Item of the progress center.
  */
-/* #export */ class ProgressCenterItem {
+export class ProgressCenterItem {
   constructor() {
     /**
      * Item ID.
@@ -118,20 +118,6 @@ Object.freeze(ProgressItemType);
      * @type {?function()}
      */
     this.cancelCallback = null;
-
-    /**
-     * The current speed of the progress item in bytes per second.
-     * It's calculated using moving average formula.
-     * @type {number}
-     */
-    this.currentSpeed;
-
-    /**
-     * The average speed of the progress item in bytes per second.
-     * It is calculated using cumulative moving average.
-     * @type {number}
-     */
-    this.averageSpeed;
 
     /**
      * The predicted remaining time to complete the progress item in seconds.

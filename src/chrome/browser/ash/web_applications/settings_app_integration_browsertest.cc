@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, SettingsAppDisabled) {
   content::WebContents* web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  content::WebUI* web_ui = web_contents->GetCommittedWebUI();
+  content::WebUI* web_ui = web_contents->GetWebUI();
   ASSERT_TRUE(web_ui);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_CHROME_URLS_DISABLED_PAGE_HEADER),
             web_contents->GetTitle());
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, SettingsAppDisabled) {
 // This test verifies that the settings page is opened in a new browser window.
 IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, OmniboxNavigateToSettings) {
   // Install the Settings App.
-  web_app::WebAppProvider::Get(browser()->profile())
+  web_app::WebAppProvider::GetForTest(browser()->profile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
   GURL old_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest,
                        RedirectIncognitoToOriginalProfile) {
   // Install the real SWA, not the test mock. This verifies the production
   // SystemAppInfo is correct.
-  web_app::WebAppProvider::Get(browser()->profile())
+  web_app::WebAppProvider::GetForTest(browser()->profile())
       ->system_web_app_manager()
       .InstallSystemAppsForTesting();
 

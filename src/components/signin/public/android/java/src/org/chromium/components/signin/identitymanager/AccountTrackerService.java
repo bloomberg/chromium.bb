@@ -4,8 +4,6 @@
 
 package org.chromium.components.signin.identitymanager;
 
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
@@ -26,7 +24,6 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -47,8 +44,13 @@ public class AccountTrackerService {
         /**
          * This method is invoked every time the accounts on device are seeded.
          * @param accountInfos List of all the accounts on device.
+         * @param accountsChanged Whether this seeding is triggered by an accounts changed event.
+         *
+         * The seeding can be triggered when Chrome starts, user signs in/signs out and
+         * when accounts change. Only the last scenario should trigger this call with
+         * {@param accountsChanged} equal true.
          */
-        void onAccountsSeeded(List<CoreAccountInfo> accountInfos);
+        void onAccountsSeeded(List<CoreAccountInfo> accountInfos, boolean accountsChanged);
     }
 
     private static final String TAG = "AccountService";
@@ -70,15 +72,15 @@ public class AccountTrackerService {
     private @AccountsSeedingStatus int mAccountsSeedingStatus;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private AccountsChangeObserver mAccountsChangeObserver;
+    private boolean mExistsPendingSeedAccountsTask;
 
     @VisibleForTesting
     @CalledByNative
     AccountTrackerService(long nativeAccountTrackerService) {
         mNativeAccountTrackerService = nativeAccountTrackerService;
         mAccountsSeedingStatus = AccountsSeedingStatus.NOT_STARTED;
-        mRunnablesWaitingForAccountsSeeding = VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP
-                ? new ConcurrentLinkedDeque<>()
-                : new ArrayDeque<>();
+        mRunnablesWaitingForAccountsSeeding = new ConcurrentLinkedDeque<>();
+        mExistsPendingSeedAccountsTask = false;
     }
 
     /**
@@ -105,7 +107,7 @@ public class AccountTrackerService {
         switch (mAccountsSeedingStatus) {
             case AccountsSeedingStatus.NOT_STARTED:
                 mRunnablesWaitingForAccountsSeeding.add(onAccountsSeeded);
-                seedAccounts();
+                seedAccounts(/*accountsChanged=*/false);
                 break;
             case AccountsSeedingStatus.IN_PROGRESS:
                 mRunnablesWaitingForAccountsSeeding.add(onAccountsSeeded);
@@ -125,13 +127,24 @@ public class AccountTrackerService {
      */
     public void onAccountsChanged() {
         if (mAccountsSeedingStatus == AccountsSeedingStatus.IN_PROGRESS) {
-            mRunnablesWaitingForAccountsSeeding.add(this::seedAccounts);
+            mExistsPendingSeedAccountsTask = true;
         } else {
-            seedAccounts();
+            seedAccounts(/*accountsChanged=*/true);
         }
     }
 
-    private void seedAccounts() {
+    /**
+     * Seeds the accounts on device.
+     * @param accountsChanged Whether this seeding is triggered by an accounts changed event.
+     *
+     * The seeding can be triggered when Chrome starts, user signs in/signs out and
+     * when accounts change. Only the last scenario should trigger this call with
+     * {@param accountsChanged} equal true.
+     * When Chrome starts, we should trigger seedAccounts(false) because the accounts are
+     * already loaded in PO2TS in this flow. accountsChanged=false will avoid it to get
+     * triggered again from SigninChecker.
+     */
+    private void seedAccounts(boolean accountsChanged) {
         ThreadUtils.assertOnUiThread();
         final AccountManagerFacade accountManagerFacade =
                 AccountManagerFacadeProvider.getInstance();
@@ -144,7 +157,7 @@ public class AccountTrackerService {
             accountManagerFacade.addObserver(mAccountsChangeObserver);
         }
 
-        accountManagerFacade.tryGetGoogleAccounts(accounts -> {
+        accountManagerFacade.getAccounts().then(accounts -> {
             final List<String> emails = AccountUtils.toAccountNames(accounts);
             new AsyncTask<List<String>>() {
                 @Override
@@ -166,21 +179,31 @@ public class AccountTrackerService {
                 @Override
                 public void onPostExecute(List<String> gaiaIds) {
                     if (gaiaIds.size() == emails.size()) {
-                        finishSeedingAccounts(gaiaIds, emails);
+                        finishSeedingAccounts(gaiaIds, emails, accountsChanged);
                     } else {
                         mAccountsSeedingStatus = AccountsSeedingStatus.NOT_STARTED;
-                        seedAccounts();
+                        seedAccounts(/*accountsChanged=*/accountsChanged);
                     }
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
     }
 
-    private void finishSeedingAccounts(List<String> gaiaIds, List<String> emails) {
+    private void finishSeedingAccounts(
+            List<String> gaiaIds, List<String> emails, boolean accountsChanged) {
         assert gaiaIds.size() == emails.size() : "gaia IDs and emails should have the same size!";
         AccountTrackerServiceJni.get().seedAccountsInfo(mNativeAccountTrackerService,
                 gaiaIds.toArray(new String[0]), emails.toArray(new String[0]));
         mAccountsSeedingStatus = AccountsSeedingStatus.DONE;
+
+        if (mExistsPendingSeedAccountsTask) {
+            // When mExistsPendingSeedAccountsTask is true, it means that an accounts changed
+            // event has been triggered during the current seeding, we should stop the current
+            // seeding here and re-seed the accounts
+            seedAccounts(/*accountsChanged=*/true);
+            mExistsPendingSeedAccountsTask = false;
+            return;
+        }
 
         while (!mRunnablesWaitingForAccountsSeeding.isEmpty()) {
             Runnable runnable = mRunnablesWaitingForAccountsSeeding.remove();
@@ -193,7 +216,7 @@ public class AccountTrackerService {
                     CoreAccountInfo.createFromEmailAndGaiaId(emails.get(i), gaiaIds.get(i)));
         }
         for (Observer observer : mObservers) {
-            observer.onAccountsSeeded(accountInfos);
+            observer.onAccountsSeeded(accountInfos, accountsChanged);
         }
     }
 

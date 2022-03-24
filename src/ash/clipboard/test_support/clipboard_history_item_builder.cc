@@ -47,6 +47,7 @@ ClipboardHistoryItemBuilder& ClipboardHistoryItemBuilder::Clear() {
   text_ = absl::nullopt;
   markup_ = absl::nullopt;
   rtf_ = absl::nullopt;
+  filenames_.clear();
   bookmark_title_ = absl::nullopt;
   png_ = absl::nullopt;
   custom_format_ = absl::nullopt;
@@ -214,10 +215,9 @@ ClipboardHistoryItemBuilder& ClipboardHistoryItemBuilder::SetFileSystemData(
           {{kFileSystemSourcesType, base::JoinString(source_list, u"\n")}}),
       &custom_data);
 
-  return SetCustomData(
-      ui::ClipboardFormatType::GetWebCustomDataType().GetName(),
-      std::string(static_cast<const char*>(custom_data.data()),
-                  custom_data.size()));
+  return SetCustomData(ui::ClipboardFormatType::WebCustomDataType().GetName(),
+                       std::string(static_cast<const char*>(custom_data.data()),
+                                   custom_data.size()));
 }
 
 ClipboardHistoryItemBuilder& ClipboardHistoryItemBuilder::SetWebSmartPaste(

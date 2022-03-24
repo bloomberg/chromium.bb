@@ -18,6 +18,7 @@
 #include "dawn_native/vulkan/BindGroupLayoutVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
 namespace dawn_native { namespace vulkan {
@@ -33,7 +34,7 @@ namespace dawn_native { namespace vulkan {
 
     MaybeError PipelineLayout::Initialize() {
         // Compute the array of VkDescriptorSetLayouts that will be chained in the create info.
-        // TODO(cwallez@chromium.org) Vulkan doesn't allow holes in this array, should we expose
+        // TODO(crbug.com/dawn/277) Vulkan doesn't allow holes in this array, should we expose
         // this constraints at the Dawn level?
         uint32_t numSetLayouts = 0;
         std::array<VkDescriptorSetLayout, kMaxBindGroups> setLayouts;
@@ -52,12 +53,19 @@ namespace dawn_native { namespace vulkan {
         createInfo.pPushConstantRanges = nullptr;
 
         Device* device = ToBackend(GetDevice());
-        return CheckVkSuccess(
+        DAWN_TRY(CheckVkSuccess(
             device->fn.CreatePipelineLayout(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
-            "CreatePipelineLayout");
+            "CreatePipelineLayout"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
-    PipelineLayout::~PipelineLayout() {
+    PipelineLayout::~PipelineLayout() = default;
+
+    void PipelineLayout::DestroyImpl() {
+        PipelineLayoutBase::DestroyImpl();
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
             mHandle = VK_NULL_HANDLE;
@@ -66,6 +74,11 @@ namespace dawn_native { namespace vulkan {
 
     VkPipelineLayout PipelineLayout::GetHandle() const {
         return mHandle;
+    }
+
+    void PipelineLayout::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_PIPELINE_LAYOUT,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_PipelineLayout", GetLabel());
     }
 
 }}  // namespace dawn_native::vulkan

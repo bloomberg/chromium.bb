@@ -69,12 +69,16 @@ const UIStrings = {
   *@description Text for the adorner of the page
   */
   adorner: 'Adorner',
+  /**
+   * @description Header for the "Sync" section in the settings UI. The "Sync"
+   * section allows users to configure which DevTools data is synced via Chrome Sync.
+   */
+  sync: 'Sync',
 };
 const str_ = i18n.i18n.registerUIStrings('core/common/SettingRegistration.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let registeredSettings: Array<SettingRegistration> = [];
 const settingNameSet = new Set<string>();
-
 
 export function registerSettingExtension(registration: SettingRegistration): void {
   const settingName = registration.settingName;
@@ -138,6 +142,7 @@ export enum SettingCategory {
   MEMORY = 'MEMORY',
   EXTENSIONS = 'EXTENSIONS',
   ADORNER = 'ADORNER',
+  SYNC = 'SYNC',
 }
 
 export function getLocalizedSettingsCategory(category: SettingCategory): string|Platform.UIString.LocalizedString {
@@ -176,6 +181,8 @@ export function getLocalizedSettingsCategory(category: SettingCategory): string|
       return i18nString(UIStrings.adorner);
     case SettingCategory.NONE:
       return '';
+    case SettingCategory.SYNC:
+      return i18nString(UIStrings.sync);
   }
 }
 

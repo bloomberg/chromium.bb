@@ -391,6 +391,9 @@ class ResizeRealtimeTest
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       encoder->Control(AV1E_SET_AQ_MODE, 3);
+      encoder->Control(AV1E_SET_ALLOW_WARPED_MOTION, 0);
+      encoder->Control(AV1E_SET_ENABLE_GLOBAL_MOTION, 0);
+      encoder->Control(AV1E_SET_ENABLE_OBMC, 0);
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
     }
@@ -850,14 +853,12 @@ TEST_P(ResizeModeTestLarge, ResizeModeTest) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-// TODO(anyone): Enable below test once resize issues are fixed
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ResizeModeTestLarge);
-// AV1_INSTANTIATE_TEST_SUITE(
-//    ResizeModeTestLarge,
-//    ::testing::Values(::libaom_test::kOnePassGood,
-//    ::libaom_test::kTwoPassGood),
-//    ::testing::Values(1, 2), ::testing::Values(8, 12, 16),
-//    ::testing::Values(8, 12, 16), ::testing::Range(2, 7));
+AV1_INSTANTIATE_TEST_SUITE(ResizeModeTestLarge,
+                           ::testing::Values(::libaom_test::kOnePassGood,
+                                             ::libaom_test::kTwoPassGood),
+                           ::testing::Values(1, 2), ::testing::Values(8, 12),
+                           ::testing::Values(10, 14), ::testing::Values(3, 6));
 #endif  // !CONFIG_REALTIME_ONLY
 
 AV1_INSTANTIATE_TEST_SUITE(ResizeTest,

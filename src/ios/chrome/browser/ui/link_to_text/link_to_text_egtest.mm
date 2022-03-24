@@ -8,8 +8,8 @@
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "components/shared_highlighting/core/common/fragment_directives_utils.h"
 #import "components/shared_highlighting/core/common/text_fragment.h"
-#import "components/shared_highlighting/core/common/text_fragments_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_actions_app_interface.h"
@@ -18,6 +18,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/test/element_selector.h"
@@ -203,102 +204,104 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
 }
 
 // Tests that a link can be generated for a simple text selection.
-- (void)testGenerateLinkForSimpleText {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    // Skip test on iOS 12 as the Activity View on that version is not
-    // accessible by Earl Grey.
-    EARL_GREY_TEST_SKIPPED(@"Test skipped on iOS 12.");
-  }
-
+// TODO(crbug.com/1232101) Re-enable flakey tests.
+- (void)DISABLE_testGenerateLinkForSimpleText {
   // TODO(crbug.com/1149603): Re-enable this test on iPad once presenting
   // popovers work.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test is disabled on iPad.");
   }
 
-  if (@available(iOS 13, *)) {
-    GURL pageURL = self.testServer->GetURL(kTestURL);
-    [ChromeEarlGrey loadURL:pageURL];
-    [ChromeEarlGrey waitForWebStateContainingText:kTestPageTextSample];
+  GURL pageURL = self.testServer->GetURL(kTestURL);
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey waitForWebStateContainingText:kTestPageTextSample];
 
-    [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
 
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-        performAction:chrome_test_util::LongPressElementForContextMenu(
-                          [ElementSelector
-                              selectorWithElementID:kSimpleTextElementId],
-                          true)];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::LongPressElementForContextMenu(
+                        [ElementSelector
+                            selectorWithElementID:kSimpleTextElementId],
+                        true)];
 
-    // Edit menu should be there.
-    id<GREYMatcher> linkToTextButton =
-        chrome_test_util::SystemSelectionCalloutLinkToTextButton();
-    [ChromeEarlGrey
-        waitForSufficientlyVisibleElementWithMatcher:linkToTextButton];
+  // Wait for the menu to open. The "Copy" menu item will always be present,
+  // but other items may be hidden behind the overflow button.
+  [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                      chrome_test_util::SystemSelectionCalloutCopyButton()];
 
-    [[EarlGrey selectElementWithMatcher:linkToTextButton]
-        performAction:grey_tap()];
+  // The link to text button may be in the overflow, so use a search action to
+  // find it, if necessary.
+  id<GREYMatcher> linkToTextMatcher =
+      grey_allOf(chrome_test_util::SystemSelectionCalloutLinkToTextButton(),
+                 grey_sufficientlyVisible(), nil);
+  [[[EarlGrey selectElementWithMatcher:linkToTextMatcher]
+         usingSearchAction:grey_tap()
+      onElementWithMatcher:chrome_test_util::
+                               SystemSelectionCalloutOverflowButton()]
+      performAction:grey_tap()];
 
-    // Make sure the Edit menu is gone.
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::SystemSelectionCallout()]
-        assertWithMatcher:grey_notVisible()];
+  // Make sure the Edit menu is gone.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SystemSelectionCallout()]
+      assertWithMatcher:grey_notVisible()];
 
-    // Wait for the Activity View to show up (look for the Copy action).
-    id<GREYMatcher> copyActivityButton = chrome_test_util::CopyActivityButton();
-    [ChromeEarlGrey
-        waitForSufficientlyVisibleElementWithMatcher:copyActivityButton];
+  // Wait for the Activity View to show up (look for the Copy action).
+  id<GREYMatcher> copyActivityButton = chrome_test_util::CopyActivityButton();
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:copyActivityButton];
 
-    // Tap on the Copy action.
-    [[EarlGrey selectElementWithMatcher:copyActivityButton]
-        performAction:grey_tap()];
+  // Tap on the Copy action.
+  [[EarlGrey selectElementWithMatcher:copyActivityButton]
+      performAction:grey_tap()];
 
-    // Assert the values stored in the pasteboard. Lower-casing the expected
-    // GURL as that is what the JS library is doing.
-    std::vector<TextFragment> fragments{
-        TextFragment(base::ToLowerASCII(kToBeSelectedText))};
-    GURL expectedGURL =
-        shared_highlighting::AppendFragmentDirectives(pageURL, fragments);
+  // Assert the values stored in the pasteboard. Lower-casing the expected
+  // GURL as that is what the JS library is doing.
+  std::vector<TextFragment> fragments{
+      TextFragment(base::ToLowerASCII(kToBeSelectedText))};
+  GURL expectedGURL =
+      shared_highlighting::AppendFragmentDirectives(pageURL, fragments);
 
-    // Wait for the value to be in the pasteboard.
-    GREYCondition* getPasteboardValue = [GREYCondition
-        conditionWithName:@"Could not get an expected URL from the pasteboard."
-                    block:^{
-                      return expectedGURL == [ChromeEarlGrey pasteboardURL];
-                    }];
+  // Wait for the value to be in the pasteboard.
+  GREYCondition* getPasteboardValue = [GREYCondition
+      conditionWithName:@"Could not get an expected URL from the pasteboard."
+                  block:^{
+                    return expectedGURL == [ChromeEarlGrey pasteboardURL];
+                  }];
 
-    GREYAssert([getPasteboardValue
-                   waitWithTimeout:base::test::ios::kWaitForActionTimeout],
-               @"Could not get expected URL from pasteboard.");
-  }
+  GREYAssert([getPasteboardValue
+                 waitWithTimeout:base::test::ios::kWaitForActionTimeout],
+             @"Could not get expected URL from pasteboard.");
 }
 
 - (void)testBadSelectionDisablesGenerateLink {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    // The TextInput implementation is incomplete on iOS 13, so this condition
-    // isn't enforced on older versions.
-    EARL_GREY_TEST_SKIPPED(@"Test skipped on iOS 13.");
-  }
-  if (@available(iOS 14, *)) {
-    [ChromeEarlGrey loadURL:self.testServer->GetURL(kNoTextTestURL)];
-    [ChromeEarlGrey waitForWebStateContainingText:kNoTextTestPageTextSample];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kNoTextTestURL)];
+  [ChromeEarlGrey waitForWebStateContainingText:kNoTextTestPageTextSample];
 
-    [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
 
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-        performAction:chrome_test_util::LongPressElementForContextMenu(
-                          [ElementSelector
-                              selectorWithElementID:kSimpleTextElementId],
-                          true)];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::LongPressElementForContextMenu(
+                        [ElementSelector
+                            selectorWithElementID:kSimpleTextElementId],
+                        true)];
 
-    id<GREYMatcher> copyButton =
-        chrome_test_util::SystemSelectionCalloutCopyButton();
-    [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:copyButton];
+  // TODO(crbug.com/1233056): Xcode 13 gesture recognizers seem to get stuck
+  // when the user longs presses on plain text.  For this test, disable EG
+  // synchronization.
+  ScopedSynchronizationDisabler disabler;
+  id<GREYMatcher> copyButton =
+      chrome_test_util::SystemSelectionCalloutCopyButton();
+  [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:copyButton];
 
-    // Make sure the Link to Text button is not visible.
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::SystemSelectionCalloutLinkToTextButton()]
-        assertWithMatcher:grey_notVisible()];
-  }
+  // Make sure the Link to Text button is not visible.
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::SystemSelectionCalloutLinkToTextButton()]
+      assertWithMatcher:grey_notVisible()];
+
+  // TODO(crbug.com/1233056): Tap to dismiss the system selection callout
+  // buttons so tearDown doesn't hang when |disabler| goes out of scope.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:grey_tap()];
 }
 
 - (void)testInputDisablesGenerateLink {
@@ -322,6 +325,11 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
                             selectorWithElementID:kSimpleTextElementId],
                         true)];
 
+  // TODO(crbug.com/1233056): Xcode 13 gesture recognizers seem to get stuck
+  // when the user longs presses on plain text.  For this test, disable EG
+  // synchronization.
+  ScopedSynchronizationDisabler disabler;
+
   // Ensure the menu is visible by finding the Paste button.
   id<GREYMatcher> menu = grey_accessibilityLabel(@"Paste");
   [EarlGrey selectElementWithMatcher:menu];
@@ -330,6 +338,11 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::SystemSelectionCalloutLinkToTextButton()]
       assertWithMatcher:grey_notVisible()];
+
+  // TODO(crbug.com/1233056): Tap to dismiss the system selection callout
+  // buttons so tearDown doesn't hang when |disabler| goes out of scope.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:grey_tap()];
 }
 
 @end

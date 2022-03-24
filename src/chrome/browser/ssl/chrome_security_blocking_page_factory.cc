@@ -15,11 +15,14 @@
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/safe_browsing/safe_browsing_metrics_collector_factory.h"
+#include "chrome/browser/ssl/https_only_mode_controller_client.h"
 #include "chrome/browser/ssl/insecure_form/insecure_form_controller_client.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/channel_info.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/security_interstitials/content/content_metrics_helper.h"
 #include "components/security_interstitials/content/settings_page_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
@@ -31,8 +34,8 @@
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -83,7 +86,7 @@ bool IsEnterpriseManaged() {
     return true;
   }
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  if (g_browser_process->platform_part()->browser_policy_connector_chromeos()) {
+  if (g_browser_process->platform_part()->browser_policy_connector_ash()) {
     return true;
   }
 #endif  // #if defined OS_WIN
@@ -139,6 +142,15 @@ CreateSettingsPageHelper() {
       CreateChromeSettingsPageHelper();
 }
 
+void LogSafeBrowsingSecuritySensitiveAction(
+    safe_browsing::SafeBrowsingMetricsCollector* metrics_collector) {
+  if (metrics_collector) {
+    metrics_collector->AddSafeBrowsingEventToPref(
+        safe_browsing::SafeBrowsingMetricsCollector::EventType::
+            SECURITY_SENSITIVE_SSL_INTERSTITIAL);
+  }
+}
+
 }  // namespace
 
 std::unique_ptr<SSLBlockingPage>
@@ -161,24 +173,10 @@ ChromeSecurityBlockingPageFactory::CreateSSLPage(
       StatefulSSLHostStateDelegateFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   state->DidDisplayErrorPage(cert_error);
-  bool is_recurrent_error = state->HasSeenRecurrentErrors(cert_error);
-  if (overridable) {
-    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_overridable.is_recurrent_error",
-                          is_recurrent_error);
-    if (cert_error == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "interstitial.ssl_overridable.is_recurrent_error.ct_error",
-          is_recurrent_error);
-    }
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_nonoverridable.is_recurrent_error",
-                          is_recurrent_error);
-    if (cert_error == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "interstitial.ssl_nonoverridable.is_recurrent_error.ct_error",
-          is_recurrent_error);
-    }
-  }
+
+  LogSafeBrowsingSecuritySensitiveAction(
+      safe_browsing::SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())));
 
   auto controller_client = std::make_unique<SSLErrorControllerClient>(
       web_contents, ssl_info, cert_error, request_url,
@@ -241,26 +239,6 @@ ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
   return page;
 }
 
-std::unique_ptr<LegacyTLSBlockingPage>
-ChromeSecurityBlockingPageFactory::CreateLegacyTLSBlockingPage(
-    content::WebContents* web_contents,
-    int cert_error,
-    const GURL& request_url,
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const net::SSLInfo& ssl_info) {
-  auto page = std::make_unique<LegacyTLSBlockingPage>(
-      web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
-      /*can_show_enhanced_protection_message=*/true, ssl_info,
-      std::make_unique<SSLErrorControllerClient>(
-          web_contents, ssl_info, cert_error, request_url,
-          CreateMetricsHelperAndStartRecording(web_contents, request_url,
-                                               "legacy_tls", false),
-          CreateSettingsPageHelper()));
-
-  DoChromeSpecificSetup(page.get());
-  return page;
-}
-
 std::unique_ptr<MITMSoftwareBlockingPage>
 ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
     content::WebContents* web_contents,
@@ -269,6 +247,10 @@ ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     const std::string& mitm_software_name) {
+  LogSafeBrowsingSecuritySensitiveAction(
+      safe_browsing::SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())));
+
   auto page = std::make_unique<MITMSoftwareBlockingPage>(
       web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
       /*can_show_enhanced_protection_message=*/true, ssl_info,
@@ -290,6 +272,10 @@ ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info) {
+  LogSafeBrowsingSecuritySensitiveAction(
+      safe_browsing::SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())));
+
   auto page = std::make_unique<BlockedInterceptionBlockingPage>(
       web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
       /*can_show_enhanced_protection_message=*/true, ssl_info,
@@ -315,6 +301,19 @@ ChromeSecurityBlockingPageFactory::CreateInsecureFormBlockingPage(
   return page;
 }
 
+std::unique_ptr<security_interstitials::HttpsOnlyModeBlockingPage>
+ChromeSecurityBlockingPageFactory::CreateHttpsOnlyModeBlockingPage(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  std::unique_ptr<HttpsOnlyModeControllerClient> client =
+      std::make_unique<HttpsOnlyModeControllerClient>(web_contents,
+                                                      request_url);
+  auto page =
+      std::make_unique<security_interstitials::HttpsOnlyModeBlockingPage>(
+          web_contents, request_url, std::move(client));
+  return page;
+}
+
 // static
 void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
     SSLBlockingPageBase* page) {
@@ -326,8 +325,8 @@ void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
         report->SetIsEnterpriseManaged(base::IsMachineExternallyManaged());
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
         report->SetIsEnterpriseManaged(g_browser_process->platform_part()
-                                           ->browser_policy_connector_chromeos()
-                                           ->IsEnterpriseManaged());
+                                           ->browser_policy_connector_ash()
+                                           ->IsDeviceEnterpriseManaged());
 #endif
 
         // TODO(estade): this one is probably necessary for all clients, and

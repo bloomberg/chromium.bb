@@ -5,10 +5,11 @@
 #include "chrome/browser/ui/views/file_system_access/file_system_access_usage_bubble_view.h"
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
@@ -33,6 +34,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -202,11 +205,10 @@ class CollapsibleListView : public views::View {
   // views::View
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    auto* theme = GetNativeTheme();
-    const SkColor icon_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_DefaultIconColor);
+    const auto* color_provider = GetColorProvider();
+    const SkColor icon_color = color_provider->GetColor(ui::kColorIcon);
     const SkColor disabled_icon_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_DisabledIconColor);
+        color_provider->GetColor(ui::kColorIconDisabled);
     views::SetImageFromVectorIconWithColor(
         expand_collapse_button_, vector_icons::kCaretDownIcon,
         ui::TableModel::kIconSize, icon_color);
@@ -224,8 +226,8 @@ class CollapsibleListView : public views::View {
   }
 
   bool table_is_expanded_ = false;
-  views::ScrollView* table_view_parent_;
-  views::ToggleImageButton* expand_collapse_button_;
+  raw_ptr<views::ScrollView> table_view_parent_;
+  raw_ptr<views::ToggleImageButton> expand_collapse_button_;
 };
 
 BEGIN_METADATA(CollapsibleListView, views::View)
@@ -240,12 +242,9 @@ FileSystemAccessUsageBubbleView::Usage&
 FileSystemAccessUsageBubbleView::Usage::operator=(Usage&&) = default;
 
 FileSystemAccessUsageBubbleView::FilePathListModel::FilePathListModel(
-    const views::View* owner,
     std::vector<base::FilePath> files,
     std::vector<base::FilePath> directories)
-    : owner_(owner),
-      files_(std::move(files)),
-      directories_(std::move(directories)) {}
+    : files_(std::move(files)), directories_(std::move(directories)) {}
 
 FileSystemAccessUsageBubbleView::FilePathListModel::~FilePathListModel() =
     default;
@@ -257,24 +256,24 @@ int FileSystemAccessUsageBubbleView::FilePathListModel::RowCount() {
 std::u16string FileSystemAccessUsageBubbleView::FilePathListModel::GetText(
     int row,
     int column_id) {
-  if (size_t{row} < files_.size())
-    return files_[row].BaseName().LossyDisplayName();
-  return directories_[row - files_.size()].BaseName().LossyDisplayName();
+  if (static_cast<size_t>(row) < files_.size())
+    return file_system_access_ui_helper::GetPathForDisplay(files_[row]);
+  return file_system_access_ui_helper::GetPathForDisplay(
+      directories_[row - files_.size()]);
 }
 
-gfx::ImageSkia FileSystemAccessUsageBubbleView::FilePathListModel::GetIcon(
+ui::ImageModel FileSystemAccessUsageBubbleView::FilePathListModel::GetIcon(
     int row) {
-  const SkColor icon_color = owner_->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
-  return gfx::CreateVectorIcon(size_t{row} < files_.size()
-                                   ? vector_icons::kInsertDriveFileOutlineIcon
-                                   : vector_icons::kFolderOpenIcon,
-                               kIconSize, icon_color);
+  return ui::ImageModel::FromVectorIcon(
+      static_cast<size_t>(row) < files_.size()
+          ? vector_icons::kInsertDriveFileOutlineIcon
+          : vector_icons::kFolderOpenIcon,
+      ui::kColorIcon, kIconSize);
 }
 
 std::u16string FileSystemAccessUsageBubbleView::FilePathListModel::GetTooltip(
     int row) {
-  if (size_t{row} < files_.size())
+  if (static_cast<size_t>(row) < files_.size())
     return files_[row].LossyDisplayName();
   return directories_[row - files_.size()].LossyDisplayName();
 }
@@ -346,11 +345,9 @@ FileSystemAccessUsageBubbleView::FileSystemAccessUsageBubbleView(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
-      readable_paths_model_(this,
-                            std::move(usage_.readable_files),
+      readable_paths_model_(std::move(usage_.readable_files),
                             std::move(usage_.readable_directories)),
-      writable_paths_model_(this,
-                            std::move(usage_.writable_files),
+      writable_paths_model_(std::move(usage_.writable_files),
                             std::move(usage_.writable_directories)) {
   SetButtonLabel(ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_DONE));
   SetButtonLabel(

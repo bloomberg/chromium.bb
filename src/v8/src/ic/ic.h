@@ -45,7 +45,7 @@ class IC {
   void MarkRecomputeHandler(Handle<Object> name) {
     DCHECK(RecomputeHandlerForName(name));
     old_state_ = state_;
-    state_ = RECOMPUTE_HANDLER;
+    state_ = InlineCacheState::RECOMPUTE_HANDLER;
   }
 
   bool IsAnyHas() const { return IsKeyedHasIC(); }
@@ -54,8 +54,10 @@ class IC {
   }
   bool IsAnyStore() const {
     return IsStoreIC() || IsStoreOwnIC() || IsStoreGlobalIC() ||
-           IsKeyedStoreIC() || IsStoreInArrayLiteralICKind(kind());
+           IsKeyedStoreIC() || IsStoreInArrayLiteralICKind(kind()) ||
+           IsDefineOwnIC();
   }
+  bool IsAnyStoreOwn() const { return IsStoreOwnIC() || IsDefineOwnIC(); }
 
   static inline bool IsHandler(MaybeObject object);
 
@@ -74,6 +76,8 @@ class IC {
 
   bool is_vector_set() { return vector_set_; }
   inline bool vector_needs_update();
+
+  inline Handle<Object> CodeHandler(Builtin builtin);
 
   // Configure for most states.
   bool ConfigureVectorState(IC::State new_state, Handle<Object> key);
@@ -117,12 +121,18 @@ class IC {
   bool IsStoreGlobalIC() const { return IsStoreGlobalICKind(kind_); }
   bool IsStoreIC() const { return IsStoreICKind(kind_); }
   bool IsStoreOwnIC() const { return IsStoreOwnICKind(kind_); }
+  bool IsDefineOwnIC() const { return IsDefineOwnICKind(kind_); }
+  bool IsStoreInArrayLiteralIC() const {
+    return IsStoreInArrayLiteralICKind(kind_);
+  }
   bool IsKeyedStoreIC() const { return IsKeyedStoreICKind(kind_); }
   bool IsKeyedHasIC() const { return IsKeyedHasICKind(kind_); }
+  bool IsKeyedDefineOwnIC() const { return IsKeyedDefineOwnICKind(kind_); }
   bool is_keyed() const {
-    return IsKeyedLoadIC() || IsKeyedStoreIC() ||
-           IsStoreInArrayLiteralICKind(kind_) || IsKeyedHasIC();
+    return IsKeyedLoadIC() || IsKeyedStoreIC() || IsStoreInArrayLiteralIC() ||
+           IsKeyedHasIC() || IsKeyedDefineOwnIC();
   }
+  bool is_any_store_own() const { return IsStoreOwnIC() || IsDefineOwnIC(); }
   bool ShouldRecomputeHandler(Handle<String> name);
 
   Handle<Map> lookup_start_object_map() { return lookup_start_object_map_; }
@@ -335,7 +345,8 @@ class StoreInArrayLiteralIC : public KeyedStoreIC {
     DCHECK(IsStoreInArrayLiteralICKind(kind()));
   }
 
-  void Store(Handle<JSArray> array, Handle<Object> index, Handle<Object> value);
+  MaybeHandle<Object> Store(Handle<JSArray> array, Handle<Object> index,
+                            Handle<Object> value);
 };
 
 }  // namespace internal

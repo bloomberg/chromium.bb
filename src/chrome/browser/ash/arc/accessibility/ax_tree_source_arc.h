@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "base/containers/flat_map.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_info_data_wrapper.h"
-#include "components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_node.h"
@@ -23,8 +23,8 @@
 #include "ui/accessibility/ax_tree_source.h"
 #include "ui/views/view.h"
 
-namespace ui {
-struct AXEvent;
+namespace aura {
+class Window;
 }
 
 namespace arc {
@@ -65,7 +65,11 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
     virtual void PostSerializeNode(ui::AXNodeData* out_data) const = 0;
   };
 
-  explicit AXTreeSourceArc(Delegate* delegate);
+  AXTreeSourceArc(Delegate* delegate, aura::Window* window);
+
+  AXTreeSourceArc(const AXTreeSourceArc&) = delete;
+  AXTreeSourceArc& operator=(const AXTreeSourceArc&) = delete;
+
   ~AXTreeSourceArc() override;
 
   // Notify automation of an accessibility event.
@@ -105,7 +109,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
   void SerializeNode(AccessibilityInfoDataWrapper* info_data,
                      ui::AXNodeData* out_data) const override;
 
-  aura::Window* GetWindow() const;
+  aura::Window* window() { return window_; }
+  void set_window(aura::Window* window) { window_ = window; }
 
   bool is_notification() { return is_notification_; }
 
@@ -114,6 +119,12 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
   // The window id of this tree.
   absl::optional<int32_t> window_id() const { return window_id_; }
 
+  void set_automation_event_router_for_test(
+      extensions::AutomationEventRouterInterface* router) {
+    automation_event_router_for_test_ = router;
+  }
+  void set_window_id_for_test(int32_t window_id) { window_id_ = window_id; }
+
  private:
   friend class arc::AXTreeSourceArcTest;
 
@@ -121,9 +132,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
   void NotifyAccessibilityEventInternal(
       const mojom::AccessibilityEventData& event_data);
 
-  // virtual for testing.
-  virtual extensions::AutomationEventRouterInterface* GetAutomationEventRouter()
-      const;
+  // Returns AutomationEventRouter.
+  extensions::AutomationEventRouterInterface* GetAutomationEventRouter() const;
 
   // Computes the smallest rect that encloses all of the descendants of
   // |info_data|.
@@ -135,7 +145,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
   void ComputeEnclosingBoundsInternal(AccessibilityInfoDataWrapper* info_data,
                                       gfx::Rect* computed_bounds) const;
 
-  // Find the most top-left focusable node under the given node in full focus mode.
+  // Find the most top-left focusable node under the given node in full focus
+  // mode.
   AccessibilityInfoDataWrapper* FindFirstFocusableNodeInFullFocusMode(
       AccessibilityInfoDataWrapper* info_data) const;
 
@@ -153,10 +164,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
   // re-serialization.
   std::vector<int32_t> ProcessHooksOnEvent(
       const mojom::AccessibilityEventData& event_data);
-
-  // Compare previous live region and current live region, and add event to the
-  // given vector if there is any difference.
-  void HandleLiveRegions(std::vector<ui::AXEvent>* events);
 
   // Resets tree state.
   void Reset();
@@ -191,6 +198,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
 
   absl::optional<std::string> notification_key_;
 
+  // Window corresponding this tree.
+  aura::Window* window_;
+
   // Cache of mapping from the *Android* window id to the last focused node id.
   std::map<int32_t, int32_t> window_id_to_last_focus_node_id_;
 
@@ -208,7 +218,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
   // delegate is valid during the lifetime of this tree.
   const Delegate* const delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArc);
+  extensions::AutomationEventRouterInterface*
+      automation_event_router_for_test_ = nullptr;
 };
 
 }  // namespace arc

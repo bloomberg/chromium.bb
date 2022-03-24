@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/properties/css_direction_aware_resolver.h"
 #include "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -28,6 +27,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   using Flags = uint32_t;
 
   static const CSSProperty& Get(CSSPropertyID);
+
+  static bool IsShorthand(const CSSPropertyName&);
+  static bool IsRepeated(const CSSPropertyName&);
 
   // For backwards compatibility when passing around CSSUnresolvedProperty
   // references. In case we need to call a function that hasn't been converted
@@ -50,6 +52,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsInherited() const { return flags_ & kInherited; }
   bool IsVisited() const { return flags_ & kVisited; }
   bool IsInternal() const { return flags_ & kInternal; }
+  bool IsAnimationProperty() const { return flags_ & kAnimation; }
   bool IsValidForFirstLetter() const { return flags_ & kValidForFirstLetter; }
   bool IsValidForFirstLine() const { return flags_ & kValidForFirstLine; }
   bool IsValidForCue() const { return flags_ & kValidForCue; }
@@ -59,6 +62,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool AffectsFont() const { return flags_ & kAffectsFont; }
   bool IsBackground() const { return flags_ & kBackground; }
   bool IsBorder() const { return flags_ & kBorder; }
+  bool IsBorderRadius() const { return flags_ & kBorderRadius; }
   bool TakesTreeScopedValue() const { return flags_ & kTreeScopedValue; }
   bool IsInLogicalPropertyGroup() const {
     return flags_ & kInLogicalPropertyGroup;
@@ -138,18 +142,24 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // inline-size is a surrogate for either width or height.
     kSurrogate = 1 << 13,
     kAffectsFont = 1 << 14,
-    // If the author specifies any background or border property on an UI
-    // element, the native appearance must be disabled.
+    // If the author specifies any background, border or border-radius property
+    // on an UI element, the native appearance must be disabled.
     kBackground = 1 << 15,
     kBorder = 1 << 16,
+    kBorderRadius = 1 << 17,
     // Set if the property values are tree-scoped references.
-    kTreeScopedValue = 1 << 17,
+    kTreeScopedValue = 1 << 18,
     // https://drafts.csswg.org/css-pseudo-4/#highlight-styling
-    kValidForHighlight = 1 << 18,
+    kValidForHighlight = 1 << 19,
     // https://drafts.csswg.org/css-logical/#logical-property-group
-    kInLogicalPropertyGroup = 1 << 19,
+    kInLogicalPropertyGroup = 1 << 20,
     // https://drafts.csswg.org/css-pseudo-4/#first-line-styling
-    kValidForFirstLine = 1 << 20,
+    kValidForFirstLine = 1 << 21,
+    // The property participates in paired cascade, such that when encountered
+    // in highlight styles, we make all other highlight color properties default
+    // to initial, rather than the UA default.
+    // https://drafts.csswg.org/css-pseudo-4/#highlight-cascade
+    kHighlightColors = 1 << 22,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

@@ -15,19 +15,31 @@
 
 """Provides a method for reading events from an event file via an iterator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.core.util import event_pb2
 from tensorflow.python.lib.io import tf_record
 from tensorflow.python.util.tf_export import tf_export
 
 
+class _SummaryIterator(object):
+  """Yields `Event` protocol buffers from a given path."""
+
+  def __init__(self, path):
+    self._tf_record_iterator = tf_record.tf_record_iterator(path)
+
+  def __iter__(self):
+    return self
+
+  def __next__(self):
+    r = next(self._tf_record_iterator)
+    return event_pb2.Event.FromString(r)
+
+  next = __next__
+
+
 @tf_export(v1=['train.summary_iterator'])
 def summary_iterator(path):
   # pylint: disable=line-too-long
-  """An iterator for reading `Event` protocol buffers from an event file.
+  """Returns a iterator for reading `Event` protocol buffers from an event file.
 
   You can use this function to read events written to an event file. It returns
   a Python iterator that yields `Event` protocol buffers.
@@ -51,6 +63,18 @@ def summary_iterator(path):
           if v.tag == 'loss':
               print(v.simple_value)
   ```
+  Example: Continuously check for new summary values.
+
+  ```python
+  summaries = tf.compat.v1.train.summary_iterator(path to events file)
+  while True:
+    for e in summaries:
+        for v in e.summary.value:
+            if v.tag == 'loss':
+                print(v.simple_value)
+    # Wait for a bit before checking the file for any new events
+    time.sleep(wait time)
+  ```
 
   See the protocol buffer definitions of
   [Event](https://www.tensorflow.org/code/tensorflow/core/util/event.proto)
@@ -61,9 +85,7 @@ def summary_iterator(path):
   Args:
     path: The path to an event file created by a `SummaryWriter`.
 
-  Yields:
-    `Event` protocol buffers.
+  Returns:
+    A iterator that yields `Event` protocol buffers
   """
-  # pylint: enable=line-too-long
-  for r in tf_record.tf_record_iterator(path):
-    yield event_pb2.Event.FromString(r)
+  return _SummaryIterator(path)

@@ -17,6 +17,7 @@
 # limitations under the License.
 #
 # Author: Mark Lobodzinski <mark@lunarg.com>
+# Author: Nadav Geva <nadav.geva@amd.com>
 
 import os,re,sys,string,json
 import xml.etree.ElementTree as etree
@@ -33,27 +34,26 @@ class BestPracticesOutputGeneratorOptions(GeneratorOptions):
                  filename = None,
                  directory = '.',
                  genpath = None,
-                 apiname = None,
+                 apiname = 'vulkan',
                  profile = None,
                  versions = '.*',
                  emitversions = '.*',
-                 defaultExtensions = None,
+                 defaultExtensions = 'vulkan',
                  addExtensions = None,
                  removeExtensions = None,
                  emitExtensions = None,
                  emitSpirv = None,
                  sortProcedure = regSortFeatures,
-                 prefixText = "",
                  genFuncPointers = True,
                  protectFile = True,
-                 protectFeature = True,
-                 apicall = '',
-                 apientry = '',
-                 apientryp = '',
+                 protectFeature = False,
+                 apicall = 'VKAPI_ATTR ',
+                 apientry = 'VKAPI_CALL ',
+                 apientryp = 'VKAPI_PTR *',
                  indentFuncProto = True,
                  indentFuncPointer = False,
-                 alignFuncParam = 0,
-                 expandEnumerants = True):
+                 alignFuncParam = 48,
+                 expandEnumerants = False):
         GeneratorOptions.__init__(self,
                 conventions = conventions,
                 filename = filename,
@@ -69,7 +69,6 @@ class BestPracticesOutputGeneratorOptions(GeneratorOptions):
                 emitExtensions = emitExtensions,
                 emitSpirv = emitSpirv,
                 sortProcedure = sortProcedure)
-        self.prefixText      = prefixText
         self.genFuncPointers = genFuncPointers
         self.protectFile     = protectFile
         self.protectFeature  = protectFeature
@@ -119,10 +118,14 @@ class BestPracticesOutputGenerator(OutputGenerator):
             'vkGetPhysicalDeviceSurfaceFormatsKHR',
             'vkGetPhysicalDeviceSurfaceFormats2KHR',
             'vkGetPhysicalDeviceDisplayPlanePropertiesKHR',
-            'vkCreateSwapchainKHR',
             'vkGetSwapchainImagesKHR',
-            'vkEnumeratePhysicalDevices',
             'vkCreateDevice',
+            # AMD tracked
+            'vkCreateComputePipelines',
+            'vkCmdPipelineBarrier',
+            'vkCreateFence',
+            'vkCreateSemaphore',
+            'vkQueueSubmit',
             ]
 
         self.extension_info = dict()
@@ -171,6 +174,7 @@ class BestPracticesOutputGenerator(OutputGenerator):
         copyright += ' * limitations under the License.\n'
         copyright += ' *\n'
         copyright += ' * Author: Mark Lobodzinski <mark@lunarg.com>\n'
+        copyright += ' * Author: Nadav Geva <nadav.geva@amd.com>\n'
         copyright += ' *\n'
         copyright += ' ****************************************************************************/\n'
         self.otwrite('both', copyright)

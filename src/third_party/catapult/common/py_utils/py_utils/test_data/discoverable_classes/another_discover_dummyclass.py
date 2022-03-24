@@ -9,25 +9,28 @@
 # Suppress complaints about unable to import class.  The directory path is
 # added at runtime by telemetry test runner.
 #pylint: disable=import-error
+from __future__ import absolute_import
 from discoverable_classes import discover_dummyclass
 
 
 class _PrivateDummyException(discover_dummyclass.DummyException):
   def __init__(self):
-    super(_PrivateDummyException, self).__init__()
+    discover_dummyclass.DummyException.__init__(self)
 
 
 class DummyExceptionImpl1(_PrivateDummyException):
   def __init__(self):
-    super(DummyExceptionImpl1, self).__init__()
+    _PrivateDummyException.__init__(self)
 
 
 class DummyExceptionImpl2(_PrivateDummyException):
   def __init__(self):
-    super(DummyExceptionImpl2, self).__init__()
+    _PrivateDummyException.__init__(self)
 
 
 class DummyExceptionWithParameterImpl1(_PrivateDummyException):
   def __init__(self, parameter):
+    # TODO(https://crbug.com/1262295): Change to super() after Python2 trybots retire.
+    # pylint: disable=super-with-arguments
     super(DummyExceptionWithParameterImpl1, self).__init__()
     del parameter

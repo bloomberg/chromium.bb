@@ -5,7 +5,6 @@
 #include "android_webview/browser/page_load_metrics/page_load_metrics_initialize.h"
 
 #include "android_webview/browser/page_load_metrics/aw_page_load_metrics_memory_tracker_factory.h"
-#include "base/macros.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
@@ -26,6 +25,10 @@ class PageLoadMetricsEmbedder
     : public page_load_metrics::PageLoadMetricsEmbedderBase {
  public:
   explicit PageLoadMetricsEmbedder(content::WebContents* web_contents);
+
+  PageLoadMetricsEmbedder(const PageLoadMetricsEmbedder&) = delete;
+  PageLoadMetricsEmbedder& operator=(const PageLoadMetricsEmbedder&) = delete;
+
   ~PageLoadMetricsEmbedder() override;
 
   // page_load_metrics::PageLoadMetricsEmbedderBase:
@@ -40,9 +43,6 @@ class PageLoadMetricsEmbedder
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   void RegisterEmbedderObservers(
       page_load_metrics::PageLoadTracker* tracker) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsEmbedder);
 };
 
 PageLoadMetricsEmbedder::PageLoadMetricsEmbedder(

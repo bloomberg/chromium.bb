@@ -19,6 +19,7 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForClearBrowsingDataTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
@@ -31,6 +32,9 @@ class IntTestWebStateObserver : public WebStateObserver {
  public:
   // Instructs the observer to listen for page loads for |url|.
   explicit IntTestWebStateObserver(const GURL& url) : expected_url_(url) {}
+
+  IntTestWebStateObserver(const IntTestWebStateObserver&) = delete;
+  IntTestWebStateObserver& operator=(const IntTestWebStateObserver&) = delete;
 
   // Whether |expected_url_| has been loaded successfully.
   bool IsExpectedPageLoaded() { return page_loaded_; }
@@ -47,8 +51,6 @@ class IntTestWebStateObserver : public WebStateObserver {
  private:
   GURL expected_url_;
   bool page_loaded_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(IntTestWebStateObserver);
 };
 
 #pragma mark - WebIntTest
@@ -79,14 +81,6 @@ void WebIntTest::TearDown() {
                              [WKWebsiteDataStore allWebsiteDataTypes]);
 
   WebTest::TearDown();
-}
-
-std::unique_ptr<base::Value> WebIntTest::ExecuteJavaScript(NSString* script) {
-  return web::test::ExecuteJavaScript(web_state(),
-                                      base::SysNSStringToUTF8(script));
-  //  web_state()->ExecuteJavaScript
-  //  return web::test::ExecuteJavaScript(web_state()->GetJSInjectionReceiver(),
-  //                                      script);
 }
 
 bool WebIntTest::ExecuteBlockAndWaitForLoad(const GURL& url,
@@ -151,9 +145,10 @@ void WebIntTest::RemoveWKWebViewCreatedData(WKWebsiteDataStore* data_store,
     remove_data();
   }
 
-  base::test::ios::WaitUntilCondition(^bool {
-    return data_removed;
-  });
+  EXPECT_TRUE(
+      WaitUntilConditionOrTimeout(kWaitForClearBrowsingDataTimeout * 2, ^{
+        return data_removed;
+      }));
 }
 
 NSInteger WebIntTest::GetIndexOfNavigationItem(

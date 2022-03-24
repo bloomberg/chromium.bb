@@ -30,6 +30,10 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
  public:
   KeyboardShortcutViewTest()
       : ash::AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
+  KeyboardShortcutViewTest(const KeyboardShortcutViewTest&) = delete;
+  KeyboardShortcutViewTest& operator=(const KeyboardShortcutViewTest&) = delete;
+
   ~KeyboardShortcutViewTest() override = default;
 
   views::Widget* Toggle() { return KeyboardShortcutView::Toggle(GetContext()); }
@@ -84,8 +88,6 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   KeyboardShortcutView* GetView() const {
     return KeyboardShortcutView::GetInstanceForTesting();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutViewTest);
 };
 
 // Shows and closes the widget for KeyboardShortcutViewer.
@@ -132,9 +134,9 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   views::Widget* widget = Toggle();
 
   size_t category_number = 0;
-  ShortcutCategory current_category = ShortcutCategory::kUnknown;
+  ash::ShortcutCategory current_category = ash::ShortcutCategory::kUnknown;
   for (const auto& item_view : GetShortcutViews()) {
-    const ShortcutCategory category = item_view->category();
+    const ash::ShortcutCategory category = item_view->category();
     if (current_category != category) {
       DCHECK(current_category < category);
       ++category_number;
@@ -155,7 +157,7 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
   for (const auto& item_view : GetShortcutViews()) {
     // We only initialize the first visible category and other non-visible panes
     // are deferred initialized.
-    if (item_view->category() != ShortcutCategory::kPopular)
+    if (item_view->category() != ash::ShortcutCategory::kPopular)
       continue;
 
     ASSERT_EQ(2u, item_view->children().size());
@@ -262,7 +264,7 @@ TEST_F(KeyboardShortcutViewTest, ShouldAlignSubLabelsInSearchResults) {
   EXPECT_TRUE(GetFoundShortcutItems().empty());
   // Type a letter and show the search results.
   KeyPress(ui::VKEY_A, /*should_insert=*/true);
-  auto time_out = base::TimeDelta::FromMilliseconds(300);
+  auto time_out = base::Milliseconds(300);
   task_environment()->FastForwardBy(time_out);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetFoundShortcutItems().empty());
