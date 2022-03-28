@@ -5,18 +5,19 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DATA_HOST_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DATA_HOST_MANAGER_IMPL_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 class AttributionManager;
-class BrowserContext;
 
 // Manages a receiver set of all ongoing `AttributionDataHost`s and forwards
 // events to the AttributionManager which owns `this`. Because attributionsrc
@@ -27,8 +28,8 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
     : public AttributionDataHostManager,
       public blink::mojom::AttributionDataHost {
  public:
-  AttributionDataHostManagerImpl(BrowserContext* storage_partition,
-                                 AttributionManager* attribution_manager);
+  explicit AttributionDataHostManagerImpl(
+      AttributionManager* attribution_manager);
   AttributionDataHostManagerImpl(const AttributionDataHostManager& other) =
       delete;
   AttributionDataHostManagerImpl& operator=(
@@ -43,6 +44,15 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   void RegisterDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
       url::Origin context_origin) override;
+  void RegisterNavigationDataHost(
+      mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
+      const blink::AttributionSrcToken& attribution_src_token) override;
+  void NotifyNavigationForDataHost(
+      const blink::AttributionSrcToken& attribution_src_token,
+      const url::Origin& source_origin,
+      const url::Origin& destination_origin) override;
+  void NotifyNavigationFailure(
+      const blink::AttributionSrcToken& attribution_src_token) override;
 
   // TODO(johnidel): Add support for navigation bound data hosts.
 
@@ -56,22 +66,51 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
     // Source type of this context. Note that data hosts which result in
     // triggers still have a source type of` kEvent` as they share the same web
     // API surface.
-    CommonSourceInfo::SourceType source_type;
+    AttributionSourceType source_type;
+
+    // For receivers with `source_type` `AttributionSourceType::kNavigation`,
+    // the final committed origin of the navigation associated with the data
+    // host. Opaque origin otherwise.
+    url::Origin destination;
   };
+
+  struct ReceiverData {
+    url::Origin source_declared_destination_origin;
+    int num_data_registered;
+  };
+
+  static void RecordRegisteredDataPerDataHost(
+      const ReceiverData& receiver_data);
 
   // blink::mojom::AttributionDataHost:
   void SourceDataAvailable(
       blink::mojom::AttributionSourceDataPtr data) override;
+  void TriggerDataAvailable(
+      blink::mojom::AttributionTriggerDataPtr data) override;
 
-  // Safe because the owning `AttributionManager` is guaranteed to outlive the
-  // browser context.
-  raw_ptr<BrowserContext> browser_context_;
+  void OnDataHostDisconnected();
 
   // Owns `this`.
   raw_ptr<AttributionManager> attribution_manager_;
 
   mojo::ReceiverSet<blink::mojom::AttributionDataHost, FrozenContext>
       receivers_;
+
+  // If the receiver is processing sources, stores
+  // the attribution destination, which is required to be non-opaque and to
+  // match between calls to `SourceDataAvailable()` within a single
+  // `AttributionDataHost`.
+  //
+  // If the receiver is processing triggers, stores an opaque origin.
+  base::flat_map<mojo::ReceiverId, ReceiverData> receiver_data_;
+
+  // Map which stores pending receivers for data hosts which are going to
+  // register sources associated with a navigation. These are not added to
+  // `receivers_` until the necessary browser process information is available
+  // to validate the attribution sources which is after the navigation finishes.
+  base::flat_map<blink::AttributionSrcToken,
+                 mojo::PendingReceiver<blink::mojom::AttributionDataHost>>
+      navigation_data_host_map_;
 };
 
 }  // namespace content

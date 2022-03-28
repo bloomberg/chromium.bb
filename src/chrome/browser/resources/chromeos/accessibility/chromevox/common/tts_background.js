@@ -5,19 +5,9 @@
 /**
  * @fileoverview Sends Text-To-Speech commands to Chrome's native TTS
  * extension API.
- *
  */
 
-goog.provide('TtsBackground');
-
-goog.require('PanelCommand');
-goog.require('PhoneticData');
-goog.require('AbstractTts');
-goog.require('ChromeTtsBase');
-goog.require('ChromeVox');
-goog.require('goog.i18n.MessageFormat');
-
-goog.require('constants');
+import {ChromeTtsBase} from './tts_base.js';
 
 const Utterance = class {
   /**
@@ -39,7 +29,7 @@ const Utterance = class {
  */
 Utterance.nextUtteranceId_ = 1;
 
-TtsBackground = class extends ChromeTtsBase {
+export class TtsBackground extends ChromeTtsBase {
   constructor() {
     super();
 
@@ -146,7 +136,13 @@ TtsBackground = class extends ChromeTtsBase {
         this.updateFromPrefs_.bind(this, true));
   }
 
-  /** @override */
+  /**
+   * @param {string} textString The string of text to be spoken.
+   * @param {QueueMode} queueMode The queue mode to use for speaking.
+   * @param {Object=} properties Speech properties to use for this utterance.
+   * @return {TtsInterface} A tts object useful for chaining speak calls.
+   * @override
+   */
   speak(textString, queueMode, properties) {
     super.speak(textString, queueMode, properties);
 
@@ -606,6 +602,8 @@ TtsBackground = class extends ChromeTtsBase {
   }
 
   /**
+   * @param {string} text
+   * @param {Object=} properties
    * @override
    */
   preprocess(text, properties) {
@@ -877,7 +875,7 @@ TtsBackground = class extends ChromeTtsBase {
   setHintDelayMS(rate) {
     TtsBackground.hint_delay_ms_ = 1000 / rate;
   }
-};
+}
 
 
 /**

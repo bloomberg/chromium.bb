@@ -5,14 +5,13 @@
 #ifndef CAST_SENDER_PUBLIC_SENDER_SOCKET_FACTORY_H_
 #define CAST_SENDER_PUBLIC_SENDER_SOCKET_FACTORY_H_
 
-#include <openssl/x509.h>
-
 #include <memory>
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "cast/common/public/cast_socket.h"
+#include "cast/common/public/parsed_certificate.h"
 #include "platform/api/serial_delete_ptr.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
@@ -22,6 +21,7 @@ namespace openscreen {
 namespace cast {
 
 class AuthContext;
+class TrustStore;
 
 class SenderSocketFactory final : public TlsConnectionFactory::Client,
                                   public CastSocket::Client {
@@ -45,8 +45,13 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
     kIncludesVideo,
   };
 
-  // |client| and |task_runner| must outlive |this|.
+  // |client| and |task_runner| must outlive |this|.  If no trust stores are
+  // passed, the default production certificates are used.
   SenderSocketFactory(Client* client, TaskRunner* task_runner);
+  SenderSocketFactory(Client* client,
+                      TaskRunner* task_runner,
+                      std::unique_ptr<TrustStore> cast_trust_store,
+                      std::unique_ptr<TrustStore> crl_trust_store);
   ~SenderSocketFactory();
 
   // |factory| cannot be nullptr and must outlive |this|.
@@ -87,7 +92,7 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
     SerialDeletePtr<CastSocket> socket;
     CastSocket::Client* client;
     std::unique_ptr<AuthContext> auth_context;
-    bssl::UniquePtr<X509> peer_cert;
+    std::unique_ptr<ParsedCertificate> peer_cert;
   };
 
   friend bool operator<(const std::unique_ptr<PendingAuth>& a, int b);
@@ -106,6 +111,10 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
   TlsConnectionFactory* factory_ = nullptr;
   std::vector<PendingConnection> pending_connections_;
   std::vector<std::unique_ptr<PendingAuth>> pending_auth_;
+
+  // Trust stores for use with AuthenticateChallengeReply.
+  std::unique_ptr<TrustStore> cast_trust_store_;
+  std::unique_ptr<TrustStore> crl_trust_store_;
 };
 
 }  // namespace cast

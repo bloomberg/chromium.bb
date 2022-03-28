@@ -398,6 +398,11 @@
     this.observers_.forEach(o => o.onNetworkStateChanged(networkState));
   }
 
+  /** @param {string} userhash */
+  onPoliciesApplied(userhash) {
+    this.observers_.forEach(o => o.onPoliciesApplied(userhash));
+  }
+
   onDeviceStateListChanged() {
     this.observers_.forEach(o => o.onDeviceStateListChanged());
   }
@@ -619,6 +624,7 @@
   /** @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy */
   setGlobalPolicy(globalPolicy) {
     this.globalPolicy_ = globalPolicy;
+    this.onPoliciesApplied(/*userhash=*/ '');
   }
 
   /**
@@ -639,8 +645,10 @@
     return new Promise(resolve => {
       this.methodCalled('getSupportedVpnTypes');
       resolve({
-        vpnTypes:
-            ['l2tpipsec', 'openvpn', 'thirdpartyvpn', 'arcvpn', 'wireguard']
+        vpnTypes: [
+          'ikev2', 'l2tpipsec', 'openvpn', 'thirdpartyvpn', 'arcvpn',
+          'wireguard'
+        ]
       });
     });
   }

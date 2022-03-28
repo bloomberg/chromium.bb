@@ -9,8 +9,8 @@
 #             mountainlion sierra
 #         win win7 win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
-#             android-pixel-4 android-pixel-6 android-shield-android-tv
+# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+#             android-pixel-6 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -176,9 +176,6 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_d
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_OES_fbo_render_mipmap [ Skip ]
-crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
-crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_WEBGL_draw_buffers [ Skip ]
-crbug.com/1187260 [ mac angle-metal passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
 
 # Extensions not available on ChromeOS.
 crbug.com/957807 [ chromeos no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Skip ]
@@ -348,13 +345,8 @@ crbug.com/angleproject/6228 [ win intel angle-vulkan passthrough ] conformance/m
 ####################
 
 # Astro specific issues
-crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
-crbug.com/1145858 [ fuchsia fuchsia-board-astro ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -362,8 +354,6 @@ crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bit
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -372,13 +362,10 @@ crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 # OOM on hardware devices
-crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/preservedrawingbuffer-leak.html [ Failure ]
 crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 # Flaky tests
 [ fuchsia fuchsia-board-astro ] WebglExtension_EXT_float_blend [ Failure ]
 [ fuchsia fuchsia-board-sherlock ] WebglExtension_EXT_float_blend [ Failure ]
-[ fuchsia fuchsia-board-astro ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-[ fuchsia fuchsia-board-astro ] conformance/canvas/drawingbuffer-static-canvas-test.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/texture-npot-video.html [ Failure ]
 crbug.com/1210953 [ fuchsia fuchsia-board-astro ] conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
@@ -399,13 +386,8 @@ crbug.com/1136414 [ fuchsia fuchsia-board-qemu-x64 ] conformance/ogles/GL/mat/ma
 # [ fuchsia ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 
 # Sherlock failures
-crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
-crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
-crbug.com/1145858 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
-crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
@@ -413,18 +395,18 @@ crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] confor
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-npot-video.html [ Failure ]
 crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
-crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+
+crbug.com/1145858 [ fuchsia ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
 
 ####################
 # Win failures     #
@@ -517,7 +499,6 @@ crbug.com/angleproject/4846 [ mac angle-metal passthrough ] conformance/uniforms
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/acos/acos_001_to_006.html [ Failure ]
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/asin/asin_001_to_006.html [ Failure ]
 crbug.com/angleproject/6489 [ mac angle-metal passthrough ] conformance/ogles/GL/build/build_009_to_016.html [ Failure ]
-crbug.com/angleproject/6489 [ mac angle-metal passthrough ] conformance/ogles/GL/build/build_017_to_024.html [ Failure ]
 crbug.com/angleproject/6486 [ mac angle-metal passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Mac / Passthrough command decoder / Metal / Intel
@@ -539,8 +520,6 @@ crbug.com/1130759 [ mac passthrough angle-metal apple-angle-metal-renderer:-appl
 # TODO(crbug.com/1276153) uncomment after fix for updated part of test applies
 # crbug.com/angleproject/5505 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 crbug.com/angleproject/5505 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/rendering/multisample-corruption.html [ Failure ]
-# After converting to Python 3: crbug.com/1266604
-crbug.com/1271941 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance/ogles/GL/* [ RetryOnFailure ]
 
 ####################
 # Linux failures   #
@@ -613,17 +592,12 @@ crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/
 crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/1295370 [ android android-nexus-5x passthrough ] conformance/textures/video/* [ Failure ]
 
-# Android NVIDIA: Nexus 9 and/or Shield TV
-crbug.com/798117 [ android android-nexus-9 ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
-crbug.com/606096 [ android android-nexus-9 ] conformance/glsl/bugs/multiplication-assignment.html [ Failure ]
-crbug.com/478572 [ android android-nexus-9 ] deqp/data/gles2/shaders/functions.html [ Failure ]
-# Texture tests found to generate intermittent GL errors in the GPU process
-crbug.com/1090407 [ android android-nexus-9 ] conformance/textures/* [ RetryOnFailure ]
+# Android NVIDIA Shield TV
 crbug.com/1294071 [ android-pie android-shield-android-tv ] conformance/glsl/bugs/vector-matrix-constructor-scalarization.html [ Failure ]
 # Flakily returning RGBA(0,0,0,0) for all pixels
 crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
+crbug.com/1295386 [ android android-shield-android-tv ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 
 # Pixel 4
 crbug.com/1175223 [ android android-pixel-4 angle-opengles passthrough ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]

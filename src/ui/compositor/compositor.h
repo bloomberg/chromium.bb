@@ -35,8 +35,8 @@
 #include "components/viz/service/display/software_output_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom-forward.h"
-#include "skia/ext/skia_matrix_44.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkM44.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_lock.h"
@@ -164,7 +164,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
              bool enable_pixel_canvas,
              bool use_external_begin_frame_control = false,
              bool force_software_compositor = false,
-             bool enable_compositing_based_throttling = false);
+             bool enable_compositing_based_throttling = false,
+             size_t memory_limit_when_visible_mb = 0);
 
   Compositor(const Compositor&) = delete;
   Compositor& operator=(const Compositor&) = delete;
@@ -217,10 +218,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 
   // Gets and sets the color matrix used to transform the output colors of what
   // this compositor renders.
-  const skia::Matrix44& display_color_matrix() const {
-    return display_color_matrix_;
-  }
-  void SetDisplayColorMatrix(const skia::Matrix44& matrix);
+  const SkM44& display_color_matrix() const { return display_color_matrix_; }
+  void SetDisplayColorMatrix(const SkM44& matrix);
 
   // Where possible, draws are scissored to a damage region calculated from
   // changes to layer properties.  This bypasses that and indicates that
@@ -524,7 +523,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
   std::unique_ptr<ScopedAnimationDurationScaleMode> slow_animations_;
 
-  skia::Matrix44 display_color_matrix_;
+  SkM44 display_color_matrix_;
   gfx::DisplayColorSpaces display_color_spaces_;
 
   bool output_is_secure_ = false;

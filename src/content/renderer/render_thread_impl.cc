@@ -26,6 +26,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -34,6 +35,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
@@ -1671,10 +1673,6 @@ mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   return gpu_->GetGpuChannel().get();
-}
-
-base::PlatformThreadId RenderThreadImpl::GetIOPlatformThreadId() const {
-  return ChildProcess::current()->io_thread_id();
 }
 
 void RenderThreadImpl::CreateAgentSchedulingGroup(

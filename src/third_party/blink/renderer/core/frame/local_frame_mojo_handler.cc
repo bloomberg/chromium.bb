@@ -23,7 +23,6 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/core/app_history/app_history.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -55,6 +54,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -753,7 +753,7 @@ void LocalFrameMojoHandler::AdvanceFocusInFrame(
       focus_type, source_frame, frame_);
 }
 
-void LocalFrameMojoHandler::AdvanceFocusInForm(
+void LocalFrameMojoHandler::AdvanceFocusForIME(
     mojom::blink::FocusType focus_type) {
   auto* focused_frame = GetPage()->GetFocusController().FocusedFrame();
   if (focused_frame != frame_)
@@ -765,7 +765,7 @@ void LocalFrameMojoHandler::AdvanceFocusInForm(
     return;
 
   Element* next_element =
-      GetPage()->GetFocusController().NextFocusableElementInForm(element,
+      GetPage()->GetFocusController().NextFocusableElementForIME(element,
                                                                  focus_type);
   if (!next_element)
     return;
@@ -1149,10 +1149,11 @@ void LocalFrameMojoHandler::GetCanonicalUrlForSharing(
 #endif
 }
 
-void LocalFrameMojoHandler::SetAppHistoryEntriesForRestore(
-    mojom::blink::AppHistoryEntryArraysPtr entry_arrays) {
-  if (AppHistory* app_history = AppHistory::appHistory(*frame_->DomWindow()))
-    app_history->SetEntriesForRestore(entry_arrays);
+void LocalFrameMojoHandler::SetNavigationApiHistoryEntriesForRestore(
+    mojom::blink::NavigationApiHistoryEntryArraysPtr entry_arrays) {
+  if (NavigationApi* navigation_api =
+          NavigationApi::navigation(*frame_->DomWindow()))
+    navigation_api->SetEntriesForRestore(entry_arrays);
 }
 
 void LocalFrameMojoHandler::AnimateDoubleTapZoom(const gfx::Point& point,

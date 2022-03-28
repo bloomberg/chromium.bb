@@ -7,6 +7,7 @@
 
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
@@ -138,10 +139,9 @@ void ResponsivenessMetrics::RecordUserInteractionUKM(
   base::TimeDelta total_event_duration = TotalEventDuration(timestamps);
   // We found some negative values in the data. Before figuring out the root
   // cause, we need this check to avoid sending nonsensical data.
-  if (max_event_duration.InMilliseconds() >= 0 &&
-      total_event_duration.InMilliseconds() >= 0) {
-    window->GetFrame()->Client()->DidObserveUserInteraction(
-        max_event_duration, total_event_duration, interaction_type);
+  if (max_event_duration.InMilliseconds() >= 0) {
+    window->GetFrame()->Client()->DidObserveUserInteraction(max_event_duration,
+                                                            interaction_type);
   }
   TRACE_EVENT2("devtools.timeline", "Responsiveness.Renderer.UserInteraction",
                "data",

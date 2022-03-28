@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -40,7 +41,7 @@
 namespace safe_browsing {
 namespace {
 
-const int kRepeatingCheckTailoredSecurityBitDelayInMinutes = 5;
+const int kRepeatingCheckTailoredSecurityBitDelayInMinutes = 10;
 
 constexpr char kAPIScope[] =
     "https://www.googleapis.com/auth/chrome-safe-browsing";
@@ -280,13 +281,23 @@ void TailoredSecurityService::AddQueryRequest() {
   DCHECK(!is_shut_down_);
   active_query_request_++;
   if (active_query_request_ == 1) {
-    // Query now and register a repeating timer to get the tailored security bit
-    // every `kRepeatingCheckTailoredSecurityBitDelayInMinutes` minutes.
-    QueryTailoredSecurityBit();
-    timer_.Start(
-        FROM_HERE,
-        base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes), this,
-        &TailoredSecurityService::QueryTailoredSecurityBit);
+    if (base::Time::Now() - last_updated_ <=
+        base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes)) {
+      // Since we queried recently, start the timer with a shorter delay.
+      base::TimeDelta delay =
+          base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes) -
+          (base::Time::Now() - last_updated_);
+      timer_.Start(FROM_HERE, delay, this,
+                   &TailoredSecurityService::QueryTailoredSecurityBit);
+    } else {
+      // Query now and register a timer to get the tailored security bit
+      // every `kRepeatingCheckTailoredSecurityBitDelayInMinutes` minutes.
+      QueryTailoredSecurityBit();
+      timer_.Start(
+          FROM_HERE,
+          base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes), this,
+          &TailoredSecurityService::QueryTailoredSecurityBit);
+    }
   }
 }
 
@@ -362,6 +373,12 @@ void TailoredSecurityService::OnTailoredSecurityBitRetrieved(
   }
   is_tailored_security_enabled_ = is_enabled;
   last_updated_ = base::Time::Now();
+  if (active_query_request_ > 0) {
+    timer_.Start(
+        FROM_HERE,
+        base::Minutes(kRepeatingCheckTailoredSecurityBitDelayInMinutes), this,
+        &TailoredSecurityService::QueryTailoredSecurityBit);
+  }
 }
 
 void TailoredSecurityService::QueryTailoredSecurityBitCompletionCallback(

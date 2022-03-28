@@ -3694,6 +3694,7 @@ void CompilationStateImpl::SchedulePublishCompilationResults(
     }
     publisher_running_ = true;
   }
+  CodeSpaceWriteScope code_space_write_scope(native_module_);
   while (true) {
     PublishCompilationResults(std::move(unpublished_code));
     unpublished_code.clear();

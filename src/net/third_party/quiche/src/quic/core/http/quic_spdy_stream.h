@@ -35,6 +35,7 @@
 #include "quic/platform/api/quic_export.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_socket_address.h"
+#include "common/platform/api/quiche_mem_slice.h"
 #include "spdy/core/spdy_framer.h"
 #include "spdy/core/spdy_header_block.h"
 
@@ -124,7 +125,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // QPACK.
   virtual size_t WriteHeaders(
       spdy::SpdyHeaderBlock header_block, bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+          ack_listener);
 
   // Sends |data| to the peer, or buffers if it can't be sent immediately.
   void WriteOrBufferBody(absl::string_view data, bool fin);
@@ -135,7 +137,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // data sent on the encoder stream when using QPACK.
   virtual size_t WriteTrailers(
       spdy::SpdyHeaderBlock trailer_block,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+          ack_listener);
 
   // Override to report newly acked bytes via ack_listener_.
   bool OnStreamFrameAcked(QuicStreamOffset offset, QuicByteCount data_length,
@@ -154,7 +157,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Does the same thing as WriteOrBufferBody except this method takes
   // memslicespan as the data input. Right now it only calls WriteMemSlices.
-  QuicConsumedData WriteBodySlices(absl::Span<QuicMemSlice> slices, bool fin);
+  QuicConsumedData WriteBodySlices(absl::Span<quiche::QuicheMemSlice> slices,
+                                   bool fin);
 
   // Marks the trailers as consumed. This applies to the case where this object
   // receives headers and trailers as QuicHeaderLists via calls to
@@ -359,14 +363,16 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
                                          const QuicHeaderList& header_list);
   virtual size_t WriteHeadersImpl(
       spdy::SpdyHeaderBlock header_block, bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+          ack_listener);
 
   Visitor* visitor() { return visitor_; }
 
   void set_headers_decompressed(bool val) { headers_decompressed_ = val; }
 
   void set_ack_listener(
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+          ack_listener) {
     ack_listener_ = std::move(ack_listener);
   }
 
@@ -502,7 +508,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   // Ack listener of this stream, and it is notified when any of written bytes
   // are acked or retransmitted.
-  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener_;
+  quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface> ack_listener_;
 
   // Offset of unacked frame headers.
   QuicIntervalSet<QuicStreamOffset> unacked_frame_headers_offsets_;

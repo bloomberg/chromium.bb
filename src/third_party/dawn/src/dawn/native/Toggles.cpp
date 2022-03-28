@@ -237,6 +237,15 @@ namespace dawn::native {
               "command queue, and the information includes system time, CPU timestamp, GPU "
               "timestamp, and their frequency.",
               "https://crbug.com/dawn/1264"}},
+            {Toggle::DisableTimestampQueryConversion,
+             {"disable_timestamp_query_conversion",
+              "Resolve timestamp queries into ticks instead of nanoseconds.",
+              "https://crbug.com/dawn/1305"}},
+            {Toggle::VulkanUseZeroInitializeWorkgroupMemoryExtension,
+             {"use_vulkan_zero_initialize_workgroup_memory_extension",
+              "Initialize workgroup memory with OpConstantNull on Vulkan when the Vulkan extension "
+              "VK_KHR_zero_initialize_workgroup_memory is supported.",
+              "https://crbug.com/dawn/1302"}},
 
             // Dummy comment to separate the }} so it is clearer what to copy-paste to add a toggle.
         }};

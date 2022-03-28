@@ -13,39 +13,35 @@
 #endif
 
 #include "include/core/SkBlendMode.h"
+#include "include/core/SkSamplingOptions.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkTileMode.h"
+#include "include/private/SkColorData.h"
 
 enum class SkBackend : uint8_t;
-class SkPaintParamsKey;
 class SkPaintParamsKeyBuilder;
-class SkShaderCodeDictionary;
-class SkUniformBlock;
+class SkPipelineData;
+class SkUniquePaintParamsID;
+class SkKeyContext;
+
+namespace skgpu { class TextureProxy; }
 
 // The KeyHelpers can be used to manually construct an SkPaintParamsKey
 
 namespace DepthStencilOnlyBlock {
 
-    void AddToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+    void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*);
-#ifdef SK_DEBUG
-    void Dump(const SkPaintParamsKey&, int headerOffset);
-#endif
+                  SkPipelineData*);
 
 } // namespace DepthStencilOnlyBlock
 
 namespace SolidColorShaderBlock {
 
-    void AddToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+    void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*,
-                  const SkColor4f&);
-#ifdef SK_DEBUG
-    void Dump(const SkPaintParamsKey&, int headerOffset);
-#endif
+                  SkPipelineData*,
+                  const SkPMColor4f&);
 
 } // namespace SolidColorShaderBlock
 
@@ -95,39 +91,37 @@ namespace GradientShaderBlocks {
         float                  fOffsets[kMaxStops];
     };
 
-    void AddToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+    void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*,
+                  SkPipelineData*,
                   const GradientData&);
-#ifdef SK_DEBUG
-    void Dump(const SkPaintParamsKey&, int headerOffset);
-#endif
 
 } // namespace GradientShaderBlocks
 
 namespace ImageShaderBlock {
 
     struct ImageData {
-        bool operator==(const ImageData& rhs) const {
-            return fTileModes[0] == rhs.fTileModes[0] &&
-                   fTileModes[1] == rhs.fTileModes[1];
-        }
-        bool operator!=(const ImageData& rhs) const { return !(*this == rhs); }
+        ImageData(const SkSamplingOptions& sampling,
+                  SkTileMode tileModeX,
+                  SkTileMode tileModeY,
+                  SkRect subset);
 
-        // TODO: add the other image shader parameters that could impact code snippet selection
-        // (e.g., sampling options, subsetting, etc.)
+        SkSamplingOptions fSampling;
         SkTileMode fTileModes[2];
+        SkRect fSubset;
+
+#ifdef SK_GRAPHITE_ENABLED
+        // TODO: Currently this is only filled in when we're generating the key from an actual
+        // SkImageShader. In the pre-compile case we will need to create a Graphite promise
+        // image which holds the appropriate data.
+        sk_sp<skgpu::TextureProxy> fTextureProxy;
+#endif
     };
 
-    void AddToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+    void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*,
+                  SkPipelineData*,
                   const ImageData&);
-#ifdef SK_DEBUG
-    void Dump(const SkPaintParamsKey&, int headerOffset);
-#endif
 
 } // namespace ImageShaderBlock
 
@@ -140,37 +134,29 @@ namespace BlendShaderBlock {
         SkBlendMode fBM;
     };
 
-    void AddToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+    void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*,
+                  SkPipelineData*,
                   const BlendData&);
-#ifdef SK_DEBUG
-    void Dump(const SkPaintParamsKey&, int headerOffset);
-#endif
 
 } // namespace BlendShaderBlock
 
 namespace BlendModeBlock {
 
-    void AddToKey(SkShaderCodeDictionary*,
-                  SkBackend,
+    void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkUniformBlock*,
+                  SkPipelineData*,
                   SkBlendMode);
-#ifdef SK_DEBUG
-    void Dump(const SkPaintParamsKey&, int headerOffset);
-#endif
 
 } // namespace BlendModeBlock
 
 #ifdef SK_GRAPHITE_ENABLED
 // Bridge between the combinations system and the SkPaintParamsKey
-std::unique_ptr<SkPaintParamsKey> CreateKey(SkShaderCodeDictionary*,
-                                            SkBackend,
-                                            skgpu::ShaderCombo::ShaderType,
-                                            SkTileMode,
-                                            SkBlendMode);
+SkUniquePaintParamsID CreateKey(const SkKeyContext&,
+                                SkPaintParamsKeyBuilder*,
+                                skgpu::ShaderCombo::ShaderType,
+                                SkTileMode,
+                                SkBlendMode);
 #endif
 
 #endif // SkKeyHelpers_DEFINED

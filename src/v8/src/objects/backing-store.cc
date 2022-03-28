@@ -241,11 +241,10 @@ BackingStore::~BackingStore() {
     auto region =
         GetReservedRegion(has_guard_regions_, buffer_start_, byte_capacity_);
 
-    bool pages_were_freed =
-        region.size() == 0 /* no need to free any pages */ ||
-        FreePages(page_allocator, reinterpret_cast<void*>(region.begin()),
-                  region.size());
-    CHECK(pages_were_freed);
+    if (!region.is_empty()) {
+      FreePages(page_allocator, reinterpret_cast<void*>(region.begin()),
+                region.size());
+    }
     Clear();
     return;
   }
@@ -257,11 +256,10 @@ BackingStore::~BackingStore() {
     auto region =
         GetReservedRegion(has_guard_regions_, buffer_start_, byte_capacity_);
 
-    bool pages_were_freed =
-        region.size() == 0 /* no need to free any pages */ ||
-        FreePages(page_allocator, reinterpret_cast<void*>(region.begin()),
-                  region.size());
-    CHECK(pages_were_freed);
+    if (!region.is_empty()) {
+      FreePages(page_allocator, reinterpret_cast<void*>(region.begin()),
+                region.size());
+    }
     Clear();
     return;
   }
@@ -476,7 +474,7 @@ std::unique_ptr<BackingStore> BackingStore::TryAllocateAndPartiallyCommitMemory(
   if (!gc_retry(commit_memory)) {
     TRACE_BS("BSw:try   failed to set permissions (%p, %zu)\n", buffer_start,
              committed_byte_length);
-    CHECK(FreePages(page_allocator, allocation_base, reservation_size));
+    FreePages(page_allocator, allocation_base, reservation_size);
     // SetPermissions put us over the process memory limit.
     // We return an empty result so that the caller can throw an exception.
     return {};
@@ -544,13 +542,13 @@ std::unique_ptr<BackingStore> BackingStore::AllocateWasmMemory(
 }
 
 std::unique_ptr<BackingStore> BackingStore::CopyWasmMemory(Isolate* isolate,
-                                                           size_t new_pages) {
+                                                           size_t new_pages,
+                                                           size_t max_pages) {
   // Note that we could allocate uninitialized to save initialization cost here,
   // but since Wasm memories are allocated by the page allocator, the zeroing
   // cost is already built-in.
-  // TODO(titzer): should we use a suitable maximum here?
   auto new_backing_store = BackingStore::AllocateWasmMemory(
-      isolate, new_pages, new_pages,
+      isolate, new_pages, max_pages,
       is_shared() ? SharedFlag::kShared : SharedFlag::kNotShared);
 
   if (!new_backing_store ||

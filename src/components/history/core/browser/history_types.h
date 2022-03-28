@@ -856,7 +856,8 @@ struct Cluster {
   Cluster(int64_t cluster_id,
           const std::vector<ClusterVisit>& visits,
           const std::vector<std::u16string>& keywords,
-          bool should_show_on_prominent_ui_surfaces = true);
+          bool should_show_on_prominent_ui_surfaces = true,
+          absl::optional<std::u16string> label = absl::nullopt);
   Cluster(const Cluster&);
   Cluster(Cluster&&);
   Cluster& operator=(const Cluster&);
@@ -869,6 +870,15 @@ struct Cluster {
   std::vector<std::u16string> keywords;
   // Whether the cluster should be shown prominently on UI surfaces.
   bool should_show_on_prominent_ui_surfaces = true;
+  // A suitable label for the cluster. Will be nullopt if no suitable label
+  // could be determined.
+  absl::optional<std::u16string> label;
+
+  // A floating point score that's positive if the cluster matches the user's
+  // search query, and zero otherwise. This score changes depending on the
+  // entered search query, so this should never be persisted. It's a
+  // UI-state-specific score that's convenient to buffer here.
+  float search_match_score = 0.0;
 };
 
 // A minimal representation of `Cluster` used when retrieving them from

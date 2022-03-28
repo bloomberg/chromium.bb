@@ -79,7 +79,8 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
         download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
-        download->GetForcedFilePath(), absl::nullopt /*download_schedule*/,
+        download->GetForcedFilePath(), base::FilePath(),
+        absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
@@ -146,7 +147,7 @@ void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
         suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
-        absl::nullopt /*download_schedule*/,
+        base::FilePath(), absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return;
   }
@@ -167,7 +168,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 #if BUILDFLAG(IS_WIN)
   std::wstring file_part = base::FilePath(suggested_path).BaseName().value();
   wchar_t file_name[MAX_PATH];
-  base::wcslcpy(file_name, file_part.c_str(), base::size(file_name));
+  base::wcslcpy(file_name, file_part.c_str(), std::size(file_name));
   OPENFILENAME save_as;
   ZeroMemory(&save_as, sizeof(save_as));
   save_as.lStructSize = sizeof(OPENFILENAME);
@@ -178,7 +179,7 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   save_as.hwndOwner =
       web_contents->GetNativeView()->GetHost()->GetAcceleratedWidget();
   save_as.lpstrFile = file_name;
-  save_as.nMaxFile = base::size(file_name);
+  save_as.nMaxFile = std::size(file_name);
 
   std::wstring directory;
   if (!suggested_path.empty())
@@ -194,12 +195,12 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   NOTIMPLEMENTED();
 #endif
 
-  std::move(callback).Run(result,
-                          download::DownloadItem::TARGET_DISPOSITION_PROMPT,
-                          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-                          download::DownloadItem::MixedContentStatus::UNKNOWN,
-                          result, absl::nullopt /*download_schedule*/,
-                          download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(
+      result, download::DownloadItem::TARGET_DISPOSITION_PROMPT,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DownloadItem::MixedContentStatus::UNKNOWN, result,
+      base::FilePath(), absl::nullopt /*download_schedule*/,
+      download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void ShellDownloadManagerDelegate::SetDownloadBehaviorForTesting(

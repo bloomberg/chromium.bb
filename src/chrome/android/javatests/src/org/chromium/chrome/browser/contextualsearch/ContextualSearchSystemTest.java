@@ -65,13 +65,15 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
         @Override
         public Iterable<ParameterSet> getParameters() {
             return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
-                    new ParameterSet().value(EnabledFeature.LONGPRESS).name("enableLongpress"),
                     new ParameterSet()
                             .value(EnabledFeature.TRANSLATIONS)
                             .name("enableTranslations"),
                     new ParameterSet()
                             .value(EnabledFeature.CONTEXTUAL_TRIGGERS)
                             .name("enableContextualTriggers"),
+                    new ParameterSet()
+                            .value(EnabledFeature.CONTEXTUAL_TRIGGERS_MENU)
+                            .name("enableContextualTriggersMenu"),
                     new ParameterSet()
                             .value(EnabledFeature.PRIVACY_NEUTRAL)
                             .name("enablePrivacyNeutralEngagement"),
@@ -192,7 +194,7 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             ChromeTabUtils.simulateRendererKilledForTesting(
-                    sActivityTestRule.getActivity().getActivityTab(), true);
+                    sActivityTestRule.getActivity().getActivityTab());
         });
 
         // Give the panelState time to change
@@ -227,7 +229,7 @@ public class ContextualSearchSystemTest extends ContextualSearchInstrumentationB
         waitForPanelToPeek();
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { ChromeTabUtils.simulateRendererKilledForTesting(tab2, false); });
+                () -> { ChromeTabUtils.simulateRendererKilledForTesting(tab2); });
 
         waitForPanelToPeek();
     }

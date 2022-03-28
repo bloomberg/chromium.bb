@@ -101,13 +101,13 @@ Tests that two disjoint occlusion queries cannot be begun with same query index 
     if (t.params.isOnSameRenderPass) {
       pass.beginOcclusionQuery(0);
       pass.endOcclusionQuery();
-      pass.endPass();
+      pass.end();
     } else {
-      pass.endPass();
+      pass.end();
       const otherPass = beginRenderPassWithQuerySet(t, encoder, querySet);
       otherPass.beginOcclusionQuery(0);
       otherPass.endOcclusionQuery();
-      otherPass.endPass();
+      otherPass.end();
     }
 
     t.expectValidationError(() => {

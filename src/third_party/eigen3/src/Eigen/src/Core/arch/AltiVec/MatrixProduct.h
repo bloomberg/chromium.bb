@@ -193,7 +193,7 @@ EIGEN_STRONG_INLINE void symm_pack_complex_lhs_helper(std::complex<Scalar>* bloc
   const_blas_data_mapper<std::complex<Scalar>, Index, StorageOrder> lhs(_lhs, lhsStride);
   const Index vectorSize = quad_traits<Scalar>::vectorsize;
   const Index vectorDelta = vectorSize * depth;
-  Scalar* blockAf = (Scalar *)(blockA);
+  Scalar* blockAf = reinterpret_cast<Scalar *>(blockA);
 
   Index rir = 0, rii, j = 0;
   for(; j + vectorSize <= rows; j+=vectorSize)
@@ -1269,8 +1269,8 @@ const static Packet4i mask43 = { -1, -1, -1,  0 };
 
 const static Packet2l mask21 = { -1, 0 };
 
-template<typename Packet>
-EIGEN_ALWAYS_INLINE Packet bmask(const int remaining_rows)
+template<typename Packet, typename Index>
+EIGEN_ALWAYS_INLINE Packet bmask(const Index remaining_rows)
 {
   if (remaining_rows == 0) {
     return pset1<Packet>(float(0.0));  // Not used
@@ -1284,7 +1284,7 @@ EIGEN_ALWAYS_INLINE Packet bmask(const int remaining_rows)
 }
 
 template<>
-EIGEN_ALWAYS_INLINE Packet2d bmask<Packet2d>(const int remaining_rows)
+EIGEN_ALWAYS_INLINE Packet2d bmask<Packet2d,Index>(const Index remaining_rows)
 {
   if (remaining_rows == 0) {
     return pset1<Packet2d>(double(0.0));  // Not used
@@ -1748,7 +1748,7 @@ EIGEN_STRONG_INLINE void gemm(const DataMapper& res, const Scalar* blockA, const
       if( strideB == -1 ) strideB = depth;
 
       const Packet pAlpha = pset1<Packet>(alpha);
-      const Packet pMask  = bmask<Packet>((const int)(remaining_rows));
+      const Packet pMask  = bmask<Packet>(remaining_rows);
 
       Index col = 0;
       for(; col + accRows <= cols; col += accRows)
@@ -2208,7 +2208,7 @@ EIGEN_STRONG_INLINE void gemm_complex(const DataMapper& res, const LhsScalar* bl
 
       const Packet pAlphaReal = pset1<Packet>(alpha.real());
       const Packet pAlphaImag = pset1<Packet>(alpha.imag());
-      const Packet pMask = bmask<Packet>((const int)(remaining_rows));
+      const Packet pMask = bmask<Packet>(remaining_rows);
 
       const Scalar* blockA = (Scalar *) blockAc;
       const Scalar* blockB = (Scalar *) blockBc;

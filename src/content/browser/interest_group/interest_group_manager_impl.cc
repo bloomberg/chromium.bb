@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -65,6 +67,24 @@ void InterestGroupManagerImpl::UpdateInterestGroupsOfOwner(
     network::mojom::ClientSecurityStatePtr client_security_state) {
   update_manager_.UpdateInterestGroupsOfOwner(owner,
                                               std::move(client_security_state));
+}
+
+void InterestGroupManagerImpl::UpdateInterestGroupsOfOwners(
+    base::span<url::Origin> owners,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
+  update_manager_.UpdateInterestGroupsOfOwners(
+      owners, std::move(client_security_state));
+}
+
+void InterestGroupManagerImpl::set_max_update_round_duration_for_testing(
+    base::TimeDelta delta) {
+  update_manager_.set_max_update_round_duration_for_testing(delta);  // IN-TEST
+}
+
+void InterestGroupManagerImpl::set_max_parallel_updates_for_testing(
+    int max_parallel_updates) {
+  update_manager_.set_max_parallel_updates_for_testing(  // IN-TEST
+      max_parallel_updates);
 }
 
 void InterestGroupManagerImpl::RecordInterestGroupBid(
@@ -123,9 +143,10 @@ void InterestGroupManagerImpl::GetLastMaintenanceTimeForTesting(
 
 void InterestGroupManagerImpl::GetInterestGroupsForUpdate(
     const url::Origin& owner,
+    int groups_limit,
     base::OnceCallback<void(std::vector<StorageInterestGroup>)> callback) {
   impl_.AsyncCall(&InterestGroupStorage::GetInterestGroupsForUpdate)
-      .WithArgs(owner)
+      .WithArgs(owner, groups_limit)
       .Then(std::move(callback));
 }
 

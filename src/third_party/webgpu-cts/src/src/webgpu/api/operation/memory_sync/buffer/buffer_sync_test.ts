@@ -126,7 +126,8 @@ export class BufferSyncTest extends GPUTest {
       colorAttachments: [
         {
           view,
-          loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+          clearValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -152,7 +153,7 @@ export class BufferSyncTest extends GPUTest {
     renderer.draw(1, 1, 0, 0);
 
     if (inBundle) pass.executeBundles([(renderer as GPURenderBundleEncoder).finish()]);
-    pass.endPass();
+    pass.end();
   }
 
   // Write buffer via dispatch call in compute pass.
@@ -167,7 +168,7 @@ export class BufferSyncTest extends GPUTest {
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
     pass.dispatch(1);
-    pass.endPass();
+    pass.end();
   }
 
   /** Write buffer via BufferToBuffer copy. */

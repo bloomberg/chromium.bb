@@ -17,7 +17,6 @@
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 #include "quic/core/crypto/cert_compressor.h"
-#include "quic/core/crypto/common_cert_set.h"
 #include "quic/core/crypto/crypto_handshake.h"
 #include "quic/core/crypto/crypto_utils.h"
 #include "quic/core/crypto/proof_source.h"
@@ -167,8 +166,9 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     ASSERT_TRUE(server_config_->GetStringPiece(kSCID, &scid));
     scid_hex_ = "#" + absl::BytesToHexString(scid);
 
-    signed_config_ = QuicReferenceCountedPointer<QuicSignedServerConfig>(
-        new QuicSignedServerConfig());
+    signed_config_ =
+        quiche::QuicheReferenceCountedPointer<QuicSignedServerConfig>(
+            new QuicSignedServerConfig());
     QUICHE_DCHECK(signed_config_->chain.get() == nullptr);
   }
 
@@ -187,7 +187,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
       *called_ = false;
     }
 
-    void Run(QuicReferenceCountedPointer<Result> result,
+    void Run(quiche::QuicheReferenceCountedPointer<Result> result,
              std::unique_ptr<ProofSource::Details> /* details */) override {
       ASSERT_FALSE(*called_);
       test_->ProcessValidationResult(std::move(result), should_succeed_,
@@ -248,10 +248,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   class ProcessCallback : public ProcessClientHelloResultCallback {
    public:
     ProcessCallback(
-        QuicReferenceCountedPointer<ValidateCallback::Result> result,
-        bool should_succeed,
-        const char* error_substr,
-        bool* called,
+        quiche::QuicheReferenceCountedPointer<ValidateCallback::Result> result,
+        bool should_succeed, const char* error_substr, bool* called,
         CryptoHandshakeMessage* out)
         : result_(std::move(result)),
           should_succeed_(should_succeed),
@@ -284,7 +282,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     }
 
    private:
-    const QuicReferenceCountedPointer<ValidateCallback::Result> result_;
+    const quiche::QuicheReferenceCountedPointer<ValidateCallback::Result>
+        result_;
     const bool should_succeed_;
     const char* const error_substr_;
     bool* called_;
@@ -292,9 +291,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   };
 
   void ProcessValidationResult(
-      QuicReferenceCountedPointer<ValidateCallback::Result> result,
-      bool should_succeed,
-      const char* error_substr) {
+      quiche::QuicheReferenceCountedPointer<ValidateCallback::Result> result,
+      bool should_succeed, const char* error_substr) {
     QuicSocketAddress server_address(QuicIpAddress::Any4(), 5);
     bool called;
     config_.ProcessClientHello(
@@ -356,8 +354,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   QuicCryptoServerConfigPeer peer_;
   QuicCompressedCertsCache compressed_certs_cache_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
-  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   CryptoHandshakeMessage out_;
   uint8_t orbit_[kOrbitSize];
   size_t chlo_packet_size_;
@@ -793,12 +791,10 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
   EXPECT_NE(scid, kOldConfigId);
 
   // Get certs from compressed certs.
-  const CommonCertSets* common_cert_sets(CommonCertSets::GetInstanceQUIC());
   std::vector<std::string> cached_certs;
 
   std::vector<std::string> certs;
-  ASSERT_TRUE(CertCompressor::DecompressChain(cert, cached_certs,
-                                              common_cert_sets, &certs));
+  ASSERT_TRUE(CertCompressor::DecompressChain(cert, cached_certs, &certs));
 
   // Check that the proof in the REJ message is valid.
   std::unique_ptr<ProofVerifier> proof_verifier(
@@ -928,8 +924,8 @@ TEST_P(CryptoServerTest, TwoRttServerDropCachedCerts) {
   ASSERT_TRUE(out_.GetStringPiece(kCertificateTag, &certs_compressed));
   ASSERT_NE(0u, certs_compressed.size());
   std::vector<std::string> certs;
-  ASSERT_TRUE(CertCompressor::DecompressChain(
-      certs_compressed, /*cached_certs=*/{}, /*common_sets=*/nullptr, &certs));
+  ASSERT_TRUE(CertCompressor::DecompressChain(certs_compressed,
+                                              /*cached_certs=*/{}, &certs));
 
   // Start 2-RTT. Client sends CHLO with bad source-address token and hashes of
   // the certs, which tells the server that the client has cached those certs.
@@ -957,8 +953,8 @@ TEST_P(CryptoServerTest, TwoRttServerDropCachedCerts) {
   // previously-cached certs.
   ASSERT_TRUE(out_.GetStringPiece(kCertificateTag, &certs_compressed));
   ASSERT_NE(0u, certs_compressed.size());
-  ASSERT_TRUE(CertCompressor::DecompressChain(
-      certs_compressed, /*cached_certs=*/{}, /*common_sets=*/nullptr, &certs));
+  ASSERT_TRUE(CertCompressor::DecompressChain(certs_compressed,
+                                              /*cached_certs=*/{}, &certs));
 }
 
 class CryptoServerConfigGenerationTest : public QuicTest {};

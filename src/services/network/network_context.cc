@@ -83,6 +83,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
+#include "services/network/disk_cache/mojo_backend_file_operations_factory.h"
 #include "services/network/host_resolver.h"
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/http_server_properties_pref_delegate.h"
@@ -537,6 +538,12 @@ NetworkContext::NetworkContext(
       std::move(url_loader_factory_for_cert_net_fetcher_receiver));
 
   SetBlockTrustTokens(params_->block_trust_tokens);
+
+  if (params_ && params_->http_cache_file_operations_factory) {
+    http_cache_file_operations_factory_ =
+        base::MakeRefCounted<MojoBackendFileOperationsFactory>(
+            std::move(params_->http_cache_file_operations_factory));
+  }
 }
 
 NetworkContext::NetworkContext(
@@ -1505,6 +1512,15 @@ void NetworkContext::OnCTLogListUpdated(
       update_time, std::move(disqualified_logs),
       std::move(operated_by_google_logs), std::move(log_operator_history));
 }
+
+void NetworkContext::CanSendSCTAuditingReport(
+    base::OnceCallback<void(bool)> callback) {
+  client_->OnCanSendSCTAuditingReport(std::move(callback));
+}
+
+void NetworkContext::OnNewSCTAuditingReportSent() {
+  client_->OnNewSCTAuditingReportSent();
+}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkContext::CreateUDPSocket(
@@ -2035,9 +2051,7 @@ void NetworkContext::AddAuthCacheEntry(
           ->GetSession()
           ->http_auth_cache();
   http_auth_cache->Add(
-      // TODO(https://crbug.com/): Convert AuthCredentials::challenger field to
-      // a SchemeHostPort.
-      challenge.challenger.GetTupleOrPrecursorTupleIfOpaque(),
+      challenge.challenger,
       challenge.is_proxy ? net::HttpAuth::AUTH_PROXY
                          : net::HttpAuth::AUTH_SERVER,
       challenge.realm, net::HttpAuth::StringToScheme(challenge.scheme),
@@ -2581,6 +2595,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         certificate_report_sender_.get());
   }
 
+  if (network_service_->pins_list_updated()) {
+    result.url_request_context->transport_security_state()->UpdatePinList(
+        network_service_->pinsets(), network_service_->host_pins(),
+        network_service_->pins_list_update_time());
+  }
+
 #if BUILDFLAG(IS_ANDROID)
   result.url_request_context->set_check_cleartext_permitted(
       params_->check_clear_text_permitted);
@@ -2701,9 +2721,8 @@ GURL NetworkContext::GetHSTSRedirect(const GURL& original_url) {
     return original_url;
   }
 
-  url::Replacements<char> replacements;
-  const char kNewScheme[] = "https";
-  replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("https");
   return original_url.ReplaceComponents(replacements);
 }
 

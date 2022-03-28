@@ -4,8 +4,11 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 
+#import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_container_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -27,7 +30,7 @@ const CGFloat kVerticalOffset = 6;
 @property(nonatomic, strong) NSLayoutConstraint* bottomConstraint;
 
 @property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> delegate;
-@property(nonatomic, weak) UIViewController* viewController;
+@property(nonatomic, weak) UIViewController<ContentProviding>* viewController;
 @property(nonatomic, strong) UIView* popupContainerView;
 // Separator for the bottom edge of the popup on iPad.
 @property(nonatomic, strong) UIView* bottomSeparator;
@@ -36,10 +39,11 @@ const CGFloat kVerticalOffset = 6;
 
 @implementation OmniboxPopupPresenter
 
-- (instancetype)initWithPopupPresenterDelegate:
-                    (id<OmniboxPopupPresenterDelegate>)delegate
-                           popupViewController:(UIViewController*)viewController
-                                     incognito:(BOOL)incognito {
+- (instancetype)
+    initWithPopupPresenterDelegate:(id<OmniboxPopupPresenterDelegate>)delegate
+               popupViewController:
+                   (UIViewController<ContentProviding>*)viewController
+                         incognito:(BOOL)incognito {
   self = [super init];
   if (self) {
     _delegate = delegate;
@@ -50,7 +54,7 @@ const CGFloat kVerticalOffset = 6;
     ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
         initWithStyle:incognito ? INCOGNITO : NORMAL];
 
-    UIView* containerView = [[UIView alloc] init];
+    UIView* containerView = [[OmniboxPopupContainerView alloc] init];
     [containerView addSubview:viewController.view];
     _popupContainerView = containerView;
 
@@ -63,7 +67,10 @@ const CGFloat kVerticalOffset = 6;
     _popupContainerView.overrideUserInterfaceStyle = userInterfaceStyle;
     viewController.overrideUserInterfaceStyle = userInterfaceStyle;
 
-    _popupContainerView.backgroundColor = [configuration backgroundColor];
+    if (!base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
+      _popupContainerView.backgroundColor = [configuration backgroundColor];
+    }
+
     _popupContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     AddSameConstraints(viewController.view, _popupContainerView);
@@ -92,13 +99,13 @@ const CGFloat kVerticalOffset = 6;
 }
 
 - (void)updatePopup {
-  BOOL popupHeightIsZero =
-      self.viewController.view.intrinsicContentSize.height == 0;
+  BOOL popupHasContent = self.viewController.hasContent;
   BOOL popupIsOnscreen = self.popupContainerView.superview != nil;
-  if (popupHeightIsZero && popupIsOnscreen) {
+  if (!popupHasContent && popupIsOnscreen) {
     // If intrinsic size is 0 and popup is onscreen, we want to remove the
     // popup view.
-    if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
+    if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET ||
+        base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
       self.bottomConstraint.active = NO;
       self.bottomSeparator.hidden = YES;
     }
@@ -109,7 +116,7 @@ const CGFloat kVerticalOffset = 6;
 
     self.open = NO;
     [self.delegate popupDidCloseForPresenter:self];
-  } else if (!popupHeightIsZero && !popupIsOnscreen) {
+  } else if (popupHasContent && !popupIsOnscreen) {
     // If intrinsic size is nonzero and popup is offscreen, we want to add it.
     UIViewController* parentVC =
         [self.delegate popupParentViewControllerForPresenter:self];
@@ -120,7 +127,8 @@ const CGFloat kVerticalOffset = 6;
 
     [self initialLayout];
 
-    if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
+    if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET ||
+        base::FeatureList::IsEnabled(kIOSOmniboxUpdatedPopupUI)) {
       self.bottomConstraint.active = YES;
       self.bottomSeparator.hidden = NO;
     }

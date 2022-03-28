@@ -33,6 +33,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/quota_manager_proxy_sync.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +53,9 @@ std::u16string ConstructVfsFileName(const url::Origin& origin,
 
 class WebDatabaseHostImplTest : public ::testing::Test {
  public:
-  WebDatabaseHostImplTest() = default;
+  WebDatabaseHostImplTest()
+      : special_storage_policy_(
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()) {}
   WebDatabaseHostImplTest(const WebDatabaseHostImplTest&) = delete;
   WebDatabaseHostImplTest& operator=(const WebDatabaseHostImplTest&) = delete;
   ~WebDatabaseHostImplTest() override = default;
@@ -64,8 +67,7 @@ class WebDatabaseHostImplTest : public ::testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         /*is_incognito=*/false, data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(),
-        /*special_storage_policy=*/nullptr);
+        base::ThreadTaskRunnerHandle::Get(), special_storage_policy_);
     quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
         quota_manager_.get(), base::ThreadTaskRunnerHandle::Get());
 
@@ -139,15 +141,16 @@ class WebDatabaseHostImplTest : public ::testing::Test {
         process_id(), url);
   }
 
-  storage::MockQuotaManager* quota_manager() { return quota_manager_.get(); }
-
   storage::QuotaManagerProxy* quota_manager_proxy() {
     return quota_manager_proxy_.get();
   }
 
  private:
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
+
   base::ScopedTempDir data_dir_;
   BrowserTaskEnvironment task_environment_;
+
   TestBrowserContext browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   scoped_refptr<storage::DatabaseTracker> db_tracker_;
@@ -194,37 +197,6 @@ TEST_F(WebDatabaseHostImplTest, OpenFileCreatesBucket) {
   EXPECT_EQ(result->storage_key,
             blink::StorageKey::CreateFromStringForTesting(example_url));
   EXPECT_GT(result->id.value(), 0);
-}
-
-TEST_F(WebDatabaseHostImplTest, GetOrCreateBucketError) {
-  const char* example_url = "http://example.com";
-  const GURL example_gurl(example_url);
-  const url::Origin example_origin = url::Origin::Create(example_gurl);
-  const std::u16string db_name = u"db_name";
-  const std::u16string suffix(u"suffix");
-  const std::u16string vfs_file_name =
-      ConstructVfsFileName(example_origin, db_name, suffix);
-
-  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  security_policy->AddFutureIsolatedOrigins(
-      {example_origin}, ChildProcessSecurityPolicy::IsolatedOriginSource::TEST);
-  LockProcessToURL(example_gurl);
-
-  quota_manager()->SetDisableDatabase(true);
-  storage::QuotaManagerProxySync quota_manager_proxy_sync(
-      quota_manager_proxy());
-
-  base::RunLoop run_loop;
-  task_runner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
-        mojo::FakeMessageDispatchContext fake_dispatch_context;
-        host()->OpenFile(vfs_file_name, /*desired_flags=*/0,
-                         base::BindLambdaForTesting([&](base::File file) {
-                           EXPECT_FALSE(file.IsValid());
-                           run_loop.Quit();
-                         }));
-      }));
-  run_loop.Run();
 }
 
 TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {

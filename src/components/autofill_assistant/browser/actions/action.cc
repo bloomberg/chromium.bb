@@ -8,6 +8,8 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/wait_for_document_operation.h"
+#include "components/autofill_assistant/browser/wait_for_dom_operation.h"
 
 namespace autofill_assistant {
 
@@ -16,8 +18,11 @@ Action::Action(ActionDelegate* delegate, const ActionProto& proto)
 
 Action::~Action() {}
 
-bool Action::ShouldInterruptOnPause() const {
-  return false;
+Action::ActionData::ActionData() = default;
+Action::ActionData::~ActionData() = default;
+
+Action::ActionData& Action::GetActionData() {
+  return action_data_;
 }
 
 void Action::ProcessAction(ProcessActionCallback callback) {
@@ -264,6 +269,9 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case ActionProto::ActionInfoCase::kExecuteJs:
       out << "ExecuteJs";
+      break;
+    case ActionProto::ActionInfoCase::kJsFlow:
+      out << "JsFlow";
       break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";

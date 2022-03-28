@@ -195,6 +195,43 @@ const char* GCTracer::Event::TypeName(bool short_name) const {
   return "Unknown Event Type";
 }
 
+GCTracer::RecordGCPhasesInfo::RecordGCPhasesInfo(Heap* heap,
+                                                 GarbageCollector collector) {
+  Counters* counters = heap->isolate()->counters();
+  const bool in_background = heap->isolate()->IsIsolateInBackground();
+  if (Heap::IsYoungGenerationCollector(collector)) {
+    mode = Mode::Scavenger;
+    type_timer = type_priority_timer = nullptr;
+  } else {
+    DCHECK_EQ(GarbageCollector::MARK_COMPACTOR, collector);
+    if (heap->incremental_marking()->IsStopped()) {
+      mode = Mode::None;
+      type_timer = counters->gc_compactor();
+      type_priority_timer = in_background ? counters->gc_compactor_background()
+                                          : counters->gc_compactor_foreground();
+    } else if (heap->ShouldReduceMemory()) {
+      mode = Mode::None;
+      type_timer = counters->gc_finalize_reduce_memory();
+      type_priority_timer =
+          in_background ? counters->gc_finalize_reduce_memory_background()
+                        : counters->gc_finalize_reduce_memory_foreground();
+    } else {
+      if (heap->incremental_marking()->IsMarking() &&
+          heap->incremental_marking()
+              ->local_marking_worklists()
+              ->IsPerContextMode()) {
+        mode = Mode::None;
+        type_timer = counters->gc_finalize_measure_memory();
+      } else {
+        mode = Mode::Finalize;
+        type_timer = counters->gc_finalize();
+      }
+      type_priority_timer = in_background ? counters->gc_finalize_background()
+                                          : counters->gc_finalize_foreground();
+    }
+  }
+}
+
 GCTracer::GCTracer(Heap* heap)
     : heap_(heap),
       current_(Event::START, Event::State::NOT_RUNNING,
@@ -236,6 +273,8 @@ void GCTracer::ResetForTesting() {
   current_.end_time = MonotonicallyIncreasingTimeInMs();
   previous_ = current_;
   start_of_observable_pause_ = 0.0;
+  notified_sweeping_completed_ = false;
+  notified_cppgc_completed_ = false;
   young_gc_while_full_gc_ = false;
   ResetIncrementalMarkingCounters();
   allocation_time_ms_ = 0.0;
@@ -442,7 +481,7 @@ void GCTracer::UpdateStatistics(GarbageCollector collector) {
     }
     RecordMutatorUtilization(current_.end_time,
                              duration + current_.incremental_marking_duration);
-    RecordGCSumCounters(duration);
+    RecordGCSumCounters();
     ResetIncrementalMarkingCounters();
     combined_mark_compact_speed_cache_ = 0.0;
     FetchBackgroundMarkCompactCounters();
@@ -492,8 +531,6 @@ void GCTracer::StopCycle(GarbageCollector collector) {
   if (Heap::IsYoungGenerationCollector(collector)) {
     ReportYoungCycleToRecorder();
 
-    counters->scavenge_reason()->AddSample(static_cast<int>(gc_reason));
-
     // If a young generation GC interrupted an unfinished full GC cycle, restore
     // the event corresponding to the full GC cycle.
     if (young_gc_while_full_gc_) {
@@ -513,12 +550,29 @@ void GCTracer::StopCycle(GarbageCollector collector) {
   }
 }
 
-void GCTracer::StopCycleIfSweeping() {
+void GCTracer::StopCycleIfNeeded() {
   if (current_.state != Event::State::SWEEPING) return;
+  if (!notified_sweeping_completed_) return;
+  if (heap_->cpp_heap() && !notified_cppgc_completed_) return;
   StopCycle(GarbageCollector::MARK_COMPACTOR);
+  notified_sweeping_completed_ = false;
+  notified_cppgc_completed_ = false;
 }
 
 void GCTracer::NotifySweepingCompleted() {
+#ifdef VERIFY_HEAP
+  // If heap verification is enabled, sweeping finalization can also be
+  // triggered from inside a full GC cycle's atomic pause.
+  DCHECK((current_.type == Event::MARK_COMPACTOR ||
+          current_.type == Event::INCREMENTAL_MARK_COMPACTOR) &&
+         (current_.state == Event::State::SWEEPING ||
+          (FLAG_verify_heap && current_.state == Event::State::ATOMIC)));
+#else
+  DCHECK(IsSweepingInProgress());
+#endif
+
+  // Stop a full GC cycle only when both v8 and cppgc (if available) GCs have
+  // finished sweeping. This method is invoked by v8.
   if (FLAG_trace_gc_freelists) {
     PrintIsolate(heap_->isolate(),
                  "FreeLists statistics after sweeping completed:\n");
@@ -530,6 +584,21 @@ void GCTracer::NotifySweepingCompleted() {
     heap_->code_space()->PrintAllocationsOrigins();
     heap_->map_space()->PrintAllocationsOrigins();
   }
+  DCHECK(!notified_sweeping_completed_);
+  notified_sweeping_completed_ = true;
+  StopCycleIfNeeded();
+}
+
+void GCTracer::NotifyCppGCCompleted() {
+  // Stop a full GC cycle only when both v8 and cppgc (if available) GCs have
+  // finished sweeping. This method is invoked by cppgc.
+  DCHECK(heap_->cpp_heap());
+  DCHECK(CppHeap::From(heap_->cpp_heap())
+             ->GetMetricRecorder()
+             ->MetricsReportPending());
+  DCHECK(!notified_cppgc_completed_);
+  notified_cppgc_completed_ = true;
+  StopCycleIfNeeded();
 }
 
 void GCTracer::SampleAllocation(double current_ms,
@@ -1248,9 +1317,6 @@ void GCTracer::FetchBackgroundMarkCompactCounters() {
 void GCTracer::FetchBackgroundMinorGCCounters() {
   FetchBackgroundCounters(Scope::FIRST_MINOR_GC_BACKGROUND_SCOPE,
                           Scope::LAST_MINOR_GC_BACKGROUND_SCOPE);
-  heap_->isolate()->counters()->background_scavenger()->AddSample(
-      static_cast<int>(
-          current_.scopes[Scope::SCAVENGER_BACKGROUND_SCAVENGE_PARALLEL]));
 }
 
 void GCTracer::FetchBackgroundGeneralCounters() {
@@ -1272,9 +1338,9 @@ void GCTracer::AddScopeSampleBackground(Scope::ScopeId scope, double duration) {
   counter.total_duration_ms += duration;
 }
 
-void GCTracer::RecordGCPhasesHistograms(TimedHistogram* gc_timer) {
+void GCTracer::RecordGCPhasesHistograms(RecordGCPhasesInfo::Mode mode) {
   Counters* counters = heap_->isolate()->counters();
-  if (gc_timer == counters->gc_finalize()) {
+  if (mode == RecordGCPhasesInfo::Mode::Finalize) {
     DCHECK_EQ(Scope::FIRST_TOP_MC_SCOPE, Scope::MC_CLEAR);
     counters->gc_finalize_clear()->AddSample(
         static_cast<int>(current_.scopes[Scope::MC_CLEAR]));
@@ -1323,7 +1389,7 @@ void GCTracer::RecordGCPhasesHistograms(TimedHistogram* gc_timer) {
     }
 
     DCHECK_EQ(Scope::LAST_TOP_MC_SCOPE, Scope::MC_SWEEP);
-  } else if (gc_timer == counters->gc_scavenger()) {
+  } else if (mode == RecordGCPhasesInfo::Mode::Scavenger) {
     counters->gc_scavenger_scavenge_main()->AddSample(
         static_cast<int>(current_.scopes[Scope::SCAVENGER_SCAVENGE_PARALLEL]));
     counters->gc_scavenger_scavenge_roots()->AddSample(
@@ -1331,20 +1397,23 @@ void GCTracer::RecordGCPhasesHistograms(TimedHistogram* gc_timer) {
   }
 }
 
-void GCTracer::RecordGCSumCounters(double atomic_pause_duration) {
+void GCTracer::RecordGCSumCounters() {
   base::MutexGuard guard(&background_counter_mutex_);
 
-  const double overall_duration =
+  const double atomic_pause_duration = current_.scopes[Scope::MARK_COMPACTOR];
+  const double incremental_marking =
       current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_LAYOUT_CHANGE]
           .duration +
       current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_START]
           .duration +
-      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_SWEEPING]
-          .duration +
       incremental_marking_duration_ +
       current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_FINALIZE]
-          .duration +
-      atomic_pause_duration;
+          .duration;
+  const double incremental_sweeping =
+      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_SWEEPING]
+          .duration;
+  const double overall_duration =
+      atomic_pause_duration + incremental_marking + incremental_sweeping;
   const double background_duration =
       background_counter_[Scope::MC_BACKGROUND_EVACUATE_COPY]
           .total_duration_ms +
@@ -1352,22 +1421,11 @@ void GCTracer::RecordGCSumCounters(double atomic_pause_duration) {
           .total_duration_ms +
       background_counter_[Scope::MC_BACKGROUND_MARKING].total_duration_ms +
       background_counter_[Scope::MC_BACKGROUND_SWEEPING].total_duration_ms;
-
-  const double marking_duration =
-      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_LAYOUT_CHANGE]
-          .duration +
-      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_START]
-          .duration +
-      incremental_marking_duration_ +
-      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_FINALIZE]
-          .duration +
-      current_.scopes[Scope::MC_MARK];
+  const double atomic_marking_duration =
+      current_.scopes[Scope::MC_PROLOGUE] + current_.scopes[Scope::MC_MARK];
+  const double marking_duration = atomic_marking_duration + incremental_marking;
   const double marking_background_duration =
       background_counter_[Scope::MC_BACKGROUND_MARKING].total_duration_ms;
-
-  // UMA.
-  heap_->isolate()->counters()->gc_mark_compactor()->AddSample(
-      static_cast<int>(overall_duration));
 
   // Emit trace event counters.
   TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("v8.gc"),
@@ -1466,7 +1524,11 @@ void GCTracer::ReportFullCycleToRecorder() {
     FlushBatchedIncrementalEvents(incremental_mark_batched_events_,
                                   heap_->isolate());
   }
+
   v8::metrics::GarbageCollectionFullCycle event;
+  event.reason = static_cast<int>(current_.gc_reason);
+
+  // Managed C++ heap statistics:
   if (cpp_heap) {
     cpp_heap->GetMetricRecorder()->FlushBatchedIncrementalEvents();
     const base::Optional<cppgc::internal::MetricRecorder::FullCycle>
@@ -1494,7 +1556,87 @@ void GCTracer::ReportFullCycleToRecorder() {
     event.main_thread_efficiency_cpp_in_bytes_per_us =
         cppgc_event.main_thread_efficiency_in_bytes_per_us;
   }
-  // TODO(chromium:1154636): Populate v8 metrics.
+
+  // Unified heap statistics:
+  const double atomic_pause_duration = current_.scopes[Scope::MARK_COMPACTOR];
+  const double incremental_marking =
+      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_LAYOUT_CHANGE]
+          .duration +
+      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_START]
+          .duration +
+      current_.incremental_marking_duration +
+      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_FINALIZE]
+          .duration;
+  const double incremental_sweeping =
+      current_.incremental_marking_scopes[Scope::MC_INCREMENTAL_SWEEPING]
+          .duration;
+  const double overall_duration =
+      atomic_pause_duration + incremental_marking + incremental_sweeping;
+  const double marking_background_duration =
+      current_.scopes[Scope::MC_BACKGROUND_MARKING];
+  const double sweeping_background_duration =
+      current_.scopes[Scope::MC_BACKGROUND_SWEEPING];
+  const double compact_background_duration =
+      current_.scopes[Scope::MC_BACKGROUND_EVACUATE_COPY] +
+      current_.scopes[Scope::MC_BACKGROUND_EVACUATE_UPDATE_POINTERS];
+  const double background_duration = marking_background_duration +
+                                     sweeping_background_duration +
+                                     compact_background_duration;
+  const double atomic_marking_duration =
+      current_.scopes[Scope::MC_PROLOGUE] + current_.scopes[Scope::MC_MARK];
+  const double marking_duration = atomic_marking_duration + incremental_marking;
+  const double weak_duration = current_.scopes[Scope::MC_CLEAR];
+  const double compact_duration = current_.scopes[Scope::MC_EVACUATE] +
+                                  current_.scopes[Scope::MC_FINISH] +
+                                  current_.scopes[Scope::MC_EPILOGUE];
+  const double atomic_sweeping_duration = current_.scopes[Scope::MC_SWEEP];
+  const double sweeping_duration =
+      atomic_sweeping_duration + incremental_sweeping;
+
+  event.main_thread_atomic.total_wall_clock_duration_in_us =
+      static_cast<int64_t>(atomic_pause_duration *
+                           base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread.total_wall_clock_duration_in_us = static_cast<int64_t>(
+      overall_duration * base::Time::kMicrosecondsPerMillisecond);
+  event.total.total_wall_clock_duration_in_us =
+      static_cast<int64_t>((overall_duration + background_duration) *
+                           base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread_atomic.mark_wall_clock_duration_in_us =
+      static_cast<int64_t>(atomic_marking_duration *
+                           base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread.mark_wall_clock_duration_in_us = static_cast<int64_t>(
+      marking_duration * base::Time::kMicrosecondsPerMillisecond);
+  event.total.mark_wall_clock_duration_in_us =
+      static_cast<int64_t>((marking_duration + marking_background_duration) *
+                           base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread_atomic.weak_wall_clock_duration_in_us =
+      event.main_thread.weak_wall_clock_duration_in_us =
+          event.total.weak_wall_clock_duration_in_us = static_cast<int64_t>(
+              weak_duration * base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread_atomic.compact_wall_clock_duration_in_us =
+      event.main_thread.compact_wall_clock_duration_in_us =
+          static_cast<int64_t>(compact_duration *
+                               base::Time::kMicrosecondsPerMillisecond);
+  event.total.compact_wall_clock_duration_in_us =
+      static_cast<int64_t>((compact_duration + compact_background_duration) *
+                           base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread_atomic.sweep_wall_clock_duration_in_us =
+      static_cast<int64_t>(atomic_sweeping_duration *
+                           base::Time::kMicrosecondsPerMillisecond);
+  event.main_thread.sweep_wall_clock_duration_in_us = static_cast<int64_t>(
+      sweeping_duration * base::Time::kMicrosecondsPerMillisecond);
+  event.total.sweep_wall_clock_duration_in_us =
+      static_cast<int64_t>((sweeping_duration + sweeping_background_duration) *
+                           base::Time::kMicrosecondsPerMillisecond);
+
+  // TODO(chromium:1154636): Populate the following:
+  // - event.main_thread_incremental
+  // - event.objects
+  // - event.memory
+  // - event.collection_rate_in_percent
+  // - event.efficiency_in_bytes_per_us
+  // - event.main_thread_efficiency_in_bytes_per_us
+
   recorder->AddMainThreadEvent(event, GetContextId(heap_->isolate()));
 }
 

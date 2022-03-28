@@ -278,12 +278,12 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         TabSwitcher.Controller controller =
                 mTabSwitcher != null ? mTabSwitcher.getController() : mTasksSurface.getController();
-        mStartSurfaceMediator =
-                new StartSurfaceMediator(controller, mTabModelSelector, mPropertyModel,
-                        mIsStartSurfaceEnabled ? this::initializeSecondaryTasksSurface : null,
-                        mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
-                        this::isActivityFinishingOrDestroyed, excludeMVTiles, excludeQueryTiles,
-                        startSurfaceOneshotSupplier, hadWarmStart, jankTracker);
+        mStartSurfaceMediator = new StartSurfaceMediator(controller, containerView,
+                mTabModelSelector, mPropertyModel,
+                mIsStartSurfaceEnabled ? this::initializeSecondaryTasksSurface : null,
+                mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
+                this::isActivityFinishingOrDestroyed, excludeMVTiles, excludeQueryTiles,
+                startSurfaceOneshotSupplier, hadWarmStart, jankTracker);
 
         // Show feed loading image.
         if (mStartSurfaceMediator.shouldShowFeedPlaceholder()) {
@@ -642,8 +642,9 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // fakeTranslationX is 0;
         int realTranslationX = getPixelSize(R.dimen.location_bar_status_icon_width)
-                + (getPixelSize(R.dimen.location_bar_icon_end_padding_focused)
-                        - getPixelSize(R.dimen.location_bar_icon_end_padding));
+                + getPixelSize(R.dimen.location_bar_icon_end_padding_focused)
+                + (getPixelSize(R.dimen.fake_search_box_lateral_padding)
+                        - getPixelSize(R.dimen.search_box_start_padding));
 
         float fakeTextSize = mActivity.getResources().getDimension(
                 R.dimen.tasks_surface_location_bar_url_text_size);

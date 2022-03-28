@@ -419,12 +419,14 @@ function getTypeFromIOTaskType_(type) {
   switch (type) {
     case chrome.fileManagerPrivate.IOTaskType.COPY:
       return ProgressItemType.COPY;
+    case chrome.fileManagerPrivate.IOTaskType.DELETE:
+      return ProgressItemType.DELETE;
+    case chrome.fileManagerPrivate.IOTaskType.EXTRACT:
+      return ProgressItemType.EXTRACT;
     case chrome.fileManagerPrivate.IOTaskType.MOVE:
       return ProgressItemType.MOVE;
     case chrome.fileManagerPrivate.IOTaskType.ZIP:
       return ProgressItemType.ZIP;
-    case chrome.fileManagerPrivate.IOTaskType.DELETE:
-      return ProgressItemType.DELETE;
     default:
       console.error('Unknown operation type: ' + type);
       return ProgressItemType.TRANSFER;
@@ -445,6 +447,8 @@ function getMessageFromProgressEvent_(event) {
     switch (event.type) {
       case chrome.fileManagerPrivate.IOTaskType.COPY:
         return strf('COPY_FILESYSTEM_ERROR', detail);
+      case chrome.fileManagerPrivate.IOTaskType.EXTRACT:
+        return strf('EXTRACT_FILESYSTEM_ERROR', detail);
       case chrome.fileManagerPrivate.IOTaskType.MOVE:
         return strf('MOVE_FILESYSTEM_ERROR', detail);
       case chrome.fileManagerPrivate.IOTaskType.ZIP:

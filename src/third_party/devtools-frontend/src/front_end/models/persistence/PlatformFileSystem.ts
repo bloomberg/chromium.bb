@@ -23,7 +23,7 @@ export class PlatformFileSystem {
     this.typeInternal = type;
   }
 
-  getMetadata(_path: string): Promise<{modificationTime: Date, size: number}|null> {
+  getMetadata(_path: Platform.DevToolsPath.EncodedPathString): Promise<{modificationTime: Date, size: number}|null> {
     return Promise.resolve(null);
   }
 
@@ -36,6 +36,7 @@ export class PlatformFileSystem {
   }
 
   path(): Platform.DevToolsPath.UrlString {
+    // TODO(crbug.com/1297535): Cast to UrlString will be removed when migration to branded types is complete.
     return this.pathInternal as Platform.DevToolsPath.UrlString;
   }
 
@@ -48,31 +49,35 @@ export class PlatformFileSystem {
     return this.typeInternal;
   }
 
-  async createFile(_path: string, _name: string|null): Promise<string|null> {
+  async createFile(_path: Platform.DevToolsPath.EncodedPathString, _name: Platform.DevToolsPath.RawPathString|null):
+      Promise<Platform.DevToolsPath.EncodedPathString|null> {
     return Promise.resolve(null);
   }
 
-  deleteFile(_path: string): Promise<boolean> {
+  deleteFile(_path: Platform.DevToolsPath.EncodedPathString): Promise<boolean> {
     return Promise.resolve(false);
   }
 
-  requestFileBlob(_path: string): Promise<Blob|null> {
+  requestFileBlob(_path: Platform.DevToolsPath.EncodedPathString): Promise<Blob|null> {
     return Promise.resolve(null as Blob | null);
   }
 
-  async requestFileContent(_path: string): Promise<TextUtils.ContentProvider.DeferredContent> {
+  async requestFileContent(_path: Platform.DevToolsPath.EncodedPathString):
+      Promise<TextUtils.ContentProvider.DeferredContent> {
     return {content: null, error: i18nString(UIStrings.unableToReadFilesWithThis), isEncoded: false};
   }
 
-  setFileContent(_path: string, _content: string, _isBase64: boolean): void {
+  setFileContent(_path: Platform.DevToolsPath.EncodedPathString, _content: string, _isBase64: boolean): void {
     throw new Error('Not implemented');
   }
 
-  renameFile(_path: string, _newName: string, callback: (arg0: boolean, arg1?: string|undefined) => void): void {
+  renameFile(
+      _path: Platform.DevToolsPath.EncodedPathString, _newName: Platform.DevToolsPath.RawPathString,
+      callback: (arg0: boolean, arg1?: string|undefined) => void): void {
     callback(false);
   }
 
-  addExcludedFolder(_path: string): void {
+  addExcludedFolder(_path: Platform.DevToolsPath.EncodedPathString): void {
   }
 
   removeExcludedFolder(_path: string): void {
@@ -81,7 +86,7 @@ export class PlatformFileSystem {
   fileSystemRemoved(): void {
   }
 
-  isFileExcluded(_folderPath: string): boolean {
+  isFileExcluded(_folderPath: Platform.DevToolsPath.EncodedPathString): boolean {
     return false;
   }
 
@@ -103,7 +108,7 @@ export class PlatformFileSystem {
     throw new Error('Not implemented');
   }
 
-  canExcludeFolder(_path: string): boolean {
+  canExcludeFolder(_path: Platform.DevToolsPath.EncodedPathString): boolean {
     return false;
   }
 

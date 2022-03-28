@@ -1,9 +1,4 @@
 {
-  "$build/chromium_tests": {
-    "project_trigger_overrides": {
-      "chromium": "chromium-m100"
-    }
-  },
   "$build/goma": {
     "enable_ats": true,
     "rpc_extra_params": "?prod",
@@ -17,7 +12,7 @@
       "v.test_suite"
     ]
   },
-  "builder_group": "chromium.chromiumos",
+  "builder_group": "chromium.fyi",
   "recipe": "chromium",
   "sheriff_rotations": [
     "chrome_browser_release"

@@ -25,6 +25,7 @@ class NGInlineChildLayoutContext;
 class NGInlineNode;
 class NGInlineItem;
 class NGInlineLayoutStateStack;
+class NGLineBreaker;
 class NGLineInfo;
 struct NGInlineBoxState;
 struct NGInlineItemResult;
@@ -49,6 +50,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   void CreateLine(const NGLineLayoutOpportunity&,
                   NGLineInfo*,
                   NGLogicalLineItems* line_box,
+                  NGLineBreaker*,
                   LayoutUnit* ruby_block_start_adjust);
 
   const NGLayoutResult* Layout() override;
@@ -111,7 +113,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                             const FontHeight&,
                             const NGLineLayoutOpportunity&,
                             LayoutUnit ruby_block_start_adjust,
-                            NGLogicalLineItems* line_box);
+                            NGLogicalLineItems* line_box,
+                            NGLineBreaker*);
   void PlaceRelativePositionedItems(NGLogicalLineItems* line_box);
   void PlaceListMarker(const NGInlineItem&,
                        NGInlineItemResult*,
@@ -134,7 +137,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   NGInlineChildLayoutContext* context_;
 
   NGMarginStrut end_margin_strut_;
-  NGExclusionSpace exclusion_space_;
   absl::optional<int> lines_until_clamp_;
 
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;

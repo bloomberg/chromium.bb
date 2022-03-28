@@ -318,6 +318,30 @@ export const TypeBool = new ScalarType('bool', 4, (buf: Uint8Array, offset: numb
   bool(new Uint32Array(buf.buffer, offset)[0] !== 0)
 );
 
+/** @returns the ScalarType from the ScalarKind */
+export function scalarType(kind: ScalarKind): ScalarType {
+  switch (kind) {
+    case 'f32':
+      return TypeF32;
+    case 'f16':
+      return TypeF16;
+    case 'u32':
+      return TypeU32;
+    case 'u16':
+      return TypeU16;
+    case 'u8':
+      return TypeU8;
+    case 'i32':
+      return TypeI32;
+    case 'i16':
+      return TypeI16;
+    case 'i8':
+      return TypeI8;
+    case 'bool':
+      return TypeBool;
+  }
+}
+
 /** @returns the number of scalar (element) types of the given Type */
 export function numElementsOf(ty: Type): number {
   if (ty instanceof ScalarType) {

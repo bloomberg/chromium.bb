@@ -260,6 +260,11 @@ export class UserMetrics {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
         EnumeratedHistogram.RecordingExported, value, RecordingExported.MaxValue);
   }
+
+  styleTextCopied(value: StyleTextCopied): void {
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+        EnumeratedHistogram.StyleTextCopied, value, StyleTextCopied.MaxValue);
+  }
 }
 
 /**
@@ -380,7 +385,29 @@ export enum PanelCodes {
   'settings-keybinds' = 38,
   'cssoverview' = 39,
   'chrome_recorder' = 40,
-  MaxValue = 41,
+  'trust_tokens' = 41,
+  'reporting_api' = 42,
+  'interest_groups' = 43,
+  'back_forward_cache' = 44,
+  'service_worker_cache' = 45,
+  'background_service_backgroundFetch' = 46,
+  'background_service_backgroundSync' = 47,
+  'background_service_pushMessaging' = 48,
+  'background_service_notifications' = 49,
+  'background_service_paymentHandler' = 50,
+  'background_service_periodicBackgroundSync' = 51,
+  'service_workers' = 52,
+  'app_manifest' = 53,
+  'storage' = 54,
+  'cookies' = 55,
+  'frame_details' = 56,
+  'frame_resource' = 57,
+  'frame_window' = 58,
+  'frame_worker' = 59,
+  'dom_storage' = 60,
+  'indexed_db' = 61,
+  'web_sql' = 62,
+  MaxValue = 63,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -588,8 +615,9 @@ export enum DevtoolsExperiments {
   'headerOverrides' = 56,
   'lighthousePanelFR' = 57,
   'evaluateExpressionsWithSourceMaps' = 58,
+  'cssLayers' = 59,
   // Increment this when new experiments are added.
-  'MaxValue' = 59,
+  'MaxValue' = 60,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -598,7 +626,7 @@ export enum DevtoolsExperiments {
 export enum IssueExpanded {
   CrossOriginEmbedderPolicy = 0,
   MixedContent = 1,
-  SameSiteCookie = 2,
+  Cookie = 2,
   HeavyAd = 3,
   ContentSecurityPolicy = 4,
   Other = 5,
@@ -645,28 +673,28 @@ export enum IssueCreated {
   'CrossOriginEmbedderPolicyIssue::CorpNotSameOrigin' = 11,
   'CrossOriginEmbedderPolicyIssue::CorpNotSameOriginAfterDefaultedToSameOriginByCoep' = 12,
   'CrossOriginEmbedderPolicyIssue::CorpNotSameSite' = 13,
-  'SameSiteCookieIssue::ExcludeSameSiteNoneInsecure::ReadCookie' = 14,
-  'SameSiteCookieIssue::ExcludeSameSiteNoneInsecure::SetCookie' = 15,
-  'SameSiteCookieIssue::WarnSameSiteNoneInsecure::ReadCookie' = 16,
-  'SameSiteCookieIssue::WarnSameSiteNoneInsecure::SetCookie' = 17,
-  'SameSiteCookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure' = 18,
-  'SameSiteCookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure' = 19,
-  'SameSiteCookieIssue::WarnCrossDowngrade::ReadCookie::Secure' = 20,
-  'SameSiteCookieIssue::WarnCrossDowngrade::ReadCookie::Insecure' = 21,
-  'SameSiteCookieIssue::WarnCrossDowngrade::SetCookie::Secure' = 22,
-  'SameSiteCookieIssue::WarnCrossDowngrade::SetCookie::Insecure' = 23,
-  'SameSiteCookieIssue::ExcludeNavigationContextDowngrade::Secure' = 24,
-  'SameSiteCookieIssue::ExcludeNavigationContextDowngrade::Insecure' = 25,
-  'SameSiteCookieIssue::ExcludeContextDowngrade::ReadCookie::Secure' = 26,
-  'SameSiteCookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure' = 27,
-  'SameSiteCookieIssue::ExcludeContextDowngrade::SetCookie::Secure' = 28,
-  'SameSiteCookieIssue::ExcludeContextDowngrade::SetCookie::Insecure' = 29,
-  'SameSiteCookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie' = 30,
-  'SameSiteCookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie' = 31,
-  'SameSiteCookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie' = 32,
-  'SameSiteCookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::SetCookie' = 33,
-  'SameSiteCookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::ReadCookie' = 34,
-  'SameSiteCookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie' = 35,
+  'CookieIssue::ExcludeSameSiteNoneInsecure::ReadCookie' = 14,
+  'CookieIssue::ExcludeSameSiteNoneInsecure::SetCookie' = 15,
+  'CookieIssue::WarnSameSiteNoneInsecure::ReadCookie' = 16,
+  'CookieIssue::WarnSameSiteNoneInsecure::SetCookie' = 17,
+  'CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Secure' = 18,
+  'CookieIssue::WarnSameSiteStrictLaxDowngradeStrict::Insecure' = 19,
+  'CookieIssue::WarnCrossDowngrade::ReadCookie::Secure' = 20,
+  'CookieIssue::WarnCrossDowngrade::ReadCookie::Insecure' = 21,
+  'CookieIssue::WarnCrossDowngrade::SetCookie::Secure' = 22,
+  'CookieIssue::WarnCrossDowngrade::SetCookie::Insecure' = 23,
+  'CookieIssue::ExcludeNavigationContextDowngrade::Secure' = 24,
+  'CookieIssue::ExcludeNavigationContextDowngrade::Insecure' = 25,
+  'CookieIssue::ExcludeContextDowngrade::ReadCookie::Secure' = 26,
+  'CookieIssue::ExcludeContextDowngrade::ReadCookie::Insecure' = 27,
+  'CookieIssue::ExcludeContextDowngrade::SetCookie::Secure' = 28,
+  'CookieIssue::ExcludeContextDowngrade::SetCookie::Insecure' = 29,
+  'CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::ReadCookie' = 30,
+  'CookieIssue::ExcludeSameSiteUnspecifiedTreatedAsLax::SetCookie' = 31,
+  'CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::ReadCookie' = 32,
+  'CookieIssue::WarnSameSiteUnspecifiedLaxAllowUnsafe::SetCookie' = 33,
+  'CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::ReadCookie' = 34,
+  'CookieIssue::WarnSameSiteUnspecifiedCrossSiteContext::SetCookie' = 35,
   'SharedArrayBufferIssue::TransferIssue' = 36,
   'SharedArrayBufferIssue::CreationIssue' = 37,
   'TrustedWebActivityIssue::kHttpError' = 38,
@@ -902,4 +930,21 @@ export enum ConsoleShowsCorsErrors {
   'true' = 1,
   MaxValue = 2,
 }
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum StyleTextCopied {
+  DeclarationViaChangedLine = 1,
+  AllChangesViaStylesPane = 2,
+  DeclarationViaContextMenu = 3,
+  PropertyViaContextMenu = 4,
+  ValueViaContextMenu = 5,
+  DeclarationAsJSViaContextMenu = 6,
+  RuleViaContextMenu = 7,
+  AllDeclarationsViaContextMenu = 8,
+  AllDeclarationsAsJSViaContextMenu = 9,
+  SelectorViaContextMenu = 10,
+  MaxValue = 11,
+}
+
 /* eslint-enable @typescript-eslint/naming-convention */

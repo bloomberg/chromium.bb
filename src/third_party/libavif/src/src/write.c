@@ -86,6 +86,7 @@ typedef struct avifEncoderItem
     avifCodecConfigurationBox av1C;       // Harvested in avifEncoderFinish(), if encodeOutput has samples
     uint32_t cellIndex;                   // Which row-major cell index corresponds to this item. ignored on non-av01 types
     avifBool alpha;
+    avifBool hiddenImage; // A hidden image item has (flags & 1) equal to 1 in its ItemInfoEntry.
 
     const char * infeName;
     size_t infeNameSize;
@@ -486,6 +487,7 @@ static void avifEncoderWriteTrackMetaBox(avifEncoder * encoder, avifRWStream * s
             continue;
         }
 
+        assert(!item->hiddenImage);
         avifBoxMarker infe = avifRWStreamWriteFullBox(s, "infe", AVIF_BOX_SIZE_TBD, 2, 0);
         avifRWStreamWriteU16(s, item->id);                             // unsigned int(16) item_ID;
         avifRWStreamWriteU16(s, 0);                                    // unsigned int(16) item_protection_index;
@@ -654,6 +656,7 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
 
             if (cellCount > 1) {
                 item->dimgFromID = gridColorID;
+                item->hiddenImage = AVIF_TRUE;
             } else {
                 encoder->data->primaryItemID = item->id;
             }
@@ -712,6 +715,7 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
 
                 if (cellCount > 1) {
                     item->dimgFromID = gridAlphaID;
+                    item->hiddenImage = AVIF_TRUE;
                 } else {
                     item->irefToID = encoder->data->primaryItemID;
                     item->irefType = "auxl";
@@ -876,7 +880,7 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
             const avifEncodeSample * firstSample = &item->encodeOutput->samples.sample[0];
             avifSequenceHeader sequenceHeader;
             if (avifSequenceHeaderParse(&sequenceHeader, (const avifROData *)&firstSample->data)) {
-                memcpy(&item->av1C, &sequenceHeader.av1C, sizeof(avifCodecConfigurationBox));
+                item->av1C = sequenceHeader.av1C;
             } else {
                 // This must be an invalid AV1 payload
                 return item->alpha ? AVIF_RESULT_ENCODE_ALPHA_FAILED : AVIF_RESULT_ENCODE_COLOR_FAILED;
@@ -911,6 +915,7 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
     if (encoder->data->frames.count > 1) {                                 //
         avifRWStreamWriteChars(&s, "avis", 4);                             // ... compatible_brands[]
         avifRWStreamWriteChars(&s, "msf1", 4);                             // ... compatible_brands[]
+        avifRWStreamWriteChars(&s, "iso8", 4);                             // ... compatible_brands[]
     }                                                                      //
     avifRWStreamWriteChars(&s, "mif1", 4);                                 // ... compatible_brands[]
     avifRWStreamWriteChars(&s, "miaf", 4);                                 // ... compatible_brands[]
@@ -993,7 +998,8 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
     for (uint32_t itemIndex = 0; itemIndex < encoder->data->items.count; ++itemIndex) {
         avifEncoderItem * item = &encoder->data->items.item[itemIndex];
 
-        avifBoxMarker infe = avifRWStreamWriteFullBox(&s, "infe", AVIF_BOX_SIZE_TBD, 2, 0);
+        uint32_t flags = item->hiddenImage ? 1 : 0;
+        avifBoxMarker infe = avifRWStreamWriteFullBox(&s, "infe", AVIF_BOX_SIZE_TBD, 2, flags);
         avifRWStreamWriteU16(&s, item->id);                             // unsigned int(16) item_ID;
         avifRWStreamWriteU16(&s, 0);                                    // unsigned int(16) item_protection_index;
         avifRWStreamWrite(&s, item->type, 4);                           // unsigned int(32) item_type;
@@ -1079,7 +1085,7 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
                 avifEncoderItem * dedupItem = &encoder->data->items.item[dedupIndex];
                 if (item->dimgFromID == dedupItem->dimgFromID) {
                     // We've already written dedup's items out. Steal their ipma indices and move on!
-                    memcpy(&item->ipma, &dedupItem->ipma, sizeof(struct ipmaArray));
+                    item->ipma = dedupItem->ipma;
                     foundPreviousCell = AVIF_TRUE;
                     break;
                 }
@@ -1180,7 +1186,19 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
     // Write tracks (if an image sequence)
 
     if (encoder->data->frames.count > 1) {
-        static const uint32_t unityMatrix[9] = { 0x00010000, 0, 0, 0, 0x00010000, 0, 0, 0, 0x40000000 };
+        static const uint8_t unityMatrix[9][4] = {
+            /* clang-format off */
+            { 0x00, 0x01, 0x00, 0x00 },
+            { 0 },
+            { 0 },
+            { 0 },
+            { 0x00, 0x01, 0x00, 0x00 },
+            { 0 },
+            { 0 },
+            { 0 },
+            { 0x40, 0x00, 0x00, 0x00 }
+            /* clang-format on */
+        };
 
         uint64_t durationInTimescales = 0;
         for (uint32_t frameIndex = 0; frameIndex < encoder->data->frames.count; ++frameIndex) {
@@ -1366,6 +1384,15 @@ avifResult avifEncoderFinish(avifEncoder * encoder, avifRWData * output)
             if (!item->alpha) {
                 avifEncoderWriteColorProperties(&s, imageMetadata, NULL, NULL);
             }
+
+            avifBoxMarker ccst = avifRWStreamWriteFullBox(&s, "ccst", AVIF_BOX_SIZE_TBD, 0, 0);
+            const uint8_t ccstValue = (0 << 7) | // unsigned int(1) all_ref_pics_intra;
+                                      (1 << 6) | // unsigned int(1) intra_pred_used;
+                                      (15 << 2); // unsigned int(4) max_ref_per_pic;
+            avifRWStreamWriteU8(&s, ccstValue);
+            avifRWStreamWriteZeros(&s, 3); // unsigned int(26) reserved; (two zero bits are written along with ccstValue).
+            avifRWStreamFinishBox(&s, ccst);
+
             avifRWStreamFinishBox(&s, av01);
             avifRWStreamFinishBox(&s, stsd);
 

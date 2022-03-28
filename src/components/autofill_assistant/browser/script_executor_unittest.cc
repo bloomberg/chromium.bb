@@ -744,6 +744,29 @@ TEST_F(ScriptExecutorTest, StopAfterEnd) {
   executor_->Run(&user_data_, executor_callback_.Get());
 }
 
+TEST_F(ScriptExecutorTest, StopClearsUnexecutedActions) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_stop();
+  actions_response.add_actions()->mutable_tell()->set_message("should not run");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
+                      RunOnceCallback<5>(net::HTTP_OK, "")));
+  EXPECT_CALL(executor_callback_,
+              Run(AllOf(Field(&ScriptExecutor::Result::success, true),
+                        Field(&ScriptExecutor::Result::at_end,
+                              ScriptExecutor::SHUTDOWN))));
+  executor_->Run(&user_data_, executor_callback_.Get());
+
+  EXPECT_NE(ui_delegate_.GetStatusMessage(), "should not run");
+  ASSERT_EQ(processed_actions_capture.size(), 1u);
+  EXPECT_EQ(processed_actions_capture[0].action(), actions_response.actions(0));
+}
+
 TEST_F(ScriptExecutorTest, InterruptActionListOnError) {
   ActionsResponseProto initial_actions_response;
   initial_actions_response.add_actions()->mutable_tell()->set_message(
@@ -1927,94 +1950,6 @@ TEST_F(ScriptExecutorTest, InterceptUserActions) {
 
   (*ui_delegate_.GetUserActions())[0].RunCallback();
   EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
-}
-
-TEST_F(ScriptExecutorTest, PauseAndResume) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()->mutable_tell()->set_message("Tell");
-  actions_response.add_actions()
-      ->mutable_prompt()
-      ->add_choices()
-      ->mutable_chip()
-      ->set_text("Chip");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-
-  executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ("Tell", ui_delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
-
-  executor_->OnPause("Paused", "Button");
-  EXPECT_EQ("Paused", ui_delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::STOPPED, delegate_.GetState());
-  ASSERT_THAT(*ui_delegate_.GetUserActions(), SizeIs(1));
-  EXPECT_THAT(
-      *ui_delegate_.GetUserActions(),
-      ElementsAre(Property(&UserAction::chip,
-                           AllOf(Field(&Chip::text, StrEq("Button")),
-                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
-
-  (*ui_delegate_.GetUserActions())[0].RunCallback();
-  EXPECT_EQ("Tell", ui_delegate_.GetStatusMessage());
-  EXPECT_THAT(delegate_.GetStateHistory(),
-              ElementsAre(AutofillAssistantState::PROMPT,
-                          AutofillAssistantState::STOPPED,
-                          AutofillAssistantState::RUNNING,
-                          AutofillAssistantState::PROMPT));
-}
-
-TEST_F(ScriptExecutorTest, PauseAndResumeWithOngoingAction) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()->mutable_tell()->set_message("Tell");
-  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
-  wait_for_dom->set_timeout_ms(5000);
-  *wait_for_dom->mutable_wait_condition()->mutable_match() =
-      ToSelectorProto("element");
-  auto* prompt = actions_response.add_actions()->mutable_prompt();
-  prompt->set_message("Prompt");
-  prompt->add_choices()->mutable_chip()->set_text("Chip");
-  actions_response.add_actions()->mutable_tell()->set_message("Finished");
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(net::HTTP_OK, Serialize(actions_response)));
-
-  // At first we don't find the element, to keep the |WaitForDomAction| running.
-  EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
-      .WillOnce(
-          RunOnceCallback<2>(ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
-
-  executor_->Run(&user_data_, executor_callback_.Get());
-  EXPECT_EQ("Tell", ui_delegate_.GetStatusMessage());
-  EXPECT_THAT(delegate_.GetState(), Not(Eq(AutofillAssistantState::PROMPT)));
-
-  executor_->OnPause("Paused", "Button");
-  EXPECT_EQ("Paused", ui_delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::STOPPED, delegate_.GetState());
-  ASSERT_THAT(*ui_delegate_.GetUserActions(), SizeIs(1));
-  EXPECT_THAT(
-      *ui_delegate_.GetUserActions(),
-      ElementsAre(Property(&UserAction::chip,
-                           AllOf(Field(&Chip::text, StrEq("Button")),
-                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
-
-  // Resume, this should not restart the |WaitForDomAction|, it should also
-  // not advance to the next action (i.e. |PromptAction|), so the status
-  // status message is the one from |TellAction|.
-  EXPECT_CALL(mock_web_controller_, FindElement(_, _, _)).Times(0);
-  (*ui_delegate_.GetUserActions())[0].RunCallback();
-  EXPECT_EQ("Tell", ui_delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
-
-  // We have resumed, the |WaitForDom| should now finish and advance the script.
-  EXPECT_CALL(mock_web_controller_, FindElement(Selector({"element"}), _, _))
-      .WillOnce(WithArgs<2>([](auto&& callback) {
-        std::move(callback).Run(OkClientStatus(),
-                                std::make_unique<ElementFinder::Result>());
-      }));
-  task_environment_.FastForwardBy(base::Milliseconds(1000));
-  EXPECT_EQ("Prompt", ui_delegate_.GetStatusMessage());
-  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
 }
 
 TEST_F(ScriptExecutorTest, RoundtripTimingStats) {

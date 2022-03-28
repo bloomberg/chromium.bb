@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">បន្ទាប់</translation>
 <translation id="1209796539517632982">ម៉ាស៊ីនមេដែលមានឈ្មោះស្វ័យប្រវត្តិ</translation>
 <translation id="1210831758834677569">ភាសា​ឡាវ</translation>
+<translation id="1223825810409523901">កម្មវិធីបន្ថែមលើ Chrome</translation>
 <translation id="1243314992276662751">ទាញឡើង</translation>
 <translation id="1249250836236328755">ប្រភេទ</translation>
 <translation id="1254593899333212300">ការភ្ជាប់អ៊ីនធឺណិតផ្ទាល់</translation>
@@ -61,6 +62,7 @@
 <translation id="1497522201463361063">មិនអាចប្តូរឈ្មោះ "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">ភាសា​អង់គ្លេស (សហរដ្ឋអាមេរិក) ដែលប្រើ​ក្ដារចុច Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - ម៉ាស៊ីន</translation>
+<translation id="1521655867290435174">Google បញ្ជី</translation>
 <translation id="1538729222189715449">កំពុងបើក​ឯកសារ Linux...</translation>
 <translation id="1547964879613821194">ភាសាអង់គ្លេសកាណាដា</translation>
 <translation id="1556189134700913550">អនុវត្តទៅទាំងអស់</translation>
@@ -79,6 +81,7 @@
 <translation id="166439687370499867">ការផ្លាស់ប្តូរការកំណត់រចនាសម្ព័ន្ធបណ្តាញដែលបានចែករំលែកមិនត្រូវបានអនុញ្ញាតទេ</translation>
 <translation id="1665611772925418501">ឯកសារនេះមិនអាចកែសម្រួលទេ។</translation>
 <translation id="1673103856845176271">ឯកសារនេះមិនអាចត្រូវបានចូលប្រើទេដោយសារហេតុផលសុវត្ថិភាព។</translation>
+<translation id="16762847117768727">រូបភាព ISO</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">កំពុងជិះកង់</translation>
 <translation id="1722487484194605434">កំពុងបង្រួមធាតុ <ph name="NUMBER_OF_ITEMS" /> ...</translation>
@@ -184,7 +187,6 @@
 <translation id="2544853746127077729">វិញ្ញាបនប័ត្រសម្គាល់អត្តសញ្ញាណត្រូវបានបដិសេធដោយបណ្តាញ</translation>
 <translation id="2547921442987553570">បន្ថែមទៅ <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">US អន្តរជាតិ</translation>
-<translation id="2562685439590298522">ឯកសារ</translation>
 <translation id="2563185590376525700">កង្កែប</translation>
 <translation id="2578394532502990878">សូរសព្ទជាភាសា​តាមិល</translation>
 <translation id="2579959351793446050">ភាសា​អូឌៀ</translation>
@@ -220,9 +222,7 @@
 <translation id="2902734494705624966">US extended</translation>
 <translation id="290843123675549676">ភាសា​ម៉ារ៉ាទី</translation>
 <translation id="2923240520113693977">ភាសាអេស្តូនី</translation>
-<translation id="2925966894897775835">បញ្ជីតារាង</translation>
 <translation id="2938685643439809023">ភាសាមុងហ្គោលី</translation>
-<translation id="2943400156390503548">ស្លាយ៍</translation>
 <translation id="2943503720238418293">ប្រើ​ឈ្មោះ​ខ្លី​ជាងនេះ</translation>
 <translation id="2949781154072577687">កំពុងសម្អាត <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">ខ្ញែសមុទ្រ</translation>
@@ -384,6 +384,7 @@
 <translation id="4380245540200674032">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
 <translation id="4387004326333427325">វិញ្ញាបនប័ត្រសម្គាល់អត្តសញ្ញាណបានបដិសេធពីចម្ងាយ</translation>
 <translation id="4394214039309501350">តំណ​ខាង​ក្រៅ</translation>
+<translation id="4401287888955153199">ដកទាំងអស់</translation>
 <translation id="4418686080762064601">បង្កើត​ផ្លូវកាត់​សម្រាប់​ឯកសារ​របស់អ្នក</translation>
 <translation id="4425149324548788773">ដ្រាយរបស់ខ្ញុំ</translation>
 <translation id="4439427728133035643">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ភ្ជាប់</translation>
@@ -413,6 +414,7 @@
 <translation id="4656777537938206294">កំណត់ឱ្យ​អាចប្រើ​ឯកសារបាន​ពេលគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="4658782175094886150">មនុស្ស​នៅក្រោម​ព្រិលធ្លាក់</translation>
 <translation id="4669606053856530811">សមាជិករបស់ '<ph name="SOURCE_NAME" />' នឹងបាត់បង់សិទ្ធិ​ចូលប្រើ ប្រសិនបើធាតុទាំងនេះ​មិនត្រូវបានចែករំលែកដល់ពួកគេទេ។</translation>
+<translation id="467809019005607715">Google បទបង្ហាញ</translation>
 <translation id="4690246192099372265">ភាសាស៊ុយអែដ</translation>
 <translation id="4693155481716051732">ស៊ូស៊ី</translation>
 <translation id="4694604912444486114">ស្វា</translation>
@@ -656,6 +658,7 @@
 <translation id="6732801395666424405">វិញ្ញាបនប័ត្រមិនត្រូវបានដំណើរការទេ</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">បានជ្រើសថតឯកសារ 1</translation>
+<translation id="6755827872271341378">ឧបករណ៍ ChromeOS Flex</translation>
 <translation id="6790428901817661496">លេង</translation>
 <translation id="6795884519221689054">ខ្លាឃ្មុំ​ផេនដា</translation>
 <translation id="6806699711453372963">គ្រប់គ្រង​ការចែករំលែក Linux</translation>
@@ -733,6 +736,7 @@
 <translation id="7343393116438664539">ភាសាវៀតណាម​ថេឡិច</translation>
 <translation id="7359359531237882347">កំពុង​ចម្លងធាតុ <ph name="NUMBER_OF_ITEMS" /> ...</translation>
 <translation id="7375951387215729722">បញ្ជី​ឯកសារ​ដែលតម្រៀប​តាមលំដាប់​ចុះនៃ <ph name="COLUMN_NAME" /> ។</translation>
+<translation id="7402503521691663770">ឧបករណ៍ ChromeOS Flex</translation>
 <translation id="7408870451288633753">ភាសា​ឆែក</translation>
 <translation id="7417453074306512035">ក្តារចុចអេត្យូពី</translation>
 <translation id="7417705661718309329">Google ផែនទី</translation>
@@ -808,6 +812,7 @@
 <translation id="7925686952655276919">កុំប្រើទិន្នន័យទូរស័ព្ទសម្រាប់ធ្វើសមកម្ម</translation>
 <translation id="7928710562641958568">បញ្ចេញឧបករណ៍</translation>
 <translation id="7943385054491506837">US Colemak</translation>
+<translation id="7948417415021769876">បណ្ណសារ 7z</translation>
 <translation id="7953739707111622108">ឧបករណ៍នេះមិនអាចបើកទេ ពីព្រោះប្រព័ន្ធឯកសាររបស់វាមិនត្រូវបានស្គាល់ទេ។</translation>
 <translation id="7969525169268594403">ភាសាស្លូវ៉ានី</translation>
 <translation id="7972920761225148017">ភាសា​បារាំង (ស្វ៊ីស)</translation>
@@ -822,6 +827,7 @@
 <translation id="8042602468072383151">សំឡេង <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">ភាសារូម៉ានី</translation>
 <translation id="8049184478152619004">បញ្ចូលកូដឈប់​ទប់ស្កាត់ផ្ទាល់ខ្លួន (PUK)</translation>
+<translation id="807187749540895545">កំពុងស្រង់ <ph name="FILE_NAME" />...</translation>
 <translation id="8079530767338315840">ចាក់ឡើងវិញ</translation>
 <translation id="8087576439476816834">ទាញយក, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">បានចែករំលែកជាមួយខ្ញុំ</translation>
@@ -856,6 +862,7 @@
 <translation id="8372369524088641025">សោ WEP មិនល្អ</translation>
 <translation id="8372852072747894550">ភាសា​ក្រិក</translation>
 <translation id="8386903983509584791">ការស្កេនបានបញ្ចប់</translation>
+<translation id="8387733224523483503">បានស្រង់ <ph name="FILE_NAME" />។</translation>
 <translation id="8395901698320285466">ទំហំ</translation>
 <translation id="8408068190360279472">បណ្ដាញ <ph name="NETWORK_TYPE" />, កំពុង​ភ្ជាប់</translation>
 <translation id="8425213833346101688">ប្តូរ</translation>
@@ -873,6 +880,7 @@
 <translation id="8484284835977497781">ជ្រើសរើសពី​រូបថតថ្មីៗ​របស់អ្នក។</translation>
 <translation id="8487700953926739672">មាននៅក្រៅបណ្តាញ</translation>
 <translation id="8492972329130824181">មិនអាចប្រើបណ្ដាញ​​នៅផ្ទះបានទេ។ ត្រូវតែបើកការ​រ៉ូមីង​ទិន្នន័យទូរសព្ទចល័ត ដើម្បីភ្ជាប់។</translation>
+<translation id="8499098729323186194">កំពុងស្រង់ធាតុ <ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="8521441079177373948">ភាសាអង់គ្លេស</translation>
 <translation id="8525306231823319788">ពេញអេក្រង់</translation>
 <translation id="853494022971700746">ភាសា​បារាំង (បារាំង)</translation>
@@ -947,7 +955,9 @@
 <translation id="9172592259078059678">ការសរសេរតាម​សូរសព្ទជាភាសា​គូចារ៉ាទី</translation>
 <translation id="9173120999827300720">ភាសា​អង់គ្លេស (សហរដ្ឋអាមេរិក) ដែលប្រើ​ក្ដារចុចអន្តរជាតិ</translation>
 <translation id="9174050671906956834">ធាតុ​នៅ​ក្នុង​ធុង​សំរាម​ត្រូវ​បាន​លុបចោល​រហូត​ក្រោយ​ពេល 30 ថ្ងៃ។</translation>
+<translation id="9183302530794969518">Google ឯកសារ</translation>
 <translation id="9189836632794948435">ភាសា​កាហ្សាក់</translation>
+<translation id="9200427192836333033">បានស្រង់ធាតុ <ph name="NUMBER_OF_ITEMS" />។</translation>
 <translation id="9213073329713032541">បានចាប់ផ្ដើម​ការដំឡើង​ដោយជោគជ័យហើយ។</translation>
 <translation id="9219103736887031265">រូបភាព</translation>
 <translation id="9219908252191632183">ទេសភាព​ភព​ព្រះចន្ទ</translation>

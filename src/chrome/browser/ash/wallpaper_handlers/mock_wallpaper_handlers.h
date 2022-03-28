@@ -33,8 +33,12 @@ class MockGooglePhotosAlbumsFetcher : public GooglePhotosAlbumsFetcher {
 
   MOCK_METHOD(GooglePhotosAlbumsCbkArgs,
               ParseResponse,
-              (absl::optional<base::Value> response),
+              (const base::Value::Dict* response),
               (override));
+
+  // Overridden to increase visibility.
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosAlbumsCbkArgs& result) override;
 };
 
 // Fetcher that returns a dummy value for the number of photos in a user's
@@ -57,8 +61,40 @@ class MockGooglePhotosCountFetcher : public GooglePhotosCountFetcher {
 
   MOCK_METHOD(int,
               ParseResponse,
-              (absl::optional<base::Value> response),
+              (const base::Value::Dict* response),
               (override));
+
+  // Overridden to increase visibility.
+  absl::optional<size_t> GetResultCount(const int& result) override;
+};
+
+// Fetcher that claims the user is allowed to access Google Photos data. Used to
+// avoid network requests in unit tests.
+class MockGooglePhotosEnabledFetcher : public GooglePhotosEnabledFetcher {
+ public:
+  explicit MockGooglePhotosEnabledFetcher(Profile* profile);
+
+  MockGooglePhotosEnabledFetcher(const MockGooglePhotosEnabledFetcher&) =
+      delete;
+  MockGooglePhotosEnabledFetcher& operator=(
+      const MockGooglePhotosEnabledFetcher&) = delete;
+
+  ~MockGooglePhotosEnabledFetcher() override;
+
+  // GooglePhotosEnabledFetcher:
+  MOCK_METHOD(void,
+              AddRequestAndStartIfNecessary,
+              (base::OnceCallback<void(GooglePhotosEnablementState)> callback),
+              (override));
+
+  MOCK_METHOD(GooglePhotosEnablementState,
+              ParseResponse,
+              (const base::Value::Dict* response),
+              (override));
+
+  // Overridden to increase visibility.
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosEnablementState& result) override;
 };
 
 // Fetcher that returns an empty photo list and no resume token in response to a
@@ -85,8 +121,12 @@ class MockGooglePhotosPhotosFetcher : public GooglePhotosPhotosFetcher {
 
   MOCK_METHOD(GooglePhotosPhotosCbkArgs,
               ParseResponse,
-              (absl::optional<base::Value> response),
+              (const base::Value::Dict* response),
               (override));
+
+  // Overridden to increase visibility.
+  absl::optional<size_t> GetResultCount(
+      const GooglePhotosPhotosCbkArgs& result) override;
 };
 
 }  // namespace wallpaper_handlers

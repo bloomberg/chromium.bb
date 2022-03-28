@@ -59,14 +59,12 @@ TargetRateConstraints ConvertConstraints(const BitrateConstraints& contraints,
                             contraints.start_bitrate_bps, clock);
 }
 
-bool IsEnabled(const WebRtcKeyValueConfig* trials, absl::string_view key) {
-  RTC_DCHECK(trials != nullptr);
-  return absl::StartsWith(trials->Lookup(key), "Enabled");
+bool IsEnabled(const WebRtcKeyValueConfig& trials, absl::string_view key) {
+  return absl::StartsWith(trials.Lookup(key), "Enabled");
 }
 
-bool IsDisabled(const WebRtcKeyValueConfig* trials, absl::string_view key) {
-  RTC_DCHECK(trials != nullptr);
-  return absl::StartsWith(trials->Lookup(key), "Disabled");
+bool IsDisabled(const WebRtcKeyValueConfig& trials, absl::string_view key) {
+  return absl::StartsWith(trials.Lookup(key), "Disabled");
 }
 
 bool IsRelayed(const rtc::NetworkRoute& route) {
@@ -76,12 +74,12 @@ bool IsRelayed(const rtc::NetworkRoute& route) {
 }  // namespace
 
 RtpTransportControllerSend::PacerSettings::PacerSettings(
-    const WebRtcKeyValueConfig* trials)
+    const WebRtcKeyValueConfig& trials)
     : tq_disabled("Disabled"),
       holdback_window("holdback_window", PacingController::kMinSleepTime),
       holdback_packets("holdback_packets", -1) {
   ParseFieldTrial({&tq_disabled, &holdback_window, &holdback_packets},
-                  trials->Lookup("WebRTC-TaskQueuePacer"));
+                  trials.Lookup("WebRTC-TaskQueuePacer"));
 }
 
 RtpTransportControllerSend::RtpTransportControllerSend(
@@ -92,7 +90,7 @@ RtpTransportControllerSend::RtpTransportControllerSend(
     const BitrateConstraints& bitrate_config,
     std::unique_ptr<ProcessThread> process_thread,
     TaskQueueFactory* task_queue_factory,
-    const WebRtcKeyValueConfig* trials)
+    const WebRtcKeyValueConfig& trials)
     : clock_(clock),
       event_log_(event_log),
       bitrate_configurator_(bitrate_config),
@@ -131,21 +129,24 @@ RtpTransportControllerSend::RtpTransportControllerSend(
       relay_bandwidth_cap_("relay_cap", DataRate::PlusInfinity()),
       transport_overhead_bytes_per_packet_(0),
       network_available_(false),
+      congestion_window_size_(DataSize::PlusInfinity()),
+      is_congested_(false),
       retransmission_rate_limiter_(clock, kRetransmitWindowSizeMs),
       task_queue_(task_queue_factory->CreateTaskQueue(
           "rtp_send_controller",
-          TaskQueueFactory::Priority::NORMAL)) {
+          TaskQueueFactory::Priority::NORMAL)),
+      field_trials_(trials) {
   ParseFieldTrial({&relay_bandwidth_cap_},
-                  trials->Lookup("WebRTC-Bwe-NetworkRouteConstraints"));
+                  trials.Lookup("WebRTC-Bwe-NetworkRouteConstraints"));
   initial_config_.constraints = ConvertConstraints(bitrate_config, clock_);
   initial_config_.event_log = event_log;
-  initial_config_.key_value_config = trials;
+  initial_config_.key_value_config = &trials;
   RTC_DCHECK(bitrate_config.start_bitrate_bps > 0);
 
   pacer()->SetPacingRates(
       DataRate::BitsPerSec(bitrate_config.start_bitrate_bps), DataRate::Zero());
 
-  if (absl::StartsWith(trials->Lookup("WebRTC-LazyPacerStart"), "Disabled")) {
+  if (absl::StartsWith(trials.Lookup("WebRTC-LazyPacerStart"), "Disabled")) {
     EnsureStarted();
   }
 }
@@ -174,7 +175,8 @@ RtpVideoSenderInterface* RtpTransportControllerSend::CreateRtpVideoSender(
       // the parts of RtpTransportControllerSendInterface that are really used.
       this, event_log, &retransmission_rate_limiter_, std::move(fec_controller),
       frame_encryption_config.frame_encryptor,
-      frame_encryption_config.crypto_options, std::move(frame_transformer)));
+      frame_encryption_config.crypto_options, std::move(frame_transformer),
+      field_trials_));
   return video_rtp_senders_.back().get();
 }
 
@@ -200,6 +202,15 @@ void RtpTransportControllerSend::UpdateControlState() {
   // We won't create control_handler_ until we have an observers.
   RTC_DCHECK(observer_ != nullptr);
   observer_->OnTargetTransferRate(*update);
+}
+
+void RtpTransportControllerSend::UpdateCongestedState() {
+  bool congested = transport_feedback_adapter_.GetOutstandingData() >=
+                   congestion_window_size_;
+  if (congested != is_congested_) {
+    is_congested_ = congested;
+    pacer()->SetCongested(congested);
+  }
 }
 
 RtpPacketPacer* RtpTransportControllerSend::pacer() {
@@ -361,7 +372,8 @@ void RtpTransportControllerSend::OnNetworkRouteChanged(
       } else {
         UpdateInitialConstraints(msg.constraints);
       }
-      pacer()->UpdateOutstandingData(DataSize::Zero());
+      is_congested_ = false;
+      pacer()->SetCongested(false);
     });
   }
 }
@@ -382,7 +394,8 @@ void RtpTransportControllerSend::OnNetworkAvailability(bool network_available) {
     } else {
       pacer()->Pause();
     }
-    pacer()->UpdateOutstandingData(DataSize::Zero());
+    is_congested_ = false;
+    pacer()->SetCongested(false);
 
     if (controller_) {
       control_handler_->SetNetworkAvailability(network_available_);
@@ -421,12 +434,11 @@ void RtpTransportControllerSend::OnSentPacket(
     absl::optional<SentPacket> packet_msg =
         transport_feedback_adapter_.ProcessSentPacket(sent_packet);
     if (packet_msg) {
-      // Only update outstanding data in pacer if:
+      // Only update outstanding data if:
       // 1. Packet feadback is used.
       // 2. The packet has not yet received an acknowledgement.
       // 3. It is not a retransmission of an earlier packet.
-      pacer()->UpdateOutstandingData(
-          transport_feedback_adapter_.GetOutstandingData());
+      UpdateCongestedState();
       if (controller_)
         PostUpdates(controller_->OnSentPacket(*packet_msg));
     }
@@ -583,10 +595,8 @@ void RtpTransportControllerSend::OnTransportFeedback(
       if (controller_)
         PostUpdates(controller_->OnTransportPacketsFeedback(*feedback_msg));
 
-      // Only update outstanding data in pacer if any packet is first time
-      // acked.
-      pacer()->UpdateOutstandingData(
-          transport_feedback_adapter_.GetOutstandingData());
+      // Only update outstanding data if any packet is first time acked.
+      UpdateCongestedState();
     }
   });
 }
@@ -678,7 +688,8 @@ void RtpTransportControllerSend::UpdateStreamsConfig() {
 
 void RtpTransportControllerSend::PostUpdates(NetworkControlUpdate update) {
   if (update.congestion_window) {
-    pacer()->SetCongestionWindow(*update.congestion_window);
+    congestion_window_size_ = *update.congestion_window;
+    UpdateCongestedState();
   }
   if (update.pacer_config) {
     pacer()->SetPacingRates(update.pacer_config->data_rate(),

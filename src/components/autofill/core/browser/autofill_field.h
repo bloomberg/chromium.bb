@@ -146,6 +146,11 @@ class AutofillField : public FormFieldData {
   // field).
   bool IsFieldFillable() const;
 
+  // Returns true if suggestion prompts should not be shown for this field.
+  // Currently, prompts are suppressed if the autocomplete attribute is
+  // unrecognized unless it is a credit card form related field.
+  bool ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute() const;
+
   void set_initial_value_hash(uint32_t value) { initial_value_hash_ = value; }
   absl::optional<uint32_t> initial_value_hash() { return initial_value_hash_; }
 
@@ -202,14 +207,15 @@ class AutofillField : public FormFieldData {
     return single_username_vote_type_;
   }
 
-  // Getter and Setter methods for |value_not_autofilled_over_existing_value_|.
-  void set_value_not_autofilled_over_existing_value(
-      const std::u16string& value_not_autofilled_over_existing_value) {
-    value_not_autofilled_over_existing_value_ =
-        value_not_autofilled_over_existing_value;
+  // Getter and Setter methods for
+  // |value_not_autofilled_over_existing_value_hash_|.
+  void set_value_not_autofilled_over_existing_value_hash(
+      absl::optional<size_t> value_not_autofilled_over_existing_value_hash) {
+    value_not_autofilled_over_existing_value_hash_ =
+        value_not_autofilled_over_existing_value_hash;
   }
-  std::u16string value_not_autofilled_over_existing_value() const {
-    return value_not_autofilled_over_existing_value_;
+  absl::optional<size_t> value_not_autofilled_over_existing_value_hash() const {
+    return value_not_autofilled_over_existing_value_hash_;
   }
 
   // For each type in |possible_types_| that's missing from
@@ -310,10 +316,9 @@ class AutofillField : public FormFieldData {
   absl::optional<AutofillUploadContents::Field::SingleUsernameVoteType>
       single_username_vote_type_;
 
-  // Stores the value which is supposed to be autofilled in the field.
-  // This value is set when the field was not autofilled due to a prefilled
-  // value.
-  std::u16string value_not_autofilled_over_existing_value_;
+  // Stores the hash of the value which is supposed to be autofilled in the
+  // field but was not due to a prefilled value.
+  absl::optional<size_t> value_not_autofilled_over_existing_value_hash_;
 };
 
 }  // namespace autofill

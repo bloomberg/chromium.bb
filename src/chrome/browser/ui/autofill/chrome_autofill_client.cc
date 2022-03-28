@@ -379,7 +379,7 @@ ChromeAutofillClient::GetVirtualCardEnrollmentManager() {
 }
 
 void ChromeAutofillClient::ShowVirtualCardEnrollDialog(
-    const raw_ptr<VirtualCardEnrollmentFields> virtual_card_enrollment_fields,
+    const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
     base::OnceClosure accept_virtual_card_callback,
     base::OnceClosure decline_virtual_card_callback) {
   VirtualCardEnrollBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -390,6 +390,17 @@ void ChromeAutofillClient::ShowVirtualCardEnrollDialog(
                          std::move(accept_virtual_card_callback),
                          std::move(decline_virtual_card_callback));
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+void ChromeAutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
+  VirtualCardEnrollBubbleControllerImpl::CreateForWebContents(web_contents());
+  VirtualCardEnrollBubbleControllerImpl* controller =
+      VirtualCardEnrollBubbleControllerImpl::FromWebContents(web_contents());
+
+  if (controller && controller->IsIconVisible())
+    controller->HideIconAndBubble();
+}
+#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 std::vector<std::string>

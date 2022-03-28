@@ -51,6 +51,9 @@ class BleAdvertisementHeader {
     // characteristic so the two are not compatible.
   };
 
+  static constexpr int kAdvertisementHashLength = 4;
+  static constexpr int kServiceIdBloomFilterLength = 10;
+
   BleAdvertisementHeader() = default;
   BleAdvertisementHeader(Version version, bool extended_advertisement,
                          int num_slots,
@@ -76,8 +79,6 @@ class BleAdvertisementHeader {
 
  private:
   static constexpr int kVersionAndNumSlotsLength = 1;
-  static constexpr int kServiceIdBloomFilterLength = 10;
-  static constexpr int kAdvertisementHashLength = 4;
   static constexpr int kMinAdvertisementHeaderLength =
       kVersionAndNumSlotsLength + kServiceIdBloomFilterLength +
       kAdvertisementHashLength;

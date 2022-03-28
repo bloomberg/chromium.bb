@@ -20,7 +20,6 @@
 #include "quic/core/http/spdy_utils.h"
 #include "quic/core/http/web_transport_http3.h"
 #include "quic/core/quic_connection.h"
-#include "quic/core/quic_simple_buffer_allocator.h"
 #include "quic/core/quic_stream_sequencer_buffer.h"
 #include "quic/core/quic_utils.h"
 #include "quic/core/quic_versions.h"
@@ -37,6 +36,8 @@
 #include "quic/test_tools/quic_spdy_stream_peer.h"
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
+#include "common/quiche_mem_slice_storage.h"
+#include "common/simple_buffer_allocator.h"
 
 using spdy::kV3HighestPriority;
 using spdy::kV3LowestPriority;
@@ -191,7 +192,7 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
 
   bool encryption_established_;
   bool one_rtt_keys_available_;
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
 };
 
 class TestStream : public QuicSpdyStream {
@@ -221,9 +222,10 @@ class TestStream : public QuicSpdyStream {
 
   MOCK_METHOD(void, WriteHeadersMock, (bool fin), ());
 
-  size_t WriteHeadersImpl(spdy::SpdyHeaderBlock header_block, bool fin,
-                          QuicReferenceCountedPointer<QuicAckListenerInterface>
-                          /*ack_listener*/) override {
+  size_t WriteHeadersImpl(
+      spdy::SpdyHeaderBlock header_block, bool fin,
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+      /*ack_listener*/) override {
     saved_headers_ = std::move(header_block);
     WriteHeadersMock(fin);
     if (VersionUsesHttp3(transport_version())) {
@@ -476,8 +478,8 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   std::string DataFrame(absl::string_view payload) {
-    QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
-        payload.length(), SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer header = HttpEncoder::SerializeDataFrameHeader(
+        payload.length(), quiche::SimpleBufferAllocator::Get());
     return absl::StrCat(header.AsStringView(), payload);
   }
 
@@ -1009,8 +1011,8 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
   std::string data;
 
   if (UsesHttp3()) {
-    QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
-        body.length(), SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer header = HttpEncoder::SerializeDataFrameHeader(
+        body.length(), quiche::SimpleBufferAllocator::Get());
     data = absl::StrCat(header.AsStringView(), body);
     header_length = header.size();
   } else {
@@ -1052,8 +1054,8 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlWindowUpdate) {
   std::string data;
 
   if (UsesHttp3()) {
-    QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
-        body.length(), SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer header = HttpEncoder::SerializeDataFrameHeader(
+        body.length(), quiche::SimpleBufferAllocator::Get());
     data = absl::StrCat(header.AsStringView(), body);
     header_length = header.size();
   } else {
@@ -1117,12 +1119,12 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlWindowUpdate) {
 
   if (UsesHttp3()) {
     body = std::string(kWindow / 4 - 2, 'a');
-    QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
-        body.length(), SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer header = HttpEncoder::SerializeDataFrameHeader(
+        body.length(), quiche::SimpleBufferAllocator::Get());
     data = absl::StrCat(header.AsStringView(), body);
     header_length = header.size();
-    QuicBuffer header2 = HttpEncoder::SerializeDataFrameHeader(
-        body.length(), SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer header2 = HttpEncoder::SerializeDataFrameHeader(
+        body.length(), quiche::SimpleBufferAllocator::Get());
     data2 = absl::StrCat(header2.AsStringView(), body2);
   } else {
     body = std::string(kWindow / 4, 'a');
@@ -1595,7 +1597,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   QuicByteCount header_length = 0;
   if (UsesHttp3()) {
     header_length = HttpEncoder::SerializeDataFrameHeader(
-                        body.length(), SimpleBufferAllocator::Get())
+                        body.length(), quiche::SimpleBufferAllocator::Get())
                         .size();
   }
 
@@ -1720,9 +1722,9 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).Times(AtLeast(1));
   testing::InSequence s;
-  QuicReferenceCountedPointer<MockAckListener> ack_listener1(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> ack_listener1(
       new MockAckListener());
-  QuicReferenceCountedPointer<MockAckListener> ack_listener2(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> ack_listener2(
       new MockAckListener());
   stream_->set_ack_listener(ack_listener1);
   stream2_->set_ack_listener(ack_listener2);
@@ -1810,7 +1812,7 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
 
 TEST_P(QuicSpdyStreamTest, StreamWaitsForAcks) {
   Initialize(kShouldProcessData);
-  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).Times(AtLeast(1));
@@ -1864,7 +1866,7 @@ TEST_P(QuicSpdyStreamTest, StreamWaitsForAcks) {
 
 TEST_P(QuicSpdyStreamTest, StreamDataGetAckedMultipleTimes) {
   Initialize(kShouldProcessData);
-  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).Times(AtLeast(1));
@@ -1929,7 +1931,7 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteOrBufferBody) {
   }
 
   Initialize(kShouldProcessData);
-  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
   std::string body = "Test1";
@@ -1939,10 +1941,10 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteOrBufferBody) {
   stream_->WriteOrBufferBody(body, false);
   stream_->WriteOrBufferBody(body2, true);
 
-  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
-      body.length(), SimpleBufferAllocator::Get());
-  QuicBuffer header2 = HttpEncoder::SerializeDataFrameHeader(
-      body2.length(), SimpleBufferAllocator::Get());
+  quiche::QuicheBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body.length(), quiche::SimpleBufferAllocator::Get());
+  quiche::QuicheBuffer header2 = HttpEncoder::SerializeDataFrameHeader(
+      body2.length(), quiche::SimpleBufferAllocator::Get());
 
   EXPECT_CALL(*mock_ack_listener, OnPacketAcked(body.length(), _));
   QuicStreamFrame frame(stream_->id(), false, 0,
@@ -1973,17 +1975,17 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteBodySlices) {
   }
 
   Initialize(kShouldProcessData);
-  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
   std::string body1 = "Test1";
   std::string body2(100, 'x');
   struct iovec body1_iov = {const_cast<char*>(body1.data()), body1.length()};
   struct iovec body2_iov = {const_cast<char*>(body2.data()), body2.length()};
-  QuicMemSliceStorage storage(&body1_iov, 1,
-                              helper_.GetStreamSendBufferAllocator(), 1024);
-  QuicMemSliceStorage storage2(&body2_iov, 1,
-                               helper_.GetStreamSendBufferAllocator(), 1024);
+  quiche::QuicheMemSliceStorage storage(
+      &body1_iov, 1, helper_.GetStreamSendBufferAllocator(), 1024);
+  quiche::QuicheMemSliceStorage storage2(
+      &body2_iov, 1, helper_.GetStreamSendBufferAllocator(), 1024);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _)).Times(AtLeast(1));
   stream_->WriteBodySlices(storage.ToSpan(), false);
   stream_->WriteBodySlices(storage2.ToSpan(), true);
@@ -2008,7 +2010,7 @@ TEST_P(QuicSpdyStreamTest, HeaderBytesNotReportedOnRetransmission) {
   }
 
   Initialize(kShouldProcessData);
-  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
+  quiche::QuicheReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
   std::string body1 = "Test1";

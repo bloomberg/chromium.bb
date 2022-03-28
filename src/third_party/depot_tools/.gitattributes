@@ -10,8 +10,8 @@
 /*.sh  recipes
 
 # vpython specs
-/.vpython*      recipes
-/gsutil.vpython recipes
+/.vpython*       recipes
+/gsutil.vpython3 recipes
 
 # Extensionless tools we want and support scripts.
 /autoninja*                   recipes

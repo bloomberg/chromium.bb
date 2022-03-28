@@ -271,6 +271,8 @@ struct loader_instance {
     // device stored internal to the public structures.
     uint32_t phys_dev_group_count_term;
     struct VkPhysicalDeviceGroupProperties **phys_dev_groups_term;
+    uint32_t phys_dev_group_count_tramp;
+    struct VkPhysicalDeviceGroupProperties **phys_dev_groups_tramp;
 
     struct loader_instance *next;
 
@@ -444,6 +446,12 @@ struct loader_scanned_icd {
 #endif
 };
 
+struct loader_phys_dev_per_icd {
+    uint32_t count;
+    VkPhysicalDevice *phys_devs;
+    struct loader_icd_term *this_icd_term;
+};
+
 enum loader_data_files_type {
     LOADER_DATA_FILE_MANIFEST_ICD = 0,
     LOADER_DATA_FILE_MANIFEST_LAYER,
@@ -456,7 +464,7 @@ struct loader_data_files {
     char **filename_list;
 };
 
-struct loader_phys_dev_per_icd {
+struct LoaderSortedPhysicalDevice {
     uint32_t device_count;
     VkPhysicalDevice *physical_devices;
     uint32_t icd_index;

@@ -527,12 +527,12 @@ TEST_F(PhotosServiceTest, OptInShown) {
   EXPECT_TRUE(service_->ShouldShowOptInScreen());
 
   // If user does not accept opt-in, we should keep showing screen.
-  service_->OnUserOptIn(false);
+  service_->OnUserOptIn(false, NULL, NULL);
   EXPECT_TRUE(service_->ShouldShowOptInScreen());
   EXPECT_FALSE(prefs_.GetBoolean(PhotosService::kOptInAcknowledgedPrefName));
 
   // If user accept opt-in, we should stop showing screen.
-  service_->OnUserOptIn(true);
+  service_->OnUserOptIn(true, NULL, NULL);
   EXPECT_FALSE(service_->ShouldShowOptInScreen());
   EXPECT_TRUE(prefs_.GetBoolean(PhotosService::kOptInAcknowledgedPrefName));
 }
@@ -564,7 +564,7 @@ TEST_F(PhotosServiceTest, ClearOnPrimaryAccountChange) {
   EXPECT_FALSE(prefs_.GetBoolean(PhotosService::kOptInAcknowledgedPrefName));
 
   // Opt-in current account
-  service_->OnUserOptIn(true);
+  service_->OnUserOptIn(true, NULL, NULL);
   EXPECT_TRUE(prefs_.GetBoolean(PhotosService::kOptInAcknowledgedPrefName));
 
   // Clear primary account which should trigger clearing the pref.
@@ -875,6 +875,41 @@ TEST_F(PhotosServiceFavoritePeopleTitleEnabledTest, showsRHTitle) {
 
   std::string expected_string = l10n_util::GetStringUTF8(
       IDS_NTP_MODULES_PHOTOS_MEMORIES_FAVORITE_PEOPLE_WELCOME_TITLE);
+  EXPECT_EQ(expected_string,
+            service_->GetOptInTitleText(std::move(memory_list)));
+}
+
+class PhotosServiceTripTitleEnabledTest : public PhotosServiceTest {
+ public:
+  PhotosServiceTripTitleEnabledTest() {
+    features_.InitAndEnableFeatureWithParameters(
+        ntp_features::kNtpPhotosModuleCustomizedOptInTitle,
+        {{"NtpPhotosModuleOptInTitleParam",
+          base::NumberToString(static_cast<int>(
+              PhotosService::OptInCardTitle::kOptInTripsTitle))}});
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+TEST_F(PhotosServiceTripTitleEnabledTest, showsTripsTitle) {
+  std::vector<photos::mojom::MemoryPtr> memory_list;
+
+  auto recent_highlight = photos::mojom::Memory::New();
+  recent_highlight->title = "Recent Highlights";
+  memory_list.push_back(std::move(recent_highlight));
+
+  auto n_years_ago = photos::mojom::Memory::New();
+  n_years_ago->title = "6 Years Ago";
+  memory_list.push_back(std::move(n_years_ago));
+
+  auto mojo_memory = photos::mojom::Memory::New();
+  mojo_memory->title = "Trip to India";
+  memory_list.push_back(std::move(mojo_memory));
+
+  std::string expected_string = l10n_util::GetStringUTF8(
+      IDS_NTP_MODULES_PHOTOS_MEMORIES_TRIPS_WELCOME_TITLE);
   EXPECT_EQ(expected_string,
             service_->GetOptInTitleText(std::move(memory_list)));
 }

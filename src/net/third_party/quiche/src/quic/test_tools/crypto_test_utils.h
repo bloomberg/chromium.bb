@@ -20,7 +20,6 @@
 
 namespace quic {
 
-class CommonCertSets;
 class ProofSource;
 class ProofVerifier;
 class ProofVerifyContext;
@@ -147,12 +146,6 @@ uint64_t LeafCertHashForTesting();
 // returned by |ProofVerifierForTesting|.
 std::unique_ptr<ProofVerifyContext> ProofVerifyContextForTesting();
 
-// MockCommonCertSets returns a CommonCertSets that contains a single set with
-// hash |hash|, consisting of the certificate |cert| at index |index|.
-CommonCertSets* MockCommonCertSets(absl::string_view cert,
-                                   uint64_t hash,
-                                   uint32_t index);
-
 // Creates a minimal dummy reject message that will pass the client-config
 // validation tests. This will include a server config, but no certs, proof
 // source address token, or server nonce.
@@ -199,12 +192,10 @@ CryptoHandshakeMessage GenerateDefaultInchoateCHLO(
 // |crypto_config|'s validation.
 void GenerateFullCHLO(
     const CryptoHandshakeMessage& inchoate_chlo,
-    QuicCryptoServerConfig* crypto_config,
-    QuicSocketAddress server_addr,
-    QuicSocketAddress client_addr,
-    QuicTransportVersion transport_version,
+    QuicCryptoServerConfig* crypto_config, QuicSocketAddress server_addr,
+    QuicSocketAddress client_addr, QuicTransportVersion transport_version,
     const QuicClock* clock,
-    QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
+    quiche::QuicheReferenceCountedPointer<QuicSignedServerConfig> signed_config,
     QuicCompressedCertsCache* compressed_certs_cache,
     CryptoHandshakeMessage* out);
 

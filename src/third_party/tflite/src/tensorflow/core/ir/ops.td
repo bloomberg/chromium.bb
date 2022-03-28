@@ -65,9 +65,7 @@ def TFGraph_GraphOp : TFGraph_Op<"graph",
     }
   }];
 
-  // Make the assembly pretty!
-  let printer = [{ PrintGraphOp(p, *this); }];
-  let parser = [{ return ParseGraphOp(parser, result); }];
+  let assemblyFormat = "qualified($version) attr-dict-with-keyword $nodes";
   let hasVerifier = 1;
 }
 
@@ -83,6 +81,7 @@ def TFGraph_GraphFuncOp : TFGraph_Op<"func", [
     list of nodes forming a TensorFlow graph.
     The body still has a return operation as terminator which must always be
     the last operation.
+
     A function can be generic if it specifies the `generic` attribute. Such
     function is akin to a C++ template: it need "instantiation attributes" to be
     specified at each call site in order to make it into a concrete function,
@@ -90,9 +89,44 @@ def TFGraph_GraphFuncOp : TFGraph_Op<"func", [
   }];
 
   let arguments = (ins
+    // This attribute is set if the function is generic/parameterized.
+    UnitAttr:$generic,
+    // Attributes required by FunctionOpInterface. These are declared here for
+    // ease of access and to cache the attribute names in the op.
     SymbolNameAttr:$sym_name,
     TypeAttr:$type,
-    UnitAttr:$generic);
+    ArrayAttr:$arg_attrs,
+    ArrayAttr:$res_attrs,
+    // Optional function attributes.
+    OptionalAttr<StrAttr>:$description,
+    UnitAttr:$is_stateful,
+    OptionalAttr<FlatSymbolRefAttr>:$gradient,
+    OptionalAttr<I32ElementsAttr>:$resource_arg_unique_ids_keys,
+    OptionalAttr<I32ElementsAttr>:$resource_arg_unique_ids_values,
+    // Optional attributes that only appear on generic functions. On generic
+    // functions, the control output names are stored on the function instead of
+    // on the terminator like in non-generic functions.
+    OptionalAttr<StrArrayAttr>:$control_output
+  );
+
+  // Allow construction of an empty function with no attributes.
+  let builders = [
+    // Construct an empty function with no attributes.
+    OpBuilder<(ins), [{ (void)$_state.addRegion(); }]>,
+    // Construct a function with a name, a function type, and a generic flag.
+    OpBuilder<(ins "const Twine &":$sym_name, "FunctionType":$type,
+                   "bool":$generic), [{
+      build($_builder, $_state);
+      $_state.addAttribute(GraphFuncOp::sym_nameAttrName($_state.name),
+                           $_builder.getStringAttr(sym_name));
+      $_state.addAttribute(GraphFuncOp::typeAttrName($_state.name),
+                           TypeAttr::get(type));
+      if (generic) {
+        $_state.addAttribute(GraphFuncOp::genericAttrName($_state.name),
+                             $_builder.getUnitAttr());
+      }
+    }]>
+  ];
 
   let regions = (region AnyRegion:$body);
   let extraClassDeclaration = [{
@@ -168,8 +202,7 @@ def TFGraph_GraphFuncOp : TFGraph_Op<"func", [
     bool isDeclaration() { return isExternal(); }
   }];
 
-  let parser = [{ return ParseGraphFunc(parser, result); }];
-  let printer = [{ return PrintGraphFunc(*this, p); }];
+  let hasCustomAssemblyFormat = 1;
   let hasVerifier = 1;
   let hasCanonicalizeMethod = 1;
 }
@@ -196,8 +229,7 @@ def TFGraph_ReturnOp : TFGraph_Op<"return",
     OpBuilder<(ins "ValueRange":$operands, "ValueRange":$control_operands)>];
 
   let hasVerifier = 1;
-  let parser = [{ return ParseReturnOp(parser, result); }];
-  let printer = [{ Print(*this, p); }];
+  let hasCustomAssemblyFormat = 1;
 }
 
 
@@ -394,7 +426,8 @@ def TFGraph_YieldOp : TFGraph_Op<"yield",
 
 // Base class for TFGraph if-like operations with regions.
 class TFGraph_IfLikeRegionOp<string mnemonic> : TFGraph_RegionOp<
-    mnemonic, [DeclareOpInterfaceMethods<RegionBranchOpInterface>]> {
+    mnemonic, [DeclareOpInterfaceMethods<RegionBranchOpInterface,
+                                         ["getRegionInvocationBounds"]>]> {
   let arguments = (ins
     // Op operands.
     I1Tensor:$cond,
@@ -430,8 +463,15 @@ class TFGraph_IfLikeRegionOp<string mnemonic> : TFGraph_RegionOp<
     void $cppClass::getSuccessorRegions(
         Optional<unsigned> index, ArrayRef<Attribute> operands,
         SmallVectorImpl<RegionSuccessor> &regions) {
-      getIfLikeRegionOpSuccessorRegions(*this, index, operands, regions);
+      GetIfLikeRegionOpSuccessorRegions(*this, index, operands, regions);
     }
+    void $cppClass::getRegionInvocationBounds(
+        ArrayRef<Attribute> operands,
+        SmallVectorImpl<InvocationBounds> &invocationBounds) {
+      invocationBounds.append(/*NumInputs=*/2, /*Elt=*/{0, 1});
+    }
+
+    LogicalResult $cppClass::verify() { return VerifyIfLikeRegionOp(*this); }
   }];
 
   let assemblyFormat = [{
@@ -457,7 +497,8 @@ def TFGraph_StatefulIfRegionOp : TFGraph_IfLikeRegionOp<"StatefulIfRegion"> {
 
 // Base calss for TFGraph case-like operations with regions.
 class TFGraph_CaseLikeRegionOp<string mnemonic> : TFGraph_RegionOp<
-    mnemonic, [DeclareOpInterfaceMethods<RegionBranchOpInterface>]> {
+    mnemonic, [DeclareOpInterfaceMethods<RegionBranchOpInterface,
+                                         ["getRegionInvocationBounds"]>]> {
   let arguments = (ins
     // Op operands.
     I32Tensor:$branch_index,
@@ -486,8 +527,15 @@ class TFGraph_CaseLikeRegionOp<string mnemonic> : TFGraph_RegionOp<
     void $cppClass::getSuccessorRegions(
         Optional<unsigned> index, ArrayRef<Attribute> operands,
         SmallVectorImpl<RegionSuccessor> &regions) {
-      getCaseLikeRegionOpSuccessorRegions(*this, index, operands, regions);
+      GetCaseLikeRegionOpSuccessorRegions(*this, index, operands, regions);
     }
+    void $cppClass::getRegionInvocationBounds(
+        ArrayRef<Attribute> operands,
+        SmallVectorImpl<InvocationBounds> &invocationBounds) {
+      invocationBounds.append(getNumRegions(), /*Elt=*/{0, 1});
+    }
+
+    LogicalResult $cppClass::verify() { return VerifyCaseLikeRegionOp(*this); }
   }];
 
   let assemblyFormat = [{
@@ -522,7 +570,8 @@ def TFGraph_ConditionOp : TFGraph_Op<"condition",
     Variadic<TFGraph_Tensor>:$args,
     Variadic<ControlType>:$ctls
   );
-  let assemblyFormat = "$cond `:` type($cond) (` ` `(` $args^ `)`)? (`[` $ctls^ `]`)? attr-dict (`:` type($args)^)?";
+  let assemblyFormat = [{ $cond `:` type($cond) (` ` `(` $args^ `)`)?
+                          (`[` $ctls^ `]`)? attr-dict (`:` type($args)^)? }];
 }
 
 // TF graph while loop op with regions.
@@ -583,8 +632,11 @@ class TFGraph_WhileLikeRegionOp<string mnemonic> : TFGraph_RegionOp<
     void $cppClass::getSuccessorRegions(
         Optional<unsigned> index, ArrayRef<Attribute> operands,
         SmallVectorImpl<RegionSuccessor> &regions) {
-      return getWhileLikeRegionOpSuccessorRegions(*this, index, operands, regions);
+      return GetWhileLikeRegionOpSuccessorRegions(*this, index, operands,
+                                                  regions);
     }
+
+    LogicalResult $cppClass::verify() { return VerifyWhileLikeRegionOp(*this); }
 
     BlockArgument $cppClass::getDataValueOf(BlockArgument ctl) {
       return GetLoopRegionDataOf(ctl);

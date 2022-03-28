@@ -9,13 +9,13 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "quic/core/crypto/null_encrypter.h"
-#include "quic/core/quic_buffer_allocator.h"
 #include "quic/core/quic_time.h"
 #include "quic/core/quic_types.h"
-#include "quic/platform/api/quic_mem_slice.h"
-#include "quic/platform/api/quic_reference_counted.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/test_tools/quic_test_utils.h"
+#include "common/platform/api/quiche_mem_slice.h"
+#include "common/platform/api/quiche_reference_counted.h"
+#include "common/quiche_buffer_allocator.h"
 
 namespace quic {
 namespace test {
@@ -35,7 +35,7 @@ class EstablishedCryptoStream : public MockQuicCryptoStream {
 
 class QuicDatagramQueueObserver final : public QuicDatagramQueue::Observer {
  public:
-  class Context : public QuicReferenceCounted {
+  class Context : public quiche::QuicheReferenceCounted {
    public:
     std::vector<absl::optional<MessageStatus>> statuses;
   };
@@ -49,10 +49,12 @@ class QuicDatagramQueueObserver final : public QuicDatagramQueue::Observer {
     context_->statuses.push_back(std::move(status));
   }
 
-  const QuicReferenceCountedPointer<Context>& context() { return context_; }
+  const quiche::QuicheReferenceCountedPointer<Context>& context() {
+    return context_;
+  }
 
  private:
-  QuicReferenceCountedPointer<Context> context_;
+  quiche::QuicheReferenceCountedPointer<Context> context_;
 };
 
 class QuicDatagramQueueTestBase : public QuicTest {
@@ -70,11 +72,9 @@ class QuicDatagramQueueTestBase : public QuicTest {
 
   ~QuicDatagramQueueTestBase() = default;
 
-  QuicMemSlice CreateMemSlice(absl::string_view data) {
-    QuicUniqueBufferPtr buffer =
-        MakeUniqueBuffer(helper_.GetStreamSendBufferAllocator(), data.size());
-    memcpy(buffer.get(), data.data(), data.size());
-    return QuicMemSlice(std::move(buffer), data.size());
+  quiche::QuicheMemSlice CreateMemSlice(absl::string_view data) {
+    return quiche::QuicheMemSlice(quiche::QuicheBuffer::Copy(
+        helper_.GetStreamSendBufferAllocator(), data));
   }
 
   MockQuicConnectionHelper helper_;
@@ -176,7 +176,7 @@ TEST_F(QuicDatagramQueueTest, Expiry) {
   std::vector<std::string> messages;
   EXPECT_CALL(*connection_, SendMessage(_, _, _))
       .WillRepeatedly([&messages](QuicMessageId /*id*/,
-                                  absl::Span<QuicMemSlice> message,
+                                  absl::Span<quiche::QuicheMemSlice> message,
                                   bool /*flush*/) {
         messages.push_back(std::string(message[0].AsStringView()));
         return MESSAGE_STATUS_SUCCESS;
@@ -211,7 +211,8 @@ class QuicDatagramQueueWithObserverTest : public QuicDatagramQueueTestBase {
   // This is moved out immediately.
   std::unique_ptr<QuicDatagramQueueObserver> observer_;
 
-  QuicReferenceCountedPointer<QuicDatagramQueueObserver::Context> context_;
+  quiche::QuicheReferenceCountedPointer<QuicDatagramQueueObserver::Context>
+      context_;
   QuicDatagramQueue queue_;
 };
 

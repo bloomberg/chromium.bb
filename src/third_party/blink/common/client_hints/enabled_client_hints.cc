@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/time/time.h"
+#include "net/base/features.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "third_party/blink/public/common/features.h"
@@ -84,20 +85,23 @@ bool IsDisabledByFeature(const WebClientHintsType type) {
               features::kClientHintsViewportWidth_DEPRECATED))
         return true;
       break;
+    case WebClientHintsType::kPartitionedCookies:
+      if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies))
+        return true;
+      break;
     default:
       break;
   }
   return false;
 }
 
-bool IsUserAgentOriginTrialEnabled(
-    const GURL& url,
-    const GURL* third_party_url,
-    const net::HttpResponseHeaders* response_headers,
-    base::StringPiece feature_name) {
+bool IsOriginTrialEnabled(const GURL& url,
+                          const absl::optional<GURL>& third_party_url,
+                          const net::HttpResponseHeaders* response_headers,
+                          base::StringPiece feature_name) {
   blink::TrialTokenValidator validator;
   base::Time now = base::Time::Now();
-  if (third_party_url == nullptr) {
+  if (!third_party_url) {
     // It's not a third-party embed request, validate the feature_name OT
     // token as normal.
     return validator.RequestEnablesFeature(url, response_headers, feature_name,
@@ -105,7 +109,6 @@ bool IsUserAgentOriginTrialEnabled(
   }
 
   // Validate the third-party OT token.
-  bool enabled = false;
   // Iterate through all of the Origin-Trial headers and validate if any of
   // them are valid third-party OT tokens for the feature_name trial.
   if (validator.IsTrialPossibleOnOrigin(*third_party_url)) {
@@ -118,13 +121,12 @@ bool IsUserAgentOriginTrialEnabled(
           validator.ValidateToken(token, origin, third_party_origins, now);
       if (result.Status() == blink::OriginTrialTokenStatus::kSuccess) {
         if (result.ParsedToken()->feature_name() == feature_name) {
-          enabled = true;
-          break;
+          return true;
         }
       }
     }
   }
-  return enabled;
+  return false;
 }
 
 }  // namespace
@@ -141,19 +143,22 @@ void EnabledClientHints::SetIsEnabled(const WebClientHintsType type,
 
 void EnabledClientHints::SetIsEnabled(
     const GURL& url,
-    const GURL* third_party_url,
+    const absl::optional<GURL>& third_party_url,
     const net::HttpResponseHeaders* response_headers,
     const network::mojom::WebClientHintsType type,
     const bool should_send) {
   bool enabled = should_send;
   if (enabled && type == WebClientHintsType::kUAReduced) {
-    enabled = IsUserAgentOriginTrialEnabled(
-        url, third_party_url, response_headers, "UserAgentReduction");
+    enabled = IsOriginTrialEnabled(url, third_party_url, response_headers,
+                                   "UserAgentReduction");
   }
   if (enabled && type == WebClientHintsType::kFullUserAgent) {
-    enabled =
-        IsUserAgentOriginTrialEnabled(url, third_party_url, response_headers,
-                                      "SendFullUserAgentAfterReduction");
+    enabled = IsOriginTrialEnabled(url, third_party_url, response_headers,
+                                   "SendFullUserAgentAfterReduction");
+  }
+  if (enabled && type == WebClientHintsType::kPartitionedCookies) {
+    enabled = IsOriginTrialEnabled(url, third_party_url, response_headers,
+                                   "PartitionedCookies");
   }
   SetIsEnabled(type, enabled);
 }

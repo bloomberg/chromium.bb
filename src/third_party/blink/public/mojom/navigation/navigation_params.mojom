@@ -21,7 +21,7 @@ import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/loader/mixed_content.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
-import "third_party/blink/public/mojom/navigation/app_history_entry_arrays.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom";
 import "third_party/blink/public/mojom/navigation/was_activated_option.mojom";
@@ -113,7 +113,7 @@ struct BeginNavigationParams {
   // initiator information in DevTools protocol format. See
   // https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
   // for details.
-  mojo_base.mojom.DictionaryValue? devtools_initiator;
+  mojo_base.mojom.DeprecatedDictionaryValue? devtools_initiator;
 
   // Specifies whether, and how, the navigation should execute a Trust Tokens
   // operation (https://github.com/wicg/trust-token-api) and attach headers
@@ -437,6 +437,11 @@ struct CommitNavigationParams {
   // https://html.spec.whatwg.org/C/#origin-keyed-agent-clusters
   bool origin_agent_cluster = false;
 
+  // Whether the decision to use origin-keyed or site-keyed agent clustering
+  // (which itself is recorded in origin_agent_cluster, above) has been
+  // made based on absent Origin-Agent-Cluster http header.
+  bool origin_agent_cluster_left_as_default = true;
+
   // Client-hints enabled; this is based on the top-level frame and should be
   // further narrowed down by permissions policy.
   array<network.mojom.WebClientHintsType> enabled_client_hints;
@@ -453,9 +458,9 @@ struct CommitNavigationParams {
   // received response headers.
   int32 http_response_code = -1;
 
-  // A same-origin subset of the back/forward list exposed by the appHistory
-  // API.
-  AppHistoryEntryArrays app_history_entry_arrays;
+  // A same-origin subset of the back/forward list exposed by the
+  // window.navigation API.
+  NavigationApiHistoryEntryArrays navigation_api_history_entry_arrays;
 
   array<url.mojom.Url> early_hints_preloaded_resources;
 

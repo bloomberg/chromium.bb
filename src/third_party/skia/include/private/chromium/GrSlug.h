@@ -8,19 +8,22 @@
 #ifndef GrSlug_DEFINED
 #define GrSlug_DEFINED
 
+#include "include/core/SkData.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkRefCnt.h"
 
 class SkCanvas;
 class SkMatrix;
 class SkPaint;
-class SkReadBuffer;
 class SkTextBlob;
+class SkReadBuffer;
 class SkStrikeClient;
 class SkWriteBuffer;
 
 // You can use GrSlug to simulate drawTextBlob by defining the following at compile time.
 //    SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG
+// You can use GrSlug serialization to simulate drawTextBlob by defining the following:
+//    SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG_SERIALIZE
 // For Skia, add this to your args.gn file.
 //    extra_cflags = ["-D", "SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG"]
 
@@ -43,16 +46,29 @@ public:
     static sk_sp<GrSlug> ConvertBlob(
             SkCanvas* canvas, const SkTextBlob& blob, SkPoint origin, const SkPaint& paint);
 
-    // Set the client parameter to nullptr if no typeface ID translation is needed.
-    static sk_sp<GrSlug> MakeFromBuffer(SkReadBuffer& buffer, const SkStrikeClient* client);
+    // Serialize the slug.
+    sk_sp<SkData> serialize() const;
+    size_t serialize(void* buffer, size_t size) const;
+
+    // Set the client parameter to the appropriate SkStrikeClient when typeface ID translation
+    // is needed.
+    static sk_sp<GrSlug> Deserialize(
+            const void* data, size_t size, const SkStrikeClient* client = nullptr);
+    static sk_sp<GrSlug> MakeFromBuffer(SkReadBuffer& buffer);
+
 
     // Draw the GrSlug obeying the canvas's mapping and clipping.
-    void draw(SkCanvas* canvas);
-
-    // Serialize the slug.
-    virtual void flatten(SkWriteBuffer&) const = 0;
+    void draw(SkCanvas* canvas) const;
 
     virtual SkRect sourceBounds() const = 0;
     virtual const SkPaint& paint() const = 0;
+
+    virtual void doFlatten(SkWriteBuffer&) const = 0;
+
+    uint32_t uniqueID() const { return fUniqueID; }
+
+private:
+    static uint32_t NextUniqueID();
+    const uint32_t  fUniqueID{NextUniqueID()};
 };
 #endif  // GrSlug_DEFINED

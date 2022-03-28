@@ -8,13 +8,13 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/strings/strcat.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_host_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/renderer_host/navigation_controller_android.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/url_utils.h"
@@ -35,7 +35,6 @@ namespace content {
 namespace attribution_reporter_android {
 
 void ReportAppImpression(AttributionManager& attribution_manager,
-                         BrowserContext* context,
                          const std::string& source_package_name,
                          const std::string& source_event_id,
                          const std::string& destination,
@@ -52,8 +51,8 @@ void ReportAppImpression(AttributionManager& attribution_manager,
       OriginFromAndroidPackageName(source_package_name);
 
   attribution_host_utils::VerifyAndStoreImpression(
-      CommonSourceInfo::SourceType::kEvent, impression_origin, *impression,
-      context, attribution_manager, impression_time);
+      AttributionSourceType::kEvent, impression_origin, *impression,
+      attribution_manager, impression_time);
 }
 
 }  // namespace attribution_reporter_android
@@ -104,8 +103,7 @@ void JNI_AttributionReporterImpl_ReportAppImpression(
                                    : base::Time::FromJavaTime(event_time);
 
   attribution_reporter_android::ReportAppImpression(
-      *attribution_manager, context,
-      ConvertJavaStringToUTF8(env, j_source_package_name),
+      *attribution_manager, ConvertJavaStringToUTF8(env, j_source_package_name),
       ConvertJavaStringToUTF8(env, j_source_event_id),
       ConvertJavaStringToUTF8(env, j_destination),
       j_report_to ? ConvertJavaStringToUTF8(env, j_report_to) : "", expiry,

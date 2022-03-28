@@ -7,7 +7,9 @@
 #include <string>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/desk_template.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
 #include "chrome/browser/ash/app_restore/arc_app_launch_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/desks_templates/desks_templates_client.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -28,50 +31,42 @@
 #include "components/app_restore/desk_template_read_handler.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_info.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "extensions/common/extension.h"
-
-namespace {
-
-// The restore data owned by this class will clear after being set. This is a
-// temporary estimate of how long it takes to launch apps.
-constexpr base::TimeDelta kClearRestoreDataDuration = base::Seconds(5);
-
-}  // namespace
 
 DesksTemplatesAppLaunchHandler::DesksTemplatesAppLaunchHandler(Profile* profile)
     : ash::AppLaunchHandler(profile),
       read_handler_(app_restore::DeskTemplateReadHandler::Get()) {}
 
-DesksTemplatesAppLaunchHandler::~DesksTemplatesAppLaunchHandler() = default;
+DesksTemplatesAppLaunchHandler::~DesksTemplatesAppLaunchHandler() {
+  if (launch_id_) {
+    read_handler_->ClearRestoreData(launch_id_);
 
-void DesksTemplatesAppLaunchHandler::SetRestoreDataAndLaunch(
-    std::unique_ptr<app_restore::RestoreData> new_restore_data) {
-  // Another desk template is underway.
-  // TODO(sammiequon): Checking the read handler for restore data is temporary.
-  // We will want to use a better check of whether a desk template is underway.
-  // Perhaps removing entries from read handler's restore data of launched apps
-  // and/or using individual shorter timeouts.
-  if (read_handler_->restore_data())
-    return;
+    if (auto* arc_task_handler =
+            ash::app_restore::AppRestoreArcTaskHandler::GetForProfile(
+                profile())) {
+      arc_task_handler->ClearDeskTemplateArcAppLaunchHandler(launch_id_);
+    }
+  }
+}
 
-  set_restore_data(std::move(new_restore_data));
+void DesksTemplatesAppLaunchHandler::LaunchTemplate(
+    const ash::DeskTemplate& desk_template) {
+  // Ensure that the handler isn't re-used.
+  DCHECK_EQ(launch_id_, 0);
+  launch_id_ = desk_template.launch_id();
 
-  if (!HasRestoreData())
-    return;
+  DCHECK(desk_template.desk_restore_data());
+  auto restore_data = desk_template.desk_restore_data()->Clone();
+  DCHECK(!restore_data->app_id_to_launch_list().empty());
 
-  read_handler_->SetRestoreData(restore_data()->Clone());
+  read_handler_->SetRestoreData(launch_id_, restore_data->Clone());
+  set_restore_data(std::move(restore_data));
 
   // Launch the different types of apps. They can be done in any order.
   MaybeLaunchArcApps();
   LaunchApps();
   LaunchBrowsers();
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&DesksTemplatesAppLaunchHandler::
-                         ClearDeskTemplateReadHandlerRestoreData,
-                     weak_ptr_factory_.GetWeakPtr()),
-      kClearRestoreDataDuration);
 }
 
 bool DesksTemplatesAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
@@ -91,8 +86,8 @@ bool DesksTemplatesAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->AppRegistryCache()
       .ForOneApp(app_id, [&is_system_web_app](const apps::AppUpdate& update) {
-        if (update.AppType() == apps::mojom::AppType::kWeb ||
-            update.AppType() == apps::mojom::AppType::kSystemWeb) {
+        if (update.AppType() == apps::AppType::kWeb ||
+            update.AppType() == apps::AppType::kSystemWeb) {
           is_system_web_app = true;
         }
       });
@@ -122,8 +117,17 @@ bool DesksTemplatesAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
   if (is_multi_instance_window)
     return true;
 
-  return ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
-      app_id, launch_list);
+  const bool should_launch =
+      ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
+          app_id, launch_list);
+
+  // Notify performance tracker that some tracked windows will be moving.
+  if (!should_launch) {
+    for (const auto& window : launch_list)
+      NotifyMovedSingleInstanceApp(window.first);
+  }
+
+  return should_launch;
 }
 
 void DesksTemplatesAppLaunchHandler::OnExtensionLaunching(
@@ -155,7 +159,14 @@ void DesksTemplatesAppLaunchHandler::LaunchBrowsers() {
 
       const bool app_type_browser =
           app_restore_data->app_type_browser.value_or(false);
-      const std::string app_name = app_restore_data->app_name.value_or(app_id);
+
+      const absl::optional<std::string> maybe_app_name =
+          app_restore_data->app_name;
+      const std::string app_name =
+          maybe_app_name.has_value() && !maybe_app_name.value().empty()
+              ? maybe_app_name.value()
+              : app_id;
+
       const gfx::Rect current_bounds =
           app_restore_data->current_bounds.value_or(gfx::Rect());
 
@@ -219,8 +230,8 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchArcApps() {
   std::set<std::string> app_ids;
   cache.ForEachApp(
       [&app_ids, &app_id_to_launch_list](const apps::AppUpdate& update) {
-        if (update.Readiness() == apps::mojom::Readiness::kReady &&
-            update.AppType() == apps::mojom::AppType::kArc &&
+        if (update.Readiness() == apps::Readiness::kReady &&
+            update.AppType() == apps::AppType::kArc &&
             base::Contains(app_id_to_launch_list, update.AppId())) {
           app_ids.insert(update.AppId());
         }
@@ -235,6 +246,8 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchArcApps() {
     DCHECK(it != app_id_to_launch_list.end());
     if (!ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
             app_id, it->second)) {
+      for (auto& window : it->second)
+        NotifyMovedSingleInstanceApp(window.first);
       restore_data()->RemoveApp(app_id);
     }
   }
@@ -245,17 +258,19 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchArcApps() {
     return;
 
   if (auto* launch_handler =
-          arc_task_handler->desks_templates_arc_app_launch_handler()) {
+          arc_task_handler->GetDeskTemplateArcAppLaunchHandler(launch_id_)) {
+    launch_handler->set_desk_template_launch_id(launch_id_);
     launch_handler->RestoreArcApps(this);
   }
-}
-
-void DesksTemplatesAppLaunchHandler::ClearDeskTemplateReadHandlerRestoreData() {
-  read_handler_->SetRestoreData(nullptr);
 }
 
 void DesksTemplatesAppLaunchHandler::RecordRestoredAppLaunch(
     apps::AppTypeName app_type_name) {
   // TODO: Add UMA Histogram.
   NOTIMPLEMENTED();
+}
+
+void DesksTemplatesAppLaunchHandler::NotifyMovedSingleInstanceApp(
+    int32_t window_id) {
+  DesksTemplatesClient::Get()->NotifyMovedSingleInstanceApp(window_id);
 }

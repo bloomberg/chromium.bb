@@ -10,7 +10,6 @@
 #include "src/base/sanitizer/asan.h"
 #include "src/base/sanitizer/msan.h"
 #include "src/base/sanitizer/tsan.h"
-#include "src/heap/cppgc/globals.h"
 
 namespace heap {
 namespace base {
@@ -40,7 +39,7 @@ bool Stack::IsOnStack(void* slot) const {
 #if defined(__has_feature)
 #if __has_feature(safe_stack)
   if (__builtin___get_unsafe_stack_top() >= slot &&
-      slot > __builtin___get_unsafe_stack_ptr()) {
+      slot >= __builtin___get_unsafe_stack_ptr()) {
     return true;
   }
 #endif  // __has_feature(safe_stack)

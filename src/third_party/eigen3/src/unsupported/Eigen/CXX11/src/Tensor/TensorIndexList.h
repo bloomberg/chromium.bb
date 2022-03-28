@@ -305,6 +305,11 @@ struct IndexList : internal::IndexTuple<FirstType, OtherTypes...> {
     return internal::tuple_coeff<internal::array_size<internal::IndexTuple<FirstType, OtherTypes...> >::value-1, Index>::set(i, *this, value);
   }
 
+  EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC constexpr std::size_t size() const {
+    return 1 + sizeof...(OtherTypes);
+  };
+
+
   EIGEN_DEVICE_FUNC constexpr IndexList(const internal::IndexTuple<FirstType, OtherTypes...>& other) : internal::IndexTuple<FirstType, OtherTypes...>(other) { }
   EIGEN_DEVICE_FUNC constexpr IndexList(FirstType& first, OtherTypes... other) : internal::IndexTuple<FirstType, OtherTypes...>(first, other...) { }
   EIGEN_DEVICE_FUNC constexpr IndexList() : internal::IndexTuple<FirstType, OtherTypes...>() { }

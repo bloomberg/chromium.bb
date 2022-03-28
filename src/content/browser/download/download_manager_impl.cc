@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
@@ -498,7 +499,7 @@ void DownloadManagerImpl::DetermineDownloadTarget(
         target_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN, target_path,
-        absl::nullopt /*download_schedule*/,
+        base::FilePath(), absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 }
@@ -832,8 +833,9 @@ void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
   pending_disk_access_query_.erase(download_id);
 
   if (!result) {  // File does not exist.
-    if (base::Contains(downloads_, download_id))
-      downloads_[download_id]->OnDownloadedFileRemoved();
+    auto it = downloads_.find(download_id);
+    if (it != downloads_.end())
+      it->second->OnDownloadedFileRemoved();
   }
 }
 
@@ -1257,8 +1259,8 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() {
 }
 
 download::DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
-  return base::Contains(downloads_, download_id) ? downloads_[download_id].get()
-                                                 : nullptr;
+  auto it = downloads_.find(download_id);
+  return it != downloads_.end() ? it->second.get() : nullptr;
 }
 
 download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
@@ -1269,8 +1271,8 @@ download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
         return it.get();
     }
   }
-  return base::Contains(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
-                                                  : nullptr;
+  auto it = downloads_by_guid_.find(guid);
+  return it != downloads_by_guid_.end() ? it->second : nullptr;
 }
 
 void DownloadManagerImpl::GetAllDownloads(

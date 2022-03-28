@@ -102,8 +102,8 @@ std::tuple<SkStrikeSpec, SkScalar> SkStrikeSpec::MakeCanonicalized(
         canonicalizedPaint.reset();
     }
 
-    return {SkStrikeSpec(*canonicalizedFont, canonicalizedPaint,
-                         SkSurfaceProps(), kFakeGammaAndBoostContrast, SkMatrix::I()),
+    return {SkStrikeSpec(*canonicalizedFont, canonicalizedPaint, SkSurfaceProps(),
+                         SkScalerContextFlags::kFakeGammaAndBoostContrast, SkMatrix::I()),
             strikeToSourceScale};
 }
 
@@ -113,8 +113,8 @@ SkStrikeSpec SkStrikeSpec::MakeWithNoDevice(const SkFont& font, const SkPaint* p
         setupPaint = *paint;
     }
 
-    return SkStrikeSpec(
-            font, setupPaint, SkSurfaceProps(), kFakeGammaAndBoostContrast, SkMatrix::I());
+    return SkStrikeSpec(font, setupPaint, SkSurfaceProps(),
+                        SkScalerContextFlags::kFakeGammaAndBoostContrast, SkMatrix::I());
 }
 
 bool SkStrikeSpec::ShouldDrawAsPath(
@@ -166,7 +166,7 @@ SkStrikeSpec SkStrikeSpec::MakePDFVector(const SkTypeface& typeface, int* size) 
     return SkStrikeSpec(font,
                         SkPaint(),
                         SkSurfaceProps(0, kUnknown_SkPixelGeometry),
-                        kFakeGammaAndBoostContrast,
+                        SkScalerContextFlags::kFakeGammaAndBoostContrast,
                         SkMatrix::I());
 }
 
@@ -259,6 +259,23 @@ void SkBulkGlyphMetricsAndPaths::findIntercepts(
     // TODO(herb): remove this abominable const_cast. Do the intercepts really need to be on the
     //  glyph?
     fStrike->findIntercepts(bounds, scale, xPos, const_cast<SkGlyph*>(glyph), array, count);
+}
+
+SkBulkGlyphMetricsAndDrawables::SkBulkGlyphMetricsAndDrawables(const SkStrikeSpec& spec)
+        : fStrike{spec.findOrCreateStrike()} { }
+
+SkBulkGlyphMetricsAndDrawables::SkBulkGlyphMetricsAndDrawables(sk_sp<SkStrike>&& strike)
+        : fStrike{std::move(strike)} { }
+
+SkBulkGlyphMetricsAndDrawables::~SkBulkGlyphMetricsAndDrawables() = default;
+
+SkSpan<const SkGlyph*> SkBulkGlyphMetricsAndDrawables::glyphs(SkSpan<const SkGlyphID> glyphIDs) {
+    fGlyphs.reset(glyphIDs.size());
+    return fStrike->prepareDrawables(glyphIDs, fGlyphs.get());
+}
+
+const SkGlyph* SkBulkGlyphMetricsAndDrawables::glyph(SkGlyphID glyphID) {
+    return this->glyphs(SkSpan<const SkGlyphID>{&glyphID, 1})[0];
 }
 
 SkBulkGlyphMetricsAndImages::SkBulkGlyphMetricsAndImages(const SkStrikeSpec& spec)

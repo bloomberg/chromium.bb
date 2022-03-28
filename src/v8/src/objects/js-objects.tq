@@ -40,11 +40,20 @@ macro NewJSObject(implicit context: Context)(): JSObject {
   return AllocateJSObjectFromMap(map);
 }
 
+extern class JSExternalObject extends JSObject { value: ExternalPointer; }
+
+// A JSObject that may contain EmbedderDataSlots.
+@abstract
+extern class JSObjectWithEmbedderSlots extends JSObject {
+}
+
 @abstract
 @lowestInstanceTypeWithinParentClassRange
 extern class JSCustomElementsObject extends JSObject {
 }
 
+// These may also contain EmbedderDataSlots but can't be a child class of
+// JSObjectWithEmbedderSlots due to type id constraints.
 @abstract
 @lowestInstanceTypeWithinParentClassRange
 extern class JSSpecialObject extends JSCustomElementsObject {

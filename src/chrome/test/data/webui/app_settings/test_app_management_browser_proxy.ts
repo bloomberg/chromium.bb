@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {App, PageCallbackRouter, PageHandlerInterface, PageRemote} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
+import {App, PageCallbackRouter, PageHandlerInterface, PageRemote, Permission} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {BrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
-import {OptionalBool, Permission, RunOnOsLoginMode, WindowMode} from 'chrome://resources/cr_components/app_management/types.mojom-webui.js';
+import {OptionalBool, RunOnOsLoginMode, WindowMode} from 'chrome://resources/cr_components/app_management/types.mojom-webui.js';
 
 export class FakePageHandler implements PageHandlerInterface {
   private app_: App;
@@ -60,6 +60,11 @@ export class FakePageHandler implements PageHandlerInterface {
     this.app_.runOnOsLogin!.loginMode = loginMode;
     this.page_.onAppChanged(this.app_);
   }
+
+  setFileHandlingEnabled(_appId: string, fileHandlingEnabled: boolean) {
+    this.app_.fileHandlingState!.enabled = fileHandlingEnabled;
+    this.page_.onAppChanged(this.app_);
+  }
 }
 
 export class TestAppManagementBrowserProxy implements BrowserProxy {
@@ -76,5 +81,9 @@ export class TestAppManagementBrowserProxy implements BrowserProxy {
 
     this.fakeHandler = new FakePageHandler(this.callbackRouterRemote, app);
     this.handler = this.fakeHandler;
+  }
+
+  recordEnumerationValue(metricName: string, value: number, enumSize: number) {
+    chrome.metricsPrivate.recordEnumerationValue(metricName, value, enumSize);
   }
 }

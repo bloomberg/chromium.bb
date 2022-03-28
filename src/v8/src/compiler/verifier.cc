@@ -49,6 +49,9 @@ class Verifier::Visitor {
 
  private:
   void CheckNotTyped(Node* node) {
+    // Verification of simplified lowering sets types of many additional nodes.
+    if (FLAG_verify_simplified_lowering) return;
+
     if (NodeProperties::IsTyped(node)) {
       std::ostringstream str;
       str << "TypeError: node #" << node->id() << ":" << *node->op()
@@ -736,30 +739,31 @@ void Verifier::Visitor::Check(Node* node, const AllNodes& all) {
       CheckTypeIs(node, Type::Any());
       CHECK(LoadGlobalParametersOf(node->op()).feedback().IsValid());
       break;
-    case IrOpcode::kJSStoreProperty:
+    case IrOpcode::kJSSetKeyedProperty:
       CheckNotTyped(node);
       CHECK(PropertyAccessOf(node->op()).feedback().IsValid());
       break;
-    case IrOpcode::kJSDefineProperty:
+    case IrOpcode::kJSDefineKeyedOwnProperty:
       CheckNotTyped(node);
       CHECK(PropertyAccessOf(node->op()).feedback().IsValid());
       break;
-    case IrOpcode::kJSStoreNamed:
+    case IrOpcode::kJSSetNamedProperty:
       CheckNotTyped(node);
       break;
     case IrOpcode::kJSStoreGlobal:
       CheckNotTyped(node);
       CHECK(StoreGlobalParametersOf(node->op()).feedback().IsValid());
       break;
-    case IrOpcode::kJSStoreNamedOwn:
+    case IrOpcode::kJSDefineNamedOwnProperty:
       CheckNotTyped(node);
-      CHECK(StoreNamedOwnParametersOf(node->op()).feedback().IsValid());
+      CHECK(
+          DefineNamedOwnPropertyParametersOf(node->op()).feedback().IsValid());
       break;
     case IrOpcode::kJSGetIterator:
       CheckValueInputIs(node, 0, Type::Any());
       CheckTypeIs(node, Type::Any());
       break;
-    case IrOpcode::kJSStoreDataPropertyInLiteral:
+    case IrOpcode::kJSDefineKeyedOwnPropertyInLiteral:
     case IrOpcode::kJSStoreInArrayLiteral:
       CheckNotTyped(node);
       CHECK(FeedbackParameterOf(node->op()).feedback().IsValid());

@@ -28,6 +28,7 @@ from . import outfeed_receiver
 from . import pmap_lib
 from . import profiler
 from . import pytree
+from . import transfer_guard_lib
 
 _LiteralSlice = Any
 _Status = Any
@@ -157,7 +158,13 @@ class HloPrintOptions:
   leading_and_trailing_instructions_number: int
 
 class HloModule:
+  spmd_output_sharding: Optional[OpSharding]
+  spmd_parameters_shardings: Optional[List[OpSharding]]
   def to_string(self, options: HloPrintOptions = ...) -> str: ...
+  def as_serialized_hlo_module_proto(self)-> bytes: ...
+  @staticmethod
+  def from_serialized_hlo_module_proto(
+    serialized_hlo_module_proto: bytes) -> HloModule: ...
 
 def hlo_module_to_dot_graph(hlo_module: HloModule) -> str: ...
 
@@ -244,6 +251,7 @@ class OpSharding:
   Type: typing.Type[OpSharding_Type]
   type: OpSharding_Type
   replicate_on_last_tile_dim: bool
+  last_tile_dims: Sequence[Type]
   tile_assignment_dimensions: Sequence[int]
   tile_assignment_devices: Sequence[int]
   tuple_shardings: Sequence[OpSharding]
@@ -382,7 +390,6 @@ class DeviceArray(DeviceArrayBase):
   _device: Optional[Device]
   aval: Any
   weak_type: Optional[bool]
-  _lazy_expr: Any
   @property
   def device_buffer(self: _T) -> _T: ...
   shape: Tuple[int, ...]
@@ -488,13 +495,6 @@ def is_optimized_build() -> bool: ...
 def json_to_pprof_profile(json: str) -> bytes: ...
 def pprof_profile_to_json(proto: bytes) -> str: ...
 
-class CompiledFunctionCache:
-  def __init__(self, capacity: int = ...): ...
-  def __getstate__(self) -> Any: ...
-  def __setstate__(self, Any): ...
-  def size(self) -> int: ...
-  def capacity(self) -> int: ...
-  def clear(self): ...
 
 class CompiledFunction:
   def __call__(self, *args, **kwargs) -> Any: ...

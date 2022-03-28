@@ -40,21 +40,20 @@ sk_sp<SkBlender> PaintParams::refBlender() const { return fBlender; }
 
 sk_sp<SkShader> PaintParams::refShader() const { return fShader; }
 
-void PaintParams::toKey(SkShaderCodeDictionary* dict,
-                        SkBackend backend,
+void PaintParams::toKey(const SkKeyContext& keyContext,
                         SkPaintParamsKeyBuilder* builder,
-                        SkUniformBlock* uniformBlock) const {
+                        SkPipelineData* pipelineData) const {
 
     if (fShader) {
-        as_SB(fShader)->addToKey(dict, backend, builder, uniformBlock);
+        as_SB(fShader)->addToKey(keyContext, builder, pipelineData);
     } else {
-        SolidColorShaderBlock::AddToKey(dict, backend, builder, uniformBlock, fColor);
+        SolidColorShaderBlock::AddToKey(keyContext, builder, pipelineData, fColor.premul());
     }
 
     if (fBlender) {
-        as_BB(fBlender)->addToKey(dict, backend, builder, uniformBlock);
+        as_BB(fBlender)->addToKey(keyContext, builder, pipelineData);
     } else {
-        BlendModeBlock::AddToKey(dict, backend, builder, uniformBlock, SkBlendMode::kSrcOver);
+        BlendModeBlock::AddToKey(keyContext, builder, pipelineData, SkBlendMode::kSrcOver);
     }
 
     SkASSERT(builder->sizeInBytes() > 0);

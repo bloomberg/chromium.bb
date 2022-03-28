@@ -170,6 +170,25 @@ TEST(TplModelTest, GetOverlapAreaNoOverlap) {
   EXPECT_EQ(overlap_area, 0);
 }
 
+TEST(TplModelTest, GetQIndexFromQstepRatio) {
+  const aom_bit_depth_t bit_depth = AOM_BITS_8;
+  // When qstep_ratio is 1, the output q_index should be equal to leaf_qindex.
+  double qstep_ratio = 1.0;
+  for (int leaf_qindex = 1; leaf_qindex <= 255; ++leaf_qindex) {
+    const int q_index =
+        av1_get_q_index_from_qstep_ratio(leaf_qindex, qstep_ratio, bit_depth);
+    EXPECT_EQ(q_index, leaf_qindex);
+  }
+
+  // When qstep_ratio is very low, the output q_index should be 1.
+  qstep_ratio = 0.0001;
+  for (int leaf_qindex = 1; leaf_qindex <= 255; ++leaf_qindex) {
+    const int q_index =
+        av1_get_q_index_from_qstep_ratio(leaf_qindex, qstep_ratio, bit_depth);
+    EXPECT_EQ(q_index, 0);
+  }
+}  // namespace
+
 TEST(TplModelTest, TxfmStatsInitTest) {
   TplTxfmStats tpl_txfm_stats;
   av1_init_tpl_txfm_stats(&tpl_txfm_stats);

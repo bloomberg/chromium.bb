@@ -105,7 +105,7 @@ void FakeLocalFrame::AdvanceFocusInFrame(
     blink::mojom::FocusType focus_type,
     const absl::optional<blink::RemoteFrameToken>& source_frame_token) {}
 
-void FakeLocalFrame::AdvanceFocusInForm(blink::mojom::FocusType focus_type) {}
+void FakeLocalFrame::AdvanceFocusForIME(blink::mojom::FocusType focus_type) {}
 
 void FakeLocalFrame::ReportContentSecurityPolicyViolation(
     network::mojom::CSPViolationPtr violation) {}
@@ -188,8 +188,8 @@ void FakeLocalFrame::HandleRendererDebugURL(const GURL& url) {}
 void FakeLocalFrame::GetCanonicalUrlForSharing(
     base::OnceCallback<void(const absl::optional<GURL>&)> callback) {}
 
-void FakeLocalFrame::SetAppHistoryEntriesForRestore(
-    blink::mojom::AppHistoryEntryArraysPtr entry_arrays) {}
+void FakeLocalFrame::SetNavigationApiHistoryEntriesForRestore(
+    blink::mojom::NavigationApiHistoryEntryArraysPtr entry_arrays) {}
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

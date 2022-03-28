@@ -20,9 +20,11 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 
+class Browser;
 class PrefService;
 
 namespace content {
+class BrowsingDataRemover;
 class InterestGroupManager;
 }
 
@@ -80,14 +82,16 @@ class PrivacySandboxService : public KeyedService,
     kMaxValue = kConsentClosedNoDecision,
   };
 
-  PrivacySandboxService(PrivacySandboxSettings* privacy_sandbox_settings,
-                        content_settings::CookieSettings* cookie_settings,
-                        PrefService* pref_service,
-                        policy::PolicyService* policy_service,
-                        syncer::SyncService* sync_service,
-                        signin::IdentityManager* identity_manager,
-                        content::InterestGroupManager* interest_group_manager,
-                        profile_metrics::BrowserProfileType profile_type);
+  PrivacySandboxService(
+      privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings,
+      content_settings::CookieSettings* cookie_settings,
+      PrefService* pref_service,
+      policy::PolicyService* policy_service,
+      syncer::SyncService* sync_service,
+      signin::IdentityManager* identity_manager,
+      content::InterestGroupManager* interest_group_manager,
+      profile_metrics::BrowserProfileType profile_type,
+      content::BrowsingDataRemover* browsing_data_remover);
   ~PrivacySandboxService() override;
 
   // Returns the dialog type that should be shown to the user. This consults
@@ -95,7 +99,8 @@ class PrivacySandboxService : public KeyedService,
   // state of the Privacy Sandbox settings, and the current location of the
   // user, to determine the appropriate type. This is expected to be called by
   // UI code locations determining whether a dialog should be shown on startup.
-  DialogType GetRequiredDialogType();
+  // Virtual to allow mocking in tests.
+  virtual DialogType GetRequiredDialogType();
 
   // Informs the service that |action| occurred with the dialog. This allows
   // the service to record this information in preferences such that future
@@ -104,6 +109,31 @@ class PrivacySandboxService : public KeyedService,
   // between platforms will also be recorded.
   // This method is virtual for mocking in tests.
   virtual void DialogActionOccurred(DialogAction action);
+
+  // Returns whether |url| is suitable to display the Privacy Sandbox dialog
+  // over. Only about:blank and certain chrome:// URLs are considered suitable.
+  static bool IsUrlSuitableForDialog(const GURL& url);
+
+  // Functions for coordinating the display of the Privacy Sandbox dialog
+  // across multiple browser windows. Only relevant for Desktop.
+
+  // Informs the service that a Privacy Sandbox dialog |view| has been opened
+  // or closed for |browser|.
+  // Virtual to allow mocking in tests.
+  virtual void DialogOpenedForBrowser(Browser* browser);
+  virtual void DialogClosedForBrowser(Browser* browser);
+
+  // Returns whether a Privacy Sandbox dialog is currently open for |browser|.
+  // Virtual to allow mocking in tests.
+  virtual bool IsDialogOpenForBrowser(Browser* browser);
+
+  // Disables the display of the Privacy Sandbox dialog for testing. When
+  // |disabled| is true, GetRequiredDialogType() will only ever return that no
+  // dialog is required.
+  // NOTE: This is set to true in InProcessBrowserTest::SetUp, disabling the
+  // dialog for those tests. If you set this outside of that context, you should
+  // ensure it is reset at the end of your test.
+  static void SetDialogDisabledForTests(bool disabled);
 
   // Returns a description of FLoC ready for display to the user. Correctly
   // takes into account the FLoC feature parameters when determining the number
@@ -159,8 +189,17 @@ class PrivacySandboxService : public KeyedService,
   // Returns whether the state of the API is managed.
   bool IsPrivacySandboxManaged();
 
-  // Called when a preference relevant to the the Privacy Sandbox is changed.
-  void OnPrivacySandboxPrefChanged();
+  // Returns whether the Privacy Sandbox is currently restricted for the
+  // profile. UI code should consult this to ensure that when restricted,
+  // Privacy Sandbox related UI is updated appropriately.
+  bool IsPrivacySandboxRestricted();
+
+  // Called when a preference relevant to the the V1 Privacy Sandbox page is
+  // changed.
+  void OnPrivacySandboxV1PrefChanged();
+
+  // Called when the V2 Privacy Sandbox preference is changed.
+  void OnPrivacySandboxV2PrefChanged();
 
   // Returns the set of eTLD + 1's on which the user was joined to a FLEDGE
   // interest group. Consults with the InterestGroupManager associated with
@@ -175,7 +214,9 @@ class PrivacySandboxService : public KeyedService,
       const;
 
   // Sets Fledge interest group joining to |allowed| for |top_frame_etld_plus1|.
-  // This is a wrapper on the equivalent function on PrivacySandboxSettings.
+  // Forwards the setting to the PrivacySandboxSettings service, but also
+  // removes any Fledge data for the |top_frame_etld_plus1| if |allowed| is
+  // false.
   // Virtual to allow mocking in tests.
   virtual void SetFledgeJoiningAllowed(const std::string& top_frame_etld_plus1,
                                        bool allowed) const;
@@ -245,8 +286,35 @@ class PrivacySandboxService : public KeyedService,
                            MetricsLoggingOccursCorrectly);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTestNonRegularProfile,
                            NoMetricsRecorded);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDialogTest, RestrictedDialog);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDialogTest, ManagedNoDialog);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDeathTest,
                            GetRequiredDialogType);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxDialogNoticeWaiting);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxDialogConsentWaiting);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxV1OffEnabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxV1OffDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxConsentEnabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxConsentDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxNoticeEnabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxNoticeDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandbox3PCOffEnabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandbox3PCOffDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxManagedEnabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest,
+                           PrivacySandboxManagedDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTest, PrivacySandboxRestricted);
 
   // Should be used only for tests when mocking the service.
   PrivacySandboxService();
@@ -273,6 +341,28 @@ class PrivacySandboxService : public KeyedService,
     kMaxValue = kPSEnabledFlocDisabledBlockAll,
   };
 
+  // Contains the possible states of a users Privacy Sandbox overall settings.
+  // Must be kept in sync with SettingsPrivacySandboxStartupStates in
+  // histograms/enums.xml
+  enum class PSStartupStates {
+    kDialogWaiting = 0,
+    kDialogOffV1OffEnabled = 1,
+    kDialogOffV1OffDisabled = 2,
+    kConsentShownEnabled = 3,
+    kConsentShownDisabled = 4,
+    kNoticeShownEnabled = 5,
+    kNoticeShownDisabled = 6,
+    kDialogOff3PCOffEnabled = 7,
+    kDialogOff3PCOffDisabled = 8,
+    kDialogOffManagedEnabled = 9,
+    kDialogOffManagedDisabled = 10,
+    kDialogOffRestricted = 11,
+
+    // Add values above this line with a corresponding label in
+    // tools/metrics/histograms/enums.xml
+    kMaxValue = kDialogOffRestricted,
+  };
+
   // Inspects the current sync state and settings to determine if the Privacy
   // Sandbox prefs should be reconciled. Calls ReconcilePrivacySandbox()
   // immediately if appropriate, or may register sync and identity observers to
@@ -296,6 +386,10 @@ class PrivacySandboxService : public KeyedService,
   // profile startup.
   void LogPrivacySandboxState();
 
+  // Logs the state of privacy sandbox 3 in regards to dialogs. Called once per
+  // profile startup.
+  void RecordPrivacySandbox3StartupMetrics();
+
   // Converts the provided list of |top_frames| into eTLD+1s for display, and
   // provides those to |callback|.
   void ConvertFledgeJoiningTopFramesForDisplay(
@@ -304,13 +398,17 @@ class PrivacySandboxService : public KeyedService,
 
   // Contains the logic which powers GetRequiredDialogType(). Static to allow
   // EXPECT_DCHECK_DEATH testing, which does not work well with many of the
-  // other dependencies of this service.
+  // other dependencies of this service. It is also for this reason the 3P
+  // cookie block state is passed in, as CookieSettings cannot be used in
+  // death tests.
   static PrivacySandboxService::DialogType GetRequiredDialogTypeInternal(
       PrefService* pref_service,
-      profile_metrics::BrowserProfileType profile_type);
+      profile_metrics::BrowserProfileType profile_type,
+      privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings,
+      bool third_party_cookies_blocked);
 
  private:
-  raw_ptr<PrivacySandboxSettings> privacy_sandbox_settings_;
+  raw_ptr<privacy_sandbox::PrivacySandboxSettings> privacy_sandbox_settings_;
   raw_ptr<content_settings::CookieSettings> cookie_settings_;
   raw_ptr<PrefService> pref_service_;
   raw_ptr<policy::PolicyService> policy_service_;
@@ -318,6 +416,7 @@ class PrivacySandboxService : public KeyedService,
   raw_ptr<signin::IdentityManager> identity_manager_;
   raw_ptr<content::InterestGroupManager> interest_group_manager_;
   profile_metrics::BrowserProfileType profile_type_;
+  raw_ptr<content::BrowsingDataRemover> browsing_data_remover_;
 
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_{this};
@@ -331,13 +430,20 @@ class PrivacySandboxService : public KeyedService,
   // Unfortunately PolicyService does not support scoped observers.
   bool policy_service_observed_ = false;
 
+  // The set of Browser windows which have an open Privacy Sandbox dialog.
+  std::set<Browser*> browsers_with_open_dialogs_;
+
   // Fake implementation for current and blocked topics.
   std::set<privacy_sandbox::CanonicalTopic> fake_current_topics_ = {
-      {1, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
-      {2, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
+      {browsing_topics::Topic(1),
+       privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
+      {browsing_topics::Topic(2),
+       privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
   std::set<privacy_sandbox::CanonicalTopic> fake_blocked_topics_ = {
-      {3, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
-      {4, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
+      {browsing_topics::Topic(3),
+       privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
+      {browsing_topics::Topic(4),
+       privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
 
   base::WeakPtrFactory<PrivacySandboxService> weak_factory_{this};
 };

@@ -7,13 +7,13 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "ash/constants/ash_features.h"');
-GEN('#include "ash/constants/ash_features.h"');
-GEN('#include "components/app_restore/features.h"');
-GEN('#include "chrome/common/buildflags.h"');
 GEN('#include "build/branding_buildflags.h"');
-GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "chrome/browser/ash/crostini/fake_crostini_features.h"');
 GEN('#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"');
+GEN('#include "chrome/common/buildflags.h"');
+GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/app_restore/features.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
 
@@ -29,7 +29,6 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kEnableHostnameSetting',
-        'features::kCrostini',
       ],
     };
   }
@@ -281,7 +280,40 @@ var OSSettingsSearchEngineV3Test = class extends OSSettingsV3BrowserTest {
   }
 };
 
-TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
+var OSSettingsAppManagementAppDetailsV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_details_item_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(
+          ['features::kAppManagementAppDetails'])
+    };
+  }
+};
+
+TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+var OSSettingsCrostiniPageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.m.js';
+  }
+
+  /** @override */
+  testGenPreamble() {
+    GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
+    GEN('fake_crostini_features.SetAll(true);');
+  }
+};
+
+TEST_F('OSSettingsCrostiniPageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -292,6 +324,7 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.m.js'],
  ['AppsPage', 'apps_page_test.m.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.m.js'],
+ ['AppManagementAppDetailsItem', 'app_details_item_test.m.js'],
  ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
  ['AppManagementAppItem', 'app_item_test.m.js'],
  ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
@@ -301,7 +334,6 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['AppManagementMainView', 'main_view_test.m.js'],
  ['AppManagementManagedApp', 'managed_apps_test.m.js'],
  ['AppManagementPage', 'app_management_page_tests.m.js'],
- ['AppManagementPermissionItem', 'permission_item_test.m.js'],
  ['AppManagementPinToShelfItem', 'pin_to_shelf_item_test.m.js'],
  ['AppManagementPluginVmDetailView', 'plugin_vm_detail_view_test.m.js'],
  ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
@@ -318,7 +350,6 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
    'DictationChangeLanguageLocaleDialogTest',
    'change_dictation_locale_dialog_test.m.js'
  ],
- ['CrostiniPage', 'crostini_page_test.m.js'],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
  // TODO(crbug/1240970): Re-enable once flakiness is fixed.
@@ -344,7 +375,6 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.m.js'],
- ['LocalizedLink', 'localized_link_test.m.js'],
  ['LockScreenPage', 'lock_screen_tests.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
  ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.m.js'],

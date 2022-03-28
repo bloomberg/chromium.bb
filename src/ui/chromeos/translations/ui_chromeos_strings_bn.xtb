@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">পরের</translation>
 <translation id="1209796539517632982">স্বয়ংক্রিয় নাম সার্ভার</translation>
 <translation id="1210831758834677569">লাও</translation>
+<translation id="1223825810409523901">Chrome এক্সটেনশন</translation>
 <translation id="1243314992276662751">আপলোড</translation>
 <translation id="1249250836236328755">প্রকার</translation>
 <translation id="1254593899333212300">সরাসরি ইন্টারনেট সংযোগ</translation>
@@ -61,6 +62,7 @@
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" পুনঃনাম দিতে অসমর্থ৷ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">ইংরেজি (মার্কিন যুক্তরাষ্ট্র) ভাষায় Dvorak কীবোর্ড</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - হোস্ট</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1538729222189715449">Linux ফাইল খোলা হচ্ছে...</translation>
 <translation id="1547964879613821194">কানাডীয় ইংরেজি</translation>
 <translation id="1556189134700913550">সবগুলিতে প্রয়োগ করুন</translation>
@@ -79,6 +81,7 @@
 <translation id="166439687370499867">শেয়ার করার নেটওয়ার্ক কনফিগারেশন পরিবর্তনের অনুমতি নেই</translation>
 <translation id="1665611772925418501">ফাইল সংশোধন করা যায়নি৷</translation>
 <translation id="1673103856845176271">নিরাপত্তাজড়িন কারণে ফাইলটিতে অ্যাক্সেস করা যায়নি৷</translation>
+<translation id="16762847117768727">ISO ছবি</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">বাইকিং</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" />টি আইটেম জিপ করা হচ্ছে…</translation>
@@ -184,7 +187,6 @@
 <translation id="2544853746127077729">নেটওয়ার্কের দ্বারা প্রমাণীকরণ সার্টিফিকেট প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> এ যোগ করুন</translation>
 <translation id="255937426064304553">মার্কিন আন্তর্জাতিক</translation>
-<translation id="2562685439590298522">Docs</translation>
 <translation id="2563185590376525700">ব্যাঙ</translation>
 <translation id="2578394532502990878">তামিল ফোনেটিক</translation>
 <translation id="2579959351793446050">ওড়িয়া</translation>
@@ -220,9 +222,7 @@
 <translation id="2902734494705624966">মার্কিন যুক্তরাষ্ট্রীয় বর্ধিত</translation>
 <translation id="290843123675549676">মারাঠি</translation>
 <translation id="2923240520113693977">এস্তোনীয়</translation>
-<translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">মঙ্গোলীয়</translation>
-<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">অন্য একটি ছোট নাম ব্যবহার করুন</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ফরম্যাট করা হচ্ছে...</translation>
 <translation id="2951236788251446349">জেলিফিশ</translation>
@@ -384,6 +384,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" /> সিগন্যাল ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে, বিবরণ</translation>
 <translation id="4387004326333427325">দূরবর্তী লোকেশন থেকে প্রমাণীকরণ সার্টিফিকেট প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="4394214039309501350">এক্সটার্নাল লিঙ্ক</translation>
+<translation id="4401287888955153199">জিপ ফাইল থেকে সব কন্টেন্ট এক্সট্র্যাক্ট করুন</translation>
 <translation id="4418686080762064601">আপনার ফাইলের একটি শর্টকাট তৈরি করুন</translation>
 <translation id="4425149324548788773">আমার ড্রাইভ</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, কানেক্ট করুন</translation>
@@ -413,6 +414,7 @@
 <translation id="4656777537938206294">ফাইল অফলাইনে উপলভ্য করুন</translation>
 <translation id="4658782175094886150">বরফের মধ্যে ব্যক্তির ছবি</translation>
 <translation id="4669606053856530811">এই আইটেমগুলি '<ph name="SOURCE_NAME" />' এর সদস্যদের সাথে শেয়ার না করলে তারা সেগুলি অ্যাক্সেস করতে পারবে না।</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">সুইডিশ</translation>
 <translation id="4693155481716051732">সুশি</translation>
 <translation id="4694604912444486114">বাঁদর</translation>
@@ -656,6 +658,7 @@
 <translation id="6732801395666424405">শংসাপত্র লোড হয়নি</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">১টি ফোল্ডার নির্বাচন করা হয়েছে</translation>
+<translation id="6755827872271341378">ChromeOS Flex ডিভাইস</translation>
 <translation id="6790428901817661496">চালু করুন</translation>
 <translation id="6795884519221689054">পান্ডা</translation>
 <translation id="6806699711453372963">Linux শেয়ারিং পরিচালনা করুন</translation>
@@ -733,6 +736,7 @@
 <translation id="7343393116438664539">ভিয়েতনামি টেলেক্স</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />টি আইটেম কপি করা হচ্ছে…</translation>
 <translation id="7375951387215729722">ফাইলের তালিকা <ph name="COLUMN_NAME" />-এর মানের উপর নির্ভর করে বড় থেকে ছোট ক্রমানুযায়ী সাজানো আছে।</translation>
+<translation id="7402503521691663770">ChromeOS Flex ডিভাইস</translation>
 <translation id="7408870451288633753">চেক ভাষা</translation>
 <translation id="7417453074306512035">ইথিওপিক কীবোর্ড</translation>
 <translation id="7417705661718309329">Google ম্যাপ</translation>
@@ -808,6 +812,7 @@
 <translation id="7925686952655276919">সিঙ্ক-এর জন্য মোবাইল ডেটা ব্যবহার করবেন না</translation>
 <translation id="7928710562641958568">বের করে দেওযার ডিভাইস</translation>
 <translation id="7943385054491506837">মার্কিন যুক্তরাষ্ট্রীয় কোলেম্যাক</translation>
+<translation id="7948417415021769876">7z ফাইল</translation>
 <translation id="7953739707111622108">এই ডিভাইসটি ফাইল সিস্টেমটি স্বীকৃত না হওয়ার কারণে খুলতে পারা যায়না৷</translation>
 <translation id="7969525169268594403">স্লোভেনিয়ান</translation>
 <translation id="7972920761225148017">ফরাসি (সুইজারল্যান্ড)</translation>
@@ -822,6 +827,7 @@
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> অডিও</translation>
 <translation id="8045462269890919536">রোমানিয়</translation>
 <translation id="8049184478152619004">'পার্সোনাল আনব্লকিং কী' (PUK) লিখুন</translation>
+<translation id="807187749540895545"><ph name="FILE_NAME" /> এক্সট্র্যাক্ট করা হচ্ছে...</translation>
 <translation id="8079530767338315840">পুনরাবৃত্তি করুন</translation>
 <translation id="8087576439476816834"><ph name="PROFILE_NAME" />, ডাউনলোড করুন</translation>
 <translation id="8106045200081704138">আমার সাথে শেয়ার করা</translation>
@@ -856,6 +862,7 @@
 <translation id="8372369524088641025">খারাপ WEP কী</translation>
 <translation id="8372852072747894550">গ্রিক</translation>
 <translation id="8386903983509584791">স্ক্যান করা সম্পন্ন হয়েছে</translation>
+<translation id="8387733224523483503"><ph name="FILE_NAME" /> এক্সট্র্যাক্ট করা হয়েছে।</translation>
 <translation id="8395901698320285466">আয়তন</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> নেটওয়ার্ক, কানেক্ট করা হচ্ছে</translation>
 <translation id="8425213833346101688">পরিবর্তন</translation>
@@ -873,6 +880,7 @@
 <translation id="8484284835977497781">আপনার সাম্প্রতিক ফটো থেকে বেছে নিন।</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8492972329130824181">হোম নেটওয়ার্ক উপলভ্য নেই। কানেক্ট করতে, মোবাইলে ডেটা রোমিং অবশ্যই চালু থাকতে হবে।</translation>
+<translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" />টি আইটেম এক্সট্র্যাক্ট করা হচ্ছে...</translation>
 <translation id="8521441079177373948">যুক্তরাজ্য</translation>
 <translation id="8525306231823319788">পূর্ণ স্ক্রীণ</translation>
 <translation id="853494022971700746">ফরাসি (ফ্রান্স)</translation>
@@ -947,7 +955,9 @@
 <translation id="9172592259078059678">গুজরাতি লিপ্যন্তর</translation>
 <translation id="9173120999827300720">ইংরেজি (মার্কিন যুক্তরাষ্ট্র) ভাষায় ইন্টারন্যাশনাল কীবোর্ড</translation>
 <translation id="9174050671906956834">ট্র্যাশে থাকা আইটেম ৩০ দিন পরে স্থায়ীভাবে মুছে ফেলা হয়।</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">কাজাখ</translation>
+<translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" />টি আইটেম এক্সট্যাক্ট করা হয়েছে।</translation>
 <translation id="9213073329713032541">ইনস্টলেশন চালু হয়েছে।</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9219908252191632183">লুনার</translation>

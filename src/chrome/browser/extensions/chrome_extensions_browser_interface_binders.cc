@@ -29,6 +29,8 @@
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/language/language_packs/language_packs_impl.h"
 #include "chromeos/language/public/mojom/language_packs.mojom.h"
+#include "chromeos/services/chromebox_for_meetings/public/cpp/appid_util.h"
+#include "chromeos/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -46,9 +48,7 @@
 
 #if BUILDFLAG(PLATFORM_CFM)
 #include "chromeos/components/chromebox_for_meetings/features/features.h"
-#include "chromeos/services/chromebox_for_meetings/public/cpp/appid_util.h"
 #include "chromeos/services/chromebox_for_meetings/public/cpp/service_connection.h"
-#include "chromeos/services/chromebox_for_meetings/public/mojom/cfm_service_manager.mojom.h"
 #endif
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -61,7 +61,7 @@ namespace {
 // Resolves InputEngineManager receiver in InputMethodManager.
 void BindInputEngineManager(
     content::RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+    mojo::PendingReceiver<ash::ime::mojom::InputEngineManager> receiver) {
   ash::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
       std::move(receiver));
 }
@@ -129,7 +129,7 @@ void PopulateChromeFrameBindersForExtension(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Registry InputEngineManager for official Google XKB Input only.
   if (extension->id() == ash::extension_ime_util::kXkbExtensionId) {
-    binder_map->Add<chromeos::ime::mojom::InputEngineManager>(
+    binder_map->Add<ash::ime::mojom::InputEngineManager>(
         base::BindRepeating(&BindInputEngineManager));
     binder_map->Add<chromeos::language::mojom::LanguagePacks>(
         base::BindRepeating(&BindLanguagePacks));
@@ -138,19 +138,45 @@ void PopulateChromeFrameBindersForExtension(
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
+  if (chromeos::cfm::IsChromeboxForMeetingsAppId(extension->id())) {
+    binder_map->Add<
+        chromeos::cfm::mojom::CfmServiceContext>(base::BindRepeating(
+        [](content::RenderFrameHost* frame_host,
+           mojo::PendingReceiver<chromeos::cfm::mojom::CfmServiceContext>
+               receiver) {
 #if BUILDFLAG(PLATFORM_CFM)
-  if (base::FeatureList::IsEnabled(chromeos::cfm::features::kMojoServices) &&
-      chromeos::cfm::IsChromeboxForMeetingsAppId(extension->id())) {
-    binder_map->Add<chromeos::cfm::mojom::CfmServiceContext>(
-        base::BindRepeating(
-            [](content::RenderFrameHost* frame_host,
-               mojo::PendingReceiver<chromeos::cfm::mojom::CfmServiceContext>
-                   receiver) {
-              chromeos::cfm::ServiceConnection::GetInstance()
-                  ->BindServiceContext(std::move(receiver));
-            }));
-  }
+          if (base::FeatureList::IsEnabled(
+                  chromeos::cfm::features::kMojoServices)) {
+            chromeos::cfm::ServiceConnection::GetInstance()->BindServiceContext(
+                std::move(receiver));
+          } else {
+            // The experimentation framework used to manage the
+            // chromeos::cfm::features::kMojoServices feature flag requires
+            // Chrome to restart before updates are applied. Meet Devices have
+            // a variable uptime ranging from a week or more and set by the
+            // admin. Additionally its kiosked process is not tied to a chromium
+            // release and can be dynamically updated during Chrome runtime.
+            // Unfortunately this makes it difficult to fully predict when the
+            // flag will be applied to all devices across the fleet.
+            // As such we proactively support the case for devices that may be
+            // in a different state than expected from the kiosked process.
+            receiver.ResetWithReason(
+                static_cast<uint32_t>(
+                    chromeos::cfm::mojom::DisconnectReason::kFinchDisabledCode),
+                chromeos::cfm::mojom::DisconnectReason::kFinchDisabledMessage);
+          }
+#else
+          // On first launch some older devices may be running on none-CfM
+          // images. For those devices reject all requests until they are
+          // rebooted to the CfM image variant for their device.
+          receiver.ResetWithReason(
+              static_cast<uint32_t>(chromeos::cfm::mojom::DisconnectReason::
+                                        kServiceUnavailableCode),
+              chromeos::cfm::mojom::DisconnectReason::
+                  kServiceUnavailableMessage);
 #endif  // BUILDFLAG(PLATFORM_CFM)
+        }));
+  }
 
   if (extension->permissions_data()->HasAPIPermission(
           mojom::APIPermissionID::kMediaPerceptionPrivate)) {

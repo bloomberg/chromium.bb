@@ -15,7 +15,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
@@ -54,6 +53,8 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/geolocation_logger.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
+#import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
@@ -121,11 +122,11 @@
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1962,9 +1963,7 @@ bool IsSigninForcedByPolicy() {
     shouldActivateBrowser:(Browser*)browser
            dismissTabGrid:(BOOL)dismissTabGrid
              focusOmnibox:(BOOL)focusOmnibox {
-  DCHECK(dismissTabGrid ||
-         ShowThumbStripInTraitCollection(
-             self.mainCoordinator.baseViewController.traitCollection));
+  DCHECK(dismissTabGrid || self.mainCoordinator.isThumbStripEnabled);
   [self beginActivatingBrowser:browser
             dismissTabSwitcher:dismissTabGrid
                   focusOmnibox:focusOmnibox];
@@ -1992,9 +1991,7 @@ bool IsSigninForcedByPolicy() {
                   focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(browser == self.mainInterface.browser ||
          browser == self.incognitoInterface.browser);
-  DCHECK(dismissTabSwitcher ||
-         ShowThumbStripInTraitCollection(
-             self.mainCoordinator.baseViewController.traitCollection));
+  DCHECK(dismissTabSwitcher || self.mainCoordinator.isThumbStripEnabled);
 
   self.activatingBrowser = YES;
   ApplicationMode mode = (browser == self.mainInterface.browser)
@@ -2315,10 +2312,10 @@ bool IsSigninForcedByPolicy() {
   // services it wraps.
   ios::GetChromeBrowserProvider().GetChromeIdentityService()->DismissDialogs();
 
-  // MailtoHandlerProvider is responsible for the dialogs displayed by the
+  // MailtoHandlerService is responsible for the dialogs displayed by the
   // services it wraps.
-  ios::GetChromeBrowserProvider()
-      .GetMailtoHandlerProvider()
+  MailtoHandlerServiceFactory::GetForBrowserState(
+      self.currentInterface.browserState)
       ->DismissAllMailtoHandlerInterfaces();
 
   // Then, depending on what the SSO view controller is presented on, dismiss
@@ -2713,8 +2710,8 @@ bool IsSigninForcedByPolicy() {
       dismissSettings();
     }
   } else if (self.signinCoordinator) {
-    //      |self.signinCoordinator| can be presented without settings, from the
-    //      bookmarks or the recent tabs view.
+    // |self.signinCoordinator| can be presented without settings, from the
+    // bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
   } else {
     completion();
@@ -2851,8 +2848,8 @@ bool IsSigninForcedByPolicy() {
       }
     };
 
-    base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
-                           base::BindRepeating(cleanup));
+    web::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, base::DoNothing(), base::BindRepeating(cleanup));
   }
 
   // a) The first condition can happen when the last incognito tab is closed
@@ -2906,7 +2903,7 @@ bool IsSigninForcedByPolicy() {
   // until the callback is received.
   BrowsingDataRemover* browsingDataRemover =
       BrowsingDataRemoverFactory::GetForBrowserStateIfExists(
-          self.currentInterface.browser->GetBrowserState());
+          self.currentInterface.browserState);
   if (browsingDataRemover && browsingDataRemover->IsRemoving())
     return;
 

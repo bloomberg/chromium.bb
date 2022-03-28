@@ -29,8 +29,9 @@ load("//project.star", "settings")
 load("./args.star", "args")
 load("./branches.star", "branches")
 load("./bootstrap.star", "register_bootstrap")
-load("./builder_config.star", "builder_config", "register_builder_config")
+load("./builder_config.star", "register_builder_config")
 load("./recipe_experiments.star", "register_recipe_experiments_ref")
+load("./sheriff_rotations.star", "register_sheriffed_builder")
 
 ################################################################################
 # Constants for use with the builder function                                  #
@@ -190,7 +191,7 @@ xcode = struct(
     # Default Xcode 13 for chromium iOS.
     x13main = xcode_enum("13c100"),
     # A newer Xcode version used on beta bots.
-    x13betabots = xcode_enum("13c100"),
+    x13betabots = xcode_enum("13e5104i"),
     # in use by ios-webkit-tot
     x13wk = xcode_enum("13a1030dwk"),
 )
@@ -204,15 +205,6 @@ _DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX]
 # Macs all have SSDs, so it doesn't make sense to use the default behavior of
 # setting ssd:0 dimension
 _EXCLUDE_BUILDERLESS_SSD_OS_CATEGORIES = [os_category.MAC]
-
-def _chromium_tests_property(*, project_trigger_overrides):
-    chromium_tests = {}
-
-    project_trigger_overrides = defaults.get_value("project_trigger_overrides", project_trigger_overrides)
-    if project_trigger_overrides:
-        chromium_tests["project_trigger_overrides"] = project_trigger_overrides
-
-    return chromium_tests or None
 
 def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs):
     goma_properties = {}
@@ -243,7 +235,8 @@ def _code_coverage_property(
         use_java_coverage,
         use_javascript_coverage,
         coverage_exclude_sources,
-        coverage_test_types):
+        coverage_test_types,
+        export_coverage_to_zoss):
     code_coverage = {}
 
     use_clang_coverage = defaults.get_value(
@@ -274,6 +267,13 @@ def _code_coverage_property(
     )
     if coverage_test_types:
         code_coverage["coverage_test_types"] = coverage_test_types
+
+    export_coverage_to_zoss = defaults.get_value(
+        "export_coverage_to_zoss",
+        export_coverage_to_zoss,
+    )
+    if export_coverage_to_zoss:
+        code_coverage["export_coverage_to_zoss"] = export_coverage_to_zoss
 
     return code_coverage or None
 
@@ -330,7 +330,6 @@ defaults = args.defaults(
     goma_jobs = None,
     list_view = args.COMPUTE,
     os = None,
-    project_trigger_overrides = None,
     pool = None,
     sheriff_rotations = None,
     xcode = None,
@@ -340,6 +339,7 @@ defaults = args.defaults(
     use_javascript_coverage = False,
     coverage_exclude_sources = None,
     coverage_test_types = None,
+    export_coverage_to_zoss = False,
     resultdb_bigquery_exports = [],
     resultdb_index_by_timestamp = False,
     reclient_instance = None,
@@ -386,7 +386,6 @@ def builder(
         xcode = args.DEFAULT,
         console_view_entry = None,
         list_view = args.DEFAULT,
-        project_trigger_overrides = args.DEFAULT,
         goma_backend = args.DEFAULT,
         goma_debug = args.DEFAULT,
         goma_enable_ats = args.DEFAULT,
@@ -396,6 +395,7 @@ def builder(
         use_javascript_coverage = args.DEFAULT,
         coverage_exclude_sources = args.DEFAULT,
         coverage_test_types = args.DEFAULT,
+        export_coverage_to_zoss = args.DEFAULT,
         resultdb_bigquery_exports = args.DEFAULT,
         resultdb_index_by_timestamp = args.DEFAULT,
         reclient_instance = args.DEFAULT,
@@ -502,11 +502,6 @@ def builder(
         list_view: A string or a list of strings identifying the ID(s) of the
             list view(s) to add an entry to. Supports a module-level default
             that defaults to no list views.
-        project_trigger_overrides: a dict mapping the LUCI projects declared in
-            recipe BotSpecs to the LUCI project to use when triggering builders.
-            When this builder triggers another builder, if the BotSpec for that
-            builder has a LUCI project that is a key in this mapping, the
-            corresponding value will be used instead.
         goma_backend: a member of the `goma.backend` enum indicating the goma
             backend the builder should use. Will be incorporated into the
             '$build/goma' property. By default, considered None.
@@ -542,6 +537,10 @@ def builder(
         coverage_test_types: a list of string as test types to process data for
             in code_coverage recipe module. Will be copied to
             '$build/code_coverage' property. By default, considered None.
+        export_coverage_to_zoss: a boolean indicating if the raw coverage data
+            be exported zoss(and eventually in code search) in code_coverage
+            recipe module. Will be copied to '$build/code_coverage' property
+            if set. Be default, considered False.
         resultdb_bigquery_exports: a list of resultdb.export_test_results(...)
             specifying parameters for exporting test results to BigQuery. By
             default, do not export.
@@ -669,12 +668,6 @@ def builder(
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
 
-    chromium_tests = _chromium_tests_property(
-        project_trigger_overrides = project_trigger_overrides,
-    )
-    if chromium_tests != None:
-        properties["$build/chromium_tests"] = chromium_tests
-
     goma_enable_ats = defaults.get_value("goma_enable_ats", goma_enable_ats)
 
     # Enable ATS on linux by default.
@@ -698,6 +691,7 @@ def builder(
         use_javascript_coverage = use_javascript_coverage,
         coverage_exclude_sources = coverage_exclude_sources,
         coverage_test_types = coverage_test_types,
+        export_coverage_to_zoss = export_coverage_to_zoss,
     )
     if code_coverage != None:
         properties["$build/code_coverage"] = code_coverage
@@ -739,11 +733,6 @@ def builder(
             by_timestamp = resultdb_index_by_timestamp,
         )
 
-    if builder_spec and builder_spec.execution_mode == builder_config.execution_mode.TEST:
-        if triggered_by != args.DEFAULT:
-            fail("triggered testers cannot specify triggered_by")
-        triggered_by = [builder_spec.parent]
-
     kwargs["notifies"] = defaults.get_value("notifies", notifies, merge = args.MERGE_LIST)
 
     triggered_by = defaults.get_value("triggered_by", triggered_by)
@@ -770,6 +759,8 @@ def builder(
     # settings and the branch selector
     if builder == None:
         return None
+
+    register_sheriffed_builder(bucket, name, sheriff_rotations)
 
     register_recipe_experiments_ref(bucket, name, executable)
 

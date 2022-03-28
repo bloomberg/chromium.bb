@@ -1,7 +1,7 @@
 #ifndef EIGEN_WARNINGS_DISABLED
 #define EIGEN_WARNINGS_DISABLED
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
   // 4100 - unreferenced formal parameter (occurred e.g. in aligned_allocator::destroy(pointer p))
   // 4101 - unreferenced local variable
   // 4127 - conditional expression is constant
@@ -78,7 +78,13 @@
 #endif
 
 #if defined __NVCC__
-  #define EIGEN_MAKE_PRAGMA(X) _Pragma(#X)
+  // MSVC 14.16 (required by CUDA 9.*) does not support the _Pragma keyword, so
+  // we instead use Microsoft's __pragma extension.
+  #if defined _MSC_VER
+    #define EIGEN_MAKE_PRAGMA(X) __pragma(#X)
+  #else
+    #define EIGEN_MAKE_PRAGMA(X) _Pragma(#X)
+  #endif
   #if defined __NVCC_DIAG_PRAGMA_SUPPORT__
     #define EIGEN_NV_DIAG_SUPPRESS(X) EIGEN_MAKE_PRAGMA(nv_diag_suppress X)
   #else

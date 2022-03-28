@@ -406,6 +406,13 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_ariaPressedChangesButtonRole() {
+        performTest("aria-pressed-changes-button-role.html",
+                "aria-pressed-changes-button-role-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
     public void test_ariaReadonlyChanged() {
         performTest("aria-readonly-changed.html", EMPTY_EXPECTATIONS_FILE);
     }
@@ -849,12 +856,6 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_menuOpenedClosed() {
         performTest("menu-opened-closed.html", EMPTY_EXPECTATIONS_FILE);
-    }
-
-    @Test
-    @SmallTest
-    public void test_menuOpenedClosedViaInnerText() {
-        performTest("menu-opened-closed-via-inner-text.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test

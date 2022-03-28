@@ -24,21 +24,21 @@ template <typename DerivedDescriptor>
 void StaticCallInterfaceDescriptor<DerivedDescriptor>::
     VerifyArgumentRegisterCount(CallInterfaceDescriptorData* data, int argc) {
   RegList allocatable_regs = data->allocatable_registers();
-  if (argc >= 1) DCHECK(allocatable_regs | r3.bit());
-  if (argc >= 2) DCHECK(allocatable_regs | r4.bit());
-  if (argc >= 3) DCHECK(allocatable_regs | r5.bit());
-  if (argc >= 4) DCHECK(allocatable_regs | r6.bit());
-  if (argc >= 5) DCHECK(allocatable_regs | r7.bit());
-  if (argc >= 6) DCHECK(allocatable_regs | r8.bit());
-  if (argc >= 7) DCHECK(allocatable_regs | r9.bit());
-  if (argc >= 8) DCHECK(allocatable_regs | r10.bit());
+  if (argc >= 1) DCHECK(allocatable_regs.has(r3));
+  if (argc >= 2) DCHECK(allocatable_regs.has(r4));
+  if (argc >= 3) DCHECK(allocatable_regs.has(r5));
+  if (argc >= 4) DCHECK(allocatable_regs.has(r6));
+  if (argc >= 5) DCHECK(allocatable_regs.has(r7));
+  if (argc >= 6) DCHECK(allocatable_regs.has(r8));
+  if (argc >= 7) DCHECK(allocatable_regs.has(r9));
+  if (argc >= 8) DCHECK(allocatable_regs.has(r10));
   // Additional arguments are passed on the stack.
 }
 #endif  // DEBUG
 
 // static
 constexpr auto WriteBarrierDescriptor::registers() {
-  return RegisterArray(r4, r8, r7, r5, r3);
+  return RegisterArray(r4, r8, r7, r5, r3, r6, kContextRegister);
 }
 
 // static
@@ -147,6 +147,22 @@ constexpr auto CallTrampolineDescriptor::registers() {
   // r3 : number of arguments
   // r4 : the target to call
   return RegisterArray(r4, r3);
+}
+
+// static
+constexpr auto CopyDataPropertiesWithExcludedPropertiesDescriptor::registers() {
+  // r4 : the source
+  // r3 : the excluded property count
+  return RegisterArray(r4, r3);
+}
+
+// static
+constexpr auto
+CopyDataPropertiesWithExcludedPropertiesOnStackDescriptor::registers() {
+  // r4 : the source
+  // r3 : the excluded property count
+  // r5 : the excluded property base
+  return RegisterArray(r4, r3, r5);
 }
 
 // static

@@ -308,10 +308,6 @@ export namespace Accessibility {
      */
     depth?: integer;
     /**
-     * Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
-     */
-    max_depth?: integer;
-    /**
      * The frame for whose document the AX tree should be retrieved.
      * If omited, the root frame is used.
      */
@@ -700,7 +696,7 @@ export namespace Audits {
     frameId: Page.FrameId;
   }
 
-  export const enum SameSiteCookieExclusionReason {
+  export const enum CookieExclusionReason {
     ExcludeSameSiteUnspecifiedTreatedAsLax = 'ExcludeSameSiteUnspecifiedTreatedAsLax',
     ExcludeSameSiteNoneInsecure = 'ExcludeSameSiteNoneInsecure',
     ExcludeSameSiteLax = 'ExcludeSameSiteLax',
@@ -709,7 +705,7 @@ export namespace Audits {
     ExcludeSamePartyCrossPartyContext = 'ExcludeSamePartyCrossPartyContext',
   }
 
-  export const enum SameSiteCookieWarningReason {
+  export const enum CookieWarningReason {
     WarnSameSiteUnspecifiedCrossSiteContext = 'WarnSameSiteUnspecifiedCrossSiteContext',
     WarnSameSiteNoneInsecure = 'WarnSameSiteNoneInsecure',
     WarnSameSiteUnspecifiedLaxAllowUnsafe = 'WarnSameSiteUnspecifiedLaxAllowUnsafe',
@@ -718,9 +714,10 @@ export namespace Audits {
     WarnSameSiteStrictCrossDowngradeLax = 'WarnSameSiteStrictCrossDowngradeLax',
     WarnSameSiteLaxCrossDowngradeStrict = 'WarnSameSiteLaxCrossDowngradeStrict',
     WarnSameSiteLaxCrossDowngradeLax = 'WarnSameSiteLaxCrossDowngradeLax',
+    WarnAttributeValueExceedsMaxSize = 'WarnAttributeValueExceedsMaxSize',
   }
 
-  export const enum SameSiteCookieOperation {
+  export const enum CookieOperation {
     SetCookie = 'SetCookie',
     ReadCookie = 'ReadCookie',
   }
@@ -730,7 +727,7 @@ export namespace Audits {
    * time finding a specific cookie. With this, we can convey specific error
    * information without the cookie.
    */
-  export interface SameSiteCookieIssueDetails {
+  export interface CookieIssueDetails {
     /**
      * If AffectedCookie is not set then rawCookieLine contains the raw
      * Set-Cookie header string. This hints at a problem where the
@@ -739,13 +736,13 @@ export namespace Audits {
      */
     cookie?: AffectedCookie;
     rawCookieLine?: string;
-    cookieWarningReasons: SameSiteCookieWarningReason[];
-    cookieExclusionReasons: SameSiteCookieExclusionReason[];
+    cookieWarningReasons: CookieWarningReason[];
+    cookieExclusionReasons: CookieExclusionReason[];
     /**
      * Optionally identifies the site-for-cookies and the cookie url, which
      * may be used by the front-end as additional context.
      */
-    operation: SameSiteCookieOperation;
+    operation: CookieOperation;
     siteForCookies?: string;
     cookieUrl?: string;
     request?: AffectedRequest;
@@ -758,6 +755,7 @@ export namespace Audits {
   }
 
   export const enum MixedContentResourceType {
+    AttributionSrc = 'AttributionSrc',
     Audio = 'Audio',
     Beacon = 'Beacon',
     CSPReport = 'CSPReport',
@@ -1059,7 +1057,7 @@ export namespace Audits {
   /**
    * Represents the failure reason when a federated authentication reason fails.
    * Should be updated alongside RequestIdTokenStatus in
-   * third_party/blink/public/mojom/webid/federated_auth_request.mojom to include
+   * third_party/blink/public/mojom/devtools/inspector_issue.mojom to include
    * all cases except for success.
    */
   export const enum FederatedAuthRequestIssueReason {
@@ -1071,6 +1069,8 @@ export namespace Audits {
     ClientMetadataHttpNotFound = 'ClientMetadataHttpNotFound',
     ClientMetadataNoResponse = 'ClientMetadataNoResponse',
     ClientMetadataInvalidResponse = 'ClientMetadataInvalidResponse',
+    ClientMetadataMissingPrivacyPolicyUrl = 'ClientMetadataMissingPrivacyPolicyUrl',
+    DisabledInSettings = 'DisabledInSettings',
     ErrorFetchingSignin = 'ErrorFetchingSignin',
     InvalidSigninResponse = 'InvalidSigninResponse',
     AccountsHttpNotFound = 'AccountsHttpNotFound',
@@ -1099,7 +1099,7 @@ export namespace Audits {
    * information about the kind of issue.
    */
   export const enum InspectorIssueCode {
-    SameSiteCookieIssue = 'SameSiteCookieIssue',
+    CookieIssue = 'CookieIssue',
     MixedContentIssue = 'MixedContentIssue',
     BlockedByResponseIssue = 'BlockedByResponseIssue',
     HeavyAdIssue = 'HeavyAdIssue',
@@ -1123,7 +1123,7 @@ export namespace Audits {
    * add a new optional field to this type.
    */
   export interface InspectorIssueDetails {
-    sameSiteCookieIssueDetails?: SameSiteCookieIssueDetails;
+    cookieIssueDetails?: CookieIssueDetails;
     mixedContentIssueDetails?: MixedContentIssueDetails;
     blockedByResponseIssueDetails?: BlockedByResponseIssueDetails;
     heavyAdIssueDetails?: HeavyAdIssueDetails;
@@ -1766,6 +1766,16 @@ export namespace CSS {
   }
 
   /**
+   * Inherited pseudo element matches from pseudos of an ancestor node.
+   */
+  export interface InheritedPseudoElementMatches {
+    /**
+     * Matches of pseudo styles from the pseudos of an ancestor node.
+     */
+    pseudoElements: PseudoElementMatches[];
+  }
+
+  /**
    * Match data for a CSS rule.
    */
   export interface RuleMatch {
@@ -1924,6 +1934,11 @@ export namespace CSS {
      * The array enumerates @supports at-rules starting with the innermost one, going outwards.
      */
     supports?: CSSSupports[];
+    /**
+     * Cascade layer array. Contains the layer hierarchy that this rule belongs to starting
+     * with the innermost layer and going outwards.
+     */
+    layers?: CSSLayer[];
   }
 
   /**
@@ -2183,6 +2198,44 @@ export namespace CSS {
      * Identifier of the stylesheet containing this object (if exists).
      */
     styleSheetId?: StyleSheetId;
+  }
+
+  /**
+   * CSS Layer at-rule descriptor.
+   */
+  export interface CSSLayer {
+    /**
+     * Layer name.
+     */
+    text: string;
+    /**
+     * The associated rule header range in the enclosing stylesheet (if
+     * available).
+     */
+    range?: SourceRange;
+    /**
+     * Identifier of the stylesheet containing this object (if exists).
+     */
+    styleSheetId?: StyleSheetId;
+  }
+
+  /**
+   * CSS Layer data.
+   */
+  export interface CSSLayerData {
+    /**
+     * Layer name.
+     */
+    name: string;
+    /**
+     * Direct sub-layers
+     */
+    subLayers?: CSSLayerData[];
+    /**
+     * Layer order. The order determines the order of the layer in the cascade order.
+     * A higher number has higher priority in the cascade order.
+     */
+    order: number;
   }
 
   /**
@@ -2464,6 +2517,10 @@ export namespace CSS {
      */
     inherited?: InheritedStyleEntry[];
     /**
+     * A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
+     */
+    inheritedPseudoElements?: InheritedPseudoElementMatches[];
+    /**
      * A list of CSS keyframed animations matching this node.
      */
     cssKeyframesRules?: CSSKeyframesRule[];
@@ -2493,6 +2550,14 @@ export namespace CSS {
      * The stylesheet text.
      */
     text: string;
+  }
+
+  export interface GetLayersForNodeRequest {
+    nodeId: DOM.NodeId;
+  }
+
+  export interface GetLayersForNodeResponse extends ProtocolResponseWithError {
+    rootLayer: CSSLayerData;
   }
 
   export interface TrackComputedStyleUpdatesRequest {
@@ -2951,10 +3016,11 @@ export namespace DOM {
     ScrollbarCorner = 'scrollbar-corner',
     Resizer = 'resizer',
     InputListButton = 'input-list-button',
-    Transition = 'transition',
-    TransitionContainer = 'transition-container',
-    TransitionOldContent = 'transition-old-content',
-    TransitionNewContent = 'transition-new-content',
+    PageTransition = 'page-transition',
+    PageTransitionContainer = 'page-transition-container',
+    PageTransitionImageWrapper = 'page-transition-image-wrapper',
+    PageTransitionOutgoingImage = 'page-transition-outgoing-image',
+    PageTransitionIncomingImage = 'page-transition-incoming-image',
   }
 
   /**
@@ -5350,6 +5416,13 @@ export namespace Emulation {
      * To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
      */
     userAgentMetadata?: UserAgentMetadata;
+  }
+
+  export interface SetAutomationOverrideRequest {
+    /**
+     * Whether the override should be enabled.
+     */
+    enabled: boolean;
   }
 }
 
@@ -9531,6 +9604,7 @@ export namespace Overlay {
   export const enum ColorFormat {
     Rgb = 'rgb',
     Hsl = 'hsl',
+    Hwb = 'hwb',
     Hex = 'hex',
   }
 
@@ -10813,6 +10887,12 @@ export namespace Page {
      * Not restored reason
      */
     reason: BackForwardCacheNotRestoredReason;
+    /**
+     * Context associated with the reason. The meaning of this context is
+     * dependent on the reason:
+     * - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
+     */
+    context?: string;
   }
 
   export interface BackForwardCacheNotRestoredExplanationTree {

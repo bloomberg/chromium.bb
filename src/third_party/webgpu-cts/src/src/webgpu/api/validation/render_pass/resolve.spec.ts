@@ -131,7 +131,7 @@ Test various validation behaviors when a resolveTarget is provided.
 
           renderPassColorAttachmentDescriptors.push({
             view: resolveSourceColorAttachment.createView(),
-            loadValue: 'load',
+            loadOp: 'load',
             storeOp: 'discard',
             resolveTarget: resolveTarget.createView({
               dimension: resolveTargetViewArrayLayerCount === 1 ? '2d' : '2d-array',
@@ -168,7 +168,7 @@ Test various validation behaviors when a resolveTarget is provided.
 
           renderPassColorAttachmentDescriptors.push({
             view: colorAttachment.createView(),
-            loadValue: 'load',
+            loadOp: 'load',
             storeOp: 'discard',
             resolveTarget: resolveTarget.createView(),
           });
@@ -178,7 +178,7 @@ Test various validation behaviors when a resolveTarget is provided.
       const pass = encoder.beginRenderPass({
         colorAttachments: renderPassColorAttachmentDescriptors,
       });
-      pass.endPass();
+      pass.end();
 
       t.expectValidationError(() => {
         encoder.finish();

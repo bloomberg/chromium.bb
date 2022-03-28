@@ -46,6 +46,7 @@
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "quic/test_tools/quic_test_utils.h"
+#include "common/platform/api/quiche_mem_slice.h"
 #include "common/quiche_endian.h"
 #include "common/test_tools/quiche_test_utils.h"
 #include "spdy/core/spdy_framer.h"
@@ -207,7 +208,7 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
 
   bool encryption_established_;
   bool one_rtt_keys_available_;
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
 };
 
 class TestHeadersStream : public QuicHeadersStream {
@@ -340,14 +341,12 @@ class TestSession : public QuicSpdySession {
   }
 
   QuicConsumedData SendStreamData(QuicStream* stream) {
-    struct iovec iov;
     if (!QuicUtils::IsCryptoStreamId(connection()->transport_version(),
                                      stream->id()) &&
         connection()->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
       this->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
-    MakeIOVector("not empty", &iov);
-    QuicStreamPeer::SendBuffer(stream).SaveStreamData(&iov, 1, 0, 9);
+    QuicStreamPeer::SendBuffer(stream).SaveStreamData("not empty");
     QuicConsumedData consumed =
         WritevData(stream->id(), 9, 0, FIN, NOT_RETRANSMISSION,
                    GetEncryptionLevelToSendApplicationData());
@@ -1345,8 +1344,7 @@ TEST_P(QuicSpdySessionTestServer, Http3GoAwayLargerIdThanBefore) {
 // Test that server session will send a connectivity probe in response to a
 // connectivity probe on the same path.
 TEST_P(QuicSpdySessionTestServer, ServerReplyToConnecitivityProbe) {
-  if (VersionHasIetfQuicFrames(transport_version()) &&
-      connection_->send_path_response()) {
+  if (VersionHasIetfQuicFrames(transport_version())) {
     return;
   }
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
@@ -1357,13 +1355,8 @@ TEST_P(QuicSpdySessionTestServer, ServerReplyToConnecitivityProbe) {
   QuicSocketAddress new_peer_address =
       QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort + 1);
 
-  if (connection_->send_path_response()) {
     EXPECT_CALL(*connection_,
                 SendConnectivityProbingPacket(nullptr, new_peer_address));
-  } else {
-    EXPECT_CALL(*connection_,
-                SendConnectivityProbingResponsePacket(new_peer_address));
-  }
 
   if (VersionHasIetfQuicFrames(transport_version())) {
     // Need to explicitly do this to emulate the reception of a PathChallenge,
@@ -1828,6 +1821,10 @@ TEST_P(QuicSpdySessionTestServer, DrainingStreamsDoNotCountAsOpened) {
 
 // TODO(b/171463363): Remove.
 TEST_P(QuicSpdySessionTestServer, ReduceMaxPushId) {
+  if (GetQuicReloadableFlag(quic_ignore_max_push_id)) {
+    return;
+  }
+
   if (!VersionUsesHttp3(transport_version())) {
     return;
   }
@@ -2046,7 +2043,7 @@ TEST_P(QuicSpdySessionTestClient, WritePriority) {
   SpdyFramer spdy_framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdySerializedFrame frame = spdy_framer.SerializeFrame(priority_frame);
 
-  const QuicMemSlice& slice =
+  const quiche::QuicheMemSlice& slice =
       QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer)->slice;
   EXPECT_EQ(absl::string_view(frame.data(), frame.size()),
             absl::string_view(slice.data(), slice.length()));

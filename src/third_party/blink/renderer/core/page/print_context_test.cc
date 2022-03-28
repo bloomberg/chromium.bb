@@ -114,6 +114,7 @@ class FakeRasterInterface : public gpu::raster::RasterImplementationGLES {
                            GLuint msaa_sample_count,
                            gpu::raster::MsaaMode msaa_mode,
                            GLboolean can_use_lcd_text,
+                           GLboolean visible,
                            const gfx::ColorSpace& color_space,
                            const GLbyte* mailbox) override {}
   void RasterCHROMIUM(const cc::DisplayItemList* list,
@@ -169,7 +170,8 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
     Event* event = MakeGarbageCollected<BeforePrintEvent>();
     GetPrintContext().GetFrame()->DomWindow()->DispatchEvent(*event);
     GetPrintContext().BeginPrintMode(page_rect.width(), page_rect.height());
-    UpdateAllLifecyclePhasesForTest();
+    GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+        DocumentUpdateReason::kTest);
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
     GraphicsContext& context = builder->Context();
     context.SetPrinting(true);

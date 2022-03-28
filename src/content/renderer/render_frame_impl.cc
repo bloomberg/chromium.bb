@@ -31,6 +31,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -71,7 +72,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
@@ -82,11 +82,11 @@
 #include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/agent_scheduling_group.h"
 #include "content/renderer/content_security_policy_util.h"
+#include "content/renderer/document_state.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/frame_owner_properties_converter.h"
 #include "content/renderer/gpu_benchmarking_extension.h"
-#include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/mhtml_handle_writer.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
@@ -370,7 +370,7 @@ ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
                                      bool is_main_frame,
                                      bool is_in_fenced_frame_tree) {
   NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(document_loader);
+      DocumentState::FromDocumentLoader(document_loader)->navigation_state();
   ui::PageTransition default_transition =
       navigation_state->IsForSynchronousCommit()
           ? ui::PAGE_TRANSITION_LINK
@@ -877,8 +877,8 @@ bool ShouldLoadDataWithBaseURL(
 std::unique_ptr<DocumentState> BuildDocumentState() {
   std::unique_ptr<DocumentState> document_state =
       std::make_unique<DocumentState>();
-  InternalDocumentStateData::FromDocumentState(document_state.get())
-      ->set_navigation_state(NavigationState::CreateForSynchronousCommit());
+  document_state->set_navigation_state(
+      NavigationState::CreateForSynchronousCommit());
   return document_state;
 }
 
@@ -893,18 +893,16 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     bool was_initiated_in_this_frame,
     bool is_main_frame) {
   std::unique_ptr<DocumentState> document_state(new DocumentState());
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state.get());
 
   DCHECK(!common_params.navigation_start.is_null());
   DCHECK(!common_params.url.SchemeIs(url::kJavaScriptScheme));
 
-  internal_data->set_is_overriding_user_agent(
+  document_state->set_is_overriding_user_agent(
       commit_params.is_overriding_user_agent);
-  internal_data->set_must_reset_scroll_and_scale_state(
+  document_state->set_must_reset_scroll_and_scale_state(
       common_params.navigation_type ==
       blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL);
-  internal_data->set_request_id(request_id);
+  document_state->set_request_id(request_id);
 
   // If this is a loadDataWithBaseURL request, save the commit URL so that we
   // can send a DidCommit message with the URL that was originally sent by the
@@ -915,11 +913,9 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   if (load_data)
     document_state->set_data_url(common_params.url);
 
-  InternalDocumentStateData::FromDocumentState(document_state.get())
-      ->set_navigation_state(NavigationState::Create(
-          common_params.Clone(), commit_params.Clone(),
-          std::move(commit_callback), std::move(navigation_client),
-          was_initiated_in_this_frame));
+  document_state->set_navigation_state(NavigationState::Create(
+      common_params.Clone(), commit_params.Clone(), std::move(commit_callback),
+      std::move(navigation_client), was_initiated_in_this_frame));
   return document_state;
 }
 
@@ -994,16 +990,16 @@ blink::WebNavigationTimings BuildNavigationTimings(
   return renderer_navigation_timings;
 }
 
-WebHistoryItem AppHistoryEntryPtrToWebHistoryItem(
-    const blink::mojom::AppHistoryEntry& entry) {
+WebHistoryItem NavigationApiHistoryEntryPtrToWebHistoryItem(
+    const blink::mojom::NavigationApiHistoryEntry& entry) {
   WebHistoryItem item;
   item.Initialize();
-  item.SetAppHistoryKey(WebString::FromUTF16(entry.key));
-  item.SetAppHistoryId(WebString::FromUTF16(entry.id));
+  item.SetNavigationApiKey(WebString::FromUTF16(entry.key));
+  item.SetNavigationApiId(WebString::FromUTF16(entry.id));
   item.SetURLString(WebString::FromUTF16(entry.url));
   item.SetItemSequenceNumber(entry.item_sequence_number);
   item.SetDocumentSequenceNumber(entry.document_sequence_number);
-  item.SetAppHistoryState(
+  item.SetNavigationApiState(
       WebSerializedScriptValue::FromString(WebString::FromUTF16(entry.state)));
   return item;
 }
@@ -1061,6 +1057,8 @@ void FillMiscNavigationParams(
   }
 
   navigation_params->origin_agent_cluster = commit_params.origin_agent_cluster;
+  navigation_params->origin_agent_cluster_left_as_default =
+      commit_params.origin_agent_cluster_left_as_default;
 
   navigation_params->anonymous = commit_params.anonymous;
   navigation_params->enabled_client_hints.reserve(
@@ -1071,19 +1069,19 @@ void FillMiscNavigationParams(
   if (commit_params.http_response_code != -1)
     navigation_params->http_status_code = commit_params.http_response_code;
 
-  // Populate the arrays of non-current entries for the appHistory API.
-  auto& entry_arrays = commit_params.app_history_entry_arrays;
-  navigation_params->app_history_back_entries.reserve(
+  // Populate the arrays of non-current entries for the window.navigation API.
+  auto& entry_arrays = commit_params.navigation_api_history_entry_arrays;
+  navigation_params->navigation_api_back_entries.reserve(
       entry_arrays->back_entries.size());
   for (const auto& entry : entry_arrays->back_entries) {
-    navigation_params->app_history_back_entries.emplace_back(
-        AppHistoryEntryPtrToWebHistoryItem(*entry));
+    navigation_params->navigation_api_back_entries.emplace_back(
+        NavigationApiHistoryEntryPtrToWebHistoryItem(*entry));
   }
-  navigation_params->app_history_forward_entries.reserve(
+  navigation_params->navigation_api_forward_entries.reserve(
       entry_arrays->forward_entries.size());
   for (const auto& entry : entry_arrays->forward_entries) {
-    navigation_params->app_history_forward_entries.emplace_back(
-        AppHistoryEntryPtrToWebHistoryItem(*entry));
+    navigation_params->navigation_api_forward_entries.emplace_back(
+        NavigationApiHistoryEntryPtrToWebHistoryItem(*entry));
   }
 
   if (commit_params.ad_auction_components) {
@@ -3154,19 +3152,13 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     if (common_params->initiator_origin)
       initiator_origin = common_params->initiator_origin.value();
 
-    DocumentState* original_document_state =
+    DocumentState* document_state =
         DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-    std::unique_ptr<DocumentState> document_state =
-        original_document_state->Clone();
-    InternalDocumentStateData* internal_data =
-        InternalDocumentStateData::FromDocumentState(document_state.get());
-    internal_data->CopyFrom(
-        InternalDocumentStateData::FromDocumentState(original_document_state));
     // This is a same-document navigation coming from the browser process (as
     // opposed to a fragment link click, which would have been handled
     // synchronously in the renderer process), therefore
     // |was_initiated_in_this_frame| must be false.
-    internal_data->set_navigation_state(NavigationState::Create(
+    document_state->set_navigation_state(NavigationState::Create(
         std::move(common_params), std::move(commit_params),
         mojom::NavigationClient::CommitNavigationCallback(), nullptr,
         false /* was_initiated_in_this_frame */));
@@ -3175,7 +3167,7 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     commit_status = frame_->CommitSameDocumentNavigation(
         url, load_type, item_for_history_navigation, is_client_redirect,
         started_with_transient_activation, initiator_origin,
-        is_browser_initiated, std::move(document_state));
+        is_browser_initiated);
 
     // The load of the URL can result in this frame being removed. Use a
     // WeakPtr as an easy way to detect whether this has occured. If so, this
@@ -3750,9 +3742,9 @@ void RenderFrameImpl::DidCommitNavigation(
   navigation_commit_state_ = NavigationCommitState::kDidCommit;
 
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(document_loader);
-  NavigationState* navigation_state = internal_data->navigation_state();
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
+  NavigationState* navigation_state = document_state->navigation_state();
   DCHECK(!navigation_state->WasWithinSameDocument());
 
   TRACE_EVENT2("navigation,benchmark,rail",
@@ -3903,10 +3895,14 @@ void RenderFrameImpl::DidCommitNavigation(
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 
   NotifyObserversOfNavigationCommit(transition);
+
+  document_state->clear_navigation_state();
 }
 
 void RenderFrameImpl::DidCommitDocumentReplacementNavigation(
     blink::WebDocumentLoader* document_loader) {
+  DocumentState::FromDocumentLoader(document_loader)
+      ->set_navigation_state(NavigationState::CreateForSynchronousCommit());
   // TODO(https://crbug.com/855189): figure out which of the following observer
   // calls are necessary, if any.
   for (auto& observer : observers_)
@@ -4047,11 +4043,13 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
                "RenderFrameImpl::didFinishSameDocumentNavigation", "id",
                routing_id_);
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  InternalDocumentStateData* data =
-      InternalDocumentStateData::FromDocumentLoader(document_loader);
-  if (is_synchronously_committed)
-    data->set_navigation_state(NavigationState::CreateForSynchronousCommit());
-  data->navigation_state()->set_was_within_same_document(true);
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
+  if (is_synchronously_committed) {
+    document_state->set_navigation_state(
+        NavigationState::CreateForSynchronousCommit());
+  }
+  document_state->navigation_state()->set_was_within_same_document(true);
 
   ui::PageTransition transition = GetTransitionType(
       document_loader, IsMainFrame(), GetWebView()->IsFencedFrameRoot());
@@ -4073,10 +4071,13 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
-  data->navigation_state()->set_transition_type(ui::PAGE_TRANSITION_LINK);
+  document_state->navigation_state()->set_transition_type(
+      ui::PAGE_TRANSITION_LINK);
 
   for (auto& observer : observers_)
     observer.DidFinishSameDocumentNavigation();
+
+  document_state->clear_navigation_state();
 }
 
 void RenderFrameImpl::WillFreezePage() {
@@ -4386,11 +4387,9 @@ void RenderFrameImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
 
 void RenderFrameImpl::DidObserveUserInteraction(
     base::TimeDelta max_event_duration,
-    base::TimeDelta total_event_duration,
     blink::UserInteractionType interaction_type) {
   for (auto& observer : observers_)
-    observer.DidObserveUserInteraction(max_event_duration, total_event_duration,
-                                       interaction_type);
+    observer.DidObserveUserInteraction(max_event_duration, interaction_type);
 }
 
 void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
@@ -4423,12 +4422,6 @@ void RenderFrameImpl::DidObserveLayoutNg(uint32_t all_block_count,
   for (auto& observer : observers_)
     observer.DidObserveLayoutNg(all_block_count, ng_block_count, all_call_count,
                                 ng_call_count);
-}
-
-void RenderFrameImpl::DidObserveLazyLoadBehavior(
-    WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
-  for (auto& observer : observers_)
-    observer.DidObserveLazyLoadBehavior(lazy_load_behavior);
 }
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
@@ -4520,11 +4513,10 @@ bool RenderFrameImpl::ShouldUseUserAgentOverride() const {
   const WebLocalFrame* main_frame = web_view->MainFrame()->ToWebLocalFrame();
 
   WebDocumentLoader* document_loader = main_frame->GetDocumentLoader();
-  InternalDocumentStateData* internal_data =
-      document_loader
-          ? InternalDocumentStateData::FromDocumentLoader(document_loader)
-          : nullptr;
-  return internal_data && internal_data->is_overriding_user_agent();
+  DocumentState* document_state =
+      document_loader ? DocumentState::FromDocumentLoader(document_loader)
+                      : nullptr;
+  return document_state && document_state->is_overriding_user_agent();
 }
 
 blink::WebString RenderFrameImpl::DoNotTrackValue() {
@@ -4636,10 +4628,9 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   const WebURLResponse& response = document_loader->GetResponse();
 
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(
-          frame_->GetDocumentLoader());
-  NavigationState* navigation_state = internal_data->navigation_state();
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
+  NavigationState* navigation_state = document_state->navigation_state();
 
   auto params = mojom::DidCommitProvisionalLoadParams::New();
   params->http_status_code = response.HttpStatusCode();
@@ -4714,7 +4705,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 
   params->item_sequence_number = item.ItemSequenceNumber();
   params->document_sequence_number = item.DocumentSequenceNumber();
-  params->app_history_key = item.GetAppHistoryKey().Utf8();
+  params->navigation_api_key = item.GetNavigationApiKey().Utf8();
 
   // Note that the value of `referrer` will be overwritten in the browser with a
   // browser-calculated value in most cases. The exceptions are
@@ -4757,7 +4748,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 
     // Send the user agent override back.
     params->is_overriding_user_agent =
-        internal_data->is_overriding_user_agent();
+        document_state->is_overriding_user_agent();
 
     params->history_list_was_cleared =
         navigation_state->commit_params().should_clear_history_list;
@@ -4803,7 +4794,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
           requires_universal_access);
     }
   }
-  params->request_id = internal_data->request_id();
+  params->request_id = document_state->request_id();
 
   params->unload_start = GetWebFrame()->Performance().UnloadStart();
   params->unload_end = GetWebFrame()->Performance().UnloadEnd();
@@ -4816,7 +4807,8 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 void RenderFrameImpl::UpdateNavigationHistory(
     blink::WebHistoryCommitType commit_type) {
   NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader())
+          ->navigation_state();
   const blink::mojom::CommitNavigationParams& commit_params =
       navigation_state->commit_params();
 
@@ -4851,10 +4843,9 @@ void RenderFrameImpl::NotifyObserversOfNavigationCommit(
 void RenderFrameImpl::UpdateStateForCommit(
     blink::WebHistoryCommitType commit_type,
     ui::PageTransition transition) {
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentLoader(
-          frame_->GetDocumentLoader());
-  NavigationState* navigation_state = internal_data->navigation_state();
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
+  NavigationState* navigation_state = document_state->navigation_state();
 
   // We need to update the last committed session history entry with state for
   // the previous page. Do this before updating the current history item.
@@ -4862,9 +4853,9 @@ void RenderFrameImpl::UpdateStateForCommit(
 
   UpdateNavigationHistory(commit_type);
 
-  if (internal_data->must_reset_scroll_and_scale_state()) {
+  if (document_state->must_reset_scroll_and_scale_state()) {
     GetWebView()->ResetScrollAndScaleState();
-    internal_data->set_must_reset_scroll_and_scale_state(false);
+    document_state->set_must_reset_scroll_and_scale_state(false);
   }
   if (!frame_->Parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
@@ -4937,7 +4928,8 @@ void RenderFrameImpl::DidCommitNavigationInternal(
         std::move(params), std::move(same_document_params));
   } else {
     NavigationState* navigation_state =
-        NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
+        DocumentState::FromDocumentLoader(frame_->GetDocumentLoader())
+            ->navigation_state();
     if (navigation_state->has_navigation_client()) {
       navigation_state->RunCommitNavigationCallback(
           std::move(params), std::move(interface_params));
@@ -5657,11 +5649,13 @@ void RenderFrameImpl::CreateAudioInputStream(
     uint32_t shared_memory_count,
     blink::CrossVariantMojoReceiver<
         media::mojom::AudioProcessorControlsInterfaceBase> controls_receiver,
-    const media::AudioProcessingSettings& settings) {
+    const media::AudioProcessingSettings* settings) {
+  DCHECK_EQ(!!settings, !!controls_receiver);
   media::mojom::AudioProcessingConfigPtr processing_config;
   if (controls_receiver) {
+    DCHECK(settings);
     processing_config = media::mojom::AudioProcessingConfig::New(
-        std::move(controls_receiver), settings);
+        std::move(controls_receiver), *settings);
   }
 
   GetAudioInputStreamFactory()->CreateStream(

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/safe_base_name.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -28,6 +29,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/file_manager/path_util.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/common/chrome_paths_lacros.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace webshare {
 
@@ -128,26 +133,33 @@ TEST_F(SharesheetClientUnitTest, TestWithoutFilesInIncognito) {
   EXPECT_EQ(error, blink::mojom::ShareError::OK);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(SharesheetClientUnitTest, DeleteAfterShare) {
   SetGuest();
   SharesheetClient sharesheet_client(web_contents());
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  base::FilePath share_cache_dir;
+  ASSERT_TRUE(chrome::GetShareCachePath(&share_cache_dir));
+  const base::FilePath first_file =
+      share_cache_dir.AppendASCII(".web_share/share1/first.txt");
+  const base::FilePath second_file =
+      share_cache_dir.AppendASCII(".web_share/share2/second.txt");
+#else
   const base::FilePath share_cache_dir =
       file_manager::util::GetShareCacheFilePath(profile());
   const base::FilePath first_file =
       share_cache_dir.AppendASCII(".WebShare/share1/first.txt");
   const base::FilePath second_file =
       share_cache_dir.AppendASCII(".WebShare/share2/second.txt");
-
+#endif
   const std::string title = "Subject";
   const std::string text = "Message";
   const GURL share_url("https://example.com/");
   std::vector<blink::mojom::SharedFilePtr> files;
   files.push_back(
-      blink::mojom::SharedFile::New(first_file.BaseName().AsUTF8Unsafe(),
+      blink::mojom::SharedFile::New(*base::SafeBaseName::Create(first_file),
                                     blink::mojom::SerializedBlob::New()));
   files.push_back(
-      blink::mojom::SharedFile::New(second_file.BaseName().AsUTF8Unsafe(),
+      blink::mojom::SharedFile::New(*base::SafeBaseName::Create(second_file),
                                     blink::mojom::SerializedBlob::New()));
 
   base::RunLoop run_loop;
@@ -173,8 +185,5 @@ TEST_F(SharesheetClientUnitTest, DeleteAfterShare) {
   EXPECT_FALSE(base::PathExists(first_file));
   EXPECT_FALSE(base::PathExists(second_file));
 }
-#else
-// TODO(crbug.com/1225825): Support file sharing from Lacros.
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace webshare

@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import argparse
 import collections
+import metrics
 import os
 import subprocess2
 import sys
@@ -311,6 +312,7 @@ def print_desc():
       print(outline)
   print('')
 
+@metrics.collector.collect_metrics('git map-branches')
 def main(argv):
   setup_color.init()
   if get_git_version() < MIN_UPSTREAM_TRACK_GIT_VERSION:
@@ -349,7 +351,8 @@ def main(argv):
 
 if __name__ == '__main__':
   try:
-    sys.exit(main(sys.argv[1:]))
+    with metrics.collector.print_notice_and_exit():
+      sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
     sys.exit(1)

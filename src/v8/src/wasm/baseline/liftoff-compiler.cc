@@ -764,7 +764,7 @@ class LiftoffCompiler {
   bool SpillLocalsInitially(FullDecoder* decoder, uint32_t num_params) {
     int actual_locals = __ num_locals() - num_params;
     DCHECK_LE(0, actual_locals);
-    constexpr int kNumCacheRegisters = NumRegs(kLiftoffAssemblerGpCacheRegs);
+    constexpr int kNumCacheRegisters = kLiftoffAssemblerGpCacheRegs.Count();
     // If we have many locals, we put them on the stack initially. This avoids
     // having to spill them on merge points. Use of these initial values should
     // be rare anyway.
@@ -826,12 +826,13 @@ class LiftoffCompiler {
                       .AsRegister()));
     __ cache_state()->SetInstanceCacheRegister(kWasmInstanceRegister);
     // Load the feedback vector and cache it in a stack slot.
-    constexpr LiftoffRegList parameter_registers = GetGpParamRegisters();
+    constexpr LiftoffRegList kGpParamRegisters = GetGpParamRegisters();
     if (FLAG_wasm_speculative_inlining) {
+      CODE_COMMENT("load feedback vector");
       int declared_func_index =
           func_index_ - env_->module->num_imported_functions;
       DCHECK_GE(declared_func_index, 0);
-      LiftoffRegList pinned = parameter_registers;
+      LiftoffRegList pinned = kGpParamRegisters;
       LiftoffRegister tmp = pinned.set(__ GetUnusedRegister(kGpReg, pinned));
       __ LoadTaggedPointerFromInstance(
           tmp.gp(), kWasmInstanceRegister,
@@ -841,11 +842,10 @@ class LiftoffCompiler {
                                declared_func_index),
                            pinned);
       __ Spill(liftoff::kFeedbackVectorOffset, tmp, kPointerKind);
-    } else {
-      __ Spill(liftoff::kFeedbackVectorOffset, WasmValue::ForUintPtr(0));
     }
     if (dynamic_tiering()) {
-      LiftoffRegList pinned = parameter_registers;
+      CODE_COMMENT("load tier up budget");
+      LiftoffRegList pinned = kGpParamRegisters;
       LiftoffRegister tmp = pinned.set(__ GetUnusedRegister(kGpReg, pinned));
       LOAD_INSTANCE_FIELD(tmp.gp(), TieringBudgetArray, kSystemPointerSize,
                           pinned);
@@ -853,8 +853,6 @@ class LiftoffCompiler {
           kInt32Size * declared_function_index(env_->module, func_index_);
       __ Load(tmp, tmp.gp(), no_reg, offset, LoadType::kI32Load, pinned);
       __ Spill(liftoff::kTierupBudgetOffset, tmp, ValueKind::kI32);
-    } else {
-      __ Spill(liftoff::kTierupBudgetOffset, WasmValue::ForUintPtr(0));
     }
     if (for_debugging_) __ ResetOSRTarget();
 
@@ -963,11 +961,11 @@ class LiftoffCompiler {
     source_position_table_builder_.AddPosition(
         __ pc_offset(), SourcePosition(ool->position), true);
     __ CallRuntimeStub(ool->stub);
-    Safepoint safepoint = safepoint_table_builder_.DefineSafepoint(&asm_);
+    auto safepoint = safepoint_table_builder_.DefineSafepoint(&asm_);
 
     if (ool->safepoint_info) {
       for (auto index : ool->safepoint_info->slots) {
-        safepoint.DefinePointerSlot(index);
+        safepoint.DefineTaggedStackSlot(index);
       }
 
       int total_frame_size = __ GetTotalFrameSize();
@@ -2860,6 +2858,7 @@ class LiftoffCompiler {
   void AlignmentCheckMem(FullDecoder* decoder, uint32_t access_size,
                          uintptr_t offset, Register index,
                          LiftoffRegList pinned) {
+    CODE_COMMENT("alignment check");
     Label* trap_label =
         AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapUnalignedAccess, 0);
     Register address = __ GetUnusedRegister(kGpReg, pinned).gp();
@@ -3281,7 +3280,7 @@ class LiftoffCompiler {
         ValueType type =
             index < static_cast<int>(__ num_locals())
                 ? decoder->local_type(index)
-                : exception ? ValueType::Ref(HeapType::kExtern, kNonNullable)
+                : exception ? ValueType::Ref(HeapType::kAny, kNonNullable)
                             : decoder->stack_value(decoder_stack_index--)->type;
         DCHECK(CheckCompatibleStackSlotTypes(slot.kind(), type.kind()));
         value.type = type;
@@ -4498,9 +4497,9 @@ class LiftoffCompiler {
     LiftoffRegister value = pinned.set(__ PopToRegister());
 #ifdef V8_TARGET_ARCH_IA32
     // We have to reuse the value register as the result register so that we
-    //  don't run out of registers on ia32. For this we use the value register
-    //  as the result register if it has no other uses. Otherwise  we allocate
-    //  a new register and let go of the value register to get spilled.
+    // don't run out of registers on ia32. For this we use the value register as
+    // the result register if it has no other uses. Otherwise we allocate a new
+    // register and let go of the value register to get spilled.
     LiftoffRegister result = value;
     if (__ cache_state()->is_used(value)) {
       result = pinned.set(__ GetUnusedRegister(value.reg_class(), pinned));
@@ -4520,6 +4519,7 @@ class LiftoffCompiler {
     pinned.set(index);
     AlignmentCheckMem(decoder, type.size(), imm.offset, index, pinned);
 
+    CODE_COMMENT("atomic binop");
     uintptr_t offset = imm.offset;
     Register addr = pinned.set(GetMemoryStart(pinned));
 
@@ -4824,45 +4824,82 @@ class LiftoffCompiler {
   void AtomicFence(FullDecoder* decoder) { __ AtomicFence(); }
 
   // Pop a memtype (i32 or i64 depending on {WasmModule::is_memory64}) to a
-  // register. Returns the ptrsized register holding the popped value.
-  LiftoffRegister PopMemTypeToRegister(LiftoffRegList pinned) {
-    LiftoffRegister reg = __ PopToRegister(pinned);
-    // On 64-bit hosts, potentially zero-extend, then return.
-    if (kSystemPointerSize == kInt64Size) {
-      if (!env_->module->is_memory64) {
-        __ emit_u32_to_uintptr(reg.gp(), reg.gp());
+  // register, updating {*high_word} to contain the ORed combination of all
+  // popped high words. Returns the ptrsized register holding the popped value.
+  LiftoffRegister PopMemTypeToRegister(FullDecoder* decoder,
+                                       Register* high_word,
+                                       LiftoffRegList* pinned) {
+    LiftoffRegister reg = __ PopToRegister(*pinned);
+    LiftoffRegister intptr_reg = reg;
+    // For memory32 on 64-bit hosts, zero-extend.
+    if (kSystemPointerSize == kInt64Size && !env_->module->is_memory64) {
+      // Only overwrite {reg} if it's not used otherwise.
+      if (pinned->has(reg) || __ cache_state()->is_used(reg)) {
+        intptr_reg = __ GetUnusedRegister(kGpReg, *pinned);
       }
-      return reg;
+      __ emit_u32_to_uintptr(intptr_reg.gp(), reg.gp());
     }
-    // For memory32 on 32-bit systems, also nothing to do.
-    if (!env_->module->is_memory64) return reg;
+    // For memory32 or memory64 on 64-bit, we are done here.
+    if (kSystemPointerSize == kInt64Size || !env_->module->is_memory64) {
+      pinned->set(intptr_reg);
+      return intptr_reg;
+    }
 
-    // TODO(v8:10949): Implement bounds-checking of the high word, while keeping
-    // register pressure low enough on ia32 to pop three 64-bit values (for
-    // memory.copy).
-    __ bailout(kOtherReason, "memory64 on 32-bit platform");
+    // For memory64 on 32-bit systems, combine all high words for a zero-check
+    // and only use the low words afterwards. This keeps the register pressure
+    // managable.
+    DCHECK_GE(kMaxUInt32, env_->max_memory_size);
+    pinned->set(reg.low());
+    if (*high_word == no_reg) {
+      // Choose a register to hold the (combination of) high word(s). It cannot
+      // be one of the pinned registers, and it cannot be used in the value
+      // stack.
+      *high_word =
+          pinned->has(reg.high())
+              ? __ GetUnusedRegister(kGpReg, *pinned).gp()
+              : __ GetUnusedRegister(kGpReg, {reg.high()}, *pinned).gp();
+      pinned->set(*high_word);
+      if (*high_word != reg.high_gp()) {
+        __ Move(*high_word, reg.high_gp(), kI32);
+      }
+    } else if (*high_word != reg.high_gp()) {
+      // Combine the new high word into existing high words.
+      __ emit_i32_or(*high_word, *high_word, reg.high_gp());
+    }
     return reg.low();
   }
 
   void MemoryInit(FullDecoder* decoder,
                   const MemoryInitImmediate<validate>& imm, const Value&,
                   const Value&, const Value&) {
+    Register mem_offsets_high_word = no_reg;
     LiftoffRegList pinned;
     LiftoffRegister size = pinned.set(__ PopToRegister());
     LiftoffRegister src = pinned.set(__ PopToRegister(pinned));
-    LiftoffRegister dst = pinned.set(PopMemTypeToRegister(pinned));
-
-    LiftoffRegister segment_index =
-        pinned.set(__ GetUnusedRegister(kGpReg, pinned));
-    __ LoadConstant(segment_index, WasmValue(imm.data_segment.index));
+    LiftoffRegister dst =
+        PopMemTypeToRegister(decoder, &mem_offsets_high_word, &pinned);
 
     Register instance = __ cache_state()->cached_instance;
     if (instance == no_reg) {
       instance = __ GetUnusedRegister(kGpReg, pinned).gp();
       __ LoadInstanceFromFrame(instance);
     }
+    pinned.set(instance);
 
-    ExternalReference ext_ref = ExternalReference::wasm_memory_init();
+    // Only allocate the OOB code now, so the state of the stack is reflected
+    // correctly.
+    Label* trap_label =
+        AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapMemOutOfBounds);
+    if (mem_offsets_high_word != no_reg) {
+      // If any high word has bits set, jump to the OOB trap.
+      __ emit_cond_jump(kNotEqualZero, trap_label, kI32, mem_offsets_high_word);
+      pinned.clear(mem_offsets_high_word);
+    }
+
+    LiftoffRegister segment_index =
+        pinned.set(__ GetUnusedRegister(kGpReg, pinned));
+    __ LoadConstant(segment_index, WasmValue(imm.data_segment.index));
+
     auto sig = MakeSig::Returns(kI32).Params(kPointerKind, kPointerKind, kI32,
                                              kI32, kI32);
     LiftoffRegister args[] = {LiftoffRegister(instance), dst, src,
@@ -4870,10 +4907,8 @@ class LiftoffCompiler {
     // We don't need the instance anymore after the call. We can use the
     // register for the result.
     LiftoffRegister result(instance);
-    GenerateCCall(&result, &sig, kVoid, args, ext_ref);
-    // TODO(manoskouk): Also throw kDataSegmentOutOfBounds.
-    Label* trap_label =
-        AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapMemOutOfBounds);
+    GenerateCCall(&result, &sig, kVoid, args,
+                  ExternalReference::wasm_memory_init());
     __ emit_cond_jump(kEqual, trap_label, kI32, result.gp());
   }
 
@@ -4900,10 +4935,14 @@ class LiftoffCompiler {
   void MemoryCopy(FullDecoder* decoder,
                   const MemoryCopyImmediate<validate>& imm, const Value&,
                   const Value&, const Value&) {
+    Register mem_offsets_high_word = no_reg;
     LiftoffRegList pinned;
-    LiftoffRegister size = pinned.set(PopMemTypeToRegister(pinned));
-    LiftoffRegister src = pinned.set(PopMemTypeToRegister(pinned));
-    LiftoffRegister dst = pinned.set(PopMemTypeToRegister(pinned));
+    LiftoffRegister size = pinned.set(
+        PopMemTypeToRegister(decoder, &mem_offsets_high_word, &pinned));
+    LiftoffRegister src = pinned.set(
+        PopMemTypeToRegister(decoder, &mem_offsets_high_word, &pinned));
+    LiftoffRegister dst = pinned.set(
+        PopMemTypeToRegister(decoder, &mem_offsets_high_word, &pinned));
 
     Register instance = __ cache_state()->cached_instance;
     if (instance == no_reg) {
@@ -4911,26 +4950,36 @@ class LiftoffCompiler {
       __ LoadInstanceFromFrame(instance);
     }
 
-    ExternalReference ext_ref = ExternalReference::wasm_memory_copy();
+    // Only allocate the OOB code now, so the state of the stack is reflected
+    // correctly.
+    Label* trap_label =
+        AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapMemOutOfBounds);
+    if (mem_offsets_high_word != no_reg) {
+      // If any high word has bits set, jump to the OOB trap.
+      __ emit_cond_jump(kNotEqualZero, trap_label, kI32, mem_offsets_high_word);
+    }
+
     auto sig = MakeSig::Returns(kI32).Params(kPointerKind, kPointerKind,
                                              kPointerKind, kPointerKind);
     LiftoffRegister args[] = {LiftoffRegister(instance), dst, src, size};
     // We don't need the instance anymore after the call. We can use the
     // register for the result.
     LiftoffRegister result(instance);
-    GenerateCCall(&result, &sig, kVoid, args, ext_ref);
-    Label* trap_label =
-        AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapMemOutOfBounds);
+    GenerateCCall(&result, &sig, kVoid, args,
+                  ExternalReference::wasm_memory_copy());
     __ emit_cond_jump(kEqual, trap_label, kI32, result.gp());
   }
 
   void MemoryFill(FullDecoder* decoder,
                   const MemoryIndexImmediate<validate>& imm, const Value&,
                   const Value&, const Value&) {
+    Register mem_offsets_high_word = no_reg;
     LiftoffRegList pinned;
-    LiftoffRegister size = pinned.set(PopMemTypeToRegister(pinned));
+    LiftoffRegister size = pinned.set(
+        PopMemTypeToRegister(decoder, &mem_offsets_high_word, &pinned));
     LiftoffRegister value = pinned.set(__ PopToRegister(pinned));
-    LiftoffRegister dst = pinned.set(PopMemTypeToRegister(pinned));
+    LiftoffRegister dst = pinned.set(
+        PopMemTypeToRegister(decoder, &mem_offsets_high_word, &pinned));
 
     Register instance = __ cache_state()->cached_instance;
     if (instance == no_reg) {
@@ -4938,16 +4987,23 @@ class LiftoffCompiler {
       __ LoadInstanceFromFrame(instance);
     }
 
-    ExternalReference ext_ref = ExternalReference::wasm_memory_fill();
+    // Only allocate the OOB code now, so the state of the stack is reflected
+    // correctly.
+    Label* trap_label =
+        AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapMemOutOfBounds);
+    if (mem_offsets_high_word != no_reg) {
+      // If any high word has bits set, jump to the OOB trap.
+      __ emit_cond_jump(kNotEqualZero, trap_label, kI32, mem_offsets_high_word);
+    }
+
     auto sig = MakeSig::Returns(kI32).Params(kPointerKind, kPointerKind, kI32,
                                              kPointerKind);
     LiftoffRegister args[] = {LiftoffRegister(instance), dst, value, size};
     // We don't need the instance anymore after the call. We can use the
     // register for the result.
     LiftoffRegister result(instance);
-    GenerateCCall(&result, &sig, kVoid, args, ext_ref);
-    Label* trap_label =
-        AddOutOfLineTrap(decoder, WasmCode::kThrowWasmTrapMemOutOfBounds);
+    GenerateCCall(&result, &sig, kVoid, args,
+                  ExternalReference::wasm_memory_fill());
     __ emit_cond_jump(kEqual, trap_label, kI32, result.gp());
   }
 
@@ -6390,12 +6446,12 @@ class LiftoffCompiler {
   }
 
   void DefineSafepoint() {
-    Safepoint safepoint = safepoint_table_builder_.DefineSafepoint(&asm_);
+    auto safepoint = safepoint_table_builder_.DefineSafepoint(&asm_);
     __ cache_state()->DefineSafepoint(safepoint);
   }
 
   void DefineSafepointWithCalleeSavedRegisters() {
-    Safepoint safepoint = safepoint_table_builder_.DefineSafepoint(&asm_);
+    auto safepoint = safepoint_table_builder_.DefineSafepoint(&asm_);
     __ cache_state()->DefineSafepointWithCalleeSavedRegisters(safepoint);
   }
 

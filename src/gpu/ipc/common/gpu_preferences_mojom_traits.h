@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_preferences.h"
@@ -221,7 +222,6 @@ struct GPU_EXPORT
     }
 
     out->ignore_gpu_blocklist = prefs.ignore_gpu_blocklist();
-    out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     if (!prefs.ReadGrContextType(&out->gr_context_type))
       return false;
@@ -382,9 +382,6 @@ struct GPU_EXPORT
   }
   static bool ignore_gpu_blocklist(const gpu::GpuPreferences& prefs) {
     return prefs.ignore_gpu_blocklist;
-  }
-  static bool enable_oop_rasterization_ddl(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_oop_rasterization_ddl;
   }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;

@@ -126,7 +126,7 @@ class LocalFrameMojoHandler
   void AdvanceFocusInFrame(
       mojom::blink::FocusType focus_type,
       const absl::optional<RemoteFrameToken>& source_frame_token) final;
-  void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
+  void AdvanceFocusForIME(mojom::blink::FocusType focus_type) final;
   void ReportContentSecurityPolicyViolation(
       network::mojom::blink::CSPViolationPtr csp_violation) final;
   // Updates the snapshotted policy attributes (sandbox flags and permissions
@@ -192,8 +192,8 @@ class LocalFrameMojoHandler
   void GetCanonicalUrlForSharing(
       GetCanonicalUrlForSharingCallback callback) final;
 
-  void SetAppHistoryEntriesForRestore(
-      mojom::blink::AppHistoryEntryArraysPtr) final;
+  void SetNavigationApiHistoryEntriesForRestore(
+      mojom::blink::NavigationApiHistoryEntryArraysPtr) final;
 
   // blink::mojom::LocalMainFrame overrides:
   void AnimateDoubleTapZoom(const gfx::Point& point,

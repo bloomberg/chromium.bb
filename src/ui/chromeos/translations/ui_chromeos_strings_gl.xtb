@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1209796539517632982">Servidores de nomes automáticos</translation>
 <translation id="1210831758834677569">Laosiano</translation>
+<translation id="1223825810409523901">Extensión de Chrome</translation>
 <translation id="1243314992276662751">Cargar</translation>
 <translation id="1249250836236328755">Xénero</translation>
 <translation id="1254593899333212300">Conexión directa a Internet</translation>
@@ -61,6 +62,7 @@
 <translation id="1497522201463361063">Non se pode cambiar o nome de "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Inglés (EUA) con teclado Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" />: host</translation>
+<translation id="1521655867290435174">Follas de cálculo de Google</translation>
 <translation id="1538729222189715449">Abrindo ficheiros de Linux…</translation>
 <translation id="1547964879613821194">Inglés canadense</translation>
 <translation id="1556189134700913550">Aplicar a todas</translation>
@@ -79,6 +81,7 @@
 <translation id="166439687370499867">Non se permite cambiar a configuración da rede compartida</translation>
 <translation id="1665611772925418501">Non se puido modificar o ficheiro.</translation>
 <translation id="1673103856845176271">Non se puido acceder ao ficheiro por motivos de seguranza.</translation>
+<translation id="16762847117768727">Imaxe ISO</translation>
 <translation id="169515659049020177">Maiús</translation>
 <translation id="1715848075824334077">En bicicleta</translation>
 <translation id="1722487484194605434">Comprimindo <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
@@ -184,7 +187,6 @@
 <translation id="2544853746127077729">A rede rexeitou o certificado de autenticación</translation>
 <translation id="2547921442987553570">Engadir a <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Internacional dos EUA</translation>
-<translation id="2562685439590298522">Documentos</translation>
 <translation id="2563185590376525700">Ra</translation>
 <translation id="2578394532502990878">Támil (fonético)</translation>
 <translation id="2579959351793446050">Odiá</translation>
@@ -220,9 +222,7 @@
 <translation id="2902734494705624966">Estadounidense ampliado</translation>
 <translation id="290843123675549676">Marathi</translation>
 <translation id="2923240520113693977">Estoniano</translation>
-<translation id="2925966894897775835">Follas</translation>
 <translation id="2938685643439809023">Mongol</translation>
-<translation id="2943400156390503548">Presentacións</translation>
 <translation id="2943503720238418293">Utiliza un nome máis curto</translation>
 <translation id="2949781154072577687">Formatando <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Medusa</translation>
@@ -384,6 +384,7 @@
 <translation id="4380245540200674032">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, xestionada polo teu administrador, detalles</translation>
 <translation id="4387004326333427325">Certificado de autenticación rexeitado de forma remota</translation>
 <translation id="4394214039309501350">Ligazón externa</translation>
+<translation id="4401287888955153199">Extraer todo</translation>
 <translation id="4418686080762064601">Crea un atallo para acceder aos teus ficheiros</translation>
 <translation id="4425149324548788773">A miña unidade</translation>
 <translation id="4439427728133035643">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, conectar</translation>
@@ -413,6 +414,7 @@
 <translation id="4656777537938206294">Activa o acceso sen conexión a estes ficheiros</translation>
 <translation id="4658782175094886150">Persoa na neve</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" perderán o acceso a menos que estes elementos se compartan con eles.</translation>
+<translation id="467809019005607715">Presentacións de Google</translation>
 <translation id="4690246192099372265">Sueco</translation>
 <translation id="4693155481716051732">Suxi</translation>
 <translation id="4694604912444486114">Mono</translation>
@@ -656,6 +658,7 @@
 <translation id="6732801395666424405">Non se poden cargar os certificados</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Seleccionouse 1 cartafol</translation>
+<translation id="6755827872271341378">Dispositivo Chrome OS Flex</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Xestionar o uso compartido de Linux</translation>
@@ -733,6 +736,7 @@
 <translation id="7343393116438664539">Vietnamita (télex)</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="7375951387215729722">A lista de ficheiros está en orde descendente segundo os datos da columna <ph name="COLUMN_NAME" />.</translation>
+<translation id="7402503521691663770">Dispositivos Chrome OS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa de Google</translation>
@@ -808,6 +812,7 @@
 <translation id="7925686952655276919">Non utilizar datos móbiles para a sincronización</translation>
 <translation id="7928710562641958568">Expulsar dispositivo</translation>
 <translation id="7943385054491506837">Colemak para EUA</translation>
+<translation id="7948417415021769876">Ficheiro 7z</translation>
 <translation id="7953739707111622108">Non se pode abrir este dispositivo porque non se recoñeceu o seu sistema de ficheiros.</translation>
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7972920761225148017">Francés (Suíza)</translation>
@@ -822,6 +827,7 @@
 <translation id="8042602468072383151">Audio <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">Romanés</translation>
 <translation id="8049184478152619004">Mete a clave de desbloqueo persoal (PUK)</translation>
+<translation id="807187749540895545">Extraendo <ph name="FILE_NAME" />…</translation>
 <translation id="8079530767338315840">Repetir</translation>
 <translation id="8087576439476816834">Descargar, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Compartido comigo</translation>
@@ -856,6 +862,7 @@
 <translation id="8372369524088641025">Clave WEP incorrecta</translation>
 <translation id="8372852072747894550">Grego</translation>
 <translation id="8386903983509584791">Finalizou a busca</translation>
+<translation id="8387733224523483503">Extraeuse <ph name="FILE_NAME" />.</translation>
 <translation id="8395901698320285466">Dimensións</translation>
 <translation id="8408068190360279472">Rede de tipo <ph name="NETWORK_TYPE" />, conectando</translation>
 <translation id="8425213833346101688">Cambiar</translation>
@@ -873,6 +880,7 @@
 <translation id="8484284835977497781">Escolle unha das túas fotos recentes.</translation>
 <translation id="8487700953926739672">Dispoñible sen conexión</translation>
 <translation id="8492972329130824181">A rede doméstica non está dispoñible. Para conectarte, debes ter activada a itinerancia de datos móbiles.</translation>
+<translation id="8499098729323186194">Extraendo <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="8521441079177373948">RU</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="853494022971700746">Francés (Francia)</translation>
@@ -947,7 +955,9 @@
 <translation id="9172592259078059678">Guxarati (transliteración)</translation>
 <translation id="9173120999827300720">Inglés (EUA) con teclado internacional</translation>
 <translation id="9174050671906956834">Os elementos da papeleira elimínanse para sempre ao cabo de 30 días.</translation>
+<translation id="9183302530794969518">Documentos de Google</translation>
 <translation id="9189836632794948435">Kazako</translation>
+<translation id="9200427192836333033">Extraéronse <ph name="NUMBER_OF_ITEMS" /> elementos.</translation>
 <translation id="9213073329713032541">Iniciouse correctamente a instalación.</translation>
 <translation id="9219103736887031265">Imaxes</translation>
 <translation id="9219908252191632183">Paisaxe lunar</translation>

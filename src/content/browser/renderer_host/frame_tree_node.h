@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node_blame_context.h"
 #include "content/browser/renderer_host/navigator.h"
@@ -91,8 +92,6 @@ class CONTENT_EXPORT FrameTreeNode {
       FrameTree* frame_tree,
       RenderFrameHostImpl* parent,
       blink::mojom::TreeScopeType tree_scope_type,
-      const std::string& name,
-      const std::string& unique_name,
       bool is_created_by_script,
       const base::UnguessableToken& devtools_frame_token,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
@@ -121,6 +120,9 @@ class CONTENT_EXPORT FrameTreeNode {
   Navigator& navigator() { return frame_tree()->navigator(); }
 
   RenderFrameHostManager* render_manager() { return &render_manager_; }
+  const RenderFrameHostManager* render_manager() const {
+    return &render_manager_;
+  }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
   const std::string& frame_name() const {
     return render_manager_.current_replication_state().name;
@@ -330,7 +332,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // A RenderFrameHost in this node started loading.
   // |should_show_loading_ui| indicates whether this navigation should be
   // visible in the UI. True for cross-document navigations and navigations
-  // intercepted by appHistory's transitionWhile().
+  // intercepted by the navigation API's transitionWhile().
   // |was_previously_loading| is false if the FrameTree was not loading before.
   // The caller is required to provide this boolean as the delegate should only
   // be notified if the FrameTree went from non-loading to loading state.
@@ -459,7 +461,8 @@ class CONTENT_EXPORT FrameTreeNode {
   // Write a representation of this object into a trace.
   void WriteIntoTrace(perfetto::TracedValue context) const;
   void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::FrameTreeNodeInfo> proto);
+      perfetto::TracedProto<perfetto::protos::pbzero::FrameTreeNodeInfo> proto)
+      const;
 
   // Returns true the node is navigating, i.e. it has an associated
   // NavigationRequest.
@@ -519,7 +522,8 @@ class CONTENT_EXPORT FrameTreeNode {
   //  is implemented to utilize the new path.
   void set_frame_name_for_activation(const std::string& unique_name,
                                      const std::string& name) {
-    render_manager_.browsing_context_state()->set_frame_name(unique_name, name);
+    current_frame_host()->browsing_context_state()->set_frame_name(unique_name,
+                                                                   name);
   }
 
   // Returns true if error page isolation is enabled.
@@ -529,6 +533,17 @@ class CONTENT_EXPORT FrameTreeNode {
   // FrameTreeNode.
   void SetSrcdocValue(const std::string& srcdoc_value);
   const std::string& srcdoc_value() const { return srcdoc_value_; }
+
+  // Accessor to BrowsingContextState for subframes only. Only main frame
+  // navigations can change BrowsingInstances and BrowsingContextStates,
+  // therefore for subframes associated BrowsingContextState never changes. This
+  // helper method makes this more explicit and guards against calling this on
+  // main frames (there an appropriate BrowsingContextState should be obtained
+  // from RenderFrameHost or from RenderFrameProxyHost as e.g. during
+  // cross-BrowsingInstance navigations multiple BrowsingContextStates exist in
+  // the same frame).
+  const scoped_refptr<BrowsingContextState>&
+  GetBrowsingContextStateForSubframe() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessPermissionsPolicyBrowserTest,

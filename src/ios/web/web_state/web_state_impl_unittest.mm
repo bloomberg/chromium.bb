@@ -180,41 +180,16 @@ class WebStateImplTest : public web::WebTest {
   std::unique_ptr<WebStateImpl> web_state_;
 };
 
-// Tests WebState::Getter default implementation.
-TEST_F(WebStateImplTest, DefaultGetter) {
-  WebState::Getter getter = web_state_->CreateDefaultGetter();
-  ASSERT_FALSE(getter.is_null());
+// Tests WebState::GetWeakPtr.
+TEST_F(WebStateImplTest, GetWeakPtr) {
+  base::WeakPtr<WebState> weak_ptr = web_state_->GetWeakPtr();
 
-  // Verify that the getter returns |web_state_| if executed before
-  // deallocation.
-  EXPECT_EQ(web_state_.get(), getter.Run());
+  // Verify that |weak_ptr| points to |web_state_|.
+  EXPECT_EQ(weak_ptr.get(), web_state_.get());
 
-  // Destroy |web_state_| and verify that the getter returns nullptr if executed
-  // after destruction.
-  web_state_ = nullptr;
-  EXPECT_FALSE(getter.Run());
-}
-
-// Tests WebState::OnceGetter default implementation before WebState
-// destruction.
-TEST_F(WebStateImplTest, DefaultOnceGetterBeforeDestruction) {
-  WebState::OnceGetter getter = web_state_->CreateDefaultOnceGetter();
-  ASSERT_FALSE(getter.is_null());
-
-  // Verify that the getter returns |web_state_| if executed before
-  // deallocation.
-  EXPECT_EQ(web_state_.get(), std::move(getter).Run());
-}
-
-// Tests WebState::OnceGetter default implementation after WebState destruction.
-TEST_F(WebStateImplTest, DefaultOnceGetterAfterDestruction) {
-  WebState::OnceGetter getter = web_state_->CreateDefaultOnceGetter();
-  ASSERT_FALSE(getter.is_null());
-
-  // Destroy |web_state_| and verify that the getter returns nullptr if executed
-  // after destruction.
-  web_state_ = nullptr;
-  EXPECT_FALSE(std::move(getter).Run());
+  // Verify that |weak_ptr| is null after |web_state_| destruction.
+  web_state_.reset();
+  EXPECT_EQ(weak_ptr.get(), nullptr);
 }
 
 TEST_F(WebStateImplTest, WebUsageEnabled) {
@@ -1026,7 +1001,7 @@ TEST_F(WebStateImplTest, BuildStorageDuringRestore) {
                   GURL("https://chromium.test/2"),
                   GURL("https://chromium.test/3")};
   std::vector<std::unique_ptr<NavigationItem>> items;
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < std::size(urls); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(urls[index]);
   }
@@ -1266,7 +1241,7 @@ TEST_F(WebStateImplTest, MixedSafeUnsafeRestore) {
                   GURL("https://chromium.test/2"),
                   GURL("https://chromium.test/3")};
   std::vector<std::unique_ptr<NavigationItem>> items;
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < std::size(urls); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(urls[index]);
   }
@@ -1288,7 +1263,7 @@ TEST_F(WebStateImplTest, MixedSafeUnsafeRestore) {
   scoped_feature_list.Reset();
   scoped_feature_list.InitWithFeatures({features::kSynthesizedRestoreSession},
                                        {});
-  for (size_t index = 0; index < base::size(urls); ++index) {
+  for (size_t index = 0; index < std::size(urls); ++index) {
     items.push_back(NavigationItem::Create());
     items.back()->SetURL(urls[index]);
   }

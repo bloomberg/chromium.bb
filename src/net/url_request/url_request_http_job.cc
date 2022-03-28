@@ -16,6 +16,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/adapters.h"
 #include "base/file_version_info.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -735,6 +736,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
                                             cookie_line);
 
       size_t n_partitioned_cookies = 0;
+      size_t n_partitioned_cookies_no_nonce = 0;
 
       // TODO(crbug.com/1031664): Reduce the number of times the cookie list
       // is iterated over. Get metrics for every cookie which is included.
@@ -765,13 +767,36 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
         UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
                                   cookie_request_schemes);
-        if (c.cookie.IsPartitioned())
+        if (c.cookie.IsPartitioned()) {
           ++n_partitioned_cookies;
+          if (!c.cookie.PartitionKey()->nonce())
+            ++n_partitioned_cookies_no_nonce;
+        }
       }
 
       if (IsPartitionedCookiesEnabled()) {
         base::UmaHistogramCounts100("Cookie.PartitionedCookiesInRequest",
                                     n_partitioned_cookies);
+        // TODO(crbug.com/1296161): Remove this code when the partitioned
+        // cookies Origin Trial is over.
+        if (n_partitioned_cookies_no_nonce > 0 &&
+            !request_info_.extra_headers.HasHeader(
+                "Sec-CH-Partitioned-Cookies")) {
+          // If the cookie store has partitioned cookies and there is no
+          // Sec-CH-Partitioned-Cookies header set by the process that initiated
+          // the request, then the site was in the Origin Trial at one point,
+          // but we have not yet received a valid token or Accept-CH header.
+          //
+          // In this case, we still send the partitioned cookies and set the
+          // Sec-CH-Partitioned-Cookies structured header to false.
+          //
+          // If the site does not respond with the Accept-CH header and OT token
+          // in the response, the partitioned cookies will be converted to
+          // unpartitioned cookies. This conversion is done by
+          // CookieManager::ConvertPartitionedCookiesToUnpartitioned.
+          request_info_.extra_headers.SetHeader("Sec-CH-Partitioned-Cookies",
+                                                "?0");
+        }
       }
     }
   }
@@ -929,7 +954,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options, cookie_to_return,
                        cookie_string),
-        &cookie_access_result);
+        std::move(cookie_access_result));
   }
   // Removing the 1 that |num_cookie_lines_left| started with, signifing that
   // loop has been exited.
@@ -1309,9 +1334,8 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
     }
   }
 
-  for (auto r_iter = types.rbegin(); r_iter != types.rend(); ++r_iter) {
+  for (const auto& type : base::Reversed(types)) {
     std::unique_ptr<FilterSourceStream> downstream;
-    SourceStream::SourceType type = *r_iter;
     switch (type) {
       case SourceStream::TYPE_BROTLI:
         downstream = CreateBrotliSourceStream(std::move(upstream));

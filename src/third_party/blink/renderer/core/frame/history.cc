@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/frame/history.h"
 
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
-#include "third_party/blink/renderer/core/app_history/app_history.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/history_util.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -246,8 +246,8 @@ void History::pushState(v8::Isolate* isolate,
   if (exception_state.HadException())
     return;
 
-  StateObjectAdded(std::move(serialized_data), title, url,
-                   ScrollRestorationInternal(), load_type, exception_state);
+  StateObjectAdded(std::move(serialized_data), title, url, load_type,
+                   exception_state);
 }
 
 void History::replaceState(v8::Isolate* isolate,
@@ -264,7 +264,6 @@ void History::replaceState(v8::Isolate* isolate,
     return;
 
   StateObjectAdded(std::move(serialized_data), title, url,
-                   ScrollRestorationInternal(),
                    WebFrameLoadType::kReplaceCurrentItem, exception_state);
 }
 
@@ -277,13 +276,11 @@ KURL History::UrlForState(const String& url_string) {
   return KURL(DomWindow()->BaseURL(), url_string);
 }
 
-void History::StateObjectAdded(
-    scoped_refptr<SerializedScriptValue> data,
-    const String& /* title */,
-    const String& url_string,
-    mojom::blink::ScrollRestorationType restoration_type,
-    WebFrameLoadType type,
-    ExceptionState& exception_state) {
+void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
+                               const String& /* title */,
+                               const String& url_string,
+                               WebFrameLoadType type,
+                               ExceptionState& exception_state) {
   if (!DomWindow()) {
     exception_state.ThrowSecurityError(
         "May not use a History object associated with a Document that is not "
@@ -316,18 +313,18 @@ void History::StateObjectAdded(
     return;
   }
 
-  if (auto* app_history = AppHistory::appHistory(*DomWindow())) {
-    if (app_history->DispatchNavigateEvent(
+  if (auto* navigation_api = NavigationApi::navigation(*DomWindow())) {
+    if (navigation_api->DispatchNavigateEvent(
             full_url, nullptr, NavigateEventType::kHistoryApi, type,
-            UserNavigationInvolvement::kNone,
-            data.get()) != AppHistory::DispatchResult::kContinue) {
+            UserNavigationInvolvement::kNone, data.get(),
+            nullptr) != NavigationApi::DispatchResult::kContinue) {
       return;
     }
   }
 
   DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
-      full_url, mojom::blink::SameDocumentNavigationType::kHistoryApi,
-      std::move(data), type, restoration_type);
+      full_url, nullptr, mojom::blink::SameDocumentNavigationType::kHistoryApi,
+      std::move(data), type);
 }
 
 }  // namespace blink

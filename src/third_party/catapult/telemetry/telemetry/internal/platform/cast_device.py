@@ -19,10 +19,19 @@ class CastDevice(device.Device):
   def GetAllConnectedDevices(cls, denylist):
     return []
 
+  @property
+  def output_dir(self):
+    return self._output_dir
+
+  @property
+  def runtime_exe(self):
+    return self._runtime_exe
+
 
 def FindAllAvailableDevices(options):
   """Returns a list of available devices.
   """
-  if options.browser_type not in cast_interface.CAST_BROWSERS:
+  if (not options.cast_receiver_type or
+      options.cast_receiver_type not in cast_interface.CAST_BROWSERS):
     return []
   return [CastDevice(options.cast_output_dir, options.cast_runtime_exe)]

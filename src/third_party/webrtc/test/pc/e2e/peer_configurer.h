@@ -17,6 +17,7 @@
 
 #include "absl/strings/string_view.h"
 #include "api/async_resolver_factory.h"
+#include "api/audio/audio_mixer.h"
 #include "api/call/call_factory_interface.h"
 #include "api/fec_controller.h"
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
@@ -26,6 +27,7 @@
 #include "api/transport/network_control.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder_factory.h"
+#include "modules/audio_processing/include/audio_processing.h"
 #include "rtc_base/network.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/ssl_certificate.h"
@@ -165,6 +167,16 @@ class PeerConfigurerImpl final
     components_->pcf_dependencies->neteq_factory = std::move(neteq_factory);
     return this;
   }
+  PeerConfigurer* SetAudioProcessing(
+      rtc::scoped_refptr<webrtc::AudioProcessing> audio_processing) override {
+    components_->pcf_dependencies->audio_processing = audio_processing;
+    return this;
+  }
+  PeerConfigurer* SetAudioMixer(
+      rtc::scoped_refptr<webrtc::AudioMixer> audio_mixer) override {
+    components_->pcf_dependencies->audio_mixer = audio_mixer;
+    return this;
+  }
   PeerConfigurer* SetRtcEventLogPath(std::string path) override {
     params_->rtc_event_log_path = std::move(path);
     return this;
@@ -193,6 +205,11 @@ class PeerConfigurerImpl final
   PeerConfigurer* SetIceTransportFactory(
       std::unique_ptr<IceTransportFactory> factory) override {
     components_->pc_dependencies->ice_transport_factory = std::move(factory);
+    return this;
+  }
+
+  PeerConfigurer* SetPortAllocatorExtraFlags(uint32_t extra_flags) override {
+    params_->port_allocator_extra_flags = extra_flags;
     return this;
   }
   // Implementation of PeerConnectionE2EQualityTestFixture::PeerConfigurer end.

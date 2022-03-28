@@ -430,11 +430,22 @@ namespace dawn::native {
                 descriptor->module->GetEntryPoint(descriptor->entryPoint);
             for (ColorAttachmentIndex i(uint8_t(0));
                  i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->targetCount)); ++i) {
-                DAWN_TRY_CONTEXT(
-                    ValidateColorTargetState(device, &descriptor->targets[static_cast<uint8_t>(i)],
-                                             fragmentMetadata.fragmentOutputsWritten[i],
-                                             fragmentMetadata.fragmentOutputVariables[i]),
-                    "validating targets[%u].", static_cast<uint8_t>(i));
+                const ColorTargetState* target = &descriptor->targets[static_cast<uint8_t>(i)];
+                if (target->format != wgpu::TextureFormat::Undefined) {
+                    DAWN_TRY_CONTEXT(ValidateColorTargetState(
+                                         device, target, fragmentMetadata.fragmentOutputsWritten[i],
+                                         fragmentMetadata.fragmentOutputVariables[i]),
+                                     "validating targets[%u].", static_cast<uint8_t>(i));
+                } else {
+                    DAWN_INVALID_IF(
+                        target->blend,
+                        "Color target[%u] blend state is set when the format is undefined.",
+                        static_cast<uint8_t>(i));
+                    DAWN_INVALID_IF(
+                        target->writeMask != wgpu::ColorWriteMask::None,
+                        "Color target[%u] write mask is set to (%s) when the format is undefined.",
+                        static_cast<uint8_t>(i), target->writeMask);
+                }
             }
 
             return {};
@@ -599,6 +610,7 @@ namespace dawn::native {
             mVertexBufferInfos[typedSlot].arrayStride = buffers[slot].arrayStride;
             mVertexBufferInfos[typedSlot].stepMode = buffers[slot].stepMode;
             mVertexBufferInfos[typedSlot].usedBytesInStride = 0;
+            mVertexBufferInfos[typedSlot].lastStride = 0;
             switch (buffers[slot].stepMode) {
                 case wgpu::VertexStepMode::Vertex:
                     mVertexBufferSlotsUsedAsVertexBuffer.set(typedSlot);
@@ -623,12 +635,16 @@ namespace dawn::native {
                 // maxVertexBufferArrayStride (2048), which is promised by the GPUVertexBufferLayout
                 // validation of creating render pipeline. Therefore, calculating in uint16_t will
                 // cause no overflow.
+                uint32_t formatByteSize =
+                    GetVertexFormatInfo(buffers[slot].attributes[i].format).byteSize;
                 DAWN_ASSERT(buffers[slot].attributes[i].offset <= 2048);
                 uint16_t accessBoundary =
-                    uint16_t(buffers[slot].attributes[i].offset) +
-                    uint16_t(GetVertexFormatInfo(buffers[slot].attributes[i].format).byteSize);
+                    uint16_t(buffers[slot].attributes[i].offset) + uint16_t(formatByteSize);
                 mVertexBufferInfos[typedSlot].usedBytesInStride =
                     std::max(mVertexBufferInfos[typedSlot].usedBytesInStride, accessBoundary);
+                mVertexBufferInfos[typedSlot].lastStride =
+                    std::max(mVertexBufferInfos[typedSlot].lastStride,
+                             mAttributeInfos[location].offset + formatByteSize);
             }
         }
 

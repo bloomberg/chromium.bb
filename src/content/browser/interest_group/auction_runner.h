@@ -21,10 +21,13 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
+#include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -34,7 +37,23 @@ class InterestGroupManagerImpl;
 // their reporting phases and produces the result via a callback.
 class CONTENT_EXPORT AuctionRunner {
  public:
+  // TODO(behamilton@google.com): Make this struct more broadly available to
+  // the rest of interest group code and adjust them to use it where
+  // appropriate.
+  struct InterestGroupKey {
+    InterestGroupKey(url::Origin o, std::string n) : owner(o), name(n) {}
+    inline bool operator<(const InterestGroupKey& other) const {
+      return owner != other.owner ? owner < other.owner : name < other.name;
+    }
+    inline bool operator==(const InterestGroupKey& other) const {
+      return owner == other.owner && name == other.name;
+    }
+    url::Origin owner;
+    std::string name;
+  };
   // Invoked when a FLEDGE auction is complete.
+  //
+  // `winning_group_id` owner and name of the winning interest group (if any).
   //
   // `render_url` URL of auction winning ad to render. Null if there is no
   //  winner.
@@ -53,14 +72,15 @@ class CONTENT_EXPORT AuctionRunner {
   //
   // `errors` are various error messages to be used for debugging. These are too
   //  sensitive for the renderers to see.
-  using RunAuctionCallback = base::OnceCallback<void(
-      AuctionRunner* auction_runner,
-      absl::optional<GURL> render_url,
-      absl::optional<std::vector<GURL>> ad_component_urls,
-      std::vector<GURL> report_urls,
-      std::vector<GURL> debug_loss_report_urls,
-      std::vector<GURL> debug_win_report_urls,
-      std::vector<std::string> errors)>;
+  using RunAuctionCallback =
+      base::OnceCallback<void(AuctionRunner* auction_runner,
+                              absl::optional<InterestGroupKey> winning_group_id,
+                              absl::optional<GURL> render_url,
+                              std::vector<GURL> ad_component_urls,
+                              std::vector<GURL> report_urls,
+                              std::vector<GURL> debug_loss_report_urls,
+                              std::vector<GURL> debug_win_report_urls,
+                              std::vector<std::string> errors)>;
 
   // Returns true if `origin` is allowed to use the interest group API. Will be
   // called on worklet / interest group origins before using them in any
@@ -131,6 +151,10 @@ class CONTENT_EXPORT AuctionRunner {
   // `auction_config` is the configuration provided by client JavaScript in
   //  the renderer in order to initiate the auction.
   //
+  //  `client_security_state` is the client security state of the frame that
+  //  issued the auction request -- this is used for post-auction interest group
+  //  updates.
+  //
   // `is_interest_group_api_allowed_callback` will be called on all buyer and
   //  seller origins, and those for which it returns false will not be allowed
   //  to participate in the auction.
@@ -141,6 +165,7 @@ class CONTENT_EXPORT AuctionRunner {
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
       blink::mojom::AuctionAdConfigPtr auction_config,
+      network::mojom::ClientSecurityStatePtr client_security_state,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       RunAuctionCallback callback);
 
@@ -157,7 +182,7 @@ class CONTENT_EXPORT AuctionRunner {
   // interest groups bid in an auction. A sets is used to avoid double-counting
   // interest groups that bid in multiple components auctions in a component
   // auction.
-  using InterestGroupSet = std::set<std::pair<url::Origin, std::string>>;
+  using InterestGroupSet = std::set<InterestGroupKey>;
 
   class Auction;
 
@@ -209,7 +234,7 @@ class CONTENT_EXPORT AuctionRunner {
     Bid(std::string ad_metadata,
         double bid,
         GURL render_url,
-        absl::optional<std::vector<GURL>> ad_components,
+        std::vector<GURL> ad_components,
         base::TimeDelta bid_duration,
         absl::optional<uint32_t> bidding_signals_data_version,
         const blink::InterestGroup::Ad* bid_ad,
@@ -225,7 +250,7 @@ class CONTENT_EXPORT AuctionRunner {
     const std::string ad_metadata;
     const double bid;
     const GURL render_url;
-    const absl::optional<std::vector<GURL>> ad_components;
+    const std::vector<GURL> ad_components;
     const base::TimeDelta bid_duration;
     const absl::optional<uint32_t> bidding_signals_data_version;
 
@@ -250,13 +275,27 @@ class CONTENT_EXPORT AuctionRunner {
   struct ScoredBid {
     ScoredBid(double score,
               absl::optional<uint32_t> scoring_signals_data_version,
-              std::unique_ptr<Bid> bid);
+              std::unique_ptr<Bid> bid,
+              auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+                  component_auction_modified_bid_params);
     ~ScoredBid();
 
+    // The seller's desirability score for the bid.
     const double score;
+
+    // The seller's scoring signals version.
     const absl::optional<uint32_t> scoring_signals_data_version;
 
+    // The bid that came from the bidder or component Auction.
     const std::unique_ptr<Bid> bid;
+
+    // Modifications that should be applied to `bid` before the parent
+    // auction uses it. Only present for bids in component Auctions. When
+    // the top-level auction creates a ScoredBid represending the result from
+    // a component auction, the params have already been applied to the
+    // underlying Bid, so the params are no longer needed.
+    const auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+        component_auction_modified_bid_params;
   };
 
   // Handles running an auction rooted at a given AuctionConfig. Separate from
@@ -288,10 +327,10 @@ class CONTENT_EXPORT AuctionRunner {
 
     // All passed in raw pointers must remain valid until the Auction is
     // destroyed. `config` is typically owned by the AuctionRunner's
-    // `owned_auction_config_` field. `is_component_auction` should be true
-    // if the Auction is a component of another auction.
+    // `owned_auction_config_` field. `parent` should be the parent Auction if
+    // this is a component auction, and null, otherwise.
     Auction(blink::mojom::AuctionAdConfig* config,
-            bool is_component_auction,
+            const Auction* parent,
             AuctionWorkletManager* auction_worklet_manager,
             InterestGroupManagerImpl* interest_group_manager,
             base::Time auction_start_time);
@@ -341,7 +380,11 @@ class CONTENT_EXPORT AuctionRunner {
     // when all reporting URLs (if any) have been retrieved from the applicable
     // worklets. `success` is true if the final status of the auction is
     // `kSuccess`.
+    //
+    // If this is a component auction, `top_seller_signals` must populated and
+    // be the output from the top-level seller's reportResult() method.
     void StartReportingPhase(
+        absl::optional<std::string> top_seller_signals,
         AuctionPhaseCompletionCallback reporting_phase_callback);
 
     // Close all Mojo pipes and release all weak pointers. Called when an
@@ -370,6 +413,14 @@ class CONTENT_EXPORT AuctionRunner {
     // Retrieves any errors from the auction. May only be called once, since it
     // takes ownership of stored errors.
     std::vector<std::string> TakeErrors();
+
+    // Retrieves (by appending) all owners of interest groups that participated
+    // in this auction (or any of its child auctions) that successfully loaded
+    // at least one interest group. May only be called after the auction has
+    // completed, for either success or failure. Duplication is possible,
+    // particularly if an owner is listed in multiple auction components. May
+    // only be called once, since it moves the stored origins.
+    void TakePostAuctionUpdateOwners(std::vector<url::Origin>& owners);
 
     // Returns the top bid of the auction. May only be invoked after the
     // bidding and scoring phase has completed successfully.
@@ -492,16 +543,20 @@ class CONTENT_EXPORT AuctionRunner {
     void ScoreBidIfReady(std::unique_ptr<Bid> bid);
 
     // Callback from ScoreBid().
-    void OnBidScored(std::unique_ptr<Bid> bid,
-                     double score,
-                     uint32_t scoring_signals_data_version,
-                     bool has_scoring_signals_data_version,
-                     const absl::optional<GURL>& debug_loss_report_url,
-                     const absl::optional<GURL>& debug_win_report_url,
-                     const std::vector<std::string>& errors);
+    void OnBidScored(
+        std::unique_ptr<Bid> bid,
+        double score,
+        auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+            component_auction_modified_bid_params,
+        uint32_t scoring_signals_data_version,
+        bool has_scoring_signals_data_version,
+        const absl::optional<GURL>& debug_loss_report_url,
+        const absl::optional<GURL>& debug_win_report_url,
+        const std::vector<std::string>& errors);
 
     absl::optional<std::string> PerBuyerSignals(const BidState* state);
     absl::optional<base::TimeDelta> PerBuyerTimeout(const BidState* state);
+    absl::optional<base::TimeDelta> SellerTimeout();
 
     // If there are no `outstanding_bids_`, completes the bidding and scoring
     // phase.
@@ -521,14 +576,13 @@ class CONTENT_EXPORT AuctionRunner {
     // Sequence of asynchronous methods to call into the seller and then bidder
     // worklet to report a a win. Will ultimately invoke
     // `reporting_phase_callback_`, which will delete the auction.
-    void ReportSellerResult();
+    void ReportSellerResult(absl::optional<std::string> top_seller_signals);
     void OnReportSellerResultComplete(
         const absl::optional<std::string>& signals_for_winner,
         const absl::optional<GURL>& seller_report_url,
         const std::vector<std::string>& error_msgs);
-    void LoadBidderWorkletToReportBidWin(
-        const absl::optional<std::string>& signals_for_winner);
-    void ReportBidWin(const absl::optional<std::string>& signals_for_winner);
+    void LoadBidderWorkletToReportBidWin(const std::string& signals_for_winner);
+    void ReportBidWin(const std::string& signals_for_winner);
     void OnReportBidWinComplete(const absl::optional<GURL>& bidder_report_url,
                                 const std::vector<std::string>& error_msgs);
 
@@ -559,6 +613,14 @@ class CONTENT_EXPORT AuctionRunner {
     // Methods not associated with a phase
     // -----------------------------------
 
+    // Creates a ComponentAuctionOtherSeller to pass to SellerWorklets when
+    // dealing with `bid`. If `this` is a component auction, returns an object
+    // with a `top_level_seller`. If this is a top-level auction and `bid` comes
+    // from a component auction, returns an object with a `component_seller` to
+    // `bid's` seller.
+    auction_worklet::mojom::ComponentAuctionOtherSellerPtr GetOtherSellerParam(
+        const Bid& bid) const;
+
     // Requests a WorkletHandle for the interest group identified by
     // `bid_state`, using the provided callbacks. Returns true if a worklet was
     // received synchronously.
@@ -572,7 +634,8 @@ class CONTENT_EXPORT AuctionRunner {
 
     // Configuration of this auction.
     raw_ptr<const blink::mojom::AuctionAdConfig> config_;
-    const bool is_component_auction_;
+    // If this is a component auction, the parent Auction. Null, otherwise.
+    const raw_ptr<const Auction> parent_;
 
     // Component auctions that are part of this auction. This auction manages
     // their state transition, and their bids may participate in this auction as
@@ -648,6 +711,11 @@ class CONTENT_EXPORT AuctionRunner {
     // multiple Auctions.
     int num_owners_with_interest_groups_ = 0;
 
+    // A list of all buyer owners that participated in this auction and had at
+    // least one interest group. These owners will have their interest groups
+    // updated after a successful auction, barring rate-limiting.
+    std::vector<url::Origin> post_auction_update_owners_;
+
     // The highest scoring bid so far. Null if no bid has been accepted yet.
     std::unique_ptr<ScoredBid> top_bid_;
     // Number of bidders with the same score as `top_bidder`.
@@ -676,14 +744,16 @@ class CONTENT_EXPORT AuctionRunner {
     base::WeakPtrFactory<Auction> weak_ptr_factory_{this};
   };
 
-  AuctionRunner(AuctionWorkletManager* auction_worklet_manager,
-                InterestGroupManagerImpl* interest_group_manager,
-                blink::mojom::AuctionAdConfigPtr auction_config,
-                RunAuctionCallback callback);
+  AuctionRunner(
+      AuctionWorkletManager* auction_worklet_manager,
+      InterestGroupManagerImpl* interest_group_manager,
+      blink::mojom::AuctionAdConfigPtr auction_config,
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
+      RunAuctionCallback callback);
 
   // Tells `auction_` to start the loading interest groups phase.
-  void StartAuction(
-      IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback);
+  void StartAuction();
 
   // Invoked asynchronously by `auction_` once all interest groups have loaded.
   // Fails the auction if `success` is false. Otherwise, starts the bidding and
@@ -701,7 +771,21 @@ class CONTENT_EXPORT AuctionRunner {
   // invoke the auction callback.
   void OnReportingPhaseComplete(bool success);
 
+  // After an auction completes (success or failure -- wherever `callback_` is
+  // invoked), updates the set of interest groups that participated in the
+  // auction.
+  void UpdateInterestGroupsPostAuction();
+
   const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
+
+  // ClientSecurityState built from the frame that issued the auction request;
+  // will be used to update interest groups that participated in the auction
+  // after the auction.
+  network::mojom::ClientSecurityStatePtr client_security_state_;
+
+  // For checking if operations like running auctions, updating interest groups,
+  // etc. are allowed or not.
+  IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback_;
 
   // Configuration.
   blink::mojom::AuctionAdConfigPtr owned_auction_config_;

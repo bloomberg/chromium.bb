@@ -1105,7 +1105,7 @@ template<typename RotationMatrixType, typename ScalingMatrixType>
 EIGEN_DEVICE_FUNC void Transform<Scalar,Dim,Mode,Options>::computeRotationScaling(RotationMatrixType *rotation, ScalingMatrixType *scaling) const
 {
   // Note that JacobiSVD is faster than BDCSVD for small matrices.
-  JacobiSVD<LinearMatrixType> svd(linear(), ComputeFullU | ComputeFullV);
+  JacobiSVD<LinearMatrixType, ComputeFullU | ComputeFullV> svd(linear());
 
   Scalar x = (svd.matrixU() * svd.matrixV().adjoint()).determinant() < Scalar(0) ? Scalar(-1) : Scalar(1); // so x has absolute value 1
   VectorType sv(svd.singularValues());
@@ -1135,7 +1135,7 @@ template<typename ScalingMatrixType, typename RotationMatrixType>
 EIGEN_DEVICE_FUNC void Transform<Scalar,Dim,Mode,Options>::computeScalingRotation(ScalingMatrixType *scaling, RotationMatrixType *rotation) const
 {
   // Note that JacobiSVD is faster than BDCSVD for small matrices.
-  JacobiSVD<LinearMatrixType> svd(linear(), ComputeFullU | ComputeFullV);
+  JacobiSVD<LinearMatrixType, ComputeFullU | ComputeFullV> svd(linear());
 
   Scalar x = (svd.matrixU() * svd.matrixV().adjoint()).determinant() < Scalar(0) ? Scalar(-1) : Scalar(1); // so x has absolute value 1
   VectorType sv(svd.singularValues());

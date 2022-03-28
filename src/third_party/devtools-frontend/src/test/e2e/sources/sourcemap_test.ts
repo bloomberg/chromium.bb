@@ -7,28 +7,18 @@ import {click, getBrowserAndPages, goToResource, pasteText, step, typeText, wait
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {CONSOLE_TAB_SELECTOR, focusConsolePrompt, getCurrentConsoleMessages} from '../helpers/console-helpers.js';
 import {clickNthChildOfSelectedElementNode, focusElementsTree, waitForContentOfSelectedElementsNode, waitForCSSPropertyValue, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
-import {addBreakpointForLine, clickOnContextMenu, getBreakpointDecorators, getValuesForScope, openSourceCodeEditorForFile, openSourcesPanel, removeBreakpointForLine, RESUME_BUTTON, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, STEP_OUT_BUTTON, STEP_OVER_BUTTON} from '../helpers/sources-helpers.js';
+import {addBreakpointForLine, clickOnContextMenu, getBreakpointDecorators, getValuesForScope, openSourceCodeEditorForFile, openSourcesPanel, removeBreakpointForLine, RESUME_BUTTON, retrieveTopCallFrameScriptLocation, retrieveTopCallFrameWithoutResuming, STEP_INTO_BUTTON, STEP_OUT_BUTTON, STEP_OVER_BUTTON} from '../helpers/sources-helpers.js';
 
 describe('The Sources Tab', async () => {
-  // Flaky test.
-  it.skip('[crbug.com/1272490] sets multiple breakpoints in case of code-splitting', async () => {
+  it('sets multiple breakpoints in case of code-splitting', async () => {
     const {target, frontend} = getBrowserAndPages();
     await openSourceCodeEditorForFile('sourcemap-codesplit.ts', 'sourcemap-codesplit.html');
     await addBreakpointForLine(frontend, 3);
 
-    const scriptLocation0 = await retrieveTopCallFrameScriptLocation('functions[0]();', target);
-    assert.deepEqual(scriptLocation0, 'sourcemap-codesplit.ts:3');
-
-    await target.evaluate(
-        'var s = document.createElement("script"); s.src = "sourcemap-codesplit2.js"; document.body.appendChild(s);');
-
-    // Wait for the sourcemap of sourcemap-codesplit2.js to load, which is
-    // indicated by the status text in the toolbar of the Sources panel.
-    const toolbarHandle = await waitFor('.sources-toolbar');
-    await waitForElementWithTextContent('sourcemap-codesplit2.js', toolbarHandle);
-
-    const scriptLocation1 = await retrieveTopCallFrameScriptLocation('functions[1]();', target);
-    assert.deepEqual(scriptLocation1, 'sourcemap-codesplit.ts:3');
+    for (let i = 0; i < 2; ++i) {
+      const scriptLocation = await retrieveTopCallFrameScriptLocation(`functions[${i}]();`, target);
+      assert.deepEqual(scriptLocation, 'sourcemap-codesplit.ts:3');
+    }
   });
 
   async function waitForStackTopMatch(matcher: RegExp) {
@@ -141,6 +131,42 @@ describe('The Sources Tab', async () => {
     });
   });
 
+  it('stepping works at the end of a sourcemapped script (crbug/1305956)', async () => {
+    const {target} = getBrowserAndPages();
+    await openSourceCodeEditorForFile('sourcemap-stepping-at-end.js', 'sourcemap-stepping-at-end.html');
+
+    // DevTools is contracting long filenames with ellipses.
+    // Let us match the location with regexp to match even contracted locations.
+    const breakLocationRegExp = /.*at-end\.js:2$/;
+    const stepLocationRegExp = /.*at-end.html:6$/;
+
+    for (const [description, button] of [
+             ['into', STEP_INTO_BUTTON],
+             ['out', STEP_OUT_BUTTON],
+             ['over', STEP_OVER_BUTTON],
+    ]) {
+      let scriptEvaluation: Promise<unknown>;
+      await step('Run to debugger statement', async () => {
+        scriptEvaluation = target.evaluate('outer();');
+
+        const scriptLocation = await waitForStackTopMatch(breakLocationRegExp);
+        assert.match(scriptLocation, breakLocationRegExp);
+      });
+
+      await step(`Step ${description} from debugger statement`, async () => {
+        await click(button);
+
+        const stepLocation = await waitForStackTopMatch(stepLocationRegExp);
+        assert.match(stepLocation, stepLocationRegExp);
+      });
+
+      await step('Resume', async () => {
+        await click(RESUME_BUTTON);
+        await scriptEvaluation;
+      });
+    }
+  });
+
   it('shows unminified identifiers in scopes and console', async () => {
     const {target, frontend} = getBrowserAndPages();
     await openSourceCodeEditorForFile('sourcemap-minified.js', 'sourcemap-minified.html');
@@ -180,7 +206,7 @@ describe('The Sources Tab', async () => {
 
       await click(CONSOLE_TAB_SELECTOR);
       await focusConsolePrompt();
-      await pasteText('text');
+      await pasteText('`Hello${text}!`');
       await frontend.keyboard.press('Enter');
 
       // Wait for the console to be usable again.
@@ -189,7 +215,7 @@ describe('The Sources Tab', async () => {
       });
       const messages = await getCurrentConsoleMessages();
 
-      assert.deepEqual(messages, ['\' world\'']);
+      assert.deepEqual(messages, ['\'Hello world!\'']);
 
       await openSourcesPanel();
     });

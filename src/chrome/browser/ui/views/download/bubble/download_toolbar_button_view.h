@@ -8,7 +8,6 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_icon_state.h"
-#include "chrome/browser/ui/views/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -16,6 +15,7 @@
 class Browser;
 class BrowserView;
 class DownloadDisplayController;
+class DownloadBubbleUIController;
 
 // Download icon shown in the trusted area of the toolbar. Its lifetime is tied
 // to that of its parent ToolbarView. The icon is made visible when downloads
@@ -35,7 +35,8 @@ class DownloadToolbarButtonView : public ToolbarButton, public DownloadDisplay {
   bool IsShowing() override;
   void Enable() override;
   void Disable() override;
-  void UpdateDownloadIcon(download::DownloadIconState state) override;
+  void UpdateDownloadIcon() override;
+  void ShowDetails() override;
 
   // ToolbarButton:
   void UpdateIcon() override;
@@ -45,16 +46,18 @@ class DownloadToolbarButtonView : public ToolbarButton, public DownloadDisplay {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
   void ButtonPressed();
-  std::unique_ptr<views::BubbleDialogDelegate> CreateBubbleDialogDelegate();
+  std::unique_ptr<views::BubbleDialogDelegate> CreateBubbleDialogDelegate(
+      std::unique_ptr<View> bubble_contents_view);
   void OnBubbleDelegateDeleted();
 
   raw_ptr<Browser> browser_;
-  // Controller for the DownloadToolbarButton.
+  // Controller for the DownloadToolbarButton UI.
   std::unique_ptr<DownloadDisplayController> controller_;
-  // Controller for the DownloadBubbleUI, both main view and partial view.
+  // Controller for keeping track of items for both main view and partial view.
   std::unique_ptr<DownloadBubbleUIController> bubble_controller_;
-  download::DownloadIconState icon_state_;
   raw_ptr<views::BubbleDialogDelegate> bubble_delegate_ = nullptr;
+
+  base::WeakPtrFactory<DownloadToolbarButtonView> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_BUBBLE_DOWNLOAD_TOOLBAR_BUTTON_VIEW_H_

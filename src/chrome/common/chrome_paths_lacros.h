@@ -22,7 +22,9 @@ void SetLacrosDefaultPaths(const base::FilePath& documents_dir,
                            const base::FilePath& drivefs,
                            const base::FilePath& removable_media_dir,
                            const base::FilePath& android_files_dir,
-                           const base::FilePath& linux_files_dir);
+                           const base::FilePath& linux_files_dir,
+                           const base::FilePath& ash_resources_dir,
+                           const base::FilePath& share_cache_dir);
 
 // Sets the default paths from BrowserInitParams received from ash on startup.
 void SetLacrosDefaultPathsFromInitParams(
@@ -40,6 +42,8 @@ bool GetDriveFsMountPointPath(base::FilePath* result);
 bool GetRemovableMediaPath(base::FilePath* result);
 bool GetAndroidFilesPath(base::FilePath* result);
 bool GetLinuxFilesPath(base::FilePath* result);
+bool GetAshResourcesPath(base::FilePath* result);
+bool GetShareCachePath(base::FilePath* result);
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_PATHS_LACROS_H_

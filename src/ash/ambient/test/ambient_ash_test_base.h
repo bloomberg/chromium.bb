@@ -13,11 +13,12 @@
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/test/test_ambient_client.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
-#include "ash/public/cpp/ambient/ambient_animation_theme.h"
+#include "ash/constants/ambient_animation_theme.h"
 #include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -188,6 +189,8 @@ class AmbientAshTestBase : public AshTestBase {
   void ClearBackupDownloadPhotoData();
 
   void SetDecodePhotoImage(const gfx::ImageSkia& image);
+
+  void SetPhotoDownloadDelay(base::TimeDelta delay);
 
  private:
   void SpinWaitForAmbientViewAvailable(

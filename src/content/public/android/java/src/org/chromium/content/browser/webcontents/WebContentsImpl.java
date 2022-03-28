@@ -29,6 +29,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink_public.input.SelectionGranularity;
 import org.chromium.content.browser.AppWebMessagePort;
+import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.RenderWidgetHostViewImpl;
@@ -253,6 +254,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         if (windowAndroid != null) {
             getRenderCoordinates().setDeviceScaleFactor(windowAndroid.getDisplay().getDipScale());
         }
+
+        // Create GestureListenerManagerImpl so it updates `mRenderCoordinates`.
+        GestureListenerManagerImpl.fromWebContents(this);
     }
 
     @Override
@@ -801,9 +805,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @VisibleForTesting
-    public void simulateRendererKilledForTesting(boolean wasOomProtected) {
+    public void simulateRendererKilledForTesting() {
         if (mObserverProxy != null) {
-            mObserverProxy.renderProcessGone(wasOomProtected);
+            mObserverProxy.renderProcessGone();
         }
     }
 

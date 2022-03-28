@@ -4,6 +4,8 @@
 
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 
+#include <algorithm>
+
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
@@ -68,12 +70,24 @@ SCTAuditingCache::SCTAuditingCache(size_t cache_size)
 
 SCTAuditingCache::~SCTAuditingCache() = default;
 
+void SCTAuditingCache::Configure(
+    mojom::SCTAuditingConfigurationPtr configuration) {
+  configuration_ = std::move(configuration);
+}
+
+mojom::SCTAuditingConfigurationPtr SCTAuditingCache::GetConfiguration() const {
+  return configuration_.Clone();
+}
+
 absl::optional<SCTAuditingCache::ReportEntry>
 SCTAuditingCache::MaybeGenerateReportEntry(
     const net::HostPortPair& host_port_pair,
     const net::X509Certificate* validated_certificate_chain,
     const net::SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps) {
+  if (!configuration_) {
+    return absl::nullopt;
+  }
   if (!histogram_timer_.IsRunning()) {
     // High-water-mark metrics get logged hourly (rather than once-per-session
     // at shutdown, as Network Service shutdown is not consistent and
@@ -125,7 +139,7 @@ SCTAuditingCache::MaybeGenerateReportEntry(
   // Add `cache_key` to the dedupe cache. The cache value is not used.
   dedupe_cache_.Put(cache_key, true);
 
-  if (base::RandDouble() > sampling_rate_) {
+  if (base::RandDouble() > configuration_->sampling_rate) {
     RecordSCTAuditingReportSampledMetrics(false);
     return absl::nullopt;
   }
@@ -161,6 +175,13 @@ SCTAuditingCache::MaybeGenerateReportEntry(
   report_entry.key = std::move(cache_key);
   report_entry.report = std::move(report);
   return report_entry;
+}
+
+bool SCTAuditingCache::IsPopularSCT(base::span<const uint8_t> sct_leaf_hash) {
+  // Copy into a vector to make comparisons easier.
+  std::vector<uint8_t> leaf_hash(sct_leaf_hash.begin(), sct_leaf_hash.end());
+  return std::binary_search(popular_scts_.begin(), popular_scts_.end(),
+                            leaf_hash);
 }
 
 void SCTAuditingCache::ClearCache() {

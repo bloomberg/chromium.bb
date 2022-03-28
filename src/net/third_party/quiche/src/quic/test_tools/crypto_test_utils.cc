@@ -17,7 +17,6 @@
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 #include "quic/core/crypto/channel_id.h"
-#include "quic/core/crypto/common_cert_set.h"
 #include "quic/core/crypto/crypto_handshake.h"
 #include "quic/core/crypto/quic_crypto_server_config.h"
 #include "quic/core/crypto/quic_decrypter.h"
@@ -104,12 +103,11 @@ namespace {
 class FullChloGenerator {
  public:
   FullChloGenerator(
-      QuicCryptoServerConfig* crypto_config,
-      QuicSocketAddress server_addr,
-      QuicSocketAddress client_addr,
-      const QuicClock* clock,
+      QuicCryptoServerConfig* crypto_config, QuicSocketAddress server_addr,
+      QuicSocketAddress client_addr, const QuicClock* clock,
       ParsedQuicVersion version,
-      QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
+      quiche::QuicheReferenceCountedPointer<QuicSignedServerConfig>
+          signed_config,
       QuicCompressedCertsCache* compressed_certs_cache,
       CryptoHandshakeMessage* out)
       : crypto_config_(crypto_config),
@@ -126,8 +124,9 @@ class FullChloGenerator {
    public:
     explicit ValidateClientHelloCallback(FullChloGenerator* generator)
         : generator_(generator) {}
-    void Run(QuicReferenceCountedPointer<
-                 ValidateClientHelloResultCallback::Result> result,
+    void Run(quiche::QuicheReferenceCountedPointer<
+                 ValidateClientHelloResultCallback::Result>
+                 result,
              std::unique_ptr<ProofSource::Details> /* details */) override {
       generator_->ValidateClientHelloDone(std::move(result));
     }
@@ -142,9 +141,9 @@ class FullChloGenerator {
   }
 
  private:
-  void ValidateClientHelloDone(
-      QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
-          result) {
+  void ValidateClientHelloDone(quiche::QuicheReferenceCountedPointer<
+                               ValidateClientHelloResultCallback::Result>
+                                   result) {
     result_ = result;
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false, TestConnectionId(1), server_addr_,
@@ -206,12 +205,13 @@ class FullChloGenerator {
   QuicSocketAddress client_addr_;
   const QuicClock* clock_;
   ParsedQuicVersion version_;
-  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
+  quiche::QuicheReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   QuicCompressedCertsCache* compressed_certs_cache_;
   CryptoHandshakeMessage* out_;
 
-  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
-  QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+  quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  quiche::QuicheReferenceCountedPointer<
+      ValidateClientHelloResultCallback::Result>
       result_;
 };
 
@@ -474,7 +474,7 @@ std::string GetValueForTag(const CryptoHandshakeMessage& message, QuicTag tag) {
 }
 
 uint64_t LeafCertHashForTesting() {
-  QuicReferenceCountedPointer<ProofSource::Chain> chain;
+  quiche::QuicheReferenceCountedPointer<ProofSource::Chain> chain;
   QuicSocketAddress server_address(QuicIpAddress::Any4(), 42);
   QuicSocketAddress client_address(QuicIpAddress::Any4(), 43);
   QuicCryptoProof proof;
@@ -482,20 +482,22 @@ uint64_t LeafCertHashForTesting() {
 
   class Callback : public ProofSource::Callback {
    public:
-    Callback(bool* ok, QuicReferenceCountedPointer<ProofSource::Chain>* chain)
+    Callback(bool* ok,
+             quiche::QuicheReferenceCountedPointer<ProofSource::Chain>* chain)
         : ok_(ok), chain_(chain) {}
 
-    void Run(bool ok,
-             const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
-             const QuicCryptoProof& /* proof */,
-             std::unique_ptr<ProofSource::Details> /* details */) override {
+    void Run(
+        bool ok,
+        const quiche::QuicheReferenceCountedPointer<ProofSource::Chain>& chain,
+        const QuicCryptoProof& /* proof */,
+        std::unique_ptr<ProofSource::Details> /* details */) override {
       *ok_ = ok;
       *chain_ = chain;
     }
 
    private:
     bool* ok_;
-    QuicReferenceCountedPointer<ProofSource::Chain>* chain_;
+    quiche::QuicheReferenceCountedPointer<ProofSource::Chain>* chain_;
   };
 
   // Note: relies on the callback being invoked synchronously
@@ -510,65 +512,6 @@ uint64_t LeafCertHashForTesting() {
   }
 
   return QuicUtils::FNV1a_64_Hash(chain->certs.at(0));
-}
-
-class MockCommonCertSets : public CommonCertSets {
- public:
-  MockCommonCertSets(absl::string_view cert, uint64_t hash, uint32_t index)
-      : cert_(cert), hash_(hash), index_(index) {}
-
-  absl::string_view GetCommonHashes() const override {
-    QUIC_BUG(quic_bug_10142_1) << "not implemented";
-    return absl::string_view();
-  }
-
-  absl::string_view GetCert(uint64_t hash, uint32_t index) const override {
-    if (hash == hash_ && index == index_) {
-      return cert_;
-    }
-    return absl::string_view();
-  }
-
-  bool MatchCert(absl::string_view cert,
-                 absl::string_view common_set_hashes,
-                 uint64_t* out_hash,
-                 uint32_t* out_index) const override {
-    if (cert != cert_) {
-      return false;
-    }
-
-    if (common_set_hashes.size() % sizeof(uint64_t) != 0) {
-      return false;
-    }
-    bool client_has_set = false;
-    for (size_t i = 0; i < common_set_hashes.size(); i += sizeof(uint64_t)) {
-      uint64_t hash;
-      memcpy(&hash, common_set_hashes.data() + i, sizeof(hash));
-      if (hash == hash_) {
-        client_has_set = true;
-        break;
-      }
-    }
-
-    if (!client_has_set) {
-      return false;
-    }
-
-    *out_hash = hash_;
-    *out_index = index_;
-    return true;
-  }
-
- private:
-  const std::string cert_;
-  const uint64_t hash_;
-  const uint32_t index_;
-};
-
-CommonCertSets* MockCommonCertSets(absl::string_view cert,
-                                   uint64_t hash,
-                                   uint32_t index) {
-  return new class MockCommonCertSets(cert, hash, index);
 }
 
 void FillInDummyReject(CryptoHandshakeMessage* rej) {
@@ -898,12 +841,10 @@ std::string GenerateClientPublicValuesHex() {
 
 void GenerateFullCHLO(
     const CryptoHandshakeMessage& inchoate_chlo,
-    QuicCryptoServerConfig* crypto_config,
-    QuicSocketAddress server_addr,
-    QuicSocketAddress client_addr,
-    QuicTransportVersion transport_version,
+    QuicCryptoServerConfig* crypto_config, QuicSocketAddress server_addr,
+    QuicSocketAddress client_addr, QuicTransportVersion transport_version,
     const QuicClock* clock,
-    QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
+    quiche::QuicheReferenceCountedPointer<QuicSignedServerConfig> signed_config,
     QuicCompressedCertsCache* compressed_certs_cache,
     CryptoHandshakeMessage* out) {
   // Pass a inchoate CHLO.

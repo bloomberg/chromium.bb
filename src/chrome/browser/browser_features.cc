@@ -100,15 +100,11 @@ const base::Feature kPrewarmSearchResultsPageFonts{
     "PrewarmSearchResultsPageFonts", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Shows a confirmation dialog when updates to PWAs identity (name and icon)
-// have been detected.
-const base::Feature kPwaUpdateDialogForNameAndIcon{
-    "PwaUpdateDialogForNameAndIcon", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Gates sandboxed iframe navigation toward external protocol behind any of:
-// - allow-popups
 // - allow-top-navigation
+// - allow-top-navigation-to-custom-protocols
 // - allow-top-navigation-with-user-gesture (+ user gesture)
+// - allow-popups
 //
 // Motivation:
 // Developers are surprised that a sandboxed iframe can navigate and/or
@@ -120,8 +116,13 @@ const base::Feature kPwaUpdateDialogForNameAndIcon{
 // malvertising.
 //
 // Implementation bug: https://crbug.com/1253379
+// I2S: https://groups.google.com/a/chromium.org/g/blink-dev/c/-t-f7I6VvOI
+//
+// To be enabled in M103
 const base::Feature kSandboxExternalProtocolBlocked{
     "SandboxExternalProtocolBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSandboxExternalProtocolBlockedWarning{
+    "SandboxExternalProtocolBlockedWarning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables migration of the network context data from `unsandboxed_data_path` to
 // `data_path`. See the explanation in network_context.mojom.
@@ -142,7 +143,7 @@ const base::Feature kWebUsbDeviceDetection{"WebUsbDeviceDetection",
 #if BUILDFLAG(IS_ANDROID)
 // Enables Certificate Transparency on Android.
 const base::Feature kCertificateTransparencyAndroid{
-    "CertificateTransparencyAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CertificateTransparencyAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kLargeFaviconFromGoogle{"LargeFaviconFromGoogle",
@@ -156,5 +157,16 @@ const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
 // See https://bit.ly/chromium-startup-no-guest-profile.
 const base::Feature kObserverBasedPostProfileInit{
     "ObserverBasedPostProfileInit", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the static key pinning list can be updated via component
+// updater.
+const base::Feature kKeyPinningComponentUpdater{
+    "KeyPinningComponentUpdater", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When this feature is enabled, the network service will restart unsandboxed if
+// a previous attempt to launch it sandboxed failed.
+const base::Feature kRestartNetworkServiceUnsandboxedForFailedLaunch{
+    "RestartNetworkServiceUnsandboxedForFailedLaunch",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

@@ -9,9 +9,9 @@
     "allowJs": false,
     "strict": true,
     /* tsc lint options */
-    "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    /* These should be caught be eslint instead */
+    /* These should be caught by eslint instead */
+    "noFallthroughCasesInSwitch": false,
     "noUnusedLocals": false,
     "allowUnreachableCode": true,
     /* Module Options */
@@ -20,6 +20,7 @@
   },
   "include": ["src/**/*.ts"],
   "typedocOptions": {
+    "entryPointStrategy": "expand",
     "entryPoints": [
       "src/common/framework/",
       "src/common/util/",
@@ -34,7 +35,10 @@
     "excludeInternal": true,
     "excludeProtected": true,
     "excludePrivate": true,
-    "listInvalidSymbolLinks": true,
+    "validation": {
+      "invalidLink": true,
+      "notExported": false,
+    },
     "readme": "./docs/helper_index.txt",
     "out": "docs/tsdoc/"
   }

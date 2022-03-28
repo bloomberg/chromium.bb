@@ -167,7 +167,7 @@ EIGEN_ALWAYS_INLINE void storeMaddData(ResScalar* res, ResScalar& alpha, ResScal
   if (GEMV_GETN(N) > iter1) { \
     if (GEMV_IS_FLOAT) { \
       LhsPacket h[2]; \
-      __builtin_vsx_disassemble_pair((void*)(h), &b##iter2); \
+      __builtin_vsx_disassemble_pair(reinterpret_cast<void*>(h), &b##iter2); \
       pger_vecMMA_acc<LhsPacket, RhsPacket, true>(&e##iter2, a0, h[0]); \
       pger_vecMMA_acc<LhsPacket, RhsPacket, true>(&e##iter3, a0, h[1]); \
     } else { \
@@ -302,6 +302,8 @@ EIGEN_ALWAYS_INLINE void storeMaddData(ResScalar* res, ResScalar& alpha, ResScal
 #define GEMV_INIT(iter, N) \
   if (N > iter) { \
     c##iter = pset1<ResPacket>(ResScalar(0)); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(c##iter); \
   }
 
 #ifdef EIGEN_POWER_USE_GEMV_PREFETCH
@@ -407,16 +409,18 @@ EIGEN_STRONG_INLINE void gemv_col(
         RhsPacketSize = Traits::RhsPacketSize,
     };
 
+#ifndef GCC_ONE_VECTORPAIR_BUG
     const Index n8 = rows - 8 * ResPacketSize + 1;
     const Index n4 = rows - 4 * ResPacketSize + 1;
     const Index n2 = rows - 2 * ResPacketSize + 1;
+#endif
     const Index n1 = rows - 1 * ResPacketSize + 1;
 #ifdef EIGEN_POWER_USE_GEMV_PREFETCH
     const Index prefetch_dist = 64 * LhsPacketSize;
 #endif
 
     // TODO: improve the following heuristic:
-    const Index block_cols = cols < 128 ? cols : (lhsStride * sizeof(LhsScalar) < 32000 ? 16 : 16);
+    const Index block_cols = cols < 128 ? cols : (lhsStride * sizeof(LhsScalar) < 16000 ? 16 : 8);
     ResPacket palpha = pset1<ResPacket>(alpha);
 
     for (Index j2 = 0; j2 < cols; j2 += block_cols)
@@ -1289,10 +1293,10 @@ EIGEN_ALWAYS_INLINE void gemv_mult_complex_MMA(LhsType& a0, RhsType* b, __vector
     gemv_mult_complex_real_MMA<ScalarPacket, LhsPacket, SLhsPacket, RhsScalar, ResPacket, ConjugateLhs, ConjugateRhs, StorageOrder>(a0, b, c0); \
 }
 
-GEMV_MULT_COMPLEX_REAL_MMA(Packet2cf,     float);
-GEMV_MULT_COMPLEX_REAL_MMA(Packet1cd,     double);
-GEMV_MULT_COMPLEX_REAL_MMA(__vector_pair, float);
-GEMV_MULT_COMPLEX_REAL_MMA(__vector_pair, double);
+GEMV_MULT_COMPLEX_REAL_MMA(Packet2cf,     float)
+GEMV_MULT_COMPLEX_REAL_MMA(Packet1cd,     double)
+GEMV_MULT_COMPLEX_REAL_MMA(__vector_pair, float)
+GEMV_MULT_COMPLEX_REAL_MMA(__vector_pair, double)
 
 /** \internal disassemble MMA accumulator results into packets */
 template <typename Scalar, typename ScalarPacket, typename LhsPacket, typename RhsPacket, bool ConjugateLhs, bool ConjugateRhs>
@@ -1439,7 +1443,7 @@ EIGEN_ALWAYS_INLINE void disassembleResults(__vector_quad* c0, PacketBlock<Scala
   if (GEMV_GETN_COMPLEX(N) > iter1) { \
     if (GEMV_IS_COMPLEX_FLOAT) { \
       PLhsPacket g[2]; \
-      __builtin_vsx_disassemble_pair((void*)(g), &a##iter2); \
+      __builtin_vsx_disassemble_pair(reinterpret_cast<void*>(g), &a##iter2); \
       gemv_mult_complex_MMA<ScalarPacket, LhsScalar, PLhsPacket, PLhsPacket, RhsScalar, RhsPacket, ResPacket, ConjugateLhs, ConjugateRhs, ColMajor>(g[0], b, &e0##iter2); \
       gemv_mult_complex_MMA<ScalarPacket, LhsScalar, PLhsPacket, PLhsPacket, RhsScalar, RhsPacket, ResPacket, ConjugateLhs, ConjugateRhs, ColMajor>(g[1], b, &e0##iter3); \
     } else { \
@@ -1525,12 +1529,17 @@ EIGEN_ALWAYS_INLINE void disassembleResults(__vector_quad* c0, PacketBlock<Scala
   if (N > iter) { \
     c0##iter = pset_zero<PResPacket>(); \
     c1##iter = pset_init<ResPacket, LhsPacket, RhsPacket>(c1##iter); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(c0##iter); \
+    EIGEN_UNUSED_VARIABLE(c1##iter); \
   }
 
 #define GEMV_WORK_COL_COMPLEX(iter, N) \
   if (N > iter) { \
     f##iter = GEMV_LOADPACKET_COL_COMPLEX(iter); \
     gemv_mult_complex<ScalarPacket, PLhsPacket, RhsScalar, RhsPacket, PResPacket, ResPacket, ConjugateLhs, ConjugateRhs, ColMajor>(f##iter, b, c0##iter, c1##iter); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(f##iter); \
   }
 
 #define GEMV_STORE_COL_COMPLEX(iter, N) \
@@ -1616,13 +1625,15 @@ EIGEN_STRONG_INLINE void gemv_complex_col(
     const Index prefetch_dist = 64 * LhsPacketSize;
 #endif
 
+#ifndef GCC_ONE_VECTORPAIR_BUG
     const Index n8 = rows - 8 * ResPacketSize + 1;
     const Index n4 = rows - 4 * ResPacketSize + 1;
     const Index n2 = rows - 2 * ResPacketSize + 1;
+#endif
     const Index n1 = rows - 1 * ResPacketSize + 1;
 
     // TODO: improve the following heuristic:
-    const Index block_cols = cols < 128 ? cols : (lhsStride * sizeof(LhsScalar) < 32000 ? 16 : 16);
+    const Index block_cols = cols < 128 ? cols : (lhsStride * sizeof(LhsScalar) < 16000 ? 16 : 8);
 
     typedef alpha_store<PResPacket, ResPacket, ResScalar, Scalar> AlphaData;
     AlphaData alpha_data(alpha);
@@ -1661,10 +1672,10 @@ EIGEN_STRONG_INLINE void gemv_complex_col(
         {
             GEMV_PROCESS_COL_COMPLEX(2)
         }
+        if (i < n1)
 #else
         while (i < n1)
 #endif
-        if (i < n1)
         {
             GEMV_PROCESS_COL_COMPLEX_ONE(1)
         }
@@ -1861,11 +1872,15 @@ EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(ResPacket& a, ResPa
     } else { \
       cc##iter1 = predux_real<ResScalar, ResPacket>(&c##iter1); \
     } \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(cc##iter1); \
   }
 #else
 #define GEMV_INIT_ROW(iter, N) \
   if (N > iter) { \
     c##iter = pset1<ResPacket>(ResScalar(0)); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(c##iter); \
   }
 
 #define GEMV_WORK_ROW(iter, N) \
@@ -1876,6 +1891,8 @@ EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(ResPacket& a, ResPa
 #define GEMV_PREDUX2(iter1, iter2, iter3, N) \
   if (N > iter1) { \
     cc##iter1 = predux_real<ResScalar, ResPacket>(c##iter2, c##iter3); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(cc##iter1); \
   }
 #endif
 
@@ -1933,9 +1950,11 @@ EIGEN_STRONG_INLINE void gemv_row(
 
     // TODO: fine tune the following heuristic. The rationale is that if the matrix is very large,
     //       processing 8 rows at once might be counter productive wrt cache.
+#ifndef GCC_ONE_VECTORPAIR_BUG
     const Index n8 = lhs.stride() * sizeof(LhsScalar) > 32000 ? (rows - 7) : (rows - 7);
     const Index n4 = rows - 3;
     const Index n2 = rows - 1;
+#endif
 
     // TODO: for padded aligned inputs, we could enable aligned reads
     enum {
@@ -1952,8 +1971,8 @@ EIGEN_STRONG_INLINE void gemv_row(
 #else
     ResPacket c0, c1, c2, c3, c4, c5, c6, c7;
 #endif
-    ScalarBlock<ResScalar, 2> cc0, cc1, cc2, cc3;
 #ifndef GCC_ONE_VECTORPAIR_BUG
+    ScalarBlock<ResScalar, 2> cc0, cc1, cc2, cc3;
     GEMV_PROCESS_ROW(8)
     GEMV_PROCESS_ROW(4)
     GEMV_PROCESS_ROW(2)
@@ -2061,6 +2080,8 @@ EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(PResPacket& a0, PRe
     } else { \
       cc##iter1 = predux_complex<ResScalar, ScalarPacket, LhsPacket, RhsPacket, ConjugateLhs, ConjugateRhs>(&e0##iter1); \
     } \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(cc##iter1); \
   }
 
 #define GEMV_PROCESS_ROW_COMPLEX_SINGLE_MMA(N) \
@@ -2084,6 +2105,8 @@ EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(PResPacket& a0, PRe
 #define GEMV_PREDUX4_COMPLEX(iter1, iter2, iter3, N) \
   if (N > iter1) { \
     cc##iter1 = predux_complex<ResScalar, PResPacket, ResPacket, LhsPacket, RhsPacket>(c0##iter2, c0##iter3, c1##iter2, c1##iter3); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(cc##iter1); \
   }
 
 #define GEMV_MULT_COMPLEX(iter1, iter2, iter3, N) \
@@ -2133,9 +2156,11 @@ EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(PResPacket& a0, PRe
   lhs.template load<LhsPacket, LhsAlignment>(i + (iter), j)
 
 #define GEMV_INIT_COMPLEX_OLD(iter, N) \
+  EIGEN_UNUSED_VARIABLE(c0##iter); \
   if (N > iter) { \
     c1##iter = pset_zero<ResPacket>(); \
-    EIGEN_UNUSED_VARIABLE(c0##iter); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(c1##iter); \
   }
 
 #define GEMV_WORK_ROW_COMPLEX_OLD(iter, N) \
@@ -2148,6 +2173,8 @@ EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(PResPacket& a0, PRe
   if (N > iter1) { \
     cc##iter1.scalar[0] = predux(c1##iter2); \
     cc##iter1.scalar[1] = predux(c1##iter3); \
+  } else { \
+    EIGEN_UNUSED_VARIABLE(cc##iter1); \
   }
 
 #define GEMV_PROCESS_ROW_COMPLEX_SINGLE_OLD(N) \
@@ -2237,9 +2264,11 @@ EIGEN_STRONG_INLINE void gemv_complex_row(
 
     // TODO: fine tune the following heuristic. The rationale is that if the matrix is very large,
     //       processing 8 rows at once might be counter productive wrt cache.
+#ifndef GCC_ONE_VECTORPAIR_BUG
     const Index n8 = lhs.stride() * sizeof(LhsScalar) > 32000 ? (rows - 7) : (rows - 7);
     const Index n4 = rows - 3;
     const Index n2 = rows - 1;
+#endif
 
     // TODO: for padded aligned inputs, we could enable aligned reads
     enum {
@@ -2258,12 +2287,12 @@ EIGEN_STRONG_INLINE void gemv_complex_row(
     GEMV_UNUSED_EXTRA(1, c0)
     GEMV_UNUSED_EXTRA(1, c1)
 #endif
-    ScalarBlock<ResScalar, 2> cc0, cc1, cc2, cc3;
     ResScalar dd0;
-#if !defined(GCC_ONE_VECTORPAIR_BUG) && defined(USE_GEMV_MMA)
+#ifndef GCC_ONE_VECTORPAIR_BUG
+    ScalarBlock<ResScalar, 2> cc0, cc1, cc2, cc3;
+#ifdef USE_GEMV_MMA
     if (!GEMV_IS_COMPLEX_COMPLEX)
 #endif
-#ifndef GCC_ONE_VECTORPAIR_BUG
     {
         GEMV_PROCESS_ROW_COMPLEX(8)
     }

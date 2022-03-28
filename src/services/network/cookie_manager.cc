@@ -459,4 +459,8 @@ CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {
   return delete_info;
 }
 
+void CookieManager::ConvertPartitionedCookiesToUnpartitioned(const GURL& url) {
+  cookie_store_->ConvertPartitionedCookiesToUnpartitioned(url);
+}
+
 }  // namespace network

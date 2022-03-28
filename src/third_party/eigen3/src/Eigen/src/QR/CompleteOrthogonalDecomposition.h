@@ -179,7 +179,7 @@ template <typename MatrixType_> class CompleteOrthogonalDecomposition
    * \code matrixT().template triangularView<Upper>() \endcode
    * For rank-deficient matrices, use
    * \code
-   * matrixR().topLeftCorner(rank(), rank()).template triangularView<Upper>()
+   * matrixT().topLeftCorner(rank(), rank()).template triangularView<Upper>()
    * \endcode
    */
   const MatrixType& matrixT() const { return m_cpqr.matrixQR(); }

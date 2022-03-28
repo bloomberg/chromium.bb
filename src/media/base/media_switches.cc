@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/system_media_controls/linux/buildflags/buildflags.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(IS_LINUX)
 #include "base/cpu.h"
@@ -348,6 +349,13 @@ const base::Feature kCdmHostVerification{"CdmHostVerification",
 const base::Feature kCdmProcessSiteIsolation{"CdmProcessSiteIsolation",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If echo cancellation for a mic signal is requested, mix and cancel all audio
+// playback going to a specific output device in the audio service.
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+const base::Feature kChromeWideEchoCancellation{
+    "ChromeWideEchoCancellation", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.
@@ -527,10 +535,16 @@ const base::Feature kVaapiH264TemporalLayerHWEncoding{
     "VaapiH264TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enable VP8 temporal layer encoding with HW encoder on ChromeOS.
 const base::Feature kVaapiVp8TemporalLayerHWEncoding{
-    "VaapiVp8TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
+    "VaapiVp8TemporalLayerEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enable VP9 k-SVC encoding with HW encoder for webrtc use case on ChromeOS.
-const base::Feature kVaapiVp9kSVCHWEncoding{"VaapiVp9kSVCHWEncoding",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kVaapiVp9kSVCHWEncoding {
+  "VaapiVp9kSVCHWEncoding",
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+};
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 
 // Inform video blitter of video color space.
@@ -735,11 +749,17 @@ const base::Feature kUseAlternateVideoDecoderImplementation{
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+const base::Feature kVideoToolboxHEVCDecoding{
+    "VideoToolboxHEVCDecoding", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+
 // Enable binding multiple shared images to a single GpuMemoryBuffer for
 // accelerated video decode using VideoToolbox.
 const base::Feature kMultiPlaneVideoToolboxSharedImages{
     "MultiPlaneVideoToolboxSharedImages", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
 // Does NV12->NV12 video copy on the main thread right before the texture's
@@ -924,6 +944,14 @@ const base::Feature kBresenhamCadence{"BresenhamCadence",
 // Display the playback speed button on the media controls.
 const base::Feature kPlaybackSpeedButton{"PlaybackSpeedButton",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsChromeWideEchoCancellationEnabled() {
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  return base::FeatureList::IsEnabled(kChromeWideEchoCancellation);
+#else
+  return false;
+#endif
+}
 
 bool IsHardwareSecureDecryptionEnabled() {
   return base::FeatureList::IsEnabled(kHardwareSecureDecryption) ||

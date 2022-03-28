@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_CONSTRAINT_SPACE_DATA_H_
 
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/table/ng_table_column_location.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -20,24 +21,7 @@ namespace blink {
 class NGTableConstraintSpaceData
     : public RefCounted<NGTableConstraintSpaceData> {
  public:
-  // Table grid columns are used to compute cell geometry.
-  struct ColumnLocation {
-    ColumnLocation(LayoutUnit offset, LayoutUnit inline_size, bool is_collapsed)
-        : offset(offset),
-          inline_size(inline_size),
-          is_collapsed(is_collapsed) {}
-
-    bool operator==(const ColumnLocation& other) const {
-      return offset == other.offset && inline_size == other.inline_size &&
-             is_collapsed == other.is_collapsed;
-    }
-
-    const LayoutUnit offset;
-    const LayoutUnit inline_size;
-    const bool is_collapsed;
-  };
-
-  // Section hold row index information used to map between table and
+  // |Section| holds the row index information used to map between table and
   // section row indexes.
   struct Section {
     Section(wtf_size_t start_row_index, wtf_size_t row_count)
@@ -88,18 +72,19 @@ class NGTableConstraintSpaceData
   // Data needed to layout a single cell.
   struct Cell {
     Cell(NGBoxStrut borders,
-         LayoutUnit block_size,
+         LayoutUnit rowspan_block_size,
          wtf_size_t start_column,
          bool has_grown,
          bool is_constrained)
         : borders(borders),
-          block_size(block_size),
+          rowspan_block_size(rowspan_block_size),
           start_column(start_column),
           has_grown(has_grown),
           is_constrained(is_constrained) {}
 
     bool operator==(const Cell& other) const {
-      return borders == other.borders && block_size == other.block_size &&
+      return borders == other.borders &&
+             rowspan_block_size == other.rowspan_block_size &&
              start_column == other.start_column &&
              has_grown == other.has_grown &&
              is_constrained == other.is_constrained;
@@ -109,7 +94,7 @@ class NGTableConstraintSpaceData
     // Size of borders drawn on the inside of the border box.
     const NGBoxStrut borders;
     // Size of the cell. Need this for cells that span multiple rows.
-    const LayoutUnit block_size;
+    const LayoutUnit rowspan_block_size;
     const wtf_size_t start_column;
     const bool has_grown;
     const bool is_constrained;
@@ -189,7 +174,7 @@ class NGTableConstraintSpaceData
     return true;
   }
 
-  Vector<ColumnLocation> column_locations;
+  Vector<NGTableColumnLocation> column_locations;
   Vector<Section> sections;
   Vector<Row> rows;
   Vector<Cell> cells;
@@ -204,8 +189,6 @@ class NGTableConstraintSpaceData
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(
-    blink::NGTableConstraintSpaceData::ColumnLocation)
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
     blink::NGTableConstraintSpaceData::Section)
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(

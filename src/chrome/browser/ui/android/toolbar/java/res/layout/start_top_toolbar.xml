@@ -20,6 +20,9 @@
         android:contentDescription="@string/accessibility_toolbar_btn_home"
         android:src="@drawable/btn_toolbar_home"
         android:visibility="gone"
+        app:menuMaxWidth="@dimen/home_button_list_menu_width"
+        app:menuPositionedAtEnd="false"
+        app:menuVerticalOverlapAnchor="false"
         app:tint="@color/default_icon_color_tint_list" />
 
     <ViewStub
@@ -35,9 +38,9 @@
         android:id="@+id/logo"
         android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="32dp"
+        android:layout_height="40dp"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
+        android:layout_alignParentBottom="true"/>
 
     <LinearLayout
         android:layout_width="wrap_content"

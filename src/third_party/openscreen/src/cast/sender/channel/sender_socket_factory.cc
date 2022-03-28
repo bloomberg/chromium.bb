@@ -5,6 +5,7 @@
 #include "cast/sender/public/sender_socket_factory.h"
 
 #include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/common/public/trust_store.h"
 #include "cast/sender/channel/cast_auth_util.h"
 #include "cast/sender/channel/message_util.h"
 #include "platform/base/tls_connect_options.h"
@@ -30,9 +31,24 @@ bool operator<(int a,
 
 SenderSocketFactory::SenderSocketFactory(Client* client,
                                          TaskRunner* task_runner)
-    : client_(client), task_runner_(task_runner) {
+    : SenderSocketFactory(client,
+                          task_runner,
+                          CastTrustStore::Create(),
+                          CastCRLTrustStore::Create()) {}
+
+SenderSocketFactory::SenderSocketFactory(
+    Client* client,
+    TaskRunner* task_runner,
+    std::unique_ptr<TrustStore> cast_trust_store,
+    std::unique_ptr<TrustStore> crl_trust_store)
+    : client_(client),
+      task_runner_(task_runner),
+      cast_trust_store_(std::move(cast_trust_store)),
+      crl_trust_store_(std::move(crl_trust_store)) {
   OSP_DCHECK(client);
   OSP_DCHECK(task_runner);
+  OSP_DCHECK(cast_trust_store_);
+  OSP_DCHECK(crl_trust_store_);
 }
 
 SenderSocketFactory::~SenderSocketFactory() {
@@ -80,8 +96,8 @@ void SenderSocketFactory::OnConnected(
   CastSocket::Client* client = it->client;
   pending_connections_.erase(it);
 
-  ErrorOr<bssl::UniquePtr<X509>> peer_cert =
-      ImportCertificate(der_x509_peer_cert.data(), der_x509_peer_cert.size());
+  ErrorOr<std::unique_ptr<ParsedCertificate>> peer_cert =
+      ParsedCertificate::ParseFromDER(der_x509_peer_cert);
   if (!peer_cert) {
     client_->OnError(this, endpoint, peer_cert.error());
     return;
@@ -165,7 +181,8 @@ void SenderSocketFactory::OnMessage(CastSocket* socket, CastMessage message) {
   }
 
   ErrorOr<CastDeviceCertPolicy> policy_or_error = AuthenticateChallengeReply(
-      message, pending->peer_cert.get(), *pending->auth_context);
+      message, *pending->peer_cert, *pending->auth_context,
+      cast_trust_store_.get(), crl_trust_store_.get());
   if (policy_or_error.is_error()) {
     OSP_DLOG_WARN << "Authentication failed for " << pending->endpoint
                   << " with error: " << policy_or_error.error();

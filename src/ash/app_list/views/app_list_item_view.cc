@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
@@ -71,9 +72,6 @@ constexpr int kTouchLongpressDelayInMs = 300;
 
 // The drag and drop app icon should get scaled by this factor.
 constexpr float kDragDropAppIconScale = 1.2f;
-
-// The app icon should get scaled by this factor when entering cardify mode.
-constexpr float kCardifyIconScale = 0.84f;
 
 // The drag and drop icon scaling up or down animation transition duration.
 constexpr int kDragDropAppIconScaleTransitionInMs = 200;
@@ -379,19 +377,23 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
   SetAnimationDuration(base::TimeDelta());
 
   preview_circle_radius_ = 0;
+}
 
+void AppListItemView::InitializeIconLoader() {
+  DCHECK(item_weak_);
   // Creates app icon load helper. base::Unretained is safe because `this` owns
   // `icon_load_helper_` and `view_delegate_` outlives `this`.
   if (is_folder_) {
-    AppListFolderItem* folder_item = static_cast<AppListFolderItem*>(item);
+    AppListFolderItem* folder_item =
+        static_cast<AppListFolderItem*>(item_weak_);
     icon_load_helper_.emplace(
         folder_item->item_list(),
         base::BindRepeating(&AppListViewDelegate::LoadIcon,
                             base::Unretained(view_delegate_)));
   } else {
     icon_load_helper_.emplace(
-        item, base::BindRepeating(&AppListViewDelegate::LoadIcon,
-                                  base::Unretained(view_delegate_)));
+        item_weak_, base::BindRepeating(&AppListViewDelegate::LoadIcon,
+                                        base::Unretained(view_delegate_)));
   }
 }
 
@@ -1027,7 +1029,7 @@ std::u16string AppListItemView::GetTooltipText(const gfx::Point& p) const {
   title_->SetTooltipText(tooltip_text_);
   std::u16string tooltip = title_->GetTooltipText(p);
   title_->SetHandlesTooltips(false);
-  if (new_install_dot_ && new_install_dot_->GetVisible()) {
+  if (new_install_dot_ && new_install_dot_->GetVisible() && !is_folder_) {
     // Tooltip becomes two lines: "App Name" + "New install".
     tooltip = l10n_util::GetStringFUTF16(IDS_APP_LIST_NEW_INSTALL, tooltip);
   }
@@ -1167,9 +1169,10 @@ void AppListItemView::SetIconVisible(bool visible) {
 void AppListItemView::EnterCardifyState() {
   in_cardified_grid_ = true;
   gfx::FontList font_size = app_list_config_->app_title_font();
-  const int size_delta = font_size.GetFontSize() * (1 - kCardifyIconScale);
+  const float cardified_scale = GetAppsGridCardifiedScale();
+  const int size_delta = font_size.GetFontSize() * (1 - cardified_scale);
   title_->SetFontList(font_size.DeriveWithSizeDelta(-size_delta));
-  ScaleIconImmediatly(kCardifyIconScale);
+  ScaleIconImmediatly(cardified_scale);
 }
 
 void AppListItemView::ExitCardifyState() {
@@ -1236,8 +1239,10 @@ void AppListItemView::ItemBadgeColorChanged() {
 
 void AppListItemView::ItemIsNewInstallChanged() {
   DCHECK(item_weak_);
-  if (new_install_dot_)
+  if (new_install_dot_) {
     new_install_dot_->SetVisible(item_weak_->is_new_install());
+    InvalidateLayout();
+  }
 }
 
 void AppListItemView::ItemBeingDestroyed() {

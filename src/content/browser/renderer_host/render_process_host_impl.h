@@ -42,6 +42,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom-forward.h"
+#include "media/mojo/mojom/webrtc_video_perf.mojom-forward.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
@@ -290,7 +291,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) override;
   void ForceCrash() override;
-  void CleanupNetworkServicePluginExceptionsUponDestruction() override;
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   void WriteIntoTrace(
@@ -586,6 +586,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver)
       override;
 
+  // Binds |receiver| to the WebrtcVideoPerfHistory instance owned by the render
+  // process host, and is used by workers via BrowserInterfaceBroker.
+  void BindWebrtcVideoPerfHistory(
+      mojo::PendingReceiver<media::mojom::WebrtcVideoPerfHistory> receiver);
+
   // Binds `receiever` to the `PushMessagingManager` instance owned by the
   // render process host, and is used by workers via `BrowserInterfaceBroker`.
   void BindPushMessaging(
@@ -661,16 +666,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindP2PSocketManager(
       net::NetworkIsolationKey isolation_key,
       mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver);
-
-  // Allows |process_id| to use an additional |allowed_request_initiator|
-  // (bypassing |request_initiator_origin_lock| enforcement).
-  //
-  // The exception will be removed when the corresponding RenderProcessHostImpl
-  // is destroyed (see
-  // |cleanup_network_service_plugin_exceptions_upon_destruction_|).
-  static void AddAllowedRequestInitiatorForPlugin(
-      int process_id,
-      const url::Origin& allowed_request_initiator);
 
   using IpcSendWatcher = base::RepeatingCallback<void(const IPC::Message& msg)>;
   void SetIpcSendWatcherForTesting(IpcSendWatcher watcher) {
@@ -847,9 +842,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // report those histograms to UMA.
   void CreateSharedRendererHistogramAllocator();
 
+  // Retrieves the details of the terminating child process.
+  //
+  // If the process is no longer running, this will also reset the process
+  // handle and (where applicable) reap the zombie process.
+  //
+  // |already_dead| should be set to true if we already know the process is
+  // dead. See `ChildProcessLauncher::GetChildTerminationInfo()` for more info
+  // on this flag.
+  ChildProcessTerminationInfo GetChildTerminationInfo(bool already_dead);
+
   // Handle termination of our process.
-  void ProcessDied(bool already_dead,
-                   ChildProcessTerminationInfo* known_details);
+  void ProcessDied(const ChildProcessTerminationInfo& termination_info);
 
   // Destroy all objects that can cause methods to be invoked on this object or
   // any other that hang off it.
@@ -884,7 +888,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       SiteInstanceImpl* site_instance);
 
   void NotifyRendererOfLockedStateUpdate();
+
+#if BUILDFLAG(IS_ANDROID)
+  // Populates the ChildProcessTerminationInfo fields that are strictly related
+  // to renderer (This struct is also used for other child processes).
   void PopulateTerminationInfoRendererFields(ChildProcessTerminationInfo* info);
+#endif  // BUILDFLAG(IS_ANDROID)
 
   static void OnMojoError(int render_process_id, const std::string& error);
 
@@ -1140,8 +1149,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<mojo::Receiver<viz::mojom::CompositingModeReporter>>
       compositing_mode_reporter_;
-
-  bool cleanup_network_service_plugin_exceptions_upon_destruction_ = false;
 
   // Fields for recording MediaStream UMA.
   bool has_recorded_media_stream_frame_depth_metric_ = false;

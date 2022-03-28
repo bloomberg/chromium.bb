@@ -83,7 +83,7 @@ chrome.terminalPrivate.onTerminalResize = function(id, width, height, callback) 
 chrome.terminalPrivate.ackOutput = function(id) {};
 
 /**
- * Open the Terminal tabbed window.
+ * Open a Terminal app window/tab
  * @param {{
  *   url: (string|undefined),
  *   asTab: (boolean|undefined)
@@ -99,6 +99,15 @@ chrome.terminalPrivate.openWindow = function(data) {};
 chrome.terminalPrivate.openOptionsPage = function(callback) {};
 
 /**
+ * Open the System Settings at the specified subpage.
+ * @param {string} subpage Name of subpage to open.  Currently only 'crostini'
+ *     supported.
+ * @param {function(): void} callback Callback that will be called when
+ *     complete.
+ */
+chrome.terminalPrivate.openSettingsSubpage = function(subpage, callback) {};
+
+/**
  * Returns an object containing info about ChromeOS settings that affect the
  * Terminal, e.g. which feature flags are enabled.
  * @param {function({
@@ -106,6 +115,22 @@ chrome.terminalPrivate.openOptionsPage = function(callback) {};
  * }): void} callback Callback that will be called with the info object.
  */
 chrome.terminalPrivate.getOSInfo = function(callback) {};
+
+/**
+ * Returns specified pref values, ignoring any not in allowlist.
+ * @param {!Array<string>} paths Paths of prefs to fetch.
+ * @param {function(Object): void} callback Callback that will be called with
+ *     prefs.
+ */
+chrome.terminalPrivate.getPrefs = function(paths, callback) {};
+
+/**
+ * Sets specified prefs, ignoring any not in allowlist.
+ * @param {Object} prefs Prefs to update keyed by paths.
+ * @param {function(): void} callback Callback that will be called when
+ *     complete.
+ */
+chrome.terminalPrivate.setPrefs = function(prefs, callback) {};
 
 /**
  * Returns an object (DictionaryValue) containing UI settings such as font style
@@ -141,6 +166,12 @@ chrome.terminalPrivate.getA11yStatus = function(callback) {};
  * @type {!ChromeEvent}
  */
 chrome.terminalPrivate.onProcessOutput;
+
+/**
+ * Fired when pref changes.
+ * @type {!ChromeEvent}
+ */
+chrome.terminalPrivate.onPrefChanged;
 
 /**
  * Fired when terminal UI settings change.

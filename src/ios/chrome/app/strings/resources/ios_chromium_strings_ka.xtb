@@ -3,6 +3,7 @@
 <translationbundle lang="ka">
 <translation id="102360288709523007">დაგვეხმარეთ Chromium-ის გაუმჯობესებაში, გამოყენების სტატისტიკისა და შეცდომების შესახებ ანგარიშების Google-ში გაგზავნით.</translation>
 <translation id="1047130070405668746">აირჩიეთ Chromium</translation>
+<translation id="1091252999271033193">ეს იმას ნიშნავს, რომ Chromium ყოველ ჯერზე მოითხოვს მობილურ საიტს.</translation>
 <translation id="1185134272377778587">Chromium-ის შესახებ</translation>
 <translation id="1257458525759135959">სურათების შესანახად შეეხეთ „პარამეტრებს“ და მიეცით საშუალება Chromium-ს, დაამატოს თქვენი ფოტოები</translation>
 <translation id="1289216811211435351">გადაერთეთ Chromium-ზე</translation>
@@ -26,6 +27,7 @@
 <translation id="2178608107313874732">Chromium ამჟამად თქვენს კამერას ვერ გამოიყენებს</translation>
 <translation id="2195025571279539885">გსურთ, Chromium-მა შემდგომში ამ საიტის <ph name="LANGUAGE_NAME" /> გვერდების თარგმნა შემოგთავაზოთ?</translation>
 <translation id="2218146227246548550">თქვენი ორგანიზაცია მოითხოვს, რომ Chromium-ის გამოსაყენებლად სისტემაში შეხვიდეთ. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
+<translation id="2236584955986023187">ეს იმას ნიშნავს, რომ Chromium ყოველ ჯერზე მოითხოვს დესკტოპის საიტს.</translation>
 <translation id="2426113998523353159">თქვენი ორგანიზაცია მოითხოვს, რომ Chromium-ის გამოსაყენებლად სისტემაში შეხვიდეთ.</translation>
 <translation id="2450140762465183767">ამიერიდან შეგიძლიათ გამოიყენოთ Chromium, როცა შეტყობინებებში, დოკუმენტებში ან სხვა აპებში ბმულებს ეხებით.</translation>
 <translation id="2478931088402984578">აირჩიეთ <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -42,6 +44,7 @@
 <translation id="3344973607274501920">Chromium-მა ვერ შეამოწმა თქვენი პაროლები. შეამოწმეთ კავშირი ინტერნეტთან.</translation>
 <translation id="3472200483164753384">მხარდაუჭერელია Chromium Canary-ში</translation>
 <translation id="3639997914391704523">პაროლების Chromium-ის მეშვეობით შესამოწმებლად შედით სისტემაში თქვენი Google ანგარიშით.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> იყენებდა Chromium-ს და ამ მოწყობილობაზე დატოვა სანიშნეები, პაროლები და სხვა პარამეტრები.</translation>
 <translation id="3805899903892079518">Chromium-ს არ აქვს წვდომა თქვენს ფოტოებსა და ვიდეოებზე. ჩართეთ წვდომა iOS-ის მენიუში: პარამეტრები &gt; კონფიდენციალურობა &gt; ფოტოები.</translation>
 <translation id="4043291146360695975">პაროლები ინახება პაროლების მმართველში მხოლოდ ამ მოწყობილობაზე.</translation>
 <translation id="4099085513035183040">მხარდაუჭერელია Chromium Beta-ში</translation>
@@ -53,6 +56,15 @@
 <translation id="4828317641996116749">Chromium-მა ვერ შეამოწმა ყველა პაროლი. ცადეთ მოგვიანებით.</translation>
 <translation id="4985291216379576555">ხაზგარეშეა, Chromium ვერ ახერხებს განახლებების შემოწმებას</translation>
 <translation id="4999538639245140991">ვინაიდან თქვენ გადიხართ ანგარიშიდან, რომელსაც მართავს <ph name="SIGNOUT_MANAGED_DOMAIN" />, ამ მოწყობილობიდან წაიშლება თქვენი Chromium მონაცემები, თუმცა ისინი შენარჩუნდება თქვენს Google ანგარიშში.</translation>
+<translation id="5039881550736388123">როდესაც ჩართულია:
+<ph name="BEGIN_INDENT" />  • დაგვეხმარეთ, გავაუმჯობესოთ Chromium მათთვის, ვინც მას თქვენ მსგავსად იყენებს.<ph name="END_INDENT" />
+
+რა უნდა გაითვალისწინოთ:
+<ph name="BEGIN_INDENT" />  • თქვენ მიერ Chromium-ის გამოყენების შესახებ ინფორმაცია ეგზავნება Google-ს, მაგრამ ის არ იქნება დაკავშირებული თქვენთან.
+
+  • Chromium-ის ავარიულად გათიშვის შემთხვევაში, გათიშვის დეტალები შეიძლება გარკვეულ პერსონალურ ინფორმაციას შეიცავდეს.
+
+  • თუ სინქრონიზაციას ჩართავთ, მეტრიკა შეიძლება შეიცავდეს ინფორმაციას თქვენ მიერ მონახულებული URL-ების შესახებ.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">შედით Chromium-ში</translation>
 <translation id="5224391634244552924">შენახული პაროლები არ არის. პაროლების შემოწმებას Chromium შეძლებს მათი შენახვის შემდეგ.</translation>
 <translation id="5308226104666789935">Chromium ვერ ახერხებს განახლებების შემოწმებას</translation>
@@ -63,6 +75,7 @@
 <translation id="5777187867430702742">Chromium-ის გვერდი</translation>
 <translation id="5862307444128926510">მოგესალმებათ Chromium!</translation>
 <translation id="5945387852661427312">თქვენ შედიხართ ანგარიშით, რომელსაც მართავს <ph name="DOMAIN" /> და მის ადმინისტრატორს თქვენი Chromium მონაცემების მართვის საშუალებას აძლევთ. Chromium-იდან გასვლის შემთხვევაში, თქვენი მონაცემები წაიშლება ამ მოწყობილობიდან, თუმცა ისინი თქვენს Google ანგარიშში შენარჩუნდება.</translation>
+<translation id="5983312940147103417">გააუმჯობესეთ Chromium</translation>
 <translation id="602807004951640891">Chromium-ის გამოყენებით თქვენ ეთანხმებით <ph name="BEGIN_LINK_TOS" />მომსახურების პირობებს<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Chromium-ის ნაგულისხმევად დასაყენებლად:
 1. გახსენით „პარამეტრები“

@@ -12,10 +12,12 @@
 <translation id="1125124144982679672">କିଏ Chrome ବ୍ୟବହାର କରୁଛନ୍ତି?</translation>
 <translation id="1142745911746664600">Chrome ଅପ୍‌ଡେଟ୍ ହୋଇପାରିବ ନାହିଁ</translation>
 <translation id="1154147086299354128">&amp;Chromeରେ ଖୋଲନ୍ତୁ</translation>
+<translation id="1178374936842835197">ଯଦି ଏହି ପୃଷ୍ଠାରେ କୌଣସି ସେଟିଂ ଦେଖାଯାଏ ନାହିଁ, ତେବେ ଆପଣଙ୍କ <ph name="LINK_BEGIN" />ChromeOS Flex ସେଟିଂସ<ph name="LINK_END" />ରେ ଦେଖନ୍ତୁ</translation>
 <translation id="1182414570724401860">ଆପଣ ଏହି ଫାଇଲକୁ ଡାଉନଲୋଡ୍ କରନ୍ତୁ ନାହିଁ କିମ୍ବା ଖୋଲନ୍ତୁ ନାହିଁ ବୋଲି Chrome ସୁପାରିଶ କରେ</translation>
 <translation id="1278833599417554002">&amp;Chrome ଅପଡେଟ୍ କରିବା ପାଇଁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> ପାଇଁ ଆପଣଙ୍କୁ ଏହି ଡିଭାଇସକୁ ବ୍ୟବହାର କରିବା ପୂର୍ବରୁ ନିମ୍ନୋକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀକୁ ପଢ଼ି ସେଗୁଡ଼ିକୁ ଗ୍ରହଣ କରିବାର ଆବଶ୍ୟକତା ଅଛି। ଏହି ସର୍ତ୍ତାବଳୀ Google Chrome OSର ସର୍ତ୍ତାବଳୀକୁ ବିସ୍ତାର, ପରିବର୍ତ୍ତନ କିମ୍ବା ସୀମିତ କରେ ନାହିଁ।</translation>
 <translation id="1302523850133262269">Chrome ନବୀନତମ ସିଷ୍ଟମ୍ ଅପ୍‌ଡେଟ୍‌ଗୁଡ଼ିକ ଇନ୍‌ଷ୍ଟଲ୍ କରୁଛି, ଦୟାକରି ଅପେକ୍ଷା କରନ୍ତୁ।</translation>
+<translation id="1335640173511558774"><ph name="MANAGER" /> ପାଇଁ ଆପଣଙ୍କୁ ଏହି ଡିଭାଇସକୁ ବ୍ୟବହାର କରିବା ପୂର୍ବରୁ ନିମ୍ନୋକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀକୁ ପଢ଼ି ସେଗୁଡ଼ିକୁ ଗ୍ରହଣ କରିବାର ଆବଶ୍ୟକତା ଅଛି। ଏହି ସର୍ତ୍ତାବଳୀ Google ChromeOS Flexର ସର୍ତ୍ତାବଳୀକୁ ବିସ୍ତାର, ପରିବର୍ତ୍ତନ କିମ୍ବା ସୀମିତ କରେ ନାହିଁ।</translation>
 <translation id="137466361146087520">Google Chrome ବିଟା</translation>
 <translation id="1399397803214730675">ଏହି କମ୍ପ୍ୟୁଟର୍‌ରେ ପୂର୍ବରୁ Google Chromeର ସବୁଠାରୁ ନିକଟତମ ସଂସ୍କରଣ ଅଛି। ଯଦି ସଫ୍ଟୱେୟାର୍ କାର୍ଯ୍ୟ କରୁ ନାହିଁ, ଦୟାକରି Google Chrome ଅନ୍‌ଇନ୍‌ଷ୍ଟଲ୍ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="1434626383986940139">Chrome କେନେରୀ ଆପ୍ସ</translation>
@@ -29,6 +31,7 @@
 <translation id="1597911401261118146">ଆପଣଙ୍କ ପାସୱାର୍ଡଗୁଡ଼ିକ ଡାଟା ଚୋରି ଏବଂ ଅନ୍ୟ ସୁରକ୍ଷା ସମସ୍ୟାଗୁଡ଼ିକରୁ ସୁରକ୍ଷିତ ଅଛି ନା ନାହିଁ ତାହା ଯାଞ୍ଚ କରିବାକୁ, <ph name="BEGIN_LINK" />Chromeରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ<ph name="END_LINK" />।</translation>
 <translation id="1619887657840448962">Chromeକୁ ଆହୁରି ସୁରକ୍ଷିତ କରିବା ପାଇଁ, ଆମେ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ରେ ତାଲିକାଭୁକ୍ତ ହୋଇନଥିବା ଏବଂ ଆପଣଙ୍କର ଅଜାଣତରେ ଯୋଗ କରାଯାଇଥିବା ନିମ୍ନୋକ୍ତ ଏକ୍ସ‌ଟେନ୍‌ସନ୍‌କୁ ଅକ୍ଷମ କରିଦେଇଛୁ।</translation>
 <translation id="1628000112320670027">Chrome ସାହାଯ୍ୟରେ ସାହାଯ୍ୟ ପ୍ରାପ୍ତ କରନ୍ତୁ</translation>
+<translation id="1662146548738125461">ChromeOS Flex ବିଷୟରେ</translation>
 <translation id="1674870198290878346">Chrome ଇନ୍‍କଗ୍ନିଟୋ ୱିଣ୍ଡୋରେ ଲିଙ୍କ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="1682634494516646069">Google Chrome ଏହାର ଡାଟା ଡିରେକ୍ଟୋରୀକୁ ପଢ଼ି ଓ ଲେଖି ପାରିବ ନାହିଁ:
 
@@ -47,7 +50,9 @@
 <translation id="1919130412786645364">Chromeରେ ସାଇନ୍-ଇନ୍‌ କରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="2018528049276128029">ପ୍ରତ୍ୟେକ ପ୍ରୋଫାଇଲରେ ବୁକମାର୍କ, ଇତିହାସ, ପାସୱାର୍ଡ ଏବଂ ଆହୁରି ଅନେକ କିଛି ପରି ତା'ର ନିଜସ୍ୱ Chrome ସୂଚନା ଥାଏ</translation>
 <translation id="2063848847527508675">ଅପ୍‌ଡେଟ୍‌କୁ ଲାଗୁ କରିବା ପାଇଁ Chrome OSକୁ ରିଷ୍ଟାର୍ଟ କରିବାର ଆବଶ୍ୟକତା ରହିଛି।</translation>
+<translation id="2094648590148273905">ChromeOS Flex ସର୍ତ୍ତାବଳୀ</translation>
 <translation id="2094919256425865063">ଯେକୌଣସି ମତେ Chrome ପରିତ୍ୟାଗ କରିବେ?</translation>
+<translation id="2106831557840787829">ChromeOS Flex <ph name="BEGIN_LINK_LINUX_OSS" />Linux ଡେଭଲପମେଣ୍ଟ ଏନଭାୟରନମେଣ୍ଟ<ph name="END_LINK_LINUX_OSS" /> ପରି ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ଓପନ ସୋର୍ସ ସଫ୍ଟୱେର<ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋଇଛି।</translation>
 <translation id="2120620239521071941">ଏହି ଡିଭାଇସ୍‌ରୁ ଏହା <ph name="ITEMS_COUNT" />ଟି ଆଇଟମ୍‌ ଡିଲିଟ୍‌ କରିବ। ପରେ ଆପଣଙ୍କର ଡାଟା ପୁନଃପ୍ରାପ୍ତ କରିବାକୁ, Chromeରେ <ph name="USER_EMAIL" />ଭାବେ ସାଇନ୍‌ ଇନ୍‌ କରନ୍ତୁ।</translation>
 <translation id="2121284319307530122">&amp;Chrome ଅପଡେଟ୍ କରିବା ପାଇଁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />ବର୍ତ୍ତମାନ ସେଟିଂସ୍‌<ph name="END_LINK" />ର ରିପୋର୍ଟ କରି Chromeକୁ ଆହୁରି ଉତ୍ତମ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ</translation>
@@ -75,6 +80,7 @@
 <translation id="2665296953892887393">Googleକୁ କ୍ରାଶ୍ ରିପୋର୍ଟ ଏବଂ <ph name="UMA_LINK" /> ପଠାଇ Google Chromeକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ।</translation>
 <translation id="2689103672227170538">ଯେତେବେଳେ ଆପଣ Chrome ଆରମ୍ଭ କରନ୍ତି, ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠା ଦେଖାଯିବ, ତାହା ଏହି ଏକ୍ସଟେନ୍‌ସନ୍ ବଦଳାଇଦେଇଛି।</translation>
 <translation id="2742320827292110288">ଚେତାବନୀ: Google Chrome କୌଣସି ଏକ୍ସଟେନସନକୁ ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଇତିହାସ ରେକର୍ଡ କରିବାରୁ ପ୍ରତିରୋଧ କରିପାରିବ ନାହିଁ। ଇନକଗ୍ନିଟୋ ମୋଡରେ ଏହି ଏକ୍ସଟେନସନକୁ ଅକ୍ଷମ କରିବା ପାଇଁ, ଏହି ବିକଳ୍ପକୁ ଅଚୟନ କରନ୍ତୁ।</translation>
+<translation id="2746842245914314523">ଆପଣ Chrome ସେଟିଂସରେ ଏହି ଫିଚରଗୁଡ଼ିକ ବିଷୟରେ ଅଧିକ ଜାଣିପାରିବେ। ଟ୍ରାଏଲ ସମୟରେ, ଏହି ନୂଆ ଫିଚରଗୁଡ଼ିକ ବିନା ସାଇଟଗୁଡ଼ିକ ସହ ଆପଣଙ୍କ ଇଣ୍ଟରାକ୍ସନ ଯେତେ ବ୍ୟକ୍ତିଗତ ଅଟେ ତା'ଠାରୁ ଅଧିକ ବ୍ୟକ୍ତିଗତ ହୋଇନପାରେ।</translation>
 <translation id="2765403129283291972">ଏହି ସାଇଟ୍ ପାଇଁ Chrome ଆପଣଙ୍କର ମାଇକ୍ରୋଫୋନ୍ ଆକ୍‌ସେସ୍ କରିବାକୁ ଅନୁମତି ଆବଶ୍ୟକ କରୁଛି</translation>
 <translation id="2770231113462710648">ଏଠାକୁ ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍‌କୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ:</translation>
 <translation id="2775140325783767197">Chrome ଆପଣଙ୍କର ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ ନାହିଁ। ଆପଣଙ୍କର ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରି ଦେଖନ୍ତୁ।</translation>
@@ -90,6 +96,7 @@
 <translation id="2926952073016206995">ଏହି ସାଇଟ୍ ପାଇଁ Chrome କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
 <translation id="2929907241665500097">Chrome ଅପଡେଟ୍ ହେଲା ନାହିଁ, କିଛି ତ୍ରୁଟି ହୋଇଗଲା। <ph name="BEGIN_LINK" />Chrome ଅପଡେଟ୍ ସମସ୍ୟା ଏବଂ ବିଫଳ ଅପଡେଟଗୁଡ଼ିକର ସମାଧାନ କରନ୍ତୁ।<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - ନେଟୱାର୍କ ସାଇନ୍-ଇନ୍ - Chrome</translation>
+<translation id="3019382870990049182">&amp;ChromeOS Flexକୁ ଅପଡେଟ କରିବା ପାଇଁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="303514781271618814">ଆପଣଙ୍କର କମ୍ ଡାଟା ବ୍ୟବହାର କରି ସମାନ ବ୍ରାଉଜିଂ ଅନୁଭୂତି ଡେଲିଭର କରିବା ପାଇଁ ସାଇଟଗୁଡ଼ିକୁ ଅନୁମତି ଦେଉଥିବା ନୂଆ ଫିଚରଗୁଡ଼ିକୁ Chrome ଏକ୍ସପ୍ଲୋର କରୁଛି</translation>
 <translation id="3037838751736561277">Google Chrome ପୃଷ୍ଠପଟ ମୋଡ୍‌ରେ ଅଛି।</translation>
 <translation id="3059710691562604940">ସେଫ୍ ବ୍ରାଉଜିଂ ବନ୍ଦ ଅଛି। Chrome ଏହାକୁ ଚାଲୁ କରିବାକୁ ସୁପାରିଶ କରେ।</translation>
@@ -98,6 +105,7 @@
 <translation id="3080151273017101988">ଯେତେବେଳେ Google Chrome ବନ୍ଦ ଅଛି, ସେତେବେଳେ ପୃଷ୍ଠପଟରେ ଥିବା ଆପ୍ସ ଚାଲିବା ଜାରି ରଖନ୍ତୁ।</translation>
 <translation id="3089968997497233615">Google Chromeର ଏକ ନୂଆ, ସୁରକ୍ଷିତ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି।</translation>
 <translation id="3100998948628680988">ଆପଣଙ୍କ Chrome ପ୍ରୋଫାଇଲର ନାମ ଦିଅନ୍ତୁ</translation>
+<translation id="3103390129666310801">ଆପଣଙ୍କ ଡିଭାଇସ ଅପଟୁଡେଟ ଅଛି କି ନାହିଁ, ତାହା ଦେଖିବାକୁ <ph name="LINK_BEGIN" />ChromeOS Flex ସେଟିଂସ<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="3114643501466072395">ଆପଣଙ୍କ ଅନ୍ୟ ପାସୱାର୍ଡଗୁଡ଼ିକ ଡାଟା ଚୋରି ଏବଂ ଅନ୍ୟ ସୁରକ୍ଷା ସମସ୍ୟାଗୁଡ଼ିକରୁ ସୁରକ୍ଷିତ ଅଛି ନା ନାହିଁ ତାହା ଯାଞ୍ଚ କରିବାକୁ, <ph name="BEGIN_LINK" />Chromeରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ<ph name="END_LINK" />।</translation>
 <translation id="3140883423282498090">ପରବର୍ତ୍ତୀ ସମୟରେ Google Chromeକୁ ପୁଣି ଲଞ୍ଚ କରିବାବେଳେ ପରିବର୍ତ୍ତନଗୁଡ଼ିକ ଲାଗୁ ହେବ।</translation>
 <translation id="3149510190863420837">Chrome ଆପ୍ସ</translation>
@@ -119,17 +127,21 @@
 <translation id="3596080736082218006">{COUNT,plural, =0{ଆପଣଙ୍କ ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍ ଚାହୁଁଛନ୍ତି ଯେ ଆପଣ ଏକ ଅପ୍‌ଡେଟ୍ ଲାଗୁ କରିବା ପାଇଁ Chromeକୁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ}=1{ଆପଣଙ୍କ ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍ ଚାହୁଁଛନ୍ତି ଯେ ଆପଣ ଏକ ଅପ୍‌ଡେଟ୍ ଲାଗୁ କରିବା ପାଇଁ Chromeକୁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ। ଆପଣଙ୍କର ଇନ୍‌କଗ୍ନିଟୋ ୱିଣ୍ଡୋ ପୁଣି ଖୋଲିବ ନାହିଁ।}other{ଆପଣଙ୍କ ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍ ଚାହୁଁଛନ୍ତି ଯେ ଆପଣ ଏକ ଅପ୍‌ଡେଟ୍ ଲାଗୁ କରିବା ପାଇଁ Chromeକୁ ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ। ଆପଣଙ୍କର #ଟି ଇନ୍‌କଗ୍ନିଟୋ ୱିଣ୍ଡୋ ପୁଣି ଖୋଲିବ ନାହିଁ।}}</translation>
 <translation id="3622797965165704966">ବର୍ତ୍ତମାନ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ସହ ଏବଂ ସେୟାର୍ ହୋଇଥିବା କମ୍ପ୍ୟୁଟର୍‌ରେ Chrome ବ୍ୟବହାର କରିବା ସହଜ ଅଟେ।</translation>
 <translation id="3673813398384385993">"<ph name="EXTENSION_NAME" />"ରେ ମାଲୱେର୍ ଥିବା Chrome ଜାଣିବାକୁ ପାଇଛି</translation>
+<translation id="3716540481907974026">ChromeOS Flex ସଂସ୍କରଣ</translation>
 <translation id="3718181793972440140">ଏହି ଡିଭାଇସ୍‌ରୁ ଏହା 1ଟି ଆଇଟମ୍ ଡିଲିଟ୍ ହୋଇଯିବ। ପରେ ଆପଣଙ୍କର ଡାଟା ପୁନଃପ୍ରାପ୍ତ କରିବାକୁ, Chromeରେ <ph name="USER_EMAIL" />ଭାବରେ ସାଇନ୍ ଇନ୍‌ କରନ୍ତୁ।</translation>
 <translation id="3735758079232443276">ଆପଣ ଯେତେବେଳେ Chrome ଆରମ୍ଭ କରିବେ, ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠାଗୁଡ଼ିକ ଦେଖାଯିବ ତାହା "<ph name="EXTENSION_NAME" />" ଏକ୍ସଟେନ୍‌ସନ୍ ବଦଳାଇଦିଏ।</translation>
 <translation id="3779473566290487688">Google Chromeର ଭବିଷ୍ୟତର ଅପଡେଟଗୁଡ଼ିକ ପାଇବା ପାଇଁ, ଆପଣ OS X 10.11 କିମ୍ବା ତା'ପରର ସଂସ୍କରଣ ଆବଶ୍ୟକ କରିବେ। ଏହି କମ୍ପ୍ୟୁଟରରେ OS X 10.10 ସଂସ୍କରଣ ବ୍ୟବହାର କରାଯାଉଛି।</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
+<translation id="3785324443014631273">ସାଇନ ଇନ କରିବାରେ ଏକ ତ୍ରୁଟି ଯୋଗୁଁ ChromeOS Flex ଆପଣଙ୍କ ଡାଟାକୁ ସିଙ୍କ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="3835168907083856002">ଏହା <ph name="USER_EMAIL_ADDRESS" /> ପାଇଁ ଏକ ନୂଆ Chrome ପ୍ରୋଫାଇଲ୍ ତିଆରି କରିବ</translation>
 <translation id="386202838227397562">ଦୟାକରି ସମସ୍ତ Google Chrome ୱିଣ୍ଡୋ ବନ୍ଦ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
+<translation id="3862592757180800623">ଆପଣ ଯେ କୌଣସି ସମୟରେ Chrome ସେଟିଂସରେ ଆପଣଙ୍କ ମନ ବଦଳାଇପାରିବେ। ଟ୍ରାଏଲ ସମୟରେ, ଏହି ନୂଆ ଫିଚରଗୁଡ଼ିକ ବିନା ସାଇଟଗୁଡ଼ିକ ସହ ଆପଣଙ୍କ ଇଣ୍ଟରାକ୍ସନ ଯେତେ ବ୍ୟକ୍ତିଗତ ଅଟେ ତା'ଠାରୁ ଅଧିକ ବ୍ୟକ୍ତିଗତ ହୋଇନପାରେ।</translation>
 <translation id="3865754807470779944">Chrome ସଂସ୍କରଣ <ph name="PRODUCT_VERSION" /> ଇନଷ୍ଟଲ୍ କରାଯାଇଛି</translation>
 <translation id="3873044882194371212">Chromeର ଇନ୍‍କ&amp;ଗ୍ନିଟୋ ୱିଣ୍ଡୋରେ ଲିଙ୍କ୍‍ ଖୋଲନ୍ତୁ</translation>
 <translation id="3889417619312448367">Google Chrome ଅସଂସ୍ଥାପନ କରନ୍ତୁ</translation>
 <translation id="4050175100176540509">ନବୀନତମ ସଂସ୍କରଣରେ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ସୁରକ୍ଷା ଉନ୍ନୟନ ଏବଂ ନୂତନ ବୈଶିଷ୍ଟ୍ୟ ଉପଲବ୍ଧ ଅଛି।</translation>
 <translation id="4053720452172726777">Google Chromeକୁ କଷ୍ଟମାଇଜ୍ ଓ ନିୟନ୍ତ୍ରଣ କରନ୍ତୁ।</translation>
+<translation id="4106587138345390261">ଆପଣଙ୍କର ସୂଚନାକୁ କମ୍ ବ୍ୟବହାର କରି ସମାନ ବ୍ରାଉଜିଂ ଅନୁଭୂତି ଡେଲିଭର କରିବା ପାଇଁ ସାଇଟଗୁଡ଼ିକୁ ଅନୁମତି ଦେଉଥିବା ନୂଆ ଫିଚରଗୁଡ଼ିକୁ Chrome ଏକ୍ସପ୍ଲୋର କରୁଛି</translation>
 <translation id="4110895483821904099">ଆପଣଙ୍କର ନୂଆ Chrome ପ୍ରୋଫାଇଲ୍ ସେଟ୍ ଅପ୍ କରନ୍ତୁ</translation>
 <translation id="4147555960264124640">ଆପଣ ଏକ ପରିଚାଳିତ ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି ଏବଂ ଏହାର ବ୍ୟବସ୍ଥାପକଙ୍କୁ ଆପଣଙ୍କ Google Chrome ପ୍ରୋଫାଇଲ୍‌ର ନିୟନ୍ତ୍ରଣ ଦେଇଛନ୍ତି। ଆପଣଙ୍କର Chrome ଡାଟା ଯେପରିକି, ଆପଣଙ୍କର ଆପ୍ସ, ବୁକ୍‌ମାର୍କ୍‌ଗୁଡ଼ିକ, ଇତିବୃତ୍ତି, ପାସ୍‌ୱାର୍ଡଗୁଡ଼ିକ ଏବଂ ଅନ୍ୟ ସେଟିଂସ୍ ସ୍ଥାୟୀରୂପେ <ph name="USER_NAME" />କୁ ଯୋଡ଼ି ହୋଇଯିବ। ଆପଣ ଏହି ଡାଟାକୁ Google ଆକାଉଣ୍ଟ ଡ୍ୟାସ୍‌ବୋର୍ଡ ମାଧ୍ୟମରେ ଡିଲିଟ୍ କରିପାରିବେ, କିନ୍ତୁ ଆପଣ ଏହି ଡାଟାକୁ ଅନ୍ୟ ଆକାଉଣ୍ଟ ସହିତ ଜଡ଼ିତ କରିପାରିବେ ନାହିଁ। <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">ସଂସ୍ଥାପକ ଅଭିଲେଖାଗାର ଅଣ ସଙ୍କୁଚିତ କରିବାରେ ବିଫଳ । ଦୟାକରି Google Chrome ପୁନଃ ଡାଉନଲୋଡ୍ କରନ୍ତୁ ।</translation>
@@ -138,6 +150,7 @@
 <translation id="4242034826641750751">ଏହି ସାଇଟ୍ ପାଇଁ Chrome କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
 <translation id="424864128008805179">Chromeରୁ ସାଇନ୍‌ ଆଉଟ୍‍ କରିବେ?</translation>
 <translation id="4251615635259297716">ଆପଣଙ୍କର Chrome ଡାଟା ଏହି ଆକାଉଣ୍ଟ ସହ ଲିଙ୍କ୍ କରିବେ?</translation>
+<translation id="4262915912852657291"><ph name="BEGIN_BOLD" />କେଉଁ ଡାଟା ବ୍ୟବହାର କରାଯାଏ:<ph name="END_BOLD" /> ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଇତିହାସ, ଏହି ଡିଭାଇସରେ Chrome ବ୍ୟବହାର କରି ଆପଣ ଭିଜିଟ କରିଥିବା ସାଇଟଗୁଡ଼ିକର ଏହା ହେଉଛି ଏକ ରେକର୍ଡ।</translation>
 <translation id="4281844954008187215">ସେବାର ସର୍ତ୍ତାବଳୀ</translation>
 <translation id="4293420128516039005">ସିଙ୍କ୍‌ରେ ସାଇନ୍‌ କରନ୍ତୁ କିମ୍ବା ଆପଣଙ୍କର ସମସ୍ତ ଡିଭାଇସ୍‌ରେ Chromeକୁ ବ୍ୟକ୍ତିଗତକୃତ କରନ୍ତୁ</translation>
 <translation id="4325083532956419387">Chrome OS ସଂସ୍କରଣ</translation>
@@ -157,16 +170,19 @@
 <translation id="4571503333518166079">Chrome ବିଜ୍ଞପ୍ତି ସେଟିଂସ୍‌କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="459622048091363950">ଥରେ Chromeକୁ ଆକ୍‌ସେସ୍ ମିଳିଗଲା ପରେ, ୱେବ୍‌ସାଇଟ୍‌ଗୁଡ଼ିକ ଆପଣଙ୍କୁ ଆକ୍‌ସେସ୍ ମାଗିବାକୁ ସମର୍ଥ ହେବେ।</translation>
 <translation id="4600710005438004015">Chrome ନବୀନତମ ସଂସ୍କରଣରେ ଅପ୍‌ଡେଟ୍ କରିପାରିଲା ନାହିଁ, ତେଣୁ ଆପଣ ନୂତନ ବୈଶିଷ୍ଟ୍ୟ ଏବଂ ସୁରକ୍ଷା ସମସ୍ୟାର ସମାଧାନରୁ ବଞ୍ଚିତ ହେଉଛନ୍ତି।</translation>
+<translation id="4627412468266359539">ଇଚ୍ଛାଧୀନ: Googleକୁ ସ୍ୱଚାଳିତ ଭାବେ ଡାଏଗ୍ନୋଷ୍ଟିକ ଓ ବ୍ୟବହାର ଡାଟା ପଠାଇ ChromeOS Flex ଫିଚର ଓ ପରଫରମାନ୍ସକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ।</translation>
 <translation id="4633000520311261472">Chromeକୁ ଆହୁରି ସୁରକ୍ଷିତ କରିବା ପାଇଁ, ଆମେ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ରେ ତାଲିକାଭୁକ୍ତ ହୋଇନଥିବା ଏବଂ ଆପଣଙ୍କର ଅଜାଣତରେ ଯୋଗ କରାଯାଇଥିବା କିଛି ଏକ୍ସ‌ଟେନ୍‌ସନ୍‌ଗୁଡ଼ିକୁ ଅକ୍ଷମ କରିଦେଇଛୁ।</translation>
 <translation id="4728575227883772061">ଅଣନିର୍ଦ୍ଧିଷ୍ଟିତ ତ୍ରୁଟି ଯୋଗୁଁ ସଂସ୍ଥାପନ ବିଫଳ ହେଲା । ଯଦି Google Chrome ବର୍ତ୍ତମାନ ଚାଲୁଛି, ଦୟାକରି ଏହାକୁ ବନ୍ଦ କରନ୍ତୁ ଏବଂ ପୁନଃ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ଏହି ଫାଇଲ୍‌ ବିପଜ୍ଜନକ ହୋ‍ଇପାରେ, ତେଣୁ ଏହାକୁ Chrome ଅବରୋଧ କରିଛି।</translation>
 <translation id="479167709087336770">ଏହା Google ସନ୍ଧାନରେ ବ୍ୟବହୃତ ହେଉଥିବା ସମାନବନାନ ଯାଞ୍ଚକାରୀ ବ୍ୟବହାର କରେ। ବ୍ରାଉଜର୍‌ରେ ଆପଣ ଟାଇପ୍ କରିଥିବା ଟେକ୍ସଟ୍ Googleକୁ ପଠାଯାଏ। ଆପଣ ସର୍ବଦା ସେଟିଂସ୍‌ରେ ଏହି ଆଚରଣ ପରିବର୍ତ୍ତନ କରିପାରିବେ।</translation>
+<translation id="4842397268809523050">ଆପଣଙ୍କ ଡୋମେନ ପାଇଁ ସିଙ୍କ ଉପଲବ୍ଧ ନଥିବା ଯୋଗୁଁ ChromeOS Flex ଆପଣଙ୍କ ଡାଟାକୁ ସିଙ୍କ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="4873783916118289636">Chromeର ମୁଖ୍ୟ ଗୋପନୀୟତା ଏବଂ ସୁରକ୍ଷା ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକର ସମୀକ୍ଷା କରନ୍ତୁ</translation>
 <translation id="4891791193823137474">ପୃଷ୍ଠଭୂମିରେ Google Chromeକୁ ଚାଲିବାକୁ ଦିଅନ୍ତୁ</translation>
 <translation id="4895437082222824641">ନୂଆ Chrome &amp;ଟାବ୍‌ରେ ଲିଙ୍କ୍‌ଟି ଖୋଲନ୍ତୁ</translation>
 <translation id="4953650215774548573">Google Chromeକୁ ଆପଣଙ୍କର ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ଭାବେ ସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="495931528404527476">Chromeରେ</translation>
+<translation id="4969674060580488087">ଆପଣଙ୍କ ଆକାଉଣ୍ଟର ସାଇନ-ଇନ ବିବରଣୀ ପୁରୁଣା ହୋଇଯାଇଥିବା ଯୋଗୁଁ ChromeOS Flex ଆପଣଙ୍କ ଡାଟାକୁ ସିଙ୍କ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="4970761609246024540">Chrome ପ୍ରୋଫାଇଲକୁ ସ୍ୱାଗତ</translation>
 <translation id="4990567037958725628">Google Chrome କ୍ୟାନାରୀ</translation>
 <translation id="5062123544085870375">Chrome OS ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
@@ -179,6 +195,7 @@
 <translation id="521447420733633466">ଯଦି ଆପଣ ଏକ ଡିଭାଇସ୍ ସେୟାର୍ କରନ୍ତି, ତେବେ ସାଙ୍ଗ ଓ ପରିବାରର ଲୋକମାନେ ଅଲଗା ଭାବରେ ବ୍ରାଉଜ୍ କରିପାରିବେ ଏବଂ ସେମାନଙ୍କ ପସନ୍ଦ ଅନୁସାରେ Chromeକୁ ସେଟ୍ ଅପ୍ କରିପାରିବେ</translation>
 <translation id="5251420635869119124">ଅତିଥିମାନେ, ପଛରେ କିଛି ନଛାଡ଼ି Chrome ବ୍ୟବହାର କରିପାରିବେ।</translation>
 <translation id="5334487786912937552">ଫାଇଲଗୁଡ଼ିକୁ ଡାଉନଲୋଡ୍ କରିବା ପାଇଁ Chrome ଷ୍ଟୋରେଜ୍ ଆକ୍ସେସ୍ କରିବାର ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
+<translation id="5357889879764279201">ChromeOS Flex ମାଧ୍ୟମରେ ସାହାଯ୍ୟ ପାଆନ୍ତୁ</translation>
 <translation id="5386244825306882791">ଯେତେବେଳେ ଆପଣ Chrome ଆରମ୍ଭ କରନ୍ତି କିମ୍ବା ଓମ୍ନିବକ୍ସରୁ ସନ୍ଧାନ କରନ୍ତି, ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠା ଦେଖାଯିବ ତାହା ମଧ୍ୟ ଏହା ନିୟନ୍ତ୍ରଣ କରେ।</translation>
 <translation id="5394833366792865639">ଗୋଟିଏ Chrome ଟାବ୍ ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="5430073640787465221">ଆପଣଙ୍କର ଅଗ୍ରାଧିକାର ଫାଇଲ୍‌ ଖରାପ କିମ୍ବା ଅବୈଧ ଅଟେ।
@@ -204,7 +221,6 @@
 <translation id="5941830788786076944">ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ଭାବରେ Google Chrome ପ୍ରସ୍ତୁତ କରନ୍ତୁ</translation>
 <translation id="6070348360322141662">ଅତିରିକ୍ତ ସୁରକ୍ଷା ପାଇଁ, Google Chrome ଆପଣଙ୍କର ଡାଟା ଏନକ୍ରିପ୍ଟ କରିବ</translation>
 <translation id="608006075545470555">ଏହି ବ୍ରାଉଜରରେ ୱାର୍କ ପ୍ରୋଫାଇଲ୍ ଯୋଗ କରନ୍ତୁ</translation>
-<translation id="608496399798299674">CloudReady 2.0</translation>
 <translation id="6113794647360055231">Chrome ଏଇ ବର୍ତ୍ତମାନ ଉନ୍ନତ ହୋଇଛି</translation>
 <translation id="6145313976051292476">Chromeରେ PDFଗୁଡ଼ିକୁ ଖୋଲନ୍ତୁ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
@@ -218,12 +234,15 @@
 <translation id="6506909944137591434">ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରିବା ପାଇଁ Chrome କ୍ୟାମେରା ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Chrome OS ସିଷ୍ଟମ୍</translation>
+<translation id="6632473616050862500">ChromeOS Flex ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ଓପନ ସୋର୍ସ ସଫ୍ଟୱେର<ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋଇଛି।</translation>
 <translation id="6676384891291319759">ଇଣ୍ଟର୍ନେଟ୍ ପ୍ରବେଶ କରନ୍ତୁ</translation>
 <translation id="6679975945624592337">ପୃଷ୍ଠଭୂମିରେ Google Chromeକୁ ଚାଲିବାକୁ ଦିଅନ୍ତୁ</translation>
 <translation id="6696915334902295848">ଏହି ସାଇଟ୍ ପାଇଁ Chrome ମାଇକ୍ରୋଫୋନ୍ ଅନୁମତି ଆବଶ୍ୟକ କରେ</translation>
+<translation id="6735387454586646204">ChromeOS Flex ସିଷ୍ଟମ</translation>
 <translation id="6739177684496155661">ଏକ ନୂଆ Chrome ପ୍ରୋଫାଇଲରେ ଜାରି ରଖିବେ?</translation>
 <translation id="6750954913813541382">ବନାନ ଗତ ତ୍ରୁଟିଗୁଡ଼ିକର ସମାଧାନ ପାଇଁ, Chrome ବ୍ରାଉଜର୍‌ରେ ଆପଣ ଟାଇପ୍ କରିଥିବା ଟେକ୍ସଟ୍ Googleକୁ ପଠାଇଥାଏ</translation>
 <translation id="677276454032249905">ଯେକୌଣସିମତେ Chromeରୁ ବାହାରିବେ?</translation>
+<translation id="6814748008107187409">ଯଦି ଏହି ପୃଷ୍ଠାରେ କୌଣସି ସେଟିଂ ଦେଖାଯାଏ ନାହିଁ, ତେବେ ଆପଣଙ୍କ <ph name="LINK_BEGIN" />Chrome OS ସେଟିଂସ<ph name="LINK_END" />ରେ ଦେଖନ୍ତୁ</translation>
 <translation id="683440813066116847">mDNS ଟ୍ରାଫିକ୍‍କୁ ଅନୁମତି ଦେବା ପାଇଁ Google Chrome Canaryରେ ଅନ୍ତର୍ନିହିତ ଥିବା ନିୟମ।</translation>
 <translation id="6881299373831449287">Chrome ଅପଡେଟ୍ କରାଯାଉଛି</translation>
 <translation id="6885412569789873916">Chrome ବିଟା ଆପ୍ସ</translation>
@@ -231,6 +250,9 @@
 <translation id="6967962315388095737">mDNS ଟ୍ରାଫିକ୍‍କୁ ଅନୁମତି ଦେବା ପାଇଁ Google Chrome Betaରେ ଅନ୍ତର୍ନିହିତ ଥିବା ନିୟମ।</translation>
 <translation id="6989339256997917931">Google Chromeକୁ ଅପ୍‌ଡେଟ୍‌ କରାଯାଇଛି, କିନ୍ତୁ ଆପଣ ଏହାକୁ ଅତିକମରେ 30 ଦିନ ପର୍ଯ୍ୟନ୍ତ ବ୍ୟବହାର କରିନାହାନ୍ତି।</translation>
 <translation id="7025800014283535195">ଏଠାରେ ଆପଣ Chrome ପ୍ରୋଫାଇଲଗୁଡ଼ିକ ମଧ୍ୟରେ ସ୍ୱିଚ୍ କରିପାରିବେ</translation>
+<translation id="7036251913954633326">ଯଦି ଏହି ଆକାଉଣ୍ଟକୁ ଆପଣ କେବଳ ଗୋଟିଏ-ଥର ପାଇଁ ବ୍ୟବହାର କରିବାକୁ ଚାହାଁନ୍ତି, ତେବେ Chrome ବ୍ରାଉଜରରେ <ph name="GUEST_LINK_BEGIN" />ଅତିଥି ମୋଡ<ph name="GUEST_LINK_END" /> ବ୍ୟବହାର କରିପାରିବେ। ଯଦି ଆପଣ ଅନ୍ୟ କୌଣସି ବ୍ୟକ୍ତିଙ୍କ ପାଇଁ ଏକ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାକୁ ଚାହାଁନ୍ତି, ତେବେ ଆପଣଙ୍କ <ph name="DEVICE_TYPE" />ରେ <ph name="LINK_BEGIN" />ଜଣେ ନୂଆ ବ୍ୟକ୍ତିଙ୍କୁ ଯୋଗ କରନ୍ତୁ<ph name="LINK_END" />।
+
+ଆପଣ ୱେବସାଇଟ ଏବଂ ଆପ୍ସକୁ ପୂର୍ବରୁ ଦେଇଥିବା ଅନୁମତିଗୁଡ଼ିକ ଏହି ଆକାଉଣ୍ଟରେ ଲାଗୁ ହୋଇପାରେ। ଆପଣ <ph name="SETTINGS_LINK_BEGIN" />ସେଟିଂସ<ph name="SETTINGS_LINK_END" />ରେ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟଗୁଡ଼ିକୁ ପରିଚାଳନା କରିପାରିବେ।</translation>
 <translation id="7062128746136194023">ଆପଣଙ୍କ ବାପାମା Chrome ପାଇଁ "ସାଇଟ୍, ଆପ୍ ଏବଂ ଏକ୍ସଟେନସନଗୁଡ଼ିକ ନିମନ୍ତେ ଅନୁମତିଗୁଡ଼ିକ" ବନ୍ଦ କରିଦେଇଛନ୍ତି। ଏହି <ph name="EXTENSION_TYPE_PARAMETER" />କୁ ଯୋଗ କରିବା ପାଇଁ ଅନୁମତି ନାହିଁ।</translation>
 <translation id="7085332316435785646">Google ସେବାଗୁଡ଼ିକରେ ପର୍ସନାଲାଇଜ କରାଯାଇଥିବା ଅଧିକ ଅନୁଭୂତି ପାଇଁ Chrome ଇତିହାସକୁ ଅନ୍ତର୍ଭୁକ୍ତ କରିବେ ନା ନାହିଁ ବାଛନ୍ତୁ</translation>
 <translation id="7088681679121566888">Chrome ଅପ୍ ଟୁ ଡେଟ୍ ଅଛି</translation>
@@ -244,6 +266,9 @@
 <translation id="7296210096911315575">ଗୁରୁତ୍ବପୂର୍ଣ୍ଣ ବ୍ୟବହାର ଏବଂ ସୁରକ୍ଷା ସୂଚନା</translation>
 <translation id="7308322188646931570">ଫାଇଲ୍‌ଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍ କରିବାକୁ Chrome ଷ୍ଟୋରେଜ୍ ଆକ୍ସେସ୍ ଆବଶ୍ୟକ କରେ</translation>
 <translation id="7339898014177206373">ନୂଆ ୱିଣ୍ଡୋ</translation>
+<translation id="7388770099345495132">ଯଦି ଏହି ଆକାଉଣ୍ଟକୁ ଆପଣ କେବଳ ଗୋଟିଏ-ଥର ପାଇଁ ବ୍ୟବହାର କରିବାକୁ ଚାହାଁନ୍ତି, ତେବେ Chrome ବ୍ରାଉଜରରେ ଅତିଥି ମୋଡ ବ୍ୟବହାର କରିପାରିବେ। ଯଦି ଆପଣ ଅନ୍ୟ କୌଣସି ବ୍ୟକ୍ତିଙ୍କ ପାଇଁ ଏକ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାକୁ ଚାହାଁନ୍ତି, ତେବେ ଆପଣଙ୍କ <ph name="DEVICE_TYPE" />ରେ <ph name="LINK_BEGIN" />ଜଣେ ନୂଆ ବ୍ୟକ୍ତିଙ୍କୁ ଯୋଗ କରନ୍ତୁ<ph name="LINK_END" />।
+
+ଆପଣ ୱେବସାଇଟ ଏବଂ ଆପ୍ସକୁ ପୂର୍ବରୁ ଦେଇଥିବା ଅନୁମତିଗୁଡ଼ିକ ଏହି ଆକାଉଣ୍ଟରେ ଲାଗୁ ହୋଇପାରେ। ଆପଣ <ph name="SETTINGS_LINK_BEGIN" />ସେଟିଂସ<ph name="SETTINGS_LINK_END" />ରେ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟଗୁଡ଼ିକୁ ପରିଚାଳନା କରିପାରିବେ।</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> ଭାବରେ ଆପଣ Chromeରେ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି। ପୁଣିଥରେ ସାଇନ୍ ଇନ୍ କରିବା ପାଇଁ ଦୟାକରି ସେହି ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="7408085963519505752">Chrome OS ସର୍ତ୍ତ</translation>
 <translation id="7419046106786626209">Chrome OS ଆପଣଙ୍କର ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିବ ନାହିଁ, କାରଣ ଆପଣଙ୍କ ଡୋମେନ୍ ପାଇଁ ସିଙ୍କ୍ ଉପଲବ୍ଧ ନାହିଁ।</translation>
@@ -252,6 +277,7 @@
 <translation id="7535429826459677826">Google Chrome ଡେଭ୍‍</translation>
 <translation id="7573289029918943991">ଆପଣଙ୍କ ଡିଭାଇସ୍ ଅପ୍ ଟୁ ଡେଟ୍ ଅଛି କି ନାହିଁ, ତାହା ଦେଖିବାକୁ <ph name="LINK_BEGIN" />Chrome OS ସେଟିଂସ୍‌<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="7592736734348559088">Google Chrome ଆପଣଙ୍କର ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ କାରଣ ଆପଣଙ୍କର ଆକାଉଣ୍ଟର ସାଇନ୍‌-ଇନ୍‌ ବିବରଣୀର ସମୟ ସୀମା ସମାପ୍ତ ହୋ‍ଇସାରିଛି।</translation>
+<translation id="7606334485649076285">Google ChromeOS Flex</translation>
 <translation id="7626032353295482388">Chromeକୁ ସ୍ୱାଗତ୍‌</translation>
 <translation id="7629695634924605473">ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡଗୁଡ଼ିକ କେବେ ବି ଚୋରି ହୋଇଛି କି ନାହିଁ ତାହା Chrome ଆପଣଙ୍କୁ ଜାଣିବାକୁ ଦିଏ</translation>
 <translation id="7641148173327520642">ଆପଣଙ୍କର ସିଷ୍ଟମ୍ ଆଡ୍‌ମିନିଷ୍ଟ୍ରେଟର୍ <ph name="ALTERNATIVE_BROWSER_NAME" /> ଖୋଲିବା ପାଇଁ Google Chrome କନ୍‌ଫିଗର୍ କରିଛନ୍ତି, ଯାହା ଦ୍ୱାରା <ph name="TARGET_URL_HOSTNAME" />କୁ ଆକ୍ସେସ୍ କରାଯାଇପାରିବ।</translation>
@@ -271,10 +297,12 @@
 <translation id="7896673875602241923">ଏହି କମ୍ପ୍ୟୁଟର୍‌ରେ କେହିଜଣେ ପୂର୍ବରୁ Chromeରେ <ph name="ACCOUNT_EMAIL_LAST" /> ଭାବରେ ସାଇନ୍ ଇନ୍ କରିଛନ୍ତି। ଦୟାକରି ଆପଣଙ୍କର ସୂଚନା ଅଲଗା ରଖିବା ପାଇଁ ଏକ ନୂତନ Chrome ଉପଯୋଗକର୍ତ୍ତା ତିଆରି କରନ୍ତୁ।</translation>
 <translation id="7917876797003313048">ଆପଣ ଆପଣଙ୍କ ସାଇନ୍-ଇନ୍ କରାଯାଇଥିବା Google ଆକାଉଣ୍ଟଗୁଡ଼ିକୁ ପରିଚାଳନା କରିପାରିବେ। ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟଗୁଡ଼ିକ Chrome ବ୍ରାଉଜର୍, Play Store, Gmail ଏବଂ ଆହୁରି ଅନେକ କିଛି ପାଇଁ ବ୍ୟବହାର କରାଯାଇଛି। ଯଦି ଆପଣ ଜଣେ ପରିବାର ସଦସ୍ୟଙ୍କ ପରି ଅନ୍ୟ କୌଣସି ବ୍ୟକ୍ତିଙ୍କ ପାଇଁ ଏକ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାକୁ ଚାହୁଁଛନ୍ତି, ତେବେ ଏହା ପରିବର୍ତ୍ତେ ଆପଣଙ୍କ <ph name="DEVICE_TYPE" />ରେ ଜଣେ ନୂଆ ବ୍ୟକ୍ତିଙ୍କୁ ଯୋଗ କରନ୍ତୁ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
 <translation id="7930071585467473040">Google Chrome ପାସୱାର୍ଡଗୁଡ଼ିକ କପି କରିବାକୁ ଚେଷ୍ଟା କରୁଛି।</translation>
+<translation id="7951272445806340501">ଅପଡେଟ ଲାଗୁ କରିବା ପାଇଁ ChromeOS Flexକୁ ରିଷ୍ଟାର୍ଟ କରାଯିବା ଆବଶ୍ୟକ।</translation>
 <translation id="7962410387636238736">ଏହି କମ୍ପ୍ୟୁଟର୍‌ ଆଉ Google Chrome ଅପ‌ଡେଟ୍‍ ପ୍ରାପ୍ତ କରିବ ନାହିଁ କାରଣ ଏହା ଆଉ Windows XP ଏବଂ Windows Vista ଦ୍ୱାରା ସମର୍ଥିତ ନୁହେଁ</translation>
 <translation id="79947657522496226">Chrome OS <ph name="BEGIN_LINK_LINUX_OSS" />Linux ଡେଭଲପମେଣ୍ଟ ପରିବେଶ <ph name="END_LINK_LINUX_OSS" /> ପରି ଅତିରିକ୍ତ <ph name="BEGIN_LINK_CROS_OSS" />ଓପନ୍ ସୋର୍ସ ସଫ୍ଟୱେର୍<ph name="END_LINK_CROS_OSS" /> ଦ୍ୱାରା ସମ୍ଭବପର ହୋଇଛି।</translation>
 <translation id="8008534537613507642">Chrome ପୁଣି ଇନ୍‍ଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="8013993649590906847">ଯଦି ଗୋଟିଏ ଛବିରେ ଏକ ବ୍ୟବହାରଯୋଗ୍ୟ ବିବରଣୀ ନାହିଁ, ତେବେ Chrome ଆପଣଙ୍କ ପାଇଁ ଏକ ବିବରଣୀ ପ୍ରଦାନ କରିବାକୁ ଚେଷ୍ଟା କରିବ। ବିବରଣୀ ତିଆରି କରିବାକୁ, ଛବିଗୁଡ଼ିକ Googleକୁ ପଠାଇ ଦିଆଯାଇଛି।</translation>
+<translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">&amp;Google Chrome ବିଷୟରେ</translation>
 <translation id="8255190535488645436">Google Chrome ଆପଣଙ୍କର କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନ୍‌କୁ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="8286862437124483331">Google Chrome ପାସ୍‌ୱର୍ଡ ଦେଖାଇବାକୁ ଚାହୁଁଛି। ଏହାକୁ ଅନୁମତି ଦେବାପାଇଁ ଆପଣଙ୍କର Windows ପାସ୍‌ୱର୍ଡ ଟାଇପ୍ କରନ୍ତୁ।</translation>
@@ -282,10 +310,12 @@
 <translation id="8290100596633877290">ୱାହୋ! Google Chrome କ୍ରାସ୍ ହୋଇଯାଇଛି। ବର୍ତ୍ତମାନ ପୁଣି ଲଞ୍ଚ କରିବେ କି?</translation>
 <translation id="8342675569599923794">ଏହି ଫାଇଲ୍‌ ବିପଜ୍ଜନକ ଅଟେ, ତେଣୁ Chrome ଏହାକୁ ଅବରୋଧ କରିଛି।</translation>
 <translation id="8370517070665726704">କପିରାଇଟ୍ <ph name="YEAR" /> Google LLC। ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ ଅଛି।</translation>
+<translation id="8383226135083126309"><ph name="BEGIN_BOLD" />ଆମେ ଏହି ଡାଟାକୁ କିପରି ବ୍ୟବହାର କରୁ:<ph name="END_BOLD" /> Chrome ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକୁ ଆକଳନ କରିପାରିବ। ପରେ, ଆପଣ ଭିଜିଟ କରୁଥିବା ଏକ ସାଇଟ, ଆପଣ ଦେଖୁଥିବା ବିଜ୍ଞାପନଗୁଡ଼ିକୁ ପର୍ସନାଲାଇଜ କରିବା ପାଇଁ Chromeକୁ ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକୁ ଦେଖିବା ପାଇଁ କହିପାରିବ।</translation>
 <translation id="8394720698884623075">Chromeରେ ଷ୍ଟୋର କରାଯାଇଥିବା ଅସୁରକ୍ଷିତ ସାଇଟଗୁଡ଼ିକର ଏକ ତାଲିକା ସହ URLଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରେ</translation>
 <translation id="840084489713044809">Google Chrome ଆପଣଙ୍କର ପାସ୍‌ୱାର୍ଡ‌ଗୁଡିକୁ ଏକ୍ସପୋର୍ଟ୍ କରିବାକୁ ଚାହେଁ।</translation>
 <translation id="8433638294851456451">ଏଠାରୁ ଆପଣଙ୍କ Android ଫୋନକୁ ଏକ ନମ୍ବର ପଠାଇବାକୁ, ଉଭୟ ଡିଭାଇସରେ Chromeରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ।</translation>
 <translation id="8498858610309223613">କିଛି ସମୟ ପୂର୍ବରୁ Google Chrome ପାଇଁ ଏକ ବିଶେଷ ସୁରକ୍ଷା ଅପ୍‌ଡେଟ୍ ଲାଗୁ କରାଯାଇଛି। ବର୍ତ୍ତମାନ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ ଏବଂ ଆମେ ଆପଣଙ୍କ ଟାବ୍ ରିଷ୍ଟୋର୍ କରିବୁ।</translation>
+<translation id="8516431725144212809">Chrome ଦ୍ୱାରା ଆକଳନ କରାଯାଇଥିବା ଅନୁସାରେ ଆପଣଙ୍କ ରୁଚିଗୁଡ଼ିକ</translation>
 <translation id="8521348052903287641">mDNS ଟ୍ରାଫିକ୍‍କୁ ଅନୁମତି ଦେବାକୁ Google Chrome Dev ପାଇଁ ଇନ୍‌ବାଉଣ୍ଡ ନିୟମ।</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8550334526674375523">ଏହି ୱାର୍କ ପ୍ରୋଫାଇଲ୍ ଆପଣଙ୍କ ବ୍ୟକ୍ତିଗତ ପ୍ରୋଫାଇଲରୁ ସମ୍ପୂର୍ଣ୍ଣ ରୂପେ ଅଲଗା ଅଟେ।</translation>
@@ -311,11 +341,13 @@
 <translation id="8986207147630327271">ଆପଣ ଏହି ବ୍ରାଉଜରରେ ଏକ ୱାର୍କ ପ୍ରୋଫାଇଲ୍ ଯୋଗ କରୁଛନ୍ତି ଏବଂ ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କୁ ସେହି ୱାର୍କ ପ୍ରୋଫାଇଲକୁ କେବଳ ନିୟନ୍ତ୍ରଣ କରିବା ପାଇଁ ଅନୁମତି ଦେଉଛନ୍ତି।</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}=1{Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}other{# ଦିନ ପାଇଁ Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}}</translation>
 <translation id="9026991721384951619">ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ସାଇନ୍ ଇନ୍ ବିବରଣୀ ପୁରୁଣା ହୋଇଥିବା ଯୋଗୁଁ Chrome OS ଆପଣଙ୍କର ଡାଟା ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ।</translation>
+<translation id="9053892488859122171">ChromeOS Flex ସିଷ୍ଟମ</translation>
 <translation id="9067395829937117663">Google Chrome, Windows 7 କିମ୍ୱା ଉଚ୍ଚତର OS ଆବଶ୍ୟକ କରିଥାଏ।</translation>
 <translation id="911206726377975832">ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଡାଟା ମଧ୍ୟ ବିଲୋପ କରିବେ?</translation>
 <translation id="9138603949443464873">ଆପଣ କରିଥିବା ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ଲାଗୁ କରିବା ପାଇଁ, Chrome ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="919706545465235479">ସିଙ୍କ ଆରମ୍ଭ କରିବାକୁ Chrome ଅପ୍‌ଡେଟ୍ କରନ୍ତୁ</translation>
 <translation id="922152298093051471">Chromeକୁ କଷ୍ଟମାଇଜ୍ କରନ୍ତୁ</translation>
+<translation id="93760716455950538">ChromeOS Flexକୁ ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="940313311831216333">ଆପଣଙ୍କ ସମସ୍ତ ଡିଭାଇସରେ ଆପଣଙ୍କର Chrome ଷ୍ଟଫଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବା ପାଇଁ ସାଇନ୍ ଇନ୍ କରି ତାପରେ ସିଙ୍କ୍ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="989369509083708165">Google Chrome ଆପଣଙ୍କର ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ଅଟେ</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> ବ୍ୟବହାର କରି Chrome ପ୍ରୋଫାଇଲଗୁଡ଼ିକ ମଧ୍ୟରେ ସ୍ୱିଚ୍ କରାଯାଇପାରିବ</translation>

@@ -99,7 +99,6 @@
                 ]
             },
             {
-                "tags": ["dawn"],
                 "name": "enumerate features",
                 "returns": "size_t",
                 "args": [
@@ -153,7 +152,8 @@
             {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "required features count", "type": "uint32_t", "default": 0},
             {"name": "required features", "type": "feature name", "annotation": "const*", "length": "required features count", "default": "nullptr"},
-            {"name": "required limits", "type": "required limits", "annotation": "const*", "optional": true}
+            {"name": "required limits", "type": "required limits", "annotation": "const*", "optional": true},
+            {"name": "default queue", "type": "queue descriptor", "tags": ["upstream"]}
         ]
     },
     "dawn toggles device descriptor": {
@@ -165,6 +165,14 @@
             {"name": "force enabled toggles", "type": "char", "annotation": "const*const*", "length": "force enabled toggles count"},
             {"name": "force disabled toggles count", "type": "uint32_t", "default": 0},
             {"name": "force disabled toggles", "type": "char", "annotation": "const*const*", "length": "force disabled toggles count"}
+        ]
+    },
+    "dawn cache device descriptor" : {
+        "tags": ["dawn", "native"],
+        "category": "structure",
+        "chained": "in",
+        "members": [
+            {"name": "isolation key", "type": "char", "annotation": "const*", "length": "strlen", "default": "\"\""}
         ]
     },
     "address mode": {
@@ -742,8 +750,8 @@
         "extensible": "in",
         "members": [
             {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
-            {"name": "timestamp write count", "type": "uint32_t", "default": 0, "tags": ["upstream"]},
-            {"name": "timestamp writes", "type": "compute pass timestamp write", "annotation": "const*", "length": "timestamp write count", "tags": ["upstream"]}
+            {"name": "timestamp write count", "type": "uint32_t", "default": 0},
+            {"name": "timestamp writes", "type": "compute pass timestamp write", "annotation": "const*", "length": "timestamp write count"}
         ]
     },
     "compute pass encoder": {
@@ -835,7 +843,6 @@
     },
     "compute pass timestamp location": {
         "category": "enum",
-        "tags": ["upstream"],
         "values": [
             {"value": 0, "name": "beginning"},
             {"value": 1, "name": "end"}
@@ -843,7 +850,6 @@
     },
     "compute pass timestamp write": {
         "category": "structure",
-        "tags": ["upstream"],
         "members": [
             {"name": "query set", "type": "query set"},
             {"name": "query index", "type": "uint32_t"},
@@ -1078,7 +1084,6 @@
                 ]
             },
             {
-                "tags": ["dawn"],
                 "name": "has feature",
                 "returns": "bool",
                 "args": [
@@ -1086,7 +1091,6 @@
                 ]
             },
             {
-                "tags": ["dawn"],
                 "name": "enumerate features",
                 "returns": "size_t",
                 "args": [
@@ -1453,7 +1457,7 @@
         "category": "enum",
         "emscripten_no_enum_table": true,
         "values": [
-            {"value": 0, "name": "undefined", "valid": false, "jsrepr": "undefined"},
+            {"value": 0, "name": "undefined", "jsrepr": "undefined"},
             {"value": 1, "name": "clear"},
             {"value": 2, "name": "load"}
         ]
@@ -1466,10 +1470,18 @@
             {"value": 2, "name": "write"}
         ]
     },
+    "mipmap filter mode": {
+        "category": "enum",
+        "tags": ["upstream"],
+        "values": [
+            {"value": 0, "name": "nearest"},
+            {"value": 1, "name": "linear"}
+        ]
+    },
     "store op": {
         "category": "enum",
         "values": [
-            {"value": 0, "name": "undefined", "valid": false, "jsrepr": "undefined"},
+            {"value": 0, "name": "undefined", "jsrepr": "undefined"},
             {"value": 1, "name": "store"},
             {"value": 2, "name": "discard"}
         ]
@@ -1607,8 +1619,17 @@
             },
             {
                 "name": "on submitted work done",
+                "tags": ["dawn", "emscripten"],
                 "args": [
                     {"name": "signal value", "type": "uint64_t"},
+                    {"name": "callback", "type": "queue work done callback"},
+                    {"name": "userdata", "type": "void", "annotation": "*"}
+                ]
+            },
+            {
+                "name": "on submitted work done",
+                "tags": ["upstream"],
+                "args": [
                     {"name": "callback", "type": "queue work done callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
@@ -1643,6 +1664,14 @@
                     {"name": "options", "type": "copy texture for browser options", "annotation": "const*"}
                 ]
             }
+        ]
+    },
+    "queue descriptor": {
+        "category": "structure",
+        "extensible": "in",
+        "tags": ["upstream"],
+        "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
         ]
     },
     "queue work done callback": {
@@ -1796,11 +1825,12 @@
     "render pass color attachment": {
         "category": "structure",
         "members": [
-            {"name": "view", "type": "texture view"},
+            {"name": "view", "type": "texture view", "optional": true},
             {"name": "resolve target", "type": "texture view", "optional": true},
             {"name": "load op", "type": "load op"},
             {"name": "store op", "type": "store op"},
-            {"name": "clear color", "type": "color"}
+            {"name": "clear color", "type": "color", "default": "{ NAN, NAN, NAN, NAN }", "tags": ["deprecated"]},
+            {"name": "clear value", "type": "color"}
         ]
     },
 
@@ -1810,11 +1840,13 @@
             {"name": "view", "type": "texture view"},
             {"name": "depth load op", "type": "load op", "default": "undefined"},
             {"name": "depth store op", "type": "store op", "default": "undefined"},
-            {"name": "clear depth", "type": "float", "default": "0"},
+            {"name": "clear depth", "type": "float", "default": "NAN", "tags": ["deprecated"]},
+            {"name": "depth clear value", "type": "float", "default": "0"},
             {"name": "depth read only", "type": "bool", "default": "false"},
             {"name": "stencil load op", "type": "load op", "default": "undefined"},
             {"name": "stencil store op", "type": "store op", "default": "undefined"},
-            {"name": "clear stencil", "type": "uint32_t", "default": "0"},
+            {"name": "clear stencil", "type": "uint32_t", "default": "0", "tags": ["deprecated"]},
+            {"name": "stencil clear value", "type": "uint32_t", "default": "0"},
             {"name": "stencil read only", "type": "bool", "default": "false"}
         ]
     },
@@ -1828,8 +1860,8 @@
             {"name": "color attachments", "type": "render pass color attachment", "annotation": "const*", "length": "color attachment count"},
             {"name": "depth stencil attachment", "type": "render pass depth stencil attachment", "annotation": "const*", "optional": true},
             {"name": "occlusion query set", "type": "query set", "optional": true},
-            {"name": "timestamp write count", "type": "uint32_t", "default": 0, "tags": ["upstream"]},
-            {"name": "timestamp writes", "type": "render pass timestamp write", "annotation": "const*", "length": "timestamp write count", "tags": ["upstream"]}
+            {"name": "timestamp write count", "type": "uint32_t", "default": 0},
+            {"name": "timestamp writes", "type": "render pass timestamp write", "annotation": "const*", "length": "timestamp write count"}
         ]
     },
     "render pass encoder": {
@@ -2005,7 +2037,6 @@
     },
     "render pass timestamp location": {
         "category": "enum",
-        "tags": ["upstream"],
         "values": [
             {"value": 0, "name": "beginning"},
             {"value": 1, "name": "end"}
@@ -2013,7 +2044,6 @@
     },
     "render pass timestamp write": {
         "category": "structure",
-        "tags": ["upstream"],
         "members": [
             {"name": "query set", "type": "query set"},
             {"name": "query index", "type": "uint32_t"},
@@ -2198,7 +2228,8 @@
             {"name": "address mode w", "type": "address mode", "default": "clamp to edge"},
             {"name": "mag filter", "type": "filter mode", "default": "nearest"},
             {"name": "min filter", "type": "filter mode", "default": "nearest"},
-            {"name": "mipmap filter", "type": "filter mode", "default": "nearest"},
+            {"name": "mipmap filter", "type": "filter mode", "default": "nearest", "tags": ["dawn", "emscripten"]},
+            {"name": "mipmap filter", "type": "mipmap filter mode", "default": "nearest", "tags": ["upstream"]},
             {"name": "lod min clamp", "type": "float", "default": "0.0f"},
             {"name": "lod max clamp", "type": "float", "default": "1000.0f"},
             {"name": "compare", "type": "compare function", "default": "undefined"},
@@ -2299,6 +2330,14 @@
             {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
         ]
     },
+    "surface descriptor from android native window": {
+        "category": "structure",
+        "chained": "in",
+        "tags": ["native"],
+        "members": [
+            {"name": "window", "type": "void", "annotation": "*"}
+        ]
+    },
     "surface descriptor from canvas HTML selector": {
         "category": "structure",
         "chained": "in",
@@ -2330,6 +2369,15 @@
         "members": [
             {"name": "display", "type": "void", "annotation": "*"},
             {"name": "window", "type": "uint32_t"}
+        ]
+    },
+    "surface descriptor from wayland surface": {
+        "category": "structure",
+        "chained": "in",
+        "tags": ["native"],
+        "members": [
+            {"name": "display", "type": "void", "annotation": "*"},
+            {"name": "surface", "type": "void", "annotation": "*"}
         ]
     },
     "surface descriptor from windows core window": {
@@ -2390,15 +2438,18 @@
             {"value": 5, "name": "shader module SPIRV descriptor"},
             {"value": 6, "name": "shader module WGSL descriptor"},
             {"value": 7, "name": "primitive depth clip control", "tags": ["upstream", "emscripten"]},
-            {"value": 8, "name": "surface descriptor from windows core window", "tags": ["dawn"]},
-            {"value": 9, "name": "external texture binding entry", "tags": ["dawn"]},
-            {"value": 10, "name": "external texture binding layout", "tags": ["dawn"]},
-            {"value": 11, "name": "surface descriptor from windows swap chain panel", "tags": ["dawn"]},
+            {"value": 8, "name": "surface descriptor from wayland surface", "tags": ["native"]},
+            {"value": 9, "name": "surface descriptor from android native window", "tags": ["native"]},
+            {"value": 10, "name": "surface descriptor from windows core window", "tags": ["dawn"]},
+            {"value": 11, "name": "external texture binding entry", "tags": ["dawn"]},
+            {"value": 12, "name": "external texture binding layout", "tags": ["dawn"]},
+            {"value": 13, "name": "surface descriptor from windows swap chain panel", "tags": ["dawn"]},
             {"value": 1000, "name": "dawn texture internal usage descriptor", "tags": ["dawn"]},
             {"value": 1001, "name": "primitive depth clamping state", "tags": ["dawn", "emscripten"]},
             {"value": 1002, "name": "dawn toggles device descriptor", "tags": ["dawn", "native"]},
             {"value": 1003, "name": "dawn encoder internal usage descriptor", "tags": ["dawn"]},
-            {"value": 1004, "name": "dawn instance descriptor", "tags": ["dawn", "native"]}
+            {"value": 1004, "name": "dawn instance descriptor", "tags": ["dawn", "native"]},
+            {"value": 1005, "name": "dawn cache device descriptor", "tags": ["dawn", "native"]}
         ]
     },
     "texture": {
@@ -2463,7 +2514,9 @@
             {"name": "size", "type": "extent 3D"},
             {"name": "format", "type": "texture format"},
             {"name": "mip level count", "type": "uint32_t", "default": 1},
-            {"name": "sample count", "type": "uint32_t", "default": 1}
+            {"name": "sample count", "type": "uint32_t", "default": 1},
+            {"name": "view format count", "type": "uint32_t", "default": 0, "tags": ["upstream"]},
+            {"name": "view formats", "type": "texture format", "annotation": "const*", "length": "view format count", "tags": ["upstream"]}
         ]
     },
     "texture dimension": {

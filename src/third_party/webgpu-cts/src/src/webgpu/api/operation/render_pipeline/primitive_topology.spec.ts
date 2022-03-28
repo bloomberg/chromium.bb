@@ -311,7 +311,8 @@ class PrimitiveTopologyTest extends GPUTest {
       colorAttachments: [
         {
           view: colorAttachment.createView(),
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -407,7 +408,7 @@ class PrimitiveTopologyTest extends GPUTest {
       }
     }
 
-    renderPass.endPass();
+    renderPass.end();
 
     this.device.queue.submit([encoder.finish()]);
 

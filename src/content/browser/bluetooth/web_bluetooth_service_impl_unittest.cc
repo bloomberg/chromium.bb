@@ -321,6 +321,9 @@ class TestBluetoothDelegate : public BluetoothDelegate {
       const blink::WebBluetoothDeviceId& device_id) override {
     return false;
   }
+  void RevokeDevicePermissionWebInitiated(
+      RenderFrameHost* frame,
+      const blink::WebBluetoothDeviceId& device_id) override {}
   bool IsAllowedToAccessService(RenderFrameHost* frame,
                                 const blink::WebBluetoothDeviceId& device_id,
                                 const device::BluetoothUUID& service) override {
@@ -698,18 +701,18 @@ TEST_F(WebBluetoothServiceImplTest, DestroyedDuringRequestScanningStart) {
   options->filters.emplace();
   options->filters->push_back(std::move(filter));
 
-  // Check that a the callback is never called, as the service gets deleted
-  // during the scanning request.
+  // The callback is currently called before delete is completed, during
+  // the scanning request. Though, this is a behavior that is not mandatory
+  // so not calling the callback would also be valid.
   base::RunLoop loop;
   base::MockCallback<WebBluetoothServiceImpl::RequestScanningStartCallback>
       callback;
-  EXPECT_CALL(callback, Run).Times(0);
+  EXPECT_CALL(callback, Run).Times(1);
   service_->RequestScanningStart(std::move(client), std::move(options),
                                  callback.Get());
 
   // Post a task to delete the WebBluetoothService state during a call to
-  // RequestScanningStart(). This should cause the callback to be dropped
-  // without being called.
+  // RequestScanningStart().
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([this]() { delete service_; }));
 

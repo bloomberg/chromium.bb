@@ -56,6 +56,11 @@ const char kBackoffEntryKey[] = "backoff_entry";
 const char kReportKey[] = "report";
 const char kSCTHashdanceMetadataKey[] = "sct_metadata";
 
+void RecordPopularSCTSkippedMetrics(bool popular_sct_skipped) {
+  base::UmaHistogramBoolean("Security.SCTAuditing.OptOut.PopularSCTSkipped",
+                            popular_sct_skipped);
+}
+
 }  // namespace
 
 SCTAuditingHandler::SCTAuditingHandler(NetworkContext* context,
@@ -132,6 +137,16 @@ void SCTAuditingHandler::MaybeEnqueueReport(
     DCHECK(result);
     result = net::ct::HashMerkleTreeLeaf(tree_leaf, &sct_metadata->leaf_hash);
     DCHECK(result);
+
+    // Do not report if this is a known popular SCT.
+    if (owner_network_context_->network_service()
+            ->sct_auditing_cache()
+            ->IsPopularSCT(
+                base::as_bytes(base::make_span(sct_metadata->leaf_hash)))) {
+      RecordPopularSCTSkippedMetrics(true);
+      return;
+    }
+    RecordPopularSCTSkippedMetrics(false);
 
     // Find the corresponding log entry metadata.
     const std::vector<mojom::CTLogInfoPtr>& logs =
@@ -286,26 +301,13 @@ void SCTAuditingHandler::AddReporter(
     return;
   }
 
-  // Get the URLs, traffic annotations, and timing parameters as configured on
-  // the SCTAuditingCache.
-  auto* sct_auditing_cache =
-      owner_network_context_->network_service()->sct_auditing_cache();
-  auto log_expected_ingestion_delay =
-      sct_auditing_cache->log_expected_ingestion_delay();
-  auto log_max_ingestion_random_delay =
-      sct_auditing_cache->log_max_ingestion_random_delay();
-  auto report_uri = sct_auditing_cache->report_uri();
-  auto hashdance_lookup_uri = sct_auditing_cache->hashdance_lookup_uri();
-  auto traffic_annotation = sct_auditing_cache->traffic_annotation();
-  auto hashdance_traffic_annotation =
-      sct_auditing_cache->hashdance_traffic_annotation();
-
   auto reporter = std::make_unique<SCTAuditingReporter>(
-      reporter_key, std::move(report),
+      owner_network_context_, reporter_key, std::move(report),
       mode_ == mojom::SCTAuditingMode::kHashdance, std::move(sct_metadata),
-      GetURLLoaderFactory(), log_expected_ingestion_delay,
-      log_max_ingestion_random_delay, report_uri, hashdance_lookup_uri,
-      traffic_annotation, hashdance_traffic_annotation,
+      owner_network_context_->network_service()
+          ->sct_auditing_cache()
+          ->GetConfiguration(),
+      GetURLLoaderFactory(),
       base::BindRepeating(&SCTAuditingHandler::OnReporterStateUpdated,
                           GetWeakPtr()),
       base::BindOnce(&SCTAuditingHandler::OnReporterFinished, GetWeakPtr()),
@@ -357,7 +359,7 @@ void SCTAuditingHandler::SetMode(mojom::SCTAuditingMode mode) {
   // processes can fail to report metrics during shutdown). The timer should
   // only be running if SCT auditing is enabled.
   if (mode != mojom::SCTAuditingMode::kDisabled) {
-    histogram_timer_.Start(FROM_HERE, base::Hours(1), this,
+    histogram_timer_.Start(FROM_HERE, hwm_metrics_period_, this,
                            &SCTAuditingHandler::ReportHWMMetrics);
   } else {
     histogram_timer_.Stop();

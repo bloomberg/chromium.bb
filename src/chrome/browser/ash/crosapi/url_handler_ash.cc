@@ -83,9 +83,11 @@ void UrlHandlerAsh::OpenUrl(const GURL& url) {
 }
 
 bool UrlHandlerAsh::OpenUrlInternal(const GURL& url) {
-  GURL target_url = crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
+  GURL target_url =
+      crosapi::gurl_os_handler_utils::GetTargetURLFromLacrosURL(url);
   GURL short_target_url = crosapi::gurl_os_handler_utils::SanitizeAshURL(
-      url, /*include_path=*/false);
+      target_url, /*include_path=*/false);
+
   // Settings will be handled.
   if (short_target_url == GURL(chrome::kChromeUIOSSettingsURL)) {
     chrome::SettingsWindowManager* settings_window_manager =

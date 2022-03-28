@@ -4,7 +4,7 @@ TODO:
 - non-pass command, or beginPass, during {render, compute} pass
 - {before (control case), after} finish()
     - x= {finish(), ... all non-pass commands}
-- {before (control case), after} endPass()
+- {before (control case), after} end()
     - x= {render, compute} pass
     - x= {finish(), ... all relevant pass commands}
     - x= {

@@ -78,6 +78,22 @@ E2ETestBase = class extends testing.Test {
     `);
   }
 
+  /** @override */
+  setUp() {
+    const runTest = this.deferRunTest(WhenTestDone.EXPECT);
+    (async () => {
+      await this.setUpDeferred();
+      runTest();
+    })();
+  }
+
+  /**
+   * An async variant of setUp.
+   * Derived classes should use importModules within this function to pull any
+   * ES6
+   */
+  async setUpDeferred() {}
+
   /**
    * Listens and waits for the first event on the given node of the given type.
    * @param {!chrome.automation.AutomationNode} node
@@ -205,22 +221,34 @@ E2ETestBase = class extends testing.Test {
                     // This populates the address bar as if we typed the url.
                     focus.setValue(url);
 
-                    // Next, wait until the auto completion shows up.
-                    const clickAutocomplete = () => {
-                      focus.removeEventListener(
-                          'controlsChanged', clickAutocomplete);
+                    // We have two choices to confirm navigation.
+                    if (!this.navigateLacrosWithAutoComplete) {
+                      // 1. (default), hit enter.
+                      const onValueChanged = e => {
+                        focus.removeEventListener(
+                            'valueChanged', onValueChanged);
+                        EventGenerator.sendKeyPress(KeyCode.RETURN);
+                      };
+                      focus.addEventListener('valueChanged', onValueChanged);
+                    } else {
+                      // 2. use the auto completion.
+                      // Wait until the auto completion shows up.
+                      const clickAutocomplete = () => {
+                        focus.removeEventListener(
+                            'controlsChanged', clickAutocomplete);
 
-                      // The text field relates to the auto complete list box
-                      // via controlledBy. The |controls| node structure here
-                      // nests several levels until the listBoxOption we want.
-                      const autoCompleteListBoxOption =
-                          focus.controls[0].firstChild.firstChild;
-                      assertEquals(
-                          'listBoxOption', autoCompleteListBoxOption.role);
-                      autoCompleteListBoxOption.doDefault();
-                    };
-                    focus.addEventListener(
-                        'controlsChanged', clickAutocomplete);
+                        // The text field relates to the auto complete list box
+                        // via controlledBy. The |controls| node structure here
+                        // nests several levels until the listBoxOption we want.
+                        const autoCompleteListBoxOption =
+                            focus.controls[0].firstChild.firstChild;
+                        assertEquals(
+                            'listBoxOption', autoCompleteListBoxOption.role);
+                        autoCompleteListBoxOption.doDefault();
+                      };
+                      focus.addEventListener(
+                          'controlsChanged', clickAutocomplete);
+                    }
                   }
                 });
                 return;
@@ -250,6 +278,10 @@ E2ETestBase = class extends testing.Test {
             if (!hasLacrosChromePath) {
               const createParams = {active: true, url};
               chrome.tabs.create(createParams);
+            } else {
+              chrome.automation.getFocus(f => {
+                listener({target: f});
+              });
             }
           });
     });
@@ -309,8 +341,3 @@ E2ETestBase = class extends testing.Test {
 
 /** @override */
 E2ETestBase.prototype.isAsync = true;
-/**
- * @override
- * No UI in the background context.
- */
-E2ETestBase.prototype.runAccessibilityChecks = false;

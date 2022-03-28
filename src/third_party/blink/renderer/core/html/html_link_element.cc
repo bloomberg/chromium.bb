@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -79,9 +78,9 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
     : HTMLElement(html_names::kLinkTag, document),
       link_loader_(
           MakeGarbageCollected<LinkLoader>(this, GetLoadingTaskRunner())),
-      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(MakeGarbageCollected<RelList>(this)),
+      blocking_attribute_(MakeGarbageCollected<BlockingAttribute>(this)),
       resources_(
           MakeGarbageCollected<DOMTokenList>(*this,
                                              html_names::kResourcesAttr)),
@@ -108,6 +107,10 @@ void HTMLLinkElement::ParseAttribute(
                         WebFeature::kHTMLLinkElementMonetization);
     }
     rel_list_->DidUpdateAttributeValue(params.old_value, value);
+    Process();
+  } else if (name == html_names::kBlockingAttr &&
+             RuntimeEnabledFeatures::BlockingAttributeEnabled()) {
+    blocking_attribute_->DidUpdateAttributeValue(params.old_value, value);
     Process();
   } else if (name == html_names::kHrefAttr) {
     // Log href attribute before logging resource fetching in process().
@@ -139,11 +142,11 @@ void HTMLLinkElement::ParseAttribute(
     Process();
   } else if (name == html_names::kIntegrityAttr) {
     integrity_ = value;
-  } else if (name == html_names::kImportanceAttr &&
+  } else if (name == html_names::kFetchpriorityAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(
                  GetExecutionContext())) {
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
-    importance_ = value;
+    fetch_priority_hint_ = value;
   } else if (name == html_names::kResourcesAttr &&
              LinkWebBundle::IsFeatureEnabled(GetExecutionContext())) {
     resources_->DidUpdateAttributeValue(params.old_value, value);
@@ -370,9 +373,9 @@ void HTMLLinkElement::ScheduleEvent() {
               std::make_unique<IncrementLoadEventDelayCount>(GetDocument())));
 }
 
-void HTMLLinkElement::StartLoadingDynamicSheet() {
+void HTMLLinkElement::SetToPendingState() {
   DCHECK(GetLinkStyle());
-  GetLinkStyle()->StartLoadingDynamicSheet();
+  GetLinkStyle()->SetToPendingState();
 }
 
 bool HTMLLinkElement::IsURLAttribute(const Attribute& attribute) const {
@@ -440,6 +443,7 @@ void HTMLLinkElement::Trace(Visitor* visitor) const {
   visitor->Trace(sizes_);
   visitor->Trace(link_loader_);
   visitor->Trace(rel_list_);
+  visitor->Trace(blocking_attribute_);
   visitor->Trace(resources_);
   visitor->Trace(scopes_);
   HTMLElement::Trace(visitor);

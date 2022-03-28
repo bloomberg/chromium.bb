@@ -20,6 +20,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -195,10 +196,6 @@ ModelTypeWorker::ModelTypeWorker(ModelType type,
 }
 
 ModelTypeWorker::~ModelTypeWorker() {
-  base::UmaHistogramCounts1000(
-      std::string("Sync.UndecryptedEntitiesOnDataTypeDisabled.") +
-          ModelTypeToHistogramSuffix(type_),
-      entries_pending_decryption_.size());
   if (model_type_processor_) {
     // This will always be the case in production today.
     model_type_processor_->DisconnectSync();

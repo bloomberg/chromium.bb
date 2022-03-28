@@ -56,8 +56,6 @@ class PageTimingMetricsSender {
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
                           uint32_t ng_call_count);
-  void DidObserveLazyLoadBehavior(
-      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior);
   void DidObserveMobileFriendlinessChanged(const blink::MobileFriendliness&);
 
   void DidStartResponse(const GURL& response_url,
@@ -76,7 +74,6 @@ class PageTimingMetricsSender {
 
   void DidObserveInputDelay(base::TimeDelta input_delay);
   void DidObserveUserInteraction(base::TimeDelta max_event_duration,
-                                 base::TimeDelta total_event_duration,
                                  blink::UserInteractionType interaction_type);
   // Updates the timing information. Buffers |timing| to be sent over mojo
   // sometime 'soon'.
@@ -119,7 +116,6 @@ class PageTimingMetricsSender {
   // browser.
   std::vector<blink::UseCounterFeature> new_features_;
   mojom::FrameRenderDataUpdate render_data_;
-  mojom::DeferredResourceCountsPtr new_deferred_resource_data_;
 
   blink::UseCounterFeatureTracker feature_tracker_;
 

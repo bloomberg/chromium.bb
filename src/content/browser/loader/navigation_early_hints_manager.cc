@@ -13,15 +13,19 @@
 #include "content/public/browser/url_loader_throttles.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/load_flags.h"
 #include "net/base/schemeful_site.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_job.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy/csp_source_list.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -83,6 +87,57 @@ constexpr char kEarlyHintsPreloadForNavigationOriginTrialName[] =
 bool IsDisabledEarlyHintsPreloadForcibly() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kEarlyHintsPreloadForNavigation, "force_disable", false);
+}
+
+network::mojom::CSPDirectiveName LinkAsAttributeToCSPDirective(
+    network::mojom::LinkAsAttribute attr) {
+  switch (attr) {
+    case network::mojom::LinkAsAttribute::kUnspecified:
+      return network::mojom::CSPDirectiveName::Unknown;
+    case network::mojom::LinkAsAttribute::kImage:
+      return network::mojom::CSPDirectiveName::ImgSrc;
+    case network::mojom::LinkAsAttribute::kFont:
+      return network::mojom::CSPDirectiveName::FontSrc;
+    case network::mojom::LinkAsAttribute::kScript:
+      return network::mojom::CSPDirectiveName::ScriptSrcElem;
+    case network::mojom::LinkAsAttribute::kStyleSheet:
+      return network::mojom::CSPDirectiveName::StyleSrcElem;
+  }
+  NOTREACHED();
+  return network::mojom::CSPDirectiveName::Unknown;
+}
+
+bool CheckContentSecurityPolicyForPreload(
+    const network::mojom::LinkHeaderPtr& link,
+    const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+        content_security_policies) {
+  DCHECK(link->rel == network::mojom::LinkRelAttribute::kPreload ||
+         link->rel == network::mojom::LinkRelAttribute::kModulePreload);
+
+  network::mojom::CSPDirectiveName directive =
+      LinkAsAttributeToCSPDirective(link->as);
+
+  for (network::mojom::CSPDirectiveName effective_directive = directive;
+       effective_directive != network::mojom::CSPDirectiveName::Unknown;
+       effective_directive =
+           network::CSPFallbackDirective(effective_directive, directive)) {
+    for (auto& policy : content_security_policies) {
+      const auto& it = policy->directives.find(effective_directive);
+      if (it == policy->directives.end())
+        continue;
+
+      if (!network::CheckCSPSourceList(
+              directive, *it->second, link->href, *(policy->self_origin),
+              /*has_followed_redirect=*/false, /*is_response_check=*/false,
+              /*is_opaque_fenced_frame=*/false)) {
+        // TODO(https://crbug.com/1305896): Report CSP violation once the final
+        // response is received.
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 network::mojom::RequestDestination LinkAsAttributeToRequestDestination(
@@ -368,7 +423,9 @@ NavigationEarlyHintsManager::~NavigationEarlyHintsManager() = default;
 
 void NavigationEarlyHintsManager::HandleEarlyHints(
     network::mojom::EarlyHintsPtr early_hints,
-    const network::ResourceRequest& navigation_request) {
+    const network::ResourceRequest& request_for_navigation) {
+  net::ReferrerPolicy referrer_policy =
+      Referrer::ReferrerPolicyForUrlRequest(early_hints->referrer_policy);
   bool enabled_by_origin_trial = IsPreloadForNavigationEnabledByOriginTrial(
       early_hints->origin_trial_tokens);
 
@@ -378,8 +435,9 @@ void NavigationEarlyHintsManager::HandleEarlyHints(
       MaybePreconnect(link, enabled_by_origin_trial);
     } else if (link->rel == network::mojom::LinkRelAttribute::kPreload ||
                link->rel == network::mojom::LinkRelAttribute::kModulePreload) {
-      MaybePreloadHintedResource(link, navigation_request,
-                                 enabled_by_origin_trial);
+      MaybePreloadHintedResource(link, request_for_navigation,
+                                 early_hints->headers->content_security_policy,
+                                 referrer_policy, enabled_by_origin_trial);
     }
   }
 }
@@ -481,14 +539,20 @@ void NavigationEarlyHintsManager::MaybePreconnect(
 
 void NavigationEarlyHintsManager::MaybePreloadHintedResource(
     const network::mojom::LinkHeaderPtr& link,
-    const network::ResourceRequest& navigation_request,
+    const network::ResourceRequest& request_for_navigation,
+    const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+        content_security_policies,
+    net::ReferrerPolicy referrer_policy,
     bool enabled_by_origin_trial) {
-  DCHECK(navigation_request.is_main_frame);
-  DCHECK(navigation_request.url.SchemeIsHTTPOrHTTPS());
+  DCHECK(request_for_navigation.is_main_frame);
+  DCHECK(request_for_navigation.url.SchemeIsHTTPOrHTTPS());
 
   was_resource_hints_received_ = true;
 
   if (!ShouldHandleResourceHints(link, enabled_by_origin_trial))
+    return;
+
+  if (!CheckContentSecurityPolicyForPreload(link, content_security_policies))
     return;
 
   if (inflight_preloads_.contains(link->href) ||
@@ -508,8 +572,8 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
   request.site_for_cookies = site_for_cookies;
   request.request_initiator = origin_;
   request.referrer = net::URLRequestJob::ComputeReferrerForPolicy(
-      navigation_request.referrer_policy, navigation_request.url, request.url);
-  request.referrer_policy = navigation_request.referrer_policy;
+      referrer_policy, request_for_navigation.url, request.url);
+  request.referrer_policy = referrer_policy;
   request.load_flags = net::LOAD_NORMAL;
   request.resource_type =
       static_cast<int>(blink::mojom::ResourceType::kSubResource);

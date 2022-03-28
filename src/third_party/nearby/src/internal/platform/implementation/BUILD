@@ -69,6 +69,8 @@ cc_library(
         "//connections/implementation/proto:offline_wire_formats_cc_proto",
         "//internal/platform:base",
         "//internal/platform:cancellation_flag",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
     ],
@@ -81,6 +83,7 @@ cc_library(
     ],
     defines = ["NO_WEBRTC"],
     visibility = [
+        "//connections/implementation:__subpackages__",
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//internal/platform:__pkg__",
         "//internal/platform/implementation:__subpackages__",

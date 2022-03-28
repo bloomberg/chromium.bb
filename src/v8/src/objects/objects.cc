@@ -441,11 +441,11 @@ Handle<String> AsStringOrEmpty(Isolate* isolate, Handle<Object> object) {
 Handle<String> NoSideEffectsErrorToString(Isolate* isolate,
                                           Handle<JSReceiver> error) {
   Handle<Name> name_key = isolate->factory()->name_string();
-  Handle<Object> name = JSReceiver::GetDataProperty(error, name_key);
+  Handle<Object> name = JSReceiver::GetDataProperty(isolate, error, name_key);
   Handle<String> name_str = AsStringOrEmpty(isolate, name);
 
   Handle<Name> msg_key = isolate->factory()->message_string();
-  Handle<Object> msg = JSReceiver::GetDataProperty(error, msg_key);
+  Handle<Object> msg = JSReceiver::GetDataProperty(isolate, error, msg_key);
   Handle<String> msg_str = AsStringOrEmpty(isolate, msg);
 
   if (name_str->length() == 0) return msg_str;
@@ -530,7 +530,7 @@ MaybeHandle<String> Object::NoSideEffectsToMaybeString(Isolate* isolate,
     // -- J S R e c e i v e r
     Handle<JSReceiver> receiver = Handle<JSReceiver>::cast(input);
     Handle<Object> to_string = JSReceiver::GetDataProperty(
-        receiver, isolate->factory()->toString_string());
+        isolate, receiver, isolate->factory()->toString_string());
 
     if (IsErrorObject(isolate, input) ||
         *to_string == *isolate->error_to_string()) {
@@ -541,7 +541,7 @@ MaybeHandle<String> Object::NoSideEffectsToMaybeString(Isolate* isolate,
                                         Handle<JSReceiver>::cast(input));
     } else if (*to_string == *isolate->object_to_string()) {
       Handle<Object> ctor = JSReceiver::GetDataProperty(
-          receiver, isolate->factory()->constructor_string());
+          isolate, receiver, isolate->factory()->constructor_string());
       if (ctor->IsFunction()) {
         Handle<String> ctor_name;
         if (ctor->IsJSBoundFunction()) {
@@ -599,7 +599,7 @@ Handle<String> Object::NoSideEffectsToString(Isolate* isolate,
 
   Handle<String> builtin_tag = handle(receiver->class_name(), isolate);
   Handle<Object> tag_obj = JSReceiver::GetDataProperty(
-      receiver, isolate->factory()->to_string_tag_symbol());
+      isolate, receiver, isolate->factory()->to_string_tag_symbol());
   Handle<String> tag =
       tag_obj->IsString() ? Handle<String>::cast(tag_obj) : builtin_tag;
 
@@ -2330,6 +2330,7 @@ bool HeapObject::NeedsRehashing(InstanceType instance_type) const {
       return false;  // We'll rehash from the JSMap or JSSet referencing them.
     case NAME_DICTIONARY_TYPE:
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
+    case REGISTERED_SYMBOL_TABLE_TYPE:
     case GLOBAL_DICTIONARY_TYPE:
     case NUMBER_DICTIONARY_TYPE:
     case SIMPLE_NUMBER_DICTIONARY_TYPE:
@@ -2359,6 +2360,7 @@ bool HeapObject::CanBeRehashed(PtrComprCageBase cage_base) const {
       return false;
     case NAME_DICTIONARY_TYPE:
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
+    case REGISTERED_SYMBOL_TABLE_TYPE:
     case GLOBAL_DICTIONARY_TYPE:
     case NUMBER_DICTIONARY_TYPE:
     case SIMPLE_NUMBER_DICTIONARY_TYPE:
@@ -2390,6 +2392,9 @@ void HeapObject::RehashBasedOnMap(IsolateT* isolate) {
       break;
     case NAME_TO_INDEX_HASH_TABLE_TYPE:
       NameToIndexHashTable::cast(*this).Rehash(isolate);
+      break;
+    case REGISTERED_SYMBOL_TABLE_TYPE:
+      RegisteredSymbolTable::cast(*this).Rehash(isolate);
       break;
     case SWISS_NAME_DICTIONARY_TYPE:
       SwissNameDictionary::cast(*this).Rehash(isolate);
@@ -2442,10 +2447,6 @@ void HeapObject::RehashBasedOnMap(IsolateT* isolate) {
 }
 template void HeapObject::RehashBasedOnMap(Isolate* isolate);
 template void HeapObject::RehashBasedOnMap(LocalIsolate* isolate);
-
-bool HeapObject::IsExternal(Isolate* isolate) const {
-  return map(isolate).FindRootMap(isolate) == isolate->heap()->external_map();
-}
 
 void DescriptorArray::GeneralizeAllFields() {
   int length = number_of_descriptors();
@@ -2823,7 +2824,16 @@ Maybe<bool> Object::SetDataProperty(LookupIterator* it, Handle<Object> value) {
 
   } else  // NOLINT(readability/braces)
 #endif    // V8_ENABLE_WEBASSEMBLY
-  {
+          // clang-format off
+  if (V8_UNLIKELY(receiver->IsJSSharedStruct(isolate))) {
+    // clang-format on
+
+    // Shared structs can only point to primitives or shared values.
+    ASSIGN_RETURN_ON_EXCEPTION_VALUE(
+        isolate, to_assign, Object::Share(isolate, to_assign, kThrowOnError),
+        Nothing<bool>());
+    it->WriteDataValue(to_assign, false);
+  } else {
     // Possibly migrate to the most up-to-date map that will be able to store
     // |value| under it->name().
     it->PrepareForDataProperty(to_assign);
@@ -2913,6 +2923,30 @@ Maybe<bool> Object::AddDataProperty(LookupIterator* it, Handle<Object> value,
   }
 
   return Just(true);
+}
+
+// static
+MaybeHandle<Object> Object::ShareSlow(Isolate* isolate,
+                                      Handle<HeapObject> value,
+                                      ShouldThrow throw_if_cannot_be_shared) {
+  // Use Object::Share() if value might already be shared.
+  DCHECK(!value->IsShared());
+
+  if (value->IsString()) {
+    return String::Share(isolate, Handle<String>::cast(value));
+  }
+
+  if (value->IsHeapNumber()) {
+    uint64_t bits = HeapNumber::cast(*value).value_as_bits(kRelaxedLoad);
+    return isolate->factory()
+        ->NewHeapNumberFromBits<AllocationType::kSharedOld>(bits);
+  }
+
+  if (throw_if_cannot_be_shared == kThrowOnError) {
+    THROW_NEW_ERROR(
+        isolate, NewTypeError(MessageTemplate::kCannotBeShared, value), Object);
+  }
+  return MaybeHandle<Object>();
 }
 
 template <class T>
@@ -3816,22 +3850,25 @@ Handle<DescriptorArray> DescriptorArray::CopyUpTo(Isolate* isolate,
 }
 
 Handle<DescriptorArray> DescriptorArray::CopyUpToAddAttributes(
-    Isolate* isolate, Handle<DescriptorArray> desc, int enumeration_index,
-    PropertyAttributes attributes, int slack) {
+    Isolate* isolate, Handle<DescriptorArray> source_handle,
+    int enumeration_index, PropertyAttributes attributes, int slack) {
   if (enumeration_index + slack == 0) {
     return isolate->factory()->empty_descriptor_array();
   }
 
   int size = enumeration_index;
-
-  Handle<DescriptorArray> descriptors =
+  Handle<DescriptorArray> copy_handle =
       DescriptorArray::Allocate(isolate, size, slack);
+
+  DisallowGarbageCollection no_gc;
+  auto source = *source_handle;
+  auto copy = *copy_handle;
 
   if (attributes != NONE) {
     for (InternalIndex i : InternalIndex::Range(size)) {
-      MaybeObject value_or_field_type = desc->GetValue(i);
-      Name key = desc->GetKey(i);
-      PropertyDetails details = desc->GetDetails(i);
+      MaybeObject value_or_field_type = source.GetValue(i);
+      Name key = source.GetKey(i);
+      PropertyDetails details = source.GetDetails(i);
       // Bulk attribute changes never affect private properties.
       if (!key.IsPrivate()) {
         int mask = DONT_DELETE | DONT_ENUM;
@@ -3845,35 +3882,39 @@ Handle<DescriptorArray> DescriptorArray::CopyUpToAddAttributes(
         details = details.CopyAddAttributes(
             static_cast<PropertyAttributes>(attributes & mask));
       }
-      descriptors->Set(i, key, value_or_field_type, details);
+      copy.Set(i, key, value_or_field_type, details);
     }
   } else {
     for (InternalIndex i : InternalIndex::Range(size)) {
-      descriptors->CopyFrom(i, *desc);
+      copy.CopyFrom(i, source);
     }
   }
 
-  if (desc->number_of_descriptors() != enumeration_index) descriptors->Sort();
+  if (source.number_of_descriptors() != enumeration_index) copy.Sort();
 
-  return descriptors;
+  return copy_handle;
 }
 
 // Create a new descriptor array with only enumerable, configurable, writeable
 // data properties, but identical field locations.
 Handle<DescriptorArray> DescriptorArray::CopyForFastObjectClone(
-    Isolate* isolate, Handle<DescriptorArray> src, int enumeration_index,
+    Isolate* isolate, Handle<DescriptorArray> src_handle, int enumeration_index,
     int slack) {
   if (enumeration_index + slack == 0) {
     return isolate->factory()->empty_descriptor_array();
   }
 
   int size = enumeration_index;
-  Handle<DescriptorArray> descriptors =
+  Handle<DescriptorArray> descriptors_handle =
       DescriptorArray::Allocate(isolate, size, slack);
 
+  DisallowGarbageCollection no_gc;
+  auto src = *src_handle;
+  auto descriptors = *descriptors_handle;
+
   for (InternalIndex i : InternalIndex::Range(size)) {
-    Name key = src->GetKey(i);
-    PropertyDetails details = src->GetDetails(i);
+    Name key = src.GetKey(i);
+    PropertyDetails details = src.GetDetails(i);
     Representation new_representation = details.representation();
 
     DCHECK(!key.IsPrivateName());
@@ -3882,7 +3923,7 @@ Handle<DescriptorArray> DescriptorArray::CopyForFastObjectClone(
     // If the new representation is an in-place changeable field, make it
     // generic as possible (under in-place changes) to avoid type confusion if
     // the source representation changes after this feedback has been collected.
-    MaybeObject type = src->GetValue(i);
+    MaybeObject type = src.GetValue(i);
     if (details.location() == PropertyLocation::kField) {
       type = MaybeObject::FromObject(FieldType::Any());
       // TODO(bmeurer,ishell): Igor suggested to use some kind of dynamic
@@ -3899,12 +3940,12 @@ Handle<DescriptorArray> DescriptorArray::CopyForFastObjectClone(
                                 details.constness(), new_representation,
                                 details.field_index());
 
-    descriptors->Set(i, key, type, new_details);
+    descriptors.Set(i, key, type, new_details);
   }
 
-  descriptors->Sort();
+  descriptors.Sort();
 
-  return descriptors;
+  return descriptors_handle;
 }
 
 bool DescriptorArray::IsEqualUpTo(DescriptorArray desc, int nof_descriptors) {
@@ -5953,6 +5994,21 @@ bool StringSet::Has(Isolate* isolate, Handle<String> name) {
   return FindEntry(isolate, *name).is_found();
 }
 
+Handle<RegisteredSymbolTable> RegisteredSymbolTable::Add(
+    Isolate* isolate, Handle<RegisteredSymbolTable> table, Handle<String> key,
+    Handle<Symbol> symbol) {
+  // Validate that the key is absent.
+  SLOW_DCHECK(table->FindEntry(isolate, key).is_not_found());
+
+  table = EnsureCapacity(isolate, table);
+  uint32_t hash = ShapeT::Hash(ReadOnlyRoots(isolate), key);
+  InternalIndex entry = table->FindInsertionEntry(isolate, hash);
+  table->set(EntryToIndex(entry), *key);
+  table->set(EntryToValueIndex(entry), *symbol);
+  table->ElementAdded();
+  return table;
+}
+
 Handle<ObjectHashSet> ObjectHashSet::Add(Isolate* isolate,
                                          Handle<ObjectHashSet> set,
                                          Handle<Object> key) {
@@ -6279,6 +6335,10 @@ Object ObjectHashTableBase<Derived, Shape>::Lookup(Handle<Object> key,
 
 template <typename Derived, typename Shape>
 Object ObjectHashTableBase<Derived, Shape>::ValueAt(InternalIndex entry) {
+  return this->get(EntryToValueIndex(entry));
+}
+
+Object RegisteredSymbolTable::ValueAt(InternalIndex entry) {
   return this->get(EntryToValueIndex(entry));
 }
 
@@ -6871,6 +6931,7 @@ EXTERN_DEFINE_HASH_TABLE(StringSet, StringSetShape)
 EXTERN_DEFINE_HASH_TABLE(CompilationCacheTable, CompilationCacheShape)
 EXTERN_DEFINE_HASH_TABLE(ObjectHashSet, ObjectHashSetShape)
 EXTERN_DEFINE_HASH_TABLE(NameToIndexHashTable, NameToIndexShape)
+EXTERN_DEFINE_HASH_TABLE(RegisteredSymbolTable, RegisteredSymbolTableShape)
 
 EXTERN_DEFINE_OBJECT_BASE_HASH_TABLE(ObjectHashTable, ObjectHashTableShape)
 EXTERN_DEFINE_OBJECT_BASE_HASH_TABLE(EphemeronHashTable, ObjectHashTableShape)

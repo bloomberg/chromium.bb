@@ -19,6 +19,7 @@
 #include "experimental/graphite/src/Renderer.h"
 #include "experimental/graphite/src/ResourceProvider.h"
 #include "include/core/SkPathTypes.h"
+#include "src/core/SkKeyContext.h"
 #include "src/core/SkKeyHelpers.h"
 #include "src/core/SkShaderCodeDictionary.h"
 
@@ -74,21 +75,22 @@ void Context::preCompile(const PaintCombo& paintCombo) {
     };
 
     SkShaderCodeDictionary* dict = fGlobalCache->shaderCodeDictionary();
+    SkKeyContext keyContext(dict);
+
+    SkPaintParamsKeyBuilder builder(dict, SkBackend::kGraphite);
 
     for (auto bm: paintCombo.fBlendModes) {
         for (auto& shaderCombo: paintCombo.fShaders) {
             for (auto shaderType: shaderCombo.fTypes) {
                 for (auto tm: shaderCombo.fTileModes) {
-                    std::unique_ptr<SkPaintParamsKey> key = CreateKey(dict, SkBackend::kGraphite,
-                                                                      shaderType, tm, bm);
-                    auto entry = dict->findOrCreate(std::move(key));
+                    auto uniqueID = CreateKey(keyContext, &builder, shaderType, tm, bm);
 
                     GraphicsPipelineDesc desc;
 
                     for (const Renderer* r : kRenderers) {
                         for (auto&& s : r->steps()) {
                             if (s->performsShading()) {
-                                desc.setProgram(s, entry->uniqueID());
+                                desc.setProgram(s, uniqueID);
                             }
                             // TODO: Combine with renderpass description set to generate full
                             // GraphicsPipeline and MSL program. Cache that compiled pipeline on

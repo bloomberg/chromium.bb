@@ -10,7 +10,6 @@
 
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
@@ -139,8 +138,8 @@ const unsigned char privateKeyPkcs8System[] = {
 
 base::FilePath GetExtensionDirName() {
   return base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
-      .Append(
-          FILE_PATH_LITERAL("extensions/api_test/enterprise_platform_keys/"));
+      .Append(FILE_PATH_LITERAL(
+          "extensions/api_test/enterprise_platform_keys/basic/"));
 }
 
 base::FilePath GetExtensionPemFileName() {
@@ -235,7 +234,7 @@ class EnterprisePlatformKeysTest
     // In order to use a prepared certificate, import a private key to the
     // user's token for which the Javscript test will import the certificate.
     ImportPrivateKeyPKCS8ToSlot(privateKeyPkcs8User,
-                                base::size(privateKeyPkcs8User),
+                                std::size(privateKeyPkcs8User),
                                 cert_db->GetPrivateSlot().get());
     std::move(done_callback).Run();
   }
@@ -255,7 +254,7 @@ class EnterprisePlatformKeysTest
     // Import a private key to the system slot.  The Javascript part of this
     // test has a prepared certificate for this key.
     ImportPrivateKeyPKCS8ToSlot(privateKeyPkcs8System,
-                                base::size(privateKeyPkcs8System),
+                                std::size(privateKeyPkcs8System),
                                 system_slot->slot());
   }
 
@@ -320,12 +319,11 @@ INSTANTIATE_TEST_SUITE_P(
 // chrome.enterprise.platformKeys namespace.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        EnterprisePlatformKeysIsRestrictedToPolicyExtension) {
-  ASSERT_TRUE(RunExtensionTest("enterprise_platform_keys",
-                               {.page_url = "api_not_available.html"},
+  ASSERT_TRUE(RunExtensionTest("enterprise_platform_keys/api_not_available", {},
                                {.ignore_manifest_warnings = true}));
 
   base::FilePath extension_path =
-      test_data_dir_.AppendASCII("enterprise_platform_keys");
+      test_data_dir_.AppendASCII("enterprise_platform_keys/api_not_available");
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const Extension* extension =
       GetExtensionByPath(registry->enabled_extensions(), extension_path);

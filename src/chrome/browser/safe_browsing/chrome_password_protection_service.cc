@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/observer_list.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -1167,7 +1168,8 @@ void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
     PasswordProtectionRequest* request,
     const std::string& username,
     PasswordType password_type,
-    bool is_phishing_url) {
+    bool is_phishing_url,
+    bool warning_shown) {
   auto reused_password_account_type =
       GetPasswordProtectionReusedPasswordAccountType(password_type, username);
   if (reused_password_account_type.account_type() ==
@@ -1197,7 +1199,7 @@ void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
           static_cast<PasswordProtectionRequestContent*>(request);
       router->OnPolicySpecifiedPasswordReuseDetected(
           request_content->web_contents()->GetLastCommittedURL(),
-          username_or_email, is_phishing_url);
+          username_or_email, is_phishing_url, warning_shown);
     }
   }
 }
@@ -1348,7 +1350,8 @@ void ChromePasswordProtectionService::FillReferrerChain(
           profile_);
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager->IdentifyReferrerChainByEventURL(
-          event_url, event_tab_id, kPasswordEventAttributionUserGestureLimit,
+          event_url, event_tab_id, content::GlobalRenderFrameHostId(),
+          kPasswordEventAttributionUserGestureLimit,
           frame->mutable_referrer_chain());
   size_t referrer_chain_length = frame->referrer_chain().size();
   UMA_HISTOGRAM_COUNTS_100(

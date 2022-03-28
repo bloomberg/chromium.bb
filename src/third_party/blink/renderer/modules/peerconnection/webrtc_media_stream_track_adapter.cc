@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_video_webrtc_sink.h"
@@ -264,8 +265,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteVideoTrack(
             webrtc::MediaStreamTrackInterface::kVideoKind);
   remote_video_track_adapter_ =
       base::MakeRefCounted<blink::RemoteVideoTrackAdapter>(
-          main_thread_, webrtc_video_track.get(),
-          factory_->metronome_provider(), track_execution_context);
+          main_thread_, webrtc_video_track.get(), track_execution_context);
   webrtc_track_ = webrtc_video_track;
   remote_track_can_complete_initialization_.Signal();
   PostCrossThreadTask(

@@ -27,7 +27,9 @@ bool PasswordManagerClient::IsFillingFallbackEnabled(const GURL& url) const {
   return true;
 }
 
-void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
+void PasswordManagerClient::ShowTouchToFill(
+    PasswordManagerDriver* driver,
+    autofill::mojom::SubmissionReadinessState submission_readiness) {}
 
 void PasswordManagerClient::OnPasswordSelected(const std::u16string& text) {}
 

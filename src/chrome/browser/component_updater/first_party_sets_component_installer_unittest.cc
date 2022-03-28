@@ -16,8 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
-#include "chrome/browser/first_party_sets/first_party_sets_util.h"
+#include "chrome/browser/first_party_sets/first_party_sets_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
@@ -46,7 +45,7 @@ class FirstPartySetsComponentInstallerTest : public ::testing::Test {
  public:
   FirstPartySetsComponentInstallerTest() {
     CHECK(component_install_dir_.CreateUniqueTempDir());
-    FirstPartySetsUtil::GetInstance()->ResetForTesting();
+    FirstPartySetsSettings::Get()->ResetForTesting();
   }
 
   void TearDown() override {
@@ -291,6 +290,60 @@ TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
 
     run_loop.Run();
   }
+}
+
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       ReconfigureNetworkBeforeComponentReady) {
+  SEQUENCE_CHECKER(sequence_checker);
+  const std::string expectation = "some first party sets";
+
+  base::RunLoop run_loop;
+  FirstPartySetsComponentInstallerPolicy policy(
+      base::BindLambdaForTesting([&](base::File file) {
+        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+        EXPECT_TRUE(file.IsValid());
+        EXPECT_EQ(ReadToString(std::move(file)), expectation);
+        run_loop.Quit();
+      }));
+
+  ASSERT_TRUE(
+      base::WriteFile(FirstPartySetsComponentInstallerPolicy::GetInstalledPath(
+                          component_install_dir_.GetPath()),
+                      expectation));
+
+  policy.ReconfigureAfterNetworkRestart(
+      base::BindLambdaForTesting([](base::File file) {
+        // Should not be called.
+        EXPECT_TRUE(false);
+      }));
+
+  policy.ComponentReady(base::Version(), component_install_dir_.GetPath(),
+                        base::Value(base::Value::Type::DICTIONARY));
+
+  run_loop.Run();
+}
+
+TEST_F(FirstPartySetsComponentInstallerFeatureEnabledTest,
+       ReconfigureNetworkBeforeRegistrationComplete) {
+  SEQUENCE_CHECKER(sequence_checker);
+
+  base::RunLoop run_loop;
+  FirstPartySetsComponentInstallerPolicy policy(
+      base::BindLambdaForTesting([&](base::File file) {
+        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
+        EXPECT_FALSE(file.IsValid());
+        run_loop.Quit();
+      }));
+
+  policy.ReconfigureAfterNetworkRestart(
+      base::BindLambdaForTesting([](base::File file) {
+        // Should not be called.
+        EXPECT_TRUE(false);
+      }));
+
+  policy.OnRegistrationComplete();
+
+  run_loop.Run();
 }
 
 // Test ReconfigureAfterNetworkRestart calls the callback with the correct

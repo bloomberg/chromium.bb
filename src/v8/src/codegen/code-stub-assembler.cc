@@ -3042,6 +3042,25 @@ void CodeStubAssembler::UnsafeStoreObjectFieldNoWriteBarrier(
                                           object, offset, value);
 }
 
+void CodeStubAssembler::StoreJSSharedStructInObjectField(
+    TNode<HeapObject> object, TNode<IntPtrT> offset, TNode<Object> value) {
+  CSA_DCHECK(this, IsJSSharedStruct(object));
+  // JSSharedStructs are allocated in the shared old space, which is currently
+  // collected by stopping the world, so the incremental write barrier is not
+  // needed. They can only store Smis and other HeapObjects in the shared old
+  // space, so the generational write barrier is also not needed.
+  // TODO(v8:12547): Add a safer, shared variant of NoWriteBarrier instead of
+  // using Unsafe.
+  int const_offset;
+  if (TryToInt32Constant(offset, &const_offset)) {
+    UnsafeStoreObjectFieldNoWriteBarrier(object, const_offset, value);
+  } else {
+    UnsafeStoreNoWriteBarrier(MachineRepresentation::kTagged, object,
+                              IntPtrSub(offset, IntPtrConstant(kHeapObjectTag)),
+                              value);
+  }
+}
+
 void CodeStubAssembler::StoreMap(TNode<HeapObject> object, TNode<Map> map) {
   OptimizedStoreMap(object, map);
   DcheckHasValidMap(object);
@@ -6523,6 +6542,10 @@ TNode<BoolT> CodeStubAssembler::IsJSPrimitiveWrapperMap(TNode<Map> map) {
   return IsJSPrimitiveWrapperInstanceType(LoadMapInstanceType(map));
 }
 
+TNode<BoolT> CodeStubAssembler::IsJSWrappedFunction(TNode<HeapObject> object) {
+  return HasInstanceType(object, JS_WRAPPED_FUNCTION_TYPE);
+}
+
 TNode<BoolT> CodeStubAssembler::IsJSArrayInstanceType(
     TNode<Int32T> instance_type) {
   return InstanceTypeEqual(instance_type, JS_ARRAY_TYPE);
@@ -6538,6 +6561,28 @@ TNode<BoolT> CodeStubAssembler::IsJSArrayMap(TNode<Map> map) {
 
 TNode<BoolT> CodeStubAssembler::IsJSArrayIterator(TNode<HeapObject> object) {
   return HasInstanceType(object, JS_ARRAY_ITERATOR_TYPE);
+}
+
+TNode<BoolT> CodeStubAssembler::IsJSSharedStructInstanceType(
+    TNode<Int32T> instance_type) {
+  return InstanceTypeEqual(instance_type, JS_SHARED_STRUCT_TYPE);
+}
+
+TNode<BoolT> CodeStubAssembler::IsJSSharedStructMap(TNode<Map> map) {
+  return IsJSSharedStructInstanceType(LoadMapInstanceType(map));
+}
+
+TNode<BoolT> CodeStubAssembler::IsJSSharedStruct(TNode<HeapObject> object) {
+  return IsJSSharedStructMap(LoadMap(object));
+}
+
+TNode<BoolT> CodeStubAssembler::IsJSSharedStruct(TNode<Object> object) {
+  return Select<BoolT>(
+      TaggedIsSmi(object), [=] { return Int32FalseConstant(); },
+      [=] {
+        TNode<HeapObject> heap_object = CAST(object);
+        return IsJSSharedStruct(heap_object);
+      });
 }
 
 TNode<BoolT> CodeStubAssembler::IsJSAsyncGeneratorObject(
@@ -6668,6 +6713,19 @@ TNode<BoolT> CodeStubAssembler::IsInternalizedStringInstanceType(
       Int32Constant(kStringTag | kInternalizedTag));
 }
 
+TNode<BoolT> CodeStubAssembler::IsSharedStringInstanceType(
+    TNode<Int32T> instance_type) {
+  TNode<BoolT> is_shared = Word32Equal(
+      Word32And(instance_type,
+                Int32Constant(kIsNotStringMask | kSharedStringMask)),
+      Int32Constant(kStringTag | kSharedStringTag));
+  // TODO(v8:12007): Internalized strings do not have kSharedStringTag until
+  // the shared string table ships.
+  return Word32Or(is_shared,
+                  Word32And(HasSharedStringTableFlag(),
+                            IsInternalizedStringInstanceType(instance_type)));
+}
+
 TNode<BoolT> CodeStubAssembler::IsUniqueName(TNode<HeapObject> object) {
   TNode<Uint16T> instance_type = LoadInstanceType(object);
   return Select<BoolT>(
@@ -6770,8 +6828,9 @@ TNode<BoolT> CodeStubAssembler::IsJSGeneratorObject(TNode<HeapObject> object) {
 
 TNode<BoolT> CodeStubAssembler::IsFunctionInstanceType(
     TNode<Int32T> instance_type) {
-  return IsInRange(instance_type, FIRST_JS_FUNCTION_OR_BOUND_FUNCTION_TYPE,
-                   LAST_JS_FUNCTION_OR_BOUND_FUNCTION_TYPE);
+  return IsInRange(instance_type,
+                   FIRST_JS_FUNCTION_OR_BOUND_FUNCTION_OR_WRAPPED_FUNCTION_TYPE,
+                   LAST_JS_FUNCTION_OR_BOUND_FUNCTION_OR_WRAPPED_FUNCTION_TYPE);
 }
 TNode<BoolT> CodeStubAssembler::IsJSFunctionInstanceType(
     TNode<Int32T> instance_type) {
@@ -6939,6 +6998,15 @@ TNode<BoolT> CodeStubAssembler::IsNumberArrayIndex(TNode<Number> number) {
   return Select<BoolT>(
       TaggedIsSmi(number), [=] { return TaggedIsPositiveSmi(number); },
       [=] { return IsHeapNumberUint32(CAST(number)); });
+}
+
+TNode<IntPtrT> CodeStubAssembler::LoadBasicMemoryChunkFlags(
+    TNode<HeapObject> object) {
+  TNode<IntPtrT> object_word = BitcastTaggedToWord(object);
+  TNode<IntPtrT> page = PageFromAddress(object_word);
+  return UncheckedCast<IntPtrT>(
+      Load(MachineType::Pointer(), page,
+           IntPtrConstant(BasicMemoryChunk::kFlagsOffset)));
 }
 
 template <typename TIndex>
@@ -9109,7 +9177,7 @@ void CodeStubAssembler::ForEachEnumerableOwnProperty(
 
             var_value = CallGetterIfAccessor(
                 var_value.value(), object, var_details.value(), context, object,
-                next_key, &slow_load, kCallJSGetter);
+                next_key, &slow_load, kCallJSGetterUseCachedName);
             Goto(&callback);
 
             BIND(&slow_load);
@@ -9210,6 +9278,70 @@ TNode<NativeContext> CodeStubAssembler::GetCreationContext(
 
   TNode<NativeContext> native_context = LoadNativeContext(context);
   return native_context;
+}
+
+TNode<NativeContext> CodeStubAssembler::GetFunctionRealm(
+    TNode<Context> context, TNode<JSReceiver> receiver, Label* if_bailout) {
+  TVARIABLE(JSReceiver, current);
+  Label loop(this, VariableList({&current}, zone())), is_proxy(this),
+      is_function(this), is_bound_function(this), is_wrapped_function(this),
+      proxy_revoked(this, Label::kDeferred);
+  CSA_DCHECK(this, IsCallable(receiver));
+  current = receiver;
+  Goto(&loop);
+
+  BIND(&loop);
+  {
+    TNode<JSReceiver> current_value = current.value();
+    GotoIf(IsJSProxy(current_value), &is_proxy);
+    GotoIf(IsJSFunction(current_value), &is_function);
+    GotoIf(IsJSBoundFunction(current_value), &is_bound_function);
+    GotoIf(IsJSWrappedFunction(current_value), &is_wrapped_function);
+    Goto(if_bailout);
+  }
+
+  BIND(&is_proxy);
+  {
+    TNode<JSProxy> proxy = CAST(current.value());
+    TNode<HeapObject> handler =
+        CAST(LoadObjectField(proxy, JSProxy::kHandlerOffset));
+    // Proxy is revoked.
+    GotoIfNot(IsJSReceiver(handler), &proxy_revoked);
+    TNode<JSReceiver> target =
+        CAST(LoadObjectField(proxy, JSProxy::kTargetOffset));
+    current = target;
+    Goto(&loop);
+  }
+
+  BIND(&proxy_revoked);
+  { ThrowTypeError(context, MessageTemplate::kProxyRevoked, "apply"); }
+
+  BIND(&is_bound_function);
+  {
+    TNode<JSBoundFunction> bound_function = CAST(current.value());
+    TNode<JSReceiver> target = CAST(LoadObjectField(
+        bound_function, JSBoundFunction::kBoundTargetFunctionOffset));
+    current = target;
+    Goto(&loop);
+  }
+
+  BIND(&is_wrapped_function);
+  {
+    TNode<JSWrappedFunction> wrapped_function = CAST(current.value());
+    TNode<JSReceiver> target = CAST(LoadObjectField(
+        wrapped_function, JSWrappedFunction::kWrappedTargetFunctionOffset));
+    current = target;
+    Goto(&loop);
+  }
+
+  BIND(&is_function);
+  {
+    TNode<JSFunction> function = CAST(current.value());
+    TNode<Context> context =
+        CAST(LoadObjectField(function, JSFunction::kContextOffset));
+    TNode<NativeContext> native_context = LoadNativeContext(context);
+    return native_context;
+  }
 }
 
 void CodeStubAssembler::DescriptorLookup(TNode<Name> unique_name,
@@ -9580,7 +9712,8 @@ TNode<Object> CodeStubAssembler::CallGetterIfAccessor(
 
   // AccessorPair case.
   {
-    if (mode == kCallJSGetter) {
+    if (mode == kCallJSGetterUseCachedName ||
+        mode == kCallJSGetterDontUseCachedName) {
       Label if_callable(this), if_function_template_info(this);
       TNode<AccessorPair> accessor_pair = CAST(value);
       TNode<HeapObject> getter =
@@ -9605,10 +9738,15 @@ TNode<Object> CodeStubAssembler::CallGetterIfAccessor(
       BIND(&if_function_template_info);
       {
         Label runtime(this, Label::kDeferred);
+        Label use_cached_property(this);
         GotoIf(IsSideEffectFreeDebuggingActive(), &runtime);
         TNode<HeapObject> cached_property_name = LoadObjectField<HeapObject>(
             getter, FunctionTemplateInfo::kCachedPropertyNameOffset);
-        GotoIfNot(IsTheHole(cached_property_name), if_bailout);
+
+        Label* has_cached_property = mode == kCallJSGetterUseCachedName
+                                         ? &use_cached_property
+                                         : if_bailout;
+        GotoIfNot(IsTheHole(cached_property_name), has_cached_property);
 
         TNode<NativeContext> creation_context =
             GetCreationContext(CAST(holder), if_bailout);
@@ -9618,6 +9756,14 @@ TNode<Object> CodeStubAssembler::CallGetterIfAccessor(
             receiver);
         Goto(&done);
 
+        if (mode == kCallJSGetterUseCachedName) {
+          Bind(&use_cached_property);
+
+          var_value = GetProperty(context, holder, cached_property_name);
+
+          Goto(&done);
+        }
+
         BIND(&runtime);
         {
           var_value = CallRuntime(Runtime::kGetProperty, context, holder, name,
@@ -9626,6 +9772,7 @@ TNode<Object> CodeStubAssembler::CallGetterIfAccessor(
         }
       }
     } else {
+      DCHECK_EQ(mode, kReturnAccessorPair);
       Goto(&done);
     }
   }
@@ -9697,7 +9844,7 @@ void CodeStubAssembler::TryGetOwnProperty(
     Label* if_bailout) {
   TryGetOwnProperty(context, receiver, object, map, instance_type, unique_name,
                     if_found_value, var_value, nullptr, nullptr, if_not_found,
-                    if_bailout, kCallJSGetter);
+                    if_bailout, kCallJSGetterUseCachedName);
 }
 
 void CodeStubAssembler::TryGetOwnProperty(
@@ -15792,6 +15939,66 @@ void CodeStubAssembler::SwissNameDictionaryAdd(TNode<SwissNameDictionary> table,
     SwissNameDictionaryAddPortable(table, key, value, property_details,
                                    needs_resize);
   }
+}
+
+void CodeStubAssembler::SharedValueBarrier(
+    TNode<Context> context, TVariable<Object>* var_shared_value) {
+  // The barrier ensures that the value can be shared across Isolates.
+  // The fast paths should be kept in sync with Object::Share.
+
+  TNode<Object> value = var_shared_value->value();
+  Label check_in_shared_heap(this), slow(this), skip_barrier(this), done(this);
+
+  // Fast path: Smis are trivially shared.
+  GotoIf(TaggedIsSmi(value), &done);
+  // Fast path: Shared memory features imply shared RO space, so RO objects are
+  // trivially shared.
+  DCHECK(ReadOnlyHeap::IsReadOnlySpaceShared());
+  TNode<IntPtrT> page_flags = LoadBasicMemoryChunkFlags(CAST(value));
+  GotoIf(WordNotEqual(WordAnd(page_flags,
+                              IntPtrConstant(BasicMemoryChunk::READ_ONLY_HEAP)),
+                      IntPtrConstant(0)),
+         &skip_barrier);
+
+  // Fast path: Check if the HeapObject is already shared.
+  TNode<Uint16T> value_instance_type =
+      LoadMapInstanceType(LoadMap(CAST(value)));
+  GotoIf(IsSharedStringInstanceType(value_instance_type), &skip_barrier);
+  GotoIf(IsJSSharedStructInstanceType(value_instance_type), &skip_barrier);
+  GotoIf(IsHeapNumberInstanceType(value_instance_type), &check_in_shared_heap);
+  Goto(&slow);
+
+  BIND(&check_in_shared_heap);
+  {
+    Branch(
+        WordNotEqual(WordAnd(page_flags,
+                             IntPtrConstant(BasicMemoryChunk::IN_SHARED_HEAP)),
+                     IntPtrConstant(0)),
+        &skip_barrier, &slow);
+  }
+
+  // Slow path: Call out to runtime to share primitives and to throw on
+  // non-shared JS objects.
+  BIND(&slow);
+  {
+    *var_shared_value =
+        CallRuntime(Runtime::kSharedValueBarrierSlow, context, value);
+    Goto(&skip_barrier);
+  }
+
+  BIND(&skip_barrier);
+  {
+    CSA_DCHECK(
+        this,
+        WordNotEqual(
+            WordAnd(LoadBasicMemoryChunkFlags(CAST(var_shared_value->value())),
+                    IntPtrConstant(BasicMemoryChunk::READ_ONLY_HEAP |
+                                   BasicMemoryChunk::IN_SHARED_HEAP)),
+            IntPtrConstant(0)));
+    Goto(&done);
+  }
+
+  BIND(&done);
 }
 
 }  // namespace internal

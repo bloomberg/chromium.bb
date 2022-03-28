@@ -30,6 +30,7 @@ class F extends ValidationTest {
         await p!;
         assert(rejectName === null, 'mapAsync unexpectedly passed');
       } catch (ex) {
+        assert(ex instanceof Error, 'mapAsync rejected with non-error');
         assert(rejectName === ex.name, `mapAsync rejected unexpectedly with: ${ex}`);
       }
     }

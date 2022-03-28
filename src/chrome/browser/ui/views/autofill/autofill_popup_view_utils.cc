@@ -21,6 +21,8 @@
 
 using views::BubbleBorder;
 
+namespace autofill {
+
 namespace {
 
 // The minimum number of pixels the popup should be distanced from the edge of
@@ -252,6 +254,7 @@ bool CanShowDropdownHere(int item_height,
           element_bottom_is_within_content_area_bounds);
 }
 
+// Keep in sync with TryToCloseAllPrompts() from autofill_uitest.cc.
 bool BoundsOverlapWithAnyOpenPrompt(const gfx::Rect& screen_bounds,
                                     content::WebContents* web_contents) {
   gfx::NativeView top_level_view =
@@ -407,7 +410,14 @@ views::BubbleArrowSide GetOptimalArrowSide(
     }
   }
 
-  return views::BubbleArrowSide::kBottom;
+  // As a fallback, render the popup on top of the element if there is more
+  // space than below the element.
+  if (element_bounds.y() - content_area_bounds.y() >
+      content_area_bounds.bottom() - element_bounds.bottom()) {
+    return views::BubbleArrowSide::kBottom;
+  }
+
+  return views::BubbleArrowSide::kTop;
 }
 
 BubbleBorder::Arrow GetOptimalPopupPlacement(
@@ -508,3 +518,5 @@ BubbleBorder::Arrow GetOptimalPopupPlacement(
 
   return arrow;
 }
+
+}  // namespace autofill

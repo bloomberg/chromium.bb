@@ -23,6 +23,7 @@ limitations under the License.
 #include "mlir/IR/MLIRContext.h"  // from @llvm-project
 #include "mlir/Pass/PassManager.h"  // from @llvm-project
 #include "mlir/Pass/PassRegistry.h"  // from @llvm-project
+#include "mlir/Transforms/Passes.h"  // from @llvm-project
 #include "tensorflow/compiler/mlir/init_mlir.h"
 #include "tensorflow/compiler/mlir/tensorflow/dialect_registration.h"
 #include "tensorflow/compiler/mlir/tensorflow/utils/error_util.h"
@@ -95,13 +96,9 @@ void RegisterDialects(mlir::DialectRegistry& registry) {
 tensorflow::Status RunOptimizationPasses(
     const mlir::PassPipelineCLParser& passPipeline, mlir::ModuleOp module,
     mlir::MLIRContext* context) {
-  auto graph_op = llvm::dyn_cast<mlir::tfg::GraphOp>(module.getBody()->front());
-  if (!graph_op) {
-    return tensorflow::errors::InvalidArgument(
-        "TFG MLIR module missing graph op");
-  }
+  mlir::PassManager pm(context);
+  mlir::applyPassManagerCLOptions(pm);
 
-  mlir::PassManager pm(context, mlir::tfg::GraphOp::getOperationName());
   auto error_handler = [&](const llvm::Twine& msg) {
     emitError(mlir::UnknownLoc::get(pm.getContext())) << msg;
     return mlir::failure();
@@ -112,7 +109,7 @@ tensorflow::Status RunOptimizationPasses(
   }
 
   mlir::StatusScopedDiagnosticHandler diagnostics_handler(context);
-  if (failed(pm.run(graph_op))) {
+  if (failed(pm.run(module))) {
     return diagnostics_handler.Combine(
         tensorflow::errors::InvalidArgument("MLIR Pass Manager failure: "));
   }
@@ -188,6 +185,8 @@ int main(int argc, char** argv) {
   mlir::registerMLIRContextCLOptions();
   mlir::registerPassManagerCLOptions();
   mlir::tfg::registerTFGraphPasses();
+  mlir::registerSymbolPrivatizePass();
+  mlir::registerSymbolDCEPass();
 
   mlir::PassPipelineCLParser pass_pipeline("", "TFG passes to run");
   llvm::cl::ParseCommandLineOptions(argc, argv, "TFG optimization tool\n");

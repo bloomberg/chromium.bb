@@ -24,17 +24,17 @@ template <typename DerivedDescriptor>
 void StaticCallInterfaceDescriptor<DerivedDescriptor>::
     VerifyArgumentRegisterCount(CallInterfaceDescriptorData* data, int argc) {
   RegList allocatable_regs = data->allocatable_registers();
-  if (argc >= 1) DCHECK(allocatable_regs | a0.bit());
-  if (argc >= 2) DCHECK(allocatable_regs | a1.bit());
-  if (argc >= 3) DCHECK(allocatable_regs | a2.bit());
-  if (argc >= 4) DCHECK(allocatable_regs | a3.bit());
+  if (argc >= 1) DCHECK(allocatable_regs.has(a0));
+  if (argc >= 2) DCHECK(allocatable_regs.has(a1));
+  if (argc >= 3) DCHECK(allocatable_regs.has(a2));
+  if (argc >= 4) DCHECK(allocatable_regs.has(a3));
   // Additional arguments are passed on the stack.
 }
 #endif  // DEBUG
 
 // static
 constexpr auto WriteBarrierDescriptor::registers() {
-  return RegisterArray(a1, t1, t0, a0, a2, v0, a3);
+  return RegisterArray(a1, t1, t0, a0, a2, v0, a3, kContextRegister);
 }
 
 // static
@@ -142,6 +142,22 @@ constexpr auto CallTrampolineDescriptor::registers() {
   // a1: target
   // a0: number of arguments
   return RegisterArray(a1, a0);
+}
+
+// static
+constexpr auto CopyDataPropertiesWithExcludedPropertiesDescriptor::registers() {
+  // a1 : the source
+  // a0 : the excluded property count
+  return RegisterArray(a1, a0);
+}
+
+// static
+constexpr auto
+CopyDataPropertiesWithExcludedPropertiesOnStackDescriptor::registers() {
+  // a1 : the source
+  // a0 : the excluded property count
+  // a2 : the excluded property base
+  return RegisterArray(a1, a0, a2);
 }
 
 // static

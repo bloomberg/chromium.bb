@@ -42,6 +42,10 @@
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/common/chrome_paths_lacros.h"  // nogncheck
+#endif
+
 namespace {
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -362,6 +366,24 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       break;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    case chrome::FILE_FALLBACK_RESOURCES_PACK:
+      if (!GetDefaultUserDataDirectory(&cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("resources_fallback.pak"));
+      break;
+    case chrome::FILE_ASH_RESOURCES_PACK:
+      if (!chrome::GetAshResourcesPath(&cur))
+        return false;
+      cur = cur.Append("resources.pak");
+      break;
+    case chrome::FILE_RESOURCES_MAP:
+      if (!GetDefaultUserDataDirectory(&cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("resources.map"));
+      break;
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case chrome::DIR_CHROMEOS_WALLPAPERS:
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
@@ -448,7 +470,6 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("Google"))
                .Append(FILE_PATH_LITERAL("Chrome"))
                .Append(FILE_PATH_LITERAL("External Extensions"));
-      create_dir = false;
 #else
       if (!base::PathService::Get(base::DIR_MODULE, &cur))
         return false;
@@ -512,11 +533,9 @@ bool PathProvider(int key, base::FilePath* result) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION:
       cur = base::FilePath(kChromeOSTPMFirmwareUpdateLocation);
-      create_dir = false;
       break;
     case chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA:
       cur = base::FilePath(kChromeOSTPMFirmwareUpdateSRKVulnerableROCA);
-      create_dir = false;
       break;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     case chrome::DIR_OPTIMIZATION_GUIDE_PREDICTION_MODELS:
@@ -532,8 +551,7 @@ bool PathProvider(int key, base::FilePath* result) {
 
   // TODO(bauerb): http://crbug.com/259796
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  if (create_dir && !base::PathExists(cur) &&
-      !base::CreateDirectory(cur))
+  if (create_dir && !base::PathExists(cur) && !base::CreateDirectory(cur))
     return false;
 
   *result = cur;

@@ -8,12 +8,12 @@ import {assert, assertNotReached} from '//resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {App} from './app_management.mojom-webui.js';
+import {Permission} from './app_management.mojom-webui.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {AppManagementUserAction} from './constants.js';
 import {PermissionType, PermissionTypeIndex, TriState} from './permission_constants.js';
 import {createBoolPermission, createTriStatePermission, getBoolPermissionValue, getTriStatePermissionValue, isBoolValue, isTriStateValue} from './permission_util.js';
 import {AppManagementToggleRowElement} from './toggle_row.js';
-import {Permission} from './types.mojom-webui.js';
 import {getPermission, getPermissionValueBool, recordAppManagementUserAction} from './util.js';
 
 export class AppManagementPermissionItemElement extends PolymerElement {
@@ -34,7 +34,7 @@ export class AppManagementPermissionItemElement extends PolymerElement {
 
       /**
        * A string version of the permission type. Must be a value of the
-       * permission type enum in apps.mojom.PermissionType.
+       * permission type enum in appManagement.mojom.PermissionType.
        */
       permissionType: String,
 
@@ -75,7 +75,7 @@ export class AppManagementPermissionItemElement extends PolymerElement {
   private disabled_: boolean;
 
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('click', this.onClick_);
     this.addEventListener('change', this.togglePermission_);
@@ -221,36 +221,37 @@ export class AppManagementPermissionItemElement extends PolymerElement {
       permissionType: PermissionTypeIndex): AppManagementUserAction {
     switch (permissionType) {
       case 'kNotifications':
-        return permissionValue ? AppManagementUserAction.NotificationsTurnedOn :
-                                 AppManagementUserAction.NotificationsTurnedOff;
+        return permissionValue ?
+            AppManagementUserAction.NOTIFICATIONS_TURNED_ON :
+            AppManagementUserAction.NOTIFICATIONS_TURNED_OFF;
 
       case 'kLocation':
-        return permissionValue ? AppManagementUserAction.LocationTurnedOn :
-                                 AppManagementUserAction.LocationTurnedOff;
+        return permissionValue ? AppManagementUserAction.LOCATION_TURNED_ON :
+                                 AppManagementUserAction.LOCATION_TURNED_OFF;
 
       case 'kCamera':
-        return permissionValue ? AppManagementUserAction.CameraTurnedOn :
-                                 AppManagementUserAction.CameraTurnedOff;
+        return permissionValue ? AppManagementUserAction.CAMERA_TURNED_ON :
+                                 AppManagementUserAction.CAMERA_TURNED_OFF;
 
       case 'kMicrophone':
-        return permissionValue ? AppManagementUserAction.MicrophoneTurnedOn :
-                                 AppManagementUserAction.MicrophoneTurnedOff;
+        return permissionValue ? AppManagementUserAction.MICROPHONE_TURNED_ON :
+                                 AppManagementUserAction.MICROPHONE_TURNED_OFF;
 
       case 'kContacts':
-        return permissionValue ? AppManagementUserAction.ContactsTurnedOn :
-                                 AppManagementUserAction.ContactsTurnedOff;
+        return permissionValue ? AppManagementUserAction.CONTACTS_TURNED_ON :
+                                 AppManagementUserAction.CONTACTS_TURNED_OFF;
 
       case 'kStorage':
-        return permissionValue ? AppManagementUserAction.StorageTurnedOn :
-                                 AppManagementUserAction.StorageTurnedOff;
+        return permissionValue ? AppManagementUserAction.STORAGE_TURNED_ON :
+                                 AppManagementUserAction.STORAGE_TURNED_OFF;
 
       case 'kPrinting':
-        return permissionValue ? AppManagementUserAction.PrintingTurnedOn :
-                                 AppManagementUserAction.PrintingTurnedOff;
+        return permissionValue ? AppManagementUserAction.PRINTING_TURNED_ON :
+                                 AppManagementUserAction.PRINTING_TURNED_OFF;
 
       default:
         assertNotReached();
-        return AppManagementUserAction.NotificationsTurnedOn;
+        return AppManagementUserAction.NOTIFICATIONS_TURNED_ON;
     }
   }
 }

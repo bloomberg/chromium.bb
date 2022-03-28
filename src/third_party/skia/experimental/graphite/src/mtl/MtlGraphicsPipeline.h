@@ -42,7 +42,7 @@ public:
     ~GraphicsPipeline() override {}
 
     id<MTLRenderPipelineState> mtlPipelineState() const { return fPipelineState.get(); }
-    id<MTLDepthStencilState> mtlDepthStencilState() const { return fDepthStencilState; }
+    id<MTLDepthStencilState> mtlDepthStencilState() const { return fDepthStencilState.get(); }
     uint32_t stencilReferenceValue() const { return fStencilReferenceValue; }
     size_t vertexStride() const { return fVertexStride; }
     size_t instanceStride() const { return fInstanceStride; }
@@ -50,7 +50,7 @@ public:
 private:
     GraphicsPipeline(const skgpu::Gpu* gpu,
                      sk_cfp<id<MTLRenderPipelineState>> pso,
-                     id<MTLDepthStencilState> dss,
+                     sk_cfp<id<MTLDepthStencilState>> dss,
                      uint32_t refValue,
                      size_t vertexStride,
                      size_t instanceStride)
@@ -61,10 +61,10 @@ private:
         , fVertexStride(vertexStride)
         , fInstanceStride(instanceStride) {}
 
-    void onFreeGpuData() override;
+    void freeGpuData() override;
 
     sk_cfp<id<MTLRenderPipelineState>> fPipelineState;
-    id<MTLDepthStencilState> fDepthStencilState;
+    sk_cfp<id<MTLDepthStencilState>> fDepthStencilState;
     uint32_t fStencilReferenceValue;
     size_t fVertexStride = 0;
     size_t fInstanceStride = 0;

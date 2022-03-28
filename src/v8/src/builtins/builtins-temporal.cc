@@ -16,31 +16,28 @@ namespace internal {
     UNIMPLEMENTED();            \
   }
 
-/* Temporal #sec-temporal.now.timezone */
-TO_BE_IMPLEMENTED(TemporalNowTimeZone)
-/* Temporal #sec-temporal.now.instant */
-TO_BE_IMPLEMENTED(TemporalNowInstant)
-/* Temporal #sec-temporal.now.plaindatetime */
-TO_BE_IMPLEMENTED(TemporalNowPlainDateTime)
-/* Temporal #sec-temporal.now.plaindatetimeiso */
-TO_BE_IMPLEMENTED(TemporalNowPlainDateTimeISO)
-/* Temporal #sec-temporal.now.zoneddatetime */
-TO_BE_IMPLEMENTED(TemporalNowZonedDateTime)
-/* Temporal #sec-temporal.now.zoneddatetimeiso */
-TO_BE_IMPLEMENTED(TemporalNowZonedDateTimeISO)
-/* Temporal #sec-temporal.now.plaindate */
-TO_BE_IMPLEMENTED(TemporalNowPlainDate)
-/* Temporal #sec-temporal.now.plaindateiso */
-TO_BE_IMPLEMENTED(TemporalNowPlainDateISO)
+#define TEMPORAL_NOW0(T)                                            \
+  BUILTIN(TemporalNow##T) {                                         \
+    HandleScope scope(isolate);                                     \
+    RETURN_RESULT_OR_FAILURE(isolate, JSTemporal##T::Now(isolate)); \
+  }
 
-/* There is no Temporal.now.plainTime. See
- * https://github.com/tc39/proposal-temporal/issues/1540 */
+#define TEMPORAL_NOW2(T)                                                     \
+  BUILTIN(TemporalNow##T) {                                                  \
+    HandleScope scope(isolate);                                              \
+    RETURN_RESULT_OR_FAILURE(                                                \
+        isolate, JSTemporal##T::Now(isolate, args.atOrUndefined(isolate, 1), \
+                                    args.atOrUndefined(isolate, 2)));        \
+  }
 
-/* Temporal #sec-temporal.now.plaintimeiso */
-TO_BE_IMPLEMENTED(TemporalNowPlainTimeISO)
+#define TEMPORAL_NOW_ISO1(T)                                             \
+  BUILTIN(TemporalNow##T##ISO) {                                         \
+    HandleScope scope(isolate);                                          \
+    RETURN_RESULT_OR_FAILURE(                                            \
+        isolate,                                                         \
+        JSTemporal##T::NowISO(isolate, args.atOrUndefined(isolate, 1))); \
+  }
 
-/* Temporal #sec-temporal.plaindate.from */
-TO_BE_IMPLEMENTED(TemporalPlainDateFrom)
 /* Temporal #sec-temporal.plaindate.compare */
 TO_BE_IMPLEMENTED(TemporalPlainDateCompare)
 /* Temporal #sec-temporal.plaindate.prototype.toplainyearmonth */
@@ -455,6 +452,15 @@ TO_BE_IMPLEMENTED(TemporalZonedDateTimePrototypeToLocaleString)
                                args.atOrUndefined(isolate, 3)));             \
   }
 
+#define TEMPORAL_METHOD2(T, METHOD)                                     \
+  BUILTIN(Temporal##T##METHOD) {                                        \
+    HandleScope scope(isolate);                                         \
+    RETURN_RESULT_OR_FAILURE(                                           \
+        isolate,                                                        \
+        JSTemporal##T ::METHOD(isolate, args.atOrUndefined(isolate, 1), \
+                               args.atOrUndefined(isolate, 2)));        \
+  }
+
 #define TEMPORAL_VALUE_OF(T)                                                 \
   BUILTIN(Temporal##T##PrototypeValueOf) {                                   \
     HandleScope scope(isolate);                                              \
@@ -537,6 +543,20 @@ TO_BE_IMPLEMENTED(TemporalZonedDateTimePrototypeToLocaleString)
                      date_like));                                            \
   }
 
+// Now
+TEMPORAL_NOW0(TimeZone)
+TEMPORAL_NOW0(Instant)
+TEMPORAL_NOW2(PlainDateTime)
+TEMPORAL_NOW_ISO1(PlainDateTime)
+TEMPORAL_NOW2(PlainDate)
+TEMPORAL_NOW_ISO1(PlainDate)
+
+// There is NO Temporal.now.plainTime
+// See https://github.com/tc39/proposal-temporal/issues/1540
+TEMPORAL_NOW_ISO1(PlainTime)
+TEMPORAL_NOW2(ZonedDateTime)
+TEMPORAL_NOW_ISO1(ZonedDateTime)
+
 // PlainDate
 BUILTIN(TemporalPlainDateConstructor) {
   HandleScope scope(isolate);
@@ -548,6 +568,7 @@ BUILTIN(TemporalPlainDateConstructor) {
                    args.atOrUndefined(isolate, 3),    // iso_day
                    args.atOrUndefined(isolate, 4)));  // calendar_like
 }
+TEMPORAL_METHOD2(PlainDate, From)
 TEMPORAL_GET(PlainDate, Calendar, calendar)
 TEMPORAL_GET_BY_FORWARD_CALENDAR(PlainDate, Year, year)
 TEMPORAL_GET_BY_FORWARD_CALENDAR(PlainDate, Month, month)

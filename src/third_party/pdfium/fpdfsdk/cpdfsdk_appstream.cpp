@@ -27,6 +27,7 @@
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_icon.h"
 #include "core/fpdfdoc/cpvt_word.h"
+#include "core/fxcrt/fx_string_wrappers.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
@@ -35,6 +36,7 @@
 #include "fpdfsdk/pwl/cpwl_edit_impl.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "third_party/base/cxx17_backports.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -1720,7 +1722,7 @@ void CPDFSDK_AppStream::SetAsTextField(absl::optional<WideString> sValue) {
       }
     } else {
       if (sValue.has_value())
-        nMaxLen = sValue.value().GetLength();
+        nMaxLen = pdfium::base::checked_cast<int>(sValue.value().GetLength());
       pEdit->SetLimitChar(nMaxLen);
     }
   }
@@ -1842,24 +1844,27 @@ void CPDFSDK_AppStream::AddImage(const ByteString& sAPType,
 void CPDFSDK_AppStream::Write(const ByteString& sAPType,
                               const ByteString& sContents,
                               const ByteString& sAPState) {
-  CPDF_Stream* pStream = nullptr;
-  CPDF_Dictionary* pParentDict = nullptr;
+  CPDF_Dictionary* pParentDict;
+  ByteString key;
   if (sAPState.IsEmpty()) {
     pParentDict = dict_.Get();
-    pStream = dict_->GetStreamFor(sAPType);
+    key = sAPType;
   } else {
     CPDF_Dictionary* pAPTypeDict = dict_->GetDictFor(sAPType);
     if (!pAPTypeDict)
       pAPTypeDict = dict_->SetNewFor<CPDF_Dictionary>(sAPType);
 
     pParentDict = pAPTypeDict;
-    pStream = pAPTypeDict->GetStreamFor(sAPState);
+    key = sAPState;
   }
 
-  if (!pStream) {
-    CPDF_Document* doc = widget_->GetPageView()->GetPDFDocument();
-    pStream = doc->NewIndirect<CPDF_Stream>();
-    pParentDict->SetNewFor<CPDF_Reference>(sAPType, doc, pStream->GetObjNum());
+  // If `pStream` is created by CreateModifiedAPStream(), then it is safe to
+  // edit, as it is not shared.
+  CPDF_Stream* pStream = pParentDict->GetStreamFor(key);
+  CPDF_Document* doc = widget_->GetPageView()->GetPDFDocument();
+  if (!doc->IsModifiedAPStream(pStream)) {
+    pStream = doc->CreateModifiedAPStream();
+    pParentDict->SetNewFor<CPDF_Reference>(key, doc, pStream->GetObjNum());
   }
 
   CPDF_Dictionary* pStreamDict = pStream->GetDict();

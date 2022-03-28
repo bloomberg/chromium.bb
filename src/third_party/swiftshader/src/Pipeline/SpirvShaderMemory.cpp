@@ -56,7 +56,7 @@ SpirvShader::EmitResult SpirvShader::EmitLoad(InsnIterator insn, EmitState *stat
 	auto ptr = GetPointerToData(pointerId, 0, state);
 	bool interleavedByLane = IsStorageInterleavedByLane(pointerTy.storageClass);
 	auto &dst = state->createIntermediate(resultId, resultTy.componentCount);
-	auto robustness = state->getOutOfBoundsBehavior(pointerTy.storageClass);
+	auto robustness = getOutOfBoundsBehavior(pointerId, state);
 
 	VisitMemoryObject(pointerId, [&](const MemoryElement &el) {
 		auto p = ptr + el.offset;
@@ -100,7 +100,7 @@ void SpirvShader::Store(Object::ID pointerId, const Operand &value, bool atomic,
 
 	auto ptr = GetPointerToData(pointerId, 0, state);
 	bool interleavedByLane = IsStorageInterleavedByLane(pointerTy.storageClass);
-	auto robustness = state->getOutOfBoundsBehavior(pointerTy.storageClass);
+	auto robustness = getOutOfBoundsBehavior(pointerId, state);
 
 	SIMD::Int mask = state->activeLaneMask();
 	if(!StoresInHelperInvocation(pointerTy.storageClass))
@@ -219,6 +219,7 @@ SpirvShader::EmitResult SpirvShader::EmitVariable(InsnIterator insn, EmitState *
 		case spv::StorageClassOutput:
 		case spv::StorageClassPrivate:
 		case spv::StorageClassFunction:
+		case spv::StorageClassWorkgroup:
 			{
 				bool interleavedByLane = IsStorageInterleavedByLane(objectTy.storageClass);
 				auto ptr = GetPointerToData(resultId, 0, state);
@@ -229,6 +230,12 @@ SpirvShader::EmitResult SpirvShader::EmitVariable(InsnIterator insn, EmitState *
 					auto robustness = OutOfBoundsBehavior::UndefinedBehavior;  // Local variables are always within bounds.
 					p.Store(initialValue.Float(el.index), robustness, state->activeLaneMask());
 				});
+				if(objectTy.storageClass == spv::StorageClassWorkgroup)
+				{
+					// Initialization of workgroup memory is done by each subgroup and requires waiting on a barrier.
+					// TODO(b/221242292): Initialize just once per workgroup and eliminate the barrier.
+					Yield(YieldResult::ControlBarrier);
+				}
 			}
 			break;
 		default:
@@ -355,8 +362,7 @@ void SpirvShader::VisitMemoryObject(Object::ID id, const MemoryVisitor &f) const
 
 	if(IsExplicitLayout(type.storageClass))
 	{
-		Decorations d{};
-		ApplyDecorationsForId(&d, id);
+		Decorations d = GetDecorationsForId(id);
 		uint32_t index = 0;
 		VisitMemoryObjectInner(typeId, d, index, 0, f);
 	}
@@ -395,23 +401,35 @@ SIMD::Pointer SpirvShader::GetPointerToData(Object::ID id, Int arrayIndex, EmitS
 
 			auto set = state->getPointer(id);
 			Assert(set.base != Pointer<Byte>(nullptr));
-			Pointer<Byte> descriptor = set.base + descriptorOffset;                                        // BufferDescriptor*
-			Pointer<Byte> data = *Pointer<Pointer<Byte>>(descriptor + OFFSET(vk::BufferDescriptor, ptr));  // void*
-			Int size = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, sizeInBytes));
+			Pointer<Byte> descriptor = set.base + descriptorOffset;  // BufferDescriptor* or inline uniform block
 
-			if(routine->pipelineLayout->isDescriptorDynamic(d.DescriptorSet, d.Binding))
+			auto descriptorType = routine->pipelineLayout->getDescriptorType(d.DescriptorSet, d.Binding);
+			if(descriptorType == VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT)
 			{
-				Int dynamicOffsetIndex =
-				    routine->pipelineLayout->getDynamicOffsetIndex(d.DescriptorSet, d.Binding) +
-				    arrayIndex;
-				Int offset = routine->descriptorDynamicOffsets[dynamicOffsetIndex];
-				Int robustnessSize = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, robustnessSize));
-
-				return SIMD::Pointer(data + offset, Min(size, robustnessSize - offset));
+				// Note: there is no bounds checking for inline uniform blocks.
+				// MAX_INLINE_UNIFORM_BLOCK_SIZE represents the maximum size of
+				// an inline uniform block, but this value should remain unused.
+				return SIMD::Pointer(descriptor, vk::MAX_INLINE_UNIFORM_BLOCK_SIZE);
 			}
 			else
 			{
-				return SIMD::Pointer(data, size);
+				Pointer<Byte> data = *Pointer<Pointer<Byte>>(descriptor + OFFSET(vk::BufferDescriptor, ptr));  // void*
+				Int size = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, sizeInBytes));
+
+				if(routine->pipelineLayout->isDescriptorDynamic(d.DescriptorSet, d.Binding))
+				{
+					Int dynamicOffsetIndex =
+					    routine->pipelineLayout->getDynamicOffsetIndex(d.DescriptorSet, d.Binding) +
+					    arrayIndex;
+					Int offset = routine->descriptorDynamicOffsets[dynamicOffsetIndex];
+					Int robustnessSize = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, robustnessSize));
+
+					return SIMD::Pointer(data + offset, Min(size, robustnessSize - offset));
+				}
+				else
+				{
+					return SIMD::Pointer(data, size);
+				}
 			}
 		}
 

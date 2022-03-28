@@ -171,11 +171,11 @@ INT32_ACCESSORS(Code, unwinding_info_offset, kUnwindingInfoOffsetOffset)
   }
 
 // Same as RELEASE_ACQUIRE_ACCESSORS_CHECKED2 macro but with Code as a host and
-// using main_cage_base() for computing the base.
+// using main_cage_base(kRelaxedLoad) for computing the base.
 #define RELEASE_ACQUIRE_CODE_ACCESSORS_CHECKED2(name, type, offset,           \
                                                 get_condition, set_condition) \
   type Code::name(AcquireLoadTag tag) const {                                 \
-    PtrComprCageBase cage_base = main_cage_base();                            \
+    PtrComprCageBase cage_base = main_cage_base(kRelaxedLoad);                \
     return Code::name(cage_base, tag);                                        \
   }                                                                           \
   type Code::name(PtrComprCageBase cage_base, AcquireLoadTag) const {         \
@@ -236,17 +236,27 @@ PtrComprCageBase Code::main_cage_base() const {
 #endif
 }
 
-void Code::set_main_cage_base(Address cage_base) {
+PtrComprCageBase Code::main_cage_base(RelaxedLoadTag) const {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  Address cage_base_hi =
+      Relaxed_ReadField<Tagged_t>(kMainCageBaseUpper32BitsOffset);
+  return PtrComprCageBase(cage_base_hi << 32);
+#else
+  return GetPtrComprCageBase(*this);
+#endif
+}
+
+void Code::set_main_cage_base(Address cage_base, RelaxedStoreTag) {
 #ifdef V8_EXTERNAL_CODE_SPACE
   Tagged_t cage_base_hi = static_cast<Tagged_t>(cage_base >> 32);
-  WriteField<Tagged_t>(kMainCageBaseUpper32BitsOffset, cage_base_hi);
+  Relaxed_WriteField<Tagged_t>(kMainCageBaseUpper32BitsOffset, cage_base_hi);
 #else
   UNREACHABLE();
 #endif
 }
 
 CodeDataContainer Code::GCSafeCodeDataContainer(AcquireLoadTag) const {
-  PtrComprCageBase cage_base = main_cage_base();
+  PtrComprCageBase cage_base = main_cage_base(kRelaxedLoad);
   HeapObject object =
       TaggedField<HeapObject, kCodeDataContainerOffset>::Acquire_Load(cage_base,
                                                                       *this);
@@ -271,6 +281,17 @@ inline Handle<CodeT> ToCodeT(Handle<Code> code, Isolate* isolate) {
   return handle(ToCodeT(*code), isolate);
 #else
   return code;
+#endif
+}
+
+inline MaybeHandle<CodeT> ToCodeT(MaybeHandle<Code> maybe_code,
+                                  Isolate* isolate) {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  Handle<Code> code;
+  if (maybe_code.ToHandle(&code)) return ToCodeT(code, isolate);
+  return {};
+#else
+  return maybe_code;
 #endif
 }
 
@@ -318,7 +339,7 @@ void Code::WipeOutHeader() {
   WRITE_FIELD(*this, kPositionTableOffset, Smi::FromInt(0));
   WRITE_FIELD(*this, kCodeDataContainerOffset, Smi::FromInt(0));
   if (V8_EXTERNAL_CODE_SPACE_BOOL) {
-    set_main_cage_base(kNullAddress);
+    set_main_cage_base(kNullAddress, kRelaxedStore);
   }
 }
 
@@ -558,7 +579,8 @@ void Code::initialize_flags(CodeKind kind, bool is_turbofanned, int stack_slots,
                    IsOffHeapTrampoline::encode(is_off_heap_trampoline);
   STATIC_ASSERT(FIELD_SIZE(kFlagsOffset) == kInt32Size);
   RELAXED_WRITE_UINT32_FIELD(*this, kFlagsOffset, flags);
-  DCHECK_IMPLIES(stack_slots != 0, has_safepoint_info());
+  DCHECK_IMPLIES(stack_slots != 0, uses_safepoint_table());
+  DCHECK_IMPLIES(!uses_safepoint_table(), stack_slots == 0);
 }
 
 inline bool Code::is_interpreter_trampoline_builtin() const {
@@ -603,6 +625,8 @@ inline bool Code::is_turbofanned() const {
   const uint32_t flags = RELAXED_READ_UINT32_FIELD(*this, kFlagsOffset);
   return IsTurbofannedField::decode(flags);
 }
+
+bool Code::is_maglevved() const { return kind() == CodeKind::MAGLEV; }
 
 inline bool Code::can_have_weak_objects() const {
   DCHECK(CodeKindIsOptimizedJSFunction(kind()));
@@ -670,14 +694,15 @@ void Code::set_inlined_bytecode_size(unsigned size) {
   RELAXED_WRITE_UINT_FIELD(*this, kInlinedBytecodeSizeOffset, size);
 }
 
-bool Code::has_safepoint_info() const {
-  return is_turbofanned() || is_wasm_code();
+bool Code::uses_safepoint_table() const {
+  return is_turbofanned() || is_maglevved() || is_wasm_code();
 }
 
 int Code::stack_slots() const {
-  DCHECK(has_safepoint_info());
   const uint32_t flags = RELAXED_READ_UINT32_FIELD(*this, kFlagsOffset);
-  return StackSlotsField::decode(flags);
+  const int slots = StackSlotsField::decode(flags);
+  DCHECK_IMPLIES(!uses_safepoint_table(), slots == 0);
+  return slots;
 }
 
 bool CodeDataContainer::marked_for_deoptimization() const {

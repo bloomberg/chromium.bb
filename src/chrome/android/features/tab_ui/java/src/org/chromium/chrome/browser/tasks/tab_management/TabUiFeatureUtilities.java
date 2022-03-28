@@ -41,11 +41,6 @@ public class TabUiFeatureUtilities {
             new StringCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                     TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM, "");
 
-    public static final String THUMBNAIL_ASPECT_RATIO_PARAM = "thumbnail_aspect_ratio";
-    public static final DoubleCachedFieldTrialParameter THUMBNAIL_ASPECT_RATIO =
-            new DoubleCachedFieldTrialParameter(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, THUMBNAIL_ASPECT_RATIO_PARAM, 0.85);
-
     private static final String SEARCH_CHIP_PARAM = "enable_search_term_chip";
     public static final BooleanCachedFieldTrialParameter ENABLE_SEARCH_CHIP =
             new BooleanCachedFieldTrialParameter(
@@ -106,6 +101,12 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
                     GRID_TAB_SWITCHER_FOR_TABLETS_POLISH_PARAM, false);
 
+    // Field trial parameter for defining tab width for tab strip improvements.
+    private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
+    public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
+            new DoubleCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS,
+                    TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM, 190.f);
+
     private static Boolean sTabManagementModuleSupportedForTesting;
 
     /**
@@ -142,6 +143,15 @@ public class TabUiFeatureUtilities {
     }
 
     /**
+     * @return Whether the tablet Grid Tab Switcher Polish is enabled.
+     * @param context The activity context.
+     */
+    public static boolean isTabletGridTabSwitcherPolishEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && GRID_TAB_SWITCHER_FOR_TABLETS_POLISH.getValue();
+    }
+
+    /**
      * @return Whether the tab group feature is enabled and available for use.
      * @param context The activity context.
      */
@@ -175,13 +185,6 @@ public class TabUiFeatureUtilities {
                 && !ConditionalTabStripUtils.getOptOutIndicator();
     }
 
-    /**
-     * @return Whether the thumbnail_aspect_ratio field trail is set.
-     */
-    public static boolean isTabThumbnailAspectRatioNotOne() {
-        return Double.compare(1.0, THUMBNAIL_ASPECT_RATIO.getValue()) != 0;
-    }
-
     public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {
         return TextUtils.equals(TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE.getValue(), "NewTabTile");
     }
@@ -211,6 +214,26 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isLaunchPolishEnabled() {
         return ENABLE_LAUNCH_POLISH.getValue();
+    }
+
+    private static Float sTabMinWidthForTesting;
+
+    /**
+     * Set the min tab width for testing.
+     */
+    public static void setTabMinWidthForTesting(@Nullable Float minWidth) {
+        sTabMinWidthForTesting = minWidth;
+    }
+
+    /**
+     * @return The min tab width.
+     */
+    public static float getTabMinWidth() {
+        if (sTabMinWidthForTesting != null) {
+            return sTabMinWidthForTesting;
+        }
+
+        return (float) TAB_STRIP_TAB_WIDTH.getValue();
     }
 
     /**

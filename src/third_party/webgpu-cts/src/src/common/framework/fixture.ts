@@ -189,7 +189,10 @@ export class Fixture {
         await p;
         niceStack.message = 'resolved as expected' + m;
       } catch (ex) {
-        niceStack.message = `REJECTED${m}\n${ex.message}`;
+        niceStack.message = `REJECTED${m}`;
+        if (ex instanceof Error) {
+          niceStack.message += '\n' + ex.message;
+        }
         this.rec.expectationFailed(niceStack);
       }
     });

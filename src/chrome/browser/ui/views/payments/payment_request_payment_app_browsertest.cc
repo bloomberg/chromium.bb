@@ -4,6 +4,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -170,7 +171,13 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
 };
 
 // Test payment request methods are not supported by the payment app.
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
+// Flaky on Linux: http://crbug.com/1296289
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_NotSupportedError DISABLED_NotSupportedError
+#else
+#define MAYBE_NotSupportedError NotSupportedError
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, MAYBE_NotSupportedError) {
   InstallAlicePayForMethod("https://frankpay.com");
 
   {
@@ -277,7 +284,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
 }
 
 // Test CanMakePayment and payment request can be fullfiled in incognito mode.
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePayIncognito) {
+// The test is flaky https://crbug.com/1306453.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#define MAYBE_PayWithAlicePayIncognito DISABLED_PayWithAlicePayIncognito
+#else
+#define MAYBE_PayWithAlicePayIncognito PayWithAlicePayIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
+                       MAYBE_PayWithAlicePayIncognito) {
   SetIncognito();
   InstallAlicePayForMethod("https://alicepay.com");
 

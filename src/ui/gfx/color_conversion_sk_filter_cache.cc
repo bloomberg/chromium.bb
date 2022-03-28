@@ -21,7 +21,7 @@ namespace gfx {
 namespace {
 
 const base::Feature kImageToneMapping{"ImageToneMapping",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Additional YUV information to skia renderer to draw 9- and 10- bits color.
 struct YUVInput {
@@ -30,16 +30,6 @@ struct YUVInput {
 };
 
 }  // namespace
-
-bool IsHLGOrPQ(const gfx::ColorSpace& color_space) {
-  switch (color_space.GetTransferID()) {
-    case gfx::ColorSpace::TransferID::HLG:
-    case gfx::ColorSpace::TransferID::PQ:
-      return true;
-    default:
-      return false;
-  }
-}
 
 ColorConversionSkFilterCache::ColorConversionSkFilterCache() = default;
 ColorConversionSkFilterCache::~ColorConversionSkFilterCache() = default;
@@ -80,14 +70,14 @@ sk_sp<SkColorFilter> ColorConversionSkFilterCache::Get(
     float dst_max_luminance_relative) {
   // Set unused parameters to bogus values, so that they do not result in
   // different keys for the same conversion.
-  if (!IsHLGOrPQ(src)) {
+  if (!src.IsPQOrHLG()) {
     // If the source is not HLG or PQ, then `dst_max_luminance_relative` will
     // not be used, so set it to a nonsense value.
     dst_max_luminance_relative = 0;
 
     // If neither source nor destination are HLG or PQ, then
     // `sdr_max_luminance_nits` will not be used, so set it to a nonsense value.
-    if (!IsHLGOrPQ(dst)) {
+    if (!dst.IsPQOrHLG()) {
       sdr_max_luminance_nits = 0;
     }
   }
@@ -97,7 +87,7 @@ sk_sp<SkColorFilter> ColorConversionSkFilterCache::Get(
 
   if (!effect) {
     gfx::ColorTransform::Options options;
-    options.tone_map_pq_and_hlg_to_sdr = !key.dst.IsHDR();
+    options.tone_map_pq_and_hlg_to_sdr = dst_max_luminance_relative == 1.f;
     options.sdr_max_luminance_nits = key.sdr_max_luminance_nits;
     // TODO(https://crbug.com/1286076): Ensure that, when tone mapping using
     // `dst_max_luminance_relative` is implemented, the gfx::ColorTransform's
@@ -155,7 +145,7 @@ sk_sp<SkImage> ColorConversionSkFilterCache::ConvertImage(
   static bool image_tone_mapping_enabled =
       base::FeatureList::IsEnabled(kImageToneMapping);
 
-  SkColorSpace* image_sk_color_space = image->colorSpace();
+  sk_sp<SkColorSpace> image_sk_color_space = image->refColorSpace();
   if (!image_sk_color_space || !image_tone_mapping_enabled)
     return image->makeColorSpace(target_color_space, context);
 
@@ -171,7 +161,7 @@ sk_sp<SkImage> ColorConversionSkFilterCache::ConvertImage(
   SkImageInfo image_info =
       SkImageInfo::Make(image->dimensions(),
                         SkColorInfo(kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-                                    target_color_space));
+                                    image_sk_color_space));
   sk_sp<SkSurface> surface;
   if (context) {
     // TODO(https://crbug.com/1286088): Consider adding mipmap support here.
@@ -180,9 +170,25 @@ sk_sp<SkImage> ColorConversionSkFilterCache::ConvertImage(
                                     /*sampleCount=*/0, kTopLeft_GrSurfaceOrigin,
                                     /*surfaceProps=*/nullptr,
                                     /*shouldCreateWithMips=*/false);
+    // It is not guaranteed that kRGBA_F16_SkColorType is renderable. If we fail
+    // to create an SkSurface with that color type, fall back to
+    // kN32_SkColorType.
+    if (!surface) {
+      DLOG(ERROR) << "Falling back to tone mapped 8-bit surface.";
+      image_info = image_info.makeColorType(kN32_SkColorType);
+      surface = SkSurface::MakeRenderTarget(
+          context, SkBudgeted::kNo, image_info,
+          /*sampleCount=*/0, kTopLeft_GrSurfaceOrigin,
+          /*surfaceProps=*/nullptr,
+          /*shouldCreateWithMips=*/false);
+    }
   } else {
     surface = SkSurface::MakeRaster(image_info, image_info.minRowBytes(),
                                     /*surfaceProps=*/nullptr);
+  }
+  if (!surface) {
+    DLOG(ERROR) << "Failed to create SkSurface color conversion.";
+    return nullptr;
   }
 
   sk_sp<SkColorFilter> filter =
@@ -193,10 +199,10 @@ sk_sp<SkImage> ColorConversionSkFilterCache::ConvertImage(
   paint.setBlendMode(SkBlendMode::kSrc);
   paint.setColorFilter(filter);
   SkSamplingOptions sampling_options(SkFilterMode::kNearest);
-  surface->getCanvas()->drawImage(
-      image->reinterpretColorSpace(target_color_space),
-      /*x=*/0, /*y=*/0, sampling_options, &paint);
-  return surface->makeImageSnapshot();
+  surface->getCanvas()->drawImage(image,
+                                  /*x=*/0, /*y=*/0, sampling_options, &paint);
+  return surface->makeImageSnapshot()->reinterpretColorSpace(
+      target_color_space);
 }
 
 }  // namespace gfx

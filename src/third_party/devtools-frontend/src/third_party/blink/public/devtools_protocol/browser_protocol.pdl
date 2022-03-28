@@ -214,8 +214,6 @@ experimental domain Accessibility
       # The maximum depth at which descendants of the root node should be retrieved.
       # If omitted, the full tree is returned.
       optional integer depth
-      # Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
-      deprecated optional integer max_depth
       # The frame for whose document the AX tree should be retrieved.
       # If omited, the root frame is used.
       optional Page.FrameId frameId
@@ -473,7 +471,7 @@ experimental domain Audits
     properties
       Page.FrameId frameId
 
-  type SameSiteCookieExclusionReason extends string
+  type CookieExclusionReason extends string
     enum
       ExcludeSameSiteUnspecifiedTreatedAsLax
       ExcludeSameSiteNoneInsecure
@@ -482,7 +480,7 @@ experimental domain Audits
       ExcludeInvalidSameParty
       ExcludeSamePartyCrossPartyContext
 
-  type SameSiteCookieWarningReason extends string
+  type CookieWarningReason extends string
     enum
       WarnSameSiteUnspecifiedCrossSiteContext
       WarnSameSiteNoneInsecure
@@ -492,8 +490,9 @@ experimental domain Audits
       WarnSameSiteStrictCrossDowngradeLax
       WarnSameSiteLaxCrossDowngradeStrict
       WarnSameSiteLaxCrossDowngradeLax
+      WarnAttributeValueExceedsMaxSize
 
-  type SameSiteCookieOperation extends string
+  type CookieOperation extends string
     enum
       SetCookie
       ReadCookie
@@ -501,7 +500,7 @@ experimental domain Audits
   # This information is currently necessary, as the front-end has a difficult
   # time finding a specific cookie. With this, we can convey specific error
   # information without the cookie.
-  type SameSiteCookieIssueDetails extends object
+  type CookieIssueDetails extends object
     properties
       # If AffectedCookie is not set then rawCookieLine contains the raw
       # Set-Cookie header string. This hints at a problem where the
@@ -509,11 +508,11 @@ experimental domain Audits
       # that no valid cookie could be created.
       optional AffectedCookie cookie
       optional string rawCookieLine
-      array of SameSiteCookieWarningReason cookieWarningReasons
-      array of SameSiteCookieExclusionReason cookieExclusionReasons
+      array of CookieWarningReason cookieWarningReasons
+      array of CookieExclusionReason cookieExclusionReasons
       # Optionally identifies the site-for-cookies and the cookie url, which
       # may be used by the front-end as additional context.
-      SameSiteCookieOperation operation
+      CookieOperation operation
       optional string siteForCookies
       optional string cookieUrl
       optional AffectedRequest request
@@ -526,6 +525,7 @@ experimental domain Audits
 
   type MixedContentResourceType extends string
     enum
+      AttributionSrc
       Audio
       Beacon
       CSPReport
@@ -779,7 +779,7 @@ experimental domain Audits
 
   # Represents the failure reason when a federated authentication reason fails.
   # Should be updated alongside RequestIdTokenStatus in
-  # third_party/blink/public/mojom/webid/federated_auth_request.mojom to include
+  # third_party/blink/public/mojom/devtools/inspector_issue.mojom to include
   # all cases except for success.
   type FederatedAuthRequestIssueReason extends string
     enum
@@ -791,6 +791,8 @@ experimental domain Audits
       ClientMetadataHttpNotFound
       ClientMetadataNoResponse
       ClientMetadataInvalidResponse
+      ClientMetadataMissingPrivacyPolicyUrl
+      DisabledInSettings
       ErrorFetchingSignin
       InvalidSigninResponse
       AccountsHttpNotFound
@@ -815,7 +817,7 @@ experimental domain Audits
   # information about the kind of issue.
   type InspectorIssueCode extends string
     enum
-      SameSiteCookieIssue
+      CookieIssue
       MixedContentIssue
       BlockedByResponseIssue
       HeavyAdIssue
@@ -837,7 +839,7 @@ experimental domain Audits
   # add a new optional field to this type.
   type InspectorIssueDetails extends object
     properties
-      optional SameSiteCookieIssueDetails sameSiteCookieIssueDetails
+      optional CookieIssueDetails cookieIssueDetails
       optional MixedContentIssueDetails mixedContentIssueDetails
       optional BlockedByResponseIssueDetails blockedByResponseIssueDetails
       optional HeavyAdIssueDetails heavyAdIssueDetails
@@ -1299,6 +1301,12 @@ experimental domain CSS
       # Matches of CSS rules matching the ancestor node in the style inheritance chain.
       array of RuleMatch matchedCSSRules
 
+  # Inherited pseudo element matches from pseudos of an ancestor node.
+  type InheritedPseudoElementMatches extends object
+    properties
+      # Matches of pseudo styles from the pseudos of an ancestor node.
+      array of PseudoElementMatches pseudoElements
+
   # Match data for a CSS rule.
   type RuleMatch extends object
     properties
@@ -1389,6 +1397,9 @@ experimental domain CSS
       # @supports CSS at-rule array.
       # The array enumerates @supports at-rules starting with the innermost one, going outwards.
       experimental optional array of CSSSupports supports
+      # Cascade layer array. Contains the layer hierarchy that this rule belongs to starting
+      # with the innermost layer and going outwards.
+      experimental optional array of CSSLayer layers
 
   # CSS coverage information.
   type RuleUsage extends object
@@ -1535,6 +1546,28 @@ experimental domain CSS
       optional SourceRange range
       # Identifier of the stylesheet containing this object (if exists).
       optional StyleSheetId styleSheetId
+
+  # CSS Layer at-rule descriptor.
+  experimental type CSSLayer extends object
+    properties
+      # Layer name.
+      string text
+      # The associated rule header range in the enclosing stylesheet (if
+      # available).
+      optional SourceRange range
+      # Identifier of the stylesheet containing this object (if exists).
+      optional StyleSheetId styleSheetId
+
+  # CSS Layer data.
+  experimental type CSSLayerData extends object
+    properties
+      # Layer name.
+      string name
+      # Direct sub-layers
+      optional array of CSSLayerData subLayers
+      # Layer order. The order determines the order of the layer in the cascade order.
+      # A higher number has higher priority in the cascade order.
+      number order
 
   # Information about amount of glyphs that were rendered with given font.
   type PlatformFontUsage extends object
@@ -1712,6 +1745,8 @@ experimental domain CSS
       optional array of PseudoElementMatches pseudoElements
       # A chain of inherited styles (from the immediate node parent up to the DOM tree root).
       optional array of InheritedStyleEntry inherited
+      # A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
+      optional array of InheritedPseudoElementMatches inheritedPseudoElements
       # A list of CSS keyframed animations matching this node.
       optional array of CSSKeyframesRule cssKeyframesRules
 
@@ -1736,6 +1771,16 @@ experimental domain CSS
     returns
       # The stylesheet text.
       string text
+
+  # Returns all layers parsed by the rendering engine for the tree scope of a node.
+  # Given a DOM element identified by nodeId, getLayersForNode returns the root
+  # layer for the nearest ancestor document or shadow root. The layer root contains
+  # the full layer tree for the tree scope and their ordering.
+  experimental command getLayersForNode
+    parameters
+      DOM.NodeId nodeId
+    returns
+      CSSLayerData rootLayer
 
   # Starts tracking the given computed styles for updates. The specified array of properties
   # replaces the one previously specified. Pass empty array to disable tracking.
@@ -2097,10 +2142,11 @@ domain DOM
       scrollbar-corner
       resizer
       input-list-button
-      transition
-      transition-container
-      transition-old-content
-      transition-new-content
+      page-transition
+      page-transition-container
+      page-transition-image-wrapper
+      page-transition-outgoing-image
+      page-transition-incoming-image
 
   # Shadow root type.
   type ShadowRootType extends string
@@ -3722,6 +3768,12 @@ domain Emulation
       optional string platform
       # To be sent in Sec-CH-UA-* headers and returned in navigator.userAgentData
       experimental optional UserAgentMetadata userAgentMetadata
+
+  # Allows overriding the automation flag.
+  experimental command setAutomationOverride
+    parameters
+      # Whether the override should be enabled.
+      boolean enabled
 
 # This domain provides experimental commands only supported in headless mode.
 experimental domain HeadlessExperimental
@@ -6499,6 +6551,7 @@ experimental domain Overlay
     enum
       rgb
       hsl
+      hwb
       hex
 
   # Configurations for Persistent Grid Highlight
@@ -8166,6 +8219,11 @@ domain Page
       BackForwardCacheNotRestoredReasonType type
       # Not restored reason
       BackForwardCacheNotRestoredReason reason
+      # Context associated with the reason. The meaning of this context is
+      # dependent on the reason:
+      # - EmbedderExtensionSentMessageToCachedFrame: the extension ID.
+      #
+      optional string context
 
   experimental type BackForwardCacheNotRestoredExplanationTree extends object
     properties

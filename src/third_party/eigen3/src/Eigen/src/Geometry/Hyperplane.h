@@ -108,7 +108,7 @@ public:
     if(norm <= v0.norm() * v1.norm() * NumTraits<RealScalar>::epsilon())
     {
       Matrix<Scalar,2,3> m; m << v0.transpose(), v1.transpose();
-      JacobiSVD<Matrix<Scalar,2,3> > svd(m, ComputeFullV);
+      JacobiSVD<Matrix<Scalar,2,3>, ComputeFullV> svd(m);
       result.normal() = svd.matrixV().col(2);
     }
     else

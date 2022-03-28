@@ -76,6 +76,12 @@ inline T REF_FREXP(const T& x, T& exp) {
   EIGEN_USING_STD(frexp)
   const T out = static_cast<T>(frexp(x, &iexp));
   exp = static_cast<T>(iexp);
+  
+  // The exponent value is unspecified if the input is inf or NaN, but MSVC
+  // seems to set it to 1.  We need to set it back to zero for consistency.
+  if (!(numext::isfinite)(x)) {
+    exp = T(0);
+  }
   return out;
 }
 
@@ -377,10 +383,10 @@ template <typename Scalar, typename Packet>
 void packetmath_minus_zero_add() {
   const int PacketSize = internal::unpacket_traits<Packet>::size;
   const int size = 2 * PacketSize;
-  EIGEN_ALIGN_MAX Scalar data1[size];
-  EIGEN_ALIGN_MAX Scalar data2[size];
-  EIGEN_ALIGN_MAX Scalar ref[size];
-
+  EIGEN_ALIGN_MAX Scalar data1[size] = {};
+  EIGEN_ALIGN_MAX Scalar data2[size] = {};
+  EIGEN_ALIGN_MAX Scalar ref[size] = {};
+  
   for (int i = 0; i < PacketSize; ++i) {
     data1[i] = Scalar(-0.0);
     data1[i + PacketSize] = Scalar(-0.0);
@@ -655,6 +661,85 @@ void packetmath() {
 template <typename Scalar>
 Scalar log2(Scalar x) {
   return Scalar(EIGEN_LOG2E) * std::log(x);
+}
+
+// Create a functor out of a function so it can be passed (with overloads)
+// to another function as an input argument.
+#define CREATE_FUNCTOR(Name, Func)     \
+struct Name {                          \
+  template<typename T>                 \
+  T operator()(const T& val) const {   \
+    return Func(val);                  \
+  }                                    \
+}
+
+CREATE_FUNCTOR(psqrt_functor, internal::psqrt);
+CREATE_FUNCTOR(prsqrt_functor, internal::prsqrt);
+
+// TODO(rmlarsen): Run this test for more functions.
+template <bool Cond, typename Scalar, typename Packet, typename RefFunctorT, typename FunctorT>
+void packetmath_test_IEEE_corner_cases(const RefFunctorT& ref_fun,
+                                       const FunctorT& fun) {
+  const int PacketSize = internal::unpacket_traits<Packet>::size;
+  const Scalar norm_min = (std::numeric_limits<Scalar>::min)();
+  const Scalar norm_max = (std::numeric_limits<Scalar>::max)();
+
+  constexpr int size = PacketSize * 2;
+  EIGEN_ALIGN_MAX Scalar data1[size];
+  EIGEN_ALIGN_MAX Scalar data2[size];
+  EIGEN_ALIGN_MAX Scalar ref[size];
+  for (int i = 0; i < size; ++i) {
+    data1[i] = data2[i] = ref[i] = Scalar(0);
+  }
+
+  // Test for subnormals.
+  if (Cond && std::numeric_limits<Scalar>::has_denorm == std::denorm_present) {
+
+    for (int scale = 1; scale < 5; ++scale) {
+      // When EIGEN_FAST_MATH is 1 we relax the conditions slightly, and allow the function
+      // to return the same value for subnormals as the reference would return for zero with
+      // the same sign as the input.
+      #if EIGEN_FAST_MATH
+        data1[0] = Scalar(scale) * std::numeric_limits<Scalar>::denorm_min();
+        data1[1] = -data1[0];
+        test::packet_helper<Cond, Packet> h;
+        h.store(data2, fun(h.load(data1)));
+        for (int i=0; i < PacketSize; ++i) {
+          const Scalar ref_zero = ref_fun(data1[i] < 0 ? -Scalar(0) : Scalar(0));
+          const Scalar ref_val = ref_fun(data1[i]);
+          VERIFY(((std::isnan)(data2[i]) && (std::isnan)(ref_val)) || data2[i] == ref_zero ||
+                verifyIsApprox(data2[i], ref_val));
+        }
+      #else
+        CHECK_CWISE1_IF(Cond, ref_fun, fun);
+      #endif
+    }
+  }
+
+  // Test for smallest normalized floats.
+  data1[0] = norm_min;
+  data1[1] = -data1[0];
+  CHECK_CWISE1_IF(Cond, ref_fun, fun);
+  
+  // Test for largest floats.
+  data1[0] = norm_max;
+  data1[1] = -data1[0];
+  CHECK_CWISE1_IF(Cond, ref_fun, fun);
+
+  // Test for zeros.
+  data1[0] = Scalar(0.0);
+  data1[1] = -data1[0];
+  CHECK_CWISE1_IF(Cond, ref_fun, fun);
+
+  // Test for infinities.
+  data1[0] = NumTraits<Scalar>::infinity();
+  data1[1] = -data1[0];
+  CHECK_CWISE1_IF(Cond, ref_fun, fun);
+
+  // Test for quiet NaNs.
+  data1[0] = std::numeric_limits<Scalar>::quiet_NaN();
+  data1[1] = -std::numeric_limits<Scalar>::quiet_NaN();
+  CHECK_CWISE1_IF(Cond, ref_fun, fun);
 }
 
 template <typename Scalar, typename Packet>
@@ -946,18 +1031,10 @@ void packetmath_real() {
       VERIFY((numext::isnan)(data2[0]));
       VERIFY((numext::isnan)(data2[1]));
     }
-    if (PacketTraits::HasSqrt) {
-      test::packet_helper<PacketTraits::HasSqrt, Packet> h;
-      data1[0] = Scalar(-1.0f);
-      if (std::numeric_limits<Scalar>::has_denorm == std::denorm_present) {
-        data1[1] = -std::numeric_limits<Scalar>::denorm_min();
-      } else {
-        data1[1] = -((std::numeric_limits<Scalar>::min)());
-      }
-      h.store(data2, internal::psqrt(h.load(data1)));
-      VERIFY((numext::isnan)(data2[0]));
-      VERIFY((numext::isnan)(data2[1]));
-    }
+
+    packetmath_test_IEEE_corner_cases<PacketTraits::HasSqrt, Scalar, Packet>(numext::sqrt<Scalar>, psqrt_functor());
+    packetmath_test_IEEE_corner_cases<PacketTraits::HasRsqrt, Scalar, Packet>(numext::rsqrt<Scalar>, prsqrt_functor());
+
     // TODO(rmlarsen): Re-enable for half and bfloat16.
     if (PacketTraits::HasCos
         && !internal::is_same<Scalar, half>::value

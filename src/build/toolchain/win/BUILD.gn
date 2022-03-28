@@ -307,7 +307,7 @@ template("msvc_toolchain") {
       rustc = rebase_path("${rust_sysroot}/bin/rustc", root_build_dir)
       rust_sysroot_relative_to_out = rebase_path(rust_sysroot, root_out_dir)
       tool("rust_staticlib") {
-        rust_outfile = "{{target_out_dir}}/{{crate_name}}.lib"
+        rust_outfile = "{{output_dir}}/{{target_output_name}}.lib"
         depfile = "{{output}}.d"
         rspfile = "$rust_outfile.rsp"
         rspfile_content = "{{rustdeps}} {{externs}}"
@@ -318,8 +318,9 @@ template("msvc_toolchain") {
       }
 
       tool("rust_rlib") {
-        rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.rlib"
+        rust_outfile = "{{output_dir}}/lib{{target_output_name}}.rlib"
         depfile = "{{output}}.d"
+
         # Do not use rsp files in this (common) case because they occupy the
         # ninja main thread, and {{rlibs}} have shorter command lines than
         # fully linked targets.
@@ -331,7 +332,7 @@ template("msvc_toolchain") {
 
       if (toolchain_args.rustc_can_link) {
         tool("rust_bin") {
-          rust_outfile = "{{root_out_dir}}/{{crate_name}}.exe"
+          rust_outfile = "{{root_out_dir}}/{{target_output_name}}.exe"
           depfile = "{{output}}.d"
           rspfile = "$rust_outfile.rsp"
           rspfile_content = "{{rustdeps}} {{externs}}"
@@ -342,7 +343,7 @@ template("msvc_toolchain") {
         }
 
         tool("rust_cdylib") {
-          rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.dll"
+          rust_outfile = "{{output_dir}}/lib{{target_output_name}}.dll"
           depfile = "{{output}}.d"
           rspfile = "$rust_outfile.rsp"
           rspfile_content = "{{rustdeps}} {{externs}}"
@@ -353,7 +354,7 @@ template("msvc_toolchain") {
         }
 
         tool("rust_macro") {
-          rust_outfile = "{{target_out_dir}}/{{crate_name}}.dll"
+          rust_outfile = "{{output_dir}}/{{target_output_name}}.dll"
           depfile = "{{output}}.d"
           rspfile = "$rust_outfile.rsp"
           rspfile_content = "{{rustdeps}} {{externs}}"
@@ -367,7 +368,8 @@ template("msvc_toolchain") {
 
     tool("alink") {
       rspfile = "{{output}}.rsp"
-      command = "$linker_wrapper$lib /OUT:{{output}} /nologo ${sys_lib_flags}{{arflags}} @$rspfile"
+      command =
+          "$linker_wrapper$lib /OUT:{{output}} /nologo {{arflags}} @$rspfile"
       description = "LIB {{output}}"
       outputs = [
         # Ignore {{output_extension}} and always use .lib, there's no reason to
@@ -538,7 +540,21 @@ template("win_toolchains") {
     sys_include_flags = "${win_toolchain_data.include_flags_imsvc}"
     if (use_lld) {
       sys_lib_flags =
-          "-libpath:$_clang_lib_dir ${win_toolchain_data.libpath_flags}"
+          "-libpath:$_clang_lib_dir ${win_toolchain_data.libpath_lldlink_flags}"
+
+      # TODO(thakis): Remove once crbug.com/1300005 is fixed
+      assert(toolchain_arch == "x64" || toolchain_arch == "x86" ||
+                 toolchain_arch == "arm" || toolchain_arch == "arm64",
+             "Only supports x64, x86, arm and arm64 CPUs")
+      if (toolchain_arch == "x64") {
+        sys_lib_flags += " /MACHINE:X64"
+      } else if (toolchain_arch == "x86") {
+        sys_lib_flags += " /MACHINE:X86"
+      } else if (toolchain_arch == "arm") {
+        sys_lib_flags += " /MACHINE:ARM"
+      } else if (toolchain_arch == "arm64") {
+        sys_lib_flags += " /MACHINE:ARM64"
+      }
     }
 
     toolchain_args = {

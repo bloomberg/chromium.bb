@@ -8,6 +8,7 @@
 #ifndef skgpu_tessellate_Tessellation_DEFINED
 #define skgpu_tessellate_Tessellation_DEFINED
 
+#include "include/core/SkPoint.h"
 #include "include/core/SkStrokeRec.h"
 #include "include/gpu/GrTypes.h"
 #include "include/private/SkVx.h"
@@ -133,6 +134,9 @@ constexpr size_t PatchAttribsStride(PatchAttribs attribs) {
                     ? (attribs & PatchAttribs::kWideColorIfEnabled ? sizeof(float)
                                                                    : sizeof(uint8_t)) * 4 : 0) +
            (attribs & PatchAttribs::kExplicitCurveType ? sizeof(float) : 0);
+}
+constexpr size_t PatchStride(PatchAttribs attribs) {
+    return 4*sizeof(SkPoint) + PatchAttribsStride(attribs);
 }
 
 // Don't tessellate paths that might have an individual curve that requires more than 1024 segments.

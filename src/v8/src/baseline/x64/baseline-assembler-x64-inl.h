@@ -86,6 +86,11 @@ MemOperand BaselineAssembler::RegisterFrameOperand(
     interpreter::Register interpreter_register) {
   return MemOperand(rbp, interpreter_register.ToOperand() * kSystemPointerSize);
 }
+void BaselineAssembler::RegisterFrameAddress(
+    interpreter::Register interpreter_register, Register rscratch) {
+  return __ leaq(rscratch, MemOperand(rbp, interpreter_register.ToOperand() *
+                                               kSystemPointerSize));
+}
 MemOperand BaselineAssembler::FeedbackVectorOperand() {
   return MemOperand(rbp, BaselineFrameConstants::kFeedbackVectorFromFp);
 }
@@ -440,7 +445,7 @@ void BaselineAssembler::EmitReturn(MacroAssembler* masm) {
 
       __ LoadContext(kContextRegister);
       __ Push(MemOperand(rbp, InterpreterFrameConstants::kFunctionOffset));
-      __ CallRuntime(Runtime::kBytecodeBudgetInterruptFromBytecode, 1);
+      __ CallRuntime(Runtime::kBytecodeBudgetInterrupt, 1);
 
       __ Pop(kInterpreterAccumulatorRegister, params_size);
       __ masm()->SmiUntag(params_size);

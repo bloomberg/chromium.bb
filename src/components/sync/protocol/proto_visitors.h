@@ -910,7 +910,6 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(specifics);
   VISIT(folder);
   VISIT(client_defined_unique_tag);
-  VISIT_BYTES(ordinal_in_parent);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SyncInvalidationsPayload& proto) {
@@ -1245,6 +1244,9 @@ VISIT_PROTO_FIELDS(const sync_pb::WorkspaceDeskSpecifics::App& proto) {
   VISIT(window_id);
   VISIT(display_id);
   VISIT_ENUM(pre_minimized_window_state);
+  VISIT_ENUM(container);
+  VISIT_ENUM(disposition);
+  VISIT(app_name);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WorkspaceDeskSpecifics::AppOneOf& proto) {
@@ -1258,6 +1260,7 @@ VISIT_PROTO_FIELDS(
     const sync_pb::WorkspaceDeskSpecifics::BrowserAppWindow& proto) {
   VISIT_REP(tabs);
   VISIT(active_tab_index);
+  VISIT(show_as_app);
 }
 
 VISIT_PROTO_FIELDS(

@@ -12,8 +12,10 @@
 #include "base/command_line.h"
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -37,6 +39,10 @@
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "components/permissions/android/android_permission_util.h"
+#endif
 
 namespace permissions {
 
@@ -173,6 +179,24 @@ void PermissionRequestManager::AddRequest(
     request->RequestFinished();
     return;
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  if (request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
+    bool enabled_app_level = AreAppLevelNotificationsEnabled();
+    base::UmaHistogramBoolean(
+        "Permissions.Prompt.Notifications.EnabledAppLevel", enabled_app_level);
+
+    if (!enabled_app_level &&
+        base::FeatureList::IsEnabled(
+            features::kBlockNotificationPromptsIfDisabledOnAppLevel)) {
+      // Automatically cancel site Notification requests when Chrome is not able
+      // to send notifications in an app level.
+      request->Cancelled();
+      request->RequestFinished();
+      return;
+    }
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
 
   if (is_notification_prompt_cooldown_active_ &&
       request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
@@ -695,7 +719,8 @@ void PermissionRequestManager::ShowBubble() {
       switch (*quiet_ui_reason) {
         case QuietUiReason::kEnabledInPrefs:
         case QuietUiReason::kTriggeredByCrowdDeny:
-        case QuietUiReason::kPredictedVeryUnlikelyGrant:
+        case QuietUiReason::kServicePredictedVeryUnlikelyGrant:
+        case QuietUiReason::kOnDevicePredictedVeryUnlikelyGrant:
           break;
         case QuietUiReason::kTriggeredDueToAbusiveRequests:
           LogWarningToConsole(kAbusiveNotificationRequestsEnforcementMessage);
@@ -767,8 +792,11 @@ void PermissionRequestManager::FinalizeCurrentRequests(
       requests_, web_contents(), permission_action, time_to_decision,
       DetermineCurrentRequestUIDisposition(),
       DetermineCurrentRequestUIDispositionReasonForUMA(),
-      prediction_grant_likelihood_, did_show_bubble_, did_click_manage_,
-      did_click_learn_more_);
+      prediction_grant_likelihood_,
+      current_request_ui_to_use_
+          ? current_request_ui_to_use_->decision_held_back
+          : absl::nullopt,
+      did_show_bubble_, did_click_manage_, did_click_learn_more_);
 
   content::BrowserContext* browser_context =
       web_contents()->GetBrowserContext();
@@ -941,7 +969,8 @@ bool PermissionRequestManager::ShouldDropCurrentRequestIfCannotShowQuietly()
   if (quiet_ui_reason.has_value()) {
     switch (quiet_ui_reason.value()) {
       case QuietUiReason::kEnabledInPrefs:
-      case QuietUiReason::kPredictedVeryUnlikelyGrant:
+      case QuietUiReason::kServicePredictedVeryUnlikelyGrant:
+      case QuietUiReason::kOnDevicePredictedVeryUnlikelyGrant:
       case QuietUiReason::kTriggeredByCrowdDeny:
         return false;
       case QuietUiReason::kTriggeredDueToAbusiveRequests:
@@ -1034,8 +1063,10 @@ PermissionRequestManager::DetermineCurrentRequestUIDispositionReasonForUMA() {
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
     case QuietUiReason::kTriggeredDueToAbusiveContent:
       return PermissionPromptDispositionReason::SAFE_BROWSING_VERDICT;
-    case QuietUiReason::kPredictedVeryUnlikelyGrant:
+    case QuietUiReason::kServicePredictedVeryUnlikelyGrant:
       return PermissionPromptDispositionReason::PREDICTION_SERVICE;
+    case QuietUiReason::kOnDevicePredictedVeryUnlikelyGrant:
+      return PermissionPromptDispositionReason::ON_DEVICE_PREDICTION_MODEL;
   }
 }
 

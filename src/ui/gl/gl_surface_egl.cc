@@ -154,6 +154,12 @@
 #define EGL_HIGH_POWER_ANGLE 0x0002
 #endif /* EGL_ANGLE_power_preference */
 
+#ifndef EGL_ANGLE_platform_angle_device_id
+#define EGL_ANGLE_platform_angle_device_id
+#define EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE 0x34D6
+#define EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE 0x34D7
+#endif /* EGL_ANGLE_platform_angle_device_id */
+
 // From ANGLE's egl/eglext.h.
 #ifndef EGL_ANGLE_feature_control
 #define EGL_ANGLE_feature_control 1
@@ -209,6 +215,7 @@ bool g_egl_ext_pixel_format_float_supported = false;
 bool g_egl_angle_feature_control_supported = false;
 bool g_egl_angle_power_preference_supported = false;
 bool g_egl_angle_display_power_preference_supported = false;
+bool g_egl_angle_platform_angle_device_id_supported = false;
 bool g_egl_angle_external_context_and_surface_supported = false;
 bool g_egl_ext_query_device_supported = false;
 bool g_egl_angle_context_virtualization_supported = false;
@@ -397,11 +404,22 @@ EGLDisplay GetDisplayFromType(
     EGLDisplayPlatform native_display,
     const std::vector<std::string>& enabled_angle_features,
     const std::vector<std::string>& disabled_angle_features,
-    bool disable_all_angle_features) {
+    bool disable_all_angle_features,
+    uint64_t system_device_id) {
   std::vector<EGLAttrib> extra_display_attribs;
   if (disable_all_angle_features) {
     extra_display_attribs.push_back(EGL_FEATURE_ALL_DISABLED_ANGLE);
     extra_display_attribs.push_back(EGL_TRUE);
+  }
+  if (system_device_id != 0 &&
+      GLSurfaceEGL::IsANGLEPlatformANGLEDeviceIdSupported()) {
+    uint32_t low_part = system_device_id & 0xffffffff;
+    extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE);
+    extra_display_attribs.push_back(low_part);
+
+    uint32_t high_part = (system_device_id >> 32) & 0xffffffff;
+    extra_display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE);
+    extra_display_attribs.push_back(high_part);
   }
   switch (display_type) {
     case DEFAULT:
@@ -617,7 +635,8 @@ bool ValidateEglConfig(EGLDisplay display,
 
 EGLConfig ChooseConfig(GLSurfaceFormat format,
                        bool surfaceless,
-                       bool offscreen) {
+                       bool offscreen,
+                       EGLint visual_id) {
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
 
@@ -704,7 +723,7 @@ EGLConfig ChooseConfig(GLSurfaceFormat format,
     }
 
     std::unique_ptr<EGLConfig[]> matching_configs(new EGLConfig[num_configs]);
-    if (want_rgb565) {
+    if (want_rgb565 || visual_id >= 0) {
       config_size = num_configs;
       config_data = matching_configs.get();
     }
@@ -751,6 +770,16 @@ EGLConfig ChooseConfig(GLSurfaceFormat format,
           LOG(ERROR) << "eglChooseConfig failed with error "
                      << GetLastEGLErrorString();
           return config;
+        }
+      }
+    } else if (visual_id >= 0) {
+      for (int i = 0; i < num_configs; i++) {
+        EGLint id;
+        if (eglGetConfigAttrib(g_egl_display, matching_configs[i],
+                               EGL_NATIVE_VISUAL_ID, &id) &&
+            id == visual_id) {
+          config = matching_configs[i];
+          break;
         }
       }
     }
@@ -972,20 +1001,26 @@ EGLDisplay GLSurfaceEGL::GetDisplay() {
 
 EGLConfig GLSurfaceEGL::GetConfig() {
   if (!config_) {
-    config_ = ChooseConfig(format_, IsSurfaceless(), IsOffscreen());
+    config_ = ChooseConfig(format_, IsSurfaceless(), IsOffscreen(),
+                           GetNativeVisualID());
   }
   return config_;
 }
 
+EGLint GLSurfaceEGL::GetNativeVisualID() const {
+  return -1;
+}
+
 // static
-bool GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform native_display) {
+bool GLSurfaceEGL::InitializeOneOff(EGLDisplayPlatform native_display,
+                                    uint64_t system_device_id) {
   if (initialized_)
     return true;
 
   // Must be called before InitializeDisplay().
   g_driver_egl.InitializeClientExtensionBindings();
 
-  InitializeDisplay(native_display);
+  InitializeDisplay(native_display, system_device_id);
   if (g_egl_display == EGL_NO_DISPLAY)
     return false;
 
@@ -1293,6 +1328,10 @@ bool GLSurfaceEGL::IsANGLEDisplayPowerPreferenceSupported() {
   return g_egl_angle_display_power_preference_supported;
 }
 
+bool GLSurfaceEGL::IsANGLEPlatformANGLEDeviceIdSupported() {
+  return g_egl_angle_platform_angle_device_id_supported;
+}
+
 bool GLSurfaceEGL::IsANGLEExternalContextAndSurfaceSupported() {
   return g_egl_angle_external_context_and_surface_supported;
 }
@@ -1316,7 +1355,8 @@ GLSurfaceEGL::~GLSurfaceEGL() = default;
 // InitializeDisplay is necessary because the static binding code
 // needs a full Display init before it can query the Display extensions.
 // static
-EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
+EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display,
+                                           uint64_t system_device_id) {
   if (g_egl_display != EGL_NO_DISPLAY) {
     return g_egl_display;
   }
@@ -1379,6 +1419,9 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   g_egl_angle_display_power_preference_supported =
       HasEGLClientExtension("EGL_ANGLE_display_power_preference");
 
+  g_egl_angle_platform_angle_device_id_supported =
+      HasEGLClientExtension("EGL_ANGLE_platform_angle_device_id");
+
   std::vector<DisplayType> init_displays;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
@@ -1400,7 +1443,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
     DisplayType display_type = init_displays[disp_index];
     EGLDisplay display = GetDisplayFromType(
         display_type, g_native_display, enabled_angle_features,
-        disabled_angle_features, disable_all_angle_features);
+        disabled_angle_features, disable_all_angle_features, system_device_id);
     if (display == EGL_NO_DISPLAY) {
       LOG(ERROR) << "EGL display query failed with error "
                  << GetLastEGLErrorString();

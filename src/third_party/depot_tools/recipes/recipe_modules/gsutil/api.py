@@ -71,8 +71,8 @@ class GSUtilApi(recipe_api.RecipeApi):
     else:
       cmd_prefix.append('--')
 
-    return self.m.python(full_name, gsutil_path, cmd_prefix + cmd,
-                         infra_step=infra_step, **kwargs)
+    exec_cmd = ['python3', '-u', gsutil_path] + cmd_prefix + cmd
+    return self.m.step(full_name, exec_cmd, infra_step=infra_step, **kwargs)
 
   def upload(self, source, bucket, dest, args=None, link_name='gsutil.upload',
              metadata=None, unauthenticated_url=False, **kwargs):

@@ -29,8 +29,7 @@
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) && \
     defined(PA_THREAD_CACHE_SUPPORTED)
 
-namespace base {
-namespace internal {
+namespace base::internal {
 
 namespace {
 
@@ -112,7 +111,7 @@ class PartitionAllocThreadCacheTest : public ::testing::TestWithParam<bool> {
 
  protected:
   void SetUp() override {
-    if (!GetParam())
+    if (GetParam())
       root_->SwitchToDenserBucketDistribution();
     else
       root_->ResetBucketDistributionForTesting();
@@ -158,9 +157,12 @@ class PartitionAllocThreadCacheTest : public ::testing::TestWithParam<bool> {
     return tc_bucket->slot_size;
   }
 
+  static size_t SizeToIndex(size_t size) {
+    return PartitionRoot<ThreadSafe>::SizeToBucketIndex(size, GetParam());
+  }
+
   size_t FillThreadCacheAndReturnIndex(size_t size, size_t count = 1) {
-    uint16_t bucket_index =
-        PartitionRoot<ThreadSafe>::SizeToBucketIndex(size, GetParam());
+    uint16_t bucket_index = SizeToIndex(size);
     std::vector<void*> allocated_data;
 
     for (size_t i = 0; i < count; ++i) {
@@ -204,8 +206,7 @@ TEST_P(PartitionAllocThreadCacheTest, Simple) {
   void* ptr = root_->Alloc(kSmallSize, "");
   ASSERT_TRUE(ptr);
 
-  uint16_t index =
-      PartitionRoot<ThreadSafe>::SizeToBucketIndex(kSmallSize, GetParam());
+  uint16_t index = SizeToIndex(kSmallSize);
   EXPECT_EQ(kFillCountForSmallBucket - 1,
             tcache->bucket_count_for_testing(index));
 
@@ -233,8 +234,7 @@ TEST_P(PartitionAllocThreadCacheTest, InexactSizeMatch) {
   auto* tcache = root_->thread_cache_for_testing();
   EXPECT_TRUE(tcache);
 
-  uint16_t index =
-      PartitionRoot<ThreadSafe>::SizeToBucketIndex(kSmallSize, GetParam());
+  uint16_t index = SizeToIndex(kSmallSize);
   EXPECT_EQ(kFillCountForSmallBucket - 1,
             tcache->bucket_count_for_testing(index));
 
@@ -704,6 +704,7 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_DynamicCountPerBucket) {
   auto* tcache = root_->thread_cache_for_testing();
   size_t bucket_index =
       FillThreadCacheAndReturnIndex(kMediumSize, kDefaultCountForMediumBucket);
+
   EXPECT_EQ(kDefaultCountForMediumBucket, tcache->buckets_[bucket_index].count);
 
   ThreadCacheRegistry::Instance().SetThreadCacheMultiplier(
@@ -912,8 +913,8 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
   void* arr[kFillCountForMediumBucket] = {};
   auto* tcache = root_->thread_cache_for_testing();
 
-  root_->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
-                     PartitionPurgeDiscardUnusedSystemPages);
+  root_->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans |
+                     PurgeFlags::kDiscardUnusedSystemPages);
   root_->ResetBookkeepingForTesting();
 
   // The ThreadCache is allocated before we change buckets, so its size is
@@ -933,8 +934,7 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
 
   void* ptr = root_->Alloc(kMediumSize, "");
 
-  auto* medium_bucket =
-      &root_->buckets[root_->SizeToBucketIndex(kMediumSize, GetParam())];
+  auto* medium_bucket = root_->buckets + SizeToIndex(kMediumSize);
   size_t medium_alloc_size = medium_bucket->slot_size;
   expected_allocated_size += medium_alloc_size;
   expected_committed_size +=
@@ -973,6 +973,26 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
   tcache->Purge();
   EXPECT_EQ(root_->get_total_size_of_allocated_bytes(),
             GetBucketSizeForThreadCache());
+}
+
+TEST_P(PartitionAllocThreadCacheTest, TryPurgeNoAllocs) {
+  auto* tcache = root_->thread_cache_for_testing();
+  tcache->TryPurge();
+}
+
+TEST_P(PartitionAllocThreadCacheTest, TryPurgeMultipleCorrupted) {
+  auto* tcache = root_->thread_cache_for_testing();
+
+  void* ptr = root_->Alloc(kMediumSize, "");
+
+  auto* medium_bucket = root_->buckets + SizeToIndex(kMediumSize);
+
+  auto* curr = medium_bucket->active_slot_spans_head->get_freelist_head();
+  curr = curr->GetNextForThreadCache<true>(kMediumSize);
+  curr->CorruptNextForTesting(0x12345678);
+  tcache->TryPurge();
+  curr->SetNext(nullptr);
+  root_->Free(ptr);
 }
 
 TEST(AlternateBucketDistributionTest, SizeToIndex) {
@@ -1088,8 +1108,7 @@ TEST(AlternateBucketDistributionTest, SwitchAfterAlloc) {
     internal::ThreadCache::RemoveTombstoneForTesting();
 }
 
-}  // namespace internal
-}  // namespace base
+}  // namespace base::internal
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&
         // defined(PA_THREAD_CACHE_SUPPORTED)

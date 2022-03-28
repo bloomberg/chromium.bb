@@ -10,26 +10,28 @@
 
 #include "pc/rtc_stats_collector.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
-#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/array_view.h"
 #include "api/candidate.h"
+#include "api/dtls_transport_interface.h"
 #include "api/media_stream_interface.h"
 #include "api/rtp_parameters.h"
-#include "api/rtp_receiver_interface.h"
-#include "api/rtp_sender_interface.h"
 #include "api/sequence_checker.h"
 #include "api/stats/rtc_stats.h"
 #include "api/stats/rtcstats_objects.h"
 #include "api/task_queue/queued_task.h"
+#include "api/units/time_delta.h"
 #include "api/video/video_content_type.h"
 #include "common_video/include/quality_limitation_reason.h"
 #include "media/base/media_channel.h"
@@ -37,7 +39,6 @@
 #include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "p2p/base/connection_info.h"
-#include "p2p/base/dtls_transport_internal.h"
 #include "p2p/base/ice_transport_internal.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/port.h"
@@ -45,6 +46,8 @@
 #include "pc/channel_interface.h"
 #include "pc/data_channel_utils.h"
 #include "pc/rtc_stats_traversal.h"
+#include "pc/rtp_receiver_proxy.h"
+#include "pc/rtp_sender_proxy.h"
 #include "pc/webrtc_sdp.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/ip_address.h"
@@ -227,7 +230,7 @@ const char* DtlsTransportStateToRTCDtlsTransportState(
   }
 }
 
-const char* NetworkAdapterTypeToStatsType(rtc::AdapterType type) {
+const char* NetworkTypeToStatsType(rtc::AdapterType type) {
   switch (type) {
     case rtc::ADAPTER_TYPE_CELLULAR:
     case rtc::ADAPTER_TYPE_CELLULAR_2G:
@@ -245,6 +248,36 @@ const char* NetworkAdapterTypeToStatsType(rtc::AdapterType type) {
     case rtc::ADAPTER_TYPE_LOOPBACK:
     case rtc::ADAPTER_TYPE_ANY:
       return RTCNetworkType::kUnknown;
+  }
+  RTC_DCHECK_NOTREACHED();
+  return nullptr;
+}
+
+absl::string_view NetworkTypeToStatsNetworkAdapterType(rtc::AdapterType type) {
+  switch (type) {
+    case rtc::ADAPTER_TYPE_CELLULAR:
+      return RTCNetworkAdapterType::kCellular;
+    case rtc::ADAPTER_TYPE_CELLULAR_2G:
+      return RTCNetworkAdapterType::kCellular2g;
+    case rtc::ADAPTER_TYPE_CELLULAR_3G:
+      return RTCNetworkAdapterType::kCellular3g;
+    case rtc::ADAPTER_TYPE_CELLULAR_4G:
+      return RTCNetworkAdapterType::kCellular4g;
+    case rtc::ADAPTER_TYPE_CELLULAR_5G:
+      return RTCNetworkAdapterType::kCellular5g;
+    case rtc::ADAPTER_TYPE_ETHERNET:
+      return RTCNetworkAdapterType::kEthernet;
+    case rtc::ADAPTER_TYPE_WIFI:
+      return RTCNetworkAdapterType::kWifi;
+    case rtc::ADAPTER_TYPE_UNKNOWN:
+      return RTCNetworkAdapterType::kUnknown;
+    case rtc::ADAPTER_TYPE_LOOPBACK:
+      return RTCNetworkAdapterType::kLoopback;
+    case rtc::ADAPTER_TYPE_ANY:
+      return RTCNetworkAdapterType::kAny;
+    case rtc::ADAPTER_TYPE_VPN:
+      /* should not be handled here. Vpn is modelled as a bool */
+      break;
   }
   RTC_DCHECK_NOTREACHED();
   return nullptr;
@@ -730,7 +763,7 @@ const std::string& ProduceIceCandidateStats(int64_t timestamp_us,
     candidate_stats->transport_id = transport_id;
     if (is_local) {
       candidate_stats->network_type =
-          NetworkAdapterTypeToStatsType(candidate.network_type());
+          NetworkTypeToStatsType(candidate.network_type());
       const std::string& candidate_type = candidate.type();
       const std::string& relay_protocol = candidate.relay_protocol();
       const std::string& url = candidate.url();
@@ -748,6 +781,16 @@ const std::string& ProduceIceCandidateStats(int64_t timestamp_us,
         if (!url.empty()) {
           candidate_stats->url = url;
         }
+      }
+      if (candidate.network_type() == rtc::ADAPTER_TYPE_VPN) {
+        candidate_stats->vpn = true;
+        candidate_stats->network_adapter_type =
+            std::string(NetworkTypeToStatsNetworkAdapterType(
+                candidate.underlying_type_for_vpn()));
+      } else {
+        candidate_stats->vpn = false;
+        candidate_stats->network_adapter_type = std::string(
+            NetworkTypeToStatsNetworkAdapterType(candidate.network_type()));
       }
     } else {
       // We don't expect to know the adapter type of remote candidates.
@@ -2039,21 +2082,20 @@ void RTCStatsCollector::ProduceTransportStats_n(
           new RTCTransportStats(RTCTransportStatsIDFromTransportChannel(
                                     transport_name, channel_stats.component),
                                 timestamp_us));
-      transport_stats->bytes_sent = 0;
-      transport_stats->packets_sent = 0;
-      transport_stats->bytes_received = 0;
-      transport_stats->packets_received = 0;
+      transport_stats->packets_sent =
+          channel_stats.ice_transport_stats.packets_sent;
+      transport_stats->packets_received =
+          channel_stats.ice_transport_stats.packets_received;
+      transport_stats->bytes_sent =
+          channel_stats.ice_transport_stats.bytes_sent;
+      transport_stats->bytes_received =
+          channel_stats.ice_transport_stats.bytes_received;
       transport_stats->dtls_state =
           DtlsTransportStateToRTCDtlsTransportState(channel_stats.dtls_state);
       transport_stats->selected_candidate_pair_changes =
           channel_stats.ice_transport_stats.selected_candidate_pair_changes;
       for (const cricket::ConnectionInfo& info :
            channel_stats.ice_transport_stats.connection_infos) {
-        *transport_stats->bytes_sent += info.sent_total_bytes;
-        *transport_stats->packets_sent +=
-            info.sent_total_packets - info.sent_discarded_packets;
-        *transport_stats->bytes_received += info.recv_total_bytes;
-        *transport_stats->packets_received += info.packets_received;
         if (info.best_connection) {
           transport_stats->selected_candidate_pair_id =
               RTCIceCandidatePairStatsIDFromConnectionInfo(info);

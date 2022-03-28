@@ -116,6 +116,10 @@
 #include "unicode/uobject.h"
 #endif  // V8_INTL_SUPPORT
 
+#if V8_ENABLE_MAGLEV
+#include "src/maglev/maglev-concurrent-dispatcher.h"
+#endif  // V8_ENABLE_MAGLEV
+
 #if V8_ENABLE_WEBASSEMBLY
 #include "src/trap-handler/trap-handler.h"
 #include "src/wasm/wasm-code-manager.h"
@@ -279,7 +283,7 @@ bool Isolate::CurrentEmbeddedBlobIsBinaryEmbedded() {
   // embedded blob may change (e.g. in tests or mksnapshot). If the blob is
   // binary-embedded, it is immortal immovable.
   const uint8_t* code =
-      current_embedded_blob_code_.load(std::memory_order::memory_order_relaxed);
+      current_embedded_blob_code_.load(std::memory_order_relaxed);
   if (code == nullptr) return false;
   return code == DefaultEmbeddedBlobCode();
 }
@@ -356,26 +360,22 @@ uint32_t Isolate::embedded_blob_data_size() const {
 
 // static
 const uint8_t* Isolate::CurrentEmbeddedBlobCode() {
-  return current_embedded_blob_code_.load(
-      std::memory_order::memory_order_relaxed);
+  return current_embedded_blob_code_.load(std::memory_order_relaxed);
 }
 
 // static
 uint32_t Isolate::CurrentEmbeddedBlobCodeSize() {
-  return current_embedded_blob_code_size_.load(
-      std::memory_order::memory_order_relaxed);
+  return current_embedded_blob_code_size_.load(std::memory_order_relaxed);
 }
 
 // static
 const uint8_t* Isolate::CurrentEmbeddedBlobData() {
-  return current_embedded_blob_data_.load(
-      std::memory_order::memory_order_relaxed);
+  return current_embedded_blob_data_.load(std::memory_order_relaxed);
 }
 
 // static
 uint32_t Isolate::CurrentEmbeddedBlobDataSize() {
-  return current_embedded_blob_data_size_.load(
-      std::memory_order::memory_order_relaxed);
+  return current_embedded_blob_data_size_.load(std::memory_order_relaxed);
 }
 
 // static
@@ -521,12 +521,16 @@ void Isolate::InitializeOncePerProcess() {
   CHECK(isolate_key_created_.compare_exchange_strong(
       expected, true, std::memory_order_relaxed));
   per_isolate_thread_data_key_ = base::Thread::CreateThreadLocalKey();
+
+  Heap::InitializeOncePerProcess();
 }
 
 void Isolate::DisposeOncePerProcess() {
+  base::Thread::DeleteThreadLocalKey(isolate_key_);
   bool expected = true;
   CHECK(isolate_key_created_.compare_exchange_strong(
       expected, false, std::memory_order_relaxed));
+  base::Thread::DeleteThreadLocalKey(per_isolate_thread_data_key_);
 }
 
 Address Isolate::get_address_from_id(IsolateAddressId id) {
@@ -901,7 +905,8 @@ bool GetStackTraceLimit(Isolate* isolate, int* result) {
   Handle<JSObject> error = isolate->error_function();
 
   Handle<String> key = isolate->factory()->stackTraceLimit_string();
-  Handle<Object> stack_trace_limit = JSReceiver::GetDataProperty(error, key);
+  Handle<Object> stack_trace_limit =
+      JSReceiver::GetDataProperty(isolate, error, key);
   if (!stack_trace_limit->IsNumber()) return false;
 
   // Ensure that limit is not negative.
@@ -1226,7 +1231,7 @@ MaybeHandle<JSObject> Isolate::CaptureAndSetErrorStack(
 Handle<FixedArray> Isolate::GetDetailedStackTrace(
     Handle<JSReceiver> error_object) {
   Handle<Object> error_stack = JSReceiver::GetDataProperty(
-      error_object, factory()->error_stack_symbol());
+      this, error_object, factory()->error_stack_symbol());
   if (!error_stack->IsErrorStackData()) {
     return Handle<FixedArray>();
   }
@@ -1243,7 +1248,7 @@ Handle<FixedArray> Isolate::GetDetailedStackTrace(
 Handle<FixedArray> Isolate::GetSimpleStackTrace(
     Handle<JSReceiver> error_object) {
   Handle<Object> error_stack = JSReceiver::GetDataProperty(
-      error_object, factory()->error_stack_symbol());
+      this, error_object, factory()->error_stack_symbol());
   if (error_stack->IsFixedArray()) {
     return Handle<FixedArray>::cast(error_stack);
   }
@@ -1847,6 +1852,8 @@ class SetThreadInWasmFlagScope {
 }  // namespace
 
 Object Isolate::UnwindAndFindHandler() {
+  // TODO(v8:12676): Fix gcmole failures in this function.
+  DisableGCMole no_gcmole;
 #if V8_ENABLE_WEBASSEMBLY
   // Create the {SetThreadInWasmFlagScope} first in this function so that its
   // destructor gets called after all the other destructors. It is important
@@ -2349,19 +2356,19 @@ bool Isolate::ComputeLocationFromException(MessageLocation* target,
 
   Handle<Name> start_pos_symbol = factory()->error_start_pos_symbol();
   Handle<Object> start_pos = JSReceiver::GetDataProperty(
-      Handle<JSObject>::cast(exception), start_pos_symbol);
+      this, Handle<JSObject>::cast(exception), start_pos_symbol);
   if (!start_pos->IsSmi()) return false;
   int start_pos_value = Handle<Smi>::cast(start_pos)->value();
 
   Handle<Name> end_pos_symbol = factory()->error_end_pos_symbol();
   Handle<Object> end_pos = JSReceiver::GetDataProperty(
-      Handle<JSObject>::cast(exception), end_pos_symbol);
+      this, Handle<JSObject>::cast(exception), end_pos_symbol);
   if (!end_pos->IsSmi()) return false;
   int end_pos_value = Handle<Smi>::cast(end_pos)->value();
 
   Handle<Name> script_symbol = factory()->error_script_symbol();
   Handle<Object> script = JSReceiver::GetDataProperty(
-      Handle<JSObject>::cast(exception), script_symbol);
+      this, Handle<JSObject>::cast(exception), script_symbol);
   if (!script->IsScript()) return false;
 
   Handle<Script> cast_script(Script::cast(*script), this);
@@ -2620,7 +2627,8 @@ bool PromiseIsRejectHandler(Isolate* isolate, Handle<JSReceiver> handler) {
   //    has a dependency edge to the generated outer Promise.
   // Otherwise, this is a real reject handler for the Promise.
   Handle<Symbol> key = isolate->factory()->promise_forwarding_handler_symbol();
-  Handle<Object> forwarding_handler = JSReceiver::GetDataProperty(handler, key);
+  Handle<Object> forwarding_handler =
+      JSReceiver::GetDataProperty(isolate, handler, key);
   return forwarding_handler->IsUndefined(isolate);
 }
 
@@ -2664,7 +2672,8 @@ bool Isolate::PromiseHasUserDefinedRejectHandler(Handle<JSPromise> promise) {
     if (promise->status() == Promise::kPending) {
       promises.push(promise);
     }
-    Handle<Object> outer_promise_obj = JSObject::GetDataProperty(promise, key);
+    Handle<Object> outer_promise_obj =
+        JSObject::GetDataProperty(this, promise, key);
     if (!outer_promise_obj->IsJSPromise()) break;
     promise = Handle<JSPromise>::cast(outer_promise_obj);
   }
@@ -3363,9 +3372,14 @@ void Isolate::Deinit() {
     cancelable_task_manager()->CancelAndWait();
   }
 
-  // Cancel all baseline compiler tasks.
+  // Cancel all compiler tasks.
   delete baseline_batch_compiler_;
   baseline_batch_compiler_ = nullptr;
+
+#ifdef V8_ENABLE_MAGLEV
+  delete maglev_concurrent_dispatcher_;
+  maglev_concurrent_dispatcher_ = nullptr;
+#endif  // V8_ENABLE_MAGLEV
 
   if (lazy_compile_dispatcher_) {
     lazy_compile_dispatcher_->AbortAll();
@@ -3874,6 +3888,9 @@ bool Isolate::Init(SnapshotData* startup_snapshot_data,
         this, V8::GetCurrentPlatform(), FLAG_stack_size);
   }
   baseline_batch_compiler_ = new baseline::BaselineBatchCompiler(this);
+#ifdef V8_ENABLE_MAGLEV
+  maglev_concurrent_dispatcher_ = new maglev::MaglevConcurrentDispatcher(this);
+#endif  // V8_ENABLE_MAGLEV
 
 #if USE_SIMULATOR
   simulator_data_ = new SimulatorData;
@@ -4478,16 +4495,16 @@ ISOLATE_INIT_ARRAY_LIST(ISOLATE_FIELD_OFFSET)
 Handle<Symbol> Isolate::SymbolFor(RootIndex dictionary_index,
                                   Handle<String> name, bool private_symbol) {
   Handle<String> key = factory()->InternalizeString(name);
-  Handle<NameDictionary> dictionary =
-      Handle<NameDictionary>::cast(root_handle(dictionary_index));
+  Handle<RegisteredSymbolTable> dictionary =
+      Handle<RegisteredSymbolTable>::cast(root_handle(dictionary_index));
   InternalIndex entry = dictionary->FindEntry(this, key);
   Handle<Symbol> symbol;
   if (entry.is_not_found()) {
     symbol =
         private_symbol ? factory()->NewPrivateSymbol() : factory()->NewSymbol();
     symbol->set_description(*key);
-    dictionary = NameDictionary::Add(this, dictionary, key, symbol,
-                                     PropertyDetails::Empty(), &entry);
+    dictionary = RegisteredSymbolTable::Add(this, dictionary, key, symbol);
+
     switch (dictionary_index) {
       case RootIndex::kPublicSymbolTable:
         symbol->set_is_in_public_symbol_table(true);
@@ -4999,6 +5016,54 @@ void Isolate::OnPromiseAfter(Handle<JSPromise> promise) {
     }
   }
   if (debug()->is_active()) PopPromise();
+}
+
+void Isolate::OnTerminationDuringRunMicrotasks() {
+  // This performs cleanup for when RunMicrotasks (in
+  // builtins-microtask-queue-gen.cc) is aborted via a termination exception.
+  // This has to be kept in sync with the code in said file. Currently this
+  // includes:
+  //
+  //  (1) Resetting the |current_microtask| slot on the Isolate to avoid leaking
+  //      memory (and also to keep |current_microtask| not being undefined as an
+  //      indicator that we're currently pumping the microtask queue).
+  //  (2) Empty the promise stack to avoid leaking memory.
+  //  (3) If the |current_microtask| is a promise reaction or resolve thenable
+  //      job task, then signal the async event delegate and debugger that the
+  //      microtask finished running.
+  //
+
+  // Reset the |current_microtask| global slot.
+  Handle<Microtask> current_microtask(
+      Microtask::cast(heap()->current_microtask()), this);
+  heap()->set_current_microtask(ReadOnlyRoots(this).undefined_value());
+
+  // Empty the promise stack.
+  while (PopPromise()) {
+  }
+
+  if (current_microtask->IsPromiseReactionJobTask()) {
+    Handle<PromiseReactionJobTask> promise_reaction_job_task =
+        Handle<PromiseReactionJobTask>::cast(current_microtask);
+    Handle<HeapObject> promise_or_capability(
+        promise_reaction_job_task->promise_or_capability(), this);
+    if (promise_or_capability->IsPromiseCapability()) {
+      promise_or_capability = handle(
+          Handle<PromiseCapability>::cast(promise_or_capability)->promise(),
+          this);
+    }
+    if (promise_or_capability->IsJSPromise()) {
+      OnPromiseAfter(Handle<JSPromise>::cast(promise_or_capability));
+    }
+  } else if (current_microtask->IsPromiseResolveThenableJobTask()) {
+    Handle<PromiseResolveThenableJobTask> promise_resolve_thenable_job_task =
+        Handle<PromiseResolveThenableJobTask>::cast(current_microtask);
+    Handle<JSPromise> promise_to_resolve(
+        promise_resolve_thenable_job_task->promise_to_resolve(), this);
+    OnPromiseAfter(promise_to_resolve);
+  }
+
+  SetTerminationOnExternalTryCatch();
 }
 
 void Isolate::SetPromiseRejectCallback(PromiseRejectCallback callback) {

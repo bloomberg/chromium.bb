@@ -10,7 +10,7 @@
 
 #include "src/gpu/GrAttachment.h"
 
-#include "dawn/webgpu_cpp.h"
+#include "webgpu/webgpu_cpp.h"
 
 class GrDawnGpu;
 
@@ -34,7 +34,8 @@ private:
                      UsageFlags supportedUsages,
                      int samples,
                      wgpu::Texture texture,
-                     wgpu::TextureView view);
+                     wgpu::TextureView view,
+                     std::string_view label);
 
     GrDawnGpu* getDawnGpu() const;
 

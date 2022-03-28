@@ -1847,8 +1847,3 @@ product of 2 1d tensors (through contractions) returns a 0d tensor.
 *   The IndexList class requires a cxx11 compliant compiler. You can use an
     array of indices instead if you don't have access to a modern compiler.
 *   On GPUs only floating point values are properly tested and optimized for.
-*   Complex and integer values are known to be broken on GPUs. If you try to use
-    them you'll most likely end up triggering a static assertion failure such as
-    EIGEN_STATIC_ASSERT(packetSize > 1, YOU_MADE_A_PROGRAMMING_MISTAKE)
-
-

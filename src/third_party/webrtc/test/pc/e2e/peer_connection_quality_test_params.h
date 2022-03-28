@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "api/async_resolver_factory.h"
+#include "api/audio/audio_mixer.h"
 #include "api/call/call_factory_interface.h"
 #include "api/fec_controller.h"
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
@@ -24,6 +25,8 @@
 #include "api/transport/webrtc_key_value_config.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder_factory.h"
+#include "modules/audio_processing/include/audio_processing.h"
+#include "p2p/base/port_allocator.h"
 #include "rtc_base/network.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/ssl_certificate.h"
@@ -55,6 +58,9 @@ struct PeerConnectionFactoryComponents {
   std::unique_ptr<VideoDecoderFactory> video_decoder_factory;
 
   std::unique_ptr<WebRtcKeyValueConfig> trials;
+
+  rtc::scoped_refptr<webrtc::AudioProcessing> audio_processing;
+  rtc::scoped_refptr<webrtc::AudioMixer> audio_mixer;
 };
 
 // Contains most parts from PeerConnectionDependencies. Also all fields are
@@ -112,6 +118,9 @@ struct Params {
   std::vector<PeerConnectionE2EQualityTestFixture::VideoConfig> video_configs;
   // If `audio_config` is set audio stream will be configured
   absl::optional<PeerConnectionE2EQualityTestFixture::AudioConfig> audio_config;
+  // Flags to set on `cricket::PortAllocator`. These flags will be added
+  // to the default ones that are presented on the port allocator.
+  uint32_t port_allocator_extra_flags = cricket::kDefaultPortAllocatorFlags;
   // If `rtc_event_log_path` is set, an RTCEventLog will be saved in that
   // location and it will be available for further analysis.
   absl::optional<std::string> rtc_event_log_path;

@@ -4,7 +4,10 @@ generated_cc_atom(
     name = "GrVkAMDMemoryAllocator_hdr",
     hdrs = ["GrVkAMDMemoryAllocator.h"],
     visibility = ["//:__subpackages__"],
-    deps = ["//include/gpu/vk:GrVkMemoryAllocator_hdr"],
+    deps = [
+        "//include/gpu/vk:GrVkMemoryAllocator_hdr",
+        "//third_party:vulkanmemoryallocator",
+    ],
 )
 
 generated_cc_atom(
@@ -53,6 +56,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         "//include/gpu/vk:GrVkTypes_hdr",
+        "//include/private:SkTDArray_hdr",
         "//src/gpu:GrCaps_hdr",
     ],
 )

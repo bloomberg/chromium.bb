@@ -24,6 +24,9 @@ namespace internal {
 // MemoryAllocator
 //
 
+size_t MemoryAllocator::commit_page_size_ = 0;
+size_t MemoryAllocator::commit_page_size_bits_ = 0;
+
 MemoryAllocator::MemoryAllocator(Isolate* isolate,
                                  v8::PageAllocator* code_page_allocator,
                                  size_t capacity)
@@ -229,7 +232,7 @@ bool MemoryAllocator::UncommitMemory(VirtualMemory* reservation) {
 
 void MemoryAllocator::FreeMemoryRegion(v8::PageAllocator* page_allocator,
                                        Address base, size_t size) {
-  CHECK(FreePages(page_allocator, reinterpret_cast<void*>(base), size));
+  FreePages(page_allocator, reinterpret_cast<void*>(base), size);
 }
 
 Address MemoryAllocator::AllocateAlignedMemory(
@@ -399,14 +402,15 @@ V8_EXPORT_PRIVATE BasicMemoryChunk* MemoryAllocator::AllocateBasicChunk(
 MemoryChunk* MemoryAllocator::AllocateChunk(size_t reserve_area_size,
                                             size_t commit_area_size,
                                             Executability executable,
+                                            PageSize page_size,
                                             BaseSpace* owner) {
   BasicMemoryChunk* basic_chunk = AllocateBasicChunk(
       reserve_area_size, commit_area_size, executable, owner);
 
   if (basic_chunk == nullptr) return nullptr;
 
-  MemoryChunk* chunk =
-      MemoryChunk::Initialize(basic_chunk, isolate_->heap(), executable);
+  MemoryChunk* chunk = MemoryChunk::Initialize(basic_chunk, isolate_->heap(),
+                                               executable, page_size);
 
 #ifdef DEBUG
   if (chunk->executable()) RegisterExecutableMemoryChunk(chunk);
@@ -559,7 +563,7 @@ Page* MemoryAllocator::AllocatePage(MemoryAllocator::AllocationMode alloc_mode,
     chunk = AllocatePagePooled(owner);
   }
   if (chunk == nullptr) {
-    chunk = AllocateChunk(size, size, executable, owner);
+    chunk = AllocateChunk(size, size, executable, PageSize::kRegular, owner);
   }
   if (chunk == nullptr) return nullptr;
   return owner->InitializePage(chunk);
@@ -582,7 +586,8 @@ MemoryAllocator::RemapSharedPage(
 LargePage* MemoryAllocator::AllocateLargePage(size_t size,
                                               LargeObjectSpace* owner,
                                               Executability executable) {
-  MemoryChunk* chunk = AllocateChunk(size, size, executable, owner);
+  MemoryChunk* chunk =
+      AllocateChunk(size, size, executable, PageSize::kLarge, owner);
   if (chunk == nullptr) return nullptr;
   return LargePage::Initialize(isolate_->heap(), chunk, executable);
 }
@@ -606,7 +611,8 @@ MemoryChunk* MemoryAllocator::AllocatePagePooled(Space* owner) {
   BasicMemoryChunk* basic_chunk =
       BasicMemoryChunk::Initialize(isolate_->heap(), start, size, area_start,
                                    area_end, owner, std::move(reservation));
-  MemoryChunk::Initialize(basic_chunk, isolate_->heap(), NOT_EXECUTABLE);
+  MemoryChunk::Initialize(basic_chunk, isolate_->heap(), NOT_EXECUTABLE,
+                          PageSize::kRegular);
   size_ += size;
   return chunk;
 }
@@ -619,18 +625,16 @@ void MemoryAllocator::ZapBlock(Address start, size_t size,
                size >> kTaggedSizeLog2);
 }
 
-intptr_t MemoryAllocator::GetCommitPageSize() {
-  if (FLAG_v8_os_page_size != 0) {
-    DCHECK(base::bits::IsPowerOfTwo(FLAG_v8_os_page_size));
-    return FLAG_v8_os_page_size * KB;
-  } else {
-    return CommitPageSize();
-  }
+void MemoryAllocator::InitializeOncePerProcess() {
+  commit_page_size_ =
+      FLAG_v8_os_page_size > 0 ? FLAG_v8_os_page_size * KB : CommitPageSize();
+  CHECK(base::bits::IsPowerOfTwo(commit_page_size_));
+  commit_page_size_bits_ = base::bits::WhichPowerOfTwo(commit_page_size_);
 }
 
 base::AddressRegion MemoryAllocator::ComputeDiscardMemoryArea(Address addr,
                                                               size_t size) {
-  size_t page_size = MemoryAllocator::GetCommitPageSize();
+  size_t page_size = GetCommitPageSize();
   if (size < page_size + FreeSpace::kSize) {
     return base::AddressRegion(0, 0);
   }

@@ -70,8 +70,7 @@ void LocalEmbedderHeapTracer::TraceEpilogue() {
       EmbedderHeapTracer::EmbedderStackState::kMayContainHeapPointers;
 
   if (cpp_heap_) {
-    cpp_heap()->TraceEpilogue(
-        cppgc::internal::GarbageCollector::Config::CollectionType::kMajor);
+    cpp_heap()->TraceEpilogue();
   } else {
     EmbedderHeapTracer::TraceSummary summary;
     remote_tracer_->TraceEpilogue(&summary);
@@ -114,15 +113,6 @@ bool LocalEmbedderHeapTracer::IsRemoteTracingDone() {
                                 : remote_tracer_->IsTracingDone());
 }
 
-void LocalEmbedderHeapTracer::SetEmbedderStackStateForNextFinalization(
-    EmbedderHeapTracer::EmbedderStackState stack_state) {
-  if (!InUse()) return;
-
-  embedder_stack_state_ = stack_state;
-  if (EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers == stack_state)
-    NotifyEmptyEmbedderStack();
-}
-
 LocalEmbedderHeapTracer::ProcessingScope::ProcessingScope(
     LocalEmbedderHeapTracer* tracer)
     : tracer_(tracer), wrapper_descriptor_(tracer->wrapper_descriptor_) {
@@ -149,7 +139,7 @@ LocalEmbedderHeapTracer::ExtractWrapperInfo(Isolate* isolate,
 
 void LocalEmbedderHeapTracer::ProcessingScope::TracePossibleWrapper(
     JSObject js_object) {
-  DCHECK(js_object.IsApiWrapper());
+  DCHECK(js_object.MayHaveEmbedderFields());
   WrapperInfo info;
   if (ExtractWrappableInfo(tracer_->isolate_, js_object, wrapper_descriptor_,
                            &info)) {
@@ -199,7 +189,7 @@ void LocalEmbedderHeapTracer::NotifyEmptyEmbedderStack() {
 void LocalEmbedderHeapTracer::EmbedderWriteBarrier(Heap* heap,
                                                    JSObject js_object) {
   DCHECK(InUse());
-  DCHECK(js_object.IsApiWrapper());
+  DCHECK(js_object.MayHaveEmbedderFields());
   if (cpp_heap_) {
     DCHECK_NOT_NULL(heap->mark_compact_collector());
     const EmbedderDataSlot type_slot(js_object,

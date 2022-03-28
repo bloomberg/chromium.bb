@@ -1,5 +1,5 @@
 Tests for validation that occurs inside queued operations
-(submit, writeBuffer, writeTexture, copyImageBitmapToTexture).
+(submit, writeBuffer, writeTexture, copyExternalImageToTexture).
 
 BufferMapStatesToTest = {
   mapped -> unmapped,

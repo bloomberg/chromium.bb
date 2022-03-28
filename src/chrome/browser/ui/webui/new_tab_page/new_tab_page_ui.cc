@@ -24,7 +24,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/browser_command/browser_command_handler.h"
 #include "chrome/browser/ui/webui/cr_components/most_visited/most_visited_handler.h"
@@ -46,6 +45,7 @@
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/google/core/common/google_util.h"
 #include "components/grit/components_scaled_resources.h"
@@ -83,6 +83,74 @@ namespace {
 constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
 constexpr char kSignedOutNtpModulesSwitch[] = "signed-out-ntp-modules";
 
+void AddRawStringOrDefault(content::WebUIDataSource* source,
+                           const char key[],
+                           const std::string str,
+                           int default_string_id) {
+  if (str.empty()) {
+    source->AddLocalizedString(key, default_string_id);
+  } else {
+    source->AddString(key, str);
+  }
+}
+
+// The Discount Consent V2 is gated by Chrome Cart, and that is enabled for
+// en-us local only. So using plain en strings here is fine.
+void AddResourcesForCartDiscountConsentV2(content::WebUIDataSource* source) {
+  AddRawStringOrDefault(
+      source, "modulesCartDiscountConsentContent",
+      commerce::kNtpChromeCartModuleDiscountConsentStringChangeContent.Get(),
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT_V2);
+
+  source->AddBoolean(
+      "modulesCartConsentStepTwoDifferentColor",
+      commerce::kNtpChromeCartModuleDiscountConsentInlineStepTwoDifferentColor
+          .Get());
+
+  AddRawStringOrDefault(
+      source, "modulesCartDiscountConentTitle",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpDialogContentTitle.Get(),
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_TITLE);
+
+  source->AddBoolean(
+      "modulesCartStepOneUseStaticContent",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneUseStaticContent
+          .Get());
+  // This does not have a raw string resource.
+  source->AddString(
+      "modulesCartStepOneStaticContent",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneStaticContent
+          .Get());
+
+  AddRawStringOrDefault(
+      source, "modulesCartConsentStepOneOneMerchantContent",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneContentOneCart
+          .Get(),
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_STEP_1_WITH_MERCHANT_NAME);
+  AddRawStringOrDefault(
+      source, "modulesCartConsentStepOneTwoMerchantsContent",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneContentTwoCarts
+          .Get(),
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_STEP_1_WITH_TWO_MERCHANT_NAMES);
+  AddRawStringOrDefault(
+      source, "modulesCartConsentStepOneThreeMerchantsContent",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpStepOneContentThreeCarts
+          .Get(),
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_STEP_1_WITH_THREE_MERCHANT_NAMES);
+  AddRawStringOrDefault(
+      source, "modulesCartConsentStepTwoContent",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpStepTwoContent.Get(),
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT_V3);
+
+  source->AddLocalizedString(
+      "modulesCartConsentStepOneButton",
+      IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_STEP_1_CONTINUE);
+
+  source->AddBoolean(
+      "modulesCartDiscountInlineCardShowCloseButton",
+      commerce::kNtpChromeCartModuleDiscountConsentInlineShowCloseButton.Get());
+}
+
 content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINewTabPageHost);
@@ -116,6 +184,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "modulesDragAndDropEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop));
+  source->AddBoolean("modulesFirstRunExperienceEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpModulesFirstRunExperience));
   source->AddBoolean("modulesLoadEnabled", base::FeatureList::IsEnabled(
                                                ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
@@ -214,11 +285,13 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesCustomizeButtonText", IDS_NTP_MODULES_CUSTOMIZE_BUTTON_TEXT},
       {"modulesShoppingTasksSentence", IDS_NTP_MODULES_SHOPPING_TASKS_SENTENCE},
       {"modulesShoppingTasksLower", IDS_NTP_MODULES_SHOPPING_TASKS_LOWER},
+      {"modulesRecipeInfo", IDS_NTP_MODULES_RECIPE_INFO},
       {"modulesRecipeTasksSentence", IDS_NTP_MODULES_RECIPE_TASKS_SENTENCE},
       {"modulesRecipeTasksLower", IDS_NTP_MODULES_RECIPE_TASKS_LOWER},
       {"modulesRecipeTasksLowerThese",
        IDS_NTP_MODULES_RECIPE_TASKS_LOWER_THESE},
       {"modulesTasksInfo", IDS_NTP_MODULES_TASKS_INFO},
+      {"modulesCartInfo", IDS_NTP_MODULES_CART_INFO},
       {"modulesCartSentence", IDS_NTP_MODULES_CART_SENTENCE},
       {"modulesCartSentenceV2", IDS_NTP_MODULES_CART_SENTENCE_V2},
       {"modulesCartLower", IDS_NTP_MODULES_CART_LOWER},
@@ -271,7 +344,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesPhotosNew", IDS_NTP_MODULES_PHOTOS_NEW},
       {"modulesTasksInfoTitle", IDS_NTP_MODULES_SHOPPING_TASKS_INFO_TITLE},
       {"modulesTasksInfoClose", IDS_NTP_MODULES_SHOPPING_TASKS_INFO_CLOSE},
-      {"modulesCartHeaderNew", IDS_NTP_MODULES_CART_HEADER_CHIP_NEW},
       {"modulesCartWarmWelcome", IDS_NTP_MODULES_CART_WARM_WELCOME},
       {"modulesCartModuleMenuHideToastMessage",
        IDS_NTP_MODULES_CART_MODULE_MENU_HIDE_TOAST_MESSAGE},
@@ -287,8 +359,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_CART_DISCOUNT_CHIP_AMOUNT},
       {"modulesCartDiscountChipUpToAmount",
        IDS_NTP_MODULES_CART_DISCOUNT_CHIP_UP_TO_AMOUNT},
-      {"modulesCartDiscountConsentContent",
-       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT},
       {"modulesCartDiscountConsentAccept",
        IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_ACCEPT},
       {"modulesCartDiscountConsentAcceptConfirmation",
@@ -303,8 +373,34 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_CART_ITEM_COUNT_SINGULAR},
       {"modulesCartItemCountMultiple",
        IDS_NTP_MODULES_CART_ITEM_COUNT_MULTIPLE},
+      {"modulesCartDiscountConsentContentV3",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT_V3},
+      {"modulesCartDiscountConentTitle",
+       IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_TITLE},
+      {"modulesNewTagLabel", IDS_NTP_MODULES_NEW_TAG_LABEL},
+      {"modulesFirstRunExperienceTitle",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_TITLE},
+      {"modulesFirstRunExperienceBodyLine1",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_BODY_LINE_1},
+      {"modulesFirstRunExperienceBodyLine2",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_BODY_LINE_2},
+      {"modulesFirstRunOptInButton",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_IN_BUTTON},
+      {"modulesFirstRunOptOutButton",
+       IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT_BUTTON},
   };
   source->AddLocalizedStrings(kStrings);
+
+  source->AddInteger(
+      "modulesCartDiscountConsentVariation",
+      commerce::kNtpChromeCartModuleDiscountConsentNtpVariation.Get());
+
+  if (base::FeatureList::IsEnabled(commerce::kDiscountConsentV2)) {
+    AddResourcesForCartDiscountConsentV2(source);
+  } else {
+    source->AddLocalizedString("modulesCartDiscountConsentContent",
+                               IDS_NTP_MODULES_CART_DISCOUNT_CONSENT_CONTENT);
+  }
 
 #if !defined(OFFICIAL_BUILD)
   source->AddBoolean(
@@ -323,6 +419,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "photosModuleEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpPhotosModule));
+  source->AddString("photosModuleCustomArtWork",
+                    base::GetFieldTrialParamValueByFeature(
+                        ntp_features::kNtpPhotosModuleCustomizedOptInArtWork,
+                        ntp_features::kNtpPhotosModuleOptInArtWorkParam));
   source->AddBoolean(
       "ruleBasedDiscountEnabled",
       base::GetFieldTrialParamValueByFeature(
@@ -531,8 +631,8 @@ void NewTabPageUI::BindInterface(
 
 void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<photos::mojom::PhotosHandler> pending_receiver) {
-  photos_handler_ =
-      std::make_unique<PhotosHandler>(std::move(pending_receiver), profile_);
+  photos_handler_ = std::make_unique<PhotosHandler>(std::move(pending_receiver),
+                                                    profile_, web_contents_);
 }
 
 #if !defined(OFFICIAL_BUILD)
@@ -602,21 +702,21 @@ void NewTabPageUI::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 void NewTabPageUI::OnThemeChanged() {
   std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
-  const Browser* browser = chrome::FindBrowserWithProfile(profile_);
-  DCHECK(browser);
-  const ui::ThemeProvider* theme_provider =
-      browser->window()->GetThemeProvider();
 
-  // `theme_provider` will be nullptr in unit tests. If you want to test NTP
-  // color, use webui::SetThemeProviderForTesting().
+  const ui::ThemeProvider* theme_provider =
+      webui::GetThemeProvider(web_contents_);
+  // TODO(crbug.com/1299925): Always mock theme provider in tests so that
+  // `theme_provider` is never nullptr.
   if (theme_provider) {
     auto background_color =
         theme_provider->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
     update->SetStringKey("backgroundColor",
                          skia::SkColorToHexString(background_color));
-    content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
-                                     std::move(update));
+  } else {
+    update->SetStringKey("backgroundColor", "");
   }
+  content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
+                                   std::move(update));
 }
 
 void NewTabPageUI::OnCustomBackgroundImageUpdated() {

@@ -44,6 +44,7 @@
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/wm_helper.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/display.h"
@@ -259,8 +260,7 @@ bool ArcAppLaunchHandler::IsAppPendingRestore(const std::string& app_id) const {
 }
 
 void ArcAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
-  if (!update.ReadinessChanged() ||
-      update.AppType() != apps::mojom::AppType::kArc) {
+  if (!update.ReadinessChanged() || update.AppType() != apps::AppType::kArc) {
     return;
   }
 
@@ -270,7 +270,7 @@ void ArcAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
   }
 
   // If the app is not ready, don't launch the app for the restoration.
-  if (update.Readiness() != apps::mojom::Readiness::kReady)
+  if (update.Readiness() != apps::Readiness::kReady)
     return;
 
   if (is_shelf_ready_ && base::Contains(app_ids_, update.AppId())) {
@@ -387,8 +387,8 @@ void ArcAppLaunchHandler::PrepareLaunchApps() {
   // for the app.
   std::set<std::string> app_ids;
   cache.ForEachApp([&app_ids, this](const apps::AppUpdate& update) {
-    if (update.Readiness() == apps::mojom::Readiness::kReady &&
-        update.AppType() == apps::mojom::AppType::kArc &&
+    if (update.Readiness() == apps::Readiness::kReady &&
+        update.AppType() == apps::AppType::kArc &&
         base::Contains(app_ids_, update.AppId())) {
       app_ids.insert(update.AppId());
     }
@@ -420,8 +420,13 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
     DCHECK(data_it.second->event_flag.has_value());
 
     // Set an ARC session id to find the restore window id based on the newly
-    // created ARC task id.
+    // created ARC task id. Note that the desk template launch ID must be set
+    // first, if available.
     const int32_t arc_session_id = ::app_restore::CreateArcSessionId();
+    if (desk_template_launch_id_ != 0) {
+      ::app_restore::SetDeskTemplateLaunchIdForArcSessionId(
+          arc_session_id, desk_template_launch_id_);
+    }
     ::app_restore::SetArcSessionIdForWindowId(arc_session_id, data_it.first);
     window_id_to_session_id_[data_it.first] = arc_session_id;
     session_id_to_window_id_[arc_session_id] = data_it.first;

@@ -503,7 +503,7 @@ class PipelineData {
     if (call_descriptor && call_descriptor->RequiresFrameAsIncoming()) {
       sequence_->instruction_blocks()[0]->mark_needs_frame();
     } else {
-      DCHECK_EQ(0u, call_descriptor->CalleeSavedFPRegisters());
+      DCHECK(call_descriptor->CalleeSavedFPRegisters().is_empty());
     }
   }
 
@@ -1105,15 +1105,14 @@ PipelineCompilationJob::PipelineCompilationJob(
     // we pass it to the CompilationJob constructor, but it is not
     // dereferenced there.
     : OptimizedCompilationJob(&compilation_info_, "TurboFan"),
-      zone_(function->GetIsolate()->allocator(),
-            kPipelineCompilationJobZoneName),
-      zone_stats_(function->GetIsolate()->allocator()),
-      compilation_info_(&zone_, function->GetIsolate(), shared_info, function,
-                        code_kind, osr_offset, osr_frame),
+      zone_(isolate->allocator(), kPipelineCompilationJobZoneName),
+      zone_stats_(isolate->allocator()),
+      compilation_info_(&zone_, isolate, shared_info, function, code_kind,
+                        osr_offset, osr_frame),
       pipeline_statistics_(CreatePipelineStatistics(
           handle(Script::cast(shared_info->script()), isolate),
-          compilation_info(), function->GetIsolate(), &zone_stats_)),
-      data_(&zone_stats_, function->GetIsolate(), compilation_info(),
+          compilation_info(), isolate, &zone_stats_)),
+      data_(&zone_stats_, isolate, compilation_info(),
             pipeline_statistics_.get()),
       pipeline_(&data_),
       linkage_(nullptr) {}
@@ -2263,6 +2262,17 @@ struct AllocateFPRegistersPhase {
   }
 };
 
+template <typename RegAllocator>
+struct AllocateSimd128RegistersPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(AllocateSIMD128Registers)
+
+  void Run(PipelineData* data, Zone* temp_zone) {
+    RegAllocator allocator(data->top_tier_register_allocation_data(),
+                           RegisterKind::kSimd128, temp_zone);
+    allocator.AllocateRegisters();
+  }
+};
+
 struct DecideSpillingModePhase {
   DECL_PIPELINE_PHASE_CONSTANTS(DecideSpillingMode)
 
@@ -3039,7 +3049,7 @@ wasm::WasmCompilationResult Pipeline::GenerateCodeForWasmNativeStub(
   wasm::WasmCompilationResult result;
   code_generator->tasm()->GetCode(
       nullptr, &result.code_desc, code_generator->safepoint_table_builder(),
-      static_cast<int>(code_generator->GetHandlerTableOffset()));
+      static_cast<int>(code_generator->handler_table_offset()));
   result.instr_buffer = code_generator->tasm()->ReleaseBuffer();
   result.source_positions = code_generator->GetSourcePositionTable();
   result.protected_instructions_data =
@@ -3161,7 +3171,7 @@ void Pipeline::GenerateCodeForWasmFunction(
   CodeGenerator* code_generator = pipeline.code_generator();
   code_generator->tasm()->GetCode(
       nullptr, &result->code_desc, code_generator->safepoint_table_builder(),
-      static_cast<int>(code_generator->GetHandlerTableOffset()));
+      static_cast<int>(code_generator->handler_table_offset()));
 
   result->instr_buffer = code_generator->tasm()->ReleaseBuffer();
   result->frame_slot_count = code_generator->frame()->GetTotalFrameSlotCount();
@@ -3207,8 +3217,10 @@ void Pipeline::GenerateCodeForWasmFunction(
                    << time.InMilliseconds() << " ms and "
                    << zone_stats.GetMaxAllocatedBytes() << " / "
                    << zone_stats.GetTotalAllocatedBytes()
-                   << " max/total bytes, codesize " << codesize << " name "
-                   << data.info()->GetDebugName().get() << std::endl;
+                   << " max/total bytes; bodysize "
+                   << function_body.end - function_body.start << " codesize "
+                   << codesize << " name " << data.info()->GetDebugName().get()
+                   << std::endl;
   }
 
   DCHECK(result->succeeded());
@@ -3232,7 +3244,7 @@ MaybeHandle<Code> Pipeline::GenerateCodeForTesting(
 
   {
     CompilationHandleScope compilation_scope(isolate, info);
-    CanonicalHandleScope canonical(isolate, info);
+    CanonicalHandleScopeForTurbofan canonical(isolate, info);
     info->ReopenHandlesInNewHandleScope(isolate);
     pipeline.InitializeHeapBroker();
   }
@@ -3310,8 +3322,7 @@ MaybeHandle<Code> Pipeline::GenerateCodeForTesting(
 std::unique_ptr<OptimizedCompilationJob> Pipeline::NewCompilationJob(
     Isolate* isolate, Handle<JSFunction> function, CodeKind code_kind,
     bool has_script, BytecodeOffset osr_offset, JavaScriptFrame* osr_frame) {
-  Handle<SharedFunctionInfo> shared =
-      handle(function->shared(), function->GetIsolate());
+  Handle<SharedFunctionInfo> shared(function->shared(), isolate);
   return std::make_unique<PipelineCompilationJob>(
       isolate, shared, function, osr_offset, osr_frame, code_kind);
 }
@@ -3457,14 +3468,15 @@ bool PipelineImpl::SelectInstructions(Linkage* linkage) {
   const RegisterConfiguration* config = RegisterConfiguration::Default();
   std::unique_ptr<const RegisterConfiguration> restricted_config;
   bool use_mid_tier_register_allocator =
-      FLAG_turbo_force_mid_tier_regalloc ||
-      (FLAG_turbo_use_mid_tier_regalloc_for_huge_functions &&
-       data->sequence()->VirtualRegisterCount() >
-           kTopTierVirtualRegistersLimit);
+      !CodeKindIsStaticallyCompiled(data->info()->code_kind()) &&
+      (FLAG_turbo_force_mid_tier_regalloc ||
+       (FLAG_turbo_use_mid_tier_regalloc_for_huge_functions &&
+        data->sequence()->VirtualRegisterCount() >
+            kTopTierVirtualRegistersLimit));
 
   if (call_descriptor->HasRestrictedAllocatableRegisters()) {
     RegList registers = call_descriptor->AllocatableRegisters();
-    DCHECK_LT(0, NumRegs(registers));
+    DCHECK_LT(0, registers.Count());
     restricted_config.reset(
         RegisterConfiguration::RestrictGeneralRegisters(registers));
     config = restricted_config.get();
@@ -3733,6 +3745,11 @@ void PipelineImpl::AllocateRegistersForTopTier(
 
   if (data->sequence()->HasFPVirtualRegisters()) {
     Run<AllocateFPRegistersPhase<LinearScanAllocator>>();
+  }
+
+  if (data->sequence()->HasSimd128VirtualRegisters() &&
+      (kFPAliasing == AliasingKind::kIndependent)) {
+    Run<AllocateSimd128RegistersPhase<LinearScanAllocator>>();
   }
 
   Run<DecideSpillingModePhase>();

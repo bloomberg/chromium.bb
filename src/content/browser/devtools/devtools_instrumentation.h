@@ -240,12 +240,12 @@ void FencedFrameCreated(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
     FencedFrame* fenced_frame);
 
-void ReportSameSiteCookieIssue(
+void ReportCookieIssue(
     RenderFrameHostImpl* render_frame_host_impl,
     const network::mojom::CookieOrLineWithAccessResultPtr& excluded_cookie,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    blink::mojom::SameSiteCookieOperation operation,
+    blink::mojom::CookieOperation operation,
     const absl::optional<std::string>& devtools_request_id);
 
 enum class AttributionReportingIssueType {
@@ -294,7 +294,8 @@ void OnServiceWorkerMainScriptFetchingFailed(
     const std::string& error);
 void OnServiceWorkerMainScriptRequestWillBeSent(
     const GlobalRenderFrameHostId& requesting_frame_id,
-    const base::UnguessableToken& token,
+    const ServiceWorkerContextWrapper* context_wrapper,
+    int64_t version_id,
     const network::ResourceRequest& request);
 
 // Fires `Network.onLoadingFailed` event for a dedicated worker main script.

@@ -174,10 +174,6 @@
       status: "test",
     },
     {
-      // Deprecated, see UserActivationPostMessageTransfer.
-      name: "AllowActivationDelegationAttr",
-    },
-    {
       name: "AllowContentInitiatedDataUrlNavigations",
     },
     {
@@ -315,6 +311,11 @@
       name: "BlinkRuntimeCallStats",
     },
     {
+      // "blocking" attribute on scripts and link resources
+      name: "BlockingAttribute",
+      status: "experimental",
+    },
+    {
       name: "BlockingFocusWithoutUserActivation",
       status: "experimental",
     },
@@ -423,10 +424,6 @@
       status: "experimental",
     },
     {
-      name: "COLRV1Fonts",
-      status: "stable",
-    },
-    {
       name: "CompositeBGColorAnimation",
       status: "experimental",
     },
@@ -498,10 +495,6 @@
       status: "experimental",
     },
     {
-      name: "ConversionMeasurementEventSources",
-      status: "test",
-    },
-    {
       name: "CooperativeScheduling"
     },
     {
@@ -546,6 +539,13 @@
       status: "stable",
     },
     {
+      // Support CSS Values Level 4 calc simplification and serialization
+      // as specified in the specs below.
+      // https://drafts.csswg.org/css-values-4/#calc-simplification
+      // https://drafts.csswg.org/css-values-4/#calc-serialize
+      name: "CSSCalcSimplificationAndSerialization"
+    },
+    {
       // https://drafts.csswg.org/css-cascade-5/#layering
       name: "CSSCascadeLayers",
       status: "stable",
@@ -576,7 +576,7 @@
     {
       // https://drafts.csswg.org/css-contain-3/#container-queries
       name: "CSSContainerQueries",
-      status: "test"
+      status: "experimental"
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-lengths
@@ -592,7 +592,7 @@
       implied_by: ["CSSContainerQueries"]
     },
     {
-      // Support for contain:inline-size and contain:block-size
+      // Support for contain:inline-size
       name: "CSSContainSize1D",
       implied_by: ["CSSContainerQueries"]
     },
@@ -749,7 +749,7 @@
     },
     {
       name: "CSSPseudoHas",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "CSSPseudoHasInSnapshotProfile",
@@ -854,6 +854,8 @@
     {
       // crbug.com/1259085
       name: "DeferredShaping",
+      depends_on: ["LayoutNG"],
+      // The status is managed by the corresponding base::Feature.
     },
     {
       name: "DelegatedInkTrails",
@@ -987,6 +989,12 @@
       status: "stable",
     },
     {
+      // Non-standard API Event.path. Should be replaced by Event.composedPath.
+      // TODO(1277431): This flag should be eventually disabled.
+      name: "EventPath",
+      status: "stable",
+    },
+    {
       name: "ExceptionMetaDataForDevTools",
       status: "stable",
     },
@@ -1061,6 +1069,17 @@
       status: "experimental"
     },
     {
+      name: "FedCm",
+      origin_trial_feature_name: "FedCM",
+      origin_trial_allows_third_party: true,
+      origin_trial_os: ["android"],
+      status: "test",
+    },
+    {
+      name: "FedCmIdpSignout",
+      status: "test",
+    },
+    {
       name: "FencedFrames",
       // This helps enable and expose the <fencedframe> element, but note that
       // blink::features::kFencedFrames must be enabled as well, similar to
@@ -1111,6 +1130,10 @@
       name: "FirstPartySets",
     },
     {
+      name: "FixedElementsDontOverscroll",
+      status: "experimental",
+    },
+    {
       name: "Fledge",
       origin_trial_feature_name: "Fledge",
     },
@@ -1130,7 +1153,7 @@
     },
     {
       name: "FontPalette",
-      status: "test",
+      status: "stable",
     },
     {
       name: "FontSrcLocalMatching",
@@ -1193,6 +1216,11 @@
         },
     },
     {
+      // Enables the getDisplayMediaSet API for multi surface capture.
+      name: "GetDisplayMediaSet",
+      depends_on: ["GetDisplayMedia"],
+    },
+    {
       name: "GravitySensor",
       status: "stable",
     },
@@ -1219,6 +1247,9 @@
     },
     {
       name: "HighlightInheritance",
+    },
+    {
+      name: "HighlightOverlayPainting",
     },
     {
       name: "HrefTranslate",
@@ -1326,6 +1357,7 @@
       // https://drafts.csswg.org/css-grid-1/#pagination
       name: "LayoutNGGridFragmentation",
       depends_on: ["LayoutNG"],
+      status: "test",
     },
     {
       name: "LayoutNGPrinting",
@@ -1508,7 +1540,6 @@
     },
     {
       name: "MediaStreamTrackInWorker",
-      status: "test",
     },
     {
       name: "MediaStreamTrackTransfer",
@@ -1548,7 +1579,7 @@
       status: "stable",
     },
     {
-      name: "NavigationCounter",
+      name: "NavigationId",
       status: "experimental",
     },
     {
@@ -1578,9 +1609,7 @@
       name: "NeverSlowMode",
     },
     {
-      name: "NewCanvas2DAPI",
-      origin_trial_feature_name: "NewCanvas2DAPI",
-      status: "experimental",
+      name: "NewFlexboxSizing",
     },
     {
       name: "NoIdleEncodingForWebTests",
@@ -1721,15 +1750,6 @@
     {
       name: "Parakeet",
       origin_trial_feature_name: "Parakeet",
-    },
-    {
-      // This flag enables the Manifest parser to handle URL Protocols.
-      // Also enabled when blink::features::kWebAppEnableProtocolHandlers is
-      // overridden on the command line (or via chrome://flags).
-      name: "ParseUrlProtocolHandler",
-      status: "experimental",
-      origin_trial_feature_name: "ParseUrlProtocolHandler",
-      origin_trial_os: ["win", "mac", "linux"],
     },
     {
       name: "PartitionedCookies",
@@ -1901,8 +1921,7 @@
     },
     {
       name: "PriorityHints",
-      origin_trial_feature_name: "PriorityHintsAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PrivateNetworkAccessNonSecureContextsAllowed",
@@ -2074,6 +2093,10 @@
       name: "ScrollUnification",
     },
     {
+      name: "SecureContextFixForSharedWorkers",
+      status: "experimental",
+    },
+    {
       name: "SecureContextFixForWorkers",
       status: "experimental",
     },
@@ -2086,6 +2109,10 @@
     // require blink-side support to function.
     {
       name: "SecurePaymentConfirmation",
+      status: "test",
+    },
+    {
+      name: "SecurePaymentConfirmationAPIV3",
       status: "test",
     },
     {
@@ -2131,7 +2158,7 @@
     },
     {
       name: "SharedAutofill",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "SharedStorageAPI",
@@ -2268,6 +2295,9 @@
       name: "TimeZoneChangeEvent",
       status: "experimental",
     },
+    {
+      name: "TopicsAPI",
+    },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without
     // this feature, a long-press touch gesture can start either a drag or a
@@ -2275,6 +2305,13 @@
     // only if a drag cannot be started).
     {
       name: "TouchDragAndContextMenu",
+      implied_by: ["TouchDragOnShortPress"],
+    },
+    // This feature makes touch dragging to occur at the short-press gesture,
+    // which occurs right before the long-press gesture.  This feature assumes
+    // that TouchDragAndContextMenu is enabled.
+    {
+      name: "TouchDragOnShortPress",
     },
     // Many websites disable mouse support when touch APIs are available.  We'd
     // like to enable this always but can't until more websites fix this bug.
@@ -2390,11 +2427,24 @@
       name: "VideoRotateToFullscreen",
     },
     {
+      name: "VideoTrackGenerator",
+      status: "test",
+    },
+    {
+      name: "VideoTrackGeneratorInWindow",
+      status: "test",
+    },
+    {
+      name: "VideoTrackGeneratorInWorker",
+      status: "test",
+    },
+    {
       name: "VideoWakeLockOptimisationHiddenMuted",
       status: "stable",
     },
     {
       name: "ViewportHeightClientHintHeader",
+      origin_trial_feature_name: "ViewportHeightClientHintHeader",
       status: "experimental",
     },
     {
@@ -2561,8 +2611,9 @@
       status: "experimental",
     },
     {
+      // Draft WebGL extensions are deliberately not enabled by experimental web
+      // platform features.
       name: "WebGLDraftExtensions",
-      status: "experimental",
     },
     {
       name: "WebGLImageChromium",
@@ -2584,11 +2635,6 @@
     {
       name: "WebHID",
       status: {"Android": "", "default": "stable"},
-    },
-    {
-      name: "WebID",
-      origin_trial_feature_name: "FedCM",
-      status: "test",
     },
     {
       name: "WebNFC",
@@ -2633,6 +2679,10 @@
     },
     {
       name: "WebUSB",
+      status: "stable",
+    },
+    {
+      name: "WebUsbDeviceForget",
       status: "stable",
     },
     {
@@ -2717,7 +2767,7 @@
       name: "WindowPlacement",
       origin_trial_feature_name: "WindowPlacementOT2",
       implied_by: ["WindowPlacementV2"],
-      status: "experimental",
+      status: "stable",
     },
     // Further extends window placement functionality for multi-screen devices.
     {

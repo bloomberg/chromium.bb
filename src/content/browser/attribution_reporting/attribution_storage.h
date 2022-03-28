@@ -10,9 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "content/browser/attribution_reporting/stored_source.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -22,7 +20,11 @@ class Origin;
 
 namespace content {
 
-struct AggregatableAttribution;
+class AttributionTrigger;
+class CreateReportResult;
+class StoredSource;
+
+struct DeactivatedSource;
 
 // This class provides an interface for persisting attribution data to
 // disk, and performing queries on it. AttributionStorage should initialize
@@ -30,25 +32,6 @@ struct AggregatableAttribution;
 // properly should result in no-ops.
 class AttributionStorage {
  public:
-  struct CONTENT_EXPORT DeactivatedSource {
-    enum class Reason {
-      kReplacedByNewerSource,
-      kReachedAttributionLimit,
-    };
-
-    DeactivatedSource(StoredSource source, Reason reason);
-    ~DeactivatedSource();
-
-    DeactivatedSource(const DeactivatedSource&);
-    DeactivatedSource(DeactivatedSource&&);
-
-    DeactivatedSource& operator=(const DeactivatedSource&);
-    DeactivatedSource& operator=(DeactivatedSource&&);
-
-    StoredSource source;
-    Reason reason;
-  };
-
   struct CONTENT_EXPORT StoreSourceResult {
     explicit StoreSourceResult(
         StorableSource::Result status,
@@ -86,46 +69,6 @@ class AttributionStorage {
       const StorableSource& source,
       int deactivated_source_return_limit = -1) = 0;
 
-  class CONTENT_EXPORT CreateReportResult {
-   public:
-    explicit CreateReportResult(
-        AttributionTrigger::Result status,
-        absl::optional<AttributionReport> dropped_report = absl::nullopt,
-        absl::optional<DeactivatedSource::Reason>
-            dropped_report_source_deactivation_reason = absl::nullopt,
-        absl::optional<base::Time> report_time = absl::nullopt);
-    ~CreateReportResult();
-
-    CreateReportResult(const CreateReportResult&);
-    CreateReportResult(CreateReportResult&&);
-
-    CreateReportResult& operator=(const CreateReportResult&);
-    CreateReportResult& operator=(CreateReportResult&&);
-
-    AttributionTrigger::Result status() const;
-
-    const absl::optional<AttributionReport>& dropped_report() const;
-
-    absl::optional<base::Time> report_time() const;
-
-    absl::optional<DeactivatedSource> GetDeactivatedSource() const;
-
-   private:
-    AttributionTrigger::Result status_;
-
-    // `AttributionTrigger::Result::kInternalError` is only associated with a
-    // dropped report if the browser succeeded in running the
-    // source-to-attribute logic.
-    absl::optional<AttributionReport> dropped_report_;
-
-    // Null unless `dropped_report_`'s source was deactivated.
-    absl::optional<DeactivatedSource::Reason>
-        dropped_report_source_deactivation_reason_;
-
-    // Null unless `status` is `kSuccess` or `kSuccessDroppedLowerPriority`.
-    absl::optional<base::Time> report_time_;
-  };
-
   // Finds all stored sources matching a given `trigger`, and stores the
   // new associated report. Only active sources will receive new attributions.
   // Returns whether a new report has been scheduled/added to storage.
@@ -136,9 +79,12 @@ class AttributionStorage {
   // |max_report_time|. This call is logically const, and does not modify the
   // underlying storage. |limit| limits the number of reports to return; use
   // a negative number for no limit. Reports are shuffled before being returned.
-  virtual std::vector<AttributionReport> GetAttributionsToReport(
+  virtual std::vector<AttributionReport> GetAttributionReports(
       base::Time max_report_time,
-      int limit = -1) = 0;
+      int limit = -1,
+      AttributionReport::ReportTypes report_types = {
+          AttributionReport::ReportType::kEventLevel,
+          AttributionReport::ReportType::kAggregatableAttribution}) = 0;
 
   // Returns the first report time strictly after `time`.
   virtual absl::optional<base::Time> GetNextReportTime(base::Time time) = 0;
@@ -146,7 +92,7 @@ class AttributionStorage {
   // Returns the reports with the given IDs. This call is logically const, and
   // does not modify the underlying storage.
   virtual std::vector<AttributionReport> GetReports(
-      const std::vector<AttributionReport::EventLevelData::Id>& ids) = 0;
+      const std::vector<AttributionReport::Id>& ids) = 0;
 
   // Returns all active sources in storage. Active sources are all
   // sources that can still convert. Sources that: are past expiry,
@@ -164,7 +110,7 @@ class AttributionStorage {
   // its report time to the given value. Should be called after a transient
   // failure to send the report so that it is retried later.
   [[nodiscard]] virtual bool UpdateReportForSendFailure(
-      AttributionReport::EventLevelData::Id report_id,
+      AttributionReport::Id report_id,
       base::Time new_report_time) = 0;
 
   // Adjusts the report time of all reports that should have been sent while the
@@ -190,15 +136,7 @@ class AttributionStorage {
 
   // Aggregate Attribution:
   [[nodiscard]] virtual bool AddAggregatableAttributionForTesting(
-      const AggregatableAttribution& aggregatable_attribution) = 0;
-
-  // Returns all of the aggregatable reports that should be sent before
-  // `max_report_time`. This call is logically const, and does not modify the
-  // underlying storage. `limit` limits the number of reports to return; use a
-  // negative number for no limit.
-  virtual std::vector<AttributionReport>
-  GetAggregatableContributionReportsForTesting(base::Time max_report_time,
-                                               int limit = -1) = 0;
+      const AttributionReport& report) = 0;
 };
 
 }  // namespace content

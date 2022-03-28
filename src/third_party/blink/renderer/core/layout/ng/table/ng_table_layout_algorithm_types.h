@@ -185,12 +185,6 @@ class CORE_EXPORT NGTableTypes {
     bool is_collapsed;
   };
 
-  struct ColumnLocation {
-    LayoutUnit offset;  // inline offset from table edge.
-    LayoutUnit size;
-    bool is_collapsed;
-  };
-
   struct Section {
     wtf_size_t start_row;
     wtf_size_t row_count;
@@ -229,7 +223,6 @@ class CORE_EXPORT NGTableTypes {
   using RowspanCells = Vector<RowspanCell>;
   using Rows = Vector<Row>;
   using Sections = Vector<Section>;
-  using ColumnLocations = Vector<ColumnLocation>;
 };
 
 class NGTableGroupedChildrenIterator;
@@ -241,12 +234,23 @@ struct NGTableGroupedChildren {
 
  public:
   explicit NGTableGroupedChildren(const NGBlockNode& table);
+  ~NGTableGroupedChildren() {
+    captions.clear();
+    columns.clear();
+    bodies.clear();
+  }
 
-  Vector<NGBlockNode> captions;  // CAPTION
-  Vector<NGBlockNode> columns;   // COLGROUP, COL
+  void Trace(Visitor*) const;
+
+  HeapVector<NGBlockNode> captions;  // CAPTION
+  HeapVector<NGBlockNode> columns;   // COLGROUP, COL
 
   NGBlockNode header;          // first THEAD
-  Vector<NGBlockNode> bodies;  // TBODY/multiple THEAD/TFOOT
+
+  // These cannot be modified except in ctor to ensure
+  // NGTableGroupedChildrenIterator works correctly.
+  HeapVector<NGBlockNode> bodies;  // TBODY/multiple THEAD/TFOOT
+
   NGBlockNode footer;          // first TFOOT
 
   // Default iterators iterate over tbody-like (THEAD/TBODY/TFOOT) elements.
@@ -258,6 +262,7 @@ struct NGTableGroupedChildren {
 // thead, tbody, tfoot
 class NGTableGroupedChildrenIterator {
   STACK_ALLOCATED();
+
   enum CurrentSection { kNone, kHead, kBody, kFoot, kEnd };
 
  public:
@@ -275,8 +280,12 @@ class NGTableGroupedChildrenIterator {
  private:
   void AdvanceToNonEmptySection();
   const NGTableGroupedChildren& grouped_children_;
-  Vector<NGBlockNode>::const_iterator body_iterator_;
   CurrentSection current_section_{kNone};
+
+  // |body_vector_| can be modified only in ctor and
+  // |AdvanceToNonEmptySection()|.
+  const HeapVector<NGBlockNode>* body_vector_ = nullptr;
+  wtf_size_t position_ = 0;
 };
 
 }  // namespace blink
@@ -291,8 +300,6 @@ WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
     blink::NGTableTypes::RowspanCell)
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NGTableTypes::Row)
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::NGTableTypes::ColumnLocation)
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NGTableTypes::Section)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_LAYOUT_ALGORITHM_TYPES_H_

@@ -7,17 +7,16 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -67,6 +66,12 @@ void LaunchAppFromIntentPicker(content::WebContents* web_contents,
 #if BUILDFLAG(IS_CHROMEOS)
   LaunchAppFromIntentPickerChromeOs(web_contents, url, launch_name, app_type);
 #else
+  if (base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate)) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    IntentPickerAutoDisplayService::Get(profile)->ResetIntentChipCounter(url);
+  }
+
   switch (app_type) {
     case PickerEntryType::kWeb:
       web_app::ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
@@ -109,7 +114,7 @@ void OnIntentPickerClosed(
     // We reach here if the picker was closed without an app being chosen, e.g.
     // due to the tab being closed. Keep count of this scenario so we can stop
     // the UI from showing after 2+ dismissals.
-    ui_auto_display_service->IncrementCounter(url);
+    ui_auto_display_service->IncrementPickerUICounter(url);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
@@ -177,8 +182,7 @@ void ShowIntentPickerBubble(content::WebContents* web_contents,
       apps::IntentHandlingMetrics::IntentPickerIconEvent::kIconClicked);
 #endif
 
-  if (apps.size() == 1 &&
-      base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate)) {
+  if (apps.size() == 1 && apps::features::ShouldIntentChipSkipIntentPicker()) {
     LaunchAppFromIntentPicker(web_contents, url, apps[0].launch_name,
                               apps[0].type);
     return;

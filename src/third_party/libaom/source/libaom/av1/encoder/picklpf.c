@@ -195,12 +195,19 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   struct loopfilter *const lf = &cm->lf;
+  int disable_filter_rt_screen = 0;
   (void)sd;
 
   lf->sharpness_level = 0;
   cpi->td.mb.rdmult = cpi->rd.RDMULT;
 
-  if (cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_NONE ||
+  if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN &&
+      cpi->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ &&
+      cpi->sf.rt_sf.skip_lf_screen)
+    disable_filter_rt_screen = av1_cyclic_refresh_disable_lf_cdef(cpi);
+
+  if (disable_filter_rt_screen ||
+      cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_NONE ||
       (cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_REFERENCE &&
        cpi->svc.non_reference_frame)) {
     lf->filter_level[0] = 0;

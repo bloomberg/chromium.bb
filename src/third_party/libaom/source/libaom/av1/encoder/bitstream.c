@@ -3940,8 +3940,8 @@ static void write_tile_obu_size(AV1_COMP *const cpi, uint8_t *const dst,
 // number of required number of workers based on setup time overhead and job
 // dispatch time overhead for given tiles and available workers.
 int calc_pack_bs_mt_workers(const TileDataEnc *tile_data, int num_tiles,
-                            int avail_workers) {
-  if (AOMMIN(avail_workers, num_tiles) <= 1) return 1;
+                            int avail_workers, bool pack_bs_mt_enabled) {
+  if (!pack_bs_mt_enabled) return 1;
 
   uint64_t frame_abs_sum_level = 0;
 
@@ -3981,7 +3981,8 @@ static INLINE uint32_t pack_tiles_in_tg_obus(
   const int num_tiles = tile_rows * tile_cols;
 
   const int num_workers = calc_pack_bs_mt_workers(
-      cpi->tile_data, num_tiles, cpi->mt_info.num_mod_workers[MOD_PACK_BS]);
+      cpi->tile_data, num_tiles, cpi->mt_info.num_mod_workers[MOD_PACK_BS],
+      cpi->mt_info.pack_bs_mt_enabled);
 
   if (num_workers > 1) {
     av1_write_tile_obu_mt(cpi, dst, &total_size, saved_wb, obu_extension_header,

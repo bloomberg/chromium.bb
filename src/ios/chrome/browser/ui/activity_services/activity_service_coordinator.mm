@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
@@ -70,13 +71,16 @@
       ios::BookmarkModelFactory::GetForBrowserState(browserState);
   id<BookmarksCommands> bookmarksHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), BookmarksCommands);
+  WebNavigationBrowserAgent* agent =
+      WebNavigationBrowserAgent::FromBrowser(self.browser);
   self.mediator =
       [[ActivityServiceMediator alloc] initWithHandler:self.handler
                                       bookmarksHandler:bookmarksHandler
                                    qrGenerationHandler:self.scopedHandler
                                            prefService:browserState->GetPrefs()
                                          bookmarkModel:bookmarkModel
-                                    baseViewController:self.baseViewController];
+                                    baseViewController:self.baseViewController
+                                       navigationAgent:agent];
 
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
@@ -172,12 +176,19 @@
 // Fetches the current tab's URL, configures activities and items, and shows
 // an activity view.
 - (void)shareCurrentPage {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+
+  // In some cases it seems that the share sheet is triggered while no tab is
+  // present (probably due to a timing issue).
+  if (!currentWebState)
+    return;
+
   // Retrieve the current page's URL.
   __weak __typeof(self) weakSelf = self;
-  activity_services::RetrieveCanonicalUrl(
-      self.browser->GetWebStateList()->GetActiveWebState(), ^(const GURL& url) {
-        [weakSelf sharePageWithCanonicalURL:url];
-      });
+  activity_services::RetrieveCanonicalUrl(currentWebState, ^(const GURL& url) {
+    [weakSelf sharePageWithCanonicalURL:url];
+  });
 }
 
 // Shares the current page using its |canonicalURL|.

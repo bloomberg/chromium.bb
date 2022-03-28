@@ -4,27 +4,9 @@
 
 // Flags: --experimental-d8-web-snapshot-api --allow-natives-syntax
 
+'use strict';
 
-function use(exports) {
-  const result = Object.create(null);
-  exports.forEach(x => result[x] = globalThis[x]);
-  return result;
-}
-
-function takeAndUseWebSnapshot(createObjects, exports) {
-  // Take a snapshot in Realm r1.
-  const r1 = Realm.create();
-  Realm.eval(r1, createObjects, { type: 'function' });
-  const snapshot = Realm.takeWebSnapshot(r1, exports);
-  // Use the snapshot in Realm r2.
-  const r2 = Realm.create();
-  const success = Realm.useWebSnapshot(r2, snapshot);
-  assertTrue(success);
-  const result =
-      Realm.eval(r2, use, { type: 'function', arguments: [exports] });
-  %HeapObjectVerify(result);
-  return result;
-}
+d8.file.execute('test/mjsunit/web-snapshot/web-snapshot-helpers.js');
 
 (function TestObjectReferencingObject() {
   function createObjects() {
@@ -112,6 +94,50 @@ function takeAndUseWebSnapshot(createObjects, exports) {
   }
   const { foo } = takeAndUseWebSnapshot(createObjects, ['foo']);
   assertEquals(5, foo.array[0]());
+})();
+
+(function TestInPlaceStringsInArray() {
+  function createObjects() {
+    globalThis.foo = {
+      array: ['foo', 'bar', 'baz']
+    };
+  }
+  const { foo } = takeAndUseWebSnapshot(createObjects, ['foo']);
+  // We cannot test that the strings are really in-place; that's covered by
+  // cctests.
+  assertEquals('foobarbaz', foo.array.join(''));
+})();
+
+(function TestRepeatedInPlaceStringsInArray() {
+  function createObjects() {
+    globalThis.foo = {
+      array: ['foo', 'bar', 'foo']
+    };
+  }
+  const { foo } = takeAndUseWebSnapshot(createObjects, ['foo']);
+  // We cannot test that the strings are really in-place; that's covered by
+  // cctests.
+  assertEquals('foobarfoo', foo.array.join(''));
+})();
+
+(function TestInPlaceStringsInObject() {
+  function createObjects() {
+    globalThis.foo = {a: 'foo', b: 'bar', c: 'baz'};
+  }
+  const { foo } = takeAndUseWebSnapshot(createObjects, ['foo']);
+  // We cannot test that the strings are really in-place; that's covered by
+  // cctests.
+  assertEquals('foobarbaz', foo.a + foo.b + foo.c);
+})();
+
+(function TestRepeatedInPlaceStringsInObject() {
+  function createObjects() {
+    globalThis.foo = {a: 'foo', b: 'bar', c: 'foo'};
+  }
+  const { foo } = takeAndUseWebSnapshot(createObjects, ['foo']);
+  // We cannot test that the strings are really in-place; that's covered by
+  // cctests.
+  assertEquals('foobarfoo', foo.a + foo.b + foo.c);
 })();
 
 (function TestContextReferencingArray() {

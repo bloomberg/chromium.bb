@@ -263,6 +263,8 @@ def _PointInfoDict(row, anomaly_annotation_map):
       point_info['a_default_rev'] = val
     elif name == 'timestamp':
       point_info['timestamp'] = val
+    elif name == 'a_bot_id':
+      point_info['a_bot_id'] = val
     elif name.startswith('a_') and _IsMarkdownLink(val):
       point_info[name] = val
   return point_info

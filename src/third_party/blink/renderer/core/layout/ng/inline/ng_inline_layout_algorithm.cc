@@ -225,6 +225,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
     const NGLineLayoutOpportunity& opportunity,
     NGLineInfo* line_info,
     NGLogicalLineItems* line_box,
+    NGLineBreaker* line_breaker,
     LayoutUnit* ruby_block_start_adjust) {
   // Needs MutableResults to move ShapeResult out of the NGLineInfo.
   NGInlineItemResults* line_items = line_info->MutableResults();
@@ -336,14 +337,11 @@ void NGInlineLayoutAlgorithm::CreateLine(
       has_out_of_flow_positioned_items = true;
     } else if (item.Type() == NGInlineItem::kFloating) {
       if (item_result.positioned_float) {
-        if (item_result.positioned_float->layout_result) {
+        if (!item_result.positioned_float->need_break_before) {
+          DCHECK(item_result.positioned_float->layout_result);
           line_box->AddChild(item_result.positioned_float->layout_result,
                              item_result.positioned_float->bfc_offset,
                              item.BidiLevel());
-        } else {
-          // If we didn't produce a result, it means that we decided to push the
-          // float to the next fragmentainer.
-          DCHECK(ConstraintSpace().HasBlockFragmentation());
         }
       } else {
         line_box->AddChild(item.GetLayoutObject(), item.BidiLevel());
@@ -446,7 +444,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   if (has_floating_items) {
     DCHECK(!line_info->IsBlockInInline());
     PlaceFloatingObjects(*line_info, line_box_metrics, opportunity,
-                         *ruby_block_start_adjust, line_box);
+                         *ruby_block_start_adjust, line_box, line_breaker);
   }
 
   // Apply any relative positioned offsets to *items* which have relative
@@ -663,7 +661,7 @@ void NGInlineLayoutAlgorithm::PlaceBlockInInline(
   }
 
   end_margin_strut_ = result.EndMarginStrut();
-  exclusion_space_ = result.ExclusionSpace();
+  container_builder_.SetExclusionSpace(result.ExclusionSpace());
   container_builder_.SetAdjoiningObjectTypes(result.AdjoiningObjectTypes());
   lines_until_clamp_ = result.LinesUntilClamp();
   if (UNLIKELY(box_fragment.MayHaveDescendantAboveBlockStart()))
@@ -774,7 +772,8 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     const FontHeight& line_box_metrics,
     const NGLineLayoutOpportunity& opportunity,
     LayoutUnit ruby_block_start_adjust,
-    NGLogicalLineItems* line_box) {
+    NGLogicalLineItems* line_box,
+    NGLineBreaker* line_breaker) {
   DCHECK(line_info.IsEmptyLine() || !line_box_metrics.IsEmpty())
       << "Non-empty lines must have a valid set of linebox metrics.";
 
@@ -803,21 +802,21 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     // PositionLeadingFloats step.
     if (child.unpositioned_float) {
       NGPositionedFloat positioned_float = PositionFloat(
-          origin_bfc_block_offset, child.unpositioned_float, &exclusion_space_);
+          origin_bfc_block_offset, child.unpositioned_float, &ExclusionSpace());
       if (positioned_float.need_break_before) {
         // We decided to break before the float. No fragment here. Create a
         // break token and propagate it to the block container.
         NGBlockNode float_node(To<LayoutBox>(child.unpositioned_float.Get()));
         auto* break_before = NGBlockBreakToken::CreateBreakBefore(
             float_node, /* is_forced_break */ false);
-        context_->PropagateBreakToken(break_before);
+        line_breaker->PropagateBreakToken(break_before);
         continue;
       } else {
         // If the float broke inside, we need to propagate the break token to
         // the block container, so that we'll resume in the next fragmentainer.
         if (const NGBreakToken* token =
                 positioned_float.layout_result->PhysicalFragment().BreakToken())
-          context_->PropagateBreakToken(To<NGBlockBreakToken>(token));
+          line_breaker->PropagateBreakToken(To<NGBlockBreakToken>(token));
         child.layout_result = std::move(positioned_float.layout_result);
         child.bfc_offset = positioned_float.bfc_offset;
         child.unpositioned_float = nullptr;
@@ -1097,7 +1096,7 @@ bool NGInlineLayoutAlgorithm::AddAnyClearanceAfterLine(
     LayoutUnit block_end_offset_without_clearence = bfc_offset.block_offset;
     const auto clear_type = item.Style()->Clear(Style());
     if (clear_type != EClear::kNone) {
-      AdjustToClearance(exclusion_space_.ClearanceOffset(clear_type),
+      AdjustToClearance(ExclusionSpace().ClearanceOffset(clear_type),
                         &bfc_offset);
 
       // Unlike regular CSS clearance (which adds space *before* content), BR
@@ -1108,7 +1107,7 @@ bool NGInlineLayoutAlgorithm::AddAnyClearanceAfterLine(
           bfc_offset.block_offset - block_end_offset_without_clearence);
     }
 
-    if (exclusion_space_.NeedsClearancePastFragmentainer(clear_type))
+    if (ExclusionSpace().NeedsClearancePastFragmentainer(clear_type))
       return false;
   }
   return true;
@@ -1116,6 +1115,11 @@ bool NGInlineLayoutAlgorithm::AddAnyClearanceAfterLine(
 
 const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
   NGExclusionSpace initial_exclusion_space(ConstraintSpace().ExclusionSpace());
+
+  // Clear break tokens (for fragmented floats) propagated from the previous
+  // line (or even the *current* line, in cases where we retry layout after
+  // having resolved the BFC offset).
+  context_->ClearPropagatedBreakTokens();
 
   end_margin_strut_ = ConstraintSpace().MarginStrut();
   container_builder_.SetAdjoiningObjectTypes(
@@ -1184,7 +1188,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
 
     // Reset any state that may have been modified in a previous pass.
     container_builder_.Reset();
-    exclusion_space_ = initial_exclusion_space;
+    container_builder_.SetExclusionSpace(initial_exclusion_space);
     is_line_created = false;
 
     NGLineLayoutOpportunity line_opportunity =
@@ -1195,7 +1199,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
     NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
                                ConstraintSpace(), line_opportunity,
                                leading_floats, handled_leading_floats_index,
-                               break_token, &exclusion_space_);
+                               break_token, &ExclusionSpace());
     line_breaker.NextLine(&line_info);
 
     const auto* block_in_inline_result = line_info.BlockInInlineLayoutResult();
@@ -1270,7 +1274,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
     PrepareBoxStates(line_info, break_token);
 
     LayoutUnit ruby_block_start_adjust;
-    CreateLine(line_opportunity, &line_info, line_box,
+    CreateLine(line_opportunity, &line_info, line_box, &line_breaker,
                &ruby_block_start_adjust);
     is_line_created = true;
 
@@ -1373,7 +1377,6 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
 
   CHECK(is_line_created);
   container_builder_.SetEndMarginStrut(end_margin_strut_);
-  container_builder_.SetExclusionSpace(std::move(exclusion_space_));
   container_builder_.SetLinesUntilClamp(lines_until_clamp_);
 
   DCHECK(items_builder);
@@ -1423,7 +1426,6 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
         auto* break_before = NGBlockBreakToken::CreateBreakBefore(
             float_node, /* is_forced_break */ false);
         context_->PropagateBreakToken(break_before);
-        positioned_float.layout_result = nullptr;
       } else if (const NGBreakToken* token =
                      positioned_float.layout_result->PhysicalFragment()
                          .BreakToken()) {

@@ -19,6 +19,7 @@
 #include <mach-o/dyld_images.h>
 #include <mach-o/nlist.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -28,6 +29,7 @@
 #import "Service/Sources/EDOHostNamingService.h"
 #import "Service/Sources/EDOHostService.h"
 #import "Service/Sources/NSObject+EDOValueObject.h"
+#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "client/annotation.h"
 #include "client/annotation_list.h"
@@ -35,9 +37,15 @@
 #include "client/crashpad_client.h"
 #include "client/crashpad_info.h"
 #include "client/simple_string_dictionary.h"
+#include "client/simulate_crash.h"
 #include "snapshot/minidump/process_snapshot_minidump.h"
+#include "test/file.h"
 #import "test/ios/host/cptest_crash_view_controller.h"
 #import "test/ios/host/cptest_shared_object.h"
+#import "test/ios/host/handler_forbidden_allocators.h"
+#include "util/file/filesystem.h"
+#include "util/ios/raw_logging.h"
+#include "util/thread/thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,6 +62,14 @@ base::FilePath GetDatabaseDir() {
                                          inDomains:NSUserDomainMask]
                                   .lastObject.path.UTF8String);
   return database_dir.Append("crashpad");
+}
+
+base::FilePath GetRawLogOutputFile() {
+  base::FilePath document_directory([NSFileManager.defaultManager
+                                        URLsForDirectory:NSDocumentDirectory
+                                               inDomains:NSUserDomainMask]
+                                        .lastObject.path.UTF8String);
+  return document_directory.Append("raw_log_output.txt");
 }
 
 std::unique_ptr<crashpad::CrashReportDatabase> GetDatabase() {
@@ -99,20 +115,34 @@ GetProcessSnapshotMinidumpFromSinglePending() {
 
 @interface CPTestApplicationDelegate ()
 - (void)processIntermediateDumps;
+@property(copy, nonatomic) NSString* raw_log_output;
 @end
 
 @implementation CPTestApplicationDelegate {
   crashpad::CrashpadClient client_;
+  crashpad::ScopedFileHandle raw_logging_file_;
 }
 
 @synthesize window = _window;
 
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
+  base::FilePath raw_log_file_path = GetRawLogOutputFile();
+  NSString* path =
+      [NSString stringWithUTF8String:raw_log_file_path.value().c_str()];
+  self.raw_log_output =
+      [[NSString alloc] initWithContentsOfFile:path
+                                      encoding:NSUTF8StringEncoding
+                                         error:NULL];
+  raw_logging_file_.reset(
+      LoggingOpenFileForWrite(raw_log_file_path,
+                              crashpad::FileWriteMode::kTruncateOrCreate,
+                              crashpad::FilePermissions::kOwnerOnly));
+  crashpad::internal::SetFileHandleForTesting(raw_logging_file_.get());
+
   // Start up crashpad.
   std::map<std::string, std::string> annotations = {
       {"prod", "xcuitest"}, {"ver", "1"}, {"plat", "iOS"}, {"crashpad", "yes"}};
-
   NSArray<NSString*>* arguments = [[NSProcessInfo processInfo] arguments];
   if ([arguments containsObject:@"--alternate-client-annotations"]) {
     annotations = {{"prod", "some_app"},
@@ -248,14 +278,17 @@ GetProcessSnapshotMinidumpFromSinglePending() {
 }
 
 - (void)crashKillAbort {
+  crashpad::test::ReplaceAllocatorsWithHandlerForbidden();
   kill(getpid(), SIGABRT);
 }
 
 - (void)crashTrap {
+  crashpad::test::ReplaceAllocatorsWithHandlerForbidden();
   __builtin_trap();
 }
 
 - (void)crashAbort {
+  crashpad::test::ReplaceAllocatorsWithHandlerForbidden();
   abort();
 }
 
@@ -265,7 +298,8 @@ GetProcessSnapshotMinidumpFromSinglePending() {
 }
 
 - (void)crashNSException {
-  // EDO has its own sinkhole, so dispatch this away.
+  // EDO has its own sinkhole which will suppress this attempt at an NSException
+  // crash, so dispatch this out of the sinkhole.
   dispatch_async(dispatch_get_main_queue(), ^{
     NSError* error = [NSError errorWithDomain:@"com.crashpad.xcuitests"
                                          code:200
@@ -294,7 +328,8 @@ GetProcessSnapshotMinidumpFromSinglePending() {
 }
 
 - (void)crashCoreAutoLayoutSinkhole {
-  // EDO has its own sinkhole, so dispatch this away.
+  // EDO has its own sinkhole which will suppress this attempt at an NSException
+  // crash, so dispatch this out of the sinkhole.
   dispatch_async(dispatch_get_main_queue(), ^{
     UIView* unattachedView = [[UIView alloc] init];
     UIWindow* window = [UIApplication sharedApplication].windows[0];
@@ -352,6 +387,78 @@ GetProcessSnapshotMinidumpFromSinglePending() {
   test_annotation_four.Set("same-name 4");
   test_annotation_two.Clear();
   abort();
+}
+
+class RaceThread : public crashpad::Thread {
+ public:
+  explicit RaceThread() : Thread() {}
+
+  void SetCount(int count) { count_ = count; }
+
+ private:
+  void ThreadMain() override {
+    for (int i = 0; i < count_; ++i) {
+      CRASHPAD_SIMULATE_CRASH();
+    }
+  }
+
+  int count_;
+};
+
+- (void)generateDumpWithoutCrash:(int)dump_count threads:(int)threads {
+  std::vector<RaceThread> race_threads(threads);
+  for (RaceThread& race_thread : race_threads) {
+    race_thread.SetCount(dump_count);
+    race_thread.Start();
+  }
+
+  for (RaceThread& race_thread : race_threads) {
+    race_thread.Join();
+  }
+}
+
+class CrashThread : public crashpad::Thread {
+ public:
+  explicit CrashThread(bool signal) : Thread(), signal_(signal) {}
+
+ private:
+  void ThreadMain() override {
+    sleep(1);
+    if (signal_) {
+      abort();
+    } else {
+      __builtin_trap();
+    }
+  }
+  bool signal_;
+};
+
+- (void)crashConcurrentSignalAndMach {
+  CrashThread signal_thread(true);
+  CrashThread mach_thread(false);
+  signal_thread.Start();
+  mach_thread.Start();
+  signal_thread.Join();
+  mach_thread.Join();
+}
+
+- (void)crashInHandlerReentrant {
+  crashpad::CrashpadClient client_;
+  client_.SetMachExceptionCallbackForTesting(abort);
+
+  // Trigger a Mach exception.
+  [self crashTrap];
+}
+
+- (void)allocateWithForbiddenAllocators {
+  crashpad::test::ReplaceAllocatorsWithHandlerForbidden();
+  (void)malloc(10);
+}
+
+- (NSString*)rawLogContents {
+  CPTestApplicationDelegate* delegate =
+      (CPTestApplicationDelegate*)UIApplication.sharedApplication.delegate;
+  return delegate.raw_log_output;
 }
 
 @end

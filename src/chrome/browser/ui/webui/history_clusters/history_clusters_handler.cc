@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/query_clusters_state.h"
@@ -86,7 +87,7 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
     visit_mojom->annotations.push_back(mojom::Annotation::kSearchResultsPage);
   }
 
-  if (base::FeatureList::IsEnabled(kUserVisibleDebug)) {
+  if (GetConfig().user_visible_debug) {
     visit_mojom->debug_info["visit_id"] =
         base::NumberToString(annotated_visit.visit_row.visit_id);
     visit_mojom->debug_info["score"] = base::NumberToString(visit.score);
@@ -137,6 +138,10 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
   for (const auto& cluster : clusters_batch) {
     auto cluster_mojom = mojom::Cluster::New();
     cluster_mojom->id = cluster.cluster_id;
+    if (cluster.label) {
+      cluster_mojom->label = base::UTF16ToUTF8(*cluster.label);
+    }
+
     for (const auto& visit : cluster.visits) {
       mojom::URLVisitPtr visit_mojom = VisitToMojom(profile, visit);
       if (!cluster_mojom->visit) {
@@ -153,22 +158,22 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
         visit_mojom->below_the_fold =
             (top_visit_mojom->related_visits.size() >=
                  static_cast<size_t>(
-                     kNumVisitsToAlwaysShowAboveTheFold.Get()) &&
-             visit.score < kMinScoreToAlwaysShowAboveTheFold.Get()) ||
+                     GetConfig().num_visits_to_always_show_above_the_fold) &&
+             visit.score <
+                 GetConfig().min_score_to_always_show_above_the_fold) ||
             visit.score == 0.0;
         top_visit_mojom->related_visits.push_back(std::move(visit_mojom));
       }
 
-      // Coalesce the unique related searches of this visit into the top visit
+      // Coalesce the unique related searches of this visit into the cluster
       // until the cap is reached.
-      const auto& top_visit_mojom = cluster_mojom->visit;
       for (const auto& search_query :
            visit.annotated_visit.content_annotations.related_searches) {
-        if (top_visit_mojom->related_searches.size() >= kMaxRelatedSearches) {
+        if (cluster_mojom->related_searches.size() >= kMaxRelatedSearches) {
           break;
         }
 
-        if (base::Contains(top_visit_mojom->related_searches, search_query,
+        if (base::Contains(cluster_mojom->related_searches, search_query,
                            [](const mojom::SearchQueryPtr& search_query_mojom) {
                              return search_query_mojom->query;
                            })) {
@@ -177,7 +182,7 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
 
         auto search_query_mojom = SearchQueryToMojom(profile, search_query);
         if (search_query_mojom) {
-          top_visit_mojom->related_searches.emplace_back(
+          cluster_mojom->related_searches.emplace_back(
               std::move(*search_query_mojom));
         }
       }
@@ -290,6 +295,14 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
     return;
   }
 
+  // Hard cap the number of opened visits in a tab group to 32. It's a
+  // relatively high cap chosen fairly arbitrarily, because the user took an
+  // affirmative action to open this many tabs. And hidden visits aren't opened.
+  constexpr size_t kMaxVisitsToOpenInTabGroup = 32;
+  if (visits.size() > kMaxVisitsToOpenInTabGroup) {
+    visits.resize(kMaxVisitsToOpenInTabGroup);
+  }
+
   auto* model = browser->tab_strip_model();
   std::vector<int> tab_indices;
   tab_indices.reserve(visits.size());
@@ -317,7 +330,7 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
 
 void HistoryClustersHandler::OnDebugMessage(const std::string& message) {
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  if (rfh && base::FeatureList::IsEnabled(kNonUserVisibleDebug)) {
+  if (rfh && GetConfig().non_user_visible_debug) {
     rfh->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kInfo, message);
   }
 }

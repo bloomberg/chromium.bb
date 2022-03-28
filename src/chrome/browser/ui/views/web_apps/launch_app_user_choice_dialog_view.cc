@@ -22,9 +22,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
-#include "content/public/common/custom_handlers/protocol_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -77,13 +75,12 @@ LaunchAppUserChoiceDialogView::LaunchAppUserChoiceDialogView(
     const web_app::AppId& app_id,
     chrome::WebAppLaunchAcceptanceCallback close_callback)
     : profile_(profile),
-      app_id_(std::move(app_id)),
+      app_id_(app_id),
       close_callback_(std::move(close_callback)) {}
 
 LaunchAppUserChoiceDialogView::~LaunchAppUserChoiceDialogView() = default;
 
 void LaunchAppUserChoiceDialogView::Init() {
-  SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
   SetModalType(ui::MODAL_TYPE_NONE);
 #if !BUILDFLAG(IS_CHROMEOS)
   SetTitle(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
@@ -91,11 +88,6 @@ void LaunchAppUserChoiceDialogView::Init() {
   SetShowCloseButton(true);
   SetCanResize(false);
   set_draggable(true);
-
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                 l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
-  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                 l10n_util::GetStringUTF16(IDS_WEB_APP_PERMISSION_DONT_ALLOW));
 
   SetAcceptCallback(base::BindOnce(&LaunchAppUserChoiceDialogView::OnAccepted,
                                    base::Unretained(this)));
@@ -218,9 +210,10 @@ void LaunchAppUserChoiceDialogView::OnIconsRead(
     return;
 
   gfx::Size image_size{web_app::kWebAppIconSmall, web_app::kWebAppIconSmall};
-  auto imageSkia = gfx::ImageSkia(std::make_unique<WebAppInfoImageSource>(
-                                      web_app::kWebAppIconSmall, icon_bitmaps),
-                                  image_size);
+  auto imageSkia =
+      gfx::ImageSkia(std::make_unique<WebAppInfoImageSource>(
+                         web_app::kWebAppIconSmall, std::move(icon_bitmaps)),
+                     image_size);
   icon_image_view_->SetImage(imageSkia);
 }
 

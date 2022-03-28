@@ -5,7 +5,13 @@ import { runRefTest } from './gpu_ref_test.js';
 // <canvas> element from html page
 declare const cvs: HTMLCanvasElement;
 
-export function run(format: GPUTextureFormat, compositingAlphaMode: GPUCanvasCompositingAlphaMode) {
+type WriteCanvasMethod = 'draw' | 'copy';
+
+export function run(
+  format: GPUTextureFormat,
+  compositingAlphaMode: GPUCanvasCompositingAlphaMode,
+  writeCanvasMethod: WriteCanvasMethod
+) {
   runRefTest(async t => {
     const ctx = cvs.getContext('webgpu');
     assert(ctx !== null, 'Failed to get WebGPU context from canvas');
@@ -23,10 +29,19 @@ export function run(format: GPUTextureFormat, compositingAlphaMode: GPUCanvasCom
     // This is mimic globalAlpha in 2d context blending behavior
     const a = compositingAlphaMode === 'opaque' ? (1.0).toFixed(1) : (0.5).toFixed(1);
 
+    let usage = 0;
+    switch (writeCanvasMethod) {
+      case 'draw':
+        usage = GPUTextureUsage.RENDER_ATTACHMENT;
+        break;
+      case 'copy':
+        usage = GPUTextureUsage.COPY_DST;
+        break;
+    }
     ctx.configure({
       device: t.device,
       format,
-      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      usage,
       compositingAlphaMode,
     });
 
@@ -109,12 +124,25 @@ return fragColor;
       },
     });
 
+    let renderTarget: GPUTexture;
+    switch (writeCanvasMethod) {
+      case 'draw':
+        renderTarget = ctx.getCurrentTexture();
+        break;
+      case 'copy':
+        renderTarget = t.device.createTexture({
+          size: [ctx.canvas.width, ctx.canvas.height],
+          format,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+        });
+        break;
+    }
     const renderPassDescriptor: GPURenderPassDescriptor = {
       colorAttachments: [
         {
-          view: ctx.getCurrentTexture().createView(),
-
-          loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          view: renderTarget.createView(),
+          clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+          loadOp: 'clear',
           storeOp: 'store',
         },
       ],
@@ -127,7 +155,24 @@ return fragColor;
     passEncoder.draw(6, 1, 6, 0);
     passEncoder.draw(6, 1, 12, 0);
     passEncoder.draw(6, 1, 18, 0);
-    passEncoder.endPass();
+    passEncoder.end();
+
+    switch (writeCanvasMethod) {
+      case 'draw':
+        break;
+      case 'copy':
+        commandEncoder.copyTextureToTexture(
+          {
+            texture: renderTarget,
+          },
+          {
+            texture: ctx.getCurrentTexture(),
+          },
+          [ctx.canvas.width, ctx.canvas.height]
+        );
+        break;
+    }
+
     t.device.queue.submit([commandEncoder.finish()]);
   });
 }

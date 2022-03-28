@@ -101,10 +101,11 @@ void StopTracing(GCTracer* tracer, GarbageCollector collector) {
   tracer->StopAtomicPause();
   tracer->StopObservablePause();
   tracer->UpdateStatistics(collector);
-  if (Heap::IsYoungGenerationCollector(collector))
+  if (Heap::IsYoungGenerationCollector(collector)) {
     tracer->StopCycle(collector);
-  else
-    tracer->StopCycleIfSweeping();
+  } else {
+    tracer->NotifySweepingCompleted();
+  }
 }
 
 }  // namespace
@@ -541,7 +542,8 @@ TEST_F(GCTracerTest, RecordMarkCompactHistograms) {
   tracer->current_.scopes[GCTracer::Scope::MC_MARK] = 5;
   tracer->current_.scopes[GCTracer::Scope::MC_PROLOGUE] = 6;
   tracer->current_.scopes[GCTracer::Scope::MC_SWEEP] = 7;
-  tracer->RecordGCPhasesHistograms(i_isolate()->counters()->gc_finalize());
+  tracer->RecordGCPhasesHistograms(
+      GCTracer::RecordGCPhasesInfo::Mode::Finalize);
   EXPECT_EQ(1, GcHistogram::Get("V8.GCFinalizeMC.Clear")->Total());
   EXPECT_EQ(2, GcHistogram::Get("V8.GCFinalizeMC.Epilogue")->Total());
   EXPECT_EQ(3, GcHistogram::Get("V8.GCFinalizeMC.Evacuate")->Total());
@@ -560,33 +562,10 @@ TEST_F(GCTracerTest, RecordScavengerHistograms) {
   tracer->ResetForTesting();
   tracer->current_.scopes[GCTracer::Scope::SCAVENGER_SCAVENGE_ROOTS] = 1;
   tracer->current_.scopes[GCTracer::Scope::SCAVENGER_SCAVENGE_PARALLEL] = 2;
-  tracer->RecordGCPhasesHistograms(i_isolate()->counters()->gc_scavenger());
+  tracer->RecordGCPhasesHistograms(
+      GCTracer::RecordGCPhasesInfo::Mode::Scavenger);
   EXPECT_EQ(1, GcHistogram::Get("V8.GCScavenger.ScavengeRoots")->Total());
   EXPECT_EQ(2, GcHistogram::Get("V8.GCScavenger.ScavengeMain")->Total());
-  GcHistogram::CleanUp();
-}
-
-TEST_F(GCTracerTest, RecordGCSumHistograms) {
-  if (FLAG_stress_incremental_marking) return;
-  isolate()->SetCreateHistogramFunction(&GcHistogram::CreateHistogram);
-  isolate()->SetAddHistogramSampleFunction(&GcHistogram::AddHistogramSample);
-  GCTracer* tracer = i_isolate()->heap()->tracer();
-  tracer->ResetForTesting();
-  StartTracing(tracer, GarbageCollector::MARK_COMPACTOR,
-               StartTracingMode::kIncrementalStart);
-  tracer->current_
-      .incremental_marking_scopes[GCTracer::Scope::MC_INCREMENTAL_START]
-      .duration = 1;
-  tracer->current_
-      .incremental_marking_scopes[GCTracer::Scope::MC_INCREMENTAL_SWEEPING]
-      .duration = 2;
-  tracer->AddIncrementalMarkingStep(3.0, 1024);
-  tracer->current_
-      .incremental_marking_scopes[GCTracer::Scope::MC_INCREMENTAL_FINALIZE]
-      .duration = 4;
-  const double atomic_pause_duration = 5.0;
-  tracer->RecordGCSumCounters(atomic_pause_duration);
-  EXPECT_EQ(15, GcHistogram::Get("V8.GCMarkCompactor")->Total());
   GcHistogram::CleanUp();
 }
 

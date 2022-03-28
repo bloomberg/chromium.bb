@@ -4,10 +4,12 @@
 
 #include "components/viz/service/display/overlay_processor_ozone.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -130,6 +132,7 @@ OverlayProcessorOzone::OverlayProcessorOzone(
         NOTREACHED();
     }
   }
+  MaybeObserveHardwareCapabilities();
 }
 
 OverlayProcessorOzone::~OverlayProcessorOzone() = default;
@@ -195,11 +198,10 @@ void OverlayProcessorOzone::CheckOverlaySupportImpl(
       // to not display it at all).
       // TODO(b/181974042): plumb the color space all the way to the ozone DRM
       // backend when we get an API for per-plane color management.
-      DCHECK(primary_plane);
       if (!surface_iterator->requires_overlay &&
           !AllowColorSpaceCombination(
               /*source_color_space=*/surface_iterator->color_space,
-              /*destination_color_space=*/primary_plane->color_space)) {
+              /*destination_color_space=*/primary_plane_color_space_)) {
         *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
         ozone_surface_iterator->plane_z_order = surface_iterator->plane_z_order;
         continue;
@@ -238,6 +240,26 @@ void OverlayProcessorOzone::CheckOverlaySupportImpl(
       surface_iterator->display_rect = ozone_surface_iterator->display_rect;
     }
   }
+}
+
+void OverlayProcessorOzone::MaybeObserveHardwareCapabilities() {
+  // HardwareCapabilities isn't necessary unless attempting multiple overlays.
+  if (max_overlays_config_ <= 1) {
+    return;
+  }
+  overlay_candidates_->ObserveHardwareCapabilities(
+      base::BindRepeating(&OverlayProcessorOzone::ReceiveHardwareCapabilities,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OverlayProcessorOzone::ReceiveHardwareCapabilities(
+    ui::HardwareCapabilities hardware_capabilities) {
+  // Subtract 1 because one of these overlay capable planes will be needed for
+  // the primary plane.
+  int max_overlays_supported =
+      hardware_capabilities.num_overlay_capable_planes - 1;
+  max_overlays_considered_ =
+      std::min(max_overlays_supported, max_overlays_config_);
 }
 
 gfx::Rect OverlayProcessorOzone::GetOverlayDamageRectForOutputSurface(

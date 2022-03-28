@@ -673,6 +673,7 @@ StackFrame::Type StackFrame::ComputeType(const StackFrameIteratorBase* iterator,
           }
           return BUILTIN;
         case CodeKind::TURBOFAN:
+        case CodeKind::MAGLEV:
           return OPTIMIZED;
         case CodeKind::BASELINE:
           return Type::BASELINE;
@@ -1060,10 +1061,10 @@ void CommonFrame::IterateCompiledFrame(RootVisitor* v) const {
   if (!is_wasm) {
     InnerPointerToCodeCache::InnerPointerToCodeCacheEntry* entry =
         isolate()->inner_pointer_to_code_cache()->GetCacheEntry(inner_pointer);
-    if (!entry->safepoint_entry.is_valid()) {
+    if (!entry->safepoint_entry.is_initialized()) {
       entry->safepoint_entry =
           entry->code.GetSafepointEntry(isolate(), inner_pointer);
-      DCHECK(entry->safepoint_entry.is_valid());
+      DCHECK(entry->safepoint_entry.is_initialized());
     } else {
       DCHECK_EQ(entry->safepoint_entry,
                 entry->code.GetSafepointEntry(isolate(), inner_pointer));
@@ -1085,7 +1086,6 @@ void CommonFrame::IterateCompiledFrame(RootVisitor* v) const {
     if (is_wasm_call) has_tagged_outgoing_params = false;
 #endif  // V8_ENABLE_WEBASSEMBLY
   }
-  uint32_t slot_space = stack_slots * kSystemPointerSize;
 
   // Determine the fixed header and spill slot area size.
   int frame_header_size = StandardFrameConstants::kFixedFrameSizeFromFp;
@@ -1143,14 +1143,22 @@ void CommonFrame::IterateCompiledFrame(RootVisitor* v) const {
         UNREACHABLE();
     }
   }
-  slot_space -=
+
+  // slot_space holds the actual number of spill slots, without fixed frame
+  // slots.
+  const uint32_t slot_space =
+      stack_slots * kSystemPointerSize -
       (frame_header_size + StandardFrameConstants::kFixedFrameSizeAboveFp);
 
+  // base <= limit.
+  // Fixed frame slots.
   FullObjectSlot frame_header_base(&Memory<Address>(fp() - frame_header_size));
   FullObjectSlot frame_header_limit(
       &Memory<Address>(fp() - StandardFrameConstants::kCPSlotSize));
+  // Parameters passed to the callee.
   FullObjectSlot parameters_base(&Memory<Address>(sp()));
   FullObjectSlot parameters_limit(frame_header_base.address() - slot_space);
+  // Spill slots are in the region ]frame_header_base, parameters_limit];
 
   // Visit the rest of the parameters if they are tagged.
   if (has_tagged_outgoing_params) {
@@ -1165,7 +1173,7 @@ void CommonFrame::IterateCompiledFrame(RootVisitor* v) const {
   PtrComprCageBase cage_base(isolate());
   for (uint8_t bits : safepoint_entry.tagged_slots()) {
     while (bits) {
-      int bit = base::bits::CountTrailingZeros(bits);
+      const int bit = base::bits::CountTrailingZeros(bits);
       bits &= ~(1 << bit);
       FullObjectSlot spill_slot = parameters_limit + slot_offset + bit;
 #ifdef V8_COMPRESS_POINTERS
@@ -1203,7 +1211,17 @@ void CommonFrame::IterateCompiledFrame(RootVisitor* v) const {
             HeapObject forwarded = map_word.IsForwardingAddress()
                                        ? map_word.ToForwardingAddress()
                                        : raw;
-            CHECK(forwarded.map(cage_base).IsMap());
+            bool is_self_forwarded =
+                forwarded.map_word(cage_base, kRelaxedLoad).ptr() ==
+                forwarded.address();
+            if (is_self_forwarded) {
+              // The object might be in a self-forwarding state if it's located
+              // in new large object space. GC will fix this at a later stage.
+              CHECK(BasicMemoryChunk::FromHeapObject(forwarded)
+                        ->InNewLargeObjectSpace());
+            } else {
+              CHECK(forwarded.map(cage_base).IsMap(cage_base));
+            }
           }
         }
       } else {
@@ -2035,7 +2053,7 @@ void WasmFrame::Print(StringStream* accumulator, PrintMode mode,
     return;
   }
   wasm::WasmCodeRefScope code_ref_scope;
-  accumulator->Add("WASM [");
+  accumulator->Add("Wasm [");
   accumulator->PrintName(script().name());
   Address instruction_start = wasm_code()->instruction_start();
   base::Vector<const uint8_t> raw_func_name =
@@ -2162,7 +2180,7 @@ void WasmDebugBreakFrame::Iterate(RootVisitor* v) const {
 void WasmDebugBreakFrame::Print(StringStream* accumulator, PrintMode mode,
                                 int index) const {
   PrintIndex(accumulator, mode, index);
-  accumulator->Add("WASM DEBUG BREAK");
+  accumulator->Add("WasmDebugBreak");
   if (mode != OVERVIEW) accumulator->Add("\n");
 }
 

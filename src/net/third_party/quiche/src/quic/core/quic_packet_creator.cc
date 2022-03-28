@@ -14,6 +14,7 @@
 #include "absl/base/macros.h"
 #include "absl/base/optimization.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "quic/core/crypto/crypto_protocol.h"
@@ -1122,6 +1123,7 @@ size_t QuicPacketCreator::SerializeCoalescedPacket(
   QUIC_BUG_IF(quic_bug_12398_15, coalesced.length() == 0)
       << ENDPOINT << "Attempt to serialize empty coalesced packet";
   size_t packet_length = 0;
+  size_t initial_length = 0;
   if (coalesced.initial_packet() != nullptr) {
     // Padding coalesced packet containing initial packet to full.
     size_t padding_size = coalesced.max_packet_length() - coalesced.length();
@@ -1132,7 +1134,7 @@ size_t QuicPacketCreator::SerializeCoalescedPacket(
       // Do not pad server initial connection close packet.
       padding_size = 0;
     }
-    size_t initial_length = ReserializeInitialPacketInCoalescedPacket(
+    initial_length = ReserializeInitialPacketInCoalescedPacket(
         *coalesced.initial_packet(), padding_size, buffer, buffer_len);
     if (initial_length == 0) {
       QUIC_BUG(quic_bug_10752_19)
@@ -1147,6 +1149,14 @@ size_t QuicPacketCreator::SerializeCoalescedPacket(
   }
   size_t length_copied = 0;
   if (!coalesced.CopyEncryptedBuffers(buffer, buffer_len, &length_copied)) {
+    QUIC_BUG(quic_serialize_coalesced_packet_copy_failure)
+        << "SerializeCoalescedPacket failed. buffer_len:" << buffer_len
+        << ", initial_length:" << initial_length
+        << ", length_copied:" << length_copied
+        << ", coalesced.length:" << coalesced.length()
+        << ", coalesced.max_packet_length:" << coalesced.max_packet_length()
+        << ", coalesced.packet_lengths:"
+        << absl::StrJoin(coalesced.packet_lengths(), ":");
     return 0;
   }
   packet_length += length_copied;
@@ -1451,17 +1461,16 @@ size_t QuicPacketCreator::ConsumeCryptoData(EncryptionLevel level,
             level, write_length - total_bytes_consumed,
             offset + total_bytes_consumed, fully_pad_crypto_handshake_packets_,
             next_transmission_type_, &frame)) {
-      // The only pending data in the packet is non-retransmittable frames. I'm
-      // assuming here that they won't occupy so much of the packet that a
+      // The only pending data in the packet is non-retransmittable frames.
+      // I'm assuming here that they won't occupy so much of the packet that a
       // CRYPTO frame won't fit.
-      const std::string error_message = absl::StrCat(
+      QUIC_BUG_IF(quic_bug_10752_26, !HasSoftMaxPacketLength()) << absl::StrCat(
           ENDPOINT, "Failed to ConsumeCryptoData at level ", level,
           ", pending_frames: ", GetPendingFramesInfo(),
           ", has_soft_max_packet_length: ", HasSoftMaxPacketLength(),
           ", max_packet_length: ", max_packet_length_, ", transmission_type: ",
           TransmissionTypeToString(next_transmission_type_),
           ", packet_number: ", packet_number().ToString());
-      QUIC_BUG(quic_bug_10752_26) << error_message;
       return 0;
     }
     total_bytes_consumed += frame.crypto_frame->data_length;
@@ -1527,9 +1536,7 @@ bool QuicPacketCreator::FlushAckFrame(const QuicFrames& frames) {
          "generator tries to send ACK frame.";
   // MaybeBundleAckOpportunistically could be called nestedly when sending a
   // control frame causing another control frame to be sent.
-  QUIC_BUG_IF(quic_bug_12398_18,
-              GetQuicReloadableFlag(quic_single_ack_in_packet2) &&
-                  !frames.empty() && has_ack())
+  QUIC_BUG_IF(quic_bug_12398_18, !frames.empty() && has_ack())
       << ENDPOINT << "Trying to flush " << quiche::PrintElements(frames)
       << " when there is ACK queued";
   for (const auto& frame : frames) {
@@ -1605,7 +1612,7 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
 }
 
 MessageStatus QuicPacketCreator::AddMessageFrame(
-    QuicMessageId message_id, absl::Span<QuicMemSlice> message) {
+    QuicMessageId message_id, absl::Span<quiche::QuicheMemSlice> message) {
   QUIC_BUG_IF(quic_bug_10752_33, !flusher_attached_)
       << ENDPOINT
       << "Packet flusher is not attached when "
@@ -2220,7 +2227,6 @@ bool QuicPacketCreator::AddPathResponseFrame(
   }
 
   QUIC_DVLOG(1) << ENDPOINT << "Can't send PATH_RESPONSE now";
-  QUIC_RELOADABLE_FLAG_COUNT_N(quic_send_path_response2, 5, 5);
   delete path_response;
   return false;
 }

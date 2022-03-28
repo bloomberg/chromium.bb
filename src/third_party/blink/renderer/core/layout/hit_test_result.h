@@ -126,7 +126,7 @@ class CORE_EXPORT HitTestResult {
     SetInnerNode(node);
   }
   void SetNodeAndPosition(Node*,
-                          scoped_refptr<const NGPhysicalBoxFragment>,
+                          const NGPhysicalBoxFragment*,
                           const PhysicalOffset&);
 
   // Override an inner node previously set. The new node needs to be monolithic
@@ -190,6 +190,10 @@ class CORE_EXPORT HitTestResult {
                                                         const cc::Region&);
 
   void Append(const HitTestResult&);
+
+  bool HasListBasedResult() const {
+    return GetHitTestRequest().ListBased() && InnerNode();
+  }
 
   // If m_listBasedTestResult is 0 then set it to a new NodeSet. Return
   // *m_listBasedTestResult. Lazy allocation makes sense because the NodeSet is

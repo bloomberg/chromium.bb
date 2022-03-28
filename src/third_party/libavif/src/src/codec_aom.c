@@ -43,10 +43,8 @@
 #endif
 
 // Speeds 7-9 were added to all intra mode in https://aomedia-review.googlesource.com/c/aom/+/140624.
-#if defined(AOM_EXT_PART_ABI_VERSION)
-#if AOM_ENCODER_ABI_VERSION >= (10 + AOM_CODEC_ABI_VERSION + AOM_EXT_PART_ABI_VERSION)
+#if AOM_ENCODER_ABI_VERSION >= (10 + AOM_CODEC_ABI_VERSION + /*AOM_EXT_PART_ABI_VERSION=*/1)
 #define ALL_INTRA_HAS_SPEEDS_7_TO_9 1
-#endif
 #endif
 #endif
 
@@ -179,6 +177,11 @@ static avifBool aomCodecGetNextImage(struct avifCodec * codec,
                 yuvFormat = AVIF_PIXEL_FORMAT_YUV444;
                 break;
             case AOM_IMG_FMT_NONE:
+#if defined(AOM_HAVE_IMG_FMT_NV12)
+            // Although the libaom encoder supports the NV12 image format as an input format, the
+            // libaom decoder does not support NV12 as an output format.
+            case AOM_IMG_FMT_NV12:
+#endif
             case AOM_IMG_FMT_YV12:
             case AOM_IMG_FMT_AOMYV12:
             case AOM_IMG_FMT_YV1216:

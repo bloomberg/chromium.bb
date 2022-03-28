@@ -31,6 +31,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/fx_string_wrappers.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
@@ -535,15 +536,15 @@ bool CPDF_NPageToOneExporter::ExportNPagesToOne(
   size_t nPagesPerSheet = nSafePagesPerSheet.ValueOrDie();
   NupState nupState(destPageSize, nPagesOnXAxis, nPagesOnYAxis);
 
-  size_t curpage = 0;
+  FX_SAFE_INT32 curpage = 0;
   const CFX_FloatRect destPageRect(0, 0, destPageSize.width,
                                    destPageSize.height);
   for (size_t iOuterPage = 0; iOuterPage < pageIndices.size();
        iOuterPage += nPagesPerSheet) {
     m_XObjectNameToNumberMap.clear();
 
-    // Create a new page
-    CPDF_Dictionary* pDestPageDict = dest()->CreateNewPage(curpage);
+    CPDF_Dictionary* pDestPageDict =
+        dest()->CreateNewPage(curpage.ValueOrDie());
     if (!pDestPageDict)
       return false;
 

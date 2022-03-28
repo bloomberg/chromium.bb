@@ -71,7 +71,10 @@ source_set("fpdfsdk") {
     "ipdfsdk_annothandler.h",
   ]
 
-  configs += [ "../:pdfium_strict_config" ]
+  configs += [
+    "../:pdfium_strict_config",
+    "../:pdfium_noshorten_config",
+  ]
   deps = [
     "../:pdfium_public_headers",
     "../constants",
@@ -117,8 +120,9 @@ pdfium_unittest_source_set("unittests") {
     ":fpdfsdk",
     "../:pdfium_public_headers",
     "../constants",
-    "../core/fpdfapi/page",
+    "../core/fpdfapi/page:unit_test_support",
     "../core/fpdfapi/parser",
+    "../core/fpdfapi/parser:unit_test_support",
     "../core/fpdfapi/render",
     "../core/fpdfdoc",
   ]

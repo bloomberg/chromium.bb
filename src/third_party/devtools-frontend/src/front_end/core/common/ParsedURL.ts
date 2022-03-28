@@ -64,6 +64,16 @@ export function normalizePath(path: string): string {
   return normalizedPath;
 }
 
+/**
+ * File paths in DevTools that are represented either as unencoded absolute or relative paths, or encoded paths, or URLs.
+ * @example
+ * RawPathString: “/Hello World/file.js”
+ * EncodedPathString: “/Hello%20World/file.js”
+ * UrlString: “file:///Hello%20World/file/js”
+ */
+type BrandedPathString =
+    Platform.DevToolsPath.UrlString|Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.EncodedPathString;
+
 export class ParsedURL {
   isValid: boolean;
   url: string;
@@ -215,16 +225,44 @@ export class ParsedURL {
     return decodedFileURL.substr('file://'.length) as Platform.DevToolsPath.RawPathString;
   }
 
-  static substr<DevToolsPathType extends Platform.DevToolsPath.UrlString|Platform.DevToolsPath.RawPathString|
-                                         Platform.DevToolsPath.EncodedPathString>(
+  static sliceUrlToEncodedPathString(url: Platform.DevToolsPath.UrlString, start: number):
+      Platform.DevToolsPath.EncodedPathString {
+    return url.substring(start) as Platform.DevToolsPath.EncodedPathString;
+  }
+
+  static substr<DevToolsPathType extends BrandedPathString>(
       devToolsPath: DevToolsPathType, from: number, length?: number): DevToolsPathType {
     return devToolsPath.substr(from, length) as DevToolsPathType;
   }
 
-  static concatenate<DevToolsPathType extends Platform.DevToolsPath.UrlString|Platform.DevToolsPath
-                                                  .RawPathString|Platform.DevToolsPath.EncodedPathString>(
+  static substring<DevToolsPathType extends BrandedPathString>(
+      devToolsPath: DevToolsPathType, start: number, end?: number): DevToolsPathType {
+    return devToolsPath.substring(start, end) as DevToolsPathType;
+  }
+
+  static prepend<DevToolsPathType extends BrandedPathString>(prefix: string, devToolsPath: DevToolsPathType):
+      DevToolsPathType {
+    return prefix + devToolsPath as DevToolsPathType;
+  }
+
+  static concatenate<DevToolsPathType extends BrandedPathString>(
       devToolsPath: DevToolsPathType, ...appendage: string[]): DevToolsPathType {
     return devToolsPath.concat(...appendage) as DevToolsPathType;
+  }
+
+  static trim<DevToolsPathType extends BrandedPathString>(devToolsPath: DevToolsPathType): DevToolsPathType {
+    return devToolsPath.trim() as DevToolsPathType;
+  }
+
+  static slice<DevToolsPathType extends BrandedPathString>(
+      devToolsPath: DevToolsPathType, start?: number, end?: number): DevToolsPathType {
+    return devToolsPath.slice(start, end) as DevToolsPathType;
+  }
+
+  static join<DevToolsPathType extends Platform.DevToolsPath.UrlString|Platform.DevToolsPath.RawPathString|
+                                       Platform.DevToolsPath.EncodedPathString>(
+      devToolsPaths: DevToolsPathType[], separator?: string): DevToolsPathType {
+    return devToolsPaths.join(separator) as DevToolsPathType;
   }
 
   static urlWithoutHash(url: string): string {
@@ -301,12 +339,12 @@ export class ParsedURL {
     return index < 0 ? pathAndQuery : pathAndQuery.substr(0, index);
   }
 
-  static completeURL(baseURL: string, href: string): string|null {
+  static completeURL(baseURL: Platform.DevToolsPath.UrlString, href: string): Platform.DevToolsPath.UrlString|null {
     // Return special URLs as-is.
     const trimmedHref = href.trim();
     if (trimmedHref.startsWith('data:') || trimmedHref.startsWith('blob:') || trimmedHref.startsWith('javascript:') ||
         trimmedHref.startsWith('mailto:')) {
-      return href;
+      return href as Platform.DevToolsPath.UrlString;
     }
 
     // Return absolute URLs with normalized path and other components as-is.
@@ -315,7 +353,7 @@ export class ParsedURL {
       const securityOrigin = parsedHref.securityOrigin();
       const pathText = parsedHref.path;
       const hrefSuffix = trimmedHref.substring(securityOrigin.length + pathText.length);
-      return securityOrigin + normalizePath(pathText) + hrefSuffix;
+      return securityOrigin + normalizePath(pathText) + hrefSuffix as Platform.DevToolsPath.UrlString;
     }
 
     const parsedURL = this.fromString(baseURL);
@@ -324,12 +362,12 @@ export class ParsedURL {
     }
 
     if (parsedURL.isDataURL()) {
-      return href;
+      return href as Platform.DevToolsPath.UrlString;
     }
 
     if (href.length > 1 && href.charAt(0) === '/' && href.charAt(1) === '/') {
       // href starts with "//" which is a full URL with the protocol dropped (use the baseURL protocol).
-      return parsedURL.scheme + ':' + href;
+      return parsedURL.scheme + ':' + href as Platform.DevToolsPath.UrlString;
     }
 
     const securityOrigin = parsedURL.securityOrigin();
@@ -338,15 +376,15 @@ export class ParsedURL {
 
     // Empty href resolves to a URL without fragment.
     if (!href.length) {
-      return securityOrigin + pathText + queryText;
+      return securityOrigin + pathText + queryText as Platform.DevToolsPath.UrlString;
     }
 
     if (href.charAt(0) === '#') {
-      return securityOrigin + pathText + queryText + href;
+      return securityOrigin + pathText + queryText + href as Platform.DevToolsPath.UrlString;
     }
 
     if (href.charAt(0) === '?') {
-      return securityOrigin + pathText + href;
+      return securityOrigin + pathText + href as Platform.DevToolsPath.UrlString;
     }
 
     const hrefMatches = href.match(/^[^#?]*/);
@@ -358,7 +396,7 @@ export class ParsedURL {
     if (hrefPath.charAt(0) !== '/') {
       hrefPath = parsedURL.folderPathComponents + '/' + hrefPath;
     }
-    return securityOrigin + normalizePath(hrefPath) + hrefSuffix;
+    return securityOrigin + normalizePath(hrefPath) + hrefSuffix as Platform.DevToolsPath.UrlString;
   }
 
   static splitLineAndColumn(string: string): {

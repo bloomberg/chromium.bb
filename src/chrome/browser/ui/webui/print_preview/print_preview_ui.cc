@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
-#include "chrome/browser/ui/webui/print_preview/data_request_filter.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -288,8 +287,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF},
     {"printing", IDS_PRINT_PREVIEW_PRINTING},
     {"recentDestinationsTitle", IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE},
-    {"registerPrinterInformationMessage",
-     IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION},
     {"resolveExtensionUSBDialogTitle",
      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_DIALOG_TITLE},
     {"resolveExtensionUSBErrorMessage",
@@ -378,9 +375,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
-  // TODO(crbug.com/1238829): Only serve PDF from chrome-untrusted://print. The
-  // legacy Pepper-based PDF plugin still requires this.
-  AddDataRequestFilter(*source);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ChildSrc,
       "child-src 'self' chrome-untrusted://print;");
@@ -442,7 +436,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
   // this UI is around.
   if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
     service_manager_client_id_ =
-        PrintBackendServiceManager::GetInstance().RegisterClient();
+        PrintBackendServiceManager::GetInstance().RegisterQueryClient();
   }
 #endif
 }
@@ -472,7 +466,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
   // this UI is around.
   if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
     service_manager_client_id_ =
-        PrintBackendServiceManager::GetInstance().RegisterClient();
+        PrintBackendServiceManager::GetInstance().RegisterQueryClient();
   }
 #endif
 }

@@ -59,6 +59,7 @@ void MediumEnvironment::Reset() {
     bluetooth_adapters_.clear();
     bluetooth_mediums_.clear();
     ble_mediums_.clear();
+    ble_v2_mediums_.clear();
 #ifndef NO_WEBRTC
     webrtc_signaling_message_callback_.clear();
     webrtc_signaling_complete_callback_.clear();
@@ -226,6 +227,15 @@ void MediumEnvironment::OnBlePeripheralStateChanged(
       info.discovery_callback.peripheral_lost_cb(peripheral, service_id);
     }
   });
+}
+
+void MediumEnvironment::OnBleV2PeripheralStateChanged(
+    bool is_fast_advertisement, bool enabled, BleV2MediumContext& info) {
+  if (!enabled_) return;
+  NEARBY_LOGS(INFO) << "G3 OnBleServiceStateChanged, context=" << &info
+                    << ", notify=" << enable_notifications_.load();
+  if (!enable_notifications_) return;
+  // TODO(edwinwu): Report Advertisement found
 }
 
 void MediumEnvironment::OnWifiLanServiceStateChanged(
@@ -477,6 +487,54 @@ void MediumEnvironment::CallBleAcceptedConnectionCallback(
         info.accepted_connection_callback.accepted_cb(socket, service_id);
       });
 }
+
+void MediumEnvironment::RegisterBleV2Medium(api::ble_v2::BleMedium& medium) {
+  if (!enabled_) return;
+  RunOnMediumEnvironmentThread([this, &medium]() {
+    ble_v2_mediums_.insert({&medium, BleV2MediumContext{}});
+    NEARBY_LOGS(INFO) << "Registered: medium:" << &medium;
+  });
+}
+
+// TODO(b/213691253): Add g3 BleV2 medium tests after more functions are ready.
+void MediumEnvironment::UpdateBleV2MediumForAdvertising(
+    bool is_fast_advertisement, bool enabled, api::ble_v2::BleMedium& medium,
+    ByteArray* advertisement_byte) {
+  if (!enabled_) return;
+  RunOnMediumEnvironmentThread([this, &medium, advertisement_byte,
+                                is_fast_advertisement, enabled]() {
+    auto it = ble_v2_mediums_.find(&medium);
+    if (it == ble_v2_mediums_.end()) {
+      NEARBY_LOGS(INFO) << "UpdateBleMediumForAdvertising failed. There is no "
+                           "medium registered.";
+      return;
+    }
+    auto& context = it->second;
+    context.advertisement_byte = advertisement_byte;
+    context.is_fast_advertisement = is_fast_advertisement;
+    NEARBY_LOGS(INFO) << "Update Ble medium for advertising: this=" << this
+                      << ", medium=" << &medium
+                      << ", is_fast_advertisement=" << is_fast_advertisement
+                      << ", enabled=" << enabled;
+    for (auto& medium_info : ble_v2_mediums_) {
+      auto& local_medium = medium_info.first;
+      auto& info = medium_info.second;
+      // Do not send notification to the same medium.
+      if (local_medium == &medium) continue;
+      OnBleV2PeripheralStateChanged(is_fast_advertisement, enabled, info);
+    }
+  });
+}
+
+void MediumEnvironment::UnregisterBleV2Medium(api::ble_v2::BleMedium& medium) {
+  if (!enabled_) return;
+  RunOnMediumEnvironmentThread([this, &medium]() {
+    auto item = ble_v2_mediums_.extract(&medium);
+    if (item.empty()) return;
+    NEARBY_LOGS(INFO) << "Unregistered Ble medium";
+  });
+}
+
 #ifndef NO_WEBRTC
 void MediumEnvironment::RegisterWebRtcSignalingMessenger(
     absl::string_view self_id, OnSignalingMessageCallback message_callback,

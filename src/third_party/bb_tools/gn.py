@@ -141,6 +141,10 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     'proprietary_codecs': True,
     'ffmpeg_branding': 'Chrome',
 
+    # This COM check hook seems to cause some problems on some developer
+    # workstations.
+    'com_init_check_hook_disabled': True,
+
     # Apply the content shell version.
     'content_shell_version': chromium_version,
     'content_shell_major_version': chromium_version.split('.')[0],

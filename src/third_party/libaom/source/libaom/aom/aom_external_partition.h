@@ -20,6 +20,10 @@
 
 /*!\file
  * \brief Provides function pointer definitions for the external partition.
+ *
+ * \note The external partition API should be considered experimental. Until the
+ * external partition API is declared stable, breaking changes may be made to
+ * this API in a future libaom release.
  */
 
 /*!\brief Current ABI version number

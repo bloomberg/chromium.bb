@@ -5,7 +5,7 @@
 // clang-format off
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {AutofillManagerProxy, PasswordEditDialogElement, PasswordListItemElement, PasswordMoveMultiplePasswordsToAccountDialogElement, PasswordsExportDialogElement, PasswordsSectionElement, PaymentsManagerProxy, PersonalDataChangedListener} from 'chrome://settings/lazy_load.js';
+import {AutofillManagerProxy, PasswordDialogMode, PasswordEditDialogElement, PasswordListItemElement, PasswordMoveMultiplePasswordsToAccountDialogElement, PasswordsExportDialogElement, PasswordsSectionElement, PaymentsManagerProxy, PersonalDataChangedListener} from 'chrome://settings/lazy_load.js';
 import {MultiStoreExceptionEntry, MultiStorePasswordUiEntry, PasswordManagerProxy} from 'chrome://settings/settings.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 
@@ -20,6 +20,7 @@ export type PasswordEntryParams = {
   id?: number,
   frontendId?: number,
   fromAccountStore?: boolean,
+  note?: string,
 };
 
 /**
@@ -38,6 +39,7 @@ export function createPasswordEntry(params?: PasswordEntryParams):
   const id = params.id !== undefined ? params.id : 42;
   const frontendId = params.frontendId !== undefined ? params.frontendId : id;
   const fromAccountStore = params.fromAccountStore || false;
+  const note = params.note || '';
 
   return {
     urls: {
@@ -50,6 +52,7 @@ export function createPasswordEntry(params?: PasswordEntryParams):
     id: id,
     frontendId: frontendId,
     fromAccountStore: fromAccountStore,
+    passwordNote: note,
   };
 }
 
@@ -59,6 +62,7 @@ export type MultyStorePasswordEntryParams = {
   federationText?: string,
   accountId?: number,
   deviceId?: number,
+  note?: string,
 };
 
 /**
@@ -77,7 +81,8 @@ export function createMultiStorePasswordEntry(
       federationText: params.federationText,
       id: params.deviceId,
       frontendId: dummyFrontendId,
-      fromAccountStore: false
+      fromAccountStore: false,
+      note: params.note,
     });
   }
   if (params.accountId !== undefined) {
@@ -87,7 +92,8 @@ export function createMultiStorePasswordEntry(
       federationText: params.federationText,
       id: params.accountId,
       frontendId: dummyFrontendId,
-      fromAccountStore: true
+      fromAccountStore: true,
+      note: params.note,
     });
   }
 
@@ -385,9 +391,12 @@ export class PasswordSectionElementFactory {
   createPasswordEditDialog(
       passwordEntry: MultiStorePasswordUiEntry|null = null,
       passwords?: MultiStorePasswordUiEntry[],
-      isAccountStoreUser: boolean = false): PasswordEditDialogElement {
+      isAccountStoreUser: boolean = false,
+      requestedDialogMode: PasswordDialogMode|
+      null = null): PasswordEditDialogElement {
     const passwordDialog = this.document.createElement('password-edit-dialog');
     passwordDialog.existingEntry = passwordEntry;
+    passwordDialog.requestedDialogMode = requestedDialogMode;
     if (passwordEntry && !passwordEntry.federationText) {
       // Edit dialog is always opened with plaintext password for non-federated
       // credentials since user authentication is required before opening the

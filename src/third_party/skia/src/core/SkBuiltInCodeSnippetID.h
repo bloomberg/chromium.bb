@@ -16,6 +16,9 @@ enum class SkBuiltInCodeSnippetID : uint8_t {
     // draw that originated from a PaintParams.
     kDepthStencilOnlyDraw,
 
+    // This isn't just a signal for a failure during paintparams key creation. It also actually
+    // implements the default behavior for an erroneous draw. Currently it just draws solid
+    // magenta.
     kError,
 
     // SkShader code snippets
@@ -29,9 +32,10 @@ enum class SkBuiltInCodeSnippetID : uint8_t {
     kBlendShader,     // aka ComposeShader
 
     // BlendMode code snippets
-    kSimpleBlendMode,
+    kFixedFunctionBlender,
+    kShaderBasedBlender,
 
-    kLast = kSimpleBlendMode
+    kLast = kShaderBasedBlender
 };
 static constexpr int kBuiltInCodeSnippetIDCount = static_cast<int>(SkBuiltInCodeSnippetID::kLast)+1;
 

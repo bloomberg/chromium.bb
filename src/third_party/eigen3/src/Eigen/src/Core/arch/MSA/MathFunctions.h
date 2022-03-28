@@ -33,7 +33,7 @@ namespace Eigen {
 namespace internal {
 
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet4f
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet4f
 plog<Packet4f>(const Packet4f& _x) {
   static EIGEN_DECLARE_CONST_Packet4f(cephes_SQRTHF, 0.707106781186547524f);
   static EIGEN_DECLARE_CONST_Packet4f(cephes_log_p0, 7.0376836292e-2f);
@@ -121,7 +121,7 @@ plog<Packet4f>(const Packet4f& _x) {
 }
 
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet4f
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet4f
 pexp<Packet4f>(const Packet4f& _x) {
   // Limiting single-precision pexp's argument to [-128, +128] lets pexp
   // reach 0 and INFINITY naturally.
@@ -174,7 +174,7 @@ pexp<Packet4f>(const Packet4f& _x) {
 }
 
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet4f
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet4f
 ptanh<Packet4f>(const Packet4f& _x) {
   static EIGEN_DECLARE_CONST_Packet4f(tanh_tiny, 1e-4f);
   static EIGEN_DECLARE_CONST_Packet4f(tanh_hi, 9.0f);
@@ -312,19 +312,19 @@ Packet4f psincos_inner_msa_float(const Packet4f& _x) {
 }
 
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet4f
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet4f
 psin<Packet4f>(const Packet4f& x) {
   return psincos_inner_msa_float</* sine */ true>(x);
 }
 
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet4f
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet4f
 pcos<Packet4f>(const Packet4f& x) {
   return psincos_inner_msa_float</* sine */ false>(x);
 }
 
 template <>
-EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet2d
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS Packet2d
 pexp<Packet2d>(const Packet2d& _x) {
   // Limiting double-precision pexp's argument to [-1024, +1024] lets pexp
   // reach 0 and INFINITY naturally.

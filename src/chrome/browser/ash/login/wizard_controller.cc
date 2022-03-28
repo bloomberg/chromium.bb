@@ -1229,6 +1229,7 @@ void WizardController::SkipToLoginForTesting() {
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
     return;
   wizard_context_->skip_to_login_for_tests = true;
+  login_screen_started_ = false;
 
   if (!chromeos::features::IsOobeConsolidatedConsentEnabled())
     StartupUtils::MarkEulaAccepted();
@@ -1806,8 +1807,7 @@ void WizardController::OnOobeFlowFinished() {
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&UserSessionManager::DoBrowserLaunch,
                                 UserSessionManager::GetInstance()->AsWeakPtr(),
-                                ProfileManager::GetActiveUserProfile(),
-                                GetLoginDisplayHost()));
+                                ProfileManager::GetActiveUserProfile()));
 }
 
 void WizardController::OnDeviceDisabledChecked(bool device_disabled) {

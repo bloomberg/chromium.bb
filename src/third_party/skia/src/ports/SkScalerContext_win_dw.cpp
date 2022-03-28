@@ -13,6 +13,7 @@
 
 #include "include/codec/SkCodec.h"
 #include "include/core/SkBitmap.h"
+#include "include/core/SkData.h"
 #include "include/core/SkDrawable.h"
 #include "include/core/SkFontMetrics.h"
 #include "include/core/SkPath.h"
@@ -281,7 +282,7 @@ SkScalerContext_DW::SkScalerContext_DW(sk_sp<DWriteFontTypeface> typefaceRef,
     // horizontal glyphs and the subpixel flag should not affect glyph shapes.
 
     SkVector scale;
-    fRec.computeMatrices(SkScalerContextRec::kVertical_PreMatrixScale, &scale, &fSkXform);
+    fRec.computeMatrices(SkScalerContextRec::PreMatrixScale::kVertical, &scale, &fSkXform);
 
     fXform.m11 = SkScalarToFloat(fSkXform.getScaleX());
     fXform.m12 = SkScalarToFloat(fSkXform.getSkewY());
@@ -1067,21 +1068,22 @@ void SkScalerContext_DW::drawColorGlyphImage(const SkGlyph& glyph, SkCanvas& can
     }
     canvas.concat(fSkXform);
 
+    DWriteFontTypeface* typeface = this->getDWriteTypeface();
+    size_t paletteEntryCount = typeface->fPaletteEntryCount;
+    SkColor* palette = typeface->fPalette.get();
     BOOL hasNextRun = FALSE;
     while (SUCCEEDED(colorLayers->MoveNext(&hasNextRun)) && hasNextRun) {
         const DWRITE_COLOR_GLYPH_RUN* colorGlyph;
         HRVM(colorLayers->GetCurrentRun(&colorGlyph), "Could not get current color glyph run");
 
         SkColor color;
-        if (colorGlyph->paletteIndex != 0xffff) {
-            color = SkColorSetARGB(sk_float_round2int(colorGlyph->runColor.a * 255),
-                                   sk_float_round2int(colorGlyph->runColor.r * 255),
-                                   sk_float_round2int(colorGlyph->runColor.g * 255),
-                                   sk_float_round2int(colorGlyph->runColor.b * 255));
-        } else {
-            // If all components of runColor are 0 or (equivalently) paletteIndex is 0xFFFF then
-            // the 'foreground color' is used.
+        if (colorGlyph->paletteIndex == 0xffff) {
             color = fRec.fForegroundColor;
+        } else if (colorGlyph->paletteIndex < paletteEntryCount) {
+            color = palette[colorGlyph->paletteIndex];
+        } else {
+            SK_TRACEHR(DWRITE_E_NOCOLOR, "Invalid palette index.");
+            color = SK_ColorBLACK;
         }
         paint.setColor(color);
 

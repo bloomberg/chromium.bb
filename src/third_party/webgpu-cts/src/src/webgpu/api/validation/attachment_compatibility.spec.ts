@@ -43,7 +43,8 @@ class F extends ValidationTest {
   ): GPURenderPassColorAttachment {
     return {
       view: this.createAttachmentTextureView(format, sampleCount),
-      loadValue: [0, 0, 0, 0],
+      clearValue: [0, 0, 0, 0],
+      loadOp: 'clear',
       storeOp: 'store',
     };
   }
@@ -52,13 +53,20 @@ class F extends ValidationTest {
     format: GPUTextureFormat,
     sampleCount?: number
   ): GPURenderPassDepthStencilAttachment {
-    return {
+    const attachment: GPURenderPassDepthStencilAttachment = {
       view: this.createAttachmentTextureView(format, sampleCount),
-      depthLoadValue: 0,
-      depthStoreOp: 'discard',
-      stencilLoadValue: 1,
-      stencilStoreOp: 'discard',
     };
+    if (kTextureFormatInfo[format].depth) {
+      attachment.depthClearValue = 0;
+      attachment.depthLoadOp = 'clear';
+      attachment.depthStoreOp = 'discard';
+    }
+    if (kTextureFormatInfo[format].stencil) {
+      attachment.stencilClearValue = 1;
+      attachment.stencilLoadOp = 'clear';
+      attachment.stencilStoreOp = 'discard';
+    }
+    return attachment;
   }
 
   createRenderPipeline(
@@ -116,7 +124,7 @@ g.test('render_pass_and_bundle,color_format')
       colorAttachments: [t.createColorAttachment(passFormat)],
     });
     pass.executeBundles([bundle]);
-    pass.endPass();
+    pass.end();
     validateFinishAndSubmit(passFormat === bundleFormat, true);
   });
 
@@ -145,7 +153,7 @@ g.test('render_pass_and_bundle,color_count')
       colorAttachments: range(passCount, () => t.createColorAttachment('rgba8unorm')),
     });
     pass.executeBundles([bundle]);
-    pass.endPass();
+    pass.end();
     validateFinishAndSubmit(passCount === bundleCount, true);
   });
 
@@ -173,7 +181,7 @@ g.test('render_pass_and_bundle,depth_format')
         passFormat !== undefined ? t.createDepthAttachment(passFormat) : undefined,
     });
     pass.executeBundles([bundle]);
-    pass.endPass();
+    pass.end();
     validateFinishAndSubmit(passFormat === bundleFormat, true);
   });
 
@@ -196,7 +204,7 @@ g.test('render_pass_and_bundle,sample_count')
       colorAttachments: [t.createColorAttachment('rgba8unorm', renderSampleCount)],
     });
     pass.executeBundles([bundle]);
-    pass.endPass();
+    pass.end();
     validateFinishAndSubmit(renderSampleCount === bundleSampleCount, true);
   });
 

@@ -95,6 +95,8 @@ namespace internal {
   ASM(CallFunction_ReceiverIsAny, CallTrampoline)                              \
   /* ES6 section 9.4.1.1 [[Call]] ( thisArgument, argumentsList) */            \
   ASM(CallBoundFunction, CallTrampoline)                                       \
+  /* #sec-wrapped-function-exotic-objects-call-thisargument-argumentslist */   \
+  TFC(CallWrappedFunction, CallTrampoline)                                     \
   /* ES6 section 7.3.12 Call(F, V, [argumentsList]) */                         \
   ASM(Call_ReceiverIsNullOrUndefined, CallTrampoline)                          \
   ASM(Call_ReceiverIsNotNullOrUndefined, CallTrampoline)                       \
@@ -273,7 +275,7 @@ namespace internal {
   /* Handlers */                                                               \
   TFH(KeyedLoadIC_PolymorphicName, LoadWithVector)                             \
   TFH(KeyedStoreIC_Megamorphic, Store)                                         \
-  TFH(KeyedDefineOwnIC_Megamorphic, Store)                                     \
+  TFH(DefineKeyedOwnIC_Megamorphic, Store)                                     \
   TFH(LoadGlobalIC_NoFeedback, LoadGlobalNoFeedback)                           \
   TFH(LoadIC_FunctionPrototype, LoadWithVector)                                \
   TFH(LoadIC_StringLength, LoadWithVector)                                     \
@@ -281,7 +283,7 @@ namespace internal {
   TFH(LoadIC_NoFeedback, LoadNoFeedback)                                       \
   TFH(StoreGlobalIC_Slow, StoreWithVector)                                     \
   TFH(StoreIC_NoFeedback, Store)                                               \
-  TFH(StoreOwnIC_NoFeedback, Store)                                            \
+  TFH(DefineNamedOwnIC_NoFeedback, Store)                                      \
   TFH(KeyedLoadIC_SloppyArguments, LoadWithVector)                             \
   TFH(LoadIndexedInterceptorIC, LoadWithVector)                                \
   TFH(KeyedStoreIC_SloppyArguments_Standard, StoreWithVector)                  \
@@ -315,6 +317,10 @@ namespace internal {
   /* ES #sec-copydataproperties */                                             \
   TFS(CopyDataProperties, kTarget, kSource)                                    \
   TFS(SetDataProperties, kTarget, kSource)                                     \
+  TFC(CopyDataPropertiesWithExcludedPropertiesOnStack,                         \
+      CopyDataPropertiesWithExcludedPropertiesOnStack)                         \
+  TFC(CopyDataPropertiesWithExcludedProperties,                                \
+      CopyDataPropertiesWithExcludedProperties)                                \
                                                                                \
   /* Abort */                                                                  \
   TFC(Abort, Abort)                                                            \
@@ -635,15 +641,15 @@ namespace internal {
   TFH(StoreIC, StoreWithVector)                                                \
   TFH(StoreICTrampoline, Store)                                                \
   TFH(StoreICBaseline, StoreBaseline)                                          \
-  TFH(StoreOwnIC, StoreWithVector)                                             \
-  TFH(StoreOwnICTrampoline, Store)                                             \
-  TFH(StoreOwnICBaseline, StoreBaseline)                                       \
+  TFH(DefineNamedOwnIC, StoreWithVector)                                       \
+  TFH(DefineNamedOwnICTrampoline, Store)                                       \
+  TFH(DefineNamedOwnICBaseline, StoreBaseline)                                 \
   TFH(KeyedStoreIC, StoreWithVector)                                           \
   TFH(KeyedStoreICTrampoline, Store)                                           \
   TFH(KeyedStoreICBaseline, StoreBaseline)                                     \
-  TFH(KeyedDefineOwnIC, StoreWithVector)                                       \
-  TFH(KeyedDefineOwnICTrampoline, Store)                                       \
-  TFH(KeyedDefineOwnICBaseline, StoreBaseline)                                 \
+  TFH(DefineKeyedOwnIC, StoreWithVector)                                       \
+  TFH(DefineKeyedOwnICTrampoline, Store)                                       \
+  TFH(DefineKeyedOwnICBaseline, StoreBaseline)                                 \
   TFH(StoreInArrayLiteralIC, StoreWithVector)                                  \
   TFH(StoreInArrayLiteralICBaseline, StoreBaseline)                            \
   TFH(LookupContextBaseline, LookupBaseline)                                   \
@@ -874,6 +880,7 @@ namespace internal {
   CPP(ShadowRealmConstructor)                                                  \
   CPP(ShadowRealmPrototypeEvaluate)                                            \
   CPP(ShadowRealmPrototypeImportValue)                                         \
+  TFS(ShadowRealmGetWrappedValue, kCreationContext, kValue)                    \
                                                                                \
   /* SharedArrayBuffer */                                                      \
   CPP(SharedArrayBufferPrototypeGetByteLength)                                 \
@@ -881,9 +888,10 @@ namespace internal {
   /* https://tc39.es/proposal-resizablearraybuffer/ */                         \
   CPP(SharedArrayBufferPrototypeGrow)                                          \
                                                                                \
-  TFJ(AtomicsLoad, kJSArgcReceiverSlots + 2, kReceiver, kArray, kIndex)        \
-  TFJ(AtomicsStore, kJSArgcReceiverSlots + 3, kReceiver, kArray, kIndex,       \
-      kValue)                                                                  \
+  TFJ(AtomicsLoad, kJSArgcReceiverSlots + 2, kReceiver, kArrayOrSharedStruct,  \
+      kIndexOrFieldName)                                                       \
+  TFJ(AtomicsStore, kJSArgcReceiverSlots + 3, kReceiver, kArrayOrSharedStruct, \
+      kIndexOrFieldName, kValue)                                               \
   TFJ(AtomicsExchange, kJSArgcReceiverSlots + 3, kReceiver, kArray, kIndex,    \
       kValue)                                                                  \
   TFJ(AtomicsCompareExchange, kJSArgcReceiverSlots + 4, kReceiver, kArray,     \
@@ -984,6 +992,10 @@ namespace internal {
   /* WeakSet / WeakMap Helpers */                                              \
   TFS(WeakCollectionDelete, kCollection, kKey)                                 \
   TFS(WeakCollectionSet, kCollection, kKey, kValue)                            \
+                                                                               \
+  /* JS Structs */                                                             \
+  CPP(SharedStructTypeConstructor)                                             \
+  CPP(SharedStructConstructor)                                                 \
                                                                                \
   /* AsyncGenerator */                                                         \
                                                                                \
@@ -1650,6 +1662,7 @@ namespace internal {
   CPP(TemporalCalendarPrototypeToJSON)                                         \
                                                                                \
   /* "Private" (created but not exposed) Bulitins needed by Temporal */        \
+  TFJ(StringFixedArrayFromIterable, kJSArgcReceiverSlots, kIterable)           \
   TFJ(TemporalInstantFixedArrayFromIterable, kJSArgcReceiverSlots, kIterable)
 
 #define BUILTIN_LIST_BASE(CPP, TFJ, TFC, TFS, TFH, ASM) \
@@ -1760,6 +1773,10 @@ namespace internal {
   CPP(NumberFormatInternalFormatNumber)                                \
   /* ecma402 #sec-intl.numberformat.prototype.format */                \
   CPP(NumberFormatPrototypeFormatNumber)                               \
+  /* ecma402 #sec-intl.numberformat.prototype.formatrange */           \
+  CPP(NumberFormatPrototypeFormatRange)                                \
+  /* ecma402 #sec-intl.numberformat.prototype.formatrangetoparts */    \
+  CPP(NumberFormatPrototypeFormatRangeToParts)                         \
   /* ecma402 #sec-intl.numberformat.prototype.formattoparts */         \
   CPP(NumberFormatPrototypeFormatToParts)                              \
   /* ecma402 #sec-intl.numberformat.prototype.resolvedoptions */       \
@@ -1772,6 +1789,8 @@ namespace internal {
   CPP(PluralRulesPrototypeResolvedOptions)                             \
   /* ecma402 #sec-intl.pluralrules.prototype.select */                 \
   CPP(PluralRulesPrototypeSelect)                                      \
+  /* ecma402 #sec-intl.pluralrules.prototype.selectrange */            \
+  CPP(PluralRulesPrototypeSelectRange)                                 \
   /* ecma402 #sec-intl.pluralrules.supportedlocalesof */               \
   CPP(PluralRulesSupportedLocalesOf)                                   \
   /* ecma402 #sec-intl.RelativeTimeFormat.constructor */               \

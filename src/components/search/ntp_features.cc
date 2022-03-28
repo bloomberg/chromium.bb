@@ -117,6 +117,10 @@ const base::Feature kNtpPhotosModule{"NtpPhotosModule",
 const base::Feature kNtpPhotosModuleCustomizedOptInTitle{
     "NtpPhotosModuleCustomizedOptInTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, a customized art work will be shown on the opt-in card.
+const base::Feature kNtpPhotosModuleCustomizedOptInArtWork{
+    "NtpPhotosModuleCustomizedOptInArtWork", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, Google Photos opt-in card will show a button to soft opt-out.
 const base::Feature kNtpPhotosModuleSoftOptOut(
     "NtpPhotosModuleSoftOptOut",
@@ -129,6 +133,10 @@ const base::Feature kNtpSafeBrowsingModule{"NtpSafeBrowsingModule",
 // If enabled, modules will be able to be reordered via dragging and dropping
 const base::Feature kNtpModulesDragAndDrop{"NtpModulesDragAndDrop",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the first run experience for Modular NTP Desktop v1 will show.
+const base::Feature kNtpModulesFirstRunExperience{
+    "NtpModulesFirstRunExperience", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
@@ -161,6 +169,8 @@ const char kNtpDriveModuleExperimentGroupParam[] =
     "NtpDriveModuleExperimentGroupParam";
 const char kNtpPhotosModuleDataParam[] = "NtpPhotosModuleDataParam";
 const char kNtpPhotosModuleOptInTitleParam[] = "NtpPhotosModuleOptInTitleParam";
+const char kNtpPhotosModuleOptInArtWorkParam[] =
+    "NtpPhotosModuleOptInArtWorkParam";
 const char kNtpSafeBrowsingModuleCooldownPeriodDaysParam[] =
     "NtpSafeBrowsingModuleCooldownPeriodDaysParam";
 const char kNtpSafeBrowsingModuleCountMaxParam[] =

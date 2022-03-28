@@ -1,3 +1,5 @@
+import { GPUConst } from '../../../../constants.js';
+
 /**
  * Boundary between the first operation, and the second operation.
  */
@@ -5,6 +7,7 @@ export const kOperationBoundaries = [
   'queue-op', // Operations are performed in different queue operations (submit, writeTexture).
   'command-buffer', // Operations are in different command buffers.
   'pass', // Operations are in different passes.
+  'execute-bundles', // Operations are in different executeBundles(...) calls
   'render-bundle', // Operations are in different render bundles.
   'dispatch', // Operations are in different dispatches.
   'draw', // Operations are in different draws.
@@ -13,6 +16,8 @@ export type OperationBoundary = typeof kOperationBoundaries[number];
 
 /**
  * Context a particular operation is permitted in.
+ * These contexts should be sorted such that the first is the most top-level
+ * context, and the last is most nested (inside a render bundle, in a render pass, ...).
  */
 export const kOperationContexts = [
   'queue', // Operation occurs on the GPUQueue object
@@ -71,6 +76,11 @@ export const kBoundaryInfo: {
       ['render-bundle-encoder', 'render-bundle-encoder'],
     ],
   },
+  'execute-bundles': {
+    contexts: [
+      ['render-bundle-encoder', 'render-bundle-encoder'],
+    ]
+  },
   'render-bundle': {
     contexts: [
       ['render-bundle-encoder', 'render-pass-encoder'],
@@ -101,45 +111,114 @@ export const kAllWriteOps = [
 ] as const;
 export type WriteOp = typeof kAllWriteOps[number];
 
-export const kAllReadOps = [
-  't2b-copy',
-  't2t-copy',
-  'attachment-load',
-  'storage',
-  'sample',
-] as const;
+export const kAllReadOps = ['t2b-copy', 't2t-copy', 'sample'] as const;
 export type ReadOp = typeof kAllReadOps[number];
 
 export type Op = ReadOp | WriteOp;
 
 interface OpInfo {
   readonly contexts: OperationContext[];
+  readonly readUsage: GPUTextureUsageFlags;
+  readonly writeUsage: GPUTextureUsageFlags;
   // Add fields as needed
 }
 
 /**
  * Mapping of Op to the OperationContext(s) it is valid in
  */
-const kOpInfo: {
+export const kOpInfo: {
   readonly [k in Op]: OpInfo;
 } = /* prettier-ignore */ {
-  'write-texture': { contexts: [ 'queue' ] },
-  'b2t-copy': { contexts: [ 'command-encoder' ] },
-  't2t-copy': { contexts: [ 'command-encoder' ] },
-  't2b-copy': { contexts: [ 'command-encoder' ] },
-  'storage': { contexts: [ 'compute-pass-encoder', 'render-pass-encoder', 'render-bundle-encoder' ] },
-  'sample': { contexts: [ 'compute-pass-encoder', 'render-pass-encoder', 'render-bundle-encoder' ] },
-  'attachment-store': { contexts: [ 'render-pass-encoder' ] },
-  'attachment-resolve': { contexts: [ 'render-pass-encoder' ] },
-  'attachment-load': { contexts: [ 'render-pass-encoder' ] },
+  'write-texture': {
+    contexts: [ 'queue' ],
+    readUsage: 0,
+    writeUsage: GPUConst.TextureUsage.COPY_DST,
+  },
+  'b2t-copy': {
+    contexts: [ 'command-encoder' ],
+    readUsage: 0,
+    writeUsage: GPUConst.TextureUsage.COPY_DST,
+  },
+  't2t-copy': {
+    contexts: [ 'command-encoder' ],
+    readUsage: GPUConst.TextureUsage.COPY_SRC,
+    writeUsage: GPUConst.TextureUsage.COPY_DST,
+  },
+  't2b-copy': {
+    contexts: [ 'command-encoder' ],
+    readUsage: GPUConst.TextureUsage.COPY_SRC,
+    writeUsage: 0,
+  },
+  'storage': {
+    contexts: [ 'compute-pass-encoder', 'render-pass-encoder', 'render-bundle-encoder' ],
+    readUsage: 0,
+    writeUsage: GPUConst.TextureUsage.STORAGE,
+  },
+  'sample': {
+    contexts: [ 'compute-pass-encoder', 'render-pass-encoder', 'render-bundle-encoder' ],
+    readUsage: GPUConst.TextureUsage.SAMPLED,
+    writeUsage: 0,
+  },
+  'attachment-store': {
+    contexts: [ 'command-encoder' ],
+    readUsage: 0,
+    writeUsage: GPUConst.TextureUsage.RENDER_ATTACHMENT,
+  },
+  'attachment-resolve': {
+    contexts: [ 'command-encoder' ],
+    readUsage: 0,
+    writeUsage: GPUConst.TextureUsage.RENDER_ATTACHMENT,
+  },
 };
 
 export function checkOpsValidForContext(
   ops: [Op, Op],
   context: [OperationContext, OperationContext]
 ) {
-  return (
-    kOpInfo[ops[0]].contexts.indexOf(context[0]) !== -1 &&
-    kOpInfo[ops[1]].contexts.indexOf(context[1]) !== -1
-  );
+  const valid =
+    kOpInfo[ops[0]].contexts.includes(context[0]) && kOpInfo[ops[1]].contexts.includes(context[1]);
+  if (!valid) return false;
+
+  if (
+    context[0] === 'render-bundle-encoder' ||
+    context[0] === 'render-pass-encoder' ||
+    context[1] === 'render-bundle-encoder' ||
+    context[1] === 'render-pass-encoder'
+  ) {
+    // In a render pass, it is invalid to use a resource as both writable and another usage.
+    // Also, for storage+storage usage, the application is opting into racy behavior.
+    // The storage+storage case is also skipped as the results cannot be reliably tested.
+    const checkImpl = (op1: Op, op2: Op) => {
+      switch (op1) {
+        case 'attachment-resolve':
+        case 'attachment-store':
+        case 'storage':
+          switch (op2) {
+            case 'attachment-resolve':
+            case 'attachment-store':
+            case 'storage':
+            case 'sample':
+              // Write+other, or racy.
+              return false;
+            case 'b2t-copy':
+            case 't2b-copy':
+            case 't2t-copy':
+            case 'write-texture':
+              // These don't occur in a render pass.
+              return true;
+          }
+          break;
+        case 'b2t-copy':
+        case 'sample':
+        case 't2b-copy':
+        case 't2t-copy':
+        case 'write-texture':
+          // These are not write usages, or don't occur in a render pass.
+          break;
+      }
+      return true;
+    };
+    return checkImpl(ops[0], ops[1]) && checkImpl(ops[1], ops[0]);
+  }
+  return true;
 }

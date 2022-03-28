@@ -19,9 +19,9 @@
 #include "base/location.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/autocomplete/tab_matcher_android.h"
@@ -31,6 +31,7 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -202,6 +203,20 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   autocomplete_controller_->Start(input_);
 }
 
+void AutocompleteControllerAndroid::StartPrefetch(JNIEnv* env) {
+  AutocompleteInput autocomplete_input(
+      u"", metrics::OmniboxEventProto::NTP_ZPS_PREFETCH,
+      ChromeAutocompleteSchemeClassifier(profile_));
+  autocomplete_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+
+  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestPrefetching)) {
+    autocomplete_controller_->StartPrefetch(autocomplete_input);
+  } else {
+    // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
+    new ZeroSuggestPrefetcher(profile_);
+  }
+}
+
 ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::Classify(
     JNIEnv* env,
     const JavaParamRef<jstring>& j_text,
@@ -264,8 +279,8 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
         omnibox::kOmniboxSpareRenderer, "omnibox_spare_renderer_delay_ms",
         OMNIBOX_SPARE_RENDERER_DELAY_MS);
 
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&AutocompleteControllerAndroid::WarmUpRenderProcess,
                        weak_ptr_factory_.GetWeakPtr()),
         base::Milliseconds(renderer_delay_ms));
@@ -290,7 +305,7 @@ void AutocompleteControllerAndroid::ResetSession(JNIEnv* env) {
 
 void AutocompleteControllerAndroid::OnSuggestionSelected(
     JNIEnv* env,
-    jint selected_index,
+    jint match_index,
     const jint j_window_open_disposition,
     const JavaParamRef<jstring>& j_current_url,
     jint j_page_classification,
@@ -303,8 +318,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
-  const auto& match =
-      autocomplete_controller_->result().match_at(selected_index);
+  const auto& match = autocomplete_controller_->result().match_at(match_index);
   SuggestionAnswer::LogAnswerUsed(match.answer);
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -336,7 +350,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
                                                        : input_.text(),
       false,                /* don't know */
       input_.type(), false, /* not keyword mode */
-      OmniboxEventProto::INVALID, true, selected_index,
+      OmniboxEventProto::INVALID, true, match_index,
       static_cast<WindowOpenDisposition>(j_window_open_disposition), false,
       sessions::SessionTabHelper::IdForTab(web_contents),
       OmniboxEventProto::PageClassification(j_page_classification),
@@ -347,25 +361,45 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
 
+  // Record the value if prerender for search suggestion was not started. Other
+  // values (kHitFinished, kUnused, kCancelled) are recorded in
+  // PrerenderManager.
+  if (web_contents) {
+    auto* prerender_manager = PrerenderManager::FromWebContents(web_contents);
+    if (!prerender_manager || !prerender_manager->search_prerender_handle()) {
+      base::UmaHistogramEnumeration(
+          internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
+          PrerenderPredictionStatus::kNotStarted);
+    }
+  }
+
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
       ->OnOmniboxOpenedUrl(log);
 }
 
-void AutocompleteControllerAndroid::DeleteSuggestion(JNIEnv* env, jint index) {
-  const auto& match = autocomplete_controller_->result().match_at(index);
+void AutocompleteControllerAndroid::DeleteMatch(JNIEnv* env, jint match_index) {
+  const auto& match = autocomplete_controller_->result().match_at(match_index);
   if (match.SupportsDeletion())
     autocomplete_controller_->DeleteMatch(match);
+}
+
+void AutocompleteControllerAndroid::DeleteMatchElement(JNIEnv* env,
+                                                       jint match_index,
+                                                       jint element_index) {
+  const auto& match = autocomplete_controller_->result().match_at(match_index);
+  if (match.SupportsDeletion())
+    autocomplete_controller_->DeleteMatchElement(match, element_index);
 }
 
 ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::
     UpdateMatchDestinationURLWithAdditionalAssistedQueryStats(
         JNIEnv* env,
-        jint selected_index,
+        jint match_index,
         jlong elapsed_time_since_input_change,
         const JavaParamRef<jstring>& jnew_query_text,
         const JavaParamRef<jobjectArray>& jnew_query_params) {
   AutocompleteMatch match(
-      autocomplete_controller_->result().match_at(selected_index));
+      autocomplete_controller_->result().match_at(match_index));
 
   if (!jnew_query_text.is_null()) {
     std::u16string query =
@@ -395,9 +429,9 @@ ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::
 
 ScopedJavaLocalRef<jobject>
 AutocompleteControllerAndroid::GetMatchingTabForSuggestion(JNIEnv* env,
-                                                           jint index) {
+                                                           jint match_index) {
   const AutocompleteMatch& match =
-      autocomplete_controller_->result().match_at(index);
+      autocomplete_controller_->result().match_at(match_index);
   return match.GetMatchingJavaTab().get(env);
 }
 
@@ -513,13 +547,4 @@ static ScopedJavaLocalRef<jobject> JNI_AutocompleteController_GetForProfile(
   if (!native_bridge)
     return {};
   return native_bridge->GetJavaObject();
-}
-
-static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile)
-    return;
-
-  // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
-  new ZeroSuggestPrefetcher(profile);
 }

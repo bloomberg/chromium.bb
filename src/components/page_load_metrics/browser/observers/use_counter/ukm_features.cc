@@ -191,7 +191,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kAVIFImage,
           WebFeature::kGetDisplayMedia,
           WebFeature::kLaxAllowingUnsafeCookies,
-          WebFeature::kOpenWebDatabaseThirdPartyContext,
           WebFeature::kOversrollBehaviorOnViewportBreaks,
           WebFeature::kPaymentRequestCSPViolation,
           WebFeature::kRequestedFileSystemPersistentThirdPartyContext,
@@ -210,7 +209,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::
               kBlobStoreAccessAcrossAgentClustersInResolveAsURLLoaderFactory,
           WebFeature::kBlobStoreAccessAcrossAgentClustersInResolveForNavigation,
-          WebFeature::kReadOrWriteWebDatabaseThirdPartyContext,
           WebFeature::kSearchEventFired,
           WebFeature::kReadOrWriteWebDatabase,
           WebFeature::kExternalProtocolBlockedBySandbox,
@@ -225,6 +223,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kWebCodecsVideoFrameFromBuffer,
           WebFeature::kOpenWebDatabaseInsecureContext,
           WebFeature::kPrivateNetworkAccessIgnoredPreflightError,
+          WebFeature::kWebBluetoothGetAvailability,
       }));
   return *opt_in_features;
 }

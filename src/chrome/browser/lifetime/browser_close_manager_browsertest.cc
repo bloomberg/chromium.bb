@@ -230,11 +230,12 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       download::DownloadDangerType danger_type,
       download::DownloadItem::MixedContentStatus mcs,
       const base::FilePath& intermediate_path,
+      const base::FilePath& display_name,
       absl::optional<download::DownloadSchedule> download_schedule,
       download::DownloadInterruptReason reason) {
-    std::move(callback).Run(target_path, disp,
-                            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, mcs,
-                            intermediate_path, download_schedule, reason);
+    std::move(callback).Run(
+        target_path, disp, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, mcs,
+        intermediate_path, display_name, download_schedule, reason);
   }
 };
 
@@ -316,7 +317,7 @@ class BrowserCloseManagerBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitForAllBrowsersToClose() {
-    for (size_t i = 0U; i < browsers_.size(); ++i)
+    while (!BrowserList::GetInstance()->empty())
       ui_test_utils::WaitForBrowserToClose();
   }
 

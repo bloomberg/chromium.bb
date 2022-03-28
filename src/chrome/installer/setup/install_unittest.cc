@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "base/base_paths.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -87,8 +86,8 @@ class CreateVisualElementsManifestTest
   // Creates a dummy test file at |path|.
   void CreateTestFile(const base::FilePath& path) {
     static constexpr char kBlah[] = "blah";
-    ASSERT_EQ(static_cast<int>(base::size(kBlah) - 1),
-              base::WriteFile(path, &kBlah[0], base::size(kBlah) - 1));
+    ASSERT_EQ(static_cast<int>(std::size(kBlah) - 1),
+              base::WriteFile(path, &kBlah[0], std::size(kBlah) - 1));
   }
 
   // Creates the VisualElements directory and a light asset, if testing such.
@@ -140,7 +139,7 @@ constexpr char kExpectedPrimaryManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='transparent'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -152,7 +151,7 @@ constexpr char kExpectedBetaManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='transparent'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedDevManifest[] =
@@ -163,7 +162,7 @@ constexpr char kExpectedDevManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='transparent'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedCanaryManifest[] =
@@ -174,7 +173,7 @@ constexpr char kExpectedCanaryManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoCanary.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoCanary.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='transparent'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 INSTANTIATE_TEST_SUITE_P(
@@ -288,7 +287,7 @@ class InstallShortcutTest : public testing::Test {
     };
 
     std::string initial_prefs("{\"distribution\":{");
-    for (size_t i = 0; i < base::size(desired_prefs); ++i) {
+    for (size_t i = 0; i < std::size(desired_prefs); ++i) {
       initial_prefs += (i == 0 ? "\"" : ",\"");
       initial_prefs += desired_prefs[i].pref_name;
       initial_prefs += "\":";

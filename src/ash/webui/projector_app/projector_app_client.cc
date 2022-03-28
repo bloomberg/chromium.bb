@@ -14,10 +14,32 @@ namespace {
 constexpr char kPendingScreencastName[] = "name";
 constexpr char kPendingScreencastUploadProgress[] = "uploadProgress";
 constexpr char kPendingScreencastCreatedTime[] = "createdTime";
+constexpr char kPendingScreencastUploadFailed[] = "uploadFailed";
 constexpr int64_t kPendingScreencastDiffThresholdInBytes = 600 * 1024;
 
 ProjectorAppClient* g_instance = nullptr;
 }  // namespace
+
+PendingScreencast::PendingScreencast() = default;
+
+PendingScreencast::PendingScreencast(const base::FilePath& container_dir)
+    : container_dir(container_dir) {}
+
+PendingScreencast::PendingScreencast(const base::FilePath& container_dir,
+                                     const std::string& name,
+                                     int64_t total_size_in_bytes,
+                                     int64_t bytes_transferred)
+    : container_dir(container_dir),
+      name(name),
+      total_size_in_bytes(total_size_in_bytes),
+      bytes_transferred(bytes_transferred) {}
+
+PendingScreencast::PendingScreencast(const PendingScreencast&) = default;
+
+PendingScreencast& PendingScreencast::operator=(const PendingScreencast&) =
+    default;
+
+PendingScreencast::~PendingScreencast() = default;
 
 base::Value PendingScreencast::ToValue() const {
   base::Value val(base::Value::Type::DICTIONARY);
@@ -31,6 +53,8 @@ base::Value PendingScreencast::ToValue() const {
              base::Value(created_time.is_null()
                              ? 0
                              : created_time.ToJsTimeIgnoringNull()));
+
+  val.SetKey(kPendingScreencastUploadFailed, base::Value(upload_failed));
   return val;
 }
 
@@ -39,9 +63,11 @@ bool PendingScreencast::operator==(const PendingScreencast& rhs) const {
   // kPendingScreencastDiffThresholdInBytes), we consider this pending
   // screencast doesn't change. It helps to reduce the frequency of updating the
   // pending screencast list.
-  return container_dir == rhs.container_dir &&
+  return container_dir == rhs.container_dir && name == rhs.name &&
          std::abs(bytes_transferred - rhs.bytes_transferred) <
-             kPendingScreencastDiffThresholdInBytes;
+             kPendingScreencastDiffThresholdInBytes &&
+         total_size_in_bytes == rhs.total_size_in_bytes &&
+         rhs.upload_failed == upload_failed;
 }
 
 bool PendingScreencastSetComparator::operator()(

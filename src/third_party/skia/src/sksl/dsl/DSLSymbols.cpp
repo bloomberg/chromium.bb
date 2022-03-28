@@ -33,8 +33,8 @@ std::shared_ptr<SymbolTable> CurrentSymbolTable() {
     return ThreadContext::SymbolTable();
 }
 
-DSLPossibleExpression Symbol(std::string_view name, PositionInfo pos) {
-    return ThreadContext::Compiler().convertIdentifier(pos.line(), name);
+DSLPossibleExpression Symbol(std::string_view name, Position pos) {
+    return ThreadContext::Compiler().convertIdentifier(pos, name);
 }
 
 bool IsType(std::string_view name) {
@@ -45,7 +45,7 @@ bool IsBuiltinType(std::string_view name) {
     return is_type_in_symbol_table(name, CurrentSymbolTable()->builtinParent());
 }
 
-void AddToSymbolTable(DSLVarBase& var, PositionInfo pos) {
+void AddToSymbolTable(DSLVarBase& var, Position pos) {
     const SkSL::Variable* skslVar = DSLWriter::Var(var);
     if (skslVar) {
         CurrentSymbolTable()->addWithoutOwnership(skslVar);

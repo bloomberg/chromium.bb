@@ -52,7 +52,6 @@ class MetricsRenderFrameObserver
   void DidObserveInputDelay(base::TimeDelta input_delay) override;
   void DidObserveUserInteraction(
       base::TimeDelta max_event_duration,
-      base::TimeDelta total_event_duration,
       blink::UserInteractionType interaction_type) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
@@ -63,8 +62,6 @@ class MetricsRenderFrameObserver
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
                           uint32_t ng_call_count) override;
-  void DidObserveLazyLoadBehavior(
-      blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   void DidStartResponse(
       const GURL& response_url,
       int request_id,

@@ -965,9 +965,16 @@
     {
       "id": 132,
       "description": "On Intel GPUs MSAA performance is not acceptable for GPU rasterization",
-      "cr_bugs": [527565],
+      "cr_bugs": [527565, 1298585],
       "vendor_id": "0x8086",
       "multi_gpu_category": "active",
+      "exceptions": [
+        {
+          "os": {
+            "type": "fuchsia"
+          }
+        }
+      ],
       "features": [
         "msaa_is_slow"
       ]
@@ -3932,6 +3939,20 @@
       },
       "features": [
         "disable_dynamic_video_encode_framerate_update"
+      ]
+    },
+    {
+      "id": 391,
+      "description": "Skia ReduceOpsTaskSplitting causes artifacts on Intel Skylake",
+      "cr_bugs": [1298809],
+      "os": {
+        "type": "win"
+      },
+      "intel_gpu_series": [
+        "skylake"
+      ],
+      "features": [
+        "disable_skia_reduce_ops_task_splitting"
       ]
     }
   ]

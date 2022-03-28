@@ -72,7 +72,7 @@ if (!build_with_chromium) {
   executable("cast_receiver") {
     sources = [ "main.cc" ]
 
-    deps = shared_deps
+    deps = shared_deps + [ "../common:certificate_boringssl" ]
     configs += [ "../common:certificate_config" ]
 
     if (have_external_libs) {

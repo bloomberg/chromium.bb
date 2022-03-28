@@ -167,11 +167,15 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
 
   void ReleaseKeyboardLock(RenderFrameHostImpl* rfh);
 
+  // Start a navigation to |url| but block it on an error. If |history_offset|
+  // is not 0, then the navigation will be a history navigation and this will
+  // assert that the URL after navigation is |url|.
+  void NavigateAndBlock(GURL url, int history_offset);
+
   base::HistogramTester histogram_tester_;
 
   bool same_site_back_forward_cache_enabled_ = true;
   bool skip_same_site_if_unload_exists_ = false;
-  bool check_eligibility_after_pagehide_ = false;
   std::string unload_support_ = "always";
 
   const int kMaxBufferedBytesPerProcess = 10000;

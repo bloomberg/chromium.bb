@@ -48,7 +48,7 @@ a single render pass for every output fragment, with each pass executing a one-v
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
@@ -58,7 +58,7 @@ a single render pass for every output fragment, with each pass executing a one-v
       const pass = encoder.beginRenderPass(renderPassDescriptor);
       pass.setPipeline(pipeline);
       pass.draw(1, 1, i);
-      pass.endPass();
+      pass.end();
     });
     t.device.queue.submit([encoder.finish()]);
     t.expectSingleColor(renderTarget, 'rgba8unorm', {
@@ -105,15 +105,15 @@ pass does a single draw call, with one pass per output fragment.`
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
       depthStencilAttachment: {
         view: depthTarget.createView(),
-        depthLoadValue: 'load',
+        depthLoadOp: 'load',
         depthStoreOp: 'store',
-        stencilLoadValue: 'load',
+        stencilLoadOp: 'load',
         stencilStoreOp: 'discard',
       },
     };
@@ -137,7 +137,7 @@ pass does a single draw call, with one pass per output fragment.`
       const pass = encoder.beginRenderPass(renderPassDescriptor);
       pass.setPipeline(pipeline);
       pass.draw(1, 1, i);
-      pass.endPass();
+      pass.end();
     });
     t.device.queue.submit([encoder.finish()]);
     t.expectSingleColor(renderTarget, 'rgba8unorm', {
@@ -200,7 +200,7 @@ buffer.`
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
@@ -222,7 +222,7 @@ buffer.`
       );
       pass.draw(1, 1);
     });
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectSingleColor(renderTarget, 'rgba8unorm', {
       size: [kSize, kSize, 1],
@@ -270,7 +270,7 @@ render pass with a single pipeline, and one draw call per fragment of the output
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
@@ -279,7 +279,7 @@ render pass with a single pipeline, and one draw call per fragment of the output
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
     range(kSize * kSize, i => pass.draw(1, 1, i));
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectSingleColor(renderTarget, 'rgba8unorm', {
       size: [kSize, kSize, 1],
@@ -330,7 +330,7 @@ call which draws multiple vertices for each fragment of a large output texture.`
       colorAttachments: [
         {
           view: renderTarget.createView(),
-          loadValue: 'load',
+          loadOp: 'load',
           storeOp: 'store',
         },
       ],
@@ -340,7 +340,7 @@ call which draws multiple vertices for each fragment of a large output texture.`
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
     pass.draw(kSize * kSize);
-    pass.endPass();
+    pass.end();
     t.device.queue.submit([encoder.finish()]);
     t.expectSingleColor(renderTarget, 'rgba8unorm', {
       size: [kTextureSize, kTextureSize, 1],

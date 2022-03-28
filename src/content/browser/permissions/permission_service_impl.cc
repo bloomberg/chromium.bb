@@ -129,13 +129,6 @@ void PermissionServiceImpl::RequestPermissions(
           types, context_->render_frame_host(), origin_.GetURL(), user_gesture,
           base::BindOnce(&PermissionServiceImpl::OnRequestPermissionsResponse,
                          weak_factory_.GetWeakPtr(), pending_request_id));
-
-  // Check if the request still exists. It may have been removed by the
-  // the response callback.
-  PendingRequest* in_progress_request =
-      pending_requests_.Lookup(pending_request_id);
-  if (!in_progress_request)
-    return;
 }
 
 void PermissionServiceImpl::OnRequestPermissionsResponse(
@@ -203,16 +196,17 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
   if (!browser_context)
     return PermissionStatus::DENIED;
 
-  GURL requesting_origin(origin_.GetURL());
   if (context_->render_frame_host()) {
     return browser_context->GetPermissionController()
-        ->GetPermissionStatusForFrame(type, context_->render_frame_host(),
-                                      requesting_origin);
+        ->GetPermissionStatusForCurrentDocument(type,
+                                                context_->render_frame_host());
+  } else {
+    // If `context_->render_frame_host()` is empty, it means `PermissionService`
+    // is created for a ServiceWorker.
+    DCHECK(context_->GetEmbeddingOrigin().is_empty());
+    return browser_context->GetPermissionController()
+        ->GetPermissionStatusForServiceWorker(type, origin_);
   }
-
-  DCHECK(context_->GetEmbeddingOrigin().is_empty());
-  return browser_context->GetPermissionController()->GetPermissionStatus(
-      type, requesting_origin, requesting_origin);
 }
 
 void PermissionServiceImpl::ResetPermissionStatus(PermissionType type) {

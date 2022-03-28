@@ -11,6 +11,7 @@
 #include "public/fpdf_save.h"
 #include "public/fpdfview.h"
 #include "testing/embedder_test.h"
+#include "testing/embedder_test_constants.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,14 +21,14 @@ TEST_F(FPDFSaveEmbedderTest, SaveSimpleDoc) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.7\r\n"));
-  EXPECT_EQ(805u, GetString().length());
+  EXPECT_EQ(805u, GetString().size());
 }
 
 TEST_F(FPDFSaveEmbedderTest, SaveSimpleDocWithVersion) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   EXPECT_TRUE(FPDF_SaveWithVersion(document(), this, 0, 14));
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.4\r\n"));
-  EXPECT_EQ(805u, GetString().length());
+  EXPECT_EQ(805u, GetString().size());
 }
 
 TEST_F(FPDFSaveEmbedderTest, SaveSimpleDocWithBadVersion) {
@@ -50,28 +51,28 @@ TEST_F(FPDFSaveEmbedderTest, SaveSimpleDocIncremental) {
   // Version gets taken as-is from input document.
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.7\n%\xa0\xf2\xa4\xf4"));
   // Additional output produced vs. non incremental.
-  EXPECT_EQ(985u, GetString().length());
+  EXPECT_EQ(985u, GetString().size());
 }
 
 TEST_F(FPDFSaveEmbedderTest, SaveSimpleDocNoIncremental) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   EXPECT_TRUE(FPDF_SaveWithVersion(document(), this, FPDF_NO_INCREMENTAL, 14));
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.4\r\n"));
-  EXPECT_EQ(805u, GetString().length());
+  EXPECT_EQ(805u, GetString().size());
 }
 
 TEST_F(FPDFSaveEmbedderTest, SaveSimpleDocRemoveSecurity) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   EXPECT_TRUE(FPDF_SaveWithVersion(document(), this, FPDF_REMOVE_SECURITY, 14));
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.4\r\n"));
-  EXPECT_EQ(805u, GetString().length());
+  EXPECT_EQ(805u, GetString().size());
 }
 
 TEST_F(FPDFSaveEmbedderTest, SaveSimpleDocBadFlags) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   EXPECT_TRUE(FPDF_SaveWithVersion(document(), this, 999999, 14));
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.4\r\n"));
-  EXPECT_EQ(805u, GetString().length());
+  EXPECT_EQ(805u, GetString().size());
 }
 
 TEST_F(FPDFSaveEmbedderTest, SaveCopiedDoc) {
@@ -108,7 +109,7 @@ TEST_F(FPDFSaveEmbedderTest, SaveLinearizedDoc) {
   EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.6\r\n"));
   EXPECT_THAT(GetString(), testing::HasSubstr("/Root "));
   EXPECT_THAT(GetString(), testing::HasSubstr("/Info "));
-  EXPECT_EQ(8219u, GetString().length());
+  EXPECT_EQ(8219u, GetString().size());
 
   // Make sure new document renders the same as the old one.
   ASSERT_TRUE(OpenSavedDocument());
@@ -120,6 +121,37 @@ TEST_F(FPDFSaveEmbedderTest, SaveLinearizedDoc) {
     CloseSavedPage(page);
   }
   CloseSavedDocument();
+}
+
+TEST_F(FPDFSaveEmbedderTest, Bug1409) {
+  ASSERT_TRUE(OpenDocument("jpx_lzw.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  while (FPDFPage_CountObjects(page) > 0) {
+    ScopedFPDFPageObject object(FPDFPage_GetObject(page, 0));
+    ASSERT_TRUE(object);
+    ASSERT_TRUE(FPDFPage_RemoveObject(page, object.get()));
+  }
+  ASSERT_TRUE(FPDFPage_GenerateContent(page));
+  UnloadPage(page);
+
+  ASSERT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+
+  // The new document should render as empty.
+  ASSERT_TRUE(OpenSavedDocument());
+  FPDF_PAGE saved_page = LoadSavedPage(0);
+  ASSERT_TRUE(saved_page);
+  ScopedFPDFBitmap bitmap = RenderSavedPage(saved_page);
+  EXPECT_EQ(pdfium::kBlankPage612By792Checksum, HashBitmap(bitmap.get()));
+  CloseSavedPage(saved_page);
+  CloseSavedDocument();
+
+  EXPECT_THAT(GetString(), testing::StartsWith("%PDF-1.7\r\n"));
+  EXPECT_THAT(GetString(), testing::HasSubstr("/Root "));
+  // TODO(crbug.com/pdfium/1409): The PDF should not have any images, given it
+  // is rendering blank. The file size should also be a lot smaller.
+  EXPECT_THAT(GetString(), testing::HasSubstr("/Image"));
+  EXPECT_LT(GetString().size(), 1300u);
 }
 
 #ifdef PDF_ENABLE_XFA

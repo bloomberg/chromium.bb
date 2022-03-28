@@ -167,12 +167,11 @@ struct pldexp_fast_impl {
 //               polynomial interpolants -> ... -> profit!
 template <typename Packet, bool base2>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet plog_impl_float(const Packet _x)
 {
   const Packet cst_1              = pset1<Packet>(1.0f);
-  const Packet cst_minus_inf      = pset1frombits<Packet>( 0xff800000u);
-  const Packet cst_pos_inf        = pset1frombits<Packet>( 0x7f800000u);
+  const Packet cst_minus_inf      = pset1frombits<Packet>(static_cast<Eigen::numext::uint32_t>(0xff800000u));
+  const Packet cst_pos_inf        = pset1frombits<Packet>(static_cast<Eigen::numext::uint32_t>(0x7f800000u));
 
   const Packet cst_cephes_SQRTHF = pset1<Packet>(0.707106781186547524f);
   Packet e, x;
@@ -231,7 +230,6 @@ Packet plog_impl_float(const Packet _x)
 
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet plog_float(const Packet _x)
 {
   return plog_impl_float<Packet, /* base2 */ false>(_x);
@@ -239,7 +237,6 @@ Packet plog_float(const Packet _x)
 
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet plog2_float(const Packet _x)
 {
   return plog_impl_float<Packet, /* base2 */ true>(_x);
@@ -256,7 +253,6 @@ Packet plog2_float(const Packet _x)
  */
 template <typename Packet, bool base2>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet plog_impl_double(const Packet _x)
 {
   Packet x = _x;
@@ -347,7 +343,6 @@ Packet plog_impl_double(const Packet _x)
 
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet plog_double(const Packet _x)
 {
   return plog_impl_double<Packet, /* base2 */ false>(_x);
@@ -355,7 +350,6 @@ Packet plog_double(const Packet _x)
 
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet plog2_double(const Packet _x)
 {
   return plog_impl_double<Packet, /* base2 */ true>(_x);
@@ -412,7 +406,6 @@ Packet generic_expm1(const Packet& x)
 // exp(r) is computed using a 6th order minimax polynomial approximation.
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet pexp_float(const Packet _x)
 {
   const Packet cst_zero   = pset1<Packet>(0.0f);
@@ -461,7 +454,6 @@ Packet pexp_float(const Packet _x)
 
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet pexp_double(const Packet _x)
 {
   Packet x = _x;
@@ -538,7 +530,7 @@ Packet pexp_double(const Packet _x)
 //    aligned on 8-bits, and (2) replicating the storage of the bits of 2/pi.
 //  - Avoid a branch in rounding and extraction of the remaining fractional part.
 // Overall, I measured a speed up higher than x2 on x86-64.
-inline float trig_reduce_huge (float xf, int *quadrant)
+inline float trig_reduce_huge (float xf, Eigen::numext::int32_t *quadrant)
 {
   using Eigen::numext::int32_t;
   using Eigen::numext::uint32_t;
@@ -594,7 +586,6 @@ inline float trig_reduce_huge (float xf, int *quadrant)
 
 template<bool ComputeSine,typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 #if EIGEN_COMP_GNUC_STRICT
 __attribute__((optimize("-fno-unsafe-math-optimizations")))
 #endif
@@ -605,20 +596,20 @@ Packet psincos_float(const Packet& _x)
   const Packet  cst_2oPI            = pset1<Packet>(0.636619746685028076171875f); // 2/PI
   const Packet  cst_rounding_magic  = pset1<Packet>(12582912); // 2^23 for rounding
   const PacketI csti_1              = pset1<PacketI>(1);
-  const Packet  cst_sign_mask       = pset1frombits<Packet>(0x80000000u);
+  const Packet  cst_sign_mask       = pset1frombits<Packet>(static_cast<Eigen::numext::uint32_t>(0x80000000u));
 
   Packet x = pabs(_x);
 
   // Scale x by 2/Pi to find x's octant.
   Packet y = pmul(x, cst_2oPI);
 
-  // Rounding trick:
+  // Rounding trick to find nearest integer:
   Packet y_round = padd(y, cst_rounding_magic);
   EIGEN_OPTIMIZATION_BARRIER(y_round)
   PacketI y_int = preinterpret<PacketI>(y_round); // last 23 digits represent integer (if abs(x)<2^24)
-  y = psub(y_round, cst_rounding_magic); // nearest integer to x*4/pi
+  y = psub(y_round, cst_rounding_magic); // nearest integer to x * (2/pi)
 
-  // Reduce x by y octants to get: -Pi/4 <= x <= +Pi/4
+  // Subtract y * Pi/2 to reduce x to the interval -Pi/4 <= x <= +Pi/4
   // using "Extended precision modular arithmetic"
   #if defined(EIGEN_HAS_SINGLE_INSTRUCTION_MADD)
   // This version requires true FMA for high accuracy
@@ -661,7 +652,7 @@ Packet psincos_float(const Packet& _x)
     const int PacketSize = unpacket_traits<Packet>::size;
     EIGEN_ALIGN_TO_BOUNDARY(sizeof(Packet)) float vals[PacketSize];
     EIGEN_ALIGN_TO_BOUNDARY(sizeof(Packet)) float x_cpy[PacketSize];
-    EIGEN_ALIGN_TO_BOUNDARY(sizeof(Packet)) int y_int2[PacketSize];
+    EIGEN_ALIGN_TO_BOUNDARY(sizeof(Packet)) Eigen::numext::int32_t y_int2[PacketSize];
     pstoreu(vals, pabs(_x));
     pstoreu(x_cpy, x);
     pstoreu(y_int2, y_int);
@@ -719,7 +710,6 @@ Packet psincos_float(const Packet& _x)
 
 template<typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet psin_float(const Packet& x)
 {
   return psincos_float<true>(x);
@@ -727,7 +717,6 @@ Packet psin_float(const Packet& x)
 
 template<typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet pcos_float(const Packet& x)
 {
   return psincos_float<false>(x);
@@ -735,7 +724,7 @@ Packet pcos_float(const Packet& x)
 
 template<typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED Packet pdiv_complex(const Packet& x, const Packet& y) {
+Packet pdiv_complex(const Packet& x, const Packet& y) {
   typedef typename unpacket_traits<Packet>::as_real RealPacket;
   // In the following we annotate the code for the case where the inputs
   // are a pair length-2 SIMD vectors representing a single pair of complex
@@ -756,7 +745,6 @@ EIGEN_UNUSED Packet pdiv_complex(const Packet& x, const Packet& y) {
 
 template<typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet psqrt_complex(const Packet& a) {
   typedef typename unpacket_traits<Packet>::type Scalar;
   typedef typename Scalar::value_type RealScalar;
@@ -1441,7 +1429,6 @@ EIGEN_STRONG_INLINE Packet generic_pow_impl(const Packet& x, const Packet& y) {
 // Generic implementation of pow(x,y).
 template<typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-EIGEN_UNUSED
 Packet generic_pow(const Packet& x, const Packet& y) {
   typedef typename unpacket_traits<Packet>::type Scalar;
 

@@ -92,8 +92,8 @@ const base::Feature kSplitAuthCacheByNetworkIsolationKey{
 // Enable usage of hardcoded DoH upgrade mapping for use in automatic mode.
 const base::Feature kDnsOverHttpsUpgrade {
   "DnsOverHttpsUpgrade",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -106,13 +106,6 @@ const base::Feature kDnsOverHttpsUpgrade {
 // mDNS names (random UUIDs) in the TXT record data.
 const base::Feature kMdnsResponderGeneratedNameListing{
     "MdnsResponderGeneratedNameListing", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Provides a mechanism to disable DoH upgrades for some subset of the hardcoded
-// upgrade mapping. Separate multiple provider ids with commas. See the
-// mapping in net/dns/dns_util.cc for provider ids.
-const base::FeatureParam<std::string>
-    kDnsOverHttpsUpgradeDisabledProvidersParam{&kDnsOverHttpsUpgrade,
-                                               "DisabledProviders", ""};
 
 // Disable special treatment on requests with keepalive set (see
 // https://fetch.spec.whatwg.org/#request-keepalive-flag). This is introduced
@@ -220,6 +213,11 @@ static_assert(kDefaultDataPipeAllocationSize >= net::kMaxBytesToSniff,
 
 // static
 uint32_t GetDataPipeDefaultAllocationSize(DataPipeAllocationSize option) {
+#if BUILDFLAG(IS_CHROMEOS)
+  // TODO(crbug.com/1306998): ChromeOS experiences a much higher OOM crash
+  // rate if the larger data pipe size is used.
+  return kDefaultDataPipeAllocationSize;
+#else
   // For low-memory devices, always use the (smaller) default buffer size.
   if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
     return kDefaultDataPipeAllocationSize;
@@ -229,6 +227,7 @@ uint32_t GetDataPipeDefaultAllocationSize(DataPipeAllocationSize option) {
     case DataPipeAllocationSize::kLargerSizeIfPossible:
       return kLargerDataPipeAllocationSize;
   }
+#endif
 }
 
 // static
@@ -262,10 +261,6 @@ const base::Feature kCorsNonWildcardRequestHeadersSupport{
 const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Optimize the implementation of calling URLLoaderFactory::UpdateLoadInfo().
-const base::Feature kOptimizeUpdateLoadInfo{"OptimizeUpdateLoadInfo",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Combine URLLoaderClient::OnReceiveResponse and OnStartLoadingResponseBody.
 const base::Feature kCombineResponseBody{"CombineResponseBody",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -279,6 +274,11 @@ const base::Feature kFasterSetCookie{"FasterSetCookie",
 // inactive.
 const base::Feature kBatchSimpleURLLoader{"BatchSimpleURLLoader",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Do not send TLS client certificates in CORS preflight. Omit all client certs
+// and continue the handshake without sending one if requested.
+const base::Feature kOmitCorsClientCert{"OmitCorsClientCert",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

@@ -52,12 +52,14 @@ cc_library(
     testonly = True,
     srcs = [
         "ble.cc",
+        "ble_v2.cc",
         "bluetooth_adapter.cc",
         "bluetooth_classic.cc",
         "wifi_lan.cc",
     ],
     hdrs = [
         "ble.h",
+        "ble_v2.h",
         "bluetooth_adapter.h",
         "bluetooth_classic.h",
         "wifi_lan.h",
@@ -109,6 +111,7 @@ cc_library(
         "//internal/analytics:__subpackages__",
         "//internal/platform:__subpackages__",
         "//internal/proto/analytics:__subpackages__",
+        "//location/nearby/cpp/sharing:__subpackages__",
     ],
     deps = [
         ":comm",

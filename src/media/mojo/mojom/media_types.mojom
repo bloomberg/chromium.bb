@@ -176,6 +176,7 @@ struct AudioDecoderConfig {
   int32 codec_delay;
   AudioCodecProfile profile;
   ChannelLayout target_output_channel_layout;
+  SampleFormat target_output_sample_format;
   bool should_discard_decoder_delay;
   array<uint8> aac_extra_data;
 };
@@ -305,6 +306,7 @@ struct VideoFrameMetadata {
   gfx.mojom.Rect? capture_update_rect;
 
   gfx.mojom.Rect? region_capture_rect;
+  uint32 crop_version;
 
   bool has_copy_mode;
   CopyMode copy_mode;

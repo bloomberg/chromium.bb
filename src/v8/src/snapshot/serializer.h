@@ -141,13 +141,16 @@ class ObjectCacheIndexMap {
   // If |obj| is in the map, immediately return true.  Otherwise add it to the
   // map and return false. In either case set |*index_out| to the index
   // associated with the map.
-  bool LookupOrInsert(Handle<HeapObject> obj, int* index_out) {
+  bool LookupOrInsert(HeapObject obj, int* index_out) {
     auto find_result = map_.FindOrInsert(obj);
     if (!find_result.already_exists) {
       *find_result.entry = next_index_++;
     }
     *index_out = *find_result.entry;
     return find_result.already_exists;
+  }
+  bool LookupOrInsert(Handle<HeapObject> obj, int* index_out) {
+    return LookupOrInsert(*obj, index_out);
   }
 
   bool Lookup(HeapObject obj, int* index_out) const {
@@ -158,6 +161,8 @@ class ObjectCacheIndexMap {
     *index_out = *index;
     return true;
   }
+
+  Handle<FixedArray> Values(Isolate* isolate);
 
   int size() const { return next_index_; }
 
@@ -445,6 +450,7 @@ class Serializer::ObjectSerializer : public ObjectVisitor {
   void VisitEmbeddedPointer(Code host, RelocInfo* target) override;
   void VisitExternalReference(Foreign host, Address* p) override;
   void VisitExternalReference(Code host, RelocInfo* rinfo) override;
+  void VisitExternalPointer(HeapObject host, ExternalPointer_t ptr) override;
   void VisitInternalReference(Code host, RelocInfo* rinfo) override;
   void VisitCodeTarget(Code host, RelocInfo* target) override;
   void VisitRuntimeEntry(Code host, RelocInfo* reloc) override;
@@ -460,8 +466,8 @@ class Serializer::ObjectSerializer : public ObjectVisitor {
   // This function outputs or skips the raw data between the last pointer and
   // up to the current position.
   void SerializeContent(Map map, int size);
-  void OutputExternalReference(Address target, int target_size,
-                               bool sandboxify);
+  void OutputExternalReference(Address target, int target_size, bool sandboxify,
+                               ExternalPointerTag tag);
   void OutputRawData(Address up_to);
   void SerializeCode(Map map, int size);
   uint32_t SerializeBackingStore(void* backing_store, int32_t byte_length);

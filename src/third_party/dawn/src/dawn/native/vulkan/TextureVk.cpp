@@ -924,9 +924,12 @@ namespace dawn::native::vulkan {
             bool isInitialized = IsSubresourceContentInitialized(GetAllSubresources());
 
             // We don't care about the pending old layout if the texture is uninitialized. The
-            // driver is free to discard it. Likewise, we don't care about the pending new layout if
-            // the texture is uninitialized. We can skip the layout transition.
-            if (!isInitialized) {
+            // driver is free to discard it. Also it is invalid to transition to layout UNDEFINED or
+            // PREINITIALIZED. If the embedder provided no new layout, or we don't care about the
+            // previous contents, we can skip the layout transition.
+            // https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkImageMemoryBarrier-newLayout-01198
+            if (!isInitialized || mPendingAcquireNewLayout == VK_IMAGE_LAYOUT_UNDEFINED ||
+                mPendingAcquireNewLayout == VK_IMAGE_LAYOUT_PREINITIALIZED) {
                 barrier->oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 barrier->newLayout = desiredLayout;
             } else {
@@ -1302,7 +1305,7 @@ namespace dawn::native::vulkan {
     }
 
     MaybeError TextureView::Initialize(const TextureViewDescriptor* descriptor) {
-        if ((GetTexture()->GetUsage() &
+        if ((GetTexture()->GetInternalUsage() &
              ~(wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst)) == 0) {
             // If the texture view has no other usage than CopySrc and CopyDst, then it can't
             // actually be used as a render pass attachment or sampled/storage texture. The Vulkan

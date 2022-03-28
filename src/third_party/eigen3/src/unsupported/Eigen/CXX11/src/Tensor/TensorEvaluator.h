@@ -194,7 +194,7 @@ struct TensorEvaluator
   const Device EIGEN_DEVICE_REF m_device;
 };
 
-namespace {
+namespace internal {
 template <typename T> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
 T loadConstant(const T* address) {
   return *address;
@@ -221,8 +221,7 @@ T &loadConstant(const Eigen::TensorSycl::internal::RangeAccess<AcMd, T> &address
   return *address;
 }
 #endif
-}
-
+}  // namespace internal
 
 // Default evaluator for rvalues
 template<typename Derived, typename Device>
@@ -291,7 +290,7 @@ struct TensorEvaluator<const Derived, Device>
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE CoeffReturnType coeff(Index index) const {
     eigen_assert(m_data != NULL);
-    return loadConstant(m_data+index);
+    return internal::loadConstant(m_data+index);
   }
 
   template<int LoadMode> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
@@ -316,7 +315,7 @@ struct TensorEvaluator<const Derived, Device>
     eigen_assert(m_data != NULL);
     const Index index = (static_cast<int>(Layout) == static_cast<int>(ColMajor)) ? m_dims.IndexOfColMajor(coords)
                         : m_dims.IndexOfRowMajor(coords);
-    return loadConstant(m_data+index);
+    return internal::loadConstant(m_data+index);
   }
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE TensorOpCost costPerCoeff(bool vectorized) const {

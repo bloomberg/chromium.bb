@@ -6,6 +6,7 @@
 
 #include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
+#include "components/search/ntp_features.h"
 
 namespace {
 // These values are persisted to logs. Entries should not be renumbered and
@@ -44,4 +45,61 @@ void CartDiscountMetricCollector::RecordDiscountConsentStatus(
     DiscountConsentStatus status) {
   base::UmaHistogramEnumeration("NewTabPage.Carts.DiscountConsentStatusAtLoad",
                                 status);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusAcceptedIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.AcceptedIn", variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusRejectedIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.RejectedIn", variation);
+}
+
+void CartDiscountMetricCollector::
+    RecordDiscountConsentStatusNoShowAfterDecidedIn(
+        commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowHasFinalized",
+      variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusDismissedIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.DismissedIn", variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusShowInterestIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.InterestedButNoActionIn",
+      variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusNeverShowIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.NeverShownIn", variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusNoShowIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowIn", variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusIgnoredIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.IgnoredIn", variation);
+}
+
+void CartDiscountMetricCollector::RecordDiscountConsentStatusShownIn(
+    commerce::DiscountConsentNtpVariation variation) {
+  base::UmaHistogramEnumeration(
+      "NewTabPage.Carts.DiscountConsentStatusAtLoad.ShownIn", variation);
 }

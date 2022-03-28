@@ -96,9 +96,9 @@ template<typename MatrixType> void diagonalmatrices(const MatrixType& m)
   // products do not allocate memory
   MatrixType res(rows, cols);
   internal::set_is_malloc_allowed(false);
-  res.noalias() = ldm1 * m;
-  res.noalias() = m * rdm1;
-  res.noalias() = ldm1 * m * rdm1;
+  res.noalias() = ldm1 * m1;
+  res.noalias() = m1 * rdm1;
+  res.noalias() = ldm1 * m1 * rdm1;
   internal::set_is_malloc_allowed(true);  
   
   // scalar multiple

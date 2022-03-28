@@ -58,6 +58,7 @@
 #include "quic/platform/api/quic_export.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_socket_address.h"
+#include "common/platform/api/quiche_mem_slice.h"
 #include "common/quiche_circular_deque.h"
 
 namespace quic {
@@ -411,6 +412,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnNPacketNumbersSkipped(QuicPacketCount /*count*/,
                                        QuicTime /*now*/) {}
 
+  // Called when a packet is serialized but discarded (i.e. not sent).
+  virtual void OnPacketDiscarded(const SerializedPacket& /*packet*/) {}
+
   // Called for QUIC+TLS versions when we send transport parameters.
   virtual void OnTransportParametersSent(
       const TransportParameters& /*transport_parameters*/) {}
@@ -448,8 +452,8 @@ class QUIC_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // Returns a QuicRandom to be used for all random number related functions.
   virtual QuicRandom* GetRandomGenerator() = 0;
 
-  // Returns a QuicBufferAllocator to be used for stream send buffers.
-  virtual QuicBufferAllocator* GetStreamSendBufferAllocator() = 0;
+  // Returns a QuicheBufferAllocator to be used for stream send buffers.
+  virtual quiche::QuicheBufferAllocator* GetStreamSendBufferAllocator() = 0;
 };
 
 class QUIC_EXPORT_PRIVATE QuicConnection
@@ -963,14 +967,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       QuicPacketWriter* probing_writer,
       const QuicSocketAddress& peer_address);
 
-  // Sends response to a connectivity probe. Sends either a Padded Ping
-  // or an IETF PATH_RESPONSE based on the version of the connection.
-  // Is the counterpart to SendConnectivityProbingPacket().
-  // TODO(danzh): remove this method after deprecating
-  // --gfe2_reloadable_flag_quic_send_path_response.
-  virtual void SendConnectivityProbingResponsePacket(
-      const QuicSocketAddress& peer_address);
-
   // Disable MTU discovery on this connection.
   void DisableMtuDiscovery();
 
@@ -990,7 +986,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // If |flush| is false, this will return a MESSAGE_STATUS_BLOCKED
   // when the connection is deemed unwritable.
   virtual MessageStatus SendMessage(QuicMessageId message_id,
-                                    absl::Span<QuicMemSlice> message,
+                                    absl::Span<quiche::QuicheMemSlice> message,
                                     bool flush);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
@@ -1156,8 +1152,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Enables Legacy Version Encapsulation using |server_name| as SNI.
   // Can only be set if this is a client connection.
   void EnableLegacyVersionEncapsulation(const std::string& server_name);
-
-  bool send_path_response() const { return send_path_response_; }
 
   bool use_path_validator() const { return use_path_validator_; }
 
@@ -1676,11 +1670,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Sends generic path probe packet to the peer. If we are not IETF QUIC, will
   // always send a padded ping, regardless of whether this is a request or not.
-  // TODO(danzh): remove |is_response| after deprecating
-  // --gfe2_reloadable_flag_quic_send_path_response.
   bool SendGenericPathProbePacket(QuicPacketWriter* probing_writer,
-                                  const QuicSocketAddress& peer_address,
-                                  bool is_response);
+                                  const QuicSocketAddress& peer_address);
 
   // Called when an ACK is about to send. Resets ACK related internal states,
   // e.g., cancels ack_alarm_, resets
@@ -2218,11 +2209,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   size_t anti_amplification_factor_ =
       GetQuicFlag(FLAGS_quic_anti_amplification_factor);
 
-  // latch --gfe2_reloadable_flag_quic_send_path_response.
-  bool send_path_response_ = GetQuicReloadableFlag(quic_send_path_response2);
-
   bool use_path_validator_ =
-      send_path_response_ &&
       GetQuicReloadableFlag(quic_pass_path_response_to_validator);
 
   // True if AckFrequencyFrame is supported.
@@ -2281,10 +2268,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Enable this via reloadable flag once this feature is complete.
   bool connection_migration_use_new_cid_ = false;
-
-  const bool reset_per_packet_state_for_undecryptable_packets_ =
-      GetQuicReloadableFlag(
-          quic_reset_per_packet_state_for_undecryptable_packets);
 
   // TODO(b/205023946) Debug-only fields, to be deprecated after the bug is
   // fixed.

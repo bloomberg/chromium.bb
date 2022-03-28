@@ -29,42 +29,11 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
                                        absl::optional<LayoutUnit> row_baseline,
                                        LayoutUnit* cell_inline_offset = nullptr,
                                        bool use_block_fragmentation = false) {
-    const wtf_size_t start_column = table_data.cells[cell_index].start_column;
-    const wtf_size_t end_column =
-        std::min(start_column + cell.TableCellColspan() - 1,
-                 table_data.column_locations.size() - 1);
-
-    // When columns spanned by the cell are collapsed, the cell geometry is
-    // defined by:
-    // - The start edge of the first non-collapsed column.
-    // - The end edge of the last non-collapsed column.
-    // - If all columns are collapsed, the |cell_inline_size| is defined by the
-    //   edges of the last column. Picking last column is arbitrary, any
-    //   spanned column would work, as all spanned columns define the same
-    //   geometry: same location, zero width.
-    wtf_size_t cell_location_start_column = start_column;
-    while (
-        table_data.column_locations[cell_location_start_column].is_collapsed &&
-        cell_location_start_column < end_column)
-      cell_location_start_column++;
-    wtf_size_t cell_location_end_column = end_column;
-    while (table_data.column_locations[cell_location_end_column].is_collapsed &&
-           cell_location_end_column > cell_location_start_column)
-      cell_location_end_column--;
-
-    if (cell_inline_offset) {
-      *cell_inline_offset =
-          table_data.column_locations[cell_location_start_column].offset;
-    }
-
-    const NGTableConstraintSpaceData::Cell& cell_data =
-        table_data.cells[cell_index];
-    const LayoutUnit cell_inline_size =
-        table_data.column_locations[cell_location_end_column].offset +
-        table_data.column_locations[cell_location_end_column].inline_size -
-        table_data.column_locations[cell_location_start_column].offset;
+    const auto& cell_data = table_data.cells[cell_index];
     const LayoutUnit cell_block_size =
-        row.is_collapsed ? LayoutUnit() : cell_data.block_size;
+        cell_data.rowspan_block_size != kIndefiniteSize
+            ? cell_data.rowspan_block_size
+            : row.block_size;
 
     // Our initial block-size is definite if this cell has a fixed block-size,
     // or we have grown and the table has a specified block-size.
@@ -72,17 +41,17 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
         cell_data.is_constrained ||
         (cell_data.has_grown && table_data.is_table_block_size_specified);
 
-    const bool is_hidden_for_paint =
-        table_data.column_locations[cell_location_start_column].is_collapsed &&
-        cell_location_start_column == cell_location_end_column;
+    const wtf_size_t start_column = cell_data.start_column;
+    if (cell_inline_offset)
+      *cell_inline_offset = table_data.column_locations[start_column].offset;
 
     NGConstraintSpaceBuilder builder =
         NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
             table_data.table_writing_direction, cell, cell_data.borders,
-            {cell_inline_size, cell_block_size},
+            table_data.column_locations, cell_block_size,
             container_builder_.InlineSize(), row_baseline, start_column,
             !is_initial_block_size_definite,
-            table_data.is_table_block_size_specified, is_hidden_for_paint,
+            table_data.is_table_block_size_specified,
             table_data.has_collapsed_borders, NGCacheSlot::kLayout);
 
     if (use_block_fragmentation) {
@@ -121,6 +90,11 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
     row_baseline = row_baseline_tabulator.ComputeBaseline(row.block_size);
   }
 
+  bool should_propagate_child_break_values =
+      ConstraintSpace().ShouldPropagateChildBreakValues();
+  EBreakBetween row_break_before = EBreakBetween::kAuto;
+  EBreakBetween row_break_after = EBreakBetween::kAuto;
+
   // Generate cell fragments.
   NGRowBaselineTabulator row_baseline_tabulator;
   NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken(),
@@ -129,6 +103,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
        NGBlockNode cell = To<NGBlockNode>(entry.node);
        entry = child_iterator.NextChild()) {
     const auto* cell_break_token = To<NGBlockBreakToken>(entry.token);
+    const auto& cell_style = cell.Style();
     wtf_size_t cell_index = row.start_cell_index + *entry.index;
     LayoutUnit cell_inline_offset;
     NGConstraintSpace cell_constraint_space = CreateCellConstraintSpace(
@@ -136,17 +111,27 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
         ConstraintSpace().HasBlockFragmentation());
     const NGLayoutResult* cell_result =
         cell.Layout(cell_constraint_space, cell_break_token);
-    // TODO(mstensho): Propagate break-before and break-after values to the row.
     container_builder_.AddResult(
         *cell_result,
         {cell_inline_offset - table_data.table_border_spacing.inline_size,
          LayoutUnit()});
+
+    if (should_propagate_child_break_values) {
+      auto cell_break_before = JoinFragmentainerBreakValues(
+          cell_style.BreakBefore(), cell_result->InitialBreakBefore());
+      auto cell_break_after = JoinFragmentainerBreakValues(
+          cell_style.BreakAfter(), cell_result->FinalBreakAfter());
+      row_break_before =
+          JoinFragmentainerBreakValues(row_break_before, cell_break_before);
+      row_break_after =
+          JoinFragmentainerBreakValues(row_break_after, cell_break_after);
+    }
+
     NGBoxFragment fragment(
         table_data.table_writing_direction,
         To<NGPhysicalBoxFragment>(cell_result->PhysicalFragment()));
     row_baseline_tabulator.ProcessCell(
-        fragment,
-        NGTableAlgorithmUtils::IsBaseline(cell.Style().VerticalAlign()),
+        fragment, NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign()),
         cell.TableCellRowspan() > 1,
         cell_result->HasDescendantThatDependsOnPercentageBlockSize());
   }
@@ -163,6 +148,11 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   if (row.is_collapsed)
     container_builder_.SetIsHiddenForPaint(true);
   container_builder_.SetIsTableNGPart();
+
+  if (should_propagate_child_break_values) {
+    container_builder_.SetInitialBreakBefore(row_break_before);
+    container_builder_.SetPreviousBreakAfter(row_break_after);
+  }
 
   if (UNLIKELY(InvolvedInBlockFragmentation(container_builder_))) {
     NGBreakStatus status = FinishFragmentation(

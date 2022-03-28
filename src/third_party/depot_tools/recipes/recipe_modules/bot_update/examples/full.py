@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine import post_process
+
 PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
 
 DEPS = [
@@ -180,6 +182,11 @@ def GenTests(api):
       api.properties(fail_patch='download') +
       api.step_data('bot_update', retcode=87)
   )
+  yield (api.test('tryjob_fail_missing_bot_update_json') + try_build() +
+         api.override_step_data('bot_update', retcode=1) +
+         api.post_process(post_process.ResultReasonRE, 'Infra Failure.*') +
+         api.post_process(post_process.StatusException) +
+         api.post_process(post_process.DropExpectation))
   yield (
       api.test('clobber') +
       api.properties(clobber=1)

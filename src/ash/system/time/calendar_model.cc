@@ -11,6 +11,7 @@
 #include "ash/calendar/calendar_client.h"
 #include "ash/calendar/calendar_controller.h"
 #include "ash/shell.h"
+#include "ash/system/time/calendar_event_fetch.h"
 #include "ash/system/time/calendar_utils.h"
 #include "base/bind.h"
 #include "base/check.h"
@@ -53,64 +54,17 @@ constexpr int kMaxNumberOfMonthsCached =
 
 namespace ash {
 
-// Represents a single fetch of a given month's calendar events.
-class CalendarEventFetch {
- public:
-  // A callback invoked when a fetch of calendar events is complete.
-  using FetchCompleteCallback =
-      base::OnceCallback<void(base::Time start_of_month,
-                              google_apis::ApiErrorCode error,
-                              const google_apis::calendar::EventList* events)>;
+CalendarModel::CalendarModel() : session_observer_(this) {}
 
-  // Fetch begins immediately on construction.
-  CalendarEventFetch(base::Time start_of_month,
-                     FetchCompleteCallback complete_callback)
-      : start_of_month_(start_of_month),
-        complete_callback_(std::move(complete_callback)),
-        fetch_start_time_(base::Time::Now()) {
-    CalendarClient* client = Shell::Get()->calendar_controller()->GetClient();
-    DCHECK(client);
+CalendarModel::~CalendarModel() {}
 
-    const base::Time start_of_next_month =
-        calendar_utils::GetStartOfNextMonthUTC(start_of_month);
-    client->GetEventList(base::BindOnce(&CalendarEventFetch::OnResultReceived,
-                                        weak_factory_.GetWeakPtr()),
-                         start_of_month, start_of_next_month);
-  }
-  CalendarEventFetch(const CalendarEventFetch& other) = delete;
-  CalendarEventFetch& operator=(const CalendarEventFetch& other) = delete;
-  virtual ~CalendarEventFetch() = default;
-
- private:
-  // Callback invoked when results of a fetch are available.
-  void OnResultReceived(
-      google_apis::ApiErrorCode error,
-      std::unique_ptr<google_apis::calendar::EventList> events) {
-    base::UmaHistogramTimes("Ash.Calendar.FetchEvents.FetchDuration",
-                            base::Time::Now() - fetch_start_time_);
-
-    // IMPORTANT: 'this' is NOT safe to use after `complete_callback_` has been
-    // executed, as the last thing it does is destroy `this`.
-    std::move(complete_callback_).Run(start_of_month_, error, events.get());
-  }
-
-  // Start of the month whose events we're fetching.
-  base::Time start_of_month_;
-
-  // Callback invoked when the fetch is complete.
-  FetchCompleteCallback complete_callback_;
-
-  const base::Time fetch_start_time_;
-
-  base::WeakPtrFactory<CalendarEventFetch> weak_factory_{this};
-};
-
-// The calendar model itself.
-CalendarModel::CalendarModel(const std::set<base::Time>& base_months) {
-  FetchEvents(base_months);
+void CalendarModel::OnSessionStateChanged(session_manager::SessionState state) {
+  ClearAllCachedEvents();
 }
 
-CalendarModel::~CalendarModel() = default;
+void CalendarModel::OnActiveUserSessionChanged(const AccountId& account_id) {
+  ClearAllCachedEvents();
+}
 
 void CalendarModel::AddObserver(Observer* observer) {
   if (observer)
@@ -156,8 +110,14 @@ void CalendarModel::MaybeFetchMonth(base::Time start_of_month) {
   pending_fetches_.emplace(
       start_of_month,
       std::make_unique<CalendarEventFetch>(
-          start_of_month, base::BindRepeating(&CalendarModel::OnEventsFetched,
-                                              base::Unretained(this))));
+          start_of_month,
+          /*complete_callback=*/
+          base::BindRepeating(&CalendarModel::OnEventsFetched,
+                              base::Unretained(this)),
+          /*internal_error_callback_=*/
+          base::BindRepeating(&CalendarModel::OnEventFetchFailedInternalError,
+                              base::Unretained(this)),
+          /*tick_clock=*/nullptr));
 }
 
 void CalendarModel::MarkMonthAsFetched(base::Time start_of_month) {
@@ -182,9 +142,27 @@ void CalendarModel::QueuePrunableMonth(base::Time start_of_month) {
   prunable_months_mru_.push_front(start_of_month);
 }
 
+void CalendarModel::ClearAllCachedEvents() {
+  // Destroy all outstanding fetch requests.
+  pending_fetches_.clear();
+
+  // Destroy the list used to decide who gets pruned.
+  prunable_months_mru_.clear();
+
+  // Destroy the events themselves.
+  event_months_.clear();
+}
+
 void CalendarModel::FetchEvents(const std::set<base::Time>& months) {
   for (auto& month : months)
     MaybeFetchMonth(month.UTCMidnight());
+}
+
+void CalendarModel::FetchEventsSurrounding(int num_months,
+                                           const base::Time day) {
+  std::set<base::Time> months =
+      calendar_utils::GetSurroundingMonthsUTC(day, num_months);
+  FetchEvents(months);
 }
 
 int CalendarModel::EventsNumberOfDayInternal(base::Time day,
@@ -220,6 +198,8 @@ void CalendarModel::OnEventsFetched(
   if (error != google_apis::HTTP_SUCCESS) {
     LOG(ERROR) << __FUNCTION__ << " Event fetch received error: " << error;
     // Request is no longer outstanding, so it can be destroyed.
+    // TODO: https://crbug.com/1298187 We need to respond further based on the
+    // specific error code, retry in some cases, etc.
     pending_fetches_.erase(start_of_month);
     return;
   }
@@ -241,8 +221,23 @@ void CalendarModel::OnEventsFetched(
   pending_fetches_.erase(start_of_month);
 }
 
+void CalendarModel::OnEventFetchFailedInternalError(
+    base::Time start_of_month,
+    CalendarEventFetchInternalErrorCode error) {
+  LOG(ERROR) << __FUNCTION__
+             << " Event fetch received internal error: " << (int)error;
+
+  // Request is no longer outstanding, so it can be destroyed.
+  // TODO: https://crbug.com/1298187 We need to respond further based on the
+  // specific error code, retry in some cases, etc.
+  pending_fetches_.erase(start_of_month);
+}
+
 void CalendarModel::InsertEvent(
     const google_apis::calendar::CalendarEvent* event) {
+  if (!event)
+    return;
+
   base::Time start_of_month =
       calendar_utils::GetStartOfMonthUTC(GetStartTimeMidnightAdjusted(event));
 
@@ -262,6 +257,9 @@ void CalendarModel::InsertEvent(
 void CalendarModel::InsertEventInMonth(
     SingleMonthEventMap& month,
     const google_apis::calendar::CalendarEvent* event) {
+  if (!event)
+    return;
+
   base::Time start_time_midnight = GetStartTimeMidnightAdjusted(event);
 
   auto it = month.find(start_time_midnight);
@@ -290,6 +288,9 @@ base::Time CalendarModel::GetStartTimeMidnightAdjusted(
 
 void CalendarModel::InsertEvents(
     const google_apis::calendar::EventList* events) {
+  if (!events)
+    return;
+
   for (const auto& event : events->items())
     InsertEvent(event.get());
 }

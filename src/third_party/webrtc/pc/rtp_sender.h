@@ -17,6 +17,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,13 +33,16 @@
 #include "api/rtp_parameters.h"
 #include "api/rtp_sender_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/sequence_checker.h"
 #include "media/base/audio_source.h"
 #include "media/base/media_channel.h"
 #include "pc/dtmf_sender.h"
 #include "pc/stats_collector_interface.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 #include "rtc_base/thread.h"
+#include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
 
@@ -222,6 +226,11 @@ class RtpSenderBase : public RtpSenderInternal, public ObserverInterface {
   std::vector<std::string> stream_ids_;
   RtpParameters init_parameters_;
 
+  // TODO(tommi): `media_channel_` and several other member variables in this
+  // class (ssrc_, stopped_, etc) are accessed from more than one thread without
+  // a guard or lock. Internally there are also several Invoke()s that we could
+  // remove since the upstream code may already be performing several operations
+  // on the worker thread.
   cricket::MediaChannel* media_channel_ = nullptr;
   rtc::scoped_refptr<MediaStreamTrackInterface> track_;
 

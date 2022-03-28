@@ -20,6 +20,8 @@
 #include "src/execution/isolate.h"
 #include "src/heap/code-object-registry.h"
 #include "src/heap/concurrent-allocator-inl.h"
+#include "src/heap/concurrent-allocator.h"
+#include "src/heap/heap-allocator-inl.h"
 #include "src/heap/heap-write-barrier.h"
 #include "src/heap/heap.h"
 #include "src/heap/large-spaces.h"
@@ -98,6 +100,16 @@ int64_t Heap::external_memory() { return external_memory_.total(); }
 
 int64_t Heap::update_external_memory(int64_t delta) {
   return external_memory_.Update(delta);
+}
+
+PagedSpace* Heap::space_for_maps() {
+  return V8_LIKELY(map_space_) ? static_cast<PagedSpace*>(map_space_)
+                               : static_cast<PagedSpace*>(old_space_);
+}
+
+ConcurrentAllocator* Heap::concurrent_allocator_for_maps() {
+  return V8_LIKELY(shared_map_allocator_) ? shared_map_allocator_.get()
+                                          : shared_old_allocator_.get();
 }
 
 RootsTable& Heap::roots_table() { return isolate()->roots_table(); }
@@ -188,145 +200,16 @@ int Heap::MaxRegularHeapObjectSize(AllocationType allocation) {
 AllocationResult Heap::AllocateRaw(int size_in_bytes, AllocationType type,
                                    AllocationOrigin origin,
                                    AllocationAlignment alignment) {
-  DCHECK_EQ(gc_state(), NOT_IN_GC);
-  DCHECK(AllowHandleAllocation::IsAllowed());
-  DCHECK(AllowHeapAllocation::IsAllowed());
-#ifdef V8_ENABLE_ALLOCATION_TIMEOUT
-  if (FLAG_random_gc_interval > 0 || FLAG_gc_interval >= 0) {
-    if (!always_allocate() && Heap::allocation_timeout_-- <= 0) {
-      AllocationSpace space = FLAG_single_generation ? OLD_SPACE : NEW_SPACE;
-      return AllocationResult::Failure(space);
-    }
-  }
-#endif  // V8_ENABLE_ALLOCATION_TIMEOUT
-#ifdef DEBUG
-  IncrementObjectCounters();
-#endif  // DEBUG
-
-  if (CanSafepoint()) {
-    main_thread_local_heap()->Safepoint();
-  }
-
-  const size_t large_object_threshold = MaxRegularHeapObjectSize(type);
-  const bool large_object =
-      static_cast<size_t>(size_in_bytes) > large_object_threshold;
-
-  HeapObject object;
-  AllocationResult allocation;
-
-  if (FLAG_single_generation && type == AllocationType::kYoung) {
-    type = AllocationType::kOld;
-  }
-
-  if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
-    allocation = tp_heap_->Allocate(size_in_bytes, type, alignment);
-  } else {
-    if (V8_UNLIKELY(large_object)) {
-      allocation =
-          AllocateRawLargeInternal(size_in_bytes, type, origin, alignment);
-    } else {
-      switch (type) {
-        case AllocationType::kYoung:
-          allocation =
-              new_space_->AllocateRaw(size_in_bytes, alignment, origin);
-          break;
-        case AllocationType::kOld:
-          allocation =
-              old_space_->AllocateRaw(size_in_bytes, alignment, origin);
-          break;
-        case AllocationType::kCode:
-          DCHECK_EQ(alignment, AllocationAlignment::kTaggedAligned);
-          DCHECK(AllowCodeAllocation::IsAllowed());
-          allocation = code_space_->AllocateRawUnaligned(size_in_bytes);
-          break;
-        case AllocationType::kMap:
-          DCHECK_EQ(alignment, AllocationAlignment::kTaggedAligned);
-          allocation = map_space_->AllocateRawUnaligned(size_in_bytes);
-          break;
-        case AllocationType::kReadOnly:
-          DCHECK(CanAllocateInReadOnlySpace());
-          DCHECK_EQ(AllocationOrigin::kRuntime, origin);
-          allocation = read_only_space_->AllocateRaw(size_in_bytes, alignment);
-          break;
-        case AllocationType::kSharedMap:
-          allocation = shared_map_allocator_->AllocateRaw(size_in_bytes,
-                                                          alignment, origin);
-          break;
-        case AllocationType::kSharedOld:
-          allocation = shared_old_allocator_->AllocateRaw(size_in_bytes,
-                                                          alignment, origin);
-          break;
-      }
-    }
-  }
-
-  if (allocation.To(&object)) {
-    if (AllocationType::kCode == type && !V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
-      // Unprotect the memory chunk of the object if it was not unprotected
-      // already.
-      UnprotectAndRegisterMemoryChunk(object,
-                                      UnprotectMemoryOrigin::kMainThread);
-      ZapCodeObject(object.address(), size_in_bytes);
-      if (!large_object) {
-        MemoryChunk::FromHeapObject(object)
-            ->GetCodeObjectRegistry()
-            ->RegisterNewlyAllocatedCodeObject(object.address());
-      }
-    }
-
-#ifdef V8_ENABLE_CONSERVATIVE_STACK_SCANNING
-    if (AllocationType::kReadOnly != type) {
-      DCHECK_TAG_ALIGNED(object.address());
-      Page::FromHeapObject(object)->object_start_bitmap()->SetBit(
-          object.address());
-    }
-#endif  // V8_ENABLE_CONSERVATIVE_STACK_SCANNING
-
-    for (auto& tracker : allocation_trackers_) {
-      tracker->AllocationEvent(object.address(), size_in_bytes);
-    }
-  }
-
-  return allocation;
-}
-
-template <Heap::AllocationRetryMode mode>
-HeapObject Heap::AllocateRawWith(int size, AllocationType allocation,
-                                 AllocationOrigin origin,
-                                 AllocationAlignment alignment) {
-  DCHECK(AllowHandleAllocation::IsAllowed());
-  DCHECK(AllowHeapAllocation::IsAllowed());
-  DCHECK_EQ(gc_state(), NOT_IN_GC);
-  if (allocation == AllocationType::kYoung) {
-    auto result = AllocateRaw(size, AllocationType::kYoung, origin, alignment);
-    HeapObject object;
-    if (result.To(&object)) return object;
-
-  } else if (allocation == AllocationType::kOld) {
-    auto result = AllocateRaw(size, AllocationType::kOld, origin, alignment);
-    HeapObject object;
-    if (result.To(&object)) return object;
-  }
-  switch (mode) {
-    case kLightRetry:
-      return AllocateRawWithLightRetrySlowPath(size, allocation, origin,
-                                               alignment);
-    case kRetryOrFail:
-      return AllocateRawWithRetryOrFailSlowPath(size, allocation, origin,
-                                                alignment);
-  }
-  UNREACHABLE();
+  return heap_allocator_.AllocateRaw(size_in_bytes, type, origin, alignment);
 }
 
 Address Heap::AllocateRawOrFail(int size, AllocationType allocation,
                                 AllocationOrigin origin,
                                 AllocationAlignment alignment) {
-  return AllocateRawWith<kRetryOrFail>(size, allocation, origin, alignment)
+  return heap_allocator_
+      .AllocateRawWith<HeapAllocator::kRetryOrFail>(size, allocation, origin,
+                                                    alignment)
       .address();
-}
-
-bool Heap::CanAllocateInReadOnlySpace() {
-  return read_only_space()->writable();
 }
 
 void Heap::RegisterExternalString(String string) {

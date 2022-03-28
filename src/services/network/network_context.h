@@ -109,6 +109,7 @@ class CookieManager;
 class ExpectCTReporter;
 class HostResolver;
 class MdnsResponderManager;
+class MojoBackendFileOperationsFactory;
 class NetworkService;
 class NetworkServiceNetworkDelegate;
 class NetworkServiceProxyDelegate;
@@ -310,6 +311,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   SCTAuditingHandler* sct_auditing_handler() {
     return sct_auditing_handler_.get();
   }
+  void CanSendSCTAuditingReport(base::OnceCallback<void(bool)> callback);
+  void OnNewSCTAuditingReportSent();
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(
       mojo::PendingReceiver<mojom::UDPSocket> receiver,
@@ -884,6 +887,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       url_loader_factories_;
 
   std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
+
+  scoped_refptr<MojoBackendFileOperationsFactory>
+      http_cache_file_operations_factory_;
 
   base::WeakPtrFactory<NetworkContext> weak_factory_{this};
 };

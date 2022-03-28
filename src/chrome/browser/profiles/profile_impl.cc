@@ -40,7 +40,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -110,6 +109,8 @@
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
 #include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
 #include "chrome/browser/webid/federated_identity_active_session_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_api_permission_context.h"
+#include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_request_permission_context.h"
 #include "chrome/browser/webid/federated_identity_request_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
@@ -163,6 +164,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/federated_identity_active_session_permission_context_delegate.h"
+#include "content/public/browser/federated_identity_api_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_request_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
 #include "content/public/browser/permission_controller.h"
@@ -185,6 +187,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -459,12 +462,6 @@ ProfileImpl::ProfileImpl(
   }
 #endif
 
-#if BUILDFLAG(ENABLE_SESSION_SERVICE)
-  create_session_service_timer_.Start(
-      FROM_HERE, kCreateSessionServiceDelay, this,
-      &ProfileImpl::EnsureSessionServiceCreated);
-#endif
-
   if (path == ProfileManager::GetGuestProfilePath()) {
       profile_metrics::SetBrowserProfileType(
           this, profile_metrics::BrowserProfileType::kGuest);
@@ -654,7 +651,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
       ash::ProfileHelper::IsPrimaryProfile(this)) {
     auto& map = profile_policy_connector_->policy_service()->GetPolicies(
         policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
-    crosapi::browser_util::CacheLacrosLaunchSwitch(map);
+    crosapi::browser_util::CacheLacrosAvailability(map);
   }
 #endif
 }
@@ -834,7 +831,8 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   if (BreadcrumbsStatus::IsEnabled()) {
     breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
+            this, /*create=*/true);
     breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
         .ObserveBreadcrumbManagerService(breadcrumb_service);
 
@@ -868,9 +866,10 @@ ProfileImpl::~ProfileImpl() {
   StopCreateSessionServiceTimer();
 #endif
 
-  if (BreadcrumbsStatus::IsEnabled()) {
-    breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
+  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
+      BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
+          this, /*create=*/false);
+  if (breadcrumb_service) {
     breadcrumb_service->StopPersisting();
     breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
         .StopObservingBreadcrumbManagerService(breadcrumb_service);
@@ -1140,7 +1139,7 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
     if (ash::ProfileHelper::IsPrimaryProfile(this)) {
       auto& map = profile_policy_connector_->policy_service()->GetPolicies(
           policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
-      crosapi::browser_util::CacheLacrosLaunchSwitch(map);
+      crosapi::browser_util::CacheLacrosAvailability(map);
     }
 
     ash::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
@@ -1149,6 +1148,15 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
   }
 #else
   OnLocaleReady(create_mode);
+#endif
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  // SessionService depends on Profile::GetPrefs() and therefore shouldn't be
+  // forced initialized before prefs are loaded. Starting this Timer before
+  // that point resulted in a racy use-before-initialized in the past.
+  create_session_service_timer_.Start(
+      FROM_HERE, kCreateSessionServiceDelay, this,
+      &ProfileImpl::EnsureSessionServiceCreated);
 #endif
 }
 
@@ -1320,6 +1328,11 @@ content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
 
 content::ContentIndexProvider* ProfileImpl::GetContentIndexProvider() {
   return ContentIndexProviderFactory::GetForProfile(this);
+}
+
+content::FederatedIdentityApiPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentityApiPermissionContext() {
+  return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
 }
 
 content::FederatedIdentityActiveSessionPermissionContextDelegate*

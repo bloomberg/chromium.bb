@@ -18,7 +18,7 @@ import os
 import re
 import subprocess
 import sys
-import urllib
+import urllib.request
 
 
 def FindSrcDirPath():
@@ -45,7 +45,6 @@ WEBRTC_ONLY_DEPS = [
     'src/ios',
     'src/testing',
     'src/third_party',
-    'src/third_party/bazel',
     'src/third_party/findbugs',
     'src/third_party/gtest-parallel',
     'src/third_party/yasm/binaries',
@@ -120,7 +119,7 @@ def ParseDepsDict(deps_content):
 
 def ParseLocalDepsFile(filename):
   with open(filename, 'rb') as f:
-    deps_content = f.read()
+    deps_content = f.read().decode('utf-8')
   return ParseDepsDict(deps_content)
 
 
@@ -196,7 +195,7 @@ def _ReadGitilesContent(url):
   # Download and decode BASE64 content until
   # https://code.google.com/p/gitiles/issues/detail?id=7 is fixed.
   base64_content = ReadUrlContent(url + '?format=TEXT')
-  return base64.b64decode(base64_content[0])
+  return base64.b64decode(base64_content[0]).decode('utf-8')
 
 
 def ReadRemoteCrFile(path_below_src, revision):
@@ -449,7 +448,7 @@ def CalculateChangedClang(new_cr_rev):
         return match.group(1)
     raise RollError('Could not parse Clang revision!')
 
-  with open(CLANG_UPDATE_SCRIPT_LOCAL_PATH, 'rb') as f:
+  with open(CLANG_UPDATE_SCRIPT_LOCAL_PATH, 'r') as f:
     current_lines = f.readlines()
   current_rev = GetClangRev(current_lines)
 
@@ -524,8 +523,8 @@ def GenerateCommitMessage(
 def UpdateDepsFile(deps_filename, rev_update, changed_deps, new_cr_content):
   """Update the DEPS file with the new revision."""
 
-  with open(deps_filename, 'r') as deps_file:
-    deps_content = deps_file.read()
+  with open(deps_filename, 'rb') as deps_file:
+    deps_content = deps_file.read().decode('utf-8')
 
   # Update the chromium_revision variable.
   deps_content = deps_content.replace(rev_update.current_chromium_rev,
@@ -544,8 +543,8 @@ def UpdateDepsFile(deps_filename, rev_update, changed_deps, new_cr_content):
                     (ANDROID_DEPS_START, ANDROID_DEPS_END, faulty))
   deps_content = deps_re.sub(new_deps.group(0), deps_content)
 
-  with open(deps_filename, 'w') as deps_file:
-    deps_file.write(deps_content)
+  with open(deps_filename, 'wb') as deps_file:
+    deps_file.write(deps_content.encode('utf-8'))
 
   # Update each individual DEPS entry.
   for dep in changed_deps:

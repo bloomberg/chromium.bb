@@ -55,16 +55,10 @@ bool ShouldShowQuickAnswers() {
     return false;
 
   bool settings_enabled = QuickAnswersState::Get()->settings_enabled();
-  // Respect the managed settings.
-  if (QuickAnswersState::Get()->IsSettingsEnforced())
-    return settings_enabled;
-
-  if (settings_enabled)
-    return true;
 
   bool should_show_consent = QuickAnswersState::Get()->consent_status() ==
                              quick_answers::prefs::ConsentStatus::kUnknown;
-  return should_show_consent;
+  return settings_enabled || should_show_consent;
 }
 
 }  // namespace
@@ -274,7 +268,7 @@ void QuickAnswersControllerImpl::OpenQuickAnswersSettings() {
 }
 
 void QuickAnswersControllerImpl::MaybeDismissQuickAnswersConsent() {
-  if (quick_answers_ui_controller_->is_showing_user_consent_view())
+  if (quick_answers_ui_controller_->IsShowingUserConsentView())
     QuickAnswersState::Get()->OnConsentResult(ConsentResultType::kDismiss);
   quick_answers_ui_controller_->CloseUserConsentView();
 }
@@ -283,7 +277,7 @@ void QuickAnswersControllerImpl::ShowUserConsent(
     const std::u16string& intent_type,
     const std::u16string& intent_text) {
   // Show consent informing user about the feature if required.
-  if (!quick_answers_ui_controller_->is_showing_user_consent_view()) {
+  if (!quick_answers_ui_controller_->IsShowingUserConsentView()) {
     quick_answers_ui_controller_->CreateUserConsentView(
         anchor_bounds_, intent_type, intent_text);
     QuickAnswersState::Get()->StartConsent();

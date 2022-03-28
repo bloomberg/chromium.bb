@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -467,19 +468,15 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
   if (IsInProcessNetworkService())
     return;
 
-  mojo::PendingRemote<network::mojom::NetworkServiceTest>
-      pending_network_service_test;
-  GetNetworkService()->BindTestInterface(
-      pending_network_service_test.InitWithNewPipeAndPassReceiver());
-
   net::EmbeddedTestServer http_server;
   http_server.AddDefaultHandlers(GetTestDataFilePath());
   http_server.RegisterRequestMonitor(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request) {
         if (request.relative_url == "/hung") {
-          mojo::Remote<network::mojom::NetworkServiceTest> network_service_test(
-              std::move(pending_network_service_test));
-          network_service_test->SimulateCrash();
+          GetUIThreadTaskRunner({})->PostTask(
+              FROM_HERE,
+              base::BindOnce(&BrowserTestBase::SimulateNetworkServiceCrash,
+                             base::Unretained(this)));
         }
       }));
   EXPECT_TRUE(http_server.Start());

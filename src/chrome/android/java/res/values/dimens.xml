@@ -128,18 +128,6 @@
 
     <dimen name="fre_button_vertical_margin_small">16dp</dimen>
 
-    <!-- Chrome Management dimensions -->
-    <dimen name="cm_max_width">600dp</dimen>
-    <dimen name="cm_padding">32dp</dimen>
-    <dimen name="cm_logo_width">40dp</dimen>
-    <dimen name="cm_logo_height">36dp</dimen>
-    <dimen name="cm_title_margin_top">30dp</dimen>
-    <dimen name="cm_description_margin_top">24dp</dimen>
-    <dimen name="cm_learn_more_margin_top">22dp</dimen>
-    <dimen name="cm_browser_margin_top">42dp</dimen>
-    <dimen name="cm_browser_item_margin_top">20dp</dimen>
-    <dimen name="cm_browser_item_drawable_padding">18dp</dimen>
-
     <!-- Account Signin dimensions -->
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
     a lot of the fre_* dimensions for consistency. -->
@@ -174,6 +162,7 @@
     <dimen name="tile_grid_layout_bleed">8dp</dimen>
     <dimen name="tile_grid_layout_vertical_spacing">6dp</dimen>
     <dimen name="tile_grid_layout_min_horizontal_spacing">4dp</dimen>
+    <dimen name="tile_grid_layout_bottom_margin">16dp</dimen>
     <dimen name="ntp_logo_height">100dp</dimen>
     <dimen name="ntp_logo_margin_top">26dp</dimen>
     <dimen name="duet_ntp_logo_top_margin">-16dp</dimen>
@@ -272,7 +261,6 @@
      <!-- We intentionally use px to avoid showing fewer favicons in some UIs on higher density devices. -->
      <dimen name="bookmark_refresh_min_start_icon_size" tools:ignore="PxUsage">32px</dimen>
      <dimen name="bookmark_refresh_circular_monogram_text_size">18dp</dimen>
-
 
     <!-- Bookmark widget dimensions -->
     <dimen name="bookmark_widget_min_width">64dp</dimen>

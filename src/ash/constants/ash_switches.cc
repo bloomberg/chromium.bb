@@ -149,6 +149,11 @@ const char kArcStartMode[] = "arc-start-mode";
 // Sets ARC Terms Of Service hostname url for testing.
 const char kArcTosHostForTests[] = "arc-tos-host-for-tests";
 
+// Mounts the debugfs file system if this flag is set.
+// Debugfs was removed in Android S to meet GTS requirements, but for ureadahead
+// tracing we need to enable it in developer mode only.
+const char kArcVmMountDebugFs[] = "arcvm-mount-debugfs";
+
 // Sets the mode of operation for ureadahead during ARCVM boot. If this switch
 // is not set, ARCVM ureadahead will check for the presence and age of pack
 // file and reads ahead files to page cache for improved boot performance.
@@ -523,6 +528,10 @@ const char kFingerprintSensorLocation[] = "fingerprint-sensor-location";
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
 
+// Forces fetching tokens for Cryptohome Recovery.
+const char kForceCryptohomeRecoveryForTesting[] =
+    "force-cryptohome-recovery-for-testing";
+
 // Forces developer tools availability, no matter what values the enterprise
 // policies DeveloperToolsDisabled and DeveloperToolsAvailability are set to.
 const char kForceDevToolsAvailable[] = "force-devtools-available";
@@ -579,6 +588,9 @@ const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 // both Search and Caps Lock keys (e.g. stout) and for devices like Chromeboxes
 // that only use external keyboards.
 const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
+
+// Whether this device that has hps.
+const char kHasHps[] = "has-hps";
 
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
@@ -976,6 +988,10 @@ bool IsUsingShelfAutoDim() {
 bool ShouldClearFastInkBuffer() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAshClearFastInkBuffer);
+}
+
+bool HasHps() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kHasHps);
 }
 
 }  // namespace switches

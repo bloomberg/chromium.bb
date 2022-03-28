@@ -31,8 +31,8 @@ namespace liftoff {
 //   1   | previous frame (fp)|
 //   0   | const pool (r28)   | if const pool is enabled
 //  -----+--------------------+  <-- frame ptr (fp) or cp
-//  -1   | 0xa: WASM          |
-//  -2   |     instance       |
+//  -1   | StackFrame::WASM   |
+//  -2   |    instance        |
 //  -3   |    feedback vector |
 //  -4   |    tiering budget  |
 //  -----+--------------------+---------------------------
@@ -2893,15 +2893,14 @@ void LiftoffAssembler::PopRegisters(LiftoffRegList regs) {
   MultiPop(regs.GetGpList());
 }
 
-void LiftoffAssembler::RecordSpillsInSafepoint(Safepoint& safepoint,
-                                               LiftoffRegList all_spills,
-                                               LiftoffRegList ref_spills,
-                                               int spill_offset) {
+void LiftoffAssembler::RecordSpillsInSafepoint(
+    SafepointTableBuilder::Safepoint& safepoint, LiftoffRegList all_spills,
+    LiftoffRegList ref_spills, int spill_offset) {
   int spill_space_size = 0;
   while (!all_spills.is_empty()) {
     LiftoffRegister reg = all_spills.GetLastRegSet();
     if (ref_spills.has(reg)) {
-      safepoint.DefinePointerSlot(spill_offset);
+      safepoint.DefineTaggedStackSlot(spill_offset);
     }
     all_spills.clear(reg);
     ++spill_offset;

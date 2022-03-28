@@ -1460,13 +1460,11 @@ TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
 }
 
 // Tests that webkit preferences are updated when user agent override changes.
-// Fails on linux-bfcache-rel: crbug.com/1244109
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_GoBackWithUserAgentOverrideChange DISABLED_GoBackWithUserAgentOverrideChange
-#else
-#define MAYBE_GoBackWithUserAgentOverrideChange GoBackWithUserAgentOverrideChange
-#endif
-TEST_F(NavigationControllerTest, MAYBE_GoBackWithUserAgentOverrideChange) {
+TEST_F(NavigationControllerTest, GoBackWithUserAgentOverrideChange) {
+  // The test requires that going back will load a new document instead of
+  // restoring an old one from the back/forward cache.
+  DisableBackForwardCacheForTesting(RenderViewHostTestHarness::web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigationControllerImpl& controller = controller_impl();
 
   // Set up a simple NavigationEntry stack of two pages.
@@ -4303,7 +4301,8 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
       main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
       false /* should_replace_current_entry */,
       blink::NavigationDownloadPolicy(), "GET", nullptr, "",
-      network::mojom::SourceLocation::New(), nullptr, absl::nullopt);
+      network::mojom::SourceLocation::New(), nullptr, absl::nullopt,
+      base::TimeTicks::Now() /* navigation_start_time */);
 
   // Clean up the handler.
   BrowserURLHandlerImpl::GetInstance()->RemoveHandlerForTesting(
@@ -4348,7 +4347,7 @@ TEST_F(NavigationControllerTest,
       main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
       should_replace_current_entry, blink::NavigationDownloadPolicy(), "GET",
       nullptr, "", network::mojom::SourceLocation::New(), nullptr,
-      absl::nullopt);
+      absl::nullopt, base::TimeTicks::Now() /* navigation_start_time */);
   NavigationRequest* request = node->navigation_request();
   ASSERT_TRUE(request);
 
@@ -4459,7 +4458,7 @@ TEST_F(NavigationControllerTest, PruneForwardEntriesAfterClone) {
 }
 
 TEST_F(NavigationControllerTest,
-       NavigateToAppHistoryKey_DifferentSiteInstance) {
+       NavigateToNavigationApiKey_DifferentSiteInstance) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -4469,23 +4468,23 @@ TEST_F(NavigationControllerTest,
   std::string first_key = "12345";
   controller.GetLastCommittedEntry()
       ->GetFrameEntry(root_ftn())
-      ->set_app_history_key(first_key);
+      ->set_navigation_api_key(first_key);
 
   // Navigate to a new site instance. The key should not be shared.
   NavigateAndCommit(url2);
   EXPECT_NE(controller.GetLastCommittedEntry()
                 ->GetFrameEntry(root_ftn())
-                ->app_history_key(),
+                ->navigation_api_key(),
             first_key);
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // Attempte to provide the cross-site-instance key to
-  // NavigateToAppHistoryKey(). No navigation should occur.
-  controller.NavigateToAppHistoryKey(root_ftn(), first_key);
+  // NavigateToNavigationApiKey(). No navigation should occur.
+  controller.NavigateToNavigationApiKey(root_ftn(), first_key);
   EXPECT_FALSE(controller.GetPendingEntry());
 }
 
-TEST_F(NavigationControllerTest, NavigateToAppHistoryKey_KeyForWrongFrame) {
+TEST_F(NavigationControllerTest, NavigateToNavigationApiKey_KeyForWrongFrame) {
   const GURL kUrl1("http://google.com");
 
   // Simulate navigating to a page that has a same-origin subframe.
@@ -4498,7 +4497,7 @@ TEST_F(NavigationControllerTest, NavigateToAppHistoryKey_KeyForWrongFrame) {
   controller_impl()
       .GetLastCommittedEntry()
       ->GetFrameEntry(root_ftn())
-      ->set_app_history_key(first_main_key);
+      ->set_navigation_api_key(first_main_key);
 
   // Navigate both frames again.
   const GURL kUrl2("http://google.com#bar");
@@ -4510,17 +4509,17 @@ TEST_F(NavigationControllerTest, NavigateToAppHistoryKey_KeyForWrongFrame) {
   same_document_navigation_subframe->CommitSameDocument();
   ASSERT_EQ(3, controller_impl().GetEntryCount());
 
-  // Call NavigateToAppHistoryKey() on the subframe with the key from the main
-  // frame. No navigation should begin, because we should only match keys for
-  // the target frame.
+  // Call NavigateToNavigationApiKey() on the subframe with the key from the
+  // main frame. No navigation should begin, because we should only match keys
+  // for the target frame.
   FrameTreeNode* subframe_node =
       main_test_rfh()->frame_tree_node()->child_at(0);
-  controller_impl().NavigateToAppHistoryKey(subframe_node, first_main_key);
+  controller_impl().NavigateToNavigationApiKey(subframe_node, first_main_key);
   EXPECT_FALSE(controller_impl().GetPendingEntry());
 
-  // Call NavigateToAppHistoryKey() on the main frame with the key from the main
-  // frame. This time a navigation should begin.
-  controller_impl().NavigateToAppHistoryKey(root_ftn(), first_main_key);
+  // Call NavigateToNavigationApiKey() on the main frame with the key from the
+  // main frame. This time a navigation should begin.
+  controller_impl().NavigateToNavigationApiKey(root_ftn(), first_main_key);
   EXPECT_TRUE(controller_impl().GetPendingEntry());
 }
 

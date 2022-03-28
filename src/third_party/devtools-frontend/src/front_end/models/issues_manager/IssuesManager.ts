@@ -22,7 +22,7 @@ import {LowTextContrastIssue} from './LowTextContrastIssue.js';
 import {MixedContentIssue} from './MixedContentIssue.js';
 import {NavigatorUserAgentIssue} from './NavigatorUserAgentIssue.js';
 import {QuirksModeIssue} from './QuirksModeIssue.js';
-import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
+import {CookieIssue} from './CookieIssue.js';
 import {SharedArrayBufferIssue} from './SharedArrayBufferIssue.js';
 import {SourceFrameIssuesManager} from './SourceFrameIssuesManager.js';
 import {TrustedWebActivityIssue} from './TrustedWebActivityIssue.js';
@@ -49,8 +49,8 @@ const issueCodeHandlers = new Map<
     Protocol.Audits.InspectorIssueCode,
     (model: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue) => Issue[]>([
   [
-    Protocol.Audits.InspectorIssueCode.SameSiteCookieIssue,
-    SameSiteCookieIssue.fromInspectorIssue,
+    Protocol.Audits.InspectorIssueCode.CookieIssue,
+    CookieIssue.fromInspectorIssue,
   ],
   [
     Protocol.Audits.InspectorIssueCode.MixedContentIssue,

@@ -925,8 +925,12 @@ class _GitDiffCache(_DiffCache):
         (normpath(path), ''.join(diff)) for path, diff in diffs.items())
 
     if path not in self._diffs_by_file:
-      raise PresubmitFailure(
-          'Unified diff did not contain entry for file %s' % path)
+      # SCM didn't have any diff on this file. It could be that the file was not
+      # modified at all (e.g. user used --all flag in git cl presubmit).
+      # Intead of failing, return empty string.
+      # See: https://crbug.com/808346.
+      logging.warning('No diff found for %s' % path)
+      return ''
 
     return self._diffs_by_file[path]
 
@@ -1727,7 +1731,6 @@ def DoPresubmitChecks(change,
       else:
         messages.setdefault('Messages', []).append(result)
 
-    sys.stdout.write('\n')
     for name, items in messages.items():
       sys.stdout.write('** Presubmit %s **\n' % name)
       for item in items:
@@ -1737,10 +1740,10 @@ def DoPresubmitChecks(change,
     total_time = time_time() - start_time
     if total_time > 1.0:
       sys.stdout.write(
-          'Presubmit checks took %.1fs to calculate.\n\n' % total_time)
+          'Presubmit checks took %.1fs to calculate.\n' % total_time)
 
     if not should_prompt and not presubmits_failed:
-      sys.stdout.write('%s presubmit checks passed.\n' % python_version)
+      sys.stdout.write('%s presubmit checks passed.\n\n' % python_version)
     elif should_prompt and not presubmits_failed:
       sys.stdout.write('There were %s presubmit warnings. ' % python_version)
       if may_prompt:

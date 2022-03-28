@@ -279,8 +279,6 @@ void LayoutTheme::AdjustStyle(const Element* e, ComputedStyle& style) {
     case kSliderThumbHorizontalPart:
     case kSliderThumbVerticalPart:
       return AdjustSliderThumbStyle(style);
-    case kSearchFieldPart:
-      return AdjustSearchFieldStyle(style);
     case kSearchFieldCancelButtonPart:
       return AdjustSearchFieldCancelButtonStyle(style);
     default:
@@ -508,8 +506,6 @@ void LayoutTheme::AdjustSliderThumbStyle(ComputedStyle& style) const {
 
 void LayoutTheme::AdjustSliderThumbSize(ComputedStyle&) const {}
 
-void LayoutTheme::AdjustSearchFieldStyle(ComputedStyle&) const {}
-
 void LayoutTheme::AdjustSearchFieldCancelButtonStyle(ComputedStyle&) const {}
 
 void LayoutTheme::PlatformColorsDidChange() {
@@ -617,6 +613,9 @@ Color LayoutTheme::DefaultSystemColor(
                                                               : 0xFFFFFFFF;
     case CSSValueID::kBackground:
       return 0xFF6363CE;
+    case CSSValueID::kButtonborder:
+      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF6B6B6B
+                                                              : 0xFF767676;
     case CSSValueID::kButtonface:
       return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF444444
                                                               : 0xFFDDDDDD;
@@ -625,7 +624,7 @@ Color LayoutTheme::DefaultSystemColor(
     case CSSValueID::kButtonshadow:
       return 0xFF888888;
     case CSSValueID::kButtontext:
-      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFFAAAAAA
+      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFFFFFFFF
                                                               : 0xFF000000;
     case CSSValueID::kCaptiontext:
       return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFFFFFFFF
@@ -718,6 +717,7 @@ Color LayoutTheme::SystemColorFromNativeTheme(
     case CSSValueID::kButtonface:
       theme_color = blink::WebThemeEngine::SystemThemeColor::kButtonFace;
       break;
+    case CSSValueID::kButtonborder:
     case CSSValueID::kButtontext:
       theme_color = blink::WebThemeEngine::SystemThemeColor::kButtonText;
       break;

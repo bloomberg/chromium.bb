@@ -40,11 +40,11 @@ display::Display::Rotation WaylandTransformToRotation(int32_t transform) {
     case WL_OUTPUT_TRANSFORM_NORMAL:
       return display::Display::ROTATE_0;
     case WL_OUTPUT_TRANSFORM_90:
-      return display::Display::ROTATE_90;
+      return display::Display::ROTATE_270;
     case WL_OUTPUT_TRANSFORM_180:
       return display::Display::ROTATE_180;
     case WL_OUTPUT_TRANSFORM_270:
-      return display::Display::ROTATE_270;
+      return display::Display::ROTATE_90;
     // ui::display::Display does not support flipped rotation.
     // see ui::display::Display::Rotation comment.
     case WL_OUTPUT_TRANSFORM_FLIPPED:
@@ -224,9 +224,9 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
 }
 
 gfx::Point WaylandScreen::GetCursorScreenPoint() const {
-  // Wayland does not provide either location of surfaces in global space
-  // coordinate system or location of a pointer. Instead, only locations of
-  // mouse/touch events are known. Given that Chromium assumes top-level
+  // wl_shell/xdg-shell do not provide either location of surfaces in global
+  // space coordinate system or location of a pointer. Instead, only locations
+  // of mouse/touch events are known. Given that Chromium assumes top-level
   // windows are located at origin, always provide a cursor point in regards
   // to surfaces' location.
   //

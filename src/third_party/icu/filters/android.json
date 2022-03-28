@@ -1800,7 +1800,6 @@
         "locales_tree"
       ],
       "files": {
-        "filterType": "language",
         "includelist": [
 // Created by diff scripts/chrome_ui_languages.list scripts/accept_lang.list|egrep "^>"|egrep -v "#"|cut -c3-10
           "ach",

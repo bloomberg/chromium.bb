@@ -161,9 +161,11 @@ class CoordinationServiceInterface {
   //      Deadline is determined by the server timestamp when it receives the
   //      first WaitAtBarrier() + timeout duration.
   //   - Cancelled: One of the tasks called CancelBarrier().
+  //   - Aborted: Service is shutting down.
   //   - Internal: Any participating task is in ERROR state.
-  //   - InvalidArgument: Conflicting tasks specified by different agents for
-  //       the same barrier, or task making the request is not included in the
+  //   - InvalidArgument: (1) Conflicting tasks specified by different agents
+  //       for the same barrier, (2) one of the participating tasks is not in
+  //       the cluster, or (3) task making the request is not included in the
   //       list of participating tasks.
   //   - FailedPrecondition: Agent is in UNINITIALIZED or ERROR state.
   virtual void BarrierAsync(
@@ -187,6 +189,7 @@ class CoordinationServiceInterface {
   friend class CoordinationServiceTest_ListClusterDevices_XlaDevice_Test;
 
   virtual const CoordinationServiceDeviceInfo& ListClusterDevices() = 0;
+  virtual uint64_t GetServiceIncarnation() = 0;
 
   static std::unordered_map<std::string, CoordinationServiceFactory>*
   GetCoordinationServiceFactories() {

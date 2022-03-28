@@ -11,6 +11,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -51,7 +52,6 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
@@ -108,6 +108,32 @@ bool ChromeShellDelegate::CanShowWindowForUser(
 std::unique_ptr<ash::CaptureModeDelegate>
 ChromeShellDelegate::CreateCaptureModeDelegate() const {
   return std::make_unique<ChromeCaptureModeDelegate>();
+}
+
+ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
+  return new ChromeAccessibilityDelegate;
+}
+
+std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
+ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
+    ash::BackGestureContextualNudgeController* controller) {
+  return std::make_unique<BackGestureContextualNudgeDelegate>(controller);
+}
+
+std::unique_ptr<ash::NearbyShareDelegate>
+ChromeShellDelegate::CreateNearbyShareDelegate(
+    ash::NearbyShareController* controller) const {
+  return std::make_unique<NearbyShareDelegateImpl>(controller);
+}
+
+std::unique_ptr<ash::DesksTemplatesDelegate>
+ChromeShellDelegate::CreateDesksTemplatesDelegate() const {
+  return std::make_unique<ChromeDesksTemplatesDelegate>();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeShellDelegate::GetGeolocationSharedURLLoaderFactory() const {
+  return g_browser_process->shared_url_loader_factory();
 }
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
@@ -179,11 +205,11 @@ void ChromeShellDelegate::BindFingerprint(
 }
 
 void ChromeShellDelegate::BindMultiDeviceSetup(
-    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+    mojo::PendingReceiver<ash::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
-  chromeos::multidevice_setup::MultiDeviceSetupService* service =
-      chromeos::multidevice_setup::MultiDeviceSetupServiceFactory::
-          GetForProfile(ProfileManager::GetPrimaryUserProfile());
+  ash::multidevice_setup::MultiDeviceSetupService* service =
+      ash::multidevice_setup::MultiDeviceSetupServiceFactory::GetForProfile(
+          ProfileManager::GetPrimaryUserProfile());
   if (service)
     service->BindMultiDeviceSetup(std::move(receiver));
 }
@@ -191,27 +217,6 @@ void ChromeShellDelegate::BindMultiDeviceSetup(
 media_session::MediaSessionService*
 ChromeShellDelegate::GetMediaSessionService() {
   return &content::GetMediaSessionService();
-}
-
-ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
-  return new ChromeAccessibilityDelegate;
-}
-
-std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
-ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
-    ash::BackGestureContextualNudgeController* controller) {
-  return std::make_unique<BackGestureContextualNudgeDelegate>(controller);
-}
-
-std::unique_ptr<ash::NearbyShareDelegate>
-ChromeShellDelegate::CreateNearbyShareDelegate(
-    ash::NearbyShareController* controller) const {
-  return std::make_unique<NearbyShareDelegateImpl>(controller);
-}
-
-std::unique_ptr<ash::DesksTemplatesDelegate>
-ChromeShellDelegate::CreateDesksTemplatesDelegate() const {
-  return std::make_unique<ChromeDesksTemplatesDelegate>();
 }
 
 bool ChromeShellDelegate::IsSessionRestoreInProgress() const {

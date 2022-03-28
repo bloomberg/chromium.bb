@@ -6,6 +6,7 @@
 
 #include "chromeos/crosapi/mojom/web_app_types.mojom.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 
 namespace mojo {
 
@@ -65,6 +66,9 @@ crosapi::mojom::WebAppInstallResultCode EnumTraits<
       return crosapi::mojom::WebAppInstallResultCode::kInstallTaskDestroyed;
     case webapps::InstallResultCode::kUpdateTaskFailed:
       return crosapi::mojom::WebAppInstallResultCode::kUpdateTaskFailed;
+    case webapps::InstallResultCode::kAppNotInRegistrarAfterCommit:
+      return crosapi::mojom::WebAppInstallResultCode::
+          kAppNotInRegistrarAfterCommit;
   };
 }
 
@@ -144,6 +148,47 @@ bool EnumTraits<crosapi::mojom::WebAppInstallResultCode,
       return true;
     case crosapi::mojom::WebAppInstallResultCode::kUpdateTaskFailed:
       *output = webapps::InstallResultCode::kUpdateTaskFailed;
+      return true;
+    case crosapi::mojom::WebAppInstallResultCode::kAppNotInRegistrarAfterCommit:
+      *output = webapps::InstallResultCode::kAppNotInRegistrarAfterCommit;
+      return true;
+  };
+
+  NOTREACHED();
+  return false;
+}
+
+crosapi::mojom::WebAppUninstallResultCode EnumTraits<
+    crosapi::mojom::WebAppUninstallResultCode,
+    webapps::UninstallResultCode>::ToMojom(webapps::UninstallResultCode input) {
+  switch (input) {
+    case webapps::UninstallResultCode::kSuccess:
+      return crosapi::mojom::WebAppUninstallResultCode::kSuccess;
+    case webapps::UninstallResultCode::kNoAppToUninstall:
+      return crosapi::mojom::WebAppUninstallResultCode::kNoAppToUninstall;
+    case webapps::UninstallResultCode::kCancelled:
+      return crosapi::mojom::WebAppUninstallResultCode::kCancelled;
+    case webapps::UninstallResultCode::kError:
+      return crosapi::mojom::WebAppUninstallResultCode::kError;
+  };
+}
+
+bool EnumTraits<crosapi::mojom::WebAppUninstallResultCode,
+                webapps::UninstallResultCode>::
+    FromMojom(crosapi::mojom::WebAppUninstallResultCode input,
+              webapps::UninstallResultCode* output) {
+  switch (input) {
+    case crosapi::mojom::WebAppUninstallResultCode::kSuccess:
+      *output = webapps::UninstallResultCode::kSuccess;
+      return true;
+    case crosapi::mojom::WebAppUninstallResultCode::kNoAppToUninstall:
+      *output = webapps::UninstallResultCode::kNoAppToUninstall;
+      return true;
+    case crosapi::mojom::WebAppUninstallResultCode::kCancelled:
+      *output = webapps::UninstallResultCode::kCancelled;
+      return true;
+    case crosapi::mojom::WebAppUninstallResultCode::kError:
+      *output = webapps::UninstallResultCode::kError;
       return true;
   };
 

@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
@@ -211,13 +211,6 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       reporting_proxy_(reporting_proxy) {
   GetSecurityContext().SetSecurityOrigin(std::move(origin));
 
-  // TODO(https://crbug.com/780031): When the right blink feature is disabled,
-  // we can incorrectly compute the secure context bit for this worker. It
-  // should never be true when the creator context was non-secure.
-  if (IsSecureContext() && !is_creator_secure_context_) {
-    CountUse(mojom::blink::WebFeature::kSecureContextIncorrectForWorker);
-  }
-
   SetPolicyContainer(PolicyContainer::CreateEmpty());
   if (worker_clients_)
     worker_clients_->ReattachThread();
@@ -257,6 +250,14 @@ bool WorkerOrWorkletGlobalScope::HasPendingActivity() const {
 
 void WorkerOrWorkletGlobalScope::CountUse(WebFeature feature) {
   DCHECK(IsContextThread());
+
+  // `reporting_proxy_` should outlive `this` but there seems a situation where
+  // the assumption is broken. Don't count features while the context is
+  // destroyed.
+  // TODO(https://crbug.com/1298450): Fix the lifetime of WorkerReportingProxy.
+  if (IsContextDestroyed())
+    return;
+
   DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
   DCHECK_GT(WebFeature::kNumberOfFeatures, feature);
   if (used_features_[static_cast<size_t>(feature)])
@@ -419,13 +420,7 @@ bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
 }
 
 bool WorkerOrWorkletGlobalScope::HasInsecureContextInAncestors() const {
-  if (RuntimeEnabledFeatures::SecureContextFixForWorkersEnabled()) {
-    return !is_creator_secure_context_;
-  }
-
-  // TODO(https://crbug.com/780031): Remove this branch once the feature is
-  // always enabled. This preserves previous functionality in the meantime.
-  return false;
+  return !is_creator_secure_context_;
 }
 
 void WorkerOrWorkletGlobalScope::Dispose() {
@@ -522,16 +517,12 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   }
 
   // credentials mode is credentials mode, and referrer policy is the empty
-  // string."
-  // TODO(domfarolino): Module worker scripts are fetched with kImportanceAuto.
-  // Priority Hints is currently non-standard, but we can assume "fetch a module
-  // worker script tree" sets the script fetch options struct's "importance" to
-  // "auto". See https://github.com/whatwg/html/issues/3670 and
-  // https://crbug.com/821464.
+  // string.
+  // Module worker scripts are fetched with fetchpriority kAuto.
   ScriptFetchOptions options(
       nonce, IntegrityMetadataSet(), integrity_attribute, parser_state,
       credentials_mode, network::mojom::ReferrerPolicy::kDefault,
-      mojom::blink::FetchImportanceMode::kImportanceAuto,
+      mojom::blink::FetchPriorityHint::kAuto,
       RenderBlockingBehavior::kNonBlocking, reject_coep_unsafe_none);
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());

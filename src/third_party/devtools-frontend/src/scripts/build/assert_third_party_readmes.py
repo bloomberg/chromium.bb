@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # -*- coding: UTF-8 -*-
 #
 # Copyright 2022 The Chromium Authors. All rights reserved.
@@ -54,7 +54,7 @@ def main(argv):
             print(
                 "Directory `" + listed_directory + "`" +
                 " is not included in `config/gni/devtools_grd_files.gni`." +
-                " Make sure to only include third_party directoires that are shipped"
+                " Make sure to only include third_party directories that are shipped"
                 + " in Chromium.\n")
 
             return_code = 1

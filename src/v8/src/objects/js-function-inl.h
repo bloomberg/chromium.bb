@@ -25,8 +25,9 @@ namespace internal {
 
 #include "torque-generated/src/objects/js-function-tq-inl.inc"
 
-TQ_OBJECT_CONSTRUCTORS_IMPL(JSFunctionOrBoundFunction)
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSFunctionOrBoundFunctionOrWrappedFunction)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSBoundFunction)
+TQ_OBJECT_CONSTRUCTORS_IMPL(JSWrappedFunction)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSFunction)
 
 ACCESSORS(JSFunction, raw_feedback_cell, FeedbackCell, kFeedbackCellOffset)
@@ -68,55 +69,10 @@ bool JSFunction::IsMarkedForConcurrentOptimization() {
              OptimizationMarker::kCompileTurbofan_Concurrent;
 }
 
-void JSFunction::SetInterruptBudget() {
-  if (has_feedback_vector()) {
-    FeedbackVector::SetInterruptBudget(raw_feedback_cell());
-  } else {
-    DCHECK(shared().is_compiled());
-    raw_feedback_cell().set_interrupt_budget(
-        shared().GetBytecodeArray(GetIsolate()).length() *
-        FLAG_interrupt_budget_factor_for_feedback_allocation);
-  }
-}
-
-void JSFunction::MarkForOptimization(ConcurrencyMode mode) {
-  Isolate* isolate = GetIsolate();
-  if (!isolate->concurrent_recompilation_enabled() ||
-      isolate->bootstrapper()->IsActive()) {
-    mode = ConcurrencyMode::kNotConcurrent;
-  }
-
-  DCHECK(!is_compiled() || ActiveTierIsIgnition() || ActiveTierIsBaseline());
-  DCHECK(!ActiveTierIsTurbofan());
-  DCHECK(shared().HasBytecodeArray());
-  DCHECK(shared().allows_lazy_compilation() ||
-         !shared().optimization_disabled());
-
-  if (mode == ConcurrencyMode::kConcurrent) {
-    if (IsInOptimizationQueue()) {
-      if (FLAG_trace_concurrent_recompilation) {
-        PrintF("  ** Not marking ");
-        ShortPrint();
-        PrintF(" -- already in optimization queue.\n");
-      }
-      return;
-    }
-    if (FLAG_trace_concurrent_recompilation) {
-      PrintF("  ** Marking ");
-      ShortPrint();
-      PrintF(" for concurrent recompilation.\n");
-    }
-  }
-
-  SetOptimizationMarker(
-      mode == ConcurrencyMode::kConcurrent
-          ? OptimizationMarker::kCompileTurbofan_Concurrent
-          : OptimizationMarker::kCompileTurbofan_NotConcurrent);
-}
-
 bool JSFunction::IsInOptimizationQueue() {
   if (!has_feedback_vector()) return false;
-  return IsInOptimizationQueueMarker(feedback_vector().optimization_marker());
+  return feedback_vector().optimization_marker() ==
+         OptimizationMarker::kInOptimizationQueue;
 }
 
 void JSFunction::CompleteInobjectSlackTrackingIfActive() {

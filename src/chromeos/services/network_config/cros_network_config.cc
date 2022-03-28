@@ -63,6 +63,9 @@ const char kErrorInvalidONCConfiguration[] = "Error.InvalidONCConfiguration";
 const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
 const char kErrorNotReady[] = "Error.NotReady";
 
+// IKEv2 string from Shill SupportedVPNType property.
+const char kIKEv2VPNType[] = "ikev2";
+
 // WireGuard string from Shill SupportedVPNType property.
 const char kWireGuardVPNType[] = "wireguard";
 
@@ -205,6 +208,8 @@ std::string MojoSecurityTypeToOnc(mojom::SecurityType security_type) {
 }
 
 mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
+  if (onc_vpn_type == ::onc::vpn::kIPsec)
+    return mojom::VpnType::kIKEv2;
   if (onc_vpn_type == ::onc::vpn::kTypeL2TP_IPsec)
     return mojom::VpnType::kL2TPIPsec;
   if (onc_vpn_type == ::onc::vpn::kOpenVPN)
@@ -221,6 +226,8 @@ mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
 
 std::string MojoVpnTypeToOnc(mojom::VpnType mojo_vpn_type) {
   switch (mojo_vpn_type) {
+    case mojom::VpnType::kIKEv2:
+      return ::onc::vpn::kIPsec;
     case mojom::VpnType::kL2TPIPsec:
       return ::onc::vpn::kTypeL2TP_IPsec;
     case mojom::VpnType::kOpenVPN:
@@ -1294,6 +1301,10 @@ mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
       GetManagedStringList(ipsec_dict, ::onc::ipsec::kServerCAPEMs);
   ipsec->server_ca_refs =
       GetManagedStringList(ipsec_dict, ::onc::ipsec::kServerCARefs);
+  ipsec->local_identity =
+      GetManagedString(ipsec_dict, ::onc::ipsec::kLocalIdentity);
+  ipsec->remote_identity =
+      GetManagedString(ipsec_dict, ::onc::ipsec::kRemoteIdentity);
   return ipsec;
 }
 
@@ -1682,6 +1693,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       vpn->host = GetManagedString(vpn_dict, ::onc::vpn::kHost);
 
       switch (vpn->type) {
+        case mojom::VpnType::kIKEv2:
+          vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
+          break;
         case mojom::VpnType::kL2TPIPsec:
           vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
           vpn->l2tp = GetManagedL2TPProperties(vpn_dict, ::onc::vpn::kL2TP);
@@ -1926,6 +1940,14 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
                     &ip_sec_dict);
       SetStringList(::onc::ipsec::kServerCARefs, ip_sec.server_ca_refs,
                     &ip_sec_dict);
+      SetString(::onc::ipsec::kLocalIdentity, ip_sec.local_identity,
+                &ip_sec_dict);
+      SetString(::onc::ipsec::kRemoteIdentity, ip_sec.remote_identity,
+                &ip_sec_dict);
+      if (ip_sec.eap) {
+        ip_sec_dict.SetKey(::onc::ipsec::kEAP,
+                           GetEAPProperties(*ip_sec.eap.get()));
+      }
       type_dict.SetKey(::onc::vpn::kIPsec, std::move(ip_sec_dict));
     }
     if (vpn.l2tp) {
@@ -2179,7 +2201,7 @@ CrosNetworkConfig::CrosNetworkConfig(
 }
 
 CrosNetworkConfig::~CrosNetworkConfig() {
-  if (network_state_handler_->HasObserver(this))
+  if (network_state_handler_ && network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (network_certificate_handler_ &&
       network_certificate_handler_->HasObserver(this)) {
@@ -2187,6 +2209,10 @@ CrosNetworkConfig::~CrosNetworkConfig() {
   }
   if (cellular_inhibitor_ && cellular_inhibitor_->HasObserver(this))
     cellular_inhibitor_->RemoveObserver(this);
+  if (network_configuration_handler_ &&
+      network_configuration_handler_->HasObserver(this)) {
+    network_configuration_handler_->RemoveObserver(this);
+  }
 }
 
 void CrosNetworkConfig::BindReceiver(
@@ -2205,6 +2231,10 @@ void CrosNetworkConfig::AddObserver(
   }
   if (cellular_inhibitor_ && !cellular_inhibitor_->HasObserver(this))
     cellular_inhibitor_->AddObserver(this);
+  if (network_configuration_handler_ &&
+      !network_configuration_handler_->HasObserver(this)) {
+    network_configuration_handler_->AddObserver(this);
+  }
   observers_.Add(std::move(observer));
 }
 
@@ -2888,29 +2918,39 @@ void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {
 
 void CrosNetworkConfig::GetGlobalPolicy(GetGlobalPolicyCallback callback) {
   auto result = mojom::GlobalPolicy::New();
+
+  // Network configuration handler can be nullptr in tests.
+  if (!network_configuration_handler_) {
+    std::move(callback).Run(std::move(result));
+    return;
+  }
+
   // Global network configuration policy values come from the device policy.
   const base::Value* global_policy_dict =
       network_configuration_handler_->GetGlobalConfigFromPolicy(
           /*userhash=*/std::string());
-  if (global_policy_dict) {
-    result->allow_only_policy_cellular_networks = GetBoolean(
-        global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyCellularNetworks);
-    result->allow_only_policy_networks_to_autoconnect = GetBoolean(
-        global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect);
-    result->allow_only_policy_wifi_networks_to_connect =
-        GetBoolean(global_policy_dict,
-                   ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect);
-    result
-        ->allow_only_policy_wifi_networks_to_connect_if_available = GetBoolean(
-        global_policy_dict,
-        ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable);
-    absl::optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
-        global_policy_dict, ::onc::global_network_config::kBlockedHexSSIDs);
-    if (blocked_hex_ssids)
-      result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
+  if (!global_policy_dict) {
+    std::move(callback).Run(std::move(result));
+    return;
   }
+
+  result->allow_only_policy_cellular_networks = GetBoolean(
+      global_policy_dict,
+      ::onc::global_network_config::kAllowOnlyPolicyCellularNetworks);
+  result->allow_only_policy_networks_to_autoconnect = GetBoolean(
+      global_policy_dict,
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect);
+  result->allow_only_policy_wifi_networks_to_connect =
+      GetBoolean(global_policy_dict,
+                 ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnect);
+  result->allow_only_policy_wifi_networks_to_connect_if_available = GetBoolean(
+      global_policy_dict,
+      ::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable);
+  absl::optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
+      global_policy_dict, ::onc::global_network_config::kBlockedHexSSIDs);
+  if (blocked_hex_ssids)
+    result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
+
   std::move(callback).Run(std::move(result));
 }
 
@@ -3144,6 +3184,12 @@ void CrosNetworkConfig::OnGetSupportedVpnTypes(
         base::SplitString(*value->GetIfString(), ",", base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_NONEMPTY);
   }
+  if (!base::FeatureList::IsEnabled(ash::features::kEnableIkev2Vpn)) {
+    auto iter = std::find(result.begin(), result.end(), kIKEv2VPNType);
+    if (iter != result.end()) {
+      result.erase(iter);
+    }
+  }
   if (!base::FeatureList::IsEnabled(ash::features::kEnableWireGuard)) {
     auto iter = std::find(result.begin(), result.end(), kWireGuardVPNType);
     if (iter != result.end()) {
@@ -3342,6 +3388,19 @@ void CrosNetworkConfig::OnCertificatesChanged() {
 
 void CrosNetworkConfig::OnInhibitStateChanged() {
   DeviceListChanged();
+}
+
+void CrosNetworkConfig::PoliciesApplied(const std::string& userhash) {
+  for (auto& observer : observers_)
+    observer->OnPoliciesApplied(userhash);
+}
+
+void CrosNetworkConfig::OnManagedNetworkConfigurationHandlerShuttingDown() {
+  if (network_configuration_handler_ &&
+      network_configuration_handler_->HasObserver(this)) {
+    network_configuration_handler_->RemoveObserver(this);
+  }
+  network_configuration_handler_ = nullptr;
 }
 
 const std::string& CrosNetworkConfig::GetServicePathFromGuid(

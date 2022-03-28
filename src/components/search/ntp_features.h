@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace base {
 class TimeDelta;
@@ -45,10 +46,12 @@ extern const base::Feature kNtpDummyModules;
 #endif
 extern const base::Feature kNtpPhotosModule;
 extern const base::Feature kNtpPhotosModuleSoftOptOut;
-extern const base::Feature kNtpPhotosModulePersonalizedOptInCard;
+
 extern const base::Feature kNtpPhotosModuleCustomizedOptInTitle;
+extern const base::Feature kNtpPhotosModuleCustomizedOptInArtWork;
 extern const base::Feature kNtpSafeBrowsingModule;
 extern const base::Feature kNtpModulesDragAndDrop;
+extern const base::Feature kNtpModulesFirstRunExperience;
 
 extern const base::Feature kNtpHandleMostVisitedNavigationExplicitly;
 
@@ -94,6 +97,8 @@ extern const char kNtpDriveModuleCacheMaxAgeSParam[];
 extern const char kNtpDriveModuleExperimentGroupParam[];
 // Parameter determining the type of Photos data to render.
 extern const char kNtpPhotosModuleDataParam[];
+// Parameter determining the art work in opt-in card.
+extern const char kNtpPhotosModuleOptInArtWorkParam[];
 // Parameter determining the title for the opt-in card.
 extern const char kNtpPhotosModuleOptInTitleParam[];
 // Parameter determining the number of times a module is shown to a user

@@ -11,6 +11,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
@@ -31,6 +32,8 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedSubscriptionRequestStatus;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -61,8 +64,10 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -149,6 +154,10 @@ public class FeedStream implements Stream {
             // sheet is closed. This is to fix the problem that the last focused view is not
             // restored after opening and closing the bottom sheet.
             mLastFocusedView = mActivity.getCurrentFocus();
+            // If the talkback is enabled, also remember the accessibility focused view, which may
+            // be different from the focused view, so that we can get back to it once the bottom
+            // sheet is closed.
+            mLastAccessibilityFocusedView = findAccessibilityFocus(actionSourceView);
 
             // Make a sheetContent with the view.
             mBottomSheetContent = new CardMenuBottomSheetContent(view);
@@ -156,9 +165,15 @@ public class FeedStream implements Stream {
             mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
                 @Override
                 public void onSheetClosed(@StateChangeReason int reason) {
-                    if (mLastFocusedView == null) return;
-                    mLastFocusedView.requestFocus();
-                    mLastFocusedView = null;
+                    if (mLastFocusedView != null) {
+                        mLastFocusedView.requestFocus();
+                        mLastFocusedView = null;
+                    }
+                    if (mLastAccessibilityFocusedView != null) {
+                        mLastAccessibilityFocusedView.sendAccessibilityEvent(
+                                AccessibilityEvent.TYPE_VIEW_FOCUSED);
+                        mLastAccessibilityFocusedView = null;
+                    }
                 }
             });
             mBottomSheetController.requestShowContent(mBottomSheetContent, true);
@@ -167,6 +182,60 @@ public class FeedStream implements Stream {
         @Override
         public void dismissBottomSheet() {
             FeedStream.this.dismissBottomSheet();
+        }
+
+        /**
+         * Search the view hierarchy to find the accessibility focused view.
+         */
+        private View findAccessibilityFocus(View view) {
+            if (view == null || view.isAccessibilityFocused()) return view;
+            if (!(view instanceof ViewGroup)) return null;
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); ++i) {
+                View childView = viewGroup.getChildAt(i);
+                View focusedView = findAccessibilityFocus(childView);
+                if (focusedView != null) return focusedView;
+            }
+            return null;
+        }
+
+        @Override
+        public void updateUserProfileOnLinkClick(String url, List<Long> entityMids) {
+            assert ThreadUtils.runningOnUiThread();
+            long[] entityArray = new long[entityMids.size()];
+            for (int i = 0; i < entityMids.size(); ++i) {
+                entityArray[i] = entityMids.get(i);
+            }
+            FeedStreamJni.get().updateUserProfileOnLinkClick(
+                    mNativeFeedStream, mMakeGURL.apply(url), entityArray);
+        }
+
+        @Override
+        public void updateWebFeedFollowState(WebFeedFollowUpdate update) {
+            byte[] webFeedId;
+            try {
+                webFeedId = update.webFeedName().getBytes("UTF8");
+            } catch (UnsupportedEncodingException e) {
+                Log.i(TAG, "Invalid webFeedName", e);
+                return;
+            }
+            if (update.isFollow()) {
+                WebFeedBridge.followFromId(webFeedId, update.isDurable(), results -> {
+                    WebFeedFollowUpdate.Callback callback = update.callback();
+                    if (callback != null) {
+                        callback.requestComplete(
+                                results.requestStatus == WebFeedSubscriptionRequestStatus.SUCCESS);
+                    }
+                });
+            } else {
+                WebFeedBridge.unfollow(webFeedId, update.isDurable(), results -> {
+                    WebFeedFollowUpdate.Callback callback = update.callback();
+                    if (callback != null) {
+                        callback.requestComplete(
+                                results.requestStatus == WebFeedSubscriptionRequestStatus.SUCCESS);
+                    }
+                });
+            }
         }
 
         private void openSuggestionUrl(String url, int disposition) {
@@ -433,6 +502,7 @@ public class FeedStream implements Stream {
     private BottomSheetContent mBottomSheetContent;
     private String mBottomSheetOriginatingSliceId;
     private View mLastFocusedView;
+    private View mLastAccessibilityFocusedView;
 
     /**
      * Creates a new Feed Stream.
@@ -1100,6 +1170,7 @@ public class FeedStream implements Stream {
                 long nativeFeedStream, FeedStream caller, @FeedUserActionType int userAction);
         void reportStreamScrolled(long nativeFeedStream, FeedStream caller, int distanceDp);
         void reportStreamScrollStart(long nativeFeedStream, FeedStream caller);
+        void updateUserProfileOnLinkClick(long nativeFeedStream, GURL url, long[] mids);
         void loadMore(long nativeFeedStream, FeedStream caller, Callback<Boolean> callback);
         void manualRefresh(long nativeFeedStream, FeedStream caller, Callback<Boolean> callback);
         void processThereAndBackAgain(

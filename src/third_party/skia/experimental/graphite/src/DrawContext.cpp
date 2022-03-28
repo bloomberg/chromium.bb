@@ -60,32 +60,15 @@ DrawContext::~DrawContext() {
     fDrawPasses.clear();
 }
 
-void DrawContext::stencilAndFillPath(const Transform& localToDevice,
-                                     const Shape& shape,
-                                     const Clip& clip,
-                                     DrawOrder order,
-                                     const PaintParams* paint)  {
-    SkASSERT(SkIRect::MakeSize(fTarget->dimensions()).contains(clip.scissor()));
-    fPendingDraws->stencilAndFillPath(localToDevice, shape, clip, order,paint);
-}
-
-void DrawContext::fillConvexPath(const Transform& localToDevice,
-                                 const Shape& shape,
-                                 const Clip& clip,
-                                 DrawOrder order,
-                                 const PaintParams* paint) {
-    SkASSERT(SkIRect::MakeSize(fTarget->dimensions()).contains(clip.scissor()));
-    fPendingDraws->fillConvexPath(localToDevice, shape, clip, order, paint);
-}
-
-void DrawContext::strokePath(const Transform& localToDevice,
+void DrawContext::recordDraw(const Renderer& renderer,
+                             const Transform& localToDevice,
                              const Shape& shape,
-                             const StrokeParams& stroke,
                              const Clip& clip,
-                             DrawOrder order,
-                             const PaintParams* paint) {
+                             DrawOrder ordering,
+                             const PaintParams* paint,
+                             const StrokeParams* stroke) {
     SkASSERT(SkIRect::MakeSize(fTarget->dimensions()).contains(clip.scissor()));
-    fPendingDraws->strokePath(localToDevice, shape, stroke, clip, order, paint);
+    fPendingDraws->recordDraw(renderer, localToDevice, shape, clip, ordering, paint, stroke);
 }
 
 void DrawContext::clear(const SkColor4f& clearColor) {
@@ -195,7 +178,7 @@ sk_sp<Task> DrawContext::snapRenderPassTask(Recorder* recorder,
 }
 
 sk_sp<Task> DrawContext::snapUploadTask(Recorder* recorder) {
-    if (!fPendingUploads) {
+    if (!fPendingUploads || fPendingUploads->size() == 0) {
         return nullptr;
     }
 

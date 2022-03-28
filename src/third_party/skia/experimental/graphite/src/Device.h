@@ -22,8 +22,10 @@ class BoundsManager;
 class Clip;
 class Context;
 class DrawContext;
+class PaintParams;
 class Recorder;
 class Shape;
+class StrokeParams;
 class TextureProxy;
 class Transform;
 
@@ -37,6 +39,8 @@ public:
                               sk_sp<SkColorSpace>,
                               SkColorType,
                               SkAlphaType);
+
+    Device* asGraphiteDevice() override { return this; }
 
     Recorder* recorder() { return fRecorder; }
     // This call is triggered from the Recorder on its registered Devices. It is typically called
@@ -117,7 +121,7 @@ private:
                    const SkPaint&) override {}
 
     void drawDrawable(SkCanvas*, SkDrawable*, const SkMatrix*) override {}
-    void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&) override {}
+    void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&, bool) override {}
     void drawCustomMesh(SkCustomMesh, sk_sp<SkBlender>, const SkPaint&) override {}
     void drawShadow(const SkPath&, const SkDrawShadowRec&) override {}
     void onDrawGlyphRunList(SkCanvas*, const SkGlyphRunList&, const SkPaint&) override {}
@@ -154,6 +158,13 @@ private:
                    const SkPaint&,
                    const SkStrokeRec&,
                    Mask<DrawFlags> = DrawFlags::kNone);
+    // Lowest level draw recording where everything but Renderer has been decided.
+    void recordDraw(const Transform& localToDevice,
+                    const Shape& shape,
+                    const Clip& clip,
+                    DrawOrder ordering,
+                    const PaintParams* paint,
+                    const StrokeParams* stroke);
 
     // Determines most optimal painters order for a draw of the given shape and style. This computes
     // the draw's bounds, applying both the style and scissor to the returned bounds. Low-level

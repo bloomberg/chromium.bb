@@ -5,7 +5,7 @@
 #include "ash/ambient/resources/ambient_animation_static_resources.h"
 
 #include "ash/ambient/resources/ambient_animation_resource_constants.h"
-#include "ash/public/cpp/ambient/ambient_animation_theme.h"
+#include "ash/constants/ambient_animation_theme.h"
 #include "base/json/json_reader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +36,7 @@ TEST(AmbientAnimationStaticResourcesTest, LoadsStaticAssets) {
       AmbientAnimationTheme::kFeelTheBreeze);
   ASSERT_THAT(resources, NotNull());
   for (base::StringPiece asset_id :
-       ambient::resources::kAllFeelTheBreeezeStaticAssets) {
+       ambient::resources::kAllFeelTheBreezeStaticAssets) {
     gfx::ImageSkia image_original = resources->GetStaticImageAsset(asset_id);
     ASSERT_FALSE(image_original.isNull());
     gfx::ImageSkia image_reloaded = resources->GetStaticImageAsset(asset_id);

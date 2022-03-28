@@ -16,6 +16,7 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/hlo_dataflow_analysis.h"
 
 #include <algorithm>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -314,18 +315,18 @@ HloValue* HloDataflowAnalysis::NewHloValue(HloInstruction* instruction,
                                            const ShapeIndex& index,
                                            bool is_phi) {
   const int64_t value_id = next_value_id_++;
-  auto emplaced = values_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(value_id),
-      std::forward_as_tuple(value_id, instruction, index, is_phi));
-  CHECK(emplaced.second);
+  auto result =
+      values_.insert({value_id, std::make_unique<HloValue>(
+                                    value_id, instruction, index, is_phi)});
+  CHECK(result.second);
 
-  VLOG(4) << "NewHloValue = " << emplaced.first->second.ToShortString();
+  VLOG(4) << "NewHloValue = " << result.first->second->ToShortString();
 
-  return &emplaced.first->second;
+  return result.first->second.get();
 }
 
 void HloDataflowAnalysis::MarkValueForDeletion(HloValue::Id value_id) {
-  HloValue& value = values_.at(value_id);
+  const HloValue& value = *values_.at(value_id);
   VLOG(4) << "MarkValueForDeletion(" << value.ToShortString() << ")";
 
   value_ids_to_delete_.push_back(value_id);
@@ -339,7 +340,7 @@ void HloDataflowAnalysis::DeleteMarkedValues() {
   // Verify that no marked-for-deletion values are in any of the value sets.
   for (const auto& pair : value_sets_) {
     const HloInstruction* instruction = pair.first;
-    const InstructionValueSet& instruction_value_set = pair.second;
+    const InstructionValueSet& instruction_value_set = *pair.second;
     for (const auto& index_value_set : instruction_value_set) {
       const HloValueSet& value_set = index_value_set.second;
       for (const HloValue* value : value_set.values()) {
@@ -511,11 +512,11 @@ bool HloDataflowAnalysis::Phi(
 }
 
 const HloValue& HloDataflowAnalysis::GetValue(HloValue::Id value_id) const {
-  return values_.at(value_id);
+  return *values_.at(value_id);
 }
 
 HloValue& HloDataflowAnalysis::GetValue(HloValue::Id value_id) {
-  return values_.at(value_id);
+  return *values_.at(value_id);
 }
 
 HloValueSet HloDataflowAnalysis::GetFlattenedValueSet(
@@ -1200,12 +1201,12 @@ void HloDataflowAnalysis::Propagate() {
 
 const InstructionValueSet& HloDataflowAnalysis::GetInstructionValueSet(
     const HloInstruction* instruction) const {
-  return value_sets_.at(instruction);
+  return *value_sets_.at(instruction);
 }
 
 InstructionValueSet& HloDataflowAnalysis::GetInstructionValueSet(
     const HloInstruction* instruction) {
-  return value_sets_.at(instruction);
+  return *value_sets_.at(instruction);
 }
 
 Status HloDataflowAnalysis::InitializeInstructionValueSets() {
@@ -1213,9 +1214,8 @@ Status HloDataflowAnalysis::InitializeInstructionValueSets() {
     const CallGraphNode& call_graph_node = call_graph_->GetNode(computation);
     for (HloInstruction* instruction : computation->instructions()) {
       // Create an empty shape tree.
-      value_sets_.emplace(std::piecewise_construct,
-                          std::forward_as_tuple(instruction),
-                          std::forward_as_tuple(instruction->shape()));
+      value_sets_.insert({instruction, std::make_unique<InstructionValueSet>(
+                                           instruction->shape())});
 
       // For each sub-shape of the instruction shape, add a new HloValue to its
       // HloValueSet.
@@ -1432,14 +1432,14 @@ StatusOr<std::unique_ptr<HloDataflowAnalysis>> HloDataflowAnalysis::Run(
   }
   for (auto& pair : dataflow_analysis->values_) {
     HloValue::Id value_id = pair.first;
-    HloValue& value = pair.second;
-    value.SetPositionsAndComputeUses(value_positions[value_id]);
+    HloValue& value = *pair.second;
+    value.SetPositions(value_positions[value_id]);
   }
 
   // Construct vector of values.
   dataflow_analysis->values_vector_.reserve(dataflow_analysis->values_.size());
-  for (auto& pair : dataflow_analysis->values_) {
-    dataflow_analysis->values_vector_.push_back(&pair.second);
+  for (const auto& pair : dataflow_analysis->values_) {
+    dataflow_analysis->values_vector_.push_back(pair.second.get());
   }
   absl::c_sort(dataflow_analysis->values_vector_, HloValue::IdLessThan);
 
@@ -1487,14 +1487,14 @@ bool HloDataflowAnalysis::DoesNotUseOperandBuffer(
     const HloInstruction* user) const {
   // Return false if no value at 'operand' and 'index' is used at 'user'.
   for (const HloValue* value : GetValueSet(operand, index).values()) {
-    for (const HloUse& use : value->uses()) {
+    for (const HloUse& use : value->GetUses()) {
       if (use.instruction == user) {
         if (user->IsLoopFusion()) {
           HloInstruction* fusion_param =
               user->fused_parameter(use.operand_number);
           const HloValue& value =
               GetValueDefinedAt(fusion_param, use.operand_index);
-          return value.uses().empty();
+          return value.GetUses().empty();
         }
         return false;
       }
@@ -1645,21 +1645,21 @@ bool HloDataflowAnalysis::CanShareOperandBufferWithUser(
                fusion_param, user->fused_expression_root(), user_index);
   }
 
+  auto shapes_equal = ShapeUtil::Equal(operand_subshape, user_subshape);
   // Check that operand and user emit the same shape and layout.
-  if (!ShapeUtil::Equal(operand_subshape, user_subshape)) {
-    return false;
-  }
-
-  // Must-alias relationship returns true for in-place operations (DUS and DUS
-  // fusions), regardless of the backend.
-  for (const auto& operand_and_output_index :
-       GetInPlaceInputOutputPairs(user)) {
-    if (operand_and_output_index.second != user_index) {
-      continue;
-    }
-    for (const HloUse& use : GetUniqueValueAt(operand, operand_index).uses()) {
-      if (use == operand_and_output_index.first) {
-        return true;
+  if (shapes_equal) {
+    // Must-alias relationship returns true for in-place operations (DUS and DUS
+    // fusions), regardless of the backend.
+    for (const auto& operand_and_output_index :
+         GetInPlaceInputOutputPairs(user)) {
+      if (operand_and_output_index.second != user_index) {
+        continue;
+      }
+      for (const HloUse& use :
+           GetUniqueValueAt(operand, operand_index).GetUses()) {
+        if (use == operand_and_output_index.first) {
+          return true;
+        }
       }
     }
   }
@@ -1669,6 +1669,10 @@ bool HloDataflowAnalysis::CanShareOperandBufferWithUser(
             can_share_buffer_(user, operand, user_index)) {
       return *hint;
     }
+  }
+
+  if (!shapes_equal) {
+    return false;
   }
 
   if (user->opcode() == HloOpcode::kFusion) {
@@ -1702,8 +1706,8 @@ bool HloDataflowAnalysis::CanShareOperandBufferWithUser(
       // Returns true iff there is exactly one use of 'operand' at shape index
       // 'operand_index', and this singleton use is the fused root (at operand
       // index 'other_add_operand_index').
-      if (fusion_param_value.uses().size() == 1) {
-        const HloUse& use = fusion_param_value.uses()[0];
+      if (fusion_param_value.GetUses().size() == 1) {
+        const HloUse& use = fusion_param_value.GetUses()[0];
         return use.instruction == user->fused_expression_root() &&
                use.operand_number == other_add_operand_index;
       }
@@ -1749,7 +1753,7 @@ bool HloDataflowAnalysis::CanShareOperandBufferWithUser(
   }
   if (user->opcode() == HloOpcode::kCall) {
     // Get all uses of value defined by 'operand' at 'operand_index'.
-    const auto& uses = GetValueDefinedAt(operand, operand_index).uses();
+    auto uses = GetValueDefinedAt(operand, operand_index).GetUses();
     // Return true iff:
     // *) There exists two uses of 'operand'.
     // *) One use is by 'user' (caller).

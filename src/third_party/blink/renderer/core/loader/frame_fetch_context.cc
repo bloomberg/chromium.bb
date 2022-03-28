@@ -66,7 +66,7 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -932,7 +932,8 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
 
   if (String string = search_params->get("dedup-key")) {
     if (absl::optional<uint64_t> value = parse_uint64(string)) {
-      conversion->dedup_key = mojom::blink::DedupKey::New(*value);
+      conversion->dedup_key =
+          mojom::blink::AttributionTriggerDedupKey::New(*value);
     } else {
       AuditsIssue::ReportAttributionIssue(
           document_->domWindow(),

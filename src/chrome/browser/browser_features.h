@@ -50,9 +50,8 @@ extern const base::Feature kMuteNotificationSnoozeAction;
 extern const base::Feature kPrewarmSearchResultsPageFonts;
 #endif
 
-extern const base::Feature kPwaUpdateDialogForNameAndIcon;
-
 extern const base::Feature kSandboxExternalProtocolBlocked;
+extern const base::Feature kSandboxExternalProtocolBlockedWarning;
 extern const base::Feature kTriggerNetworkDataMigration;
 
 extern const base::Feature kWebUsbDeviceDetection;
@@ -65,6 +64,10 @@ extern const base::Feature kLargeFaviconFromGoogle;
 extern const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip;
 
 extern const base::Feature kObserverBasedPostProfileInit;
+
+extern const base::Feature kRestartNetworkServiceUnsandboxedForFailedLaunch;
+
+extern const base::Feature kKeyPinningComponentUpdater;
 
 }  // namespace features
 

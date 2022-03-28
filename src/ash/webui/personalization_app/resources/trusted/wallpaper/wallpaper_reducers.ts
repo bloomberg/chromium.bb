@@ -156,7 +156,7 @@ function loadingReducer(
           albums: true,
         },
       };
-    case WallpaperActionName.SET_GOOGLE_PHOTOS_ALBUMS:
+    case WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUMS:
       assert(state.googlePhotos.albums === true);
       return {
         ...state,
@@ -192,7 +192,7 @@ function loadingReducer(
           photos: true,
         },
       };
-    case WallpaperActionName.SET_GOOGLE_PHOTOS_PHOTOS:
+    case WallpaperActionName.APPEND_GOOGLE_PHOTOS_PHOTOS:
       assert(state.googlePhotos.photos === true);
       return {
         ...state,
@@ -343,14 +343,40 @@ function googlePhotosReducer(
         },
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS:
-      // The list of albums should be loaded only once.
-      assert(state.albums === undefined);
+      // The list of albums should be loaded only while additional albums exist.
+      assert(state.albums === undefined || state.resumeTokens.albums);
       return state;
-    case WallpaperActionName.SET_GOOGLE_PHOTOS_ALBUMS:
+    case WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUMS:
       assert(action.albums !== undefined);
+      // Case: First batch of albums.
+      if (!Array.isArray(state.albums)) {
+        return {
+          ...state,
+          albums: action.albums,
+          resumeTokens: {
+            ...state.resumeTokens,
+            albums: action.resumeToken,
+          },
+        };
+      }
+      // Case: Subsequent batches of albums.
+      if (Array.isArray(action.albums)) {
+        return {
+          ...state,
+          albums: [...state.albums, ...action.albums],
+          resumeTokens: {
+            ...state.resumeTokens,
+            albums: action.resumeToken,
+          },
+        };
+      }
+      // Case: Error.
       return {
         ...state,
-        albums: action.albums,
+        resumeTokens: {
+          ...state.resumeTokens,
+          albums: action.resumeToken,
+        },
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT:
       // The total count of photos should be loaded only once.
@@ -363,14 +389,40 @@ function googlePhotosReducer(
         count: action.count,
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS:
-      // The list of photos should be loaded only once.
-      assert(state.photos === undefined);
+      // The list of photos should be loaded only while additional photos exist.
+      assert(state.photos === undefined || state.resumeTokens.photos);
       return state;
-    case WallpaperActionName.SET_GOOGLE_PHOTOS_PHOTOS:
+    case WallpaperActionName.APPEND_GOOGLE_PHOTOS_PHOTOS:
       assert(action.photos !== undefined);
+      // Case: First batch of photos.
+      if (!Array.isArray(state.photos)) {
+        return {
+          ...state,
+          photos: action.photos,
+          resumeTokens: {
+            ...state.resumeTokens,
+            photos: action.resumeToken,
+          },
+        };
+      }
+      // Case: Subsequent batches of photos.
+      if (Array.isArray(action.photos)) {
+        return {
+          ...state,
+          photos: [...state.photos, ...action.photos],
+          resumeTokens: {
+            ...state.resumeTokens,
+            photos: action.resumeToken,
+          },
+        };
+      }
+      // Case: Error.
       return {
         ...state,
-        photos: action.photos,
+        resumeTokens: {
+          ...state.resumeTokens,
+          photos: action.resumeToken,
+        },
       };
     default:
       return state;

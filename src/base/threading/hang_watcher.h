@@ -22,6 +22,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/template_util.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -111,7 +112,8 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
     kBrowserProcess = 1,
     kGPUProcess = 2,
     kRendererProcess = 3,
-    kMax = kRendererProcess
+    kUtilityProcess = 4,
+    kMax = kUtilityProcess
   };
 
   // Describes the type of a thread for logging purposes.

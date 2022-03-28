@@ -15,6 +15,7 @@ static_assert(
 #include "include/v8-metrics.h"
 #include "src/base/flags.h"
 #include "src/base/macros.h"
+#include "src/base/optional.h"
 #include "src/heap/cppgc/heap-base.h"
 #include "src/heap/cppgc/stats-collector.h"
 #include "src/logging/metrics.h"
@@ -117,6 +118,7 @@ class V8_EXPORT_PRIVATE CppHeap final
       std::unique_ptr<CustomSpaceStatisticsReceiver>);
 
   void FinishSweepingIfRunning();
+  void FinishSweepingIfOutOfWork();
 
   void InitializeTracing(
       cppgc::internal::GarbageCollector::Config::CollectionType,
@@ -124,8 +126,10 @@ class V8_EXPORT_PRIVATE CppHeap final
   void StartTracing();
   bool AdvanceTracing(double max_duration);
   bool IsTracingDone();
-  void TraceEpilogue(cppgc::internal::GarbageCollector::Config::CollectionType);
+  void TraceEpilogue();
   void EnterFinalPause(cppgc::EmbedderStackState stack_state);
+
+  void RunMinorGC();
 
   // StatsCollector::AllocationObserver interface.
   void AllocatedObjectSizeIncreased(size_t) final;
@@ -156,8 +160,14 @@ class V8_EXPORT_PRIVATE CppHeap final
   void FinalizeIncrementalGarbageCollectionForTesting(
       cppgc::EmbedderStackState) final;
 
+  MarkingType SelectMarkingType() const;
+  SweepingType SelectSweepingType() const;
+
   Isolate* isolate_ = nullptr;
   bool marking_done_ = false;
+  // |collection_type_| is initialized when marking is in progress.
+  base::Optional<cppgc::internal::GarbageCollector::Config::CollectionType>
+      collection_type_;
   GarbageCollectionFlags current_gc_flags_;
 
   // Buffered allocated bytes. Reporting allocated bytes to V8 can trigger a GC

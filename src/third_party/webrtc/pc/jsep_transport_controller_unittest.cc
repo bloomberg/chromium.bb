@@ -11,16 +11,29 @@
 #include "pc/jsep_transport_controller.h"
 
 #include <map>
-#include <memory>
+#include <string>
+#include <utility>
 
 #include "api/dtls_transport_interface.h"
+#include "api/transport/enums.h"
+#include "p2p/base/candidate_pair_interface.h"
 #include "p2p/base/dtls_transport_factory.h"
 #include "p2p/base/fake_dtls_transport.h"
 #include "p2p/base/fake_ice_transport.h"
+#include "p2p/base/p2p_constants.h"
 #include "p2p/base/transport_info.h"
+#include "rtc_base/fake_ssl_identity.h"
 #include "rtc_base/gunit.h"
+#include "rtc_base/location.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/net_helper.h"
+#include "rtc_base/ref_counted_object.h"
+#include "rtc_base/socket_address.h"
+#include "rtc_base/ssl_fingerprint.h"
+#include "rtc_base/ssl_identity.h"
 #include "rtc_base/thread.h"
 #include "test/gtest.h"
+#include "test/scoped_key_value_config.h"
 
 using cricket::Candidate;
 using cricket::Candidates;
@@ -88,6 +101,7 @@ class JsepTransportControllerTest : public JsepTransportController::Observer,
     config.ice_transport_factory = fake_ice_transport_factory_.get();
     config.dtls_transport_factory = fake_dtls_transport_factory_.get();
     config.on_dtls_handshake_error_ = [](rtc::SSLHandshakeError s) {};
+    config.field_trials = &field_trials_;
     transport_controller_ = std::make_unique<JsepTransportController>(
         network_thread, port_allocator, nullptr /* async_resolver_factory */,
         config);
@@ -366,6 +380,7 @@ class JsepTransportControllerTest : public JsepTransportController::Observer,
   // Transport controller needs to be destroyed first, because it may issue
   // callbacks that modify the changed_*_by_mid in the destructor.
   std::unique_ptr<JsepTransportController> transport_controller_;
+  webrtc::test::ScopedKeyValueConfig field_trials_;
 };
 
 TEST_F(JsepTransportControllerTest, GetRtpTransport) {

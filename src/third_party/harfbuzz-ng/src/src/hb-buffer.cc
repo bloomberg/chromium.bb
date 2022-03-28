@@ -102,7 +102,7 @@ hb_segment_properties_hash (const hb_segment_properties_t *p)
  * can be unset), if @p does not have language set, language is copied from
  * @src.
  *
- * Since: REPLACEME
+ * Since: 3.3.0
  **/
 void
 hb_segment_properties_overlay (hb_segment_properties_t *p,
@@ -573,33 +573,6 @@ done:
 }
 
 void
-hb_buffer_t::unsafe_to_break_impl (unsigned int start, unsigned int end)
-{
-  unsigned int cluster = UINT_MAX;
-  cluster = _infos_find_min_cluster (info, start, end, cluster);
-  _unsafe_to_break_set_mask (info, start, end, cluster);
-}
-void
-hb_buffer_t::unsafe_to_break_from_outbuffer (unsigned int start, unsigned int end)
-{
-  if (!have_output)
-  {
-    unsafe_to_break_impl (start, end);
-    return;
-  }
-
-  assert (start <= out_len);
-  assert (idx <= end);
-
-  unsigned int cluster = UINT_MAX;
-  cluster = _infos_find_min_cluster (out_info, start, out_len, cluster);
-  cluster = _infos_find_min_cluster (info, idx, end, cluster);
-
-  _unsafe_to_break_set_mask (out_info, start, out_len, cluster);
-  _unsafe_to_break_set_mask (info, idx, end, cluster);
-}
-
-void
 hb_buffer_t::guess_segment_properties ()
 {
   assert_unicode ();
@@ -691,14 +664,13 @@ hb_buffer_create ()
  * hb_buffer_create_similar:
  * @src: An #hb_buffer_t
  *
- * Resets the buffer to its initial status, as if it was just newly created
- * with hb_buffer_create().
- *
- * Return value: (transfer full):
- * A newly allocated #hb_buffer_t, similar to hb_buffer_create(). The only
+ * Creates a new #hb_buffer_t, similar to hb_buffer_create(). The only
  * difference is that the buffer is configured similarly to @src.
  *
- * Since: REPLACEME
+ * Return value: (transfer full):
+ * A newly allocated #hb_buffer_t, similar to hb_buffer_create().
+ *
+ * Since: 3.3.0
  **/
 hb_buffer_t *
 hb_buffer_create_similar (const hb_buffer_t *src)
@@ -1817,7 +1789,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
  **/
 HB_EXTERN void
 hb_buffer_append (hb_buffer_t *buffer,
-		  hb_buffer_t *source,
+		  const hb_buffer_t *source,
 		  unsigned int start,
 		  unsigned int end)
 {

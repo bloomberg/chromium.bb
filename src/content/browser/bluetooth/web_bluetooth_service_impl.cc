@@ -588,6 +588,11 @@ WebBluetoothServiceImpl::~WebBluetoothServiceImpl() {
 #endif
 
   BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
+
+  // Force destructor of device_scanning_prompt_controller_ happening before
+  // members destruction stage to prevent use-after-free accessing
+  // scanning_clients_.empty().
+  device_scanning_prompt_controller_.reset();
 }
 
 blink::mojom::WebBluetoothResult
@@ -961,6 +966,27 @@ void WebBluetoothServiceImpl::GetDevices(GetDevicesCallback callback) {
       this,
       base::BindOnce(&WebBluetoothServiceImpl::GetDevicesImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebBluetoothServiceImpl::ForgetDevice(
+    const blink::WebBluetoothDeviceId& device_id,
+    ForgetDeviceCallback callback) {
+  if (!base::FeatureList::IsEnabled(
+          features::kWebBluetoothNewPermissionsBackend)) {
+    auto device_address = allowed_devices().GetDeviceAddress(device_id);
+    allowed_devices().RemoveDevice(device_address);
+    std::move(callback).Run();
+    return;
+  }
+
+  BluetoothDelegate* delegate =
+      GetContentClient()->browser()->GetBluetoothDelegate();
+  if (delegate &&
+      delegate->HasDevicePermission(render_frame_host(), device_id)) {
+    delegate->RevokeDevicePermissionWebInitiated(render_frame_host(),
+                                                 device_id);
+  }
+  std::move(callback).Run();
 }
 
 void WebBluetoothServiceImpl::RemoteServerConnect(

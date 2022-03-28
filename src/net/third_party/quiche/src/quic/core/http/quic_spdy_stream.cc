@@ -32,7 +32,7 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_mem_slice_storage.h"
+#include "common/quiche_mem_slice_storage.h"
 #include "common/quiche_text_utils.h"
 #include "spdy/core/spdy_protocol.h"
 
@@ -262,7 +262,8 @@ bool QuicSpdyStream::ShouldUseDatagramContexts() const {
 
 size_t QuicSpdyStream::WriteHeaders(
     SpdyHeaderBlock header_block, bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   if (!AssertNotWebTransportDataStream("writing headers")) {
     return 0;
   }
@@ -349,7 +350,8 @@ void QuicSpdyStream::WriteOrBufferBody(absl::string_view data, bool fin) {
 
 size_t QuicSpdyStream::WriteTrailers(
     SpdyHeaderBlock trailer_block,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   if (fin_sent()) {
     QUIC_BUG(quic_bug_10410_1)
         << "Trailers cannot be sent after a FIN, on stream " << id();
@@ -390,7 +392,7 @@ size_t QuicSpdyStream::WriteTrailers(
 
 QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov, int count,
                                             bool fin) {
-  QuicMemSliceStorage storage(
+  quiche::QuicheMemSliceStorage storage(
       iov, count,
       session()->connection()->helper()->GetStreamSendBufferAllocator(),
       GetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size));
@@ -401,7 +403,7 @@ bool QuicSpdyStream::WriteDataFrameHeader(QuicByteCount data_length,
                                           bool force_write) {
   QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
   QUICHE_DCHECK_GT(data_length, 0u);
-  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+  quiche::QuicheBuffer header = HttpEncoder::SerializeDataFrameHeader(
       data_length,
       spdy_session_->connection()->helper()->GetStreamSendBufferAllocator());
   const bool can_write = CanWriteNewDataAfterData(header.size());
@@ -421,7 +423,7 @@ bool QuicSpdyStream::WriteDataFrameHeader(QuicByteCount data_length,
                   << header.size();
   if (can_write) {
     // Save one copy and allocation if send buffer can accomodate the header.
-    QuicMemSlice header_slice(std::move(header));
+    quiche::QuicheMemSlice header_slice(std::move(header));
     WriteMemSlices(absl::MakeSpan(&header_slice, 1), false);
   } else {
     QUICHE_DCHECK(force_write);
@@ -431,7 +433,7 @@ bool QuicSpdyStream::WriteDataFrameHeader(QuicByteCount data_length,
 }
 
 QuicConsumedData QuicSpdyStream::WriteBodySlices(
-    absl::Span<QuicMemSlice> slices, bool fin) {
+    absl::Span<quiche::QuicheMemSlice> slices, bool fin) {
   if (!VersionUsesHttp3(transport_version()) || slices.empty()) {
     return WriteMemSlices(slices, fin);
   }
@@ -1204,7 +1206,8 @@ bool QuicSpdyStream::OnUnknownFrameEnd() { return true; }
 
 size_t QuicSpdyStream::WriteHeadersImpl(
     spdy::SpdyHeaderBlock header_block, bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+        ack_listener) {
   if (!VersionUsesHttp3(transport_version())) {
     return spdy_session_->WriteHeadersOnHeadersStream(
         id(), std::move(header_block), fin, precedence(),
@@ -1563,7 +1566,7 @@ void QuicSpdyStream::OnCapsuleParseFailure(const std::string& error_message) {
 void QuicSpdyStream::WriteCapsule(const Capsule& capsule, bool fin) {
   QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id() << " sending capsule "
                   << capsule;
-  QuicBuffer serialized_capsule = SerializeCapsule(
+  quiche::QuicheBuffer serialized_capsule = SerializeCapsule(
       capsule,
       spdy_session_->connection()->helper()->GetStreamSendBufferAllocator());
   QUICHE_DCHECK_GT(serialized_capsule.size(), 0u);

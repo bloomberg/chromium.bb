@@ -413,6 +413,11 @@ struct BLINK_EXPORT WebNavigationParams {
   // https://html.spec.whatwg.org/C/#is-origin-keyed
   bool origin_agent_cluster = false;
 
+  // Whether the decision to use origin-keyed or site-keyed agent clustering
+  // (which itself is recorded in origin_agent_cluster, above) has been
+  // made based on absent Origin-Agent-Cluster http header.
+  bool origin_agent_cluster_left_as_default = true;
+
   // List of client hints enabled for top-level frame. These still need to be
   // checked against permissions policy before use.
   WebVector<network::mojom::WebClientHintsType> enabled_client_hints;
@@ -426,10 +431,10 @@ struct BLINK_EXPORT WebNavigationParams {
   std::unique_ptr<WebPolicyContainer> policy_container;
 
   // These are used to construct a subset of the back/forward list for the
-  // appHistory API. They only have the attributes that are needed for
-  // appHistory.
-  WebVector<WebHistoryItem> app_history_back_entries;
-  WebVector<WebHistoryItem> app_history_forward_entries;
+  // window.navigation API. They only have the attributes that are needed for
+  // that API.
+  WebVector<WebHistoryItem> navigation_api_back_entries;
+  WebVector<WebHistoryItem> navigation_api_forward_entries;
 
   // List of URLs which are preloaded by HTTP Early Hints.
   WebVector<WebURL> early_hints_preloaded_resources;

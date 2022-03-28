@@ -8,16 +8,17 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -25,13 +26,14 @@ import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUi
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -48,8 +50,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -404,8 +408,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
      */
     private void computeNextStepForUpdate(OfflineItem updatedItem, boolean forceShowDownloadStarted,
             boolean userCancel, boolean itemWasRemoved) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) return;
-
         if (updatedItem != null && mIgnoredItems.contains(updatedItem.id)) return;
 
         preProcessUpdatedItem(updatedItem);
@@ -612,8 +614,7 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
                 info.icon = R.drawable.infobar_download_complete_animation;
             } else if (singleDownloadScheduled) {
                 // TODO(shaktisahu, xingliu): Find out what the message should be.
-                info.description = getContext().getString(
-                        R.string.download_message_download_scheduled_description);
+                info.description = getMessageForDownloadScheduled(itemToShow);
                 info.link = getContext().getString(R.string.change_link);
                 info.id = itemToShow.id;
                 info.schedule = itemToShow.schedule.clone();
@@ -666,6 +667,24 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         mEndTimerRunnable = null;
     }
 
+    private String getMessageForDownloadScheduled(OfflineItem offlineItem) {
+        assert offlineItem != null && offlineItem.schedule != null;
+        if (offlineItem.schedule.onlyOnWifi) {
+            return getContext().getString(
+                    R.string.download_message_download_scheduled_description_on_wifi);
+        } else {
+            long now = new Date().getTime();
+            String dateTimeString = DateUtils
+                                            .formatSameDayTime(offlineItem.schedule.startTimeMs,
+                                                    now, DateFormat.MEDIUM, DateFormat.SHORT)
+                                            .toString();
+            int stringId = CalendarUtils.isSameDay(now, offlineItem.schedule.startTimeMs)
+                    ? R.string.download_message_download_scheduled_description_on_time
+                    : R.string.download_message_download_scheduled_description_on_date;
+            return getContext().getString(stringId, dateTimeString);
+        }
+    }
+
     private void preProcessUpdatedItem(OfflineItem updatedItem) {
         if (updatedItem == null) return;
 
@@ -699,7 +718,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
      */
     @VisibleForTesting
     protected void showMessage(@UiState int state, DownloadProgressMessageUiData info) {
-        assert ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_MESSAGE);
         if (mDelegate.maybeSwitchToFocusedActivity()) {
             closePreviousMessage();
         }
@@ -748,11 +766,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         mPropertyModel.set(MessageBannerProperties.ON_DISMISSED, this::onMessageDismissed);
         mPropertyModel.set(MessageBannerProperties.ON_PRIMARY_ACTION,
                 () -> onPrimaryAction(info.id, info.schedule));
-        if (getMessageDismissDurationMs() > 0) {
-            mPropertyModel.set(
-                    MessageBannerProperties.DISMISSAL_DURATION, getMessageDismissDurationMs());
-        }
-
         final MessageDispatcher dispatcher = getMessageDispatcher();
         mDismissRunnable = () -> {
             if (dispatcher == null) return;
@@ -777,7 +790,7 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
     private Drawable createDrawable(DownloadProgressMessageUiData info) {
         switch (info.iconType) {
             case IconType.DRAWABLE:
-                return ApiCompatibilityUtils.getDrawable(getContext().getResources(), info.icon);
+                return AppCompatResources.getDrawable(getContext(), info.icon);
             case IconType.VECTOR_DRAWABLE:
                 return VectorDrawableCompat.create(
                         getContext().getResources(), info.icon, getContext().getTheme());
@@ -875,7 +888,8 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         mNotificationIds.remove(contentId);
     }
 
-    private void onPrimaryAction(ContentId itemId, final OfflineItemSchedule schedule) {
+    private @PrimaryActionClickBehavior int onPrimaryAction(
+            ContentId itemId, final OfflineItemSchedule schedule) {
         OfflineItem offlineItem = mTrackedItems.remove(itemId);
         removeNotification(itemId);
         if (itemId != null && schedule != null) {
@@ -893,6 +907,7 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
                     getOTRProfileIDForTrackedItems(), DownloadOpenSource.DOWNLOAD_PROGRESS_MESSAGE);
             recordLinkClicked(false /*openItem*/);
         }
+        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
     }
 
     private OTRProfileID getOTRProfileIDForTrackedItems() {
@@ -927,13 +942,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
                     if (newSchedule == null) return;
                     OfflineContentAggregatorFactory.get().changeSchedule(id, newSchedule);
                 });
-    }
-
-    private long getMessageDismissDurationMs() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                       ChromeFeatureList.DOWNLOAD_PROGRESS_MESSAGE,
-                       "message_dismiss_duration_seconds", -1)
-                * 1000;
     }
 
     private static void recordMessageState(@UiState int state, DownloadProgressMessageUiData info) {

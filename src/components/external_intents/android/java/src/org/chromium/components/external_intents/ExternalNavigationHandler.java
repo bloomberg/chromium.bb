@@ -355,6 +355,7 @@ public class ExternalNavigationHandler {
             Intent targetIntent, GURL browserFallbackUrl, boolean canLaunchExternalFallback) {
         if (browserFallbackUrl.isEmpty()
                 || (params.getRedirectHandler() != null
+                        && params.getRedirectHandler().isOnNavigation()
                         // For instance, if this is a chained fallback URL, we ignore it.
                         && params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
             return OverrideUrlLoadingResult.forNoOverride();
@@ -409,7 +410,7 @@ public class ExternalNavigationHandler {
         // Otherwise, it can be used in chain for fingerprinting multiple app installation
         // status in one shot. In order to prevent this scenario, we notify redirection
         // handler that redirection from the current navigation should stay in this app.
-        if (params.getRedirectHandler() != null
+        if (params.getRedirectHandler() != null && params.getRedirectHandler().isOnNavigation()
                 && !params.getRedirectHandler()
                             .getAndClearShouldNotBlockOverrideUrlLoadingOnCurrentRedirectionChain()) {
             params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
@@ -1429,19 +1430,13 @@ public class ExternalNavigationHandler {
 
         ResolveActivitySupplier resolveActivity = new ResolveActivitySupplier(targetIntent);
         boolean requiresIntentChooser = false;
-        if (isViewIntentToOtherBrowser(
-                    targetIntent, resolvingInfos, isIntentWithSupportedProtocol, resolveActivity)) {
-            RecordHistogram.recordBooleanHistogram("Android.Intent.WebIntentToOtherBrowser", true);
-            requiresIntentChooser = true;
+        if (!mDelegate.maybeSetTargetPackage(targetIntent)) {
+            requiresIntentChooser = isViewIntentToOtherBrowser(
+                    targetIntent, resolvingInfos, isIntentWithSupportedProtocol, resolveActivity);
         }
 
-        if (mDelegate.maybeSetTargetPackage(targetIntent)) {
-            // This check was not combined with the one above to preserve the value of the
-            // Android.Intent.WebIntentToOtherBrowser histogram.
-            requiresIntentChooser = false;
-        }
-
-        if (shouldAvoidShowingDisambiguationPrompt(targetIntent, resolvingInfos, resolveActivity)) {
+        if (shouldAvoidShowingDisambiguationPrompt(
+                    isExternalProtocol, targetIntent, resolvingInfos, resolveActivity)) {
             return OverrideUrlLoadingResult.forNoOverride();
         }
 
@@ -1462,9 +1457,13 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    private boolean shouldAvoidShowingDisambiguationPrompt(Intent intent,
-            QueryIntentActivitiesSupplier resolvingInfosSupplier,
+    private boolean shouldAvoidShowingDisambiguationPrompt(boolean isExternalProtocol,
+            Intent intent, QueryIntentActivitiesSupplier resolvingInfosSupplier,
             ResolveActivitySupplier resolveActivitySupplier) {
+        // For navigations Chrome can't handle, it's fine to show the disambiguation dialog
+        // regardless of the embedder's preference.
+        if (isExternalProtocol) return false;
+
         // Don't bother performing the package manager checks if the delegate is fine with the
         // disambiguation prompt.
         if (!mDelegate.shouldAvoidDisambiguationDialog(intent)) return false;

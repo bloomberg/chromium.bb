@@ -8,7 +8,6 @@
 #include "components/version_info/version_info.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -431,6 +430,35 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   // Reloading should change to desktop.
   [ChromeEarlGrey reload];
   [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+}
+
+// Tests that navigating back to a page after changing default mode doesn't
+// change the page mode.
+- (void)testGoBackInDifferentDefaultMode {
+  GREYAssertTrue([ChromeEarlGrey isMobileModeByDefault],
+                 @"The default mode should be mobile.");
+
+  std::unique_ptr<web::DataResponseProvider> provider(
+      new UserAgentResponseProvider());
+  web::test::SetUpHttpServer(std::move(provider));
+
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
+  // Verify initial reception of the mobile site.
+  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+
+  [self selectDefaultMode:@"Desktop"];
+
+  GREYAssertFalse([ChromeEarlGrey isMobileModeByDefault],
+                  @"The default mode should be desktop.");
+
+  // Move to another page, loaded in desktop mode.
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://2.com")];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+
+  // Go back to the Mobile page.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
 }
 
 @end

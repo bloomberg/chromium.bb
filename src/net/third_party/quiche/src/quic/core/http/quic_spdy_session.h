@@ -104,8 +104,6 @@ class QUIC_EXPORT_PRIVATE Http3DebugVisitor {
   // Outgoing HTTP/3 frames on the control stream.
   virtual void OnSettingsFrameSent(const SettingsFrame& /*frame*/) = 0;
   virtual void OnGoAwayFrameSent(QuicStreamId /*stream_id*/) {}
-  // TODO(b/171463363): Remove.
-  virtual void OnMaxPushIdFrameSent(const MaxPushIdFrame& /*frame*/) {}
   virtual void OnPriorityUpdateFrameSent(const PriorityUpdateFrame& /*frame*/) {
   }
 
@@ -206,7 +204,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   virtual size_t WriteHeadersOnHeadersStream(
       QuicStreamId id, spdy::SpdyHeaderBlock headers, bool fin,
       const spdy::SpdyStreamPrecedence& precedence,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+          ack_listener);
 
   // Writes an HTTP/2 PRIORITY frame the to peer. Returns the size in bytes of
   // the resulting PRIORITY frame.
@@ -330,10 +329,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // |max_push_id_|.
   // TODO(b/171463363): Remove.
   bool OnMaxPushIdFrame(PushId max_push_id);
-
-  // TODO(b/171463363): Remove.
-  // Returns false.
-  bool CanCreatePushStreamWithId(PushId push_id);
 
   int32_t destruction_indicator() const { return destruction_indicator_; }
 
@@ -512,7 +507,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   size_t WriteHeadersOnHeadersStreamImpl(
       QuicStreamId id, spdy::SpdyHeaderBlock headers, bool fin,
       QuicStreamId parent_stream_id, int weight, bool exclusive,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+      quiche::QuicheReferenceCountedPointer<QuicAckListenerInterface>
+          ack_listener);
 
   void OnNewEncryptionKeyAvailable(
       EncryptionLevel level, std::unique_ptr<QuicEncrypter> encrypter) override;

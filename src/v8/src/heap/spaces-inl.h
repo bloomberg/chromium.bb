@@ -93,7 +93,8 @@ OldGenerationMemoryChunkIterator::OldGenerationMemoryChunkIterator(Heap* heap)
       state_(kOldSpaceState),
       old_iterator_(heap->old_space()->begin()),
       code_iterator_(heap->code_space()->begin()),
-      map_iterator_(heap->map_space()->begin()),
+      map_iterator_(heap->map_space() ? heap->map_space()->begin()
+                                      : PageRange::iterator(nullptr)),
       lo_iterator_(heap->lo_space()->begin()),
       code_lo_iterator_(heap->code_lo_space()->begin()) {}
 
@@ -140,7 +141,7 @@ AllocationResult LocalAllocationBuffer::AllocateRawAligned(
   int filler_size = Heap::GetFillToAlign(current_top, alignment);
   int aligned_size = filler_size + size_in_bytes;
   if (!allocation_info_.CanIncrementTop(aligned_size)) {
-    return AllocationResult::Failure(NEW_SPACE);
+    return AllocationResult::Failure();
   }
   HeapObject object =
       HeapObject::FromAddress(allocation_info_.IncrementTop(aligned_size));

@@ -32,6 +32,7 @@
     <!-- Button default measures -->
     <dimen name="button_min_width">88dp</dimen>
     <dimen name="button_bg_vertical_inset">4dp</dimen>
+    <dimen name="button_outlined_border_width">1dp</dimen>
 
     <!-- Menu footer chip measures-->
     <!-- ( listPreferredItemHeightSmall(40dp) - text size(12sp) - top and bottom padding(12dp) ) / 2 -->
@@ -83,6 +84,8 @@
     <dimen name="default_elevation_6">67dp</dimen>
     <!-- TODO(crbug.com/1236215): Remove once dynamic color is ready for all cards -->
     <dimen name="card_elevation">@dimen/default_elevation_1</dimen>
+
+    <dimen name="toast_elevation">@dimen/default_elevation_4</dimen>
 
     <!-- Arbitrary shadow length for elevation levels -->
     <dimen name="default_shadow_length_elev_2">6dp</dimen>

@@ -442,22 +442,14 @@ void TurboAssembler::LoadExternalPointerField(
 }
 
 void TurboAssembler::MaybeSaveRegisters(RegList registers) {
-  if (registers == 0) return;
-  DCHECK_GT(NumRegs(registers), 0);
-  for (int i = 0; i < Register::kNumRegisters; ++i) {
-    if ((registers >> i) & 1u) {
-      pushq(Register::from_code(i));
-    }
+  for (Register reg : registers) {
+    pushq(reg);
   }
 }
 
 void TurboAssembler::MaybeRestoreRegisters(RegList registers) {
-  if (registers == 0) return;
-  DCHECK_GT(NumRegs(registers), 0);
-  for (int i = Register::kNumRegisters - 1; i >= 0; --i) {
-    if ((registers >> i) & 1u) {
-      popq(Register::from_code(i));
-    }
+  for (Register reg : base::Reversed(registers)) {
+    popq(reg);
   }
 }
 
@@ -1468,7 +1460,7 @@ void TurboAssembler::Move(Register dst, Smi source) {
   int value = source.value();
   if (value == 0) {
     xorl(dst, dst);
-  } else if (SmiValuesAre32Bits() || value < 0) {
+  } else if (SmiValuesAre32Bits()) {
     Move(dst, source.ptr(), RelocInfo::NO_INFO);
   } else {
     uint32_t uvalue = static_cast<uint32_t>(source.ptr());
@@ -2763,7 +2755,7 @@ void TurboAssembler::LeaveFrame(StackFrame::Type type) {
   popq(rbp);
 }
 
-#if defined(V8_TARGET_OS_WIN) || defined(V8_TARGET_OS_MACOSX)
+#if defined(V8_TARGET_OS_WIN) || defined(V8_TARGET_OS_MACOS)
 void TurboAssembler::AllocateStackSpace(Register bytes_scratch) {
   ASM_CODE_COMMENT(this);
   // On Windows and on macOS, we cannot increment the stack size by more than

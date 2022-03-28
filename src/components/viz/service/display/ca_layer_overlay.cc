@@ -5,6 +5,7 @@
 #include "components/viz/service/display/ca_layer_overlay.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/features.h"
@@ -18,6 +19,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkDeferredDisplayList.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace viz {
 
@@ -26,9 +28,11 @@ namespace {
 // The CoreAnimation renderer's performance starts suffering when too many
 // quads are promoted to CALayers. At extremes, corruption can occur.
 // https://crbug.com/1022116
-// This number can be re-assigned by kMacCAOverlayQuadMaxNum when
-// feature kMacCAOverlayQuad is enabled.
+
 constexpr size_t kTooManyQuads = 128;
+// |kTooManyQuadsWithVideos| can be re-assigned by kMacCAOverlayQuadMaxNum when
+// feature kMacCAOverlayQuad is enabled.
+constexpr size_t kTooManyQuadsWithVideos = 300;
 
 // If there are too many RenderPassDrawQuads, we shouldn't use Core
 // Animation to present them as individual layers, since that potentially
@@ -41,8 +45,37 @@ const int kTooManyRenderPassDrawQuads = 30;
 // or equal to this number.
 const int kMaxNumVideos = 5;
 
-void RecordCALayerHistogram(gfx::CALayerResult result) {
+void RecordCALayerHistogram(gfx::CALayerResult result,
+                            bool odd_width,
+                            bool odd_height,
+                            bool odd_x,
+                            bool odd_y) {
   UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayerResult", result);
+
+  // Record any odd sized and odd offset videos in the current frame.
+  gfx::OddSize size_enum;
+  if (odd_width && odd_height)
+    size_enum = gfx::OddSize::kOddWidthAndHeight;
+  else if (odd_width)
+    size_enum = gfx::OddSize::kOddWidthOnly;
+  else if (odd_height)
+    size_enum = gfx::OddSize::kOddHeightOnly;
+  else
+    size_enum = gfx::OddSize::kEvenWidthAndHeight;
+  UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayer.OddSizedVideo",
+                            size_enum);
+
+  gfx::OddOffset offset_enum;
+  if (odd_x && odd_y)
+    offset_enum = gfx::OddOffset::kOddXAndY;
+  else if (odd_x)
+    offset_enum = gfx::OddOffset::kOddXOnly;
+  else if (odd_y)
+    offset_enum = gfx::OddOffset::kOddYOnly;
+  else
+    offset_enum = gfx::OddOffset::kEvenXAndY;
+  UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayer.OddOffsetVideo",
+                            offset_enum);
 }
 
 bool FilterOperationSupported(const cc::FilterOperation& operation) {
@@ -142,9 +175,9 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
     // transformation that flips the contents of the layer without changing its
     // frame is the composition of a vertical flip about the anchor point, and a
     // translation by the height of the layer.
-    ca_layer_overlay->shared_state->transform.preTranslate(
-        0, ca_layer_overlay->bounds_rect.height(), 0);
-    ca_layer_overlay->shared_state->transform.preScale(1, -1, 1);
+    ca_layer_overlay->shared_state->transform.Translate(
+        0, ca_layer_overlay->bounds_rect.height());
+    ca_layer_overlay->shared_state->transform.Scale(1, -1);
   }
   ca_layer_overlay->contents_resource_id = resource_id;
   ca_layer_overlay->contents_rect =
@@ -163,7 +196,11 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
 
 gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
                                     const YUVVideoDrawQuad* quad,
-                                    CALayerOverlay* ca_layer_overlay) {
+                                    CALayerOverlay* ca_layer_overlay,
+                                    bool& video_with_odd_width_out,
+                                    bool& video_with_odd_height_out,
+                                    bool& video_with_odd_x_out,
+                                    bool& video_with_odd_y_out) {
   // For YUVVideoDrawQuads, the Y and UV planes alias the same underlying
   // IOSurface. Ensure all planes are overlays and have the same contents
   // rect. Then use the Y plane as the resource for the overlay.
@@ -173,20 +210,46 @@ gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
       !resource_provider->IsOverlayCandidate(quad->v_plane_resource_id())) {
     return gfx::kCALayerFailedYUVNotCandidate;
   }
+
   if (quad->y_plane_resource_id() == quad->u_plane_resource_id() ||
       quad->y_plane_resource_id() == quad->v_plane_resource_id() ||
       quad->u_plane_resource_id() != quad->v_plane_resource_id()) {
     return gfx::kCALayerFailedYUVInvalidPlanes;
   }
 
-  gfx::RectF ya_contents_rect =
-      gfx::ScaleRect(quad->ya_tex_coord_rect, 1.f / quad->ya_tex_size.width(),
-                     1.f / quad->ya_tex_size.height());
-  gfx::RectF uv_contents_rect =
-      gfx::ScaleRect(quad->uv_tex_coord_rect, 1.f / quad->uv_tex_size.width(),
-                     1.f / quad->uv_tex_size.height());
-  if (ya_contents_rect != uv_contents_rect)
+  // Use division to calculate |ya_contents_rect| instead of using
+  // gfx::ScaleRect (which would multiply by the reciprocal), to avoid
+  // introducing excessive floating-point errors.
+  gfx::RectF ya_contents_rect = {
+      (quad->ya_tex_coord_rect.x() / quad->ya_tex_size.width()),
+      (quad->ya_tex_coord_rect.y() / quad->ya_tex_size.height()),
+      (quad->ya_tex_coord_rect.width() / quad->ya_tex_size.width()),
+      (quad->ya_tex_coord_rect.height() / quad->ya_tex_size.height())};
+  gfx::RectF uv_contents_rect = {
+      (quad->uv_tex_coord_rect.x() / quad->uv_tex_size.width()),
+      (quad->uv_tex_coord_rect.y() / quad->uv_tex_size.height()),
+      (quad->uv_tex_coord_rect.width() / quad->uv_tex_size.width()),
+      (quad->uv_tex_coord_rect.height() / quad->uv_tex_size.height())};
+  // For odd-sized videos, |ya_tex_coord_rect| and |uv_tex_coord_rect| might not
+  // be identical.
+  float tolerance_x = 1.5f / quad->uv_tex_size.width();
+  float tolerance_y = 1.5f / quad->uv_tex_size.height();
+  if (!ya_contents_rect.ApproximatelyEqual(uv_contents_rect, tolerance_x,
+                                           tolerance_y)) {
     return gfx::kCALayerFailedYUVTexcoordMismatch;
+  }
+
+  // Check any odd sized and odd offset video in the current frame.
+  if (quad->ya_tex_size.width() % 2)
+    video_with_odd_width_out = true;
+  if (quad->ya_tex_size.height() % 2)
+    video_with_odd_height_out = true;
+  float integer = 0;
+  if (std::modf(quad->ya_tex_coord_rect.x() / 2.f, &integer) != 0)
+    video_with_odd_x_out = true;
+  if (std::modf(quad->ya_tex_coord_rect.y() / 2.f, &integer) != 0)
+    video_with_odd_y_out = true;
+
   ca_layer_overlay->contents_resource_id = y_resource_id;
   ca_layer_overlay->contents_rect = ya_contents_rect;
   ca_layer_overlay->protected_video_type = quad->protected_video_type;
@@ -271,7 +334,7 @@ class CALayerOverlayProcessorInternal {
       most_recent_overlay_shared_state_->opacity =
           quad->shared_quad_state->opacity;
       most_recent_overlay_shared_state_->transform =
-          quad->shared_quad_state->quad_to_target_transform.matrix();
+          quad->shared_quad_state->quad_to_target_transform;
     }
     ca_layer_overlay->shared_state = most_recent_overlay_shared_state_;
 
@@ -308,9 +371,10 @@ class CALayerOverlayProcessorInternal {
         return gfx::kCALayerFailedSurfaceContent;
       case DrawQuad::Material::kYuvVideoContent:
         yuv_draw_quad_count++;
-        return FromYUVVideoQuad(resource_provider,
-                                YUVVideoDrawQuad::MaterialCast(quad),
-                                ca_layer_overlay);
+        return FromYUVVideoQuad(
+            resource_provider, YUVVideoDrawQuad::MaterialCast(quad),
+            ca_layer_overlay, video_with_odd_width_, video_with_odd_height_,
+            video_with_odd_x_, video_with_odd_y_);
       default:
         break;
     }
@@ -318,9 +382,18 @@ class CALayerOverlayProcessorInternal {
     return gfx::kCALayerFailedUnknown;
   }
 
+  bool video_with_odd_width() { return video_with_odd_width_; }
+  bool video_with_odd_height() { return video_with_odd_height_; }
+  bool video_with_odd_x() { return video_with_odd_x_; }
+  bool video_with_odd_y() { return video_with_odd_y_; }
+
  private:
   const SharedQuadState* most_recent_shared_quad_state_ = nullptr;
   scoped_refptr<CALayerOverlaySharedState> most_recent_overlay_shared_state_;
+  bool video_with_odd_width_ = false;
+  bool video_with_odd_height_ = false;
+  bool video_with_odd_x_ = false;
+  bool video_with_odd_y_ = false;
 };
 
 // Control using the CoreAnimation renderer, which is the path that replaces
@@ -348,12 +421,16 @@ CALayerOverlayProcessor::CALayerOverlayProcessor()
     : overlays_allowed_(ui::RemoteLayerAPISupported()),
       enable_ca_renderer_(base::FeatureList::IsEnabled(kCARenderer)),
       enable_hdr_underlays_(base::FeatureList::IsEnabled(kHDRUnderlays)) {
-  max_quad_list_size_ = kTooManyQuads;
   if (base::FeatureList::IsEnabled(features::kMacCAOverlayQuad)) {
+    max_quad_list_size_for_videos_ = kTooManyQuadsWithVideos;
     const int max_num = features::kMacCAOverlayQuadMaxNum.Get();
     if (max_num > 0)
-      max_quad_list_size_ = max_num;
+      max_quad_list_size_for_videos_ = max_num;
+  } else {
+    max_quad_list_size_for_videos_ = kTooManyQuads;
   }
+
+  DCHECK_GE(max_quad_list_size_for_videos_, kTooManyQuads);
 }
 
 bool CALayerOverlayProcessor::AreClipSettingsValid(
@@ -389,7 +466,6 @@ void CALayerOverlayProcessor::PutForcedOverlayContentIntoUnderlays(
         render_pass_backdrop_filters,
     CALayerOverlayList* ca_layer_overlays) const {
   bool failed = false;
-  CALayerOverlayProcessorInternal processor;
 
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     const DrawQuad* quad = *it;
@@ -458,14 +534,12 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     result = gfx::kCALayerFailedVideoCaptureEnabled;
   } else if (!render_pass->copy_requests.empty()) {
     result = gfx::kCALayerFailedCopyRequests;
-  } else if (num_visible_quads > max_quad_list_size_) {
-    // |max_quad_list_size_| might be set by finch and is bigger than
-    // kTooManyQuads (128).
+  } else if (num_visible_quads > max_quad_list_size_for_videos_) {
     result = gfx::kCALayerFailedTooManyQuads;
   }
 
   if (result != gfx::kCALayerSuccess) {
-    RecordCALayerHistogram(result);
+    RecordCALayerHistogram(result, false, false, false, false);
     SaveCALayerResult(result);
     return false;
   }
@@ -509,15 +583,19 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     ca_layer_overlays->push_back(ca_layer);
   }
 
-  // In the case of |max_quad_list_size_| > |num_visible_quads| > kTooManyQuads,
-  // Accept CALayerOverlay if in a video conference (video count >=
-  // kMaxNumVideos(5)). Otherwise, do not use CALayerOverlay.
+  // Apply Feature kMacCAOverlayQuad to non-video-conferencing mode only.
+  // In the case of |max_quad_list_size_for_videos_| > |num_visible_quads| >
+  // kTooManyQuads, accept CALayerOverlay only if it's in a video conferencing
+  // mode. (video count >= kMaxNumVideos(5)) Otherwise, fail CALayerOverlay.
   if (num_visible_quads > kTooManyQuads &&
       yuv_draw_quad_count < kMaxNumVideos) {
     result = gfx::kCALayerFailedTooManyQuads;
   }
 
-  RecordCALayerHistogram(result);
+  RecordCALayerHistogram(result, processor.video_with_odd_width(),
+                         processor.video_with_odd_height(),
+                         processor.video_with_odd_x(),
+                         processor.video_with_odd_y());
   SaveCALayerResult(result);
 
   if (result != gfx::kCALayerSuccess) {

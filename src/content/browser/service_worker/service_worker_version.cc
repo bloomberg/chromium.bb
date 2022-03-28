@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
@@ -1722,9 +1723,28 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
 void ServiceWorkerVersion::set_cross_origin_embedder_policy(
     network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   // Once it is set, the CrossOriginEmbedderPolicy is immutable.
-  DCHECK(!cross_origin_embedder_policy_ ||
-         cross_origin_embedder_policy_ == cross_origin_embedder_policy);
-  cross_origin_embedder_policy_ = std::move(cross_origin_embedder_policy);
+  DCHECK(!client_security_state_ ||
+         client_security_state_->cross_origin_embedder_policy ==
+             cross_origin_embedder_policy);
+  if (!client_security_state_) {
+    client_security_state_ = network::mojom::ClientSecurityState::New();
+  }
+  client_security_state_->cross_origin_embedder_policy =
+      std::move(cross_origin_embedder_policy);
+}
+
+network::mojom::CrossOriginEmbedderPolicyValue
+ServiceWorkerVersion::cross_origin_embedder_policy_value() const {
+  return client_security_state_
+             ? client_security_state_->cross_origin_embedder_policy.value
+             : network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+}
+
+const network::CrossOriginEmbedderPolicy*
+ServiceWorkerVersion::cross_origin_embedder_policy() const {
+  return client_security_state_
+             ? &client_security_state_->cross_origin_embedder_policy
+             : nullptr;
 }
 
 // static

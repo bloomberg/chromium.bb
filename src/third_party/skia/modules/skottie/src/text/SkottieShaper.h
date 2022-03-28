@@ -37,6 +37,10 @@ public:
     struct Result {
         std::vector<Fragment> fFragments;
         size_t                fMissingGlyphCount = 0;
+        // Relative text size scale, when using an auto-scaling ResizePolicy
+        // (otherwise 1.0).  This is informative of the final text size, and is
+        // not required to render the Result.
+        float                 fScale = 1.0f;
 
         SkRect computeVisualBounds() const;
     };
@@ -104,19 +108,20 @@ public:
 
     struct TextDesc {
         const sk_sp<SkTypeface>&  fTypeface;
-        SkScalar                  fTextSize,
-                                  fMinTextSize,
-                                  fMaxTextSize,
-                                  fLineHeight,
-                                  fLineShift,
-                                  fAscent;
-        SkTextUtils::Align        fHAlign;
-        VAlign                    fVAlign;
-        ResizePolicy              fResize;
-        LinebreakPolicy           fLinebreak;
-        Direction                 fDirection;
-        Capitalization            fCapitalization;
-        uint32_t                  fFlags;
+        SkScalar                  fTextSize       = 0,
+                                  fMinTextSize    = 0,  // when auto-sizing
+                                  fMaxTextSize    = 0,  // when auto-sizing
+                                  fLineHeight     = 0,
+                                  fLineShift      = 0,
+                                  fAscent         = 0;
+        SkTextUtils::Align        fHAlign         = SkTextUtils::kLeft_Align;
+        VAlign                    fVAlign         = Shaper::VAlign::kTop;
+        ResizePolicy              fResize         = Shaper::ResizePolicy::kNone;
+        LinebreakPolicy           fLinebreak      = Shaper::LinebreakPolicy::kExplicit;
+        Direction                 fDirection      = Shaper::Direction::kLTR ;
+        Capitalization            fCapitalization = Shaper::Capitalization::kNone;
+        size_t                    fMaxLines       = 0;  // when auto-sizing, 0 -> no max
+        uint32_t                  fFlags          = 0;
     };
 
     // Performs text layout along an infinite horizontal line, starting at |textPoint|.

@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 #include <cstdint>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -28,15 +29,20 @@
 #include "api/rtc_error.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "api/rtp_parameters.h"
+#include "api/rtp_receiver_interface.h"
 #include "api/scoped_refptr.h"
 #include "api/test/fake_frame_decryptor.h"
 #include "api/test/fake_frame_encryptor.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
+#include "api/video/video_bitrate_allocator_factory.h"
+#include "api/video/video_codec_constants.h"
 #include "media/base/codec.h"
+#include "media/base/delayable.h"
 #include "media/base/fake_media_engine.h"
 #include "media/base/media_channel.h"
 #include "media/base/media_config.h"
 #include "media/base/media_engine.h"
+#include "media/base/rid_description.h"
 #include "media/base/stream_params.h"
 #include "media/base/test_utils.h"
 #include "media/engine/fake_webrtc_call.h"
@@ -50,8 +56,6 @@
 #include "pc/dtls_srtp_transport.h"
 #include "pc/local_audio_source.h"
 #include "pc/media_stream.h"
-#include "pc/remote_audio_source.h"
-#include "pc/rtp_receiver.h"
 #include "pc/rtp_sender.h"
 #include "pc/rtp_transport_internal.h"
 #include "pc/test/fake_video_track_source.h"
@@ -59,11 +63,14 @@
 #include "pc/video_track.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/gunit.h"
+#include "rtc_base/location.h"
+#include "rtc_base/ref_counted_object.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 #include "rtc_base/thread.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/run_loop.h"
+#include "test/scoped_key_value_config.h"
 
 using ::testing::_;
 using ::testing::ContainerEq;
@@ -181,7 +188,7 @@ class RtpSenderReceiverTest
 
   std::unique_ptr<webrtc::RtpTransportInternal> CreateDtlsSrtpTransport() {
     auto dtls_srtp_transport = std::make_unique<webrtc::DtlsSrtpTransport>(
-        /*rtcp_mux_required=*/true);
+        /*rtcp_mux_required=*/true, field_trials_);
     dtls_srtp_transport->SetDtlsTransports(rtp_dtls_transport_.get(),
                                            /*rtcp_dtls_transport=*/nullptr);
     return dtls_srtp_transport;
@@ -347,7 +354,7 @@ class RtpSenderReceiverTest
   void DestroyAudioRtpReceiver() {
     if (!audio_rtp_receiver_)
       return;
-    audio_rtp_receiver_->Stop();
+    audio_rtp_receiver_->SetMediaChannel(nullptr);
     audio_rtp_receiver_ = nullptr;
     VerifyVoiceChannelNoOutput();
   }
@@ -356,6 +363,7 @@ class RtpSenderReceiverTest
     if (!video_rtp_receiver_)
       return;
     video_rtp_receiver_->Stop();
+    video_rtp_receiver_->SetMediaChannel(nullptr);
     video_rtp_receiver_ = nullptr;
     VerifyVideoChannelNoOutput();
   }
@@ -537,6 +545,7 @@ class RtpSenderReceiverTest
   rtc::scoped_refptr<VideoTrackInterface> video_track_;
   rtc::scoped_refptr<AudioTrackInterface> audio_track_;
   bool audio_sender_destroyed_signal_fired_ = false;
+  webrtc::test::ScopedKeyValueConfig field_trials_;
 };
 
 // Test that `voice_channel_` is updated when an audio track is associated
@@ -1640,7 +1649,7 @@ TEST_F(RtpSenderReceiverTest, AudioReceiverCannotSetFrameDecryptorAfterStop) {
   rtc::scoped_refptr<FrameDecryptorInterface> fake_frame_decryptor(
       new FakeFrameDecryptor());
   EXPECT_EQ(nullptr, audio_rtp_receiver_->GetFrameDecryptor());
-  audio_rtp_receiver_->Stop();
+  audio_rtp_receiver_->SetMediaChannel(nullptr);
   audio_rtp_receiver_->SetFrameDecryptor(fake_frame_decryptor);
   // TODO(webrtc:9926) - Validate media channel not set once fakes updated.
   DestroyAudioRtpReceiver();
@@ -1687,7 +1696,7 @@ TEST_F(RtpSenderReceiverTest, VideoReceiverCannotSetFrameDecryptorAfterStop) {
   rtc::scoped_refptr<FrameDecryptorInterface> fake_frame_decryptor(
       new FakeFrameDecryptor());
   EXPECT_EQ(nullptr, video_rtp_receiver_->GetFrameDecryptor());
-  video_rtp_receiver_->Stop();
+  video_rtp_receiver_->SetMediaChannel(nullptr);
   video_rtp_receiver_->SetFrameDecryptor(fake_frame_decryptor);
   // TODO(webrtc:9926) - Validate media channel not set once fakes updated.
   DestroyVideoRtpReceiver();

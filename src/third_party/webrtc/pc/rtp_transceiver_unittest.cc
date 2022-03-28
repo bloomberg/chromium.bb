@@ -14,12 +14,15 @@
 
 #include <memory>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/rtp_parameters.h"
 #include "media/base/fake_media_engine.h"
+#include "media/base/media_engine.h"
 #include "pc/test/mock_channel_interface.h"
 #include "pc/test/mock_rtp_receiver_internal.h"
 #include "pc/test/mock_rtp_sender_internal.h"
+#include "rtc_base/thread.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 
@@ -146,7 +149,8 @@ class RtpTransceiverUnifiedPlanTest : public ::testing::Test {
 
 // Basic tests for Stop()
 TEST_F(RtpTransceiverUnifiedPlanTest, StopSetsDirection) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 
@@ -204,8 +208,7 @@ class RtpTransceiverTestForHeaderExtensions : public ::testing::Test {
   }
 
   void ClearChannel(cricket::MockChannelInterface& mock_channel) {
-    EXPECT_CALL(*sender_.get(), SetMediaChannel(nullptr));
-    EXPECT_CALL(*receiver_.get(), Stop());
+    EXPECT_CALL(*sender_.get(), SetMediaChannel(_));
     EXPECT_CALL(mock_channel, SetFirstPacketReceivedCallback(_));
     EXPECT_CALL(channel_manager_, DestroyChannel(&mock_channel))
         .WillRepeatedly(testing::Return());
@@ -221,7 +224,8 @@ class RtpTransceiverTestForHeaderExtensions : public ::testing::Test {
 };
 
 TEST_F(RtpTransceiverTestForHeaderExtensions, OffersChannelManagerList) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 
@@ -229,7 +233,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions, OffersChannelManagerList) {
 }
 
 TEST_F(RtpTransceiverTestForHeaderExtensions, ModifiesDirection) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 
@@ -253,7 +258,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions, ModifiesDirection) {
 }
 
 TEST_F(RtpTransceiverTestForHeaderExtensions, AcceptsStoppedExtension) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 
@@ -265,7 +271,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions, AcceptsStoppedExtension) {
 }
 
 TEST_F(RtpTransceiverTestForHeaderExtensions, RejectsUnsupportedExtension) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 
@@ -279,7 +286,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions, RejectsUnsupportedExtension) {
 
 TEST_F(RtpTransceiverTestForHeaderExtensions,
        RejectsStoppedMandatoryExtensions) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 
@@ -299,7 +307,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions,
 
 TEST_F(RtpTransceiverTestForHeaderExtensions,
        NoNegotiatedHdrExtsWithoutChannel) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
   EXPECT_THAT(transceiver_.HeaderExtensionsNegotiated(), ElementsAre());
@@ -308,8 +317,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions,
 TEST_F(RtpTransceiverTestForHeaderExtensions,
        NoNegotiatedHdrExtsWithChannelWithoutNegotiation) {
   const std::string content_name("my_mid");
-  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*receiver_.get(), Stop()).WillRepeatedly(Return());
   EXPECT_CALL(*sender_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
@@ -329,8 +338,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions,
 
 TEST_F(RtpTransceiverTestForHeaderExtensions, ReturnsNegotiatedHdrExts) {
   const std::string content_name("my_mid");
-  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_)).WillRepeatedly(Return());
+  EXPECT_CALL(*receiver_.get(), Stop()).WillRepeatedly(Return());
   EXPECT_CALL(*sender_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
@@ -362,7 +371,8 @@ TEST_F(RtpTransceiverTestForHeaderExtensions, ReturnsNegotiatedHdrExts) {
 
 TEST_F(RtpTransceiverTestForHeaderExtensions,
        ReturnsNegotiatedHdrExtsSecondTime) {
-  EXPECT_CALL(*receiver_.get(), StopAndEndTrack());
+  EXPECT_CALL(*receiver_.get(), Stop());
+  EXPECT_CALL(*receiver_.get(), SetMediaChannel(_));
   EXPECT_CALL(*sender_.get(), SetTransceiverAsStopped());
   EXPECT_CALL(*sender_.get(), Stop());
 

@@ -28,9 +28,10 @@ namespace internal {
   V(C_WASM_ENTRY)          \
   V(INTERPRETED_FUNCTION)  \
   V(BASELINE)              \
+  V(MAGLEV)                \
   V(TURBOFAN)
 
-enum class CodeKind {
+enum class CodeKind : uint8_t {
 #define DEFINE_CODE_KIND_ENUM(name) name,
   CODE_KIND_LIST(DEFINE_CODE_KIND_ENUM)
 #undef DEFINE_CODE_KIND_ENUM
@@ -41,6 +42,8 @@ STATIC_ASSERT(CodeKind::BASELINE < CodeKind::TURBOFAN);
 #define V(...) +1
 static constexpr int kCodeKindCount = CODE_KIND_LIST(V);
 #undef V
+// Unlikely, but just to be safe:
+STATIC_ASSERT(kCodeKindCount <= std::numeric_limits<uint8_t>::max());
 
 const char* CodeKindToString(CodeKind kind);
 
@@ -54,6 +57,10 @@ inline constexpr bool CodeKindIsBaselinedJSFunction(CodeKind kind) {
   return kind == CodeKind::BASELINE;
 }
 
+inline constexpr bool CodeKindIsStaticallyCompiled(CodeKind kind) {
+  return kind == CodeKind::BYTECODE_HANDLER || kind == CodeKind::BUILTIN;
+}
+
 inline constexpr bool CodeKindIsUnoptimizedJSFunction(CodeKind kind) {
   STATIC_ASSERT(static_cast<int>(CodeKind::INTERPRETED_FUNCTION) + 1 ==
                 static_cast<int>(CodeKind::BASELINE));
@@ -62,12 +69,16 @@ inline constexpr bool CodeKindIsUnoptimizedJSFunction(CodeKind kind) {
 }
 
 inline constexpr bool CodeKindIsOptimizedJSFunction(CodeKind kind) {
-  return kind == CodeKind::TURBOFAN;
+  STATIC_ASSERT(static_cast<int>(CodeKind::MAGLEV) + 1 ==
+                static_cast<int>(CodeKind::TURBOFAN));
+  return base::IsInRange(kind, CodeKind::MAGLEV, CodeKind::TURBOFAN);
 }
 
 inline constexpr bool CodeKindIsJSFunction(CodeKind kind) {
-  return CodeKindIsUnoptimizedJSFunction(kind) ||
-         CodeKindIsOptimizedJSFunction(kind);
+  STATIC_ASSERT(static_cast<int>(CodeKind::BASELINE) + 1 ==
+                static_cast<int>(CodeKind::MAGLEV));
+  return base::IsInRange(kind, CodeKind::INTERPRETED_FUNCTION,
+                         CodeKind::TURBOFAN);
 }
 
 inline constexpr bool CodeKindIsBuiltinOrJSFunction(CodeKind kind) {
@@ -116,10 +127,10 @@ using CodeKinds = base::Flags<CodeKindFlag>;
 DEFINE_OPERATORS_FOR_FLAGS(CodeKinds)
 
 static constexpr CodeKinds kJSFunctionCodeKindsMask{
-    CodeKindFlag::INTERPRETED_FUNCTION | CodeKindFlag::TURBOFAN |
-    CodeKindFlag::BASELINE};
+    CodeKindFlag::INTERPRETED_FUNCTION | CodeKindFlag::BASELINE |
+    CodeKindFlag::MAGLEV | CodeKindFlag::TURBOFAN};
 static constexpr CodeKinds kOptimizedJSFunctionCodeKindsMask{
-    CodeKindFlag::TURBOFAN};
+    CodeKindFlag::MAGLEV | CodeKindFlag::TURBOFAN};
 
 }  // namespace internal
 }  // namespace v8

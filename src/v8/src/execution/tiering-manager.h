@@ -17,24 +17,30 @@ class Isolate;
 class UnoptimizedFrame;
 class JavaScriptFrame;
 class JSFunction;
-enum class CodeKind;
+class OptimizationDecision;
+enum class CodeKind : uint8_t;
 enum class OptimizationReason : uint8_t;
+
+void TraceManualRecompile(JSFunction function, CodeKind code_kind,
+                          ConcurrencyMode concurrency_mode);
 
 class TieringManager {
  public:
   explicit TieringManager(Isolate* isolate) : isolate_(isolate) {}
 
-  void OnInterruptTickFromBytecode();
+  void OnInterruptTick(Handle<JSFunction> function);
 
   void NotifyICChanged() { any_ic_changed_ = true; }
 
   void AttemptOnStackReplacement(UnoptimizedFrame* frame,
                                  int nesting_levels = 1);
 
- private:
-  // Helper function called from OnInterruptTick*
-  void OnInterruptTick(JavaScriptFrame* frame);
+  // For use when a JSFunction is available.
+  static int InterruptBudgetFor(Isolate* isolate, JSFunction function);
+  // For use when no JSFunction is available.
+  static int InitialInterruptBudget();
 
+ private:
   // Make the decision whether to optimize the given function, and mark it for
   // optimization if the decision was 'yes'.
   void MaybeOptimizeFrame(JSFunction function, JavaScriptFrame* frame,
@@ -43,11 +49,10 @@ class TieringManager {
   // Potentially attempts OSR from and returns whether no other
   // optimization attempts should be made.
   bool MaybeOSR(JSFunction function, UnoptimizedFrame* frame);
-  OptimizationReason ShouldOptimize(JSFunction function,
-                                    BytecodeArray bytecode_array,
-                                    JavaScriptFrame* frame);
-  void Optimize(JSFunction function, OptimizationReason reason,
-                CodeKind code_kind);
+  OptimizationDecision ShouldOptimize(JSFunction function, CodeKind code_kind,
+                                      JavaScriptFrame* frame);
+  void Optimize(JSFunction function, CodeKind code_kind,
+                OptimizationDecision decision);
   void Baseline(JSFunction function, OptimizationReason reason);
 
   class V8_NODISCARD OnInterruptTickScope final {
@@ -56,7 +61,6 @@ class TieringManager {
     ~OnInterruptTickScope();
 
    private:
-    HandleScope handle_scope_;
     TieringManager* const profiler_;
     DisallowGarbageCollection no_gc;
   };

@@ -14,8 +14,6 @@ Tests that AR camera access returns non-empty GLTexture.
     <!-- Required features must be set after importing webxr_boilerplate.js to avoid overwrite -->
     <script>var immersiveArSessionInit = { requiredFeatures: ['camera-access'] };</script>
     <script>
-      setup({single_test: true});
-
       // How many frames with viewer poses some tests will wait for until trying to
       // exercise the API and run the test case:
       const MIN_NUM_FRAMES_WITH_POSES = 10;
@@ -37,6 +35,7 @@ Tests that AR camera access returns non-empty GLTexture.
         const glBinding = new XRWebGLBinding(sessionInfo.currentSession, gl);
 
         onARFrameCallback = (session, frame) => {
+          console.log('Got AR frame for storing texture callback');
           const pose = frame.getViewerPose(referenceSpace);
           if (pose) {
             numPosesFound++;
@@ -76,6 +75,7 @@ Tests that AR camera access returns non-empty GLTexture.
         const glBinding = new XRWebGLBinding(sessionInfo.currentSession, gl);
 
         onARFrameCallback = (session, frame) => {
+          console.log('Got AR frame for store/delete texture callback');
           const pose = frame.getViewerPose(referenceSpace);
           if (pose) {
             numPosesFound++;
@@ -107,6 +107,7 @@ Tests that AR camera access returns non-empty GLTexture.
         const glBinding = new XRWebGLBinding(sessionInfo.currentSession, gl);
 
         onARFrameCallback = (session, frame) => {
+          console.log('Got AR frame for non-null texture');
           const pose = frame.getViewerPose(referenceSpace);
           if (pose) {
             numPosesFound++;
@@ -159,6 +160,7 @@ Tests that AR camera access returns non-empty GLTexture.
         let numIterations = 0;
 
         onARFrameCallback = (session, frame) => {
+          console.log('Got AR frame for lifetime limit callback');
           const pose = frame.getViewerPose(referenceSpace);
           if (pose) {
             numPosesFound++;

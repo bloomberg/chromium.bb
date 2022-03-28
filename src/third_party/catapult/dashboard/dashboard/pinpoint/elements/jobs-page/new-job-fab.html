@@ -126,9 +126,9 @@ found in the LICENSE file.
           <p class="error">[[error]]
         </template>
         <iron-ajax method="post" headers="[[authHeaders]]" auto url="/api/config" loading="{{configLoading}}" last-response="{{config}}"></iron-ajax>
-        <iron-ajax method="post" headers="[[authHeaders]]" auto url="https://chromeperf.appspot.com/api/test_suites" loading="{{suitesLoading}}" last-response="{{testSuites}}"></iron-ajax>
+        <iron-ajax method="post" headers="[[authHeaders]]" auto url="{{generateChromeperfUrl('/api/test_suites')}}" loading="{{suitesLoading}}" last-response="{{testSuites}}"></iron-ajax>
         <template is="dom-if" if="{{validBenchmark(benchmark)}}">
-          <iron-ajax method="post" headers="[[authHeaders]]" auto url="https://chromeperf.appspot.com/api/describe" params="{{describeParams(benchmark)}}" loading="{{benchmarkConfigLoading}}" last-response="{{benchmarkConfig}}"></iron-ajax>
+          <iron-ajax method="post" headers="[[authHeaders]]" auto url="{{generateChromeperfUrl('/api/describe')}}" params="{{describeParams(benchmark)}}" loading="{{benchmarkConfigLoading}}" last-response="{{benchmarkConfig}}"></iron-ajax>
         </template>
         <template is="dom-if" if="[[hasJob(job)]]">
           <iron-ajax method="post" headers="[[authHeaders]]" auto url="/api/commits" params="{{commitsParams(job)}}" loading="{{commitRangeLoading}}" last-response="{{commitsList}}"></iron-ajax>
@@ -287,9 +287,6 @@ found in the LICENSE file.
             <paper-input name="project" value="{{project::input}}" label="Monorail Project"></paper-input>
             <paper-input name="bug_id" value="{{bug_id}}" label="Bug ID"></paper-input>
 
-            <paper-checkbox name="experimental_execution_engine">
-              Use experimental execution engine.
-            </paper-checkbox>
             <paper-input name="batch_id" value="{{batch_id}}" label="Batch ID"></paper-input>
           </form>
         </iron-form>
@@ -495,6 +492,15 @@ found in the LICENSE file.
           start_git_hash: job.arguments.start_git_hash,
           end_git_hash: job.arguments.end_git_hash
         };
+      },
+
+      generateChromeperfUrl(api) {
+        if (window.location.href.includes('-stage')) {
+          return "https://chromeperf-stage.uc.r.appspot.com" + api;
+        }
+        else {
+          return "https://chromeperf.appspot.com" + api;
+        }
       },
 
       describeParams(benchmark) {

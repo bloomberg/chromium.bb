@@ -16,6 +16,7 @@
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> дададзены</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Спампоўка прыпынена</translation>
+<translation id="1409426117486808224">Спрошчаны выгляд адкрытых укладак</translation>
 <translation id="1415402041810619267">URL-адрас абрэзаны</translation>
 <translation id="1446450296470737166">Дазв. поўны кантроль MIDI-прылад</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -52,8 +53,10 @@
 <translation id="2253414712144136228">Выдаліць: <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Пытацца, калі сайт спрабуе выявіць прылады Bluetooth паблізу (рэкамендуецца)</translation>
 <translation id="2315043854645842844">Аперацыйная сістэма не падтрымлівае выбар сертыфіката кліента.</translation>
+<translation id="2321958826496381788">Перацягвайце паўзунок, пакуль гэты тэкст не будзе зручна чытаць. Пасля падвойнага націскання на абзац тэкст павінен быць як мінімум такім вялікім.</translation>
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2379925928934107488">Калі Chrome выкарыстоўвае цёмную тэму, прымяняць яе да сайтаў (калі гэта магчыма)</translation>
+<translation id="2387895666653383613">Маштаб тэксту</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}one{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}few{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}many{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}other{Дазволены <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> і яшчэ <ph name="NUM_MORE" />}}</translation>
 <translation id="2434158240863470628">Спампоўванне завершана <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -74,6 +77,7 @@
 <translation id="2687403674020088961">Блакіраваць усе файлы cookie (не рэкамендуецца)</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
 <translation id="2717722538473713889">Адрасы электроннай пошты</translation>
+<translation id="2750481671343847896">Сайты могуць паказваць запыты на ўваход ад сэрвісаў ідэнтыфікацыі.</translation>
 <translation id="2785051990912111074">Будуць выдалены файлы cookie для вэб-сайта <ph name="WEBSITE" /></translation>
 <translation id="2822354292072154809">Сапраўды скінуць усе дазволы сайта для <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -109,9 +113,11 @@
 <translation id="3763247130972274048">Каб пераматаць відэа на 10 с назад або наперад, двойчы націсніце на яго з правага або левага боку</translation>
 <translation id="3797520601150691162">Не прымяняць цёмную тэму да канкрэтнага сайта</translation>
 <translation id="381841723434055211">Нумары тэлефонаў</translation>
+<translation id="3826050100957962900">Уваход праз староннія сэрвісы</translation>
 <translation id="3835233591525155343">Выкарыстанне вамі прылады</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Перайсці ўперад</translation>
+<translation id="3895926599014793903">Прымусовае ўключэнне павелічэння</translation>
 <translation id="3955193568934677022">Дазволіць сайтам прайграваць абароненае змесціва (рэкамендуецца)</translation>
 <translation id="3967822245660637423">Спампоўка завершана</translation>
 <translation id="3987993985790029246">Скапіраваць спасылку</translation>
@@ -119,6 +125,7 @@
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4008040567710660924">Дазвол выкарыстання файлаў cookie ад канкрэтнага сайта.</translation>
 <translation id="4046123991198612571">Наступны трэк</translation>
+<translation id="4149994727733219643">Спрошчаны выгляд для вэб-старонак</translation>
 <translation id="4165986682804962316">Налады сайта</translation>
 <translation id="4194328954146351878">Пытацца, перш чым дазваляць сайтам праглядаць і змяняць інфармацыю на прыладах NFC (рэкамендуецца)</translation>
 <translation id="4200726100658658164">Адкрыць налады месцазнаходжання</translation>
@@ -171,6 +178,7 @@
 <translation id="5354152178998424783">Будуць выдалены файлы cookie і даныя (<ph name="DATASIZE" />), захаваныя сайтамі.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(і яшчэ 1)}one{(і яшчэ #)}few{(і яшчэ #)}many{(і яшчэ #)}other{(і яшчэ #)}}</translation>
 <translation id="5403592356182871684">Імёны</translation>
+<translation id="5412236728747081950">Гэты сайт выкарыстоўвае інфармацыю пра вашы дзеянні ў Chrome, каб паказваць вам больш адпаведную вашым інтарэсам рэкламу</translation>
 <translation id="5438097262470833822">Будуць скінуты дазволы для вэб-сайта <ph name="WEBSITE" /></translation>
 <translation id="5489227211564503167">Прайшло часу: <ph name="ELAPSED_TIME" /> з <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Блакіраваць рэкламу на сайтах, якія паказваюць назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
@@ -182,6 +190,7 @@
 <translation id="5556459405103347317">Перазагрузіць</translation>
 <translation id="5596627076506792578">Дадатковыя параметры</translation>
 <translation id="5649053991847567735">Аўтаматычнае спампоўванне</translation>
+<translation id="5668404140385795438">Перавызначаць запыт вэб-сайта на прадухіленне павелічэння маштабу</translation>
 <translation id="5677928146339483299">Заблакіравана</translation>
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
 <translation id="5690795753582697420">Камера выключана ў наладах Android</translation>
@@ -228,6 +237,7 @@
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6689172468748959065">Фота профілю</translation>
 <translation id="6697925417670533197">Актыўныя спампоўкі</translation>
+<translation id="6722828510648505498">Блакіраваць запыты на ўваход ад сэрвісаў ідэнтыфікацыі.</translation>
 <translation id="6746124502594467657">Перамясціць ніжэй</translation>
 <translation id="6749077623962119521">Скінуць дазволы?</translation>
 <translation id="6766622839693428701">Правядзіце пальцам уніз, каб закрыць.</translation>
@@ -237,14 +247,17 @@
 <translation id="6912998170423641340">Заблакіраваць сайтам доступ да чытання тэксту і відарысаў з буфера абмену</translation>
 <translation id="6945221475159498467">Выбраць</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="6981982820502123353">Спец. магчымасці</translation>
 <translation id="6992289844737586249">Пытацца, перш чым дазволіць сайтам выкарыстоўваць мікрафон (рэкамендуецца)</translation>
 <translation id="7000754031042624318">Выключана ў наладах Android</translation>
 <translation id="7016516562562142042">Дазволена для бягучай пошукавай сістэмы</translation>
+<translation id="702463548815491781">Рэкамендуецца, калі ўключаны TalkBack або доступ праз пераключальнікі</translation>
 <translation id="7053983685419859001">Заблакіраваць</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбраны 1 элемент}one{Выбраны # элемент}few{Выбрана # элементы}many{Выбрана # элементаў}other{Выбрана # элемента}}</translation>
 <translation id="7087918508125750058">Выбрана: <ph name="ITEM_COUNT" />.  Параметры знаходзяцца ўверсе экрана</translation>
 <translation id="7141896414559753902">Заблакіраваць сайтам паказ выплыўных вокнаў і перанакіраванні (рэкамендуецца)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
+<translation id="7180611975245234373">Абнавіць</translation>
 <translation id="723171743924126238">Выберыце відарысы</translation>
 <translation id="7243308994586599757">Параметры знаходзяцца ў ніжняй частцы экрана</translation>
 <translation id="7250468141469952378">Выбрана: <ph name="ITEM_COUNT" /></translation>
@@ -290,6 +303,7 @@
 <translation id="8211406090763984747">Падключэнне бяспечнае</translation>
 <translation id="8249310407154411074">Перамясціць уверх</translation>
 <translation id="8261506727792406068">Выдаліць</translation>
+<translation id="8284326494547611709">Субцітры</translation>
 <translation id="8300705686683892304">Пад кіраваннем праграмы</translation>
 <translation id="8324158725704657629">Больш не пытацца</translation>
 <translation id="8372893542064058268">Дазволіць фонавую сінхранізацыю для канкрэтнага сайта.</translation>
@@ -297,7 +311,9 @@
 <translation id="83792324527827022">Сайт выкарыстоўвае камеру і мікрафон</translation>
 <translation id="8380167699614421159">Гэты сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
+<translation id="8409345997656833551">Апавяшчаць, калі артыкул можна адкрыць у спрошчаным выглядзе</translation>
 <translation id="8425213833346101688">Змяніць</translation>
+<translation id="8428213095426709021">Налады</translation>
 <translation id="8441146129660941386">Перайсці назад</translation>
 <translation id="8444433999583714703">Каб даць праграме "<ph name="APP_NAME" />" доступ да даных пра ваша месцазнаходжанне, уключыце апошнія ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Адклікаць дазвол на доступ да прылады</translation>

@@ -82,6 +82,7 @@ add_spvtools_unittest(TARGET opt
        propagator_test.cpp
        reduce_load_size_test.cpp
        redundancy_elimination_test.cpp
+       remove_dontinline_test.cpp
 	   remove_unused_interface_variables_test.cpp
        register_liveness.cpp
        relax_float_ops_test.cpp
@@ -91,9 +92,10 @@ add_spvtools_unittest(TARGET opt
        scalar_replacement_test.cpp
        set_spec_const_default_value_test.cpp
        simplification_test.cpp
+       spread_volatile_semantics_test.cpp
        strength_reduction_test.cpp
        strip_debug_info_test.cpp
-       strip_reflect_info_test.cpp
+        strip_nonsemantic_info_test.cpp
        struct_cfg_analysis_test.cpp
        type_manager_test.cpp
        types_test.cpp

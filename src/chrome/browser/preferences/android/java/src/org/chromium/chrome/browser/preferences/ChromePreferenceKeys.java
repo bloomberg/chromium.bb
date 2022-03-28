@@ -344,8 +344,8 @@ public final class ChromePreferenceKeys {
     public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
     public static final String FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME = "first_run_signin_account_name";
     public static final String FIRST_RUN_FLOW_SIGNIN_COMPLETE = "first_run_signin_complete";
-    // Needed by ChromeBackupAgent
     public static final String FIRST_RUN_FLOW_SIGNIN_SETUP = "first_run_signin_setup";
+    // Needed by ChromeBackupAgent
     public static final String FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE = "lightweight_first_run_flow";
     public static final String FIRST_RUN_SKIP_WELCOME_PAGE = "skip_welcome_page";
     public static final String FIRST_RUN_SKIPPED_BY_POLICY = "Chrome.FirstRun.SkippedByPolicy";
@@ -552,6 +552,11 @@ public final class ChromePreferenceKeys {
 
     public static final String NOTIFICATION_PERMISSION_RATIONALE_TIMESTAMP_KEY =
             "Chrome.NotificationPermission.RationaleTimestamp";
+
+    // Number of times we've showed any prompt (either Android UI or Chrome rationale) related to
+    // the notification permission.
+    public static final String NOTIFICATION_PERMISSION_REQUEST_COUNT =
+            "Chrome.NotificationPermission.RequestCount";
 
     public static final String NTP_SNIPPETS_IS_SCHEDULED = "ntp_snippets.is_scheduled";
 
@@ -1070,6 +1075,7 @@ public final class ChromePreferenceKeys {
                 MULTI_INSTANCE_TITLE.pattern(),
                 MULTI_INSTANCE_URL.pattern(),
                 NOTIFICATION_PERMISSION_RATIONALE_TIMESTAMP_KEY,
+                NOTIFICATION_PERMISSION_REQUEST_COUNT,
                 OFFLINE_INDICATOR_V2_WALL_TIME_SHOWN_MS,
                 OFFLINE_INDICATOR_V2_LAST_UPDATE_WALL_TIME_MS,
                 OFFLINE_INDICATOR_V2_TIME_IN_FOREGROUND_MS,

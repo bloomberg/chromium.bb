@@ -10,7 +10,6 @@
 
 #include "experimental/graphite/src/CommandBuffer.h"
 #include "experimental/graphite/src/GraphicsPipelineDesc.h"
-#include "experimental/graphite/src/ResourceCache.h"
 #include "experimental/graphite/src/ResourceTypes.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkTileMode.h"
@@ -28,7 +27,10 @@ class Caps;
 class GlobalCache;
 class Gpu;
 class GraphicsPipeline;
+class GraphiteResourceKey;
+class ResourceCache;
 class Sampler;
+class SingleOwner;
 class Texture;
 class TextureInfo;
 
@@ -41,8 +43,14 @@ public:
     sk_sp<GraphicsPipeline> findOrCreateGraphicsPipeline(const GraphicsPipelineDesc&,
                                                          const RenderPassDesc&);
 
-    sk_sp<Texture> findOrCreateTexture(SkISize, const TextureInfo&);
+    sk_sp<Texture> findOrCreateScratchTexture(SkISize, const TextureInfo&);
     virtual sk_sp<Texture> createWrappedTexture(const BackendTexture&) = 0;
+
+    sk_sp<Texture> findOrCreateDepthStencilAttachment(SkISize dimensions,
+                                                      const TextureInfo&);
+
+    sk_sp<Texture> findOrCreateDiscardableMSAAAttachment(SkISize dimensions,
+                                                         const TextureInfo&);
 
     sk_sp<Buffer> findOrCreateBuffer(size_t size, BufferType type, PrioritizeGpuReads);
 
@@ -67,6 +75,10 @@ private:
                                          SkTileMode xTileMode,
                                          SkTileMode yTileMode) = 0;
 
+    sk_sp<Texture> findOrCreateTextureWithKey(SkISize dimensions,
+                                              const TextureInfo& info,
+                                              const GraphiteResourceKey& key);
+
     class GraphicsPipelineCache {
     public:
         GraphicsPipelineCache(ResourceProvider* resourceProvider);
@@ -89,7 +101,7 @@ private:
         ResourceProvider* fResourceProvider;
     };
 
-    ResourceCache fResourceCache;
+    sk_sp<ResourceCache> fResourceCache;
     sk_sp<GlobalCache> fGlobalCache;
 
     // Cache of GraphicsPipelines

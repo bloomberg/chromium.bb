@@ -37,31 +37,17 @@
  * For a detailed writeup on the overflow resolution algorithm see:
  * docs/repacker.md
  */
-
 struct graph_t
 {
   struct vertex_t
   {
-    vertex_t () :
-        distance (0),
-        space (0),
-        parents (),
-        start (0),
-        end (0),
-        priority(0) {}
-
-    void fini () {
-      obj.fini ();
-      parents.fini ();
-    }
-
     hb_serialize_context_t::object_t obj;
-    int64_t distance;
-    int64_t space;
+    int64_t distance = 0 ;
+    int64_t space = 0 ;
     hb_vector_t<unsigned> parents;
-    unsigned start;
-    unsigned end;
-    unsigned priority;
+    unsigned start = 0;
+    unsigned end = 0;
+    unsigned priority = 0;
 
     bool is_shared () const
     {
@@ -153,7 +139,8 @@ struct graph_t
    * the 'packed' object stack used internally in the
    * serializer
    */
-  graph_t (const hb_vector_t<hb_serialize_context_t::object_t *>& objects)
+  template<typename T>
+  graph_t (const T& objects)
       : parents_invalid (true),
         distance_invalid (true),
         positions_invalid (true),
@@ -186,7 +173,7 @@ struct graph_t
 
   ~graph_t ()
   {
-    vertices_.fini_deep ();
+    vertices_.fini ();
   }
 
   bool in_error () const
@@ -309,7 +296,7 @@ struct graph_t
     remap_all_obj_indices (id_map, &sorted_graph);
 
     hb_swap (vertices_, sorted_graph);
-    sorted_graph.fini_deep ();
+    sorted_graph.fini ();
   }
 
   /*
@@ -369,7 +356,7 @@ struct graph_t
     remap_all_obj_indices (id_map, &sorted_graph);
 
     hb_swap (vertices_, sorted_graph);
-    sorted_graph.fini_deep ();
+    sorted_graph.fini ();
   }
 
   /*
@@ -871,7 +858,7 @@ struct graph_t
     // Redundant ones are filtered out later on by the visited set.
     // According to https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
     // for practical performance this is faster then using a more advanced queue
-    // (such as a fibonaacci queue) with a fast decrease priority.
+    // (such as a fibonacci queue) with a fast decrease priority.
     for (unsigned i = 0; i < vertices_.length; i++)
     {
       if (i == vertices_.length - 1)
@@ -1111,8 +1098,9 @@ struct graph_t
   hb_vector_t<unsigned> num_roots_for_space_;
 };
 
-static bool _try_isolating_subgraphs (const hb_vector_t<graph_t::overflow_record_t>& overflows,
-                                      graph_t& sorted_graph)
+static inline
+bool _try_isolating_subgraphs (const hb_vector_t<graph_t::overflow_record_t>& overflows,
+                               graph_t& sorted_graph)
 {
   unsigned space = 0;
   hb_set_t roots_to_isolate;
@@ -1160,9 +1148,10 @@ static bool _try_isolating_subgraphs (const hb_vector_t<graph_t::overflow_record
   return true;
 }
 
-static bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& overflows,
-                                hb_set_t& priority_bumped_parents,
-                                graph_t& sorted_graph)
+static inline
+bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& overflows,
+                         hb_set_t& priority_bumped_parents,
+                         graph_t& sorted_graph)
 {
   bool resolution_attempted = false;
 
@@ -1220,8 +1209,9 @@ static bool _process_overflows (const hb_vector_t<graph_t::overflow_record_t>& o
  * For a detailed writeup describing how the algorithm operates see:
  * docs/repacker.md
  */
+template<typename T>
 inline hb_blob_t*
-hb_resolve_overflows (const hb_vector_t<hb_serialize_context_t::object_t *>& packed,
+hb_resolve_overflows (const T& packed,
                       hb_tag_t table_tag,
                       unsigned max_rounds = 20) {
   // Kahn sort is ~twice as fast as shortest distance sort and works for many fonts
