@@ -35,6 +35,16 @@
         "sha": "c353841ee6e359002f5977f742894107fdf947b4"
       }
     },
+    "src/chrome/build/pgo_profiles": {
+      "chrome-win32-4758-1643823424-6fc894015b2aaf7744e49a56535d288003ad9a98.profdata": {
+        "sha": "615769e97138294de698dc0202a10d2113ebb1dd",
+        "type": "7z"
+      },
+      "chrome-win64-4758-1643823424-b758aa4bd073b60f90ff8b6ebefd4c816ce2ee8f.profdata": {
+        "sha": "62fa7e91694a590a1a5be66e2db7315b73cbe7c3",
+        "type": "7z"
+      }
+    },
     "src/gpu/config": {
       "gpu_lists_version.h": "ad10f852487b92422de49a9a2ec0e69b4f1d0f74"
     },
