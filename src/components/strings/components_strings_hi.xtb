@@ -977,6 +977,7 @@
 <translation id="3969052498612555048">क्या आपको ओटीपी कोड नहीं मिला? <ph name="BEGIN_LINK" />नया कोड पाएं<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> को ब्लॉक किया गया है</translation>
+<translation id="3978338123949022456">खोज मोड, <ph name="KEYWORD_SUFFIX" /> को खोजने के लिए क्वेरी लिखें और Enter दबाएं</translation>
 <translation id="3986705137476756801">अभी के लिए लाइव कैप्शन की सुविधा बंद करें</translation>
 <translation id="3987940399970879459">एक एमबी से कम</translation>
 <translation id="3990250421422698716">जोग ऑफ़सेट</translation>
@@ -1000,7 +1001,6 @@
 <translation id="4075941231477579656">टच आईडी</translation>
 <translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट यूआरएल का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
 <translation id="4082393374666368382">सेटिंग - प्रबंधन</translation>
-<translation id="4084120443451129199">Search मोड, <ph name="KEYWORD_SUFFIX" /> खोजने के लिए, Enter दबाएं</translation>
 <translation id="4087296516249690906">इवेंट बनाने के लिए बटन, Google Calendar में जल्दी से नया इवेंट बनाने के लिए Enter दबाएं</translation>
 <translation id="4088981014127559358">साइड 1 इमेज Y शिफ़्ट</translation>
 <translation id="4089152113577680600">ट्रे 14</translation>

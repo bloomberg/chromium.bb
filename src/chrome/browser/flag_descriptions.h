@@ -1225,6 +1225,9 @@ extern const char kPrivacyAdvisorDescription[];
 extern const char kPrivacyGuideName[];
 extern const char kPrivacyGuideDescription[];
 
+extern const char kPrivacySandboxAdsAPIsOverrideName[];
+extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
+
 extern const char kPrivacySandboxV3Name[];
 extern const char kPrivacySandboxV3Description[];
 
@@ -1313,6 +1316,9 @@ extern const char kSidePanelDescription[];
 extern const char kSidePanelDragAndDropFlagId[];
 extern const char kSidePanelDragAndDropName[];
 extern const char kSidePanelDragAndDropDescription[];
+
+extern const char kSidePanelImprovedClobberingName[];
+extern const char kSidePanelImprovedClobberingDescription[];
 
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];

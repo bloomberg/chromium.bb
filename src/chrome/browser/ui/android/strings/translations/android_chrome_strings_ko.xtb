@@ -49,6 +49,7 @@
 <translation id="1239792311949352652">이 페이지를 빠르게 공유합니다. 바로가기를 수정하려면 설정으로 이동하세요.</translation>
 <translation id="1240190568154816272">Chrome 사용 팁</translation>
 <translation id="1240288207750131269"><ph name="LANG" /> 로드 중</translation>
+<translation id="1240903469550363138">계속하려면 <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />에서 내 이름, 이메일 주소, 프로필 사진을 이 사이트와 공유해야 합니다. 이 사이트의 <ph name="BEGIN_LINK1" />개인정보처리방침<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />서비스 약관<ph name="END_LINK2" />을 확인하세요.</translation>
 <translation id="1242883863226959074">기기</translation>
 <translation id="124678866338384709">현재 탭 닫기</translation>
 <translation id="1246905108078336582">클립보드에서 추천 항목을 삭제하시겠습니까?</translation>
@@ -170,6 +171,7 @@
 <translation id="1974060860693918893">고급</translation>
 <translation id="1984417487208496350">보호되지 않음(권장되지 않음)</translation>
 <translation id="1986685561493779662">이미 사용 중인 이름입니다.</translation>
+<translation id="1995884366040846621">계속하려면 <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />에서 내 이름, 이메일 주소, 프로필 사진을 이 사이트와 공유해야 합니다. 이 사이트의 <ph name="BEGIN_LINK1" />개인정보처리방침<ph name="END_LINK1" />을 확인하세요.</translation>
 <translation id="2000419248597011803">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
 <translation id="200114059308480249">Google 검색어에 주변 텍스트를 포함하시겠습니까?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{파일 #개}other{파일 #개}}</translation>
@@ -580,7 +582,6 @@
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4321739720395210191">카메라를 열 수 없습니다. 기기를 다시 시작한 후 시도해 보세요.</translation>
-<translation id="4324158606177867698">삭제한 관심분야가 여기에 표시됩니다.</translation>
 <translation id="433213510553688132">팔로우 중...</translation>
 <translation id="4335835283689002019">세이프 브라우징 사용 안함</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
@@ -818,7 +819,6 @@
 <translation id="5665379678064389456"><ph name="APP_NAME" />에 일정 만들기</translation>
 <translation id="5683547024293500885">Chrome에서 업데이트를 확인할 수 없음</translation>
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
-<translation id="5692329390578659217">계속하려면 <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />에서 내 이름, 이메일, 주소, 프로필 사진을 이 사이트와 공유해야 합니다. 이 사이트의 <ph name="BEGIN_LINK1" />개인정보처리방침<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />서비스 약관<ph name="END_LINK2" />을 확인하세요.</translation>
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
 <translation id="5696597120588531049">Chrome은 정보 유출, 안전하지 않은 웹사이트 등으로부터 사용자를 보호해 줍니다.</translation>
 <translation id="5697688514913266141">파일이 <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />에 저장됩니다. <ph name="BEGIN_LINK2" />수정<ph name="END_LINK2" /></translation>
@@ -1152,7 +1152,6 @@
 <translation id="7474822150871987353">페이지에서 나가지 않고도 웹사이트의 주제에 관해 알아봅니다. 페이지에서 하나 이상의 단어를 선택하여 검색합니다.</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
 <translation id="7475688122056506577">SD 카드가 없습니다. 일부 파일이 누락되었을 수 있습니다.</translation>
-<translation id="7477262822945323753">계속하려면 <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />에서 내 이름, 이메일, 주소, 프로필 사진을 이 사이트와 공유해야 합니다. 이 사이트의 <ph name="BEGIN_LINK1" />개인정보처리방침<ph name="END_LINK1" />을 확인하세요.</translation>
 <translation id="7479104141328977413">탭 관리</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7482656565088326534">미리보기 탭</translation>
@@ -1199,6 +1198,7 @@
 <translation id="7704317875155739195">검색어 및 URL 자동 완성</translation>
 <translation id="770741401784017797">GIF 생성</translation>
 <translation id="7707922173985738739">모바일 데이터 사용</translation>
+<translation id="7709094866268987903">삭제한 관심분야가 여기에 표시됩니다.</translation>
 <translation id="7725024127233776428">북마크한 페이지가 여기에 표시됩니다.</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" />에서 공유된 텍스트</translation>
 <translation id="7761849928583394409">날짜 및 시간 선택</translation>

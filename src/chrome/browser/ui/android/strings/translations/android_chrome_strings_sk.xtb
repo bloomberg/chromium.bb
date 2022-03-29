@@ -49,6 +49,7 @@
 <translation id="1239792311949352652">Skratka na rýchle zdieľanie tejto stránky. Ak chcete skratku upraviť, prejdite do Nastavení.</translation>
 <translation id="1240190568154816272">Tipy pre Chrome</translation>
 <translation id="1240288207750131269">Načítava sa <ph name="LANG" /></translation>
+<translation id="1240903469550363138">Ak chcete pokračovať, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s týmto webom zdieľať vaše meno, e‑mailovú adresu a profilovú fotku. Pozrite si <ph name="BEGIN_LINK1" />pravidlá ochrany súkromia<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />zmluvné podmienky<ph name="END_LINK2" /> tohto webu.</translation>
 <translation id="1242883863226959074">zariadenie</translation>
 <translation id="124678866338384709">Zavretie aktuálnej karty</translation>
 <translation id="1246905108078336582">Chcete odstrániť návrh zo schránky?</translation>
@@ -67,6 +68,9 @@
 <translation id="1320912611264252795">Priečinky s postupom uloženia záložky sú otvorené na úplnú výšku</translation>
 <translation id="1327257854815634930">História navigácie je otvorená</translation>
 <translation id="1331212799747679585">Chrome sa nedá aktualizovať. Ďalšie možnosti</translation>
+<translation id="1332100670807501334">Meranie reklám umožňuje webom, ktoré navštívite, požadovať od Chromu údaje, ktoré im pomáhajú merať výkonnosť reklám. Meranie reklám obmedzuje sledovanie na rôznych weboch presúvaním minimálneho množstva údajov medzi webmi.
+
+Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), odstránite aj spojené údaje merania. <ph name="BEGIN_LINK" />Zobraziť históriu prehliadania<ph name="END_LINK" /></translation>
 <translation id="1332501820983677155">Skratky pre funkcie prehliadača Google Chrome</translation>
 <translation id="1344653310988386453">Zahrnúť odkaz na zvýraznenie</translation>
 <translation id="1347468774581902829">Spravovať aktivitu</translation>
@@ -114,6 +118,7 @@
 Na základe vašej interakcie s určitým webom, ako je pravidelné prihlasovanie sa do účtu, môže daný web vydať vášmu prehliadaču token dôveryhodnosti. Ak neskôr ďalšie weby, ktoré navštívite, skontrolujú a nájdu platný token dôveryhodnosti, budú vás s vyššou pravdepodobnosťou považovať za osobu a nie robota.
 
 Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nejde podľa nich zistiť vaša totožnosť.</translation>
+<translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Ako môžete spravovať svoje údaje:<ph name="END_BOLD" /> v rámci ochrany vášho súkromia automaticky odstraňujeme záujmy, ktoré sú staršie ako štyri týždne. Pri ďalšom prehliadaní sa v zozname môže znova zobraziť určitý záujem. Prípadne môžete odstrániť záujmy, ktoré nemá Chrome posudzovať.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Odstrániť 1 vybranú položku}few{Odstrániť # vybrané položky}many{Odstrániť # vybranej položky}other{Odstrániť # vybraných položiek}}</translation>
 <translation id="1633659023549081553">Objavte nový obsah na domovskej stránke Chromu</translation>
 <translation id="1641113438599504367">Bezpečné prehliadanie</translation>
@@ -146,6 +151,9 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nejde podľa
 <translation id="1829244130665387512">Nájsť na stránke</translation>
 <translation id="1832459821645506983">Áno, súhlasím</translation>
 <translation id="1849863543394887018">Upozornenia môžete vypnúť v nastaveniach</translation>
+<translation id="1854311313115643875">Keď sú skúšobné obdobia zapnuté, meranie reklám umožňuje webom, ktoré navštívite, požadovať od Chromu údaje, ktoré im pomáhajú merať výkonnosť reklám. Meranie reklám obmedzuje sledovanie na rôznych weboch presúvaním minimálneho množstva údajov medzi webmi.
+
+Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), odstránite aj spojené údaje merania. <ph name="BEGIN_LINK" />Zobraziť históriu prehliadania<ph name="END_LINK" /></translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
 <translation id="1883903952484604915">Moje súbory</translation>
 <translation id="189358972401248634">Ďalšie jazyky</translation>
@@ -170,6 +178,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nejde podľa
 <translation id="1974060860693918893">Rozšírené</translation>
 <translation id="1984417487208496350">Bez ochrany (neodporúča sa)</translation>
 <translation id="1986685561493779662">Názov už existuje</translation>
+<translation id="1995884366040846621">Ak chcete pokračovať, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s týmto webom zdieľať vaše meno, e‑mailovú adresu a profilovú fotku. Pozrite si <ph name="BEGIN_LINK1" />pravidlá ochrany súkromia<ph name="END_LINK1" /> tohto webu.</translation>
 <translation id="2000419248597011803">Odošle niektoré súbory cookie a vyhľadávania z panela s adresou a vyhľadávacieho poľa do vášho predvoleného vyhľadávača</translation>
 <translation id="200114059308480249">Chcete zahŕňať okolitý text vo vyhľadávaniach na Googli?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# súbor}few{# súbory}many{# Files}other{# súborov}}</translation>
@@ -309,6 +318,7 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="2746842245914314523">Viac o týchto funkciách sa dozviete v nastaveniach Chromu. V rámci skúšobného obdobia nemusí byť vaša interakcia s webmi súkromnejšia ako bez týchto nových funkcií.</translation>
 <translation id="2760989362628427051">Zapnúť tmavý motív, keď je v zariadení zapnutý tmavý motív alebo šetrič batérie</translation>
 <translation id="2762000892062317888">práve teraz</translation>
+<translation id="2765569104201273438">Počas experimentu bude Chrome odhadovať témy, ktoré by vás mohli zaujímať. Potom weby, ktoré navštívite, vám na základe týchto údajov môžu zobrazovať relevantné reklamy bez zistenia vašej totožnosti. Záujmy sú založené na vašej nedávnej histórii prehliadania a môžete si ich zobraziť a spravovať.</translation>
 <translation id="276969039800130567">Prihlásený účet <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2776236159752647997">Ďalšie nastavenia týkajúce sa ochrany súkromia, zabezpečenia a zhromažďovania údajov nájdete v sekcii <ph name="BEGIN_LINK" />Služby Googlu<ph name="END_LINK" /></translation>
 <translation id="2777555524387840389">Zostáva: <ph name="SECONDS" /> s</translation>
@@ -580,7 +590,6 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="4307992518367153382">Základy</translation>
 <translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="4321739720395210191">Vaša kamera sa nedá otvoriť. Reštartujte zariadenie a skúste to znova.</translation>
-<translation id="4324158606177867698">Tu sa budú zobrazovať odstránené záujmy</translation>
 <translation id="433213510553688132">Sledované…</translation>
 <translation id="4335835283689002019">Bezpečné prehliadanie je vypnuté</translation>
 <translation id="4351244548802238354">Zavrieť dialógové okno</translation>
@@ -792,6 +801,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5514904542973294328">Deaktivované správcom tohto zariadenia</translation>
 <translation id="5515439363601853141">Heslo sa zobrazí po odomknutí</translation>
 <translation id="5517095782334947753">Máte záložky, históriu, heslá a ďalšie nastavenia z účtu <ph name="FROM_ACCOUNT" />.</translation>
+<translation id="5524761631371622910">Keď sú zapnuté skúšobné obdobia a ak vás Chrome náhodne zapojil do aktívneho skúšobného obdobia, vaša história prehliadania ovplyvňuje zobrazované reklamy a záujmy, ktoré sú odhadnuté nižšie. Chrome priebežne odstraňuje vaše záujmy každý mesiac, aby tak chránil vaše súkromie.</translation>
 <translation id="5524843473235508879">Presmerovanie bolo zablokované.</translation>
 <translation id="5548606607480005320">Kontrola bezpečnosti</translation>
 <translation id="5555525474779371165">Výber ochrany v rámci Bezpečného prehliadania</translation>
@@ -818,13 +828,13 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5665379678064389456">Vytvorte udalosť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">Chrome nemôže skontrolovať dostupnosť aktualizácií</translation>
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
-<translation id="5692329390578659217">Ak chcete pokračovať, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s týmto webom zdieľať vaše meno, e‑mail, adresu a profilovú fotku. Pozrite si <ph name="BEGIN_LINK1" />pravidlá ochrany súkromia<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />zmluvné podmienky<ph name="END_LINK2" /> tohto webu.</translation>
 <translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
 <translation id="5696597120588531049">Chrome vás môže chrániť pred porušeniami ochrany údajov, nebezpečnými webmi a ďalšími hrozbami</translation>
 <translation id="5697688514913266141">Váš súbor bude uložený do adresára <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Upraviť<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Prepnúť na kartu</translation>
 <translation id="572328651809341494">Nedávne karty</translation>
 <translation id="5726692708398506830">Zväčšenie obsahu na stránke</translation>
+<translation id="5727531838415286053">Ak vás Chrome náhodne zapojil do aktívneho skúšobného obdobia, vaša história prehliadania ovplyvňuje zobrazované reklamy a záujmy, ktoré sú odhadnuté nižšie. Chrome priebežne odstraňuje vaše záujmy každý mesiac, aby tak chránil vaše súkromie. Záujmy sa obnovujú, pokiaľ ich neodstránite.</translation>
 <translation id="5748802427693696783">Prepnuté na štandardné karty</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
 <translation id="5749237766298580851">Vypnuté <ph name="SEPARATOR" /> Neodporúča sa</translation>
@@ -900,6 +910,7 @@ Skúšobné obdobia technológií Privacy Sandbox sú stále v aktívnom vývoj
 <translation id="6085886413119427067">Určuje, ako sa pripojiť k webom prostredníctvom zabezpečeného pripojenia</translation>
 <translation id="6091413777268123602">V rámci skúšobných období technológie Privacy Sandbox môžu weby zobrazovať rovnaké prostredie prehliadania s využitím menšieho množstva vašich údajov. Predstavuje to vyššiu ochranu vášho súkromia a menej sledovania na rôznych weboch. Nové skúšobné obdobia pridáme, keď budú pripravené na testovanie.</translation>
 <translation id="60923314841986378">Zostáva: <ph name="HOURS" /> h</translation>
+<translation id="609511393187302037">Chrome skúma spôsoby, ako obmedziť sledovanie na rôznych weboch a zároveň webom umožniť bojovať proti reklamnému spamu a podvodom.</translation>
 <translation id="6095578583683628124">Ak je Google aj váš predvolený vyhľadávač, budú sa vám zobrazovať lepšie a kontextovo relevantnejšie návrhy</translation>
 <translation id="6108923351542677676">Inštaluje sa...</translation>
 <translation id="6112702117600201073">Obnovenie stránky</translation>
@@ -947,6 +958,11 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6364438453358674297">Odstrániť návrh z histórie?</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> sa otvorí v Chrome. Pokračovaním vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami spoločnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatočnými zmluvnými podmienkami prehliadača Google Chrome a systému Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6380100320871303656">Častejšie prednačítava stránky, ktoré podľa Chromu pravdepodobne navštívite. Toto nastavenie môže zvýšiť spotrebu dát.</translation>
+<translation id="6385407407546870227">Keď sú zapnuté skúšobné obdobia, redukcia spamu a podvodov závisí od tokenov dôveryhodnosti, ktoré pomáhajú webom bojovať proti podvodom a rozlišovať robotov od ľudí.
+
+Na základe vašej interakcie s určitým webom, ako je pravidelné prihlasovanie sa do účtu, môže daný web vydať vášmu prehliadaču token dôveryhodnosti. Ak neskôr ďalšie weby, ktoré navštívite, skontrolujú a nájdu platný token dôveryhodnosti, budú vás s vyššou pravdepodobnosťou považovať za osobu a nie robota.
+
+Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa podľa nich zistiť vaša totožnosť.</translation>
 <translation id="6395288395575013217">ODKAZ</translation>
 <translation id="6397616442223433927">Sme späť online</translation>
 <translation id="6402652558933147609"><ph name="VIOLATED_URL" />: <ph name="ERROR_CODE" /></translation>
@@ -1152,7 +1168,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7474822150871987353">Zistite viac o témach na weboch bez toho, aby ste museli opustiť stránku. Vyberte na stránke jedno či viac slov, čím ich vyhľadáte.</translation>
 <translation id="7475192538862203634">Ak sa vám táto stránka zobrazuje často, skúste použiť tieto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karta sa nenašla. Môžu chýbať niektoré súbory.</translation>
-<translation id="7477262822945323753">Ak chcete pokračovať, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s týmto webom zdieľať vaše meno, e‑mail, adresu a profilovú fotku. Pozrite si <ph name="BEGIN_LINK1" />pravidlá ochrany súkromia<ph name="END_LINK1" /> tohto webu.</translation>
 <translation id="7479104141328977413">Správa kariet</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7482656565088326534">Karta ukážky</translation>
@@ -1199,6 +1214,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7704317875155739195">Automaticky dopĺňať vyhľadávania a webové adresy</translation>
 <translation id="770741401784017797">Vytvára sa gif</translation>
 <translation id="7707922173985738739">Používať mobilné dáta</translation>
+<translation id="7709094866268987903">Tu sa budú zobrazovať záujmy, ktoré odstránite</translation>
 <translation id="7725024127233776428">Tu sa zobrazia vaše stránky uložené ako záložky</translation>
 <translation id="7757787379047923882">Text zdieľaný zo zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Vybrať dátum a čas</translation>
@@ -1342,6 +1358,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8445448999790540984">Heslá sa nepodarilo exportovať</translation>
 <translation id="8446884382197647889">Ďalšie informácie</translation>
 <translation id="8453310803815879010">Spustiť hru s dinosaurom</translation>
+<translation id="8455351369246067579">Chrome dokáže odhadnúť témy, ktoré vás môžu zaujímať. Potom weby, ktoré navštívite, vám na základe týchto údajov môžu zobrazovať relevantné reklamy bez zistenia vašej totožnosti. Záujmy sú založené na vašej nedávnej histórii prehliadania a môžete si ich zobraziť a spravovať.</translation>
 <translation id="8461694314515752532">Šifrovať synchronizované údaje pomocou vlastnej prístupovej frázy synchronizácie</translation>
 <translation id="8466613982764129868">Skontrolujte, či je zariadenie <ph name="TARGET_DEVICE_NAME" /> pripojené k internetu</translation>
 <translation id="8473863474539038330">Adresy a ďalšie údaje</translation>
@@ -1448,6 +1465,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8972098258593396643">Stiahnuť do predvoleného priečinka?</translation>
 <translation id="8987641763863173640">Spravujte nastavenia ukážok videa</translation>
 <translation id="898854820045159673">Reakcia bola pridaná</translation>
+<translation id="8989968390305463310">Vaša história prehliadania ovplyvňuje zobrazované reklamy a záujmy, ktoré sú odhadnuté nižšie. Chrome priebežne automaticky odstraňuje vaše záujmy každý mesiac, aby tak chránil vaše súkromie. Záujmy sa môžu obnoviť, pokiaľ ich neodstránite.</translation>
 <translation id="8993760627012879038">Otvorenie novej karty v režime inkognito</translation>
 <translation id="8996847606757455498">Vybrať iného poskytovateľa</translation>
 <translation id="8998729206196772491">Prihlasujete sa pomocou účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a jej správcovi tým dávate kontrolu nad svojimi údajmi Chromu. Vaše údaje budú natrvalo prepojené s týmto účtom. Odhlásením z Chromu odstránite údaje z príslušného zariadenia, avšak naďalej zostanú uložené vo vašom účte Google.</translation>

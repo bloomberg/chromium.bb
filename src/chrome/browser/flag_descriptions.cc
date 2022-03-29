@@ -2174,6 +2174,11 @@ const char kPrivacyGuideDescription[] =
     "Shows a new subpage in Settings that helps the user to review various "
     "privacy settings.";
 
+const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
+const char kPrivacySandboxAdsAPIsOverrideDescription[] =
+    "Enables Privacy Sandbox APIs: Attribtuion Reporting, Fledge, Topics and "
+    "their associated features.";
+
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
     "Enables an updated Privacy Sandbox UI. Also enables some related "
@@ -2319,6 +2324,11 @@ const char kSidePanelDragAndDropFlagId[] = "side-panel-drag-and-drop";
 const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
 const char kSidePanelDragAndDropDescription[] =
     "Enables drag and drop of bookmarks within the side panel.";
+
+const char kSidePanelImprovedClobberingName[] =
+    "Side panel improved clobbering";
+const char kSidePanelImprovedClobberingDescription[] =
+    "Improves the side panel clobbering experience for RHS side panels.";
 
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
@@ -2585,9 +2595,12 @@ const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
 const char
     kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesDescription[] =
         "When enabled, all cross-origin iframes with zero visibility (either "
-        "display:none or zero area) will be throttled, regardless of whether "
-        "they are same-process or cross-process. When disabled, only cross-"
-        "process iframes will be throttled.";
+        "display:none or zero viewport intersection with non-zero area) will be"
+        " throttled, regardless of whether they are same-process or "
+        "cross-process. When disabled, throttling for cross-process iframes is "
+        "the same, but for same-process iframes throttling only occurs when "
+        "the frame has zero viewport intersection, a non-zero area, and is "
+        "not display:none.";
 
 const char kTouchDragDropName[] = "Touch initiated drag and drop";
 const char kTouchDragDropDescription[] =

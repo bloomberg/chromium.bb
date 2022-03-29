@@ -49,6 +49,7 @@
 <translation id="1239792311949352652">Comparte rapidamente esta páxina. Para editar este atallo, vai a Configuración.</translation>
 <translation id="1240190568154816272">Consellos de Chrome</translation>
 <translation id="1240288207750131269">Cargando <ph name="LANG" /></translation>
+<translation id="1240903469550363138">Para continuar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> compartirá o teu nome, enderezo de correo electrónico e imaxe do perfil con este sitio. Consulta a <ph name="BEGIN_LINK1" />política de privacidade<ph name="END_LINK1" /> e as <ph name="BEGIN_LINK2" />condicións de servizo<ph name="END_LINK2" /> deste sitio.</translation>
 <translation id="1242883863226959074">dispositivo</translation>
 <translation id="124678866338384709">Pechar a pestana actual</translation>
 <translation id="1246905108078336582">Queres quitar a suxestión do portapapeis?</translation>
@@ -170,6 +171,7 @@ Os tokens de confianza melloran a privacidade na Web e non se poden usar para de
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1984417487208496350">Sen protección (non recomendado)</translation>
 <translation id="1986685561493779662">O nome xa existe</translation>
+<translation id="1995884366040846621">Para continuar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> compartirá o teu nome, enderezo de correo electrónico e imaxe do perfil con este sitio. Consulta a <ph name="BEGIN_LINK1" />política de privacidade<ph name="END_LINK1" /> deste sitio.</translation>
 <translation id="2000419248597011803">Envía buscas e cookies da barra de enderezos e da caixa de busca ao motor de busca predeterminado</translation>
 <translation id="200114059308480249">Queres incluír o texto circundante nas buscas de Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ficheiro}other{# ficheiros}}</translation>
@@ -580,7 +582,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4307992518367153382">Opcións básicas</translation>
 <translation id="4320177379694898372">Non hai conexión a Internet</translation>
 <translation id="4321739720395210191">Non se puido abrir a cámara. Reinicia o dispositivo e téntao de novo.</translation>
-<translation id="4324158606177867698">Os intereses que quites aparecerán aquí</translation>
 <translation id="433213510553688132">Seguindo...</translation>
 <translation id="4335835283689002019">A navegación segura está desactivada</translation>
 <translation id="4351244548802238354">Pechar cadro de diálogo</translation>
@@ -818,7 +819,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5665379678064389456">Crea un evento en <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">Chrome non puido buscar actualizacións</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
-<translation id="5692329390578659217">Para continuar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> compartirá o teu nome, o correo electrónico, o enderezo e a imaxe do perfil con este sitio. Consulta a <ph name="BEGIN_LINK1" />política de privacidade<ph name="END_LINK1" /> e as <ph name="BEGIN_LINK2" />condicións de servizo<ph name="END_LINK2" /> deste sitio.</translation>
 <translation id="569536719314091526">Traduce esta páxina a calquera idioma desde o botón Máis opcións</translation>
 <translation id="5696597120588531049">Chrome pode protexerte contra violacións da seguranza dos datos, sitios web que non son seguros e moito máis</translation>
 <translation id="5697688514913266141">O teu ficheiro gardarase en <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Editar<ph name="END_LINK2" />.</translation>
@@ -1152,7 +1152,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7474822150871987353">Obtén información sobre os temas en sitios web sen saír da páxina. Selecciona unha ou varias palabras na páxina para buscalas.</translation>
 <translation id="7475192538862203634">Se esta mensaxe aparece frecuentemente, proba estas <ph name="BEGIN_LINK" />suxestións<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Non se atopou a tarxeta SD. É posible que falten algúns dos teus ficheiros.</translation>
-<translation id="7477262822945323753">Para continuar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> compartirá o teu nome, o correo electrónico, o enderezo e a imaxe do perfil con este sitio. Consulta a <ph name="BEGIN_LINK1" />política de privacidade<ph name="END_LINK1" /> deste sitio.</translation>
 <translation id="7479104141328977413">Xestión de pestanas</translation>
 <translation id="7481312909269577407">Adiante</translation>
 <translation id="7482656565088326534">Pestana de vista previa</translation>
@@ -1199,6 +1198,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7704317875155739195">Completar buscas e URL automaticamente</translation>
 <translation id="770741401784017797">Creando GIF</translation>
 <translation id="7707922173985738739">Utilizaranse datos móbiles</translation>
+<translation id="7709094866268987903">Os intereses que quites mostraranse aquí</translation>
 <translation id="7725024127233776428">As páxinas que engadas aos marcadores aparecerán aquí</translation>
 <translation id="7757787379047923882">O texto compartiuse desde <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Seleccionar data e hora</translation>

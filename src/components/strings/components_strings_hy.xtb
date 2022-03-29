@@ -977,6 +977,7 @@
 <translation id="3969052498612555048">Չե՞ք կարողանում գտնել ձեր կոդը։ <ph name="BEGIN_LINK" />Ստանալ նոր կոդ<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Հաշվարկում…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" />-ն արգելափակված է</translation>
+<translation id="3978338123949022456">Որոնման ռեժիմ, մուտքագրեք հարցումը և սեղմեք Enter՝ <ph name="KEYWORD_SUFFIX" />-ում որոնելու համար</translation>
 <translation id="3986705137476756801">Անջատել Կենդանի ենթագրերը</translation>
 <translation id="3987940399970879459">1 ՄԲ-ից քիչ</translation>
 <translation id="3990250421422698716">Աստիճանական տեղաշարժ</translation>
@@ -1000,7 +1001,6 @@
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Պրոքսի-սերվերի կազմաձևումը նախատեսում է PAC սկրիպտների URL-ների օգտագործում՝ ֆիքսված պրոքսի-սերվերների փոխարեն:</translation>
 <translation id="4082393374666368382">Կարգավորումներ – Կառավարում</translation>
-<translation id="4084120443451129199">Որոնման ռեժիմ։ «<ph name="KEYWORD_SUFFIX" />» որոնելու համար սեղմեք Enter։</translation>
 <translation id="4087296516249690906">«Ստեղծել միջոցառում» կոճակ։ Google Օրացույցում արագ միջոցառում ստեղծելու համար սեղմեք Enter։</translation>
 <translation id="4088981014127559358">Պատկերների տեղաշարժ երեսի կողմից՝ Y առանցքով</translation>
 <translation id="4089152113577680600">Դարակ 14</translation>

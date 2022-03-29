@@ -49,6 +49,7 @@
 <translation id="1239792311949352652">快速分享這個頁面。如要編輯這個捷徑，請前往 [設定]。</translation>
 <translation id="1240190568154816272">Chrome 提示</translation>
 <translation id="1240288207750131269">正在載入<ph name="LANG" /></translation>
+<translation id="1240903469550363138">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件地址和個人資料相片提供給這個網站。查看這個網站的《<ph name="BEGIN_LINK1" />隱私權政策<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />服務條款<ph name="END_LINK2" />》。</translation>
 <translation id="1242883863226959074">裝置</translation>
 <translation id="124678866338384709">關閉目前的分頁</translation>
 <translation id="1246905108078336582">要從剪貼簿中移除建議嗎？</translation>
@@ -168,6 +169,7 @@
 <translation id="1974060860693918893">進階</translation>
 <translation id="1984417487208496350">無防護 (不建議)</translation>
 <translation id="1986685561493779662">這個名稱已有人使用</translation>
+<translation id="1995884366040846621">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件地址和個人資料相片提供給這個網站。查看這個網站的《<ph name="BEGIN_LINK1" />隱私權政策<ph name="END_LINK1" />》。</translation>
 <translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
 <translation id="200114059308480249">要在使用 Google 搜尋時納入前後文嗎？</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
@@ -578,7 +580,6 @@
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4320177379694898372">沒有網際網路連線</translation>
 <translation id="4321739720395210191">無法開啟攝影機，請重新啟動裝置，然後再試一次。</translation>
-<translation id="4324158606177867698">已移除的感興趣主題會顯示在這裡</translation>
 <translation id="433213510553688132">正在設為追蹤…</translation>
 <translation id="4335835283689002019">安全瀏覽功能已關閉</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
@@ -816,7 +817,6 @@
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5683547024293500885">Chrome 無法檢查更新</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
-<translation id="5692329390578659217">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件、地址和個人資料相片提供給這個網站。查看這個網站的《<ph name="BEGIN_LINK1" />隱私權政策<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />服務條款<ph name="END_LINK2" />》。</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
 <translation id="5696597120588531049">Chrome 可確保安全性，例如防範資料侵害事件或封鎖不安全的網站等等</translation>
 <translation id="5697688514913266141">檔案會儲存至「<ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />」。<ph name="BEGIN_LINK2" />編輯<ph name="END_LINK2" />。</translation>
@@ -1150,7 +1150,6 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="7474822150871987353">不必離開原本的網頁，即可查看網站上各主題的資訊。只要選取網頁上的一或多個字詞，就能展開搜尋。</translation>
 <translation id="7475192538862203634">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。部分檔案可能會遺失。</translation>
-<translation id="7477262822945323753">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件、地址和個人資料相片提供給這個網站。查看這個網站的《<ph name="BEGIN_LINK1" />隱私權政策<ph name="END_LINK1" />》。</translation>
 <translation id="7479104141328977413">分頁管理</translation>
 <translation id="7481312909269577407">往前</translation>
 <translation id="7482656565088326534">預覽分頁</translation>
@@ -1197,6 +1196,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="770741401784017797">正在建立 GIF</translation>
 <translation id="7707922173985738739">使用行動數據</translation>
+<translation id="7709094866268987903">你移除的興趣喜好會顯示在這裡</translation>
 <translation id="7725024127233776428">加入書籤的頁面會顯示在這裡</translation>
 <translation id="7757787379047923882">透過「<ph name="DEVICE_NAME" />」分享的文字</translation>
 <translation id="7761849928583394409">選擇日期和時間</translation>
