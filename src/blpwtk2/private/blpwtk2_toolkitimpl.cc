@@ -76,6 +76,7 @@
 #include <sandbox/win/src/win_utils.h>
 #include <sandbox/policy/switches.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
+#include <third_party/blink/public/platform/platform.h>
 #include <third_party/blink/public/platform/web_security_origin.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_bindings.h>
@@ -737,6 +738,11 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
             renderer_io_thread_ = std::make_unique<RendererIOThread>();
             mojo::WaitSet::SetProxy(renderer_io_thread_->proxy());
         }
+
+        // Establish the GPU channel as soon as possible.  Doing it at a later
+        // time can potentially cause a deadlock if the browser thread is busy
+        // doing something else.
+        blink::Platform::Current()->EstablishGpuChannelSync();
     }
 
     else if (isHost && browserV8Enabled && Statics::isOriginalThreadMode()) {
