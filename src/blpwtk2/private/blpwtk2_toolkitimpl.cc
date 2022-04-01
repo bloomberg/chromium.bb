@@ -420,6 +420,10 @@ static std::vector<std::string> concateCmdLineFeatureSwitches(const std::vector<
     IsSwitch(swtStringUtf16, &switchName16, &switchValue16, true);
     std::string switchName = base::UTF16ToASCII(switchName16);
 
+    if (switchName.compare(0, 2, "--") == 0) {
+        switchName = switchName.substr(2);
+    }
+
     if (std::find(featureKeys.begin(), featureKeys.end(), switchName) == featureKeys.end()) {
       res.push_back(swtStringUtf8);
       continue;
@@ -704,6 +708,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
             // Apply command line switches from channel info.
             getSwitchesFromHostChannel(&args, channelInfo);
+            args = concateCmdLineFeatureSwitches(args);
         }
 
         // Apply command line switches to content.
