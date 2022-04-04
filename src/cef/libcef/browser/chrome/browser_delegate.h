@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/base/window_open_disposition.h"
 
 class Browser;
 
@@ -41,6 +42,19 @@ class BrowserDelegate : public content::WebContentsDelegate {
   // Add or remove ownership of the WebContents.
   virtual void SetAsDelegate(content::WebContents* web_contents,
                              bool set_delegate) = 0;
+
+  // Return true to show the status bubble. This should consistently return the
+  // same value for the lifespan of a Browser.
+  virtual bool ShowStatusBubble(bool show_by_default) {
+    return show_by_default;
+  }
+
+  // Return true to handle (or disable) a command. ID values come from
+  // chrome/app/chrome_command_ids.h.
+  virtual bool HandleCommand(int command_id,
+                             WindowOpenDisposition disposition) {
+    return false;
+  }
 };
 
 }  // namespace cef

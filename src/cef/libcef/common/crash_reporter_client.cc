@@ -495,14 +495,14 @@ bool CefCrashReporterClient::ReadCrashConfigFile() {
     };
 
     // Make sure we can fit all possible name/value pairs.
-    static_assert(base::size(ids) * crashpad::Annotation::kValueMaxSize >=
+    static_assert(std::size(ids) * crashpad::Annotation::kValueMaxSize >=
                       3 * 26 /* sizes (small, medium, large) * slots (A to Z) */
                           * (3 + 2 /* key size ("S-A") + delim size ("=,") */
                              + crashpad::Annotation::kNameMaxLength),
                   "Not enough storage for key map");
 
     size_t offset = 0;
-    for (size_t i = 0; i < base::size(ids); ++i) {
+    for (size_t i = 0; i < std::size(ids); ++i) {
       size_t length = std::min(map_keys.size() - offset,
                                crashpad::Annotation::kValueMaxSize);
       ids[i].Set(base::StringPiece(map_keys.data() + offset, length));
@@ -615,22 +615,6 @@ void CefCrashReporterClient::GetProductNameAndVersion(std::string* product_name,
   *version = product_version_;
 }
 
-#if !BUILDFLAG(IS_MAC)
-
-base::FilePath CefCrashReporterClient::GetReporterLogFilename() {
-  return base::FilePath(FILE_PATH_LITERAL("uploads.log"));
-}
-
-bool CefCrashReporterClient::EnableBreakpadForProcess(
-    const std::string& process_type) {
-  return process_type == switches::kRendererProcess ||
-         process_type == switches::kPpapiPluginProcess ||
-         process_type == switches::kZygoteProcess ||
-         process_type == switches::kGpuProcess;
-}
-
-#endif  // !BUILDFLAG(IS_MAC)
-
 bool CefCrashReporterClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
   // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
   // location to write breakpad crash dumps can be set.
@@ -654,21 +638,11 @@ bool CefCrashReporterClient::GetCollectStatsInSample() {
   return true;
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 bool CefCrashReporterClient::ReportingIsEnforcedByPolicy(
     bool* crashpad_enabled) {
   *crashpad_enabled = true;
   return true;
 }
-#endif
-
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-bool CefCrashReporterClient::IsRunningUnattended() {
-  // Crash upload will only be enabled with Breakpad on Linux if this method
-  // returns false.
-  return false;
-}
-#endif
 
 std::string CefCrashReporterClient::GetUploadUrl() {
   return server_url_;
@@ -721,13 +695,6 @@ bool CefCrashReporterClient::EnableBrowserCrashForwarding() {
 }
 #endif
 
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-CefCrashReporterClient::ParameterMap CefCrashReporterClient::FilterParameters(
-    const ParameterMap& parameters) {
-  return crash_report_utils::FilterParameters(parameters);
-}
-#endif
-
 // The new Crashpad Annotation API requires that annotations be declared using
 // static storage. We work around this limitation by defining a fixed amount of
 // storage for each key size and later substituting the actual key name during
@@ -751,7 +718,7 @@ CefCrashReporterClient::ParameterMap CefCrashReporterClient::FilterParameters(
   bool Set##name##Annotation(size_t index, const base::StringPiece& value) { \
     using IDKey = crash_reporter::CrashKeyString<size_>;                     \
     static IDKey ids[] = {IDKEY_ENTRIES(#name)};                             \
-    if (index < base::size(ids)) {                                           \
+    if (index < std::size(ids)) {                                            \
       if (value.empty()) {                                                   \
         ids[index].Clear();                                                  \
       } else {                                                               \

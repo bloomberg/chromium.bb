@@ -271,9 +271,14 @@
   if (cef_browser_delegate_) { \
     return cef_browser_delegate_->name(__VA_ARGS__); \
   }
+#define CALL_CEF_DELEGATE_RESULT(name, result, ...) \
+  if (cef_browser_delegate_) { \
+    result = cef_browser_delegate_->name(__VA_ARGS__); \
+  }
 #else  // !BUILDFLAG(ENABLE_CEF)
 #define CALL_CEF_DELEGATE(name, ...)
 #define CALL_CEF_DELEGATE_RETURN(name, ...)
+#define CALL_CEF_DELEGATE_RESULT(name, result, ...)
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1789,6 +1794,19 @@ bool Browser::TakeFocus(content::WebContents* source, bool reverse) {
   return false;
 }
 
+void Browser::CanDownload(const GURL& url,
+                          const std::string& request_method,
+                          base::OnceCallback<void(bool)> callback) {
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef_browser_delegate_) {
+    cef_browser_delegate_->CanDownload(url, request_method,
+                                       std::move(callback));
+    return;
+  }
+#endif
+  std::move(callback).Run(true);
+}
+
 void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
@@ -2704,12 +2722,19 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
+  bool show_by_default = true;
+
   // In kiosk and exclusive app mode we want to always hide the status bubble.
   if (chrome::IsRunningInAppMode() ||
       (base::FeatureList::IsEnabled(features::kRemoveStatusBarInWebApps) &&
        web_app::AppBrowserController::IsWebApp(this))) {
-    return nullptr;
+    show_by_default = false;
   }
+
+  bool show = show_by_default;
+  CALL_CEF_DELEGATE_RESULT(ShowStatusBubble, show, show_by_default);
+  if (!show)
+    return nullptr;
 
   return window_ ? window_->GetStatusBubble() : nullptr;
 }

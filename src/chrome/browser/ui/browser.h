@@ -827,6 +827,9 @@ class Browser : public TabStripModelObserver,
                           bool exited) override;
   void ContentsZoomChange(bool zoom_in) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
+  void CanDownload(const GURL& url,
+                   const std::string& request_method,
+                   base::OnceCallback<void(bool)> callback) override;
   void BeforeUnloadFired(content::WebContents* source,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;

@@ -254,9 +254,9 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
     bool use_proxy_output_device = false;
     if (display_client->UseProxyOutputDevice(&use_proxy_output_device) &&
         use_proxy_output_device) {
-      mojom::LayeredWindowUpdaterPtr layered_window_updater;
+      mojo::PendingRemote<mojom::LayeredWindowUpdater> layered_window_updater;
       display_client->CreateLayeredWindowUpdater(
-          mojo::MakeRequest(&layered_window_updater));
+          layered_window_updater.InitWithNewPipeAndPassReceiver());
       return std::make_unique<SoftwareOutputDeviceProxy>(
           std::move(layered_window_updater));
     }

@@ -227,11 +227,8 @@ ContentMainParams::~ContentMainParams() = default;
 ContentMainParams::ContentMainParams(ContentMainParams&&) = default;
 ContentMainParams& ContentMainParams::operator=(ContentMainParams&&) = default;
 
-// This function must be marked with NO_STACK_PROTECTOR or it may crash on
-// return, see the --change-stack-guard-on-fork command line flag.
-int NO_STACK_PROTECTOR
-RunContentProcess(ContentMainParams params,
-                  ContentMainRunner* content_main_runner) {
+int ContentMainInitialize(ContentMainParams params,
+                          ContentMainRunner* content_main_runner) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Lacros is launched with inherited priority. Revert to normal priority
   // before spawning more processes.

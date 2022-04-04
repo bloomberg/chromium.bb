@@ -41,7 +41,6 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "net/base/features.h"
-#include "pdf/pdf_ppapi.h"
 #include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/switches.h"
@@ -52,6 +51,8 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "libcef/common/util_mac.h"
+#elif BUILDFLAG(IS_POSIX)
+#include "libcef/common/util_linux.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -64,7 +65,7 @@ const char* const kNonWildcardDomainNonPortSchemes[] = {
     extensions::kExtensionScheme, content::kChromeDevToolsScheme,
     content::kChromeUIScheme, content::kChromeUIUntrustedScheme};
 const size_t kNonWildcardDomainNonPortSchemesSize =
-    base::size(kNonWildcardDomainNonPortSchemes);
+    std::size(kNonWildcardDomainNonPortSchemes);
 
 }  // namespace
 
@@ -94,8 +95,7 @@ bool AlloyMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line->GetSwitchValueASCII(switches::kProcessType);
 
 #if BUILDFLAG(IS_POSIX)
-  // Read the crash configuration file. Platforms using Breakpad also add a
-  // command-line switch. On Windows this is done from chrome_elf.
+  // Read the crash configuration file. On Windows this is done from chrome_elf.
   crash_reporting::BasicStartupComplete(command_line);
 #endif
 
@@ -355,6 +355,8 @@ void AlloyMainDelegate::PreSandboxStartup() {
 // Only override these paths when executing the main process.
 #if BUILDFLAG(IS_MAC)
     util_mac::PreSandboxStartup();
+#elif BUILDFLAG(IS_POSIX)
+    util_linux::PreSandboxStartup();
 #endif
 
     resource_util::OverrideDefaultDownloadDir();
@@ -376,12 +378,6 @@ void AlloyMainDelegate::PreSandboxStartup() {
 
   InitializeResourceBundle();
   MaybePatchGdiGetFontData();
-}
-
-void AlloyMainDelegate::SandboxInitialized(const std::string& process_type) {
-  AlloyContentClient::SetPDFEntryFunctions(chrome_pdf::PPP_GetInterface,
-                                           chrome_pdf::PPP_InitializeModule,
-                                           chrome_pdf::PPP_ShutdownModule);
 }
 
 absl::variant<int, content::MainFunctionParams> AlloyMainDelegate::RunProcess(

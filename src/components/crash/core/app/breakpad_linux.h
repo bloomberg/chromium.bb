@@ -20,9 +20,6 @@ extern void InitCrashReporter(const std::string& process_type);
 // Sets the product/distribution channel crash key.
 void SetChannelCrashKey(const std::string& channel);
 
-// Set the crash server URL.
-void SetCrashServerURL(const std::string& url);
-
 #if BUILDFLAG(IS_ANDROID)
 extern void InitCrashKeysForTesting();
 

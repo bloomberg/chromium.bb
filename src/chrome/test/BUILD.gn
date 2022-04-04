@@ -1415,7 +1415,7 @@ if (!is_android) {
       "//testing/perf",
       "//third_party/blink/public:blink_headers",
       "//third_party/blink/public:buildflags",
-      "//third_party/blink/public/common:headers",
+      "//third_party/blink/public/common",
       "//third_party/blink/public/mojom:web_feature_mojo_bindings",
       "//third_party/icu",
       "//third_party/leveldatabase",
@@ -1584,7 +1584,6 @@ if (!is_android) {
       "../browser/apps/platform_apps/platform_app_navigation_redirector_browsertest.cc",
       "../browser/apps/platform_apps/service_worker_browsertest.cc",
       "../browser/attribution_reporting/chrome_attribution_browsertest.cc",
-      "../browser/attribution_reporting/conversions_usage_restriction_trial_browsertest.cc",
       "../browser/autocomplete/autocomplete_browsertest.cc",
       "../browser/autofill/autofill_autocomplete_browsertest.cc",
       "../browser/autofill/autofill_browsertest.cc",
@@ -4228,6 +4227,10 @@ if (!is_android) {
       ]
     }
 
+    if (enable_side_search) {
+      sources += [ "../browser/ui/views/side_search/default_search_icon_source_browsertest.cc" ]
+    }
+
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
       sources += [
         "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
@@ -5326,6 +5329,7 @@ test("unit_tests") {
       "../browser/content_settings/generated_notification_pref_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
       "../browser/download/bubble/download_bubble_controller_unittest.cc",
+      "../browser/download/bubble/download_bubble_prefs_unittest.cc",
       "../browser/download/bubble/download_display_controller_unittest.cc",
       "../browser/download/download_shelf_context_menu_unittest.cc",
       "../browser/enterprise/signals/client_certificate_fetcher_unittest.cc",

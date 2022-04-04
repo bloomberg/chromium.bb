@@ -49,6 +49,7 @@
 <translation id="1239792311949352652">Bu səhifəni cəld paylaşın. Bu qısayolu redaktə etmək üçün Ayarlara keçin.</translation>
 <translation id="1240190568154816272">Chrome ipucuları</translation>
 <translation id="1240288207750131269"><ph name="LANG" /> yüklənir</translation>
+<translation id="1240903469550363138">Davam etmək üçün <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ad, e-poçt ünvanı və profil şəklinizi bu sayt ilə paylaşacaq. Bu saytın <ph name="BEGIN_LINK1" />məxfilik siyasəti<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />xidmət şərtlərinə<ph name="END_LINK2" /> baxın.</translation>
 <translation id="1242883863226959074">cihaz</translation>
 <translation id="124678866338384709">Cari paneli bağlayın</translation>
 <translation id="1246905108078336582">Təklif mübadilə buferindən silinsin?</translation>
@@ -67,6 +68,9 @@
 <translation id="1320912611264252795">Əlfəcin saxlama prosesi qovluqları tam hündürlükdə açılıb</translation>
 <translation id="1327257854815634930">Naviqasiya tarixçəsi açıqdır</translation>
 <translation id="1331212799747679585">Chrome güncəllənmədi. Digər seçimlər</translation>
+<translation id="1332100670807501334">Reklamın ölçülməsi ziyarət etdiyiniz saytlara Chrome'dan sayta reklamlarının performansını ölçməyə kömək edən məlumat tələb etməyə imkan verir. Reklamın ölçülməsi saytlar arasında mümkün qədər az məlumat ötürməklə saytlararası izləməni məhdudlaşdırır.
+
+Baxış tarixçənizi (bütün saytlar və ya müəyyən bir sayt üçün) sildiyiniz zaman əlaqədar ölçmə məlumatını da silirsiniz. <ph name="BEGIN_LINK" />Baxış tarixçənizə<ph name="END_LINK" /> baxın.</translation>
 <translation id="1332501820983677155">Google Chrome funksiya qısayolları</translation>
 <translation id="1344653310988386453">Vurğulamaya keçidi daxil edin</translation>
 <translation id="1347468774581902829">Fəaliyyəti idarə edin</translation>
@@ -114,6 +118,7 @@
 Müntəzəm olaraq hesaba daxil olmaq kimi saytla qarşılıqlı əlaqəniz əsasında həmin sayt brauzerinizə güvən nişanı verə bilər. Daha sonra ziyarət etdiyiniz digər saytlar keçərli güvən nişanını yoxlayıb tapsalar, onlar sizə bot deyil, insan kimi yanaşacaqlar.
 
 Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuzu öyrənmək üçün istifadə edilə bilməz.</translation>
+<translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Datanızı necə idarə edə bilərsiniz:<ph name="END_BOLD" /> Məxfiliyinizi qorumaq üçün 4 həftədən köhnə maraqlarınızı avtomatik silirik. Baxmağa davam etdikcə, maraq siyahıda yenidən görünə bilər. Və ya Chrome'un nəzərə almasını istəmədiyiniz maraqları silə bilərsiniz.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Seçilmiş 1 elementi silin}other{Seçilmiş # elementi silin}}</translation>
 <translation id="1633659023549081553">Chrome'un əsas səhifəsində yeni məzmunu kəşf edin</translation>
 <translation id="1641113438599504367">Təhlükəsiz Axtarış</translation>
@@ -146,6 +151,9 @@ Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuz
 <translation id="1829244130665387512">Səhifədə tapın</translation>
 <translation id="1832459821645506983">Bəli, varam</translation>
 <translation id="1849863543394887018">Ayarlara keçərək bildirişləri deaktiv edə bilərsiniz</translation>
+<translation id="1854311313115643875">Sınaqlar aktiv olduqda, reklamın ölçülməsi ziyarət etdiyiniz saytlara Chrome'dan sayta reklamlarının performansını ölçməyə kömək edən məlumat tələb etməyə imkan verir. Reklamın ölçülməsi saytlar arasında mümkün qədər az məlumat ötürməklə saytlararası izləməni məhdudlaşdırır.
+
+Baxış tarixçənizi (bütün saytlar və ya müəyyən bir sayt üçün) sildiyiniz zaman əlaqədar ölçmə məlumatını da silirsiniz. <ph name="BEGIN_LINK" />Baxış tarixçənizə<ph name="END_LINK" /> baxın.</translation>
 <translation id="1877026089748256423">Chrome'un vaxtı keçib</translation>
 <translation id="1883903952484604915">Fayllarım</translation>
 <translation id="189358972401248634">Digər dillərdə</translation>
@@ -170,6 +178,7 @@ Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuz
 <translation id="1974060860693918893">Qabaqcıl</translation>
 <translation id="1984417487208496350">Qoruma yoxdur (tövsiyə edilmir)</translation>
 <translation id="1986685561493779662">Adı artıq mövcuddur</translation>
+<translation id="1995884366040846621">Davam etmək üçün <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ad, e-poçt ünvanı və profil şəklinizi bu sayt ilə paylaşacaq. Bu saytın <ph name="BEGIN_LINK1" />məxfilik siyasətinə<ph name="END_LINK1" /> baxın.</translation>
 <translation id="2000419248597011803">Ünvan paneli və axtarış qutusundakı bəzi kuki və axtarışları defolt axtarış mühərrikinizə göndərin</translation>
 <translation id="200114059308480249">Google axtarışlarına ətrafdakı mətn daxil edilsin?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Fayl}other{# Fayl}}</translation>
@@ -309,6 +318,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2746842245914314523">Chrome ayarlarında bu funksiyalar haqqında ətraflı öyrənə bilərsiniz. Sınaqlar zamanı saytlarla qarşılıqlı əlaqəniz bu yeni funksiyaların olmadığı zamandan daha məxfi olmaya bilər.</translation>
 <translation id="2760989362628427051">Cihazın tünd tema və ya Enerjiyə Qənaət rejimi aktiv olduqda tünd temanı aktiv edin</translation>
 <translation id="2762000892062317888">indicə</translation>
+<translation id="2765569104201273438">Təcrübə zamanı Chrome maraqlana biləcəyiniz mövzuları təxmin edəcək. Sonra kim olduğunuzu öyrənmədən, ziyarət etdiyiniz saytlar bu məlumatı sizə uyğun reklamlar göstərmək üçün istifadə edə bilər. Maraqlar son baxış tarixçənizə əsaslanır və siz onları görə və idarə edə bilərsiniz.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> olaraq hesaba girdi.</translation>
 <translation id="2776236159752647997">Məxfilik, təhlükəsizlik və datanın toplanması ilə bağlı daha çox ayarlar üçün <ph name="BEGIN_LINK" />Google xidmətləri<ph name="END_LINK" /> səhifəsinə daxil olun.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> saniyə qaldı</translation>
@@ -580,7 +590,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4307992518367153382">Əsaslar</translation>
 <translation id="4320177379694898372">İnternet bağlantısı yoxdur</translation>
 <translation id="4321739720395210191">Kameranı açmaq olmur. Cihazı yenidən başladıb təkrar cəhd edin.</translation>
-<translation id="4324158606177867698">Sildiyiniz maraq burada görünəcək</translation>
 <translation id="433213510553688132">İzlənilir...</translation>
 <translation id="4335835283689002019">Təhlükəsiz Baxış deaktivdir</translation>
 <translation id="4351244548802238354">Dialoqu qapadın</translation>
@@ -792,6 +801,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5514904542973294328">Bu cihazın administratoru tərəfindən deaktiv edildi</translation>
 <translation id="5515439363601853141">Parola baxmaq üçün kiliddən çıxarın</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> hesabından əlfəcin, tarixçə, parol və digər ayarlar var.</translation>
+<translation id="5524761631371622910">Sınaqlar aktiv olduqda və Chrome təsadüfi olaraq sizi aktiv sınağa təyin edibsə, baxış tarixçəniz gördüyünüz reklamlara və aşağıda təxmin edilən maraqlara təsir edir. Məxfiliyinizi qorumaq üçün Chrome hər ay maraqlarınızı növbəlilik əsasında silir.</translation>
 <translation id="5524843473235508879">Yönləndirmə blok edildi.</translation>
 <translation id="5548606607480005320">Təhlükəsizlik yoxlanışı</translation>
 <translation id="5555525474779371165">Təhlükəsiz Baxış ilə qorunmanı seçin</translation>
@@ -818,13 +828,13 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5665379678064389456"><ph name="APP_NAME" /> tətbiqində tədbir yaradın</translation>
 <translation id="5683547024293500885">Chrome güncəlləmələri yoxlaya bilmir</translation>
 <translation id="5686790454216892815">Fayl adı çox uzundur</translation>
-<translation id="5692329390578659217">Davam etmək üçün <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ad, e-poçt ünvanı və profil şəklinizi bu sayt ilə paylaşacaq. Bu saytın <ph name="BEGIN_LINK1" />məxfilik siyasəti<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />xidmət şərtlərinə<ph name="END_LINK2" /> baxın.</translation>
 <translation id="569536719314091526">Əlavə seçimlər düyməsində bu səhifəni istədiyiniz dilə tərcümə edin</translation>
 <translation id="5696597120588531049">Chrome sizi data pozuntuları, güvənli olmayan vebsaytlar və digər güvənlik məsələlərindən qoruya bilər</translation>
 <translation id="5697688514913266141">Faylınız burada saxlanacaq: <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Düzəliş edin<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Taba keçin</translation>
 <translation id="572328651809341494">Son panellər</translation>
 <translation id="5726692708398506830">Səhifədəki hər şeyi böyüdün</translation>
+<translation id="5727531838415286053">Chrome təsadüfi olaraq sizi aktiv sınağa təyin edibsə, baxış tarixçəniz gördüyünüz reklamlara və aşağıda təxmin edilən maraqlara təsir edir. Məxfiliyinizi qorumaq üçün Chrome hər ay maraqlarınızı növbəlilik əsasında silir. Silmədiyiniz təqdirdə maraqlar yenilənir.</translation>
 <translation id="5748802427693696783">Standart panellərə keçdi</translation>
 <translation id="5749068826913805084">Faylları endirmək üçün Chrome yaddaşa giriş tələb edir.</translation>
 <translation id="5749237766298580851">Deaktiv <ph name="SEPARATOR" /> Tövsiyə edilmir</translation>
@@ -900,6 +910,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="6085886413119427067">Güvənli bağlantı vasitəsilə vebsaytlara necə qoşulmağı müəyyən edir</translation>
 <translation id="6091413777268123602">Məxfilik Sendboksu sınaqları ilə saytlar datanızdan daha az istifadə etməklə eyni baxış təcrübəsi təqdim edə bilər. Bu, məxfiliyi artırır və saytlararası izləməni azaldır. Hazır olduqda yeni sınaqlar əlavə edəcəyik.</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> saat qaldı</translation>
+<translation id="609511393187302037">Chrome saytlara reklam spamını və dələduzluğu dayandırmağa imkan verərkən saytlararası izləməni məhdudlaşdırmağın yollarını araşdırır.</translation>
 <translation id="6095578583683628124">Google həm də defolt axtarış sisteminizdirsə daha yaxşı, kontekstə uyğun təkliflər görəcəksiniz</translation>
 <translation id="6108923351542677676">Quraşdırma icra olunur...</translation>
 <translation id="6112702117600201073">Səhifə yenilənir</translation>
@@ -945,6 +956,11 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="6364438453358674297">Təklif tarixçədən silinsin?</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> Chrome'da açılacaq. Davam etməklə, <ph name="BEGIN_LINK1" />Google Xidmət Şərtləri<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />Google Chrome və Chrome ƏS Əlavə Xidmət Şərtləri<ph name="END_LINK2" /> ilə razılaşırsınız.</translation>
 <translation id="6380100320871303656">Chrome'un ziyarət edəcəyinizi düşündüyü səhifələr daha çox əvvəlcədən yüklənir. Bu ayar data istifadəsinin artması ilə nəticələnə bilər.</translation>
+<translation id="6385407407546870227">Sınaqlar aktiv olduqda, spam və dələduzluğun azaldılması saytlara dələduzluqla mübarizə aparmağa və botları insanlardan ayırmağa kömək etmək üçün güvən nişanlarına əsaslanır.
+
+Müntəzəm olaraq hesaba daxil olmaq kimi saytla qarşılıqlı əlaqəniz əsasında həmin sayt brauzerinizə güvən nişanı verə bilər. Daha sonra ziyarət etdiyiniz digər saytlar keçərli güvən nişanını yoxlayıb tapsalar, onlar sizə bot deyil, insan kimi yanaşacaqlar.
+
+Güvən nişanları internetdə məxfiliyi yaxşılaşdırır və kim olduğunuzu öyrənmək üçün istifadə edilə bilməz.</translation>
 <translation id="6395288395575013217">LİNK</translation>
 <translation id="6397616442223433927">Bağlantı bərpa edildi</translation>
 <translation id="6402652558933147609"><ph name="VIOLATED_URL" /> üzrə <ph name="ERROR_CODE" /></translation>
@@ -1150,7 +1166,6 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="7474822150871987353">Səhifədən çıxmadan veb saytdakı mövzular haqqında öyrənin. Axtarmaq üçün səhifədə bir və ya daha çox söz seçin.</translation>
 <translation id="7475192538862203634">Bunu tez-tez görürsünüzsə, bu <ph name="BEGIN_LINK" />təklifləri<ph name="END_LINK" /> nəzərdən keçirin.</translation>
 <translation id="7475688122056506577">SD kart tapılmadı. Bəzi fayllar əskik ola bilər.</translation>
-<translation id="7477262822945323753">Davam etmək üçün <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ad, e-poçt ünvanı və profil şəklinizi bu sayt ilə paylaşacaq. Bu saytın <ph name="BEGIN_LINK1" />məxfilik siyasətinə<ph name="END_LINK1" /> baxın.</translation>
 <translation id="7479104141328977413">Tab idarəetməsi</translation>
 <translation id="7481312909269577407">İrəli</translation>
 <translation id="7482656565088326534">Önbaxış tabı</translation>
@@ -1197,6 +1212,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="7704317875155739195">Axtarış və linkləri avtomatik tamamlayın</translation>
 <translation id="770741401784017797">GIF yaradılır</translation>
 <translation id="7707922173985738739">Mobil data istifadə edin</translation>
+<translation id="7709094866268987903">Sildiyiniz maraqlar burada görünəcək</translation>
 <translation id="7725024127233776428">Seçdiyiniz səhifələr burada görünəcək</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> cihazından paylaşılan mətn</translation>
 <translation id="7761849928583394409">Tarix və vaxt seçin</translation>
@@ -1340,6 +1356,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="8445448999790540984">Parolları eksport etmək alınmadı</translation>
 <translation id="8446884382197647889">Ətraflı Məlumat</translation>
 <translation id="8453310803815879010">Dinozavr oyununu başladın</translation>
+<translation id="8455351369246067579">Chrome maraqlana biləcəyiniz mövzuları təxmin edə bilər. Sonra kim olduğunuzu öyrənmədən, ziyarət etdiyiniz saytlar bu məlumatı sizə uyğun reklamlar göstərmək üçün istifadə edə bilər. Maraqlar son baxış tarixçənizə əsaslanır və siz onları görə və idarə edə bilərsiniz.</translation>
 <translation id="8461694314515752532">Sinxronizasiya parolunuz ilə sinxronizasiya edilmiş datanı şifrələyin</translation>
 <translation id="8466613982764129868"><ph name="TARGET_DEVICE_NAME" /> cihazının internetə qoşulduğuna əmin olun</translation>
 <translation id="8473863474539038330">Ünvanlar və s.</translation>
@@ -1446,6 +1463,7 @@ Məxfilik Sendboksu sınaqları hələ də aktiv hazırlanma mərhələsindədir
 <translation id="8972098258593396643">Defolt qovluğa endirilsin?</translation>
 <translation id="8987641763863173640">Video Önizləmə Ayarlarını İdarə Edin</translation>
 <translation id="898854820045159673">Reaksiya əlavə edilib</translation>
+<translation id="8989968390305463310">Baxış tarixçəniz gördüyünüz reklamlara və aşağıda təxmin edilən maraqlara təsir edir. Məxfiliyinizi qorumaq üçün Chrome hər ay maraqlarınızı növbəlilik əsasında avtomatik olaraq silir. Silmədiyiniz təqdirdə maraqlar yenilənə bilər.</translation>
 <translation id="8993760627012879038">Incognito rejimində yeni panel açın</translation>
 <translation id="8996847606757455498">Başqa provayder seçin</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tərəfindən idarə olunan hesab ilə daxil olursunuz və onun administratoruna Chrome datanız üzərində nəzarəti verirsiniz. Datanız həmişəlik bu hesab ilə əlaqələndiriləcək. Chrome'dan çıxmaq datanızı bu cihazdan siləcək, lakin data Google Hesabında qalacaq.</translation>

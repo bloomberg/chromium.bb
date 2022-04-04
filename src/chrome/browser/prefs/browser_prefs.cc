@@ -1178,6 +1178,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   DeviceOAuth2TokenStoreDesktop::RegisterPrefs(registry);
 #endif
 
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled, false);
+
   // This is intentionally last.
   RegisterLocalStatePrefsForMigration(registry);
 }

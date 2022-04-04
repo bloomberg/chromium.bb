@@ -159,7 +159,7 @@ class CefBeforeDownloadCallbackImpl : public CefBeforeDownloadCallback {
           suggested_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
           download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
           download::DownloadItem::MixedContentStatus::UNKNOWN, suggested_path,
-          absl::nullopt /*download_schedule*/,
+          base::FilePath(), absl::nullopt /*download_schedule*/,
           download::DOWNLOAD_INTERRUPT_REASON_NONE);
     }
   }
@@ -178,7 +178,8 @@ class CefBeforeDownloadCallbackImpl : public CefBeforeDownloadCallback {
     std::move(callback).Run(path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                             download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                             download::DownloadItem::MixedContentStatus::UNKNOWN,
-                            path, absl::nullopt /*download_schedule*/,
+                            path, base::FilePath(),
+                            absl::nullopt /*download_schedule*/,
                             download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 
@@ -366,7 +367,8 @@ bool CefDownloadManagerDelegate::DetermineDownloadTarget(
         item->GetForcedFilePath(), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
-        item->GetForcedFilePath(), absl::nullopt /*download_schedule*/,
+        item->GetForcedFilePath(), base::FilePath(),
+        absl::nullopt /*download_schedule*/,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
@@ -405,12 +407,7 @@ void CefDownloadManagerDelegate::GetNextId(
 }
 
 std::string CefDownloadManagerDelegate::ApplicationClientIdForFileScanning() {
-  const CefSettings& settings = CefContext::Get()->settings();
-  if (settings.application_client_id_for_file_scanning.length > 0) {
-    return CefString(&settings.application_client_id_for_file_scanning)
-        .ToString();
-  }
-  return std::string();
+  return std::string(chrome::kApplicationClientIDStringForAVScanning);
 }
 
 void CefDownloadManagerDelegate::OnBrowserDestroyed(

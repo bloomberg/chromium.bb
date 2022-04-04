@@ -72,6 +72,36 @@ void ChromeBrowserDelegate::SetAsDelegate(content::WebContents* web_contents,
                 request_context_impl);
 }
 
+bool ChromeBrowserDelegate::ShowStatusBubble(bool show_by_default) {
+  if (!show_status_bubble_.has_value()) {
+    show_status_bubble_ = show_by_default;
+    if (auto browser = ChromeBrowserHostImpl::GetBrowserForBrowser(browser_)) {
+      const auto& state = browser->settings().chrome_status_bubble;
+      if (show_by_default && state == STATE_DISABLED) {
+        show_status_bubble_ = false;
+      } else if (!show_by_default && state == STATE_ENABLED) {
+        show_status_bubble_ = true;
+      }
+    }
+  }
+
+  return *show_status_bubble_;
+}
+
+bool ChromeBrowserDelegate::HandleCommand(int command_id,
+                                          WindowOpenDisposition disposition) {
+  if (auto browser = ChromeBrowserHostImpl::GetBrowserForBrowser(browser_)) {
+    if (auto client = browser->GetClient()) {
+      if (auto handler = client->GetCommandHandler()) {
+        return handler->OnChromeCommand(
+            browser.get(), command_id,
+            static_cast<cef_window_open_disposition_t>(disposition));
+      }
+    }
+  }
+  return false;
+}
+
 void ChromeBrowserDelegate::WebContentsCreated(
     content::WebContents* source_contents,
     int opener_render_process_id,
@@ -203,6 +233,20 @@ void ChromeBrowserDelegate::ExitFullscreenModeForTab(
   if (auto delegate = GetDelegateForWebContents(web_contents)) {
     delegate->ExitFullscreenModeForTab(web_contents);
   }
+}
+
+void ChromeBrowserDelegate::CanDownload(
+    const GURL& url,
+    const std::string& request_method,
+    base::OnceCallback<void(bool)> callback) {
+  auto source = browser_->tab_strip_model()->GetActiveWebContents();
+  DCHECK(source);
+
+  if (auto delegate = GetDelegateForWebContents(source)) {
+    delegate->CanDownload(url, request_method, std::move(callback));
+    return;
+  }
+  std::move(callback).Run(true);
 }
 
 KeyboardEventProcessingResult ChromeBrowserDelegate::PreHandleKeyboardEvent(

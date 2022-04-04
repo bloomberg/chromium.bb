@@ -227,11 +227,4 @@ bool CrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
   return false;
 }
 
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-CrashReporterClient::ParameterMap
-CrashReporterClient::FilterParameters(const ParameterMap& parameters) {
-  return parameters;
-}
-#endif
-
 }  // namespace crash_reporter

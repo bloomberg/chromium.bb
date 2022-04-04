@@ -51,6 +51,9 @@ class ChromeBrowserDelegate : public cef::BrowserDelegate {
   void OnWebContentsCreated(content::WebContents* new_contents) override;
   void SetAsDelegate(content::WebContents* web_contents,
                      bool set_delegate) override;
+  bool ShowStatusBubble(bool show_by_default) override;
+  bool HandleCommand(int command_id,
+                     WindowOpenDisposition disposition) override;
 
   // WebContentsDelegate methods:
   void WebContentsCreated(content::WebContents* source_contents,
@@ -83,6 +86,9 @@ class ChromeBrowserDelegate : public cef::BrowserDelegate {
       content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
+  void CanDownload(const GURL& url,
+                   const std::string& request_method,
+                   base::OnceCallback<void(bool)> callback) override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
@@ -109,6 +115,8 @@ class ChromeBrowserDelegate : public cef::BrowserDelegate {
 
   // Used when creating a new browser host.
   const CefBrowserCreateParams create_params_;
+
+  absl::optional<bool> show_status_bubble_;
 };
 
 #endif  // CEF_LIBCEF_BROWSER_CHROME_CHROME_BROWSER_DELEGATE_H_

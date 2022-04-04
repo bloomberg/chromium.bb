@@ -7,6 +7,7 @@
 
 #include <string>
 #include "base/values.h"
+#include "base/version.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace commerce_heuristics {
@@ -19,6 +20,13 @@ class CommerceHeuristicsData {
   CommerceHeuristicsData(const CommerceHeuristicsData&) = delete;
   CommerceHeuristicsData& operator=(const CommerceHeuristicsData&) = delete;
   ~CommerceHeuristicsData();
+
+  // Called by component installer to update the version number of the
+  // heuristics.
+  void UpdateVersion(base::Version version);
+
+  // Get the current version number of the heuristics.
+  const std::string GetVersion();
 
   // Populate and cache the heuristics from JSON data.
   bool PopulateDataFromComponent(const std::string& hint_json_data,
@@ -42,6 +50,31 @@ class CommerceHeuristicsData {
   // for coupon discount.
   const re2::RE2* GetCouponDiscountPartnerMerchantPattern();
 
+  // Try to get the pattern regex to decide if a URL is cart page URL.
+  const re2::RE2* GetCartPageURLPattern();
+
+  // Try to get the pattern regex to decide if a URL is checkout page URL.
+  const re2::RE2* GetCheckoutPageURLPattern();
+
+  // Try to get the pattern regex to decide if a button is a purchase button.
+  const re2::RE2* GetPurchaseButtonTextPattern();
+
+  // Try to get the pattern regex to decide if a request is a add-to-cart
+  // request.
+  const re2::RE2* GetAddToCartRequestPattern();
+
+  // Try to get the pattern regex to decide if a URL is cart page URL in
+  // `domain`.
+  const re2::RE2* GetCartPageURLPatternForDomain(const std::string& domain);
+
+  // Try to get the pattern regex to decide if a URL is checkout page URL in
+  // `domain`.
+  const re2::RE2* GetCheckoutPageURLPatternForDomain(const std::string& domain);
+
+  // Try to get the pattern regex to decide if a URL is purchase page URL in
+  // `domain`.
+  const re2::RE2* GetPurchasePageURLPatternForDomain(const std::string& domain);
+
  private:
   friend class CommerceHeuristicsDataTest;
 
@@ -52,13 +85,29 @@ class CommerceHeuristicsData {
   absl::optional<std::string> GetCommerceGlobalHeuristics(
       const std::string& type);
 
+  const re2::RE2* GetCommerceHintHeuristicsRegex(
+      std::map<std::string, std::unique_ptr<re2::RE2>>& map,
+      const std::string type,
+      const std::string domain);
+
   std::unique_ptr<re2::RE2> ConstructGlobalRegex(const std::string& type);
 
+  base::Version version_;
   base::Value::Dict hint_heuristics_;
   base::Value::Dict global_heuristics_;
   std::unique_ptr<re2::RE2> product_skip_pattern_;
   std::unique_ptr<re2::RE2> rule_discount_partner_merchant_pattern_;
   std::unique_ptr<re2::RE2> coupon_discount_partner_merchant_pattern_;
+  std::unique_ptr<re2::RE2> cart_url_pattern_;
+  std::unique_ptr<re2::RE2> checkout_url_pattern_;
+  std::unique_ptr<re2::RE2> purchase_button_pattern_;
+  std::unique_ptr<re2::RE2> add_to_cart_request_pattern_;
+  std::map<std::string, std::unique_ptr<re2::RE2>>
+      domain_cart_url_pattern_mapping_;
+  std::map<std::string, std::unique_ptr<re2::RE2>>
+      domain_checkout_url_pattern_mapping_;
+  std::map<std::string, std::unique_ptr<re2::RE2>>
+      domain_purchase_url_pattern_mapping_;
 };
 
 }  // namespace commerce_heuristics

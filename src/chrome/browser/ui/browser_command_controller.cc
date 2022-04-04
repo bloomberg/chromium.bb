@@ -395,6 +395,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
   DCHECK(command_updater_.IsCommandEnabled(id))
       << "Invalid/disabled command " << id;
 
+#if BUILDFLAG(ENABLE_CEF)
+  if (browser_->cef_delegate() &&
+      browser_->cef_delegate()->HandleCommand(id, disposition)) {
+    return true;
+  }
+#endif
+
   // The order of commands in this switch statement must match the function
   // declaration order in browser.h!
   switch (id) {

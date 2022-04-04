@@ -317,6 +317,13 @@ bool PartialMatch(base::StringPiece str, const re2::RE2& re) {
 }
 
 const re2::RE2& GetAddToCartPattern() {
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetAddToCartRequestPattern();
+  if (pattern_from_component &&
+      kAddToCartPattern.Get() == kAddToCartPattern.default_value) {
+    return *pattern_from_component;
+  }
   re2::RE2::Options options;
   options.set_case_sensitive(false);
   static base::NoDestructor<re2::RE2> instance(kAddToCartPattern.Get(),
@@ -324,107 +331,14 @@ const re2::RE2& GetAddToCartPattern() {
   return *instance;
 }
 
-// TODO(crbug.com/1189786): Using per-site pattern and full URL matching could
-// be unnecessary. Improve this later by using general pattern if possible and
-// more flexible matching.
-const re2::RE2& GetVisitCartPattern(const GURL& url) {
-  static base::NoDestructor<std::map<std::string, std::string>>
-      heuristic_string_map([] {
-        const base::StringPiece json_resource(
-            ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                IDR_CART_DOMAIN_CART_URL_REGEX_JSON));
-        const std::string& finch_param = kCartPatternMapping.Get();
-        const base::Value json(base::JSONReader::Read(finch_param.empty()
-                                                          ? json_resource
-                                                          : finch_param)
-                                   .value());
-        DCHECK(json.is_dict());
-        std::map<std::string, std::string> map;
-        for (auto item : json.DictItems()) {
-          map.insert(
-              {std::move(item.first), std::move(item.second.GetString())});
-        }
-        return map;
-      }());
-  static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
-      heuristic_regex_map;
-  static re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  const std::string& domain = eTLDPlusOne(url);
-  if (heuristic_string_map->find(domain) == heuristic_string_map->end()) {
-    static base::NoDestructor<re2::RE2> instance(kCartPattern.Get(), options);
-    return *instance;
-  }
-  if (heuristic_regex_map->find(domain) == heuristic_regex_map->end()) {
-    heuristic_regex_map->insert(
-        {domain, std::make_unique<re2::RE2>(heuristic_string_map->at(domain),
-                                            options)});
-  }
-  return *heuristic_regex_map->at(domain);
-}
-
-// TODO(crbug/1164236): cover more shopping sites.
-const re2::RE2& GetVisitCheckoutPattern() {
-  re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> instance(kCheckoutPattern.Get(), options);
-  return *instance;
-}
-
-const re2::RE2& GetSkipPattern() {
-  auto* pattern_from_component =
-      commerce_heuristics::CommerceHeuristicsData::GetInstance()
-          .GetProductSkipPattern();
-  if (pattern_from_component &&
-      kSkipPattern.Get() == kSkipPattern.default_value) {
-    DVLOG(1) << "SkipPattern = " << pattern_from_component->pattern();
-    return *pattern_from_component;
-  }
-  static base::NoDestructor<re2::RE2> instance([] {
-    const std::string& pattern = kSkipPattern.Get();
-    DVLOG(1) << "SkipPattern = " << pattern;
-    return pattern;
-  }());
-  return *instance;
-}
-
-// TODO(crbug/1164236): need i18n.
-const re2::RE2& GetPurchaseTextPattern() {
-  re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> instance(kPurchaseButtonPattern.Get(),
-                                               options);
-  return *instance;
-}
-
-bool GetProductIdFromRequest(base::StringPiece request,
-                             std::string* product_id) {
-  re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  static base::NoDestructor<re2::RE2> re("(product_id|pr1id)=(\\w+)", options);
-  return RE2::PartialMatch(re2::StringPiece(request.data(), request.size()),
-                           *re, nullptr, product_id);
-}
-
-bool IsSameDomainXHR(const std::string& host,
-                     const blink::WebURLRequest& request) {
-  // Only handle XHR POST requests here.
-  // Other matches like navigation is handled in DidStartNavigation().
-  if (!request.HttpMethod().Equals("POST"))
-    return false;
-
-  const GURL url = request.Url();
-  return url.DomainIs(host);
-}
-
-const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
-  static base::NoDestructor<std::map<std::string, std::string>> skip_map([] {
+const std::map<std::string, std::string>& GetCartPatternMapping() {
+  static base::NoDestructor<std::map<std::string, std::string>> pattern_map([] {
     const base::Value json(
         base::JSONReader::Read(
-            kSkipAddToCartMapping.Get().empty()
+            kCartPatternMapping.Get().empty()
                 ? ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                      IDR_SKIP_ADD_TO_CART_REQUEST_DOMAIN_MAPPING_JSON)
-                : kSkipAddToCartMapping.Get())
+                      IDR_CART_DOMAIN_CART_URL_REGEX_JSON)
+                : kCartPatternMapping.Get())
             .value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
@@ -433,7 +347,7 @@ const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
     }
     return map;
   }());
-  return *skip_map;
+  return *pattern_map;
 }
 
 const std::map<std::string, std::string>& GetCheckoutPatternMapping() {
@@ -486,6 +400,176 @@ const std::map<std::string, std::string>& GetPurchaseButtonPatternMapping() {
     return map;
   }());
   return *pattern_map;
+}
+
+// TODO(crbug.com/1189786): Using per-site pattern and full URL matching could
+// be unnecessary. Improve this later by using general pattern if possible and
+// more flexible matching.
+const re2::RE2* GetVisitCartPattern(const GURL& url) {
+  std::string domain = eTLDPlusOne(url);
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetCartPageURLPatternForDomain(domain);
+  if (pattern_from_component &&
+      kCartPatternMapping.Get() == kCartPatternMapping.default_value) {
+    return pattern_from_component;
+  }
+  const std::map<std::string, std::string>& cart_string_map =
+      GetCartPatternMapping();
+  static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
+      cart_regex_map;
+  static re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  if (cart_string_map.find(domain) == cart_string_map.end()) {
+    auto* pattern_from_component =
+        commerce_heuristics::CommerceHeuristicsData::GetInstance()
+            .GetCartPageURLPattern();
+    if (pattern_from_component &&
+        kCartPattern.Get() == kCartPattern.default_value) {
+      return pattern_from_component;
+    }
+    static base::NoDestructor<re2::RE2> instance(kCartPattern.Get(), options);
+    return instance.get();
+  }
+  if (cart_regex_map->find(domain) == cart_regex_map->end()) {
+    cart_regex_map->insert({domain, std::make_unique<re2::RE2>(
+                                        cart_string_map.at(domain), options)});
+  }
+  return cart_regex_map->at(domain).get();
+}
+
+// TODO(crbug/1164236): cover more shopping sites.
+const re2::RE2* GetVisitCheckoutPattern(const GURL& url) {
+  std::string domain = eTLDPlusOne(url);
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetCheckoutPageURLPatternForDomain(domain);
+  if (pattern_from_component &&
+      kCheckoutPatternMapping.Get() == kCheckoutPatternMapping.default_value) {
+    return pattern_from_component;
+  }
+  const std::map<std::string, std::string>& checkout_string_map =
+      GetCheckoutPatternMapping();
+  static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
+      checkout_regex_map;
+  static re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  if (checkout_string_map.find(domain) == checkout_string_map.end()) {
+    auto* pattern_from_component =
+        commerce_heuristics::CommerceHeuristicsData::GetInstance()
+            .GetCheckoutPageURLPattern();
+    if (pattern_from_component &&
+        kCheckoutPattern.Get() == kCheckoutPattern.default_value) {
+      return pattern_from_component;
+    }
+    static base::NoDestructor<re2::RE2> instance(kCheckoutPattern.Get(),
+                                                 options);
+    return instance.get();
+  }
+  if (checkout_regex_map->find(domain) == checkout_regex_map->end()) {
+    checkout_regex_map->insert(
+        {domain,
+         std::make_unique<re2::RE2>(checkout_string_map.at(domain), options)});
+  }
+  return checkout_regex_map->at(domain).get();
+}
+
+const re2::RE2* GetVisitPurchasePattern(const GURL& url) {
+  std::string domain = eTLDPlusOne(url);
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetPurchasePageURLPatternForDomain(domain);
+  if (pattern_from_component && kPurchaseURLPatternMapping.Get() ==
+                                    kPurchaseURLPatternMapping.default_value) {
+    return pattern_from_component;
+  }
+  const std::map<std::string, std::string>& purchase_string_map =
+      GetPurchaseURLPatternMapping();
+  if (purchase_string_map.find(domain) == purchase_string_map.end()) {
+    return nullptr;
+  }
+  static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
+      purchase_regex_map;
+  static re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  if (purchase_regex_map->find(domain) == purchase_regex_map->end()) {
+    purchase_regex_map->insert(
+        {domain,
+         std::make_unique<re2::RE2>(purchase_string_map.at(domain), options)});
+  }
+  return purchase_regex_map->at(domain).get();
+}
+
+const re2::RE2& GetSkipPattern() {
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetProductSkipPattern();
+  if (pattern_from_component &&
+      kSkipPattern.Get() == kSkipPattern.default_value) {
+    DVLOG(1) << "SkipPattern = " << pattern_from_component->pattern();
+    return *pattern_from_component;
+  }
+  static base::NoDestructor<re2::RE2> instance([] {
+    const std::string& pattern = kSkipPattern.Get();
+    DVLOG(1) << "SkipPattern = " << pattern;
+    return pattern;
+  }());
+  return *instance;
+}
+
+// TODO(crbug/1164236): need i18n.
+const re2::RE2& GetPurchaseTextPattern() {
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetPurchaseButtonTextPattern();
+  if (pattern_from_component &&
+      kPurchaseButtonPattern.Get() == kPurchaseButtonPattern.default_value) {
+    return *pattern_from_component;
+  }
+  re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  static base::NoDestructor<re2::RE2> instance(kPurchaseButtonPattern.Get(),
+                                               options);
+  return *instance;
+}
+
+bool GetProductIdFromRequest(base::StringPiece request,
+                             std::string* product_id) {
+  re2::RE2::Options options;
+  options.set_case_sensitive(false);
+  static base::NoDestructor<re2::RE2> re("(product_id|pr1id)=(\\w+)", options);
+  return RE2::PartialMatch(re2::StringPiece(request.data(), request.size()),
+                           *re, nullptr, product_id);
+}
+
+bool IsSameDomainXHR(const std::string& host,
+                     const blink::WebURLRequest& request) {
+  // Only handle XHR POST requests here.
+  // Other matches like navigation is handled in DidStartNavigation().
+  if (!request.HttpMethod().Equals("POST"))
+    return false;
+
+  const GURL url = request.Url();
+  return url.DomainIs(host);
+}
+
+const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
+  static base::NoDestructor<std::map<std::string, std::string>> skip_map([] {
+    const base::Value json(
+        base::JSONReader::Read(
+            kSkipAddToCartMapping.Get().empty()
+                ? ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+                      IDR_SKIP_ADD_TO_CART_REQUEST_DOMAIN_MAPPING_JSON)
+                : kSkipAddToCartMapping.Get())
+            .value());
+    DCHECK(json.is_dict());
+    std::map<std::string, std::string> map;
+    for (auto item : json.DictItems()) {
+      map.insert({std::move(item.first), std::move(item.second.GetString())});
+    }
+    return map;
+  }());
+  return *skip_map;
 }
 
 bool DetectAddToCart(content::RenderFrame* render_frame,
@@ -657,48 +741,24 @@ bool CommerceHintAgent::IsAddToCart(base::StringPiece str,
 }
 
 bool CommerceHintAgent::IsVisitCart(const GURL& url) {
-  return PartialMatch(CanonicalURL(url).substr(0, kLengthLimit),
-                      GetVisitCartPattern(url));
+  auto* pattern = GetVisitCartPattern(url);
+  if (!pattern)
+    return false;
+  return PartialMatch(CanonicalURL(url).substr(0, kLengthLimit), *pattern);
 }
 
 bool CommerceHintAgent::IsVisitCheckout(const GURL& url) {
-  const std::map<std::string, std::string>& checkout_string_map =
-      GetCheckoutPatternMapping();
-  static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
-      checkout_regex_map;
-  std::string domain = eTLDPlusOne(url);
-  std::string url_string = CanonicalURL(url).substr(0, kLengthLimit);
-  if (checkout_string_map.find(domain) == checkout_string_map.end()) {
-    return PartialMatch(url_string, GetVisitCheckoutPattern());
-  }
-  static re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  if (checkout_regex_map->find(domain) == checkout_regex_map->end()) {
-    checkout_regex_map->insert(
-        {domain,
-         std::make_unique<re2::RE2>(checkout_string_map.at(domain), options)});
-  }
-  return PartialMatch(url_string, *checkout_regex_map->at(domain));
+  auto* pattern = GetVisitCheckoutPattern(url);
+  if (!pattern)
+    return false;
+  return PartialMatch(CanonicalURL(url).substr(0, kLengthLimit), *pattern);
 }
 
 bool CommerceHintAgent::IsPurchase(const GURL& url) {
-  const std::map<std::string, std::string>& purchase_string_map =
-      GetPurchaseURLPatternMapping();
-  static base::NoDestructor<std::map<std::string, std::unique_ptr<re2::RE2>>>
-      purchase_regex_map;
-  std::string domain = eTLDPlusOne(url);
-  std::string url_string = CanonicalURL(url).substr(0, kLengthLimit);
-  if (purchase_string_map.find(domain) == purchase_string_map.end()) {
+  auto* pattern = GetVisitPurchasePattern(url);
+  if (!pattern)
     return false;
-  }
-  static re2::RE2::Options options;
-  options.set_case_sensitive(false);
-  if (purchase_regex_map->find(domain) == purchase_regex_map->end()) {
-    purchase_regex_map->insert(
-        {domain,
-         std::make_unique<re2::RE2>(purchase_string_map.at(domain), options)});
-  }
-  return PartialMatch(url_string, *purchase_regex_map->at(domain));
+  return PartialMatch(CanonicalURL(url).substr(0, kLengthLimit), *pattern);
 }
 
 bool CommerceHintAgent::IsPurchase(const GURL& url,

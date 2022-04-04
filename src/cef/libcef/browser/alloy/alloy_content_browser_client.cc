@@ -143,17 +143,14 @@
 #include "ui/base/ui_base_switches.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-#include "base/debug/leak_annotations.h"
-#include "chrome/common/chrome_paths.h"
-#include "components/crash/content/browser/crash_handler_host_linux.h"
-#include "components/crash/core/app/breakpad_linux.h"
-#include "content/public/common/content_descriptors.h"
-#endif
-
 #if BUILDFLAG(IS_MAC)
 #include "net/ssl/client_cert_store_mac.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#elif BUILDFLAG(IS_POSIX)
+#include "components/crash/core/app/crash_switches.h"
+#include "components/crash/core/app/crashpad.h"
+#include "content/public/common/content_descriptors.h"
+#include "libcef/common/crash_reporting.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -409,59 +406,13 @@ class CefQuotaPermissionContext : public content::QuotaPermissionContext {
 };
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
-    const std::string& process_type) {
-  base::FilePath dumps_path;
-  base::PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
-  {
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    // Uploads will only occur if a non-empty crash URL is specified in
-    // AlloyMainDelegate::InitCrashReporter.
-    breakpad::CrashHandlerHostLinux* crash_handler =
-        new breakpad::CrashHandlerHostLinux(process_type, dumps_path,
-                                            true /* upload */);
-    crash_handler->StartUploaderThread();
-    return crash_handler;
-  }
-}
-
-int GetCrashSignalFD(const base::CommandLine& command_line) {
-  if (!breakpad::IsCrashReporterEnabled())
+int GetCrashSignalFD() {
+  if (!crash_reporting::Enabled())
     return -1;
 
-  // Extensions have the same process type as renderers.
-  if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost("extension");
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  if (process_type == switches::kRendererProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kPpapiPluginProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kGpuProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  return -1;
+  int fd;
+  pid_t pid;
+  return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
 }
 #endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 
@@ -739,7 +690,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kUserAgentProductAndVersion,
     };
     command_line->CopySwitchesFrom(*browser_cmd, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   std::size(kSwitchNames));
   }
 
   const std::string& process_type =
@@ -758,7 +709,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
         network::switches::kUnsafelyTreatInsecureOriginAsSecure,
     };
     command_line->CopySwitchesFrom(*browser_cmd, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   std::size(kSwitchNames));
 
     if (extensions::ExtensionsEnabled()) {
       content::RenderProcessHost* process =
@@ -787,7 +738,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kLang,
     };
     command_line->CopySwitchesFrom(*browser_cmd, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   std::size(kSwitchNames));
   }
 
   // Necessary to populate DIR_USER_DATA in sub-processes.
@@ -797,7 +748,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   }
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
   if (process_type == switches::kZygoteProcess) {
     if (browser_cmd->HasSwitch(switches::kBrowserSubprocessPath)) {
       // Force use of the sub-process executable path for the zygote process.
@@ -813,9 +764,19 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kLogFile,
     };
     command_line->CopySwitchesFrom(*browser_cmd, kSwitchNames,
-                                   base::size(kSwitchNames));
+                                   std::size(kSwitchNames));
   }
-#endif  // BUILDFLAG(IS_LINUX)
+
+  if (crash_reporting::Enabled()) {
+    int fd;
+    pid_t pid;
+    if (crash_reporter::GetHandlerSocket(&fd, &pid)) {
+      command_line->AppendSwitchASCII(
+          crash_reporter::switches::kCrashpadHandlerPid,
+          base::NumberToString(pid));
+    }
+  }
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 
   CefRefPtr<CefApp> app = CefAppManager::Get()->GetApplication();
   if (app.get()) {
@@ -1132,17 +1093,17 @@ AlloyContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   return interceptors;
 }
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 void AlloyContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     content::PosixFileDescriptorInfo* mappings) {
-  int crash_signal_fd = GetCrashSignalFD(command_line);
+  int crash_signal_fd = GetCrashSignalFD();
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 }
-#endif  // BUILDFLAG(IS_LINUX)
+#endif  //  BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 
 void AlloyContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
@@ -1363,10 +1324,10 @@ AlloyContentBrowserClient::GetNetworkContextsParentDirectory() {
 bool AlloyContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
     content::WebContents::Getter web_contents_getter,
-    int child_id,
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
-    bool is_main_frame,
+    bool is_primary_main_frame,
+    bool is_in_fenced_frame_tree,
     network::mojom::WebSandboxFlags sandbox_flags,
     ui::PageTransition page_transition,
     bool has_user_gesture,
@@ -1381,6 +1342,8 @@ bool AlloyContentBrowserClient::HandleExternalProtocol(
     content::WebContents::Getter web_contents_getter,
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
+    bool is_primary_main_frame,
+    bool is_in_fenced_frame_tree,
     network::mojom::WebSandboxFlags sandbox_flags,
     const network::ResourceRequest& resource_request,
     const absl::optional<url::Origin>& initiating_origin,
@@ -1459,7 +1422,7 @@ AlloyContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
 }
 
 std::string AlloyContentBrowserClient::GetProduct() {
-  return embedder_support::GetProduct();
+  return GetChromeProduct();
 }
 
 std::string AlloyContentBrowserClient::GetChromeProduct() {
@@ -1500,8 +1463,7 @@ AlloyContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
   auto map = PluginUtils::GetMimeTypeToExtensionIdMap(browser_context);
   for (const auto& pair : map)
     mime_types.insert(pair.first);
-  if (pdf::IsInternalPluginExternallyHandled())
-    mime_types.insert(pdf::kInternalPluginMimeType);
+  mime_types.insert(pdf::kInternalPluginMimeType);
   return mime_types;
 }
 
@@ -1542,8 +1504,7 @@ bool AlloyContentBrowserClient::IsFindInPageDisabledForOrigin(
     const url::Origin& origin) {
   // For PDF viewing with the PPAPI-free PDF Viewer, find-in-page should only
   // display results from the PDF content, and not from the UI.
-  return base::FeatureList::IsEnabled(chrome_pdf::features::kPdfUnseasoned) &&
-         IsPdfExtensionOrigin(origin);
+  return IsPdfExtensionOrigin(origin);
 }
 
 CefRefPtr<CefRequestContextImpl> AlloyContentBrowserClient::request_context()

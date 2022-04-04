@@ -224,13 +224,6 @@ class CrashReporterClient {
   // enabled for the browser process.
   virtual bool EnableBrowserCrashForwarding();
 #endif
-
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-  // Provides an oportunity to modify the parameters that will be sent with a
-  // crash upload.
-  using ParameterMap = std::map<std::string, std::string>;
-  virtual ParameterMap FilterParameters(const ParameterMap& parameters);
-#endif
 };
 
 }  // namespace crash_reporter

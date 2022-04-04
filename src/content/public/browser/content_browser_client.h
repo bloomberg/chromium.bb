@@ -1881,6 +1881,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       WebContents::Getter web_contents_getter,
       int frame_tree_node_id,
       NavigationUIData* navigation_data,
+      bool is_primary_main_frame,
+      bool is_in_fenced_frame_tree,
       network::mojom::WebSandboxFlags sandbox_flags,
       const network::ResourceRequest& request,
       const absl::optional<url::Origin>& initiating_origin,

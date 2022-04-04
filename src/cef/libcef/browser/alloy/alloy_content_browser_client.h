@@ -137,7 +137,7 @@ class AlloyContentBrowserClient : public content::ContentBrowserClient {
       const scoped_refptr<network::SharedURLLoaderFactory>&
           network_loader_factory) override;
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
@@ -195,10 +195,10 @@ class AlloyContentBrowserClient : public content::ContentBrowserClient {
   bool HandleExternalProtocol(
       const GURL& url,
       content::WebContents::Getter web_contents_getter,
-      int child_id,
       int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
-      bool is_main_frame,
+      bool is_primary_main_frame,
+      bool is_in_fenced_frame_tree,
       network::mojom::WebSandboxFlags sandbox_flags,
       ui::PageTransition page_transition,
       bool has_user_gesture,
@@ -210,6 +210,8 @@ class AlloyContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents::Getter web_contents_getter,
       int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
+      bool is_primary_main_frame,
+      bool is_in_fenced_frame_tree,
       network::mojom::WebSandboxFlags sandbox_flags,
       const network::ResourceRequest& request,
       const absl::optional<url::Origin>& initiating_origin,

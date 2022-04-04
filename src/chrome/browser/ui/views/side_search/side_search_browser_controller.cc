@@ -340,6 +340,9 @@ void SideSearchBrowserController::DidFinishNavigation(
   // be shown.
   auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
       navigation_handle->GetWebContents());
+  if (!tab_contents_helper)
+    return;
+
   if (GetSidePanelToggledOpen() &&
       !tab_contents_helper->CanShowSidePanelForCommittedNavigation()) {
     CloseSidePanel();
@@ -364,12 +367,14 @@ void SideSearchBrowserController::UpdateSidePanelForContents(
   // Ensure that the controller acts as the delegate only to the currently
   // active contents.
   if (old_contents) {
-    SideSearchTabContentsHelper::FromWebContents(old_contents)
-        ->SetDelegate(nullptr);
+    auto* helper = SideSearchTabContentsHelper::FromWebContents(old_contents);
+    if (helper)
+      helper->SetDelegate(nullptr);
   }
   if (new_contents) {
-    SideSearchTabContentsHelper::FromWebContents(new_contents)
-        ->SetDelegate(weak_factory_.GetWeakPtr());
+    auto* helper = SideSearchTabContentsHelper::FromWebContents(new_contents);
+    if (helper)
+      helper->SetDelegate(weak_factory_.GetWeakPtr());
   }
 
   Observe(new_contents);
@@ -413,14 +418,17 @@ void SideSearchBrowserController::ToggleSidePanel() {
 
 bool SideSearchBrowserController::GetSidePanelToggledOpen() const {
   auto* active_contents = browser_view_->GetActiveWebContents();
-  return active_contents
-             ? SideSearchTabContentsHelper::FromWebContents(active_contents)
-                   ->toggled_open()
-             : false;
+  if (!active_contents)
+    return false;
+
+  const auto* helper =
+      SideSearchTabContentsHelper::FromWebContents(active_contents);
+  return helper ? helper->toggled_open() : false;
 }
 
 void SideSearchBrowserController::SidePanelCloseButtonPressed() {
   CloseSidePanel(SideSearchCloseActionType::kTapOnSideSearchCloseButton);
+  browser_view_->RightAlignedSidePanelWasClosed();
 }
 
 void SideSearchBrowserController::OpenSidePanel() {
@@ -455,20 +463,35 @@ void SideSearchBrowserController::CloseSidePanel(
     ClearSideContentsCacheForActiveTab();
 }
 
+void SideSearchBrowserController::ClobberAllInCurrentBrowser() {
+  auto* tab_strip_model = browser_view_->browser()->tab_strip_model();
+  for (int i = 0; i < tab_strip_model->count(); ++i) {
+    auto* helper = SideSearchTabContentsHelper::FromWebContents(
+        tab_strip_model->GetWebContentsAt(i));
+    if (helper)
+      helper->set_toggled_open(false);
+  }
+}
+
 void SideSearchBrowserController::ClearSideContentsCacheForActiveTab() {
   web_view_->SetWebContents(nullptr);
 
   if (auto* active_contents = browser_view_->GetActiveWebContents()) {
-    SideSearchTabContentsHelper::FromWebContents(active_contents)
-        ->ClearSidePanelContents();
+    auto* helper =
+        SideSearchTabContentsHelper::FromWebContents(active_contents);
+    if (helper)
+      helper->ClearSidePanelContents();
   }
 }
 
 void SideSearchBrowserController::SetSidePanelToggledOpen(bool toggled_open) {
   if (auto* active_contents = browser_view_->GetActiveWebContents()) {
-    SideSearchTabContentsHelper::FromWebContents(active_contents)
-        ->set_toggled_open(toggled_open);
-    side_search::MaybeSaveSideSearchTabSessionData(active_contents);
+    auto* helper =
+        SideSearchTabContentsHelper::FromWebContents(active_contents);
+    if (helper) {
+      helper->set_toggled_open(toggled_open);
+      side_search::MaybeSaveSideSearchTabSessionData(active_contents);
+    }
   }
 }
 
@@ -489,12 +512,21 @@ void SideSearchBrowserController::UpdateSidePanel() {
   auto* tab_contents_helper =
       SideSearchTabContentsHelper::FromWebContents(active_contents);
 
+  // Early return if the tab helper for the active tab is not defined
+  // (crbug.com/1307908).
+  if (!tab_contents_helper)
+    return;
+
   const bool can_show_side_panel_for_page =
       tab_contents_helper->CanShowSidePanelForCommittedNavigation();
   const bool will_show_side_panel =
       can_show_side_panel_for_page && GetSidePanelToggledOpen();
 
+  // When side search is shown we only need to close other side panels for the
+  // basic clobbering experience. The improved experience leverages a
+  // SidePanelVisibilityController on the browser view.
   if (base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
+      !base::FeatureList::IsEnabled(features::kSidePanelImprovedClobbering) &&
       will_show_side_panel) {
     browser_view_->CloseOpenRightAlignedSidePanel(/*exclude_lens=*/false,
                                                   /*exclude_side_search=*/true);

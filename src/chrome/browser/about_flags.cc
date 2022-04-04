@@ -5280,6 +5280,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSidePanelDragAndDropDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanelDragAndDrop)},
 
+    {"side-panel-improved-clobbering",
+     flag_descriptions::kSidePanelImprovedClobberingName,
+     flag_descriptions::kSidePanelImprovedClobberingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelImprovedClobbering)},
+
     {flag_descriptions::kUnifiedSidePanelFlagId,
      flag_descriptions::kUnifiedSidePanelName,
      flag_descriptions::kUnifiedSidePanelDescription, kOsDesktop,
@@ -7298,6 +7303,16 @@ const FeatureEntry kFeatureEntries[] = {
          "PrivacySandboxSettings3:"
          "disable-dialog-for-testing/true/show-sample-data/true,"
          "EnableFetchingAccountCapabilities")},
+
+    {"privacy-sandbox-ads-apis",
+     flag_descriptions::kPrivacySandboxAdsAPIsOverrideName,
+     flag_descriptions::kPrivacySandboxAdsAPIsOverrideDescription, kOsAll,
+     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
+     // multiple related features when they are available.
+     SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
+                                 "PrivacySandboxAdsAPIsOverride,"
+                                 "Fledge,BrowsingTopics,ConversionMeasurement,"
+                                 "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
      flag_descriptions::kAnimatedImageResumeDescription, kOsAll,

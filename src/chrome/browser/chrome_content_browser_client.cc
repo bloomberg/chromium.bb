@@ -1347,6 +1347,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kSSLErrorOverrideAllowedForOrigins);
   registry->RegisterBooleanPref(
       prefs::kSuppressDifferentOriginSubframeJSDialogs, true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled, false);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kWebXRImmersiveArEnabled, true);
 #endif
@@ -2358,6 +2360,19 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       if (prefs->HasPrefPath(prefs::kScrollToTextFragmentEnabled) &&
           !prefs->GetBoolean(prefs::kScrollToTextFragmentEnabled)) {
         command_line->AppendSwitch(switches::kDisableScrollToTextFragment);
+      }
+
+      // Override SetTimeoutWithoutClamp feature if its Enterprise Policy
+      // is specified.
+      if (prefs->HasPrefPath(
+              policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled)) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kSetTimeoutWithout1MsClampPolicy,
+            prefs->GetBoolean(
+                policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled)
+                ? blink::switches::kSetTimeoutWithout1MsClampPolicy_ForceEnable
+                : blink::switches::
+                      kSetTimeoutWithout1MsClampPolicy_ForceDisable);
       }
 
       // The IntensiveWakeUpThrottling feature is typically managed via a

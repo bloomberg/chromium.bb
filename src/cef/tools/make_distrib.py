@@ -719,6 +719,7 @@ if mode == 'standard' or mode == 'minimal':
 
   # Transfer generated include files.
   generated_includes = [
+      'cef_command_ids.h',
       'cef_config.h',
       'cef_pack_resources.h',
       'cef_pack_strings.h',
@@ -886,6 +887,7 @@ if platform == 'windows':
       'obj\\base\\third_party\\dynamic_annotations\\dynamic_annotations.lib',
       'obj\\base\\win\\pe_image.lib',
       cef_sandbox_lib,
+      'obj\\sandbox\\common\\*.obj',
       'obj\\sandbox\\win\\sandbox.lib',
       'obj\\third_party\\abseil-cpp\\absl\\base\\**\\*.obj',
       'obj\\third_party\\abseil-cpp\\absl\\debugging\\**\\*.obj',

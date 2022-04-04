@@ -835,8 +835,7 @@ static_library("libcef_static") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//chrome:browser_dependencies",
-    "//chrome:child_dependencies",
+    "//chrome:dependencies",
     "//chrome:packed_resources",
     "//chrome:resources",
     "//chrome:strings",
@@ -903,6 +902,7 @@ static_library("libcef_static") {
     "//third_party/blink/public:blink",
     "//third_party/brotli:dec",
     "//third_party/cld_3/src/src:cld_3",
+    "//third_party/crashpad/crashpad/handler",
     "//third_party/hunspell",
     "//third_party/leveldatabase",
     "//third_party/libxml:libxml",
@@ -975,6 +975,8 @@ static_library("libcef_static") {
       "libcef/browser/osr/browser_platform_delegate_osr_linux.h",
       "libcef/browser/printing/print_dialog_linux.cc",
       "libcef/browser/printing/print_dialog_linux.h",
+      "libcef/common/util_linux.h",
+      "libcef/common/util_linux.cc",
     ]
 
     if (ozone_platform_x11) {
@@ -1017,24 +1019,8 @@ static_library("libcef_static") {
     ]
   }
 
-  if (is_win || is_mac) {
-    deps += [ "//third_party/crashpad/crashpad/handler" ]
-  }
-
   if (ozone_platform_x11) {
     deps += [ "//ui/events/devices/x11" ]
-  }
-
-  if (is_posix && !is_mac) {
-    sources += [
-      "libcef/common/cef_crash_report_utils.cc",
-      "libcef/common/cef_crash_report_utils.h",
-    ]
-
-    deps += [
-      "//components/crash/core/app",
-      "//components/crash/content/browser",
-    ]
   }
 
   if (v8_use_external_startup_data && use_v8_context_snapshot) {
@@ -1353,7 +1339,6 @@ grit("cef_resources") {
 template("make_pack_header") {
   assert(defined(invoker.header))
   assert(defined(invoker.inputs))
-  assert(defined(invoker.deps))
 
   action("make_pack_header_${target_name}") {
     script = "tools/make_pack_header.py"
@@ -1364,7 +1349,9 @@ template("make_pack_header") {
     args = rebase_path(outputs, root_build_dir) +
            rebase_path(inputs, root_build_dir)
 
-    deps = invoker.deps
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 }
 
@@ -1469,6 +1456,14 @@ make_pack_header("strings") {
   ]
 }
 
+# Generate cef_command_ids.h.
+make_pack_header("command_ids") {
+  header = "$root_out_dir/includes/include/cef_command_ids.h"
+  inputs = [
+    "//chrome/app/chrome_command_ids.h",
+  ]
+}
+
 # Generate cef_api_hash.h.
 action("make_api_hash_header") {
   script = "tools/make_api_hash_header.py"
@@ -1500,6 +1495,7 @@ group("cef_make_headers") {
   deps = [
     ":make_pack_header_resources",
     ":make_pack_header_strings",
+    ":make_pack_header_command_ids",
     ":make_api_hash_header",
     ":make_config_header",
   ]

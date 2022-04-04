@@ -30,6 +30,9 @@ IncognitoClearBrowsingDataDialog* g_incognito_cbd_dialog = nullptr;
 void IncognitoClearBrowsingDataDialog::Show(views::View* anchor_view,
                                             Profile* incognito_profile,
                                             Type type) {
+  // The full toolbar may not be visible.
+  if (!anchor_view)
+    return;
   g_incognito_cbd_dialog = new IncognitoClearBrowsingDataDialog(
       anchor_view, incognito_profile, type);
   views::Widget* const widget =
@@ -72,7 +75,9 @@ IncognitoClearBrowsingDataDialog::IncognitoClearBrowsingDataDialog(
       dialog_type_(type),
       incognito_profile_(incognito_profile) {
   DCHECK(incognito_profile_);
-  DCHECK(incognito_profile_->IsIncognitoProfile());
+  DCHECK(incognito_profile_->IsIncognitoProfile() ||
+         (incognito_profile_->IsOffTheRecord() &&
+          incognito_profile_->GetOTRProfileID().IsUniqueForCEF()));
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetShowCloseButton(true);
 

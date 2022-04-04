@@ -223,13 +223,11 @@ void UpdatePrintSettingsOnIO(
     scoped_refptr<PrintQueriesQueue> queue,
     base::Value job_settings,
     base::WeakPtr<PrintViewManagerBase> manager,
-    int process_id,
-    int routing_id) {
+    const content::GlobalRenderFrameHostId& global_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
   if (!printer_query) {
-    printer_query =
-        queue->CreatePrinterQuery(content::GlobalRenderFrameHostId());
+    printer_query = queue->CreatePrinterQuery(global_id);
   }
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->SetSettings(
@@ -657,8 +655,7 @@ void PrintViewManagerBase::UpdatePrintSettings(
       base::BindOnce(&UpdatePrintSettingsOnIO, cookie,
                      std::move(callback_wrapper), queue_,
                      std::move(job_settings), weak_ptr_factory_.GetWeakPtr(),
-                     render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID()));
+                     render_frame_host->GetGlobalId()));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

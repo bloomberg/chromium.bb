@@ -23,6 +23,7 @@
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "components/crash/core/app/crash_switches.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_paths.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
@@ -107,11 +108,10 @@ bool PlatformCrashpadInitialization(
     crash_reporter_client->GetCrashDumpLocation(database_path);
     crash_reporter_client->GetCrashMetricsLocation(&metrics_path);
 
+    // Use the same main (default) or subprocess helper exe.
     base::FilePath handler_path;
-    if (!base::PathService::Get(base::DIR_EXE, &handler_path)) {
-      return false;
-    }
-    handler_path = handler_path.Append("chrome_crashpad_handler");
+    base::PathService::Get(content::CHILD_PROCESS_EXE, &handler_path);
+    DCHECK(!handler_path.empty());
 
     // When --use-cros-crash-reporter is set (below), the handler passes dumps
     // to ChromeOS's /sbin/crash_reporter which in turn passes the dump to
@@ -128,8 +128,8 @@ bool PlatformCrashpadInitialization(
                                                     &product_version, &channel);
 
     std::map<std::string, std::string> annotations;
-    annotations["prod"] = product_name;
-    annotations["ver"] = product_version;
+    annotations["product"] = product_name;
+    annotations["version"] = product_version;
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Empty means stable.
@@ -146,7 +146,20 @@ bool PlatformCrashpadInitialization(
       annotations["channel"] = channel;
     }
 
-    annotations["plat"] = std::string("Linux");
+#if defined(ARCH_CPU_ARM_FAMILY)
+#if defined(ARCH_CPU_32_BITS)
+    const char* platform = "linuxarm";
+#elif defined(ARCH_CPU_64_BITS)
+    const char* platform = "linuxarm64";
+#endif
+#else
+#if defined(ARCH_CPU_32_BITS)
+    const char* platform = "linux32";
+#elif defined(ARCH_CPU_64_BITS)
+    const char* platform = "linux64";
+#endif
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+    annotations["platform"] = platform;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     // "build_time_millis" is used on LaCros chrome to determine when to stop
@@ -190,6 +203,12 @@ bool PlatformCrashpadInitialization(
       arguments.push_back("--always-allow-feedback");
     }
 #endif
+
+    // Since we're using the same main or subprocess helper exe we must specify
+    // the process type.
+    arguments.push_back(std::string("--type=") + switches::kCrashpadHandler);
+
+    crash_reporter_client->GetCrashOptionalArguments(&arguments);
 
     bool result =
         client.StartHandler(handler_path, *database_path, metrics_path, url,

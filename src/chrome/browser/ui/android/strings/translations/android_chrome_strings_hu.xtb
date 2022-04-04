@@ -49,6 +49,7 @@
 <translation id="1239792311949352652">Az oldal gyors megosztása. A gyorsparancs szerkesztéséhez lépjen a Beállításokhoz.</translation>
 <translation id="1240190568154816272">Chrome-tippek</translation>
 <translation id="1240288207750131269">Betöltés: <ph name="LANG" /></translation>
+<translation id="1240903469550363138">A folytatáshoz a(z) <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> megosztja az Ön nevét, e-mail-címét és profilképét ezzel a webhellyel. Tekintse át a webhely <ph name="BEGIN_LINK1" />adatvédelmi irányelveit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />általános szerződési feltételeit<ph name="END_LINK2" />.</translation>
 <translation id="1242883863226959074">eszközén</translation>
 <translation id="124678866338384709">Az aktuális lap bezárása</translation>
 <translation id="1246905108078336582">Eltávolítja a javaslatot a vágólapról?</translation>
@@ -67,6 +68,9 @@
 <translation id="1320912611264252795">A könyvjelzőmentési folyamat teljes magasságban van megnyitva</translation>
 <translation id="1327257854815634930">Megnyitotta a navigációs előzményeket</translation>
 <translation id="1331212799747679585">A Chrome frissítése nem lehetséges. További lehetőségek</translation>
+<translation id="1332100670807501334">A hirdetésmérés segítségével az Ön által felkeresett webhelyek olyan adatokat kérhetnek a Chrome-tól, amelyek segítségével a webhely mérheti hirdetéseinek teljesítményét. A hirdetésmérés azáltal korlátozza a webhelyeken átnyúló nyomon követést, hogy a lehető legkevesebb adatot továbbítja a webhelyek között.
+
+Az összes böngészési előzmény vagy csak adott webhely böngészési előzményeinek törlésekor a kapcsolódó mérési adatokat is törli a böngésző. Tekintse meg a <ph name="BEGIN_LINK" />böngészési előzményeit<ph name="END_LINK" />.</translation>
 <translation id="1332501820983677155">A Google Chrome-funkciók billentyűparancsai</translation>
 <translation id="1344653310988386453">A kiemelt szöveghez vezető linkkel együtt</translation>
 <translation id="1347468774581902829">Tevékenységek kezelése</translation>
@@ -114,6 +118,7 @@
 A webhelyeken végzett tevékenységei (például a fiókokba való rendszeres bejelentkezések) alapján az érintett webhely megbízhatósági tokent biztosíthat a böngésző számára. Ha pedig később a többi Ön által felkeresett webhely érvényes megbízhatósági tokent keres, majd talál, akkor sokkal nagyobb valószínűséggel kezelik Önt személyként, mint robotként.
 
 A megbízhatósági tokenek nagyobb fokú adatvédelmet biztosítanak az interneten, és nem alkalmasak arra, hogy felfedjék az Ön személyazonosságát.</translation>
+<translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Az adatok kezelésének módja:<ph name="END_BOLD" /> Adatai védelme érdekében a négy hétnél régebbi érdeklődési köreit automatikusan töröljük. Böngészési tevékenysége alapján az érdeklődési körök újra megjelenhetnek a listákon. Arra is lehetősége van, hogy eltávolítsa azokat az érdeklődési köröket, amelyeket nem szeretne, hogy a Chrome figyelembe vegyen.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 kijelölt elem eltávolítása}other{# kijelölt elem eltávolítása}}</translation>
 <translation id="1633659023549081553">Fedezzen fel új tartalmakat a Chrome kezdőlapján</translation>
 <translation id="1641113438599504367">Biztonságos Böngészés</translation>
@@ -146,6 +151,9 @@ A megbízhatósági tokenek nagyobb fokú adatvédelmet biztosítanak az interne
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
 <translation id="1832459821645506983">Benne vagyok!</translation>
 <translation id="1849863543394887018">Az értesítéseket a beállítások között kapcsolhatja ki</translation>
+<translation id="1854311313115643875">A próbaidőszakok alatt a hirdetésmérés segítségével az Ön által felkeresett webhelyek olyan adatokat kérhetnek a Chrome-tól, amelyek segítségével a webhely mérheti hirdetéseinek teljesítményét. A hirdetésmérés azáltal korlátozza a webhelyeken átnyúló nyomon követést, hogy a lehető legkevesebb adatot továbbítja a webhelyek között.
+
+Az összes böngészési előzmény vagy csak adott webhely böngészési előzményeinek törlésekor a kapcsolódó mérési adatokat is törli a böngésző. Tekintse meg a <ph name="BEGIN_LINK" />böngészési előzményeit<ph name="END_LINK" />.</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="1883903952484604915">Saját fájlok</translation>
 <translation id="189358972401248634">Más nyelvek</translation>
@@ -170,6 +178,7 @@ A megbízhatósági tokenek nagyobb fokú adatvédelmet biztosítanak az interne
 <translation id="1974060860693918893">Speciális</translation>
 <translation id="1984417487208496350">Nincs védelem (nem javasolt)</translation>
 <translation id="1986685561493779662">Már van ilyen név</translation>
+<translation id="1995884366040846621">A folytatáshoz a(z) <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> megosztja az Ön nevét, e-mail-címét és profilképét ezzel a webhellyel. Olvassa el a webhely <ph name="BEGIN_LINK1" />adatvédelmi irányelveit<ph name="END_LINK1" />.</translation>
 <translation id="2000419248597011803">Bizonyos cookie-kat és kereséseket küld a címsávból és a keresőmezőből az alapértelmezett keresőmotornak</translation>
 <translation id="200114059308480249">Használni szeretné a környező szöveget is a Google Kereső használatakor?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fájl}other{# fájl}}</translation>
@@ -309,6 +318,7 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="2746842245914314523">A Chrome-beállítások között bővebben is tájékozódhat ezekről a funkciókról. A próbaidőszakok alatt előfordulhat, hogy a webhelyeken végzett tevékenységei nem lesznek privátabbak annál, mint amilyenek az új funkciók nélkül lennének.</translation>
 <translation id="2760989362628427051">Sötét téma bekapcsolása, amikor az eszköz sötét témája vagy Akkumulátorkímélő módja be van kapcsolva</translation>
 <translation id="2762000892062317888">éppen most</translation>
+<translation id="2765569104201273438">A kísérlet során a Chrome felméri majd az Önt esetlegesen érdeklő témaköröket. Ezt követően az Ön által felkeresett egyes webhelyek felhasználhatják ezeket az információkat arra, hogy releváns hirdetéseket jelenítsenek meg (anélkül, hogy megismernék az Ön személyazonosságát). Az Ön közelmúltbeli böngészési előzményein alapuló érdeklődési köröket Ön megtekintheti és kezelheti.</translation>
 <translation id="276969039800130567">Bejelentkezve a következőként: <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="2776236159752647997">A <ph name="BEGIN_LINK" />Google-szolgáltatások<ph name="END_LINK" /> részben további beállításokat talál az adatvédelemre, biztonságra és adatgyűjtésre vonatkozóan.</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
@@ -580,7 +590,6 @@ A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válas
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="4320177379694898372">Nincs internetkapcsolat</translation>
 <translation id="4321739720395210191">Nem lehet megnyitni a kamerát. Indítsa újra az eszközt, és próbálkozzon újra.</translation>
-<translation id="4324158606177867698">Az eltávolított érdeklődési körök itt jelennek meg</translation>
 <translation id="433213510553688132">Követés…</translation>
 <translation id="4335835283689002019">A Biztonságos Böngészés ki van kapcsolva</translation>
 <translation id="4351244548802238354">Párbeszédablak bezárása</translation>
@@ -792,6 +801,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5514904542973294328">Letiltotta az eszköz rendszergazdája</translation>
 <translation id="5515439363601853141">Oldja fel a képernyőzárat a jelszó megtekintéséhez</translation>
 <translation id="5517095782334947753">Vannak könyvjelzői, előzményei, jelszavai és más beállításai a(z) <ph name="FROM_ACCOUNT" /> fiókból.</translation>
+<translation id="5524761631371622910">A próbaidőszakok során, ha a Chrome véletlenszerű módon regisztrálta Önt egy próbaidőszakra, az Ön böngészési előzményei hatással vannak a megjelenő hirdetésekre és a becslések szerinti érdeklődési körökre. Adatai védelme érdekében a Chrome havi rendszerességgel törli az Ön érdeklődési köreit.</translation>
 <translation id="5524843473235508879">Átirányítás letiltva.</translation>
 <translation id="5548606607480005320">Biztonsági ellenőrzés</translation>
 <translation id="5555525474779371165">Válassza ki, hogy milyen védelmet nyújtson a Biztonságos Böngészés</translation>
@@ -818,13 +828,13 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5665379678064389456">Esemény létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="5683547024293500885">A Chrome nem tud frissítéseket keresni</translation>
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
-<translation id="5692329390578659217">A folytatáshoz a(z) <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> megosztja az Ön nevét, e-mail-címét és profilképét ezzel a webhellyel. Tekintse át a webhely <ph name="BEGIN_LINK1" />adatvédelmi irányelveit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />általános szerződési feltételeit<ph name="END_LINK2" />.</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
 <translation id="5696597120588531049">A Chrome segíthet az adatvédelmi incidensek, a nem biztonságos webhelyek és egyebek elleni védekezésben</translation>
 <translation id="5697688514913266141">A letöltés helye: <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Módosítás<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Váltás lapra</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
+<translation id="5727531838415286053">Ha a Chrome véletlenszerű módon regisztrálta Önt egy aktív próbaidőszakra, az Ön böngészési előzményei hatással vannak a megjelenő hirdetésekre és a becslések szerinti érdeklődési körökre. Adatai védelme érdekében a Chrome havi rendszerességgel törli az Ön érdeklődési köreit. Az érdeklődési körök frissülnek, kivéve, ha eltávolítja őket.</translation>
 <translation id="5748802427693696783">Szabványos lapokra váltva</translation>
 <translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5749237766298580851">Ki <ph name="SEPARATOR" /> Nem javasolt</translation>
@@ -900,6 +910,7 @@ A Privacy Sandbox próbaverziói még mindig aktív fejlesztés alatt állnak, �
 <translation id="6085886413119427067">Meghatározza, hogyan lehet csatlakozni webhelyekhez biztonságos kapcsolat használatával</translation>
 <translation id="6091413777268123602">A Privacy Sandbox próbaidőszakai alatt a webhelyek ugyanazt a böngészési élményt biztosítják, de ehhez kevesebb személyes adatot használnak fel. Ez nagyobb fokú adatvédelmet és kevesebb webhelyeken átnyúló nyomon követést jelent az Ön számára. Amint készen állnak a tesztelésre, rendelkezésre bocsájtjuk az új próbaidőszakokat.</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> óra van hátra</translation>
+<translation id="609511393187302037">A Chrome olyan módszerek kidolgozásán fáradozik, melyekkel korlátozható a webhelyeken átnyúló nyomon követés úgy, hogy közben a webhelyek is gátat vethetnek a hirdetési spameknek és a csalásnak.</translation>
 <translation id="6095578583683628124">Ha a Google az alapértelmezett keresőmotorja is, jobb és a kontextusnak megfelelő javaslatokat láthat.</translation>
 <translation id="6108923351542677676">A telepítés folyamatban...</translation>
 <translation id="6112702117600201073">Oldal frissítése</translation>
@@ -947,6 +958,11 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6364438453358674297">Eltávolítja a javaslatot az előzményekből?</translation>
 <translation id="6379829913050047669">A(z) <ph name="APP_NAME" /> a Chrome-ban fog megnyílni. A továbblépéssel elfogadja a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />A Google Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeit<ph name="END_LINK2" />.</translation>
 <translation id="6380100320871303656">Gyakrabban tölti be előre azokat az oldalakat, amelyeket a böngésző szerint Ön valószínűleg felkeres. Ez a beállítás megnövekedett adathasználattal járhat.</translation>
+<translation id="6385407407546870227">Az aktív próbaidőszakokban a spam és a csalás elleni védelem megbízhatósági tokenekre támaszkodva segít a webhelyeknek a csalás elleni küzdelemben és a robotok és az emberek megkülönböztetésében.
+
+A webhelyeken végzett tevékenységei (például a fiókokba való rendszeres bejelentkezések) alapján az érintett webhely megbízhatósági tokent biztosíthat a böngésző számára. Ha pedig később a többi Ön által felkeresett webhely érvényes megbízhatósági tokent keres, majd talál, akkor sokkal nagyobb valószínűséggel kezelik Önt személyként, mint robotként.
+
+A megbízhatósági tokenek nagyobb fokú adatvédelmet biztosítanak az interneten, és nem alkalmasak arra, hogy felfedjék az Ön személyazonosságát.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Ismét online</translation>
 <translation id="6402652558933147609"><ph name="ERROR_CODE" />, <ph name="VIOLATED_URL" /></translation>
@@ -1152,7 +1168,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7474822150871987353">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Jelöljön ki egy vagy több szót az oldalon, ha rájuk szeretne keresni.</translation>
 <translation id="7475192538862203634">Ha gyakran látja ezt, próbálja ki ezeket a <ph name="BEGIN_LINK" />javaslatokat<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Az SD-kártya nem található. Előfordulhat, hogy egyes fájlok hiányoznak.</translation>
-<translation id="7477262822945323753">A folytatáshoz a(z) <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> megosztja az Ön nevét, e-mail-címét és profilképét ezzel a webhellyel. Olvassa el a webhely <ph name="BEGIN_LINK1" />adatvédelmi irányelveit<ph name="END_LINK1" />.</translation>
 <translation id="7479104141328977413">Lapkezelés</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7482656565088326534">Előnézeti lap</translation>
@@ -1199,6 +1214,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7704317875155739195">Keresések és URL-címek automatikus kiegészítése</translation>
 <translation id="770741401784017797">GIF létrehozása…</translation>
 <translation id="7707922173985738739">Mobiladat-kapcsolat használata</translation>
+<translation id="7709094866268987903">Az eltávolított érdeklődési körök itt jelennek meg</translation>
 <translation id="7725024127233776428">Itt jelennek meg a könyvjelzőként mentett oldalak</translation>
 <translation id="7757787379047923882">Szöveg megosztva a következő eszközről: <ph name="DEVICE_NAME" /></translation>
 <translation id="7761849928583394409">Dátum és időpont kiválasztása</translation>
@@ -1342,6 +1358,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8445448999790540984">Nem sikerült a jelszavak exportálása</translation>
 <translation id="8446884382197647889">További információ</translation>
 <translation id="8453310803815879010">Dinós játék indítása</translation>
+<translation id="8455351369246067579">A Chrome felmérheti az Önt esetlegesen érdeklő témaköröket. Ezt követően az Ön által felkeresett egyes webhelyek felhasználhatják ezeket az információkat arra, hogy releváns hirdetéseket jelenítsenek meg (anélkül, hogy megismernék az Ön személyazonosságát). Az Ön közelmúltbeli böngészési előzményein alapuló érdeklődési köröket Ön megtekintheti és kezelheti.</translation>
 <translation id="8461694314515752532">A szinkronizált adatok titkosítása saját összetett szinkronizálási jelszóval</translation>
 <translation id="8466613982764129868">Győződjön meg arról, hogy a(z) <ph name="TARGET_DEVICE_NAME" /> eszköz csatlakozik az internethez</translation>
 <translation id="8473863474539038330">Címek és egyebek</translation>
@@ -1448,6 +1465,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8972098258593396643">Letölti az alapértelmezett mappába?</translation>
 <translation id="8987641763863173640">Videó-előnézeti beállítások kezelése</translation>
 <translation id="898854820045159673">Reakció hozzáadva</translation>
+<translation id="8989968390305463310">Böngészési előzményei határozzák meg az Ön számára megjelenő hirdetéseket és az alább látható módon felmért érdeklődési köröket. Adatai védelme érdekében a Chrome havi rendszerességgel automatikusan törli az Ön érdeklődési köreit. Az érdeklődési körök frissülhetnek, kivéve, ha eltávolítja őket.</translation>
 <translation id="8993760627012879038">Új lap megnyitása inkognitó módban</translation>
 <translation id="8996847606757455498">Másik szolgáltató választása</translation>
 <translation id="8998729206196772491">Egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de Google-fiókjában továbbra is megmaradnak.</translation>

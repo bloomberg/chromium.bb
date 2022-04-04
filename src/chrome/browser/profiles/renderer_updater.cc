@@ -87,8 +87,8 @@ RendererUpdater::RendererUpdater(Profile* profile)
       is_off_the_record_(profile_->IsOffTheRecord()),
       original_profile_(profile->GetOriginalProfile()) {
   if (!cef::IsAlloyRuntimeEnabled()) {
-    identity_manager_observation_.Observe(
-        IdentityManagerFactory::GetForProfile(original_profile_));
+  identity_manager_observation_.Observe(
+      IdentityManagerFactory::GetForProfile(original_profile_));
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

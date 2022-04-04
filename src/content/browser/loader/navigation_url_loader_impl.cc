@@ -675,7 +675,10 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
       if (!handled) {
         handled = GetContentClient()->browser()->HandleExternalProtocol(
             web_contents_getter_, frame_tree_node_id_,
-            navigation_ui_data_.get(), request_info_->sandbox_flags,
+            navigation_ui_data_.get(), request_info_->is_primary_main_frame,
+            FrameTreeNode::GloballyFindByID(frame_tree_node_id_)
+                ->IsInFencedFrameTree(),
+            request_info_->sandbox_flags,
             *resource_request_, initiating_origin,
             initiator_document_.AsRenderFrameHostIfValid(), &loader_factory);
       }

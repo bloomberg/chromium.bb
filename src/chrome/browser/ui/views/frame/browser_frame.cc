@@ -186,6 +186,10 @@ bool BrowserFrame::ShouldDrawFrameHeader() const {
 
 void BrowserFrame::GetWindowPlacement(gfx::Rect* bounds,
                                       ui::WindowShowState* show_state) const {
+  if (!native_browser_frame_) {
+    *show_state = ui::SHOW_STATE_DEFAULT;
+    return;
+  }
   return native_browser_frame_->GetWindowPlacement(bounds, show_state);
 }
 
@@ -374,6 +378,8 @@ void BrowserFrame::SetTabDragKind(TabDragKind tab_drag_kind) {
 
 ui::ColorProviderManager::Key BrowserFrame::GetColorProviderKey() const {
   auto key = Widget::GetColorProviderKey();
+  if (!browser_view_)
+    return key;
   auto* app_controller = browser_view_->browser()->app_controller();
   key.app_controller =
       app_controller ? app_controller->get_weak_ref() : nullptr;
