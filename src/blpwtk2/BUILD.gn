@@ -236,6 +236,8 @@ shared_library("blpwtk2") {
     "public/blpwtk2_contextmenuparams.h",
     "public/blpwtk2_iatpatchfunction.cc",
     "public/blpwtk2_iatpatchfunction.h",
+    "public/blpwtk2_measurememoryutil.cc",
+    "public/blpwtk2_measurememoryutil.h",
     "public/blpwtk2_pdfutil.cc",
     "public/blpwtk2_pdfutil.h",
     "public/blpwtk2_profile.cc",
