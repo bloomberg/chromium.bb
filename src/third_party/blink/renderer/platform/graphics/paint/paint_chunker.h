@@ -67,6 +67,9 @@ class PLATFORM_EXPORT PaintChunker final {
     should_compute_contents_opaque_ = should_compute_;
   }
 
+  Color GetBbLcdBackgroundColor() const { return bb_lcd_background_color_; }
+  void SetBbLcdBackgroundColor(Color color) { bb_lcd_background_color_ = color; }
+
   void AppendByMoving(PaintChunk&&);
 
   // Returns true if a new chunk is created.
@@ -143,6 +146,7 @@ class PLATFORM_EXPORT PaintChunker final {
   bool current_effectively_invisible_ = false;
   bool should_compute_contents_opaque_ = true;
 
+  Color bb_lcd_background_color_ = Color::kTransparent;
   Color candidate_background_color_ = Color::kTransparent;
   float candidate_background_area_ = 0;
 };

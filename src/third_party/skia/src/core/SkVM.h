@@ -17,7 +17,6 @@
 #include "src/core/SkVM_fwd.h"
 #include <vector>      // std::vector
 
-class SkColorSpace;
 class SkWStream;
 
 #if defined(SKVM_JIT_WHEN_POSSIBLE) && !defined(SK_BUILD_FOR_IOS)

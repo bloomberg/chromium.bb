@@ -283,6 +283,10 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
         pending_layer.TextKnownToBeOnOpaqueBackground());
   }
 
+  Color bb_lcd_background_color = pending_layer.FirstPaintChunk().bb_lcd_background_color;
+  cc_layer->SetDefaultLCDBackgroundColor(bb_lcd_background_color.Rgb());
+  cc_layer->SetContentsOpaqueForLCDText(bb_lcd_background_color.Alpha() == 255);
+
   return cc_layer;
 }
 

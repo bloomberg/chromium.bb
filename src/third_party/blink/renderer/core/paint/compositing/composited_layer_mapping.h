@@ -338,7 +338,6 @@ class CORE_EXPORT CompositedLayerMapping final
   // Returns true if this layer has content that needs to be displayed by
   // painting into the backing store.
   bool ContainsPaintedContent() const;
-  void UpdateLCDBackgroundColor(CompositedLayerMapping *containerLayerMapping);
 
   void UpdateContentsRect();
   void UpdateCompositingReasons();
@@ -448,7 +447,6 @@ class CORE_EXPORT CompositedLayerMapping final
   bool is_destroyed_ = false;
 #endif
 
-  Color inherited_background_color_ = Color::kTransparent;
   friend class CompositedLayerMappingTest;
 };
 

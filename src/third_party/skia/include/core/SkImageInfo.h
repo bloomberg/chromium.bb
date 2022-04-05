@@ -52,7 +52,7 @@ static constexpr inline SkColor SkColorSetARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU 
 */
 constexpr SkColor SK_ColorTRANSPARENT = SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 
-/** \enum SkAlphaType
+/** \enum SkImageInfo::SkAlphaType
     Describes how to interpret the alpha component of a pixel. A pixel may
     be opaque, or alpha, describing multiple levels of transparency.
 

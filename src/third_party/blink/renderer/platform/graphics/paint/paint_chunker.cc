@@ -103,6 +103,7 @@ bool PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id,
     chunks_->emplace_back(begin, begin, next_chunk_id_->second,
                           next_chunk_id_->first, current_properties_,
                           current_effectively_invisible_);
+    chunks_->back().bb_lcd_background_color = bb_lcd_background_color_;
     next_chunk_id_ = absl::nullopt;
     will_force_new_chunk_ = false;
     return true;

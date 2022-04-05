@@ -2641,6 +2641,7 @@ class ComputedStyle : public ComputedStyleBase,
       return true;
     return HasBackgroundImage();
   }
+  void OnBackgroundColorChanged(const ComputedStyle& parentStyle);
 
   // Color utility functions.
   CORE_EXPORT Color

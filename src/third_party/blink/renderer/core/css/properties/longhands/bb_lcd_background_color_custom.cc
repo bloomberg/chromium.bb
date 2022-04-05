@@ -43,8 +43,14 @@ void BbLcdBackgroundColor::ApplyInitial(StyleResolverState& state) const {
 void BbLcdBackgroundColor::ApplyInherit(StyleResolverState& state) const {
   state.Style()->SetLcdBackgroundColorSource(
     state.ParentStyle()->LcdBackgroundColorSource());
-  state.Style()->SetBbLcdBackgroundColor(
-    state.ParentStyle()->BbLcdBackgroundColor());
+  if (state.ParentStyle()->LcdBackgroundColorSource() == ELcdBackgroundColorSource::kAuto) {
+    state.Style()->SetBbLcdBackgroundColor(
+      state.Style()->EffectiveBackgroundColorForAutoLcd());
+  }
+  else {
+    state.Style()->SetBbLcdBackgroundColor(
+      state.ParentStyle()->BbLcdBackgroundColor());
+  }
 }
 
 void BbLcdBackgroundColor::ApplyValue(StyleResolverState& state,
@@ -64,7 +70,7 @@ void BbLcdBackgroundColor::ApplyValue(StyleResolverState& state,
           state.Style()->SetLcdBackgroundColorSource(
               ELcdBackgroundColorSource::kAuto);
           state.Style()->SetBbLcdBackgroundColor(
-              blink::Color::kTransparent);
+              state.Style()->EffectiveBackgroundColorForAutoLcd());
           return;
       default:
           if (StyleColor::IsColorKeyword(id)) {

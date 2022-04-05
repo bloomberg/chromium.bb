@@ -10,7 +10,6 @@
 
 #include "include/core/SkRect.h"
 #include "include/core/SkRefCnt.h"
-#include "include/core/SkMatrix.h"
 
 #include <vector>
 

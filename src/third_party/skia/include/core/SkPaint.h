@@ -13,7 +13,6 @@
 #include "include/core/SkRefCnt.h"
 #include "include/private/SkTOptional.h"
 #include "include/private/SkTo.h"
-#include "include/core/SkRect.h"
 
 class SkBlender;
 class SkColorFilter;

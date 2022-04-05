@@ -2327,6 +2327,18 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
 }
 
+void ComputedStyle::OnBackgroundColorChanged(const ComputedStyle& parentStyle) {
+  Color bgColor = BackgroundColor().Resolve(GetCurrentColor(), UsedColorScheme());
+  if (bgColor.HasAlpha()) {
+    Color parent = parentStyle.EffectiveBackgroundColorForAutoLcd();
+    bgColor = parent.Blend(bgColor);
+  }
+  SetEffectiveBackgroundColorForAutoLcd(bgColor);
+  if (LcdBackgroundColorSource() == ELcdBackgroundColorSource::kAuto) {
+    SetBbLcdBackgroundColor(bgColor);
+  }
+}
+
 Color ComputedStyle::VisitedDependentColor(
     const CSSProperty& color_property) const {
   DCHECK(!color_property.IsVisited());

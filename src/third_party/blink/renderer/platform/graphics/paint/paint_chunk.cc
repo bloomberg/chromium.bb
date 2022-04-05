@@ -28,6 +28,7 @@ bool PointerValueEquals(const std::unique_ptr<T>& a,
 struct SameSizeAsPaintChunk {
   wtf_size_t begin_index;
   wtf_size_t end_index;
+  Color bb_lcd_background_color;
   Color background_color;
   float background_color_area;
   PaintChunk::Id id;
