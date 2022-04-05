@@ -791,6 +791,13 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       context.GetPaintController(), chunk_properties, paint_layer_,
       DisplayItem::PaintPhaseToDrawingType(phase));
 
+  // Any `PaintChunk`s created below this scope will have its
+  // `bb_lcd_background_color` property set to the value from the current
+  // `ComputedStyle`.
+  ScopedBbLcdBackgroundColor scoped_bb_lcd_background_color(
+      context.GetPaintController(),
+      paint_layer_.GetLayoutObject().Style()->BbLcdBackgroundColor());
+
   PaintInfo paint_info(context, cull_rect, phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
                        &painting_info.root_layer->GetLayoutObject());

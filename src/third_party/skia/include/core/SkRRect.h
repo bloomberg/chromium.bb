@@ -10,7 +10,6 @@
 
 #include "include/core/SkPoint.h"
 #include "include/core/SkRect.h"
-#include "include/core/SkMatrix.h"
 
 class SkPath;
 class SkMatrix;

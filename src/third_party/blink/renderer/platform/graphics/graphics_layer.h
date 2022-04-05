@@ -143,10 +143,6 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
-  // Set the color to blend LCD text with when the layer's background color
-  // would otherwise be transparent.
-  void SetDefaultLCDBackgroundColor(const Color&);
-
   void SetHitTestable(bool);
   bool IsHitTestable() const { return hit_testable_; }
 

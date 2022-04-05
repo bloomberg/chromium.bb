@@ -58,6 +58,7 @@ struct PLATFORM_EXPORT PaintChunk {
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
       : begin_index(begin),
         end_index(begin + other.size()),
+        bb_lcd_background_color(other.bb_lcd_background_color),
         background_color(other.background_color),
         background_color_area(other.background_color_area),
         id(other.id),
@@ -125,6 +126,9 @@ struct PLATFORM_EXPORT PaintChunk {
   // Index of the first drawing not in this chunk, so that there are
   // |endIndex - beginIndex| drawings in the chunk.
   wtf_size_t end_index;
+
+  // Color to use for lcd text rendering.
+  Color bb_lcd_background_color;
 
   // Color to use for checkerboarding, derived from display item's in this
   // chunk; or Color::kTransparent if no such display item exists.

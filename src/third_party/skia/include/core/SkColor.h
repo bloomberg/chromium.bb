@@ -9,7 +9,6 @@
 #define SkColor_DEFINED
 
 #include "include/core/SkImageInfo.h"
-
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypes.h"
 
