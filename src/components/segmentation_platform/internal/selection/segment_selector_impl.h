@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SELECTION_SEGMENT_SELECTOR_IMPL_H_
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SELECTION_SEGMENT_SELECTOR_IMPL_H_
 
-#include "base/memory/raw_ptr.h"
-#include "components/segmentation_platform/internal/selection/segment_selector.h"
-
 #include "base/callback_helpers.h"
+#include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/platform_options.h"
+#include "components/segmentation_platform/internal/selection/segment_result_provider.h"
+#include "components/segmentation_platform/internal/selection/segment_selector.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 
 namespace base {
@@ -20,7 +21,8 @@ class Clock;
 namespace segmentation_platform {
 
 struct Config;
-class ModelExecutionScheduler;
+class ModelExecutionManager;
+class DefaultModelManager;
 class SegmentationResultPrefs;
 class SignalStorageConfig;
 
@@ -31,7 +33,9 @@ class SegmentSelectorImpl : public SegmentSelector {
                       SegmentationResultPrefs* result_prefs,
                       const Config* config,
                       base::Clock* clock,
-                      const PlatformOptions& platform_options);
+                      const PlatformOptions& platform_options,
+                      DefaultModelManager* default_model_manager,
+                      ModelExecutionManager* execution_manager);
 
   ~SegmentSelectorImpl() override;
 
@@ -43,8 +47,6 @@ class SegmentSelectorImpl : public SegmentSelector {
   // the selection if the new result is unknown.
   virtual void UpdateSelectedSegment(OptimizationTarget new_selection);
 
-  // ModelExecutionScheduler::Observer overrides.
-
   // Called whenever a model eval completes. Runs segment selection to find the
   // best segment, and writes it to the pref.
   void OnModelExecutionCompleted(OptimizationTarget segment_id) override;
@@ -53,21 +55,29 @@ class SegmentSelectorImpl : public SegmentSelector {
   // For testing.
   friend class SegmentSelectorTest;
 
-  // Helper method to run segment selection if possible.
-  void RunSegmentSelection(
-      std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> all_segments);
+  using SegmentRanks = base::flat_map<OptimizationTarget, int>;
 
   // Determines whether segment selection can be run based on whether all
   // segments have met signal collection requirement, have valid results, and
   // segment selection TTL has expired.
-  bool CanComputeSegmentSelection(
-      const SegmentInfoDatabase::SegmentInfoList& all_segments);
+  bool CanComputeSegmentSelection();
+
+  // Gets ranks for each segment from SegmentResultProvider, and then computes
+  // segment selection.
+  void GetRankForNextSegment(std::unique_ptr<SegmentRanks> ranks);
+
+  // Callback used to get result from SegmentResultProvider for each segment.
+  void OnGetResultForSegmentSelection(
+      std::unique_ptr<SegmentRanks> ranks,
+      OptimizationTarget current_segment_id,
+      std::unique_ptr<SegmentResultProvider::SegmentResult> result);
 
   // Loops through all segments, performs discrete mapping, honors finch
-  // supplied tie-breakers, TTL, inertia etc, and finds the highest score.
+  // supplied tie-breakers, TTL, inertia etc, and finds the highest rank.
   // Ignores the segments that have no results.
-  OptimizationTarget FindBestSegment(
-      const SegmentInfoDatabase::SegmentInfoList& all_segments);
+  OptimizationTarget FindBestSegment(const SegmentRanks& segment_scores);
+
+  std::unique_ptr<SegmentResultProvider> segment_result_provider_;
 
   // The database storing metadata and results.
   raw_ptr<SegmentInfoDatabase> segment_database_;

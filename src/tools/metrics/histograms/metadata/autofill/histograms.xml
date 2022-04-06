@@ -3552,8 +3552,22 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Autofill.VirtualCardEnroll.CardArtImageAvailable.{EnrollmentSource}"
+    enum="BooleanAvailable" expires_after="2023-04-01">
+  <owner>alexandertekle@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    This metric emits true if the card art image is available for use in the
+    virtual card enroll bubble for {EnrollmentSource} and false if it is not
+    available. Recorded when bubble is shown.
+  </summary>
+  <token key="EnrollmentSource"
+      variants="Autofill.VirtualCardEnrollmentSource"/>
+</histogram>
+
+<histogram
     name="Autofill.VirtualCardEnroll.LinkClicked.{EnrollmentSource}.{LinkType}"
-    enum="BooleanClicked" expires_after="2023-03-01">
+    enum="BooleanClicked" expires_after="2023-04-01">
   <owner>alexandertekle@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3566,7 +3580,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.VirtualCardEnrollBubble.LatencySinceUpstream"
-    units="ms" expires_after="2023-03-01">
+    units="ms" expires_after="2023-04-01">
   <owner>vinnypersky@google.com</owner>
   <owner>alexandertekle@google.com</owner>
   <owner>siyua@chromium.org</owner>
@@ -3577,6 +3591,21 @@ chromium-metrics-reviews@google.com.
     before the Virtual Card Enroll Bubble is shown, but if web contents are
     unavailable it will be logged before waiting for web contents to become
     available.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.VirtualCardEnrollBubble.MaxStrikesLimitReached"
+    enum="AutofillVirtualCardEnrollmentSource" expires_after="2023-04-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>alexandertekle@google.com</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    This metric is recorded every time the virtual card enrollment bubble would
+    have been offered but is not offered due to the maximum number of strikes
+    being reached. It logs the source for the flow where the bubble would have
+    been shown, if the strike limit did not block it (for example, upstream i.e.
+    the save card flow).
   </summary>
 </histogram>
 
@@ -3605,6 +3634,21 @@ chromium-metrics-reviews@google.com.
     that start from {EnrollmentSource}. Recorded when the bubble is shown.
     Records false the first time the bubble is shown, true for subsequent bubble
     shows.
+  </summary>
+  <token key="EnrollmentSource"
+      variants="Autofill.VirtualCardEnrollmentSource"/>
+</histogram>
+
+<histogram
+    name="Autofill.VirtualCardEnrollmentStrikeDatabase.{EnrollmentSource}"
+    enum="AutofillVirtualCardEnrollmentStrikeDatabaseEvent"
+    expires_after="2023-04-01">
+  <owner>alexandertekle@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logged when a strike is registered in the virtual card enrollment strike
+    database because a user rejects the bubble, or when strikes are cleared
+    because the user accepted enrollment.
   </summary>
   <token key="EnrollmentSource"
       variants="Autofill.VirtualCardEnrollmentSource"/>

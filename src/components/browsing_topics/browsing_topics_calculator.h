@@ -76,6 +76,7 @@ class BrowsingTopicsCalculator {
  protected:
   // This method exists for the purposes of overriding in tests.
   virtual uint64_t GenerateRandUint64();
+  virtual void CheckCanCalculate();
 
  private:
   // Get the top `kBrowsingTopicsNumberOfTopTopicsPerEpoch` topics. If there
@@ -91,12 +92,13 @@ class BrowsingTopicsCalculator {
       std::vector<Topic>& top_topics,
       size_t& padded_top_topics_start_index);
 
-  void CheckCanCalculate();
-
   void OnGetRecentBrowsingTopicsApiUsagesCompleted(
       browsing_topics::ApiUsageContextQueryResult result);
 
   void OnGetRecentlyVisitedURLsCompleted(history::QueryResults results);
+
+  void OnRequestModelCompleted(std::vector<std::string> raw_hosts,
+                               bool successful);
 
   void OnGetTopicsForHostsCompleted(
       std::vector<std::string> raw_hosts,

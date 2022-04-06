@@ -275,12 +275,33 @@ void BrowsingTopicsCalculator::OnGetRecentlyVisitedURLsCompleted(
       "BrowsingTopics.EpochTopicsCalculation.EligibleDistinctHistoryHostsCount",
       history_hosts_count_.size());
 
-  std::vector<std::string> raw_hosts_vector(raw_hosts.begin(), raw_hosts.end());
+  // When the input is empty, we still want to wait for the model availability
+  // status to be known, before querying the model version. Thus we simply
+  // always call `RequestAndNotifyWhenModelAvailable()` first. If the model
+  // availability status is already known, the function will be cheap and the
+  // callback will be synchronously called.
+  annotations_service_->RequestAndNotifyWhenModelAvailable(
+      optimization_guide::AnnotationType::kPageTopics,
+      base::BindOnce(
+          &BrowsingTopicsCalculator::OnRequestModelCompleted,
+          weak_ptr_factory_.GetWeakPtr(),
+          std::vector<std::string>(raw_hosts.begin(), raw_hosts.end())));
+}
+
+void BrowsingTopicsCalculator::OnRequestModelCompleted(
+    std::vector<std::string> raw_hosts,
+    bool successful) {
+  // Ignore `successful`. In `OnGetTopicsForHostsCompleted()`, it will need to
+  // check the model again anyway in case there's a race.
+  if (raw_hosts.empty()) {
+    OnGetTopicsForHostsCompleted(/*raw_hosts=*/{}, /*results=*/{});
+    return;
+  }
 
   annotations_service_->BatchAnnotatePageTopics(
       base::BindOnce(&BrowsingTopicsCalculator::OnGetTopicsForHostsCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), raw_hosts_vector),
-      raw_hosts_vector);
+                     weak_ptr_factory_.GetWeakPtr(), raw_hosts),
+      raw_hosts);
 }
 
 void BrowsingTopicsCalculator::OnGetTopicsForHostsCompleted(
@@ -303,7 +324,7 @@ void BrowsingTopicsCalculator::OnGetTopicsForHostsCompleted(
     return;
   }
 
-  const int model_version = base::checked_cast<int>(model_info->GetVersion());
+  const int64_t model_version = model_info->GetVersion();
   DCHECK_GT(model_version, 0);
 
   std::map<HashedHost, std::set<Topic>> host_topics_map;
@@ -356,8 +377,7 @@ void BrowsingTopicsCalculator::OnGetTopicsForHostsCompleted(
 void BrowsingTopicsCalculator::OnCalculateCompleted(
     CalculatorResultStatus status,
     EpochTopics epoch_topics) {
-  DCHECK(status != CalculatorResultStatus::kSuccess ||
-         epoch_topics.HasValidTopics());
+  DCHECK(status != CalculatorResultStatus::kSuccess || !epoch_topics.empty());
 
   base::UmaHistogramEnumeration(
       "BrowsingTopics.EpochTopicsCalculation.CalculatorResultStatus", status);

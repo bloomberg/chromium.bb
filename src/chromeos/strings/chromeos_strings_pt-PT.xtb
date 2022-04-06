@@ -356,7 +356,7 @@
 <translation id="5049856988445523908">SIM bloqueado (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
 <translation id="5051044138948155788">Esta é a única página. Será apresentado o ecrã inicial da digitalização.</translation>
-<translation id="5088172560898466307">Nome de anfitrião do servidor</translation>
+<translation id="5088172560898466307">Nome do anfitrião do servidor</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Autenticação</translation>
@@ -448,6 +448,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="6106186594183574873">Para terminar, introduza a palavra-passe antiga</translation>
 <translation id="6108689792487843350">Não é possível alcançar o gateway.</translation>
 <translation id="6113701710518389813">Seta para cima</translation>
+<translation id="6117895505466548728"><ph name="TITLE" /> e mais <ph name="NUMBER" /> álbuns</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6137767437444130246">Certificado do utilizador</translation>
 <translation id="6146993107019042706">Para terminar, introduza a nova palavra-passe.</translation>

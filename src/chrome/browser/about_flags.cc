@@ -1314,27 +1314,18 @@ const FeatureEntry::FeatureVariation
         {"Signed-out Users", {}, 0, "t4693176"},
         {"All Users", {}, 0, "t4693177"}};
 
+constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestInMemoryCache[] = {
+    {"ZeroSuggestCacheCounterfactual", "true"}};
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration15Secs[] =
     {{"ZeroSuggestCacheDurationSec", "15"},
-     {"ZeroSuggestCacheCounterfactual", "true"},
-     {"ZeroSuggestPrefetchBypassCache", "true"}};
-constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration30Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "30"},
-     {"ZeroSuggestCacheCounterfactual", "true"},
-     {"ZeroSuggestPrefetchBypassCache", "true"}};
-constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration60Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "60"},
-     {"ZeroSuggestCacheCounterfactual", "true"},
-     {"ZeroSuggestPrefetchBypassCache", "true"}};
+     {"ZeroSuggestCacheCounterfactual", "true"}};
 
 constexpr FeatureEntry::FeatureVariation
     kOmniboxZeroSuggestPrefetchingVariations[] = {
-        {"15 seconds", kOmniboxZeroSuggestCacheDuration15Secs,
-         std::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr},
-        {"30 seconds", kOmniboxZeroSuggestCacheDuration30Secs,
-         std::size(kOmniboxZeroSuggestCacheDuration30Secs), nullptr},
-        {"60 seconds", kOmniboxZeroSuggestCacheDuration60Secs,
-         std::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr}};
+        {"In-memory cache", kOmniboxZeroSuggestInMemoryCache,
+         std::size(kOmniboxZeroSuggestInMemoryCache), nullptr},
+        {"15 sec HTTP cache", kOmniboxZeroSuggestCacheDuration15Secs,
+         std::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -1910,6 +1901,7 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
+    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -5554,6 +5546,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebAuthenticationCableDiscoCredsDescription,
      kOsAll, FEATURE_VALUE_TYPE(device::kWebAuthCableDisco)},
 
+    {"enable-web-authentication-passkeys-ui-experiment",
+     flag_descriptions::kEnableWebAuthenticationPasskeysUIExperimentName,
+     flag_descriptions::kEnableWebAuthenticationPasskeysUIExperimentDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPasskeysUIExperiment)},
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-web-authentication-chromeos-authenticator",
      flag_descriptions::kEnableWebAuthenticationChromeOSAuthenticatorName,
@@ -6751,6 +6748,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableVirtualCardName,
      flag_descriptions::kAutofillEnableVirtualCardDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableVirtualCard)},
+#if BUILDFLAG(IS_ANDROID)
+    {"autofill-enable-manual-fallback-for-virtual-cards",
+     flag_descriptions::kAutofillEnableManualFallbackForVirtualCardsName,
+     flag_descriptions::kAutofillEnableManualFallbackForVirtualCardsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableManualFallbackForVirtualCards)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"account-id-migration", flag_descriptions::kAccountIdMigrationName,
@@ -7311,7 +7316,10 @@ const FeatureEntry kFeatureEntries[] = {
      // multiple related features when they are available.
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
                                  "PrivacySandboxAdsAPIsOverride,"
-                                 "Fledge,BrowsingTopics,ConversionMeasurement,"
+                                 "InterestGroupStorage,Fledge,"
+                                 "BiddingAndScoringDebugReportingAPI,"
+                                 "AllowURNsInIframes,BrowsingTopics,"
+                                 "ConversionMeasurement,"
                                  "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,

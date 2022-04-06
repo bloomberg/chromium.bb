@@ -95,6 +95,14 @@ struct Config {
   // a visit can be considered for the same cluster.
   base::TimeDelta cluster_navigation_time_cutoff = base::Minutes(60);
 
+  // The minimum threshold for whether an entity is considered relevant to the
+  // visit.
+  int entity_relevance_threshold = 60;
+
+  // The minimum threshold for whether a category is considered relevant to the
+  // visit.
+  int category_relevance_threshold = 36;  // 60 * 0.6 = 36.
+
   // Returns whether content clustering is enabled and
   // should be performed by the clustering backend.
   bool content_clustering_enabled = true;
@@ -187,6 +195,9 @@ struct Config {
   // The set of hosts for which all visits belonging to that host will not be in
   // any cluster.
   base::flat_set<std::string> hosts_to_skip_clustering_for;
+
+  // True if the task runner should use trait CONTINUE_ON_SHUTDOWN.
+  bool use_continue_on_shutdown = true;
 
   Config();
   Config(const Config& other);
