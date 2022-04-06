@@ -121,7 +121,8 @@ bool NativeViewWidget::focus()
 {
     DCHECK(d_impl);
     HWND hwnd = views::HWNDForWidget(d_impl);
-    if(::SetFocus(hwnd) == NULL) {
+    HWND oldFocusedHwnd = ::GetFocus();
+    if(::SetFocus(hwnd) != oldFocusedHwnd) {
         PLOG(WARNING) << "::SetFocus for HWND " << hwnd << " failed";
         return false;
     }
