@@ -64,7 +64,7 @@ struct BLPWTK2_EXPORT MeasureMemoryUtil {
                      // class MeasureMemoryUtil::Delegate
                      // =================================
 
-    class Delegate {
+    class BLPWTK2_EXPORT Delegate {
         // This abstract interface should be implemented by callers interested
         // in measuring memory used by a subset of the contexts within a
         // 'v8::Isolate'. This delegate is used by 'MeasureMemory' to determine
