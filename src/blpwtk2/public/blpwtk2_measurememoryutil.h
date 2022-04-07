@@ -54,8 +54,7 @@ struct BLPWTK2_EXPORT MeasureMemoryUtil {
             // The memory this context exclusively uses in bytes.
 
         // CREATORS
-        ContextAndSize(const v8::Local<v8::Context>& context,
-                       size_t                        exclusiveUsage);
+        ContextAndSize(v8::Local<v8::Context> context, size_t exclusiveUsage);
             // Create this object with the specified 'context' and
             // 'exclusiveUsage'.
     };
