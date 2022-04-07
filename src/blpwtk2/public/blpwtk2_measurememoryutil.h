@@ -54,8 +54,7 @@ struct BLPWTK2_EXPORT MeasureMemoryUtil {
             // The memory this context exclusively uses in bytes.
 
         // CREATORS
-        ContextAndSize(const v8::Local<v8::Context>& context,
-                       size_t                        exclusiveUsage);
+        ContextAndSize(v8::Local<v8::Context> context, size_t exclusiveUsage);
             // Create this object with the specified 'context' and
             // 'exclusiveUsage'.
     };
@@ -64,7 +63,7 @@ struct BLPWTK2_EXPORT MeasureMemoryUtil {
                      // class MeasureMemoryUtil::Delegate
                      // =================================
 
-    class Delegate {
+    class BLPWTK2_EXPORT Delegate {
         // This abstract interface should be implemented by callers interested
         // in measuring memory used by a subset of the contexts within a
         // 'v8::Isolate'. This delegate is used by 'MeasureMemory' to determine

@@ -91,8 +91,8 @@ void MeasureMemoryUtil::measure(v8::Isolate *isolate,
 
 // CREATORS
 MeasureMemoryUtil::ContextAndSize::ContextAndSize(
-                       const v8::Local<v8::Context>& context,
-                       size_t                        exclusiveUsage)
+                                         v8::Local<v8::Context> context,
+                                         size_t                 exclusiveUsage)
 : d_context(context)
 , d_exclusiveUsage(exclusiveUsage)
 {
