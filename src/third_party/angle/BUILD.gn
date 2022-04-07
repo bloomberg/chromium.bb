@@ -1171,7 +1171,10 @@ template("angle_libGLESv2") {
 
     defines = [ "LIBGLESV2_IMPLEMENTATION" ]
 
-    deps = invoker.deps + [ ":includes" ]
+    deps = invoker.deps + [
+      "//blpwtk2:blpwtk2_generate_sources",
+      ":includes",
+    ]
 
     if (is_win) {
       sources += [
