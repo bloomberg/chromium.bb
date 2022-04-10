@@ -147,7 +147,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
     content::RenderFrameHost* render_frame_host,
