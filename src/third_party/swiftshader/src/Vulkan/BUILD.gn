@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//blpwtk2/blpwtk2.gni")
 import("//build_overrides/build.gni")
 import("../swiftshader.gni")
 import("vulkan.gni")
@@ -154,6 +155,10 @@ swiftshader_shared_library("swiftshader_libvulkan") {
   ]
 
   configs = [ ":swiftshader_libvulkan_private_config" ]
+
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
 
   # TODO(capn): Use the same ICD name on both Windows and non-Windows.
   if (is_win) {

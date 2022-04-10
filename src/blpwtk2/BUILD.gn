@@ -90,11 +90,7 @@ mojom("interfaces") {
 }
 
 repack("pak") {
-  if (bb_version != "") {
-    output = "${root_out_dir}/blpwtk2.$bb_version.pak"
-  } else {
-    output = "${root_out_dir}/blpwtk2.pak"
-  }
+  output = "${root_out_dir}/blpwtk2.pak"
 
   sources = [
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
@@ -114,10 +110,6 @@ repack("pak") {
 }
 
 shared_library("blpwtk2") {
-  if (bb_version != "") {
-    output_name = "blpwtk2.$bb_version"
-  }
-
   sources = [
     "$target_gen_dir/$blpwtk2_products_h",
     "$target_gen_dir/$version_cc",
@@ -384,10 +376,6 @@ shared_library("blpwtk2") {
 }
 
 executable("blpwtk2_subprocess") {
-  if (bb_version != "") {
-    output_name = "blpwtk2_subprocess.$bb_version"
-  }
-
   sources = [
     "subprocess/main.cc",
     "subprocess/resources.rc",
