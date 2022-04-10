@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//blpwtk2/blpwtk2.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/host/installer/win/generate_clsids.gni")
 import("//remoting/host/installer/win/wix_path.gni")
@@ -67,18 +66,8 @@ action("remoting_me2me_host_archive") {
     "$root_out_dir/remoting/com.google.chrome.remote_assistance-firefox.json",
     "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
     "$root_out_dir/remoting/com.google.chrome.remote_desktop-firefox.json",
+    "$root_out_dir/icudtl.dat",
   ]
-
-  if (bb_version == "") {
-    inputs += [
-      "$root_out_dir/icudtl.dat"
-    ]
-
-  } else {
-    inputs += [
-      "$root_out_dir/icudtl.$bb_version.dat"
-    ]
-  }
 
   _generated_files = rebase_path(inputs, root_build_dir)
   _generated_files +=

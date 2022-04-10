@@ -113,6 +113,11 @@ class ContentBrowserClientImpl final : public content::ContentBrowserClient {
         blink::AssociatedInterfaceRegistry* associated_registry,
         content::RenderProcessHost* render_process_host) override;
 
+    bool BindAssociatedReceiverFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle* handle) override;
+
     // Start the in-process renderer thread.  This will only ever be called if
     // SupportsInProcessRenderer() returns true.
     void StartInProcessRendererThread(
