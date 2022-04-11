@@ -849,7 +849,8 @@ void logMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity
                        int line,
                        const char* message)
 {
-    std::cout << "[" << file << ":" << line << "] " << message << std::endl;
+    std::cout << "[" << ::GetCurrentProcessId() << ":" << GetCurrentThreadId()
+              << "][" << file << ":" << line << "]: " << message << std::endl;
 }
 
 void consoleLogMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity severity,
@@ -859,7 +860,8 @@ void consoleLogMessageHandler(blpwtk2::ToolkitCreateParams::LogMessageSeverity s
                               const blpwtk2::StringRef& message,
                               const blpwtk2::StringRef& stack_trace)
 {
-    std::cout << "[" << std::string(file.data(), file.length()) << ":"
+    std::cout << "[" << ::GetCurrentProcessId() << ":" << GetCurrentThreadId()
+              << "][" << std::string(file.data(), file.length()) << ":"
               << line << ":" << column << "] "
               << std::string(message.data(), message.length()) << std::endl;
      if (!stack_trace.isEmpty()) {
