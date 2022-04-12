@@ -106,7 +106,21 @@ class RequestPeerReceiver : public ResourceReceiver {
         if (!received_data_.empty()) {
             mojo::ScopedDataPipeProducerHandle producer_handle;
             mojo::ScopedDataPipeConsumerHandle consumer_handle;
-            CHECK_EQ(mojo::CreateDataPipe(received_data_.size(), producer_handle, consumer_handle), MOJO_RESULT_OK);
+
+            MojoResult mojoResult = mojo::CreateDataPipe(received_data_.size(),
+                                                         producer_handle,
+                                                         consumer_handle);
+
+            // CreateDataPipe may fail if system resource is exhausted (MOJO_RESULT_RESOURCE_EXHAUSTED)
+            // It may also fail during process termination
+            if (mojoResult != MOJO_RESULT_OK) {
+                LOG(WARNING) << "Failed to create mojo datapipe, error: " << mojoResult;
+
+                peer_->OnCompletedRequest(
+                    network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
+                sender_->DeletePendingRequest(runner_);
+                return;
+            }
 
             peer_->OnStartLoadingResponseBody(std::move(consumer_handle));
             uint32_t len = received_data_.size();
