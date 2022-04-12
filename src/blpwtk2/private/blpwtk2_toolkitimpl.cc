@@ -683,7 +683,12 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
     if (!isHost) {
         content::InitializeFieldTrialAndFeatureList();
+    } else if (browserV8Enabled && Statics::isOriginalThreadMode()) {
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+        gin::V8Initializer::LoadV8Snapshot(gin::V8SnapshotFileType::kWithAdditionalContext);
+#endif
     }
+
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
 
@@ -699,10 +704,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         }
     }
 
-    else if (isHost && browserV8Enabled && Statics::isOriginalThreadMode()) {
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-        gin::V8Initializer::LoadV8Snapshot(gin::V8SnapshotFileType::kWithAdditionalContext);
-#endif
+    else if (isHost && browserV8Enabled) {
         gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                        gin::ArrayBufferAllocator::SharedInstance());
 
