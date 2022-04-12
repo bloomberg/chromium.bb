@@ -704,7 +704,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         }
     }
 
-    else if (isHost && browserV8Enabled && Statics::isOriginalThreadMode()) {
+    else if (isHost && browserV8Enabled) {
         gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                        gin::ArrayBufferAllocator::SharedInstance());
 
