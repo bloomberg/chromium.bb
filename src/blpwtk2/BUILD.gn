@@ -471,7 +471,7 @@ group("blpwtk2_all") {
     "//v8:d8",
   ]
 
-  if (!is_official_build) {
+  if (blpwtk2_include_tests) {
     deps += [
       #"//base:base_unittests",  # This unittest fails to build against dynamic CRT
       "//:blink_tests",
