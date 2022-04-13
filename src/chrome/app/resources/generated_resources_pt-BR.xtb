@@ -2441,7 +2441,7 @@ e Ctrl + Alt + Diminuir brilho para diminuí-lo.</translation>
 <translation id="337286756654493126">Permissão de leitura em pastas que você abre no aplicativo</translation>
 <translation id="3374294321938930390">O favorito "<ph name="BOOKMARK_TITLE" />" foi movido para a pasta "<ph name="NEW_FOLDER_TITLE" />".</translation>
 <translation id="3378572629723696641">Esta extensão pode ter sido corrompida.</translation>
-<translation id="3378627645871606983">As permissões concedidas para o app Steam se aplicam a todos os jogos e apps dele.</translation>
+<translation id="3378627645871606983">As permissões concedidas para o app Steam são válidas para todos os jogos e apps dele.</translation>
 <translation id="337920581046691015">O <ph name="PRODUCT_NAME" /> será instalado</translation>
 <translation id="3380365263193509176">Erro desconhecido</translation>
 <translation id="3380850890226973980">Perguntar na próxima vez</translation>
@@ -8046,7 +8046,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Verifique com seu administrador de rede se o firewall não está bloqueando downloads dos servidores do Google.</translation>
 <translation id="8973557916016709913">Remover o nível de zoom</translation>
-<translation id="8973596347849323817">É possível personalizar este dispositivo para atender às suas necessidades. Esses recursos de acessibilidade podem ser alterados posteriormente em "Config.".</translation>
+<translation id="8973596347849323817">Você pode personalizar este dispositivo do jeito que quiser. Esses recursos de acessibilidade podem ser alterados depois nas Configurações.</translation>
 <translation id="897414447285476047">O arquivo de destino estava incompleto devido a um problema de conexão.</translation>
 <translation id="897525204902889653">Serviço de quarentena</translation>
 <translation id="8975396729541388937">Cancele a inscrição a qualquer momento clicando no link nos e-mails recebidos.</translation>

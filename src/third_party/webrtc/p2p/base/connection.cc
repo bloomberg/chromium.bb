@@ -868,6 +868,21 @@ void Connection::FailAndDestroy() {
 
 void Connection::FailAndPrune() {
   RTC_DCHECK_RUN_ON(network_thread_);
+
+  // TODO(bugs.webrtc.org/13865): There's a circular dependency between Port
+  // and Connection. In some cases (Port dtor), a Connection object is deleted
+  // without using the `Destroy` method (pending_delete_ won't be raised and
+  // some functionality won't run as expected), while in other cases
+  // (AddOrReplaceConnection), the Connection object is deleted asynchronously
+  // via the `Destroy` method and in that case `pending_delete_` will be raised.
+  // However, in that case, there's a chance that the Port object gets
+  // deleted before the Connection object ends up being deleted. So, the
+  // Connection object holds on to a potentially bogus `port_` pointer.
+  // Here, we avoid such a potential, but the cleanup operations in Port
+  // need to be made consistent and safe.
+  if (pending_delete_)
+    return;
+
   set_state(IceCandidatePairState::FAILED);
   Prune();
 }
@@ -1187,49 +1202,65 @@ uint32_t Connection::ComputeNetworkCost() const {
 
 std::string Connection::ToString() const {
   RTC_DCHECK_RUN_ON(network_thread_);
-  const absl::string_view CONNECT_STATE_ABBREV[2] = {
+  constexpr absl::string_view CONNECT_STATE_ABBREV[2] = {
       "-",  // not connected (false)
       "C",  // connected (true)
   };
-  const absl::string_view RECEIVE_STATE_ABBREV[2] = {
+  constexpr absl::string_view RECEIVE_STATE_ABBREV[2] = {
       "-",  // not receiving (false)
       "R",  // receiving (true)
   };
-  const absl::string_view WRITE_STATE_ABBREV[4] = {
+  constexpr absl::string_view WRITE_STATE_ABBREV[4] = {
       "W",  // STATE_WRITABLE
       "w",  // STATE_WRITE_UNRELIABLE
       "-",  // STATE_WRITE_INIT
       "x",  // STATE_WRITE_TIMEOUT
   };
-  const absl::string_view ICESTATE[4] = {
+  constexpr absl::string_view ICESTATE[4] = {
       "W",  // STATE_WAITING
       "I",  // STATE_INPROGRESS
       "S",  // STATE_SUCCEEDED
       "F"   // STATE_FAILED
   };
-  const absl::string_view SELECTED_STATE_ABBREV[2] = {
+  constexpr absl::string_view SELECTED_STATE_ABBREV[2] = {
       "-",  // candidate pair not selected (false)
       "S",  // selected (true)
   };
-  const Candidate& local = local_candidate();
-  const Candidate& remote = remote_candidate();
   rtc::StringBuilder ss;
-  ss << "Conn[" << ToDebugId() << ":" << port_->content_name() << ":"
-     << port_->Network()->ToString() << ":" << local.id() << ":"
-     << local.component() << ":" << local.generation() << ":" << local.type()
-     << ":" << local.protocol() << ":" << local.address().ToSensitiveString()
-     << "->" << remote.id() << ":" << remote.component() << ":"
-     << remote.priority() << ":" << remote.type() << ":" << remote.protocol()
-     << ":" << remote.address().ToSensitiveString() << "|"
-     << CONNECT_STATE_ABBREV[connected()] << RECEIVE_STATE_ABBREV[receiving()]
-     << WRITE_STATE_ABBREV[write_state()] << ICESTATE[static_cast<int>(state())]
-     << "|" << SELECTED_STATE_ABBREV[selected_] << "|" << remote_nomination()
-     << "|" << nomination_ << "|" << priority() << "|";
+  ss << "Conn[" << ToDebugId();
+
+  if (pending_delete_) {
+    // No content name for pending delete, so temporarily substitute the name
+    // with a hash (rhyming with trash) and don't include any information about
+    // the network or candidates, state that belongs to a potentially deleted
+    // `port_`.
+    ss << ":#:";
+  } else {
+    const Candidate& local = local_candidate();
+    const Candidate& remote = remote_candidate();
+    ss << ":" << port_->content_name() << ":" << port_->Network()->ToString()
+       << ":" << local.id() << ":" << local.component() << ":"
+       << local.generation() << ":" << local.type() << ":" << local.protocol()
+       << ":" << local.address().ToSensitiveString() << "->" << remote.id()
+       << ":" << remote.component() << ":" << remote.priority() << ":"
+       << remote.type() << ":" << remote.protocol() << ":"
+       << remote.address().ToSensitiveString() << "|";
+  }
+
+  ss << CONNECT_STATE_ABBREV[connected_] << RECEIVE_STATE_ABBREV[receiving_]
+     << WRITE_STATE_ABBREV[write_state_] << ICESTATE[static_cast<int>(state_)]
+     << "|" << SELECTED_STATE_ABBREV[selected_] << "|" << remote_nomination_
+     << "|" << nomination_ << "|";
+
+  if (!pending_delete_)
+    ss << priority() << "|";
+
   if (rtt_ < DEFAULT_RTT) {
     ss << rtt_ << "]";
   } else {
     ss << "-]";
   }
+
   return ss.Release();
 }
 

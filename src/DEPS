@@ -253,11 +253,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '34ad5c908c9a0993bedd10c70d9448f87c58c7eb',
+  'skia_revision': 'ef69dcf0c2dbda06cd47082f42a2433f7ba86a78',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c76a297e6aa169df216b026d277ce76ed7bf4dcb',
+  'v8_revision': 'bd997a77ae2137076f05352b09729f3a41af5739',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '42c9b9b87a372cda22d4db328282d970b97c5294',
+  'pdfium_revision': 'f4c62094abe20ade3a29328bc370238b7e7812b2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '28a3c8947e8f1f4abec6d67ebcba695a619ca63c',
+  'dawn_revision': '211e96c6069c66c6d503cfa2b35226c7118c7927',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -530,7 +530,7 @@ deps = {
     'packages': [
       {
         'package': 'infra/3pp/tools/httpd-php/mac-amd64',
-        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.2',
+        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.3',
       },
     ],
     'dep_type': 'cipd',
@@ -540,11 +540,22 @@ deps = {
     'packages': [
       {
         'package': 'infra/3pp/tools/httpd-php/mac-arm64',
-        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.2',
+        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.3',
       },
     ],
     'dep_type': 'cipd',
     'condition': '(host_os == "mac")',
+  },
+
+  'src/third_party/apache-linux': {
+    'packages': [
+      {
+        'package': 'infra/3pp/tools/httpd-php/${{platform}}',
+        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.3',
+      },
+    ],
+    'dep_type': 'cipd',
+    'condition': '(host_os == "linux")',
   },
 
   'src/android_webview/tools/cts_archive': {
@@ -1650,7 +1661,7 @@ deps = {
   },
 
   'src/third_party/ruy/src':
-    Var('chromium_git') + '/external/github.com/google/ruy.git' + '@' + '2d950b3bfa7ebfbe7a97ecb44b1cc4da5ac1d6f0',
+    Var('chromium_git') + '/external/github.com/google/ruy.git' + '@' + '7ef39c5745a61f43071e699c6a96da41701ae59f',
 
   'src/third_party/skia':
     Var('skia_git') + '/skia.git' + '@' +  Var('skia_revision'),
@@ -1744,7 +1755,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a630866d89f74aa95cf3aecd78987637ee195b68',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e2fb8e8b1a6e868a870a895b35f9adbd13770461',
+    Var('webrtc_git') + '/src.git' + '@' + '34e12465a46da3c220eab0489881cd89a4d659d2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1814,7 +1825,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9f3b2fcdea911440279bfe00ccbe1057db7cdd7d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5f1005d54206ad8ba8ed2087b6cf735d167fe0b1',
     'condition': 'checkout_src_internal',
   },
 
