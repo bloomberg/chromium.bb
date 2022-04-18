@@ -71,9 +71,9 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "ANGLE libEGL Dynamic Link Library"
             VALUE "FileVersion", BLPWTK2_RC_VERSION
-            VALUE "InternalName", "blpcr_egl"
+            VALUE "InternalName", "libEGL"
             VALUE "LegalCopyright", "Copyright (C) 2015 Google Inc."
-            VALUE "OriginalFilename", BLPCR_EGL_DLL_NAME
+            VALUE "OriginalFilename", "libEGL.dll"
             VALUE "ProductName", "ANGLE libEGL Dynamic Link Library"
             VALUE "ProductVersion", BLPWTK2_RC_VERSION
         END

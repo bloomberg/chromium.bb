@@ -95,6 +95,13 @@ int NativeViewWidget::setParent(blpwtk2::NativeView parent)
     if (!::SetParent(hwnd, parent)) {
         status = ::GetLastError();
     }
+    else {
+        // Make sure this hwnd is at the bottom.
+        // 'x-bloomberg-jswidget' might already embed a window that is a sibling of this hwnd.
+        // Therefore this hwnd should be set at the bottom.
+        ::SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0,
+            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
+    }
     LOG(INFO) << "NativeViewWidget::setParent hwnd = " << hwnd << ", parent = " << (void*)parent << ", status = " << status;
     return status;
 }
