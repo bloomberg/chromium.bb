@@ -90,11 +90,7 @@ mojom("interfaces") {
 }
 
 repack("pak") {
-  if (bb_version != "") {
-    output = "${root_out_dir}/blpwtk2.$bb_version.pak"
-  } else {
-    output = "${root_out_dir}/blpwtk2.pak"
-  }
+  output = "${root_out_dir}/blpwtk2.pak"
 
   sources = [
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
@@ -114,10 +110,6 @@ repack("pak") {
 }
 
 shared_library("blpwtk2") {
-  if (bb_version != "") {
-    output_name = "blpwtk2.$bb_version"
-  }
-
   sources = [
     "$target_gen_dir/$blpwtk2_products_h",
     "$target_gen_dir/$version_cc",
@@ -154,6 +146,21 @@ shared_library("blpwtk2") {
     "private/blpwtk2_findonpage.h",
     "private/blpwtk2_inprocessrenderer.cc",
     "private/blpwtk2_inprocessrenderer.h",
+
+
+
+    # patch section: url loader
+
+
+
+    # patch section: jswidget plugin
+
+
+
+    # patch section: log message handler
+
+
+
     "private/blpwtk2_mainmessagepump.cc",
     "private/blpwtk2_mainmessagepump.h",
     "private/blpwtk2_nativeviewwidget.cc",
@@ -172,6 +179,17 @@ shared_library("blpwtk2") {
     "private/blpwtk2_rendereriothread.h",
     "private/blpwtk2_rendererutil.cc",
     "private/blpwtk2_rendererutil.h",
+
+
+
+    # patch section: url loader
+
+
+
+    # patch section: renderer ui
+
+
+
     "private/blpwtk2_requestcontextmanager.cc",
     "private/blpwtk2_requestcontextmanager.h",
     "private/blpwtk2_resourcecontextimpl.cc",
@@ -357,10 +375,6 @@ shared_library("blpwtk2") {
 }
 
 executable("blpwtk2_subprocess") {
-  if (bb_version != "") {
-    output_name = "blpwtk2_subprocess.$bb_version"
-  }
-
   sources = [
     "subprocess/main.cc",
     "subprocess/resources.rc",
@@ -412,7 +426,7 @@ group("blpwtk2_all") {
     "//v8:d8",
   ]
 
-  if (!is_official_build) {
+  if (blpwtk2_include_tests) {
     deps += [
       #"//base:base_unittests",  # This unittest fails to build against dynamic CRT
       "//:blink_tests",
