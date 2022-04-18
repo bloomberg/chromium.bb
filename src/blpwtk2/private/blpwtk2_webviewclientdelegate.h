@@ -131,6 +131,12 @@ class WebViewClientDelegate
         // This method is called when the setParent call is done   
         // If successful, status 0 will be returned, otherwise error code from GetLassError()
         // will be returned as status 
+
+    // patch section: nc hittest dragging
+
+
+    // patch section: devtools integration
+
 };
 
 }  // close namespace blpwtk2
