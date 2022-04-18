@@ -75,9 +75,9 @@ BEGIN
 				VALUE "FileDescription", "SwiftShader libGLESv2 32-bit Dynamic Link Library"
 			#endif
             VALUE "FileVersion", BLPWTK2_RC_VERSION
-            VALUE "InternalName", "blpcr_glesv2"
+            VALUE "InternalName", "libGLESv2"
             VALUE "LegalCopyright", "Copyright (C) 2016 Google Inc."
-            VALUE "OriginalFilename",BLPCR_GLESV2_DLL_NAME
+            VALUE "OriginalFilename", "libGLESv2.dll"
             VALUE "PrivateBuild", BLPWTK2_RC_VERSION
             VALUE "ProductName", "SwiftShader libGLESv2 Dynamic Link Library"
             VALUE "ProductVersion", BLPWTK2_RC_VERSION
