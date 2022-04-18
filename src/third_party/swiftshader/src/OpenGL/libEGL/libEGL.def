@@ -1,3 +1,4 @@
+LIBRARY	libEGL
 EXPORTS
 	eglBindAPI                      @14
 	eglBindTexImage                 @20
