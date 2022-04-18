@@ -31,6 +31,7 @@
 #include <fstream>
 #include <string>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include <blpwtk2.h>
@@ -157,6 +158,7 @@ void testV8AppendElement(blpwtk2::WebView* webView)
 {
     blpwtk2::WebFrame* mainFrame = webView->mainFrame();
     v8::Isolate* isolate = mainFrame->scriptIsolate();
+    v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::HandleScope handleScope(isolate);
     v8::Local<v8::Context> ctxt = mainFrame->mainWorldScriptContext();
     static const char SCRIPT[] =
@@ -1537,18 +1539,33 @@ class DummyResourceLoader : public blpwtk2::ResourceLoader {
     // will return the contents of:
     //
     //     C:\stuff\test.html
+    //
+    // By default, "http://cdrive/" is mapped to "C:\".  More mappings can be
+    // added in the constructor, for example to do local bundle testing.
+
+    std::unordered_map<std::string, std::string> d_mappings;
 
 public:
-    static const char PREFIX[];
+    DummyResourceLoader()
+    {
+        d_mappings["http://cdrive/"] = "C:\\";
+
+        // Add more mappings here for local testing, e.g. bundle loading from
+        // local disk:
+        // d_mappings["http://bundles.bloomberg.com/sys-blp-ui-1.212.7/"] = "c:\\dev\\bundles\\sys-blp-ui\\";
+        // d_mappings["http://bundles.bloomberg.com/sys-ui-1.578.6/"] = "c:\\dev\\bundles\\sys-ui\\";
+    }
 
     bool canHandleURL(const blpwtk2::StringRef& url) override
     {
-        if (url.length() <= strlen(PREFIX))
-            return false;
-        blpwtk2::StringRef prefix(url.data(), strlen(PREFIX));
-        if (!prefix.equals(PREFIX))
-            return false;
-        return true;
+        for (const auto& it : d_mappings) {
+            if (url.length() <= it.first.length())
+                continue;
+            blpwtk2::StringRef prefix(url.data(), it.first.length());
+            if (prefix.equals(it.first))
+                return true;
+        }
+        return false;
     }
 
     void start(const blpwtk2::StringRef& url,
@@ -1557,9 +1574,18 @@ public:
     {
         assert(canHandleURL(url));
 
-        std::string filePath = "C:\\";
-        filePath.append(url.data() + strlen(PREFIX),
-                        url.length() - strlen(PREFIX));
+        std::string filePath;
+        for (const auto& it : d_mappings) {
+            if (url.length() <= it.first.length())
+                continue;
+            blpwtk2::StringRef prefix(url.data(), it.first.length());
+            if (prefix.equals(it.first)) {
+                filePath = it.second;
+                filePath.append(url.data() + it.first.length(),
+                                url.length() - it.first.length());
+                break;
+            }
+        }
         std::replace(filePath.begin(), filePath.end(), '/', '\\');
 
         std::ifstream fstream(filePath.c_str());
@@ -1592,7 +1618,6 @@ public:
                         // get canceled
     }
 };
-const char DummyResourceLoader::PREFIX[] = "http://cdrive/";
 
 blpwtk2::ResourceLoader* createInProcessResourceLoader()
 {
@@ -1600,7 +1625,7 @@ blpwtk2::ResourceLoader* createInProcessResourceLoader()
 }
 
 const char* getHeaderFooterHTMLContent() {
-  return R"DeLiMeTeR(<!DOCTYPE html>
+    return R"DeLiMeTeR(<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -1618,15 +1643,17 @@ const char* getHeaderFooterHTMLContent() {
     width: inherit;
   }
   #header {
+    font-size: 11px;
     vertical-align: top;
   }
   #footer {
+    font-size: 10px;
+    color: #909090;
     vertical-align: bottom;
   }
   .text {
     display: table-cell;
-    font-family: sans-serif;
-    font-size: 8px;
+    font-family: Arial;
     vertical-align: inherit;
     white-space: nowrap;
   }
@@ -1634,25 +1661,25 @@ const char* getHeaderFooterHTMLContent() {
     text-align: right;
   }
   #title {
-    text-align: center;
+    text-align: left;
   }
-  #date, #url {
+  #title, #footerText {
     padding-left: 0.7cm;
     padding-right: 0.1cm;
   }
-  #title, #page_number {
+  #page_number {
     padding-left: 0.1cm;
     padding-right: 0.7cm;
   }
-  #title, #url {
+  #footerText {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  #title, #date {
+  #title {
     padding-bottom: 0cm;
     padding-top: 0.4cm;
   }
-  #page_number, #url {
+  #page_number, #footerText {
     padding-bottom: 0.4cm;
     padding-top: 0cm;
   }
@@ -1661,25 +1688,24 @@ const char* getHeaderFooterHTMLContent() {
 function pixels(value) {
   return value + 'px';
 }
-function setup(options) {
+function setupHeaderFooterTemplate(options) {
   var body = document.querySelector('body');
   var header = document.querySelector('#header');
   var content = document.querySelector('#content');
   var footer = document.querySelector('#footer');
+  var pageNumbers = document.querySelector('#page_number span');
   body.style.width = pixels(options['width']);
   body.style.height = pixels(options['height']);
   header.style.height = pixels(options['topMargin']);
-  content.style.height = pixels(options['height'] - options['topMargin'] - options['bottomMargin']);
+  content.style.height = pixels(options['height'] - options['topMargin'] -
+    options['bottomMargin']);
   footer.style.height = pixels(options['bottomMargin']);
-  document.querySelector('#date span').innerText =
-    new Date(options['date']).toLocaleDateString();
-  document.querySelector('#title span').innerText = options['title'];
-  document.querySelector('#url span').innerText = options['url'];
-  document.querySelector('#page_number span').innerText = options['pageNumber'];
-  document.querySelector('#date').style.width =
-    pixels(document.querySelector('#date span').offsetWidth);
+  document.querySelector('#title span').innerText = options['headerText'] || "" ;
+  document.querySelector('#footerText span').innerText = options['footerText'] || "";
+  var pageStr = "PAGE " + options['pageNumber'] + ' / ' + options['totalPages'];
+  pageNumbers.innerText = pageStr;
   document.querySelector('#page_number').style.width =
-    pixels(document.querySelector('#page_number span').offsetWidth);
+    pixels(pageNumbers.offsetWidth);
   if (header.offsetHeight > options['topMargin'] + 1) {
     header.style.display = 'none';
     content.style.height = pixels(options['height'] - options['bottomMargin']);
@@ -1687,13 +1713,19 @@ function setup(options) {
   if (footer.offsetHeight > options['bottomMargin'] + 1) {
      footer.style.display = 'none';
   }
+  if (!options['printPageNumbers']) {
+     pageNumbers.style.display = 'none';
+  }
+}
+// For backward compatibility with versions older than Chromium 74
+function setup(options) {
+  return setupHeaderFooterTemplate(options);
 }
 </script>
 </head>
 <body>
 <div id="header">
   <div class="row">
-    <div id="date" class="text"><span/></div>
     <div id="title" class="text"><span/></div>
   </div>
 </div>
@@ -1701,7 +1733,7 @@ function setup(options) {
 </div>
 <div id="footer">
   <div class="row">
-    <div id="url" class="text"><span/></div>
+    <div id="footerText" class="text"><span/></div>
     <div id="page_number" class="text"><span/></div>
   </div>
 </div>
