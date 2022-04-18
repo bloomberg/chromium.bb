@@ -738,6 +738,16 @@
         "math-superscript-shift-style",
         "start"
         "accent-color",
+
+
+
+        // patch section: composited-lcd-text
+
+
+        // patch section: suppress-needs-compositing-input-update
+
+
+
     ],
     "properties": {}
 }

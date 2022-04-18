@@ -265,6 +265,11 @@ void WebViewHostImpl::findState(WebView *source,
     NOTREACHED() << "findState should come in via findStateWithReqId";
 }
 
+// patch section: nc hittest dragging
+
+
+// patch section: devtools integration
+
 // Mojo callbacks
 void WebViewHostImpl::onNCDragAck()
 {
