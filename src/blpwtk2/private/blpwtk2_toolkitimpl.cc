@@ -71,6 +71,7 @@
 #include <sandbox/win/src/win_utils.h>
 #include <sandbox/policy/switches.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
+#include <third_party/blink/public/platform/platform.h>
 #include <third_party/blink/public/platform/web_security_origin.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
@@ -407,6 +408,10 @@ static std::vector<std::string> concateCmdLineFeatureSwitches(const std::vector<
     IsSwitch(swtStringUtf16, &switchName16, &switchValue16, true);
     std::string switchName = base::UTF16ToASCII(switchName16);
 
+    if (switchName.compare(0, 2, "--") == 0) {
+        switchName = switchName.substr(2);
+    }
+
     if (std::find(featureKeys.begin(), featureKeys.end(), switchName) == featureKeys.end()) {
       res.push_back(swtStringUtf8);
       continue;
@@ -589,6 +594,11 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
+
+                         // patch section: embedder ipc
+
+
+                         // patch section: log message handler
                          const std::string&              profileDir)
     : d_mainDelegate(false)
 {
@@ -663,6 +673,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
             // Apply command line switches from channel info.
             getSwitchesFromHostChannel(&args, channelInfo);
+            args = concateCmdLineFeatureSwitches(args);
         }
 
         // Apply command line switches to content.
@@ -693,6 +704,11 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
             renderer_io_thread_ = std::make_unique<RendererIOThread>();
             mojo::WaitSet::SetProxy(renderer_io_thread_->proxy());
         }
+
+        // Establish the GPU channel as soon as possible.  Doing it at a later
+        // time can potentially cause a deadlock if the browser thread is busy
+        // doing something else.
+        blink::Platform::Current()->EstablishGpuChannelSync();
     }
 
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
@@ -722,6 +738,11 @@ ToolkitImpl::~ToolkitImpl()
     Statics::isTerminating = true;
 
     ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
+
+    // patch section: gpu
+
+
+    // patch section: performance monitor
 
     if (Statics::isRendererMainThreadMode()) {
         mojo::WaitSet::SetProxy(nullptr);

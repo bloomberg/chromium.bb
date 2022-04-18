@@ -51,6 +51,7 @@
 #include <net/url_request/url_request_job_factory.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <ui/base/resource/resource_bundle.h>
+#include "chrome/browser/printing/print_view_manager.h"
 
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -150,7 +151,22 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
+
+bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle* handle) {
+
+  if (interface_name == printing::mojom::PrintManagerHost::Name_) {
+    mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver(
+        std::move(*handle));
+      printing::PrintViewManager::BindPrintManagerHost(std::move(receiver),
+                                                       render_frame_host);
+    return true;
+  }
+  return false;
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id)
