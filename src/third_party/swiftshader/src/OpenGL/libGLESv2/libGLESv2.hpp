@@ -280,9 +280,9 @@ private:
 		{
 			#if defined(_WIN32)
 				#if defined(__LP64__)
-					const char *libGLESv2_lib[] = {"libswiftshader_libGLESv2.dll", SWIFT_GLESV2_LIBRARY_NAME, "lib64GLES_V2_translator.dll", "libGLESv2_deprecated.dll"};
+					const char *libGLESv2_lib[] = {"libswiftshader_libGLESv2.dll", "libGLESv2.dll", "lib64GLES_V2_translator.dll", "libGLESv2_deprecated.dll"};
 				#else
-					const char *libGLESv2_lib[] = {"libswiftshader_libGLESv2.dll", SWIFT_GLESV2_LIBRARY_NAME, "libGLES_V2_translator.dll", "libGLESv2_deprecated.dll"};
+					const char *libGLESv2_lib[] = {"libswiftshader_libGLESv2.dll", "libGLESv2.dll", "libGLES_V2_translator.dll", "libGLESv2_deprecated.dll"};
 				#endif
 			#elif defined(__ANDROID__)
 				const char *libGLESv2_lib[] = {"libGLESv2_swiftshader.so", "libGLESv2_swiftshader.so"};
