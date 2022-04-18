@@ -75,9 +75,9 @@ BEGIN
 				VALUE "FileDescription", "SwiftShader libEGL 32-bit Dynamic Link Library"
 			#endif
             VALUE "FileVersion", BLPWTK2_RC_VERSION
-            VALUE "InternalName", "blpcr_egl"
+            VALUE "InternalName", "libEGL"
             VALUE "LegalCopyright", "Copyright (C) 2016 Google Inc."
-            VALUE "OriginalFilename", BLPCR_EGL_DLL_NAME
+            VALUE "OriginalFilename", "libEGL.dll"
             VALUE "PrivateBuild", BLPWTK2_RC_VERSION
             VALUE "ProductName", "SwiftShader libEGL Dynamic Link Library"
             VALUE "ProductVersion", BLPWTK2_RC_VERSION
