@@ -178,6 +178,11 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
                                            hostChannel,
                                            commandLineSwitches,
                                            params.isIsolatedProfile(),
+
+                                           // patch section: embedder ipc
+
+
+                                           // patch section: log message handler
                                            profileDirectory);
 
     std::vector<std::wstring> font_files;

@@ -45,23 +45,26 @@ def _get_bin_files(version):
   """Return a list of files to copy to the bin/<config> directory."""
 
   files = [
+    'blpwtk2.pak',
     'blpwtk2_shell.exe',
     'content_shell.exe',
     'content_shell.pak',
     'd3dcompiler_47.dll',
     'd8.exe',
-    f'v8_context_snapshot.{version}.bin',
-    f'blpwtk2.{version}.pak',
-    f'icudtl.{version}.dat',
+    'icudtl.dat',
+    'v8_context_snapshot.bin',
+    'vk_swiftshader_icd.json',
   ]
 
   modules = [
-    f'blpcr_egl.{version}.dll',
-    f'blpcr_glesv2.{version}.dll',
-    f'blpwtk2.{version}.dll',
-    f'blpwtk2_subprocess.{version}.exe',
-    f'swiftshader/blpcr_egl.{version}.dll',
-    f'swiftshader/blpcr_glesv2.{version}.dll',
+    'blpwtk2.dll',
+    'blpwtk2_subprocess.exe',
+    'libEGL.dll',
+    'libGLESv2.dll',
+    'swiftshader/libEGL.dll',
+    'swiftshader/libGLESv2.dll',
+    'vk_swiftshader.dll',
+    'vulkan-1.dll',
   ]
 
   for m in modules:
@@ -105,14 +108,14 @@ def get_file_copies(chromium_dir, x86, x64, version):
     copies += _get_bin_file_copies(out_dir, 'release', version)
     copies += _get_include_file_copies(
             os.path.join(out_dir, 'gen/blpwtk2/blpwtk2/public'), 'blpwtk2')
-    copies.append((os.path.join(out_dir, f'blpwtk2.{version}.dll.lib'),
-                   f'lib/release/blpwtk2.{version}.dll.lib'))
+    copies.append((os.path.join(out_dir, f'blpwtk2.dll.lib'),
+                   f'lib/release/blpwtk2.dll.lib'))
 
   if x64:
     out_dir = os.path.join(chromium_dir, 'src/out/static_release64')
     copies += _get_bin_file_copies(out_dir, 'release64', version)
-    copies.append((os.path.join(out_dir, f'blpwtk2.{version}.dll.lib'),
-                   f'lib/release64/blpwtk2.{version}.dll.lib'))
+    copies.append((os.path.join(out_dir, f'blpwtk2.dll.lib'),
+                   f'lib/release64/blpwtk2.dll.lib'))
 
     if not x86:
       copies += _get_include_file_copies(
