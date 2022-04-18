@@ -54,10 +54,6 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #endif
 
-#if defined(IS_BLPWTK2)
-#include <blpwtk2_products.h>
-#endif
-
 namespace base {
 namespace i18n {
 
@@ -86,13 +82,9 @@ wchar_t g_debug_icu_pf_filename[_MAX_PATH];
 // No need to change the filename in multiple places (gyp files, windows
 // build pkg configurations, etc). 'l' stands for Little Endian.
 // This variable is exported through the header file.
-#if defined(IS_BLPWTK2)
-const char kIcuDataFileName[] = BLPWTK2_ICUDTL_DAT_NAME;
-const char kIcuExtraDataFileName[] = BLPWTK2_ICUDTL_EXT_DAT_NAME;
-#else
 const char kIcuDataFileName[] = "icudtl.dat";
 const char kIcuExtraDataFileName[] = "icudtl_extra.dat";
-#endif
+
 // Time zone data loading.
 // For now, only Fuchsia has a meaningful use case for this feature, so it is
 // only implemented for OS_FUCHSIA.
