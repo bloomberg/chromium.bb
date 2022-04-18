@@ -207,6 +207,12 @@ interface WebViewClient {
 
     didFailLoadForFrame(int32 routingId, string url);
         // Notify the client that loading a URL into an IFRAME failed.
+
+    // patch section: nc hittest dragging
+
+
+    // patch section: devtools integration
+
 };
 
 // vim: ts=4 et

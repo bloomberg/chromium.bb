@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//blpwtk2/blpwtk2.gni")
 import("//build_overrides/build.gni")
 import("//build_overrides/vulkan_loader.gni")
 
@@ -192,6 +193,10 @@ if (!is_android) {
     configs += [ ":vulkan_internal_config" ]
     public_configs = [ ":vulkan_loader_config" ]
     configs -= vulkan_undefine_configs
+
+    if (bb_generate_map_files) {
+      configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+    }
 
     if (is_fuchsia) {
       category = "partner"
