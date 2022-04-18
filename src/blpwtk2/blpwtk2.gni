@@ -25,6 +25,8 @@ declare_args() {
   # Whether we're building blpwtk2
   is_blpwtk2 = true
 
+  blpwtk2_include_tests = !is_official_build
+
   content_shell_version = "999.77.34.5"
   content_shell_major_version = "999"
 
