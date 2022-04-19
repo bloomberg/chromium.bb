@@ -929,7 +929,7 @@ SkARGB32_Blitter::SkARGB32_Blitter(const SkPixmap& device, const SkPaint& paint)
 
     fPMColor = SkPackARGB32(fSrcA, fSrcR, fSrcG, fSrcB);
 
-    fLCDBackgroundColor = device.defaultLCDBackgroundColor();
+    fLCDBackgroundColor = paint.getBbLcdBackgroundColor();
 }
 
 const SkPixmap* SkARGB32_Blitter::justAnOpaqueColor(uint32_t* value) {

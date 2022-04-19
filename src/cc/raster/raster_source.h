@@ -130,7 +130,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   void set_debug_name(const std::string& name) { debug_name_ = name; }
   const std::string& debug_name() const { return debug_name_; }
 
-  SkColor DefaultLCDBackgroundColor() const;
  protected:
   // RecordingSource is the only class that can create a raster source.
   friend class RecordingSource;
@@ -168,7 +167,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Rect recorded_viewport_;
   const gfx::Size size_;
   const int slow_down_raster_scale_factor_for_debug_;
-  const SkColor default_lcd_background_color_;
   const float recording_scale_factor_;
   // Used for debugging and tracing.
   std::string debug_name_;

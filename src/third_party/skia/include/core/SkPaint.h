@@ -234,6 +234,10 @@ public:
     */
     void setColor(SkColor color);
 
+    /** BB LCD Background Color */
+    SkColor getBbLcdBackgroundColor() const { return fBbLcdBackgroundColor; }
+    void setBbLcdBackgroundColor(SkColor color) { fBbLcdBackgroundColor = color; }
+
     /** Sets alpha and RGB used when stroking and filling. The color is four floating
         point values, unpremultiplied. The color values are interpreted as being in
         the colorSpace. If colorSpace is nullptr, then color is assumed to be in the
@@ -700,6 +704,7 @@ private:
     sk_sp<SkBlender>      fBlender;
 
     SkColor4f       fColor4f;
+    SkColor         fBbLcdBackgroundColor;
     SkScalar        fWidth;
     SkScalar        fMiterLimit;
     union {

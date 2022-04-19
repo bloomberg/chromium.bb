@@ -149,9 +149,6 @@ class PLATFORM_EXPORT PaintController {
     paint_chunker_.SetShouldComputeContentsOpaque(should_compute);
   }
 
-  Color GetBbLcdBackgroundColor() const { return paint_chunker_.GetBbLcdBackgroundColor(); }
-  void SetBbLcdBackgroundColor(Color color) { paint_chunker_.SetBbLcdBackgroundColor(color); }
-
   void RecordHitTestData(const DisplayItemClient&,
                          const gfx::Rect&,
                          TouchAction,
@@ -482,24 +479,6 @@ class PLATFORM_EXPORT PaintController {
   static CounterForTesting* counter_for_testing_;
 
   class PaintArtifactAsJSON;
-};
-
-class PLATFORM_EXPORT ScopedBbLcdBackgroundColor {
- public:
-  ScopedBbLcdBackgroundColor(PaintController& controller, Color color)
-  : controller_(controller)
-  , previous_color_(controller.GetBbLcdBackgroundColor())
-  {
-    controller_.SetBbLcdBackgroundColor(color);
-  }
-  ~ScopedBbLcdBackgroundColor()
-  {
-    controller_.SetBbLcdBackgroundColor(previous_color_);
-  }
-
- private:
-  PaintController& controller_;
-  Color previous_color_;
 };
 
 }  // namespace blink
