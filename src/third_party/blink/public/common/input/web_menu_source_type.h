@@ -19,8 +19,7 @@ enum WebMenuSourceType {
   kMenuSourceStylus,
   kMenuSourceAdjustSelection,
   kMenuSourceAdjustSelectionReset,
-  kMenuSourceContextMenuKey,
-  kMenuSourceTypeLast = kMenuSourceContextMenuKey
+  kMenuSourceTypeLast = kMenuSourceAdjustSelectionReset
 };
 
 }  // namespace blink
