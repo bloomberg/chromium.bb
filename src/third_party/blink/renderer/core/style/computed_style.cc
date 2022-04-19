@@ -906,6 +906,12 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
       return;
     }
   }
+  if (BbLcdBackgroundColor() != other.BbLcdBackgroundColor()) {
+    diff.SetNeedsPaintInvalidation();
+    if (BbLcdBackgroundColor().HasAlpha() != other.BbLcdBackgroundColor().HasAlpha()) {
+      diff.SetHasAlphaChanged();
+    }
+  }
   if (!BackgroundInternal().VisuallyEqual(other.BackgroundInternal())) {
     diff.SetNeedsPaintInvalidation();
     // Changes of background fill layers, such as images, may have

@@ -83,6 +83,10 @@ class PLATFORM_EXPORT GraphicsContextState final {
   Color FillColor() const { return fill_flags_.getColor(); }
   void SetFillColor(const Color&);
 
+  // BB LCD bgcolor.
+  Color BbLcdBackgroundColor() const { return fill_flags_.getBbLcdBackgroundColor(); }
+  void SetBbLcdBackgroundColor(const Color& color);
+
   // Shadow. (This will need tweaking if we use draw loopers for other things.)
   SkDrawLooper* DrawLooper() const {
     DCHECK_EQ(fill_flags_.getLooper(), stroke_flags_.getLooper());

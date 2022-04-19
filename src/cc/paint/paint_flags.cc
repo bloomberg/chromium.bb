@@ -144,6 +144,7 @@ SkPaint PaintFlags::ToSkPaint() const {
   if (image_filter_)
     paint.setImageFilter(image_filter_->cached_sk_filter_);
   paint.setColor(color_);
+  paint.setBbLcdBackgroundColor(bb_lcd_background_color_);
   paint.setStrokeWidth(width_);
   paint.setStrokeMiter(miter_limit_);
   paint.setBlendMode(getBlendMode());
@@ -180,6 +181,8 @@ bool PaintFlags::operator==(const PaintFlags& other) const {
   // comparisons on all the ref'd skia objects on the SkPaint, which
   // is not true after serialization.
   if (getColor() != other.getColor())
+    return false;
+  if (getBbLcdBackgroundColor() != other.getBbLcdBackgroundColor())
     return false;
   if (!PaintOp::AreEqualEvenIfNaN(getStrokeWidth(), other.getStrokeWidth()))
     return false;
@@ -232,6 +235,7 @@ bool PaintFlags::HasDiscardableImages() const {
 
 size_t PaintFlags::GetSerializedSize() const {
   return sizeof(color_) + sizeof(width_) + sizeof(miter_limit_) +
+         sizeof(bb_lcd_background_color_) +
          sizeof(blend_mode_) + sizeof(bitfields_uint_) +
          PaintOpWriter::GetFlattenableSize(path_effect_.get()) +
          PaintOpWriter::Alignment() +

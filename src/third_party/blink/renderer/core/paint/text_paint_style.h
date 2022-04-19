@@ -24,6 +24,7 @@ struct CORE_EXPORT TextPaintStyle {
   Color fill_color;
   Color stroke_color;
   Color emphasis_mark_color;
+  Color bb_lcd_background_color;
   float stroke_width;
   mojom::blink::ColorScheme color_scheme;
   scoped_refptr<const ShadowList> shadow;
@@ -34,6 +35,7 @@ struct CORE_EXPORT TextPaintStyle {
            fill_color == other.fill_color &&
            stroke_color == other.stroke_color &&
            emphasis_mark_color == other.emphasis_mark_color &&
+           bb_lcd_background_color == other.bb_lcd_background_color &&
            stroke_width == other.stroke_width &&
            color_scheme == other.color_scheme && shadow == other.shadow &&
            selection_text_decoration == other.selection_text_decoration;
