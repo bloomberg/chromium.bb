@@ -85,37 +85,42 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
       registered_index, {nullptr, trace_callback, GetHiddenName, false});
 }
 
-AtomicGCInfoIndex::AtomicGCInfoIndex() {
+AtomicGCInfoIndex::AtomicGCInfoIndex()
+: detail_(new std::atomic<GCInfoIndex>()) {
+}
+
+AtomicGCInfoIndex::~AtomicGCInfoIndex() {
+  delete detail_;
 }
 
 GCInfoIndex
 AtomicGCInfoIndex::load_acquire() const noexcept {
-  return detail_.load(std::memory_order_acquire);
+  return detail_->load(std::memory_order_acquire);
 }
 
 GCInfoIndex
 AtomicGCInfoIndex::load_acquire() const volatile noexcept {
-  return detail_.load(std::memory_order_acquire);
+  return detail_->load(std::memory_order_acquire);
 }
 
 GCInfoIndex
 AtomicGCInfoIndex::load_relaxed() const noexcept {
-  return detail_.load(std::memory_order_relaxed);
+  return detail_->load(std::memory_order_relaxed);
 }
 
 GCInfoIndex
 AtomicGCInfoIndex::load_relaxed() const volatile noexcept {
-  return detail_.load(std::memory_order_relaxed);
+  return detail_->load(std::memory_order_relaxed);
 }
 
 void
 AtomicGCInfoIndex::store_release(GCInfoIndex desired) noexcept {
-  detail_.store(desired, std::memory_order_release);
+  detail_->store(desired, std::memory_order_release);
 }
 
 void
 AtomicGCInfoIndex::store_release(GCInfoIndex desired) volatile noexcept {
-  detail_.store(desired, std::memory_order_release);
+  detail_->store(desired, std::memory_order_release);
 }
 
 }  // namespace internal

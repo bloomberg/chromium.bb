@@ -14,6 +14,12 @@
 #include "cppgc/trace-trait.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
+#if defined(__has_attribute)
+#define CPPGC_SUPPORTS_NO_DESTROY __has_attribute(no_destroy)
+#else
+#define CPPGC_SUPPORTS_NO_DESTROY 0
+#endif
+
 namespace cppgc {
 namespace internal {
 
@@ -22,6 +28,7 @@ using GCInfoIndex = uint16_t;
 struct V8_EXPORT AtomicGCInfoIndex final {
 
   AtomicGCInfoIndex();
+  ~AtomicGCInfoIndex();
 
   AtomicGCInfoIndex(const AtomicGCInfoIndex&) = delete;
 
@@ -38,7 +45,7 @@ struct V8_EXPORT AtomicGCInfoIndex final {
 
  private:
 
-  std::atomic<GCInfoIndex> detail_;
+  std::atomic<GCInfoIndex> *detail_;
 };
 
 struct V8_EXPORT EnsureGCInfoIndexTrait final {
@@ -164,8 +171,13 @@ template <typename T>
 struct GCInfoTrait final {
   V8_INLINE static GCInfoIndex Index() {
     static_assert(sizeof(T), "T must be fully defined");
+#if CPPGC_SUPPORTS_NO_DESTROY
+    [[clang::no_destroy]] static AtomicGCInfoIndex
+        registered_index;  // Uses zero initialization.
+#else
     static AtomicGCInfoIndex
         registered_index;  // Uses zero initialization.
+#endif
     const GCInfoIndex index = registered_index.load_acquire();
     return index ? index
                  : EnsureGCInfoIndexTrait::EnsureIndex<T>(registered_index);
