@@ -12,54 +12,68 @@
 #ifndef AOM_AV1_RATECTRL_QMODE_H_
 #define AOM_AV1_RATECTRL_QMODE_H_
 
+#include <deque>
+#include <queue>
 #include <vector>
 #include "av1/encoder/firstpass.h"
+#include "av1/ratectrl_qmode_interface.h"
+#include "av1/reference_manager.h"
 
 namespace aom {
 
-struct RateControlParam {
-  int max_gop_length;
-  int min_gop_length;
-  int max_ref_frames;
-  int base_q_index;
+constexpr int kLayerDepthOffset = 1;
+constexpr int kMinIntervalToAddArf = 3;
+constexpr int kMinArfInterval = (kMinIntervalToAddArf + 1) / 2;
+
+struct TplFrameDepStats {
+  int unit_size;  // equivalent to min_block_size
+  std::vector<std::vector<double>> unit_stats;
 };
 
-struct TplBlockStats {
-  BLOCK_SIZE block_size;
-  // row and col of mode info unit which is in unit of 4 pixels.
-  int mi_row;
-  int mi_col;
-  int64_t intra_cost;
-  int64_t inter_cost;
-  int_mv mv[2];
-  int ref_frame_index[2];
+struct TplGopDepStats {
+  std::vector<TplFrameDepStats> frame_dep_stats_list;
 };
 
-using GopChunkList = std::vector<GF_GROUP>;
+GopFrame gop_frame_invalid();
 
-struct FrameEncodeParameters {
-  int q_index;
-  int rdmult;
-};
+GopFrame gop_frame_basic(int coding_idx, int order_idx, bool is_key_frame,
+                         bool is_arf_frame, bool is_golden_frame,
+                         bool is_show_frame, int depth);
 
-using FirstpassInfo = std::vector<FIRSTPASS_STATS>;
-using TplFrameStats = std::vector<TplBlockStats>;
-using TplGopStats = std::vector<TplFrameStats>;
+GopStruct construct_gop(RefFrameManager *ref_frame_manager,
+                        int show_frame_count, bool has_key_frame);
 
-class AV1RateControlQModeInterface {
+TplFrameDepStats create_tpl_frame_dep_stats_empty(int frame_height,
+                                                  int frame_width,
+                                                  int min_block_size);
+TplFrameDepStats create_tpl_frame_dep_stats_wo_propagation(
+    const TplFrameStats &frame_stats);
+
+double tpl_frame_stats_accumulate(const TplFrameStats &frame_stats);
+
+double tpl_frame_dep_stats_accumulate(const TplFrameDepStats &frame_dep_stats);
+
+void tpl_frame_dep_stats_propagate(const TplFrameStats &frame_stats,
+                                   const RefFrameTable &ref_frame_table,
+                                   TplGopDepStats *tpl_gop_dep_stats);
+
+int get_block_overlap_area(int r0, int c0, int r1, int c1, int size);
+
+TplGopDepStats compute_tpl_gop_dep_stats(
+    const TplGopStats &tpl_gop_stats,
+    const std::vector<RefFrameTable> &ref_frame_table_list);
+
+class AV1RateControlQMode : public AV1RateControlQModeInterface {
  public:
-  AV1RateControlQModeInterface();
-  virtual ~AV1RateControlQModeInterface();
+  void SetRcParam(const RateControlParam &rc_param) override;
+  GopStructList DetermineGopInfo(const FirstpassInfo &firstpass_info) override;
+  GopEncodeInfo GetGopEncodeInfo(
+      const GopStruct &gop_struct, const TplGopStats &tpl_gop_stats,
+      const RefFrameTable &ref_frame_table_snapshot) override;
 
-  virtual void SetRcParam(const RateControlParam &rc_param) = 0;
-  virtual GopChunkList DetermineGopInfo(
-      const FirstpassInfo &firstpass_stats_list) = 0;
-  // Accept firstpass and tpl info from the encoder and return q index and
-  // rdmult. This needs to be called with consecutive GOPs as returned by
-  // DetermineGopInfo.
-  virtual std::vector<FrameEncodeParameters> GetGopEncodeInfo(
-      const TplGopStats &tpl_stats_list) = 0;
-};  // class AV1RateCtrlQMode
+ private:
+  RateControlParam rc_param_;
+};
 }  // namespace aom
 
 #endif  // AOM_AV1_RATECTRL_QMODE_H_

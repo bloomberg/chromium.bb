@@ -42,6 +42,7 @@ cc_library(
         "runnable.h",
         "socket.h",
         "types.h",
+        "wifi_hotspot_credential.h",
     ],
     copts = ["-DCORE_ADAPTER_DLL"],
     defines = ["NO_WEBRTC"],
@@ -53,8 +54,10 @@ cc_library(
         "//internal/proto/analytics:__subpackages__",
         "//location/nearby/cpp/sharing:__subpackages__",
         "//third_party/nearby/cpp/cal:__subpackages__",
+        "//third_party/nearby/presence:__subpackages__",
     ],
     deps = [
+        "//proto:connections_enums_cc_proto",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/meta:type_traits",
         "@com_google_absl//absl/strings",
@@ -196,6 +199,7 @@ cc_test(
         ":test_util",
         "//internal/platform/implementation/g3",  # build_cleaner: keep
         "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_absl//absl/hash:hash_testing",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -308,6 +312,7 @@ cc_library(
         "ble_v2.cc",
         "bluetooth_classic.cc",
         "file.cc",
+        "wifi_hotspot.cc",
         "wifi_lan.cc",
     ],
     hdrs = [
@@ -315,6 +320,7 @@ cc_library(
         "ble_v2.h",
         "bluetooth_adapter.h",
         "bluetooth_classic.h",
+        "wifi_hotspot.h",
         "wifi_lan.h",
     ],
     copts = ["-DCORE_ADAPTER_DLL"],
@@ -359,6 +365,7 @@ cc_test(
         "pipe_test.cc",
         "scheduled_executor_test.cc",
         "single_thread_executor_test.cc",
+        "wifi_hotspot_test.cc",
         "wifi_lan_test.cc",
     ],
     copts = ["-DCORE_ADAPTER_DLL"],

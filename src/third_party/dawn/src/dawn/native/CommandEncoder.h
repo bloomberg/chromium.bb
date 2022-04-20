@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_COMMANDENCODER_H_
-#define DAWNNATIVE_COMMANDENCODER_H_
+#ifndef SRC_DAWN_NATIVE_COMMANDENCODER_H_
+#define SRC_DAWN_NATIVE_COMMANDENCODER_H_
 
 #include "dawn/native/dawn_platform.h"
 
@@ -86,13 +86,16 @@ namespace dawn::native {
 
         CommandBufferBase* APIFinish(const CommandBufferDescriptor* descriptor = nullptr);
 
+        Ref<ComputePassEncoder> BeginComputePass(const ComputePassDescriptor* descriptor = nullptr);
+        Ref<RenderPassEncoder> BeginRenderPass(const RenderPassDescriptor* descriptor);
+        ResultOrError<Ref<CommandBufferBase>> Finish(
+            const CommandBufferDescriptor* descriptor = nullptr);
+
       private:
         CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor* descriptor);
         CommandEncoder(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         void DestroyImpl() override;
-        ResultOrError<Ref<CommandBufferBase>> FinishInternal(
-            const CommandBufferDescriptor* descriptor);
 
         // Helper to be able to implement both APICopyTextureToTexture and
         // APICopyTextureToTextureInternal. The only difference between both
@@ -116,4 +119,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_COMMANDENCODER_H_
+#endif  // SRC_DAWN_NATIVE_COMMANDENCODER_H_

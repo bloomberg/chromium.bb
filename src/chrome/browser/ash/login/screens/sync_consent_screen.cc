@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -197,8 +198,6 @@ void SyncConsentScreen::ShowImpl() {
   Init(context());
 
   if (behavior_ != SyncScreenBehavior::kShow) {
-    // Wait for updates and set the loading throbber to be visible.
-    view_->SetThrobberVisible(true /*visible*/);
     syncer::SyncService* service = GetSyncService(profile_);
     if (service)
       sync_service_observation_.Observe(service);
@@ -208,6 +207,7 @@ void SyncConsentScreen::ShowImpl() {
     start_time_ = base::TimeTicks::Now();
   } else {
     PrepareScreenBasedOnCapability();
+    view_->ShowLoadedStep();
   }
 
   bool is_arc_restricted =
@@ -230,12 +230,10 @@ void SyncConsentScreen::OnStateChanged(syncer::SyncService* sync) {
   UpdateScreen(*context());
 }
 
-// TODO(https://crbug.com/1229582) Remove SplitSettings from names in this file.
-void SyncConsentScreen::OnNonSplitSettingsContinue(
-    const bool opted_in,
-    const bool review_sync,
-    const std::vector<int>& consent_description,
-    const int consent_confirmation) {
+void SyncConsentScreen::OnContinue(const bool opted_in,
+                                   const bool review_sync,
+                                   const std::vector<int>& consent_description,
+                                   const int consent_confirmation) {
   if (is_hidden())
     return;
   RecordUmaReviewFollowingSetup(review_sync);
@@ -348,7 +346,7 @@ void SyncConsentScreen::UpdateScreen(const WizardContext& context) {
 
   if (behavior_ == SyncScreenBehavior::kShow) {
     PrepareScreenBasedOnCapability();
-    view_->SetThrobberVisible(false /*visible*/);
+    view_->ShowLoadedStep();
     GetSyncService(profile_)->RemoveObserver(this);
     timeout_waiter_.AbandonAndStop();
     base::UmaHistogramCustomTimes("OOBE.SyncConsentScreen.LoadingTime",
@@ -423,6 +421,11 @@ void SyncConsentScreen::SetSyncEverythingEnabled(bool enabled) {
   if (enabled != sync_settings->IsSyncEverythingEnabled()) {
     syncer::UserSelectableTypeSet empty_set;
     sync_settings->SetSelectedTypes(enabled, empty_set);
+
+    if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+      syncer::UserSelectableOsTypeSet os_empty_set;
+      sync_settings->SetSelectedOsTypes(enabled, os_empty_set);
+    }
   }
 }
 

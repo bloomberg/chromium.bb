@@ -135,6 +135,8 @@ class CONTENT_EXPORT Navigator {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
+      // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+      bool is_unfenced_top_navigation,
       blink::mojom::TriggeringEventInfo triggering_event_info,
       const std::string& href_translate,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
@@ -161,7 +163,8 @@ class CONTENT_EXPORT Navigator {
       network::mojom::SourceLocationPtr source_location,
       bool has_user_gesture,
       const absl::optional<blink::Impression>& impression,
-      base::TimeTicks navigation_start_time);
+      base::TimeTicks navigation_start_time,
+      absl::optional<bool> is_fenced_frame_opaque_url = absl::nullopt);
 
   // Called after BeforeUnloadCompleted callback is invoked from the renderer.
   // If |frame_tree_node| has a NavigationRequest waiting for the renderer

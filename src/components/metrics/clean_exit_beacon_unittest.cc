@@ -124,14 +124,22 @@ struct BeaconConsistencyTestParams {
   CleanExitBeaconConsistency expected_consistency;
 };
 
-// Used for testing the logic that emits CleanExitBeaconConsistency to
-// histograms.
 #if BUILDFLAG(IS_IOS)
-class BackupBeaconConsistencyTest
+// Used for testing the logic that emits to the UMA.CleanExitBeaconConsistency2
+// histogram.
+class PlatformBeaconAndLocalStateBeaconConsistencyTest
+    : public testing::WithParamInterface<BeaconConsistencyTestParams>,
+      public CleanExitBeaconTest {};
+
+// Used for testing the logic that emits to the UMA.CleanExitBeaconConsistency3
+// histogram.
+class BeaconFileAndPlatformBeaconConsistencyTest
     : public testing::WithParamInterface<BeaconConsistencyTestParams>,
       public CleanExitBeaconTest {};
 #endif  // BUILDFLAG(IS_IOS)
 
+// Used for testing the logic that emits to the
+// UMA.CleanExitBeacon.BeaconFileConsistency histogram.
 class BeaconFileConsistencyTest
     : public testing::WithParamInterface<BeaconConsistencyTestParams>,
       public CleanExitBeaconTest {};
@@ -297,7 +305,7 @@ INSTANTIATE_TEST_SUITE_P(
 // reasons (a) doesn't crash and (b) correctly records the  BeaconFileState
 // metric.
 TEST_P(BadBeaconFileTest, InitWithUnusableBeaconFile) {
-  SetUpExtendedSafeModeExperiment(variations::kSignalAndWriteViaFileUtilGroup);
+  SetUpExtendedSafeModeExperiment(variations::kEnabledGroup);
   BadBeaconTestParams params = GetParam();
 
   const base::FilePath user_data_dir_path = user_data_dir_.GetPath();
@@ -318,7 +326,7 @@ TEST_P(BadBeaconFileTest, InitWithUnusableBeaconFile) {
 // correctly (a) setting the |did_previous_session_exit_cleanly_| field and (b)
 // recording metrics when the last session exited cleanly.
 TEST_F(CleanExitBeaconTest, InitWithBeaconFile) {
-  SetUpExtendedSafeModeExperiment(variations::kSignalAndWriteViaFileUtilGroup);
+  SetUpExtendedSafeModeExperiment(variations::kEnabledGroup);
   const base::FilePath user_data_dir_path = user_data_dir_.GetPath();
   const base::FilePath temp_beacon_file_path =
       user_data_dir_path.Append(variations::kVariationsFilename);
@@ -342,7 +350,7 @@ TEST_F(CleanExitBeaconTest, InitWithBeaconFile) {
 // correctly (a) setting the |did_previous_session_exit_cleanly_| field and (b)
 // recording metrics when the last session did not exit cleanly.
 TEST_F(CleanExitBeaconTest, InitWithCrashAndBeaconFile) {
-  SetUpExtendedSafeModeExperiment(variations::kSignalAndWriteViaFileUtilGroup);
+  SetUpExtendedSafeModeExperiment(variations::kEnabledGroup);
   const base::FilePath user_data_dir_path = user_data_dir_.GetPath();
   const base::FilePath temp_beacon_file_path =
       user_data_dir_path.Append(variations::kVariationsFilename);
@@ -363,9 +371,9 @@ TEST_F(CleanExitBeaconTest, InitWithCrashAndBeaconFile) {
                                        updated_num_crashes, 1);
 }
 
-// The below CleanExitBeaconTest.BeaconState*ExtendedSafeMode tests verify that
-// the logic for recording UMA.CleanExitBeacon.BeaconFileConsistency is correct
-// for clients in the SignalAndWriteViaFileUtil group.
+// Verify that the logic for recording UMA.CleanExitBeacon.BeaconFileConsistency
+// is correct for clients in the Extended Variations Safe Mode experiment's
+// enabled group.
 INSTANTIATE_TEST_SUITE_P(
     All,
     BeaconFileConsistencyTest,
@@ -440,6 +448,10 @@ TEST_P(BeaconFileConsistencyTest, BeaconConsistency) {
                       params.local_state_beacon_value.value());
   }
 
+  SetUpExtendedSafeModeExperiment(variations::kEnabledGroup);
+  ASSERT_EQ(variations::kEnabledGroup, base::FieldTrialList::FindFullName(
+                                           variations::kExtendedSafeModeTrial));
+
   TestCleanExitBeacon clean_exit_beacon(&prefs_, user_data_dir_path);
   histogram_tester_.ExpectUniqueSample(
       "UMA.CleanExitBeacon.BeaconFileConsistency", params.expected_consistency,
@@ -456,17 +468,16 @@ INSTANTIATE_TEST_SUITE_P(
                                   .experiment_group = variations::kControlGroup,
                                   .exited_cleanly = true,
                                   .stage = absl::nullopt},
-        MonitoringStageTestParams{
-            .test_name = "ExperimentGroup_CleanExit",
-            .experiment_group = variations::kSignalAndWriteViaFileUtilGroup,
-            .exited_cleanly = true,
-            .stage = absl::nullopt},
+        MonitoringStageTestParams{.test_name = "ExperimentGroup_CleanExit",
+                                  .experiment_group = variations::kEnabledGroup,
+                                  .exited_cleanly = true,
+                                  .stage = absl::nullopt},
         // Verify that BeaconMonitoringStage::kMissing is emitted when the
         // beacon file does not have a monitoring stage. This can happen because
         // the monitoring stage was added in a later milestone.
         MonitoringStageTestParams{
             .test_name = "ExperimentGroup_DirtyExit_Missing",
-            .experiment_group = variations::kSignalAndWriteViaFileUtilGroup,
+            .experiment_group = variations::kEnabledGroup,
             .exited_cleanly = false,
             .stage = BeaconMonitoringStage::kMissing},
         // Verify that BeaconMonitoringStage::kExtended is emitted when the
@@ -474,7 +485,7 @@ INSTANTIATE_TEST_SUITE_P(
         // detected due to the Extended Variations Safe Mode experiment.
         MonitoringStageTestParams{
             .test_name = "ExperimentGroup_DirtyExit_Extended",
-            .experiment_group = variations::kSignalAndWriteViaFileUtilGroup,
+            .experiment_group = variations::kEnabledGroup,
             .exited_cleanly = false,
             .stage = BeaconMonitoringStage::kExtended},
         // Verify that BeaconMonitoringStage::kStatusQuo is emitted when the
@@ -553,7 +564,7 @@ INSTANTIATE_TEST_SUITE_P(
         // kNotMonitoring stage.
         MonitoringStageTestParams{
             .test_name = "ExperimentGroup_CleanExit_AsynchronousWrite",
-            .experiment_group = variations::kSignalAndWriteViaFileUtilGroup,
+            .experiment_group = variations::kEnabledGroup,
             .exited_cleanly = true,
             .is_extended_safe_mode = false,
             .stage = BeaconMonitoringStage::kNotMonitoring},
@@ -562,7 +573,7 @@ INSTANTIATE_TEST_SUITE_P(
         // results in a beacon file with the kExtended stage.
         MonitoringStageTestParams{
             .test_name = "ExperimentGroup_DirtyExit_SynchronousWrite",
-            .experiment_group = variations::kSignalAndWriteViaFileUtilGroup,
+            .experiment_group = variations::kEnabledGroup,
             .exited_cleanly = false,
             .is_extended_safe_mode = true,
             .stage = BeaconMonitoringStage::kExtended},
@@ -571,7 +582,7 @@ INSTANTIATE_TEST_SUITE_P(
         // results in a beacon file with the kStatusQuo stage.
         MonitoringStageTestParams{
             .test_name = "ExperimentGroup_DirtyExit_AsynchronousWrite",
-            .experiment_group = variations::kSignalAndWriteViaFileUtilGroup,
+            .experiment_group = variations::kEnabledGroup,
             .exited_cleanly = false,
             .is_extended_safe_mode = false,
             .stage = BeaconMonitoringStage::kStatusQuo}),
@@ -597,10 +608,10 @@ TEST_P(MonitoringStageWritingTest, CheckMonitoringStage) {
 
   // Check that experiment group clients have a beacon file and that control
   // group clients do not.
-  EXPECT_EQ(group == variations::kSignalAndWriteViaFileUtilGroup,
+  EXPECT_EQ(group == variations::kEnabledGroup,
             base::PathExists(expected_beacon_file_path));
 
-  if (group == variations::kSignalAndWriteViaFileUtilGroup) {
+  if (group == variations::kEnabledGroup) {
     // For experiment group clients, check the beacon file contents.
     std::string beacon_file_contents;
     ASSERT_TRUE(base::ReadFileToString(expected_beacon_file_path,
@@ -643,10 +654,9 @@ TEST_F(CleanExitBeaconTest,
 // VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode().
 TEST_F(CleanExitBeaconTest,
        WriteBeaconValue_SynchronousWriteDcheck_ExperimentGroup) {
-  SetUpExtendedSafeModeExperiment(variations::kSignalAndWriteViaFileUtilGroup);
-  ASSERT_EQ(
-      variations::kSignalAndWriteViaFileUtilGroup,
-      base::FieldTrialList::FindFullName(variations::kExtendedSafeModeTrial));
+  SetUpExtendedSafeModeExperiment(variations::kEnabledGroup);
+  ASSERT_EQ(variations::kEnabledGroup, base::FieldTrialList::FindFullName(
+                                           variations::kExtendedSafeModeTrial));
 
   TestCleanExitBeacon clean_exit_beacon(&prefs_, user_data_dir_.GetPath());
   EXPECT_DCHECK_DEATH(
@@ -654,12 +664,12 @@ TEST_F(CleanExitBeaconTest,
                                          /*is_extended_safe_mode=*/true));
 }
 
-// The below CleanExitBeaconTest.BeaconState_* tests verify that the logic for
-// recording UMA.CleanExitBeaconConsistency2 is correct.
 #if BUILDFLAG(IS_IOS)
+// Verify that the logic for recording UMA.CleanExitBeaconConsistency2 is
+// correct.
 INSTANTIATE_TEST_SUITE_P(
     All,
-    BackupBeaconConsistencyTest,
+    PlatformBeaconAndLocalStateBeaconConsistencyTest,
     ::testing::Values(
         BeaconConsistencyTestParams{
             .test_name = "MissingMissing",
@@ -705,7 +715,7 @@ INSTANTIATE_TEST_SUITE_P(
       return params.param.test_name;
     });
 
-TEST_P(BackupBeaconConsistencyTest, BeaconConsistency) {
+TEST_P(PlatformBeaconAndLocalStateBeaconConsistencyTest, BeaconConsistency) {
   // Clear the platform-specific and Local State beacons. Unless set below, the
   // beacons are considered missing.
   CleanExitBeacon::ResetStabilityExitedCleanlyForTesting(&prefs_);
@@ -722,6 +732,92 @@ TEST_P(BackupBeaconConsistencyTest, BeaconConsistency) {
 
   TestCleanExitBeacon clean_exit_beacon(&prefs_);
   histogram_tester_.ExpectUniqueSample("UMA.CleanExitBeaconConsistency2",
+                                       params.expected_consistency, 1);
+}
+
+// Verify that the logic for recording UMA.CleanExitBeaconConsistency3 is
+// correct for clients in the Extended Variations Safe Mode experiment's enabled
+// group.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BeaconFileAndPlatformBeaconConsistencyTest,
+    ::testing::Values(
+        BeaconConsistencyTestParams{
+            .test_name = "MissingMissing",
+            .expected_consistency =
+                CleanExitBeaconConsistency::kMissingMissing},
+        BeaconConsistencyTestParams{
+            .test_name = "MissingClean",
+            .platform_specific_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kMissingClean},
+        BeaconConsistencyTestParams{
+            .test_name = "MissingDirty",
+            .platform_specific_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kMissingDirty},
+        BeaconConsistencyTestParams{
+            .test_name = "CleanMissing",
+            .beacon_file_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kCleanMissing},
+        BeaconConsistencyTestParams{
+            .test_name = "DirtyMissing",
+            .beacon_file_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kDirtyMissing},
+        BeaconConsistencyTestParams{
+            .test_name = "CleanClean",
+            .beacon_file_beacon_value = true,
+            .platform_specific_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kCleanClean},
+        BeaconConsistencyTestParams{
+            .test_name = "CleanDirty",
+            .beacon_file_beacon_value = true,
+            .platform_specific_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kCleanDirty},
+        BeaconConsistencyTestParams{
+            .test_name = "DirtyClean",
+            .beacon_file_beacon_value = false,
+            .platform_specific_beacon_value = true,
+            .expected_consistency = CleanExitBeaconConsistency::kDirtyClean},
+        BeaconConsistencyTestParams{
+            .test_name = "DirtyDirty",
+            .beacon_file_beacon_value = false,
+            .platform_specific_beacon_value = false,
+            .expected_consistency = CleanExitBeaconConsistency::kDirtyDirty}),
+    [](const ::testing::TestParamInfo<BeaconConsistencyTestParams>& params) {
+      return params.param.test_name;
+    });
+
+TEST_P(BeaconFileAndPlatformBeaconConsistencyTest, BeaconConsistency) {
+  // Verify that the beacon file is not present. Unless set below, this beacon
+  // is considered missing.
+  const base::FilePath user_data_dir_path = user_data_dir_.GetPath();
+  const base::FilePath temp_beacon_file_path =
+      user_data_dir_path.Append(variations::kVariationsFilename);
+  ASSERT_FALSE(base::PathExists(temp_beacon_file_path));
+  // Clear the platform-specific beacon. Unless set below, this beacon is also
+  // considered missing.
+  CleanExitBeacon::ResetStabilityExitedCleanlyForTesting(&prefs_);
+
+  BeaconConsistencyTestParams params = GetParam();
+  if (params.beacon_file_beacon_value) {
+    ASSERT_LT(
+        0, base::WriteFile(
+               temp_beacon_file_path,
+               CreateWellFormedBeaconFileContents(
+                   /*exited_cleanly=*/params.beacon_file_beacon_value.value(),
+                   /*crash_streak=*/0)
+                   .data()));
+  }
+  if (params.platform_specific_beacon_value) {
+    CleanExitBeacon::SetUserDefaultsBeacon(
+        /*exited_cleanly=*/params.platform_specific_beacon_value.value());
+  }
+
+  SetUpExtendedSafeModeExperiment(variations::kEnabledGroup);
+  ASSERT_EQ(variations::kEnabledGroup, base::FieldTrialList::FindFullName(
+                                           variations::kExtendedSafeModeTrial));
+
+  TestCleanExitBeacon clean_exit_beacon(&prefs_, user_data_dir_path);
+  histogram_tester_.ExpectUniqueSample("UMA.CleanExitBeaconConsistency3",
                                        params.expected_consistency, 1);
 }
 #endif  // BUILDFLAG(IS_IOS)

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build_overrides/build.gni")
-import("osp/build/config/services.gni")
 
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
@@ -35,18 +34,6 @@ group("gn_all") {
       "osp",
       "osp/msgs",
     ]
-
-    if (use_chromium_quic) {
-      deps += [
-        "third_party/chromium_quic",
-        "third_party/chromium_quic:quic_demo_server",
-        "third_party/chromium_quic:quic_streaming_playback_controller",
-      ]
-    }
-
-    if (use_chromium_quic) {
-      deps += [ "osp:osp_demo" ]
-    }
   }
 
   if (!build_with_chromium) {

@@ -8,11 +8,46 @@
 #include <memory>
 #include <vector>
 
-#include "base/scoped_native_library.h"
+#include "base/native_library.h"
 #include "components/optimization_guide/core/entity_metadata.h"
 #include "components/optimization_guide/core/model_info.h"
 
 namespace optimization_guide {
+
+// Enumerates the statuses possible when creating an entity annotator.
+//
+// Keep this in sync with
+// OptimizationGuidePageEntitiesModelExecutorCreationStatus in enums.xml.
+enum class EntityAnnotatorCreationStatus {
+  kUnknown = 0,
+  // The entity annotator was created successfully.
+  kSuccess = 1,
+  // The native library was loaded but invalid. Should not happen in the real
+  // world.
+  kLibraryInvalid = 2,
+  // The entity annotator was requested to be created but no metadata for how to
+  // create it was present.
+  kMissingModelMetadata = 3,
+  // The entity annotator was requested to be created but the metadata specific
+  // to this model was not present.
+  kMissingEntitiesModelMetadata = 4,
+  // The entity annotator was requested to be created but no slices were
+  // specified in the model metadata.
+  kMissingEntitiesModelMetadataSliceSpecification = 5,
+  // Expected files are missing.
+  kMissingAdditionalEntitiesModelMetadataPath = 6,
+  kMissingAdditionalWordEmbeddingsPath = 7,
+  kMissingAdditionalNameFilterPath = 8,
+  kMissingAdditionalNameTablePath = 9,
+  kMissingAdditionalPrefixFilterPath = 10,
+  kMissingAdditionalMetadataTablePath = 11,
+  // All required files were present, but the creation failed for a different
+  // reason.
+  kInitializationFailure = 12,
+
+  // New values go above here.
+  kMaxValue = kInitializationFailure,
+};
 
 // Handles interactions with the native library that contains logic for the
 // entity annotator.
@@ -20,7 +55,10 @@ class EntityAnnotatorNativeLibrary {
  public:
   // Creates an EntityAnnotatorNativeLibrary, which loads a native library and
   // relevant functions required. Will return nullptr if fails.
-  static std::unique_ptr<EntityAnnotatorNativeLibrary> Create();
+  // |should_provide_filter_path| dictates whether the filters used to optimize
+  // the annotation should be provided.
+  static std::unique_ptr<EntityAnnotatorNativeLibrary> Create(
+      bool should_provide_filter_path);
 
   EntityAnnotatorNativeLibrary(const EntityAnnotatorNativeLibrary&) = delete;
   EntityAnnotatorNativeLibrary& operator=(const EntityAnnotatorNativeLibrary&) =
@@ -51,21 +89,26 @@ class EntityAnnotatorNativeLibrary {
       const std::string& entity_id);
 
  private:
-  EntityAnnotatorNativeLibrary(base::NativeLibrary native_library);
+  EntityAnnotatorNativeLibrary(base::NativeLibrary native_library,
+                               bool should_provide_filter_path);
 
   // Loads the functions exposed by the native library.
   void LoadFunctions();
 
   // Populates |options| based on |model_info|. Returns false if |model_info|
-  // cannot construct a valid options object.
-  bool PopulateEntityAnnotatorOptionsFromModelInfo(void* options,
-                                                   const ModelInfo& model_info);
+  // cannot construct a valid options object. Populates |status| with the
+  // correct failure reason if a valid options object could not be constructed.
+  bool PopulateEntityAnnotatorOptionsFromModelInfo(
+      void* options,
+      const ModelInfo& model_info,
+      EntityAnnotatorCreationStatus* status);
 
   // Returns an entity metadata from the C-API representation.
   EntityMetadata GetEntityMetadataFromOptimizationGuideEntityMetadata(
       const void* og_entity_metadata);
 
-  base::ScopedNativeLibrary native_library_;
+  base::NativeLibrary native_library_;
+  const bool should_provide_filter_path_ = true;
 
   // Functions exposed by native library.
   using GetMaxSupportedFeatureFlagFunc = int32_t (*)();

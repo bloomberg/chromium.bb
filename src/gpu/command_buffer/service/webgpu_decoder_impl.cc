@@ -17,6 +17,7 @@
 #include "base/bits.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/path_service.h"
@@ -37,6 +38,7 @@
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_preferences.h"
 #include "ipc/ipc_channel.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -66,10 +68,10 @@ constexpr size_t kDawnReturnCmdsOffset =
 
 static_assert(kDawnReturnCmdsOffset < kMaxWireBufferSize, "");
 
-// TODO(crbug.com/1266549): Support Storage usage
 static constexpr uint32_t kAllowedWritableMailboxTextureUsages =
     static_cast<uint32_t>(WGPUTextureUsage_CopyDst |
-                          WGPUTextureUsage_RenderAttachment);
+                          WGPUTextureUsage_RenderAttachment |
+                          WGPUTextureUsage_StorageBinding);
 
 static constexpr uint32_t kAllowedReadableMailboxTextureUsages =
     static_cast<uint32_t>(WGPUTextureUsage_CopySrc |
@@ -184,7 +186,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   ~WebGPUDecoderImpl() override;
 
   // WebGPUDecoder implementation
-  ContextResult Initialize() override;
+  ContextResult Initialize(const GpuFeatureInfo& gpu_feature_info) override;
 
   // DecoderContext implementation.
   base::WeakPtr<DecoderContext> AsWeakPtr() override {
@@ -432,11 +434,12 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   int32_t GetPreferredAdapterIndex(PowerPreference power_preference,
                                    bool force_fallback) const;
 
-  void DoRequestDevice(DawnRequestDeviceSerial request_device_serial,
-                       int32_t requested_adapter_index,
-                       uint32_t device_id,
-                       uint32_t device_generation,
-                       const WGPUDeviceProperties& requested_device_properties);
+  error::Error DoRequestDevice(
+      DawnRequestDeviceSerial request_device_serial,
+      int32_t requested_adapter_index,
+      uint32_t device_id,
+      uint32_t device_generation,
+      const WGPUDeviceProperties& requested_device_properties);
   void OnRequestDeviceCallback(DawnRequestDeviceSerial request_device_serial,
                                size_t requested_adapter_index,
                                uint32_t device_id,
@@ -530,6 +533,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
         case viz::ResourceFormat::RGBA_8888:
 #endif  // !BUILDFLAG(IS_MAC)
         case viz::ResourceFormat::BGRA_8888:
+        case viz::ResourceFormat::RGBA_F16:
           break;
         default:
           return nullptr;
@@ -690,6 +694,17 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       // Unmap the buffer.
       procs_.bufferUnmap(buffer);
 
+      // Transition the image back to the desired end state. This is used for
+      // transitioning the image to the external queue for Vulkan/GL interop.
+      if (scoped_read_access->end_state()) {
+        if (!shared_context_state_->gr_context()->setBackendTextureState(
+                scoped_read_access->promise_image_texture()->backendTexture(),
+                *scoped_read_access->end_state())) {
+          DLOG(ERROR) << "setBackendTextureState() failed.";
+          return false;
+        }
+      }
+
       // ReadPixels finished; signal the semaphores.
       SignalSemaphores(std::move(end_semaphores));
 
@@ -831,6 +846,16 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                            /*x*/ 0, /*y*/ 0);
 
       procs_.bufferRelease(buffer);
+
+      // Transition the image back to the desired end state. This is used for
+      // transitioning the image to the external queue for Vulkan/GL interop.
+      if (scoped_write_access->end_state()) {
+        // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
+        // will populate it with semaphores and call GrDirectContext::flush.
+        scoped_write_access->surface()->flush(/*info=*/{},
+                                              scoped_write_access->end_state());
+      }
+
       SignalSemaphores(std::move(end_semaphores));
 
       return true;
@@ -1007,7 +1032,13 @@ void WebGPUDecoderImpl::Destroy(bool have_context) {
   destroyed_ = true;
 }
 
-ContextResult WebGPUDecoderImpl::Initialize() {
+ContextResult WebGPUDecoderImpl::Initialize(
+    const GpuFeatureInfo& gpu_feature_info) {
+  if (kGpuFeatureStatusSoftware ==
+      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU]) {
+    use_webgpu_adapter_ = WebGPUAdapterName::kSwiftShader;
+  }
+
   if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
     gl_surface_ = new gl::SurfacelessEGL(gfx::Size(1, 1));
     gl::GLContextAttribs attribs;
@@ -1021,18 +1052,18 @@ ContextResult WebGPUDecoderImpl::Initialize() {
   return ContextResult::kSuccess;
 }
 
-void WebGPUDecoderImpl::DoRequestDevice(
+error::Error WebGPUDecoderImpl::DoRequestDevice(
     DawnRequestDeviceSerial request_device_serial,
     int32_t requested_adapter_index,
     uint32_t device_id,
     uint32_t device_generation,
     const WGPUDeviceProperties& request_device_properties) {
-  DCHECK_LE(0, requested_adapter_index);
+  if (requested_adapter_index < 0 ||
+      static_cast<uint32_t>(requested_adapter_index) >= dawn_adapters_.size()) {
+    return error::kOutOfBounds;
+  }
 
-  DCHECK_LT(static_cast<size_t>(requested_adapter_index),
-            dawn_adapters_.size());
-
-  WGPUDeviceDescriptor device_descriptor;
+  WGPUDeviceDescriptor device_descriptor = {};
 
   // We need to request internal usage to be able to do operations with internal
   // methods that would need specific usages.
@@ -1069,6 +1100,14 @@ void WebGPUDecoderImpl::DoRequestDevice(
     // Pass something invalid.
     required_features.push_back(static_cast<WGPUFeatureName>(-1));
   }
+
+  // Always enable "multi-planar-formats" as long as available.
+  if (dawn_adapters_[requested_adapter_index]
+          .GetAdapterProperties()
+          .multiPlanarFormats) {
+    required_features.push_back(WGPUFeatureName_DawnMultiPlanarFormats);
+  }
+
   device_descriptor.requiredFeatures = required_features.data();
   device_descriptor.requiredFeaturesCount = required_features.size();
 
@@ -1124,6 +1163,8 @@ void WebGPUDecoderImpl::DoRequestDevice(
         std::move(*callback).Run(status, wgpu_device, message);
       },
       new CallbackT(std::move(callback)));
+
+  return error::kNoError;
 }
 
 void WebGPUDecoderImpl::OnRequestDeviceCallback(
@@ -1504,7 +1545,8 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
     force_fallback_adapter = true;
   }
 
-  if (gr_context_type_ != GrContextType::kVulkan) {
+  if (gr_context_type_ != GrContextType::kVulkan &&
+      use_webgpu_adapter_ != WebGPUAdapterName::kCompat) {
 #if BUILDFLAG(IS_LINUX)
     SendAdapterProperties(request_adapter_serial, -1, nullptr,
                           "WebGPU on Linux requires command-line flag "
@@ -1580,9 +1622,8 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
     }
   }
 
-  DoRequestDevice(request_device_serial, adapter_service_id, device_id,
-                  device_generation, device_properties);
-  return error::kNoError;
+  return DoRequestDevice(request_device_serial, adapter_service_id, device_id,
+                         device_generation, device_properties);
 }
 
 error::Error WebGPUDecoderImpl::HandleDawnCommands(
@@ -1635,6 +1676,14 @@ WebGPUDecoderImpl::AssociateMailboxDawn(const Mailbox& mailbox,
     DLOG(ERROR) << "AssociateMailbox: Couldn't produce shared image";
     return nullptr;
   }
+
+#if !BUILDFLAG(IS_WIN)
+  if (usage & WGPUTextureUsage_StorageBinding) {
+    DLOG(ERROR) << "AssociateMailbox: WGPUTextureUsage_StorageBinding is NOT "
+                   "supported yet.";
+    return nullptr;
+  }
+#endif
 
   if (flags & WEBGPU_MAILBOX_DISCARD) {
     // Set contents to uncleared.

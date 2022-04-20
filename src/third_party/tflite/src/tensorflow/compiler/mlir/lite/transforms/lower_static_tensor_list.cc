@@ -84,6 +84,8 @@ namespace {
 /// Lower TensorList ops in functions for subsequent legalization.
 struct LowerStaticTensorListPass
     : public PassWrapper<LowerStaticTensorListPass, OperationPass<ModuleOp>> {
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(LowerStaticTensorListPass)
+
   LowerStaticTensorListPass() = default;
   LowerStaticTensorListPass(const LowerStaticTensorListPass &) {}
   explicit LowerStaticTensorListPass(bool allow_tensorlist_pass_through,
@@ -829,7 +831,7 @@ struct ConvertTensorListResize
                             Type result_type, FuncOp branch_func,
                             ConversionPatternRewriter *rewriter) const {
     auto guard = OpBuilder::InsertionGuard(*rewriter);
-    auto inputs = branch_func.getType().getInputs();
+    auto inputs = branch_func.getFunctionType().getInputs();
     Block *block = rewriter->createBlock(
         &branch_func.getBody(), branch_func.begin(), inputs,
         SmallVector<Location>(inputs.size(), branch_func.getLoc()));
@@ -870,7 +872,7 @@ struct ConvertTensorListResize
     // size, the else branch is executed.
     // Slice the first 'size' rows from the input tensorlist.
     auto guard = OpBuilder::InsertionGuard(*rewriter);
-    auto inputs = branch_func.getType().getInputs();
+    auto inputs = branch_func.getFunctionType().getInputs();
     Block *block = rewriter->createBlock(
         &branch_func.getBody(), branch_func.begin(), inputs,
         SmallVector<Location>(inputs.size(), branch_func.getLoc()));
@@ -1152,7 +1154,7 @@ llvm::SmallSet<int, 4> GetTensorListResultsIndex(FuncOp func) {
   llvm::SmallSet<int, 4> set;
 
   for (const auto &result_and_idx :
-       llvm::enumerate(func.getType().getResults())) {
+       llvm::enumerate(func.getFunctionType().getResults())) {
     if (IsTensorListType(result_and_idx.value(), llvm::None)) {
       set.insert(result_and_idx.index());
     }
@@ -1239,7 +1241,7 @@ LogicalResult UpdateFunctionTypesForWhileOp(
     ++func_index;
     if (!func) continue;
 
-    FunctionType func_type = func.getType();
+    FunctionType func_type = func.getFunctionType();
     int num_inputs = func_type.getNumInputs();
     int num_results = func_type.getNumResults();
 
@@ -1283,7 +1285,7 @@ LogicalResult UpdateFunctionTypesForIfOp(
   for (FuncOp func : {op.else_function(), op.then_function()}) {
     if (!func) continue;
 
-    FunctionType func_type = func.getType();
+    FunctionType func_type = func.getFunctionType();
     int num_inputs = func_type.getNumInputs();
 
     // Update the argument types of the function. If it's a tensorlist and

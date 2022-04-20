@@ -8,22 +8,23 @@
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
+import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {AmbientModeAlbum, GooglePhotosPhoto, TopicSource, WallpaperImage, WallpaperLayout} from '../trusted/personalization_app.mojom-webui.js';
 
 
 export function isWallpaperImage(obj: any): obj is WallpaperImage {
-  return typeof obj?.assetId === 'bigint';
+  return !!obj && typeof obj.assetId === 'bigint';
 }
 
 export function isFilePath(obj: any): obj is FilePath {
-  return typeof obj?.path === 'string' && obj.path;
+  return !!obj && typeof obj.path === 'string' && obj.path;
 }
 
 /** Checks whether |obj| is an instance of |GooglePhotosPhoto|. */
 export function isGooglePhotosPhoto(obj: any): obj is GooglePhotosPhoto {
-  return typeof obj?.id === 'string';
+  return !!obj && typeof obj.id === 'string';
 }
 
 /**
@@ -75,6 +76,15 @@ export function removeHighResolutionSuffix(url: string): string {
 }
 
 /**
+ * Removes the resolution suffix at the end of an image (from character '=' to
+ * the end) and replace it with a new resolution suffix.
+ */
+export function replaceResolutionSuffix(
+    url: string, resolution: string): string {
+  return url.replace(/=w[\w-]+$/, resolution);
+}
+
+/**
  * Returns whether the given URL starts with http:// or https://.
  */
 export function hasHttpScheme(url: string): boolean {
@@ -113,4 +123,16 @@ export function getTopicSourceName(topicSource: TopicSource): string {
       console.warn('Invalid TopicSource value.');
       return '';
   }
+}
+
+/**
+ * Returns a x-length dummy array of zeros (0s)
+ */
+export function getZerosArray(x: number): number[] {
+  return new Array(x).fill(0);
+}
+
+/** Converts a String16 to a JavaScript String. */
+export function decodeString16(str: String16|null): string {
+  return str ? str.data.map(ch => String.fromCodePoint(ch)).join('') : '';
 }

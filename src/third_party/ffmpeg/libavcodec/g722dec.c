@@ -37,6 +37,7 @@
 #include "libavutil/channel_layout.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "g722.h"
 #include "internal.h"
@@ -59,8 +60,8 @@ static av_cold int g722_decode_init(AVCodecContext * avctx)
 {
     G722Context *c = avctx->priv_data;
 
-    avctx->channels       = 1;
-    avctx->channel_layout = AV_CH_LAYOUT_MONO;
+    av_channel_layout_uninit(&avctx->ch_layout);
+    avctx->ch_layout      = (AVChannelLayout)AV_CHANNEL_LAYOUT_MONO;
     avctx->sample_fmt     = AV_SAMPLE_FMT_S16;
 
     c->band[0].scale_factor = 8;
@@ -139,15 +140,15 @@ static int g722_decode_frame(AVCodecContext *avctx, void *data,
     return avpkt->size;
 }
 
-const AVCodec ff_adpcm_g722_decoder = {
-    .name           = "g722",
-    .long_name      = NULL_IF_CONFIG_SMALL("G.722 ADPCM"),
-    .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = AV_CODEC_ID_ADPCM_G722,
+const FFCodec ff_adpcm_g722_decoder = {
+    .p.name         = "g722",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("G.722 ADPCM"),
+    .p.type         = AVMEDIA_TYPE_AUDIO,
+    .p.id           = AV_CODEC_ID_ADPCM_G722,
     .priv_data_size = sizeof(G722Context),
     .init           = g722_decode_init,
     .decode         = g722_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
-    .priv_class     = &g722_decoder_class,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
+    .p.priv_class   = &g722_decoder_class,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

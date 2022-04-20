@@ -5,8 +5,6 @@
 #include "services/network/public/cpp/corb/orb_impl.h"
 
 #include "base/containers/contains.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,7 +45,8 @@ bool IsAudioOrVideoMimeType(base::StringPiece mime_type) {
   //   (with only HTML/XML/JSON sniffing current implementation wouldn't block
   //   such non-webby images anyway).
   // - The current implementation reduces risk of blocking range requests for
-  //   non-sniffable types.
+  //   A) non-sniffable types and B) range responses for middle-of-resource
+  //   when first-bytes-response wasn't seen earlier.
   constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
   if (base::StartsWith(mime_type, "audio/", kCaseInsensitive) ||
       base::StartsWith(mime_type, "video/", kCaseInsensitive)) {
@@ -201,9 +200,6 @@ Decision OpaqueResponseBlockingAnalyzer::Init(
     const absl::optional<url::Origin>& request_initiator,
     mojom::RequestMode request_mode,
     const network::mojom::URLResponseHead& response) {
-  if (response.headers)
-    http_status_code_ = response.headers->response_code();
-
   // Exclude responses that ORB doesn't apply to.
   if (!IsOpaqueResponse(request_initiator, request_mode, response))
     return Decision::kAllow;
@@ -274,6 +270,15 @@ Decision OpaqueResponseBlockingAnalyzer::Init(
         break;
 
       case CrossOriginReadBlocking::MimeType::kOthers:
+        // TODO(lukasza): Departure from the spec: The implementation below
+        // allows any response with an audio/video MIME type.  For more details
+        // please see *all* TODO comments in the IsAudioOrVideoMimeType function
+        // and also the "ORB v0.1 vs full ORB differences" section in the
+        // "Gradual CORB -> ORB transition" doc.
+        if (IsAudioOrVideoMimeType(mime_type_))
+          return Decision::kAllow;
+        break;
+
       case CrossOriginReadBlocking::MimeType::kInvalidMimeType:
         break;
     }
@@ -310,12 +315,7 @@ Decision OpaqueResponseBlockingAnalyzer::Sniff(base::StringPiece data) {
 
   // 7. If the audio or video type pattern matching algorithm given bytes does
   //    not return undefined, then:
-  //
-  // TODO(lukasza): Inspecting `mime_type_` (in addition to `sniffed_mime_type`)
-  // is a departure from the spec.  For more details please see *all* 3 of the
-  // TODO comments in the IsAudioOrVideoMimeType function.
-  if (IsAudioOrVideoMimeType(sniffed_mime_type) ||
-      IsAudioOrVideoMimeType(mime_type_)) {
+  if (IsAudioOrVideoMimeType(sniffed_mime_type)) {
     // i. Append (request's opaque media identifier, request's current URL) to
     //    the user agent's opaque-safelisted requesters set.
     StoreAllowedAudioVideoRequest(final_request_url_);
@@ -437,26 +437,6 @@ void OpaqueResponseBlockingAnalyzer::ReportOrbBlockedAndCorbDidnt() const {
   base::UmaHistogramEnumeration(
       "SiteIsolation.ORB.CorbVsOrb.OrbBlockedAndCorbDidnt.Reason",
       blocking_decision_reason_);
-
-  // Additionally report crash keys for a subset of cases to confirm these cases
-  // are not likely to cause compatibility problems.
-  //
-  // Even though these scenarios represent a very small percentage of all
-  // requests, we want to rate-limit the DwoC reports to ~0.1% of
-  // problematic scenarios - this will avoid a spike in the volume of
-  // reports.
-  //
-  // TODO(https://crbug.com/1178928): Remove this once we gather enough
-  // DumpWithoutCrashing data.
-  if (base::RandDouble() < 0.001) {
-    SCOPED_CRASH_KEY_STRING64("ORB", "mime_type", mime_type_);
-    SCOPED_CRASH_KEY_STRING32("ORB", "http_status_code",
-                              base::NumberToString(http_status_code_));
-    SCOPED_CRASH_KEY_STRING32(
-        "ORB", "blocking_reason",
-        base::NumberToString(static_cast<int>(blocking_decision_reason_)));
-    base::debug::DumpWithoutCrashing();
-  }
 }
 
 void OpaqueResponseBlockingAnalyzer::StoreAllowedAudioVideoRequest(

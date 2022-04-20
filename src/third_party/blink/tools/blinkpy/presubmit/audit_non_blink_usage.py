@@ -341,12 +341,12 @@ _CONFIG = [
             'gfx::RectFToSkRect',
             'gfx::RectToSkIRect',
             'gfx::RectToSkRect',
-            'gfx::ScalePoint',
             'gfx::ScaleToCeiledSize',
             'gfx::ScaleToEnclosingRect',
             'gfx::ScaleToFlooredSize',
             'gfx::ScaleToRoundedRect',
             'gfx::ScaleToRoundedSize',
+            'gfx::ScaleRect',
             'gfx::ScaleSize',
             'gfx::ScalePoint',
             'gfx::ScaleToRoundedPoint',
@@ -568,6 +568,7 @@ _CONFIG = [
 
             # CanonicalCookie and related headers
             'net::CanonicalCookie',
+            'net::CookieInclusionStatus',
             'net::CookiePriority',
             'net::CookieSameSite',
             'net::CookieSourceScheme',
@@ -1029,10 +1030,21 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/bindings/core/v8/v8_code_cache.cc',
-            'third_party/blink/renderer/bindings/core/v8/v8_code_cache.h',
             'third_party/blink/renderer/core/loader/document_loader.cc',
             'third_party/blink/renderer/core/loader/document_loader.h',
+        ],
+        'allowed': [
+            'base::flat_map',
+            # TODO(mythria): Allow use of non-blink mojo interface. Once
+            # //content/renderer/loader is moved to Blink as a part of onion
+            # soup we can update all uses to blink::mojom::blink::CodeCacheHost.
+            'blink::mojom::CodeCacheHost',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/bindings/core/v8/v8_code_cache.cc',
+            'third_party/blink/renderer/bindings/core/v8/v8_code_cache.h',
             'third_party/blink/renderer/core/workers/worklet_global_scope.h',
             'third_party/blink/renderer/core/workers/worklet_global_scope.cc',
             'third_party/blink/renderer/core/workers/worker_global_scope.cc',
@@ -1138,6 +1150,8 @@ _CONFIG = [
             'third_party/blink/renderer/modules/breakout_box/',
         ],
         'allowed': [
+            # Required to initialize WebGraphicsContext3DVideoFramePool.
+            'gpu::GpuMemoryBufferManager',
             'media::.+',
             # Some media APIs require std::vector.
             "std::vector",
@@ -1452,7 +1466,7 @@ _CONFIG = [
         'paths': [
             'third_party/blink/renderer/modules/webaudio/',
         ],
-        'allowed': ['audio_utilities::.+'],
+        'allowed': ['audio_utilities::.+', 'media::.+'],
     },
     {
         'paths': [

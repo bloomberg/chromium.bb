@@ -134,7 +134,8 @@ enum CBStatusFlagBits : uint64_t {
     CBSTATUS_LOGIC_OP_SET                    = 0x100000000,
     CBSTATUS_PRIMITIVE_RESTART_ENABLE_SET    = 0x200000000,
     CBSTATUS_VERTEX_INPUT_SET                = 0x400000000,
-    CBSTATUS_ALL_STATE_SET                   = 0x7FFFFFDFF,   // All state set (intentionally exclude index buffer)
+    CBSTATUS_COLOR_WRITE_ENABLE_SET          = 0x800000000,
+    CBSTATUS_ALL_STATE_SET                   = 0xFFFFFFDFF,   // All state set (intentionally exclude index buffer)
     // clang-format on
 };
 
@@ -274,6 +275,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     layer_data::unordered_set<QueryObject> activeQueries;
     layer_data::unordered_set<QueryObject> startedQueries;
     layer_data::unordered_set<QueryObject> resetQueries;
+    layer_data::unordered_set<QueryObject> updatedQueries;
     CommandBufferImageLayoutMap image_layout_map;
     CommandBufferAliasedLayoutMap aliased_image_layout_map;  // storage for potentially aliased images
 
@@ -322,6 +324,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     bool conditional_rendering_active{false};
     bool conditional_rendering_inside_render_pass{false};
     uint32_t conditional_rendering_subpass{0};
+    uint32_t dynamicColorWriteEnableAttachmentCount{0};
     mutable ReadWriteLock lock;
     ReadLockGuard ReadLock() const { return ReadLockGuard(lock); }
     WriteLockGuard WriteLock() { return WriteLockGuard(lock); }
@@ -437,6 +440,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
 
     virtual void RecordCmd(CMD_TYPE cmd_type);
     void RecordStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bits);
+    void RecordColorWriteEnableStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bits, uint32_t attachment_count);
     void RecordTransferCmd(CMD_TYPE cmd_type, std::shared_ptr<BINDABLE> &&buf1, std::shared_ptr<BINDABLE> &&buf2 = nullptr);
     void RecordSetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask);
     void RecordResetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask);
@@ -461,7 +465,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     void SetImageInitialLayout(const IMAGE_STATE &image_state, const VkImageSubresourceLayers &layers, VkImageLayout layout);
 
     void Submit(uint32_t perf_submit_pass);
-    void Retire(uint32_t perf_submit_pass);
+    void Retire(uint32_t perf_submit_pass, const std::function<bool(const QueryObject &)> &is_query_updated_after);
 
     uint32_t GetDynamicColorAttachmentCount() {
         if (activeRenderPass) {
@@ -484,6 +488,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
   protected:
     void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
     void UpdateAttachmentsView(const VkRenderPassBeginInfo *pRenderPassBegin);
+    void UnbindResources();
 };
 
 // specializations for barriers that cannot do queue family ownership transfers

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -272,7 +273,7 @@ void ErrorScreen::HideImpl() {
     view_->Hide();
 }
 
-void ErrorScreen::OnUserAction(const std::string& action_id) {
+void ErrorScreen::OnUserActionDeprecated(const std::string& action_id) {
   if (action_id == kUserActionShowCaptivePortalClicked) {
     ShowCaptivePortal();
   } else if (action_id == kUserActionOpenInternetDialog) {
@@ -296,7 +297,7 @@ void ErrorScreen::OnUserAction(const std::string& action_id) {
              action_id == kUserActionCancelReset) {
     Hide();
   } else {
-    BaseScreen::OnUserAction(action_id);
+    BaseScreen::OnUserActionDeprecated(action_id);
   }
 }
 
@@ -334,7 +335,7 @@ void ErrorScreen::PolicyLoadFailed() {
 }
 
 void ErrorScreen::DefaultHideCallback() {
-  if (parent_screen_ != OobeScreen::SCREEN_UNKNOWN && view_)
+  if (parent_screen_ != ash::OOBE_SCREEN_UNKNOWN && view_)
     view_->ShowOobeScreen(parent_screen_);
 
   // TODO(antrim): Due to potential race with GAIA reload and hiding network
@@ -412,7 +413,8 @@ void ErrorScreen::StartGuestSessionAfterOwnershipCheck(
   if (guest_login_performer_)
     return;
 
-  guest_login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
+  guest_login_performer_ = std::make_unique<ChromeLoginPerformer>(
+      this, LoginDisplayHost::default_host()->metrics_recorder());
   guest_login_performer_->LoginOffTheRecord();
 }
 

@@ -84,11 +84,11 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
         shaderSource << "type StencilValues = array<u32, " << components.size() << ">;\n";
         shaderSource << R"(
             struct DepthResult {
-                value : f32;
-            };
+                value : f32
+            }
             struct StencilResult {
-                values : StencilValues;
-            };)";
+                values : StencilValues
+            })";
         shaderSource << "\n";
 
         uint32_t index = 0;
@@ -195,8 +195,8 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
             @group(0) @binding(0) var samp : sampler_comparison;
             @group(0) @binding(1) var tex : texture_depth_2d;
             struct Uniforms {
-                compareRef : f32;
-            };
+                compareRef : f32
+            }
             @group(0) @binding(2) var<uniform> uniforms : Uniforms;
 
             @stage(fragment) fn main() -> @location(0) f32 {
@@ -217,13 +217,13 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
             @group(0) @binding(0) var samp : sampler_comparison;
             @group(0) @binding(1) var tex : texture_depth_2d;
             struct Uniforms {
-                compareRef : f32;
-            };
+                compareRef : f32
+            }
             @group(0) @binding(2) var<uniform> uniforms : Uniforms;
 
             struct SamplerResult {
-                value : f32;
-            };
+                value : f32
+            }
             @group(0) @binding(3) var<storage, read_write> samplerResult : SamplerResult;
 
             @stage(compute) @workgroup_size(1) fn main() {
@@ -604,8 +604,8 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
 // Test that sampling a depth/stencil texture at components 1, 2, and 3 yield 0, 0, and 1
 // respectively
 TEST_P(DepthStencilSamplingTest, SampleExtraComponents) {
-    // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
+    // This test fails on SwANGLE (although it passes on other ANGLE backends).
+    DAWN_TEST_UNSUPPORTED_IF(IsANGLE());
 
     wgpu::TextureFormat format = GetParam().mTextureFormat;
 
@@ -622,9 +622,6 @@ TEST_P(DepthStencilSamplingTest, SampleExtraComponents) {
 
 // Test sampling both depth and stencil with a render/compute pipeline works.
 TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
-    // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
-
     wgpu::TextureFormat format = GetParam().mTextureFormat;
 
     wgpu::SamplerDescriptor samplerDesc;
@@ -787,8 +784,8 @@ class StencilSamplingTest : public DepthStencilSamplingTest {};
 
 // Test that sampling a stencil texture with a render/compute pipeline works
 TEST_P(StencilSamplingTest, SampleStencilOnly) {
-    // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
+    // This test fails on SwANGLE (although it passes on other ANGLE backends).
+    DAWN_TEST_UNSUPPORTED_IF(IsANGLE());
 
     wgpu::TextureFormat format = GetParam().mTextureFormat;
 

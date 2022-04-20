@@ -7,60 +7,55 @@
 
 #include "src/sksl/SkSLAnalysis.h"
 
-#include "include/private/SkFloatingPoint.h"
+#include "include/core/SkSpan.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLLayout.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLProgramElement.h"
 #include "include/private/SkSLSampleUsage.h"
 #include "include/private/SkSLStatement.h"
+#include "include/private/SkTArray.h"
+#include "include/private/SkTHash.h"
 #include "include/sksl/SkSLErrorReporter.h"
-#include "src/core/SkSafeMath.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLConstantFolder.h"
+#include "src/sksl/SkSLContext.h"
+#include "src/sksl/analysis/SkSLNoOpErrorReporter.h"
 #include "src/sksl/analysis/SkSLProgramVisitor.h"
-#include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLProgram.h"
-#include "src/sksl/transform/SkSLProgramWriter.h"
-
-// ProgramElements
-#include "src/sksl/ir/SkSLExtension.h"
-#include "src/sksl/ir/SkSLFunctionDefinition.h"
-#include "src/sksl/ir/SkSLInterfaceBlock.h"
-#include "src/sksl/ir/SkSLVarDeclarations.h"
-
-// Statements
-#include "src/sksl/ir/SkSLBlock.h"
-#include "src/sksl/ir/SkSLBreakStatement.h"
-#include "src/sksl/ir/SkSLContinueStatement.h"
-#include "src/sksl/ir/SkSLDiscardStatement.h"
-#include "src/sksl/ir/SkSLDoStatement.h"
-#include "src/sksl/ir/SkSLExpressionStatement.h"
-#include "src/sksl/ir/SkSLForStatement.h"
-#include "src/sksl/ir/SkSLIfStatement.h"
-#include "src/sksl/ir/SkSLNop.h"
-#include "src/sksl/ir/SkSLReturnStatement.h"
-#include "src/sksl/ir/SkSLSwitchStatement.h"
-
-// Expressions
 #include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLChildCall.h"
 #include "src/sksl/ir/SkSLConstructor.h"
-#include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
-#include "src/sksl/ir/SkSLConstructorMatrixResize.h"
+#include "src/sksl/ir/SkSLDoStatement.h"
+#include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLExternalFunctionCall.h"
-#include "src/sksl/ir/SkSLExternalFunctionReference.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
+#include "src/sksl/ir/SkSLForStatement.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
-#include "src/sksl/ir/SkSLFunctionReference.h"
+#include "src/sksl/ir/SkSLFunctionDeclaration.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
+#include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
-#include "src/sksl/ir/SkSLInlineMarker.h"
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
-#include "src/sksl/ir/SkSLSetting.h"
+#include "src/sksl/ir/SkSLProgram.h"
+#include "src/sksl/ir/SkSLReturnStatement.h"
+#include "src/sksl/ir/SkSLSwitchCase.h"
+#include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
-#include "src/sksl/ir/SkSLTypeReference.h"
+#include "src/sksl/ir/SkSLType.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
+#include "src/sksl/transform/SkSLProgramWriter.h"
+
+#include <optional>
+#include <string>
 
 namespace SkSL {
 
@@ -245,13 +240,6 @@ private:
     using INHERITED = ProgramVisitor;
 };
 
-// If a caller doesn't care about errors, we can use this trivial reporter that just counts up.
-class TrivialErrorReporter : public ErrorReporter {
-public:
-    ~TrivialErrorReporter() override { this->reportPendingErrors({}); }
-    void handleError(std::string_view, Position) override {}
-};
-
 // This isn't actually using ProgramVisitor, because it only considers a subset of the fields for
 // any given expression kind. For instance, when indexing an array (e.g. `x[1]`), we only want to
 // know if the base (`x`) is assignable; the index expression (`1`) doesn't need to be.
@@ -403,8 +391,8 @@ bool Analysis::DetectVarDeclarationWithoutScope(const Statement& stmt, ErrorRepo
     // Report an error.
     SkASSERT(var);
     if (errors) {
-        errors->error(stmt.fPosition, "variable '" + std::string(var->name()) +
-                "' must be created in a scope");
+        errors->error(var->fPosition,
+                      "variable '" + std::string(var->name()) + "' must be created in a scope");
     }
     return true;
 }
@@ -418,8 +406,8 @@ bool Analysis::StatementWritesToVariable(const Statement& stmt, const Variable& 
 }
 
 bool Analysis::IsAssignable(Expression& expr, AssignmentInfo* info, ErrorReporter* errors) {
-    TrivialErrorReporter trivialErrors;
-    return IsAssignableVisitor{errors ? errors : &trivialErrors}.visit(expr, info);
+    NoOpErrorReporter unusedErrors;
+    return IsAssignableVisitor{errors ? errors : &unusedErrors}.visit(expr, info);
 }
 
 bool Analysis::UpdateVariableRefKind(Expression* expr,
@@ -455,69 +443,6 @@ bool Analysis::IsTrivialExpression(const Expression& expr) {
            (expr.is<IndexExpression>() &&
             expr.as<IndexExpression>().index()->isIntLiteral() &&
             IsTrivialExpression(*expr.as<IndexExpression>().base()));
-}
-
-bool Analysis::IsSameExpressionTree(const Expression& left, const Expression& right) {
-    if (left.kind() != right.kind() || !left.type().matches(right.type())) {
-        return false;
-    }
-
-    // This isn't a fully exhaustive list of expressions by any stretch of the imagination; for
-    // instance, `x[y+1] = x[y+1]` isn't detected because we don't look at BinaryExpressions.
-    // Since this is intended to be used for optimization purposes, handling the common cases is
-    // sufficient.
-    switch (left.kind()) {
-        case Expression::Kind::kLiteral:
-            return left.as<Literal>().value() == right.as<Literal>().value();
-
-        case Expression::Kind::kConstructorArray:
-        case Expression::Kind::kConstructorArrayCast:
-        case Expression::Kind::kConstructorCompound:
-        case Expression::Kind::kConstructorCompoundCast:
-        case Expression::Kind::kConstructorDiagonalMatrix:
-        case Expression::Kind::kConstructorMatrixResize:
-        case Expression::Kind::kConstructorScalarCast:
-        case Expression::Kind::kConstructorStruct:
-        case Expression::Kind::kConstructorSplat: {
-            if (left.kind() != right.kind()) {
-                return false;
-            }
-            const AnyConstructor& leftCtor = left.asAnyConstructor();
-            const AnyConstructor& rightCtor = right.asAnyConstructor();
-            const auto leftSpan = leftCtor.argumentSpan();
-            const auto rightSpan = rightCtor.argumentSpan();
-            if (leftSpan.size() != rightSpan.size()) {
-                return false;
-            }
-            for (size_t index = 0; index < leftSpan.size(); ++index) {
-                if (!IsSameExpressionTree(*leftSpan[index], *rightSpan[index])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        case Expression::Kind::kFieldAccess:
-            return left.as<FieldAccess>().fieldIndex() == right.as<FieldAccess>().fieldIndex() &&
-                   IsSameExpressionTree(*left.as<FieldAccess>().base(),
-                                        *right.as<FieldAccess>().base());
-
-        case Expression::Kind::kIndex:
-            return IsSameExpressionTree(*left.as<IndexExpression>().index(),
-                                        *right.as<IndexExpression>().index()) &&
-                   IsSameExpressionTree(*left.as<IndexExpression>().base(),
-                                        *right.as<IndexExpression>().base());
-
-        case Expression::Kind::kSwizzle:
-            return left.as<Swizzle>().components() == right.as<Swizzle>().components() &&
-                   IsSameExpressionTree(*left.as<Swizzle>().base(), *right.as<Swizzle>().base());
-
-        case Expression::Kind::kVariableReference:
-            return left.as<VariableReference>().variable() ==
-                   right.as<VariableReference>().variable();
-
-        default:
-            return false;
-    }
 }
 
 class ES2IndexingVisitor : public ProgramVisitor {

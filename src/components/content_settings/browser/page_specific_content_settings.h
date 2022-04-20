@@ -22,6 +22,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
+#include "components/content_settings/common/content_settings_manager.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -96,17 +97,17 @@ class PageSpecificContentSettings
     // the location bar.
     virtual void UpdateLocationBar() = 0;
 
-    // Notifies the delegate content settings rules have changed that need to be
-    // sent to the renderer.
-    virtual void SetContentSettingRules(
-        content::RenderProcessHost* process,
-        const RendererContentSettingRules& rules) = 0;
-
     // Gets the pref service for the current web contents.
     virtual PrefService* GetPrefs() = 0;
 
     // Gets the settings map for the current web contents.
     virtual HostContentSettingsMap* GetSettingsMap() = 0;
+
+    // Allows delegate to override content setting rules that will be sent to
+    // the renderer.
+    virtual void SetDefaultRendererContentSettingRules(
+        content::RenderFrameHost* rfh,
+        RendererContentSettingRules* rules) = 0;
 
     virtual ContentSetting GetEmbargoSetting(
         const GURL& request_origin,
@@ -139,33 +140,22 @@ class PageSpecificContentSettings
     // Notifies the delegate a particular content settings type was blocked.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
 
-    // Notifies the delegate that access was granted to cache storage for
-    // |origin|.
-    virtual void OnCacheStorageAccessAllowed(const url::Origin& origin) = 0;
+    // Notifies the delegate that access to storage of type |storage_type| was
+    // granted in |page|.
+    virtual void OnStorageAccessAllowed(
+        mojom::ContentSettingsManager::StorageType storage_type,
+        const url::Origin& origin,
+        content::Page& page) = 0;
 
-    // Notifies the delegate that access was granted to |accessed_cookies|.
-    virtual void OnCookieAccessAllowed(
-        const net::CookieList& accessed_cookies) = 0;
-
-    // Notifies the delegate that access was granted to DOM storage for
-    // |origin|.
-    virtual void OnDomStorageAccessAllowed(const url::Origin& origin) = 0;
-
-    // Notifies the delegate that access was granted to file system storage for
-    // |origin|.
-    virtual void OnFileSystemAccessAllowed(const url::Origin& origin) = 0;
-
-    // Notifies the delegate that access was granted to Indexed DB storage for
-    // |origin|.
-    virtual void OnIndexedDBAccessAllowed(const url::Origin& origin) = 0;
+    // Notifies the delegate that access was granted to |accessed_cookies| in
+    // |page|.
+    virtual void OnCookieAccessAllowed(const net::CookieList& accessed_cookies,
+                                       content::Page& page) = 0;
 
     // Notifies the delegate that access was granted to service workers for
     // |origin|.
-    virtual void OnServiceWorkerAccessAllowed(const url::Origin& origin) = 0;
-
-    // Notifies the delegate that access was granted to web database storage for
-    // |origin|.
-    virtual void OnWebDatabaseAccessAllowed(const url::Origin& origin) = 0;
+    virtual void OnServiceWorkerAccessAllowed(const url::Origin& origin,
+                                              content::Page& page) = 0;
   };
 
   // Classes that want to be notified about site data events must implement
@@ -220,41 +210,12 @@ class PageSpecificContentSettings
   static PageSpecificContentSettings::Delegate* GetDelegateForWebContents(
       content::WebContents* web_contents);
 
-  // Called when a specific Web database in the current page was accessed. If
-  // access was blocked due to the user's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
-  static void WebDatabaseAccessed(int render_process_id,
-                                  int render_frame_id,
-                                  const GURL& url,
-                                  bool blocked_by_policy);
-
-  // Called when a specific indexed db factory in the current page was
-  // accessed. If access was blocked due to the user's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
-  static void IndexedDBAccessed(int render_process_id,
-                                int render_frame_id,
-                                const GURL& url,
-                                bool blocked_by_policy);
-
-  // Called when CacheStorage::Open() is called in the current page.
-  // If access was blocked due to the user's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
-  static void CacheStorageAccessed(int render_process_id,
-                                   int render_frame_id,
-                                   const GURL& url,
-                                   bool blocked_by_policy);
-
-  // Called when a specific file system in the current page was accessed.
-  // If access was blocked due to the user's content settings,
-  // |blocked_by_policy| should be true, and this function should invoke
-  // OnContentBlocked.
-  static void FileSystemAccessed(int render_process_id,
-                                 int render_frame_id,
-                                 const GURL& url,
-                                 bool blocked_by_policy);
+  static void StorageAccessed(
+      mojom::ContentSettingsManager::StorageType storage_type,
+      int render_process_id,
+      int render_frame_id,
+      const GURL& url,
+      bool blocked_by_policy);
 
   // Called when a specific Shared Worker was accessed.
   static void SharedWorkerAccessed(int render_process_id,
@@ -269,6 +230,12 @@ class PageSpecificContentSettings
   static void InterestGroupJoined(content::RenderFrameHost* rfh,
                                   const url::Origin api_origin,
                                   bool blocked_by_policy);
+
+  // Called when |api_origin| attempts to access browsing topics.
+  static void TopicAccessed(content::RenderFrameHost* rfh,
+                            const url::Origin api_origin,
+                            bool blocked_by_policy,
+                            privacy_sandbox::CanonicalTopic topic);
 
   static content::WebContentsObserver* GetWebContentsObserverForTest(
       content::WebContents* web_contents);
@@ -357,17 +324,14 @@ class PageSpecificContentSettings
   void OnContentBlocked(ContentSettingsType type);
   void OnContentAllowed(ContentSettingsType type);
 
-  // These methods are invoked on the UI thread forwarded from the
-  // ContentSettingsManagerImpl.
-  void OnDomStorageAccessed(const GURL& url,
-                            bool local,
-                            bool blocked_by_policy);
-
-  // These methods are invoked on the UI thread by the static functions above.
-  // Only public for tests.
-  void OnFileSystemAccessed(const GURL& url, bool blocked_by_policy);
-  void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
-  void OnCacheStorageAccessed(const GURL& url, bool blocked_by_policy);
+  // |originating_page| is non-null when it differs from page(), which happens
+  // when an embedding page's PSCS is notified of an access that happens in an
+  // embedded page (through |MaybeUpdateParent|).
+  void OnStorageAccessed(
+      mojom::ContentSettingsManager::StorageType storage_type,
+      const GURL& url,
+      bool blocked_by_policy,
+      content::Page* originating_page = nullptr);
   void OnSharedWorkerAccessed(const GURL& worker_url,
                               const std::string& name,
                               const blink::StorageKey& storage_key,
@@ -378,7 +342,6 @@ class PageSpecificContentSettings
                        bool blocked_by_policy,
                        privacy_sandbox::CanonicalTopic topic);
 
-  void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,
                                                bool allowed);
@@ -394,9 +357,12 @@ class PageSpecificContentSettings
       const std::string& media_stream_requested_audio_device,
       const std::string& media_stream_requested_video_device);
 
-  void OnCookiesAccessed(const content::CookieAccessDetails& details);
+  // See |OnStorageAccessed| documentation for more info on |originating_page|.
+  void OnCookiesAccessed(const content::CookieAccessDetails& details,
+                         content::Page* originating_page = nullptr);
   void OnServiceWorkerAccessed(const GURL& scope,
-                               content::AllowServiceWorkerResult allowed);
+                               content::AllowServiceWorkerResult allowed,
+                               content::Page* originating_page = nullptr);
 
   // Block all content. Used for testing content setting bubbles.
   void BlockAllContentForTesting();
@@ -479,6 +445,8 @@ class PageSpecificContentSettings
         content::RenderFrameHost* rfh);
 
     // content::WebContentsObserver overrides.
+    void ReadyToCommitNavigation(
+        content::NavigationHandle* navigation_handle) override;
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
     void OnCookiesAccessed(

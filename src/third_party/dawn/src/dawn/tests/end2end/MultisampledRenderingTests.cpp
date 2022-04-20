@@ -46,15 +46,15 @@ class MultisampledRenderingTest : public DawnTest {
         bool flipTriangle = false) {
         const char* kFsOneOutputWithDepth = R"(
             struct U {
-                color : vec4<f32>;
-                depth : f32;
-            };
+                color : vec4<f32>,
+                depth : f32,
+            }
             @group(0) @binding(0) var<uniform> uBuffer : U;
 
             struct FragmentOut {
-                @location(0) color : vec4<f32>;
-                @builtin(frag_depth) depth : f32;
-            };
+                @location(0) color : vec4<f32>,
+                @builtin(frag_depth) depth : f32,
+            }
 
             @stage(fragment) fn main() -> FragmentOut {
                 var output : FragmentOut;
@@ -65,8 +65,8 @@ class MultisampledRenderingTest : public DawnTest {
 
         const char* kFsOneOutputWithoutDepth = R"(
             struct U {
-                color : vec4<f32>;
-            };
+                color : vec4<f32>
+            }
             @group(0) @binding(0) var<uniform> uBuffer : U;
 
             @stage(fragment) fn main() -> @location(0) vec4<f32> {
@@ -84,15 +84,15 @@ class MultisampledRenderingTest : public DawnTest {
         bool alphaToCoverageEnabled = false) {
         const char* kFsTwoOutputs = R"(
             struct U {
-                color0 : vec4<f32>;
-                color1 : vec4<f32>;
-            };
+                color0 : vec4<f32>,
+                color1 : vec4<f32>,
+            }
             @group(0) @binding(0) var<uniform> uBuffer : U;
 
             struct FragmentOut {
-                @location(0) color0 : vec4<f32>;
-                @location(1) color1 : vec4<f32>;
-            };
+                @location(0) color0 : vec4<f32>,
+                @location(1) color1 : vec4<f32>,
+            }
 
             @stage(fragment) fn main() -> FragmentOut {
                 var output : FragmentOut;
@@ -311,33 +311,6 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTexture) {
 
         VerifyResolveTarget(kGreen, mResolveTexture);
     }
-}
-
-// Test that a single-layer multisampled texture view can be created and resolved from.
-TEST_P(MultisampledRenderingTest, ResolveFromSingleLayerArrayInto2DTexture) {
-    constexpr bool kTestDepth = false;
-    wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
-    wgpu::RenderPipeline pipeline = CreateRenderPipelineWithOneOutputForTest(kTestDepth);
-
-    constexpr wgpu::Color kGreen = {0.0f, 0.8f, 0.0f, 0.8f};
-
-    // Draw a green triangle.
-    {
-        wgpu::TextureViewDescriptor desc = {};
-        desc.dimension = wgpu::TextureViewDimension::e2DArray;
-        desc.arrayLayerCount = 1;
-
-        utils::ComboRenderPassDescriptor renderPass = CreateComboRenderPassDescriptorForTest(
-            {mMultisampledColorTexture.CreateView(&desc)}, {mResolveView}, wgpu::LoadOp::Clear,
-            wgpu::LoadOp::Clear, kTestDepth);
-
-        EncodeRenderPassForTest(commandEncoder, renderPass, pipeline, kGreen);
-    }
-
-    wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
-    queue.Submit(1, &commandBuffer);
-
-    VerifyResolveTarget(kGreen, mResolveTexture);
 }
 
 // Test multisampled rendering with depth test works correctly.
@@ -778,14 +751,14 @@ TEST_P(MultisampledRenderingTest, ResolveInto2DTextureWithSampleMaskAndShaderOut
     constexpr uint32_t kSampleMask = kFirstSampleMaskBit | kThirdSampleMaskBit;
     const char* fs = R"(
         struct U {
-            color : vec4<f32>;
-        };
+            color : vec4<f32>
+        }
         @group(0) @binding(0) var<uniform> uBuffer : U;
 
         struct FragmentOut {
-            @location(0) color : vec4<f32>;
-            @builtin(sample_mask) sampleMask : u32;
-        };
+            @location(0) color : vec4<f32>,
+            @builtin(sample_mask) sampleMask : u32,
+        }
 
         @stage(fragment) fn main() -> FragmentOut {
             var output : FragmentOut;
@@ -839,16 +812,16 @@ TEST_P(MultisampledRenderingTest, ResolveIntoMultipleResolveTargetsWithShaderOut
     constexpr float kMSAACoverage = 0.25f;
     const char* fs = R"(
         struct U {
-            color0 : vec4<f32>;
-            color1 : vec4<f32>;
-        };
+            color0 : vec4<f32>,
+            color1 : vec4<f32>,
+        }
         @group(0) @binding(0) var<uniform> uBuffer : U;
 
         struct FragmentOut {
-            @location(0) color0 : vec4<f32>;
-            @location(1) color1 : vec4<f32>;
-            @builtin(sample_mask) sampleMask : u32;
-        };
+            @location(0) color0 : vec4<f32>,
+            @location(1) color1 : vec4<f32>,
+            @builtin(sample_mask) sampleMask : u32,
+        }
 
         @stage(fragment) fn main() -> FragmentOut {
             var output : FragmentOut;

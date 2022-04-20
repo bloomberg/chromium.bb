@@ -12,6 +12,7 @@
 #include "ash/components/login/auth/key.h"
 #include "ash/components/login/auth/saml_password_attributes.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -24,7 +25,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/saml_confirm_password_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_constants.h"
@@ -80,7 +81,6 @@
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -689,11 +689,11 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedMultiple) {
   SigninFrameJS().TypeIntoPath("password1", {"Password1"});
   SigninFrameJS().TapOn("Submit");
   // Lands on confirm password screen.
-  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(chromeos::SamlConfirmPasswordView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(chromeos::SamlConfirmPasswordView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   // Either scraped password should be able to sign-in.
   SendConfirmPassword("password1");
@@ -733,12 +733,12 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedNone) {
   SigninFrameJS().TapOn("Submit");
 
   // Lands on confirm password screen with manual input state.
-  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(chromeos::SamlConfirmPasswordView::kScreenId).Wait();
   test::OobeJS().ExpectTrue("$('saml-confirm-password').isManualInput");
   // Entering passwords that don't match will make us land again in the same
   // page.
   SetManualPasswords("Test1", "Test2");
-  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(chromeos::SamlConfirmPasswordView::kScreenId).Wait();
   test::OobeJS().ExpectTrue("$('saml-confirm-password').isManualInput");
 
   // Two matching passwords should let the user to sign in.
@@ -824,7 +824,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, PasswordConfirmFlow) {
   SigninFrameJS().TapOn("Submit");
 
   // Lands on confirm password screen with no error message.
-  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(chromeos::SamlConfirmPasswordView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   test::OobeJS().ExpectTrue(
       "!$('saml-confirm-password').$.passwordInput.invalid");
@@ -832,7 +832,7 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, PasswordConfirmFlow) {
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(chromeos::SamlConfirmPasswordView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   test::OobeJS().ExpectTrue(
       "$('saml-confirm-password').$.passwordInput.invalid");
@@ -1713,7 +1713,7 @@ class SAMLDeviceAttestationTest
 
   attestation::MockMachineCertificateUploader mock_cert_uploader_;
   NiceMock<attestation::MockAttestationFlow> mock_attestation_flow_;
-  chromeos::ScopedStubInstallAttributes stub_install_attributes_;
+  ScopedStubInstallAttributes stub_install_attributes_;
 };
 
 void SAMLDeviceAttestationTest::SetUpInProcessBrowserTestFixture() {

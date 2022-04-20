@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_SWAPCHAIN_H_
-#define DAWNNATIVE_SWAPCHAIN_H_
+#ifndef SRC_DAWN_NATIVE_SWAPCHAIN_H_
+#define SRC_DAWN_NATIVE_SWAPCHAIN_H_
 
 #include "dawn/native/Error.h"
 #include "dawn/native/Forward.h"
@@ -32,7 +32,7 @@ namespace dawn::native {
 
     class SwapChainBase : public ApiObjectBase {
       public:
-        SwapChainBase(DeviceBase* device);
+        explicit SwapChainBase(DeviceBase* device);
 
         static SwapChainBase* MakeError(DeviceBase* device);
 
@@ -154,7 +154,8 @@ namespace dawn::native {
         // manner, starting with GetCurrentTextureViewImpl.
 
         // The returned texture view must match the swapchain descriptor exactly.
-        virtual ResultOrError<TextureViewBase*> GetCurrentTextureViewImpl() = 0;
+        ResultOrError<Ref<TextureViewBase>> GetCurrentTextureView();
+        virtual ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() = 0;
         // The call to present must destroy the current view's texture so further access to it are
         // invalid.
         virtual MaybeError PresentImpl() = 0;
@@ -166,4 +167,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_SWAPCHAIN_H_
+#endif  // SRC_DAWN_NATIVE_SWAPCHAIN_H_

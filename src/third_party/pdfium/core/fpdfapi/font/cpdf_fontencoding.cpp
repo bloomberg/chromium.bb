@@ -6,6 +6,7 @@
 
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
 
+#include "constants/font_encodings.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
@@ -13,6 +14,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/fx_freetype.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/cxx17_backports.h"
 
 namespace {
@@ -1661,8 +1663,8 @@ int CPDF_FontEncoding::CharCodeFromUnicode(wchar_t unicode) const {
   return -1;
 }
 
-CPDF_FontEncoding::CPDF_FontEncoding(int PredefinedEncoding) {
-  const uint16_t* pSrc = PDF_UnicodesForPredefinedCharSet(PredefinedEncoding);
+CPDF_FontEncoding::CPDF_FontEncoding(FontEncoding predefined_encoding) {
+  const uint16_t* pSrc = UnicodesForPredefinedCharSet(predefined_encoding);
   if (pSrc) {
     for (size_t i = 0; i < pdfium::size(m_Unicodes); i++)
       m_Unicodes[i] = pSrc[i];
@@ -1677,10 +1679,15 @@ bool CPDF_FontEncoding::IsIdentical(const CPDF_FontEncoding* pAnother) const {
 
 RetainPtr<CPDF_Object> CPDF_FontEncoding::Realize(
     WeakPtr<ByteStringPool> pPool) const {
-  int predefined = 0;
-  for (int cs = PDFFONT_ENCODING_WINANSI; cs < PDFFONT_ENCODING_ZAPFDINGBATS;
-       cs++) {
-    const uint16_t* pSrc = PDF_UnicodesForPredefinedCharSet(cs);
+  static constexpr FontEncoding kEncodings[] = {
+      FontEncoding::kWinAnsi,     FontEncoding::kMacRoman,
+      FontEncoding::kMacExpert,   FontEncoding::kStandard,
+      FontEncoding::kAdobeSymbol,
+  };
+
+  absl::optional<FontEncoding> predefined;
+  for (FontEncoding cs : kEncodings) {
+    const uint16_t* pSrc = UnicodesForPredefinedCharSet(cs);
     bool match = true;
     for (size_t i = 0; i < pdfium::size(m_Unicodes); i++) {
       if (m_Unicodes[i] != pSrc[i]) {
@@ -1693,37 +1700,38 @@ RetainPtr<CPDF_Object> CPDF_FontEncoding::Realize(
       break;
     }
   }
-  if (predefined) {
+  if (predefined.has_value()) {
     const char* pName;
-    if (predefined == PDFFONT_ENCODING_WINANSI)
-      pName = "WinAnsiEncoding";
-    else if (predefined == PDFFONT_ENCODING_MACROMAN)
-      pName = "MacRomanEncoding";
-    else if (predefined == PDFFONT_ENCODING_MACEXPERT)
-      pName = "MacExpertEncoding";
+    if (predefined.value() == FontEncoding::kWinAnsi)
+      pName = pdfium::font_encodings::kWinAnsiEncoding;
+    else if (predefined.value() == FontEncoding::kMacRoman)
+      pName = pdfium::font_encodings::kMacRomanEncoding;
+    else if (predefined.value() == FontEncoding::kMacExpert)
+      pName = pdfium::font_encodings::kMacExpertEncoding;
     else
       return nullptr;
 
     return pdfium::MakeRetain<CPDF_Name>(pPool, pName);
   }
   const uint16_t* pStandard =
-      PDF_UnicodesForPredefinedCharSet(PDFFONT_ENCODING_WINANSI);
+      UnicodesForPredefinedCharSet(FontEncoding::kWinAnsi);
   auto pDiff = pdfium::MakeRetain<CPDF_Array>();
   for (size_t i = 0; i < pdfium::size(m_Unicodes); i++) {
     if (pStandard[i] == m_Unicodes[i])
       continue;
 
     pDiff->AppendNew<CPDF_Number>(static_cast<int>(i));
-    pDiff->AppendNew<CPDF_Name>(PDF_AdobeNameFromUnicode(m_Unicodes[i]));
+    pDiff->AppendNew<CPDF_Name>(AdobeNameFromUnicode(m_Unicodes[i]));
   }
 
   auto pDict = pdfium::MakeRetain<CPDF_Dictionary>(pPool);
-  pDict->SetNewFor<CPDF_Name>("BaseEncoding", "WinAnsiEncoding");
+  pDict->SetNewFor<CPDF_Name>("BaseEncoding",
+                              pdfium::font_encodings::kWinAnsiEncoding);
   pDict->SetFor("Differences", pDiff);
   return pDict;
 }
 
-uint32_t FT_CharCodeFromUnicode(int encoding, wchar_t unicode) {
+uint32_t CharCodeFromUnicodeForFreetypeEncoding(int encoding, wchar_t unicode) {
   switch (encoding) {
     case FT_ENCODING_UNICODE:
       return unicode;
@@ -1742,30 +1750,37 @@ uint32_t FT_CharCodeFromUnicode(int encoding, wchar_t unicode) {
   }
   return 0;
 }
-const uint16_t* PDF_UnicodesForPredefinedCharSet(int encoding) {
-  switch (encoding) {
-    case PDFFONT_ENCODING_WINANSI:
-      return kAdobeWinAnsiEncoding;
-    case PDFFONT_ENCODING_MACROMAN:
-      return kMacRomanEncoding;
-    case PDFFONT_ENCODING_MACEXPERT:
-      return kMacExpertEncoding;
-    case PDFFONT_ENCODING_STANDARD:
-      return kStandardEncoding;
-    case PDFFONT_ENCODING_ADOBE_SYMBOL:
-      return kAdobeSymbolEncoding;
-    case PDFFONT_ENCODING_ZAPFDINGBATS:
-      return kZapfEncoding;
-    case PDFFONT_ENCODING_PDFDOC:
-      return kPDFDocEncoding;
-    case PDFFONT_ENCODING_MS_SYMBOL:
-      return kMSSymbolEncoding;
-  }
-  return nullptr;
+
+wchar_t UnicodeFromAppleRomanCharCode(uint8_t charcode) {
+  return kMacRomanEncoding[charcode];
 }
 
-const char* PDF_CharNameFromPredefinedCharSet(int encoding, uint8_t charcode) {
-  if (encoding == PDFFONT_ENCODING_PDFDOC) {
+const uint16_t* UnicodesForPredefinedCharSet(FontEncoding encoding) {
+  switch (encoding) {
+    case FontEncoding::kBuiltin:
+      return nullptr;
+    case FontEncoding::kWinAnsi:
+      return kAdobeWinAnsiEncoding;
+    case FontEncoding::kMacRoman:
+      return kMacRomanEncoding;
+    case FontEncoding::kMacExpert:
+      return kMacExpertEncoding;
+    case FontEncoding::kStandard:
+      return kStandardEncoding;
+    case FontEncoding::kAdobeSymbol:
+      return kAdobeSymbolEncoding;
+    case FontEncoding::kZapfDingbats:
+      return kZapfEncoding;
+    case FontEncoding::kPdfDoc:
+      return kPDFDocEncoding;
+    case FontEncoding::kMsSymbol:
+      return kMSSymbolEncoding;
+  }
+}
+
+const char* CharNameFromPredefinedCharSet(FontEncoding encoding,
+                                          uint8_t charcode) {
+  if (encoding == FontEncoding::kPdfDoc) {
     if (charcode < kPDFDocEncodingTableFirstChar)
       return nullptr;
 
@@ -1777,38 +1792,21 @@ const char* PDF_CharNameFromPredefinedCharSet(int encoding, uint8_t charcode) {
     charcode -= kEncodingTableFirstChar;
   }
   switch (encoding) {
-    case PDFFONT_ENCODING_WINANSI:
+    case FontEncoding::kWinAnsi:
       return kAdobeWinAnsiEncodingNames[charcode];
-    case PDFFONT_ENCODING_MACROMAN:
+    case FontEncoding::kMacRoman:
       return kMacRomanEncodingNames[charcode];
-    case PDFFONT_ENCODING_MACEXPERT:
+    case FontEncoding::kMacExpert:
       return kMacExpertEncodingNames[charcode];
-    case PDFFONT_ENCODING_STANDARD:
+    case FontEncoding::kStandard:
       return kStandardEncodingNames[charcode];
-    case PDFFONT_ENCODING_ADOBE_SYMBOL:
+    case FontEncoding::kAdobeSymbol:
       return kAdobeSymbolEncodingNames[charcode];
-    case PDFFONT_ENCODING_ZAPFDINGBATS:
+    case FontEncoding::kZapfDingbats:
       return kZapfEncodingNames[charcode];
-    case PDFFONT_ENCODING_PDFDOC:
+    case FontEncoding::kPdfDoc:
       return kPDFDocEncodingNames[charcode];
+    default:
+      return nullptr;
   }
-  return nullptr;
-}
-
-wchar_t FT_UnicodeFromCharCode(int encoding, uint32_t charcode) {
-  switch (encoding) {
-    case FT_ENCODING_UNICODE:
-      return (uint16_t)charcode;
-    case FT_ENCODING_ADOBE_STANDARD:
-      return kStandardEncoding[(uint8_t)charcode];
-    case FT_ENCODING_ADOBE_EXPERT:
-      return kMacExpertEncoding[(uint8_t)charcode];
-    case FT_ENCODING_ADOBE_LATIN_1:
-      return kAdobeWinAnsiEncoding[(uint8_t)charcode];
-    case FT_ENCODING_APPLE_ROMAN:
-      return kMacRomanEncoding[(uint8_t)charcode];
-    case PDFFONT_ENCODING_PDFDOC:
-      return kPDFDocEncoding[(uint8_t)charcode];
-  }
-  return 0;
 }

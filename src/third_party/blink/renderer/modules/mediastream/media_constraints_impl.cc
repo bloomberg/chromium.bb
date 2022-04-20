@@ -80,6 +80,7 @@ struct NameValueStringConstraint {
 
 // Legal constraint names.
 
+// Legacy getUserMedia() constraints. Sadly still in use.
 const char kMinAspectRatio[] = "minAspectRatio";
 const char kMaxAspectRatio[] = "maxAspectRatio";
 const char kMaxWidth[] = "maxWidth";
@@ -114,25 +115,35 @@ const char kDAEchoCancellation[] = "googDAEchoCancellation";
 // Google-specific constraint keys for a local video source (getUserMedia).
 const char kNoiseReduction[] = "googNoiseReduction";
 
-// Constraint keys for CreateOffer / CreateAnswer defined in W3C specification.
+// Legacy RTCPeerConnection createOffer() and createAnswer() constraints.
+// Legacy versions of the attributes in the spec only used with callback-based
+// versions of the spec APIs.
+// TODO(https://crbug.com/1315572): Remove these as part of removing the
+// callback-based versions.
 const char kOfferToReceiveAudio[] = "OfferToReceiveAudio";
 const char kOfferToReceiveVideo[] = "OfferToReceiveVideo";
 const char kVoiceActivityDetection[] = "VoiceActivityDetection";
 const char kIceRestart[] = "IceRestart";
-// Google specific constraint for BUNDLE enable/disable.
-const char kUseRtpMux[] = "googUseRtpMUX";
-// Below constraints should be used during PeerConnection construction.
+
+// Legacy RTCPeerConnection constructor constraints.
+
+// DtlsSrtpKeyAgreement and RtpDataChannels are already ignored, except when
+// building Fuchsia.
+// TODO(crbug.com/804275): Ignore on all platforms when Fuchsia dependency is
+// gone to unblock mediaConstraints removal.
 const char kEnableDtlsSrtp[] = "DtlsSrtpKeyAgreement";
 const char kEnableRtpDataChannels[] = "RtpDataChannels";
-// Google-specific constraint keys.
-// TODO(hta): These need to be made standard or deleted. crbug.com/605673
-const char kEnableDscp[] = "googDscp";
+// TODO(https://crbug.com/1315576): Deprecate and ignore.
 const char kEnableIPv6[] = "googIPv6";
+// TODO(https://crbug.com/1315564): Deprecate and ignore.
 const char kEnableVideoSuspendBelowMinBitrate[] = "googSuspendBelowMinBitrate";
+// TODO(https://crbug.com/1315155): Deprecate and ignore.
+const char kScreencastMinBitrate[] = "googScreencastMinBitrate";
+// TODO(https://crbug.com/1315569): Deprecate and ignore.
+const char kCpuOveruseDetection[] = "googCpuOveruseDetection";
+// Legacy goog-constraints that are already ignored.
 const char kNumUnsignalledRecvStreams[] = "googNumUnsignalledRecvStreams";
 const char kCombinedAudioVideoBwe[] = "googCombinedAudioVideoBwe";
-const char kScreencastMinBitrate[] = "googScreencastMinBitrate";
-const char kCpuOveruseDetection[] = "googCpuOveruseDetection";
 const char kCpuUnderuseThreshold[] = "googCpuUnderuseThreshold";
 const char kCpuOveruseThreshold[] = "googCpuOveruseThreshold";
 const char kCpuUnderuseEncodeRsdThreshold[] =
@@ -142,6 +153,8 @@ const char kCpuOveruseEncodeUsage[] = "googCpuOveruseEncodeUsage";
 const char kHighStartBitrate[] = "googHighStartBitrate";
 const char kPayloadPadding[] = "googPayloadPadding";
 const char kAudioLatency[] = "latencyMs";
+const char kUseRtpMux[] = "googUseRtpMUX";
+const char kEnableDscp[] = "googDscp";
 
 // Names that have been used in the past, but should now be ignored.
 // Kept around for backwards compatibility.
@@ -279,6 +292,9 @@ static void ParseOldStyleNames(
     bool report_unknown_names,
     MediaTrackConstraintSetPlatform& result,
     MediaErrorState& error_state) {
+  if (old_names.size() > 0) {
+    UseCounter::Count(context, WebFeature::kOldConstraintsParsed);
+  }
   for (const NameValueStringConstraint& constraint : old_names) {
     if (constraint.name_.Equals(kMinAspectRatio)) {
       result.aspect_ratio.SetMin(atof(constraint.value_.Utf8().c_str()));
@@ -362,8 +378,6 @@ static void ParseOldStyleNames(
       result.voice_activity_detection.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kIceRestart)) {
       result.ice_restart.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kUseRtpMux)) {
-      result.goog_use_rtp_mux.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableDtlsSrtp)) {
       bool value = ToBoolean(constraint.value_);
       if (value) {
@@ -374,9 +388,11 @@ static void ParseOldStyleNames(
             context, WebFeature::kRTCConstraintEnableDtlsSrtpFalse);
       }
 #if BUILDFLAG(IS_FUCHSIA)
-      // Special dispensation for Fuchsia to run SDES in 2002
+      // Special dispensation for Fuchsia to run SDES in 2022
       // TODO(crbug.com/804275): Delete when Fuchsia no longer depends on it.
       result.enable_dtls_srtp.SetExact(ToBoolean(constraint.value_));
+#else
+      UseCounter::Count(context, WebFeature::kOldConstraintIgnored);
 #endif
     } else if (constraint.name_.Equals(kEnableRtpDataChannels)) {
       // This constraint does not turn on RTP data channels, but we do not
@@ -389,31 +405,45 @@ static void ParseOldStyleNames(
         Deprecation::CountDeprecation(
             context, WebFeature::kRTCConstraintEnableRtpDataChannelsFalse);
       }
-    } else if (constraint.name_.Equals(kEnableDscp)) {
-      result.enable_dscp.SetExact(ToBoolean(constraint.value_));
+      UseCounter::Count(context, WebFeature::kOldConstraintIgnored);
     } else if (constraint.name_.Equals(kEnableIPv6)) {
       result.enable_i_pv6.SetExact(ToBoolean(constraint.value_));
+      // Count deprecated usage of googIPv6, when it is set to false. Setting it
+      // to true is a NO-OP and apps doing this will not be affected when this
+      // constraint is ignored.
+      if (!result.enable_i_pv6.Exact()) {
+        Deprecation::CountDeprecation(context,
+                                      WebFeature::kLegacyConstraintGoogIPv6);
+      }
     } else if (constraint.name_.Equals(kEnableVideoSuspendBelowMinBitrate)) {
       result.goog_enable_video_suspend_below_min_bitrate.SetExact(
           ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kNumUnsignalledRecvStreams)) {
-      result.goog_num_unsignalled_recv_streams.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kCombinedAudioVideoBwe)) {
-      result.goog_combined_audio_video_bwe.SetExact(
-          ToBoolean(constraint.value_));
+      // Count deprecated usage of googSuspendBelowMinBitrate, when it is set to
+      // true. Setting it to false is a NO-OP and apps doing this will not be
+      // affected when this constraint is ignored.
+      if (result.goog_enable_video_suspend_below_min_bitrate.Exact()) {
+        Deprecation::CountDeprecation(
+            context, WebFeature::kLegacyConstraintGoogSuspendBelowMinBitrate);
+      }
     } else if (constraint.name_.Equals(kScreencastMinBitrate)) {
       result.goog_screencast_min_bitrate.SetExact(
           atoi(constraint.value_.Utf8().c_str()));
+      // Count deprecated usage of googScreencastMinBitrate, when it is set to
+      // anything other than 100. Setting it to 100 is a NO-OP and apps doing
+      // this will not be affected when this constraint is ignored.
+      if (result.goog_screencast_min_bitrate.Exact() != 100) {
+        Deprecation::CountDeprecation(
+            context, WebFeature::kLegacyConstraintGoogScreencastMinBitrate);
+      }
     } else if (constraint.name_.Equals(kCpuOveruseDetection)) {
       result.goog_cpu_overuse_detection.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kHighStartBitrate)) {
-      result.goog_high_start_bitrate.SetExact(
-          atoi(constraint.value_.Utf8().c_str()));
-    } else if (constraint.name_.Equals(kPayloadPadding)) {
-      result.goog_payload_padding.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kAudioLatency)) {
-      result.goog_latency_ms.SetExact(atoi(constraint.value_.Utf8().c_str()));
+      // Count deprecated usage of googCpuOveruseDetection, when it is set to
+      // false. Setting it to true is a NO-OP and apps doing this will not be
+      // affected when this constraint is ignored.
+      if (!result.goog_cpu_overuse_detection.Exact()) {
+        Deprecation::CountDeprecation(
+            context, WebFeature::kLegacyConstraintGoogCpuOveruseDetection);
+      }
     } else if (constraint.name_.Equals(kCpuUnderuseThreshold) ||
                constraint.name_.Equals(kCpuOveruseThreshold) ||
                constraint.name_.Equals(kCpuUnderuseEncodeRsdThreshold) ||
@@ -424,7 +454,14 @@ static void ParseOldStyleNames(
                constraint.name_.Equals(kGoogArrayGeometry) ||
                constraint.name_.Equals(kPowerLineFrequency) ||
                constraint.name_.Equals(kMediaStreamAudioHotword) ||
-               constraint.name_.Equals(kGoogTypingNoiseDetection)) {
+               constraint.name_.Equals(kGoogTypingNoiseDetection) ||
+               constraint.name_.Equals(kNumUnsignalledRecvStreams) ||
+               constraint.name_.Equals(kCombinedAudioVideoBwe) ||
+               constraint.name_.Equals(kHighStartBitrate) ||
+               constraint.name_.Equals(kAudioLatency) ||
+               constraint.name_.Equals(kUseRtpMux) ||
+               constraint.name_.Equals(kPayloadPadding) ||
+               constraint.name_.Equals(kEnableDscp)) {
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -432,6 +469,7 @@ static void ParseOldStyleNames(
           mojom::ConsoleMessageLevel::kWarning,
           "Obsolete constraint named " + String(constraint.name_) +
               " is ignored. Please stop using it."));
+      UseCounter::Count(context, WebFeature::kOldConstraintIgnored);
     } else if (constraint.name_.Equals(kTestConstraint1) ||
                constraint.name_.Equals(kTestConstraint2)) {
       // These constraints are only for testing parsing.
@@ -442,16 +480,16 @@ static void ParseOldStyleNames(
       }
     } else {
       if (report_unknown_names) {
-        // TODO(hta): UMA stats for unknown constraints passed.
-        // https://crbug.com/576613
+        UseCounter::Count(context, WebFeature::kOldConstraintRejected);
         context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kDeprecation,
             mojom::ConsoleMessageLevel::kWarning,
             "Unknown constraint named " + String(constraint.name_) +
                 " rejected"));
-        // TODO(crbug.com/856176): Don't throw an error.
         error_state.ThrowConstraintError("Unknown name of constraint detected",
                                          constraint.name_);
+      } else {
+        UseCounter::Count(context, WebFeature::kOldConstraintNotReported);
       }
     }
   }

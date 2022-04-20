@@ -77,7 +77,7 @@ skvm::F32 SkRadialGradient::transformT(skvm::Builder* p, skvm::Uniforms*,
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/gradients/GrGradientShader.h"
+#include "src/gpu/ganesh/gradients/GrGradientShader.h"
 
 std::unique_ptr<GrFragmentProcessor> SkRadialGradient::asFragmentProcessor(
         const GrFPArgs& args) const {
@@ -89,7 +89,7 @@ std::unique_ptr<GrFragmentProcessor> SkRadialGradient::asFragmentProcessor(
 #ifdef SK_ENABLE_SKSL
 void SkRadialGradient::addToKey(const SkKeyContext& keyContext,
                                 SkPaintParamsKeyBuilder* builder,
-                                SkPipelineData* pipelineData) const {
+                                SkPipelineDataGatherer* gatherer) const {
     GradientShaderBlocks::GradientData data(kRadial_GradientType,
                                             fCenter, { 0.0f, 0.0f },
                                             fRadius, 0.0f,
@@ -98,6 +98,6 @@ void SkRadialGradient::addToKey(const SkKeyContext& keyContext,
                                             fOrigColors4f,
                                             fOrigPos);
 
-    GradientShaderBlocks::AddToKey(keyContext, builder, pipelineData, data);
+    GradientShaderBlocks::AddToKey(keyContext, builder, gatherer, data);
 }
 #endif

@@ -41,8 +41,6 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace gfx {
 class Size;
@@ -96,7 +94,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
   void UpdatePageInfo();
   void Record(LayoutBlock*);
   void Record(LayoutText*);
-  void Destroy(LayoutBlock*);
+  void Destroy(LayoutObject*);
 
   bool PageNeedsAutosizing() const;
 

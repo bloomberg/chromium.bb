@@ -468,11 +468,19 @@ void RecordModelExecutionSaveResult(OptimizationTarget segment_id,
 }
 
 void RecordModelExecutionStatus(OptimizationTarget segment_id,
+                                bool default_provider,
                                 ModelExecutionStatus status) {
-  base::UmaHistogramEnumeration(
-      "SegmentationPlatform.ModelExecution.Status." +
-          OptimizationTargetToHistogramVariant(segment_id),
-      status);
+  if (!default_provider) {
+    base::UmaHistogramEnumeration(
+        "SegmentationPlatform.ModelExecution.Status." +
+            OptimizationTargetToHistogramVariant(segment_id),
+        status);
+  } else {
+    base::UmaHistogramEnumeration(
+        "SegmentationPlatform.ModelExecution.DefaultProvider.Status." +
+            OptimizationTargetToHistogramVariant(segment_id),
+        status);
+  }
 }
 
 void RecordModelExecutionZeroValuePercent(OptimizationTarget segment_id,
@@ -546,6 +554,14 @@ void RecordTooManyInputTensors(int tensor_size) {
   UMA_HISTOGRAM_COUNTS_100(
       "SegmentationPlatform.StructuredMetrics.TooManyTensors.Count",
       tensor_size);
+}
+
+void RecordTrainingDataCollectionEvent(OptimizationTarget segment_id,
+                                       TrainingDataCollectionEvent event) {
+  base::UmaHistogramEnumeration(
+      "SegmentationPlatform.TrainingDataCollectionEvents." +
+          OptimizationTargetToHistogramVariant(segment_id),
+      event);
 }
 
 }  // namespace segmentation_platform::stats

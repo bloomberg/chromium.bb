@@ -1823,7 +1823,8 @@ int I420AlphaToARGBMatrix(const uint8_t* src_y,
                              int width) = I422AlphaToARGBRow_C;
   void (*ARGBAttenuateRow)(const uint8_t* src_argb, uint8_t* dst_argb,
                            int width) = ARGBAttenuateRow_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -1946,7 +1947,8 @@ int I422AlphaToARGBMatrix(const uint8_t* src_y,
                              int width) = I422AlphaToARGBRow_C;
   void (*ARGBAttenuateRow)(const uint8_t* src_argb, uint8_t* dst_argb,
                            int width) = ARGBAttenuateRow_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -2067,7 +2069,8 @@ int I444AlphaToARGBMatrix(const uint8_t* src_y,
                              int width) = I444AlphaToARGBRow_C;
   void (*ARGBAttenuateRow)(const uint8_t* src_argb, uint8_t* dst_argb,
                            int width) = ARGBAttenuateRow_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -2309,7 +2312,8 @@ int I010AlphaToARGBMatrix(const uint16_t* src_y,
                              int width) = I210AlphaToARGBRow_C;
   void (*ARGBAttenuateRow)(const uint8_t* src_argb, uint8_t* dst_argb,
                            int width) = ARGBAttenuateRow_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -2408,7 +2412,8 @@ int I210AlphaToARGBMatrix(const uint16_t* src_y,
                              int width) = I210AlphaToARGBRow_C;
   void (*ARGBAttenuateRow)(const uint8_t* src_argb, uint8_t* dst_argb,
                            int width) = ARGBAttenuateRow_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -2505,7 +2510,8 @@ int I410AlphaToARGBMatrix(const uint16_t* src_y,
                              int width) = I410AlphaToARGBRow_C;
   void (*ARGBAttenuateRow)(const uint8_t* src_argb, uint8_t* dst_argb,
                            int width) = ARGBAttenuateRow_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -6003,7 +6009,8 @@ static int I420AlphaToARGBMatrixBilinear(
   void (*Scale2RowUp)(const uint8_t* src_ptr, ptrdiff_t src_stride,
                       uint8_t* dst_ptr, ptrdiff_t dst_stride, int dst_width) =
       ScaleRowUp2_Bilinear_Any_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -6188,7 +6195,8 @@ static int I422AlphaToARGBMatrixLinear(const uint8_t* src_y,
                            int width) = ARGBAttenuateRow_C;
   void (*ScaleRowUp)(const uint8_t* src_ptr, uint8_t* dst_ptr, int dst_width) =
       ScaleRowUp2_Linear_Any_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -6341,7 +6349,8 @@ static int I010AlphaToARGBMatrixBilinear(
   void (*Scale2RowUp)(const uint16_t* src_ptr, ptrdiff_t src_stride,
                       uint16_t* dst_ptr, ptrdiff_t dst_stride, int dst_width) =
       ScaleRowUp2_Bilinear_16_Any_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.
@@ -6434,6 +6443,7 @@ static int I010AlphaToARGBMatrixBilinear(
   }
   dst_argb += dst_stride_argb;
   src_y += src_stride_y;
+  src_a += src_stride_a;
 
   for (y = 0; y < height - 2; y += 2) {
     Scale2RowUp(src_u, src_stride_u, temp_u_1, kRowSize, width);
@@ -6463,6 +6473,9 @@ static int I010AlphaToARGBMatrixBilinear(
     Scale2RowUp(src_v, 0, temp_v_1, kRowSize, width);
     I410AlphaToARGBRow(src_y, temp_u_1, temp_v_1, src_a, dst_argb, yuvconstants,
                        width);
+    if (attenuate) {
+      ARGBAttenuateRow(dst_argb, dst_argb, width);
+    }
   }
 
   free_aligned_buffer_64(row);
@@ -6493,7 +6506,8 @@ static int I210AlphaToARGBMatrixLinear(const uint16_t* src_y,
                            int width) = ARGBAttenuateRow_C;
   void (*ScaleRowUp)(const uint16_t* src_ptr, uint16_t* dst_ptr,
                      int dst_width) = ScaleRowUp2_Linear_16_Any_C;
-  if (!src_y || !src_u || !src_v || !dst_argb || width <= 0 || height == 0) {
+  if (!src_y || !src_u || !src_v || !src_a || !dst_argb || width <= 0 ||
+      height == 0) {
     return -1;
   }
   // Negative height means invert the image.

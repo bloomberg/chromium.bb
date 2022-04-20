@@ -23,12 +23,12 @@
 #include "include/core/SkTypes.h"
 #include "include/effects/SkGradientShader.h"
 #include "include/gpu/GrRecordingContext.h"
-#include "include/private/GrTypesPriv.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkMatrixProvider.h"
-#include "src/gpu/GrPaint.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+#include "src/gpu/ganesh/GrPaint.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/v1/SurfaceDrawContext_v1.h"
 #include "tools/ToolUtils.h"
 
 #include <utility>
@@ -87,7 +87,7 @@ static void draw_gradient_tiles(SkCanvas* canvas, bool alignGradients) {
                 SkMatrixProvider matrixProvider(view);
                 GrPaint grPaint;
                 SkPaintToGrPaint(rContext, sdc->colorInfo(), paint, matrixProvider, &grPaint);
-                sdc->fillRectWithEdgeAA(nullptr, std::move(grPaint), GrAA::kYes,
+                sdc->fillRectWithEdgeAA(nullptr, std::move(grPaint),
                                         static_cast<GrQuadAAFlags>(aa), view, tile);
             } else {
                 // Fallback to solid color on raster backend since the public API only has color

@@ -433,12 +433,11 @@ void FillNonTypedOrFilledPropertiesMasks(std::vector<FormFieldData>* fields,
     if (field.properties_mask & kFilledOrTyped)
       continue;
 
-    for (const auto& pair : manager.field_data_map()) {
-      const auto& field_data = pair.second;
-
-      if ((field_data.second & kFilledOrTyped) &&
-          field_data.first == field.value) {
-        field.properties_mask |= field_data.second & kFilledOrTyped;
+    for (const auto& [field_id, field_data] : manager.field_data_map()) {
+      const absl::optional<std::u16string>& value = field_data.first;
+      FieldPropertiesMask properties = field_data.second;
+      if ((properties & kFilledOrTyped) && value == field.value) {
+        field.properties_mask |= properties & kFilledOrTyped;
         break;
       }
     }
@@ -489,6 +488,13 @@ mojom::SubmissionReadinessState CalculateSubmissionReadiness(
   size_t number_of_visible_elements = 0;
   for (size_t i = 0; i < number_of_elements; ++i) {
     if (form_data.fields[i].IsVisible()) {
+      // Don't treat a checkbox (e.g. "remember me") as an input field that may
+      // block a form submission. Note: Don't use |check_status !=
+      // kNotCheckable|, a radio button is considered a "checkable" element too,
+      // but it should block a submission.
+      if (form_data.fields[i].form_control_type == "checkbox")
+        continue;
+
       if (username_index != i && password_index != i &&
           form_data.fields[i].value.empty()) {
         return mojom::SubmissionReadinessState::kEmptyFields;

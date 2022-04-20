@@ -26,8 +26,11 @@
 void av1_alloc_txb_buf(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   CoeffBufferPool *coeff_buf_pool = &cpi->coeff_buffer_pool;
-  int size = ((cm->mi_params.mi_rows >> cm->seq_params->mib_size_log2) + 1) *
-             ((cm->mi_params.mi_cols >> cm->seq_params->mib_size_log2) + 1);
+  const int num_sb_rows =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
+  const int num_sb_cols =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params->mib_size_log2);
+  const int size = num_sb_rows * num_sb_cols;
   const int num_planes = av1_num_planes(cm);
   const int subsampling_x = cm->seq_params->subsampling_x;
   const int subsampling_y = cm->seq_params->subsampling_y;
@@ -868,7 +871,8 @@ CB_COEFF_BUFFER *av1_get_cb_coeff_buffer(const struct AV1_COMP *cpi, int mi_row,
                                          int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
   const int mib_size_log2 = cm->seq_params->mib_size_log2;
-  const int stride = (cm->mi_params.mi_cols >> mib_size_log2) + 1;
+  const int stride =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params->mib_size_log2);
   const int offset =
       (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
   return cpi->coeff_buffer_base + offset;

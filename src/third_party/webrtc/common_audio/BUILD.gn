@@ -48,8 +48,11 @@ rtc_library("common_audio") {
     "../api:array_view",
     "../rtc_base:checks",
     "../rtc_base:gtest_prod",
+    "../rtc_base:logging",
     "../rtc_base:rtc_base_approved",
+    "../rtc_base:safe_conversions",
     "../rtc_base:sanitizer",
+    "../rtc_base:timeutils",
     "../rtc_base/memory:aligned_malloc",
     "../rtc_base/system:arch",
     "../rtc_base/system:file_wrapper",
@@ -197,6 +200,7 @@ rtc_library("common_audio_cc") {
 
   deps = [
     "../rtc_base:rtc_base_approved",
+    "../rtc_base:safe_conversions",
     "../system_wrappers",
   ]
 }
@@ -378,8 +382,11 @@ if (rtc_include_tests && !build_with_chromium) {
       ":fir_filter_factory",
       ":sinc_resampler",
       "../rtc_base:checks",
+      "../rtc_base:macromagic",
       "../rtc_base:rtc_base_approved",
       "../rtc_base:rtc_base_tests_utils",
+      "../rtc_base:stringutils",
+      "../rtc_base:timeutils",
       "../rtc_base/system:arch",
       "../system_wrappers",
       "../test:fileutils",

@@ -917,7 +917,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
         save_item_ptr->id(), save_item_ptr->url(), save_item_ptr->referrer(),
         requester_frame->GetProcess()->GetID(),
         requester_frame->render_view_host()->GetRoutingID(),
-        requester_frame->routing_id(), save_item_ptr->save_source(),
+        requester_frame->GetRoutingID(), save_item_ptr->save_source(),
         save_item_ptr->full_path(),
         page_->GetMainDocument().GetBrowserContext(),
         page_->GetMainDocument()
@@ -1068,7 +1068,10 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
 
       // Calculate the relative path for referring to the |save_item|.
       base::FilePath local_path(base::FilePath::kCurrentDirectory);
-      if (target_tree_node->IsMainFrame()) {
+      // TODO(crbug.com/1314749): With MPArch there may be multiple main frames
+      // and so IsMainFrame should not be used to identify subframes. Follow up
+      // to confirm correctness.
+      if (target_tree_node->IsOutermostMainFrame()) {
         local_path = local_path.Append(saved_main_directory_path_.BaseName());
       }
       local_path = local_path.Append(save_item->full_path().BaseName());

@@ -292,6 +292,60 @@ TEST_P(BufferSubDataTest, SmallIndexBufferUpdateAfterDraw)
     EXPECT_PIXEL_COLOR_EQ(0, getWindowHeight() - 1, GLColor::green);
 }
 
+// Test that updating a small index buffer after drawing with it works.
+// In the Vulkan backend, the CPU may be used to perform this copy.
+TEST_P(BufferSubDataTest, SmallVertexDataUpdateAfterDraw)
+{
+    constexpr std::array<GLfloat, 4> kGreen = {0.0f, 1.0f, 0.0f, 1.0f};
+    // Index buffer data
+    GLuint indexData[] = {0, 1, 2, 0};
+    // Vertex buffer data lower left triangle
+    // 2
+    //
+    // o    1
+    float vertexData1[] = {
+        -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
+    };
+    // Vertex buffer data upper right triangle
+    // 2      1
+    //
+    //        0
+    float vertexData2[] = {
+        1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f,
+    };
+    GLBuffer indexBuffer;
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    GLint vPos = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_NE(vPos, -1);
+    glUseProgram(program);
+    GLint colorUniformLocation =
+        glGetUniformLocation(program, angle::essl1_shaders::ColorUniform());
+    ASSERT_NE(colorUniformLocation, -1);
+
+    // Bind vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData1), vertexData1, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(vPos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(vPos);
+
+    // Bind index buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_DYNAMIC_DRAW);
+
+    glUniform4fv(colorUniformLocation, 1, kGreen.data());
+    // Draw left red triangle
+    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+    // Update the vertex buffer data.
+    // Partial copy to trigger the buffer pool allocation
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertexData2), vertexData2);
+    // Draw triangle with index (0,1,2).
+    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (const void *)sizeof(GLuint));
+    // Verify pixel corners are green
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(0, getWindowHeight() - 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() - 1, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() - 1, getWindowHeight() - 1, GLColor::green);
+}
 class IndexedBufferCopyTest : public ANGLETest
 {
   protected:
@@ -362,8 +416,6 @@ void main()
 // https://code.google.com/p/angleproject/issues/detail?id=709
 TEST_P(IndexedBufferCopyTest, IndexRangeBug)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(isSwiftshader());
     // TODO(geofflang): Figure out why this fails on AMD OpenGL (http://anglebug.com/1291)
     ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL());
 
@@ -912,6 +964,19 @@ TEST_P(BufferDataTest, MapWriteArrayBufferDataDrawArrays)
     glDrawArrays(GL_TRIANGLES, 0, 6);
     EXPECT_PIXEL_COLOR_EQ(8, 8, GLColor::red);
     EXPECT_GL_NO_ERROR();
+}
+
+// Verify that buffer sub data uploads are properly validated within the buffer size range on 32-bit
+// systems.
+TEST_P(BufferDataTest, BufferSizeValidation32Bit)
+{
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 100, nullptr, GL_STATIC_DRAW);
+
+    GLubyte data = 0;
+    glBufferSubData(GL_ARRAY_BUFFER, std::numeric_limits<uint32_t>::max(), 1, &data);
+    EXPECT_GL_ERROR(GL_INVALID_VALUE);
 }
 
 // Tests a null crash bug caused by copying from null back-end buffer pointer
@@ -1788,7 +1853,7 @@ ANGLE_INSTANTIATE_TEST_ES2(BufferDataTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BufferSubDataTest);
 ANGLE_INSTANTIATE_TEST_ES3_AND(BufferSubDataTest,
-                               WithVulkanPreferCPUForBufferSubData(ES3_VULKAN()));
+                               ES3_VULKAN().enable(Feature::PreferCPUForBufferSubData));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BufferDataTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(BufferDataTestES3);

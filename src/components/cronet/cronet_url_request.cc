@@ -27,7 +27,7 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
@@ -361,7 +361,14 @@ void CronetURLRequest::NetworkTasks::Destroy(CronetURLRequest* request,
   if (send_on_canceled)
     callback_->OnCanceled();
   callback_->OnDestroyed();
-  // Deleting owner request also deletes |this|.
+  // Check if the URLRequestContext associated to `network_` has become eligible
+  // for destruction. To simplify MaybeDestroyURLRequestContext's logic: destroy
+  // the underlying URLRequest in advance, so that it has already deregistered
+  // from its URLRequestContext by the time MaybeDestroyURLRequestContext is
+  // called.
+  url_request_.reset();
+  request->context_->MaybeDestroyURLRequestContext(network_);
+  // Deleting owner request also deletes `this`.
   delete request;
 }
 

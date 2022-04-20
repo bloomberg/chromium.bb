@@ -4,11 +4,11 @@
 
 /** @fileoverview Test suite for wallpaper-breadcrumb component.  */
 
-import {GooglePhotosAlbum, TopicSource} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
-import {PersonalizationBreadcrumb} from 'chrome://personalization/trusted/personalization_breadcrumb_element.js';
-import {Paths, PersonalizationRouter} from 'chrome://personalization/trusted/personalization_router_element.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://personalization/strings.m.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 
+import {GooglePhotosAlbum, Paths, PersonalizationBreadcrumb, PersonalizationRouter, TopicSource} from 'chrome://personalization/trusted/personalization_app.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -16,7 +16,7 @@ import {baseSetup, initElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
 import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
-export function PersonalizationBreadcrumbTest() {
+suite('PersonalizationBreadcrumbTest', function() {
   let breadcrumbElement: PersonalizationBreadcrumb|null;
 
   let wallpaperProvider: TestWallpaperProvider;
@@ -73,7 +73,7 @@ export function PersonalizationBreadcrumbTest() {
     await waitAfterNextRender(breadcrumbElement);
 
     let breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(
         breadcrumbContainer!, [breadcrumbElement.i18n('wallpaperLabel')]);
@@ -85,7 +85,7 @@ export function PersonalizationBreadcrumbTest() {
     wallpaperBreadcrumb!.click();
 
     breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(
         breadcrumbContainer!, [breadcrumbElement.i18n('wallpaperLabel')]);
@@ -156,7 +156,7 @@ export function PersonalizationBreadcrumbTest() {
     await waitAfterNextRender(breadcrumbElement);
 
     const breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(
         breadcrumbContainer!,
@@ -203,7 +203,7 @@ export function PersonalizationBreadcrumbTest() {
     });
 
     const breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(breadcrumbContainer, [
       breadcrumbElement.i18n('wallpaperLabel'),
@@ -242,7 +242,7 @@ export function PersonalizationBreadcrumbTest() {
         PersonalizationBreadcrumb, {'path': Paths.GooglePhotosCollection});
 
     const breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(breadcrumbContainer, [
       breadcrumbElement.i18n('wallpaperLabel'),
@@ -282,7 +282,7 @@ export function PersonalizationBreadcrumbTest() {
     await waitAfterNextRender(breadcrumbElement);
 
     const breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(breadcrumbContainer, [
       breadcrumbElement.i18n('wallpaperLabel'),
@@ -318,7 +318,7 @@ export function PersonalizationBreadcrumbTest() {
     await waitAfterNextRender(breadcrumbElement);
 
     let breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(
         breadcrumbContainer!, [breadcrumbElement.i18n('screensaverLabel')]);
@@ -330,7 +330,7 @@ export function PersonalizationBreadcrumbTest() {
     screensaverBreadcrumb!.click();
 
     breadcrumbContainer =
-        breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+        breadcrumbElement.shadowRoot!.getElementById('selector');
     assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
     assertBreadcrumbs(
         breadcrumbContainer!, [breadcrumbElement.i18n('screensaverLabel')]);
@@ -348,7 +348,7 @@ export function PersonalizationBreadcrumbTest() {
         });
 
         const breadcrumbContainer =
-            breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+            breadcrumbElement.shadowRoot!.getElementById('selector');
         assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
         assertBreadcrumbs(breadcrumbContainer, [
           breadcrumbElement.i18n('screensaverLabel'),
@@ -390,7 +390,7 @@ export function PersonalizationBreadcrumbTest() {
         });
 
         const breadcrumbContainer =
-            breadcrumbElement.shadowRoot!.getElementById('breadcrumbContainer');
+            breadcrumbElement.shadowRoot!.getElementById('selector');
         assertTrue(!!breadcrumbContainer && !breadcrumbContainer.hidden);
         assertBreadcrumbs(breadcrumbContainer, [
           breadcrumbElement.i18n('screensaverLabel'),
@@ -434,4 +434,4 @@ export function PersonalizationBreadcrumbTest() {
             ?.getAttribute('aria-label'),
         'back button aria label is set');
   });
-}
+});

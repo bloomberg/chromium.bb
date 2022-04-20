@@ -28,6 +28,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -50,6 +51,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -270,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeHardwareKeys) {
   sm_.Call([this]() {
     extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
         browser()->profile(), extension_misc::kChromeVoxExtensionId,
-        "CommandHandlerInterface.instance.onCommand('showKbExplorerPage');");
+        "CommandHandlerInterface.instance.onCommand('showLearnModePage');");
   });
   sm_.ExpectSpeechPattern(
       "Press a qwerty key, refreshable braille key, or touch gesture to learn "
@@ -307,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
   sm_.Call([this]() {
     extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
         browser()->profile(), extension_misc::kChromeVoxExtensionId,
-        "CommandHandlerInterface.instance.onCommand('showKbExplorerPage');");
+        "CommandHandlerInterface.instance.onCommand('showLearnModePage');");
   });
   sm_.ExpectSpeechPattern(
       "Press a qwerty key, refreshable braille key, or touch gesture to learn "
@@ -560,18 +563,28 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   std::string app_id = "TestApp";
 
   // Set the app status as paused;
-  std::vector<apps::mojom::AppPtr> apps;
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kBuiltIn;
-  app->app_id = app_id;
-  app->readiness = apps::mojom::Readiness::kReady;
-  app->paused = apps::mojom::OptionalBool::kTrue;
-  apps.push_back(std::move(app));
-  apps::AppServiceProxyFactory::GetForProfile(
-      AccessibilityManager::Get()->profile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::mojom::AppType::kBuiltIn,
-              false /* should_notify_initialized */);
+  apps::AppPtr app =
+      std::make_unique<apps::App>(apps::AppType::kBuiltIn, app_id);
+  app->readiness = apps::Readiness::kReady;
+  app->paused = true;
+
+  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
+    std::vector<apps::AppPtr> apps;
+    apps.push_back(std::move(app));
+    apps::AppServiceProxyFactory::GetForProfile(
+        AccessibilityManager::Get()->profile())
+        ->AppRegistryCache()
+        .OnApps(std::move(apps), apps::AppType::kBuiltIn,
+                false /* should_notify_initialized */);
+  } else {
+    std::vector<apps::mojom::AppPtr> mojom_apps;
+    mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
+    apps::AppServiceProxyFactory::GetForProfile(
+        AccessibilityManager::Get()->profile())
+        ->AppRegistryCache()
+        .OnApps(std::move(mojom_apps), apps::mojom::AppType::kBuiltIn,
+                false /* should_notify_initialized */);
+  }
 
   // Create and add a test app to the shelf model.
   ShelfItem item;
@@ -612,17 +625,26 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   std::string app_id = "TestApp";
 
   // Set the app status as paused;
-  std::vector<apps::mojom::AppPtr> apps;
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kBuiltIn;
-  app->app_id = app_id;
-  app->readiness = apps::mojom::Readiness::kDisabledByPolicy;
-  apps.push_back(std::move(app));
-  apps::AppServiceProxyFactory::GetForProfile(
-      AccessibilityManager::Get()->profile())
-      ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::mojom::AppType::kBuiltIn,
-              false /* should_notify_initialized */);
+  apps::AppPtr app =
+      std::make_unique<apps::App>(apps::AppType::kBuiltIn, app_id);
+  app->readiness = apps::Readiness::kDisabledByPolicy;
+  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
+    std::vector<apps::AppPtr> apps;
+    apps.push_back(std::move(app));
+    apps::AppServiceProxyFactory::GetForProfile(
+        AccessibilityManager::Get()->profile())
+        ->AppRegistryCache()
+        .OnApps(std::move(apps), apps::AppType::kBuiltIn,
+                false /* should_notify_initialized */);
+  } else {
+    std::vector<apps::mojom::AppPtr> mojom_apps;
+    mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
+    apps::AppServiceProxyFactory::GetForProfile(
+        AccessibilityManager::Get()->profile())
+        ->AppRegistryCache()
+        .OnApps(std::move(mojom_apps), apps::mojom::AppType::kBuiltIn,
+                false /* should_notify_initialized */);
+  }
 
   // Create and add a test app to the shelf model.
   ShelfItem item;
@@ -753,13 +775,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
       "Chrom* - data:text slash html;charset equal utf-8, less than button "
       "autofocus greater than Click me less than slash button greater than");
   sm_.ExpectSpeechPattern("Press Ctrl plus W to close.");
-  sm_.ExpectSpeechPattern(", window");
 
   sm_.Replay();
 }
 
+// TODO(crbug.com/1312004): Re-enable this test
 // Verify that enable chromeVox won't end overview.
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableChromeVoxOnOverviewMode) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
+                       DISABLED_EnableChromeVoxOnOverviewMode) {
   sm_.Call([this]() {
     ASSERT_TRUE(ui_test_utils::NavigateToURL(
         browser(), GURL("data:text/html;charset=utf-8,<button "
@@ -771,6 +794,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableChromeVoxOnOverviewMode) {
   });
 
   EnableChromeVox();
+  // Wait for Chromevox to start while in Overview before `sm_.Call`, which
+  // pushes a callback when the last expected speech was seen.
+  sm_.ExpectSpeechPattern(", window");
 
   sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
   sm_.ExpectSpeechPattern(
@@ -862,8 +888,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
 // depends on more of the UI events stack and sticky mode invocation has a
 // timing element to it.
 // Consistently failing on ChromiumOS MSan and ASan. http://crbug.com/1182542
-#if BUILDFLAG(IS_CHROMEOS) && \
-    (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
 #define MAYBE_ChromeVoxStickyModeRawKeys DISABLED_ChromeVoxStickyModeRawKeys
 #else
 #define MAYBE_ChromeVoxStickyModeRawKeys ChromeVoxStickyModeRawKeys
@@ -1250,7 +1275,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
   sm_.Replay();
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, SmartStickyMode) {
+// TODO(crbug.com/1310316): Test is flaky.
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_SmartStickyMode) {
   EnableChromeVox();
   sm_.Call([this]() {
     ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -1378,10 +1404,12 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
   sm_.ExpectSpeech("Turn off screen?");
   sm_.ExpectSpeech("Dialog");
-  sm_.ExpectSpeech(
+  // TODO(crbug.com/1228418) - Improve the generation of summaries across ChromeOS.
+  // Expect the content to be spoken once it has been improved.
+  /*sm_.ExpectSpeech(
       "Turn off screen? This improves privacy by turning off your screen so it "
       "isn’t visible to others. You can always turn the screen back on by "
-      "pressing Search plus Brightness up. Cancel Continue");
+      "pressing Search plus Brightness up. Cancel Continue");*/
   sm_.ExpectSpeech("Continue");
   sm_.ExpectSpeech("default");
   sm_.ExpectSpeech("Button");
@@ -1531,9 +1559,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, KeyboardShortcutViewer) {
 // Spoken feedback tests of the out-of-box experience.
 //
 
-class OobeSpokenFeedbackTest : public OobeBaseTest {
+// Parameter value represents if the OobeRemoveShutdownButton feature is
+// enabled.
+class OobeSpokenFeedbackTest : public OobeBaseTest,
+                               public testing::WithParamInterface<bool> {
  protected:
-  OobeSpokenFeedbackTest() = default;
+  OobeSpokenFeedbackTest() {
+    feature_list_.InitWithFeatureState(features::kOobeRemoveShutdownButton,
+                                       GetParam());
+  }
 
   OobeSpokenFeedbackTest(const OobeSpokenFeedbackTest&) = delete;
   OobeSpokenFeedbackTest& operator=(const OobeSpokenFeedbackTest&) = delete;
@@ -1551,18 +1585,18 @@ class OobeSpokenFeedbackTest : public OobeBaseTest {
   }
 
   test::SpeechMonitor sm_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
+IN_PROC_BROWSER_TEST_P(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   AccessibilityManager::Get()->EnableSpokenFeedbackWithTutorial();
 
   // If ChromeVox is started in OOBE, the tutorial is automatically opened.
   sm_.ExpectSpeech("Welcome to ChromeVox!");
-  sm_.ExpectSpeechPattern(
-      "Welcome to the ChromeVox tutorial*When you're ready, use the spacebar "
-      "to move to the next lesson.");
 
   // The tutorial can be exited by pressing Escape.
   sm_.Call([]() {
@@ -1582,14 +1616,18 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, SpokenFeedbackInOobe) {
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         nullptr, ui::VKEY_TAB, false, false, false, false));
   });
-  sm_.ExpectSpeech("Shut down");
+  if (GetParam()) {
+    sm_.ExpectSpeechPattern("*Status tray*");
+  } else {
+    sm_.ExpectSpeech("Shut down");
+  }
   sm_.ExpectSpeech("Button");
 
   sm_.Replay();
 }
 
 // TODO(akihiroota): fix flakiness: http://crbug.com/1172390
-IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest,
+IN_PROC_BROWSER_TEST_P(OobeSpokenFeedbackTest,
                        DISABLED_SpokenFeedbackTutorialInOobe) {
   ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
@@ -1632,7 +1670,7 @@ class SigninToUserProfileSwitchTest : public OobeSpokenFeedbackTest {
 // Verifies that spoken feedback correctly handles profile switch (signin ->
 // user) and announces the sync consent screen correctly.
 // TODO(crbug.com/1184714): Fix flakiness.
-IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
+IN_PROC_BROWSER_TEST_P(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   // Force sync screen.
   LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
@@ -1661,5 +1699,60 @@ IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   });
   sm_.Replay();
 }
+
+class DeskTemplatesSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
+ public:
+  DeskTemplatesSpokenFeedbackTest() = default;
+  DeskTemplatesSpokenFeedbackTest(const DeskTemplatesSpokenFeedbackTest&) =
+      delete;
+  DeskTemplatesSpokenFeedbackTest& operator=(
+      const DeskTemplatesSpokenFeedbackTest&) = delete;
+  ~DeskTemplatesSpokenFeedbackTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{features::kDesksTemplates};
+};
+
+IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
+  EnableChromeVox();
+
+  // Enter overview first. This is how we reach the desk templates UI.
+  sm_.Call([this]() {
+    (PerformAcceleratorAction(AcceleratorAction::TOGGLE_OVERVIEW));
+  });
+
+  sm_.ExpectSpeech(
+      "Entered window overview mode. Swipe to navigate, or press tab if using "
+      "a keyboard.");
+
+  // Reverse tab to focus the save desk as template button.
+  sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
+  sm_.ExpectSpeechPattern("Save desk as a template");
+  sm_.ExpectSpeech("Button");
+
+  // Hit enter on the save desk as template button. It should take us to the
+  // templates grid, which triggers an accessibility alert. This should nudge
+  // the template name view but not say anything extra.
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_RETURN); });
+  sm_.ExpectSpeech("Viewing templates. Press tab to navigate.");
+
+  // The first item in the tab order is the template card, which is a button. It
+  // has the same name as the desk it was created from, in this case the default
+  // desk name is "Desk 1".
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
+  sm_.ExpectSpeechPattern("Desk 1");
+  sm_.ExpectSpeech("Button");
+
+  // The next item is the textfield inside the template card, which also has the
+  // same name as the desk it was created from.
+  sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
+  sm_.ExpectSpeechPattern("Desk 1");
+  sm_.ExpectSpeech("Edit text");
+
+  sm_.Replay();
+}
+
+INSTANTIATE_TEST_SUITE_P(All, OobeSpokenFeedbackTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SigninToUserProfileSwitchTest, testing::Bool());
 
 }  // namespace ash

@@ -993,6 +993,11 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           }
           frame_decoding_finished = 1;
           pbi->seen_frame_header = 0;
+
+          if (cm->show_frame &&
+              !cm->seq_params->order_hint_info.enable_order_hint) {
+            ++cm->current_frame.frame_number;
+          }
           break;
         }
 

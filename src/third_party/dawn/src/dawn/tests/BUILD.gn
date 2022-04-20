@@ -238,6 +238,7 @@ dawn_test("dawn_unittests") {
     "unittests/SystemUtilsTests.cpp",
     "unittests/ToBackendTests.cpp",
     "unittests/TypedIntegerTests.cpp",
+    "unittests/VersionTests.cpp",
     "unittests/native/CacheKeyTests.cpp",
     "unittests/native/CommandBufferEncodingTests.cpp",
     "unittests/native/CreatePipelineAsyncTaskTests.cpp",
@@ -411,6 +412,7 @@ source_set("end2end_tests_sources") {
     "end2end/RenderBundleTests.cpp",
     "end2end/RenderPassLoadOpTests.cpp",
     "end2end/RenderPassTests.cpp",
+    "end2end/RequiredBufferSizeInCopyTests.cpp",
     "end2end/SamplerFilterAnisotropicTests.cpp",
     "end2end/SamplerTests.cpp",
     "end2end/ScissorTests.cpp",
@@ -451,7 +453,10 @@ source_set("end2end_tests_sources") {
   }
 
   if (dawn_enable_metal) {
-    sources += [ "end2end/IOSurfaceWrappingTests.cpp" ]
+    sources += [
+      "end2end/IOSurfaceWrappingTests.cpp",
+      "end2end/VideoViewsTests_mac.cpp",
+    ]
     frameworks = [ "IOSurface.framework" ]
   }
 
@@ -468,7 +473,8 @@ source_set("end2end_tests_sources") {
     deps += [ "${dawn_root}/src/dawn/utils:glfw" ]
   }
 
-  if (dawn_enable_d3d12 || (dawn_enable_vulkan && is_chromeos)) {
+  if (dawn_enable_d3d12 || (dawn_enable_vulkan && is_chromeos) ||
+      dawn_enable_metal) {
     sources += [
       "end2end/VideoViewsTests.cpp",
       "end2end/VideoViewsTests.h",
@@ -504,7 +510,7 @@ source_set("white_box_tests_sources") {
   ]
 
   if (dawn_enable_vulkan) {
-    deps += [ "${dawn_root}/third_party/khronos:vulkan_headers" ]
+    deps += [ "${dawn_vulkan_headers_dir}:vulkan_headers" ]
 
     if (is_chromeos) {
       sources += [
@@ -549,9 +555,9 @@ source_set("white_box_tests_sources") {
     deps += [ "${dawn_root}/src/dawn/utils:glfw" ]
   }
 
-  if (dawn_enable_opengles) {
+  if (dawn_enable_opengles && defined(dawn_angle_dir)) {
     sources += [ "white_box/EGLImageWrappingTests.cpp" ]
-    deps += [ "//third_party/angle:libEGL" ]
+    deps += [ "${dawn_angle_dir}:libEGL" ]
   }
 
   libs = []

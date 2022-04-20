@@ -4,6 +4,7 @@
 """Definitions of builders in the tryserver.chromium.android builder group."""
 
 load("//lib/branches.star", "branches")
+load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -32,27 +33,16 @@ try_.builder(
     name = "android-10-arm64-rel",
 )
 
-try_.orchestrator_builder(
+try_.builder(
     name = "android-11-x86-rel",
-    compilator = "android-11-x86-rel-compilator",
-    # TODO(crbug.com/1137474): Enable it on branch after running on CQ
-    # branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    # TODO(crbug.com/1137474): Fully enable once it works fine
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-)
-
-try_.compilator_builder(
-    name = "android-11-x86-rel-compilator",
-    # TODO(crbug.com/1137474): Enable it on branch after running on CQ
-    # branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
 )
 
 try_.builder(
     name = "android-12-x64-dbg",
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+        "ci/android-12-x64-dbg-tests",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -62,7 +52,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 100,
     ),
 )
 
@@ -147,10 +137,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-cronet-kitkat-arm-rel",
-)
-
-try_.builder(
     name = "android-cronet-x86-dbg",
 )
 
@@ -189,6 +175,10 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-cronet-x86-rel-kitkat-tests",
+)
+
+try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
@@ -204,8 +194,15 @@ try_.builder(
     name = "android-inverse-fieldtrials-pie-x86-fyi-rel",
 )
 
+try_.builder(
+    name = "android-marshmallow-x86-fyi-rel-reviver",
+)
+
 try_.orchestrator_builder(
     name = "android-marshmallow-arm64-rel",
+    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
+    # no longer timeout.
+    #check_for_flakiness = True,
     compilator = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -217,12 +214,16 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
+    # no longer timeout.
+    #check_for_flakiness = True,
     cores = 64 if settings.is_main else 32,
     main_list_view = "try",
 )
 
 try_.orchestrator_builder(
     name = "android-marshmallow-x86-rel",
+    check_for_flakiness = True,
     compilator = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -234,6 +235,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
 )
 
@@ -332,6 +334,10 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-11-x86-fyi-rel",
+)
+
+try_.builder(
     name = "android-pie-arm64-wpt-rel-non-cq",
 )
 
@@ -361,6 +367,10 @@ try_.builder(
 
 try_.builder(
     name = "android-webview-12-x64-dbg",
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+        "ci/android-webview-12-x64-dbg-tests",
+    ],
 )
 
 try_.builder(
@@ -403,6 +413,13 @@ try_.builder(
 try_.builder(
     name = "android_compile_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Android arm Builder (dbg)",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     builderless = not settings.is_main,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
@@ -412,6 +429,13 @@ try_.builder(
 try_.builder(
     name = "android_compile_x64_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     cores = 16,
     ssd = True,
     main_list_view = "try",
@@ -455,10 +479,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-)
-
-try_.builder(
-    name = "android_mojo",
 )
 
 try_.builder(

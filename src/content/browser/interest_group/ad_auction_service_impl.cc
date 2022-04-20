@@ -9,18 +9,19 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/interest_group/ad_auction_document_data.h"
 #include "content/browser/interest_group/ad_auction_result_metrics.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -155,7 +156,8 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config,
     }
   }
 
-  for (const auto& component_auction : config.component_auctions) {
+  for (const auto& component_auction :
+       config.auction_ad_config_non_shared_params->component_auctions) {
     // Component auctions may not have their own nested component auctions.
     if (!is_top_level_auction)
       return false;
@@ -238,7 +240,8 @@ void AdAuctionServiceImpl::LeaveInterestGroup(const url::Origin& owner,
   // Policy, do nothing
   if (!render_frame_host()->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
-    mojo::ReportBadMessage("Unexpected request");
+    mojo::ReportBadMessage(
+        "Unexpected request: JoinAdInterestGroup feature disabled");
     return;
   }
   // If the interest group API is not allowed for this origin do nothing.
@@ -247,13 +250,67 @@ void AdAuctionServiceImpl::LeaveInterestGroup(const url::Origin& owner,
     return;
   }
 
-  if (origin().scheme() != url::kHttpsScheme)
+  if (origin().scheme() != url::kHttpsScheme) {
+    mojo::ReportBadMessage(
+        "Unexpected request: JoinAdInterestGroup only supported for secure "
+        "origins");
     return;
+  }
 
   if (owner != origin())
     return;
 
   GetInterestGroupManager().LeaveInterestGroup(owner, name);
+}
+
+void AdAuctionServiceImpl::LeaveInterestGroupForDocument() {
+  // Based on the spec, permission policy is bypassed for leaving implicit
+  // interest groups.
+
+  // If the interest group API is not allowed for this origin do nothing.
+  if (!IsInterestGroupAPIAllowed(
+          ContentBrowserClient::InterestGroupApiOperation::kLeave, origin())) {
+    return;
+  }
+
+  if (origin().scheme() != url::kHttpsScheme) {
+    mojo::ReportBadMessage(
+        "Unexpected request: JoinAdInterestGroupForDocument only supported for "
+        "secure origins");
+    return;
+  }
+
+  if (!render_frame_host()->IsNestedWithinFencedFrame()) {
+    mojo::ReportBadMessage(
+        "Unexpected request: JoinAdInterestGroupForDocument only supported "
+        "within fenced frames");
+    return;
+  }
+
+  // Get interest group owner and name. AdAuctionDocumentData is created as
+  // part of navigation to a mapped URN URL. We need to find the top-level
+  // fenced frame, since only the top-level frame has the document data.
+  RenderFrameHost* rfh = render_frame_host();
+  while (!rfh->IsFencedFrameRoot()) {
+    rfh = rfh->GetParentOrOuterDocument();
+    if (!rfh) {
+      return;
+    }
+  }
+  AdAuctionDocumentData* auction_data =
+      AdAuctionDocumentData::GetForCurrentDocument(rfh);
+  if (!auction_data) {
+    return;
+  }
+
+  if (auction_data->interest_group_owner() != origin()) {
+    // The ad page calling LeaveAdInterestGroup is not the owner of the group.
+    return;
+  }
+
+  GetInterestGroupManager().LeaveInterestGroup(
+      auction_data->interest_group_owner(),
+      auction_data->interest_group_name());
 }
 
 void AdAuctionServiceImpl::UpdateAdInterestGroups() {
@@ -315,7 +372,8 @@ class FencedFrameURLMappingObserver
       absl::optional<GURL> mapped_url,
       absl::optional<AdAuctionData> ad_auction_data,
       absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-          pending_ad_components_map) override {
+          pending_ad_components_map,
+      ReportingMetadata& reporting_metadata) override {
     mapped_url_ = mapped_url;
     called_ = true;
   }
@@ -435,6 +493,20 @@ bool AdAuctionServiceImpl::IsInterestGroupAPIAllowed(
       origin);
 }
 
+void AdAuctionServiceImpl::HandleReports(
+    network::mojom::URLLoaderFactory* factory,
+    const std::vector<GURL>& report_urls,
+    const std::string& name) {
+  for (const GURL& report_url : report_urls) {
+    base::UmaHistogramCounts100000(
+        base::StrCat({"Ads.InterestGroup.Net.RequestUrlSizeBytes.", name}),
+        report_url.spec().size());
+    base::UmaHistogramCounts100(
+        base::StrCat({"Ads.InterestGroup.Net.ResponseSizeBytes.", name}), 0);
+    FetchReport(factory, report_url, origin(), GetClientSecurityState());
+  }
+}
+
 void AdAuctionServiceImpl::OnAuctionComplete(
     RunAdAuctionCallback callback,
     AuctionRunner* auction,
@@ -444,6 +516,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     std::vector<GURL> report_urls,
     std::vector<GURL> debug_loss_report_urls,
     std::vector<GURL> debug_win_report_urls,
+    ReportingMetadata ad_beacon_map,
     std::vector<std::string> errors) {
   // Delete the AuctionRunner. Since all arguments are passed by value, they're
   // all safe to used after this has been done.
@@ -466,16 +539,16 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     std::move(callback).Run(absl::nullopt);
     auction_result_metrics->ReportAuctionResult(
         AdAuctionResultMetrics::AuctionResult::kFailed);
+    HandleReports(GetTrustedURLLoaderFactory(),
+                  std::move(debug_loss_report_urls), "DebugLossReport");
     return;
   }
   DCHECK(winning_group_id);  // Should always be present with a render_url
-  render_url =
-      GetFrame()
-          ->GetPage()
-          .fenced_frame_urls_map()
-          .AddFencedFrameURLWithInterestGroupInfo(
-              *render_url, {winning_group_id->owner, winning_group_id->name},
-              ad_component_urls);
+  FencedFrameURLMapping& fenced_frame_urls_map =
+      GetFrame()->GetPage().fenced_frame_urls_map();
+  render_url = fenced_frame_urls_map.AddFencedFrameURLWithInterestGroupInfo(
+      *render_url, {winning_group_id->owner, winning_group_id->name},
+      ad_component_urls, ad_beacon_map);
   DCHECK(render_url->is_valid());
 
   std::move(callback).Run(render_url);
@@ -483,17 +556,9 @@ void AdAuctionServiceImpl::OnAuctionComplete(
       AdAuctionResultMetrics::AuctionResult::kSucceeded);
 
   network::mojom::URLLoaderFactory* factory = GetTrustedURLLoaderFactory();
-  for (const GURL& report_url : report_urls) {
-    FetchReport(factory, report_url, origin(), GetClientSecurityState());
-  }
-  for (const auto& debug_loss_report_url : debug_loss_report_urls) {
-    FetchReport(factory, debug_loss_report_url, origin(),
-                GetClientSecurityState());
-  }
-  for (const auto& debug_win_report_url : debug_win_report_urls) {
-    FetchReport(factory, debug_win_report_url, origin(),
-                GetClientSecurityState());
-  }
+  HandleReports(factory, std::move(report_urls), "SendReportToReport");
+  HandleReports(factory, std::move(debug_loss_report_urls), "DebugLossReport");
+  HandleReports(factory, std::move(debug_win_report_urls), "DebugWinReport");
 }
 
 InterestGroupManagerImpl& AdAuctionServiceImpl::GetInterestGroupManager()

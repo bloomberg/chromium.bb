@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host.h"
@@ -61,6 +62,7 @@ class AnimationTimeline;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeFrameSink;
+class LayerTreeSettings;
 class TaskGraphRunner;
 }
 
@@ -351,6 +353,12 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   // Returns a percentage representing average throughput of last X seconds.
   uint32_t GetAverageThroughput() const;
 
+  // Activates a scoped monitor for the current event to track its metrics.
+  // `done_callback` is called when the monitor goes out of scope.
+  std::unique_ptr<cc::EventsMetricsManager::ScopedMonitor>
+  GetScopedEventMetricsMonitor(
+      cc::EventsMetricsManager::ScopedMonitor::DoneCallback done_callback);
+
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
@@ -450,6 +458,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 
   virtual void SetDelegatedInkPointRenderer(
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver);
+
+  const cc::LayerTreeSettings& GetLayerTreeSettings() const;
 
  private:
   friend class base::RefCounted<Compositor>;

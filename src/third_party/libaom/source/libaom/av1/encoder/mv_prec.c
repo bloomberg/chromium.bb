@@ -415,18 +415,22 @@ static AOM_INLINE int get_smart_mv_prec(AV1_COMP *cpi, const MV_STATS *mv_stats,
 
 void av1_pick_and_set_high_precision_mv(AV1_COMP *cpi, int qindex) {
   int use_hp = qindex < HIGH_PRECISION_MV_QTHRESH;
+#if !CONFIG_REALTIME_ONLY
+  MV_STATS *mv_stats;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  mv_stats = &cpi->mv_stats;
+#else
+  mv_stats = &cpi->ppi->mv_stats;
+#endif
+#endif  // !CONFIG_REALTIME_ONLY
 
   if (cpi->sf.hl_sf.high_precision_mv_usage == QTR_ONLY) {
     use_hp = 0;
   }
 #if !CONFIG_REALTIME_ONLY
   else if (cpi->sf.hl_sf.high_precision_mv_usage == LAST_MV_DATA &&
-           av1_frame_allows_smart_mv(cpi) && cpi->ppi->mv_stats.valid) {
-#if CONFIG_FRAME_PARALLEL_ENCODE
-    use_hp = get_smart_mv_prec(cpi, &cpi->mv_stats, qindex);
-#else
-    use_hp = get_smart_mv_prec(cpi, &cpi->ppi->mv_stats, qindex);
-#endif
+           av1_frame_allows_smart_mv(cpi) && mv_stats->valid) {
+    use_hp = get_smart_mv_prec(cpi, mv_stats, qindex);
   }
 #endif  // !CONFIG_REALTIME_ONLY
 

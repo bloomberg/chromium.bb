@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 
 namespace blink {
 
@@ -219,7 +220,7 @@ void RunPaintTestOnWorklet(WorkerThread* thread,
   std::vector<cc::PaintWorkletInput::PropertyKey> property_keys;
   scoped_refptr<CSSPaintWorkletInput> input =
       base::MakeRefCounted<CSSPaintWorkletInput>(
-          "foo", gfx::SizeF(100, 100), 1.0f, 1.0f, 1, std::move(data),
+          "foo", gfx::SizeF(100, 100), 1.0f, 1, std::move(data),
           std::move(input_arguments), std::move(property_keys));
   sk_sp<PaintRecord> record = proxy_client->Paint(input.get(), {});
   EXPECT_NE(record, nullptr);

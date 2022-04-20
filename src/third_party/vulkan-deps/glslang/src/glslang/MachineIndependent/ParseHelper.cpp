@@ -2799,7 +2799,10 @@ TFunction* TParseContext::handleConstructorCall(const TSourceLoc& loc, const TPu
     TOperator op = intermediate.mapTypeToConstructorOp(type);
 
     if (op == EOpNull) {
-        error(loc, "cannot construct this type", type.getBasicString(), "");
+      if (intermediate.getEnhancedMsgs() && type.getBasicType() == EbtSampler)
+            error(loc, "function not supported in this version; use texture() instead", "texture*D*", "");
+        else
+            error(loc, "cannot construct this type", type.getBasicString(), "");
         op = EOpConstructFloat;
         TType errorType(EbtFloat);
         type.shallowCopy(errorType);
@@ -4608,7 +4611,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
 
     if (ssoPre150 ||
         (identifier == "gl_FragDepth"           && ((nonEsRedecls && version >= 420) || esRedecls)) ||
-        (identifier == "gl_FragCoord"           && ((nonEsRedecls && version >= 150) || esRedecls)) ||
+        (identifier == "gl_FragCoord"           && ((nonEsRedecls && version >= 140) || esRedecls)) ||
          identifier == "gl_ClipDistance"                                                            ||
          identifier == "gl_CullDistance"                                                            ||
          identifier == "gl_ShadingRateEXT"                                                          ||
@@ -4677,7 +4680,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
                 symbolQualifier.storage != qualifier.storage)
                 error(loc, "cannot change qualification of", "redeclaration", symbol->getName().c_str());
         } else if (identifier == "gl_FragCoord") {
-            if (intermediate.inIoAccessed("gl_FragCoord"))
+            if (!intermediate.getTexCoordRedeclared() && intermediate.inIoAccessed("gl_FragCoord"))
                 error(loc, "cannot redeclare after use", "gl_FragCoord", "");
             if (qualifier.nopersp != symbolQualifier.nopersp || qualifier.flat != symbolQualifier.flat ||
                 qualifier.isMemory() || qualifier.isAuxiliary())
@@ -4687,6 +4690,9 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
             if (! builtIn && (publicType.pixelCenterInteger != intermediate.getPixelCenterInteger() ||
                               publicType.originUpperLeft != intermediate.getOriginUpperLeft()))
                 error(loc, "cannot redeclare with different qualification:", "redeclaration", symbol->getName().c_str());
+
+
+            intermediate.setTexCoordRedeclared();
             if (publicType.pixelCenterInteger)
                 intermediate.setPixelCenterInteger();
             if (publicType.originUpperLeft)
@@ -5518,12 +5524,19 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
     }
     if (language == EShLangFragment) {
         if (id == "origin_upper_left") {
-            requireProfile(loc, ECoreProfile | ECompatibilityProfile, "origin_upper_left");
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile | ENoProfile, "origin_upper_left");
+            if (profile == ENoProfile) {
+                profileRequires(loc,ECoreProfile | ECompatibilityProfile, 140, E_GL_ARB_fragment_coord_conventions, "origin_upper_left");
+            }
+
             publicType.shaderQualifiers.originUpperLeft = true;
             return;
         }
         if (id == "pixel_center_integer") {
-            requireProfile(loc, ECoreProfile | ECompatibilityProfile, "pixel_center_integer");
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile | ENoProfile, "pixel_center_integer");
+            if (profile == ENoProfile) {
+                profileRequires(loc,ECoreProfile | ECompatibilityProfile, 140, E_GL_ARB_fragment_coord_conventions, "pixel_center_integer");
+            }
             publicType.shaderQualifiers.pixelCenterInteger = true;
             return;
         }
@@ -6355,8 +6368,12 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         profileRequires(loc, ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shader_image_load_formatted, explanation);
     }
 
-    if (qualifier.isPushConstant() && type.getBasicType() != EbtBlock)
-        error(loc, "can only be used with a block", "push_constant", "");
+    if (qualifier.isPushConstant()) {
+        if (type.getBasicType() != EbtBlock)
+            error(loc, "can only be used with a block", "push_constant", "");
+        if (type.isArray())
+            error(loc, "Push constants blocks can't be an array", "push_constant", "");
+    }
 
     if (qualifier.hasBufferReference() && type.getBasicType() != EbtBlock)
         error(loc, "can only be used with a block", "buffer_reference", "");

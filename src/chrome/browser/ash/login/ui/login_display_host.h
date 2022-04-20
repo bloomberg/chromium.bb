@@ -38,6 +38,7 @@ class Rect;
 namespace ash {
 class KioskAppId;
 class KioskLaunchController;
+class MetricsRecorder;
 class WebUILoginView;
 class WizardController;
 enum class OobeDialogState;
@@ -75,6 +76,9 @@ class LoginDisplayHost {
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
 
+  // Returns an owned pointer to the MetricsRecorder instance.
+  MetricsRecorder* metrics_recorder() { return metrics_recorder_.get(); }
+
   // Returns an unowned pointer to the LoginDisplay instance.
   virtual LoginDisplay* GetLoginDisplay() = 0;
 
@@ -98,6 +102,9 @@ class LoginDisplayHost {
 
   // Called when browsing session starts before creating initial browser.
   virtual void BeforeSessionStart() = 0;
+
+  // Whether the process of deleting LoginDisplayHost has been started.
+  virtual bool IsFinalizing() = 0;
 
   // Called when user enters or returns to browsing session so LoginDisplayHost
   // instance may delete itself. `completion_callback` will be invoked when the
@@ -266,6 +273,9 @@ class LoginDisplayHost {
  private:
   // Global LoginDisplayHost instance.
   static LoginDisplayHost* default_host_;
+
+  // Owned pointer to MetricsRecorder instance.
+  std::unique_ptr<MetricsRecorder> metrics_recorder_;
 
   // Callback to be executed when WebUI is started.
   base::RepeatingClosure on_wizard_controller_created_for_tests_;

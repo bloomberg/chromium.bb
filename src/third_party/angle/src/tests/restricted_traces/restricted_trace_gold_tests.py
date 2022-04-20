@@ -23,24 +23,18 @@ import tempfile
 import time
 import traceback
 
-# Add //src/testing into sys.path for importing xvfb and test_env, and
-# //src/testing/scripts for importing common.
-d = os.path.dirname
-THIS_DIR = d(os.path.abspath(__file__))
-sys.path.insert(0, d(THIS_DIR))
 
+def _AddToPathIfNeeded(path):
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+
+_AddToPathIfNeeded(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'py_utils')))
+import angle_path_util
 from skia_gold import angle_skia_gold_properties
 from skia_gold import angle_skia_gold_session_manager
 
-ANGLE_SRC_DIR = d(d(d(THIS_DIR)))
-sys.path.insert(0, os.path.join(ANGLE_SRC_DIR, 'testing'))
-sys.path.insert(0, os.path.join(ANGLE_SRC_DIR, 'testing', 'scripts'))
-# Handle the Chromium-relative directory as well. As long as one directory
-# is valid, Python is happy.
-CHROMIUM_SRC_DIR = d(d(ANGLE_SRC_DIR))
-sys.path.insert(0, os.path.join(CHROMIUM_SRC_DIR, 'testing'))
-sys.path.insert(0, os.path.join(CHROMIUM_SRC_DIR, 'testing', 'scripts'))
-
+angle_path_util.AddDepsDirToPath('testing/scripts')
 import common
 import test_env
 import xvfb
@@ -238,8 +232,7 @@ def upload_test_result_to_skia_gold(args, gold_session_manager, gold_session, go
     png_file_name = os.path.join(screenshot_dir, prefix + image_name + '.png')
 
     if not os.path.isfile(png_file_name):
-        logging.info('Screenshot not found, test skipped.')
-        return SKIP
+        raise Exception('Screenshot not found: ' + png_file_name)
 
     status, error = gold_session.RunComparison(
         name=image_name, png_file=png_file_name, use_luci=use_luci)
@@ -341,16 +334,23 @@ def _run_tests(args, tests, extra_flags, env, screenshot_dir, results, test_resu
                     batch_result = PASS if run_wrapper(args, cmd, env,
                                                        tempfile_path) == 0 else FAIL
 
+                    with open(tempfile_path) as f:
+                        test_output = f.read() + '\n'
+
                     next_batch = []
                     for trace in batch:
                         artifacts = {}
 
                         if batch_result == PASS:
-                            logging.debug('upload test result: %s' % trace)
-                            result = upload_test_result_to_skia_gold(args, gold_session_manager,
-                                                                     gold_session, gold_properties,
-                                                                     screenshot_dir, trace,
-                                                                     artifacts)
+                            test_prefix = SWIFTSHADER_TEST_PREFIX if args.swiftshader else DEFAULT_TEST_PREFIX
+                            trace_skipped_notice = '[  SKIPPED ] ' + test_prefix + trace + '\n'
+                            if trace_skipped_notice in test_output:
+                                result = SKIP
+                            else:
+                                logging.debug('upload test result: %s' % trace)
+                                result = upload_test_result_to_skia_gold(
+                                    args, gold_session_manager, gold_session, gold_properties,
+                                    screenshot_dir, trace, artifacts)
                         else:
                             result = batch_result
 
@@ -442,8 +442,8 @@ def main():
 
     try:
         # read test set
-        json_name = os.path.join(ANGLE_SRC_DIR, 'src', 'tests', 'restricted_traces',
-                                 'restricted_traces.json')
+        json_name = os.path.join(angle_path_util.ANGLE_ROOT_DIR, 'src', 'tests',
+                                 'restricted_traces', 'restricted_traces.json')
         with open(json_name) as fp:
             tests = json.load(fp)
 

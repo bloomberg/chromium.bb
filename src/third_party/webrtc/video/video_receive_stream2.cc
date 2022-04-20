@@ -54,7 +54,6 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/synchronization/mutex.h"
-#include "rtc_base/system/thread_registry.h"
 #include "rtc_base/task_queue.h"
 #include "rtc_base/task_utils/pending_task_safety_flag.h"
 #include "rtc_base/task_utils/to_queued_task.h"
@@ -130,8 +129,7 @@ class WebRtcRecordableEncodedFrame : public RecordableEncodedFrame {
   absl::optional<webrtc::ColorSpace> color_space_;
 };
 
-RenderResolution InitialDecoderResolution(
-    const WebRtcKeyValueConfig& field_trials) {
+RenderResolution InitialDecoderResolution(const FieldTrialsView& field_trials) {
   FieldTrialOptional<int> width("w");
   FieldTrialOptional<int> height("h");
   ParseFieldTrial({&width, &height},
@@ -209,7 +207,7 @@ VideoReceiveStream2::VideoReceiveStream2(
     VideoReceiveStream::Config config,
     CallStats* call_stats,
     Clock* clock,
-    VCMTiming* timing,
+    std::unique_ptr<VCMTiming> timing,
     NackPeriodicProcessor* nack_periodic_processor,
     DecodeSynchronizer* decode_sync)
     : task_queue_factory_(task_queue_factory),
@@ -225,8 +223,8 @@ VideoReceiveStream2::VideoReceiveStream2(
                    call->worker_thread(),
                    call->trials()),
       rtp_receive_statistics_(ReceiveStatistics::Create(clock_)),
-      timing_(timing),
-      video_receiver_(clock_, timing_.get()),
+      timing_(std::move(timing)),
+      video_receiver_(clock_, timing_.get(), call->trials()),
       rtp_video_stream_receiver_(call->worker_thread(),
                                  clock_,
                                  &transport_adapter_,

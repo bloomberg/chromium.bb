@@ -34,18 +34,20 @@ class TCPConnection;
 // call this TCPPort::OnReadPacket (3 arg) to dispatch to a connection.
 class TCPPort : public Port {
  public:
-  static std::unique_ptr<TCPPort> Create(rtc::Thread* thread,
-                                         rtc::PacketSocketFactory* factory,
-                                         rtc::Network* network,
-                                         uint16_t min_port,
-                                         uint16_t max_port,
-                                         const std::string& username,
-                                         const std::string& password,
-                                         bool allow_listen) {
+  static std::unique_ptr<TCPPort> Create(
+      rtc::Thread* thread,
+      rtc::PacketSocketFactory* factory,
+      const rtc::Network* network,
+      uint16_t min_port,
+      uint16_t max_port,
+      const std::string& username,
+      const std::string& password,
+      bool allow_listen,
+      const webrtc::FieldTrialsView* field_trials = nullptr) {
     // Using `new` to access a non-public constructor.
     return absl::WrapUnique(new TCPPort(thread, factory, network, min_port,
                                         max_port, username, password,
-                                        allow_listen));
+                                        allow_listen, field_trials));
   }
   ~TCPPort() override;
 
@@ -66,12 +68,13 @@ class TCPPort : public Port {
  protected:
   TCPPort(rtc::Thread* thread,
           rtc::PacketSocketFactory* factory,
-          rtc::Network* network,
+          const rtc::Network* network,
           uint16_t min_port,
           uint16_t max_port,
           const std::string& username,
           const std::string& password,
-          bool allow_listen);
+          bool allow_listen,
+          const webrtc::FieldTrialsView* field_trials);
 
   // Handles sending using the local TCP socket.
   int SendTo(const void* data,
@@ -124,9 +127,9 @@ class TCPPort : public Port {
 class TCPConnection : public Connection {
  public:
   // Connection is outgoing unless socket is specified
-  TCPConnection(TCPPort* port,
+  TCPConnection(rtc::WeakPtr<Port> tcp_port,
                 const Candidate& candidate,
-                rtc::AsyncPacketSocket* socket = 0);
+                rtc::AsyncPacketSocket* socket = nullptr);
   ~TCPConnection() override;
 
   int Send(const void* data,
@@ -165,6 +168,11 @@ class TCPConnection : public Connection {
                     const rtc::SocketAddress& remote_addr,
                     const int64_t& packet_time_us);
   void OnReadyToSend(rtc::AsyncPacketSocket* socket);
+
+  TCPPort* tcp_port() {
+    RTC_DCHECK_EQ(port()->GetProtocol(), PROTO_TCP);
+    return static_cast<TCPPort*>(port());
+  }
 
   std::unique_ptr<rtc::AsyncPacketSocket> socket_;
   int error_;

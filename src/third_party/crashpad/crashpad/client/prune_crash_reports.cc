@@ -27,7 +27,7 @@
 namespace crashpad {
 
 size_t PruneCrashReportDatabase(CrashReportDatabase* database,
-                              PruneCondition* condition) {
+                                PruneCondition* condition) {
   std::vector<CrashReportDatabase::Report> all_reports;
   CrashReportDatabase::OperationStatus status;
 
@@ -64,6 +64,8 @@ size_t PruneCrashReportDatabase(CrashReportDatabase* database,
       }
     }
   }
+
+  condition->ResetPruneConditionState();
 
   return num_pruned;
 
@@ -102,6 +104,8 @@ bool AgePruneCondition::ShouldPruneReport(
   return report.creation_time < oldest_report_time_;
 }
 
+void AgePruneCondition::ResetPruneConditionState() {}
+
 DatabaseSizePruneCondition::DatabaseSizePruneCondition(size_t max_size_in_kb)
     : max_size_in_kb_(max_size_in_kb), measured_size_in_kb_(0) {}
 
@@ -113,6 +117,10 @@ bool DatabaseSizePruneCondition::ShouldPruneReport(
   measured_size_in_kb_ +=
       static_cast<size_t>((report.total_size + 1023) / 1024);
   return measured_size_in_kb_ > max_size_in_kb_;
+}
+
+void DatabaseSizePruneCondition::ResetPruneConditionState() {
+  measured_size_in_kb_ = 0;
 }
 
 BinaryPruneCondition::BinaryPruneCondition(
@@ -132,6 +140,11 @@ bool BinaryPruneCondition::ShouldPruneReport(
       NOTREACHED();
       return false;
   }
+}
+
+void BinaryPruneCondition::ResetPruneConditionState() {
+  lhs_->ResetPruneConditionState();
+  rhs_->ResetPruneConditionState();
 }
 
 }  // namespace crashpad

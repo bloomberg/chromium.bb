@@ -27,6 +27,7 @@
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "internal.h"
 #include "lzf.h"
@@ -146,7 +147,7 @@ static int lz4_decompress(AVCodecContext *avctx,
     return bytestream2_tell_p(pb);
 }
 
-static int decode_blocks(AVCodecContext *avctx, AVFrame *p, ThreadFrame *frame,
+static int decode_blocks(AVCodecContext *avctx, AVFrame *p,
                          unsigned uncompressed_size)
 {
     NotchLCContext *s = avctx->priv_data;
@@ -221,7 +222,7 @@ static int decode_blocks(AVCodecContext *avctx, AVFrame *p, ThreadFrame *frame,
         return AVERROR_INVALIDDATA;
     s->uv_count_offset = s->y_data_offset - s->a_data_offset;
 
-    if ((ret = ff_thread_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_thread_get_buffer(avctx, p, 0)) < 0)
         return ret;
 
     rgb = *gb;
@@ -464,7 +465,6 @@ static int decode_frame(AVCodecContext *avctx,
                         AVPacket *avpkt)
 {
     NotchLCContext *s = avctx->priv_data;
-    ThreadFrame frame = { .f = data };
     GetByteContext *gb = &s->gb;
     PutByteContext *pb = &s->pb;
     unsigned uncompressed_size;
@@ -513,7 +513,7 @@ static int decode_frame(AVCodecContext *avctx,
         bytestream2_init(gb, s->uncompressed_buffer, uncompressed_size);
     }
 
-    ret = decode_blocks(avctx, p, &frame, uncompressed_size);
+    ret = decode_blocks(avctx, p, uncompressed_size);
     if (ret < 0)
         return ret;
 
@@ -537,15 +537,15 @@ static av_cold int decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_notchlc_decoder = {
-    .name             = "notchlc",
-    .long_name        = NULL_IF_CONFIG_SMALL("NotchLC"),
-    .type             = AVMEDIA_TYPE_VIDEO,
-    .id               = AV_CODEC_ID_NOTCHLC,
+const FFCodec ff_notchlc_decoder = {
+    .p.name           = "notchlc",
+    .p.long_name      = NULL_IF_CONFIG_SMALL("NotchLC"),
+    .p.type           = AVMEDIA_TYPE_VIDEO,
+    .p.id             = AV_CODEC_ID_NOTCHLC,
     .priv_data_size   = sizeof(NotchLCContext),
     .init             = decode_init,
     .close            = decode_end,
     .decode           = decode_frame,
-    .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
+    .p.capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
     .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE,
 };

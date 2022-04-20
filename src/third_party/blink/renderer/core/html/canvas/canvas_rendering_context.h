@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_RENDERING_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_RENDERING_CONTEXT_H_
 
+#include "base/notreached.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -41,6 +42,10 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+
+namespace media {
+class VideoFrame;
+}  // namespace media
 
 namespace blink {
 
@@ -122,7 +127,7 @@ class CORE_EXPORT CanvasRenderingContext
       const ExecutionContext* execution_context);
 
   CanvasRenderingContextHost* Host() const { return host_; }
-  SkColorInfo CanvasRenderingContextSkColorInfo() const;
+  virtual SkColorInfo CanvasRenderingContextSkColorInfo() const;
 
   virtual scoped_refptr<StaticBitmapImage> GetImage() = 0;
   virtual bool IsComposited() const = 0;
@@ -280,12 +285,6 @@ class CORE_EXPORT CanvasRenderingContext
   CanvasRenderingContext(CanvasRenderingContextHost*,
                          const CanvasContextCreationAttributesCore&,
                          CanvasRenderingAPI);
-
-  // TODO(https://crbug.com/1208480): This function applies only to 2D rendering
-  // contexts, and should be removed.
-  virtual CanvasColorParams CanvasRenderingContextColorParams() const {
-    return CanvasColorParams();
-  }
 
   virtual void Dispose();
 

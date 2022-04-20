@@ -48,6 +48,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "base/test/bind.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/test/events_test_utils.h"
@@ -1174,6 +1175,151 @@ TEST_F(PointerTest, DragDropAndPointerEnterLeaveEvents_NoOpOnTouchDrag) {
   EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
 }
+
+namespace {
+
+class PointerDragDropObserver : public WMHelper::DragDropObserver {
+ public:
+  PointerDragDropObserver(DropCallback closure)
+      : closure_(std::move(closure)) {}
+
+ private:
+  // WMHelper::DragDropObserver overrides:
+  void OnDragEntered(const ui::DropTargetEvent& event) override {}
+  aura::client::DragUpdateInfo OnDragUpdated(
+      const ui::DropTargetEvent& event) override {
+    return aura::client::DragUpdateInfo();
+  }
+  void OnDragExited() override {}
+  DropCallback GetDropCallback() override { return std::move(closure_); }
+
+  DropCallback closure_;
+};
+
+}  // namespace
+
+// Test for crbug.com/1307143: It ensures no "pointer enter" event is
+// processed in case the target surface is destroyed during the drop action.
+TEST_F(PointerTest,
+       DragDropAndPointerEnterLeaveEvents_NoEnterOnSurfaceDestroy) {
+  Seat seat(std::make_unique<TestDataExchangeDelegate>());
+  MockPointerDelegate pointer_delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&pointer_delegate, &seat));
+  TestDataSourceDelegate data_source_delegate;
+  DataSource source(&data_source_delegate);
+  std::unique_ptr<Surface> origin(new Surface());
+  auto* origin_ptr = origin.get();
+
+  // Make origin into a real window so the pointer can click it
+  ShellSurface shell_surface(origin_ptr);
+  Buffer buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10)));
+  origin_ptr->Attach(&buffer);
+  origin_ptr->Commit();
+
+  auto closure = base::BindOnce([](std::unique_ptr<Surface> shell_surface,
+                                   ui::mojom::DragOperation& output_drag_op) {},
+                                std::move(origin));
+  PointerDragDropObserver drag_drop_observer(std::move(closure));
+
+  auto* wm_helper = WMHelper::GetInstance();
+  wm_helper->AddDragDropObserver(&drag_drop_observer);
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(pointer_delegate, CanAcceptPointerEventsForSurface(origin_ptr))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(pointer_delegate, OnPointerFrame()).Times(AnyNumber());
+  EXPECT_CALL(pointer_delegate, OnPointerEnter(origin_ptr, gfx::PointF(), 0));
+  generator.MoveMouseTo(origin_ptr->window()->GetBoundsInScreen().origin());
+
+  auto* drag_drop_controller = static_cast<ash::DragDropController*>(
+      aura::client::GetDragDropClient(ash::Shell::GetPrimaryRootWindow()));
+  ASSERT_TRUE(drag_drop_controller);
+
+  generator.PressLeftButton();
+  seat.StartDrag(&source, origin_ptr, /*icon=*/nullptr,
+                 ui::mojom::DragEventSource::kMouse);
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+
+  // As soon as the runloop gets triggered, emit a mouse release event.
+  drag_drop_controller->SetLoopClosureForTesting(
+      base::BindLambdaForTesting([&]() {
+        EXPECT_CALL(pointer_delegate, OnPointerEnter(_, _, _));
+        generator.ReleaseLeftButton();
+      }),
+      base::DoNothing());
+
+  // OnPointerLeave() gets called twice:
+  // 1/ when the drag starts;
+  // 2/ when the dragging window gets destroyed.
+  EXPECT_CALL(pointer_delegate, OnPointerLeave(_)).Times(2);
+  base::RunLoop().RunUntilIdle();
+
+  wm_helper->RemoveDragDropObserver(&drag_drop_observer);
+
+  EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+// Test for crbug.com/1307143: It ensures no "pointer enter" event is
+// processed in case the target surface parent is destroyed during the drop
+// action.
+TEST_F(PointerTest,
+       DragDropAndPointerEnterLeaveEvents_NoEnterOnParentSurfaceDestroy) {
+  Seat seat(std::make_unique<TestDataExchangeDelegate>());
+  MockPointerDelegate pointer_delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&pointer_delegate, &seat));
+  TestDataSourceDelegate data_source_delegate;
+  DataSource source(&data_source_delegate);
+
+  auto shell_surface = test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+  auto* surface = shell_surface->surface_for_testing();
+
+  auto closure = base::BindOnce([](std::unique_ptr<ShellSurface> shell_surface,
+                                   ui::mojom::DragOperation& output_drag_op) {},
+                                std::move(shell_surface));
+  PointerDragDropObserver drag_drop_observer(std::move(closure));
+
+  auto* wm_helper = WMHelper::GetInstance();
+  wm_helper->AddDragDropObserver(&drag_drop_observer);
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(pointer_delegate, CanAcceptPointerEventsForSurface(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(pointer_delegate, OnPointerFrame()).Times(AnyNumber());
+  EXPECT_CALL(pointer_delegate, OnPointerEnter(surface, gfx::PointF(), 0));
+  generator.MoveMouseTo(surface->window()->GetBoundsInScreen().origin());
+
+  auto* drag_drop_controller = static_cast<ash::DragDropController*>(
+      aura::client::GetDragDropClient(ash::Shell::GetPrimaryRootWindow()));
+  ASSERT_TRUE(drag_drop_controller);
+
+  generator.PressLeftButton();
+  seat.StartDrag(&source, surface, /*icon=*/nullptr,
+                 ui::mojom::DragEventSource::kMouse);
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+
+  // As soon as the runloop gets triggered, emit a mouse release event.
+  drag_drop_controller->SetLoopClosureForTesting(
+      base::BindLambdaForTesting([&]() {
+        EXPECT_CALL(pointer_delegate, OnPointerEnter(_, _, _)).Times(1);
+        generator.ReleaseLeftButton();
+      }),
+      base::DoNothing());
+
+  // OnPointerLeave() gets called twice:
+  // 1/ when the drag starts;
+  // 2/ when the dragging window gets destroyed.
+  EXPECT_CALL(pointer_delegate, OnPointerLeave(_)).Times(2);
+  base::RunLoop().RunUntilIdle();
+
+  wm_helper->RemoveDragDropObserver(&drag_drop_observer);
+
+  EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
 #endif
 
 TEST_F(PointerTest, OnPointerRelativeMotion) {

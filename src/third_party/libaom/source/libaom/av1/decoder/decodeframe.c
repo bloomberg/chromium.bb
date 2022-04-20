@@ -109,7 +109,7 @@ static AOM_INLINE void set_planes_to_neutral_grey(
     for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
       const int is_uv = plane > 0;
       for (int row_idx = 0; row_idx < buf->crop_heights[is_uv]; row_idx++) {
-        memset(&buf->buffers[plane][row_idx * buf->uv_stride], 1 << 7,
+        memset(&buf->buffers[plane][row_idx * buf->strides[is_uv]], 1 << 7,
                buf->crop_widths[is_uv]);
       }
     }
@@ -1920,7 +1920,7 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
     // dimensions as well as the overall size.
     if (new_mi_cols > cm->mi_params.mi_cols ||
         new_mi_rows > cm->mi_params.mi_rows) {
-      if (av1_alloc_context_buffers(cm, width, height, 0, BLOCK_4X4)) {
+      if (av1_alloc_context_buffers(cm, width, height, BLOCK_4X4)) {
         // The cm->mi_* values have been cleared and any existing context
         // buffers have been freed. Clear cm->width and cm->height to be
         // consistent and to force a realloc next time.
@@ -1930,7 +1930,7 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
                            "Failed to allocate context buffers");
       }
     } else {
-      cm->mi_params.set_mb_mi(&cm->mi_params, width, height, 0, BLOCK_4X4);
+      cm->mi_params.set_mb_mi(&cm->mi_params, width, height, BLOCK_4X4);
     }
     av1_init_mi_buffers(&cm->mi_params);
     cm->width = width;
@@ -4695,7 +4695,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     current_frame->order_hint = aom_rb_read_literal(
         rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
-    current_frame->frame_number = current_frame->order_hint;
+
+    if (seq_params->order_hint_info.enable_order_hint)
+      current_frame->frame_number = current_frame->order_hint;
 
     if (!features->error_resilient_mode && !frame_is_intra_only(cm)) {
       features->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
@@ -5162,8 +5164,14 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   MACROBLOCKD *const xd = &pbi->dcb.xd;
 
 #if CONFIG_BITSTREAM_DEBUG
-  aom_bitstream_queue_set_frame_read(cm->current_frame.order_hint * 2 +
-                                     cm->show_frame);
+  if (cm->seq_params->order_hint_info.enable_order_hint) {
+    aom_bitstream_queue_set_frame_read(cm->current_frame.order_hint * 2 +
+                                       cm->show_frame);
+  } else {
+    // This is currently used in RTC encoding. cm->show_frame is always 1.
+    assert(cm->show_frame);
+    aom_bitstream_queue_set_frame_read(cm->current_frame.frame_number);
+  }
 #endif
 #if CONFIG_MISMATCH_DEBUG
   mismatch_move_frame_idx_r();
@@ -5385,5 +5393,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   // Non frame parallel update frame context here.
   if (!tiles->large_scale) {
     cm->cur_frame->frame_context = *cm->fc;
+  }
+
+  if (cm->show_frame && !cm->seq_params->order_hint_info.enable_order_hint) {
+    ++cm->current_frame.frame_number;
   }
 }

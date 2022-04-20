@@ -82,14 +82,17 @@ const test::UIPath kActivateChromeVoxButton = {"connect", "welcomeScreen",
 const char kSetAvailableVoices[] = R"(
       chrome.tts.getVoices = function(callback) {
         callback([
-          {'lang': 'en-US', 'voiceName': 'Chrome OS US English'},
-          {'lang': 'fr-FR', 'voiceName': 'Chrome OS français'}
+          {'lang': 'en-US', 'voiceName': 'ChromeOS US English'},
+          {'lang': 'fr-FR', 'voiceName': 'ChromeOS français'}
         ]);
       };)";
 
 const char kChromeVoxHintLaptopSpokenString[] =
-    "Do you want to activate ChromeVox, the built-in screen reader for Chrome "
-    "OS? If so, press the space bar.";
+    "Do you want to activate ChromeVox, the built-in screen reader for "
+    "ChromeOS? If so, press the space bar.";
+
+constexpr const char kWelcomeScreenLocaleChangeMetric[] =
+    "OOBE.WelcomeScreen.UserChangedLocale";
 
 void ToggleAccessibilityFeature(const std::string& feature_name,
                                 bool new_value) {
@@ -412,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, PRE_SelectedLanguage) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   const std::string locale = "ru";
   test::LanguageReloadObserver observer(welcome_screen());
-  welcome_screen()->SetApplicationLocale(locale);
+  welcome_screen()->SetApplicationLocale(locale, /*is_from_ui*/ true);
   observer.Wait();
 
   EXPECT_EQ(g_browser_process->local_state()->GetString(
@@ -453,6 +456,43 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yVirtualKeyboard) {
       WelcomeScreen::A11yUserAction::kDisableVirtualKeyboard, 1);
 
   histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
+}
+
+// Set of tests for the OOBE.WelcomeScreen.UserChangedLocale
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, UserChangedLocaleMetric) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  // We need to proceed to the next screen because metric is written right
+  // before we call exit_callback_().
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "getStarted"});
+  WaitForScreenExit();
+  histogram_tester_.ExpectTotalCount(kWelcomeScreenLocaleChangeMetric, 1);
+  histogram_tester_.ExpectUniqueSample(kWelcomeScreenLocaleChangeMetric, false,
+                                       1);
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
+                       UserChangedLocaleMetricAfterUILocaleChange) {
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+
+  test::OobeJS().TapOnPath(
+      {"connect", "welcomeScreen", "languageSelectionButton"});
+  EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
+
+  test::OobeJS().ExpectEQ(kCurrentLang, std::string("English (United States)"));
+
+  test::LanguageReloadObserver observer(welcome_screen());
+  test::OobeJS().SelectElementInPath("fr",
+                                     {"connect", "languageSelect", "select"});
+  observer.Wait();
+  test::OobeJS().ExpectEQ(kCurrentLang, std::string("français"));
+  EXPECT_EQ(g_browser_process->GetApplicationLocale(), "fr");
+
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "getStarted"});
+  WaitForScreenExit();
+
+  histogram_tester_.ExpectTotalCount(kWelcomeScreenLocaleChangeMetric, 1);
+  histogram_tester_.ExpectUniqueSample(kWelcomeScreenLocaleChangeMetric, true,
+                                       1);
 }
 
 class WelcomeScreenSystemDevModeBrowserTest : public WelcomeScreenBrowserTest {
@@ -707,7 +747,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, Tablet) {
   GiveChromeVoxHintForTesting();
   monitor.ExpectSpeech(
       "Do you want to activate ChromeVox, the built-in screen reader for "
-      "Chrome OS? If so, press and hold both volume keys for five seconds.");
+      "ChromeOS? If so, press and hold both volume keys for five seconds.");
   monitor.Replay();
   WaitForSpokenSuccessMetric();
 }
@@ -719,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, VoicesChanged) {
   TtsExtensionEngine::GetInstance()->DisableBuiltInTTSEngineForTesting();
   const std::string set_no_english_voice = R"(
     chrome.tts.getVoices = function(callback) {
-      callback([{'lang': 'fr-FR', 'voiceName': 'Chrome OS français'}]);
+      callback([{'lang': 'fr-FR', 'voiceName': 'ChromeOS français'}]);
     };)";
   test::ExecuteOobeJS(set_no_english_voice);
   test::SpeechMonitor monitor;
@@ -734,8 +774,8 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, VoicesChanged) {
   const std::string load_english_voice = R"(
     chrome.tts.getVoices = function(callback) {
       callback([
-        {'lang': 'fr-FR', 'voiceName': 'Chrome OS français'},
-        {'lang': 'en-US', 'voiceName': 'Chrome OS US English'},
+        {'lang': 'fr-FR', 'voiceName': 'ChromeOS français'},
+        {'lang': 'en-US', 'voiceName': 'ChromeOS US English'},
       ]);
     };
     window.speechSynthesis.dispatchEvent(new Event('voiceschanged'));
@@ -756,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, CancelHint) {
   ASSERT_TRUE(IdleDetectionCancelledForTesting());
 }
 
-#if BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_ActivateChromeVoxBeforeHint DISABLED_ActivateChromeVoxBeforeHint
 #else
 #define MAYBE_ActivateChromeVoxBeforeHint ActivateChromeVoxBeforeHint
@@ -922,7 +962,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenInternationalChromeVoxHintTest,
   // Also set the timeout for the fallback hint to 0 MS.
   const std::string set_no_french_voice = R"(
     chrome.tts.getVoices = function(callback) {
-      callback([{'lang': 'en-US', 'voiceName': 'Chrome OS US English'}]);
+      callback([{'lang': 'en-US', 'voiceName': 'ChromeOS US English'}]);
     };)";
   const std::string set_default_hint_timeout_ms = R"(
     document.getElementById('connect').DEFAULT_CHROMEVOX_HINT_TIMEOUT_MS_ = 0;

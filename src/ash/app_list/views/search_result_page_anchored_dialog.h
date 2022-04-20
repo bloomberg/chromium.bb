@@ -56,11 +56,13 @@ class SearchResultPageAnchoredDialog : public views::WidgetObserver,
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
+  void OnViewPreferredSizeChanged(views::View* observed_view) override;
 
   views::Widget* widget() { return widget_; }
 
@@ -73,6 +75,8 @@ class SearchResultPageAnchoredDialog : public views::WidgetObserver,
 
   base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
       widget_observations_{this};
+  base::ScopedMultiSourceObservation<views::View, views::ViewObserver>
+      view_observations_{this};
 };
 
 }  // namespace ash

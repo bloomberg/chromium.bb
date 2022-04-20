@@ -15,6 +15,7 @@ import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 import("//chrome/android/modules/chrome_bundle_tmpl.gni")
 import("//chrome/common/features.gni")
+import("//components/optimization_guide/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//weblayer/variables.gni")
 import("channel.gni")
@@ -72,10 +73,16 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
   _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
-  _is_64_bit_browser =
-      defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
   _is_bundle = invoker.target_type == "android_app_bundle_module"
-  not_needed([ "_is_64_bit_browser" ])
+
+  if (defined(invoker.is_64_bit_browser)) {
+    _is_64_bit_browser = invoker.is_64_bit_browser
+  } else {
+    _is_64_bit_browser = android_64bit_target_cpu
+  }
+  _is_secondary_abi_primary = !_is_64_bit_browser && android_64bit_target_cpu
+  not_needed([ "_is_secondary_abi_primary" ])
+
   assert(!(_is_monochrome && _is_trichrome),
          "Cannot be both trichrome and monochrome!")
   assert(_is_trichrome == defined(invoker.static_library_provider),
@@ -100,10 +107,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
   }
 
   if (_add_unwind_tables) {
-    _unwind_asset_target = "${target_name}__unwind_assets"
-
     if (use_android_unwinder_v2) {
-      unwind_table_asset_v2(_unwind_asset_target) {
+      _unwind_asset_v2_target = "${target_name}__v2_unwind_assets"
+      unwind_table_asset_v2(_unwind_asset_v2_target) {
         if (defined(invoker.testonly)) {
           testonly = invoker.testonly
         }
@@ -122,25 +128,28 @@ template("chrome_public_common_apk_or_module_tmpl") {
           deps = [ "//chrome/android:lib${library_target}" ]
         }
       }
-    } else {
-      unwind_table_asset(_unwind_asset_target) {
-        if (defined(invoker.testonly)) {
-          testonly = invoker.testonly
-        }
+    }
 
-        if (defined(invoker.shared_library_for_unwind_asset)) {
-          library_target = invoker.shared_library_for_unwind_asset
-        } else if (_is_monochrome || _is_trichrome) {
-          library_target = "monochrome"
-        } else {
-          library_target = "chrome"
-        }
+    # TODO(crbug.com/1315603): Remove generation of v1 unwind asset when
+    # `CFIBacktraceAndroid` is replaced with `ChromeUnwinderAndroidV2`.
+    _unwind_asset_target = "${target_name}__unwind_assets"
+    unwind_table_asset(_unwind_asset_target) {
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
 
-        if (android_64bit_target_cpu) {
-          deps = [ "//chrome/android:lib${library_target}($android_secondary_abi_toolchain)" ]
-        } else {
-          deps = [ "//chrome/android:lib${library_target}" ]
-        }
+      if (defined(invoker.shared_library_for_unwind_asset)) {
+        library_target = invoker.shared_library_for_unwind_asset
+      } else if (_is_monochrome || _is_trichrome) {
+        library_target = "monochrome"
+      } else {
+        library_target = "chrome"
+      }
+
+      if (android_64bit_target_cpu) {
+        deps = [ "//chrome/android:lib${library_target}($android_secondary_abi_toolchain)" ]
+      } else {
+        deps = [ "//chrome/android:lib${library_target}" ]
       }
     }
   } else if (defined(invoker.shared_library_for_unwind_asset)) {
@@ -276,23 +285,34 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
 
     if (use_chromium_linker) {
-      _is_trichrome_3264 =
-          !_is_trichrome || !android_64bit_target_cpu || _is_64_bit_browser
-
-      if (_is_trichrome_3264) {
-        deps += [ "//base/android/linker:chromium_android_linker" ]
-        loadable_modules +=
-            [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
-      } else {
+      if (_is_secondary_abi_primary) {
         _secondary_linker = "//base/android/linker:chromium_android_linker($android_secondary_abi_toolchain)"
         deps += [ _secondary_linker ]
         _secondary_out_dir = get_label_info(_secondary_linker, "root_out_dir")
         secondary_abi_loadable_modules +=
             [ "$_secondary_out_dir/libchromium_android_linker$shlib_extension" ]
+      } else {
+        deps += [ "//base/android/linker:chromium_android_linker" ]
+        loadable_modules +=
+            [ "$root_out_dir/libchromium_android_linker$shlib_extension" ]
       }
 
       if (!defined(load_library_from_apk)) {
         load_library_from_apk = chromium_linker_supported
+      }
+    }
+    if (build_with_internal_optimization_guide) {
+      if (_is_secondary_abi_primary) {
+        _secondary_optimization_guide = "//components/optimization_guide/internal:optimization_guide_internal($android_secondary_abi_toolchain)"
+        deps += [ _secondary_optimization_guide ]
+        _secondary_out_dir =
+            get_label_info(_secondary_optimization_guide, "root_out_dir")
+        secondary_abi_loadable_modules +=
+            [ "$_secondary_out_dir/liboptimization_guide_internal.so" ]
+      } else {
+        deps += [ "//components/optimization_guide/internal:optimization_guide_internal" ]
+        loadable_modules +=
+            [ "$root_out_dir/liboptimization_guide_internal.so" ]
       }
     }
     if (_target_type == "android_apk") {

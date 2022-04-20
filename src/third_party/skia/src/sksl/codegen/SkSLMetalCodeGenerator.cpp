@@ -7,20 +7,33 @@
 
 #include "src/sksl/codegen/SkSLMetalCodeGenerator.h"
 
+#include "include/core/SkSpan.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLLayout.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLProgramKind.h"
+#include "include/private/SkSLStatement.h"
+#include "include/private/SkSLString.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/core/SkScopeExit.h"
+#include "src/sksl/SkSLAnalysis.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLMemoryLayout.h"
+#include "src/sksl/SkSLOutputStream.h"
+#include "src/sksl/SkSLProgramSettings.h"
+#include "src/sksl/SkSLUtil.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBlock.h"
-#include "src/sksl/ir/SkSLConstructorArray.h"
+#include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorArrayCast.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
-#include "src/sksl/ir/SkSLConstructorCompoundCast.h"
-#include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
 #include "src/sksl/ir/SkSLConstructorMatrixResize.h"
-#include "src/sksl/ir/SkSLConstructorSplat.h"
-#include "src/sksl/ir/SkSLConstructorStruct.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLExtension.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
@@ -32,25 +45,35 @@
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLModifiersDeclaration.h"
 #include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
+#include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 #include "src/sksl/ir/SkSLSetting.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
+#include "src/sksl/ir/SkSLSwitchCase.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
+#include "src/sksl/ir/SkSLTernaryExpression.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
+#include "src/sksl/spirv.h"
 
 #include <algorithm>
+#include <functional>
+#include <limits>
+#include <memory>
+#include <type_traits>
 
 namespace SkSL {
 
 static const char* operator_name(Operator op) {
     switch (op.kind()) {
-        case Token::Kind::TK_LOGICALXOR:  return " != ";
+        case Operator::Kind::LOGICALXOR:  return " != ";
         default:                          return op.operatorName();
     }
 }
@@ -709,7 +732,11 @@ bool MetalCodeGenerator::writeIntrinsicCall(const FunctionCall& c, IntrinsicKind
             return true;
         }
         case k_dFdy_IntrinsicKind: {
-            this->write("(" + fRTFlipName + ".y * dfdy");
+            if (!fRTFlipName.empty()) {
+                this->write("(" + fRTFlipName + ".y * dfdy");
+            } else {
+                this->write("(dfdy");
+            }
             this->writeArgumentList(c.arguments());
             this->write(")");
             return true;
@@ -1313,12 +1340,15 @@ void MetalCodeGenerator::writeCastConstructor(const AnyConstructor& c,
 }
 
 void MetalCodeGenerator::writeFragCoord() {
-    SkASSERT(fRTFlipName.length());
-    this->write("float4(_fragCoord.x, ");
-    this->write(fRTFlipName.c_str());
-    this->write(".x + ");
-    this->write(fRTFlipName.c_str());
-    this->write(".y * _fragCoord.y, 0.0, _fragCoord.w)");
+    if (!fRTFlipName.empty()) {
+        this->write("float4(_fragCoord.x, ");
+        this->write(fRTFlipName.c_str());
+        this->write(".x + ");
+        this->write(fRTFlipName.c_str());
+        this->write(".y * _fragCoord.y, 0.0, _fragCoord.w)");
+    } else {
+        this->write("float4(_fragCoord.x, _fragCoord.y, 0.0, _fragCoord.w)");
+    }
 }
 
 void MetalCodeGenerator::writeVariableReference(const VariableReference& ref) {
@@ -1346,7 +1376,11 @@ void MetalCodeGenerator::writeVariableReference(const VariableReference& ref) {
         case SK_CLOCKWISE_BUILTIN:
             // We'd set the front facing winding in the MTLRenderCommandEncoder to be counter
             // clockwise to match Skia convention.
-            this->write("(" + fRTFlipName + ".y < 0 ? _frontFacing : !_frontFacing)");
+            if (!fRTFlipName.empty()) {
+                this->write("(" + fRTFlipName + ".y < 0 ? _frontFacing : !_frontFacing)");
+            } else {
+                this->write("_frontFacing");
+            }
             break;
         default:
             const Variable& var = *ref.variable();
@@ -1626,14 +1660,14 @@ void MetalCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
     Precedence precedence = op.getBinaryPrecedence();
     bool needParens = precedence >= parentPrecedence;
     switch (op.kind()) {
-        case Token::Kind::TK_EQEQ:
+        case Operator::Kind::EQEQ:
             this->writeEqualityHelpers(leftType, rightType);
             if (leftType.isVector()) {
                 this->write("all");
                 needParens = true;
             }
             break;
-        case Token::Kind::TK_NEQ:
+        case Operator::Kind::NEQ:
             this->writeEqualityHelpers(leftType, rightType);
             if (leftType.isVector()) {
                 this->write("any");
@@ -1643,10 +1677,10 @@ void MetalCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
         default:
             break;
     }
-    if (leftType.isMatrix() && rightType.isMatrix() && op.kind() == Token::Kind::TK_STAREQ) {
+    if (leftType.isMatrix() && rightType.isMatrix() && op.kind() == Operator::Kind::STAREQ) {
         this->writeMatrixTimesEqualHelper(leftType, rightType, b.type());
     }
-    if (op.removeAssignment().kind() == Token::Kind::TK_SLASH &&
+    if (op.removeAssignment().kind() == Operator::Kind::SLASH &&
         ((leftType.isMatrix() && rightType.isMatrix()) ||
          (leftType.isScalar() && rightType.isMatrix()) ||
          (leftType.isMatrix() && rightType.isScalar()))) {
@@ -1657,13 +1691,13 @@ void MetalCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
     }
     bool needMatrixSplatOnScalar = rightType.isMatrix() && leftType.isNumber() &&
                                    op.isValidForMatrixOrVector() &&
-                                   op.removeAssignment().kind() != Token::Kind::TK_STAR;
+                                   op.removeAssignment().kind() != Operator::Kind::STAR;
     if (needMatrixSplatOnScalar) {
         this->writeNumberAsMatrix(left, rightType);
     } else {
         this->writeExpression(left, precedence);
     }
-    if (op.kind() != Token::Kind::TK_EQ && op.isAssignment() &&
+    if (op.kind() != Operator::Kind::EQ && op.isAssignment() &&
         left.kind() == Expression::Kind::kSwizzle && !left.hasSideEffects()) {
         // This doesn't compile in Metal:
         // float4 x = float4(1);
@@ -1680,7 +1714,7 @@ void MetalCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
 
     needMatrixSplatOnScalar = leftType.isMatrix() && rightType.isNumber() &&
                               op.isValidForMatrixOrVector() &&
-                              op.removeAssignment().kind() != Token::Kind::TK_STAR;
+                              op.removeAssignment().kind() != Operator::Kind::STAR;
     if (needMatrixSplatOnScalar) {
         this->writeNumberAsMatrix(right, leftType);
     } else {
@@ -1711,12 +1745,12 @@ void MetalCodeGenerator::writePrefixExpression(const PrefixExpression& p,
     // According to the MSL specification, the arithmetic unary operators (+ and –) do not act
     // upon matrix type operands. We treat the unary "+" as NOP for all operands.
     const Operator op = p.getOperator();
-    if (op.kind() == Token::Kind::TK_PLUS) {
+    if (op.kind() == Operator::Kind::PLUS) {
         return this->writeExpression(*p.operand(), Precedence::kPrefix);
     }
 
     const bool matrixNegation =
-            op.kind() == Token::Kind::TK_MINUS && p.operand()->type().isMatrix();
+            op.kind() == Operator::Kind::MINUS && p.operand()->type().isMatrix();
     const bool needParens = Precedence::kPrefix >= parentPrecedence || matrixNegation;
 
     if (needParens) {
@@ -2069,7 +2103,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, Pos
         }
         if (fieldOffset != -1) {
             if (currentOffset > fieldOffset) {
-                fContext.fErrors->error(parentPos,
+                fContext.fErrors->error(field.fPosition,
                                         "offset of field '" + std::string(field.fName) +
                                         "' must be at least " + std::to_string(currentOffset));
                 return;
@@ -2083,7 +2117,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, Pos
             }
             int alignment = memoryLayout.alignment(*fieldType);
             if (fieldOffset % alignment) {
-                fContext.fErrors->error(parentPos,
+                fContext.fErrors->error(field.fPosition,
                                         "offset of field '" + std::string(field.fName) +
                                         "' must be a multiple of " + std::to_string(alignment));
                 return;
@@ -2732,9 +2766,6 @@ MetalCodeGenerator::Requirements MetalCodeGenerator::requirements(const Statemen
 }
 
 MetalCodeGenerator::Requirements MetalCodeGenerator::requirements(const FunctionDeclaration& f) {
-    if (f.isBuiltin()) {
-        return kNo_Requirements;
-    }
     Requirements* found = fRequirements.find(&f);
     if (!found) {
         fRequirements.set(&f, kNo_Requirements);

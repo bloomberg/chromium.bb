@@ -369,7 +369,7 @@ public class ExternalNavigationHandler {
         }
 
         if (canLaunchExternalFallback) {
-            if (shouldBlockAllExternalAppLaunches(params, false /* incomingIntentRedirect */)) {
+            if (shouldBlockAllExternalAppLaunches(params, isIncomingIntentRedirect(params))) {
                 throw new SecurityException("Context is not allowed to launch an external app.");
             }
             if (!params.isIncognito()) {
@@ -458,13 +458,12 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * https://crbug.com/1094442: Don't allow any external navigation on AUTO_SUBFRAME navigation
-     * (eg. initial ad frame navigation).
+     * https://crbug.com/1094442: Don't allow any external navigation on subframe navigations
+     * without a user gesture (eg. initial ad frame navigation).
      */
-    private boolean blockExternalNavFromAutoSubframe(ExternalNavigationParams params) {
-        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
-        if (pageTransitionCore == PageTransition.AUTO_SUBFRAME) {
-            if (DEBUG) Log.i(TAG, "Auto navigation in subframe");
+    private boolean shouldBlockSubframeAppLaunches(ExternalNavigationParams params) {
+        if (!params.isMainFrame() && !params.hasUserGesture()) {
+            if (DEBUG) Log.i(TAG, "Subframe navigation without user gesture.");
             return true;
         }
         return false;
@@ -660,7 +659,7 @@ public class ExternalNavigationHandler {
      */
     private boolean preferToShowIntentPicker(ExternalNavigationParams params,
             int pageTransitionCore, boolean isExternalProtocol, boolean isFormSubmit,
-            boolean linkNotFromIntent, boolean incomingIntentRedirect, boolean isFromIntent,
+            boolean incomingIntentRedirect, boolean isFromIntent,
             QueryIntentActivitiesSupplier resolveInfos) {
         // https://crbug.com/1232514: On Android S, since WebAPKs aren't verified apps they are
         // never launched as the result of a suitable Intent, the user's default browser will be
@@ -679,10 +678,26 @@ public class ExternalNavigationHandler {
         // following a form submit.
         boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
 
-        if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
-            if (DEBUG) Log.i(TAG, "Incoming intent (not a redirect)");
+        // TODO(https://crbug.com/1300539): Historically this was intended to prevent
+        // browser-initiated navigations like bookmarks from leaving Chrome. However, this is not a
+        // security boundary as it can be trivially (and unintentionally) subverted, including by a
+        // simple client (meta) redirect. We should decide whether or not external navigations
+        // should be blocked from browser-initiated navigations and either enforce it consistently
+        // or not enforce it at all.
+        if (!params.isRendererInitiated() && !incomingIntentRedirect && !isRedirectFromFormSubmit
+                && mDelegate.shouldEmbedderInitiatedNavigationsStayInBrowser()) {
+            if (DEBUG) Log.i(TAG, "Browser or Intent initiated and not a redirect");
             return false;
         }
+
+        // TODO(https://crbug.com/1288578): Form submits are not allowed to launch apps for probably
+        // unintentional historical reasons. We should probably allow GET requests to launch apps,
+        // but not POST requests.
+        if (isFormSubmit && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
+            if (DEBUG) Log.i(TAG, "Direct form submission, not a redirect");
+            return false;
+        }
+
         // http://crbug.com/839751: Require user gestures for form submits to external
         //                          protocols.
         // TODO(tedchoc): Turn this on by default once we verify this change does
@@ -1122,7 +1137,7 @@ public class ExternalNavigationHandler {
     protected AlertDialog showLeavingIncognitoAlert(final Context context,
             final ExternalNavigationParams params, final Intent intent, final GURL fallbackUrl,
             final boolean proxy) {
-        return new AlertDialog.Builder(context, R.style.Theme_Chromium_AlertDialog)
+        return new AlertDialog.Builder(context, R.style.ThemeOverlay_BrowserUI_AlertDialog)
                 .setTitle(R.string.external_app_leave_incognito_warning_title)
                 .setMessage(R.string.external_app_leave_incognito_warning)
                 .setPositiveButton(R.string.external_app_leave_incognito_leave,
@@ -1275,10 +1290,11 @@ public class ExternalNavigationHandler {
         return true;
     }
 
-    // Check if we're navigating under conditions that should never launch an external app.
+    // Check if we're navigating under conditions that should never launch an external app,
+    // regardless of which URL we're navigating to.
     private boolean shouldBlockAllExternalAppLaunches(
             ExternalNavigationParams params, boolean incomingIntentRedirect) {
-        return blockExternalNavFromAutoSubframe(params)
+        return shouldBlockSubframeAppLaunches(params)
                 || blockExternalNavWhileBackgrounded(params, incomingIntentRedirect)
                 || blockExternalNavFromBackgroundTab(params, incomingIntentRedirect)
                 || ignoreBackForwardNav(params);
@@ -1300,18 +1316,9 @@ public class ExternalNavigationHandler {
         // Don't allow external fallback URLs by default.
         canLaunchExternalFallbackResult.set(false);
 
-        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
-        boolean isLink = pageTransitionCore == PageTransition.LINK;
-        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
-
-        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null
-                ? false
-                : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
-
         // http://crbug.com/170925: We need to show the intent picker when we receive an intent from
         // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
-        boolean incomingIntentRedirect =
-                (isLink && isFromIntent && params.isRedirect()) || isOnEffectiveIntentRedirect;
+        boolean incomingIntentRedirect = isIncomingIntentRedirect(params);
 
         if (shouldBlockAllExternalAppLaunches(params, incomingIntentRedirect)) {
             return OverrideUrlLoadingResult.forNoOverride();
@@ -1345,6 +1352,9 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.forNoOverride();
         }
 
+        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
+        boolean isLink = params.isLinkTransition();
+        boolean isFromIntent = params.isFromIntent();
         boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
         boolean linkNotFromIntent = isLink && !isFromIntent;
 
@@ -1360,7 +1370,7 @@ public class ExternalNavigationHandler {
         QueryIntentActivitiesSupplier resolvingInfos =
                 new QueryIntentActivitiesSupplier(targetIntent);
         if (!preferToShowIntentPicker(params, pageTransitionCore, isExternalProtocol, isFormSubmit,
-                    linkNotFromIntent, incomingIntentRedirect, isFromIntent, resolvingInfos)) {
+                    incomingIntentRedirect, isFromIntent, resolvingInfos)) {
             return OverrideUrlLoadingResult.forNoOverride();
         }
 
@@ -2103,5 +2113,16 @@ public class ExternalNavigationHandler {
         if (referrerUrl == null || referrerUrl.isEmpty()) return false;
 
         return UrlUtilitiesJni.get().isGoogleSubDomainUrl(referrerUrl.getSpec());
+    }
+
+    /**
+     * @return whether this navigation is a redirect from an intent.
+     */
+    private static boolean isIncomingIntentRedirect(ExternalNavigationParams params) {
+        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null
+                ? false
+                : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
+        return (params.isLinkTransition() && params.isFromIntent() && params.isRedirect())
+                || isOnEffectiveIntentRedirect;
     }
 }

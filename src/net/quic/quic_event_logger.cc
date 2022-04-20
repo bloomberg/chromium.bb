@@ -8,7 +8,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log_values.h"
 #include "net/quic/address_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_socket_address_coder.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
@@ -200,16 +200,16 @@ base::Value NetLogQuicConnectionCloseFrameParams(
 }
 
 base::Value NetLogQuicWindowUpdateFrameParams(
-    const quic::QuicWindowUpdateFrame* frame) {
+    const quic::QuicWindowUpdateFrame& frame) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("stream_id", frame->stream_id);
-  dict.SetKey("byte_offset", NetLogNumberValue(frame->max_data));
+  dict.SetIntKey("stream_id", frame.stream_id);
+  dict.SetKey("byte_offset", NetLogNumberValue(frame.max_data));
   return dict;
 }
 
-base::Value NetLogQuicBlockedFrameParams(const quic::QuicBlockedFrame* frame) {
+base::Value NetLogQuicBlockedFrameParams(const quic::QuicBlockedFrame& frame) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("stream_id", frame->stream_id);
+  dict.SetIntKey("stream_id", frame.stream_id);
   return dict;
 }
 
@@ -327,10 +327,10 @@ base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame,
 }
 
 base::Value NetLogQuicStopSendingFrameParams(
-    const quic::QuicStopSendingFrame* frame) {
+    const quic::QuicStopSendingFrame& frame) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("stream_id", frame->stream_id);
-  dict.SetIntKey("quic_rst_stream_error", frame->error_code);
+  dict.SetIntKey("stream_id", frame.stream_id);
+  dict.SetIntKey("quic_rst_stream_error", frame.error_code);
   return dict;
 }
 
@@ -467,13 +467,13 @@ void QuicEventLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::PATH_RESPONSE_FRAME:
       net_log_.AddEvent(
           NetLogEventType::QUIC_SESSION_PATH_RESPONSE_FRAME_SENT, [&] {
-            return NetLogQuicPathData(frame.path_response_frame->data_buffer);
+            return NetLogQuicPathData(frame.path_response_frame.data_buffer);
           });
       break;
     case quic::PATH_CHALLENGE_FRAME:
       net_log_.AddEvent(
           NetLogEventType::QUIC_SESSION_PATH_CHALLENGE_FRAME_SENT, [&] {
-            return NetLogQuicPathData(frame.path_challenge_frame->data_buffer);
+            return NetLogQuicPathData(frame.path_challenge_frame.data_buffer);
           });
       break;
     case quic::STOP_SENDING_FRAME:
@@ -634,7 +634,7 @@ void QuicEventLogger::OnCryptoFrame(const quic::QuicCryptoFrame& frame) {
 void QuicEventLogger::OnStopSendingFrame(
     const quic::QuicStopSendingFrame& frame) {
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STOP_SENDING_FRAME_RECEIVED,
-                    [&] { return NetLogQuicStopSendingFrameParams(&frame); });
+                    [&] { return NetLogQuicStopSendingFrameParams(frame); });
 }
 
 void QuicEventLogger::OnStreamsBlockedFrame(
@@ -672,12 +672,12 @@ void QuicEventLogger::OnWindowUpdateFrame(
     const quic::QuicWindowUpdateFrame& frame,
     const quic::QuicTime& receive_time) {
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_WINDOW_UPDATE_FRAME_RECEIVED,
-                    [&] { return NetLogQuicWindowUpdateFrameParams(&frame); });
+                    [&] { return NetLogQuicWindowUpdateFrameParams(frame); });
 }
 
 void QuicEventLogger::OnBlockedFrame(const quic::QuicBlockedFrame& frame) {
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_BLOCKED_FRAME_RECEIVED,
-                    [&] { return NetLogQuicBlockedFrameParams(&frame); });
+                    [&] { return NetLogQuicBlockedFrameParams(frame); });
 }
 
 void QuicEventLogger::OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) {

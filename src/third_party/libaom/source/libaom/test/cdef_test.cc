@@ -295,6 +295,116 @@ void test_finddir_speed(int (*finddir)(const uint16_t *img, int stride,
       << "SIMD time: " << elapsed_time << " us" << std::endl;
 }
 
+typedef void (*find_dir_dual_t)(const uint16_t *img1, const uint16_t *img2,
+                                int stride, int32_t *var1, int32_t *var2,
+                                int coeff_shift, int *out1, int *out2);
+
+typedef std::tuple<find_dir_dual_t, find_dir_dual_t> find_dir_dual_param_t;
+
+class CDEFFindDirDualTest
+    : public ::testing::TestWithParam<find_dir_dual_param_t> {
+ public:
+  virtual ~CDEFFindDirDualTest() {}
+  virtual void SetUp() {
+    finddir = GET_PARAM(0);
+    ref_finddir = GET_PARAM(1);
+  }
+
+  virtual void TearDown() {}
+
+ protected:
+  find_dir_dual_t finddir;
+  find_dir_dual_t ref_finddir;
+};
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirDualTest);
+
+typedef CDEFFindDirDualTest CDEFFindDirDualSpeedTest;
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CDEFFindDirDualSpeedTest);
+
+void test_finddir_dual(
+    void (*finddir)(const uint16_t *img1, const uint16_t *img2, int stride,
+                    int32_t *var1, int32_t *var2, int coeff_shift, int *out1,
+                    int *out2),
+    void (*ref_finddir)(const uint16_t *img1, const uint16_t *img2, int stride,
+                        int32_t *var1, int32_t *var2, int coeff_shift,
+                        int *out1, int *out2)) {
+  const int size_wd = 16;
+  const int size_ht = 8;
+  ACMRandom rnd(ACMRandom::DeterministicSeed());
+  DECLARE_ALIGNED(16, uint16_t, s[size_ht * size_wd]);
+
+  int error = 0, errdepth = 0;
+  int32_t ref_var[2] = { 0 };
+  int ref_dir[2] = { 0 };
+  int32_t var[2] = { 0 };
+  int dir[2] = { 0 };
+
+  for (int depth = 8; depth <= 12 && !error; depth += 2) {
+    for (int count = 0; count < 512 && !error; count++) {
+      for (int level = 0; level < (1 << depth) && !error;
+           level += 1 << (depth - 8)) {
+        for (int bits = 1; bits <= depth && !error; bits++) {
+          for (unsigned int i = 0; i < sizeof(s) / sizeof(*s); i++)
+            s[i] = clamp((rnd.Rand16() & ((1 << bits) - 1)) + level, 0,
+                         (1 << depth) - 1);
+          for (int c = 0; c < 1 + 9 * (finddir == ref_finddir); c++)
+            ref_finddir(s, s + 8, size_wd, &ref_var[0], &ref_var[1], depth - 8,
+                        &ref_dir[0], &ref_dir[1]);
+          if (finddir != ref_finddir)
+            API_REGISTER_STATE_CHECK(finddir(s, s + 8, size_wd, &var[0],
+                                             &var[1], depth - 8, &dir[0],
+                                             &dir[1]));
+          if (ref_finddir != finddir) {
+            for (int j = 0; j < 2; j++) {
+              if (ref_dir[j] != dir[j] || ref_var[j] != var[j]) error = 1;
+            }
+            errdepth = depth;
+          }
+        }
+      }
+    }
+  }
+
+  for (int j = 0; j < 2; j++) {
+    EXPECT_EQ(0, error) << "Error: CDEFFindDirTest, SIMD and C mismatch."
+                        << std::endl
+                        << "direction: " << dir[j] << " : " << ref_dir[j]
+                        << std::endl
+                        << "variance: " << var[j] << " : " << ref_var[j]
+                        << std::endl
+                        << "depth: " << errdepth << std::endl
+                        << std::endl;
+  }
+}
+
+void test_finddir_dual_speed(
+    void (*finddir)(const uint16_t *img1, const uint16_t *img2, int stride,
+                    int32_t *var1, int32_t *var2, int coeff_shift, int *out1,
+                    int *out2),
+    void (*ref_finddir)(const uint16_t *img1, const uint16_t *img2, int stride,
+                        int32_t *var1, int32_t *var2, int coeff_shift,
+                        int *out1, int *out2)) {
+  aom_usec_timer ref_timer;
+  aom_usec_timer timer;
+
+  aom_usec_timer_start(&ref_timer);
+  test_finddir_dual(ref_finddir, ref_finddir);
+  aom_usec_timer_mark(&ref_timer);
+  const double ref_elapsed_time =
+      static_cast<double>(aom_usec_timer_elapsed(&ref_timer));
+
+  aom_usec_timer_start(&timer);
+  test_finddir_dual(finddir, finddir);
+  aom_usec_timer_mark(&timer);
+  const double elapsed_time =
+      static_cast<double>(aom_usec_timer_elapsed(&timer));
+
+  printf(
+      "ref_time=%lf \t simd_time=%lf \t "
+      "gain=%lf \n",
+      ref_elapsed_time, elapsed_time, ref_elapsed_time / elapsed_time);
+}
+
 TEST_P(CDEFBlockTest, TestSIMDNoMismatch) {
   test_cdef(bsize, 1, cdef, ref_cdef, boundary, depth);
 }
@@ -319,12 +429,15 @@ TEST_P(CDEFFindDirSpeedTest, DISABLED_TestSpeed) {
   test_finddir_speed(finddir, ref_finddir);
 }
 
-using std::make_tuple;
+TEST_P(CDEFFindDirDualTest, TestSIMDNoMismatch) {
+  test_finddir_dual(finddir, ref_finddir);
+}
 
-// VS compiling for 32 bit targets does not support vector types in
-// structs as arguments, which makes the v256 type of the intrinsics
-// hard to support, so optimizations for this target are disabled.
-#if defined(_WIN64) || !defined(_MSC_VER) || defined(__clang__)
+TEST_P(CDEFFindDirDualSpeedTest, DISABLED_TestSpeed) {
+  test_finddir_dual_speed(finddir, ref_finddir);
+}
+
+using std::make_tuple;
 
 #if (HAVE_SSE2 || HAVE_SSSE3 || HAVE_SSE4_1 || HAVE_AVX2 || HAVE_NEON)
 static const CdefFilterBlockFunctions kCdefFilterFuncC[] = {
@@ -366,6 +479,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(SSE2, CDEFFindDirTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_sse2,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSE2, CDEFFindDirDualTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_sse2,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_SSSE3
@@ -396,6 +512,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(SSSE3, CDEFFindDirTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSSE3, CDEFFindDirDualTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_ssse3,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_SSE4_1
@@ -426,6 +545,10 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(SSE4_1, CDEFFindDirTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(
+    SSE4_1, CDEFFindDirDualTest,
+    ::testing::Values(make_tuple(&cdef_find_dir_dual_sse4_1,
+                                 &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_AVX2
@@ -456,6 +579,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(AVX2, CDEFFindDirTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_avx2,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(AVX2, CDEFFindDirDualTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_avx2,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_NEON
@@ -507,6 +633,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(SSE2, CDEFFindDirSpeedTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_sse2,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSE2, CDEFFindDirDualSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_sse2,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_SSSE3
@@ -527,6 +656,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(SSSE3, CDEFFindDirSpeedTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSSE3, CDEFFindDirDualSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_ssse3,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_SSE4_1
@@ -547,6 +679,10 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(SSE4_1, CDEFFindDirSpeedTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(
+    SSE4_1, CDEFFindDirDualSpeedTest,
+    ::testing::Values(make_tuple(&cdef_find_dir_dual_sse4_1,
+                                 &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_AVX2
@@ -567,6 +703,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(AVX2, CDEFFindDirSpeedTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_avx2,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(AVX2, CDEFFindDirDualSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_avx2,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 #if HAVE_NEON
@@ -589,5 +728,4 @@ INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirSpeedTest,
                                                       &cdef_find_dir_c)));
 #endif
 
-#endif  // defined(_WIN64) || !defined(_MSC_VER)
 }  // namespace

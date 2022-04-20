@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include "libavutil/buffer.h"
 #include "libavutil/common.h"
 #include "libavutil/crc.h"
@@ -3377,6 +3379,7 @@ MpegTSContext *avpriv_mpegts_parse_open(AVFormatContext *s)
         return NULL;
     /* no stream case, currently used by RTP */
     ts->raw_packet_size = TS_PACKET_SIZE;
+    ts->max_packet_size = 2048000;
     ts->stream = s;
     ts->auto_guess = 1;
 

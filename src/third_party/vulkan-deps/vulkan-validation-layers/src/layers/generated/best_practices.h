@@ -1986,9 +1986,11 @@ const layer_data::unordered_map<std::string, std::string> special_use_extensions
     {"VK_EXT_depth_clip_control", "glemulation"},
     {"VK_EXT_depth_clip_enable", "d3demulation"},
     {"VK_EXT_device_memory_report", "devtools"},
+    {"VK_EXT_image_2d_view_of_3d", "glemulation"},
     {"VK_EXT_line_rasterization", "cadsupport"},
     {"VK_EXT_pipeline_creation_feedback", "devtools"},
     {"VK_EXT_primitive_topology_list_restart", "glemulation"},
+    {"VK_EXT_primitives_generated_query", "glemulation"},
     {"VK_EXT_provoking_vertex", "glemulation"},
     {"VK_EXT_transform_feedback", "glemulation, d3demulation, devtools"},
     {"VK_EXT_validation_features", "debugging"},
@@ -1997,6 +1999,7 @@ const layer_data::unordered_map<std::string, std::string> special_use_extensions
     {"VK_INTEL_performance_query", "devtools"},
     {"VK_KHR_performance_query", "devtools"},
     {"VK_KHR_pipeline_executable_properties", "devtools"},
+    {"VK_VALVE_descriptor_set_host_mapping", "d3demulation"},
     {"VK_VALVE_mutable_descriptor_type", "d3demulation"},
 };
 

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_COMPUTEPIPELINE_H_
-#define DAWNNATIVE_COMPUTEPIPELINE_H_
+#ifndef SRC_DAWN_NATIVE_COMPUTEPIPELINE_H_
+#define SRC_DAWN_NATIVE_COMPUTEPIPELINE_H_
 
 #include "dawn/common/NonCopyable.h"
 #include "dawn/native/Forward.h"
@@ -43,7 +43,7 @@ namespace dawn::native {
 
       protected:
         // Constructor used only for mocking and testing.
-        ComputePipelineBase(DeviceBase* device);
+        explicit ComputePipelineBase(DeviceBase* device);
         void DestroyImpl() override;
 
       private:
@@ -52,4 +52,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_COMPUTEPIPELINE_H_
+#endif  // SRC_DAWN_NATIVE_COMPUTEPIPELINE_H_

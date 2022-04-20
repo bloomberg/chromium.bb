@@ -103,7 +103,7 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
   void OnError(const std::string& error_message,
                Metrics::DropOutReason reason) override;
   void OnUserDataChanged(const UserData& user_data,
-                         UserData::FieldChange field_change) override;
+                         UserDataFieldChange field_change) override;
   void OnTouchableAreaChanged(
       const RectF& visual_viewport,
       const std::vector<RectF>& touchable_areas,
@@ -118,6 +118,7 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
   void OnStop() override;
   void OnResetState() override;
   void OnUiShownChanged(bool shown) override;
+  void OnShutdown(Metrics::DropOutReason reason) override;
 
   // Overrides UiControllerObserver:
   void OnStatusMessageChanged(const std::string& message) override;
@@ -256,6 +257,9 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
   base::android::ScopedJavaLocalRef<jobject> GetFormModel();
   base::android::ScopedJavaLocalRef<jobject> GetGenericUiModel();
   base::android::ScopedJavaLocalRef<jobject> GetPersistentGenericUiModel();
+  base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
+      JNIEnv* env,
+      const std::vector<UserFormSectionProto>& sections);
 
   // The ExecutionDelegate has the last say on whether we should show the
   // overlay. This saves the AutofillAssistantState-determined OverlayState and

@@ -360,6 +360,8 @@ class FakeCall final : public webrtc::Call, public webrtc::PacketReceiver {
         *trials_, field_trial_string);
   }
 
+  const webrtc::FieldTrialsView& trials() const override { return *trials_; }
+
  private:
   webrtc::AudioSendStream* CreateAudioSendStream(
       const webrtc::AudioSendStream::Config& config) override;
@@ -400,10 +402,6 @@ class FakeCall final : public webrtc::Call, public webrtc::PacketReceiver {
   }
 
   webrtc::Call::Stats GetStats() const override;
-
-  const webrtc::WebRtcKeyValueConfig& trials() const override {
-    return *trials_;
-  }
 
   webrtc::TaskQueueBase* network_thread() const override;
   webrtc::TaskQueueBase* worker_thread() const override;

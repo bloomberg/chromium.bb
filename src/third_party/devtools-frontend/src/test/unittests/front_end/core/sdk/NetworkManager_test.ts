@@ -6,6 +6,7 @@ const {assert} = chai;
 
 import * as SDK from '../../../../../front_end/core/sdk/sdk.js';
 import * as Common from '../../../../../front_end/core/common/common.js';
+import type * as Platform from '../../../../../front_end/core/platform/platform.js';
 import * as Protocol from '../../../../../front_end/generated/protocol.js';
 import {describeWithEnvironment} from '../../helpers/EnvironmentHelpers.js';
 
@@ -105,7 +106,8 @@ describe('NetworkDispatcher', () => {
 
       // ResponseReceived does overwrite response headers if request is marked as intercepted.
       SDK.NetworkManager.MultitargetNetworkManager.instance().dispatchEventToListeners(
-          SDK.NetworkManager.MultitargetNetworkManager.Events.RequestIntercepted, 'example.com');
+          SDK.NetworkManager.MultitargetNetworkManager.Events.RequestIntercepted,
+          'example.com' as Platform.DevToolsPath.UrlString);
       networkDispatcher.responseReceived(mockResponseReceivedEventWithHeaders({'test-header': 'third'}));
       assert.deepEqual(
           networkDispatcher.requestForId('mockId')?.responseHeaders, [{name: 'test-header', value: 'third'}]);
@@ -118,6 +120,7 @@ describe('NetworkDispatcher', () => {
         Protocol.Network.SubresourceWebBundleMetadataReceivedEvent;
     const webBundleInnerResponseParsedEvent = {bundleRequestId: 'bundleRequestId', innerRequestId: 'mockId'} as
         Protocol.Network.SubresourceWebBundleInnerResponseParsedEvent;
+    const resourceUrlsFoo = ['foo'] as Platform.DevToolsPath.UrlString[];
 
     beforeEach(() => {
       const networkManager = new Common.ObjectWrapper.ObjectWrapper();
@@ -129,7 +132,7 @@ describe('NetworkDispatcher', () => {
       networkDispatcher.subresourceWebBundleMetadataReceived(webBundleMetadataReceivedEvent);
       networkDispatcher.loadingFinished(loadingFinishedEvent);
 
-      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, ['foo']);
+      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, resourceUrlsFoo);
     });
 
     it('have webbundle info when webbundle event happen before browser events', () => {
@@ -137,7 +140,7 @@ describe('NetworkDispatcher', () => {
       networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
       networkDispatcher.loadingFinished(loadingFinishedEvent);
 
-      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, ['foo']);
+      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, resourceUrlsFoo);
     });
 
     it('have webbundle info when webbundle event happen after browser events', () => {
@@ -145,7 +148,7 @@ describe('NetworkDispatcher', () => {
       networkDispatcher.loadingFinished(loadingFinishedEvent);
       networkDispatcher.subresourceWebBundleMetadataReceived(webBundleMetadataReceivedEvent);
 
-      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, ['foo']);
+      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, resourceUrlsFoo);
     });
 
     it('have webbundle info only for the final request but nor redirect', () => {
@@ -156,7 +159,7 @@ describe('NetworkDispatcher', () => {
       networkDispatcher.subresourceWebBundleMetadataReceived(webBundleMetadataReceivedEvent);
       networkDispatcher.loadingFinished(loadingFinishedEvent);
 
-      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, ['foo']);
+      assert.deepEqual(networkDispatcher.requestForId('mockId')?.webBundleInfo()?.resourceUrls, resourceUrlsFoo);
       assert.exists(networkDispatcher.requestForId('mockId')?.redirectSource());
       assert.notExists(networkDispatcher.requestForId('mockId')?.redirectSource()?.webBundleInfo());
     });

@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Zálohování souborů: <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">Odstranit výjimku pro web <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Prezentace Google</translation>
+<translation id="4277536868133419688">Filtr <ph name="FILTER_NAME" /> je zapnutý.</translation>
 <translation id="4290535918735525311">1 složka je sdílena se systémem Linux</translation>
 <translation id="4299729908419173967">portugalština (Brazílie)</translation>
 <translation id="4302605047395093221">K připojení k této mobilní síti budou muset všichni uživatelé tohoto zařízení zadat PIN.</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">Ověřovací certifikát byl vzdáleně odmítnut</translation>
 <translation id="4394214039309501350">Externí odkaz</translation>
 <translation id="4401287888955153199">Extrahovat vše</translation>
+<translation id="4410695710508688828">Extrakce se nezdařila. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Vytvořte zástupce svých souborů</translation>
 <translation id="4425149324548788773">Můj disk</translation>
 <translation id="4439427728133035643">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, připojit</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">Další...</translation>
 <translation id="4579744207439506346">Do výběru byla přidána položka <ph name="ENTRY_NAME" />.</translation>
 <translation id="4594543368593301662">Zobrazují se výsledky pro dotaz <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Filtr byl resetován.</translation>
 <translation id="4603392156942865207">Kopírování souboru <ph name="FILE_NAME" /> do složky <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Interpret</translation>
 <translation id="4642769377300286600">Instalace mobilního profilu, síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -528,6 +531,7 @@
 <translation id="5469868506864199649">italština</translation>
 <translation id="5473333559083690127">Znovu zadejte nový PIN</translation>
 <translation id="5489067830765222292">lotyština</translation>
+<translation id="5489965683297092283">Filtr <ph name="FILTER_NAME" /> je vypnutý.</translation>
 <translation id="5494920125229734069">Vybrat vše</translation>
 <translation id="5500122897333236901">islandština</translation>
 <translation id="5508696409934741614">Tečky</translation>
@@ -594,6 +598,7 @@
 <translation id="6082256976217156453">Komprimovaný archiv LZMA</translation>
 <translation id="6096979789310008754">Text vyhledávání byl vymazán, zobrazeny jsou všechny soubory a složky.</translation>
 <translation id="610101264611565198">Přesouvání souboru <ph name="FILE_NAME" /> do složky <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">Text ve formátu CSV</translation>
 <translation id="6129953537138746214">Mezera</translation>
 <translation id="6133173853026656527">Přesouvání souboru <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">japonština s americkou klávesnicí</translation>
@@ -844,6 +849,7 @@
 <translation id="8208580316430297579">Umělecké dílo</translation>
 <translation id="8223479393428528563">Chcete-li tyto soubory uložit pro používání offline, vraťte se zpět online, klikněte na ně pravým tlačítkem a vyberte možnost <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Zrušit</translation>
+<translation id="8250920743982581267">Dokumenty</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="8261561378965667560">čínština (Array)</translation>
 <translation id="8269755669432358899">Sbalit panely zpětné vazby k souborům</translation>

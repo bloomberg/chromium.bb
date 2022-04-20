@@ -367,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> بیک اپ لیا جا رہا ہے</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> کے لیے استثناء ہٹائیں</translation>
 <translation id="4261901459838235729">‏Google پیشکش</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> فلٹر آن ہے۔</translation>
 <translation id="4290535918735525311">‏Linux کے ساتھ 1 فولڈر کا اشتراک کیا گیا</translation>
 <translation id="4299729908419173967">برازیلی</translation>
 <translation id="4302605047395093221">‏اس آلے کا استعمال کرنے والے کسی بھی شخص کو اس موبائل نیٹ ورک سے منسلک ہونے کے لیے PIN درج کرنا ہوگا</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">توثیق کا سرٹیفکیٹ دور سے مسترد کر دیا گیا</translation>
 <translation id="4394214039309501350">خارجی لنک</translation>
 <translation id="4401287888955153199">سبھی کھولیں</translation>
+<translation id="4410695710508688828">اضافی آپریشن ناکام ہو گیا۔ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">اپنی فائلوں کے ليے ایک شارٹ کٹ تخلیق کریں</translation>
 <translation id="4425149324548788773">میری ڈرائیو</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، منسلک کریں</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">مزید…</translation>
 <translation id="4579744207439506346">انتخاب میں <ph name="ENTRY_NAME" /> شامل کیا گیا۔</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> کے لیے نتائج دکھائے جا رہے ہیں۔</translation>
+<translation id="4599600860674643278">فلٹر کو ری سیٹ کیا گیا۔</translation>
 <translation id="4603392156942865207">‫<ph name="FILE_NAME" /> کو <ph name="FOLDER_NAME" /> میں کاپی کیا جا رہا ہے</translation>
 <translation id="4631887759990505102">فن کار</translation>
 <translation id="4642769377300286600">موبائل کی پروفائل انسٹال ہو رہی ہے، نیٹ ورک <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -528,6 +531,7 @@
 <translation id="5469868506864199649">اطالوی</translation>
 <translation id="5473333559083690127">‏نیا PIN دوبارہ درج کریں</translation>
 <translation id="5489067830765222292">لیٹویائی</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> فلٹر آف ہے۔</translation>
 <translation id="5494920125229734069">سبھی کو منتخب کریں</translation>
 <translation id="5500122897333236901">آئس لینڈک</translation>
 <translation id="5508696409934741614">نقطے</translation>
@@ -594,6 +598,7 @@
 <translation id="6082256976217156453">‏LZMA کمپریسڈ آرکائیو</translation>
 <translation id="6096979789310008754">تلاش کا متن صاف کر دیا گیا، سبھی فائلیں اور فولڈرز دکھائی دے رہے ہیں۔</translation>
 <translation id="610101264611565198">‫<ph name="FILE_NAME" /> کو <ph name="FOLDER_NAME" /> میں منتقل کیا جا رہا ہے</translation>
+<translation id="61118516107968648">‏CSV ٹیکسٹ</translation>
 <translation id="6129953537138746214">اسپیس</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> منتقل کی جا رہی ہے…</translation>
 <translation id="613750717151263950">امریکی کی بورڈ کے ساتھ جاپانی</translation>
@@ -844,6 +849,7 @@
 <translation id="8208580316430297579">فنی شاہکار</translation>
 <translation id="8223479393428528563">آف لائن استعمال کیلئے یہ فائلیں محفوظ کرنے کیلئے، پھر سے آن لائن ہو جائیں، فائلوں پر دایاں کلک کریں اور <ph name="OFFLINE_CHECKBOX_NAME" /> اختیار منتخب کریں۔</translation>
 <translation id="8249296373107784235">منسوخ کریں</translation>
+<translation id="8250920743982581267">دستاویزات</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
 <translation id="8261561378965667560">‏چینی Array</translation>
 <translation id="8269755669432358899">فائلز کے تاثرات کے پینلز کو سکیڑیں</translation>

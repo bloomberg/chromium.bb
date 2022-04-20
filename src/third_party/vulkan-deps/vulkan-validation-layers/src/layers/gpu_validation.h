@@ -20,12 +20,9 @@
 
 #pragma once
 
-#include "chassis.h"
-#include "state_tracker.h"
-#include "vk_mem_alloc.h"
 #include "gpu_utils.h"
+
 class GpuAssisted;
-class CMD_BUFFER_STATE_GPUAV;
 
 struct GpuAssistedDeviceMemoryBlock {
     VkBuffer buffer;
@@ -63,12 +60,6 @@ struct GpuAssistedBufferInfo {
           desc_pool(desc_pool),
           pipeline_bind_point(pipeline_bind_point),
           cmd_type(cmd_type){};
-};
-
-struct GpuAssistedShaderTracker {
-    VkPipeline pipeline;
-    VkShaderModule shader_module;
-    std::vector<uint32_t> pgm;
 };
 
 struct GpuVuid {
@@ -111,6 +102,7 @@ struct GpuAssistedPreDrawValidationState {
     VkShaderModule validation_shader_module = VK_NULL_HANDLE;
     VkDescriptorSetLayout validation_ds_layout = VK_NULL_HANDLE;
     VkPipelineLayout validation_pipeline_layout = VK_NULL_HANDLE;
+    VkPipeline dyn_rendering_pipeline = VK_NULL_HANDLE;
     layer_data::unordered_map <VkRenderPass, VkPipeline> renderpass_to_pipeline;
 };
 
@@ -123,73 +115,37 @@ struct GpuAssistedCmdDrawIndirectState {
     VkDeviceSize count_buffer_offset;
 };
 
-class CMD_BUFFER_STATE_GPUAV : public CMD_BUFFER_STATE {
+namespace gpuav_state {
+class CommandBuffer : public CMD_BUFFER_STATE {
   public:
     std::vector<GpuAssistedBufferInfo> gpuav_buffer_list;
     std::vector<GpuAssistedAccelerationStructureBuildValidationBufferInfo> as_validation_buffers;
 
-    CMD_BUFFER_STATE_GPUAV(GpuAssisted* ga, VkCommandBuffer cb, const VkCommandBufferAllocateInfo* pCreateInfo,
-                           const COMMAND_POOL_STATE* pool);
+    CommandBuffer(GpuAssisted* ga, VkCommandBuffer cb, const VkCommandBufferAllocateInfo* pCreateInfo,
+                  const COMMAND_POOL_STATE* pool);
 
     void Reset() final;
 };
+};  // namespace gpuav_state
 
-class GpuAssisted : public ValidationStateTracker {
-    VkPhysicalDeviceFeatures supported_features;
-    VkBool32 shaderInt64;
-    uint32_t unique_shader_module_id = 0;
-    uint32_t output_buffer_size;
-    bool buffer_oob_enabled;
-    bool validate_draw_indirect;
-    std::map<VkDeviceAddress, VkDeviceSize> buffer_map;
-    GpuAssistedAccelerationStructureBuildValidationState acceleration_structure_validation_state;
-    GpuAssistedPreDrawValidationState pre_draw_validation_state;
+VALSTATETRACK_DERIVED_STATE_OBJECT(VkCommandBuffer, gpuav_state::CommandBuffer, CMD_BUFFER_STATE);
 
-    void PreRecordCommandBuffer(VkCommandBuffer command_buffer);
-    bool CommandBufferNeedsProcessing(VkCommandBuffer command_buffer);
-    void ProcessCommandBuffer(VkQueue queue, VkCommandBuffer command_buffer);
-
+class GpuAssisted : public GpuAssistedBase {
   public:
-    GpuAssisted() { container_type = LayerObjectTypeGpuAssisted; }
+    GpuAssisted() {
+        setup_vuid = "UNASSIGNED-GPU-Assisted-Validation";
+        container_type = LayerObjectTypeGpuAssisted;
+        desired_features.vertexPipelineStoresAndAtomics = true;
+        desired_features.fragmentStoresAndAtomics = true;
+        desired_features.shaderInt64 = true;
+    }
 
-    bool aborted = false;
-    bool descriptor_indexing = false;
-    VkDevice device;
-    VkPhysicalDevice physicalDevice;
-    uint32_t adjusted_max_desc_sets;
-    uint32_t desc_set_bind_index;
-    VkDescriptorSetLayout debug_desc_layout = VK_NULL_HANDLE;
-    VkDescriptorSetLayout dummy_desc_layout = VK_NULL_HANDLE;
-    std::unique_ptr<UtilDescriptorSetManager> desc_set_manager;
-    layer_data::unordered_map<uint32_t, GpuAssistedShaderTracker> shader_map;
-    PFN_vkSetDeviceLoaderData vkSetDeviceLoaderData;
-    VmaAllocator vmaAllocator = {};
-    std::map<VkQueue, UtilQueueBarrierCommandInfo> queue_barrier_command_infos;
-  public:
-    template <typename T>
-    void ReportSetupProblem(T object, const char* const specific_message) const;
     bool CheckForDescriptorIndexing(DeviceFeatures enabled_features) const;
-    void PreCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo* pCreateInfo,
-                                   const VkAllocationCallbacks* pAllocator, VkDevice* pDevice, void* modified_create_info) override;
-    void PostCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo* pCreateInfo,
-                                    const VkAllocationCallbacks* pAllocator, VkDevice* pDevice, VkResult result) override;
-    void PostCallRecordGetBufferDeviceAddress(VkDevice device, const VkBufferDeviceAddressInfo* pInfo,
-                                              VkDeviceAddress address) override;
-    void PostCallRecordGetBufferDeviceAddressKHR(VkDevice device, const VkBufferDeviceAddressInfo* pInfo,
-                                                 VkDeviceAddress address) override;
-    void PostCallRecordGetBufferDeviceAddressEXT(VkDevice device, const VkBufferDeviceAddressInfo* pInfo,
-                                                 VkDeviceAddress address) override;
-    void PreCallRecordDestroyBuffer(VkDevice device, VkBuffer buffer, const VkAllocationCallbacks* pAllocator) override;
+    void CreateDevice(const VkDeviceCreateInfo* pCreateInfo) override;
     void PreCallRecordDestroyDevice(VkDevice device, const VkAllocationCallbacks* pAllocator) override;
     void PostCallRecordBindAccelerationStructureMemoryNV(VkDevice device, uint32_t bindInfoCount,
                                                          const VkBindAccelerationStructureMemoryInfoNV* pBindInfos,
                                                          VkResult result) override;
-    void PreCallRecordCreatePipelineLayout(VkDevice device, const VkPipelineLayoutCreateInfo* pCreateInfo,
-                                           const VkAllocationCallbacks* pAllocator, VkPipelineLayout* pPipelineLayout,
-                                           void* cpl_state_data) override;
-    void PostCallRecordCreatePipelineLayout(VkDevice device, const VkPipelineLayoutCreateInfo* pCreateInfo,
-                                            const VkAllocationCallbacks* pAllocator, VkPipelineLayout* pPipelineLayout,
-                                            VkResult result) override;
     bool PreCallValidateCmdWaitEvents(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents,
                                       VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask,
                                       uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers,
@@ -201,50 +157,13 @@ class GpuAssisted : public ValidationStateTracker {
                                        const VkDependencyInfo* pDependencyInfos) const override;
     void PreCallRecordCreateBuffer(VkDevice device, const VkBufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator,
                                    VkBuffer* pBuffer, void* cb_state_data) override;
-    void PostCallRecordCreateBuffer(VkDevice device, const VkBufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator,
-                                    VkBuffer* pBuffer, VkResult result) override;
-    void CreateAccelerationStructureBuildValidationState(GpuAssisted* device_GpuAssisted);
+    void CreateAccelerationStructureBuildValidationState();
     void DestroyAccelerationStructureBuildValidationState();
     void PreCallRecordCmdBuildAccelerationStructureNV(VkCommandBuffer commandBuffer, const VkAccelerationStructureInfoNV* pInfo,
                                                       VkBuffer instanceData, VkDeviceSize instanceOffset, VkBool32 update,
                                                       VkAccelerationStructureNV dst, VkAccelerationStructureNV src,
                                                       VkBuffer scratch, VkDeviceSize scratchOffset) override;
-    void ProcessAccelerationStructureBuildValidationBuffer(VkQueue queue, CMD_BUFFER_STATE_GPUAV* cb_node);
-    void PreCallRecordCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                              const VkGraphicsPipelineCreateInfo* pCreateInfos,
-                                              const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
-                                              void* cgpl_state_data) override;
-    void PreCallRecordCreateComputePipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                             const VkComputePipelineCreateInfo* pCreateInfos,
-                                             const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
-                                             void* ccpl_state_data) override;
-    void PreCallRecordCreateRayTracingPipelinesNV(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                                  const VkRayTracingPipelineCreateInfoNV* pCreateInfos,
-                                                  const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
-                                                  void* crtpl_state_data) override;
-    void PreCallRecordCreateRayTracingPipelinesKHR(VkDevice device, VkDeferredOperationKHR deferredOperation,
-                                                   VkPipelineCache pipelineCache, uint32_t count,
-                                                   const VkRayTracingPipelineCreateInfoKHR* pCreateInfos,
-                                                   const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
-                                                   void* crtpl_state_data) override;
-    void PostCallRecordCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                               const VkGraphicsPipelineCreateInfo* pCreateInfos,
-                                               const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines, VkResult result,
-                                               void* cgpl_state_data) override;
-    void PostCallRecordCreateComputePipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                              const VkComputePipelineCreateInfo* pCreateInfos,
-                                              const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines, VkResult result,
-                                              void* ccpl_state_data) override;
-    void PostCallRecordCreateRayTracingPipelinesNV(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                                   const VkRayTracingPipelineCreateInfoNV* pCreateInfos,
-                                                   const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines, VkResult result,
-                                                   void* crtpl_state_data) override;
-    void PostCallRecordCreateRayTracingPipelinesKHR(VkDevice device, VkDeferredOperationKHR deferredOperation,
-                                                    VkPipelineCache pipelineCache, uint32_t count,
-                                                    const VkRayTracingPipelineCreateInfoKHR* pCreateInfos,
-                                                    const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
-                                                    VkResult result, void* crtpl_state_data) override;
-    void PreCallRecordDestroyPipeline(VkDevice device, VkPipeline pipeline, const VkAllocationCallbacks* pAllocator) override;
+    void ProcessAccelerationStructureBuildValidationBuffer(VkQueue queue, gpuav_state::CommandBuffer* cb_node);
     void PreCallRecordDestroyRenderPass(VkDevice device, VkRenderPass renderPass, const VkAllocationCallbacks *pAllocator) override;
     bool InstrumentShader(const VkShaderModuleCreateInfo* pCreateInfo, std::vector<uint32_t>& new_pgm, uint32_t* unique_shader_id);
     void PreCallRecordCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo,
@@ -252,21 +171,15 @@ class GpuAssisted : public ValidationStateTracker {
                                          void* csm_state_data) override;
     void AnalyzeAndGenerateMessages(VkCommandBuffer command_buffer, VkQueue queue, GpuAssistedBufferInfo &buffer_info,
         uint32_t operation_index, uint32_t* const debug_output_buffer);
+    void ProcessInstrumentationBuffer(VkQueue queue, CMD_BUFFER_STATE* cb_node);
 
     void SetDescriptorInitialized(uint32_t* pData, uint32_t index, const cvdescriptorset::Descriptor* descriptor);
-    void UpdateInstrumentationBuffer(CMD_BUFFER_STATE_GPUAV* cb_node);
+    void UpdateInstrumentationBuffer(gpuav_state::CommandBuffer* cb_node);
     const GpuVuid& GetGpuVuid(CMD_TYPE cmd_type) const;
     void PreCallRecordQueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence) override;
-    void PostCallRecordQueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence,
-                                   VkResult result) override;
     void PreCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits,
                                       VkFence fence) override;
     void PreCallRecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence) override;
-    void RecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence, VkResult result);
-    void PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence,
-                                       VkResult result) override;
-    void PostCallRecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence,
-                                    VkResult result) override;
     void PreCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
                               uint32_t firstInstance) override;
     void PreCallRecordCmdDrawMultiEXT(VkCommandBuffer commandBuffer, uint32_t drawCount, const VkMultiDrawInfoEXT* pVertexInfo,
@@ -354,34 +267,24 @@ class GpuAssisted : public ValidationStateTracker {
     void PostCallRecordGetPhysicalDeviceProperties2(VkPhysicalDevice physicalDevice,
                                                     VkPhysicalDeviceProperties2* pPhysicalDeviceProperties2) override;
 
-    std::shared_ptr<CMD_BUFFER_STATE_GPUAV> GetCBState(VkCommandBuffer commandBuffer) {
-        return std::static_pointer_cast<CMD_BUFFER_STATE_GPUAV>(Get<CMD_BUFFER_STATE>(commandBuffer));
-    }
-    const std::shared_ptr<const CMD_BUFFER_STATE_GPUAV> GetCBState(VkCommandBuffer commandBuffer) const {
-        return std::static_pointer_cast<const CMD_BUFFER_STATE_GPUAV>(Get<CMD_BUFFER_STATE>(commandBuffer));
-    }
-    std::shared_ptr<SHADER_MODULE_STATE> GetShaderModuleState(VkShaderModule shader_module) {
-        return Get<SHADER_MODULE_STATE>(shader_module);
-    }
-    std::shared_ptr<const SHADER_MODULE_STATE> GetShaderModuleState(VkShaderModule shader_module) const {
-        return Get<SHADER_MODULE_STATE>(shader_module);
-    }
-    std::shared_ptr<const PIPELINE_STATE> GetPipelineState(VkPipeline pipeline) const { return Get<PIPELINE_STATE>(pipeline); }
-    std::shared_ptr<PIPELINE_STATE> GetPipelineState(VkPipeline pipeline) { return Get<PIPELINE_STATE>(pipeline); }
-
-    const std::vector<GpuAssistedBufferInfo>& GetBufferInfo(const CMD_BUFFER_STATE* cb_node) const {
-        assert(cb_node);
-        return static_cast<const CMD_BUFFER_STATE_GPUAV*>(cb_node)->gpuav_buffer_list;
-    }
-
-    std::vector<GpuAssistedBufferInfo>& GetBufferInfo(CMD_BUFFER_STATE* cb_node) {
-        assert(cb_node);
-        return static_cast<CMD_BUFFER_STATE_GPUAV*>(cb_node)->gpuav_buffer_list;
-    }
-
     std::shared_ptr<CMD_BUFFER_STATE> CreateCmdBufferState(VkCommandBuffer cb, const VkCommandBufferAllocateInfo* create_info,
                                                            const COMMAND_POOL_STATE* pool) final;
 
     void DestroyBuffer(GpuAssistedBufferInfo& buffer_info);
     void DestroyBuffer(GpuAssistedAccelerationStructureBuildValidationBufferInfo& buffer_info);
+
+  protected:
+    bool CommandBufferNeedsProcessing(VkCommandBuffer command_buffer) override;
+    void ProcessCommandBuffer(VkQueue queue, VkCommandBuffer command_buffer) override;
+
+  private:
+    void PreRecordCommandBuffer(VkCommandBuffer command_buffer);
+
+    VkBool32 shaderInt64;
+    bool buffer_oob_enabled;
+    bool validate_draw_indirect;
+    GpuAssistedAccelerationStructureBuildValidationState acceleration_structure_validation_state;
+    GpuAssistedPreDrawValidationState pre_draw_validation_state;
+
+    bool descriptor_indexing = false;
 };

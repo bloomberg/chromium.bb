@@ -117,6 +117,21 @@ ci.builder(
 )
 
 ci.builder(
+    name = "android-marshmallow-x86-fyi-rel-reviver",
+    console_view_entry = consoles.console_view_entry(
+        category = "reviver",
+        short_name = "M",
+    ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
+    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
+    # builds. Also we don't set any `schedule` since this builder is for
+    # reference only and should not run any new builds.
+    triggered_by = [],
+)
+
+ci.builder(
     name = "android-nougat-x86-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -138,6 +153,7 @@ ci.builder(
         category = "emulator|x86|rel",
         short_name = "N",
     ),
+    execution_timeout = 4 * time.hour,
     goma_backend = None,
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = rbe_jobs.DEFAULT,
@@ -167,7 +183,7 @@ ci.builder(
     triggered_by = ["android-x86-fyi-rel"],
 )
 
-# TODO(crbug.com/1137474): Remove this builder once there are no associated
+# TODO(crbug.com/1137474, crbug.com/1250464): Remove this builder once there are no associated
 # disabled tests.
 ci.builder(
     name = "android-11-x86-fyi-rel",
@@ -175,10 +191,9 @@ ci.builder(
         category = "emulator|x86|rel",
         short_name = "11",
     ),
-    # Set to an empty list to avoid chromium-gitiles-trigger triggering new
-    # builds. Also we don't set any `schedule` since this builder is for
-    # reference only and should not run any new builds.
-    triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -219,6 +234,25 @@ ci.builder(
 # TODO(crbug.com/1299910): Move to non-FYI once the tester works fine.
 ci.builder(
     name = "android-webview-12-x64-dbg-tests",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|webview",
         short_name = "12",
@@ -229,44 +263,30 @@ ci.builder(
 # TODO(crbug.com/1299910): Move to non-FYI once the tester works fine.
 ci.builder(
     name = "android-12-x64-dbg-tests",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|phone",
         short_name = "12",
     ),
     triggered_by = ["Android x64 Builder (dbg)"],
-)
-
-# TODO(crbug.com/1293115): [Cronet] Move to non-FYI once the tester works fine.
-ci.builder(
-    name = "android-cronet-x86-dbg-kitkat-tests",
-    console_view_entry = consoles.console_view_entry(
-        category = "cronet|test",
-        short_name = "k",
-    ),
-    notifies = ["cronet"],
-    triggered_by = ["ci/android-cronet-x86-dbg"],
-)
-
-# TODO(crbug.com/1293115): [Cronet] Move to non-FYI once the tester works fine.
-ci.builder(
-    name = "android-cronet-x86-dbg-lollipop-tests",
-    console_view_entry = consoles.console_view_entry(
-        category = "cronet|test",
-        short_name = "l",
-    ),
-    notifies = ["cronet"],
-    triggered_by = ["ci/android-cronet-x86-dbg"],
-)
-
-# TODO(crbug.com/1293115): [Cronet] Move to non-FYI once the tester works fine.
-ci.builder(
-    name = "android-cronet-x86-dbg-marshmallow-tests",
-    console_view_entry = consoles.console_view_entry(
-        category = "cronet|test",
-        short_name = "m",
-    ),
-    notifies = ["cronet"],
-    triggered_by = ["ci/android-cronet-x86-dbg"],
 )
 
 ci.builder(

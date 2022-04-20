@@ -15,6 +15,7 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -112,7 +113,9 @@ enum class SigninInterceptionResult {
   // Accepted to be opened in Guest profile.
   kAcceptedWithGuest = 4,
 
-  kMaxValue = kAcceptedWithGuest,
+  kAcceptedWithExistingProfile = 5,
+
+  kMaxValue = kAcceptedWithExistingProfile,
 };
 
 // The ScopedDiceWebSigninInterceptionBubbleHandle closes the signin intercept
@@ -154,6 +157,7 @@ class DiceWebSigninInterceptor : public KeyedService,
     kEnterprise,
     kMultiUser,
     kEnterpriseForced,
+    kEnterpriseAcceptManagement,
     kProfileSwitchForced
   };
 
@@ -162,11 +166,23 @@ class DiceWebSigninInterceptor : public KeyedService,
    public:
     // Parameters for interception bubble UIs.
     struct BubbleParameters {
+      BubbleParameters(SigninInterceptionType interception_type,
+                       AccountInfo intercepted_account,
+                       AccountInfo primary_account,
+                       SkColor profile_highlight_color = SkColor(),
+                       bool show_guest_option = false,
+                       bool show_link_data_option = false);
+
+      BubbleParameters(const BubbleParameters& copy);
+      BubbleParameters& operator=(const BubbleParameters&);
+      ~BubbleParameters();
+
       SigninInterceptionType interception_type;
       AccountInfo intercepted_account;
       AccountInfo primary_account;
       SkColor profile_highlight_color;
       bool show_guest_option;
+      bool show_link_data_option;
     };
 
     virtual ~Delegate() = default;
@@ -298,6 +314,8 @@ class DiceWebSigninInterceptor : public KeyedService,
       ProfileAttributesStorage* profile_attribute_storage) const;
   bool ShouldEnforceEnterpriseProfileSeparation(
       const AccountInfo& intercepted_account_info) const;
+  bool ShouldShowEnterpriseDialog(
+      const AccountInfo& intercepted_account_info) const;
   bool ShouldShowEnterpriseBubble(
       const AccountInfo& intercepted_account_info) const;
   bool ShouldShowMultiUserBubble(
@@ -371,6 +389,19 @@ class DiceWebSigninInterceptor : public KeyedService,
       bool timed_out,
       const AccountInfo& account_info,
       const std::string& signin_restriction);
+
+  // Returns true if enterprise separation is required.
+  // Returns false is enterprise separation is not required.
+  // Returns no value if info is required to determine if enterprise separation
+  // is required. If `managed_account_profile_level_signin_restriction` is
+  // `absl::nullopt` then the user cloud policy value of
+  // ManagedAccountsSigninRestriction has not yet been fetched. If it is an
+  // empty string, then the value has been fetched but no policy was set.
+  absl::optional<bool> EnterpriseSeparationMaybeRequired(
+      const std::string& email,
+      bool is_new_account_interception,
+      absl::optional<std::string>
+          managed_account_profile_level_signin_restriction) const;
 
   const raw_ptr<Profile> profile_;
   const raw_ptr<signin::IdentityManager> identity_manager_;

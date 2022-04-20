@@ -138,4 +138,12 @@ bool PrefetchProxyUseIndividualNetworkContextsForEachPrefetch();
 // Whether the PrefetchProxy code can handle non-private prefetches.
 bool PrefetchProxySupportNonPrivatePrefetches();
 
+// Whether the PrefetchProxy should bypass using proxy for a specific host for
+// test purposes.
+absl::optional<std::string> PrefetchProxyBypassProxyForHost();
+
+// Whether only prefetched resources with a text/html MIME type should be used.
+// If this is false, there is no MIME type restriction.
+bool PrefetchProxyHTMLOnly();
+
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PARAMS_H_

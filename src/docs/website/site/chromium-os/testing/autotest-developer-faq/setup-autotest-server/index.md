@@ -22,7 +22,7 @@ server hostname.
 You need to set up SSH for the apache user (www-data) in its home directory.
 Follow the directions for ssh key setup, using the directory /var/www/.ssh and
 make sure everything is owned by www-data with user only permissions:
-<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>
+<https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md#Set-up-SSH-connection-between-chroot-and-DUT>
 
 If you ran the setup script please proceed to the Autotest Server Usage Guide:
 <https://www.chromium.org/chromium-os/testing/autotest-developer-faq/autotest-server-usage>

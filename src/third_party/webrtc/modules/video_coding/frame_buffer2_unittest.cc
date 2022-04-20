@@ -28,6 +28,7 @@
 #include "test/field_trial.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
+#include "test/scoped_key_value_config.h"
 #include "test/time_controller/simulated_time_controller.h"
 
 using ::testing::_;
@@ -40,7 +41,8 @@ namespace video_coding {
 
 class VCMTimingFake : public VCMTiming {
  public:
-  explicit VCMTimingFake(Clock* clock) : VCMTiming(clock) {}
+  explicit VCMTimingFake(Clock* clock, const FieldTrialsView& field_trials)
+      : VCMTiming(clock, field_trials) {}
 
   Timestamp RenderTime(uint32_t frame_timestamp, Timestamp now) const override {
     if (last_render_time_.IsMinusInfinity()) {
@@ -65,25 +67,8 @@ class VCMTimingFake : public VCMTiming {
     return render_time - now - kDecodeTime;
   }
 
-  bool GetTimings(TimeDelta* max_decode,
-                  TimeDelta* current_delay,
-                  TimeDelta* target_delay,
-                  TimeDelta* jitter_buffer,
-                  TimeDelta* min_playout_delay,
-                  TimeDelta* render_delay) const override {
-    return true;
-  }
-
   TimeDelta GetCurrentJitter() {
-    TimeDelta max_decode = TimeDelta::Zero();
-    TimeDelta current_delay = TimeDelta::Zero();
-    TimeDelta target_delay = TimeDelta::Zero();
-    TimeDelta jitter_buffer = TimeDelta::Zero();
-    TimeDelta min_playout_delay = TimeDelta::Zero();
-    TimeDelta render_delay = TimeDelta::Zero();
-    VCMTiming::GetTimings(&max_decode, &current_delay, &target_delay,
-                          &jitter_buffer, &min_playout_delay, &render_delay);
-    return jitter_buffer;
+    return VCMTiming::GetTimings().jitter_buffer_delay;
   }
 
  private:
@@ -148,10 +133,11 @@ class TestFrameBuffer2 : public ::testing::Test {
             time_controller_.GetTaskQueueFactory()->CreateTaskQueue(
                 "extract queue",
                 TaskQueueFactory::Priority::NORMAL)),
-        timing_(time_controller_.GetClock()),
+        timing_(time_controller_.GetClock(), field_trials_),
         buffer_(new FrameBuffer(time_controller_.GetClock(),
                                 &timing_,
-                                &stats_callback_)),
+                                &stats_callback_,
+                                field_trials_)),
         rand_(0x34678213) {}
 
   template <typename... T>
@@ -230,6 +216,7 @@ class TestFrameBuffer2 : public ::testing::Test {
 
   uint32_t Rand() { return rand_.Rand<uint32_t>(); }
 
+  test::ScopedKeyValueConfig field_trials_;
   webrtc::GlobalSimulatedTimeController time_controller_;
   rtc::TaskQueue time_task_queue_;
   VCMTimingFake timing_;
@@ -293,9 +280,10 @@ TEST_F(TestFrameBuffer2, OneSuperFrame) {
 }
 
 TEST_F(TestFrameBuffer2, ZeroPlayoutDelay) {
-  VCMTiming timing(time_controller_.GetClock());
-  buffer_.reset(
-      new FrameBuffer(time_controller_.GetClock(), &timing, &stats_callback_));
+  test::ScopedKeyValueConfig field_trials;
+  VCMTiming timing(time_controller_.GetClock(), field_trials);
+  buffer_.reset(new FrameBuffer(time_controller_.GetClock(), &timing,
+                                &stats_callback_, field_trials));
   const VideoPlayoutDelay kPlayoutDelayMs = {0, 0};
   std::unique_ptr<FrameObjectFake> test_frame(new FrameObjectFake());
   test_frame->SetId(0);
@@ -538,6 +526,8 @@ TEST_F(TestFrameBuffer2, StatsCallback) {
   EXPECT_CALL(stats_callback_,
               OnCompleteFrame(true, kFrameSize, VideoContentType::UNSPECIFIED));
   EXPECT_CALL(stats_callback_, OnFrameBufferTimingsUpdated(_, _, _, _, _, _));
+  // Stats callback requires a previously decoded frame.
+  timing_.StopDecodeTimer(TimeDelta::Millis(1), Timestamp::Zero());
 
   {
     std::unique_ptr<FrameObjectFake> frame(new FrameObjectFake());

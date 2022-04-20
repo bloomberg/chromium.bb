@@ -59,14 +59,10 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   CommonModeInfoParams *const mi_params = &cm->mi_params;
 
   // Setup mi_params
-  mi_params->set_mb_mi(mi_params, cm->width, cm->height, cpi->oxcf.mode,
+  mi_params->set_mb_mi(mi_params, cm->width, cm->height,
                        cpi->sf.part_sf.default_min_partition_size);
 
-  if (!is_stat_generation_stage(cpi)) {
-    av1_alloc_txb_buf(cpi);
-
-    alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
-  }
+  if (!is_stat_generation_stage(cpi)) av1_alloc_txb_buf(cpi);
 
   if (cpi->td.mb.mv_costs) {
     aom_free(cpi->td.mb.mv_costs);
@@ -77,13 +73,6 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
     CHECK_MEM_ERROR(cm, cpi->td.mb.mv_costs,
                     (MvCosts *)aom_calloc(1, sizeof(MvCosts)));
   }
-
-  if (cpi->td.mb.dv_costs) {
-    aom_free(cpi->td.mb.dv_costs);
-    cpi->td.mb.dv_costs = NULL;
-  }
-  CHECK_MEM_ERROR(cm, cpi->td.mb.dv_costs,
-                  (IntraBCMVCosts *)aom_malloc(sizeof(*cpi->td.mb.dv_costs)));
 
   av1_setup_shared_coeff_buffer(cm->seq_params, &cpi->td.shared_coeff_buf,
                                 cm->error);
@@ -96,11 +85,14 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
 // level.
 static AOM_INLINE void alloc_mb_mode_info_buffers(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  if (av1_alloc_context_buffers(cm, cm->width, cm->height, cpi->oxcf.mode,
+  if (av1_alloc_context_buffers(cm, cm->width, cm->height,
                                 cpi->sf.part_sf.default_min_partition_size)) {
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate context buffers");
   }
+
+  if (!is_stat_generation_stage(cpi))
+    alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
 }
 
 static AOM_INLINE void realloc_segmentation_maps(AV1_COMP *cpi) {
@@ -308,6 +300,11 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
   if (cpi->consec_zero_mv) {
     aom_free(cpi->consec_zero_mv);
     cpi->consec_zero_mv = NULL;
+  }
+
+  if (cpi->src_sad_blk_64x64) {
+    aom_free(cpi->src_sad_blk_64x64);
+    cpi->src_sad_blk_64x64 = NULL;
   }
 
   aom_free(cpi->mb_weber_stats);

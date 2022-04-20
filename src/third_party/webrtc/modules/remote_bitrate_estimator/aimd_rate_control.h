@@ -14,8 +14,8 @@
 #include <stdint.h>
 
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/transport/network_types.h"
-#include "api/transport/webrtc_key_value_config.h"
 #include "api/units/data_rate.h"
 #include "api/units/timestamp.h"
 #include "modules/congestion_controller/goog_cc/link_capacity_estimator.h"
@@ -30,8 +30,8 @@ namespace webrtc {
 // multiplicatively.
 class AimdRateControl {
  public:
-  explicit AimdRateControl(const WebRtcKeyValueConfig* key_value_config);
-  AimdRateControl(const WebRtcKeyValueConfig* key_value_config, bool send_side);
+  explicit AimdRateControl(const FieldTrialsView* key_value_config);
+  AimdRateControl(const FieldTrialsView* key_value_config, bool send_side);
   ~AimdRateControl();
 
   // Returns true if the target bitrate has been initialized. This happens
@@ -113,6 +113,8 @@ class AimdRateControl {
   FieldTrialParameter<double> estimate_bounded_increase_ratio_{"ratio", 1.0};
   FieldTrialParameter<bool> ignore_throughput_limit_if_network_estimate_{
       "ignore_acked", false};
+  FieldTrialParameter<bool> increase_to_network_estimate_{"immediate_incr",
+                                                          false};
   FieldTrialParameter<bool> ignore_network_estimate_decrease_{"ignore_decr",
                                                               false};
   absl::optional<DataRate> last_decrease_;

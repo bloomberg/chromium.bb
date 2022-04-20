@@ -4,6 +4,7 @@
 
 #include "pdf/pdf_view_web_plugin.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -50,12 +51,14 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/range/range.h"
 #include "ui/latency/latency_info.h"
 
 namespace chrome_pdf {
 
 namespace {
 
+using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::MockFunction;
@@ -171,6 +174,10 @@ class FakeContainerWrapper : public PdfViewWebPlugin::ContainerWrapper {
 
   MOCK_METHOD(gfx::PointF, GetScrollPosition, (), (override));
 
+  MOCK_METHOD(void, PostMessage, (base::Value::Dict), (override));
+
+  MOCK_METHOD(void, UsePluginAsFindHandler, (), (override));
+
   MOCK_METHOD(void,
               SetReferrerForRequest,
               (blink::WebURLRequest&, const blink::WebURL&),
@@ -209,11 +216,10 @@ class FakeContainerWrapper : public PdfViewWebPlugin::ContainerWrapper {
     return nullptr;
   }
 
-  // TODO(https://crbug.com/1207575): Container() should not be used for testing
-  // since it doesn't have a valid blink::WebPluginContainer. Make this method
-  // fail once ContainerWrapper instead of blink::WebPluginContainer is used for
-  // initializing `PostMessageSender`.
-  blink::WebPluginContainer* Container() override { return nullptr; }
+  blink::WebPluginContainer* Container() override {
+    ADD_FAILURE();
+    return nullptr;
+  }
 
   blink::WebTextInputType widget_text_input_type() const {
     return widget_text_input_type_;
@@ -252,10 +258,23 @@ class FakePdfViewWebPluginClient : public PdfViewWebPlugin::Client {
               (const base::Value&, v8::Local<v8::Context>),
               (override));
   MOCK_METHOD(base::WeakPtr<Client>, GetWeakPtr, (), (override));
-  MOCK_METHOD(bool, IsUseZoomForDSFEnabled, (), (const, override));
 
  private:
   base::WeakPtrFactory<FakePdfViewWebPluginClient> weak_factory_{this};
+};
+
+class MockUrlLoader : public UrlLoader {
+ public:
+  MOCK_METHOD(void, GrantUniversalAccess, (), (override));
+  MOCK_METHOD(void,
+              Open,
+              (const UrlRequest&, base::OnceCallback<void(int)>),
+              (override));
+  MOCK_METHOD(void,
+              ReadResponseBody,
+              (base::span<char>, base::OnceCallback<void(int)>),
+              (override));
+  MOCK_METHOD(void, Close, (), (override));
 };
 
 }  // namespace
@@ -308,8 +327,8 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     wrapper_ptr_ = wrapper.get();
     auto engine = CreateEngine();
     engine_ptr_ = engine.get();
-    EXPECT_TRUE(
-        plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
+    EXPECT_TRUE(plugin_->InitializeForTesting(
+        std::move(wrapper), std::move(engine), CreateLoader()));
   }
 
   void TearDown() override {
@@ -323,10 +342,13 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     return std::make_unique<NiceMock<TestPDFiumEngine>>(plugin_.get());
   }
 
+  // Allow derived test classes to create their own custom loaders.
+  virtual std::unique_ptr<UrlLoader> CreateLoader() { return nullptr; }
+
   void SetDocumentDimensions(const gfx::Size& dimensions) {
     EXPECT_CALL(*engine_ptr_, ApplyDocumentLayout)
         .WillRepeatedly(Return(dimensions));
-    plugin_->OnMessage(base::test::ParseJson(R"({
+    base::Value message = base::test::ParseJson(R"({
       "type": "viewport",
       "userInitiated": false,
       "zoom": 1,
@@ -338,7 +360,8 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
       "xOffset": 0,
       "yOffset": 0,
       "pinchPhase": 0,
-    })"));
+    })");
+    plugin_->OnMessage(message.GetDict());
   }
 
   void UpdatePluginGeometry(float device_scale, const gfx::Rect& window_rect) {
@@ -438,29 +461,16 @@ TEST_F(PdfViewWebPluginWithoutInitializeTest, Initialize) {
               RequestTouchEventType(
                   blink::WebPluginContainer::kTouchEventRequestTypeRaw));
 
-  EXPECT_TRUE(
-      plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
+  EXPECT_TRUE(plugin_->InitializeForTesting(
+      std::move(wrapper), std::move(engine), /*loader=*/nullptr));
 }
 
-TEST_F(PdfViewWebPluginTest, UpdateGeometrySetsPluginRectUseZoomForDSFEnabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
+TEST_F(PdfViewWebPluginTest, UpdateGeometrySetsPluginRect) {
   EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
   TestUpdateGeometrySetsPluginRect(
       /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(4, 4, 12, 12),
       /*expected_device_scale=*/2.0f,
       /*expected_plugin_rect=*/gfx::Rect(4, 4, 12, 12));
-}
-
-TEST_F(PdfViewWebPluginTest,
-       UpdateGeometrySetsPluginRectUseZoomForDSFDisabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
-  TestUpdateGeometrySetsPluginRect(
-      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(4, 4, 12, 12),
-      /*expected_device_scale=*/2.0f,
-      /*expected_plugin_rect=*/gfx::Rect(8, 8, 24, 24));
 }
 
 TEST_F(PdfViewWebPluginTest,
@@ -479,10 +489,6 @@ TEST_F(PdfViewWebPluginTest,
     gfx::Rect expected_plugin_rect;
   };
 
-  // Keep the using zoom for DSF setting consistent within the test.
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
-
   static constexpr UpdateGeometryParams kUpdateGeometryParams[] = {
       {1.0f, gfx::Rect(3, 4, 5, 6), 1.0f, gfx::Rect(3, 4, 5, 6)},
       {2.0f, gfx::Rect(3, 4, 5, 6), 2.0f, gfx::Rect(3, 4, 5, 6)},
@@ -495,9 +501,7 @@ TEST_F(PdfViewWebPluginTest,
   }
 }
 
-TEST_F(PdfViewWebPluginTest, UpdateGeometryScrollsUseZoomForDSFEnabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
+TEST_F(PdfViewWebPluginTest, UpdateGeometryScroll) {
   SetDocumentDimensions({100, 200});
 
   EXPECT_CALL(*wrapper_ptr_, GetScrollPosition)
@@ -507,38 +511,14 @@ TEST_F(PdfViewWebPluginTest, UpdateGeometryScrollsUseZoomForDSFEnabled) {
   UpdatePluginGeometryWithoutWaiting(2.0f, gfx::Rect(3, 4, 5, 6));
 }
 
-TEST_F(PdfViewWebPluginTest, UpdateGeometryScrollsUseZoomForDSFDisabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(false));
-  SetDocumentDimensions({100, 200});
-
-  EXPECT_CALL(*wrapper_ptr_, GetScrollPosition)
-      .WillRepeatedly(Return(gfx::PointF(2.0f, 3.0f)));
-  EXPECT_CALL(*engine_ptr_, ScrolledToXPosition(4));
-  EXPECT_CALL(*engine_ptr_, ScrolledToYPosition(6));
-  UpdatePluginGeometryWithoutWaiting(2.0f, gfx::Rect(3, 4, 5, 6));
-}
-
-class PdfViewWebPluginTestUseZoomForDSF
-    : public PdfViewWebPluginTest,
-      public testing::WithParamInterface<bool> {
- public:
-  void SetUp() override {
-    PdfViewWebPluginTest::SetUp();
-    ON_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-        .WillByDefault(Return(GetParam()));
-  }
-};
-
-TEST_P(PdfViewWebPluginTestUseZoomForDSF,
-       UpdateGeometrySetsPluginRectWithEmptyWindow) {
+TEST_F(PdfViewWebPluginTest, UpdateGeometrySetsPluginRectWithEmptyWindow) {
   EXPECT_CALL(*engine_ptr_, ZoomUpdated).Times(0);
   TestUpdateGeometrySetsPluginRect(
       /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(2, 2, 0, 0),
       /*expected_device_scale=*/1.0f, /*expected_plugin_rect=*/gfx::Rect());
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF, SetCaretPositionIgnoresOrigin) {
+TEST_F(PdfViewWebPluginTest, SetCaretPositionIgnoresOrigin) {
   SetDocumentDimensions({16, 9});
   UpdatePluginGeometryWithoutWaiting(1.0f, {10, 20, 20, 5});
 
@@ -546,22 +526,21 @@ TEST_P(PdfViewWebPluginTestUseZoomForDSF, SetCaretPositionIgnoresOrigin) {
   plugin_->SetCaretPosition({4.0f, 3.0f});
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF, PaintEmptySnapshots) {
+TEST_F(PdfViewWebPluginTest, PaintEmptySnapshots) {
   TestPaintEmptySnapshots(/*device_scale=*/4.0f,
                           /*window_rect=*/gfx::Rect(10, 10, 20, 20),
                           /*paint_rect=*/gfx::Rect(5, 5, 15, 15),
                           /*expected_clipped_rect=*/gfx::Rect(10, 10, 10, 10));
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF, PaintSnapshots) {
+TEST_F(PdfViewWebPluginTest, PaintSnapshots) {
   TestPaintSnapshots(/*device_scale=*/4.0f,
                      /*window_rect=*/gfx::Rect(10, 10, 20, 20),
                      /*paint_rect=*/gfx::Rect(5, 5, 15, 15),
                      /*expected_clipped_rect=*/gfx::Rect(10, 10, 10, 10));
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF,
-       PaintSnapshotsWithVariousDeviceScales) {
+TEST_F(PdfViewWebPluginTest, PaintSnapshotsWithVariousDeviceScales) {
   static constexpr PaintParams kPaintWithVariousScalesParams[] = {
       {0.4f, gfx::Rect(8, 8, 30, 30), gfx::Rect(10, 10, 30, 30),
        gfx::Rect(10, 10, 28, 28)},
@@ -577,8 +556,7 @@ TEST_P(PdfViewWebPluginTestUseZoomForDSF,
   }
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF,
-       PaintSnapshotsWithVariousRectPositions) {
+TEST_F(PdfViewWebPluginTest, PaintSnapshotsWithVariousRectPositions) {
   static constexpr PaintParams kPaintWithVariousPositionsParams[] = {
       // The window origin falls outside the `paint_rect` area.
       {4.0f, gfx::Rect(10, 10, 20, 20), gfx::Rect(5, 5, 15, 15),
@@ -594,7 +572,7 @@ TEST_P(PdfViewWebPluginTestUseZoomForDSF,
   }
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF, UpdateLayerTransformWithIdentity) {
+TEST_F(PdfViewWebPluginTest, UpdateLayerTransformWithIdentity) {
   plugin_->UpdateLayerTransform(1.0f, gfx::Vector2dF());
   TestPaintSnapshots(/*device_scale=*/4.0f,
                      /*window_rect=*/gfx::Rect(10, 10, 20, 20),
@@ -602,7 +580,7 @@ TEST_P(PdfViewWebPluginTestUseZoomForDSF, UpdateLayerTransformWithIdentity) {
                      /*expected_clipped_rect=*/gfx::Rect(10, 10, 20, 20));
 }
 
-TEST_P(PdfViewWebPluginTestUseZoomForDSF, UpdateLayerTransformWithScale) {
+TEST_F(PdfViewWebPluginTest, UpdateLayerTransformWithScale) {
   plugin_->UpdateLayerTransform(0.5f, gfx::Vector2dF());
   TestPaintSnapshots(/*device_scale=*/4.0f,
                      /*window_rect=*/gfx::Rect(10, 10, 20, 20),
@@ -610,23 +588,7 @@ TEST_P(PdfViewWebPluginTestUseZoomForDSF, UpdateLayerTransformWithScale) {
                      /*expected_clipped_rect=*/gfx::Rect(10, 10, 10, 10));
 }
 
-TEST_F(PdfViewWebPluginTest,
-       UpdateLayerTransformWithTranslateUseZoomForDSFDisabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(false));
-
-  plugin_->UpdateLayerTransform(1.0f, gfx::Vector2dF(-5, 5));
-  TestPaintSnapshots(/*device_scale=*/4.0f,
-                     /*window_rect=*/gfx::Rect(10, 10, 20, 20),
-                     /*paint_rect=*/gfx::Rect(10, 10, 20, 20),
-                     /*expected_clipped_rect=*/gfx::Rect(10, 15, 15, 15));
-}
-
-TEST_F(PdfViewWebPluginTest,
-       UpdateLayerTransformWithTranslateUseZoomForDSFEnabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
-
+TEST_F(PdfViewWebPluginTest, UpdateLayerTransformWithTranslate) {
   plugin_->UpdateLayerTransform(1.0f, gfx::Vector2dF(-1.25, 1.25));
   TestPaintSnapshots(/*device_scale=*/4.0f,
                      /*window_rect=*/gfx::Rect(10, 10, 20, 20),
@@ -634,33 +596,13 @@ TEST_F(PdfViewWebPluginTest,
                      /*expected_clipped_rect=*/gfx::Rect(10, 15, 15, 15));
 }
 
-TEST_F(PdfViewWebPluginTest,
-       UpdateLayerTransformWithScaleAndTranslateUseZoomForDSFDisabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(false));
-
-  plugin_->UpdateLayerTransform(0.5f, gfx::Vector2dF(-5, 5));
-  TestPaintSnapshots(/*device_scale=*/4.0f,
-                     /*window_rect=*/gfx::Rect(10, 10, 20, 20),
-                     /*paint_rect=*/gfx::Rect(10, 10, 20, 20),
-                     /*expected_clipped_rect=*/gfx::Rect(10, 15, 5, 10));
-}
-
-TEST_F(PdfViewWebPluginTest,
-       UpdateLayerTransformWithScaleAndTranslateUseZoomForDSFEnabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
-
+TEST_F(PdfViewWebPluginTest, UpdateLayerTransformWithScaleAndTranslate) {
   plugin_->UpdateLayerTransform(0.5f, gfx::Vector2dF(-1.25, 1.25));
   TestPaintSnapshots(/*device_scale=*/4.0f,
                      /*window_rect=*/gfx::Rect(10, 10, 20, 20),
                      /*paint_rect=*/gfx::Rect(10, 10, 20, 20),
                      /*expected_clipped_rect=*/gfx::Rect(10, 15, 5, 10));
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         PdfViewWebPluginTestUseZoomForDSF,
-                         testing::Bool());
 
 class PdfViewWebPluginMouseEventsTest : public PdfViewWebPluginTest {
  public:
@@ -700,11 +642,7 @@ class PdfViewWebPluginMouseEventsTest : public PdfViewWebPluginTest {
   }
 };
 
-TEST_F(PdfViewWebPluginMouseEventsTest,
-       HandleInputEventWithUseZoomForDSFEnabled) {
-  // Test when using zoom for DSF is enabled.
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
+TEST_F(PdfViewWebPluginMouseEventsTest, HandleInputEvent) {
   wrapper_ptr_->set_device_scale(kDeviceScale);
   UpdatePluginGeometry(kDeviceScale, gfx::Rect(20, 20));
 
@@ -717,25 +655,6 @@ TEST_F(PdfViewWebPluginMouseEventsTest,
   const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
   ASSERT_TRUE(event);
   EXPECT_EQ(gfx::PointF(-10.0f, 0.0f), event->PositionInWidget());
-}
-
-TEST_F(PdfViewWebPluginMouseEventsTest,
-       HandleInputEventWithUseZoomForDSFDisabled) {
-  // Test when using zoom for DSF is disabled.
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(false));
-  wrapper_ptr_->set_device_scale(kDeviceScale);
-  UpdatePluginGeometry(kDeviceScale, gfx::Rect(20, 20));
-
-  ui::Cursor dummy_cursor;
-  plugin_->HandleInputEvent(
-      blink::WebCoalescedInputEvent(CreateDefaultMouseDownEvent(),
-                                    ui::LatencyInfo()),
-      &dummy_cursor);
-
-  const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
-  ASSERT_TRUE(event);
-  EXPECT_EQ(gfx::PointF(-20.0f, 0.0f), event->PositionInWidget());
 }
 
 class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
@@ -949,24 +868,12 @@ TEST_F(PdfViewWebPluginTest, ShouldDispatchImeEventsToPlugin) {
   ASSERT_TRUE(plugin_->ShouldDispatchImeEventsToPlugin());
 }
 
-TEST_F(PdfViewWebPluginTest, CaretChangeUseZoomForDSFEnabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(true));
+TEST_F(PdfViewWebPluginTest, CaretChange) {
   EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
   UpdatePluginGeometry(
       /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(12, 24, 36, 48));
   plugin_->CaretChanged(gfx::Rect(10, 20, 30, 40));
   EXPECT_EQ(gfx::Rect(28, 20, 30, 40), plugin_->GetPluginCaretBounds());
-}
-
-TEST_F(PdfViewWebPluginTest, CaretChangeUseZoomForDSFDisabled) {
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
-  UpdatePluginGeometry(
-      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(12, 24, 36, 48));
-  plugin_->CaretChanged(gfx::Rect(10, 20, 30, 40));
-  EXPECT_EQ(gfx::Rect(23, 10, 15, 20), plugin_->GetPluginCaretBounds());
 }
 
 TEST_F(PdfViewWebPluginTest, NotifyNumberOfFindResultsChanged) {
@@ -978,6 +885,198 @@ TEST_F(PdfViewWebPluginTest, NotifyNumberOfFindResultsChanged) {
   EXPECT_CALL(*wrapper_ptr_, ReportFindInPageTickmarks(tickmarks));
   EXPECT_CALL(*wrapper_ptr_, ReportFindInPageMatchCount(123, 5, true));
   plugin_->NotifyNumberOfFindResultsChanged(/*total=*/5, /*final_result=*/true);
+}
+
+class PdfViewWebPluginWithoutDocInfoTest : public PdfViewWebPluginTest {
+ public:
+  std::unique_ptr<UrlLoader> CreateLoader() override {
+    return std::make_unique<NiceMock<MockUrlLoader>>();
+  }
+
+  static base::Value::Dict CreateExpectedNoMetadataResponse() {
+    base::Value::Dict metadata;
+    metadata.Set("fileSize", "0 B");
+    metadata.Set("linearized", false);
+    metadata.Set("pageSize", "Varies");
+    metadata.Set("canSerializeDocument", true);
+
+    base::Value::Dict message;
+    message.Set("type", "metadata");
+    message.Set("metadataData", std::move(metadata));
+    return message;
+  }
+};
+
+TEST_F(PdfViewWebPluginWithoutDocInfoTest, DocumentLoadCompletePostMessages) {
+  const base::Value::Dict expect_metadata = CreateExpectedNoMetadataResponse();
+  EXPECT_CALL(*wrapper_ptr_, PostMessage);
+  EXPECT_CALL(*wrapper_ptr_, PostMessage(Eq(std::ref(expect_metadata))));
+  plugin_->DocumentLoadComplete();
+}
+
+class PdfViewWebPluginWithDocInfoTest : public PdfViewWebPluginTest {
+ public:
+  class TestPDFiumEngineWithDocInfo : public TestPDFiumEngine {
+   public:
+    explicit TestPDFiumEngineWithDocInfo(PDFEngine::Client* client)
+        : TestPDFiumEngine(client) {
+      InitializeDocumentAttachments();
+      InitializeDocumentMetadata();
+    }
+
+    base::Value::List GetBookmarks() override {
+      // Create `bookmark1` which navigates to an in-doc position. This bookmark
+      // will be in the top-level bookmark list.
+      base::Value::Dict bookmark1;
+      bookmark1.Set("title", "Bookmark 1");
+      bookmark1.Set("page", 2);
+      bookmark1.Set("x", 10);
+      bookmark1.Set("y", 20);
+      bookmark1.Set("zoom", 2.0);
+
+      // Create `bookmark2` which navigates to a web page. This bookmark will be
+      // a child of `bookmark1`.
+      base::Value::Dict bookmark2;
+      bookmark2.Set("title", "Bookmark 2");
+      bookmark2.Set("uri", "test.com");
+
+      base::Value::List children_of_bookmark1;
+      children_of_bookmark1.Append(std::move(bookmark2));
+      bookmark1.Set("children", std::move(children_of_bookmark1));
+
+      // Create the top-level bookmark list.
+      base::Value::List bookmarks;
+      bookmarks.Append(std::move(bookmark1));
+      return bookmarks;
+    }
+
+    absl::optional<gfx::Size> GetUniformPageSizePoints() override {
+      return gfx::Size(1000, 1200);
+    }
+
+   private:
+    void InitializeDocumentAttachments() {
+      doc_attachment_info_list().resize(3);
+
+      // A regular attachment.
+      doc_attachment_info_list()[0].name = u"attachment1.txt";
+      doc_attachment_info_list()[0].creation_date = u"D:20170712214438-07'00'";
+      doc_attachment_info_list()[0].modified_date = u"D:20160115091400";
+      doc_attachment_info_list()[0].is_readable = true;
+      doc_attachment_info_list()[0].size_bytes = 13u;
+
+      // An unreadable attachment.
+      doc_attachment_info_list()[1].name = u"attachment2.pdf";
+      doc_attachment_info_list()[1].is_readable = false;
+
+      // A readable attachment that exceeds download size limit.
+      doc_attachment_info_list()[2].name = u"attachment3.mov";
+      doc_attachment_info_list()[2].is_readable = true;
+      doc_attachment_info_list()[2].size_bytes =
+          PdfViewPluginBase::kMaximumSavedFileSize + 1;
+    }
+
+    void InitializeDocumentMetadata() {
+      metadata().version = PdfVersion::k1_7;
+      metadata().size_bytes = 13u;
+      metadata().page_count = 13u;
+      metadata().linearized = true;
+      metadata().has_attachments = true;
+      metadata().tagged = true;
+      metadata().form_type = FormType::kAcroForm;
+      metadata().title = "Title";
+      metadata().author = "Author";
+      metadata().subject = "Subject";
+      metadata().keywords = "Keywords";
+      metadata().creator = "Creator";
+      metadata().producer = "Producer";
+      ASSERT_TRUE(base::Time::FromUTCString("2021-05-04 11:12:13",
+                                            &metadata().creation_date));
+      ASSERT_TRUE(base::Time::FromUTCString("2021-06-04 15:16:17",
+                                            &metadata().mod_date));
+    }
+  };
+
+  std::unique_ptr<TestPDFiumEngine> CreateEngine() override {
+    return std::make_unique<TestPDFiumEngineWithDocInfo>(plugin_.get());
+  }
+  std::unique_ptr<UrlLoader> CreateLoader() override {
+    return std::make_unique<NiceMock<MockUrlLoader>>();
+  }
+
+  static base::Value::Dict CreateExpectedAttachmentsResponse() {
+    base::Value::List attachments;
+    {
+      base::Value::Dict attachment;
+      attachment.Set("name", "attachment1.txt");
+      attachment.Set("size", 13);
+      attachment.Set("readable", true);
+      attachments.Append(std::move(attachment));
+    }
+    {
+      base::Value::Dict attachment;
+      attachment.Set("name", "attachment2.pdf");
+      attachment.Set("size", 0);
+      attachment.Set("readable", false);
+      attachments.Append(std::move(attachment));
+    }
+    {
+      base::Value::Dict attachment;
+      attachment.Set("name", "attachment3.mov");
+      attachment.Set("size", -1);
+      attachment.Set("readable", true);
+      attachments.Append(std::move(attachment));
+    }
+
+    base::Value::Dict message;
+    message.Set("type", "attachments");
+    message.Set("attachmentsData", std::move(attachments));
+    return message;
+  }
+
+  static base::Value::Dict CreateExpectedBookmarksResponse(
+      base::Value::List bookmarks) {
+    base::Value::Dict message;
+    message.Set("type", "bookmarks");
+    message.Set("bookmarksData", std::move(bookmarks));
+    return message;
+  }
+
+  static base::Value::Dict CreateExpectedMetadataResponse() {
+    base::Value::Dict metadata;
+    metadata.Set("version", "1.7");
+    metadata.Set("fileSize", "13 B");
+    metadata.Set("linearized", true);
+
+    metadata.Set("title", "Title");
+    metadata.Set("author", "Author");
+    metadata.Set("subject", "Subject");
+    metadata.Set("keywords", "Keywords");
+    metadata.Set("creator", "Creator");
+    metadata.Set("producer", "Producer");
+    metadata.Set("creationDate", "5/4/21, 4:12:13 AM");
+    metadata.Set("modDate", "6/4/21, 8:16:17 AM");
+    metadata.Set("pageSize", "13.89 × 16.67 in (portrait)");
+    metadata.Set("canSerializeDocument", true);
+
+    base::Value::Dict message;
+    message.Set("type", "metadata");
+    message.Set("metadataData", std::move(metadata));
+    return message;
+  }
+};
+
+TEST_F(PdfViewWebPluginWithDocInfoTest, DocumentLoadCompletePostMessages) {
+  const base::Value::Dict expect_attachments =
+      CreateExpectedAttachmentsResponse();
+  const base::Value::Dict expect_bookmarks =
+      CreateExpectedBookmarksResponse(engine_ptr_->GetBookmarks());
+  const base::Value::Dict expect_metadata = CreateExpectedMetadataResponse();
+  EXPECT_CALL(*wrapper_ptr_, PostMessage);
+  EXPECT_CALL(*wrapper_ptr_, PostMessage(Eq(std::ref(expect_attachments))));
+  EXPECT_CALL(*wrapper_ptr_, PostMessage(Eq(std::ref(expect_bookmarks))));
+  EXPECT_CALL(*wrapper_ptr_, PostMessage(Eq(std::ref(expect_metadata))));
+  plugin_->DocumentLoadComplete();
 }
 
 }  // namespace chrome_pdf

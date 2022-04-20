@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
@@ -64,10 +65,12 @@
 #include "printing/backend/test_print_backend.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
+#include "printing/page_setup.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
 #include "printing/printing_context_factory_for_test.h"
 #include "printing/printing_features.h"
+#include "printing/printing_utils.h"
 #include "printing/test_printing_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,6 +78,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -84,6 +88,13 @@
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_delegate.h"
+#include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+
 namespace printing {
 
 using testing::_;
@@ -91,6 +102,12 @@ using testing::_;
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 using ErrorCheckCallback =
     base::RepeatingCallback<void(mojom::ResultCode result)>;
+using OnDidUseDefaultSettingsCallback =
+    base::RepeatingCallback<void(mojom::ResultCode result)>;
+#if BUILDFLAG(IS_WIN)
+using OnDidAskUserForSettingsCallback =
+    base::RepeatingCallback<void(mojom::ResultCode result)>;
+#endif
 using OnDidStartPrintingCallback =
     base::RepeatingCallback<void(mojom::ResultCode result,
                                  PrintJob* print_job)>;
@@ -99,6 +116,8 @@ using OnDidRenderPrintedPageCallback =
     base::RepeatingCallback<void(uint32_t page_number,
                                  mojom::ResultCode result)>;
 #endif
+using OnDidRenderPrintedDocumentCallback =
+    base::RepeatingCallback<void(mojom::ResultCode result)>;
 using OnDidDocumentDoneCallback =
     base::RepeatingCallback<void(mojom::ResultCode result)>;
 using OnDidShowErrorDialog = base::RepeatingCallback<void()>;
@@ -117,10 +136,15 @@ using OnStopCallback = base::RepeatingCallback<void()>;
 //       processing was done before possibly quitting the test run loop.
 struct TestPrintCallbacks {
   ErrorCheckCallback error_check_callback;
+  OnDidUseDefaultSettingsCallback did_use_default_settings_callback;
+#if BUILDFLAG(IS_WIN)
+  OnDidAskUserForSettingsCallback did_ask_user_for_settings_callback;
+#endif
   OnDidStartPrintingCallback did_start_printing_callback;
 #if BUILDFLAG(IS_WIN)
   OnDidRenderPrintedPageCallback did_render_printed_page_callback;
 #endif
+  OnDidRenderPrintedDocumentCallback did_render_printed_document_callback;
   OnDidDocumentDoneCallback did_document_done_callback;
 
   // The exceptions to the callback steps are `did_show_error_dialog` and
@@ -151,6 +175,10 @@ const PrinterBasicInfoOptions kTestDummyPrintInfoOptions{{"opt1", "123"},
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 constexpr int kDefaultDocumentCookie = 1234;
+
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+constexpr char kFakeDmToken[] = "fake-dm-token";
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
 mojom::PrintParamsPtr GetPrintParams() {
   auto params = mojom::PrintParams::New();
@@ -208,7 +236,7 @@ void UpdatePrintSettingsOnIO(
     int32_t cookie,
     mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
     scoped_refptr<PrintQueriesQueue> queue,
-    base::Value job_settings) {
+    base::Value::Dict job_settings) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
   if (!printer_query) {
@@ -522,6 +550,10 @@ class TestPrintViewManager : public PrintViewManager {
 
   PrintSettings* snooped_settings() { return snooped_settings_.get(); }
 
+  const absl::optional<bool>& print_now_result() const {
+    return print_now_result_;
+  }
+
   static TestPrintViewManager* CreateForWebContents(
       content::WebContents* web_contents) {
     auto manager = std::make_unique<TestPrintViewManager>(web_contents);
@@ -530,6 +562,13 @@ class TestPrintViewManager : public PrintViewManager {
                               std::move(manager));
     return manager_ptr;
   }
+
+  // `PrintViewManagerBase` overrides.
+  bool PrintNow(content::RenderFrameHost* rfh) override {
+    print_now_result_ = PrintViewManager::PrintNow(rfh);
+    return *print_now_result_;
+  }
+  void ShowInvalidPrinterSettingsError() override {}
 
  protected:
   base::RunLoop* run_loop_ = nullptr;
@@ -543,7 +582,7 @@ class TestPrintViewManager : public PrintViewManager {
 
   // printing::mojom::PrintManagerHost:
   void UpdatePrintSettings(int32_t cookie,
-                           base::Value job_settings,
+                           base::Value::Dict job_settings,
                            UpdatePrintSettingsCallback callback) override {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -553,6 +592,7 @@ class TestPrintViewManager : public PrintViewManager {
   }
 
   std::unique_ptr<PrintSettings> snooped_settings_;
+  absl::optional<bool> print_now_result_;
 };
 
 class TestPrintViewManagerForDLP : public TestPrintViewManager {
@@ -608,6 +648,7 @@ class TestPrintViewManagerForDLP : public TestPrintViewManager {
 
  private:
   void RejectPrintPreviewRequestIfRestricted(
+      content::GlobalRenderFrameHostId rfh_id,
       base::OnceCallback<void(bool)> callback) override {
     switch (restriction_level_) {
       case RestrictionLevel::kNotSet:
@@ -634,6 +675,137 @@ class TestPrintViewManagerForDLP : public TestPrintViewManager {
   RestrictionLevel restriction_level_ = RestrictionLevel::kNotSet;
   PrintAllowance allowance_ = PrintAllowance::kUnknown;
 };
+
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
+ public:
+  class Observer : public PrintViewManagerBase::Observer {
+   public:
+    void OnPrintNow(const content::RenderFrameHost* rfh) override {
+      print_now_called_ = true;
+    }
+
+    bool print_now_called() const { return print_now_called_; }
+
+   private:
+    bool print_now_called_ = false;
+  };
+
+  static TestPrintViewManagerForContentAnalysis* CreateForWebContents(
+      content::WebContents* web_contents) {
+    auto manager =
+        std::make_unique<TestPrintViewManagerForContentAnalysis>(web_contents);
+    auto* manager_ptr = manager.get();
+    web_contents->SetUserData(PrintViewManager::UserDataKey(),
+                              std::move(manager));
+    return manager_ptr;
+  }
+
+  explicit TestPrintViewManagerForContentAnalysis(
+      content::WebContents* web_contents)
+      : TestPrintViewManager(web_contents) {
+    AddObserver(observer_);
+    PrintViewManager::SetReceiverImplForTesting(this);
+  }
+
+  ~TestPrintViewManagerForContentAnalysis() override {
+    PrintViewManager::SetReceiverImplForTesting(nullptr);
+  }
+
+  void WaitOnScanning() { scanning_run_loop_.Run(); }
+
+  void WaitOnPreview() { preview_run_loop_.Run(); }
+
+  bool print_now_called() const { return observer_.print_now_called(); }
+
+  const absl::optional<bool>& preview_allowed() const {
+    return preview_allowed_;
+  }
+
+#if BUILDFLAG(IS_CHROMEOS)
+  void set_allowed_by_dlp(bool allowed) { allowed_by_dlp_ = allowed; }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+ protected:
+  void OnGotSnapshotCallback(
+      base::OnceCallback<void(bool should_proceed)> callback,
+      enterprise_connectors::ContentAnalysisDelegate::Data data,
+      content::GlobalRenderFrameHostId rfh_id,
+      mojom::DidPrintDocumentParamsPtr params) override {
+    ASSERT_TRUE(web_contents());
+    ASSERT_TRUE(params);
+    EXPECT_TRUE(params->content->metafile_data_region.IsValid());
+
+    PrintViewManager::OnGotSnapshotCallback(
+        std::move(callback), std::move(data), rfh_id, std::move(params));
+  }
+
+  void OnCompositedForContentAnalysis(
+      base::OnceCallback<void(bool should_proceed)> callback,
+      enterprise_connectors::ContentAnalysisDelegate::Data data,
+      content::GlobalRenderFrameHostId rfh_id,
+      mojom::PrintCompositor::Status status,
+      base::ReadOnlySharedMemoryRegion page_region) override {
+    EXPECT_TRUE(content::RenderFrameHost::FromID(rfh_id));
+    EXPECT_EQ(status, mojom::PrintCompositor::Status::kSuccess);
+
+    // The settings passed to this function should match the content of the
+    // print Connector policy.
+    EXPECT_EQ(data.settings.tags.size(), 1u);
+    EXPECT_TRUE(base::Contains(data.settings.tags, "dlp"));
+    EXPECT_EQ(data.settings.dm_token, kFakeDmToken);
+    EXPECT_EQ(data.settings.block_until_verdict,
+              enterprise_connectors::BlockUntilVerdict::BLOCK);
+    EXPECT_TRUE(data.settings.block_large_files);
+
+    // The snapshot should be valid and populated.
+    EXPECT_TRUE(LooksLikePdf(page_region.Map().GetMemoryAsSpan<char>()));
+
+    PrintViewManager::OnCompositedForContentAnalysis(
+        base::BindOnce(
+            [](base::OnceCallback<void(bool should_proceed)> callback,
+               base::RunLoop* scanning_run_loop, bool allowed) {
+              std::move(callback).Run(allowed);
+              scanning_run_loop->Quit();
+            },
+            std::move(callback), &scanning_run_loop_),
+        std::move(data), rfh_id, status, std::move(page_region));
+  }
+
+#if BUILDFLAG(IS_CHROMEOS)
+  void OnDlpPrintingRestrictionsChecked(
+      content::GlobalRenderFrameHostId rfh_id,
+      base::OnceCallback<void(bool should_proceed)> callback,
+      bool should_proceed) override {
+    PrintViewManager::OnDlpPrintingRestrictionsChecked(
+        rfh_id, std::move(callback), allowed_by_dlp_);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+ private:
+  void PrintPreviewRejectedForTesting() override {
+    preview_allowed_ = false;
+    preview_run_loop_.Quit();
+  }
+
+  void PrintPreviewAllowedForTesting() override {
+    preview_allowed_ = true;
+    preview_run_loop_.Quit();
+  }
+
+#if BUILDFLAG(IS_CHROMEOS)
+  bool allowed_by_dlp_ = true;
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+  // Indicates whether the preview was allowed after checking against content
+  // analysis and DLP (if on CrOS). This is unpopulated until then.
+  absl::optional<bool> preview_allowed_;
+
+  base::RunLoop preview_run_loop_;
+  base::RunLoop scanning_run_loop_;
+  Observer observer_;
+};
+#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
 class PrintBrowserTest : public InProcessBrowserTest {
  public:
@@ -1710,7 +1882,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, MultipagePrint) {
   EXPECT_EQ(rendered_page_count(), 3u);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PDFPluginNotKeyboardFocusable) {
+// Disabled due to flakiness: crbug.com/1311998
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
+                       DISABLED_PDFPluginNotKeyboardFocusable) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -2100,13 +2274,43 @@ INSTANTIATE_TEST_SUITE_P(
 class TestPrintJobWorker : public PrintJobWorkerOop {
  public:
   TestPrintJobWorker(content::GlobalRenderFrameHostId rfh_id,
+                     bool simulate_spooling_memory_errors,
                      TestPrintCallbacks* callbacks)
-      : PrintJobWorkerOop(rfh_id), callbacks_(callbacks) {}
+      : PrintJobWorkerOop(rfh_id, simulate_spooling_memory_errors),
+        callbacks_(callbacks) {}
   TestPrintJobWorker(const TestPrintJobWorker&) = delete;
   TestPrintJobWorker& operator=(const TestPrintJobWorker&) = delete;
   ~TestPrintJobWorker() override = default;
 
  private:
+  void OnDidUseDefaultSettings(
+      SettingsCallback callback,
+      mojom::PrintSettingsResultPtr print_settings) override {
+    DVLOG(1) << "Observed: use default settings";
+    mojom::ResultCode result = print_settings->is_result_code()
+                                   ? print_settings->get_result_code()
+                                   : mojom::ResultCode::kSuccess;
+    callbacks_->error_check_callback.Run(result);
+    PrintJobWorkerOop::OnDidUseDefaultSettings(std::move(callback),
+                                               std::move(print_settings));
+    callbacks_->did_use_default_settings_callback.Run(result);
+  }
+
+#if BUILDFLAG(IS_WIN)
+  void OnDidAskUserForSettings(
+      SettingsCallback callback,
+      mojom::PrintSettingsResultPtr print_settings) override {
+    DVLOG(1) << "Observed: ask user for settings";
+    mojom::ResultCode result = print_settings->is_result_code()
+                                   ? print_settings->get_result_code()
+                                   : mojom::ResultCode::kSuccess;
+    callbacks_->error_check_callback.Run(result);
+    PrintJobWorkerOop::OnDidAskUserForSettings(std::move(callback),
+                                               std::move(print_settings));
+    callbacks_->did_ask_user_for_settings_callback.Run(result);
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   void OnDidStartPrinting(mojom::ResultCode result) override {
     DVLOG(1) << "Observed: start printing of document";
     callbacks_->error_check_callback.Run(result);
@@ -2123,6 +2327,13 @@ class TestPrintJobWorker : public PrintJobWorkerOop {
     callbacks_->did_render_printed_page_callback.Run(page_number, result);
   }
 #endif  // BUILDFLAG(IS_WIN)
+
+  void OnDidRenderPrintedDocument(mojom::ResultCode result) override {
+    DVLOG(1) << "Observed render for printed document";
+    callbacks_->error_check_callback.Run(result);
+    PrintJobWorkerOop::OnDidRenderPrintedDocument(result);
+    callbacks_->did_render_printed_document_callback.Run(result);
+  }
 
   void OnDidDocumentDone(int job_id, mojom::ResultCode result) override {
     DVLOG(1) << "Observed: document done";
@@ -2167,6 +2378,16 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
       test_print_callbacks_.error_check_callback =
           base::BindRepeating(&PrintBackendPrintBrowserTestBase::ErrorCheck,
                               base::Unretained(this));
+      test_print_callbacks_.did_use_default_settings_callback =
+          base::BindRepeating(
+              &PrintBackendPrintBrowserTestBase::OnDidUseDefaultSettings,
+              base::Unretained(this));
+#if BUILDFLAG(IS_WIN)
+      test_print_callbacks_.did_ask_user_for_settings_callback =
+          base::BindRepeating(
+              &PrintBackendPrintBrowserTestBase::OnDidAskUserForSettings,
+              base::Unretained(this));
+#endif
       test_print_callbacks_.did_start_printing_callback = base::BindRepeating(
           &PrintBackendPrintBrowserTestBase::OnDidStartPrinting,
           base::Unretained(this));
@@ -2176,6 +2397,10 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
               &PrintBackendPrintBrowserTestBase::OnDidRenderPrintedPage,
               base::Unretained(this));
 #endif
+      test_print_callbacks_.did_render_printed_document_callback =
+          base::BindRepeating(
+              &PrintBackendPrintBrowserTestBase::OnDidRenderPrintedDocument,
+              base::Unretained(this));
       test_print_callbacks_.did_document_done_callback = base::BindRepeating(
           &PrintBackendPrintBrowserTestBase::OnDidDocumentDone,
           base::Unretained(this));
@@ -2215,6 +2440,12 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
     PrintBackend::SetPrintBackendForTesting(/*print_backend=*/nullptr);
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
     PrinterQuery::SetCreatePrintJobWorkerCallbackForTest(/*callback=*/nullptr);
+    if (UseService()) {
+      // Check that there is never a straggler client registration.
+      EXPECT_EQ(
+          PrintBackendServiceManager::GetInstance().GetClientsRegisteredCount(),
+          0u);
+    }
     PrintBackendServiceManager::ResetForTesting();
 #endif
   }
@@ -2276,6 +2507,20 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
 
   void PrimeAsRepeatingErrorGenerator() { reset_errors_after_check_ = false; }
 
+  void PrimeForSpoolingSharedMemoryErrors() {
+    simulate_spooling_memory_errors_ = true;
+  }
+
+  void PrimeForFailInUseDefaultSettings() {
+    test_printing_context_factory_.SetFailErrorOnUseDefaultSettings();
+  }
+
+#if BUILDFLAG(IS_WIN)
+  void PrimeForCancelInAskUserForSettings() {
+    test_printing_context_factory_.SetCancelErrorOnAskUserForSettings();
+  }
+#endif
+
   void PrimeForAccessDeniedErrorsInNewDocument() {
     test_printing_context_factory_.SetAccessDeniedErrorOnNewDocument(
         /*cause_errors=*/true);
@@ -2288,10 +2533,25 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
   }
 #endif
 
+  void PrimeForAccessDeniedErrorsInRenderPrintedDocument() {
+    test_printing_context_factory_.SetAccessDeniedErrorOnRenderDocument(
+        /*cause_errors=*/true);
+  }
+
   void PrimeForAccessDeniedErrorsInDocumentDone() {
     test_printing_context_factory_.SetAccessDeniedErrorOnDocumentDone(
         /*cause_errors=*/true);
   }
+
+  mojom::ResultCode use_default_settings_result() const {
+    return use_default_settings_result_;
+  }
+
+#if BUILDFLAG(IS_WIN)
+  mojom::ResultCode ask_user_for_settings_result() const {
+    return ask_user_for_settings_result_;
+  }
+#endif
 
   mojom::ResultCode start_printing_result() const {
     return start_printing_result_;
@@ -2303,6 +2563,10 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
   }
   int render_printed_page_count() const { return render_printed_pages_count_; }
 #endif  // BUILDFLAG(IS_WIN)
+
+  mojom::ResultCode render_printed_document_result() {
+    return render_printed_document_result_;
+  }
 
   mojom::ResultCode document_done_result() const {
     return document_done_result_;
@@ -2322,9 +2586,19 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
       auto context =
           std::make_unique<TestPrintingContext>(delegate, skip_system_calls);
 
+      // Setup a sample page setup, which is needed to pass checks in
+      // `PrintRenderFrameHelper` that the print params are valid.
+      constexpr gfx::Size kPhysicalSize = gfx::Size(200, 200);
+      constexpr gfx::Rect kPrintableArea = gfx::Rect(0, 0, 200, 200);
+      const PageMargins kRequestedMargins(0, 0, 5, 5, 5, 5);
+      const PageSetup kPageSetup(kPhysicalSize, kPrintableArea,
+                                 kRequestedMargins, /*forced_margins=*/false,
+                                 /*text_height=*/0);
+
       auto settings = std::make_unique<PrintSettings>();
       settings->set_copies(kTestPrintSettingsCopies);
       settings->set_dpi(kTestPrintingDpi);
+      settings->set_page_setup_device_units(kPageSetup);
       settings->set_device_name(
           base::ASCIIToUTF16(base::StringPiece(printer_name_)));
       context->SetDeviceSettings(printer_name_, std::move(settings));
@@ -2335,8 +2609,17 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
       if (access_denied_errors_for_render_page_)
         context->SetOnRenderPageBlockedByPermissions();
 #endif
+      if (access_denied_errors_for_render_document_)
+        context->SetOnRenderDocumentBlockedByPermissions();
       if (access_denied_errors_for_document_done_)
         context->SetDocumentDoneBlockedByPermissions();
+
+      if (fail_on_use_default_settings_)
+        context->SetUseDefaultSettingsFails();
+#if BUILDFLAG(IS_WIN)
+      if (cancel_on_ask_user_for_settings_)
+        context->SetAskUserForSettingsCanceled();
+#endif
 
       return std::move(context);
     }
@@ -2355,9 +2638,23 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
     }
 #endif
 
+    void SetAccessDeniedErrorOnRenderDocument(bool cause_errors) {
+      access_denied_errors_for_render_document_ = cause_errors;
+    }
+
     void SetAccessDeniedErrorOnDocumentDone(bool cause_errors) {
       access_denied_errors_for_document_done_ = cause_errors;
     }
+
+    void SetFailErrorOnUseDefaultSettings() {
+      fail_on_use_default_settings_ = true;
+    }
+
+#if BUILDFLAG(IS_WIN)
+    void SetCancelErrorOnAskUserForSettings() {
+      cancel_on_ask_user_for_settings_ = true;
+    }
+#endif
 
    private:
     std::string printer_name_;
@@ -2365,13 +2662,19 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
 #if BUILDFLAG(IS_WIN)
     bool access_denied_errors_for_render_page_ = false;
 #endif
+    bool access_denied_errors_for_render_document_ = false;
     bool access_denied_errors_for_document_done_ = false;
+    bool fail_on_use_default_settings_ = false;
+#if BUILDFLAG(IS_WIN)
+    bool cancel_on_ask_user_for_settings_ = false;
+#endif
   };
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   std::unique_ptr<PrintJobWorker> CreatePrintJobWorker(
       content::GlobalRenderFrameHostId rfh_id) {
-    return std::make_unique<TestPrintJobWorker>(rfh_id, &test_print_callbacks_);
+    return std::make_unique<TestPrintJobWorker>(
+        rfh_id, simulate_spooling_memory_errors_, &test_print_callbacks_);
   }
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
@@ -2381,6 +2684,18 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
     if (result == mojom::ResultCode::kAccessDenied)
       ResetForNoAccessDeniedErrors();
   }
+
+  void OnDidUseDefaultSettings(mojom::ResultCode result) {
+    use_default_settings_result_ = result;
+    CheckForQuit();
+  }
+
+#if BUILDFLAG(IS_WIN)
+  void OnDidAskUserForSettings(mojom::ResultCode result) {
+    ask_user_for_settings_result_ = result;
+    CheckForQuit();
+  }
+#endif
 
   void OnDidStartPrinting(mojom::ResultCode result, PrintJob* print_job) {
     start_printing_result_ = result;
@@ -2396,6 +2711,11 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
     CheckForQuit();
   }
 #endif
+
+  void OnDidRenderPrintedDocument(mojom::ResultCode result) {
+    render_printed_document_result_ = result;
+    CheckForQuit();
+  }
 
   void OnDidDocumentDone(mojom::ResultCode result) {
     document_done_result_ = result;
@@ -2423,6 +2743,8 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
     test_printing_context_factory_.SetAccessDeniedErrorOnRenderPage(
         /*cause_errors=*/false);
 #endif
+    test_printing_context_factory_.SetAccessDeniedErrorOnRenderDocument(
+        /*cause_errors=*/false);
     test_printing_context_factory_.SetAccessDeniedErrorOnDocumentDone(
         /*cause_errors=*/false);
   }
@@ -2434,16 +2756,23 @@ class PrintBackendPrintBrowserTestBase : public PrintBrowserTest {
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   TestPrintCallbacks test_print_callbacks_;
   CreatePrintJobWorkerCallback test_create_print_job_worker_callback_;
+  bool simulate_spooling_memory_errors_ = false;
   mojo::Remote<mojom::PrintBackendService> test_remote_;
   std::unique_ptr<PrintBackendServiceTestImpl> print_backend_service_;
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
   PrintJob* print_job_ = nullptr;
   bool reset_errors_after_check_ = true;
+  mojom::ResultCode use_default_settings_result_ = mojom::ResultCode::kFailed;
+#if BUILDFLAG(IS_WIN)
+  mojom::ResultCode ask_user_for_settings_result_ = mojom::ResultCode::kFailed;
+#endif
   mojom::ResultCode start_printing_result_ = mojom::ResultCode::kFailed;
 #if BUILDFLAG(IS_WIN)
   mojom::ResultCode render_printed_page_result_ = mojom::ResultCode::kFailed;
   int render_printed_pages_count_ = 0;
 #endif
+  mojom::ResultCode render_printed_document_result_ =
+      mojom::ResultCode::kFailed;
   mojom::ResultCode document_done_result_ = mojom::ResultCode::kFailed;
   bool error_dialog_shown_ = false;
   bool stop_invoked_ = false;
@@ -2530,26 +2859,54 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService, StartPrinting) {
   ASSERT_TRUE(web_contents);
   SetUpPrintViewManager(web_contents);
 
-#if BUILDFLAG(IS_WIN)
-  // The test will succeed to start the print job, render a page of content,
-  // and complete with document done.  Wait for a call to `Stop()` to ensure
-  // print job wrap-up finished cleanly before completing the test.  This
-  // results in a total of 4 expected calls.
-  SetNumExpectedMessages(/*num=*/4);
-#else
-  // The test will succeed to start printing.  Wait for a call to `Stop()` to
+  // The test will succeed to start the print job, render a page/document of
+  // content, and complete with document done.  Wait for a call to `Stop()` to
   // ensure print job wrap-up finished cleanly before completing the test.
-  // This results in a total of 2 expected calls.
-  SetNumExpectedMessages(/*num=*/2);
-#endif
+  // This results in a total of 4 expected calls.
+  SetNumExpectedMessages(/*num=*/4);
   PrintAfterPreviewIsReadyAndLoaded();
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
-  EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+#else
+  EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
+  EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_TRUE(stop_invoked());
+}
+
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
+                       StartPrintingSpoolingSharedMemoryError) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+  PrimeForSpoolingSharedMemoryErrors();
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+
+  // No attempt to retry is made if a job has a shared memory error when trying
+  // to spool a page/document fails on a shared memory error.  The test will
+  // succeed to start the print job, and fails in spooling when it is preparing
+  // to send the data for rendering.  This will cause a printing error dialog
+  // to be displayed.  Wait for a call to `Stop()` to ensure print job wrap-up
+  // finished cleanly before completing the test.  This results in a total of 3
+  // expected calls.
+  SetNumExpectedMessages(/*num=*/3);
+
+  PrintAfterPreviewIsReadyAndLoaded();
+
+  EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+  EXPECT_TRUE(error_dialog_shown());
   EXPECT_TRUE(stop_invoked());
 }
 
@@ -2568,27 +2925,25 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
   ASSERT_TRUE(web_contents);
   SetUpPrintViewManager(web_contents);
 
-#if BUILDFLAG(IS_WIN)
   // The test will retry to print after getting an access-denied error when
   // trying to start printing.  After that the printing will succeed to start,
-  // render a page of content, and complete.  Wait for a call to `Stop()` to
-  // ensure print job wrap-up finished cleanly - resulting in 5 calls.
+  // render a page/document of content, and complete.  Wait for a call to
+  // `Stop()` to ensure print job wrap-up finished cleanly - resulting in 5
+  // calls.
   SetNumExpectedMessages(/*num=*/5);
-#else
-  // The test will retry to print after getting an access-denied error when
-  // trying to start printing.  After that the printing will succeed to start.
-  // Wait for a call to `Stop()` to ensure print job wrap-up finished cleanly
-  SetNumExpectedMessages(/*num=*/3);
-#endif
 
   PrintAfterPreviewIsReadyAndLoaded();
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
-  EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+#else
+  EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
 #endif
+  EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
   EXPECT_TRUE(stop_invoked());
 }
 
@@ -2656,9 +3011,40 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-// TODO(crbug.com/809738)  Enable for other platforms once support is added
-// for `RenderPrintedDocument()`.
-#if BUILDFLAG(IS_WIN)
+// TODO(crbug.com/1008222)  Include Windows once XPS print pipeline is added.
+#if !BUILDFLAG(IS_WIN)
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
+                       StartPrintingRenderDocumentAccessDenied) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+  PrimeForAccessDeniedErrorsInRenderPrintedDocument();
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+
+  // No attempt to retry is made if an access-denied error occurs when trying
+  // to render a document.  The test will fail after starting the print job and
+  // rendering the document.  This will cause a printing error dialog to be
+  // displayed.  Wait for a call to `Stop()` to ensure print job wrap-up
+  // finished cleanly before completing the test.  This results in a total of 4
+  // expected calls.
+  SetNumExpectedMessages(/*num=*/4);
+
+  PrintAfterPreviewIsReadyAndLoaded();
+
+  EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kAccessDenied);
+  EXPECT_TRUE(error_dialog_shown());
+  EXPECT_TRUE(stop_invoked());
+}
+#endif  // !BUILDFLAG(IS_WIN)
+
 IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
                        StartPrintingDocumentDoneAccessDenied) {
   AddPrinter("printer1");
@@ -2685,16 +3071,289 @@ IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
   PrintAfterPreviewIsReadyAndLoaded();
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
+#else
+  EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
+#endif
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kAccessDenied);
   EXPECT_TRUE(error_dialog_shown());
   EXPECT_TRUE(stop_invoked());
 }
+
+// TODO(crbug.com/809738)  Extend to Linux once Wayland can be made to support
+// a system be modal against an application window in the browser process.
+#if BUILDFLAG(IS_WIN)
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService, StartBasicPrint) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+  StartBasicPrint(web_contents);
+
+  // The test will get the default settings followed by asking the user for
+  // settings.  After that a print job will be started, with a page getting
+  // rendered, and finally the document done notification.  Wait for a call to
+  // `Stop()` to ensure print job wrap-up finished cleanly before completing
+  // the test.  This results in a total of 6 calls.
+  SetNumExpectedMessages(/*num=*/6);
+
+  WaitUntilCallbackReceived();
+
+  EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(ask_user_for_settings_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // RenderPrintedDocument() once XPS print pipeline is added.
+  EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(render_printed_page_count(), 1);
+  EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_TRUE(stop_invoked());
+}
+
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
+                       StartBasicPrintCancel) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+  PrimeForCancelInAskUserForSettings();
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+  StartBasicPrint(web_contents);
+
+  // The test will get the default settings followed by asking the user for
+  // settings.  Since this pretends the user canceled from that, no further
+  // printing calls are made.  Wait for a call to `Stop()` to ensure print job
+  // wrap-up finished cleanly before completing the test.  This results in a
+  // total of 3 expected calls.
+  SetNumExpectedMessages(/*num=*/3);
+
+  WaitUntilCallbackReceived();
+
+  EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(ask_user_for_settings_result(), mojom::ResultCode::kCanceled);
+  EXPECT_TRUE(stop_invoked());
+}
+
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
+                       StartBasicPrintConcurrent) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  TestPrintViewManager* print_view_manager =
+      TestPrintViewManager::CreateForWebContents(web_contents);
+
+  // Pretend that a window has started a system print.
+  absl::optional<uint32_t> client_id =
+      PrintBackendServiceManager::GetInstance().RegisterQueryWithUiClient();
+  ASSERT_TRUE(client_id.has_value());
+
+  // Now initiate a system print that would exist concurrently with that.
+  StartBasicPrint(web_contents);
+
+  // On Windows, concurrent system print is not allowed.
+  // TODO(crbug.com/809738):  Demonstrate that Linux allows multiple system
+  // prints at a time.
+  const absl::optional<bool>& result = print_view_manager->print_now_result();
+  ASSERT_TRUE(result.has_value());
+  EXPECT_FALSE(*result);
+
+  // Cleanup before test shutdown.
+  PrintBackendServiceManager::GetInstance().UnregisterClient(*client_id);
+}
 #endif  // BUILDFLAG(IS_WIN)
+
+IN_PROC_BROWSER_TEST_F(PrintBackendPrintBrowserTestService,
+                       StartBasicPrintUseDefaultFails) {
+  PrimeForFailInUseDefaultSettings();
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+  StartBasicPrint(web_contents);
+
+  // The test will fail getting the default settings, aborting the rest of
+  // printing.  Wait for a call to `Stop()` to ensure print job wrap-up
+  // finished cleanly before completing the test. This results in a total of
+  // 2 calls.
+  SetNumExpectedMessages(/*num=*/2);
+
+  WaitUntilCallbackReceived();
+
+  EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kFailed);
+  EXPECT_TRUE(stop_invoked());
+}
 
 #endif  //  BUILDFLAG(ENABLE_OOP_PRINTING)
 
 #endif  // !BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+class ContentAnalysisPrintBrowserTest
+    : public PrintBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ContentAnalysisPrintBrowserTest() {
+    policy::SetDMTokenForTesting(
+        policy::DMToken::CreateValidTokenForTesting(kFakeDmToken));
+    enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
+        base::BindRepeating(
+            &enterprise_connectors::FakeContentAnalysisDelegate::Create,
+            base::DoNothing(),
+            base::BindRepeating(
+                &ContentAnalysisPrintBrowserTest::ScanningResponse,
+                base::Unretained(this)),
+            /*file_encrypted=*/
+            base::BindRepeating([](const base::FilePath& path) {
+              NOTREACHED();
+              return false;
+            }),
+            kFakeDmToken));
+
+    feature_list_.InitAndEnableFeature(features::kEnablePrintContentAnalysis);
+  }
+
+  void SetUpOnMainThread() override {
+    safe_browsing::SetAnalysisConnector(
+        browser()->profile()->GetPrefs(),
+        enterprise_connectors::AnalysisConnector::PRINT,
+        R"({
+          "service_provider": "google",
+          "enable": [ {"url_list": ["*"], "tags": ["dlp"]} ],
+          "block_until_verdict": 1,
+          "block_large_files": true
+        })");
+    PrintBrowserTest::SetUpOnMainThread();
+  }
+
+  bool content_analysis_allows_print() const { return GetParam(); }
+
+  enterprise_connectors::ContentAnalysisResponse ScanningResponse(
+      const base::FilePath& path) {
+    enterprise_connectors::ContentAnalysisResponse response;
+
+    auto* result = response.add_results();
+    result->set_tag("dlp");
+    result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+
+    if (!content_analysis_allows_print()) {
+      auto* rule = result->add_triggered_rules();
+      rule->set_rule_name("blocking_rule_name");
+      rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
+    }
+
+    return response;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// TODO(crbug.com/1256506): Re-enable test on Windows
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_WIN)
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintNow) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  auto* print_view_manager =
+      TestPrintViewManagerForContentAnalysis::CreateForWebContents(
+          web_contents);
+
+  StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+             /*print_renderer=*/mojo::NullAssociatedRemote(),
+             /*print_preview_disabled=*/true,
+             /*has_selection=*/false);
+
+  print_view_manager->WaitOnScanning();
+  ASSERT_EQ(print_view_manager->print_now_called(),
+            content_analysis_allows_print());
+}
+
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintWithPreview) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  auto* print_view_manager =
+      TestPrintViewManagerForContentAnalysis::CreateForWebContents(
+          web_contents);
+
+  StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+             /*print_renderer=*/mojo::NullAssociatedRemote(),
+             /*print_preview_disabled=*/false,
+             /*has_selection=*/false);
+
+  print_view_manager->WaitOnScanning();
+  ASSERT_TRUE(print_view_manager->preview_allowed().has_value());
+  ASSERT_EQ(print_view_manager->preview_allowed().value(),
+            content_analysis_allows_print());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest,
+                       BlockedByDLPThenNoContentAnalysis) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  auto* print_view_manager =
+      TestPrintViewManagerForContentAnalysis::CreateForWebContents(
+          web_contents);
+  print_view_manager->set_allowed_by_dlp(false);
+
+  StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+             /*print_renderer=*/mojo::NullAssociatedRemote(),
+             /*print_preview_disabled=*/false,
+             /*has_selection=*/false);
+
+  print_view_manager->WaitOnPreview();
+  ASSERT_TRUE(print_view_manager->preview_allowed().has_value());
+  ASSERT_FALSE(print_view_manager->preview_allowed().value());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+// TODO(crbug.com/1256506): Re-enable test on Windows
+#if !BUILDFLAG(IS_WIN)
+INSTANTIATE_TEST_SUITE_P(All, ContentAnalysisPrintBrowserTest, testing::Bool());
+#endif  // !BUILDFLAG(IS_WIN)
+
+#endif  // BUILDFLAG(ENABLE_PRINT_SCANNING)
 
 }  // namespace printing

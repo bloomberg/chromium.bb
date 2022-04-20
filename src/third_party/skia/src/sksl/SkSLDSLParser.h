@@ -8,23 +8,44 @@
 #ifndef SKSL_DSLPARSER
 #define SKSL_DSLPARSER
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
 #include "include/private/SkSLProgramKind.h"
+#include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "include/sksl/DSL.h"
-#include "include/sksl/DSLSymbols.h"
+#include "include/sksl/DSLCore.h"
+#include "include/sksl/DSLExpression.h"
+#include "include/sksl/DSLLayout.h"
+#include "include/sksl/DSLModifiers.h"
+#include "include/sksl/DSLStatement.h"
+#include "include/sksl/DSLType.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLOperator.h"
+#include "include/sksl/SkSLPosition.h"
+#include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLLexer.h"
-#include "src/sksl/ir/SkSLProgram.h"
+#include "src/sksl/SkSLProgramSettings.h"
 
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 
 namespace SkSL {
 
-class ErrorReporter;
-struct Modifiers;
 struct ParsedModule;
-class SymbolTable;
+struct Program;
+
+namespace dsl {
+class DSLBlock;
+class DSLCase;
+class DSLGlobalVar;
+class DSLParameter;
+template <typename T> class DSLWrapper;
+
+}
+
+class AutoDSLDepth;
 
 /**
  * Consumes .sksl text and invokes DSL functions to instantiate the program.
@@ -55,8 +76,6 @@ public:
     std::string_view text(Token token);
 
     Position position(Token token);
-
-    Position position(int line);
 
 private:
     static void InitLayoutMap();
@@ -119,6 +138,10 @@ private:
     void error(Token token, std::string msg);
     void error(Position position, std::string msg);
 
+    // Returns the range from `start` to the current parse position.
+    Position rangeFrom(Position start);
+    Position rangeFrom(Token start);
+
     // these functions parse individual grammar rules from the current parse position; you probably
     // don't need to call any of these outside of the parser. The function declarations in the .cpp
     // file have comments describing the grammar rules.
@@ -138,7 +161,8 @@ private:
 
     bool declaration();
 
-    bool functionDeclarationEnd(const dsl::DSLModifiers& modifiers,
+    bool functionDeclarationEnd(Position start,
+                                const dsl::DSLModifiers& modifiers,
                                 dsl::DSLType type,
                                 const Token& name);
 
@@ -157,7 +181,8 @@ private:
 
     std::optional<dsl::DSLType> structDeclaration();
 
-    SkTArray<dsl::DSLGlobalVar> structVarDeclaration(const dsl::DSLModifiers& modifiers);
+    SkTArray<dsl::DSLGlobalVar> structVarDeclaration(Position start,
+                                                     const dsl::DSLModifiers& modifiers);
 
     bool parseArrayDimensions(Position pos, dsl::DSLType* type);
 
@@ -208,6 +233,10 @@ private:
     std::optional<dsl::DSLBlock> block();
 
     dsl::DSLStatement expressionStatement();
+
+    using BinaryParseFn = dsl::DSLExpression (DSLParser::*)();
+    bool SK_WARN_UNUSED_RESULT operatorRight(AutoDSLDepth& depth, Operator::Kind op,
+            BinaryParseFn rightFn, dsl::DSLExpression& result);
 
     dsl::DSLExpression expression();
 

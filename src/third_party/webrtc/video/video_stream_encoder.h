@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "api/adaptation/resource.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/units/data_rate.h"
 #include "api/video/video_bitrate_allocator.h"
@@ -28,7 +29,6 @@
 #include "api/video/video_stream_encoder_settings.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
-#include "api/webrtc_key_value_config.h"
 #include "call/adaptation/adaptation_constraint.h"
 #include "call/adaptation/resource_adaptation_processor.h"
 #include "call/adaptation/resource_adaptation_processor_interface.h"
@@ -81,7 +81,7 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
       std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
           encoder_queue,
       BitrateAllocationCallbackType allocation_cb_type,
-      const WebRtcKeyValueConfig& field_trials);
+      const FieldTrialsView& field_trials);
   ~VideoStreamEncoder() override;
 
   VideoStreamEncoder(const VideoStreamEncoder&) = delete;
@@ -252,10 +252,10 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
 
   void RequestEncoderSwitch() RTC_RUN_ON(&encoder_queue_);
 
-  const WebRtcKeyValueConfig& field_trials_;
+  const FieldTrialsView& field_trials_;
   TaskQueueBase* const worker_queue_;
 
-  const uint32_t number_of_cores_;
+  const int number_of_cores_;
 
   EncoderSink* sink_;
   const VideoStreamEncoderSettings settings_;
@@ -439,6 +439,8 @@ class VideoStreamEncoder : public VideoStreamEncoderInterface,
 
   // Enables encoder switching on initialization failures.
   bool switch_encoder_on_init_failures_;
+
+  const absl::optional<int> vp9_low_tier_core_threshold_;
 
   // Public methods are proxied to the task queues. The queues must be destroyed
   // first to make sure no tasks run that use other members.

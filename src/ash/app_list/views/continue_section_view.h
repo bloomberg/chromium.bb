@@ -24,6 +24,7 @@ class AppListViewDelegate;
 class AppListToastView;
 class ContinueTaskContainerView;
 class ContinueTaskView;
+class SearchResultPageDialogController;
 
 // The "Continue" section of the bubble launcher. This view wraps around
 // suggestions with tasks to continue.
@@ -35,11 +36,15 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   METADATA_HEADER(ContinueSectionView);
 
   ContinueSectionView(AppListViewDelegate* view_delegate,
+                      SearchResultPageDialogController* dialog_controller,
                       int columns,
                       bool tablet_mode);
   ContinueSectionView(const ContinueSectionView&) = delete;
   ContinueSectionView& operator=(const ContinueSectionView&) = delete;
   ~ContinueSectionView() override;
+
+  // Returns true if the continue section removal metrics should be logged.
+  static bool EnableContinueSectionFileRemovalMetrics();
 
   // Called when the `suggestion_container_` finishes updating the tasks.
   void OnSearchResultContainerResultsChanged();
@@ -131,6 +136,9 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   // Starts the animation to dismiss the privacy notice toast only. This is used
   // when the privacy notice does not have enough items after an update.
   void MaybeAnimateOutPrivacyNotice();
+
+  // Controller for showing a modal dialog in the continue section.
+  SearchResultPageDialogController* const dialog_controller_;
 
   bool tablet_mode_ = false;
 

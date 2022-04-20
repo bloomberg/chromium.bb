@@ -56,6 +56,7 @@ devtools_module("elements") {
     "PropertiesWidget.ts",
     "PropertyNameCategories.ts",
     "StyleEditorWidget.ts",
+    "StylePropertiesSection.ts",
     "StylePropertyHighlighter.ts",
     "StylePropertyTreeElement.ts",
     "StylePropertyUtils.ts",
@@ -77,9 +78,9 @@ devtools_module("elements") {
     "../../panels/emulation:bundle",
     "../../panels/event_listeners:bundle",
     "../../panels/mobile_throttling:bundle",
+    "../../panels/utils:bundle",
     "../../ui/components/adorners:bundle",
     "../../ui/components/code_highlighter:bundle",
-    "../../ui/components/diff_view:bundle",
     "../../ui/components/text_editor:bundle",
     "../../ui/components/tree_outline:bundle",
     "../../ui/legacy:bundle",
@@ -144,5 +145,9 @@ devtools_entrypoint("meta") {
     "../../ui/legacy:bundle",
   ]
 
-  visibility = [ "../../entrypoints/*" ]
+  visibility = [
+    "../../../test/unittests/front_end/helpers/*",
+    "../../../test/unittests/front_end/panels/elements/*",
+    "../../entrypoints/*",
+  ]
 }

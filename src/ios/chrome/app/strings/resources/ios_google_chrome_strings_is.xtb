@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
-<translation id="1096883626080133124">Komdu meiru í verk með einfaldari, öruggari og hraðari Google Chrome</translation>
 <translation id="1143896152279775643">Aðgangsorðið verður vistað í aðgangsorðastjórnun Google fyrir <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Hjálpaðu okkur að bæta eiginleika og afköst Chrome</translation>
 <translation id="1479202195792305274">Chrome getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum.</translation>
@@ -13,6 +12,7 @@
 <translation id="1917964099031477364">Þessi reikningur og öll óvistuð gögn verða fjarlægð úr Chrome og öðrum Google forritum á þessu tæki.</translation>
 <translation id="1968388653333775699">Komdu meiru í verk með Chrome</translation>
 <translation id="2009224836393115614">Chrome gat ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
+<translation id="2056123005618757196">Komdu meiru í verk með einfaldari, öruggari og hraðari Google Chrome.</translation>
 <translation id="2147651015520127414">Chrome staðfesti að <ph name="ISSUER" /> gaf út vottorð þessa vefsvæðis.</translation>
 <translation id="2199719347983604670">Gögn úr Chrome samstillingu</translation>
 <translation id="2313070403598893276">Google Chrome er einfaldur, öruggur og hefur aldrei verið hraðari</translation>
@@ -39,7 +39,6 @@
 <translation id="3345341804167540816">Notaðu Chrome alls staðar</translation>
 <translation id="3522659714780527202">Kveiktu á samstillingu til að sjá flipana þína hvar sem þú notar Chrome</translation>
 <translation id="3533694711092285624">Engin vistuð aðgangsorð. Chrome getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
-<translation id="3634910711516114487">Skráðu þig inn á Chrome með Google reikningnum þínum svo að Chrome nýtist þér sem best</translation>
 <translation id="3655656110921623717">Þetta þýðir að Chrome biður alltaf um snjalltækjaútgáfu vefsvæðis.</translation>
 <translation id="3706101708757577809">Núna geturðu notað Chrome hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
 <translation id="3720541637541300822">Læsa huliðsflipum um leið og þú lokar Chrome</translation>
@@ -56,6 +55,7 @@
 <translation id="4523886039239821078">Einhverjar viðbætur valda því að Chrome hrynur. Fjarlægðu þær.</translation>
 <translation id="4633328489441962921">Chrome getur ekki leitað að uppfærslum.</translation>
 <translation id="4698415050768537821">Chrome gat ekki athugað öll aðgangsorð. Reyndu aftur á morgun eða <ph name="BEGIN_LINK" />athugaðu aðgangsorð á Google reikningnum þínum.<ph name="END_LINK" /></translation>
+<translation id="4819268619367838612">Chrome sendir gögn um notkun og hrun til Google til að bæta forritið. <ph name="BEGIN_LINK" />Stjórna<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Ekki stutt í Chrome Beta</translation>
 <translation id="5030102366287574140">Chrome getur veitt þér vernd gegn öryggisbrotum, hættulegum vefsvæðum og fleira.</translation>
 <translation id="5108659628347594808">Bættu Chrome</translation>
@@ -83,19 +83,13 @@
 <translation id="6709398533399187136">Aðgangsorðið þitt var afhjúpað vegna öryggisbrots. Aðgangsorðastjórnun Google mælir með að þú breytir því núna.</translation>
 <translation id="6822673484890854830">Chrome gat ekki athugað öll aðgangsorð. Reyndu aftur síðar.</translation>
 <translation id="6964931465519938134">Núna geturðu notað Chrome hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
-<translation id="7046845777663074840">Þegar kveikt er á þessu:
-<ph name="BEGIN_INDENT" />  • Hjálpaðu til við að bæta Chrome fyrir fólk sem notar það eins og þú.<ph name="END_INDENT" />
-
-Hafðu í huga:
-<ph name="BEGIN_INDENT" />  • Upplýsingar um notkun þína á Chrome eru sendar til Google en eru ekki tengdar við þig.
-  • Ef Chrome hrynur gætu tilteknar persónuupplýsingar komið fram í upplýsingum um hrunið.
-  • Ef þú kveikir að samstillingu gætu mæligildi innihaldið upplýsingar um vefslóðir sem þú ferð á.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Lagaðu Chrome að þínum þörfum</translation>
 <translation id="7124339256045485976">Haltu Chrome uppfærðu</translation>
 <translation id="7161390184744336561">Google Chrome er úrelt</translation>
 <translation id="7165736900384873061">Byrjaðu að nota QR-skanna Google Chrome</translation>
 <translation id="7172660552945675509">Ábending: <ph name="BEGIN_LINK" />Færðu Chrome í forritastikuna<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome notar andlitskennsl til að tryggja heimilaðan aðgang að aðgangsorðum þínum.</translation>
+<translation id="7187993566681480880">Tryggir öryggi þitt í Chrome og kann að vera notað til að auka öryggi þitt í öðrum Google forritum þegar þú hefur skráð þig inn.</translation>
 <translation id="72119412072970160">Þú getur notað aðgangsorðin sem þú vistaðir í aðgangsorðastjórnun Google í öðrum forritum í iPad.</translation>
 <translation id="7261678641327190792">Chrome getur ekki athugað aðgangsorðin þín</translation>
 <translation id="7272930098487145294">Til að vista myndir og láta Chrome bæta við myndirnar þínar skaltu ýta á Stillingar</translation>
@@ -108,6 +102,7 @@ Hafðu í huga:
 <translation id="766361182512894255">Aðgangsorðið þitt var afhjúpað vegna öryggisbrots. Chrome mælir með því að þú breytir aðgangsorðinu þínu núna.</translation>
 <translation id="7693590760643069321">Núna geturðu notað Chrome hvenær sem þú ýtir á tengil í skilaboðum, skjölum og öðrum forritum.</translation>
 <translation id="7698568245838009292">Chrome biður um aðgang að myndavélinni</translation>
+<translation id="7780154209050837198">Skráðu þig inn á Chrome með Google reikningnum þínum svo að Chrome nýtist þér sem best.</translation>
 <translation id="7855730255114109580">Google Chrome er uppfært</translation>
 <translation id="8022947259858476807">Notaðu Chrome sem sjálfgefinn valkost til að opna tengla, leita í græjum og til sjálfvirkrar útfyllingar aðgangsorða í öðrum forritum</translation>
 <translation id="8160472928944011082">Ekki er hægt að uppfæra Chrome</translation>
@@ -125,6 +120,13 @@ Hafðu í huga:
 <translation id="8736550665979974340">Öryggi með Google Chrome</translation>
 <translation id="8772179140489533211">Sýna innskráningartilkynningar í Chrome.</translation>
 <translation id="8788269841521769222">Þú þarft ekki að muna þetta aðgangsorð. Það verður vistað í aðgangsorðastjórnun Google fyrir <ph name="EMAIL" /></translation>
+<translation id="8969290730818637510">Þegar kveikt er á þessu:
+<ph name="BEGIN_INDENT" />  • Hjálpaðu til við að bæta Chrome fyrir fólk sem notar það eins og þú.<ph name="END_INDENT" />
+
+Hafðu í huga:
+<ph name="BEGIN_INDENT" />  • Upplýsingar um notkun þína á Chrome eru sendar til Google en eru ekki tengdar við þig.
+  • Ef Chrome hrynur gætu tilteknar persónuupplýsingar komið fram í upplýsingum um hrunið.
+  • Ef þú kveikir að samstillingu gætu mæligildi innihaldið upplýsingar um vefslóðir sem þú ferð á.<ph name="END_INDENT" /></translation>
 <translation id="9112744793181547300">Stilla Chrome sem sjálfgefið?</translation>
 <translation id="9122931302567044771">Þetta þýðir að Chrome biður alltaf um skjáborðsútgáfu vefsvæðis.</translation>
 </translationbundle>

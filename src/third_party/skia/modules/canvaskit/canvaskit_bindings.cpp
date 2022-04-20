@@ -67,9 +67,10 @@
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/gl/GrGLInterface.h"
 #include "include/gpu/gl/GrGLTypes.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/gl/GrGLDefines.h"
+#include "src/gpu/RefCntedCallback.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/gl/GrGLDefines_impl.h"
 
 #include <webgl/webgl1.h>
 #endif
@@ -88,7 +89,7 @@
 #include "include/pathops/SkPathOps.h"
 #endif
 
-#if defined(CK_INCLUDE_RUNTIME_EFFECT) && defined(CK_INCLUDE_SKSL_TRACE)
+#if defined(CK_INCLUDE_RUNTIME_EFFECT) && defined(SKSL_ENABLE_TRACING)
 #include "include/sksl/SkSLDebugTrace.h"
 #endif
 
@@ -782,7 +783,7 @@ protected:
 
         uint32_t webGLCtx = emscripten_webgl_get_current_context();
         auto releaseCtx = new TextureReleaseContext{webGLCtx, glInfo.fID};
-        auto cleanupCallback = GrRefCntedCallback::Make(deleteJSTexture, releaseCtx);
+        auto cleanupCallback = skgpu::RefCntedCallback::Make(deleteJSTexture, releaseCtx);
 
         sk_sp<GrSurfaceProxy> proxy = ctx->priv().proxyProvider()->wrapBackendTexture(
                 backendTexture,
@@ -1801,7 +1802,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
         }), allow_raw_pointers());
 
 #ifdef CK_INCLUDE_RUNTIME_EFFECT
-#ifdef CK_INCLUDE_SKSL_TRACE
+#ifdef SKSL_ENABLE_TRACING
     class_<SkSL::DebugTrace>("DebugTrace")
         .smart_ptr<sk_sp<SkSL::DebugTrace>>("sk_sp<DebugTrace>")
         .function("writeTrace", optional_override([](SkSL::DebugTrace& self) -> std::string {
@@ -1829,7 +1830,7 @@ EMSCRIPTEN_BINDINGS(Skia) {
             }
             return effect;
         }))
-#ifdef CK_INCLUDE_SKSL_TRACE
+#ifdef SKSL_ENABLE_TRACING
         .class_function("MakeTraced", optional_override([](
                 sk_sp<SkShader> shader,
                 int traceCoordX,

@@ -17,86 +17,34 @@
 # limitations under the License.
 # ~~~
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/generated ${CMAKE_CURRENT_BINARY_DIR})
-
 # Get version of the API the generated code used and put it into a cmake variable LOADER_GENERATED_HEADER_VERSION
 include(generated/loader_generated_header_version.cmake)
 
-# Check for the existance of the secure_getenv or __secure_getenv commands
-include(CheckFunctionExists)
-include(CheckIncludeFile)
-
-check_function_exists(secure_getenv HAVE_SECURE_GETENV)
-check_function_exists(__secure_getenv HAVE___SECURE_GETENV)
-if(NOT (HAVE_SECURE_GETENV OR HAVE__SECURE_GETENV))
-    message(WARNING "Using non-secure environmental lookups. This loader will not properly disable environent variables when run with elevated permissions.")
-endif()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/loader_cmake_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/loader_cmake_config.h)
-
-if(WIN32)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_WIN32_KHR WIN32_LEAN_AND_MEAN)
-    if(MSVC AND NOT MSVC_VERSION LESS 1900)
-        # Enable control flow guard
-        message(STATUS "Building loader with control flow guard")
-        set(MSVC_LOADER_COMPILE_OPTIONS ${MSVC_LOADER_COMPILE_OPTIONS} /guard:cf)
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:cf")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /guard:cf")
-    endif()
-elseif(ANDROID)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_ANDROID_KHR)
-elseif(APPLE)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_MACOS_MVK VK_USE_PLATFORM_METAL_EXT)
-elseif(UNIX AND NOT APPLE) # i.e.: Linux
-    if(BUILD_WSI_XCB_SUPPORT)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_XCB_KHR)
-    endif()
-
-    if(BUILD_WSI_XLIB_SUPPORT)
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_XLIB_KHR VK_USE_PLATFORM_XLIB_XRANDR_EXT)
-    endif()
-
-    if(BUILD_WSI_WAYLAND_SUPPORT)
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_WAYLAND_KHR)
-    endif()
-
-    if(BUILD_WSI_DIRECTFB_SUPPORT)
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_DIRECTFB_EXT)
-    endif()
-
-    if(BUILD_WSI_SCREEN_QNX_SUPPORT)
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS VK_USE_PLATFORM_SCREEN_QNX)
-    endif()
-else()
-    message(FATAL_ERROR "Unsupported Platform!")
-endif()
-
-# DEBUG enables runtime loader ICD verification
-set(CMAKE_C_FLAGS_DEBUG
-        "${CMAKE_C_FLAGS_DEBUG} -DDEBUG -DGIT_BRANCH_NAME=${GIT_BRANCH_NAME} -DGIT_TAG_INFO=${GIT_TAG_INFO}")
-set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -DGIT_BRANCH_NAME=${GIT_BRANCH_NAME} -DGIT_TAG_INFO=${GIT_TAG_INFO}")
+add_library(loader_specific_options INTERFACE)
+target_link_libraries(loader_specific_options INTERFACE loader_common_options Vulkan::Headers)
+target_include_directories(loader_specific_options INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/generated ${CMAKE_CURRENT_BINARY_DIR})
 
 if(WIN32)
     if(MSVC)
-    # Use static MSVCRT libraries
-    foreach(configuration
-            in
-            CMAKE_C_FLAGS_DEBUG
-            CMAKE_C_FLAGS_MINSIZEREL
-            CMAKE_C_FLAGS_RELEASE
-            CMAKE_C_FLAGS_RELWITHDEBINFO
-            CMAKE_CXX_FLAGS_DEBUG
-            CMAKE_CXX_FLAGS_MINSIZEREL
-            CMAKE_CXX_FLAGS_RELEASE
-            CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-        if(${configuration} MATCHES "/MD")
-            string(REGEX
-                   REPLACE "/MD"
-                           "/MT"
-                           ${configuration}
-                           "${${configuration}}")
-        endif()
-    endforeach()
+        # Use static MSVCRT libraries
+        foreach(configuration
+                in
+                CMAKE_C_FLAGS_DEBUG
+                CMAKE_C_FLAGS_MINSIZEREL
+                CMAKE_C_FLAGS_RELEASE
+                CMAKE_C_FLAGS_RELWITHDEBINFO
+                CMAKE_CXX_FLAGS_DEBUG
+                CMAKE_CXX_FLAGS_MINSIZEREL
+                CMAKE_CXX_FLAGS_RELEASE
+                CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+            if(${configuration} MATCHES "/MD")
+                string(REGEX
+                    REPLACE "/MD"
+                            "/MT"
+                            ${configuration}
+                            "${${configuration}}")
+            endif()
+        endforeach()
     endif()
 
     if(ENABLE_WIN10_ONECORE)
@@ -106,7 +54,7 @@ if(WIN32)
         set(CMAKE_C_STANDARD_LIBRARIES ${CMAKE_CXX_STANDARD_LIBRARIES})
     endif()
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS")
+    target_compile_options(loader_specific_options INTERFACE -D_CRT_SECURE_NO_WARNINGS)
     # ~~~
     # Build dev_ext_trampoline.c and unknown_ext_chain.c with /O2 to allow tail-call optimization.
     # Setup two CMake targets (loader-norm and loader-opt) for the different compilation flags.
@@ -141,6 +89,12 @@ if(WIN32)
     # Configure the file to include the versioning info
     # Place it in the current directory for check-in - so the GN build has up to date info
     configure_file(loader.rc.in ${CMAKE_CURRENT_LIST_DIR}/loader.rc)
+else()
+    # Used to make alloca() and secure_getenv() available
+    target_compile_definitions(loader_specific_options INTERFACE _GNU_SOURCE)
+    if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+        target_compile_definitions(loader_specific_options INTERFACE __BSD_VISIBLE=1)
+    endif()
 endif()
 
 set(NORMAL_LOADER_SRCS
@@ -152,17 +106,17 @@ set(NORMAL_LOADER_SRCS
     gpa_helper.c
     loader.c
     log.c
-    murmurhash.c
     terminator.c
     trampoline.c
+    unknown_function_handling.c
     wsi.c
     )
 
 if(WIN32)
-    set(NORMAL_LOADER_SRCS ${NORMAL_LOADER_SRCS} loader_windows.c)
+    list(APPEND NORMAL_LOADER_SRCS loader_windows.c dirent_on_windows.c)
 elseif(UNIX AND NOT APPLE) # i.e.: Linux
-    set(NORMAL_LOADER_SRCS ${NORMAL_LOADER_SRCS} loader_linux.c)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS LOADER_ENABLE_LINUX_SORT)
+    list(APPEND NORMAL_LOADER_SRCS loader_linux.c)
+    target_compile_definitions(loader_specific_options INTERFACE LOADER_ENABLE_LINUX_SORT)
 endif()
 
 set(OPT_LOADER_SRCS dev_ext_trampoline.c phys_dev_ext.c)
@@ -199,20 +153,20 @@ if(WIN32)
         endif()
 
         add_executable(asm_offset asm_offset.c)
-        target_link_libraries(asm_offset Vulkan::Headers)
+        target_link_libraries(asm_offset loader_specific_options)
         add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset MASM)
         add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
         set_target_properties(loader_asm_gen_files PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
         add_library(loader-unknown-chain OBJECT unknown_ext_chain_masm.asm)
         target_link_libraries(loader-unknown-chain Vulkan::Headers)
+        target_include_directories(loader-unknown-chain PUBLIC $<TARGET_PROPERTY:loader_asm_gen_files,BINARY_DIR>)
         add_dependencies(loader-unknown-chain loader_asm_gen_files)
     else()
         message(WARNING "Could not find working MASM assebler\n${ASM_FAILURE_MSG}")
         add_custom_target(loader_asm_gen_files)
         add_library(loader-unknown-chain OBJECT unknown_ext_chain.c)
-        target_link_libraries(loader-unknown-chain Vulkan::Headers)
+        target_link_libraries(loader-unknown-chain loader_specific_options)
         set_target_properties(loader-unknown-chain PROPERTIES CMAKE_C_FLAGS_DEBUG "${MODIFIED_C_FLAGS_DEBUG}")
-        target_compile_options(loader-unknown-chain PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
     endif()
 elseif(APPLE)
     # For MacOS, use the C code and force the compiler's tail-call optimization instead of using assembly code.
@@ -235,7 +189,7 @@ else() # i.e.: Linux
         elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "^i.86$")
             check_include_file("cet.h" HAVE_CET_H)
             if(HAVE_CET_H)
-                set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS HAVE_CET_H)
+                target_compile_definitions(loader_specific_options INTERFACE HAVE_CET_H)
             endif()
 
             try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/asm_test_x86.S)
@@ -247,8 +201,7 @@ else() # i.e.: Linux
 
     if(ASSEMBLER_WORKS)
         add_executable(asm_offset asm_offset.c)
-        target_link_libraries(asm_offset Vulkan::Headers)
-        target_compile_definitions(asm_offset PRIVATE _GNU_SOURCE)
+        target_link_libraries(asm_offset loader_specific_options)
         add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset GAS)
         add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
     else()
@@ -263,24 +216,19 @@ else() # i.e.: Linux
 endif()
 
 if(WIN32)
-    add_library(loader-norm OBJECT ${NORMAL_LOADER_SRCS} dirent_on_windows.c)
-    # target_compile_options(loader-norm PUBLIC "$<$<CONFIG:DEBUG>:${LOCAL_C_FLAGS_DBG}>")
-    target_compile_options(loader-norm PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
-    target_include_directories(loader-norm PRIVATE "$<TARGET_PROPERTY:Vulkan::Headers,INTERFACE_INCLUDE_DIRECTORIES>")
-
-    add_library(loader-opt OBJECT ${OPT_LOADER_SRCS})
+    add_library(loader-opt STATIC ${OPT_LOADER_SRCS})
+    target_link_libraries(loader-opt PUBLIC loader_specific_options)
     add_dependencies(loader-opt loader_asm_gen_files)
     set_target_properties(loader-opt PROPERTIES CMAKE_C_FLAGS_DEBUG "${MODIFIED_C_FLAGS_DEBUG}")
-    target_compile_options(loader-opt PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
-    target_include_directories(loader-opt PRIVATE "$<TARGET_PROPERTY:Vulkan::Headers,INTERFACE_INCLUDE_DIRECTORIES>")
 
     add_library(vulkan
                 SHARED
-                $<TARGET_OBJECTS:loader-opt>
-                $<TARGET_OBJECTS:loader-norm>
+                ${NORMAL_LOADER_SRCS}
                 $<TARGET_OBJECTS:loader-unknown-chain>
                 ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-1.def
                 ${CMAKE_CURRENT_LIST_DIR}/loader.rc)
+
+    target_link_libraries(vulkan loader_specific_options loader-opt)
 
     if (UPDATE_DEPS)
         add_dependencies(vulkan vl_update_deps)
@@ -293,8 +241,6 @@ if(WIN32)
                           PROPERTIES
                           OUTPUT_NAME vulkan-1)
 
-    target_link_libraries(vulkan Vulkan::Headers)
-
     if(MSVC AND ENABLE_WIN10_ONECORE)
         target_link_libraries(vulkan OneCoreUAP.lib LIBCMT.LIB LIBCMTD.LIB LIBVCRUNTIME.LIB LIBUCRT.LIB)
         set_target_properties(vulkan PROPERTIES LINK_FLAGS "/NODEFAULTLIB")
@@ -305,15 +251,6 @@ if(WIN32)
     add_dependencies(vulkan loader_asm_gen_files)
 
 else()
-    # Linux and MacOS
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wpointer-arith")
-
-    # Clang (and not gcc) warns about redefining a typedef with the same types, so disable that warning. Note that it will still
-    # throw an error if a typedef is redefined with a different type.
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-typedef-redefinition")
-    endif()
-
     if(APPLE AND BUILD_STATIC_LOADER)
         add_library(vulkan STATIC ${NORMAL_LOADER_SRCS} ${OPT_LOADER_SRCS})
     else()
@@ -326,46 +263,30 @@ else()
                           VERSION ${LOADER_GENERATED_HEADER_VERSION})
     target_link_libraries(vulkan ${CMAKE_DL_LIBS} m)
     if (NOT ANDROID)
-        target_link_libraries(vulkan pthread)
+        target_link_libraries(vulkan Threads::Threads)
     endif()
-    target_link_libraries(vulkan Vulkan::Headers)
-    # Used to make alloca() and secure_getenv() available
-    target_compile_definitions(vulkan PRIVATE _GNU_SOURCE)
-    if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-        target_compile_definitions(vulkan PRIVATE __BSD_VISIBLE=1)
-        target_compile_definitions(asm_offset PRIVATE __BSD_VISIBLE=1)
-    endif()
+
     if(APPLE)
         find_library(COREFOUNDATION_LIBRARY NAMES CoreFoundation)
         target_link_libraries(vulkan "-framework CoreFoundation")
 
         # Build vulkan.framework
-        set(FRAMEWORK_HEADERS
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vk_icd.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vk_layer.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vk_platform.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vk_sdk_platform.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_android.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_core.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_ios.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_macos.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_vi.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_wayland.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_win32.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_xcb.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_xlib.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_xlib_xrandr.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_screen.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan.hpp)
+        # Use GLOB_RECURSE to find all the header files and populate the vulkan.framework headers with them
+        # Use CONFIGURE_DEPENDS to ensure that if the header files are updated, this list is also updated
+        # Note: CONFIGURE_DEPENDS is a 3.12 feature - gate it for now and remove when CMake minimum version is higher
+        if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
+            file(GLOB_RECURSE CONFIGURE_DEPENDS FRAMEWORK_HEADERS ${VulkanHeaders_INCLUDE_DIRS})
+        else()
+            file(GLOB_RECURSE FRAMEWORK_HEADERS ${VulkanHeaders_INCLUDE_DIRS})
+        endif()
         if(BUILD_STATIC_LOADER)
             add_library(vulkan-framework STATIC ${NORMAL_LOADER_SRCS} ${OPT_LOADER_SRCS} ${FRAMEWORK_HEADERS})
         else()
             add_library(vulkan-framework SHARED ${NORMAL_LOADER_SRCS} ${OPT_LOADER_SRCS} ${FRAMEWORK_HEADERS})
         endif()
         add_dependencies(vulkan-framework loader_asm_gen_files)
-        target_link_libraries(vulkan-framework -ldl -lpthread -lm "-framework CoreFoundation")
-        target_link_libraries(vulkan-framework Vulkan::Headers)
+        target_link_libraries(vulkan-framework ${CMAKE_DL_LIBS} Threads::Threads -lm "-framework CoreFoundation")
+        target_link_libraries(vulkan-framework loader_specific_options)
 
         # The FRAMEWORK_VERSION needs to be "A" here so that Xcode code-signing works when a user adds their framework to an Xcode
         # project and does "Sign on Copy". It would have been nicer to use "1" to denote Vulkan 1. Although Apple docs say that a
@@ -388,10 +309,14 @@ else()
         )
 # cmake-format: on
     endif()
+endif()
 
-    if(NOT APPLE)
-        target_compile_definitions(vulkan PRIVATE _XOPEN_SOURCE=500) # hush compiler warnings for readlink
-    endif()
+# common attributes of the vulkan library
+target_link_libraries(vulkan loader_specific_options)
+
+set_target_properties(vulkan ${LOADER_STANDARD_C_PROPERTIES})
+if (TARGET asm_offset)
+    set_target_properties(asm_offset ${LOADER_STANDARD_C_PROPERTIES})
 endif()
 
 # Generate pkg-config file.

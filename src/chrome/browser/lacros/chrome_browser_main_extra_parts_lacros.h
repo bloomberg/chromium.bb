@@ -21,8 +21,10 @@ class LacrosExtensionAppsController;
 class LacrosExtensionAppsPublisher;
 class KioskSessionServiceLacros;
 class FieldTrialObserver;
+class QuickAnswersController;
 class StandaloneBrowserTestController;
 class SyncExplicitPassphraseClientLacros;
+class WebAuthnRequestRegistrarLacros;
 
 namespace arc {
 class ArcIconCacheDelegateProvider;
@@ -94,11 +96,17 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Receives web app control commands from ash.
   std::unique_ptr<crosapi::WebAppProviderBridgeLacros> web_app_provider_bridge_;
 
-  // Receives extension app events from ash.
-  std::unique_ptr<LacrosExtensionAppsController> extension_apps_controller_;
+  // Receives Chrome app (AKA extension app) events from ash.
+  std::unique_ptr<LacrosExtensionAppsController> chrome_apps_controller_;
 
-  // Sends extension app events to ash.
-  std::unique_ptr<LacrosExtensionAppsPublisher> extension_apps_publisher_;
+  // Sends Chrome app (AKA extension app) events to ash.
+  std::unique_ptr<LacrosExtensionAppsPublisher> chrome_apps_publisher_;
+
+  // Receives extension events from ash.
+  std::unique_ptr<LacrosExtensionAppsController> extensions_controller_;
+
+  // Sends extension events to ash.
+  std::unique_ptr<LacrosExtensionAppsPublisher> extensions_publisher_;
 
   // A test controller that is registered with the ash-chrome's test controller
   // service over crosapi to let tests running in ash-chrome control this Lacros
@@ -121,6 +129,13 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Responsible for sharing sync explicit passphrase between Ash and Lacros.
   std::unique_ptr<SyncExplicitPassphraseClientLacros>
       sync_explicit_passphrase_client_;
+
+  // Handles WebAuthn request id generation.
+  std::unique_ptr<WebAuthnRequestRegistrarLacros>
+      webauthn_request_registrar_lacros_;
+
+  // Handles Quick answers requests from the Lacros browser.
+  std::unique_ptr<QuickAnswersController> quick_answers_controller_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

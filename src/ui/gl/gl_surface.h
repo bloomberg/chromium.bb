@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -23,6 +24,7 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/surface_origin.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/gl_display.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
@@ -208,7 +210,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
 
   // Get the platform specific display on which this surface resides, if
   // available.
-  virtual void* GetDisplay();
+  virtual GLDisplay* GetGLDisplay();
 
   // Get the platfrom specific configuration for this surface, if available.
   virtual void* GetConfig();
@@ -312,6 +314,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
 
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
   virtual void SetFrameRate(float frame_rate) {}
+  virtual void SetChoreographerVsyncIdForNextFrame(
+      absl::optional<int64_t> choreographer_vsync_id) {}
 
   static GLSurface* GetCurrent();
 
@@ -398,7 +402,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SetBackbufferAllocation(bool allocated) override;
   void SetFrontbufferAllocation(bool allocated) override;
   void* GetShareHandle() override;
-  void* GetDisplay() override;
+  GLDisplay* GetGLDisplay() override;
   void* GetConfig() override;
   GLSurfaceFormat GetFormat() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
@@ -429,6 +433,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void SetGpuVSyncEnabled(bool enabled) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
   void SetFrameRate(float frame_rate) override;
+  void SetChoreographerVsyncIdForNextFrame(
+      absl::optional<int64_t> choreographer_vsync_id) override;
   void SetCurrent() override;
   bool IsCurrent() override;
 

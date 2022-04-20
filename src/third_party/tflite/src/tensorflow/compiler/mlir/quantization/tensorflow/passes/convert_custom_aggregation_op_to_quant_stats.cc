@@ -39,6 +39,9 @@ class ConvertCustomAggregationOpToQuantStatsPass
     : public PassWrapper<ConvertCustomAggregationOpToQuantStatsPass,
                          OperationPass<FuncOp>> {
  public:
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(
+      ConvertCustomAggregationOpToQuantStatsPass)
+
   StringRef getArgument() const final {
     // This is the argument used to refer to the pass in the textual format (on
     // the commandline for example).
@@ -73,8 +76,12 @@ class ConvertCustomAggregationOpToQuantStats : public RewritePattern {
     FloatAttr min = op->getAttr("min").dyn_cast_or_null<FloatAttr>();
     FloatAttr max = op->getAttr("max").dyn_cast_or_null<FloatAttr>();
 
-    // Could not handle when there are no min and max attributes.
-    if (min == nullptr || max == nullptr) return failure();
+    // When there are no min and max attributes, remove op.
+    if (min == nullptr || max == nullptr) {
+      op->replaceAllUsesWith(op->getOperands());
+      rewriter.eraseOp(op);
+      return success();
+    }
 
     // The layer stats contain only the first min/max pairs.
     ElementsAttr layer_stats = DenseFPElementsAttr::get(

@@ -551,7 +551,6 @@ repack("cast_shell_pak") {
     "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ax_strings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
@@ -721,11 +720,6 @@ if (is_android) {
   }
 
   if (chromecast_branding != "public") {
-    module_desc_java("cast_browser_module_desc_java") {
-      module_name = "cast_browser"
-      shared_libraries = [ "//chromecast/internal/service/main/android:libmonocast_service_cast_browser" ]
-    }
-
     android_app_bundle_module("cast_browser_bundle_module") {
       is_base_module = false
       base_module_target = "//chromecast/internal/service/main/android:cast_service_bundle_module"
@@ -744,22 +738,31 @@ if (is_android) {
       # modules' ID (0x7f).
       package_id = 125
 
-      shared_libraries = [ "//chromecast/internal/service/main/android:libmonocast_service_cast_browser" ]
+      shared_libraries = [ "//chromecast/android:libcast_browser_android" ]
       product_config_java_packages = [ "org.chromium.chromecast.shell" ]
       deps = [
-        ":cast_browser_module_desc_java",
         "//base:base_java",
         "//chromecast/browser/android:cast_browser_java",
         "//components/crash/core/app:chrome_crashpad_handler_named_as_so",
+        "//components/viz/service:service_java",
+        "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
       ]
 
-      loadable_modules = [ "$root_out_dir/libchrome_crashpad_handler.so" ]
+      loadable_modules = [
+        "$root_out_dir/libchrome_crashpad_handler.so",
+        "$root_out_dir/libcrashpad_handler_trampoline.so",
+      ]
+
+      # TODO(b/228506503): remove the exclusion rule after cast_service and
+      # cast_browser depend on different resource targets.
+      resource_exclusion_regex = "cast_web_contents_activity.xml"
 
       enable_multidex = true
 
       # TODO(b/222780347): Enable when compile errors are resolved on release
       # builds.
       proguard_enabled = false
+      generate_native_libraries_java = true
     }
   }
 }

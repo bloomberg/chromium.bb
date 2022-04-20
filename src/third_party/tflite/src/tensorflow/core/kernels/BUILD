@@ -26,6 +26,10 @@ load(
     "tf_fingerprint_deps",
     "tf_kernel_tests_linkstatic",
 )
+load(
+    "//third_party/mkl:build_defs.bzl",
+    "if_mkl",
+)
 
 # buildifier: disable=same-origin-load
 load("//tensorflow:tensorflow.bzl", "cc_header_only_library")
@@ -1858,7 +1862,7 @@ tf_cuda_cc_test(
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
         "//tensorflow/stream_executor/cuda:cudnn_plugin",
-    ],
+    ] + if_mkl(["//tensorflow/core/kernels/mkl:mkl_conv_op"]),
 )
 
 tf_cuda_cc_test(
@@ -2502,6 +2506,7 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
+        "//tensorflow/core/common_runtime:forward_type_inference",
     ],
 )
 
@@ -4988,7 +4993,9 @@ tf_kernel_library(
 tf_kernel_library(
     name = "sparse_slice_grad_op",
     prefix = "sparse_slice_grad_op",
-    deps = SPARSE_DEPS,
+    deps = SPARSE_DEPS + if_cuda_or_rocm([
+        ":gpu_prim_hdrs",
+    ]),
 )
 
 tf_kernel_library(
@@ -6466,6 +6473,7 @@ filegroup(
         "cwise_op_invert.cc",
         "cwise_op_isfinite.cc",
         "cwise_op_isnan.cc",
+        "cwise_op_leakyrelu_bf16.cc",
         "cwise_op_left_shift.cc",
         "cwise_op_less.cc",
         "cwise_op_less_equal.cc",
@@ -7688,6 +7696,7 @@ cc_library(
 tf_cc_shared_library(
     name = "libtfkernel_all_kernels.so",
     static_deps = [
+        # TODO(rostam): Remove Copybara transform.
         # copybara:comment_begin(oss only)
         "@bazel_tools//:__subpackages__",
         "@boringssl//:__subpackages__",
@@ -7850,6 +7859,7 @@ exports_files([
     "cwise_op_greater.cc",
     "cwise_op_greater_equal.cc",
     "cwise_op_isinf.cc",
+    "cwise_op_leakyrelu_bf16.cc",
     "cwise_op_less.cc",
     "cwise_op_less_equal.cc",
     "cwise_op_log.cc",

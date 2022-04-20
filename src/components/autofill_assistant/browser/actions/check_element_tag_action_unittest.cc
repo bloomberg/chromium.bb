@@ -59,10 +59,10 @@ TEST_F(CheckElementTagActionTest, UnknownElementFails) {
 }
 
 TEST_F(CheckElementTagActionTest, SucceedsForMatchingTagCaseInsensitive) {
-  ElementFinder::Result element;
-  element.dom_object.object_data.object_id = "e";
+  ElementFinderResult element;
+  element.SetObjectId("e");
   mock_action_delegate_.GetElementStore()->AddElement(kClientId,
-                                                      element.dom_object);
+                                                      element.dom_object());
 
   EXPECT_CALL(mock_web_controller_, GetElementTag(EqualsElement(element), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "TAG"));
@@ -77,10 +77,10 @@ TEST_F(CheckElementTagActionTest, SucceedsForMatchingTagCaseInsensitive) {
 }
 
 TEST_F(CheckElementTagActionTest, FailsForNoMatchingTags) {
-  ElementFinder::Result element;
-  element.dom_object.object_data.object_id = "e";
+  ElementFinderResult element;
+  element.SetObjectId("e");
   mock_action_delegate_.GetElementStore()->AddElement(kClientId,
-                                                      element.dom_object);
+                                                      element.dom_object());
 
   EXPECT_CALL(mock_web_controller_, GetElementTag(EqualsElement(element), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "TAG"));

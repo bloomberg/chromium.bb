@@ -49,6 +49,9 @@ static AOM_INLINE void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
     td->rd_counts.warped_used[i] += td_t->rd_counts.warped_used[i];
   }
 
+  td->rd_counts.seg_tmp_pred_cost[0] += td_t->rd_counts.seg_tmp_pred_cost[0];
+  td->rd_counts.seg_tmp_pred_cost[1] += td_t->rd_counts.seg_tmp_pred_cost[1];
+
   td->rd_counts.newmv_or_intra_blocks += td_t->rd_counts.newmv_or_intra_blocks;
 }
 
@@ -562,7 +565,7 @@ void av1_init_cdef_worker(AV1_COMP *cpi) {
 
   av1_alloc_cdef_buffers(&cpi->common, &p_mt_info->cdef_worker,
                          &cpi->mt_info.cdef_sync, num_cdef_workers, 1);
-  cpi->mt_info.cdef_worker = &p_mt_info->cdef_worker[0];
+  cpi->mt_info.cdef_worker = p_mt_info->cdef_worker;
 }
 
 #if !CONFIG_REALTIME_ONLY
@@ -1219,7 +1222,8 @@ static AOM_INLINE void accumulate_counters_enc_workers(AV1_COMP *cpi,
       if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.mv_costs);
       }
-      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF &&
+          av1_need_dv_costs(cpi)) {
         aom_free(thread_data->td->mb.dv_costs);
       }
     }
@@ -1269,6 +1273,8 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
     thread_data->td->intrabc_used = 0;
     thread_data->td->deltaq_used = 0;
     thread_data->td->abs_sum_level = 0;
+    thread_data->td->rd_counts.seg_tmp_pred_cost[0] = 0;
+    thread_data->td->rd_counts.seg_tmp_pred_cost[1] = 0;
 
     // Before encoding a frame, copy the thread data from cpi.
     if (thread_data->td != &cpi->td) {
@@ -1292,16 +1298,15 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
-      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
+      if ((cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) &&
+          av1_need_dv_costs(cpi)) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
                         (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
         memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
                sizeof(IntraBCMVCosts));
       }
     }
-    av1_alloc_mb_data(cm, &thread_data->td->mb,
-                      cpi->sf.rt_sf.use_nonrd_pick_mode,
-                      cpi->sf.rd_sf.use_mb_rd_hash);
+    av1_alloc_mb_data(cpi, &thread_data->td->mb);
 
     // Reset cyclic refresh counters.
     av1_init_cyclic_refresh_counters(&thread_data->td->mb);
@@ -1370,17 +1375,9 @@ static AOM_INLINE void fp_prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
-      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
-        CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
-                        (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
-        memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
-               sizeof(IntraBCMVCosts));
-      }
     }
 
-    av1_alloc_mb_data(cm, &thread_data->td->mb,
-                      cpi->sf.rt_sf.use_nonrd_pick_mode,
-                      cpi->sf.rd_sf.use_mb_rd_hash);
+    av1_alloc_mb_data(cpi, &thread_data->td->mb);
   }
 }
 #endif
@@ -1657,9 +1654,7 @@ void av1_fp_encode_tiles_row_mt(AV1_COMP *cpi) {
       if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.mv_costs);
       }
-      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
-        aom_free(thread_data->td->mb.dv_costs);
-      }
+      assert(!thread_data->td->mb.dv_costs);
     }
     av1_dealloc_mb_data(cm, &thread_data->td->mb);
   }

@@ -47,8 +47,6 @@ const char kManagedDefaultWebBluetoothGuardSetting[] =
     "profile.managed_default_content_settings.web_bluetooth_guard";
 const char kManagedDefaultWebUsbGuardSetting[] =
     "profile.managed_default_content_settings.web_usb_guard";
-const char kManagedDefaultFileHandlingGuardSetting[] =
-    "profile.managed_default_content_settings.file_handling_guard";
 const char kManagedDefaultFileSystemReadGuardSetting[] =
     "profile.managed_default_content_settings.file_system_read_guard";
 const char kManagedDefaultFileSystemWriteGuardSetting[] =
@@ -63,6 +61,8 @@ const char kManagedDefaultWebHidGuardSetting[] =
     "profile.managed_default_content_settings.web_hid_guard";
 const char kManagedDefaultWindowPlacementSetting[] =
     "profile.managed_default_content_settings.window_placement";
+const char kManagedDefaultLocalFontsSetting[] =
+    "profile.managed_default_content_settings.local_fonts";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -74,6 +74,8 @@ const char kManagedCookiesBlockedForUrls[] =
     "profile.managed_cookies_blocked_for_urls";
 const char kManagedCookiesSessionOnlyForUrls[] =
     "profile.managed_cookies_sessiononly_for_urls";
+const char kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls[] =
+    "profile.managed_get_display_media_set_select_all_screens_allowed_for_urls";
 const char kManagedImagesAllowedForUrls[] =
     "profile.managed_images_allowed_for_urls";
 const char kManagedImagesBlockedForUrls[] =
@@ -133,6 +135,10 @@ const char kManagedWindowPlacementAllowedForUrls[] =
     "profile.managed_window_placement_allowed_for_urls";
 const char kManagedWindowPlacementBlockedForUrls[] =
     "profile.managed_window_placement_blocked_for_urls";
+const char kManagedLocalFontsAllowedForUrls[] =
+    "profile.managed_local_fonts_allowed_for_urls";
+const char kManagedLocalFontsBlockedForUrls[] =
+    "profile.managed_local_fonts_blocked_for_urls";
 
 // Boolean indicating whether the quiet UI is enabled for notification
 // permission requests.

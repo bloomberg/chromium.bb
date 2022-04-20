@@ -11,6 +11,16 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
  * @fileoverview
  */
 
+type CrA11yAnnouncerMessagesSentEvent = CustomEvent<{
+  messages: string[],
+}>;
+
+declare global {
+  interface HTMLElementEventMap {
+    'cr-a11y-announcer-messages-sent': CrA11yAnnouncerMessagesSentEvent;
+  }
+}
+
 /**
  * 150ms seems to be around the minimum time required for screen readers to
  * read out consecutively queued messages.
@@ -25,6 +35,18 @@ export const TIMEOUT_MS: number = 150;
  * become inaccessible).
  */
 const instances: Map<HTMLElement, CrA11yAnnouncerElement> = new Map();
+
+export function getInstance(container: HTMLElement = document.body):
+    CrA11yAnnouncerElement {
+  if (instances.has(container)) {
+    return instances.get(container)!;
+  }
+  assert(container.isConnected);
+  const instance = new CrA11yAnnouncerElement();
+  container.appendChild(instance);
+  instances.set(container, instance);
+  return instance;
+}
 
 export class CrA11yAnnouncerElement extends PolymerElement {
   static get is() {
@@ -79,21 +101,15 @@ export class CrA11yAnnouncerElement extends PolymerElement {
         messagesDiv.appendChild(div);
       }
 
+      // Dispatch a custom event to allow consumers to know when certain alerts
+      // have been sent to the screen reader.
+      this.dispatchEvent(new CustomEvent(
+          'cr-a11y-announcer-messages-sent',
+          {bubbles: true, detail: {messages: this.messages_.slice()}}));
+
       this.messages_.length = 0;
       this.currentTimeout_ = null;
     }, TIMEOUT_MS);
-  }
-
-  static getInstance(container: HTMLElement = document.body):
-      CrA11yAnnouncerElement {
-    if (instances.has(container)) {
-      return instances.get(container)!;
-    }
-    assert(container.isConnected);
-    const instance = new CrA11yAnnouncerElement();
-    container.appendChild(instance);
-    instances.set(container, instance);
-    return instance;
   }
 }
 

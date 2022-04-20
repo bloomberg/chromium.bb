@@ -56,7 +56,9 @@ if (rtc_include_tests) {
     deps = [
       ":pending_task_safety_flag",
       ":to_queued_task",
+      "..:logging",
       "..:rtc_base_approved",
+      "..:rtc_event",
       "..:rtc_task_queue",
       "..:task_queue_for_test",
       "../../test:test_support",
@@ -70,6 +72,7 @@ if (rtc_include_tests) {
       ":repeating_task",
       ":to_queued_task",
       "..:rtc_base_approved",
+      "..:rtc_event",
       "..:rtc_task_queue",
       "..:task_queue_for_test",
       "../../api/task_queue",

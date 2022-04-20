@@ -17,6 +17,7 @@
 #include <cstdint>
 
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/units/data_size.h"
 #include "api/units/frequency.h"
 #include "api/units/time_delta.h"
@@ -25,7 +26,6 @@
 #include "rtc_base/experiments/jitter_upper_bound_experiment.h"
 #include "rtc_base/numerics/safe_conversions.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 namespace {
@@ -49,14 +49,15 @@ constexpr double kNoiseStdDevOffset = 30.0;
 
 }  // namespace
 
-VCMJitterEstimator::VCMJitterEstimator(Clock* clock)
+VCMJitterEstimator::VCMJitterEstimator(Clock* clock,
+                                       const FieldTrialsView& field_trials)
     : fps_counter_(30),  // TODO(sprang): Use an estimator with limit based on
                          // time, rather than number of samples.
       time_deviation_upper_bound_(
           JitterUpperBoundExperiment::GetUpperBoundSigmas().value_or(
               kDefaultMaxTimestampDeviationInSigmas)),
       enable_reduced_delay_(
-          !field_trial::IsEnabled("WebRTC-ReducedJitterDelayKillSwitch")),
+          !field_trials.IsEnabled("WebRTC-ReducedJitterDelayKillSwitch")),
       clock_(clock) {
   Reset();
 }

@@ -57,6 +57,7 @@ LayoutGrid::LayoutGrid(Element* element)
 LayoutGrid::~LayoutGrid() = default;
 
 void LayoutGrid::Trace(Visitor* visitor) const {
+  visitor->Trace(grid_);
   visitor->Trace(track_sizing_algorithm_);
   visitor->Trace(column_of_positioned_item_);
   visitor->Trace(row_of_positioned_item_);
@@ -572,7 +573,7 @@ MinMaxSizes LayoutGrid::ComputeIntrinsicLogicalWidths() const {
     return sizes;
   }
 
-  std::unique_ptr<Grid> grid = Grid::Create(this);
+  Grid* grid = Grid::Create(this);
   GridTrackSizingAlgorithm* algorithm =
       MakeGarbageCollected<GridTrackSizingAlgorithm>(this, *grid);
   PlaceItemsOnGrid(algorithm, absl::nullopt);
@@ -836,7 +837,7 @@ LayoutGrid::ComputeEmptyTracksForAutoRepeat(
   } else {
     for (wtf_size_t track_index = first_auto_repeat_track;
          track_index < last_auto_repeat_track; ++track_index) {
-      auto iterator = grid.CreateIterator(direction, track_index);
+      auto* iterator = grid.CreateIterator(direction, track_index);
       if (!iterator->NextGridItem()) {
         if (!empty_track_indexes)
           empty_track_indexes = std::make_unique<OrderedTrackIndexSet>();
@@ -1144,9 +1145,9 @@ void LayoutGrid::PlaceSpecifiedMajorAxisItemsOnGrid(
       if (it != minor_axis_cursors.end())
         minor_access_cursor = it->value;
     }
-    auto iterator = grid.CreateIterator(AutoPlacementMajorAxisDirection(),
-                                        major_axis_positions.StartLine(),
-                                        minor_access_cursor);
+    auto* iterator = grid.CreateIterator(AutoPlacementMajorAxisDirection(),
+                                         major_axis_positions.StartLine(),
+                                         minor_access_cursor);
     std::unique_ptr<GridArea> empty_grid_area = iterator->NextEmptyGridArea(
         major_axis_positions.IntegerSpan(), minor_axis_span_size);
     DCHECK(empty_grid_area);
@@ -1212,9 +1213,9 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
       major_axis_auto_placement_cursor++;
 
     if (major_axis_auto_placement_cursor < end_of_major_axis) {
-      auto iterator = grid.CreateIterator(AutoPlacementMinorAxisDirection(),
-                                          minor_axis_positions.StartLine(),
-                                          major_axis_auto_placement_cursor);
+      auto* iterator = grid.CreateIterator(AutoPlacementMinorAxisDirection(),
+                                           minor_axis_positions.StartLine(),
+                                           major_axis_auto_placement_cursor);
       empty_grid_area = iterator->NextEmptyGridArea(
           minor_axis_positions.IntegerSpan(), major_axis_span_size);
     }
@@ -1231,9 +1232,9 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
 
     for (wtf_size_t major_axis_index = major_axis_auto_placement_cursor;
          major_axis_index < end_of_major_axis; ++major_axis_index) {
-      auto iterator = grid.CreateIterator(AutoPlacementMajorAxisDirection(),
-                                          major_axis_index,
-                                          minor_axis_auto_placement_cursor);
+      auto* iterator = grid.CreateIterator(AutoPlacementMajorAxisDirection(),
+                                           major_axis_index,
+                                           minor_axis_auto_placement_cursor);
       empty_grid_area = iterator->NextEmptyGridArea(major_axis_span_size,
                                                     minor_axis_span_size);
       DCHECK(empty_grid_area);

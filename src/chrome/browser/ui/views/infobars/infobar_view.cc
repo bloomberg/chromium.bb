@@ -10,6 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -61,7 +62,7 @@ gfx::Insets GetCloseButtonSpacing() {
   auto* provider = ChromeLayoutProvider::Get();
   const gfx::Insets vector_button_insets =
       provider->GetInsetsMetric(views::INSETS_VECTOR_IMAGE_BUTTON);
-  return gfx::Insets(
+  return gfx::Insets::VH(
              provider->GetDistanceMetric(DISTANCE_TOAST_CONTROL_VERTICAL),
              GetElementSpacing()) -
          vector_button_insets;
@@ -87,16 +88,16 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   SetPaintToLayer();
   layer()->SetMasksToBounds(true);
 
-  gfx::Image image = this->delegate()->GetIcon();
+  const ui::ImageModel& image = this->delegate()->GetIcon();
   if (!image.IsEmpty()) {
     icon_ = new views::ImageView;
-    icon_->SetImage(image.ToImageSkia());
+    icon_->SetImage(image);
     icon_->SizeToPreferredSize();
     icon_->SetProperty(
         views::kMarginsKey,
-        gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        DISTANCE_TOAST_LABEL_VERTICAL),
-                    0));
+        gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                            DISTANCE_TOAST_LABEL_VERTICAL),
+                        0));
     AddChildView(icon_.get());
   }
 
@@ -105,14 +106,15 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
         &InfoBarView::CloseButtonPressed, base::Unretained(this)));
     // This is the wrong color, but allows the button's size to be computed
     // correctly.  We'll reset this with the correct color in OnThemeChanged().
-    views::SetImageFromVectorIcon(close_button.get(),
-                                  vector_icons::kCloseRoundedIcon,
-                                  gfx::kPlaceholderColor);
+    views::SetImageFromVectorIconWithColor(
+        close_button.get(), vector_icons::kCloseRoundedIcon,
+        gfx::kPlaceholderColor, gfx::kPlaceholderColor);
     close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-    close_button->SetProperty(views::kMarginsKey,
-                              gfx::Insets(close_button_spacing.top(), 0,
-                                          close_button_spacing.bottom(), 0));
+    close_button->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::TLBR(close_button_spacing.top(), 0,
+                          close_button_spacing.bottom(), 0));
     close_button_ = AddChildView(std::move(close_button));
   }
 }
@@ -210,14 +212,18 @@ void InfoBarView::OnPaint(gfx::Canvas* canvas) {
 
 void InfoBarView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  const auto* tp = GetThemeProvider();
-  const SkColor background_color = tp->GetColor(ThemeProperties::COLOR_INFOBAR);
+  const auto* cp = GetColorProvider();
+  const SkColor background_color = cp->GetColor(kColorInfoBarBackground);
   SetBackground(views::CreateSolidBackground(background_color));
 
-  const SkColor text_color = tp->GetColor(ThemeProperties::COLOR_INFOBAR_TEXT);
+  const SkColor text_color = cp->GetColor(kColorInfoBarForeground);
+  const SkColor icon_color = cp->GetColor(kColorInfoBarButtonIcon);
+  const SkColor icon_disabled_color =
+      cp->GetColor(kColorInfoBarButtonIconDisabled);
   if (close_button_) {
-    views::SetImageFromVectorIcon(close_button_,
-                                  vector_icons::kCloseRoundedIcon, text_color);
+    views::SetImageFromVectorIconWithColor(close_button_,
+                                           vector_icons::kCloseRoundedIcon,
+                                           icon_color, icon_disabled_color);
   }
 
   for (views::View* child : children()) {
@@ -246,17 +252,19 @@ void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
   }
 }
 
-views::Label* InfoBarView::CreateLabel(const std::u16string& text) const {
-  views::Label* label =
-      new views::Label(text, views::style::CONTEXT_DIALOG_BODY_TEXT);
-  SetLabelDetails(label);
+std::unique_ptr<views::Label> InfoBarView::CreateLabel(
+    const std::u16string& text) const {
+  auto label = std::make_unique<views::Label>(
+      text, views::style::CONTEXT_DIALOG_BODY_TEXT);
+  SetLabelDetails(label.get());
   return label;
 }
 
-views::Link* InfoBarView::CreateLink(const std::u16string& text) {
-  views::Link* link =
-      new views::Link(text, views::style::CONTEXT_DIALOG_BODY_TEXT);
-  SetLabelDetails(link);
+std::unique_ptr<views::Link> InfoBarView::CreateLink(
+    const std::u16string& text) {
+  auto link = std::make_unique<views::Link>(
+      text, views::style::CONTEXT_DIALOG_BODY_TEXT);
+  SetLabelDetails(link.get());
   link->SetCallback(
       base::BindRepeating(&InfoBarView::LinkClicked, base::Unretained(this)));
   return link;
@@ -313,7 +321,7 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
 
   // It's possible to be called twice (once with |animate| true and once with it
   // false); in this case the second SetFocusManager() call will silently no-op.
-  SetFocusManager(NULL);
+  SetFocusManager(nullptr);
 
   if (!animate)
     return;
@@ -347,10 +355,11 @@ void InfoBarView::AssignWidthsSorted(Views* views, int available_width) {
 void InfoBarView::SetLabelDetails(views::Label* label) const {
   label->SizeToPreferredSize();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetProperty(views::kMarginsKey,
-                     gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                     DISTANCE_TOAST_LABEL_VERTICAL),
-                                 0));
+  label->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_TOAST_LABEL_VERTICAL),
+                      0));
 }
 
 void InfoBarView::LinkClicked(const ui::Event& event) {

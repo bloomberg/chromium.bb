@@ -12,82 +12,193 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_CACHE_KEY_H_
-#define DAWNNATIVE_CACHE_KEY_H_
+#ifndef SRC_DAWN_NATIVE_CACHEKEY_H_
+#define SRC_DAWN_NATIVE_CACHEKEY_H_
 
+#include "dawn/common/TypedInteger.h"
+#include "dawn/common/ityp_array.h"
+
+#include <bitset>
+#include <iostream>
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <vector>
-
-#include "dawn/common/Compiler.h"
 
 namespace dawn::native {
 
-    using CacheKey = std::vector<uint8_t>;
+    // Forward declare classes because of co-dependency.
+    class CacheKey;
+    class CachedObject;
+
+    // Stream operator for CacheKey for debugging.
+    std::ostream& operator<<(std::ostream& os, const CacheKey& key);
 
     // Overridable serializer struct that should be implemented for cache key serializable
     // types/classes.
     template <typename T, typename SFINAE = void>
-    struct CacheKeySerializer {
+    class CacheKeySerializer {
+      public:
         static void Serialize(CacheKey* key, const T& t);
     };
 
-    // Specialized overload for integral types. Note that we are currently serializing as a string
-    // to avoid handling null termiantors.
-    template <typename Integer>
-    struct CacheKeySerializer<Integer, std::enable_if_t<std::is_integral_v<Integer>>> {
-        static void Serialize(CacheKey* key, const Integer i) {
-            std::string str = std::to_string(i);
-            key->insert(key->end(), str.begin(), str.end());
+    class CacheKey : public std::vector<uint8_t> {
+      public:
+        using std::vector<uint8_t>::vector;
+
+        template <typename T>
+        CacheKey& Record(const T& t) {
+            CacheKeySerializer<T>::Serialize(this, t);
+            return *this;
+        }
+        template <typename T, typename... Args>
+        CacheKey& Record(const T& t, const Args&... args) {
+            CacheKeySerializer<T>::Serialize(this, t);
+            return Record(args...);
+        }
+
+        // Records iterables by prepending the number of elements. Some common iterables are have a
+        // CacheKeySerializer implemented to avoid needing to split them out when recording, i.e.
+        // strings and CacheKeys, but they fundamentally do the same as this function.
+        template <typename IterableT>
+        CacheKey& RecordIterable(const IterableT& iterable) {
+            // Always record the size of generic iterables as a size_t for now.
+            Record(static_cast<size_t>(iterable.size()));
+            for (auto it = iterable.begin(); it != iterable.end(); ++it) {
+                Record(*it);
+            }
+            return *this;
+        }
+        template <typename Index, typename Value, size_t Size>
+        CacheKey& RecordIterable(const ityp::array<Index, Value, Size>& iterable) {
+            Record(static_cast<Index>(iterable.size()));
+            for (auto it = iterable.begin(); it != iterable.end(); ++it) {
+                Record(*it);
+            }
+            return *this;
+        }
+        template <typename Ptr>
+        CacheKey& RecordIterable(const Ptr* ptr, size_t n) {
+            Record(n);
+            for (size_t i = 0; i < n; ++i) {
+                Record(ptr[i]);
+            }
+            return *this;
         }
     };
 
-    // Specialized overload for floating point types. Note that we are currently serializing as a
-    // string to avoid handling null termiantors.
-    template <typename Float>
-    struct CacheKeySerializer<Float, std::enable_if_t<std::is_floating_point_v<Float>>> {
-        static void Serialize(CacheKey* key, const Float f) {
-            std::string str = std::to_string(f);
-            key->insert(key->end(), str.begin(), str.end());
-        }
-    };
-
-    // Specialized overload for string literals. Note we drop the null-terminator.
-    template <size_t N>
-    struct CacheKeySerializer<char[N]> {
-        static void Serialize(CacheKey* key, const char (&t)[N]) {
-            std::string len = std::to_string(N - 1);
-            key->insert(key->end(), len.begin(), len.end());
-            key->push_back('"');
-            key->insert(key->end(), t, t + N - 1);
-            key->push_back('"');
-        }
-    };
-
-    // Helper template function that defers to underlying static functions.
+    // Specialized overload for fundamental types.
     template <typename T>
-    void SerializeInto(CacheKey* key, const T& t) {
-        CacheKeySerializer<T>::Serialize(key, t);
-    }
+    class CacheKeySerializer<T, std::enable_if_t<std::is_fundamental_v<T>>> {
+      public:
+        static void Serialize(CacheKey* key, const T t) {
+            const char* it = reinterpret_cast<const char*>(&t);
+            key->insert(key->end(), it, (it + sizeof(T)));
+        }
+    };
 
-    // Given list of arguments of types with a free implementation of SerializeIntoImpl in the
-    // dawn::native namespace, serializes each argument and appends them to the CacheKey while
-    // prepending member ids before each argument.
-    template <typename... Ts>
-    CacheKey GetCacheKey(const Ts&... inputs) {
-        CacheKey key;
-        key.push_back('{');
-        int memberId = 0;
-        auto Serialize = [&](const auto& input) {
-            std::string memberIdStr = (memberId == 0 ? "" : ",") + std::to_string(memberId) + ":";
-            key.insert(key.end(), memberIdStr.begin(), memberIdStr.end());
-            SerializeInto(&key, input);
-            memberId++;
-        };
-        (Serialize(inputs), ...);
-        key.push_back('}');
-        return key;
-    }
+    // Specialized overload for bitsets that are smaller than 64.
+    template <size_t N>
+    class CacheKeySerializer<std::bitset<N>, std::enable_if_t<(N <= 64)>> {
+      public:
+        static void Serialize(CacheKey* key, const std::bitset<N>& t) {
+            key->Record(t.to_ullong());
+        }
+    };
+
+    // Specialized overload for bitsets since using the built-in to_ullong have a size limit.
+    template <size_t N>
+    class CacheKeySerializer<std::bitset<N>, std::enable_if_t<(N > 64)>> {
+      public:
+        static void Serialize(CacheKey* key, const std::bitset<N>& t) {
+            // Serializes the bitset into series of uint8_t, along with recording the size.
+            static_assert(N > 0);
+            key->Record(static_cast<size_t>(N));
+            uint8_t value = 0;
+            for (size_t i = 0; i < N; i++) {
+                value <<= 1;
+                // Explicitly convert to numeric since MSVC doesn't like mixing of bools.
+                value |= t[i] ? 1 : 0;
+                if (i % 8 == 7) {
+                    // Whenever we fill an 8 bit value, record it and zero it out.
+                    key->Record(value);
+                    value = 0;
+                }
+            }
+            // Serialize the last value if we are not a multiple of 8.
+            if (N % 8 != 0) {
+                key->Record(value);
+            }
+        }
+    };
+
+    // Specialized overload for enums.
+    template <typename T>
+    class CacheKeySerializer<T, std::enable_if_t<std::is_enum_v<T>>> {
+      public:
+        static void Serialize(CacheKey* key, const T t) {
+            CacheKeySerializer<std::underlying_type_t<T>>::Serialize(
+                key, static_cast<std::underlying_type_t<T>>(t));
+        }
+    };
+
+    // Specialized overload for TypedInteger.
+    template <typename Tag, typename Integer>
+    class CacheKeySerializer<::detail::TypedIntegerImpl<Tag, Integer>> {
+      public:
+        static void Serialize(CacheKey* key, const ::detail::TypedIntegerImpl<Tag, Integer> t) {
+            CacheKeySerializer<Integer>::Serialize(key, static_cast<Integer>(t));
+        }
+    };
+
+    // Specialized overload for pointers. Since we are serializing for a cache key, we always
+    // serialize via value, not by pointer. To handle nullptr scenarios, we always serialize whether
+    // the pointer was nullptr followed by the contents if applicable.
+    template <typename T>
+    class CacheKeySerializer<T, std::enable_if_t<std::is_pointer_v<T>>> {
+      public:
+        static void Serialize(CacheKey* key, const T t) {
+            key->Record(t == nullptr);
+            if (t != nullptr) {
+                CacheKeySerializer<std::remove_cv_t<std::remove_pointer_t<T>>>::Serialize(key, *t);
+            }
+        }
+    };
+
+    // Specialized overload for fixed arrays of primitives.
+    template <typename T, size_t N>
+    class CacheKeySerializer<T[N], std::enable_if_t<std::is_fundamental_v<T>>> {
+      public:
+        static void Serialize(CacheKey* key, const T (&t)[N]) {
+            static_assert(N > 0);
+            key->Record(static_cast<size_t>(N));
+            const char* it = reinterpret_cast<const char*>(t);
+            key->insert(key->end(), it, it + sizeof(t));
+        }
+    };
+
+    // Specialized overload for fixed arrays of non-primitives.
+    template <typename T, size_t N>
+    class CacheKeySerializer<T[N], std::enable_if_t<!std::is_fundamental_v<T>>> {
+      public:
+        static void Serialize(CacheKey* key, const T (&t)[N]) {
+            static_assert(N > 0);
+            key->Record(static_cast<size_t>(N));
+            for (size_t i = 0; i < N; i++) {
+                key->Record(t[i]);
+            }
+        }
+    };
+
+    // Specialized overload for CachedObjects.
+    template <typename T>
+    class CacheKeySerializer<T, std::enable_if_t<std::is_base_of_v<CachedObject, T>>> {
+      public:
+        static void Serialize(CacheKey* key, const T& t) {
+            key->Record(t.GetCacheKey());
+        }
+    };
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_CACHE_KEY_H_
+#endif  // SRC_DAWN_NATIVE_CACHEKEY_H_

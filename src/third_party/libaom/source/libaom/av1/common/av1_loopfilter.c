@@ -22,6 +22,12 @@
 #include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
 
+enum {
+  USE_SINGLE,
+  USE_DUAL,
+  USE_QUAD,
+} UENUM1BYTE(USE_FILTER_TYPE);
+
 static const SEG_LVL_FEATURES seg_lvl_lf_lut[MAX_MB_PLANE][2] = {
   { SEG_LVL_ALT_LF_Y_V, SEG_LVL_ALT_LF_Y_H },
   { SEG_LVL_ALT_LF_U, SEG_LVL_ALT_LF_U },
@@ -641,7 +647,8 @@ static AOM_FORCE_INLINE void set_one_param_for_line_luma(
     const AV1_COMMON *const cm, const MACROBLOCKD *const xd,
     const EDGE_DIR edge_dir, uint32_t mi_col, uint32_t mi_row,
     const struct macroblockd_plane *const plane_ptr, int coord,
-    bool is_first_block, TX_SIZE prev_tx_size, const ptrdiff_t mode_step) {
+    bool is_first_block, TX_SIZE prev_tx_size, const ptrdiff_t mode_step,
+    int *min_dim) {
   (void)plane_ptr;
   assert(mi_col << MI_SIZE_LOG2 < (uint32_t)plane_ptr->dst.width &&
          mi_row << MI_SIZE_LOG2 < (uint32_t)plane_ptr->dst.height);
@@ -676,6 +683,10 @@ static AOM_FORCE_INLINE void set_one_param_for_line_luma(
         is_first_block
             ? get_transform_size(xd, mi_prev, pv_row, pv_col, AOM_PLANE_Y, 0, 0)
             : prev_tx_size;
+    if (is_first_block) {
+      *min_dim = is_vert ? block_size_high[mi_prev->bsize]
+                         : block_size_wide[mi_prev->bsize];
+    }
     assert(mi_prev);
     uint8_t level =
         av1_get_filter_level(cm, &cm->lf_info, edge_dir, AOM_PLANE_Y, mbmi);
@@ -685,6 +696,11 @@ static AOM_FORCE_INLINE void set_one_param_for_line_luma(
     }
 
     const int32_t pu_edge = mi_prev != mbmi;
+
+    // The quad loop filter assumes that all the transform blocks within a given
+    // prediction block are of the same size.
+    assert(IMPLIES(!pu_edge, pv_ts == ts));
+
     if (!pu_edge) {
       curr_skipped = mbmi->skip_txfm && is_inter_block(mbmi);
     }
@@ -697,6 +713,10 @@ static AOM_FORCE_INLINE void set_one_param_for_line_luma(
       params->lfthr = limits;
     }
   }
+  const int block_dim =
+      is_vert ? block_size_high[mbmi->bsize] : block_size_wide[mbmi->bsize];
+  *min_dim = AOMMIN(*min_dim, block_dim);
+
   *tx_size = ts;
 }
 
@@ -707,7 +727,7 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_luma(
     const AV1_COMMON *const cm, const MACROBLOCKD *const xd,
     const EDGE_DIR edge_dir, uint32_t mi_col, uint32_t mi_row,
     const struct macroblockd_plane *const plane_ptr, const uint32_t mi_range,
-    const ptrdiff_t mode_step) {
+    const ptrdiff_t mode_step, int *min_dim) {
   const int is_vert = edge_dir == VERT_EDGE;
 
   AV1_DEBLOCKING_PARAMETERS *params = params_buf;
@@ -718,7 +738,7 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_luma(
   // Unroll the first iteration of the loop
   set_one_param_for_line_luma(params, tx_size, cm, xd, edge_dir, mi_col, mi_row,
                               plane_ptr, *counter_ptr, true, prev_tx_size,
-                              mode_step);
+                              mode_step, min_dim);
 
   // Advance
   int advance_units =
@@ -731,7 +751,7 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_luma(
   while (*counter_ptr < mi_range) {
     set_one_param_for_line_luma(params, tx_size, cm, xd, edge_dir, mi_col,
                                 mi_row, plane_ptr, *counter_ptr, false,
-                                prev_tx_size, mode_step);
+                                prev_tx_size, mode_step, min_dim);
 
     // Advance
     advance_units =
@@ -749,7 +769,7 @@ static AOM_FORCE_INLINE void set_one_param_for_line_chroma(
     const EDGE_DIR edge_dir, uint32_t mi_col, uint32_t mi_row, int coord,
     bool is_first_block, TX_SIZE prev_tx_size,
     const struct macroblockd_plane *const plane_ptr, const ptrdiff_t mode_step,
-    const int scale_horz, const int scale_vert) {
+    const int scale_horz, const int scale_vert, int *min_dim) {
   const int is_vert = edge_dir == VERT_EDGE;
   (void)plane_ptr;
   assert((mi_col << MI_SIZE_LOG2) <
@@ -795,6 +815,9 @@ static AOM_FORCE_INLINE void set_one_param_for_line_chroma(
         is_first_block ? get_transform_size(xd, mi_prev, pv_row, pv_col,
                                             AOM_PLANE_U, scale_horz, scale_vert)
                        : prev_tx_size;
+    if (is_first_block) {
+      *min_dim = is_vert ? tx_size_high[pv_ts] : tx_size_wide[pv_ts];
+    }
 
     uint8_t u_level =
         av1_get_filter_level(cm, &cm->lf_info, edge_dir, AOM_PLANE_U, mbmi);
@@ -825,6 +848,8 @@ static AOM_FORCE_INLINE void set_one_param_for_line_chroma(
       params->lfthr = limits + u_level;
     }
   }
+  const int tx_dim = is_vert ? tx_size_high[ts] : tx_size_wide[ts];
+  *min_dim = AOMMIN(*min_dim, tx_dim);
 }
 
 static AOM_FORCE_INLINE void set_lpf_parameters_for_line_chroma(
@@ -832,7 +857,8 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_chroma(
     const AV1_COMMON *const cm, const MACROBLOCKD *const xd,
     const EDGE_DIR edge_dir, uint32_t mi_col, uint32_t mi_row,
     const struct macroblockd_plane *const plane_ptr, const uint32_t mi_range,
-    const ptrdiff_t mode_step, const int scale_horz, const int scale_vert) {
+    const ptrdiff_t mode_step, const int scale_horz, const int scale_vert,
+    int *min_dim) {
   const int is_vert = edge_dir == VERT_EDGE;
 
   AV1_DEBLOCKING_PARAMETERS *params = params_buf;
@@ -842,9 +868,9 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_chroma(
   TX_SIZE prev_tx_size = TX_INVALID;
 
   // Unroll the first iteration of the loop
-  set_one_param_for_line_chroma(params, tx_size, cm, xd, edge_dir, mi_col,
-                                mi_row, *counter_ptr, true, prev_tx_size,
-                                plane_ptr, mode_step, scale_horz, scale_vert);
+  set_one_param_for_line_chroma(
+      params, tx_size, cm, xd, edge_dir, mi_col, mi_row, *counter_ptr, true,
+      prev_tx_size, plane_ptr, mode_step, scale_horz, scale_vert, min_dim);
 
   // Advance
   int advance_units =
@@ -855,9 +881,9 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_chroma(
   tx_size += advance_units;
 
   while (*counter_ptr < mi_range) {
-    set_one_param_for_line_chroma(params, tx_size, cm, xd, edge_dir, mi_col,
-                                  mi_row, *counter_ptr, false, prev_tx_size,
-                                  plane_ptr, mode_step, scale_horz, scale_vert);
+    set_one_param_for_line_chroma(
+        params, tx_size, cm, xd, edge_dir, mi_col, mi_row, *counter_ptr, false,
+        prev_tx_size, plane_ptr, mode_step, scale_horz, scale_vert, min_dim);
 
     // Advance
     advance_units =
@@ -869,53 +895,65 @@ static AOM_FORCE_INLINE void set_lpf_parameters_for_line_chroma(
   }
 }
 
-static AOM_INLINE int get_min_tx_height(const TX_SIZE *tx_buf,
-                                        const int x_range) {
-  int min_dim = INT_MAX;
-
-  for (int x = 0; x < x_range;) {
-    const TX_SIZE ts = *tx_buf;
-    if (ts == TX_INVALID) {
-      x++;
-      continue;
-    }
-    tx_buf += tx_size_wide_unit[ts];
-    x += tx_size_wide_unit[ts];
-
-    min_dim = AOMMIN(min_dim, tx_size_high[ts]);
-  }
-  return min_dim;
-}
-
-static AOM_INLINE int get_min_tx_width(const TX_SIZE *tx_buf,
-                                       const int y_range) {
-  int min_dim = INT_MAX;
-
-  for (int y = 0; y < y_range;) {
-    const TX_SIZE ts = *tx_buf;
-    if (ts == TX_INVALID) {
-      y++;
-      continue;
-    }
-    tx_buf += tx_size_high_unit[ts];
-    y += tx_size_high_unit[ts];
-
-    min_dim = AOMMIN(min_dim, tx_size_wide[ts]);
-  }
-  return min_dim;
-}
-
 static AOM_INLINE void filter_vert(uint8_t *dst, int dst_stride,
                                    const AV1_DEBLOCKING_PARAMETERS *params,
                                    const SequenceHeader *seq_params,
-                                   bool use_dual) {
+                                   USE_FILTER_TYPE use_filter_type) {
   const loop_filter_thresh *limits = params->lfthr;
 #if CONFIG_AV1_HIGHBITDEPTH
   const int use_highbitdepth = seq_params->use_highbitdepth;
   const aom_bit_depth_t bit_depth = seq_params->bit_depth;
   if (use_highbitdepth) {
     uint16_t *dst_shortptr = CONVERT_TO_SHORTPTR(dst);
-    if (use_dual) {
+    if (use_filter_type == USE_QUAD) {
+      switch (params->filter_length) {
+        // apply 4-tap filtering
+        case 4:
+          aom_highbd_lpf_vertical_4_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_vertical_4_dual(
+              dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              limits->mblim, limits->lim, limits->hev_thr, limits->mblim,
+              limits->lim, limits->hev_thr, bit_depth);
+          break;
+        case 6:  // apply 6-tap filter for chroma plane only
+          aom_highbd_lpf_vertical_6_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_vertical_6_dual(
+              dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              limits->mblim, limits->lim, limits->hev_thr, limits->mblim,
+              limits->lim, limits->hev_thr, bit_depth);
+          break;
+        // apply 8-tap filtering
+        case 8:
+          aom_highbd_lpf_vertical_8_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_vertical_8_dual(
+              dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              limits->mblim, limits->lim, limits->hev_thr, limits->mblim,
+              limits->lim, limits->hev_thr, bit_depth);
+          break;
+        // apply 14-tap filtering
+        case 14:
+          aom_highbd_lpf_vertical_14_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_vertical_14_dual(
+              dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              limits->mblim, limits->lim, limits->hev_thr, limits->mblim,
+              limits->lim, limits->hev_thr, bit_depth);
+          break;
+        // no filtering
+        default: break;
+      }
+    } else if (use_filter_type == USE_DUAL) {
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -948,6 +986,7 @@ static AOM_INLINE void filter_vert(uint8_t *dst, int dst_stride,
         default: break;
       }
     } else {
+      assert(use_filter_type == USE_SINGLE);
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -975,8 +1014,35 @@ static AOM_INLINE void filter_vert(uint8_t *dst, int dst_stride,
     return;
   }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
-
-  if (use_dual) {
+  if (use_filter_type == USE_QUAD) {
+    // Only one set of loop filter parameters (mblim, lim and hev_thr) is
+    // passed as argument to quad loop filter because quad loop filter is
+    // called for those cases where all the 4 set of loop filter parameters
+    // are equal.
+    switch (params->filter_length) {
+      // apply 4-tap filtering
+      case 4:
+        aom_lpf_vertical_4_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                limits->hev_thr);
+        break;
+      case 6:  // apply 6-tap filter for chroma plane only
+        aom_lpf_vertical_6_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                limits->hev_thr);
+        break;
+      // apply 8-tap filtering
+      case 8:
+        aom_lpf_vertical_8_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                limits->hev_thr);
+        break;
+      // apply 14-tap filtering
+      case 14:
+        aom_lpf_vertical_14_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                 limits->hev_thr);
+        break;
+      // no filtering
+      default: break;
+    }
+  } else if (use_filter_type == USE_DUAL) {
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1005,6 +1071,7 @@ static AOM_INLINE void filter_vert(uint8_t *dst, int dst_stride,
       default: break;
     }
   } else {
+    assert(use_filter_type == USE_SINGLE);
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1037,7 +1104,7 @@ static AOM_INLINE void filter_vert(uint8_t *dst, int dst_stride,
 static AOM_INLINE void filter_vert_chroma(
     uint8_t *u_dst, uint8_t *v_dst, int dst_stride,
     const AV1_DEBLOCKING_PARAMETERS *params, const SequenceHeader *seq_params,
-    bool use_dual) {
+    USE_FILTER_TYPE use_filter_type) {
   const loop_filter_thresh *u_limits = params->lfthr;
   const loop_filter_thresh *v_limits = params->lfthr;
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -1046,7 +1113,51 @@ static AOM_INLINE void filter_vert_chroma(
   if (use_highbitdepth) {
     uint16_t *u_dst_shortptr = CONVERT_TO_SHORTPTR(u_dst);
     uint16_t *v_dst_shortptr = CONVERT_TO_SHORTPTR(v_dst);
-    if (use_dual) {
+    if (use_filter_type == USE_QUAD) {
+      switch (params->filter_length) {
+        // apply 4-tap filtering
+        case 4:
+          aom_highbd_lpf_vertical_4_dual(
+              u_dst_shortptr, dst_stride, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_vertical_4_dual(
+              u_dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              u_limits->mblim, u_limits->lim, u_limits->hev_thr,
+              u_limits->mblim, u_limits->lim, u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_vertical_4_dual(
+              v_dst_shortptr, dst_stride, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_vertical_4_dual(
+              v_dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              v_limits->mblim, v_limits->lim, v_limits->hev_thr,
+              v_limits->mblim, v_limits->lim, v_limits->hev_thr, bit_depth);
+          break;
+        case 6:  // apply 6-tap filter for chroma plane only
+          aom_highbd_lpf_vertical_6_dual(
+              u_dst_shortptr, dst_stride, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_vertical_6_dual(
+              u_dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              u_limits->mblim, u_limits->lim, u_limits->hev_thr,
+              u_limits->mblim, u_limits->lim, u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_vertical_6_dual(
+              v_dst_shortptr, dst_stride, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_vertical_6_dual(
+              v_dst_shortptr + (2 * MI_SIZE * dst_stride), dst_stride,
+              v_limits->mblim, v_limits->lim, v_limits->hev_thr,
+              v_limits->mblim, v_limits->lim, v_limits->hev_thr, bit_depth);
+          break;
+        case 8:
+        case 14: assert(0);
+        // no filtering
+        default: break;
+      }
+    } else if (use_filter_type == USE_DUAL) {
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -1075,6 +1186,7 @@ static AOM_INLINE void filter_vert_chroma(
         default: break;
       }
     } else {
+      assert(use_filter_type == USE_SINGLE);
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -1102,8 +1214,31 @@ static AOM_INLINE void filter_vert_chroma(
     return;
   }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
-
-  if (use_dual) {
+  if (use_filter_type == USE_QUAD) {
+    // Only one set of loop filter parameters (mblim, lim and hev_thr) is
+    // passed as argument to quad loop filter because quad loop filter is
+    // called for those cases where all the 4 set of loop filter parameters
+    // are equal.
+    switch (params->filter_length) {
+      // apply 4-tap filtering
+      case 4:
+        aom_lpf_vertical_4_quad(u_dst, dst_stride, u_limits->mblim,
+                                u_limits->lim, u_limits->hev_thr);
+        aom_lpf_vertical_4_quad(v_dst, dst_stride, v_limits->mblim,
+                                v_limits->lim, v_limits->hev_thr);
+        break;
+      case 6:  // apply 6-tap filter for chroma plane only
+        aom_lpf_vertical_6_quad(u_dst, dst_stride, u_limits->mblim,
+                                u_limits->lim, u_limits->hev_thr);
+        aom_lpf_vertical_6_quad(v_dst, dst_stride, v_limits->mblim,
+                                v_limits->lim, v_limits->hev_thr);
+        break;
+      case 8:
+      case 14: assert(0);
+      // no filtering
+      default: break;
+    }
+  } else if (use_filter_type == USE_DUAL) {
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1132,6 +1267,7 @@ static AOM_INLINE void filter_vert_chroma(
       default: break;
     }
   } else {
+    assert(use_filter_type == USE_SINGLE);
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1196,7 +1332,7 @@ void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
         tx_size = TX_4X4;
       }
 
-      filter_vert(p, dst_stride, &params, cm->seq_params, false);
+      filter_vert(p, dst_stride, &params, cm->seq_params, USE_SINGLE);
 
       // advance the destination pointer
       advance_units = tx_size_wide_unit[tx_size];
@@ -1215,31 +1351,48 @@ void av1_filter_block_plane_vert_rt(const AV1_COMMON *const cm,
                                     TX_SIZE *tx_buf) {
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  const int plane_mi_rows = ROUND_POWER_OF_TWO(cm->mi_params.mi_rows, 0);
-  const int plane_mi_cols = ROUND_POWER_OF_TWO(cm->mi_params.mi_cols, 0);
+  // Ensure that mi_cols/mi_rows are calculated based on frame dimension aligned
+  // to MI_SIZE.
+  const int plane_mi_cols =
+      (plane_ptr->dst.width + MI_SIZE - 1) >> MI_SIZE_LOG2;
+  const int plane_mi_rows =
+      (plane_ptr->dst.height + MI_SIZE - 1) >> MI_SIZE_LOG2;
   const int y_range = AOMMIN((int)(plane_mi_rows - mi_row), MAX_MIB_SIZE);
   const int x_range = AOMMIN((int)(plane_mi_cols - mi_col), MAX_MIB_SIZE);
-  assert(!(y_range % 2));
   const ptrdiff_t mode_step = 1;
   for (int y = 0; y < y_range; y += 2) {
     const uint32_t curr_y = mi_row + y;
     const uint32_t x_start = mi_col;
     const uint32_t x_end = mi_col + x_range;
+    int min_block_height = block_size_high[BLOCK_128X128];
     set_lpf_parameters_for_line_luma(params_buf, tx_buf, cm, xd, VERT_EDGE,
                                      x_start, curr_y, plane_ptr, x_end,
-                                     mode_step);
+                                     mode_step, &min_block_height);
 
     AV1_DEBLOCKING_PARAMETERS *params = params_buf;
     TX_SIZE *tx_size = tx_buf;
+    USE_FILTER_TYPE use_filter_type = USE_SINGLE;
 
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
+
+    if ((y & 3) == 0 && (y + 3) < y_range && min_block_height >= 16) {
+      // If we are on a row which is a multiple of 4, and the minimum height is
+      // 16 pixels, then the current and right 3 cols must contain the same
+      // prediction block. This is because dim 16 can only happen every unit of
+      // 4 mi's.
+      use_filter_type = USE_QUAD;
+      y += 2;
+    } else if ((y + 1) < y_range) {
+      use_filter_type = USE_DUAL;
+    }
+
     for (int x = 0; x < x_range;) {
       if (*tx_size == TX_INVALID) {
         params->filter_length = 0;
         *tx_size = TX_4X4;
       }
 
-      filter_vert(p, dst_stride, params, cm->seq_params, true);
+      filter_vert(p, dst_stride, params, cm->seq_params, use_filter_type);
 
       // advance the destination pointer
       const uint32_t advance_units = tx_size_wide_unit[*tx_size];
@@ -1271,27 +1424,37 @@ void av1_filter_block_plane_vert_rt_chroma(
                              (MAX_MIB_SIZE >> scale_horz));
   const ptrdiff_t mode_step = (ptrdiff_t)1 << scale_horz;
 
-  int min_height = 0;
   for (int y = 0; y < y_range; y++) {
     const uint32_t curr_y = mi_row + (y << scale_vert);
     const uint32_t x_start = mi_col + (0 << scale_horz);
     const uint32_t x_end = mi_col + (x_range << scale_horz);
-    set_lpf_parameters_for_line_chroma(params_buf, tx_buf, cm, xd, VERT_EDGE,
-                                       x_start, curr_y, plane_ptr, x_end,
-                                       mode_step, scale_horz, scale_vert);
+    int min_height = tx_size_high[TX_64X64];
+    set_lpf_parameters_for_line_chroma(
+        params_buf, tx_buf, cm, xd, VERT_EDGE, x_start, curr_y, plane_ptr,
+        x_end, mode_step, scale_horz, scale_vert, &min_height);
 
     AV1_DEBLOCKING_PARAMETERS *params = params_buf;
     TX_SIZE *tx_size = tx_buf;
 
-    if (y % 2 == 0 && (y + 1) < y_range) {
+    uint8_t *u_dst = u_dst_ptr + y * MI_SIZE * dst_stride;
+    uint8_t *v_dst = v_dst_ptr + y * MI_SIZE * dst_stride;
+
+    int use_filter_type = USE_SINGLE;
+    if ((y & 3) == 0 && (y + 3) < y_range && min_height >= 16) {
+      // If we are on a row which is a multiple of 4, and the minimum height is
+      // 16 pixels, then the current and below 3 rows must contain the same tx
+      // block. This is because dim 16 can only happen every unit of 4 mi's.
+      use_filter_type = USE_QUAD;
+      y += 3;
+    } else if (y % 2 == 0 && (y + 1) < y_range && min_height >= 8) {
       // If we are on an even row, and the minimum height is 8 pixels, then the
       // current and below rows must contain the same tx block. This is because
       // dim 4 can only happen every unit of 2**0, and 8 every unit of 2**1,
       // etc.
-      min_height = get_min_tx_height(tx_buf, x_range);
+      use_filter_type = USE_DUAL;
+      y++;
     }
-    uint8_t *u_dst = u_dst_ptr + y * MI_SIZE * dst_stride;
-    uint8_t *v_dst = v_dst_ptr + y * MI_SIZE * dst_stride;
+
     for (int x = 0; x < x_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will filter the vertical edge aligned with a 8x8 block.
@@ -1303,7 +1466,7 @@ void av1_filter_block_plane_vert_rt_chroma(
       }
 
       filter_vert_chroma(u_dst, v_dst, dst_stride, params, cm->seq_params,
-                         min_height >= 8);
+                         use_filter_type);
 
       // advance the destination pointer
       const uint32_t advance_units = tx_size_wide_unit[*tx_size];
@@ -1313,23 +1476,68 @@ void av1_filter_block_plane_vert_rt_chroma(
       params += advance_units;
       tx_size += advance_units;
     }
-    if (min_height >= 8) {
-      y++;
-    }
   }
 }
 
 static AOM_INLINE void filter_horz(uint8_t *dst, int dst_stride,
                                    const AV1_DEBLOCKING_PARAMETERS *params,
                                    const SequenceHeader *seq_params,
-                                   bool use_dual) {
+                                   USE_FILTER_TYPE use_filter_type) {
   const loop_filter_thresh *limits = params->lfthr;
 #if CONFIG_AV1_HIGHBITDEPTH
   const int use_highbitdepth = seq_params->use_highbitdepth;
   const aom_bit_depth_t bit_depth = seq_params->bit_depth;
   if (use_highbitdepth) {
     uint16_t *dst_shortptr = CONVERT_TO_SHORTPTR(dst);
-    if (use_dual) {
+    if (use_filter_type == USE_QUAD) {
+      switch (params->filter_length) {
+        // apply 4-tap filtering
+        case 4:
+          aom_highbd_lpf_horizontal_4_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_horizontal_4_dual(
+              dst_shortptr + (2 * MI_SIZE), dst_stride, limits->mblim,
+              limits->lim, limits->hev_thr, limits->mblim, limits->lim,
+              limits->hev_thr, bit_depth);
+          break;
+        case 6:  // apply 6-tap filter for chroma plane only
+          aom_highbd_lpf_horizontal_6_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_horizontal_6_dual(
+              dst_shortptr + (2 * MI_SIZE), dst_stride, limits->mblim,
+              limits->lim, limits->hev_thr, limits->mblim, limits->lim,
+              limits->hev_thr, bit_depth);
+          break;
+        // apply 8-tap filtering
+        case 8:
+          aom_highbd_lpf_horizontal_8_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_horizontal_8_dual(
+              dst_shortptr + (2 * MI_SIZE), dst_stride, limits->mblim,
+              limits->lim, limits->hev_thr, limits->mblim, limits->lim,
+              limits->hev_thr, bit_depth);
+          break;
+        // apply 14-tap filtering
+        case 14:
+          aom_highbd_lpf_horizontal_14_dual(
+              dst_shortptr, dst_stride, limits->mblim, limits->lim,
+              limits->hev_thr, limits->mblim, limits->lim, limits->hev_thr,
+              bit_depth);
+          aom_highbd_lpf_horizontal_14_dual(
+              dst_shortptr + (2 * MI_SIZE), dst_stride, limits->mblim,
+              limits->lim, limits->hev_thr, limits->mblim, limits->lim,
+              limits->hev_thr, bit_depth);
+          break;
+        // no filtering
+        default: break;
+      }
+    } else if (use_filter_type == USE_DUAL) {
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -1362,6 +1570,7 @@ static AOM_INLINE void filter_horz(uint8_t *dst, int dst_stride,
         default: break;
       }
     } else {
+      assert(use_filter_type == USE_SINGLE);
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -1389,8 +1598,35 @@ static AOM_INLINE void filter_horz(uint8_t *dst, int dst_stride,
     return;
   }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
-
-  if (use_dual) {
+  if (use_filter_type == USE_QUAD) {
+    // Only one set of loop filter parameters (mblim, lim and hev_thr) is
+    // passed as argument to quad loop filter because quad loop filter is
+    // called for those cases where all the 4 set of loop filter parameters
+    // are equal.
+    switch (params->filter_length) {
+      // apply 4-tap filtering
+      case 4:
+        aom_lpf_horizontal_4_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                  limits->hev_thr);
+        break;
+      case 6:  // apply 6-tap filter for chroma plane only
+        aom_lpf_horizontal_6_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                  limits->hev_thr);
+        break;
+      // apply 8-tap filtering
+      case 8:
+        aom_lpf_horizontal_8_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                  limits->hev_thr);
+        break;
+      // apply 14-tap filtering
+      case 14:
+        aom_lpf_horizontal_14_quad(dst, dst_stride, limits->mblim, limits->lim,
+                                   limits->hev_thr);
+        break;
+      // no filtering
+      default: break;
+    }
+  } else if (use_filter_type == USE_DUAL) {
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1419,6 +1655,7 @@ static AOM_INLINE void filter_horz(uint8_t *dst, int dst_stride,
       default: break;
     }
   } else {
+    assert(use_filter_type == USE_SINGLE);
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1451,7 +1688,7 @@ static AOM_INLINE void filter_horz(uint8_t *dst, int dst_stride,
 static AOM_INLINE void filter_horz_chroma(
     uint8_t *u_dst, uint8_t *v_dst, int dst_stride,
     const AV1_DEBLOCKING_PARAMETERS *params, const SequenceHeader *seq_params,
-    bool use_dual) {
+    USE_FILTER_TYPE use_filter_type) {
   const loop_filter_thresh *u_limits = params->lfthr;
   const loop_filter_thresh *v_limits = params->lfthr;
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -1460,7 +1697,51 @@ static AOM_INLINE void filter_horz_chroma(
   if (use_highbitdepth) {
     uint16_t *u_dst_shortptr = CONVERT_TO_SHORTPTR(u_dst);
     uint16_t *v_dst_shortptr = CONVERT_TO_SHORTPTR(v_dst);
-    if (use_dual) {
+    if (use_filter_type == USE_QUAD) {
+      switch (params->filter_length) {
+        // apply 4-tap filtering
+        case 4:
+          aom_highbd_lpf_horizontal_4_dual(
+              u_dst_shortptr, dst_stride, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_horizontal_4_dual(
+              u_dst_shortptr + (2 * MI_SIZE), dst_stride, u_limits->mblim,
+              u_limits->lim, u_limits->hev_thr, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_horizontal_4_dual(
+              v_dst_shortptr, dst_stride, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_horizontal_4_dual(
+              v_dst_shortptr + (2 * MI_SIZE), dst_stride, v_limits->mblim,
+              v_limits->lim, v_limits->hev_thr, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, bit_depth);
+          break;
+        case 6:  // apply 6-tap filter for chroma plane only
+          aom_highbd_lpf_horizontal_6_dual(
+              u_dst_shortptr, dst_stride, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_horizontal_6_dual(
+              u_dst_shortptr + (2 * MI_SIZE), dst_stride, u_limits->mblim,
+              u_limits->lim, u_limits->hev_thr, u_limits->mblim, u_limits->lim,
+              u_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_horizontal_6_dual(
+              v_dst_shortptr, dst_stride, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, bit_depth);
+          aom_highbd_lpf_horizontal_6_dual(
+              v_dst_shortptr + (2 * MI_SIZE), dst_stride, v_limits->mblim,
+              v_limits->lim, v_limits->hev_thr, v_limits->mblim, v_limits->lim,
+              v_limits->hev_thr, bit_depth);
+          break;
+        case 8:
+        case 14: assert(0);
+        // no filtering
+        default: break;
+      }
+    } else if (use_filter_type == USE_DUAL) {
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -1489,6 +1770,7 @@ static AOM_INLINE void filter_horz_chroma(
         default: break;
       }
     } else {
+      assert(use_filter_type == USE_SINGLE);
       switch (params->filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -1516,8 +1798,31 @@ static AOM_INLINE void filter_horz_chroma(
     return;
   }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
-
-  if (use_dual) {
+  if (use_filter_type == USE_QUAD) {
+    // Only one set of loop filter parameters (mblim, lim and hev_thr) is
+    // passed as argument to quad loop filter because quad loop filter is
+    // called for those cases where all the 4 set of loop filter parameters
+    // are equal.
+    switch (params->filter_length) {
+      // apply 4-tap filtering
+      case 4:
+        aom_lpf_horizontal_4_quad(u_dst, dst_stride, u_limits->mblim,
+                                  u_limits->lim, u_limits->hev_thr);
+        aom_lpf_horizontal_4_quad(v_dst, dst_stride, v_limits->mblim,
+                                  v_limits->lim, v_limits->hev_thr);
+        break;
+      case 6:  // apply 6-tap filter for chroma plane only
+        aom_lpf_horizontal_6_quad(u_dst, dst_stride, u_limits->mblim,
+                                  u_limits->lim, u_limits->hev_thr);
+        aom_lpf_horizontal_6_quad(v_dst, dst_stride, v_limits->mblim,
+                                  v_limits->lim, v_limits->hev_thr);
+        break;
+      case 8:
+      case 14: assert(0);
+      // no filtering
+      default: break;
+    }
+  } else if (use_filter_type == USE_DUAL) {
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1546,6 +1851,7 @@ static AOM_INLINE void filter_horz_chroma(
       default: break;
     }
   } else {
+    assert(use_filter_type == USE_SINGLE);
     switch (params->filter_length) {
       // apply 4-tap filtering
       case 4:
@@ -1609,7 +1915,7 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
         tx_size = TX_4X4;
       }
 
-      filter_horz(p, dst_stride, &params, cm->seq_params, false);
+      filter_horz(p, dst_stride, &params, cm->seq_params, USE_SINGLE);
 
       // advance the destination pointer
       advance_units = tx_size_high_unit[tx_size];
@@ -1628,8 +1934,12 @@ void av1_filter_block_plane_horz_rt(const AV1_COMMON *const cm,
                                     TX_SIZE *tx_buf) {
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  const int plane_mi_rows = ROUND_POWER_OF_TWO(cm->mi_params.mi_rows, 0);
-  const int plane_mi_cols = ROUND_POWER_OF_TWO(cm->mi_params.mi_cols, 0);
+  // Ensure that mi_cols/mi_rows are calculated based on frame dimension aligned
+  // to MI_SIZE.
+  const int plane_mi_cols =
+      (plane_ptr->dst.width + MI_SIZE - 1) >> MI_SIZE_LOG2;
+  const int plane_mi_rows =
+      (plane_ptr->dst.height + MI_SIZE - 1) >> MI_SIZE_LOG2;
   const int y_range = AOMMIN((int)(plane_mi_rows - mi_row), MAX_MIB_SIZE);
   const int x_range = AOMMIN((int)(plane_mi_cols - mi_col), MAX_MIB_SIZE);
 
@@ -1638,21 +1948,35 @@ void av1_filter_block_plane_horz_rt(const AV1_COMMON *const cm,
     const uint32_t curr_x = mi_col + x;
     const uint32_t y_start = mi_row;
     const uint32_t y_end = mi_row + y_range;
+    int min_block_width = block_size_high[BLOCK_128X128];
     set_lpf_parameters_for_line_luma(params_buf, tx_buf, cm, xd, HORZ_EDGE,
                                      curr_x, y_start, plane_ptr, y_end,
-                                     mode_step);
+                                     mode_step, &min_block_width);
 
     AV1_DEBLOCKING_PARAMETERS *params = params_buf;
     TX_SIZE *tx_size = tx_buf;
+    USE_FILTER_TYPE filter_type = USE_SINGLE;
 
     uint8_t *p = dst_ptr + x * MI_SIZE;
+
+    if ((x & 3) == 0 && (x + 3) < x_range && min_block_width >= 16) {
+      // If we are on a col which is a multiple of 4, and the minimum width is
+      // 16 pixels, then the current and right 3 cols must contain the same
+      // prediction block. This is because dim 16 can only happen every unit of
+      // 4 mi's.
+      filter_type = USE_QUAD;
+      x += 2;
+    } else if ((x + 1) < x_range) {
+      filter_type = USE_DUAL;
+    }
+
     for (int y = 0; y < y_range;) {
       if (*tx_size == TX_INVALID) {
         params->filter_length = 0;
         *tx_size = TX_4X4;
       }
 
-      filter_horz(p, dst_stride, params, cm->seq_params, true);
+      filter_horz(p, dst_stride, params, cm->seq_params, filter_type);
 
       // advance the destination pointer
       const uint32_t advance_units = tx_size_high_unit[*tx_size];
@@ -1683,27 +2007,37 @@ void av1_filter_block_plane_horz_rt_chroma(
   const int x_range = AOMMIN((int)(plane_mi_cols - (mi_col >> scale_horz)),
                              (MAX_MIB_SIZE >> scale_horz));
   const ptrdiff_t mode_step = cm->mi_params.mi_stride << scale_vert;
-  int min_width = 0;
   for (int x = 0; x < x_range; x++) {
     const uint32_t y_start = mi_row + (0 << scale_vert);
     const uint32_t curr_x = mi_col + (x << scale_horz);
     const uint32_t y_end = mi_row + (y_range << scale_vert);
-    set_lpf_parameters_for_line_chroma(params_buf, tx_buf, cm, xd, HORZ_EDGE,
-                                       curr_x, y_start, plane_ptr, y_end,
-                                       mode_step, scale_horz, scale_vert);
+    int min_width = tx_size_wide[TX_64X64];
+    set_lpf_parameters_for_line_chroma(
+        params_buf, tx_buf, cm, xd, HORZ_EDGE, curr_x, y_start, plane_ptr,
+        y_end, mode_step, scale_horz, scale_vert, &min_width);
 
     AV1_DEBLOCKING_PARAMETERS *params = params_buf;
     TX_SIZE *tx_size = tx_buf;
 
-    if (x % 2 == 0 && (x + 1) < x_range) {
+    uint8_t *u_dst = u_dst_ptr + x * MI_SIZE;
+    uint8_t *v_dst = v_dst_ptr + x * MI_SIZE;
+
+    USE_FILTER_TYPE use_filter_type = USE_SINGLE;
+    if ((x & 3) == 0 && (x + 3) < x_range && min_width >= 16) {
+      // If we are on a col which is a multiple of 4, and the minimum width is
+      // 16 pixels, then the current and right 3 cols must contain the same tx
+      // block. This is because dim 16 can only happen every unit of 4 mi's.
+      use_filter_type = USE_QUAD;
+      x += 3;
+    } else if (x % 2 == 0 && (x + 1) < x_range && min_width >= 8) {
       // If we are on an even col, and the minimum width is 8 pixels, then the
       // current and left cols must contain the same tx block. This is because
       // dim 4 can only happen every unit of 2**0, and 8 every unit of 2**1,
       // etc.
-      min_width = get_min_tx_width(tx_buf, y_range);
+      use_filter_type = USE_DUAL;
+      x++;
     }
-    uint8_t *u_dst = u_dst_ptr + x * MI_SIZE;
-    uint8_t *v_dst = v_dst_ptr + x * MI_SIZE;
+
     for (int y = 0; y < y_range;) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will first filter the vertical edge aligned with a 8x8
@@ -1715,7 +2049,7 @@ void av1_filter_block_plane_horz_rt_chroma(
       }
 
       filter_horz_chroma(u_dst, v_dst, dst_stride, params, cm->seq_params,
-                         min_width >= 8);
+                         use_filter_type);
 
       // advance the destination pointer
       const int advance_units = tx_size_high_unit[*tx_size];
@@ -1724,9 +2058,6 @@ void av1_filter_block_plane_horz_rt_chroma(
       v_dst += advance_units * dst_stride * MI_SIZE;
       params += advance_units;
       tx_size += advance_units;
-    }
-    if (min_width >= 8) {
-      x++;
     }
   }
 }

@@ -17,12 +17,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/browsing_topics/browsing_topics_service_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -40,6 +42,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/content/mock_cookie_helper.h"
 #include "components/browsing_data/content/mock_local_storage_helper.h"
+#include "components/browsing_topics/browsing_topics_service.h"
+#include "components/browsing_topics/test_util.h"
 #include "components/client_hints/common/client_hints.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -55,7 +59,9 @@
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/test/object_permission_context_base_mock_permission_observer.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -114,14 +120,12 @@ const struct PatternContentTypeTestCase {
     {{"http://127.0.0.1", "location"}, {true, ""}},  // Localhost is secure.
     {{"http://[::1]", "location"}, {true, ""}}};
 
-apps::mojom::AppPtr MakeApp(const std::string& app_id,
-                            apps::mojom::AppType app_type,
-                            const std::string& publisher_id,
-                            apps::mojom::Readiness readiness,
-                            apps::mojom::InstallReason install_reason) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_id = app_id;
-  app->app_type = app_type;
+apps::AppPtr MakeApp(const std::string& app_id,
+                     apps::AppType app_type,
+                     const std::string& publisher_id,
+                     apps::Readiness readiness,
+                     apps::InstallReason install_reason) {
+  apps::AppPtr app = std::make_unique<apps::App>(app_type, app_id);
   app->publisher_id = publisher_id;
   app->readiness = readiness;
   app->install_reason = install_reason;
@@ -131,13 +135,20 @@ apps::mojom::AppPtr MakeApp(const std::string& app_id,
 void InstallWebApp(Profile* profile, const GURL& start_url) {
   apps::AppRegistryCache& cache =
       apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
-  std::vector<apps::mojom::AppPtr> deltas;
-  deltas.push_back(MakeApp(
-      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, start_url),
-      apps::mojom::AppType::kWeb, start_url.spec(),
-      apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kSync));
-  cache.OnApps(std::move(deltas), apps::mojom::AppType::kWeb,
-               /*should_notify_initialized=*/true);
+  std::vector<apps::AppPtr> deltas;
+  deltas.push_back(
+      MakeApp(web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, start_url),
+              apps::AppType::kWeb, start_url.spec(), apps::Readiness::kReady,
+              apps::InstallReason::kSync));
+  if (base::FeatureList::IsEnabled(apps::kAppServiceOnAppUpdateWithoutMojom)) {
+    cache.OnApps(std::move(deltas), apps::AppType::kWeb,
+                 /*should_notify_initialized=*/true);
+  } else {
+    std::vector<apps::mojom::AppPtr> mojom_deltas;
+    mojom_deltas.push_back(apps::ConvertAppToMojomApp(deltas[0]));
+    cache.OnApps(std::move(mojom_deltas), apps::mojom::AppType::kWeb,
+                 /*should_notify_initialized=*/true);
+  }
 }
 
 }  // namespace
@@ -201,6 +212,18 @@ class SiteSettingsHandlerTest : public testing::Test {
   }
 
   void SetUp() override {
+    browsing_topics::BrowsingTopicsServiceFactory::GetInstance()
+        ->SetTestingFactoryAndUse(
+            profile(),
+            base::BindLambdaForTesting([this](content::BrowserContext* context)
+                                           -> std::unique_ptr<KeyedService> {
+              auto mock_browsing_topics_service = std::make_unique<
+                  browsing_topics::MockBrowsingTopicsService>();
+              mock_browsing_topics_service_ =
+                  mock_browsing_topics_service.get();
+              return mock_browsing_topics_service;
+            }));
+
     handler_ = std::make_unique<SiteSettingsHandler>(profile_.get());
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
@@ -223,6 +246,9 @@ class SiteSettingsHandlerTest : public testing::Test {
   TestingProfile* incognito_profile() { return incognito_profile_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
   SiteSettingsHandler* handler() { return handler_.get(); }
+  browsing_topics::MockBrowsingTopicsService* mock_browsing_topics_service() {
+    return mock_browsing_topics_service_;
+  }
 
   void ValidateBlockAutoplay(bool expected_value, bool expected_enabled) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -576,6 +602,7 @@ class SiteSettingsHandlerTest : public testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
+  browsing_topics::MockBrowsingTopicsService* mock_browsing_topics_service_;
 };
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
@@ -2855,6 +2882,16 @@ TEST_F(SiteSettingsHandlerTest, NonTreeModelDeletion) {
   // Confirm that a BrowsingDataRemover task is started to remove Privacy
   // Sandbox APIs that are not integrated with the tree model.
   SetUpCookiesTreeModel();
+
+  base::ListValue::ConstListView storage_and_cookie_list =
+      GetOnStorageFetchedSentListView();
+  EXPECT_EQ(4U, storage_and_cookie_list.size());
+  EXPECT_CALL(*mock_browsing_topics_service(),
+              ClearTopicsDataForOrigin(
+                  url::Origin::Create(GURL("https://www.google.com"))));
+  EXPECT_CALL(*mock_browsing_topics_service(),
+              ClearTopicsDataForOrigin(
+                  url::Origin::Create(GURL("https://google.com"))));
 
   base::Value args(base::Value::Type::LIST);
   args.Append("google.com");

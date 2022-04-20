@@ -22,12 +22,12 @@
 #include "internal/platform/byte_array.h"
 #include "internal/platform/exception.h"
 #include "internal/platform/file.h"
-#import "internal/platform/implementation/ios/Source/GNCConnection.h"
-#import "internal/platform/implementation/ios/Source/GNCPayload.h"
 #import "internal/platform/implementation/ios/Source/Internal/GNCCore.h"
 #import "internal/platform/implementation/ios/Source/Internal/GNCCoreConnection.h"
 #import "internal/platform/implementation/ios/Source/Internal/GNCPayload+Internal.h"
 #include "internal/platform/implementation/ios/Source/Platform/utils.h"
+#import "internal/platform/implementation/ios/Source/Public/NearbyConnections/GNCConnection.h"
+#import "internal/platform/implementation/ios/Source/Public/NearbyConnections/GNCPayload.h"
 #include "internal/platform/input_stream.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -46,7 +46,7 @@ void GNCPayloadListener::OnPayload(const std::string &endpoint_id, Payload paylo
   NSMutableDictionary<NSNumber *, GNCPayloadInfo *> *payloads = payloads_provider_();
 
   switch (payload.GetType()) {
-    case Payload::Type::kBytes: {
+    case PayloadType::kBytes: {
       NSData *data = NSDataFromByteArray(payload.AsBytes());  // don't capture C++ object
 
       // Wait for the payload transfer update to arrive before calling the Bytes payload handler.
@@ -66,7 +66,7 @@ void GNCPayloadListener::OnPayload(const std::string &endpoint_id, Payload paylo
       break;
     }
 
-    case Payload::Type::kStream:
+    case PayloadType::kStream:
       if (handlers.streamPayloadHandler) {
         // Make a pair of bound streams so data pumped into the output stream becomes
         // available for reading from the input stream.
@@ -144,11 +144,11 @@ void GNCPayloadListener::OnPayload(const std::string &endpoint_id, Payload paylo
       }
       break;
 
-    case Payload::Type::kFile:
+    case PayloadType::kFile:
       if (handlers.filePayloadHandler) {
         InputFile *payloadInputFile = payload.AsFile();
-        NSURL *fileURL =
-            [NSURL URLWithString:ObjCStringFromCppString(payloadInputFile->GetFilePath())];
+        NSString *fileString = ObjCStringFromCppString(payloadInputFile->GetFilePath());
+        NSURL *fileURL = [NSURL fileURLWithPath:fileString];
         int64_t fileSize = payloadInputFile->GetTotalSize();
         NSProgress *progress = [NSProgress progressWithTotalUnitCount:fileSize];
         progress.cancellable = YES;

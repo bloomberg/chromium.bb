@@ -155,7 +155,7 @@ architecture](/developers/design-documents/multi-process-architecture). When you
 select **Run** in the debugger, only the main browser process will be debugged.
 The code that actually renders web pages (the Renderer) and the plugins will be
 in separate processes that's not (yet!) being debugged. The
-[ProcessExplorer](http://technet.microsoft.com/en-us/sysinternals/bb896653.aspx)
+[ProcessExplorer](https://technet.microsoft.com/en-us/sysinternals/bb896653.aspx)
 tool has a process tree view where you can see how these processes are related.
 You can also get the process IDs associated with each tab from the Chrome Task
 Manager (right-click on an empty area of the window title bar to open).
@@ -221,7 +221,7 @@ For utilities, you can add a service type
 `--utility-startup-dialog=data_decoder.mojom.DataDecoderService`.
 
 You can also try [the vs-chromium
-plug-in](http://chromium.github.io/vs-chromium/#attach-to-chrome) to attach to
+plug-in](https://chromium.github.io/vs-chromium/#attach-to-chrome) to attach to
 the right processes.
 
 ### Semi-automatically attaching the debugger to child processes
@@ -331,10 +331,8 @@ Add regular expressions of functions to not step into. Remember to regex-escape
 This file is read at start of a debugging session (F5), so you don't need to
 restart Visual Studio after changing it.
 
-More info: [Andy Pennel's
-Blog](http://blogs.msdn.com/b/andypennell/archive/2004/02/06/69004.aspx),
-[microsoft email
-thread](http://groups.google.com/group/microsoft.public.vsnet.debugging/msg/26addb1b539883e8)
+More info: [Microsoft email
+thread](https://groups.google.com/group/microsoft.public.vsnet.debugging/msg/26addb1b539883e8)
 
 ## V8 and Chromium
 
@@ -402,13 +400,19 @@ python tools\mb\mb.py zip out/Release base_unittests base_unittests.zip
 
 ## Finding all memory allocations
 
-It is possible to use Heap Snapshots (requires recent versions of Windows 10?)
-to get call stacks on all outstanding allocations. This works particularly well
-if heap snapshots are started as soon as the Chrome browser process is created,
-but before it starts running. Details can be found in [this batch
-file](https://github.com/google/UIforETW/blob/master/bin/etwheapsnapshot.bat).
+It is possible to use Heap Snapshots to get call stacks on all outstanding
+allocations that use the OS heap. This works particularly well if heap snapshots
+are started as soon as the Chrome browser process is created, but before it
+starts running. Details can be found in
+[this batch file](https://github.com/google/UIforETW/blob/master/bin/etwheapsnapshot.bat).
+However, with [PartitionAlloc Everywhere](https://blog.chromium.org/2021/04/efficient-and-safe-allocations-everywhere.html)
+most Chromium allocations no longer use the Windows heap so this will only find
+a subset of allocations, mostly from OS DLLs.
 
 ## Find memory leaks
+
+Note: as with Heap Snapshots the utility of UMDH is greatly reduced now because
+PartitionAlloc Everywhere has mostly replaced the Windows heap.
 
 The Windows heap manager has a really useful debug flag, where it can be asked
 to capture and store a stack trace with every allocation. The tool to scrape
@@ -452,10 +456,11 @@ which can then typically be "trivially" analyzed to find the culprit.
 
 ## Miscellaneous
 
-Note that until [crbug.com/1004989](http://crbug.com/1004989) is fixed you may
-need to add --disable-features=RendererCodeIntegrity to avoid sandbox crashes in
-renderer processes when using Application Verifier. See also [this
-page](/developers/testing/page-heap-for-chrome).
+Note that by default Application Verifier only works with non-official builds of
+Chromium. To use Application Verifier on official builds you need to add
+--disable-features=RendererCodeIntegrity to avoid sandbox crashes in renderer
+processes. See [crbug.com/1004989](https://crbug.com/1004989) for details. See
+also [this page](/developers/testing/page-heap-for-chrome).
 
 * [Application
                 Verifier](https://randomascii.wordpress.com/2011/12/07/increased-reliability-through-more-crashes/)
@@ -470,18 +475,13 @@ page](/developers/testing/page-heap-for-chrome).
                 with *Handles* and *Locks* checks enabled. When bugs are found
                 Chrome will trigger a breakpoint so running all Chrome processes
                 under a debugger is recommended. Chrome will run much more slowly
-                because Application Verifier puts every allocation on a separate
-                page.
+                because Application Verifier puts every heap allocation on a
+                separate page. Note that with PartitionAlloc Everywhere most
+                Chromium allocations don't actually go through the Windows heap
+                and are therefore unaffected by Application Verifier.
 * You can check the undocumented 'Cuzz' checkbox in Application
                 Verifier to get the Windows thread scheduler to add some extra
                 randomness in order to help expose race conditions in your code.
-* Putting every allocation on a separate page will *dramatically*
-                affect performance so you may want to only do this for some
-                applications. If you right-click on the Heaps checkbox and select
-                Properties you can edit things like the size range for what
-                allocations go into PageHeap (the page-per-allocation system) and
-                you can set a RandRate percentage to randomly put allocations in
-                PageHeap.
 
 * To put a breakpoint on CreateFile(), add this break point:
 {,,kernel32.dll}_CreateFileW@28

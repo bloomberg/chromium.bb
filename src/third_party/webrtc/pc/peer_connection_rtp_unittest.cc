@@ -69,8 +69,7 @@ using ::testing::Values;
 const uint32_t kDefaultTimeout = 10000u;
 
 template <typename MethodFunctor>
-class OnSuccessObserver : public rtc::RefCountedObject<
-                              webrtc::SetRemoteDescriptionObserverInterface> {
+class OnSuccessObserver : public webrtc::SetRemoteDescriptionObserverInterface {
  public:
   explicit OnSuccessObserver(MethodFunctor on_success)
       : on_success_(std::move(on_success)) {}
@@ -109,7 +108,7 @@ class PeerConnectionRtpBaseTest : public ::testing::Test {
 
   std::unique_ptr<PeerConnectionWrapper> CreatePeerConnectionWithPlanB() {
     RTCConfiguration config;
-    config.sdp_semantics = SdpSemantics::kPlanB;
+    config.sdp_semantics = SdpSemantics::kPlanB_DEPRECATED;
     return CreatePeerConnectionInternal(config);
   }
 
@@ -136,12 +135,12 @@ class PeerConnectionRtpBaseTest : public ::testing::Test {
   std::unique_ptr<PeerConnectionWrapper> CreatePeerConnectionInternal(
       const RTCConfiguration& config) {
     auto observer = std::make_unique<MockPeerConnectionObserver>();
-    auto pc = pc_factory_->CreatePeerConnection(config, nullptr, nullptr,
-                                                observer.get());
-    EXPECT_TRUE(pc.get());
-    observer->SetPeerConnectionInterface(pc.get());
-    return std::make_unique<PeerConnectionWrapper>(pc_factory_, pc,
-                                                   std::move(observer));
+    auto result = pc_factory_->CreatePeerConnectionOrError(
+        config, PeerConnectionDependencies(observer.get()));
+    EXPECT_TRUE(result.ok());
+    observer->SetPeerConnectionInterface(result.value());
+    return std::make_unique<PeerConnectionWrapper>(
+        pc_factory_, result.MoveValue(), std::move(observer));
   }
 };
 
@@ -155,7 +154,7 @@ class PeerConnectionRtpTest
 class PeerConnectionRtpTestPlanB : public PeerConnectionRtpBaseTest {
  protected:
   PeerConnectionRtpTestPlanB()
-      : PeerConnectionRtpBaseTest(SdpSemantics::kPlanB) {}
+      : PeerConnectionRtpBaseTest(SdpSemantics::kPlanB_DEPRECATED) {}
 };
 
 class PeerConnectionRtpTestUnifiedPlan : public PeerConnectionRtpBaseTest {
@@ -200,7 +199,7 @@ TEST_P(PeerConnectionRtpTest, AddTrackWithoutStreamFiresOnAddTrack) {
   const auto& add_track_event = callee->observer()->add_track_events_[0];
   EXPECT_EQ(add_track_event.streams, add_track_event.receiver->streams());
 
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     // Since we are not supporting the no stream case with Plan B, there should
     // be a generated stream, even though we didn't set one with AddTrack.
     ASSERT_EQ(1u, add_track_event.streams.size());
@@ -543,7 +542,7 @@ TEST_P(PeerConnectionRtpTest, AddTrackWithoutStreamAddsReceiver) {
   auto receiver_added = callee->pc()->GetReceivers()[0];
   EXPECT_EQ("audio_track", receiver_added->track()->id());
 
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     // Since we are not supporting the no stream case with Plan B, there should
     // be a generated stream, even though we didn't set one with AddTrack.
     ASSERT_EQ(1u, receiver_added->streams().size());
@@ -1992,7 +1991,7 @@ TEST_P(PeerConnectionRtpTest, CreateTwoSendersWithSameTrack) {
   EXPECT_TRUE(sender2);
   EXPECT_TRUE(sender1->SetTrack(track));
 
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     // TODO(hbos): When https://crbug.com/webrtc/8734 is resolved, this should
     // return true, and doing `callee->SetRemoteDescription()` should work.
     EXPECT_FALSE(caller->CreateOfferAndSetAsLocal());
@@ -2034,7 +2033,7 @@ TEST_F(PeerConnectionRtpTestUnifiedPlan,
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionRtpTest,
                          PeerConnectionRtpTest,
-                         Values(SdpSemantics::kPlanB,
+                         Values(SdpSemantics::kPlanB_DEPRECATED,
                                 SdpSemantics::kUnifiedPlan));
 
 }  // namespace webrtc

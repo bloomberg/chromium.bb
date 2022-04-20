@@ -651,6 +651,9 @@ VK_KHR_copy_commands2 = Extension(name='VK_KHR_copy_commands2', version=1, guard
 VK_KHR_format_feature_flags2 = Extension(name='VK_KHR_format_feature_flags2', version=1, guard=None, commands=[
 ])
 
+VK_KHR_portability_enumeration = Extension(name='VK_KHR_portability_enumeration', version=1, guard=None, commands=[
+])
+
 VK_KHR_maintenance4 = Extension(name='VK_KHR_maintenance4', version=2, guard=None, commands=[
     Command(name='vkGetDeviceBufferMemoryRequirementsKHR', dispatch='VkDevice'),
     Command(name='vkGetDeviceImageMemoryRequirementsKHR', dispatch='VkDevice'),
@@ -1173,6 +1176,9 @@ VK_NV_device_diagnostics_config = Extension(name='VK_NV_device_diagnostics_confi
 VK_QCOM_render_pass_store_ops = Extension(name='VK_QCOM_render_pass_store_ops', version=2, guard=None, commands=[
 ])
 
+VK_EXT_graphics_pipeline_library = Extension(name='VK_EXT_graphics_pipeline_library', version=1, guard=None, commands=[
+])
+
 VK_NV_fragment_shading_rate_enums = Extension(name='VK_NV_fragment_shading_rate_enums', version=1, guard=None, commands=[
     Command(name='vkCmdSetFragmentShadingRateEnumNV', dispatch='VkCommandBuffer'),
 ])
@@ -1247,6 +1253,9 @@ VK_EXT_color_write_enable = Extension(name='VK_EXT_color_write_enable', version=
     Command(name='vkCmdSetColorWriteEnableEXT', dispatch='VkCommandBuffer'),
 ])
 
+VK_EXT_primitives_generated_query = Extension(name='VK_EXT_primitives_generated_query', version=1, guard=None, commands=[
+])
+
 VK_EXT_global_priority_query = Extension(name='VK_EXT_global_priority_query', version=1, guard=None, commands=[
 ])
 
@@ -1258,6 +1267,9 @@ VK_EXT_multi_draw = Extension(name='VK_EXT_multi_draw', version=1, guard=None, c
     Command(name='vkCmdDrawMultiIndexedEXT', dispatch='VkCommandBuffer'),
 ])
 
+VK_EXT_image_2d_view_of_3d = Extension(name='VK_EXT_image_2d_view_of_3d', version=1, guard=None, commands=[
+])
+
 VK_EXT_load_store_op_none = Extension(name='VK_EXT_load_store_op_none', version=1, guard=None, commands=[
 ])
 
@@ -1266,6 +1278,11 @@ VK_EXT_border_color_swizzle = Extension(name='VK_EXT_border_color_swizzle', vers
 
 VK_EXT_pageable_device_local_memory = Extension(name='VK_EXT_pageable_device_local_memory', version=1, guard=None, commands=[
     Command(name='vkSetDeviceMemoryPriorityEXT', dispatch='VkDevice'),
+])
+
+VK_VALVE_descriptor_set_host_mapping = Extension(name='VK_VALVE_descriptor_set_host_mapping', version=1, guard=None, commands=[
+    Command(name='vkGetDescriptorSetLayoutHostMappingInfoVALVE', dispatch='VkDevice'),
+    Command(name='vkGetDescriptorSetHostMappingVALVE', dispatch='VkDevice'),
 ])
 
 VK_QCOM_fragment_density_map_offset = Extension(name='VK_QCOM_fragment_density_map_offset', version=1, guard=None, commands=[
@@ -1312,7 +1329,7 @@ VK_KHR_android_surface = Extension(name='VK_KHR_android_surface', version=6, gua
     Command(name='vkCreateAndroidSurfaceKHR', dispatch='VkInstance'),
 ])
 
-VK_ANDROID_external_memory_android_hardware_buffer = Extension(name='VK_ANDROID_external_memory_android_hardware_buffer', version=4, guard='VK_USE_PLATFORM_ANDROID_KHR', commands=[
+VK_ANDROID_external_memory_android_hardware_buffer = Extension(name='VK_ANDROID_external_memory_android_hardware_buffer', version=5, guard='VK_USE_PLATFORM_ANDROID_KHR', commands=[
     Command(name='vkGetAndroidHardwareBufferPropertiesANDROID', dispatch='VkDevice'),
     Command(name='vkGetMemoryAndroidHardwareBufferANDROID', dispatch='VkDevice'),
 ])
@@ -1429,7 +1446,7 @@ VK_QNX_screen_surface = Extension(name='VK_QNX_screen_surface', version=1, guard
     Command(name='vkGetPhysicalDeviceScreenPresentationSupportQNX', dispatch='VkPhysicalDevice'),
 ])
 
-VK_KHR_video_queue = Extension(name='VK_KHR_video_queue', version=2, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_KHR_video_queue = Extension(name='VK_KHR_video_queue', version=3, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
     Command(name='vkGetPhysicalDeviceVideoCapabilitiesKHR', dispatch='VkPhysicalDevice'),
     Command(name='vkGetPhysicalDeviceVideoFormatPropertiesKHR', dispatch='VkPhysicalDevice'),
     Command(name='vkCreateVideoSessionKHR', dispatch='VkDevice'),
@@ -1444,27 +1461,27 @@ VK_KHR_video_queue = Extension(name='VK_KHR_video_queue', version=2, guard='VK_E
     Command(name='vkCmdControlVideoCodingKHR', dispatch='VkCommandBuffer'),
 ])
 
-VK_KHR_video_decode_queue = Extension(name='VK_KHR_video_decode_queue', version=2, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_KHR_video_decode_queue = Extension(name='VK_KHR_video_decode_queue', version=4, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
     Command(name='vkCmdDecodeVideoKHR', dispatch='VkCommandBuffer'),
 ])
 
 VK_KHR_portability_subset = Extension(name='VK_KHR_portability_subset', version=1, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
 ])
 
-VK_KHR_video_encode_queue = Extension(name='VK_KHR_video_encode_queue', version=3, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_KHR_video_encode_queue = Extension(name='VK_KHR_video_encode_queue', version=5, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
     Command(name='vkCmdEncodeVideoKHR', dispatch='VkCommandBuffer'),
 ])
 
-VK_EXT_video_encode_h264 = Extension(name='VK_EXT_video_encode_h264', version=3, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_EXT_video_encode_h264 = Extension(name='VK_EXT_video_encode_h264', version=6, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
 ])
 
-VK_EXT_video_encode_h265 = Extension(name='VK_EXT_video_encode_h265', version=4, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_EXT_video_encode_h265 = Extension(name='VK_EXT_video_encode_h265', version=7, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
 ])
 
-VK_EXT_video_decode_h264 = Extension(name='VK_EXT_video_decode_h264', version=3, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_EXT_video_decode_h264 = Extension(name='VK_EXT_video_decode_h264', version=5, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
 ])
 
-VK_EXT_video_decode_h265 = Extension(name='VK_EXT_video_decode_h265', version=1, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
+VK_EXT_video_decode_h265 = Extension(name='VK_EXT_video_decode_h265', version=3, guard='VK_ENABLE_BETA_EXTENSIONS', commands=[
 ])
 
 extensions = [
@@ -1546,6 +1563,7 @@ extensions = [
     VK_KHR_workgroup_memory_explicit_layout,
     VK_KHR_copy_commands2,
     VK_KHR_format_feature_flags2,
+    VK_KHR_portability_enumeration,
     VK_KHR_maintenance4,
     VK_EXT_debug_report,
     VK_NV_glsl_shader,
@@ -1678,6 +1696,7 @@ extensions = [
     VK_EXT_pipeline_creation_cache_control,
     VK_NV_device_diagnostics_config,
     VK_QCOM_render_pass_store_ops,
+    VK_EXT_graphics_pipeline_library,
     VK_NV_fragment_shading_rate_enums,
     VK_NV_ray_tracing_motion_blur,
     VK_EXT_ycbcr_2plane_444_formats,
@@ -1698,12 +1717,15 @@ extensions = [
     VK_NV_external_memory_rdma,
     VK_EXT_extended_dynamic_state2,
     VK_EXT_color_write_enable,
+    VK_EXT_primitives_generated_query,
     VK_EXT_global_priority_query,
     VK_EXT_image_view_min_lod,
     VK_EXT_multi_draw,
+    VK_EXT_image_2d_view_of_3d,
     VK_EXT_load_store_op_none,
     VK_EXT_border_color_swizzle,
     VK_EXT_pageable_device_local_memory,
+    VK_VALVE_descriptor_set_host_mapping,
     VK_QCOM_fragment_density_map_offset,
     VK_NV_linear_color_attachment,
     VK_GOOGLE_surfaceless_query,

@@ -148,9 +148,10 @@ TEST_F(StorageAreaTest, HasOnChanged) {
         FunctionFromString(context, kRegisterListener);
     RunFunctionOnGlobal(add_listener, context, 0, nullptr);
 
+    base::Value::List value = ListValueFromString("['foo']");
     bindings_system()->DispatchEventInContext(
-        base::StringPrintf("storage.%s.onChanged", kStorage).c_str(),
-        ListValueFromString("['foo']").get(), nullptr, script_context);
+        base::StringPrintf("storage.%s.onChanged", kStorage).c_str(), value,
+        nullptr, script_context);
 
     EXPECT_EQ("\"foo\"", GetStringPropertyFromObject(context->Global(), context,
                                                      "change"));
@@ -199,7 +200,7 @@ TEST_F(StorageAreaTest, PromiseBasedFunctionsForManifestV3) {
               base::test::IsJson(R"(["local", "foo"])"));
 
   bindings_system()->HandleResponse(last_params().request_id, /*success=*/true,
-                                    *ListValueFromString(R"([{"foo": 42}])"),
+                                    ListValueFromString(R"([{"foo": 42}])"),
                                     /*error=*/std::string());
 
   EXPECT_EQ(v8::Promise::kFulfilled, promise->State());

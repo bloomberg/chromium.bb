@@ -484,10 +484,6 @@ void OriginTrialContext::AddForceEnabledTrials(
 }
 
 bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
-  if (trial_name == "HandwritingRecognition") {
-    return base::FeatureList::IsEnabled(
-        features::kHandwritingRecognitionWebPlatformApiFinch);
-  }
   if (trial_name == "Portals")
     return base::FeatureList::IsEnabled(features::kPortals);
 
@@ -521,7 +517,7 @@ Vector<OriginTrialFeature> OriginTrialContext::RestrictedFeaturesForTrial(
     const String& trial_name) {
   if (trial_name == "PrivacySandboxAdsAPIs") {
     Vector<OriginTrialFeature> restricted;
-    if (!base::FeatureList::IsEnabled(features::kFledge))
+    if (!base::FeatureList::IsEnabled(features::kInterestGroupStorage))
       restricted.push_back(OriginTrialFeature::kFledge);
     if (!base::FeatureList::IsEnabled(features::kBrowsingTopics))
       restricted.push_back(OriginTrialFeature::kTopicsAPI);

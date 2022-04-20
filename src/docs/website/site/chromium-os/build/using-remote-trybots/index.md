@@ -9,5 +9,5 @@ title: Chromium OS Remote Trybots
 ---
 
 This page has moved to
-<https://chromium.googlesource.com/chromiumos/docs/+/master/remote_trybots.md>.
+<https://chromium.googlesource.com/chromiumos/docs/+/HEAD/remote_trybots.md>.
 Please update the link that brought you here.

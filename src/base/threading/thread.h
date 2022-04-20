@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
@@ -28,7 +29,7 @@ class MessagePump;
 class RunLoop;
 
 // IMPORTANT: Instead of creating a base::Thread, consider using
-// base::Create(Sequenced|SingleThread)TaskRunner().
+// base::ThreadPool::Create(Sequenced|SingleThread)TaskRunner().
 //
 // A simple thread abstraction that establishes a MessageLoop on a new thread.
 // The consumer uses the MessageLoop of the thread to cause code to execute on

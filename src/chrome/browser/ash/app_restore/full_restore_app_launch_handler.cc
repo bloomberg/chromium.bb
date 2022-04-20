@@ -20,6 +20,7 @@
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
+#include "chrome/browser/ash/policy/scheduled_task_handler/reboot_notifications_scheduler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -171,8 +172,8 @@ void FullRestoreAppLaunchHandler::OnMojoDisconnected() {
 void FullRestoreAppLaunchHandler::OnStateChanged() {
   if (crosapi::BrowserManager::Get()->IsRunning()) {
     observation_.Reset();
-    crosapi::BrowserManager::Get()->NewWindow(
-        /*incognito=*/false, /*should_trigger_session_restore=*/true);
+    VLOG(1) << "Full restore opens Lacros";
+    crosapi::BrowserManager::Get()->OpenForFullRestore();
   }
 }
 
@@ -201,8 +202,16 @@ void FullRestoreAppLaunchHandler::OnGetRestoreData(
   // FullRestoreAppLaunchHandler could be created multiple times in browser
   // tests, and used by the desk template. Only when it is created by
   // FullRestoreService, we need to init FullRestoreService.
+  bool is_full_restore_shown = false;
   if (should_init_service_)
-    FullRestoreService::GetForProfile(profile())->Init();
+    FullRestoreService::GetForProfile(profile())->Init(is_full_restore_shown);
+
+  policy::RebootNotificationsScheduler* reboot_notifications_scheduler =
+      policy::RebootNotificationsScheduler::Get();
+  if (reboot_notifications_scheduler) {
+    reboot_notifications_scheduler->MaybeShowPostRebootNotification(
+        !is_full_restore_shown);
+  }
 }
 
 void FullRestoreAppLaunchHandler::MaybePostRestore() {
@@ -344,8 +353,8 @@ void FullRestoreAppLaunchHandler::MaybeRestoreLacros() {
   restore_data()->RemoveApp(app_constants::kLacrosAppId);
 
   if (crosapi::BrowserManager::Get()->IsRunning()) {
-    crosapi::BrowserManager::Get()->NewWindow(
-        /*incognito=*/false, /*should_trigger_session_restore=*/true);
+    VLOG(1) << "Full restore opens Lacros";
+    crosapi::BrowserManager::Get()->OpenForFullRestore();
     return;
   }
 

@@ -10,28 +10,27 @@
 #include "src/common/globals.h"
 
 // Opcodes for control operators.
-#define CONTROL_OP_LIST(V)           \
-  V(Start)                           \
-  V(Loop)                            \
-  V(Branch)                          \
-  V(Switch)                          \
-  V(IfTrue)                          \
-  V(IfFalse)                         \
-  V(IfSuccess)                       \
-  V(IfException)                     \
-  V(IfValue)                         \
-  V(IfDefault)                       \
-  V(Merge)                           \
-  V(Deoptimize)                      \
-  V(DeoptimizeIf)                    \
-  V(DeoptimizeUnless)                \
-  V(DynamicCheckMapsWithDeoptUnless) \
-  V(TrapIf)                          \
-  V(TrapUnless)                      \
-  V(Return)                          \
-  V(TailCall)                        \
-  V(Terminate)                       \
-  V(Throw)                           \
+#define CONTROL_OP_LIST(V) \
+  V(Start)                 \
+  V(Loop)                  \
+  V(Branch)                \
+  V(Switch)                \
+  V(IfTrue)                \
+  V(IfFalse)               \
+  V(IfSuccess)             \
+  V(IfException)           \
+  V(IfValue)               \
+  V(IfDefault)             \
+  V(Merge)                 \
+  V(Deoptimize)            \
+  V(DeoptimizeIf)          \
+  V(DeoptimizeUnless)      \
+  V(TrapIf)                \
+  V(TrapUnless)            \
+  V(Return)                \
+  V(TailCall)              \
+  V(Terminate)             \
+  V(Throw)                 \
   V(End)
 
 // Opcodes for constant operators.
@@ -84,6 +83,7 @@
   V(DeadValue)            \
   V(Dead)                 \
   V(Plug)                 \
+  V(SLVerifierHint)       \
   V(StaticAssert)
 
 // Opcodes for JavaScript operators.
@@ -421,7 +421,6 @@
   V(ConvertTaggedHoleToUndefined)       \
   V(DateNow)                            \
   V(DelayedStringConstant)              \
-  V(DynamicCheckMaps)                   \
   V(EnsureWritableFastElements)         \
   V(FastApiCall)                        \
   V(FindOrderedHashMapEntry)            \

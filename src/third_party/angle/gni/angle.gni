@@ -74,11 +74,11 @@ declare_args() {
 
   if (current_cpu == "arm64" || current_cpu == "x64" ||
       current_cpu == "mips64el" || current_cpu == "s390x" ||
-      current_cpu == "ppc64") {
+      current_cpu == "ppc64" || current_cpu == "loong64") {
     angle_64bit_current_cpu = true
   } else if (current_cpu == "arm" || current_cpu == "x86" ||
              current_cpu == "mipsel" || current_cpu == "s390" ||
-             current_cpu == "ppc") {
+             current_cpu == "ppc" || current_cpu == "loong32") {
     angle_64bit_current_cpu = false
   } else {
     assert(false, "Unknown current CPU: $current_cpu")
@@ -187,6 +187,7 @@ declare_args() {
   angle_enable_glsl = angle_enable_gl || use_ozone
   angle_enable_trace = false
   angle_enable_trace_android_logcat = false
+  angle_enable_trace_events = false
 
   # Disable the layers in ubsan builds because of really slow builds.
   # Vulkan Validation Layers require Android NDK API level 26, i.e. Oreo, due to
@@ -458,6 +459,7 @@ if (angle_standalone || build_with_chromium) {
 
       data = invoker.data + [
                "$angle_root/scripts/run_gtest_angle_test.py",
+               "$angle_root/src/tests/py_utils/angle_path_util.py",
                "//testing/scripts/common.py",
                "//testing/xvfb.py",
              ]
@@ -477,10 +479,15 @@ if (angle_standalone || build_with_chromium) {
         ]
       }
 
-      if (is_mac && angle_enable_metal) {
-        # On macOS, compiling Metal shader sometimes takes very long time due to internal caching
-        # mechanism. This hooking library is a way to bypass this caching mechanism.
-        data_deps += [ "$angle_root/src/libANGLE/renderer/metal/file_hooking:metal_shader_cache_file_hooking" ]
+      if (is_mac) {
+        if (angle_enable_metal) {
+          # On macOS, compiling Metal shader sometimes takes very long time due to internal caching
+          # mechanism. This hooking library is a way to bypass this caching mechanism.
+          data_deps += [ "$angle_root/src/libANGLE/renderer/metal/file_hooking:metal_shader_cache_file_hooking" ]
+        }
+        if (angle_enable_cgl) {
+          configs += [ "$angle_root:supports_automatic_graphics_switching" ]
+        }
       }
 
       if ((is_linux && !is_chromeos) ||

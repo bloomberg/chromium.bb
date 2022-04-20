@@ -208,6 +208,22 @@ it. */
   --icon-color: var(--color-primary);
 }
 
+.toolbar-state-on.toolbar-toggle-with-dot .toolbar-icon::after,
+.toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  background-color: var(--color-primary);
+  width: 4.5px;
+  height: 4.5px;
+  border: 2px solid var(--override-toolbar-background-color, --color-background);
+  border-radius: 50%;
+}
+
+.toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
+  right: 0;
+}
+
 .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
 .toolbar-button.toolbar-state-off.toolbar-default-with-red-color .toolbar-glyph {
   background-color: var(--color-accent-red) !important; /* stylelint-disable-line declaration-no-important */

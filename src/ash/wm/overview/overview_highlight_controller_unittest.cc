@@ -27,6 +27,7 @@
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_util.h"
+#include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
@@ -37,9 +38,19 @@
 
 namespace ash {
 
+namespace {
+
+struct OverviewHighlightControllerTestParams {
+  bool desk_templates_enabled = false;
+  bool save_and_recall_enabled = false;
+};
+
+}  // namespace
+
 class OverviewHighlightControllerTest
     : public OverviewTestBase,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<
+          OverviewHighlightControllerTestParams> {
  public:
   OverviewHighlightControllerTest() = default;
   OverviewHighlightControllerTest(const OverviewHighlightControllerTest&) =
@@ -61,12 +72,26 @@ class OverviewHighlightControllerTest
   }
 
   // Helper to make tests more readable.
-  bool IsDesksTemplatesEnabled() const { return GetParam(); }
+  bool IsDesksTemplatesEnabled() const {
+    return GetParam().desk_templates_enabled;
+  }
+
+  bool IsDeskSaveAndRecallEnabled() const {
+    return GetParam().save_and_recall_enabled;
+  }
 
   // OverviewTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kDesksTemplates,
-                                              GetParam());
+    std::vector<base::Feature> enabled_features, disabled_features;
+    if (IsDesksTemplatesEnabled())
+      enabled_features.push_back(features::kDesksTemplates);
+    else
+      disabled_features.push_back(features::kDesksTemplates);
+    if (IsDeskSaveAndRecallEnabled())
+      enabled_features.push_back(features::kEnableSavedDesks);
+    else
+      disabled_features.push_back(features::kEnableSavedDesks);
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     OverviewTestBase::SetUp();
     ScopedOverviewTransformWindow::SetImmediateCloseForTests(true);
@@ -375,8 +400,7 @@ class DesksOverviewHighlightControllerTest
   }
 
   OverviewHighlightableView* GetHighlightedView() {
-    return OverviewHighlightController::TestApi(GetHighlightController())
-        .GetHighlightView();
+    return GetHighlightController()->highlighted_view();
   }
 
   const DesksBarView* GetDesksBarViewForRoot(aura::Window* root_window) {
@@ -437,17 +461,17 @@ TEST_P(DesksOverviewHighlightControllerTest, TabbingBasic) {
             GetHighlightedView());
   CheckDeskBarViewSize(desk_bar_view, "new desk button");
 
-  // Tests that tabbing past the new desk button, we highlight the desks
-  // templates button and the button to save to a new desk template.
+  // Tests that tabbing past the new desk button, we highlight the save to a new
+  // desk template. The templates button is not in the tab traversal since it is
+  // hidden when we have no templates.
   if (IsDesksTemplatesEnabled()) {
     SendKey(ui::VKEY_TAB);
-    EXPECT_EQ(
-        desk_bar_view->expanded_state_desks_templates_button()->inner_button(),
-        GetHighlightedView());
-    CheckDeskBarViewSize(desk_bar_view, "desks templates button");
-
-    SendKey(ui::VKEY_TAB);
     EXPECT_EQ(desk_bar_view->overview_grid()->GetSaveDeskAsTemplateButton(),
+              GetHighlightedView());
+  }
+  if (IsDeskSaveAndRecallEnabled()) {
+    SendKey(ui::VKEY_TAB);
+    EXPECT_EQ(desk_bar_view->overview_grid()->GetSaveDeskForLaterButton(),
               GetHighlightedView());
   }
 
@@ -469,17 +493,18 @@ TEST_P(DesksOverviewHighlightControllerTest, TabbingReverse) {
       GetDesksBarViewForRoot(Shell::GetPrimaryRootWindow());
   EXPECT_EQ(2u, desk_bar_view->mini_views().size());
 
-  // Tests that the first highlighted item when reversing is the save desk as
-  // template button, if the feature is enabled.
+  // Tests that the first two highlighted items when reversing are the save desk
+  // for later button and save desk as template button, if the feature is
+  // enabled.
+  if (IsDeskSaveAndRecallEnabled()) {
+    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+    EXPECT_EQ(desk_bar_view->overview_grid()->GetSaveDeskForLaterButton(),
+              GetHighlightedView());
+  }
   if (IsDesksTemplatesEnabled()) {
     SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
     EXPECT_EQ(desk_bar_view->overview_grid()->GetSaveDeskAsTemplateButton(),
               GetHighlightedView());
-
-    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-    EXPECT_EQ(
-        desk_bar_view->expanded_state_desks_templates_button()->inner_button(),
-        GetHighlightedView());
   }
 
   // Tests that after the desks templates button (if the feature was enabled),
@@ -507,18 +532,19 @@ TEST_P(DesksOverviewHighlightControllerTest, TabbingReverse) {
   auto* item1 = GetOverviewItemForWindow(window1.get());
   EXPECT_EQ(item1->overview_item_view(), GetHighlightedView());
 
-  // Tests that we return to the save desk as template button after reverse
-  // tabbing through the overview items if the feature was enabled.
-  if (IsDesksTemplatesEnabled()) {
+  // Tests that we return to the save desk for later button and save desk as
+  // template button after reverse tabbing through the overview items if the
+  // feature was enabled.
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  if (IsDeskSaveAndRecallEnabled()) {
     SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+    EXPECT_EQ(desk_bar_view->overview_grid()->GetSaveDeskForLaterButton(),
+              GetHighlightedView());
+  }
+  if (IsDesksTemplatesEnabled()) {
     SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
     EXPECT_EQ(desk_bar_view->overview_grid()->GetSaveDeskAsTemplateButton(),
               GetHighlightedView());
-
-    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-    EXPECT_EQ(
-        desk_bar_view->expanded_state_desks_templates_button()->inner_button(),
-        GetHighlightedView());
   }
 }
 
@@ -572,12 +598,12 @@ TEST_P(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
             GetHighlightedView());
   if (IsDesksTemplatesEnabled()) {
     SendKey(ui::VKEY_TAB);
-    EXPECT_EQ(
-        desk_bar_view1->expanded_state_desks_templates_button()->inner_button(),
-        GetHighlightedView());
-
-    SendKey(ui::VKEY_TAB);
     EXPECT_EQ(desk_bar_view1->overview_grid()->GetSaveDeskAsTemplateButton(),
+              GetHighlightedView());
+  }
+  if (IsDeskSaveAndRecallEnabled()) {
+    SendKey(ui::VKEY_TAB);
+    EXPECT_EQ(desk_bar_view1->overview_grid()->GetSaveDeskForLaterButton(),
               GetHighlightedView());
   }
 
@@ -600,12 +626,12 @@ TEST_P(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
             GetHighlightedView());
   if (IsDesksTemplatesEnabled()) {
     SendKey(ui::VKEY_TAB);
-    EXPECT_EQ(
-        desk_bar_view2->expanded_state_desks_templates_button()->inner_button(),
-        GetHighlightedView());
-
-    SendKey(ui::VKEY_TAB);
     EXPECT_EQ(desk_bar_view2->overview_grid()->GetSaveDeskAsTemplateButton(),
+              GetHighlightedView());
+  }
+  if (IsDeskSaveAndRecallEnabled()) {
+    SendKey(ui::VKEY_TAB);
+    EXPECT_EQ(desk_bar_view2->overview_grid()->GetSaveDeskForLaterButton(),
               GetHighlightedView());
   }
 
@@ -628,12 +654,12 @@ TEST_P(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
             GetHighlightedView());
   if (IsDesksTemplatesEnabled()) {
     SendKey(ui::VKEY_TAB);
-    EXPECT_EQ(
-        desk_bar_view3->expanded_state_desks_templates_button()->inner_button(),
-        GetHighlightedView());
-
-    SendKey(ui::VKEY_TAB);
     EXPECT_EQ(desk_bar_view3->overview_grid()->GetSaveDeskAsTemplateButton(),
+              GetHighlightedView());
+  }
+  if (IsDeskSaveAndRecallEnabled()) {
+    SendKey(ui::VKEY_TAB);
+    EXPECT_EQ(desk_bar_view3->overview_grid()->GetSaveDeskForLaterButton(),
               GetHighlightedView());
   }
 
@@ -781,11 +807,13 @@ TEST_P(DesksOverviewHighlightControllerTest,
       desk_bar_view->expanded_state_new_desk_button()->inner_button();
   const auto* desks_controller = DesksController::Get();
 
-  auto check_name_view_at_index = [this](const auto* desk_bar_view, int index) {
+  auto check_name_view_at_index = [this, desks_controller](
+                                      const auto* desk_bar_view, int index) {
     const auto* desk_name_view =
         desk_bar_view->mini_views()[index]->desk_name_view();
     EXPECT_TRUE(desk_name_view->HasFocus());
-    EXPECT_EQ(GetHighlightedView(), desk_name_view);
+    if (desks_controller->CanCreateDesks())
+      EXPECT_EQ(GetHighlightedView(), desk_name_view);
     EXPECT_EQ(std::u16string(), desk_name_view->GetText());
   };
 
@@ -833,11 +861,6 @@ TEST_P(DesksOverviewHighlightControllerTest, ZeroStateOfDesksBar) {
             GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desks_bar_view->zero_state_new_desk_button(), GetHighlightedView());
-  if (IsDesksTemplatesEnabled()) {
-    SendKey(ui::VKEY_TAB);
-    EXPECT_EQ(desks_bar_view->zero_state_desks_templates_button(),
-              GetHighlightedView());
-  }
 
   // Trigger the zero state default desk button will focus on the default desk's
   // name view.
@@ -918,9 +941,19 @@ TEST_P(DesksOverviewHighlightControllerTest, SwitchingToZeroStateWhileTabbing) {
   SendKey(ui::VKEY_TAB);
 }
 
-INSTANTIATE_TEST_SUITE_P(All, OverviewHighlightControllerTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All,
-                         DesksOverviewHighlightControllerTest,
-                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    OverviewHighlightControllerTest,
+    testing::Values(OverviewHighlightControllerTestParams{true, true},
+                    OverviewHighlightControllerTestParams{true, false},
+                    OverviewHighlightControllerTestParams{false, true},
+                    OverviewHighlightControllerTestParams{false, false}));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DesksOverviewHighlightControllerTest,
+    testing::Values(OverviewHighlightControllerTestParams{true, true},
+                    OverviewHighlightControllerTestParams{true, false},
+                    OverviewHighlightControllerTestParams{false, true},
+                    OverviewHighlightControllerTestParams{false, false}));
 
 }  // namespace ash

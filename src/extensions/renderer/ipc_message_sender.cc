@@ -199,6 +199,12 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     render_thread_->Send(new ExtensionHostMsg_PostMessage(port_id, message));
   }
 
+  void SendMessageResponsePending(int routing_id,
+                                  const PortId& port_id) override {
+    render_thread_->Send(new ExtensionHostMsg_ResponsePending(
+        PortContext::ForFrame(routing_id), port_id));
+  }
+
   void SendActivityLogIPC(
       const ExtensionId& extension_id,
       ActivityLogCallType call_type,
@@ -218,13 +224,12 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
  private:
   void OnResponse(int request_id,
                   bool success,
-                  base::Value response,
+                  base::Value::List response,
                   const std::string& error) {
     ExtensionsRendererClient::Get()
         ->GetDispatcher()
         ->bindings_system()
-        ->HandleResponse(request_id, success,
-                         base::Value::AsListValue(response), error);
+        ->HandleResponse(request_id, success, std::move(response), error);
   }
 
   mojom::EventRouter* GetEventRouter() {
@@ -420,6 +425,13 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
   void SendPostMessageToPort(const PortId& port_id,
                              const Message& message) override {
     dispatcher_->Send(new ExtensionHostMsg_PostMessage(port_id, message));
+  }
+
+  void SendMessageResponsePending(int routing_id,
+                                  const PortId& port_id) override {
+    DCHECK_EQ(MSG_ROUTING_NONE, routing_id);
+    dispatcher_->Send(new ExtensionHostMsg_ResponsePending(
+        PortContextForCurrentWorker(), port_id));
   }
 
   void SendActivityLogIPC(

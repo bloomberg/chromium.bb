@@ -1746,13 +1746,9 @@ static void cleanup_blendings(REGIONS *regions, int *num_regions) {
   cleanup_regions(regions, num_regions);
 }
 
-// Identify stable and unstable regions from first pass stats.
-// Stats_start points to the first frame to analyze.
-// Offset is the offset from the current frame to the frame stats_start is
-// pointing to.
-static void identify_regions(const FIRSTPASS_STATS *const stats_start,
-                             int total_frames, int offset, REGIONS *regions,
-                             int *total_regions) {
+void av1_identify_regions(const FIRSTPASS_STATS *const stats_start,
+                          int total_frames, int offset, REGIONS *regions,
+                          int *total_regions) {
   int k;
   if (total_frames <= 1) return;
 
@@ -2085,7 +2081,7 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
       cut_pos[count_cuts] = cur_last;
       count_cuts++;
 
-      // reset pointers to the shrinked location
+      // reset pointers to the shrunken location
       cpi->twopass_frame.stats_in = start_pos + cur_last;
       cur_start = cur_last;
       int cur_region_idx =
@@ -2895,7 +2891,6 @@ static int define_kf_interval(AV1_COMP *cpi,
   int i = 0, j;
   int frames_to_key = search_start_idx;
   int frames_since_key = rc->frames_since_key + 1;
-  int num_stats_used_for_kf_boost = 1;
   int scenecut_detected = 0;
 
   int num_frames_to_next_key = detect_app_forced_key(cpi);
@@ -2922,9 +2917,6 @@ static int define_kf_interval(AV1_COMP *cpi,
       av1_firstpass_info_future_count(firstpass_info, 0);
   while (frames_to_key < future_stats_count &&
          frames_to_key < num_frames_to_detect_scenecut) {
-    // Accumulate total number of stats available till next key frame
-    num_stats_used_for_kf_boost++;
-
     // Provided that we are not at the end of the file...
     if ((cpi->ppi->p_rc.enable_scenecut_detection > 0) && kf_cfg->auto_key &&
         frames_to_key + 1 < future_stats_count) {
@@ -3517,7 +3509,6 @@ static void estimate_noise(FIRSTPASS_STATS *first_stats,
                            FIRSTPASS_STATS *last_stats) {
   FIRSTPASS_STATS *this_stats, *next_stats;
   double C1, C2, C3, noise;
-  int count = 0;
   for (this_stats = first_stats + 2; this_stats < last_stats; this_stats++) {
     this_stats->noise_var = 0.0;
     // flashes tend to have high correlation of innovations, so ignore them.
@@ -3539,7 +3530,6 @@ static void estimate_noise(FIRSTPASS_STATS *first_stats,
     noise = (this_stats - 1)->intra_error - C1 * C2 / C3;
     noise = AOMMAX(noise, 0.01);
     this_stats->noise_var = noise;
-    count++;
   }
 
   // Copy noise from the neighbor if the noise value is not trustworthy
@@ -3738,11 +3728,11 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
                        twopass->stats_buf_ctx->stats_in_end);
         estimate_coeff(twopass->stats_buf_ctx->stats_in_start,
                        twopass->stats_buf_ctx->stats_in_end);
-        identify_regions(cpi->twopass_frame.stats_in, rest_frames,
-                         (rc->frames_since_key == 0), p_rc->regions,
-                         &p_rc->num_regions);
+        av1_identify_regions(cpi->twopass_frame.stats_in, rest_frames,
+                             (rc->frames_since_key == 0), p_rc->regions,
+                             &p_rc->num_regions);
       } else {
-        identify_regions(
+        av1_identify_regions(
             cpi->twopass_frame.stats_in - (rc->frames_since_key == 0),
             rest_frames, 0, p_rc->regions, &p_rc->num_regions);
       }
@@ -3929,6 +3919,10 @@ void av1_init_second_pass(AV1_COMP *cpi) {
                   (int)round(stats->count));
 #endif
 
+#if CONFIG_RATECTRL_LOG
+  rc_log_init(&cpi->rc_log);
+#endif
+
   // This variable monitors how far behind the second ref update is lagging.
   twopass->sr_update_lag = 1;
 
@@ -4036,13 +4030,11 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   p_rc->vbr_bits_off_target += rc->base_frame_target - rc->projected_frame_size;
   twopass->bits_left = AOMMAX(twopass->bits_left - rc->base_frame_target, 0);
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
   if (cpi->do_update_vbr_bits_off_target_fast) {
     // Subtract current frame's fast_extra_bits.
     p_rc->vbr_bits_off_target_fast -= rc->frame_level_fast_extra_bits;
     rc->frame_level_fast_extra_bits = 0;
   }
-#endif
 
   // Target vs actual bits for this arf group.
   twopass->rolling_arf_group_target_bits += rc->base_frame_target;
@@ -4161,18 +4153,6 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
     }
     twopass->extend_minq = clamp(twopass->extend_minq, 0, minq_adj_limit);
     twopass->extend_maxq = clamp(twopass->extend_maxq, 0, maxq_adj_limit);
-
-#if CONFIG_FRAME_PARALLEL_ENCODE
-    int update_fast_extra_bits = 1;
-#if CONFIG_FPMT_TEST
-    update_fast_extra_bits = simulate_parallel_frame ? 0 : 1;
-#endif
-    if (!frame_is_kf_gf_arf(cpi) && !rc->is_src_frame_alt_ref &&
-        p_rc->vbr_bits_off_target_fast && update_fast_extra_bits) {
-      // Subtract current frame's fast_extra_bits.
-      p_rc->vbr_bits_off_target_fast -= rc->frame_level_fast_extra_bits;
-    }
-#endif
 
     // If there is a big and undexpected undershoot then feed the extra
     // bits back in quickly. One situation where this may happen is if a

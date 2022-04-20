@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "fm_src",
     srcs = ["fm.cpp"],
@@ -24,8 +26,8 @@ generated_cc_atom(
         "//src/core:SkMD5_hdr",
         "//src/core:SkOSFile_hdr",
         "//src/core:SkTaskGroup_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu:GrGpu_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrGpu_hdr",
         "//src/utils:SkOSPath_hdr",
         "//tests:TestHarness_hdr",
         "//tests:Test_hdr",

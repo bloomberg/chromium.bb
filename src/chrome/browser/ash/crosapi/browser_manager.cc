@@ -41,6 +41,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
+#include "chrome/browser/ash/crosapi/files_app_launcher.h"
 #include "chrome/browser/ash/crosapi/test_mojo_connection_manager.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
@@ -290,7 +292,44 @@ bool IsLoginLacrosOpeningDisabledForTesting() {
       ash::switches::kDisableLoginLacrosOpening);
 }
 
+ui::mojom::WindowShowState ConvertWindowShowState(ui::WindowShowState state) {
+  switch (state) {
+    case ui::SHOW_STATE_DEFAULT:
+      return ui::mojom::WindowShowState::SHOW_STATE_DEFAULT;
+    case ui::SHOW_STATE_NORMAL:
+      return ui::mojom::WindowShowState::SHOW_STATE_NORMAL;
+    case ui::SHOW_STATE_MINIMIZED:
+      return ui::mojom::WindowShowState::SHOW_STATE_MINIMIZED;
+    case ui::SHOW_STATE_MAXIMIZED:
+      return ui::mojom::WindowShowState::SHOW_STATE_MAXIMIZED;
+    case ui::SHOW_STATE_INACTIVE:
+      return ui::mojom::WindowShowState::SHOW_STATE_INACTIVE;
+    case ui::SHOW_STATE_FULLSCREEN:
+      return ui::mojom::WindowShowState::SHOW_STATE_FULLSCREEN;
+    case ui::SHOW_STATE_END:
+      NOTREACHED();
+      return ui::mojom::WindowShowState::SHOW_STATE_DEFAULT;
+  }
+}
+
 }  // namespace
+
+BrowserManager::RestoreFromDeskTemplate::RestoreFromDeskTemplate(
+    const std::vector<GURL>& urls,
+    const gfx::Rect& bounds,
+    ui::WindowShowState show_state,
+    int32_t active_tab_index,
+    const std::string& app_name)
+    : urls(urls),
+      bounds(bounds),
+      show_state(show_state),
+      active_tab_index(active_tab_index),
+      app_name(app_name) {}
+
+BrowserManager::RestoreFromDeskTemplate::RestoreFromDeskTemplate(
+    RestoreFromDeskTemplate&&) = default;
+
+BrowserManager::RestoreFromDeskTemplate::~RestoreFromDeskTemplate() = default;
 
 // To be sure the lacros is running with neutral priority.
 class LacrosThreadPriorityDelegate
@@ -418,6 +457,14 @@ void BrowserManager::NewWindow(bool incognito,
   }
   browser_service_->service->NewWindow(
       incognito, should_trigger_session_restore, base::DoNothing());
+}
+
+void BrowserManager::OpenForFullRestore() {
+  if (!browser_service_) {
+    LOG(ERROR) << "BrowserService is disconnected, cannot perform Full Restore";
+    return;
+  }
+  browser_service_->service->OpenForFullRestore();
 }
 
 bool BrowserManager::NewWindowForDetachingTabSupported() const {
@@ -560,6 +607,24 @@ void BrowserManager::HandleTabScrubbing(float x_offset) {
     return;
 
   browser_service_->service->HandleTabScrubbing(x_offset);
+}
+
+void BrowserManager::CreateBrowserWithRestoredData(
+    const std::vector<GURL>& urls,
+    const gfx::Rect& bounds,
+    const ui::WindowShowState show_state,
+    int32_t active_tab_index,
+    const std::string& app_name) {
+  auto result = MaybeStart(browser_util::InitialBrowserAction(
+      mojom::InitialBrowserAction::kDoNotOpenWindow));
+  // The service will not be available, return immediately.
+  if (result == MaybeStartResult::kNotStarted)
+    return;
+
+  windows_to_restore_.emplace_back(urls, bounds, show_state, active_tab_index,
+                                   app_name);
+  if (result == MaybeStartResult::kRunning)
+    RestoreWindowsFromTemplate();
 }
 
 void BrowserManager::InitializeAndStart() {
@@ -1043,6 +1108,10 @@ void BrowserManager::OnBrowserServiceConnected(
   // crosapi mojo connection timing (i.e., this function).
   // So, send it to lacros-chrome to update to fill the possible gap.
   UpdateKeepAliveInBrowserIfNecessary(!keep_alive_features_.empty());
+
+  // We may have some windows pending to be restored from the desk template.
+  // Now is the time to create them.
+  RestoreWindowsFromTemplate();
 }
 
 void BrowserManager::OnBrowserServiceDisconnected(
@@ -1105,6 +1174,19 @@ void BrowserManager::OnSessionStateChanged() {
   }
 
   InitializeAndStart();
+
+  // If "Go to files" on the migration error page was clicked, launch it here.
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  std::string user_id_hash =
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile);
+  if (browser_util::WasGotoFilesClicked(g_browser_process->local_state(),
+                                        user_id_hash)) {
+    files_app_launcher_ = std::make_unique<FilesAppLauncher>(
+        apps::AppServiceProxyFactory::GetForProfile(profile));
+    files_app_launcher_->Launch(base::BindOnce(
+        browser_util::ClearGotoFilesClicked, g_browser_process->local_state(),
+        std::move(user_id_hash)));
+  }
 }
 
 void BrowserManager::OnStoreLoaded(policy::CloudPolicyStore* store) {
@@ -1123,6 +1205,19 @@ void BrowserManager::OnStoreError(policy::CloudPolicyStore* store) {
 
 void BrowserManager::OnStoreDestruction(policy::CloudPolicyStore* store) {
   store->RemoveObserver(this);
+}
+
+void BrowserManager::OnComponentPolicyUpdated(
+    const policy::ComponentCloudPolicyServiceObserver::ComponentPolicyMap&
+        serialized_policy) {
+  environment_provider_->SetDeviceAccountComponentPolicy(serialized_policy);
+  if (browser_service_.has_value())
+    browser_service_->service->UpdateComponentPolicy(serialized_policy);
+}
+
+void BrowserManager::OnComponentPolicyServiceDestruction(
+    policy::ComponentCloudPolicyService* service) {
+  service->RemoveObserver(this);
 }
 
 void BrowserManager::OnEvent(Events event, const std::string& id) {
@@ -1163,26 +1258,11 @@ void BrowserManager::OnLoadComplete(
 }
 
 void BrowserManager::PrepareLacrosPolicies() {
-  policy::CloudPolicyStore* store = GetDeviceAccountPolicyStore();
-  if (!store)
-    return;
-
-  if (!store->policy_fetch_response())
-    return;
-  const std::string policy_blob =
-      store->policy_fetch_response()->SerializeAsString();
-  SetDeviceAccountPolicy(policy_blob);
-  // The lifetime of `BrowserManager` is longer than lifetime of policy store.
-  // That is why `CloudPolicyStore::RemoveObserver()` is called during
-  // `CloudPolicyStore::Observer::OnStoreDestruction()`.
-  store->AddObserver(this);
-}
-
-policy::CloudPolicyStore* BrowserManager::GetDeviceAccountPolicyStore() {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetPrimaryUser();
-  DCHECK(user);
 
+  policy::CloudPolicyStore* store = nullptr;
+  policy::ComponentCloudPolicyService* component_policy_service = nullptr;
   switch (user->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_CHILD: {
@@ -1190,9 +1270,12 @@ policy::CloudPolicyStore* BrowserManager::GetDeviceAccountPolicyStore() {
       DCHECK(profile);
       policy::CloudPolicyManager* user_cloud_policy_manager =
           profile->GetUserCloudPolicyManagerAsh();
-      if (!user_cloud_policy_manager)
-        return nullptr;
-      return user_cloud_policy_manager->core()->store();
+      if (user_cloud_policy_manager) {
+        store = user_cloud_policy_manager->core()->store();
+        component_policy_service =
+            user_cloud_policy_manager->component_policy_service();
+      }
+      break;
     }
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
     case user_manager::USER_TYPE_WEB_KIOSK_APP: {
@@ -1201,10 +1284,30 @@ policy::CloudPolicyStore* BrowserManager::GetDeviceAccountPolicyStore() {
               ->browser_policy_connector_ash()
               ->GetDeviceLocalAccountPolicyService()
               ->GetBrokerForUser(user->GetAccountId().GetUserEmail());
-      return broker ? broker->core()->store() : nullptr;
+      if (broker) {
+        store = broker->core()->store();
+        component_policy_service = broker->component_policy_service();
+      }
+      break;
     }
     default:
-      return nullptr;
+      break;
+  }
+
+  if (store && store->policy_fetch_response()) {
+    const std::string policy_blob =
+        store->policy_fetch_response()->SerializeAsString();
+    SetDeviceAccountPolicy(policy_blob);
+    // The lifetime of `BrowserManager` is longer than lifetime of policy store.
+    // That is why `CloudPolicyStore::RemoveObserver()` is called during
+    // `CloudPolicyStore::Observer::OnStoreDestruction()`.
+    store->AddObserver(this);
+  }
+
+  if (component_policy_service) {
+    // Same as above, the RemoveObserver function is called during
+    // `ComponentCloudPolicyService::Observer::OnComponentStoreDestruction()`.
+    component_policy_service->AddObserver(this);
   }
 }
 
@@ -1244,8 +1347,11 @@ void BrowserManager::StopKeepAlive(Feature feature) {
 }
 
 void BrowserManager::LaunchForKeepAliveIfNecessary() {
+  // KeepAlive should not start lacros in a windowless state if a relaunch has
+  // been requested. Lacros restart will instead be handled in
+  // `OnLacrosChromeTerminated()`.
   if (state_ == State::STOPPED && !shutdown_requested_ &&
-      !keep_alive_features_.empty()) {
+      !keep_alive_features_.empty() && !relaunch_requested_) {
     CHECK(browser_util::IsLacrosEnabled());
     CHECK(browser_util::IsLacrosAllowedToLaunch());
     MaybeStart(browser_util::InitialBrowserAction(
@@ -1357,6 +1463,27 @@ bool BrowserManager::IsNewGuestWindowSupported() const {
   return browser_service_.has_value() &&
          browser_service_->interface_version >=
              crosapi::mojom::BrowserService::kNewGuestWindowMinVersion;
+}
+
+void BrowserManager::RestoreWindowsFromTemplate() {
+  if (!browser_service_.has_value()) {
+    LOG(ERROR) << "BrowserService was disconnected";
+    return;
+  }
+
+  for (const auto& data : windows_to_restore_) {
+    crosapi::mojom::DeskTemplateStatePtr additional_state =
+        crosapi::mojom::DeskTemplateState::New(data.urls, data.active_tab_index,
+                                               data.app_name);
+    crosapi::CrosapiManager::Get()
+        ->crosapi_ash()
+        ->desk_template_ash()
+        ->CreateBrowserWithRestoredData(data.bounds,
+                                        ConvertWindowShowState(data.show_state),
+                                        std::move(additional_state));
+  }
+
+  windows_to_restore_.clear();
 }
 
 }  // namespace crosapi

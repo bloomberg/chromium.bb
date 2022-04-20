@@ -157,6 +157,38 @@
   },
   {
     "cmd": [
+      "realpath",
+      "[START_DIR]/go/go/VERSION"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "name": "realpath go/go/VERSION"
+  },
+  {
+    "cmd": [
+      "dirname",
+      ""
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "name": "dirname"
+  },
+  {
+    "cmd": [
+      "realpath",
+      "[START_DIR]/go/go/VERSION"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "name": "realpath go/go/VERSION (2)"
+  },
+  {
+    "cmd": [
+      "dirname",
+      ""
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "name": "dirname (2)"
+  },
+  {
+    "cmd": [
       "make",
       "-C",
       "tools/gpu/gl/interface",
@@ -239,7 +271,7 @@
       "[START_DIR]/cache/work/skia/bin/gn",
       "gen",
       "[START_DIR]/build/out/Release",
-      "--args=cc=\"[START_DIR]/clang_linux/bin/clang\" cc_wrapper=\"[START_DIR]/ccache_linux/bin/ccache\" cxx=\"[START_DIR]/clang_linux/bin/clang++\" extra_cflags=[\"-B[START_DIR]/clang_linux/bin\", \"-DPLACEHOLDER_clang_linux_version=42\"] extra_ldflags=[\"-B[START_DIR]/clang_linux/bin\", \"-fuse-ld=lld\", \"-L[START_DIR]/clang_linux/lib\"] is_debug=false skia_compile_processors=true skia_compile_sksl_tests=true skia_generate_workarounds=true werror=true"
+      "--args=cc=\"[START_DIR]/clang_linux/bin/clang\" cc_wrapper=\"[START_DIR]/ccache_linux/bin/ccache\" cxx=\"[START_DIR]/clang_linux/bin/clang++\" extra_cflags=[\"-B[START_DIR]/clang_linux/bin\", \"-DPLACEHOLDER_clang_linux_version=42\"] extra_ldflags=[\"-B[START_DIR]/clang_linux/bin\", \"-fuse-ld=lld\", \"-L[START_DIR]/clang_linux/lib\"] is_debug=false skia_compile_modules=true skia_compile_sksl_tests=true skia_generate_workarounds=true werror=true"
     ],
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {

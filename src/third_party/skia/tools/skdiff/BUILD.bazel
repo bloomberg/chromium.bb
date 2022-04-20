@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 cc_binary(
     name = "skdiff",
     visibility = ["//:__subpackages__"],

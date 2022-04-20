@@ -2476,7 +2476,6 @@ should be able to be added at any place in this file.
 
 <action name="Android.BookmarkPage.ReadingList.MarkAsRead">
   <owner>shaktisahu@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <description>
     User marked an item as read in the Reading List page from the Android
     bookmark page by clicking &quot;Mark As Read&quot; from the &quot;more&quot;
@@ -2486,7 +2485,6 @@ should be able to be added at any place in this file.
 
 <action name="Android.BookmarkPage.ReadingList.OpenReadingList">
   <owner>shaktisahu@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <description>
     User navigated to the Reading List page from the Android bookmark page by
     clicking on reading list folder.
@@ -2495,7 +2493,6 @@ should be able to be added at any place in this file.
 
 <action name="Android.BookmarkPage.ReadingList.RemoveItem">
   <owner>shaktisahu@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <description>
     User removed an item from the Reading List page from the Android bookmarks
     page by clicking &quot;delete&quot; from the &quot;more&quot; menu.
@@ -2504,7 +2501,6 @@ should be able to be added at any place in this file.
 
 <action name="Android.BookmarkPage.ReadingList.SelectFromMenu">
   <owner>shaktisahu@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <description>
     User selected an item from the Reading List page from the Android bookmark
     page by clicking &quot;select&quot; from the &quot;more&quot; menu.
@@ -2531,7 +2527,6 @@ should be able to be added at any place in this file.
 
 <action name="Android.Bookmarks.BottomSheet.Open">
   <owner>shaktisahu@chromium.org</owner>
-  <owner>xingliu@chromium.org</owner>
   <description>
     User tapped on the star icon from the app menu to bookmark a page. This
     resulted in opening the bookmarks bottom sheet that presents a list of
@@ -2866,7 +2861,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Item.ExternallyDeletedKeepRecord">
-  <owner>xingliu@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
   <description>
     A download file was externally deleted by other application, e.g. through a
     third-party download manager. However the associated database record will
@@ -6062,6 +6057,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Feed.CardAction.ManageHidden">
+  <owner>edchin@google.com</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>carlosk@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'manage hidden' option from the Feed header menu.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.CardAction.ManageInterests">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
@@ -6211,6 +6216,27 @@ should be able to be added at any place in this file.
   <owner>feed@chromium.org</owner>
   <description>
     The user selected the 'Manage Activity' option in the feed header menu.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.HeaderAction.ManageFollowing">
+  <owner>edchin@google.com</owner>
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'Manage Following' option in the feed management
+    surface.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.HeaderAction.ManageHidden">
+  <owner>edchin@google.com</owner>
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user selected the 'Manage Hidden' option in the feed management surface.
   </description>
 </action>
 
@@ -6632,7 +6658,6 @@ should be able to be added at any place in this file.
     CreateShortcut).
   </obsolete>
   <owner>alancutter@chromium.org</owner>
-  <owner>raymes@chromium.org</owner>
   <description>The sum of CreateShortcut and InstallWebAppFromMenu</description>
 </action>
 
@@ -6648,7 +6673,6 @@ should be able to be added at any place in this file.
 
 <action name="CreateShortcut">
   <owner>alancutter@chromium.org</owner>
-  <owner>raymes@chromium.org</owner>
   <description>
     Shortcut app creation triggered via &quot;Menu &gt; More Tools &gt; Create
     Shortcut...&quot;
@@ -7026,6 +7050,14 @@ should be able to be added at any place in this file.
   <owner>feed@chromium.org</owner>
   <description>
     The user followed the web feed for the website (Desktop only).
+  </description>
+</action>
+
+<action name="DesktopFeed.UnfollowSite">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user unfollowed the web feed for the website (Desktop only).
   </description>
 </action>
 
@@ -7590,7 +7622,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Downloads_OpenUrlOfDownloadedItem">
-  <owner>xingliu@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <description>
     Records clicks on the URL of download items in chrome://downloads page.
@@ -7601,7 +7632,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Downloads_OpenUrlOfDownloadedItemFromContextMenu">
-  <owner>xingliu@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <description>
     Records open a URL of download items in chrome://downloads page from context
@@ -10442,7 +10472,6 @@ should be able to be added at any place in this file.
 
 <action name="InstallWebAppFromMenu">
   <owner>alancutter@chromium.org</owner>
-  <owner>raymes@chromium.org</owner>
   <description>
     PWA install triggered via &quot;Menu &gt; Install App name...&quot;
   </description>
@@ -10643,22 +10672,6 @@ should be able to be added at any place in this file.
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <description>The user toogled a media permission state.</description>
-</action>
-
-<action name="IOS.ReadingList.MessagesPromptToggle.Off">
-  <owner>thegreenfrog@chromium.org</owner>
-  <owner>olivierrobin@chromium.org</owner>
-  <description>
-    The user toggled the Reading List Messages prompt setting to off. iOS only.
-  </description>
-</action>
-
-<action name="IOS.ReadingList.MessagesPromptToggle.On">
-  <owner>thegreenfrog@chromium.org</owner>
-  <owner>olivierrobin@chromium.org</owner>
-  <description>
-    The user toggled the Reading List Messages prompt setting to on. iOS only.
-  </description>
 </action>
 
 <action name="IOS.SearchEngines.RecentlyViewed.Delete">
@@ -16384,7 +16397,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Mobile.SystemNotification.Content.Click.Downloads_Files">
-  <owner>xingliu@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user clicked on the body of an Android notification for a file download.
@@ -18961,7 +18973,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabClosedUndoShortCut">
-  <owner>xingliu@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
   <description>
     Undo tab closure by keyboard shortcut ctrl+shift+T, for Android only.
   </description>
@@ -19393,6 +19405,15 @@ should be able to be added at any place in this file.
 <action name="MobileTabSwitched" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileTabSwitched.TabletTabStrip" not_user_triggered="true">
+  <owner>gauravjj@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <description>
+    User switched tabs via the tab strip on tablets. Recorded for Android only.
+  </description>
 </action>
 
 <action name="MobileThumbstripCreateIncognitoTab">
@@ -26817,6 +26838,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingHubDesktop.FollowSelected">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The follow feature was selected in the desktop sharing hub.
+  </description>
+</action>
+
 <action name="SharingHubDesktop.QRCodeSelected">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
@@ -26859,6 +26888,14 @@ should be able to be added at any place in this file.
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
     A third party option was selected in the desktop sharing hub.
+  </description>
+</action>
+
+<action name="SharingHubDesktop.UnfollowSelected">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The unfollow feature was selected in the desktop sharing hub.
   </description>
 </action>
 
@@ -28079,6 +28116,14 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromSigninInterceptFirstRunExperience">
+  <owner>alexilin@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE.
   </description>
 </action>
 
@@ -32948,6 +32993,9 @@ should be able to be added at any place in this file.
   <suffix name="IdentityDisc" label="For IdentityDisc feature."/>
   <suffix name="IncognitoWindow" label="For IncognitoWindow feature."/>
   <suffix name="InstanceSwitcher" label="For Instance switcher feature."/>
+  <suffix name="IntentChip"
+      label="In product help for opening a webpage in an app using the intent
+             chip."/>
   <suffix name="LongPressToolbarTip" label="For LongPressToolbar feature."/>
   <suffix name="MediaDownload" label="For MediaDownload feature."/>
   <suffix name="MicToolbar" label="In product help for toolbar mic."/>
@@ -32961,6 +33009,7 @@ should be able to be added at any place in this file.
   <suffix name="PageInfoStoreInfo" label="For PageInfoStoreInfo feature."/>
   <suffix name="PasswordsAccountStorage"
       label="For PasswordsAccountStorage feature."/>
+  <suffix name="PasswordSuggestions" label="For PasswordSuggestions feature."/>
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="ProfileSwitch"

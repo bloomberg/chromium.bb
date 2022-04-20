@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/side_search/side_search_config.h"
 
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
@@ -111,6 +112,9 @@ SideSearchConfig::SideSearchConfig(Profile* profile) : profile_(profile) {
   if (auto* template_url_service =
           TemplateURLServiceFactory::GetForProfile(profile_)) {
     template_url_service_observation_.Observe(template_url_service);
+
+    // Call this initially in case the default URL has already been set.
+    OnTemplateURLServiceChanged();
   }
   ApplyDSEConfiguration(profile_, *this);
 }
@@ -141,6 +145,7 @@ void SideSearchConfig::OnTemplateURLServiceChanged() {
       default_template_url_id_ != kInvalidTemplateURLID) {
     default_template_url_id_ = kInvalidTemplateURLID;
     ResetStateAndNotifyConfigChanged();
+    return;
   }
 
   // Propagate an update only if the current default search provider has
@@ -195,6 +200,7 @@ void SideSearchConfig::RemoveObserver(Observer* observer) {
 void SideSearchConfig::ResetStateAndNotifyConfigChanged() {
   // Reset the availabiliy bit before propagating notifications.
   is_side_panel_srp_available_ = false;
+  should_show_page_action_label_ = true;
 
   for (auto& observer : observers_)
     observer.OnSideSearchConfigChanged();

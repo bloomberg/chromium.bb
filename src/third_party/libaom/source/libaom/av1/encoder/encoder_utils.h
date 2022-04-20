@@ -86,20 +86,16 @@ static AOM_INLINE void enc_free_mi(CommonModeInfoParams *mi_params) {
 }
 
 static AOM_INLINE void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
-                                     int height, int mode,
+                                     int height,
                                      BLOCK_SIZE min_partition_size) {
-  const int is_4k_or_larger = AOMMIN(width, height) >= 2160;
-  const int is_realtime_mode = (mode == REALTIME);
-  mi_params->mi_alloc_bsize =
-      (is_4k_or_larger || is_realtime_mode) ? BLOCK_8X8 : min_partition_size;
+  mi_params->mi_alloc_bsize = min_partition_size;
 
   set_mb_mi(mi_params, width, height);
 }
 
 static AOM_INLINE void stat_stage_set_mb_mi(CommonModeInfoParams *mi_params,
-                                            int width, int height, int mode,
+                                            int width, int height,
                                             BLOCK_SIZE min_partition_size) {
-  (void)mode;
   (void)min_partition_size;
   mi_params->mi_alloc_bsize = BLOCK_16X16;
 

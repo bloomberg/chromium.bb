@@ -27,7 +27,7 @@ In order to run the automated tests against your device you need to ensure it is
 running a Test Image and you have password-less SSH Access.
 
 Please follow:
-<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>
+<https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md#Set-up-SSH-connection-between-chroot-and-DUT>
 
 ## Setting up an Autotest Server and Web Frontend
 

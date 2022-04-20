@@ -5,13 +5,20 @@
  * found in the LICENSE file.
  */
 
+#include "src/sksl/lex/DFA.h"
+#include "src/sksl/lex/LexUtil.h"
+#include "src/sksl/lex/NFA.h"
 #include "src/sksl/lex/NFAtoDFA.h"
+#include "src/sksl/lex/RegexNode.h"
 #include "src/sksl/lex/RegexParser.h"
 #include "src/sksl/lex/TransitionTable.h"
 
-#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <algorithm>
 #include <sstream>
 #include <string>
+#include <vector>
 
 /**
  * Processes a .lex file and produces .h and .cpp files which implement a lexical analyzer. The .lex
@@ -20,7 +27,7 @@
  * where <pattern> is either a regular expression (e.g [0-9]) or a double-quoted literal string.
  */
 
-static constexpr const char* HEADER =
+static constexpr const char HEADER[] =
     "/*\n"
     " * Copyright 2017 Google Inc.\n"
     " *\n"
@@ -38,7 +45,6 @@ static void writeH(const DFA& dfa, const char* lexer, const char* token,
     out << HEADER;
     out << "#ifndef SKSL_" << lexer << "\n";
     out << "#define SKSL_" << lexer << "\n";
-    out << "#include <cstddef>\n";
     out << "#include <cstdint>\n";
     out << "#include <string_view>\n";
     out << "namespace SkSL {\n";

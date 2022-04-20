@@ -79,7 +79,7 @@ const base::Feature kAudioServiceSandbox {
 // ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync()),
 // because the embedder may trigger reentrancy, which cannot be avoided.
 const base::Feature kAvoidUnnecessaryBeforeUnloadCheckPostTask{
-    "AvoidUnnecessaryBeforeUnloadCheck", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AvoidUnnecessaryBeforeUnloadCheck", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAvoidUnnecessaryBeforeUnloadCheckSync{
     "AvoidUnnecessaryBeforeUnloadCheckSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -238,11 +238,6 @@ const base::Feature kCrashReporting{"CrashReporting",
 const base::Feature kCriticalClientHint{"CriticalClientHint",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Puts save-data header in the holdback mode. This disables sending of
-// save-data header to origins, and to the renderer processes within Chrome.
-const base::Feature kDataSaverHoldback{"DataSaverHoldback",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable debugging the issue crbug.com/1201355
 const base::Feature kDebugHistoryInterventionNoUserActivation{
     "DebugHistoryInterventionNoUserActivation",
@@ -268,6 +263,17 @@ const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
 const base::Feature kDevicePosture{"DevicePosture",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the Digital Goods API is enabled.
+// https://github.com/WICG/digital-goods/
+const base::Feature kDigitalGoodsApi {
+  "DigitalGoodsApi",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // Enable document policy for configuring and restricting feature behavior.
 const base::Feature kDocumentPolicy{"DocumentPolicy",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -292,6 +298,17 @@ const base::Feature kEmbeddingRequiresOptIn{"EmbeddingRequiresOptIn",
 // Enables canvas 2d methods BeginLayer and EndLayer.
 const base::Feature kEnableCanvas2DLayers{"EnableCanvas2DLayers",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the Machine Learning Model Loader Web Platform API. Explainer:
+// https://github.com/webmachinelearning/model-loader/blob/main/explainer.md
+const base::Feature kEnableMachineLearningModelLoaderWebPlatformApi{
+    "EnableMachineLearningModelLoaderWebPlatformApi",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables service workers on chrome-untrusted:// urls.
+const base::Feature kEnableServiceWorkersForChromeUntrusted{
+    "EnableServiceWorkersForChromeUntrusted",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If this feature is enabled and device permission is not granted by the user,
 // media-device enumeration will provide at most one device per type and the
@@ -334,6 +351,10 @@ const char kFedCmAutoSigninFieldTrialParamName[] = "AutoSignin";
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
+// Kill switch for FedCm manifest validation.
+const base::Feature kFedCmManifestValidation{"FedCmManifestValidation",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables usage of First Party Sets to determine cookie availability.
 constexpr base::Feature kFirstPartySets{"FirstPartySets",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -350,14 +371,8 @@ const base::Feature kFirstPartySetsV2ComponentFormat{
 
 // Whether to initialize the font manager when the renderer starts on a
 // background thread.
-const base::Feature kFontManagerEarlyInit {
-  "FontManagerEarlyInit",
-#if BUILDFLAG(IS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kFontManagerEarlyInit{"FontManagerEarlyInit",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -421,7 +436,7 @@ const base::Feature kIdleDetection{"IdleDetection",
 // Note that navigation_start does not take into account the amount of time the
 // renderer spends processing the IPC (that is, executing script).
 const base::Feature kIncludeIpcOverheadInNavigationStart{
-    "IncludeIpcOverheadInNavigationStart", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IncludeIpcOverheadInNavigationStart", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill switch for the GetInstalledRelatedApps API.
 const base::Feature kInstalledApp{"InstalledApp",
@@ -570,7 +585,7 @@ const base::Feature kNavigationNetworkResponseQueue{
 
 // Preconnects socket at the construction of NavigationRequest.
 const base::Feature kNavigationRequestPreconnect{
-    "NavigationRequestPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NavigationRequestPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables optimizations for renderer->browser mojo calls to avoid waiting on
 // the UI thread during navigation.
@@ -696,7 +711,7 @@ const base::Feature kPrivateNetworkAccessRespectPreflightResults = {
 // Enables sending CORS preflight requests ahead of private network requests.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 const base::Feature kPrivateNetworkAccessSendPreflights = {
-    "PrivateNetworkAccessSendPreflights", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrivateNetworkAccessSendPreflights", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
 // represents a set of frames that can script each other. Currently, Chrome does
@@ -779,7 +794,7 @@ const base::Feature kSecurePaymentConfirmation {
 
 // Enables API V3 changes in Secure Payment Confirmation.
 const base::Feature kSecurePaymentConfirmationAPIV3{
-    "SecurePaymentConfirmationAPIV3", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SecurePaymentConfirmationAPIV3", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must
@@ -931,10 +946,6 @@ const base::Feature kSpareRendererForSitePerProcess{
 const base::Feature kStopVideoCaptureOnScreenLock{
     "StopVideoCaptureOnScreenLock", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the out-of-process Storage Service.
-const base::Feature kStorageServiceOutOfProcess{
-    "StorageServiceOutOfProcess", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether site isolation should use origins instead of scheme and
 // eTLD+1.
 const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",
@@ -993,7 +1004,7 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 // evaluate the impact of the already-launched prioritization of bootstrap
 // tasks (crbug.com/1258621).
 const base::Feature kTreatBootstrapAsDefault{"TreatBootstrapAsDefault",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
@@ -1051,7 +1062,7 @@ const base::Feature kWebAssemblyCodeProtectionPku{
 
 // Enable WebAssembly dynamic tiering (only tier up hot functions).
 const base::Feature kWebAssemblyDynamicTiering{
-    "WebAssemblyDynamicTiering", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAssemblyDynamicTiering", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly lazy compilation (JIT on first call).
 const base::Feature kWebAssemblyLazyCompilation{
@@ -1160,12 +1171,6 @@ const base::Feature kWebXr{"WebXR", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kWebXrArModule{"WebXRARModule",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether service worker process priority is affected by client
-// process fore/background state change.
-const base::Feature kChangeServiceWorkerPriorityForClientForegroundStateChange{
-    "ChangeServiceWorkerPriorityForClientForegroundStateChange",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_ANDROID)
 // Allows the use of page zoom in place of accessibility text autosizing, and
 // updated UI to replace existing Chrome Accessibility Settings.
@@ -1179,7 +1184,7 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Takes advantage of specifying which big.LITTLE cores to schedule different
-// threads on. Note this conflicts with PowerScheduler feature.
+// threads on.
 const base::Feature kBigLittleScheduling{"BigLittleScheduling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1203,9 +1208,9 @@ const base::Feature kRequestDesktopSiteExceptions{
     "RequestDesktopSiteExceptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Request Desktop Site global setting for Android.
-// Refer to the launch bug (https://crbug.com/1107601) for more information.
-const base::Feature kRequestDesktopSiteGlobal{
-    "RequestDesktopSiteGlobal", base::FEATURE_DISABLED_BY_DEFAULT};
+// Refer to the launch bug (https://crbug.com/1244979) for more information.
+const base::Feature kRequestDesktopSiteGlobal{"RequestDesktopSiteGlobal",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Screen Capture API support for Android
 const base::Feature kUserMediaScreenCapturing{
@@ -1243,7 +1248,7 @@ const char kDragAndDropMovementThresholdDipParam[] =
 
 // Temporarily pauses the compositor early in navigation.
 const base::Feature kOptimizeEarlyNavigation{"OptimizeEarlyNavigation",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::FeatureParam<base::TimeDelta> kCompositorLockTimeout{
     &kOptimizeEarlyNavigation, "compositor_lock_timeout",
     base::Milliseconds(150)};

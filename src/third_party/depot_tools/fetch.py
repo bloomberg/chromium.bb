@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,7 +21,7 @@ These parameters will be passed through to the config's main method.
 from __future__ import print_function
 
 import json
-import optparse
+import argparse
 import os
 import pipes
 import subprocess
@@ -174,85 +174,48 @@ def CheckoutFactory(type_name, options, spec, root):
     raise KeyError('unrecognized checkout type: %s' % type_name)
   return class_(options, spec, root)
 
-
-#################################################
-# Utility function and file entry point.
-#################################################
-def usage(msg=None):
-  """Print help and exit."""
-  if msg:
-    print('Error:', msg)
-
-  print(textwrap.dedent("""\
-    usage: %s [options] <config> [--property=value [--property2=value2 ...]]
-
-    This script can be used to download the Chromium sources. See
-    http://www.chromium.org/developers/how-tos/get-the-code
-    for full usage instructions.
-
-    Valid options:
-       -h, --help, help   Print this message.
-       --nohooks          Don't run hooks after checkout.
-       --force            (dangerous) Don't look for existing .gclient file.
-       -n, --dry-run      Don't run commands, only print them.
-       --no-history       Perform shallow clones, don't fetch the full git history.
-
-    Valid fetch configs:""") % os.path.basename(sys.argv[0]))
+def handle_args(argv):
+  """Gets the config name from the command line arguments."""
 
   configs_dir = os.path.join(SCRIPT_PATH, 'fetch_configs')
   configs = [f[:-3] for f in os.listdir(configs_dir) if f.endswith('.py')]
   configs.sort()
-  for fname in configs:
-    print('  ' + fname)
 
-  sys.exit(bool(msg))
+  parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description='''
+    This script can be used to download the Chromium sources. See
+    http://www.chromium.org/developers/how-tos/get-the-code
+    for full usage instructions.''',
+    epilog='Valid fetch configs:\n' + \
+      '\n'.join(map(lambda s: '  ' + s, configs))
+    )
 
+  parser.add_argument('-n', '--dry-run', action='store_true', default=False,
+    help='Don\'t run commands, only print them.')
+  parser.add_argument('--nohooks', action='store_true', default=False,
+    help='Don\'t run hooks after checkout.')
+  parser.add_argument('--no-history', action='store_true', default=False,
+    help='Perform shallow clones, don\'t fetch the full git history.')
+  parser.add_argument('--force', action='store_true', default=False,
+    help='(dangerous) Don\'t look for existing .gclient file.')
 
-def handle_args(argv):
-  """Gets the config name from the command line arguments."""
-  if len(argv) <= 1:
-    usage('Must specify a config.')
-  if argv[1] in ('-h', '--help', 'help'):
-    usage()
+  parser.add_argument('config', type=str,
+    help="Project to fetch, e.g. chromium.")
+  parser.add_argument('props', metavar='props', type=str,
+    nargs=argparse.REMAINDER, default=[])
 
-  dry_run = False
-  nohooks = False
-  no_history = False
-  force = False
-  while len(argv) >= 2:
-    arg = argv[1]
-    if not arg.startswith('-'):
-      break
-    argv.pop(1)
-    if arg in ('-n', '--dry-run'):
-      dry_run = True
-    elif arg == '--nohooks':
-      nohooks = True
-    elif arg == '--no-history':
-      no_history = True
-    elif arg == '--force':
-      force = True
-    else:
-      usage('Invalid option %s.' % arg)
+  args = parser.parse_args(argv[1:])
 
-  def looks_like_arg(arg):
-    return arg.startswith('--') and arg.count('=') == 1
+  # props passed to config must be of the format --<name>=<value>
+  looks_like_arg = lambda arg: arg.startswith('--') and arg.count('=') == 1
+  bad_param = [x for x in args.props if not looks_like_arg(x)]
+  if bad_param:
+    print('Error: Got bad arguments %s' % bad_param)
+    parser.print_help()
+    sys.exit(1)
 
-  bad_parms = [x for x in argv[2:] if not looks_like_arg(x)]
-  if bad_parms:
-    usage('Got bad arguments %s' % bad_parms)
-
-  config = argv[1]
-  props = argv[2:]
-  return (
-      optparse.Values({
-        'dry_run': dry_run,
-        'nohooks': nohooks,
-        'no_history': no_history,
-        'force': force}),
-      config,
-      props)
-
+  return args
 
 def run_config_fetch(config, props, aliased=False):
   """Invoke a config's fetch method with the passed-through args
@@ -305,9 +268,9 @@ def run(options, spec, root):
 
 
 def main():
-  options, config, props = handle_args(sys.argv)
-  spec, root = run_config_fetch(config, props)
-  return run(options, spec, root)
+  args = handle_args(sys.argv)
+  spec, root = run_config_fetch(args.config, args.props)
+  return run(args, spec, root)
 
 
 if __name__ == '__main__':

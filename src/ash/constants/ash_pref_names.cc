@@ -36,6 +36,12 @@ const char kESimRefreshedEuiccs[] = "cros_esim.refreshed_euiccs";
 // by serializing a CellularESimProfile.
 const char kESimProfiles[] = "cros_esim.esim_profiles";
 
+// Pref which stores a dictionary of Integrated Circuit Card IDentifier (ICCID)
+// and Subscription Management - Data Preparation (SMDP+) address pair for each
+// managed cellular network.
+const char kManagedCellularIccidSmdpPair[] =
+    "cros_esim.managed_iccid_smdp_pair";
+
 // A dictionary pref to hold the mute setting for all the currently known
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";
@@ -128,6 +134,11 @@ const char kLoginDisplayPasswordButtonEnabled[] =
 
 // Boolean pref indicating whether the user has enabled Suggested Content.
 const char kSuggestedContentEnabled[] = "settings.suggested_content_enabled";
+
+// Boolean value that indicates that the user has given feedback for removing
+// items from the continue section.
+const char kLauncherFeedbackOnContinueSectionSent[] =
+    "ash.launcher.continue_section_removal_feedback_sent";
 
 // Boolean pref recording whether a search result has ever been launched from
 // the Chrome OS launcher.
@@ -331,6 +342,11 @@ const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
 // A double pref storing the scale value of the Docked Magnifier feature by
 // which the screen is magnified.
 const char kDockedMagnifierScale[] = "ash.docked_magnifier.scale";
+// A double pref storing the screen height divisor value of the Docked Magnifier
+// feature defining what proportion of the screen the docked magnifier viewport
+// occupies.
+const char kDockedMagnifierScreenHeightDivisor[] =
+    "ash.docked_magnifier.screen_height_divisor";
 
 // A boolean pref which indicates whether the docked magnifier confirmation
 // dialog has ever been shown.
@@ -467,9 +483,11 @@ const char kColorModeThemed[] = "ash.dark_mode.color_mode_themed";
 // A boolean pref that indicates whether dark mode is enabled.
 const char kDarkModeEnabled[] = "ash.dark_mode.enabled";
 
-// A boolean pref that indicates whether dark mode is automatically
-// turned on at sunset and turned off at sunrise.
-const char kDarkModeAutoScheduled[] = "ash.dark_mode.auto_scheduled";
+// An integer pref storing the type of automatic scheduling of turning on and
+// off the dark mode feature similar to `kNightLightScheduleType`, but
+// custom scheduling (2) is the same as sunset to sunrise scheduling (1)
+// because dark mode does not support custom scheduling.
+const char kDarkModeScheduleType[] = "ash.dark_mode.schedule_type";
 
 // A boolean pref storing the enabled status of the NightLight feature.
 const char kNightLightEnabled[] = "ash.night_light.enabled";
@@ -528,6 +546,14 @@ const char kPowerAcScreenDimDelayMs[] = "power.ac_screen_dim_delay_ms";
 const char kPowerAcScreenOffDelayMs[] = "power.ac_screen_off_delay_ms";
 const char kPowerAcScreenLockDelayMs[] = "power.ac_screen_lock_delay_ms";
 const char kPowerAcIdleWarningDelayMs[] = "power.ac_idle_warning_delay_ms";
+
+// Boolean pref of whether adaptive charging (i.e. holding battery at a sub-100%
+// charge until necessary to extend battery life) is enabled.
+const char kPowerAdaptiveChargingEnabled[] = "power.adaptive_charging_enabled";
+// Boolean pref of whether adaptive charging educational nudge is shown to the
+// user.
+const char kPowerAdaptiveChargingNudgeShown[] =
+    "power.adaptive_charging_nudge_shown";
 
 // Screen brightness percent values to be used when running on battery power.
 // Specified by the policy.
@@ -928,6 +954,11 @@ const char kProjectorViewerOnboardingShowCount[] =
 // policy.
 const char kProjectorAllowByPolicy[] = "ash.projector.allow_by_policy";
 
+// A boolean pref that controls Projector dogfood for Family Link users.
+// Set with an enterprise user policy.
+const char kProjectorDogfoodForFamilyLinkEnabled[] =
+    "ash.projector.dogfood_for_family_link_enabled";
+
 // A boolean pref that indicates whether the migration of Chromad devices to
 // cloud management can be started.
 const char kChromadToCloudMigrationEnabled[] =
@@ -947,6 +978,10 @@ const char kLoginScreenWebUILazyLoading[] =
 
 // Boolean value for the FloatingWorkspaceEnabled policy
 const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
+
+// Boolean value indicating that post reboot notification should be shown to the
+// user.
+const char kShowPostRebootNotification[] = "ash.show_post_reboot_notification";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

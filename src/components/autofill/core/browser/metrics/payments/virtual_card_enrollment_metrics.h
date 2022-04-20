@@ -13,10 +13,6 @@ namespace base {
 class TimeDelta;
 }
 
-namespace base {
-class TimeDelta;
-}
-
 namespace autofill {
 
 // Metrics to record user interaction with the virtual card enrollment bubble.
@@ -83,7 +79,20 @@ void LogVirtualCardEnrollmentBubbleShownMetric(
 void LogVirtualCardEnrollmentBubbleResultMetric(
     VirtualCardEnrollmentBubbleResult result,
     VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow);
+    bool is_reshow,
+    bool previous_declined);
+
+// Metrics to measure strikes logged or cleared in strike database.
+enum class VirtualCardEnrollmentStrikeDatabaseEvent {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+
+  // Strike logged as enrollment bubble was not accepted.
+  VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKE_LOGGED = 0,
+  // All strikes cleared as user accepted virtual card enrollment.
+  VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKES_CLEARED = 1,
+  kMaxValue = VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKES_CLEARED,
+};
 
 // GetDetailsForEnrollmentRequest related metrics. Attempts and results should
 // be 1:1 mapping.
@@ -107,6 +116,22 @@ void LogVirtualCardEnrollmentLinkClickedMetric(
     VirtualCardEnrollmentLinkType link_type,
     VirtualCardEnrollmentBubbleSource source);
 
+// Virtual card enrollment strike database event metrics.
+void LogVirtualCardEnrollmentStrikeDatabaseEvent(
+    VirtualCardEnrollmentSource source,
+    VirtualCardEnrollmentStrikeDatabaseEvent strike_event);
+
+// Virtual card enrollment strike database max strikes limit reached metrics.
+void LogVirtualCardEnrollmentBubbleMaxStrikesLimitReached(
+    VirtualCardEnrollmentSource source);
+
+// Virtual card enrollment bubble card art available metric. Logs whether the
+// card art was used in the enroll bubble depending on if it was passed to the
+// enrollment controller.
+void LogVirtualCardEnrollBubbleCardArtAvailable(
+    bool card_art_available,
+    VirtualCardEnrollmentSource source);
+
 // Latency Since Upstream metrics. Used to determine the time that it takes for
 // the server calls that need to be made between Save Card Bubble accept and
 // when the Virtual Card Enroll Bubble is shown.
@@ -118,21 +143,15 @@ void LogVirtualCardEnrollBubbleLatencySinceUpstream(
 std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
     VirtualCardEnrollmentBubbleSource source);
 
-// Helper function used to convert VirtualCardEnrollmentLinkType enum to
-// name suffix.
-const std::string VirtualCardEnrollmentLinkTypeToMetricSuffix(
-    VirtualCardEnrollmentLinkType link_type);
-
 // Helper function used to convert VirtualCardEnrollmentSource enum to
 // name suffix.
 const std::string VirtualCardEnrollmentSourceToMetricSuffix(
     VirtualCardEnrollmentSource source);
 
-// Latency Since Upstream metrics. Used to determine the time that it takes for
-// the server calls that need to be made between Save Card Bubble accept and
-// when the Virtual Card Enroll Bubble is shown.
-void LogVirtualCardEnrollBubbleLatencySinceUpstream(
-    const base::TimeDelta& latency);
+// Helper function used to convert VirtualCardEnrollmentLinkType enum to
+// name suffix.
+const std::string VirtualCardEnrollmentLinkTypeToMetricSuffix(
+    VirtualCardEnrollmentLinkType link_type);
 
 }  // namespace autofill
 

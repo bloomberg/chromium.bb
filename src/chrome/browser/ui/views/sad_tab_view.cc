@@ -483,8 +483,7 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   // does.
   set_owned_by_client();
 
-  SetBackground(
-      views::CreateThemedSolidBackground(this, ui::kColorDialogBackground));
+  SetBackground(views::CreateThemedSolidBackground(ui::kColorDialogBackground));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -506,11 +505,11 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   // Crashed tab image.
   auto* image = container->AddChildView(std::make_unique<views::ImageView>());
   image->SetImage(
-      gfx::CreateVectorIcon(kCrashedTabIcon, 48, gfx::kChromeIconGrey));
+      ui::ImageModel::FromVectorIcon(kCrashedTabIcon, ui::kColorIcon, 48));
   const int unrelated_vertical_spacing =
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
   image->SetProperty(views::kMarginsKey,
-                     gfx::Insets(0, 0, unrelated_vertical_spacing, 0));
+                     gfx::Insets::TLBR(0, 0, unrelated_vertical_spacing, 0));
   image->SetProperty(views::kCrossAxisAlignmentKey,
                      views::LayoutAlignment::kStart);
 
@@ -523,7 +522,7 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   constexpr int kTitleBottomSpacing = 13;
   title_->SetProperty(views::kMarginsKey,
-                      gfx::Insets(0, 0, kTitleBottomSpacing, 0));
+                      gfx::Insets::TLBR(0, 0, kTitleBottomSpacing, 0));
 
   // Message and optional bulleted list.
   message_ = container->AddChildView(
@@ -541,9 +540,9 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   container
       ->AddChildView(CreateErrorCodeLabel(GetErrorCodeFormatString(),
                                           GetCrashedErrorCode()))
-      ->SetProperty(
-          views::kMarginsKey,
-          gfx::Insets(kTitleBottomSpacing, 0, unrelated_vertical_spacing, 0));
+      ->SetProperty(views::kMarginsKey,
+                    gfx::Insets::TLBR(kTitleBottomSpacing, 0,
+                                      unrelated_vertical_spacing, 0));
 
   // Bottom row: help link, action button.
   auto* actions_container =

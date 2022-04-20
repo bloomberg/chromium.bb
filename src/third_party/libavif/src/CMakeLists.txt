@@ -136,6 +136,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     if(HAVE_RESERVED_IDENTIFIER_WARNING)
         add_definitions(-Wno-reserved-identifier)
     endif()
+    # Clang >= 14 warns that mixing declarations and code is incompatible with standards before C99, even if
+    # you compile with -std=c99 or -std=gnu99.
+    check_c_compiler_flag(-Wdeclaration-after-statement HAVE_DECLARATION_AFTER_STATEMENT_WARNING)
+    if(HAVE_DECLARATION_AFTER_STATEMENT_WARNING)
+        add_definitions(-Wno-declaration-after-statement)
+    endif()
     # The detection of cross compilation by -Wpoison-system-directories has false positives on macOS because
     # --sysroot is implicitly added. Turn the warning off.
     if(NOT DEFINED HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
@@ -234,14 +240,15 @@ find_package(libyuv QUIET) # not required
 if(libyuv_FOUND)
     # libyuv 1755 exposed all of the I*Matrix() functions, which libavif relies on.
     # libyuv 1774 exposed ScalePlane_12 function, which libavif can use for some additional optimizations.
+    # libyuv 1813 added the I*ToARGBMatrixFilter() functions, which libavif can use with the bilinear filter.
     if(NOT LIBYUV_VERSION)
         message(STATUS "libavif: libyuv found, but version unknown; libyuv-based fast paths disabled.")
     elseif(LIBYUV_VERSION LESS 1755)
         message(STATUS "libavif: libyuv (${LIBYUV_VERSION}) found, but is too old; libyuv-based fast paths disabled.")
     else()
         message(STATUS "libavif: libyuv (${LIBYUV_VERSION}) found; libyuv-based fast paths enabled.")
-        if(LIBYUV_VERSION LESS 1774)
-            message(STATUS "libavif: some libyuv optimizations require at least version 1774 to work.")
+        if(LIBYUV_VERSION LESS 1813)
+            message(STATUS "libavif: some libyuv optimizations require at least version 1813 to work.")
         endif()
         set(AVIF_PLATFORM_DEFINITIONS ${AVIF_PLATFORM_DEFINITIONS} -DAVIF_LIBYUV_ENABLED=1)
         set(AVIF_PLATFORM_INCLUDES ${AVIF_PLATFORM_INCLUDES} ${LIBYUV_INCLUDE_DIR})
@@ -529,57 +536,8 @@ if(AVIF_BUILD_APPS)
 endif()
 
 if(AVIF_BUILD_TESTS)
-    # With testing enabled, all targets referenced by add_test() can be run
-    # at once with CMake's ctest command line tool from the build folder.
-    enable_testing()
-    # Using a CMake FIXTURES_SETUP/FIXTURES_CLEANUP to create and delete a
-    # subdirectory would be cleaner but this is way simpler.
-    set(AVIF_TEST_TMP_DIR ${PROJECT_BINARY_DIR})
-
-    add_executable(aviftest tests/aviftest.c)
-    if(AVIF_LOCAL_LIBGAV1)
-        set_target_properties(aviftest PROPERTIES LINKER_LANGUAGE "CXX")
-    endif()
-    target_link_libraries(aviftest avif ${AVIF_PLATFORM_LIBRARIES})
-
-    add_executable(avifgridapitest tests/avifgridapitest.c)
-    if(AVIF_LOCAL_LIBGAV1)
-        set_target_properties(avifgridapitest PROPERTIES LINKER_LANGUAGE "CXX")
-    endif()
-    target_link_libraries(avifgridapitest avif ${AVIF_PLATFORM_LIBRARIES})
-    add_test(NAME avifgridapitest
-        COMMAND ${CMAKE_BINARY_DIR}/avifgridapitest)
-
-    add_executable(avify4mtest tests/avify4mtest.c)
-    if(AVIF_LOCAL_LIBGAV1)
-        set_target_properties(avify4mtest PROPERTIES LINKER_LANGUAGE "CXX")
-    endif()
-    target_link_libraries(avify4mtest avif avif_apps ${AVIF_PLATFORM_LIBRARIES})
-    add_test(NAME avify4mtest
-        COMMAND ${CMAKE_BINARY_DIR}/avify4mtest AVIF_TEST_TMP_DIR)
-    set_tests_properties(avify4mtest PROPERTIES ENVIRONMENT "AVIF_TEST_TMP_DIR=${AVIF_TEST_TMP_DIR}")
-
-    add_executable(avifyuv tests/avifyuv.c)
-    if(AVIF_LOCAL_LIBGAV1)
-        set_target_properties(avifyuv PROPERTIES LINKER_LANGUAGE "CXX")
-    endif()
-    target_link_libraries(avifyuv avif ${AVIF_PLATFORM_LIBRARIES})
-
-    add_custom_target(avif_test_all
-        COMMAND $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
-        DEPENDS aviftest
-    )
-
-    if(AVIF_ENABLE_COVERAGE)
-        add_custom_target(avif_coverage
-            COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/aviftest.profraw $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
-            COMMAND ${XCRUN} llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/aviftest.profraw -o ${CMAKE_BINARY_DIR}/aviftest.profdata
-            COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/coverage
-            COMMAND ${XCRUN} llvm-cov show $<TARGET_FILE:aviftest> -instr-profile=${CMAKE_BINARY_DIR}/aviftest.profdata -project-title=libavif --format html -output-dir=${CMAKE_BINARY_DIR}/coverage
-            COMMAND echo Coverage report here: ${CMAKE_BINARY_DIR}/coverage/index.html
-            DEPENDS aviftest
-        )
-    endif()
+    enable_testing() # Allow ctest to be called from top-level directory.
+    add_subdirectory(tests)
 endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)

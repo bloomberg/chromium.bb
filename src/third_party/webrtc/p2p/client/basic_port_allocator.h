@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "api/field_trials_view.h"
 #include "api/turn_customizer.h"
 #include "p2p/base/port_allocator.h"
 #include "p2p/client/relay_port_factory_interface.h"
@@ -80,15 +81,21 @@ class RTC_EXPORT BasicPortAllocator : public PortAllocator {
 
   void SetVpnList(const std::vector<rtc::NetworkMask>& vpn_list) override;
 
+  const webrtc::FieldTrialsView* field_trials() const { return field_trials_; }
+
  private:
   void OnIceRegathering(PortAllocatorSession* session,
                         IceRegatheringReason reason);
 
-  // This function makes sure that relay_port_factory_ is set properly.
-  void InitRelayPortFactory(RelayPortFactoryInterface* relay_port_factory);
+  // This function makes sure that relay_port_factory_ and field_trials_ is set
+  // properly.
+  void Init(RelayPortFactoryInterface* relay_port_factory,
+            const webrtc::FieldTrialsView* field_trials);
 
   bool MdnsObfuscationEnabled() const override;
 
+  const webrtc::FieldTrialsView* field_trials_;
+  std::unique_ptr<webrtc::FieldTrialsView> owned_field_trials_;
   rtc::NetworkManager* network_manager_;
   rtc::PacketSocketFactory* socket_factory_;
   int network_ignore_mask_ = rtc::kDefaultNetworkIgnoreMask;
@@ -227,7 +234,7 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession {
   void DoAllocate(bool disable_equivalent_phases);
   void OnNetworksChanged();
   void OnAllocationSequenceObjectsCreated();
-  void DisableEquivalentPhases(rtc::Network* network,
+  void DisableEquivalentPhases(const rtc::Network* network,
                                PortConfiguration* config,
                                uint32_t* flags);
   void AddAllocatedPort(Port* port, AllocationSequence* seq);
@@ -240,9 +247,9 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession {
   void MaybeSignalCandidatesAllocationDone();
   void OnPortAllocationComplete();
   PortData* FindPort(Port* port);
-  std::vector<rtc::Network*> GetNetworks();
-  std::vector<rtc::Network*> GetFailedNetworks();
-  void Regather(const std::vector<rtc::Network*>& networks,
+  std::vector<const rtc::Network*> GetNetworks();
+  std::vector<const rtc::Network*> GetFailedNetworks();
+  void Regather(const std::vector<const rtc::Network*>& networks,
                 bool disable_equivalent_phases,
                 IceRegatheringReason reason);
 
@@ -250,7 +257,7 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession {
   bool CandidatePairable(const Candidate& c, const Port* port) const;
 
   std::vector<PortData*> GetUnprunedPorts(
-      const std::vector<rtc::Network*>& networks);
+      const std::vector<const rtc::Network*>& networks);
   // Prunes ports and signal the remote side to remove the candidates that
   // were previously signaled from these ports.
   void PrunePortsAndRemoveCandidates(
@@ -298,14 +305,10 @@ struct RTC_EXPORT PortConfiguration {
   typedef std::vector<RelayServerConfig> RelayList;
   RelayList relays;
 
-  // TODO(jiayl): remove this ctor when Chrome is updated.
-  PortConfiguration(const rtc::SocketAddress& stun_address,
-                    const std::string& username,
-                    const std::string& password);
-
   PortConfiguration(const ServerAddresses& stun_servers,
                     const std::string& username,
-                    const std::string& password);
+                    const std::string& password,
+                    const webrtc::FieldTrialsView* field_trials = nullptr);
 
   // Returns addresses of both the explicitly configured STUN servers,
   // and TURN servers that should be used as STUN servers.
@@ -347,7 +350,7 @@ class AllocationSequence : public sigslot::has_slots<> {
   // event to trigger signal. This can also be achieved by starting a timer in
   // BPAS, but this is less deterministic.
   AllocationSequence(BasicPortAllocatorSession* session,
-                     rtc::Network* network,
+                     const rtc::Network* network,
                      PortConfiguration* config,
                      uint32_t flags,
                      std::function<void()> port_allocation_complete_callback);
@@ -356,14 +359,14 @@ class AllocationSequence : public sigslot::has_slots<> {
   void OnNetworkFailed();
 
   State state() const { return state_; }
-  rtc::Network* network() const { return network_; }
+  const rtc::Network* network() const { return network_; }
 
   bool network_failed() const { return network_failed_; }
   void set_network_failed() { network_failed_ = true; }
 
   // Disables the phases for a new sequence that this one already covers for an
   // equivalent network setup.
-  void DisableEquivalentPhases(rtc::Network* network,
+  void DisableEquivalentPhases(const rtc::Network* network,
                                PortConfiguration* config,
                                uint32_t* flags);
 
@@ -396,7 +399,7 @@ class AllocationSequence : public sigslot::has_slots<> {
 
   BasicPortAllocatorSession* session_;
   bool network_failed_ = false;
-  rtc::Network* network_;
+  const rtc::Network* network_;
   // Compared with the new best IP in DisableEquivalentPhases.
   rtc::IPAddress previous_best_ip_;
   PortConfiguration* config_;

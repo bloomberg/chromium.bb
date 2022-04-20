@@ -16,6 +16,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
+#include "api/array_view.h"
 #include "api/packet_socket_factory.h"
 #include "api/transport/stun.h"
 #include "p2p/base/async_stun_tcp_socket.h"
@@ -194,7 +195,10 @@ void TurnServer::AcceptConnection(rtc::Socket* server_socket) {
     cricket::AsyncStunTCPSocket* tcp_socket =
         new cricket::AsyncStunTCPSocket(accepted_socket);
 
-    tcp_socket->SignalClose.connect(this, &TurnServer::OnInternalSocketClose);
+    tcp_socket->SubscribeClose(this,
+                               [this](rtc::AsyncPacketSocket* s, int err) {
+                                 OnInternalSocketClose(s, err);
+                               });
     // Finally add the socket so it can start communicating with the client.
     AddInternalSocket(tcp_socket, info.proto);
   }
@@ -421,7 +425,7 @@ void TurnServer::HandleAllocateRequest(TurnServerConnection* conn,
 std::string TurnServer::GenerateNonce(int64_t now) const {
   // Generate a nonce of the form hex(now + HMAC-MD5(nonce_key_, now))
   std::string input(reinterpret_cast<const char*>(&now), sizeof(now));
-  std::string nonce = rtc::hex_encode(input.c_str(), input.size());
+  std::string nonce = rtc::hex_encode(input);
   nonce += rtc::ComputeHmac(rtc::DIGEST_MD5, nonce_key_, input);
   RTC_DCHECK(nonce.size() == kNonceSize);
 
@@ -437,8 +441,8 @@ bool TurnServer::ValidateNonce(const std::string& nonce) const {
   // Decode the timestamp.
   int64_t then;
   char* p = reinterpret_cast<char*>(&then);
-  size_t len =
-      rtc::hex_decode(p, sizeof(then), nonce.substr(0, sizeof(then) * 2));
+  size_t len = rtc::hex_decode(rtc::ArrayView<char>(p, sizeof(then)),
+                               nonce.substr(0, sizeof(then) * 2));
   if (len != sizeof(then)) {
     return false;
   }
@@ -563,6 +567,7 @@ void TurnServer::DestroyInternalSocket(rtc::AsyncPacketSocket* socket) {
   InternalSocketMap::iterator iter = server_sockets_.find(socket);
   if (iter != server_sockets_.end()) {
     rtc::AsyncPacketSocket* socket = iter->first;
+    socket->UnsubscribeClose(this);
     socket->SignalReadPacket.disconnect(this);
     server_sockets_.erase(iter);
     std::unique_ptr<rtc::AsyncPacketSocket> socket_to_delete =

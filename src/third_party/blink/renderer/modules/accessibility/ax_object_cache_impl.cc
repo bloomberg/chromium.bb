@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -81,6 +82,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
@@ -306,10 +308,39 @@ bool IsTextRelevantForAccessibility(const LayoutText& layout_text) {
     return false;
   }
 
-  // Text elements with empty whitespace are returned, because of cases
-  // such as <span>Hello</span><span> </span><span>World</span>. Keeping
-  // the whitespace-only node means we now correctly expose "Hello World".
-  // See crbug.com/435765.
+  // If the prev/next node is also a text node and the adjacent character is
+  // not whitespace, CanIgnoreSpaceNextTo will return false. In some cases that
+  // is what we want; in other cases it is not. Examples:
+  //
+  // 1a: <p><span>Hello</span><span>[whitespace]</span><span>World</span></p>
+  // 1b: <p><span>Hello</span>[whitespace]<span>World</span></p>
+  // 2:  <div><ul><li style="display:inline;">x</li>[whitespace]</ul>y</div>
+  //
+  // In the first case, we want to preserve the whitespace (crbug.com/435765).
+  // In the second case, the whitespace in the markup is not relevant because
+  // the "x" is separated from the "y" by virtue of being inside a different
+  // block. In order to distinguish these two scenarios, we can use the
+  // LayoutBox associated with each node. For the first scenario, each node's
+  // LayoutBox is the LayoutBlockFlow associated with the <p>. For the second
+  // scenario, the LayoutBox of "x" and the whitespace is the LayoutBlockFlow
+  // associated with the <ul>; the LayoutBox of "y" is the one associated with
+  // the <div>.
+  LayoutBox* box = layout_text.EnclosingBox();
+  if (!box)
+    return false;
+
+  if (prev_node->GetLayoutObject() && prev_node->GetLayoutObject()->IsText()) {
+    LayoutBox* prev_box = prev_node->GetLayoutObject()->EnclosingBox();
+    if (prev_box != box)
+      return false;
+  }
+
+  if (next_node->GetLayoutObject() && next_node->GetLayoutObject()->IsText()) {
+    LayoutBox* next_box = next_node->GetLayoutObject()->EnclosingBox();
+    if (next_box != box)
+      return false;
+  }
+
   return true;
 }
 
@@ -568,6 +599,14 @@ bool IsNodeRelevantForAccessibility(const Node* node,
   // Objects inside an SVG <style> are irrelevant.
   if (Traversal<SVGStyleElement>::FirstAncestor(*node))
     return false;
+  // Elements inside of a frame/iframe are irrelevant unless inside a document
+  // that is a child of the frame. In the case where descendants are allowed,
+  // they will be in a different document.
+  for (const Node* ancestor = node; ancestor;
+       ancestor = ancestor->parentNode()) {
+    if (IsA<HTMLFrameElementBase>(ancestor))
+      return false;
+  }
 
   // All other objects are relevant, even if hidden.
   return true;
@@ -1850,10 +1889,10 @@ void AXObjectCacheImpl::SelectionChangedWithCleanLayout(Node* node) {
     ax_object->SelectionChanged();
 }
 
-void AXObjectCacheImpl::UpdateReverseRelations(
+void AXObjectCacheImpl::UpdateReverseTextRelations(
     const AXObject* relation_source,
     const Vector<String>& target_ids) {
-  relation_cache_->UpdateReverseRelations(relation_source, target_ids);
+  relation_cache_->UpdateReverseTextRelations(relation_source, target_ids);
 }
 
 void AXObjectCacheImpl::StyleChanged(const LayoutObject* layout_object) {
@@ -2165,7 +2204,21 @@ void AXObjectCacheImpl::ChildrenChanged(Node* node) {
   ChildrenChanged(Get(node));
 }
 
+// ChildrenChanged gets called a lot. For the accessibility tests that
+// measure performance when many nodes change, ChildrenChanged can be
+// called tens of thousands of times. We need to balance catching changes
+// for this metric with not slowing the perf bots down significantly.
+// Tracing every 25 calls is an attempt at achieving that balance and
+// may need to be adjusted further.
+constexpr int kChildrenChangedTraceFrequency = 25;
+
 void AXObjectCacheImpl::ChildrenChanged(const LayoutObject* layout_object) {
+  static int children_changed_counter = 0;
+  if (++children_changed_counter % kChildrenChangedTraceFrequency == 0) {
+    TRACE_EVENT0("accessibility",
+                 "AXObjectCacheImpl::ChildrenChanged(LayoutObject)");
+  }
+
   if (!layout_object)
     return;
 
@@ -2178,44 +2231,7 @@ void AXObjectCacheImpl::ChildrenChanged(const LayoutObject* layout_object) {
   if (!node)
     return;
 
-  ChildrenChanged(Get(node));
-
-  if (!layout_object->IsAnonymous())
-    return;
-
-  DCHECK_NE(node->GetLayoutObject(), layout_object);
-
-  // The passed-in layout object was anonymous, e.g. anonymous block flow
-  // inserted by blink as an inline's parent when it had a block sibling.
-  // If children change on an anonymous layout object, this can
-  // mean that child AXObjects actually had their children change.
-  // Therefore, invalidate any of those children as well, using the nearest
-  // parent that participates in the tree.
-  // In this example, if ChildrenChanged() is called on the anonymous block,
-  // then we also process ChildrenChanged() on the <div> and <a>:
-  // <div>
-  //  |    \
-  // <p>  Anonymous block   (Note: Anonymous blocks do not get AXObjects)
-  //         \
-  //         <a>
-  //           \
-  //           text
-
-  // The child traversal requires a flat tree traversal, so if it's forbidden,
-  // don't do it. Additionally, when visiting a slot, we may call AssignNodes,
-  // so also don't do this if slot (re-)assignment is forbidden.
-  // TODO(aleventhal) Why is this needed for shadow-slot-assignment.js test?
-  if (GetDocument().IsFlatTreeTraversalForbidden() ||
-      node->GetDocument()
-          .GetSlotAssignmentEngine()
-          .HasPendingSlotAssignmentRecalc()) {
-    return;
-  }
-
-  for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node); child;
-       child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
-    ChildrenChanged(Get(child));
-  }
+  ChildrenChanged(node);
 }
 
 void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {

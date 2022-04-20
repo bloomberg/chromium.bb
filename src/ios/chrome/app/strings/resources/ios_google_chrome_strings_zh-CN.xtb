@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1096883626080133124">借助比以前更简单、更安全、更快速的 Google Chrome 提高工作效率</translation>
 <translation id="1143896152279775643">系统会将您的密码保存到 <ph name="EMAIL" /> 的 Google 密码管理器中。</translation>
 <translation id="1282031177488366470">帮助我们改进 Chrome 的功能和性能</translation>
 <translation id="1479202195792305274">您需要先登录 Google 帐号才能使用 Chrome 的密码检查功能。</translation>
@@ -13,6 +12,7 @@
 <translation id="1917964099031477364">系统会从该设备上的 Chrome 和其他 Google 应用中移除此帐号以及所有未保存的数据。</translation>
 <translation id="1968388653333775699">Chrome 助您事半功倍</translation>
 <translation id="2009224836393115614">Chrome 无法检查您的密码。请尝试检查您的互联网连接。</translation>
+<translation id="2056123005618757196">借助比以前更简单、更安全、更快速的 Google Chrome 提高工作效率。</translation>
 <translation id="2147651015520127414">Chrome 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="2199719347983604670">Chrome 同步的数据</translation>
 <translation id="2313070403598893276">Google Chrome 不仅简便安全，而且速度更胜从前</translation>
@@ -39,7 +39,6 @@
 <translation id="3345341804167540816">随时随地使用 Chrome</translation>
 <translation id="3522659714780527202">要查看您在其他设备上用 Chrome 打开的标签页，请开启同步功能</translation>
 <translation id="3533694711092285624">尚未保存任何密码。您需要先保存密码才能使用 Chrome 的密码检查功能。</translation>
-<translation id="3634910711516114487">若要充分利用 Chrome，请使用您的 Google 帐号登录 Chrome</translation>
 <translation id="3655656110921623717">这意味着 Chrome 每次都会对移动网站发出请求。</translation>
 <translation id="3706101708757577809">当您点按消息、文档和其他应用中的链接时，可以使用 Chrome 打开链接啦。</translation>
 <translation id="3720541637541300822">在您关闭 Chrome 时锁定无痕式标签页</translation>
@@ -56,6 +55,7 @@
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
 <translation id="4633328489441962921">Chrome 无法检查是否有更新</translation>
 <translation id="4698415050768537821">Chrome 无法检查所有密码。请明天再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
+<translation id="4819268619367838612">为帮助改进该应用，Chrome 会向 Google 发送使用情况统计信息和崩溃数据。<ph name="BEGIN_LINK" />管理<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">在 Chrome Beta 版中不受支持</translation>
 <translation id="5030102366287574140">Chrome 有助于保护您免受数据泄露、不安全网站等问题的影响。</translation>
 <translation id="5108659628347594808">帮助改善 Chrome</translation>
@@ -83,21 +83,13 @@
 <translation id="6709398533399187136">您的密码遭遇了数据泄露。Google 密码管理器建议您立即更改此密码。</translation>
 <translation id="6822673484890854830">Chrome 无法检查所有密码。请稍后再试。</translation>
 <translation id="6964931465519938134">现在，每当点按消息、文档和其他应用中的链接时，您都可以使用 Chrome 打开链接。</translation>
-<translation id="7046845777663074840">处于开启状态时：
-<ph name="BEGIN_INDENT" />  • 可协助改进 Chrome，让所有像您这样使用 Chrome 的用户都能够获享更好的体验。<ph name="END_INDENT" />
-
-注意事项：
-<ph name="BEGIN_INDENT" />  • 系统会向 Google 发送与您的 Chrome 使用情况相关的信息，但这些信息与您没有关联。
-
-  • 如果 Chrome 崩溃，崩溃事件的相关详情中可能会包含一些个人信息。
-
-  • 如果您开启同步功能，相关指标可能会包含与您访问的网址相关的信息。<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">定制您的专属 Chrome</translation>
 <translation id="7124339256045485976">让 Chrome 保持最新状态</translation>
 <translation id="7161390184744336561">Google Chrome 版本太旧</translation>
 <translation id="7165736900384873061">开始使用 Google Chrome QR 码扫描器</translation>
 <translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />将 Chrome 移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome 会使用面容 ID 来确保对您密码的访问均已获授权。</translation>
+<translation id="7187993566681480880">保护您在 Chrome 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用。</translation>
 <translation id="72119412072970160">您可在 iPad 上的其他应用内使用已保存至 Google 密码管理器的密码。</translation>
 <translation id="7261678641327190792">Chrome 无法检查您的密码</translation>
 <translation id="7272930098487145294">若要保存图片，请点按“设置”并允许 Chrome 添加照片</translation>
@@ -110,6 +102,7 @@
 <translation id="766361182512894255">您的密码遭遇了数据泄露。Chrome 建议您立即更改此密码。</translation>
 <translation id="7693590760643069321">现在，每当点按消息、文档和其他应用中的链接时，您都可以使用 Chrome 打开链接。</translation>
 <translation id="7698568245838009292">Chrome 想要访问相机</translation>
+<translation id="7780154209050837198">若要充分利用 Chrome，请使用您的 Google 帐号登录 Chrome。</translation>
 <translation id="7855730255114109580">Google Chrome 已是最新版本</translation>
 <translation id="8022947259858476807">默认使用 Chrome 来打开链接、在微件中执行搜索以及在其他应用中自动填充密码</translation>
 <translation id="8160472928944011082">Chrome 无法更新</translation>
@@ -127,6 +120,15 @@
 <translation id="8736550665979974340">Google Chrome 可确保您始终处于保护之下</translation>
 <translation id="8772179140489533211">显示意在引导用户登录 Chrome 的提示。</translation>
 <translation id="8788269841521769222">您不需要记住此密码。系统会将它保存到 <ph name="EMAIL" /> 的 Google 密码管理器中</translation>
+<translation id="8969290730818637510">处于开启状态时：
+<ph name="BEGIN_INDENT" />  • 可协助改进 Chrome，让所有像您这样使用 Chrome 的用户都能获享更好的体验。<ph name="END_INDENT" />
+
+注意事项：
+<ph name="BEGIN_INDENT" />  • 系统会向 Google 发送与您的 Chrome 使用情况相关的信息，但这些信息未关联到您。
+
+  • 如果 Chrome 崩溃了，崩溃事件的相关详情可能会包含一些个人信息。
+
+  • 如果您开启了同步功能，相关指标可能会包含与您访问的网址有关的信息。<ph name="END_INDENT" /></translation>
 <translation id="9112744793181547300">将 Chrome 设为默认浏览器？</translation>
 <translation id="9122931302567044771">这意味着 Chrome 每次都会对桌面版网站发出请求。</translation>
 </translationbundle>

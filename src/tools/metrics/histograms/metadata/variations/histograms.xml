@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Variations.ExtendedSafeMode.BeaconFileDeserializationError"
-    enum="JsonDeserializationError" expires_after="2022-08-07">
+    enum="JsonDeserializationError" expires_after="2022-10-09">
   <owner>caitlinfischer@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <component>Internals&gt;Metrics&gt;Variations</component>
@@ -78,7 +78,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Variations.ExtendedSafeMode.BeaconFileStateAtStartup"
-    enum="BeaconFileState" expires_after="2022-08-07">
+    enum="BeaconFileState" expires_after="2022-10-09">
   <owner>caitlinfischer@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <component>Internals&gt;Metrics&gt;Variations</component>
@@ -104,7 +104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Variations.ExtendedSafeMode.WritePrefsTime"
-    units="microseconds" expires_after="2022-08-07">
+    units="microseconds" expires_after="2022-10-09">
   <owner>caitlinfischer@google.com</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <component>Internals&gt;Metrics&gt;Variations</component>
@@ -116,6 +116,19 @@ chromium-metrics-reviews@google.com.
 
     Note that clients without high-resolution clocks will report 0 for very
     short times.
+  </summary>
+</histogram>
+
+<histogram name="Variations.FirstRun.DeltaCompression"
+    enum="VariationsDeltaCompression" expires_after="2023-04-01">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>rkaplow@chromium.org</owner>
+  <owner>swestphal@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    The state of the delta-compression when attempting to fetch a variations
+    seed via the java-based fetcher on Android. Records both the requested and
+    received delta compression values in one enumeration.
   </summary>
 </histogram>
 

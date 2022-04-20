@@ -32,6 +32,8 @@
 #include "ray_tracing_state.h"
 #include "render_pass_state.h"
 #include "shader_module.h"
+#include "pipeline_layout_state.h"
+#include "pipeline_sub_state.h"
 
 // Fwd declarations -- including descriptor_set.h creates an ugly include loop
 namespace cvdescriptorset {
@@ -83,10 +85,11 @@ extern DescriptorReqFlags DescriptorRequirementsBitsFromFormat(VkFormat fmt);
 
 struct DescriptorRequirement {
     DescriptorReqFlags reqs;
+    DescriptorReqFlags all_reqs;
     bool is_writable;
     // Copy from StageState.interface_var. It combines from plural shader stages. The index of array is index of image.
     std::vector<layer_data::unordered_set<SamplerUsedByImage>> samplers_used_by_image;
-    DescriptorRequirement() : reqs(0), is_writable(false) {}
+    DescriptorRequirement() : reqs(0), all_reqs(0), is_writable(false) {}
 };
 
 inline bool operator==(const DescriptorRequirement &a, const DescriptorRequirement &b) NOEXCEPT { return a.reqs == b.reqs; }
@@ -95,78 +98,27 @@ inline bool operator<(const DescriptorRequirement &a, const DescriptorRequiremen
 
 typedef std::map<uint32_t, DescriptorRequirement> BindingReqMap;
 
-// Canonical dictionary for the pipeline layout's layout of descriptorsetlayouts
-using DescriptorSetLayoutDef = cvdescriptorset::DescriptorSetLayoutDef;
-using DescriptorSetLayoutId = std::shared_ptr<const DescriptorSetLayoutDef>;
-using PipelineLayoutSetLayoutsDef = std::vector<DescriptorSetLayoutId>;
-using PipelineLayoutSetLayoutsDict =
-    hash_util::Dictionary<PipelineLayoutSetLayoutsDef, hash_util::IsOrderedContainer<PipelineLayoutSetLayoutsDef>>;
-using PipelineLayoutSetLayoutsId = PipelineLayoutSetLayoutsDict::Id;
-
-// Canonical dictionary for PushConstantRanges
-using PushConstantRangesDict = hash_util::Dictionary<PushConstantRanges>;
-using PushConstantRangesId = PushConstantRangesDict::Id;
-
-// Defines/stores a compatibility defintion for set N
-// The "layout layout" must store at least set+1 entries, but only the first set+1 are considered for hash and equality testing
-// Note: the "cannonical" data are referenced by Id, not including handle or device specific state
-// Note: hash and equality only consider layout_id entries [0, set] for determining uniqueness
-struct PipelineLayoutCompatDef {
-    uint32_t set;
-    PushConstantRangesId push_constant_ranges;
-    PipelineLayoutSetLayoutsId set_layouts_id;
-    PipelineLayoutCompatDef(const uint32_t set_index, const PushConstantRangesId pcr_id, const PipelineLayoutSetLayoutsId sl_id)
-        : set(set_index), push_constant_ranges(pcr_id), set_layouts_id(sl_id) {}
-    size_t hash() const;
-    bool operator==(const PipelineLayoutCompatDef &other) const;
-};
-
-// Canonical dictionary for PipelineLayoutCompat records
-using PipelineLayoutCompatDict = hash_util::Dictionary<PipelineLayoutCompatDef, hash_util::HasHashMember<PipelineLayoutCompatDef>>;
-using PipelineLayoutCompatId = PipelineLayoutCompatDict::Id;
-
-// Store layouts and pushconstants for PipelineLayout
-class PIPELINE_LAYOUT_STATE : public BASE_NODE {
-  public:
-    using SetLayoutVector = std::vector<std::shared_ptr<cvdescriptorset::DescriptorSetLayout const>>;
-    const SetLayoutVector set_layouts;
-    // canonical form IDs for the "compatible for set" contents
-    const PushConstantRangesId push_constant_ranges;
-    // table of "compatible for set N" cannonical forms for trivial accept validation
-    const std::vector<PipelineLayoutCompatId> compat_for_set;
-
-    PIPELINE_LAYOUT_STATE(ValidationStateTracker *dev_data, VkPipelineLayout l, const VkPipelineLayoutCreateInfo *pCreateInfo);
-
-    VkPipelineLayout layout() const { return handle_.Cast<VkPipelineLayout>(); }
-
-    std::shared_ptr<cvdescriptorset::DescriptorSetLayout const> GetDsl(uint32_t set) const {
-        std::shared_ptr<cvdescriptorset::DescriptorSetLayout const> dsl = nullptr;
-        if (set < set_layouts.size()) {
-            dsl = set_layouts[set];
-        }
-        return dsl;
-    }
-};
-
 struct PipelineStageState {
     std::shared_ptr<const SHADER_MODULE_STATE> module_state;
-    const VkPipelineShaderStageCreateInfo *create_info;
+    const safe_VkPipelineShaderStageCreateInfo *create_info;
     VkShaderStageFlagBits stage_flag;
     spirv_inst_iter entrypoint;
     layer_data::unordered_set<uint32_t> accessible_ids;
+    layer_data::unordered_set<uint32_t> variable_ids;
     using DescriptorUse = std::pair<DescriptorSlot, interface_var>;
     std::vector<DescriptorUse> descriptor_uses;
+    std::vector<DescriptorUse> all_descriptor_uses;
     bool has_writable_descriptor;
     bool has_atomic_descriptor;
     bool wrote_primitive_shading_rate;
 
-    PipelineStageState(const VkPipelineShaderStageCreateInfo *stage, std::shared_ptr<const SHADER_MODULE_STATE> &module_state);
+    PipelineStageState(const safe_VkPipelineShaderStageCreateInfo *stage, std::shared_ptr<const SHADER_MODULE_STATE> &module_state);
 };
 
 class PIPELINE_STATE : public BASE_NODE {
   public:
     union CreateInfo {
-        CreateInfo(const VkGraphicsPipelineCreateInfo *ci, std::shared_ptr<const RENDER_PASS_STATE> rpstate) {
+        CreateInfo(const VkGraphicsPipelineCreateInfo *ci, std::shared_ptr<const RENDER_PASS_STATE> rpstate) : graphics() {
             bool use_color = false;
             bool use_depth_stencil = false;
 
@@ -177,7 +129,7 @@ class PIPELINE_STATE : public BASE_NODE {
                     use_depth_stencil = (dynamic_rendering->depthAttachmentFormat != VK_FORMAT_UNDEFINED) ||
                                         (dynamic_rendering->stencilAttachmentFormat != VK_FORMAT_UNDEFINED);
                 }
-            } else {
+            } else if (rpstate) {
                 use_color = rpstate->UsesColorAttachment(ci->subpass);
                 use_depth_stencil = rpstate->UsesDepthStencilAttachment(ci->subpass);
             }
@@ -210,12 +162,29 @@ class PIPELINE_STATE : public BASE_NODE {
         safe_VkComputePipelineCreateInfo compute;
         safe_VkRayTracingPipelineCreateInfoCommon raytracing;
     };
-    const CreateInfo create_info;
-    std::shared_ptr<const PIPELINE_LAYOUT_STATE> pipeline_layout;
+
+  protected:
+    // NOTE: The style guide suggests private data appear at the end, but we need this populated first, so placing it here
+
+    // Render pass state for dynamic rendering, etc.
     std::shared_ptr<const RENDER_PASS_STATE> rp_state;
+
+    const CreateInfo create_info;
+
+  public:
+    VkGraphicsPipelineLibraryFlagsEXT graphics_lib_type = static_cast<VkGraphicsPipelineLibraryFlagsEXT>(0);
+    // State split up based on library types
+    const std::shared_ptr<VertexInputState> vertex_input_state;  // VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT
+    const std::shared_ptr<PreRasterState> pre_raster_state;      // VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT
+    const std::shared_ptr<FragmentShaderState> fragment_shader_state;  // VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT
+    const std::shared_ptr<FragmentOutputState>
+        fragment_output_state;  // VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT
+
     // Additional metadata needed by pipeline_state initialization and validation
     using StageStateVec = std::vector<PipelineStageState>;
     const StageStateVec stage_state;
+
+    const layer_data::unordered_set<uint32_t> fragmentShader_writable_output_location_list;
 
     // Capture which slots (set#->bindings) are actually used by the shaders of this pipeline
     using ActiveSlotMap = layer_data::unordered_map<uint32_t, BindingReqMap>;
@@ -225,38 +194,27 @@ class PIPELINE_STATE : public BASE_NODE {
     const ActiveSlotMap active_slots;
     const uint32_t max_active_slot = 0;  // the highest set number in active_slots for pipeline layout compatibility checks
 
-    const layer_data::unordered_set<uint32_t> fragmentShader_writable_output_location_list;
-    // Vtx input info (if any)
-    using VertexBindingVector = std::vector<VkVertexInputBindingDescription>;
-    const VertexBindingVector vertex_binding_descriptions_;
-
-    using VertexAttrVector = std::vector<VkVertexInputAttributeDescription>;
-    const VertexAttrVector vertex_attribute_descriptions_;
-
-    using VertexAttrAlignmentVector = std::vector<VkDeviceSize>;
-    const VertexAttrAlignmentVector vertex_attribute_alignments_;
-
-    using VertexBindingIndexMap = layer_data::unordered_map<uint32_t, uint32_t>;
-    const VertexBindingIndexMap vertex_binding_to_index_map_;
-
-    using AttachmentVector = std::vector<VkPipelineColorBlendAttachmentState>;
-    const AttachmentVector attachments;
-
-    const bool blend_constants_enabled;  // Blend constants enabled for any attachments
-    const bool sample_location_enabled;
     // Flag of which shader stages are active for this pipeline
     const uint32_t active_shaders = 0;
     const VkPrimitiveTopology topology_at_rasterizer;
 
+    // Executable or legacy pipeline
     PIPELINE_STATE(const ValidationStateTracker *state_data, const VkGraphicsPipelineCreateInfo *pCreateInfo,
                    std::shared_ptr<const RENDER_PASS_STATE> &&rpstate, std::shared_ptr<const PIPELINE_LAYOUT_STATE> &&layout);
 
+    // Compute pipeline
     PIPELINE_STATE(const ValidationStateTracker *state_data, const VkComputePipelineCreateInfo *pCreateInfo,
                    std::shared_ptr<const PIPELINE_LAYOUT_STATE> &&layout);
 
-    template <typename CreateInfoStruct>
-    PIPELINE_STATE(const ValidationStateTracker *state_data, const CreateInfoStruct *pCreateInfo,
+    PIPELINE_STATE(const ValidationStateTracker *state_data, const VkRayTracingPipelineCreateInfoKHR *pCreateInfo,
                    std::shared_ptr<const PIPELINE_LAYOUT_STATE> &&layout);
+
+    PIPELINE_STATE(const ValidationStateTracker *state_data, const VkRayTracingPipelineCreateInfoNV *pCreateInfo,
+                   std::shared_ptr<const PIPELINE_LAYOUT_STATE> &&layout);
+
+    // Executable pipeline with all state defined within linked pipeline libraries
+    PIPELINE_STATE(const ValidationStateTracker *state_data, const VkGraphicsPipelineCreateInfo *pCreateInfo,
+                   std::shared_ptr<const RENDER_PASS_STATE> &&rpstate = {});
 
     VkPipeline pipeline() const { return handle_.Cast<VkPipeline>(); }
 
@@ -292,7 +250,253 @@ class PIPELINE_STATE : public BASE_NODE {
                 return 0;
         }
     }
+
+    bool IsGraphicsLibrary() const { return graphics_lib_type != static_cast<VkGraphicsPipelineLibraryFlagsEXT>(0); }
+    bool HasFullState() const { return vertex_input_state && pre_raster_state && fragment_shader_state && fragment_output_state; }
+
+    template <VkGraphicsPipelineLibraryFlagBitsEXT type_flag>
+    struct SubStateTraits {};
+
+    template <VkGraphicsPipelineLibraryFlagBitsEXT type_flag>
+    static inline typename SubStateTraits<type_flag>::type GetSubState(const PIPELINE_STATE &) {
+        return {};
+    }
+
+    template <VkGraphicsPipelineLibraryFlagBitsEXT type_flag>
+    static inline typename SubStateTraits<type_flag>::type GetLibSubState(const ValidationStateTracker &state,
+                                                                          const VkPipelineLibraryCreateInfoKHR &link_info) {
+        for (uint32_t i = 0; i < link_info.libraryCount; ++i) {
+            const auto lib_state = state.Get<PIPELINE_STATE>(link_info.pLibraries[i]);
+            if (lib_state && ((lib_state->graphics_lib_type & type_flag) != 0)) {
+                return GetSubState<type_flag>(*lib_state);
+            }
+        }
+        return {};
+    }
+
+    const std::shared_ptr<const RENDER_PASS_STATE> RenderPassState() const {
+        // TODO A render pass object is required for all of these sub-states. Which one should be used for an "executable pipeline"?
+        if (fragment_output_state && fragment_output_state->rp_state) {
+            return fragment_output_state->rp_state;
+        } else if (fragment_shader_state && fragment_shader_state->rp_state) {
+            return fragment_shader_state->rp_state;
+        } else if (pre_raster_state && pre_raster_state->rp_state) {
+            return pre_raster_state->rp_state;
+        }
+        return rp_state;
+    }
+
+    const std::shared_ptr<const PIPELINE_LAYOUT_STATE> PipelineLayoutState() const {
+        // TODO A render pass object is required for all of these sub-states. Which one should be used for an "executable pipeline"?
+        if (merged_graphics_layout) {
+            return merged_graphics_layout;
+        } else if (pre_raster_state) {
+            return pre_raster_state->pipeline_layout;
+        } else if (fragment_shader_state) {
+            return fragment_shader_state->pipeline_layout;
+        }
+        return merged_graphics_layout;
+    }
+
+    const std::shared_ptr<const PIPELINE_LAYOUT_STATE> PreRasterPipelineLayoutState() const {
+        if (pre_raster_state) {
+            return pre_raster_state->pipeline_layout;
+        }
+        return merged_graphics_layout;
+    }
+
+    const std::shared_ptr<const PIPELINE_LAYOUT_STATE> FragmentShaderPipelineLayoutState() const {
+        if (fragment_shader_state) {
+            return fragment_shader_state->pipeline_layout;
+        }
+        return merged_graphics_layout;
+    }
+
+    const safe_VkPipelineMultisampleStateCreateInfo *MultisampleState() const {
+        // TODO A render pass object is required for all of these sub-states. Which one should be used for an "executable pipeline"?
+        if (fragment_shader_state && fragment_shader_state->ms_state &&
+            (fragment_shader_state->ms_state->rasterizationSamples >= VK_SAMPLE_COUNT_1_BIT) &&
+            (fragment_shader_state->ms_state->rasterizationSamples < VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM)) {
+            return fragment_shader_state->ms_state.get();
+        } else if (fragment_output_state && fragment_output_state->ms_state &&
+                   (fragment_output_state->ms_state->rasterizationSamples >= VK_SAMPLE_COUNT_1_BIT) &&
+                   (fragment_output_state->ms_state->rasterizationSamples < VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM)) {
+            return fragment_output_state->ms_state.get();
+        }
+        return nullptr;
+    }
+
+    const safe_VkPipelineRasterizationStateCreateInfo *RasterizationState() const {
+        // TODO A render pass object is required for all of these sub-states. Which one should be used for an "executable pipeline"?
+        if (pre_raster_state) {
+            return pre_raster_state->raster_state;
+        }
+        return nullptr;
+    }
+
+    const safe_VkPipelineViewportStateCreateInfo *ViewportState() const {
+        // TODO A render pass object is required for all of these sub-states. Which one should be used for an "executable pipeline"?
+        if (pre_raster_state) {
+            return pre_raster_state->viewport_state;
+        }
+        return nullptr;
+    }
+
+    const safe_VkPipelineColorBlendStateCreateInfo *ColorBlendState() const {
+        if (fragment_output_state) {
+            return fragment_output_state->color_blend_state.get();
+        }
+        return nullptr;
+    }
+
+    const safe_VkPipelineVertexInputStateCreateInfo *InputState() const {
+        if (vertex_input_state) {
+            return vertex_input_state->input_state;
+        }
+        return nullptr;
+    }
+
+    const safe_VkPipelineInputAssemblyStateCreateInfo *InputAssemblyState() const {
+        if (vertex_input_state) {
+            return vertex_input_state->input_assembly_state;
+        }
+        return nullptr;
+    }
+
+    uint32_t Subpass() const {
+        // TODO A render pass object is required for all of these sub-states. Which one should be used for an "executable pipeline"?
+        if (pre_raster_state) {
+            return pre_raster_state->subpass;
+        } else if (fragment_shader_state) {
+            return fragment_shader_state->subpass;
+        } else if (fragment_output_state) {
+            return fragment_output_state->subpass;
+        }
+        return create_info.graphics.subpass;
+    }
+
+    const FragmentOutputState::AttachmentVector &Attachments() const {
+        if (fragment_output_state) {
+            return fragment_output_state->attachments;
+        }
+        static FragmentOutputState::AttachmentVector empty_vec = {};
+        return empty_vec;
+    }
+
+    const safe_VkPipelineDepthStencilStateCreateInfo *DepthStencilState() const {
+        if (fragment_shader_state) {
+            return fragment_shader_state->ds_state.get();
+        }
+        return nullptr;
+    }
+
+    bool BlendConstantsEnabled() const { return fragment_output_state ? fragment_output_state->blend_constants_enabled : false; }
+
+    bool SampleLocationEnabled() const { return fragment_output_state ? fragment_output_state->sample_location_enabled : false; }
+
+    VkPipeline BasePipeline() const { return create_info.graphics.basePipelineHandle; }
+
+    int32_t BasePipelineIndex() const { return create_info.graphics.basePipelineIndex; }
+
+    const safe_VkPipelineDynamicStateCreateInfo *DynamicState() const {
+        // TODO Each library can contain its own dynamic state (apparently?). Which one should be returned here? Union?
+        return create_info.graphics.pDynamicState;
+    }
+
+    layer_data::span<const safe_VkPipelineShaderStageCreateInfo> GetShaderStages() const {
+        switch (create_info.graphics.sType) {
+            case VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO:
+                return layer_data::span<const safe_VkPipelineShaderStageCreateInfo>{create_info.graphics.pStages,
+                                                                                    create_info.graphics.stageCount};
+            case VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO:
+                return layer_data::span<const safe_VkPipelineShaderStageCreateInfo>{&create_info.compute.stage, 1};
+            case VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_NV:
+                return layer_data::span<const safe_VkPipelineShaderStageCreateInfo>{create_info.raytracing.pStages,
+                                                                                    create_info.raytracing.stageCount};
+            case VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR:
+                return layer_data::span<const safe_VkPipelineShaderStageCreateInfo>{create_info.raytracing.pStages,
+                                                                                    create_info.raytracing.stageCount};
+            default:
+                assert(false);
+                return {};
+        }
+    }
+
+    const CreateInfo &GetUnifiedCreateInfo() const { return create_info; }
+
+    const void *PNext() const { return create_info.graphics.pNext; }
+
+    static ActiveSlotMap GetActiveSlots(const StageStateVec &stage_states);
+    static StageStateVec GetStageStates(const ValidationStateTracker &state_data, const PIPELINE_STATE &pipe_state);
+
+  protected:
+    static std::shared_ptr<VertexInputState> CreateVertexInputState(const PIPELINE_STATE &p, const ValidationStateTracker &state,
+                                                                    const safe_VkGraphicsPipelineCreateInfo &create_info);
+    static std::shared_ptr<PreRasterState> CreatePreRasterState(const PIPELINE_STATE &p, const ValidationStateTracker &state,
+                                                                const safe_VkGraphicsPipelineCreateInfo &create_info,
+                                                                std::shared_ptr<const RENDER_PASS_STATE> rp);
+    static std::shared_ptr<FragmentShaderState> CreateFragmentShaderState(const PIPELINE_STATE &p,
+                                                                          const ValidationStateTracker &state,
+                                                                          const VkGraphicsPipelineCreateInfo &create_info,
+                                                                          const safe_VkGraphicsPipelineCreateInfo &safe_create_info,
+                                                                          std::shared_ptr<const RENDER_PASS_STATE> rp);
+    static std::shared_ptr<FragmentOutputState> CreateFragmentOutputState(const PIPELINE_STATE &p,
+                                                                          const ValidationStateTracker &state,
+                                                                          const VkGraphicsPipelineCreateInfo &create_info,
+                                                                          const safe_VkGraphicsPipelineCreateInfo &safe_create_info,
+                                                                          std::shared_ptr<const RENDER_PASS_STATE> rp);
+
+    // Merged layouts
+    std::shared_ptr<const PIPELINE_LAYOUT_STATE> merged_graphics_layout;
 };
+
+template <>
+struct PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT> {
+    using type = std::shared_ptr<VertexInputState>;
+};
+
+// static
+template <>
+inline PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT>::type
+PIPELINE_STATE::GetSubState<VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT>(const PIPELINE_STATE &pipe_state) {
+    return pipe_state.vertex_input_state;
+}
+
+template <>
+struct PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT> {
+    using type = std::shared_ptr<PreRasterState>;
+};
+
+// static
+template <>
+inline PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT>::type
+PIPELINE_STATE::GetSubState<VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT>(const PIPELINE_STATE &pipe_state) {
+    return pipe_state.pre_raster_state;
+}
+
+template <>
+struct PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT> {
+    using type = std::shared_ptr<FragmentShaderState>;
+};
+
+// static
+template <>
+inline PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT>::type
+PIPELINE_STATE::GetSubState<VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT>(const PIPELINE_STATE &pipe_state) {
+    return pipe_state.fragment_shader_state;
+}
+
+template <>
+struct PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT> {
+    using type = std::shared_ptr<FragmentOutputState>;
+};
+
+// static
+template <>
+inline PIPELINE_STATE::SubStateTraits<VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT>::type
+PIPELINE_STATE::GetSubState<VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT>(const PIPELINE_STATE &pipe_state) {
+    return pipe_state.fragment_output_state;
+}
 
 // Track last states that are bound per pipeline bind point (Gfx & Compute)
 struct LAST_BOUND_STATE {
@@ -325,7 +529,7 @@ struct LAST_BOUND_STATE {
 };
 
 static inline bool CompatForSet(uint32_t set, const LAST_BOUND_STATE &a, const std::vector<PipelineLayoutCompatId> &b) {
-    bool result = (set < a.per_set.size()) && (set < b.size()) && (a.per_set[set].compat_id_for_set == b[set]);
+    bool result = (set < a.per_set.size()) && (set < b.size()) && (*(a.per_set[set].compat_id_for_set) == *b[set]);
     return result;
 }
 

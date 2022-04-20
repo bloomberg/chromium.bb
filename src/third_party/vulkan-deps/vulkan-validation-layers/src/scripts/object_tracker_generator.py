@@ -180,6 +180,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             'vkCmdBuildAccelerationStructuresKHR',
             'vkCmdBuildAccelerationStructuresIndirectKHR',
             'vkBuildAccelerationStructuresKHR',
+            'vkCreateRayTracingPipelinesKHR',
             ]
         # These VUIDS are not implicit, but are best handled in this layer. Codegen for vkDestroy calls will generate a key
         # which is translated here into a good VU.  Saves ~40 checks.
@@ -225,6 +226,10 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             "VkComputePipelineCreateInfo-basePipelineHandle": "\"VUID-VkComputePipelineCreateInfo-flags-00697\"",
             "VkRayTracingPipelineCreateInfoNV-basePipelineHandle": "\"VUID-VkRayTracingPipelineCreateInfoNV-flags-03421\"",
 			"VkRayTracingPipelineCreateInfoKHR-basePipelineHandle": "\"VUID-VkRayTracingPipelineCreateInfoKHR-flags-03421\"",
+            "VkAccelerationStructureKHR-accelerationStructure-compatalloc": "\"VUID-vkDestroyAccelerationStructureKHR-accelerationStructure-02443\"",
+            "VkAccelerationStructureKHR-accelerationStructure-nullalloc": "\"VUID-vkDestroyAccelerationStructureKHR-accelerationStructure-02444\"",
+            "VkAccelerationStructureNV-accelerationStructure-compatalloc": "\"VUID-vkDestroyAccelerationStructureNV-accelerationStructure-03753\"",
+            "VkAccelerationStructureNV-accelerationStructure-nullalloc": "\"VUID-vkDestroyAccelerationStructureNV-accelerationStructure-03754\"",
            }
 
         # Commands shadowed by interface functions and are not implemented
@@ -740,6 +745,18 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
             indent = self.decIndent(indent)
 
         return create_obj_code
+
+    def get_alloc_vuid(self, param_name, param_type, alloc_type):
+        lookup_string = '%s-%s' %(param_name, alloc_type)
+        vuid = self.manual_vuids.get(lookup_string, None)
+        if vuid is not None:
+            return vuid
+        lookup_string = '%s-%s-%s' %(param_type, param_name, alloc_type)
+        vuid = self.manual_vuids.get(lookup_string, None)
+        if vuid is not None:
+            return vuid
+        return "kVUIDUndefined"
+
     #
     # Generate source for destroying a non-dispatchable object
     def generate_destroy_object_code(self, indent, proto, cmd_info):
@@ -757,10 +774,8 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                 allocator = 'nullptr'
             else:
                 param = -2
-            compatalloc_vuid_string = '%s-compatalloc' % cmd_info[param].name
-            nullalloc_vuid_string = '%s-nullalloc' % cmd_info[param].name
-            compatalloc_vuid = self.manual_vuids.get(compatalloc_vuid_string, "kVUIDUndefined")
-            nullalloc_vuid = self.manual_vuids.get(nullalloc_vuid_string, "kVUIDUndefined")
+            compatalloc_vuid = self.get_alloc_vuid(cmd_info[param].name, cmd_info[param].type, "compatalloc")
+            nullalloc_vuid = self.get_alloc_vuid(cmd_info[param].name, cmd_info[param].type, "nullalloc")
             if cmd_info[param].type in self.handle_types:
                 if object_array == True:
                     # This API is freeing an array of handles -- add loop control
@@ -799,7 +814,7 @@ class ObjectTrackerOutputGenerator(OutputGenerator):
                 parent_vuid = self.GetVuid(parent_name, 'commonparent')
 
         if obj_count is not None:
-            pre_call_code += '%sif (%s%s) {\n' % (indent, prefix, obj_name)
+            pre_call_code += '%sif ((%s > 0) && (%s%s)) {\n' % (indent, obj_count, prefix, obj_name)
             indent = self.incIndent(indent)
             pre_call_code += '%sfor (uint32_t %s = 0; %s < %s; ++%s) {\n' % (indent, index, index, obj_count, index)
             indent = self.incIndent(indent)

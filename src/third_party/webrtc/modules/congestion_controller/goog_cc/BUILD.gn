@@ -31,11 +31,11 @@ rtc_library("goog_cc") {
     ":pushback_controller",
     ":send_side_bwe",
     "../..:module_api",
+    "../../../api:field_trials_view",
     "../../../api:network_state_predictor_api",
     "../../../api/rtc_event_log",
     "../../../api/transport:field_trial_based_config",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:data_size",
     "../../../api/units:time_delta",
@@ -74,8 +74,8 @@ rtc_library("pushback_controller") {
     "congestion_window_pushback_controller.h",
   ]
   deps = [
+    "../../../api:field_trials_view",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_size",
     "../../../rtc_base:checks",
     "../../../rtc_base/experiments:rate_control_settings",
@@ -92,9 +92,9 @@ rtc_library("alr_detector") {
     "alr_detector.h",
   ]
   deps = [
+    "../../../api:field_trials_view",
     "../../../api/rtc_event_log",
     "../../../api/transport:field_trial_based_config",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../logging:rtc_event_pacing",
     "../../../rtc_base:checks",
     "../../../rtc_base:safe_conversions",
@@ -124,10 +124,10 @@ rtc_library("estimators") {
   ]
 
   deps = [
+    "../../../api:field_trials_view",
     "../../../api:network_state_predictor_api",
     "../../../api/rtc_event_log",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:timestamp",
     "../../../logging:rtc_event_bwe",
@@ -153,8 +153,9 @@ rtc_library("loss_based_bwe_v2") {
   ]
   deps = [
     "../../../api:array_view",
+    "../../../api:field_trials_view",
+    "../../../api:network_state_predictor_api",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:data_size",
     "../../../api/units:time_delta",
@@ -175,8 +176,8 @@ rtc_library("loss_based_bwe_v1") {
     "loss_based_bandwidth_estimation.h",
   ]
   deps = [
+    "../../../api:field_trials_view",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
@@ -195,9 +196,10 @@ rtc_library("send_side_bwe") {
   deps = [
     ":loss_based_bwe_v1",
     ":loss_based_bwe_v2",
+    "../../../api:field_trials_view",
+    "../../../api:network_state_predictor_api",
     "../../../api/rtc_event_log",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
@@ -226,14 +228,15 @@ rtc_library("delay_based_bwe") {
 
   deps = [
     ":estimators",
+    "../../../api:field_trials_view",
     "../../../api:network_state_predictor_api",
     "../../../api/rtc_event_log",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
     "../../../logging:rtc_event_bwe",
     "../../../rtc_base:checks",
+    "../../../rtc_base:logging",
     "../../../rtc_base:rtc_base_approved",
     "../../../rtc_base/experiments:field_trial_parser",
     "../../../system_wrappers:metrics",
@@ -253,9 +256,9 @@ rtc_library("probe_controller") {
   ]
 
   deps = [
+    "../../../api:field_trials_view",
     "../../../api/rtc_event_log",
     "../../../api/transport:network_control",
-    "../../../api/transport:webrtc_key_value_config",
     "../../../api/units:data_rate",
     "../../../api/units:time_delta",
     "../../../api/units:timestamp",
@@ -325,13 +328,14 @@ if (rtc_include_tests) {
         ":probe_controller",
         ":pushback_controller",
         ":send_side_bwe",
+        "../../../api:field_trials_view",
+        "../../../api:network_state_predictor_api",
         "../../../api/rtc_event_log",
         "../../../api/test/network_emulation",
         "../../../api/test/network_emulation:create_cross_traffic",
         "../../../api/transport:field_trial_based_config",
         "../../../api/transport:goog_cc",
         "../../../api/transport:network_control",
-        "../../../api/transport:webrtc_key_value_config",
         "../../../api/units:data_rate",
         "../../../api/units:data_size",
         "../../../api/units:time_delta",
@@ -339,6 +343,7 @@ if (rtc_include_tests) {
         "../../../logging:mocks",
         "../../../logging:rtc_event_bwe",
         "../../../rtc_base:checks",
+        "../../../rtc_base:logging",
         "../../../rtc_base:rtc_base_approved",
         "../../../rtc_base:rtc_base_tests_utils",
         "../../../rtc_base:stringutils",

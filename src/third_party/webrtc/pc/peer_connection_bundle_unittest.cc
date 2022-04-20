@@ -92,13 +92,14 @@ constexpr int kDefaultTimeout = 10000;
 
 class FakeNetworkManagerWithNoAnyNetwork : public rtc::FakeNetworkManager {
  public:
-  void GetAnyAddressNetworks(NetworkList* networks) override {
+  std::vector<const rtc::Network*> GetAnyAddressNetworks() override {
     // This function allocates networks that are owned by the
     // NetworkManager. But some tests assume that they can release
     // all networks independent of the network manager.
     // In order to prevent use-after-free issues, don't allow this
     // function to have any effect when run in tests.
     RTC_LOG(LS_INFO) << "FakeNetworkManager::GetAnyAddressNetworks ignored";
+    return {};
   }
 };
 
@@ -231,14 +232,16 @@ class PeerConnectionBundleBaseTest : public ::testing::Test {
     auto observer = std::make_unique<MockPeerConnectionObserver>();
     RTCConfiguration modified_config = config;
     modified_config.sdp_semantics = sdp_semantics_;
-    auto pc = pc_factory_->CreatePeerConnection(
-        modified_config, std::move(port_allocator), nullptr, observer.get());
-    if (!pc) {
+    PeerConnectionDependencies pc_dependencies(observer.get());
+    pc_dependencies.allocator = std::move(port_allocator);
+    auto result = pc_factory_->CreatePeerConnectionOrError(
+        modified_config, std::move(pc_dependencies));
+    if (!result.ok()) {
       return nullptr;
     }
 
     auto wrapper = std::make_unique<PeerConnectionWrapperForBundleTest>(
-        pc_factory_, pc, std::move(observer));
+        pc_factory_, result.MoveValue(), std::move(observer));
     wrapper->set_network(fake_network);
     return wrapper;
   }
@@ -488,7 +491,7 @@ TEST_P(PeerConnectionBundleMatrixTest,
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionBundleTest,
     PeerConnectionBundleMatrixTest,
-    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+    Combine(Values(SdpSemantics::kPlanB_DEPRECATED, SdpSemantics::kUnifiedPlan),
             Values(std::make_tuple(BundlePolicy::kBundlePolicyBalanced,
                                    BundleIncluded::kBundleInAnswer,
                                    false,
@@ -891,7 +894,7 @@ TEST_P(PeerConnectionBundleTest, RemoveContentFromBundleGroup) {
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionBundleTest,
                          PeerConnectionBundleTest,
-                         Values(SdpSemantics::kPlanB,
+                         Values(SdpSemantics::kPlanB_DEPRECATED,
                                 SdpSemantics::kUnifiedPlan));
 
 // According to RFC5888, if an endpoint understands the semantics of an

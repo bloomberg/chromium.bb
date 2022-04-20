@@ -7,10 +7,8 @@
  * the browser.
  */
 
-// clang-format off
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-// clang-format on
+import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 /**
  * @typedef {{
@@ -328,6 +326,17 @@ export class AboutPageBrowserProxyImpl {
   refreshTPMFirmwareUpdateStatus() {
     chrome.send('refreshTPMFirmwareUpdateStatus');
   }
+
+  /** @return {!AboutPageBrowserProxy} */
+  static getInstance() {
+    return instance || (instance = new AboutPageBrowserProxyImpl());
+  }
+
+  /** @param {!AboutPageBrowserProxy} obj */
+  static setInstance(obj) {
+    instance = obj;
+  }
 }
 
-addSingletonGetter(AboutPageBrowserProxyImpl);
+/** @type {?AboutPageBrowserProxy} */
+let instance = null;

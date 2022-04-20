@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(crbug.com/1253323): Casts to UrlString will be removed from this file when migration to branded types is complete.
+
 import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
@@ -498,7 +500,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
       return element;
     }
 
-    let linkText = text || Bindings.ResourceUtils.displayNameForURL(url);
+    let linkText = text || Bindings.ResourceUtils.displayNameForURL(url as Platform.DevToolsPath.UrlString);
     if (typeof lineNumber === 'number' && !text) {
       linkText += ':' + (lineNumber + 1);
       if (showColumnNumber && typeof columnNumber === 'number') {
@@ -713,12 +715,13 @@ export class Linkifier implements SDK.TargetManager.Observer {
       url = uiLocation.uiSourceCode.contentURL();
     } else if (info.url) {
       url = info.url;
-      const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url) ||
+      const uiSourceCode =
+          Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url as Platform.DevToolsPath.UrlString) ||
           Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(
-              Common.ParsedURL.ParsedURL.urlWithoutHash(url));
+              Common.ParsedURL.ParsedURL.urlWithoutHash(url) as Platform.DevToolsPath.UrlString);
       uiLocation = uiSourceCode ? uiSourceCode.uiLocation(info.lineNumber || 0, info.columnNumber || 0) : null;
     }
-    const resource = url ? Bindings.ResourceUtils.resourceForURL(url) : null;
+    const resource = url ? Bindings.ResourceUtils.resourceForURL(url as Platform.DevToolsPath.UrlString) : null;
     const contentProvider = uiLocation ? uiLocation.uiSourceCode : resource;
 
     const revealable = info.revealable || uiLocation || resource;
@@ -750,7 +753,6 @@ export class Linkifier implements SDK.TargetManager.Observer {
       }
     }
     if (resource || info.url) {
-      // TODO(crbug.com/1253323): Cast to UrlString will be removed when migration to branded types is complete.
       result.push({
         section: 'reveal',
         title: UI.UIUtils.openLinkExternallyLabel(),

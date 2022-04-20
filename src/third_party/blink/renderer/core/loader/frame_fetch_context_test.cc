@@ -129,7 +129,6 @@ class FrameFetchContextTest : public testing::Test {
       const String& permissions_policy_header = String()) {
     dummy_page_holder = nullptr;
     dummy_page_holder = std::make_unique<DummyPageHolder>(gfx::Size(500, 500));
-    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     if (url.IsValid()) {
       auto params = WebNavigationParams::CreateWithHTMLBufferForTesting(
           SharedBuffer::Create(), url);
@@ -255,7 +254,6 @@ class FrameFetchContextMockedLocalFrameClientTest
         testing::NiceMock<FrameFetchContextMockLocalFrameClient>>();
     dummy_page_holder =
         std::make_unique<DummyPageHolder>(gfx::Size(500, 500), nullptr, client);
-    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
     document = &dummy_page_holder->GetDocument();
     document->SetURL(main_resource_url);
@@ -719,7 +717,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDPRHints) {
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("https://www.example.com/1.gif", "DPR", true, "1");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-DPR", true, "1");
-  dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(2.5);
+  document->GetFrame()->SetPageZoomFactor(2.5);
   ExpectHeader("https://www.example.com/1.gif", "DPR", true, "2.5");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-DPR", true, "2.5");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
@@ -732,7 +730,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDPRHints) {
 TEST_F(FrameFetchContextHintsTest, MonitorDPRHintsInsecureTransport) {
     ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
     ExpectHeader("http://www.example.com/1.gif", "Sec-CH-DPR", false, "");
-    dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(2.5);
+    document->GetFrame()->SetPageZoomFactor(2.5);
     ExpectHeader("http://www.example.com/1.gif", "DPR", false, "  ");
     ExpectHeader("http://www.example.com/1.gif", "Sec-CH-DPR", false, "  ");
     ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
@@ -757,7 +755,8 @@ TEST_F(FrameFetchContextHintsTest, MonitorResourceWidthHints) {
                666.6666);
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-DPR", false, "");
-  dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(2.5);
+
+  document->GetFrame()->SetPageZoomFactor(2.5);
   ExpectHeader("https://www.example.com/1.gif", "Width", true, "1250", 500);
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Width", true, "1250",
                500);
@@ -1197,57 +1196,51 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
 }
 
 // Tests if "Save-Data" header is correctly added on the first load and reload.
-TEST_F(FrameFetchContextTest, EnableDataSaver) {
+TEST_F(FrameFetchContextHintsTest, EnableDataSaver) {
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
   // Recreate the fetch context so that the updated save data settings are read.
-  RecreateFetchContext();
+  RecreateFetchContext(KURL("https://www.example.com/"));
+  document->GetSettings()->SetScriptEnabled(true);
 
-  ResourceRequest resource_request("http://www.example.com");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
+  ExpectHeader("https://www.example.com/", "Save-Data", true, "on");
 
   // Subsequent call to addAdditionalRequestHeaders should not append to the
   // save-data header.
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
+  ExpectHeader("https://www.example.com/", "Save-Data", true, "on");
 }
 
 // Tests if "Save-Data" header is not added when the data saver is disabled.
-TEST_F(FrameFetchContextTest, DisabledDataSaver) {
+TEST_F(FrameFetchContextHintsTest, DisabledDataSaver) {
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
   // Recreate the fetch context so that the updated save data settings are read.
-  RecreateFetchContext();
+  RecreateFetchContext(KURL("https://www.example.com/"));
+  document->GetSettings()->SetScriptEnabled(true);
 
-  ResourceRequest resource_request("http://www.example.com");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
+  ExpectHeader("https://www.example.com/", "Save-Data", false, "");
 }
 
 // Tests if reload variants can reflect the current data saver setting.
-TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
+TEST_F(FrameFetchContextHintsTest, ChangeDataSaverConfig) {
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
   // Recreate the fetch context so that the updated save data settings are read.
-  RecreateFetchContext();
-  ResourceRequest resource_request("http://www.example.com");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
+  RecreateFetchContext(KURL("https://www.example.com/"));
+  document->GetSettings()->SetScriptEnabled(true);
+  ExpectHeader("https://www.example.com/", "Save-Data", true, "on");
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
-  RecreateFetchContext();
-  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
+  RecreateFetchContext(KURL("https://www.example.com/"));
+  document->GetSettings()->SetScriptEnabled(true);
+  ExpectHeader("https://www.example.com/", "Save-Data", false, "");
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
-  RecreateFetchContext();
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
+  RecreateFetchContext(KURL("https://www.example.com/"));
+  document->GetSettings()->SetScriptEnabled(true);
+  ExpectHeader("https://www.example.com/", "Save-Data", true, "on");
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
-  RecreateFetchContext();
-  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
-  EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
+  RecreateFetchContext(KURL("https://www.example.com/"));
+  document->GetSettings()->SetScriptEnabled(true);
+  ExpectHeader("https://www.example.com/", "Save-Data", false, "");
 }
 
 TEST_F(FrameFetchContextSubresourceFilterTest, Filter) {
@@ -1448,86 +1441,6 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 
   EXPECT_TRUE(request.SiteForCookies().IsEquivalent(
       net::SiteForCookies::FromUrl(document_url)));
-}
-
-TEST_F(FrameFetchContextTest,
-       SendConversionRequestInsteadOfRedirecting_RecordsDetachedMetric) {
-  const bool kDetach = true;
-  const bool kNoDetach = false;
-
-  const char kTriggerURL[] =
-      "https://www.example.com/.well-known/attribution-reporting/"
-      "trigger-attribution";
-  const char kNoTriggerURL[] = "https://www.example.com/";
-
-  struct {
-    KURL url;
-    bool detach;
-    int expected_bucket;
-  } test_cases[] = {
-      {KURL(kNoTriggerURL), kNoDetach, 0},
-      {KURL(kTriggerURL), kNoDetach, 1},
-      {KURL(kNoTriggerURL), kDetach, 0},
-      {KURL(kTriggerURL), kDetach, 1},
-  };
-
-  for (const auto& test_case : test_cases) {
-    if (test_case.detach)
-      dummy_page_holder = nullptr;
-
-    HistogramTester histograms;
-    GetFetchContext()->SendConversionRequestInsteadOfRedirecting(
-        test_case.url, /*redirect_info=*/absl::nullopt,
-        ReportingDisposition::kReport, /*devtools_request_id=*/"");
-    histograms.ExpectUniqueSample(
-        "Conversions.RedirectInterceptedFrameDetached", test_case.detach,
-        test_case.expected_bucket);
-
-    RecreateFetchContext();
-  }
-}
-
-TEST_F(FrameFetchContextTest,
-       SendConversionRequestInsteadOfRedirecting_RecordsFeaturePolicyMetric) {
-  const bool kEnabled = true;
-  const bool kDisabled = false;
-
-  const char kTriggerURL[] =
-      "https://www.example.com/.well-known/attribution-reporting/"
-      "trigger-attribution";
-  const char kNoTriggerURL[] = "https://www.example.com/";
-
-  // The feature policy is only checked if the URL is same-origin with the
-  // previous URL.
-  const ResourceRequest::RedirectInfo redirect_info(
-      /*original_url=*/KURL(),
-      /*previous_url=*/KURL("https://www.example.com/"));
-
-  struct {
-    KURL url;
-    bool enabled;
-    int expected_bucket;
-  } test_cases[] = {
-      {KURL(kNoTriggerURL), kDisabled, 0},
-      {KURL(kTriggerURL), kDisabled, 1},
-      {KURL(kNoTriggerURL), kEnabled, 0},
-      {KURL(kTriggerURL), kEnabled, 1},
-  };
-
-  for (const auto& test_case : test_cases) {
-    RecreateFetchContext(redirect_info.previous_url,
-                         /*permissions_policy_header=*/test_case.enabled
-                             ? ""
-                             : "attribution-reporting 'none'");
-
-    HistogramTester histograms;
-    GetFetchContext()->SendConversionRequestInsteadOfRedirecting(
-        test_case.url, redirect_info, ReportingDisposition::kReport,
-        /*devtools_request_id=*/"");
-    histograms.ExpectUniqueSample(
-        "Conversions.ConversionIgnoredByFeaturePolicy", !test_case.enabled,
-        test_case.expected_bucket);
-  }
 }
 
 TEST_F(FrameFetchContextTest, TopFrameOrigin) {

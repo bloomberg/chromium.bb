@@ -11,10 +11,10 @@
 #include "ios/chrome/browser/net/crurl.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
-#include "ios/chrome/browser/ui/permissions/permission_info.h"
+#import "ios/chrome/browser/ui/permissions/permission_info.h"
+#import "ios/chrome/browser/ui/permissions/permissions_constants.h"
 #import "ios/chrome/browser/ui/permissions/permissions_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_attributed_string_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_multi_detail_text_item.h"
@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/permissions/permissions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -315,26 +316,28 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
                        tableViewLoaded:(BOOL)tableViewLoaded {
   if ([self.tableViewModel hasItemForItemType:itemType
                             sectionIdentifier:SectionIdentifierPermissions]) {
+    NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
+
     // Remove the switch item if the permission is not accessible.
     if (state == web::PermissionStateNotAccessible) {
       [self.tableViewModel removeItemWithType:itemType
                     fromSectionWithIdentifier:SectionIdentifierPermissions];
-      return;
-    }
-
-    NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
-    TableViewSwitchItem* currentItem =
-        base::mac::ObjCCastStrict<TableViewSwitchItem>(
-            [self.tableViewModel itemAtIndexPath:index]);
-    TableViewSwitchCell* currentCell =
-        base::mac::ObjCCastStrict<TableViewSwitchCell>(
-            [self.tableView cellForRowAtIndexPath:index]);
-    currentItem.on = state == web::PermissionStateAllowed;
-
-    // Reload the switch cell if its value is outdated.
-    if (currentItem.isOn != currentCell.switchView.isOn) {
-      [self.tableView reloadRowsAtIndexPaths:@[ index ]
+      [self.tableView deleteRowsAtIndexPaths:@[ index ]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
+    } else {
+      TableViewSwitchItem* currentItem =
+          base::mac::ObjCCastStrict<TableViewSwitchItem>(
+              [self.tableViewModel itemAtIndexPath:index]);
+      TableViewSwitchCell* currentCell =
+          base::mac::ObjCCastStrict<TableViewSwitchCell>(
+              [self.tableView cellForRowAtIndexPath:index]);
+      currentItem.on = state == web::PermissionStateAllowed;
+      // Reload the switch cell if its value is outdated.
+      if (currentItem.isOn != currentCell.switchView.isOn) {
+        [self.tableView
+            reloadRowsAtIndexPaths:@[ index ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      }
     }
     return;
   }
@@ -348,6 +351,10 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
       [[TableViewSwitchItem alloc] initWithType:itemType];
   switchItem.text = label;
   switchItem.on = state == web::PermissionStateAllowed;
+  switchItem.accessibilityIdentifier =
+      itemType == ItemTypePermissionsCamera
+          ? kPageInfoCameraSwitchAccessibilityIdentifier
+          : kPageInfoMicrophoneSwitchAccessibilityIdentifier;
 
   // If ItemTypePermissionsMicrophone is already added, insert the
   // ItemTypePermissionsCamera before the ItemTypePermissionsMicrophone.

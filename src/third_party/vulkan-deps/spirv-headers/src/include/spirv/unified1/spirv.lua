@@ -57,6 +57,7 @@ spv = {
         OpenCL_CPP = 4,
         HLSL = 5,
         CPP_for_OpenCL = 6,
+        SYCL = 7,
     },
 
     ExecutionModel = {
@@ -167,6 +168,7 @@ spv = {
         NoGlobalOffsetINTEL = 5895,
         NumSIMDWorkitemsINTEL = 5896,
         SchedulerTargetFmaxMhzINTEL = 5903,
+        NamedBarrierCountINTEL = 6417,
     },
 
     StorageClass = {
@@ -1045,6 +1047,8 @@ spv = {
         OptNoneINTEL = 6094,
         AtomicFloat16AddEXT = 6095,
         DebugInfoModuleINTEL = 6114,
+        SplitBarrierINTEL = 6141,
+        GroupUniformArithmeticKHR = 6400,
     },
 
     RayFlagsShift = {
@@ -1796,6 +1800,16 @@ spv = {
         OpTypeStructContinuedINTEL = 6090,
         OpConstantCompositeContinuedINTEL = 6091,
         OpSpecConstantCompositeContinuedINTEL = 6092,
+        OpControlBarrierArriveINTEL = 6142,
+        OpControlBarrierWaitINTEL = 6143,
+        OpGroupIMulKHR = 6401,
+        OpGroupFMulKHR = 6402,
+        OpGroupBitwiseAndKHR = 6403,
+        OpGroupBitwiseOrKHR = 6404,
+        OpGroupBitwiseXorKHR = 6405,
+        OpGroupLogicalAndKHR = 6406,
+        OpGroupLogicalOrKHR = 6407,
+        OpGroupLogicalXorKHR = 6408,
     },
 
 }

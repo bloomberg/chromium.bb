@@ -129,16 +129,6 @@ struct MakeCredentialAuthenticatorResponse {
   // See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
   int32 public_key_algo;
 
-  // Only supported by fido2 devices on android, will eventually supported by
-  // other platform.
-  // True if getClientExtensionResults() called on the returned
-  // PublicKeyCredential instance should contain an 'uvm' extension output.
-  // If so, |user_verification_methods| contains the actual value.
-  [EnableIf=is_android]
-  bool echo_user_verification_methods;
-  [EnableIf=is_android]
-  array<UvmEntry>? user_verification_methods;
-
   // True if getClientExtensionResults() called on the returned
   // PublicKeyCredential instance should contain a `credProps` extension
   // output. |has_cred_props_rk| indicates if the rk member in that extension
@@ -311,7 +301,8 @@ struct PRFValues {
 struct PaymentOptions {
   payments.mojom.PaymentCurrencyAmount total;
   PaymentCredentialInstrument instrument;
-  url.mojom.Origin payee_origin;
+  string? payee_name;
+  url.mojom.Origin? payee_origin;
 };
 
 // TODO(https://crbug.com/1239249): Move to payment_request.mojom after this
@@ -326,6 +317,12 @@ struct PaymentCredentialInstrument {
 
   // Whether the icon is required to be shown in the UI.
   bool iconMustBeShown;
+};
+
+// https://github.com/w3c/webauthn/wiki/Explainer:-WebAuthn-Remote-Desktop-Support
+struct RemoteDesktopClientOverride {
+  url.mojom.Origin origin;
+  bool same_origin_with_ancestors;
 };
 
 // Parameters passed into calls to GetAssertion.
@@ -392,6 +389,10 @@ struct PublicKeyCredentialRequestOptions {
   // If true, attempt to read a credblob.
   // https://fidoalliance.org/specs/fido-v2.1-rd-20201208/fido-client-to-authenticator-protocol-v2.1-rd-20201208.html#sctn-credBlob-extension
   bool get_cred_blob;
+
+  // Indicates that a remote desktop client is making a forwarded request on
+  // behalf of another origin.
+  RemoteDesktopClientOverride? remote_desktop_client_override;
 };
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
@@ -493,13 +494,6 @@ struct PublicKeyCredentialCreationOptions {
   // https://w3c.github.io/webauthn/#prf-extension
   bool prf_enable;
 
-  // Only supported by fido2 devices on android, will eventually supported by
-  // other platform.
-  // Whether the user verification method extension is requested by
-  // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
-  [EnableIf=is_android]
-  bool user_verification_methods;
-
   // The value of the `credentialProtectionPolicy` extension, or UNSPECIFIED if
   // none was provided.
   ProtectionPolicy protection_policy;
@@ -534,6 +528,10 @@ struct PublicKeyCredentialCreationOptions {
   // Whether the minPinLength extension was set to true.
   // https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-minpinlength-extension
   bool min_pin_length_requested = false;
+
+  // Indicates that a remote desktop client is making a forwarded request on
+  // behalf of another origin.
+  RemoteDesktopClientOverride? remote_desktop_client_override;
 };
 
 enum PublicKeyCredentialType {

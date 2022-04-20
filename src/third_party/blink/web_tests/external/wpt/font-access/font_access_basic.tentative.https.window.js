@@ -11,14 +11,13 @@ font_access_test(async t => {
   const testData = getTestData();
 
   // Get the system fonts.
-  const fonts = await navigator.fonts.query();
+  const fonts = await self.queryLocalFonts();
   assert_true(Array.isArray(fonts), 'Result of query() should be an Array');
   assert_greater_than_equal(fonts.length, 1, 'Need a least one font');
 
   fonts.forEach(font => {
     assert_true(
-        font instanceof FontMetadata,
-        'Results should be FontMetadata instances');
+        font instanceof FontData, 'Results should be FontData instances');
 
     // Verify properties and types.
     assert_equals(typeof font.postscriptName, 'string');
@@ -31,10 +30,10 @@ font_access_test(async t => {
     assert_equals(typeof font.style, 'string', 'style attribute type');
 
     // If the sample test data contains the returned system font,
-    // then verify the values of FontMetadata.
+    // then verify the values of FontData.
     const expectedFont = testData.get(font.postscriptName);
     if (expectedFont) {
       assert_font_equals(font, expectedFont);
     }
   });
-}, 'query(): FontMetadata property types and values');
+}, 'queryLocalFonts(): FontData property types and values');

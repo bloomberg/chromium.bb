@@ -31,8 +31,6 @@ struct GrGLInterface;
  * appropriate one to build.
  */
 SK_API sk_sp<const GrGLInterface> GrGLMakeNativeInterface();
-// Deprecated alternative to GrGLMakeNativeInterface().
-SK_API const GrGLInterface* GrGLCreateNativeInterface();
 
 /**
  * GrContext uses the following interface to make all calls into OpenGL. When a
@@ -170,6 +168,7 @@ public:
         GrGLFunction<GrGLGetBufferParameterivFn> fGetBufferParameteriv;
         GrGLFunction<GrGLGetErrorFn> fGetError;
         GrGLFunction<GrGLGetFramebufferAttachmentParameterivFn> fGetFramebufferAttachmentParameteriv;
+        GrGLFunction<GrGLGetFloatvFn> fGetFloatv;
         GrGLFunction<GrGLGetIntegervFn> fGetIntegerv;
         GrGLFunction<GrGLGetMultisamplefvFn> fGetMultisamplefv;
         GrGLFunction<GrGLGetProgramBinaryFn> fGetProgramBinary;
@@ -248,6 +247,7 @@ public:
         GrGLFunction<GrGLBindUniformLocationFn> fBindUniformLocation;
 
         GrGLFunction<GrGLResolveMultisampleFramebufferFn> fResolveMultisampleFramebuffer;
+        GrGLFunction<GrGLSamplerParameterfFn> fSamplerParameterf;
         GrGLFunction<GrGLSamplerParameteriFn> fSamplerParameteri;
         GrGLFunction<GrGLSamplerParameterivFn> fSamplerParameteriv;
         GrGLFunction<GrGLScissorFn> fScissor;

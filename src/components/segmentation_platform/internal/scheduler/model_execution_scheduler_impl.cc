@@ -11,9 +11,10 @@
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
-#include "components/segmentation_platform/internal/execution/model_execution_manager.h"
+#include "components/segmentation_platform/internal/execution/model_execution_manager_impl.h"
 #include "components/segmentation_platform/internal/platform_options.h"
 #include "components/segmentation_platform/internal/stats.h"
+#include "components/segmentation_platform/public/model_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
@@ -23,6 +24,7 @@ ModelExecutionSchedulerImpl::ModelExecutionSchedulerImpl(
     SegmentInfoDatabase* segment_database,
     SignalStorageConfig* signal_storage_config,
     ModelExecutionManager* model_execution_manager,
+    ModelExecutor* model_executor,
     base::flat_set<optimization_guide::proto::OptimizationTarget> segment_ids,
     base::Clock* clock,
     const PlatformOptions& platform_options)
@@ -30,6 +32,7 @@ ModelExecutionSchedulerImpl::ModelExecutionSchedulerImpl(
       segment_database_(segment_database),
       signal_storage_config_(signal_storage_config),
       model_execution_manager_(model_execution_manager),
+      model_executor_(model_executor),
       all_segment_ids_(segment_ids),
       clock_(clock),
       platform_options_(platform_options) {}
@@ -71,8 +74,12 @@ void ModelExecutionSchedulerImpl::RequestModelExecution(
       segment_id,
       base::BindOnce(&ModelExecutionSchedulerImpl::OnModelExecutionCompleted,
                      weak_ptr_factory_.GetWeakPtr(), segment_id)));
-  model_execution_manager_->ExecuteModel(
-      segment_info, outstanding_requests_[segment_id].callback());
+  ModelProvider* model =
+      model_execution_manager_->GetProvider(segment_info.segment_id());
+  DCHECK(model);
+  model_executor_->ExecuteModel(segment_info, model,
+                                /*record_metrics_for_default=*/false,
+                                outstanding_requests_[segment_id].callback());
 }
 
 void ModelExecutionSchedulerImpl::OnModelExecutionCompleted(
@@ -126,6 +133,7 @@ bool ModelExecutionSchedulerImpl::ShouldExecuteSegment(
     VLOG(1) << "Segmentation model not executed since it has fresh results.";
     stats::RecordModelExecutionStatus(
         segment_info.segment_id(),
+        /*default_provider=*/false,
         ModelExecutionStatus::kSkippedHasFreshResults);
     return false;
   }
@@ -136,6 +144,7 @@ bool ModelExecutionSchedulerImpl::ShouldExecuteSegment(
     VLOG(1) << "Segmentation model not executed since results are not expired.";
     stats::RecordModelExecutionStatus(
         segment_info.segment_id(),
+        /*default_provider=*/false,
         ModelExecutionStatus::kSkippedResultNotExpired);
     return false;
   }
@@ -145,6 +154,7 @@ bool ModelExecutionSchedulerImpl::ShouldExecuteSegment(
           segment_info.model_metadata())) {
     stats::RecordModelExecutionStatus(
         segment_info.segment_id(),
+        /*default_provider=*/false,
         ModelExecutionStatus::kSkippedNotEnoughSignals);
     VLOG(1) << "Segmentation model not executed since metadata requirements "
                "not met.";
@@ -170,7 +180,9 @@ void ModelExecutionSchedulerImpl::OnResultSaved(OptimizationTarget segment_id,
     // TODO(ssid): Consider removing this enum, this is the only case where the
     // execution status is recorded twice for the same execution request.
     stats::RecordModelExecutionStatus(
-        segment_id, ModelExecutionStatus::kFailedToSaveResultAfterSuccess);
+        segment_id,
+        /*default_provider=*/false,
+        ModelExecutionStatus::kFailedToSaveResultAfterSuccess);
     return;
   }
 

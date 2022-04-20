@@ -367,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> yedekleniyor</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> için istisnayı kaldır</translation>
 <translation id="4261901459838235729">Google sunusu</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> filtresi açık.</translation>
 <translation id="4290535918735525311">Linux ile 1 klasör paylaşılıyor</translation>
 <translation id="4299729908419173967">Brezilya Dili</translation>
 <translation id="4302605047395093221">Bu cihazı kullanan herkesin bu mobil ağa bağlanmak için PIN'i girmesi gerekir.</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
 <translation id="4394214039309501350">Harici bağlantı</translation>
 <translation id="4401287888955153199">Tümünü çıkar</translation>
+<translation id="4410695710508688828">Çıkarma işlemi gerçekleştirilemedi. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Dosyalarınız için kısayol oluşturun</translation>
 <translation id="4425149324548788773">Drive'ım</translation>
 <translation id="4439427728133035643">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Bağlan</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">Diğer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> seçime eklendi.</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> için sonuçlar gösteriliyor.</translation>
+<translation id="4599600860674643278">Filtre sıfırlandı.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> adlı dosya <ph name="FOLDER_NAME" /> klasörüne kopyalanıyor</translation>
 <translation id="4631887759990505102">Sanatçı</translation>
 <translation id="4642769377300286600">Mobil profil, <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> ağ, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> yükleniyor</translation>
@@ -529,6 +532,7 @@
 <translation id="5469868506864199649">İtalyanca</translation>
 <translation id="5473333559083690127">Yeni PIN'i tekrar girin</translation>
 <translation id="5489067830765222292">Letonca</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> filtresi kapalı.</translation>
 <translation id="5494920125229734069">Tümünü seç</translation>
 <translation id="5500122897333236901">İzlanda dili</translation>
 <translation id="5508696409934741614">Noktalar</translation>
@@ -595,6 +599,7 @@
 <translation id="6082256976217156453">LZMA sıkıştırılmış arşivi</translation>
 <translation id="6096979789310008754">Arama metni temizlendi, tüm dosya ve klasörler gösteriliyor.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> adlı dosya <ph name="FOLDER_NAME" /> klasörüne taşınıyor</translation>
+<translation id="61118516107968648">CSV metni</translation>
 <translation id="6129953537138746214">Boşluk</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> taşınıyor...</translation>
 <translation id="613750717151263950">Japonca (ABD klavye)</translation>
@@ -845,6 +850,7 @@
 <translation id="8208580316430297579">Poster</translation>
 <translation id="8223479393428528563">Bu dosyaları çevrimdışı kullanım için kaydetmek üzere tekrar çevrimiçi olun, dosyaları sağ tıklayın ve <ph name="OFFLINE_CHECKBOX_NAME" /> seçeneğini belirleyin.</translation>
 <translation id="8249296373107784235">İptal Et</translation>
+<translation id="8250920743982581267">Dokümanlar</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8261561378965667560">Çince Dizi</translation>
 <translation id="8269755669432358899">Dosyalar geri bildirim panellerini daralt</translation>

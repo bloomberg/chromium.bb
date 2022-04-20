@@ -53,13 +53,15 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 #endif
 
 namespace {
@@ -117,7 +119,7 @@ class AvatarButtonUserData : public base::SupportsUserData::Data {
   base::TimeTicks animated_identity_last_shown_;
 };
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void CreateTurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
@@ -132,7 +134,7 @@ void CreateTurnSyncOnHelper(
                        signin_promo_action, signin_reason, account_id,
                        signin_aborted_mode);
 }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 std::string GetReauthAccessPointHistogramSuffix(
     signin_metrics::ReauthAccessPoint access_point) {
@@ -171,7 +173,54 @@ GetAccountReauthSourceFromAccessPoint(
           kMaxValue;
   }
 }
-#endif
+
+base::OnceCallback<void(signin_ui_util::internal::OnAccountAddedCallback)>
+GetAddAccountCallback(Profile* profile) {
+  return base::BindOnce(
+      &SigninManager::StartWebSigninFlow,
+      // base::Unretained() is fine because this callback is called
+      // synchronously
+      base::Unretained(SigninManagerFactory::GetForProfile(profile)),
+      profile->GetPath(),
+      g_browser_process->profile_manager()->GetAccountProfileMapper(),
+      AccountReconcilorFactory::GetForProfile(profile)
+          ->GetConsistencyCookieManager());
+}
+
+void OnAccountAdded(bool enable_sync,
+                    signin_ui_util::internal::CreateTurnSyncOnHelperCallback
+                        create_turn_sync_on_helper_callback,
+                    base::WeakPtr<Browser> browser_weak,
+                    const base::FilePath& profile_path,
+                    signin_metrics::AccessPoint access_point,
+                    signin_metrics::PromoAction promo_action,
+                    const CoreAccountId& account_id) {
+  if (!enable_sync || account_id.empty())
+    return;
+
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
+  if (!profile)
+    return;
+
+  std::unique_ptr<chrome::ScopedTabbedBrowserDisplayer> displayer;
+  Browser* browser = browser_weak.get();
+  if (!browser) {
+    displayer = std::make_unique<chrome::ScopedTabbedBrowserDisplayer>(profile);
+    browser = displayer->browser();
+  }
+  if (!browser)
+    return;
+  DCHECK_EQ(browser->profile(), profile);
+
+  // TODO(https://crbug.com/1260291): Change SigninAbortedMode to REMOVE_ACCOUNT
+  // once it is supported on Lacros.
+  std::move(create_turn_sync_on_helper_callback)
+      .Run(profile, browser, access_point, promo_action,
+           signin_metrics::Reason::kSigninPrimaryAccount, account_id,
+           TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
@@ -231,6 +280,22 @@ void ShowReauthForPrimaryAccountWithAuthError(
 #endif
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ShowSigninPromptAndMaybeEnableSync(
+    Browser* browser,
+    Profile* profile,
+    bool enable_sync,
+    signin_metrics::AccessPoint access_point,
+    signin_metrics::PromoAction promo_action) {
+  // TODO(https://crbug.com/1260291): Do not show accounts that are already
+  // syncing if `enable_sync` is true.
+  internal::ShowSigninPromptAndMaybeEnableSync(
+      browser, profile, GetAddAccountCallback(profile),
+      base::BindOnce(&CreateTurnSyncOnHelper), enable_sync, access_point,
+      promo_action);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 void ShowExtensionSigninPrompt(Profile* profile,
                                bool enable_sync,
                                const std::string& email_hint) {
@@ -241,6 +306,7 @@ void ShowExtensionSigninPrompt(Profile* profile,
       profile,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
       ::GetAccountManagerFacade(profile->GetPath().value()),
+      GetAddAccountCallback(profile), base::BindOnce(&CreateTurnSyncOnHelper),
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       enable_sync, email_hint);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -271,6 +337,8 @@ void ShowExtensionSigninPrompt(
     Profile* profile,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     account_manager::AccountManagerFacade* account_manager_facade,
+    base::OnceCallback<void(OnAccountAddedCallback)> add_account_callback,
+    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback,
 #endif
     bool enable_sync,
     const std::string& email_hint) {
@@ -296,8 +364,11 @@ void ShowExtensionSigninPrompt(
 
   if (email_hint.empty()) {
     // Add a new account.
-    // TODO(https://crbug.com/1260291): add support for signed out profiles.
-    NOTREACHED() << "Lacros doesn't support signed-out profiles yet.";
+    ShowSigninPromptAndMaybeEnableSync(
+        nullptr, profile, std::move(add_account_callback),
+        std::move(create_turn_sync_on_helper_callback), enable_sync,
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
     return;
   }
 
@@ -328,6 +399,25 @@ void ShowExtensionSigninPrompt(
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ShowSigninPromptAndMaybeEnableSync(
+    Browser* browser,
+    Profile* profile,
+    base::OnceCallback<void(OnAccountAddedCallback)> add_account_callback,
+    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback,
+    bool enable_sync,
+    signin_metrics::AccessPoint access_point,
+    signin_metrics::PromoAction promo_action) {
+  DCHECK(!browser || browser->profile() == profile);
+  DCHECK(profile);
+  std::move(add_account_callback)
+      .Run(base::BindOnce(&OnAccountAdded, enable_sync,
+                          std::move(create_turn_sync_on_helper_callback),
+                          browser ? browser->AsWeakPtr() : nullptr,
+                          profile->GetPath(), access_point, promo_action));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 }  // namespace internal
 
 void EnableSyncFromSingleAccountPromo(
@@ -342,7 +432,7 @@ void EnableSyncFromMultiAccountPromo(Browser* browser,
                                      const AccountInfo& account,
                                      signin_metrics::AccessPoint access_point,
                                      bool is_default_promo_account) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   internal::EnableSyncFromPromo(browser, account, access_point,
                                 is_default_promo_account,
                                 base::BindOnce(&CreateTurnSyncOnHelper));
@@ -382,22 +472,14 @@ std::vector<AccountInfo> GetOrderedAccountsForDisplay(
   return accounts;
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 namespace internal {
 void EnableSyncFromPromo(
     Browser* browser,
     const AccountInfo& account,
     signin_metrics::AccessPoint access_point,
     bool is_default_promo_account,
-    base::OnceCallback<
-        void(Profile* profile,
-             Browser* browser,
-             signin_metrics::AccessPoint signin_access_point,
-             signin_metrics::PromoAction signin_promo_action,
-             signin_metrics::Reason signin_reason,
-             const CoreAccountId& account_id,
-             TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
-        create_turn_sync_on_helper_callback) {
+    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback) {
   DCHECK(browser);
   DCHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
   Profile* profile = browser->profile();
@@ -410,14 +492,20 @@ void EnableSyncFromPromo(
   }
 
   if (account.IsEmpty()) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(https://crbug.com/1260291): add support for signed out profiles.
+    NOTREACHED();
+#else
     chrome::ShowBrowserSignin(browser, access_point,
                               signin::ConsentLevel::kSync);
+#endif
     return;
   }
 
   DCHECK(!account.account_id.empty());
   DCHECK(!account.email.empty());
-  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
+  DCHECK(AccountConsistencyModeManager::IsDiceEnabledForProfile(profile) ||
+         AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
 
   signin_metrics::PromoAction promo_action =
       is_default_promo_account
@@ -431,8 +519,13 @@ void EnableSyncFromPromo(
       identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
           account.account_id);
   if (needs_reauth_before_enable_sync) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(https://crbug.com/1260291): add support for signed out profiles.
+    NOTREACHED();
+#else
     browser->signin_view_controller()->ShowDiceEnableSyncTab(
         access_point, promo_action, account.email);
+#endif
     return;
   }
 
@@ -445,6 +538,9 @@ void EnableSyncFromPromo(
            TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
 }
 }  // namespace internal
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 AccountInfo GetSingleAccountForDicePromos(Profile* profile) {
   std::vector<AccountInfo> accounts = GetOrderedAccountsForDisplay(

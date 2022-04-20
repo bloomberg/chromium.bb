@@ -10,6 +10,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -198,6 +199,14 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   gfx::Size last_swap_pixel_size_;
+#endif
+
+#if BUILDFLAG(IS_APPLE)
+  gfx::CALayerParams last_ca_layer_params_;
+
+  // Used to force a call to OnDisplayReceivedCALayerParams() even if the params
+  // did not change.
+  base::TimeTicks next_forced_ca_layer_params_update_time_;
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

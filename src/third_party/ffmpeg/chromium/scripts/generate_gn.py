@@ -118,6 +118,7 @@ def CleanObjectFiles(object_files):
       'libavcodec/x86/dnxhd_mmx.o',
       'libavformat/sdp.o',
       'libavutil/adler32.o',
+      'libavutil/avsscanf.o',
       'libavutil/audio_fifo.o',
       'libavutil/blowfish.o',
       'libavutil/cast5.o',
@@ -634,6 +635,7 @@ def WriteGn(fd, disjoint_sets):
 IGNORED_INCLUDE_FILES = [
     # Chromium generated files
     'config.h',
+    'config_components.h',
     os.path.join('libavcodec', 'bsf_list.c'),
     os.path.join('libavcodec', 'codec_list.c'),
     os.path.join('libavcodec', 'parser_list.c'),

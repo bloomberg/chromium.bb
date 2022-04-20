@@ -15,6 +15,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -28,17 +29,19 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service_accessor.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/tpm/stub_install_attributes.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #endif
-
-using ::testing::Optional;
 
 struct MetricsReportingStateTestParameterizedParams {
   bool initial_value;
@@ -81,12 +84,12 @@ class MetricsReportingStateTest : public InProcessBrowserTest {
     return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   }
 
-  virtual bool is_metrics_reporting_enabled_initial_value() const = 0;
+  virtual bool IsMetricsReportingEnabledInitialValue() const = 0;
 
   // InProcessBrowserTest overrides:
   bool SetUpUserDataDirectory() override {
     local_state_path_ = metrics::SetUpUserDataDirectoryForTesting(
-        is_metrics_reporting_enabled_initial_value());
+        IsMetricsReportingEnabledInitialValue());
     return !local_state_path_.empty();
   }
 
@@ -98,7 +101,7 @@ class MetricsReportingStateTest : public InProcessBrowserTest {
         true);
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
         std::make_unique<ChromeBrowserMainExtraPartsChecker>(
-            is_metrics_reporting_enabled_initial_value()));
+            IsMetricsReportingEnabledInitialValue()));
   }
 
  protected:
@@ -125,7 +128,7 @@ class MetricsReportingStateTestParameterized
 
   ~MetricsReportingStateTestParameterized() override = default;
 
-  bool is_metrics_reporting_enabled_initial_value() const override {
+  bool IsMetricsReportingEnabledInitialValue() const override {
     return GetParam().initial_value;
   }
 
@@ -133,21 +136,7 @@ class MetricsReportingStateTestParameterized
     return GetParam().final_value;
   }
 
-  void TearDown() override {
-    // Verify the changed value was written to disk.
-    JSONFileValueDeserializer deserializer(local_state_path_);
-    int error_code = 0;
-    std::string error_message;
-    std::unique_ptr<base::Value> pref_values =
-        deserializer.Deserialize(&error_code, &error_message);
-    ASSERT_TRUE(pref_values) << error_message;
-    base::DictionaryValue* pref_dict_values = nullptr;
-    ASSERT_TRUE(pref_values->GetAsDictionary(&pref_dict_values));
-    EXPECT_THAT(pref_dict_values->FindBoolPath(
-                    metrics::prefs::kMetricsReportingEnabled),
-                Optional(is_metrics_reporting_enabled_final_value()));
-    InProcessBrowserTest::TearDown();
-  }
+  base::FilePath local_state_path() { return local_state_path_; }
 };
 
 // Used to verify that metrics collected during a session are discarded upon
@@ -160,9 +149,7 @@ class MetricsReportingStateClearDataTest
           ChangeMetricsReportingStateCalledFrom> {
  public:
   // Set metrics reporting to false initially.
-  bool is_metrics_reporting_enabled_initial_value() const override {
-    return false;
-  }
+  bool IsMetricsReportingEnabledInitialValue() const override { return false; }
 };
 
 void ChromeBrowserMainExtraPartsChecker::PostEarlyInitialization() {
@@ -189,11 +176,12 @@ base::HistogramBase::Count GetHistogramDeltaTotalCount(base::StringPiece name) {
 }
 
 // Verifies that metrics reporting state is correctly written to disk when set.
-// See also MetricsReportingStateTestParameterized::TearDown.
 IN_PROC_BROWSER_TEST_P(MetricsReportingStateTestParameterized,
                        ChangeMetricsReportingState) {
-  ASSERT_EQ(is_metrics_reporting_enabled_initial_value(),
+  ASSERT_EQ(IsMetricsReportingEnabledInitialValue(),
             MetricsReportingStateTest::IsMetricsAndCrashReportingEnabled());
+
+  // Update the client's metrics reporting state.
   base::RunLoop run_loop;
   bool value_after_change = false;
   ChangeMetricsReportingStateWithReply(
@@ -201,7 +189,31 @@ IN_PROC_BROWSER_TEST_P(MetricsReportingStateTestParameterized,
       base::BindOnce(&OnMetricsReportingStateChanged, &value_after_change,
                      run_loop.QuitClosure()));
   run_loop.Run();
+
+  // Verify that the reporting state has been duly updated.
   EXPECT_EQ(is_metrics_reporting_enabled_final_value(), value_after_change);
+
+  // Flush Local State prefs, which include |kMetricsReportingEnabled| to disk.
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+  PrefService* local_state = g_browser_process->local_state();
+  base::RunLoop loop;
+  local_state->CommitPendingWrite(
+      base::BindOnce([](base::RunLoop* loop) { loop->Quit(); }, &loop));
+  loop.Run();
+
+  // Read the Local State file.
+  JSONFileValueDeserializer deserializer(local_state_path());
+  std::unique_ptr<base::Value> local_state_contents = deserializer.Deserialize(
+      /*error_code=*/nullptr, /*error_message=*/nullptr);
+  ASSERT_THAT(local_state_contents, ::testing::NotNull());
+
+  // Verify that the metrics reporting state in the file is what's expected.
+  absl::optional<bool> metrics_reporting_state =
+      local_state_contents->GetIfDict()->FindBoolByDottedPath(
+          metrics::prefs::kMetricsReportingEnabled);
+  EXPECT_TRUE(metrics_reporting_state.has_value());
+  EXPECT_EQ(metrics_reporting_state.value(),
+            is_metrics_reporting_enabled_final_value());
 }
 
 // Verifies that collected data is cleared after enabling metrics reporting.
@@ -274,3 +286,52 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn<ChangeMetricsReportingStateCalledFrom>(
         {ChangeMetricsReportingStateCalledFrom::kUnknown,
          ChangeMetricsReportingStateCalledFrom::kUiSettings}));
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Used to verify that managed/unmanged devices returns correct values based on
+// management state.
+class MetricsReportingStateManagedTest
+    : public MetricsReportingStateTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  MetricsReportingStateManagedTest() = default;
+  MetricsReportingStateManagedTest(const MetricsReportingStateManagedTest&) =
+      delete;
+  MetricsReportingStateManagedTest& operator=(
+      const MetricsReportingStateManagedTest&) = delete;
+  ~MetricsReportingStateManagedTest() = default;
+
+  void SetUp() override {
+    is_managed_ = GetParam();
+    if (is_managed()) {
+      install_attributes_ = std::make_unique<ash::ScopedStubInstallAttributes>(
+          ash::StubInstallAttributes::CreateCloudManaged("domain",
+                                                         "device_id"));
+    } else {
+      install_attributes_ = std::make_unique<ash::ScopedStubInstallAttributes>(
+          ash::StubInstallAttributes::CreateConsumerOwned());
+    }
+
+    MetricsReportingStateTest::SetUp();
+  }
+
+  // Set metrics reporting to false.
+  bool IsMetricsReportingEnabledInitialValue() const override { return false; }
+
+ protected:
+  bool is_managed() const { return is_managed_; }
+
+ private:
+  bool is_managed_;
+  std::unique_ptr<ash::ScopedStubInstallAttributes> install_attributes_;
+};
+
+IN_PROC_BROWSER_TEST_P(MetricsReportingStateManagedTest,
+                       IsMetricsReportingPolicyManagedReturnsCorrectValue) {
+  EXPECT_EQ(IsMetricsReportingPolicyManaged(), is_managed());
+}
+
+INSTANTIATE_TEST_SUITE_P(MetricsReportingStateTests,
+                         MetricsReportingStateManagedTest,
+                         testing::Bool());
+#endif

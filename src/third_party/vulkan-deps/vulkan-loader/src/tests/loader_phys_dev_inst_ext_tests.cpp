@@ -59,7 +59,7 @@ static void FillInRandomDeviceProps(VkPhysicalDeviceProperties& props, uint32_t 
 // Test vkGetPhysicalDeviceProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -73,7 +73,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevProps2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -88,7 +88,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2KHRNoICDSupport) {
 // Test vkGetPhysicalDeviceProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomDeviceProps(env.get_test_icd(0).physical_devices.back().properties, VK_API_VERSION_1_0, 5, 123);
@@ -104,7 +104,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceProperties props{};
     instance->vkGetPhysicalDeviceProperties(physical_device, &props);
@@ -124,7 +124,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -142,7 +142,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceProperties props{};
     instance->vkGetPhysicalDeviceProperties(physical_device, &props);
@@ -162,7 +162,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2Simple) {
 // extension but the instance supports 1.1 and the extension
 TEST(LoaderInstPhysDevExts, PhysDevProps2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6, VK_API_VERSION_1_0));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA, VK_API_VERSION_1_0));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -187,7 +187,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2KHRInstanceSupports11) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceProperties props{};
     instance->vkGetPhysicalDeviceProperties(physical_device, &props);
@@ -236,7 +236,7 @@ TEST(LoaderInstPhysDevExts, PhysDevProps2Mixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -407,7 +407,7 @@ static bool CompareFeatures(const VkPhysicalDeviceFeatures& feats1, const VkPhys
 // Test vkGetPhysicalDeviceFeatures2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -421,7 +421,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRNoSupport) {
 // Test vkGetPhysicalDeviceFeatures2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevFeatsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -436,7 +436,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeatsKHRNoICDSupport) {
 // Test vkGetPhysicalDeviceFeatures2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomFeatures(env.get_test_icd(0).physical_devices.back().features);
@@ -452,7 +452,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceFeatures feats{};
     instance->vkGetPhysicalDeviceFeatures(physical_device, &feats);
@@ -465,7 +465,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevFeats2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -483,7 +483,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeats2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceFeatures feats{};
     instance->vkGetPhysicalDeviceFeatures(physical_device, &feats);
@@ -496,7 +496,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeats2Simple) {
 // extension but the instance supports 1.1 and the extension
 TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6, VK_API_VERSION_1_0));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA, VK_API_VERSION_1_0));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -521,7 +521,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeats2KHRInstanceSupports11) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceFeatures feats{};
     instance->vkGetPhysicalDeviceFeatures(physical_device, &feats);
@@ -557,7 +557,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFeatsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -624,7 +624,7 @@ static void FillInRandomFormatProperties(std::vector<VkFormatProperties>& props)
 // Test vkGetPhysicalDeviceFormatProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -638,7 +638,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceFormatProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevFormatPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -653,7 +653,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatPropsKHRNoICDSupport) {
 // Test vkGetPhysicalDeviceFormatProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomFormatProperties(env.get_test_icd(0).physical_devices.back().format_properties);
@@ -672,7 +672,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkFormatProperties props{};
     instance->vkGetPhysicalDeviceFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, &props);
@@ -688,7 +688,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevFormatProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -706,7 +706,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkFormatProperties props{};
     instance->vkGetPhysicalDeviceFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, &props);
@@ -722,7 +722,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatProps2Simple) {
 // extension but the instance supports 1.1 and the extension
 TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -747,7 +747,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatProps2KHRInstanceSupports11) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkFormatProperties props{};
     instance->vkGetPhysicalDeviceFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, &props);
@@ -788,7 +788,7 @@ TEST(LoaderInstPhysDevExts, PhysDevFormatPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -859,7 +859,7 @@ static void FillInRandomImageFormatData(VkImageFormatProperties& props) {
 // Test vkGetPhysicalDeviceImageFormatProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -873,7 +873,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceImageFormatProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevImageFormatPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -888,7 +888,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatPropsKHRNoICDSupport) {
 // Test vkGetPhysicalDeviceImageFormatProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomImageFormatData(env.get_test_icd(0).physical_devices.back().image_format_properties);
@@ -904,7 +904,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkImageFormatProperties props{};
     ASSERT_EQ(VK_SUCCESS,
@@ -936,7 +936,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -954,7 +954,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkImageFormatProperties props{};
     ASSERT_EQ(VK_SUCCESS,
@@ -987,7 +987,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2Simple) {
 // and a device under that ICD also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -1012,7 +1012,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatProps2KHRInstanceSupports11) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkImageFormatProperties props{};
     ASSERT_EQ(VK_SUCCESS,
@@ -1074,7 +1074,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -1150,7 +1150,7 @@ TEST(LoaderInstPhysDevExts, PhysDevImageFormatPropsMixed) {
 // Test vkGetPhysicalDeviceMemoryProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -1164,7 +1164,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceMemoryProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevMemoryPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -1209,7 +1209,7 @@ static bool CompareMemoryData(const VkPhysicalDeviceMemoryProperties& props1, co
 // Test vkGetPhysicalDeviceMemoryProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomMemoryData(env.get_test_icd(0).physical_devices.back().memory_properties);
@@ -1225,7 +1225,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceMemoryProperties props{};
     instance->vkGetPhysicalDeviceMemoryProperties(physical_device, &props);
@@ -1239,7 +1239,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -1257,7 +1257,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceMemoryProperties props{};
     instance->vkGetPhysicalDeviceMemoryProperties(physical_device, &props);
@@ -1271,7 +1271,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2Simple) {
 // extension but the instance supports 1.1 and the extension
 TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -1296,7 +1296,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryProps2KHRInstanceSupports11) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceMemoryProperties props{};
     instance->vkGetPhysicalDeviceMemoryProperties(physical_device, &props);
@@ -1331,7 +1331,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -1389,7 +1389,7 @@ TEST(LoaderInstPhysDevExts, PhysDevMemoryPropsMixed) {
 // Test vkGetPhysicalDeviceQueueFamilyProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -1403,7 +1403,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceQueueFamilyProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -1425,7 +1425,7 @@ static uint32_t FillInRandomQueueFamilyData(std::vector<MockQueueFamilyPropertie
         props[i].properties.minImageTransferGranularity.width = (rand() % 30) + 1;
         props[i].properties.minImageTransferGranularity.height = (rand() % 30) + 1;
         props[i].properties.minImageTransferGranularity.depth = (rand() % 30) + 1;
-        props[i].support_present = (rand() % 2);
+        props[i].support_present = rand() % 2 == 0;
     }
     return static_cast<uint32_t>(props.size());
 }
@@ -1452,7 +1452,7 @@ static bool CompareQueueFamilyData(const std::vector<VkQueueFamilyProperties>& p
 // Test vkGetPhysicalDeviceQueueFamilyProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     uint32_t num_fam = FillInRandomQueueFamilyData(env.get_test_icd(0).physical_devices.back().queue_family_properties);
@@ -1468,7 +1468,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     uint32_t ret_fam_1 = 0;
     std::vector<VkQueueFamilyProperties> props{};
@@ -1491,7 +1491,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -1509,7 +1509,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     uint32_t ret_fam_1 = 0;
     std::vector<VkQueueFamilyProperties> props{};
@@ -1532,7 +1532,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2Simple) {
 // extension but the instance supports 1.1 and the extension
 TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -1557,7 +1557,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyProps2KHRInstanceSupports11) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     uint32_t ret_fam_1 = 0;
     std::vector<VkQueueFamilyProperties> props{};
@@ -1606,7 +1606,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -1671,7 +1671,7 @@ TEST(LoaderInstPhysDevExts, PhysDevQueueFamilyPropsMixed) {
 // Test vkGetPhysicalDeviceSparseImageFormatProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -1685,7 +1685,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceSparseImageFormatProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -1726,7 +1726,7 @@ static bool CompareSparseImageFormatData(const std::vector<VkSparseImageFormatPr
 // Test vkGetPhysicalDeviceSparseImageFormatProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomSparseImageFormatData(env.get_test_icd(0).physical_devices.back().sparse_image_format_properties);
@@ -1742,19 +1742,19 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRInstanceAndICDSuppo
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkSparseImageFormatProperties> props{};
     uint32_t sparse_count_1 = 0;
     instance->vkGetPhysicalDeviceSparseImageFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D,
                                                              VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
                                                              VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, nullptr);
-    ASSERT_NE(sparse_count_1, 0);
+    ASSERT_NE(sparse_count_1, 0U);
     props.resize(sparse_count_1);
     instance->vkGetPhysicalDeviceSparseImageFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D,
                                                              VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
                                                              VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, props.data());
-    ASSERT_NE(sparse_count_1, 0);
+    ASSERT_NE(sparse_count_1, 0U);
 
     VkPhysicalDeviceSparseImageFormatInfo2 info2{
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2,  // sType
@@ -1779,7 +1779,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRInstanceAndICDSuppo
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -1797,19 +1797,19 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkSparseImageFormatProperties> props{};
     uint32_t sparse_count_1 = 0;
     instance->vkGetPhysicalDeviceSparseImageFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D,
                                                              VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
                                                              VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, nullptr);
-    ASSERT_NE(sparse_count_1, 0);
+    ASSERT_NE(sparse_count_1, 0U);
     props.resize(sparse_count_1);
     instance->vkGetPhysicalDeviceSparseImageFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D,
                                                              VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
                                                              VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, props.data());
-    ASSERT_NE(sparse_count_1, 0);
+    ASSERT_NE(sparse_count_1, 0U);
 
     VkPhysicalDeviceSparseImageFormatInfo2 info2{
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2,  // sType
@@ -1834,7 +1834,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2Simple) {
 // supports extension but the instance supports 1.1 and the extension
 TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRInstanceSupports11) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().extensions.push_back({VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 0});
@@ -1859,19 +1859,19 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatProps2KHRInstanceSupports11)
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkSparseImageFormatProperties> props{};
     uint32_t sparse_count_1 = 0;
     instance->vkGetPhysicalDeviceSparseImageFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D,
                                                              VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
                                                              VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, nullptr);
-    ASSERT_NE(sparse_count_1, 0);
+    ASSERT_NE(sparse_count_1, 0U);
     props.resize(sparse_count_1);
     instance->vkGetPhysicalDeviceSparseImageFormatProperties(physical_device, VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D,
                                                              VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
                                                              VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, props.data());
-    ASSERT_NE(sparse_count_1, 0);
+    ASSERT_NE(sparse_count_1, 0U);
 
     VkPhysicalDeviceSparseImageFormatInfo2 info2{
         VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2,  // sType
@@ -1923,7 +1923,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -1974,12 +1974,12 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatPropsMixed) {
         instance->vkGetPhysicalDeviceSparseImageFormatProperties(
             physical_devices[dev], VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D, VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
             VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, nullptr);
-        ASSERT_NE(sparse_count_1, 0);
+        ASSERT_NE(sparse_count_1, 0U);
         props.resize(sparse_count_1);
         instance->vkGetPhysicalDeviceSparseImageFormatProperties(
             physical_devices[dev], VK_FORMAT_R4G4_UNORM_PACK8, VK_IMAGE_TYPE_2D, VK_SAMPLE_COUNT_4_BIT, VK_IMAGE_USAGE_STORAGE_BIT,
             VK_IMAGE_TILING_OPTIMAL, &sparse_count_1, props.data());
-        ASSERT_NE(sparse_count_1, 0);
+        ASSERT_NE(sparse_count_1, 0U);
 
         VkPhysicalDeviceSparseImageFormatInfo2 info2{
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2,  // sType
@@ -2008,7 +2008,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSparseImageFormatPropsMixed) {
 // Test vkGetPhysicalDeviceExternalBufferPropertiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevExtBufPropsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2022,7 +2022,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtBufPropsKHRNoSupport) {
 // Test vkGetPhysicalDeviceExternalBufferPropertiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevExtBufPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2060,7 +2060,7 @@ static bool CompareExtMemoryData(const VkExternalMemoryProperties& props1, const
 // Test vkGetPhysicalDeviceExternalBufferPropertiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevExtBufProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomExtMemoryData(env.get_test_icd(0).physical_devices.back().external_memory_properties);
@@ -2076,7 +2076,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtBufProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceExternalBufferInfoKHR info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR};
     VkExternalBufferPropertiesKHR props{VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES_KHR};
@@ -2089,7 +2089,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtBufProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevExtBufProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -2107,7 +2107,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtBufProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceExternalBufferInfo info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO};
     VkExternalBufferProperties props{VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES};
@@ -2136,7 +2136,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtBufPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -2219,7 +2219,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtBufPropsMixed) {
 // Test vkGetPhysicalDeviceExternalSemaphorePropertiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevExtSemPropsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2233,7 +2233,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtSemPropsKHRNoSupport) {
 // Test vkGetPhysicalDeviceExternalSemaphorePropertiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevExtSemPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2273,7 +2273,7 @@ static bool CompareExtSemaphoreData(const VkExternalSemaphoreProperties& props1,
 // Test vkGetPhysicalDeviceExternalSemaphorePropertiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevExtSemProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomExtSemData(env.get_test_icd(0).physical_devices.back().external_semaphore_properties);
@@ -2289,7 +2289,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtSemProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceExternalSemaphoreInfoKHR info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR};
     VkExternalSemaphorePropertiesKHR props{VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES_KHR};
@@ -2301,7 +2301,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtSemProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevExtSemProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -2319,7 +2319,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtSemProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceExternalSemaphoreInfo info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO};
     VkExternalSemaphoreProperties props{VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES};
@@ -2347,7 +2347,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtSemPropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -2430,7 +2430,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtSemPropsMixed) {
 // Test vkGetPhysicalDeviceExternalFencePropertiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevExtFencePropsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2444,7 +2444,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtFencePropsKHRNoSupport) {
 // Test vkGetPhysicalDeviceExternalFencePropertiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevExtFencePropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2484,7 +2484,7 @@ static bool CompareExtFenceData(const VkExternalFenceProperties& props1, const V
 // Test vkGetPhysicalDeviceExternalFencePropertiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevExtFenceProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomExtFenceData(env.get_test_icd(0).physical_devices.back().external_fence_properties);
@@ -2500,7 +2500,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtFenceProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceExternalFenceInfoKHR info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR};
     VkExternalFencePropertiesKHR props{VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES_KHR};
@@ -2512,7 +2512,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtFenceProps2KHRInstanceAndICDSupport) {
 // also support, so everything should work and return properly.
 TEST(LoaderInstPhysDevExts, PhysDevExtFenceProps2Simple) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).icd_api_version = VK_API_VERSION_1_1;
     env.get_test_icd(0).add_instance_extension({VK_KHR_EXTERNAL_FENCE_CAPABILITIES_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
@@ -2530,7 +2530,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtFenceProps2Simple) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkPhysicalDeviceExternalFenceInfo info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO};
     VkExternalFenceProperties props{VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES};
@@ -2558,7 +2558,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtFencePropsMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
 
         // ICD 1 should not have 1.1
@@ -2641,7 +2641,7 @@ TEST(LoaderInstPhysDevExts, PhysDevExtFencePropsMixed) {
 // Test vkGetPhysicalDeviceSurfaceCapabilities2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2655,7 +2655,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceSurfaceCapabilities2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2723,12 +2723,15 @@ static bool CompareSurfaceCapsData(const VkSurfaceCapabilitiesKHR& props1, const
 // Test vkGetPhysicalDeviceSurfaceCapabilities2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_SURFACE_EXTENSION_NAME};
     Extension second_ext{VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME};
     Extension third_ext{VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME};
-    env.get_test_icd(0).add_instance_extensions({first_ext, second_ext, third_ext});
-    env.get_test_icd(0).physical_devices.push_back({});
+    auto& cur_icd = env.get_test_icd(0);
+    cur_icd.add_instance_extensions({first_ext, second_ext, third_ext});
+    cur_icd.physical_devices.push_back({});
+    cur_icd.min_icd_interface_version = 3;
+    cur_icd.enable_icd_wsi = true;
     FillInRandomSurfaceCapsData(env.get_test_icd(0).physical_devices.back().surface_capabilities);
 
     InstWrapper instance(env.vulkan_functions);
@@ -2752,7 +2755,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkSurfaceKHR surface;
     VkHeadlessSurfaceCreateInfoEXT create_info{VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT};
@@ -2792,9 +2795,11 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRMixed) {
     Extension third_ext{VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME};
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
+        cur_icd.min_icd_interface_version = 3;
+        cur_icd.enable_icd_wsi = true;
         cur_icd.add_instance_extensions({first_ext, third_ext});
 
         // ICD 1 should not have 1.1
@@ -2869,7 +2874,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceCaps2KHRMixed) {
 // Test vkGetPhysicalDeviceSurfaceFormats2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2883,7 +2888,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRNoSupport) {
 // Test vkGetPhysicalDeviceSurfaceFormats2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -2924,12 +2929,15 @@ static bool CompareSurfaceFormatsData(const std::vector<VkSurfaceFormatKHR>& pro
 // Test vkGetPhysicalDeviceSurfaceFormats2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_SURFACE_EXTENSION_NAME};
     Extension second_ext{VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME};
     Extension third_ext{VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME};
-    env.get_test_icd(0).add_instance_extensions({first_ext, second_ext, third_ext});
-    env.get_test_icd(0).physical_devices.push_back({});
+    auto& cur_icd = env.get_test_icd(0);
+    cur_icd.add_instance_extensions({first_ext, second_ext, third_ext});
+    cur_icd.physical_devices.push_back({});
+    cur_icd.min_icd_interface_version = 3;
+    cur_icd.enable_icd_wsi = true;
     FillInRandomSurfaceFormatsData(env.get_test_icd(0).physical_devices.back().surface_formats);
 
     InstWrapper instance(env.vulkan_functions);
@@ -2953,7 +2961,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkSurfaceKHR surface;
     VkHeadlessSurfaceCreateInfoEXT create_info{VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT};
@@ -3002,9 +3010,11 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRMixed) {
     Extension third_ext{VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME};
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
+        cur_icd.enable_icd_wsi = true;
+        cur_icd.min_icd_interface_version = 3;
         cur_icd.add_instance_extensions({first_ext, third_ext});
 
         // ICD 1 should not have 1.1
@@ -3067,10 +3077,10 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRMixed) {
         std::vector<VkSurfaceFormatKHR> props{};
         uint32_t count_1 = 0;
         ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceSurfaceFormats(physical_devices[dev], surface, &count_1, nullptr));
-        ASSERT_NE(0, count_1);
+        ASSERT_NE(0U, count_1);
         props.resize(count_1);
         ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceSurfaceFormats(physical_devices[dev], surface, &count_1, props.data()));
-        ASSERT_NE(0, count_1);
+        ASSERT_NE(0U, count_1);
 
         VkPhysicalDeviceSurfaceInfo2KHR info{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR, nullptr, surface};
         std::vector<VkSurfaceFormat2KHR> props2{};
@@ -3093,7 +3103,7 @@ TEST(LoaderInstPhysDevExts, PhysDevSurfaceFormats2KHRMixed) {
 // Test vkGetPhysicalDeviceDisplayPropertiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3107,7 +3117,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRNoSupport) {
 // Test vkGetPhysicalDeviceDisplayPropertiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3161,7 +3171,7 @@ static bool CompareDisplayPropData(const std::vector<VkDisplayPropertiesKHR>& pr
 // Test vGetPhysicalDeviceDisplayPropertiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomDisplayPropData(env.get_test_icd(0).physical_devices.back().display_properties);
@@ -3177,7 +3187,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayPropertiesKHR> props{};
     uint32_t prop_count = 0;
@@ -3210,7 +3220,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
 
@@ -3275,7 +3285,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRMixed) {
                     if (icd == 1) {
                         // For this extension, if no support exists (like for ICD 1), the value of 0 should be returned by the
                         // loader.
-                        ASSERT_EQ(0, prop_count);
+                        ASSERT_EQ(0U, prop_count);
                     } else {
                         ASSERT_EQ(cur_dev.display_properties.size(), prop_count);
                         props.resize(prop_count);
@@ -3298,7 +3308,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPropsKHRMixed) {
 // Test vkGetPhysicalDeviceDisplayPlanePropertiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3312,7 +3322,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRNoSupport) {
 // Test vkGetPhysicalDeviceDisplayPlanePropertiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3348,7 +3358,7 @@ static bool CompareDisplayPlanePropData(const std::vector<VkDisplayPlaneProperti
 // Test vGetPhysicalDeviceDisplayPlanePropertiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     FillInRandomDisplayPlanePropData(env.get_test_icd(0).physical_devices.back().display_plane_properties);
@@ -3364,7 +3374,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayPlanePropertiesKHR> props{};
     uint32_t prop_count = 0;
@@ -3397,7 +3407,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
 
@@ -3462,7 +3472,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRMixed) {
                     if (icd == 1) {
                         // For this extension, if no support exists (like for ICD 1), the value of 0 should be returned by the
                         // loader.
-                        ASSERT_EQ(0, prop_count);
+                        ASSERT_EQ(0U, prop_count);
                     } else {
                         ASSERT_EQ(cur_dev.display_plane_properties.size(), prop_count);
                         props.resize(prop_count);
@@ -3486,7 +3496,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlanePropsKHRMixed) {
 // Test vkGetDisplayPlaneSupportedDisplaysKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3500,7 +3510,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRNoSupport) {
 // Test vkGetDisplayPlaneSupportedDisplaysKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3533,7 +3543,7 @@ static bool CompareDisplays(const std::vector<VkDisplayKHR>& disps1, const std::
 // Test vGetDisplayPlaneSupportedDisplaysKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     GenerateRandomDisplays(env.get_test_icd(0).physical_devices.back().displays);
@@ -3549,7 +3559,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayKHR> disps{};
     uint32_t disp_count = 0;
@@ -3582,7 +3592,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
 
@@ -3647,7 +3657,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRMixed) {
                     if (icd == 1) {
                         // For this extension, if no support exists (like for ICD 1), the value of 0 should be returned by the
                         // loader.
-                        ASSERT_EQ(0, disp_count);
+                        ASSERT_EQ(0U, disp_count);
                     } else {
                         ASSERT_EQ(cur_dev.displays.size(), disp_count);
                         disps.resize(disp_count);
@@ -3671,7 +3681,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneSupDispsKHRMixed) {
 // Test vkGetDisplayModePropertiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDispModePropsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3685,7 +3695,7 @@ TEST(LoaderInstPhysDevExts, GetDispModePropsKHRNoSupport) {
 // Test vkGetDisplayModePropertiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDispModePropsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3725,7 +3735,7 @@ static bool CompareDisplayModeProps(const std::vector<VkDisplayModePropertiesKHR
 // Test vGetDisplayModePropertiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDispModePropsKHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     GenerateRandomDisplayModeProps(env.get_test_icd(0).physical_devices.back().display_mode_properties);
@@ -3741,7 +3751,7 @@ TEST(LoaderInstPhysDevExts, GetDispModePropsKHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayModePropertiesKHR> props{};
     uint32_t props_count = 0;
@@ -3774,7 +3784,7 @@ TEST(LoaderInstPhysDevExts, GetDispModePropsKHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
 
@@ -3838,7 +3848,7 @@ TEST(LoaderInstPhysDevExts, GetDispModePropsKHRMixed) {
                     if (icd == 1) {
                         // For this extension, if no support exists (like for ICD 1), the value of 0 should be returned by the
                         // loader.
-                        ASSERT_EQ(0, props_count);
+                        ASSERT_EQ(0U, props_count);
                     } else {
                         std::vector<VkDisplayModePropertiesKHR> props{};
                         ASSERT_EQ(cur_dev.display_mode_properties.size(), props_count);
@@ -3863,7 +3873,7 @@ TEST(LoaderInstPhysDevExts, GetDispModePropsKHRMixed) {
 // Test vkCreateDisplayModeKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDispModesKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3877,7 +3887,7 @@ TEST(LoaderInstPhysDevExts, GetDispModesKHRNoSupport) {
 // Test vkCreateDisplayModeKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDispModesKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -3895,7 +3905,7 @@ static bool CompareDisplayModes(const VkDisplayModeKHR& disps1, VkDisplayModeKHR
 // Test vkCreateDisplayModeKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDispModesKHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     env.get_test_icd(0).physical_devices.back().display_mode = CreateRandomDisplayMode();
@@ -3911,7 +3921,7 @@ TEST(LoaderInstPhysDevExts, GetDispModesKHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkDisplayModeKHR mode{};
     VkDisplayModeCreateInfoKHR create_info{VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR};
@@ -3939,7 +3949,7 @@ TEST(LoaderInstPhysDevExts, GetDispModesKHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
 
@@ -4023,7 +4033,7 @@ TEST(LoaderInstPhysDevExts, GetDispModesKHRMixed) {
 // Test vkGetDisplayPlaneCapabilitiesKHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4037,7 +4047,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRNoSupport) {
 // Test vkGetDisplayPlaneCapabilitiesKHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4117,7 +4127,7 @@ static bool CompareDisplayPlaneCaps(const VkDisplayPlaneCapabilitiesKHR& caps1, 
 // Test vkGetDisplayPlaneCapabilitiesKHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
     env.get_test_icd(0).physical_devices.push_back({});
     GenerateRandomDisplayPlaneCaps(env.get_test_icd(0).physical_devices.back().display_plane_capabilities);
@@ -4133,7 +4143,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkDisplayPlaneCapabilitiesKHR caps{};
     ASSERT_EQ(VK_SUCCESS, GetDisplayPlaneCapabilities(physical_device, 0, 0, &caps));
@@ -4160,7 +4170,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
 
@@ -4240,7 +4250,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCapsKHRMixed) {
 // Test vkGetPhysicalDeviceDisplayProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4254,7 +4264,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceDisplayProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4287,7 +4297,7 @@ static bool CompareDisplayPropData(const std::vector<VkDisplayPropertiesKHR>& pr
 // Test vGetPhysicalDeviceDisplayProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_DISPLAY_EXTENSION_NAME};
     Extension second_ext{VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME};
     env.get_test_icd(0).add_instance_extensions({first_ext, second_ext});
@@ -4308,12 +4318,12 @@ TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayPropertiesKHR> props{};
     uint32_t prop_count = 0;
     ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayProperties(physical_device, &prop_count, nullptr));
-    ASSERT_NE(0, prop_count);
+    ASSERT_NE(0U, prop_count);
     props.resize(prop_count);
     ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayProperties(physical_device, &prop_count, props.data()));
 
@@ -4348,7 +4358,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
         cur_icd.add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
@@ -4401,7 +4411,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRMixed) {
         std::vector<VkDisplayPropertiesKHR> props{};
         uint32_t prop_count = 0;
         ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayProperties(physical_devices[dev], &prop_count, nullptr));
-        ASSERT_NE(0, prop_count);
+        ASSERT_NE(0U, prop_count);
         props.resize(prop_count);
         ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayProperties(physical_devices[dev], &prop_count, props.data()));
 
@@ -4420,7 +4430,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispProps2KHRMixed) {
 // Test vkGetPhysicalDeviceDisplayPlaneProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4434,7 +4444,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRNoSupport) {
 // Test vkGetPhysicalDeviceDisplayPlaneProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4461,7 +4471,7 @@ static bool CompareDisplayPlanePropData(const std::vector<VkDisplayPlaneProperti
 // Test vGetPhysicalDeviceDisplayPlaneProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_DISPLAY_EXTENSION_NAME};
     Extension second_ext{VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME};
     env.get_test_icd(0).add_instance_extensions({first_ext, second_ext});
@@ -4482,12 +4492,12 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayPlanePropertiesKHR> props{};
     uint32_t prop_count = 0;
     ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayPlaneProperties(physical_device, &prop_count, nullptr));
-    ASSERT_NE(0, prop_count);
+    ASSERT_NE(0U, prop_count);
     props.resize(prop_count);
     ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayPlaneProperties(physical_device, &prop_count, props.data()));
 
@@ -4521,7 +4531,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
         cur_icd.add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
@@ -4574,7 +4584,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRMixed) {
         std::vector<VkDisplayPlanePropertiesKHR> props{};
         uint32_t prop_count = 0;
         ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayPlaneProperties(physical_devices[dev], &prop_count, nullptr));
-        ASSERT_NE(0, prop_count);
+        ASSERT_NE(0U, prop_count);
         props.resize(prop_count);
         ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceDisplayPlaneProperties(physical_devices[dev], &prop_count, props.data()));
 
@@ -4592,7 +4602,7 @@ TEST(LoaderInstPhysDevExts, PhysDevDispPlaneProps2KHRMixed) {
 // Test vkGetDisplayModeProperties2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4606,7 +4616,7 @@ TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRNoSupport) {
 // Test vkGetDisplayModeProperties2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4637,7 +4647,7 @@ static bool CompareDisplayModeProps(const std::vector<VkDisplayModePropertiesKHR
 // Test vGetDisplayModeProperties2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_DISPLAY_EXTENSION_NAME};
     Extension second_ext{VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME};
     env.get_test_icd(0).add_instance_extensions({first_ext, second_ext});
@@ -4658,12 +4668,12 @@ TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     std::vector<VkDisplayModePropertiesKHR> props{};
     uint32_t props_count1 = 0;
     ASSERT_EQ(VK_SUCCESS, GetDisplayModeProperties(physical_device, VK_NULL_HANDLE, &props_count1, nullptr));
-    ASSERT_NE(0, props_count1);
+    ASSERT_NE(0U, props_count1);
     props.resize(props_count1);
     ASSERT_EQ(VK_SUCCESS, GetDisplayModeProperties(physical_device, VK_NULL_HANDLE, &props_count1, props.data()));
 
@@ -4697,7 +4707,7 @@ TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
         cur_icd.add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
@@ -4750,7 +4760,7 @@ TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRMixed) {
         std::vector<VkDisplayModePropertiesKHR> props{};
         uint32_t props_count1 = 0;
         ASSERT_EQ(VK_SUCCESS, GetDisplayModeProperties(physical_devices[dev], VK_NULL_HANDLE, &props_count1, nullptr));
-        ASSERT_NE(0, props_count1);
+        ASSERT_NE(0U, props_count1);
         props.resize(props_count1);
         ASSERT_EQ(VK_SUCCESS, GetDisplayModeProperties(physical_devices[dev], VK_NULL_HANDLE, &props_count1, props.data()));
 
@@ -4768,7 +4778,7 @@ TEST(LoaderInstPhysDevExts, GetDispModeProps2KHRMixed) {
 // Test vkGetDisplayPlaneCapabilities2KHR where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4782,7 +4792,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRNoSupport) {
 // Test vkGetDisplayPlaneCapabilities2KHR where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4820,7 +4830,7 @@ static bool CompareDisplayPlaneCaps(const VkDisplayPlaneCapabilitiesKHR& caps1, 
 // Test vkGetDisplayPlaneCapabilities2KHR where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_DISPLAY_EXTENSION_NAME};
     Extension second_ext{VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME};
     env.get_test_icd(0).add_instance_extensions({first_ext, second_ext});
@@ -4841,7 +4851,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkDisplayPlaneCapabilitiesKHR caps{};
     ASSERT_EQ(VK_SUCCESS, GetDisplayPlaneCapabilities(physical_device, 0, 0, &caps));
@@ -4871,7 +4881,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
         cur_icd.add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
@@ -4937,7 +4947,7 @@ TEST(LoaderInstPhysDevExts, GetDispPlaneCaps2KHRMixed) {
 // Test vkAcquireDrmDisplayEXT where nothing supports it.
 TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4951,7 +4961,7 @@ TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTNoSupport) {
 // Test vkAcquireDrmDisplayEXT where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -4966,7 +4976,7 @@ TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTNoICDSupport) {
 // Test vkAcquireDrmDisplayEXT where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_DISPLAY_EXTENSION_NAME};
     Extension second_ext{VK_EXT_ACQUIRE_DRM_DISPLAY_EXTENSION_NAME};
     env.get_test_icd(0).add_instance_extensions({first_ext, second_ext});
@@ -4984,7 +4994,7 @@ TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkDisplayKHR display = VK_NULL_HANDLE;
     ASSERT_EQ(VK_SUCCESS, AcquireDrmDisplay(physical_device, 0, display));
@@ -5010,7 +5020,7 @@ TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
         cur_icd.add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});
@@ -5093,7 +5103,7 @@ TEST(LoaderInstPhysDevExts, AcquireDrmDisplayEXTMixed) {
 // Test vkGetDrmDisplayEXT where nothing supports it.
 TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTNoSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -5107,7 +5117,7 @@ TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTNoSupport) {
 // Test vkGetDrmDisplayEXT where instance supports it, but nothing else.
 TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTNoICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd(0).physical_devices.push_back({});
 
     InstWrapper instance(env.vulkan_functions);
@@ -5122,7 +5132,7 @@ TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTNoICDSupport) {
 // Test vkGetDrmDisplayEXT where instance and ICD supports it, but device does not support it.
 TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTInstanceAndICDSupport) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     Extension first_ext{VK_KHR_DISPLAY_EXTENSION_NAME};
     Extension second_ext{VK_EXT_ACQUIRE_DRM_DISPLAY_EXTENSION_NAME};
     env.get_test_icd(0).add_instance_extensions({first_ext, second_ext});
@@ -5140,7 +5150,7 @@ TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTInstanceAndICDSupport) {
     uint32_t driver_count = 1;
     VkPhysicalDevice physical_device;
     ASSERT_EQ(VK_SUCCESS, instance->vkEnumeratePhysicalDevices(instance, &driver_count, &physical_device));
-    ASSERT_EQ(driver_count, 1);
+    ASSERT_EQ(driver_count, 1U);
 
     VkDisplayKHR display = VK_NULL_HANDLE;
     ASSERT_EQ(VK_SUCCESS, GetDrmDisplay(physical_device, 0, 0, &display));
@@ -5167,7 +5177,7 @@ TEST(LoaderInstPhysDevExts, GetDrmDisplayEXTMixed) {
     const uint32_t max_phys_devs = 7;
 
     for (uint32_t icd = 0; icd < max_icd_count; ++icd) {
-        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
         auto& cur_icd = env.get_test_icd(icd);
         cur_icd.icd_api_version = VK_API_VERSION_1_0;
         cur_icd.add_instance_extension({VK_KHR_DISPLAY_EXTENSION_NAME});

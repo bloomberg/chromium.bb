@@ -407,7 +407,8 @@ export enum PanelCodes {
   'dom_storage' = 60,
   'indexed_db' = 61,
   'web_sql' = 62,
-  MaxValue = 63,
+  'performance_insights' = 63,
+  MaxValue = 64,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -616,8 +617,9 @@ export enum DevtoolsExperiments {
   'lighthousePanelFR' = 57,
   'evaluateExpressionsWithSourceMaps' = 58,
   'cssLayers' = 59,
+  'eyedropperColorPicker' = 60,
   // Increment this when new experiments are added.
-  'MaxValue' = 60,
+  'MaxValue' = 61,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 

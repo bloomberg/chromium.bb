@@ -43,11 +43,17 @@ void LogVirtualCardEnrollmentBubbleShownMetric(
 void LogVirtualCardEnrollmentBubbleResultMetric(
     VirtualCardEnrollmentBubbleResult result,
     VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow) {
-  base::UmaHistogramEnumeration(
+    bool is_reshow,
+    bool previously_declined) {
+  std::string base_histogram_name =
       "Autofill.VirtualCardEnrollBubble.Result." +
-          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) +
-          (is_reshow ? ".Reshows" : ".FirstShow"),
+      VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) +
+      (is_reshow ? ".Reshows" : ".FirstShow");
+  base::UmaHistogramEnumeration(base_histogram_name, result);
+
+  base::UmaHistogramEnumeration(
+      base_histogram_name + (previously_declined ? ".WithPreviousStrikes"
+                                                 : ".WithNoPreviousStrike"),
       result);
 }
 
@@ -98,6 +104,31 @@ void LogVirtualCardEnrollmentLinkClickedMetric(
           VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) + "." +
           VirtualCardEnrollmentLinkTypeToMetricSuffix(link_type),
       true);
+}
+
+void LogVirtualCardEnrollmentStrikeDatabaseEvent(
+    VirtualCardEnrollmentSource source,
+    VirtualCardEnrollmentStrikeDatabaseEvent strike_event) {
+  base::UmaHistogramEnumeration(
+      "Autofill.VirtualCardEnrollmentStrikeDatabase." +
+          VirtualCardEnrollmentSourceToMetricSuffix(source),
+      strike_event);
+}
+
+void LogVirtualCardEnrollmentBubbleMaxStrikesLimitReached(
+    VirtualCardEnrollmentSource source) {
+  DCHECK_NE(source, VirtualCardEnrollmentSource::kSettingsPage);
+  base::UmaHistogramEnumeration(
+      "Autofill.VirtualCardEnrollBubble.MaxStrikesLimitReached", source);
+}
+
+void LogVirtualCardEnrollBubbleCardArtAvailable(
+    bool card_art_available,
+    VirtualCardEnrollmentSource source) {
+  base::UmaHistogramBoolean(
+      "Autofill.VirtualCardEnroll.CardArtImageAvailable." +
+          VirtualCardEnrollmentSourceToMetricSuffix(source),
+      card_art_available);
 }
 
 void LogVirtualCardEnrollBubbleLatencySinceUpstream(

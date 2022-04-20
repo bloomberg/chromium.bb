@@ -7,7 +7,21 @@
 
 #include "tools/debugger/JsonWriteBuffer.h"
 
+#include "include/core/SkFlattenable.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkString.h"
+#include "src/utils/SkJSONWriter.h"
 #include "tools/debugger/DrawCommand.h"
+
+class SkImage;
+class SkMatrix;
+class SkPaint;
+class SkRegion;
+class SkStream;
+class SkTypeface;
+struct SkIRect;
+struct SkPoint3;
+struct SkRect;
 
 void JsonWriteBuffer::append(const char* type) {
     SkString fullName = SkStringPrintf("%02d_%s", fCount++, type);
@@ -176,6 +190,11 @@ void JsonWriteBuffer::writeRegion(const SkRegion& region) {
 void JsonWriteBuffer::writePath(const SkPath& path) {
     this->append("path");
     DrawCommand::MakeJsonPath(*fWriter, path);
+}
+
+void JsonWriteBuffer::writeSampling(const SkSamplingOptions& sampling) {
+    this->append("sampling");
+    DrawCommand::MakeJsonSampling(*fWriter, sampling);
 }
 
 size_t JsonWriteBuffer::writeStream(SkStream* stream, size_t length) {

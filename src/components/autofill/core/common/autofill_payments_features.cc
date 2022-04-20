@@ -54,15 +54,16 @@ const base::Feature kAutofillCreditCardAuthentication{
 const base::Feature kAutofillCreditCardUploadFeedback{
     "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether we show a Google-issued card in the suggestions list.
-const base::Feature kAutofillEnableGoogleIssuedCard{
-    "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, merchant bound virtual cards will be offered when users
 // interact with a payment form.
 const base::Feature kAutofillEnableMerchantBoundVirtualCards{
     "AutofillEnableMerchantBoundVirtualCards",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, enable manual falling component for virtual cards on Android.
+const base::Feature kAutofillEnableManualFallbackForVirtualCards{
+    "AutofillEnableManualFallbackForVirtualCards",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, a notification will be displayed on page navigation if the
 // domain has an eligible merchant promo code offer or reward.
@@ -112,6 +113,14 @@ const base::Feature kAutofillEnableUpdateVirtualCardEnrollment{
 const base::Feature kAutofillEnableVirtualCard{
     "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, after a successful authentication to autofill a virtual card,
+// the user will be prompted to opt-in to FIDO if the user is not currently
+// opted-in, and if the user is opted-in already and the virtual card is FIDO
+// eligible the user will be prompted to register the virtual card into FIDO.
+const base::Feature kAutofillEnableVirtualCardFidoEnrollment(
+    "AutofillEnableVirtualCardFidoEnrollment",
+    base::FEATURE_ENABLED_BY_DEFAULT);
+
 // When enabled, in the payments settings page on desktop, virtual card
 // enrollment management will be provided so that the user can enroll/unenroll a
 // card in virtual card.
@@ -119,11 +128,21 @@ const base::Feature kAutofillEnableVirtualCardManagementInDesktopSettingsPage{
     "AutofillEnableVirtualCardManagementInDesktopSettingsPage",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, Chrome will show metadata along with other card information
+// when the virtual card is presented to users.
+const base::Feature kAutofillEnableVirtualCardMetadata{
+    "AutofillEnableVirtualCardMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, virtual card retrieval will pass an optional
 // authentication based on risk level.
 const base::Feature kAutofillEnableVirtualCardsRiskBasedAuthentication{
     "AutofillEnableVirtualCardsRiskBasedAuthentication",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, if the previous feature offer was declined, a delay will be
+// added before Chrome attempts to show offer again.
+const base::Feature kAutofillEnforceDelaysInStrikeDatabase{
+    "AutofillEnforceDelaysInStrikeDatabase", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
 // fields when data is available.

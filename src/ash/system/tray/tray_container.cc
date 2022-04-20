@@ -40,8 +40,9 @@ void TrayContainer::CalculateTargetBounds() {
 
   gfx::Insets insets(
       is_horizontal
-          ? gfx::Insets(0, new_layout_inputs.status_area_hit_region_padding)
-          : gfx::Insets(new_layout_inputs.status_area_hit_region_padding, 0));
+          ? gfx::Insets::VH(0, new_layout_inputs.status_area_hit_region_padding)
+          : gfx::Insets::VH(new_layout_inputs.status_area_hit_region_padding,
+                            0));
   border_ = views::CreateEmptyBorder(insets);
 
   int horizontal_margin = new_layout_inputs.main_axis_margin;
@@ -50,8 +51,8 @@ void TrayContainer::CalculateTargetBounds() {
     std::swap(horizontal_margin, vertical_margin);
 
   layout_manager_ = std::make_unique<views::BoxLayout>(
-      orientation, gfx::Insets(vertical_margin, horizontal_margin),
-      kUnifiedTraySpacingBetweenIcons);
+      orientation, gfx::Insets::VH(vertical_margin, horizontal_margin),
+      new_layout_inputs.spacing_between_children);
   layout_manager_->set_minimum_cross_axis_size(kTrayItemSize);
 }
 
@@ -73,6 +74,11 @@ void TrayContainer::UpdateLayout() {
 void TrayContainer::SetMargin(int main_axis_margin, int cross_axis_margin) {
   main_axis_margin_ = main_axis_margin;
   cross_axis_margin_ = cross_axis_margin;
+  UpdateLayout();
+}
+
+void TrayContainer::SetSpacingBetweenChildren(int space_dip) {
+  spacing_between_children_ = space_dip;
   UpdateLayout();
 }
 
@@ -114,7 +120,10 @@ const char* TrayContainer::GetClassName() const {
 TrayContainer::LayoutInputs TrayContainer::GetLayoutInputs() const {
   return {shelf_->IsHorizontalAlignment(),
           ShelfConfig::Get()->status_area_hit_region_padding(),
-          GetAnchorBoundsInScreen(), main_axis_margin_, cross_axis_margin_};
+          GetAnchorBoundsInScreen(),
+          main_axis_margin_,
+          cross_axis_margin_,
+          spacing_between_children_};
 }
 
 }  // namespace ash

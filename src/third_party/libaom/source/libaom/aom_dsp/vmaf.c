@@ -21,7 +21,6 @@
 #include <unistd.h>
 #endif
 
-#include <libvmaf/libvmaf.h>
 #include "aom_dsp/blend.h"
 
 static void vmaf_fatal_error(const char *message) {

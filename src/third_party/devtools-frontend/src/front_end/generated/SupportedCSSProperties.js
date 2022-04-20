@@ -142,7 +142,7 @@ export const generatedProperties = [
     ]
   },
   {'name': 'background-clip', 'keywords': ['border-box', 'padding-box', 'content-box']},
-  {'name': 'background-color', 'keywords': ['currentcolor']},
+  {'keywords': ['currentcolor'], 'name': 'background-color'},
   {'name': 'background-image', 'keywords': ['auto', 'none']},
   {'name': 'background-origin', 'keywords': ['border-box', 'padding-box', 'content-box']},
   {'longhands': ['background-position-x', 'background-position-y'], 'name': 'background-position'},
@@ -303,7 +303,7 @@ export const generatedProperties = [
   {'name': 'clip', 'keywords': ['auto']},
   {'name': 'clip-path', 'keywords': ['none']},
   {'name': 'clip-rule', 'inherited': true, 'keywords': ['nonzero', 'evenodd']},
-  {'name': 'color', 'keywords': ['currentcolor'], 'inherited': true},
+  {'keywords': ['currentcolor'], 'inherited': true, 'name': 'color'},
   {'name': 'color-interpolation', 'inherited': true, 'keywords': ['auto', 'srgb', 'linearrgb']},
   {'name': 'color-interpolation-filters', 'inherited': true, 'keywords': ['auto', 'srgb', 'linearrgb']},
   {'name': 'color-rendering', 'inherited': true, 'keywords': ['auto', 'optimizespeed', 'optimizequality']},
@@ -332,7 +332,7 @@ export const generatedProperties = [
   {'name': 'contain-intrinsic-width', 'keywords': ['auto', 'none']},
   {'longhands': ['container-type', 'container-name'], 'name': 'container'},
   {'name': 'container-name', 'keywords': ['none']},
-  {'name': 'container-type', 'keywords': ['none', 'block-size', 'inline-size', 'size']},
+  {'name': 'container-type', 'keywords': ['none', 'inline-size', 'size']},
   {'name': 'content'},
   {'name': 'content-visibility', 'keywords': ['visible', 'auto', 'hidden', 'hidden-matchable']},
   {'name': 'counter-increment', 'keywords': ['none']},
@@ -486,11 +486,11 @@ export const generatedProperties = [
   {'name': 'forced-color-adjust', 'inherited': true, 'keywords': ['auto', 'none', 'preserve-parent-color']},
   {'longhands': ['row-gap', 'column-gap'], 'name': 'gap'},
   {
+    'name': 'grid',
     'longhands': [
       'grid-template-rows', 'grid-template-columns', 'grid-template-areas', 'grid-auto-flow', 'grid-auto-rows',
       'grid-auto-columns'
-    ],
-    'name': 'grid'
+    ]
   },
   {'longhands': ['grid-row-start', 'grid-column-start', 'grid-row-end', 'grid-column-end'], 'name': 'grid-area'},
   {'name': 'grid-auto-columns', 'keywords': ['auto', 'min-content', 'max-content']},
@@ -505,7 +505,7 @@ export const generatedProperties = [
   {'name': 'grid-row-end', 'keywords': ['auto']},
   {'longhands': ['row-gap'], 'name': 'grid-row-gap'},
   {'name': 'grid-row-start', 'keywords': ['auto']},
-  {'longhands': ['grid-template-rows', 'grid-template-columns', 'grid-template-areas'], 'name': 'grid-template'},
+  {'name': 'grid-template', 'longhands': ['grid-template-rows', 'grid-template-columns', 'grid-template-areas']},
   {'keywords': ['none'], 'name': 'grid-template-areas'},
   {'name': 'grid-template-columns', 'keywords': ['none']},
   {'name': 'grid-template-rows', 'keywords': ['none']},
@@ -589,7 +589,9 @@ export const generatedProperties = [
   },
   {'name': 'negative'},
   {'name': 'object-fit', 'keywords': ['fill', 'contain', 'cover', 'none', 'scale-down']},
+  {'name': 'object-overflow', 'keywords': ['clip', 'visible']},
   {'name': 'object-position'},
+  {'name': 'object-view-box', 'keywords': ['none']},
   {
     'longhands': ['offset-position', 'offset-path', 'offset-distance', 'offset-rotate', 'offset-anchor'],
     'name': 'offset'
@@ -643,6 +645,7 @@ export const generatedProperties = [
   {'longhands': ['break-before'], 'name': 'page-break-before'},
   {'longhands': ['break-inside'], 'name': 'page-break-inside'},
   {'name': 'page-orientation'},
+  {'name': 'page-transition-tag', 'keywords': ['none']},
   {'name': 'paint-order', 'inherited': true, 'keywords': ['normal', 'fill', 'stroke', 'markers']},
   {'name': 'perspective', 'keywords': ['none']},
   {'name': 'perspective-origin'},
@@ -943,7 +946,7 @@ export const generatedPropertyValues = {
   'contain-intrinsic-height': {'values': ['auto', 'none']},
   'contain-intrinsic-width': {'values': ['auto', 'none']},
   'container-name': {'values': ['none']},
-  'container-type': {'values': ['none', 'block-size', 'inline-size', 'size']},
+  'container-type': {'values': ['none', 'inline-size', 'size']},
   'content-visibility': {'values': ['visible', 'auto', 'hidden', 'hidden-matchable']},
   'counter-increment': {'values': ['none']},
   'counter-reset': {'values': ['none']},
@@ -1094,6 +1097,8 @@ export const generatedPropertyValues = {
     ]
   },
   'object-fit': {'values': ['fill', 'contain', 'cover', 'none', 'scale-down']},
+  'object-overflow': {'values': ['clip', 'visible']},
+  'object-view-box': {'values': ['none']},
   'offset-anchor': {'values': ['auto']},
   'offset-path': {'values': ['none']},
   'offset-position': {'values': ['auto']},
@@ -1110,6 +1115,7 @@ export const generatedPropertyValues = {
   'overscroll-behavior-x': {'values': ['auto', 'contain', 'none']},
   'overscroll-behavior-y': {'values': ['auto', 'contain', 'none']},
   'page': {'values': ['auto']},
+  'page-transition-tag': {'values': ['none']},
   'paint-order': {'values': ['normal', 'fill', 'stroke', 'markers']},
   'perspective': {'values': ['none']},
   'pointer-events': {

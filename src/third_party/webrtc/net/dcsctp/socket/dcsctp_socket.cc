@@ -479,13 +479,7 @@ ResetStreamsStatus DcSctpSocket::ResetStreams(
   }
 
   tcb_->stream_reset_handler().ResetStreams(outgoing_streams);
-  absl::optional<ReConfigChunk> reconfig =
-      tcb_->stream_reset_handler().MakeStreamResetRequest();
-  if (reconfig.has_value()) {
-    SctpPacket::Builder builder = tcb_->PacketBuilder();
-    builder.Add(*reconfig);
-    packet_sender_.Send(builder);
-  }
+  MaybeSendResetStreamsRequest();
 
   RTC_DCHECK(IsConsistent());
   return ResetStreamsStatus::kPerformed;
@@ -567,6 +561,16 @@ void DcSctpSocket::MaybeSendShutdownOnPacketReceived(const SctpPacket& packet) {
       t2_shutdown_->set_duration(tcb_->current_rto());
       t2_shutdown_->Start();
     }
+  }
+}
+
+void DcSctpSocket::MaybeSendResetStreamsRequest() {
+  absl::optional<ReConfigChunk> reconfig =
+      tcb_->stream_reset_handler().MakeStreamResetRequest();
+  if (reconfig.has_value()) {
+    SctpPacket::Builder builder = tcb_->PacketBuilder();
+    builder.Add(*reconfig);
+    packet_sender_.Send(builder);
   }
 }
 
@@ -1024,11 +1028,12 @@ void DcSctpSocket::HandleDataCommon(AnyDataChunk& chunk) {
     return;
   }
 
-  tcb_->data_tracker().Observe(tsn, immediate_ack);
-  tcb_->reassembly_queue().MaybeResetStreamsDeferred(
-      tcb_->data_tracker().last_cumulative_acked_tsn());
-  tcb_->reassembly_queue().Add(tsn, std::move(data));
-  DeliverReassembledMessages();
+  if (tcb_->data_tracker().Observe(tsn, immediate_ack)) {
+    tcb_->reassembly_queue().MaybeResetStreamsDeferred(
+        tcb_->data_tracker().last_cumulative_acked_tsn());
+    tcb_->reassembly_queue().Add(tsn, std::move(data));
+    DeliverReassembledMessages();
+  }
 }
 
 void DcSctpSocket::HandleInit(const CommonHeader& header,
@@ -1462,6 +1467,10 @@ void DcSctpSocket::HandleReconfig(
   absl::optional<ReConfigChunk> chunk = ReConfigChunk::Parse(descriptor.data);
   if (ValidateParseSuccess(chunk) && ValidateHasTCB()) {
     tcb_->stream_reset_handler().HandleReConfig(*std::move(chunk));
+    // Handling this response may result in outgoing stream resets finishing
+    // (either successfully or with failure). If there still are pending streams
+    // that were waiting for this request to finish, continue resetting them.
+    MaybeSendResetStreamsRequest();
   }
 }
 

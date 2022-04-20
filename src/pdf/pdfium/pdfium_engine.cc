@@ -2354,29 +2354,27 @@ int PDFiumEngine::GetNumberOfPages() const {
   return pages_.size();
 }
 
-base::Value PDFiumEngine::GetBookmarks() {
-  base::Value dict = TraverseBookmarks(nullptr, 0);
-  DCHECK(dict.is_dict());
+base::Value::List PDFiumEngine::GetBookmarks() {
+  base::Value::Dict dict = TraverseBookmarks(nullptr, 0);
   // The root bookmark contains no useful information.
-  base::Value* children = dict.FindListKey("children");
-  DCHECK(children);
+  base::Value::List* children = dict.FindList("children");
   return std::move(*children);
 }
 
-base::Value PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
-                                            unsigned int depth) {
-  base::Value dict(base::Value::Type::DICTIONARY);
+base::Value::Dict PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
+                                                  unsigned int depth) {
+  base::Value::Dict dict;
   std::u16string title = CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDFBookmark_GetTitle, bookmark),
       /*check_expected_size=*/true);
-  dict.SetStringKey("title", title);
+  dict.Set("title", title);
 
   FPDF_DEST dest = FPDFBookmark_GetDest(doc(), bookmark);
   // Some bookmarks don't have a page to select.
   if (dest) {
     int page_index = FPDFDest_GetDestPageIndex(doc(), dest);
     if (PageIndexInBounds(page_index)) {
-      dict.SetIntKey("page", page_index);
+      dict.Set("page", page_index);
 
       absl::optional<float> x;
       absl::optional<float> y;
@@ -2384,11 +2382,11 @@ base::Value PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
       pages_[page_index]->GetPageDestinationTarget(dest, &x, &y, &zoom);
 
       if (x)
-        dict.SetIntKey("x", static_cast<int>(x.value()));
+        dict.Set("x", static_cast<int>(x.value()));
       if (y)
-        dict.SetIntKey("y", static_cast<int>(y.value()));
+        dict.Set("y", static_cast<int>(y.value()));
       if (zoom)
-        dict.SetDoubleKey("zoom", zoom.value());
+        dict.Set("zoom", static_cast<double>(zoom.value()));
     }
   } else {
     // Extract URI for bookmarks linking to an external page.
@@ -2397,10 +2395,10 @@ base::Value PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
         base::BindRepeating(&FPDFAction_GetURIPath, doc(), action),
         /*check_expected_size=*/true);
     if (!uri.empty())
-      dict.SetStringKey("uri", uri);
+      dict.Set("uri", uri);
   }
 
-  base::Value children(base::Value::Type::LIST);
+  base::Value::List children;
 
   // Don't trust PDFium to handle circular bookmarks.
   constexpr unsigned int kMaxDepth = 128;
@@ -2417,7 +2415,7 @@ base::Value PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
       children.Append(TraverseBookmarks(child_bookmark, depth + 1));
     }
   }
-  dict.SetKey("children", std::move(children));
+  dict.Set("children", std::move(children));
   return dict;
 }
 
@@ -2582,10 +2580,7 @@ absl::optional<AccessibilityTextRunInfo> PDFiumEngine::GetTextRunInfo(
     int page_index,
     int start_char_index) {
   DCHECK(PageIndexInBounds(page_index));
-  auto info = pages_[page_index]->GetTextRunInfo(start_char_index);
-  if (!client_->IsPrintPreview() && start_char_index >= 0)
-    pages_[page_index]->LogOverlappingAnnotations();
-  return info;
+  return pages_[page_index]->GetTextRunInfo(start_char_index);
 }
 
 std::vector<AccessibilityLinkInfo> PDFiumEngine::GetLinkInfo(
@@ -3103,10 +3098,11 @@ void PDFiumEngine::InsetPage(const DocumentLayout::Options& layout_options,
                              gfx::Rect& rect) const {
   draw_utils::PageInsetSizes inset_sizes =
       GetInsetSizes(layout_options, page_index, num_of_pages);
-  rect.Inset(static_cast<int>(ceil(inset_sizes.left * multiplier)),
-             static_cast<int>(ceil(inset_sizes.top * multiplier)),
-             static_cast<int>(ceil(inset_sizes.right * multiplier)),
-             static_cast<int>(ceil(inset_sizes.bottom * multiplier)));
+  rect.Inset(gfx::Insets::TLBR(
+      static_cast<int>(ceil(inset_sizes.top * multiplier)),
+      static_cast<int>(ceil(inset_sizes.left * multiplier)),
+      static_cast<int>(ceil(inset_sizes.bottom * multiplier)),
+      static_cast<int>(ceil(inset_sizes.right * multiplier))));
 }
 
 absl::optional<size_t> PDFiumEngine::GetAdjacentPageIndexForTwoUpView(
@@ -3557,7 +3553,7 @@ PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
 void PDFiumEngine::SelectionChangeInvalidator::Invalidate(
     const gfx::Rect& selection) {
   gfx::Rect expanded_selection = selection;
-  expanded_selection.Inset(-1, -1);
+  expanded_selection.Inset(-1);
   engine_->client_->Invalidate(expanded_selection);
 }
 

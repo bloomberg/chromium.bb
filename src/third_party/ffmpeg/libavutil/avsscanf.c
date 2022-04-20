@@ -21,25 +21,18 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
-// CHROMIUM: re-mapped to sscanf to work around a clang bug that breaks
-// compilation on android x64
-
-#include <stdio.h>
-#define av_sscanf sscanf
-
-#if 0
-
+#include <errno.h>
+#include <limits.h>
+#include <math.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <float.h>
 
-#include "config.h"
-#include "common.h"
 #include "avstring.h"
-#include "bprint.h"
+#include "libm.h"
 
 typedef struct FFFILE {
     size_t buf_size;
@@ -975,5 +968,3 @@ int av_sscanf(const char *string, const char *format, ...)
     va_end(ap);
     return ret;
 }
-
-#endif

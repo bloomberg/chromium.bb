@@ -23,7 +23,7 @@ namespace dawn::native::opengl {
 
         auto AddFormat = [&table](wgpu::TextureFormat dawnFormat, GLenum internalFormat,
                                   GLenum format, GLenum type, Type componentType) {
-            size_t index = ComputeFormatIndex(dawnFormat);
+            FormatIndex index = ComputeFormatIndex(dawnFormat);
             ASSERT(index < table.size());
 
             table[index].internalFormat = internalFormat;
@@ -93,8 +93,10 @@ namespace dawn::native::opengl {
         // Depth stencil formats
         AddFormat(wgpu::TextureFormat::Depth32Float, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, Type::DepthStencil);
         AddFormat(wgpu::TextureFormat::Depth24Plus, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT, Type::DepthStencil);
+        AddFormat(wgpu::TextureFormat::Depth24UnormStencil8, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, Type::DepthStencil);
         AddFormat(wgpu::TextureFormat::Depth24PlusStencil8, GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, Type::DepthStencil);
         AddFormat(wgpu::TextureFormat::Depth16Unorm, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, Type::DepthStencil);
+        AddFormat(wgpu::TextureFormat::Stencil8, GL_STENCIL_INDEX8, GL_STENCIL, GL_UNSIGNED_BYTE, Type::DepthStencil);
 
         // Block compressed formats
         AddFormat(wgpu::TextureFormat::BC1RGBAUnorm, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_RGBA, GL_UNSIGNED_BYTE, Type::Float);

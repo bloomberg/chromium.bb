@@ -25,6 +25,7 @@
 #include "libavutil/opt.h"
 
 #include "avcodec.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "internal.h"
 
@@ -290,10 +291,10 @@ static const int32_t dss_sp_sinc[67] = {
 static av_cold int dss_sp_decode_init(AVCodecContext *avctx)
 {
     DssSpContext *p = avctx->priv_data;
-    avctx->channel_layout = AV_CH_LAYOUT_MONO;
     avctx->sample_fmt     = AV_SAMPLE_FMT_S16;
-    avctx->channels       = 1;
     avctx->sample_rate    = 11025;
+    av_channel_layout_uninit(&avctx->ch_layout);
+    avctx->ch_layout      = (AVChannelLayout)AV_CHANNEL_LAYOUT_MONO;
 
     p->pulse_dec_mode = 1;
     p->avctx          = avctx;
@@ -772,14 +773,14 @@ static int dss_sp_decode_frame(AVCodecContext *avctx, void *data,
     return DSS_SP_FRAME_SIZE;
 }
 
-const AVCodec ff_dss_sp_decoder = {
-    .name           = "dss_sp",
-    .long_name      = NULL_IF_CONFIG_SMALL("Digital Speech Standard - Standard Play mode (DSS SP)"),
-    .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = AV_CODEC_ID_DSS_SP,
+const FFCodec ff_dss_sp_decoder = {
+    .p.name         = "dss_sp",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Digital Speech Standard - Standard Play mode (DSS SP)"),
+    .p.type         = AVMEDIA_TYPE_AUDIO,
+    .p.id           = AV_CODEC_ID_DSS_SP,
     .priv_data_size = sizeof(DssSpContext),
     .init           = dss_sp_decode_init,
     .decode         = dss_sp_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

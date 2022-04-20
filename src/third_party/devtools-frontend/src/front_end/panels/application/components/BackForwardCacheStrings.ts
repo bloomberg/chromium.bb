@@ -502,6 +502,14 @@ const UIStrings = {
  */
   embedderExtensionSentMessageToCachedFrame:
       'Extensions with long-lived connection attempted to send messages to frames in back/forward cache.',
+  /**
+ *  @description Description text for not restored reason ErrorDocument.
+ */
+  errorDocument: 'Back/forward cache is disabled due to a document error.',
+  /**
+ *  @description Description text for not restored reason ErrorDocument.
+ */
+  fencedFramesEmbedder: 'Pages using FencedFrames cannot be stored in bfcache.',
 };
 
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/BackForwardCacheStrings.ts', UIStrings);
@@ -639,4 +647,6 @@ export const NotRestoredReasonDescription = {
   'EmbedderExtensionMessagingForOpenPort': {name: i18nLazyString(UIStrings.embedderExtensionMessagingForOpenPort)},
   'EmbedderExtensionSentMessageToCachedFrame':
       {name: i18nLazyString(UIStrings.embedderExtensionSentMessageToCachedFrame)},
+  'ErrorDocument': {name: i18nLazyString(UIStrings.errorDocument)},
+  'FencedFramesEmbedder': {name: i18nLazyString(UIStrings.fencedFramesEmbedder)},
 };

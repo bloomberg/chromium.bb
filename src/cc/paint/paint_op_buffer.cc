@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
@@ -24,6 +25,7 @@
 #include "cc/paint/skottie_serialization_history.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
@@ -764,6 +766,7 @@ size_t DrawSkottieOp::Serialize(const PaintOp* base_op,
         // text).
         helper.WriteData(text_property_val.text().size(),
                          text_property_val.text().c_str());
+        helper.Write(gfx::RectFToSkRect(text_property_val.box()));
       }));
   return helper.size();
 }
@@ -1301,7 +1304,9 @@ absl::optional<SkottieTextPropertyValue> DeserializeSkottieTextPropertyValue(
   deserializer.ReadSize(&text_size);
   std::string text(text_size, char());
   deserializer.ReadData(text_size, const_cast<char*>(text.c_str()));
-  return SkottieTextPropertyValue(std::move(text));
+  SkRect box;
+  deserializer.Read(&box);
+  return SkottieTextPropertyValue(std::move(text), gfx::SkRectToRectF(box));
 }
 
 }  // namespace
@@ -2602,7 +2607,7 @@ gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
   // raster time, since we might be sending a larger-than-one-item display
   // item to skia, which means that skia will internally determine whether to
   // raster the picture (using device clip bounds that are outset).
-  transformed_rect.Inset(-1, -1);
+  transformed_rect.Inset(-1);
   return transformed_rect;
 }
 

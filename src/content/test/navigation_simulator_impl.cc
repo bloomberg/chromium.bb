@@ -525,6 +525,8 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   response->connection_info = http_connection_info_;
   response->ssl_info = ssl_info_;
 
+  response->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
   if (redirect_headers_) {
     response->headers = redirect_headers_;
     redirect_headers_ = nullptr;
@@ -568,6 +570,13 @@ void NavigationSimulatorImpl::ReadyToCommit() {
       InitializeFromStartedRequest(request_);
     } else {
       Start();
+
+      // If a request is blocked, we may not have a request. In this case, mark
+      // as failed and exit.
+      if (!request_) {
+        state_ = FAILED;
+        return;
+      }
 
       // For prerendered page activation, CommitDeferringConditions
       // asynchronously run before the navigation starts. Wait here until all
@@ -1427,6 +1436,10 @@ RenderFrameHost* NavigationSimulatorImpl::GetFinalRenderFrameHost() {
 
 bool NavigationSimulatorImpl::IsDeferred() {
   return !throttle_checks_complete_closure_.is_null();
+}
+
+bool NavigationSimulatorImpl::HasFailed() {
+  return state_ == FAILED;
 }
 
 bool NavigationSimulatorImpl::DidCreateNewEntry(

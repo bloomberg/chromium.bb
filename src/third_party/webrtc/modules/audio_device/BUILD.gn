@@ -51,6 +51,7 @@ rtc_source_set("audio_device_api") {
     "../../api:scoped_refptr",
     "../../api/task_queue",
     "../../rtc_base:checks",
+    "../../rtc_base:refcount",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:stringutils",
   ]
@@ -71,8 +72,12 @@ rtc_library("audio_device_buffer") {
     "../../api/task_queue",
     "../../common_audio:common_audio_c",
     "../../rtc_base:checks",
+    "../../rtc_base:logging",
+    "../../rtc_base:macromagic",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_task_queue",
+    "../../rtc_base:safe_conversions",
+    "../../rtc_base:timeutils",
     "../../rtc_base/synchronization:mutex",
     "../../system_wrappers",
     "../../system_wrappers:metrics",
@@ -87,6 +92,7 @@ rtc_library("audio_device_generic") {
   deps = [
     ":audio_device_api",
     ":audio_device_buffer",
+    "../../rtc_base:logging",
     "../../rtc_base:rtc_base_approved",
   ]
 }
@@ -110,7 +116,10 @@ rtc_source_set("windows_core_audio_utility") {
       ":audio_device_name",
       "../../api/units:time_delta",
       "../../rtc_base:checks",
+      "../../rtc_base:logging",
+      "../../rtc_base:macromagic",
       "../../rtc_base:rtc_base_approved",
+      "../../rtc_base:stringutils",
     ]
 
     libs = [ "oleaut32.lib" ]
@@ -144,9 +153,16 @@ rtc_source_set("audio_device_module_from_input_and_output") {
       ":audio_device_buffer",
       ":windows_core_audio_utility",
       "../../api:scoped_refptr",
+      "../../api:sequence_checker",
       "../../api/task_queue",
       "../../rtc_base:checks",
+      "../../rtc_base:logging",
+      "../../rtc_base:macromagic",
+      "../../rtc_base:refcount",
       "../../rtc_base:rtc_base_approved",
+      "../../rtc_base:safe_conversions",
+      "../../rtc_base:stringutils",
+      "../../rtc_base:timeutils",
     ]
     absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
   }
@@ -170,8 +186,15 @@ rtc_library("audio_device_impl") {
     "../../common_audio:common_audio_c",
     "../../rtc_base",
     "../../rtc_base:checks",
+    "../../rtc_base:logging",
+    "../../rtc_base:macromagic",
+    "../../rtc_base:refcount",
     "../../rtc_base:rtc_base_approved",
+    "../../rtc_base:rtc_event",
     "../../rtc_base:rtc_task_queue",
+    "../../rtc_base:safe_conversions",
+    "../../rtc_base:stringutils",
+    "../../rtc_base:timeutils",
     "../../rtc_base/synchronization:mutex",
     "../../rtc_base/system:arch",
     "../../rtc_base/system:file_wrapper",
@@ -389,7 +412,12 @@ if (rtc_include_tests && !build_with_chromium) {
       "../../common_audio",
       "../../rtc_base:checks",
       "../../rtc_base:ignore_wundef",
+      "../../rtc_base:logging",
+      "../../rtc_base:macromagic",
       "../../rtc_base:rtc_base_approved",
+      "../../rtc_base:rtc_event",
+      "../../rtc_base:safe_conversions",
+      "../../rtc_base:timeutils",
       "../../rtc_base/synchronization:mutex",
       "../../system_wrappers",
       "../../test:fileutils",

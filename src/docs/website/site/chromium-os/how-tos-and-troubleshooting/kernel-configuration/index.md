@@ -8,7 +8,7 @@ page_name: kernel-configuration
 title: Kernel Configuration
 ---
 
-## [TOC]
+[TOC]
 
 ## Overview
 

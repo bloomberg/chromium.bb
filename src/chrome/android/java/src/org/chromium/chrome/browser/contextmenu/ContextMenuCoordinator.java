@@ -22,7 +22,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -34,10 +33,10 @@ import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.ContentFeatures;
-import org.chromium.ui.base.DragStateTracker;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.dragdrop.DragStateTracker;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -65,9 +64,6 @@ public class ContextMenuCoordinator implements ContextMenuUi {
     }
 
     private static final int INVALID_ITEM_ID = -1;
-
-    /** Experiment params for {@link ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE}. */
-    static final String HIDE_HEADER_IMAGE_PARAM = "hide_header_image";
 
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
@@ -114,9 +110,8 @@ public class ContextMenuCoordinator implements ContextMenuUi {
         mOnMenuClosed = onMenuClosed;
         final boolean isDragDropEnabled =
                 ContentFeatureList.isEnabled(ContentFeatures.TOUCH_DRAG_AND_CONTEXT_MENU);
-        final boolean isPopup =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE)
-                || isDragDropEnabled || params.getSourceType() == MenuSourceType.MENU_SOURCE_MOUSE
+        final boolean isPopup = ContextMenuUtils.forcePopupStyleEnabled()
+                || params.getSourceType() == MenuSourceType.MENU_SOURCE_MOUSE
                 || params.getOpenedFromHighlight();
         Activity activity = window.getActivity().get();
         final float density = activity.getResources().getDisplayMetrics().density;
@@ -255,7 +250,13 @@ public class ContextMenuCoordinator implements ContextMenuUi {
 
             clickItem((int) id, activity, onItemClicked);
         });
-
+        // Set the fading edge for context menu. This is guarded by drag and drop feature flag, but
+        // ideally this could be enabled for all forms of context menu.
+        if (isDragDropEnabled) {
+            mListView.setVerticalFadingEdgeEnabled(true);
+            mListView.setFadingEdgeLength(activity.getResources().getDimensionPixelSize(
+                    R.dimen.context_menu_fading_edge_size));
+        }
         mWebContentsObserver = new WebContentsObserver(mWebContents) {
             @Override
             public void navigationEntryCommitted(LoadCommittedDetails details) {
@@ -306,12 +307,11 @@ public class ContextMenuCoordinator implements ContextMenuUi {
             boolean isPopup, int topMarginPx, int bottomMarginPx, @Nullable Integer popupMargin,
             @Nullable Integer desiredPopupContentWidth, @Nullable View webContentView, Rect rect) {
         // TODO(sinansahin): Refactor ContextMenuDialog as well.
-        boolean shouldRemoveScrim =
-                isPopup && ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_POPUP_STYLE);
+        boolean shouldRemoveScrim = isPopup && ContextMenuUtils.forcePopupStyleEnabled();
         final ContextMenuDialog dialog = new ContextMenuDialog(activity,
-                R.style.Theme_Chromium_AlertDialog, topMarginPx, bottomMarginPx, layout, view,
-                isPopup, shouldRemoveScrim, popupMargin, desiredPopupContentWidth, webContentView,
-                rect, ChromeAccessibilityUtil.get());
+                R.style.ThemeOverlay_BrowserUI_AlertDialog, topMarginPx, bottomMarginPx, layout,
+                view, isPopup, shouldRemoveScrim, popupMargin, desiredPopupContentWidth,
+                webContentView, rect, ChromeAccessibilityUtil.get());
         dialog.setContentView(layout);
 
         return dialog;
@@ -468,5 +468,10 @@ public class ContextMenuCoordinator implements ContextMenuUi {
     @VisibleForTesting
     public ContextMenuDialog getDialogForTest() {
         return mDialog;
+    }
+
+    @VisibleForTesting
+    public ContextMenuListView getListViewForTest() {
+        return mListView;
     }
 }

@@ -52,8 +52,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -187,6 +189,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityVirtualKeyboardEnabled,
     prefs::kDockedMagnifierEnabled,
     prefs::kDockedMagnifierScale,
+    prefs::kDockedMagnifierScreenHeightDivisor,
     prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
@@ -1035,6 +1038,11 @@ AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::GetFeature(
   return *features_[type].get();
 }
 
+base::WeakPtr<AccessibilityControllerImpl>
+AccessibilityControllerImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::autoclick()
     const {
   return GetFeature(FeatureType::kAutoclick);
@@ -1229,14 +1237,14 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForLargeCursor() {
 }
 
 bool AccessibilityControllerImpl::IsLiveCaptionSettingVisibleInTray() {
-  return media::IsLiveCaptionFeatureEnabled() &&
+  return captions::IsLiveCaptionFeatureSupported() &&
          base::FeatureList::IsEnabled(
              media::kLiveCaptionSystemWideOnChromeOS) &&
          live_caption().IsVisibleInTray();
 }
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForLiveCaption() {
-  return media::IsLiveCaptionFeatureEnabled() &&
+  return captions::IsLiveCaptionFeatureSupported() &&
          base::FeatureList::IsEnabled(
              media::kLiveCaptionSystemWideOnChromeOS) &&
          live_caption().IsEnterpriseIconVisible();
@@ -1511,7 +1519,8 @@ void AccessibilityControllerImpl::SetDictationActive(bool is_active) {
 void AccessibilityControllerImpl::ToggleDictationFromSource(
     DictationToggleSource source) {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Dictation"));
-  UserMetricsRecorder::RecordUserToggleDictation(source);
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosDictation.ToggleDictationMethod",
+                            source);
 
   dictation().SetEnabled(true);
   ToggleDictation();

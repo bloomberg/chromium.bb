@@ -51,6 +51,15 @@ tr.b.unittest.testSuite(function() {
     netThread.asyncSliceGroup.push(slice);
   }
 
+  function addNavigationEvent(threadForAdding, startTime, durationTime) {
+    threadForAdding.asyncSliceGroup.push(
+        tr.c.TestUtils.newAsyncSliceEx({
+          cat: 'navigation',
+          title: 'Navigation StartToCommit',
+          start: startTime,
+          duration: durationTime}));
+  }
+
   // Adds a browser and renderer to the process, with a few key events necessary
   // to calculate the |androidStartupMetric|. An |offset| can be added to all
   // events and the length of a few events can be extended by
@@ -72,12 +81,8 @@ tr.b.unittest.testSuite(function() {
           start: (offset + 6800.125),
           duration: (incrementForMetrics + 1700.0625)}));
     const navigationStart = offset + 9000.5 + incrementForMetrics;
-    browserMainThread.asyncSliceGroup.push(
-        tr.c.TestUtils.newAsyncSliceEx({
-          cat: 'navigation',
-          title: 'Navigation StartToCommit',
-          start: navigationStart,
-          duration: (incrementForMetrics + 2000.5)}));
+    addNavigationEvent(browserMainThread, navigationStart,
+        incrementForMetrics + 2000.5);
     const rendererMainThread = createRendererThread(model);
     rendererMainThread.sliceGroup.pushSlice(tr.c.TestUtils.newSliceEx({
       cat: 'loading,rail,devtools.timeline',
@@ -98,6 +103,7 @@ tr.b.unittest.testSuite(function() {
     // The metrics rely on having network access in netlog soon after the
     // navigation starts.
     addNetworkEvents(navigationStart + 110, 2, browserMainThread.parent);
+    return browserMainThread;
   }
 
   // Adds early messageloop and FCP events. The metric should ignore these very
@@ -184,12 +190,7 @@ tr.b.unittest.testSuite(function() {
               start: (20.0 + 1.0),
               duration: 10.0}));
         const navigationStartTime = 20.0 + 11.0;
-        browserMainThread.asyncSliceGroup.push(
-            tr.c.TestUtils.newAsyncSliceEx({
-              cat: 'navigation',
-              title: 'Navigation StartToCommit',
-              start: navigationStartTime,
-              duration: 10.0}));
+        addNavigationEvent(browserMainThread, navigationStartTime, 10.0);
         addNetworkEvents(navigationStartTime + 2, 2, browserMainThread.parent);
         const rendererMainThread = createRendererThread(model);
         rendererMainThread.sliceGroup.pushSlice(
@@ -292,6 +293,27 @@ tr.b.unittest.testSuite(function() {
         2, 1600, 1600 + delta);
     verifyHistogramRange(histograms, 'process_create_to_app_start_time', 2, 100,
         100 + delta);
+  });
+
+  test('androidStartupMetric_extraNavigations', function() {
+    const histograms = new tr.v.HistogramSet();
+    function makeTestModelWithExtraNavigations() {
+      return tr.c.TestUtils.newModel(function(model) {
+        const mainThread = fillModelWithOneBrowserSession(model, 0.0, 0.0);
+        addEarlyEventsToBeIgnored(model, 0.0);
+        addEarlyEventsToBeIgnored(model, 20.0);
+        // The first commit time is hardcoded to match how it is added in
+        // fillModelWithOneBrowserSession().
+        const veryFirstCommitTime = 9000.5 + 2000.5;
+        addNavigationEvent(mainThread, veryFirstCommitTime + 20.0, 5.0);
+      });
+    }
+    tr.metrics.sh.androidStartupMetric(histograms, makeTestModelWithExtraNavigations());
+    verifyHistogram(histograms, 'messageloop_start_time', 1, 1700.0625);
+    verifyHistogram(histograms, 'experimental_navigation_start_time', 1,
+        2200.375);
+    verifyHistogram(histograms, 'experimental_network_request_start_time', 1,
+        2200.375 + 110);
   });
 });
 </script>

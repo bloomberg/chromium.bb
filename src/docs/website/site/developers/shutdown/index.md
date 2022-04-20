@@ -8,25 +8,29 @@ title: Shutdown
 
 [TOC]
 
+## Profile Destruction
+
+See [shutdown.md](https://chromium.googlesource.com/chromium/src.git/+/HEAD/docs/shutdown.md#Step-0_Profile-destruction)
+
 ## Browser Process Shutdown
+
+`BrowserProcess` is also refcounted, much like `Profile`. `ScopedKeepAlive`
+inhibits teardown, and the refcount is managed by `KeepAliveRegistry`.
 
 ### Stopping the UI Message Loop
 
-*   A UI event is received that leads to BrowserList::RemoveBrowser()
-            (closing the window, closing the last tab, keyboard shortcut for app
-            termination, etc), which leads to
-            g_browser_process-&gt;ReleaseModule()
-*   If it's the last reference to g_browser_process, then we begin
+*   A UI event is received that leads to `~ScopedKeepAlive` (closing the window,
+            closing the last tab, keyboard shortcut for app termination, etc).
+*   If the refcount in `KeepAliveRegistry` drops to zero, then we begin
             application termination.
-    *   Note that Mac keeps the application alive even without browser
-                windows by adding an extra g_browser_process-&gt;AddRefModule().
-*   The last BrowserProcessImpl::ReleaseModule() call posts a task to
-            the message loop to exit
-*   Notification content::NOTIFICATION_APP_TERMINATING is broadcast
+    *   Note that macOS keeps the application alive even without browser
+                windows by adding an extra `ScopedKeepAlive` in `AppController`.
+*   If the refcount reaches zero, post a task to the message loop to exit
+*   Notification `content::NOTIFICATION_APP_TERMINATING` is broadcast
 *   The UI message loop eventually stops running, we exit out of
-            RunUIMessageLoop(). Note that all other main browser threads are
+            `RunUIMessageLoop()`. Note that all other main browser threads are
             still running their message loops. So even though the main (UI)
-            thread outlives all other joined browser threads, its MessageLoop
+            thread outlives all other joined browser threads, its `MessageLoop`
             terminates first.
 
 ### BrowserProcessImpl deletion

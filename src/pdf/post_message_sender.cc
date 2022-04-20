@@ -19,9 +19,13 @@
 
 namespace chrome_pdf {
 
-PostMessageSender::PostMessageSender(V8ValueConverter* v8_value_converter)
+PostMessageSender::PostMessageSender(blink::WebPluginContainer* container,
+                                     V8ValueConverter* v8_value_converter)
     : v8_value_converter_(v8_value_converter),
-      isolate_(blink::MainThreadIsolate()) {}
+      isolate_(blink::MainThreadIsolate()),
+      container_(container) {
+  DCHECK(container_);
+}
 
 PostMessageSender::~PostMessageSender() = default;
 
@@ -30,11 +34,7 @@ PostMessageSender::~PostMessageSender() = default;
 // When that happens, the body of this method needs to be posted to the main
 // thread as a task because that's where the Blink and V8 interactions need to
 // occur.
-void PostMessageSender::Post(base::Value message) {
-  // Drop messages if there is no container.
-  if (!container_)
-    return;
-
+void PostMessageSender::Post(base::Value::Dict message) {
   v8::Isolate::Scope isolate_scope(isolate_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
@@ -43,7 +43,7 @@ void PostMessageSender::Post(base::Value message) {
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Value> converted_message =
-      v8_value_converter_->ToV8Value(message, context);
+      v8_value_converter_->ToV8Value(base::Value(std::move(message)), context);
 
   container_->EnqueueMessageEvent(
       blink::WebSerializedScriptValue::Serialize(isolate_, converted_message));

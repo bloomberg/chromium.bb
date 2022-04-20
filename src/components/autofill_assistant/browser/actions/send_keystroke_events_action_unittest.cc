@@ -91,9 +91,10 @@ TEST_F(SendKeystrokeEventsActionTest, FailsIfElementDoesNotExist) {
 }
 
 TEST_F(SendKeystrokeEventsActionTest, SendsText) {
-  ElementFinder::Result element;
-  element.dom_object.object_data.object_id = "id";
-  mock_action_delegate_.GetElementStore()->AddElement("e", element.dom_object);
+  ElementFinderResult element;
+  element.SetObjectId("id");
+  mock_action_delegate_.GetElementStore()->AddElement("e",
+                                                      element.dom_object());
 
   EXPECT_CALL(mock_web_controller_,
               SendTextInput(20, "Hello", EqualsElement(element), _))
@@ -113,14 +114,15 @@ TEST_F(SendKeystrokeEventsActionTest, PasswordTextValueReturnLastTimeUsed) {
   ON_CALL(mock_action_delegate_, GetElementStore)
       .WillByDefault(Return(&fake_element_store));
 
-  ElementFinder::Result element;
+  ElementFinderResult element;
   // The password's origin is compared against the frame's. Navigate the frame
   // to set the matching origin.
   content::WebContentsTester::For(web_contents_.get())
       ->NavigateAndCommit(GURL(kUrl));
-  element.dom_object.object_data.object_id = "id";
-  element.container_frame_host = web_contents_->GetMainFrame();
-  mock_action_delegate_.GetElementStore()->AddElement("e", element.dom_object);
+  element.SetObjectId("id");
+  element.SetRenderFrameHost(web_contents_->GetMainFrame());
+  mock_action_delegate_.GetElementStore()->AddElement("e",
+                                                      element.dom_object());
 
   EXPECT_CALL(mock_web_controller_,
               SendTextInput(0, "password", EqualsElement(element), _))
@@ -153,14 +155,15 @@ TEST_F(SendKeystrokeEventsActionTest,
   ON_CALL(mock_action_delegate_, GetElementStore)
       .WillByDefault(Return(&fake_element_store));
 
-  ElementFinder::Result element;
+  ElementFinderResult element;
   // The password's origin is compared against the frame's. Navigate the frame
   // to set the matching origin.
   content::WebContentsTester::For(web_contents_.get())
       ->NavigateAndCommit(GURL(kUrl));
-  element.dom_object.object_data.object_id = "id";
-  element.container_frame_host = web_contents_->GetMainFrame();
-  mock_action_delegate_.GetElementStore()->AddElement("e", element.dom_object);
+  element.SetObjectId("id");
+  element.SetRenderFrameHost(web_contents_->GetMainFrame());
+  mock_action_delegate_.GetElementStore()->AddElement("e",
+                                                      element.dom_object());
 
   EXPECT_CALL(mock_web_controller_,
               SendTextInput(0, "password", EqualsElement(element), _))

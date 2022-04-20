@@ -61,6 +61,7 @@ using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 constexpr SendOptions kSendOptions;
 constexpr size_t kLargeMessageSize = DcSctpOptions::kMaxSafeMTUSize * 20;
@@ -2214,5 +2215,106 @@ TEST_P(DcSctpSocketParametrizedTest, CanLoseFirstOrderedMessage) {
   MaybeHandoverSocketAndSendMessage(a, std::move(z));
 }
 
+TEST(DcSctpSocketTest, ReceiveBothUnorderedAndOrderedWithSameTSN) {
+  /* This issue was found by fuzzing. */
+  SocketUnderTest a("A");
+  SocketUnderTest z("Z");
+
+  a.socket.Connect();
+  std::vector<uint8_t> init_data = a.cb.ConsumeSentPacket();
+  ASSERT_HAS_VALUE_AND_ASSIGN(SctpPacket init_packet,
+                              SctpPacket::Parse(init_data));
+  ASSERT_HAS_VALUE_AND_ASSIGN(
+      InitChunk init_chunk,
+      InitChunk::Parse(init_packet.descriptors()[0].data));
+  z.socket.ReceivePacket(init_data);
+  a.socket.ReceivePacket(z.cb.ConsumeSentPacket());
+  z.socket.ReceivePacket(a.cb.ConsumeSentPacket());
+  a.socket.ReceivePacket(z.cb.ConsumeSentPacket());
+
+  // Receive a short unordered message with tsn=INITIAL_TSN+1
+  TSN tsn = init_chunk.initial_tsn();
+  AnyDataChunk::Options opts;
+  opts.is_beginning = Data::IsBeginning(true);
+  opts.is_end = Data::IsEnd(true);
+  opts.is_unordered = IsUnordered(true);
+  z.socket.ReceivePacket(
+      SctpPacket::Builder(z.socket.verification_tag(), z.options)
+          .Add(DataChunk(TSN(*tsn + 1), StreamID(1), SSN(0), PPID(53),
+                         std::vector<uint8_t>(10), opts))
+          .Build());
+
+  // Now receive a longer _ordered_ message with [INITIAL_TSN, INITIAL_TSN+1].
+  // This isn't allowed as it reuses TSN=53 with different properties, but it
+  // shouldn't cause any issues.
+  opts.is_unordered = IsUnordered(false);
+  opts.is_end = Data::IsEnd(false);
+  z.socket.ReceivePacket(
+      SctpPacket::Builder(z.socket.verification_tag(), z.options)
+          .Add(DataChunk(tsn, StreamID(1), SSN(0), PPID(53),
+                         std::vector<uint8_t>(10), opts))
+          .Build());
+
+  opts.is_beginning = Data::IsBeginning(false);
+  opts.is_end = Data::IsEnd(true);
+  z.socket.ReceivePacket(
+      SctpPacket::Builder(z.socket.verification_tag(), z.options)
+          .Add(DataChunk(TSN(*tsn + 1), StreamID(1), SSN(0), PPID(53),
+                         std::vector<uint8_t>(10), opts))
+          .Build());
+}
+
+TEST(DcSctpSocketTest, CloseTwoStreamsAtTheSameTime) {
+  // Reported as https://crbug.com/1312009.
+  SocketUnderTest a("A");
+  SocketUnderTest z("Z");
+
+  EXPECT_CALL(z.cb, OnIncomingStreamsReset(ElementsAre(StreamID(1)))).Times(1);
+  EXPECT_CALL(z.cb, OnIncomingStreamsReset(ElementsAre(StreamID(2)))).Times(1);
+  EXPECT_CALL(a.cb, OnStreamsResetPerformed(ElementsAre(StreamID(1)))).Times(1);
+  EXPECT_CALL(a.cb, OnStreamsResetPerformed(ElementsAre(StreamID(2)))).Times(1);
+
+  ConnectSockets(a, z);
+
+  a.socket.Send(DcSctpMessage(StreamID(1), PPID(53), {1, 2}), kSendOptions);
+  a.socket.Send(DcSctpMessage(StreamID(2), PPID(53), {1, 2}), kSendOptions);
+
+  ExchangeMessages(a, z);
+
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(1)}));
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(2)}));
+
+  ExchangeMessages(a, z);
+}
+
+TEST(DcSctpSocketTest, CloseThreeStreamsAtTheSameTime) {
+  // Similar to CloseTwoStreamsAtTheSameTime, but ensuring that the two
+  // remaining streams are reset at the same time in the second request.
+  SocketUnderTest a("A");
+  SocketUnderTest z("Z");
+
+  EXPECT_CALL(z.cb, OnIncomingStreamsReset(ElementsAre(StreamID(1)))).Times(1);
+  EXPECT_CALL(z.cb, OnIncomingStreamsReset(
+                        UnorderedElementsAre(StreamID(2), StreamID(3))))
+      .Times(1);
+  EXPECT_CALL(a.cb, OnStreamsResetPerformed(ElementsAre(StreamID(1)))).Times(1);
+  EXPECT_CALL(a.cb, OnStreamsResetPerformed(
+                        UnorderedElementsAre(StreamID(2), StreamID(3))))
+      .Times(1);
+
+  ConnectSockets(a, z);
+
+  a.socket.Send(DcSctpMessage(StreamID(1), PPID(53), {1, 2}), kSendOptions);
+  a.socket.Send(DcSctpMessage(StreamID(2), PPID(53), {1, 2}), kSendOptions);
+  a.socket.Send(DcSctpMessage(StreamID(3), PPID(53), {1, 2}), kSendOptions);
+
+  ExchangeMessages(a, z);
+
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(1)}));
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(2)}));
+  a.socket.ResetStreams(std::vector<StreamID>({StreamID(3)}));
+
+  ExchangeMessages(a, z);
+}
 }  // namespace
 }  // namespace dcsctp

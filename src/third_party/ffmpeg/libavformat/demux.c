@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "config_components.h"
 
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
@@ -193,6 +194,18 @@ static int update_stream_avctx(AVFormatContext *s)
             av_parser_close(sti->parser);
             sti->parser = NULL;
         }
+
+#if FF_API_OLD_CHANNEL_LAYOUT
+FF_DISABLE_DEPRECATION_WARNINGS
+        if (st->codecpar->ch_layout.nb_channels &&
+            !st->codecpar->channels) {
+            st->codecpar->channels = st->codecpar->ch_layout.nb_channels;
+            st->codecpar->channel_layout = st->codecpar->ch_layout.order == AV_CHANNEL_ORDER_NATIVE ?
+                                           st->codecpar->ch_layout.u.mask : 0;
+
+        }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
         /* update internal codec context, for the parser */
         ret = avcodec_parameters_to_context(sti->avctx, st->codecpar);
@@ -1321,8 +1334,16 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
                 return ret;
             st->codecpar->sample_rate = sti->avctx->sample_rate;
             st->codecpar->bit_rate = sti->avctx->bit_rate;
-            st->codecpar->channels = sti->avctx->channels;
-            st->codecpar->channel_layout = sti->avctx->channel_layout;
+#if FF_API_OLD_CHANNEL_LAYOUT
+FF_DISABLE_DEPRECATION_WARNINGS
+            st->codecpar->channels = sti->avctx->ch_layout.nb_channels;
+            st->codecpar->channel_layout = sti->avctx->ch_layout.order == AV_CHANNEL_ORDER_NATIVE ?
+                                           sti->avctx->ch_layout.u.mask : 0;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+            ret = av_channel_layout_copy(&st->codecpar->ch_layout, &sti->avctx->ch_layout);
+            if (ret < 0)
+                return ret;
             st->codecpar->codec_id = sti->avctx->codec_id;
         } else {
             /* free packet */
@@ -1346,7 +1367,7 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
         if (sti->first_discard_sample && pkt->pts != AV_NOPTS_VALUE) {
             int64_t pts = pkt->pts - (is_relative(pkt->pts) ? RELATIVE_TS_BASE : 0);
             int64_t sample = ts_to_samples(st, pts);
-            int duration = ts_to_samples(st, pkt->duration);
+            int64_t duration = ts_to_samples(st, pkt->duration);
             int64_t end_sample = sample + duration;
             if (duration > 0 && end_sample >= sti->first_discard_sample &&
                 sample < sti->last_discard_sample)
@@ -1354,12 +1375,14 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
         }
         if (sti->start_skip_samples && (pkt->pts == 0 || pkt->pts == RELATIVE_TS_BASE))
             sti->skip_samples = sti->start_skip_samples;
+        sti->skip_samples = FFMAX(0, sti->skip_samples);
         if (sti->skip_samples || discard_padding) {
             uint8_t *p = av_packet_new_side_data(pkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
             if (p) {
                 AV_WL32(p, sti->skip_samples);
                 AV_WL32(p + 4, discard_padding);
-                av_log(s, AV_LOG_DEBUG, "demuxer injecting skip %d / discard %d\n", sti->skip_samples, discard_padding);
+                av_log(s, AV_LOG_DEBUG, "demuxer injecting skip %u / discard %u\n",
+                       (unsigned)sti->skip_samples, (unsigned)discard_padding);
             }
             sti->skip_samples = 0;
         }
@@ -1384,12 +1407,15 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
         }
     }
 
-    av_opt_get_dict_val(s, "metadata", AV_OPT_SEARCH_CHILDREN, &metadata);
-    if (metadata) {
-        s->event_flags |= AVFMT_EVENT_FLAG_METADATA_UPDATED;
-        av_dict_copy(&s->metadata, metadata, 0);
-        av_dict_free(&metadata);
-        av_opt_set_dict_val(s, "metadata", NULL, AV_OPT_SEARCH_CHILDREN);
+    if (!si->metafree) {
+        int metaret = av_opt_get_dict_val(s, "metadata", AV_OPT_SEARCH_CHILDREN, &metadata);
+        if (metadata) {
+            s->event_flags |= AVFMT_EVENT_FLAG_METADATA_UPDATED;
+            av_dict_copy(&s->metadata, metadata, 0);
+            av_dict_free(&metadata);
+            av_opt_set_dict_val(s, "metadata", NULL, AV_OPT_SEARCH_CHILDREN);
+        }
+        si->metafree = metaret == AVERROR_OPTION_NOT_FOUND;
     }
 
     if (s->debug & FF_FDEBUG_TS)
@@ -1930,7 +1956,7 @@ static int has_codec_parameters(const AVStream *st, const char **errmsg_ptr)
             FAIL("unspecified sample format");
         if (!avctx->sample_rate)
             FAIL("unspecified sample rate");
-        if (!avctx->channels)
+        if (!avctx->ch_layout.nb_channels)
             FAIL("unspecified number of channels");
         if (sti->info->found_decoder >= 0 && !sti->nb_decoded_frames && avctx->codec_id == AV_CODEC_ID_DTS)
             FAIL("no decodable DTS frames");
@@ -2934,6 +2960,9 @@ find_stream_info_err:
             av_freep(&sti->info);
         }
         avcodec_close(sti->avctx);
+        // FIXME: avcodec_close() frees AVOption settable fields which includes ch_layout,
+        //        so we need to restore it.
+        av_channel_layout_copy(&sti->avctx->ch_layout, &st->codecpar->ch_layout);
         av_bsf_free(&sti->extract_extradata.bsf);
     }
     if (ic->pb) {

@@ -249,10 +249,10 @@ TEST_P(ResizeTest, TestExternalResizeWorks) {
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 const unsigned int kStepDownFrame = 3;
 const unsigned int kStepUpFrame = 6;
 
-#if !CONFIG_REALTIME_ONLY
 class ResizeInternalTestLarge : public ResizeTest {
  protected:
 #if WRITE_COMPRESSED_STREAM

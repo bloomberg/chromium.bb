@@ -31,9 +31,9 @@
 #include "src/core/SkTaskGroup.h"
 #include "src/core/SkTextBlobPriv.h"
 #include "src/core/SkVMBlitter.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrPersistentCacheUtils.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrPersistentCacheUtils.h"
 #include "src/image/SkImage_Base.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/utils/SkJSONWriter.h"
@@ -58,8 +58,8 @@
 #include "tools/viewer/SvgSlide.h"
 
 #if SK_GPU_V1
-#include "src/gpu/ops/AtlasPathRenderer.h"
-#include "src/gpu/ops/TessellationPathRenderer.h"
+#include "src/gpu/ganesh/ops/AtlasPathRenderer.h"
+#include "src/gpu/ganesh/ops/TessellationPathRenderer.h"
 #endif
 
 #include <cstdlib>
@@ -2563,6 +2563,7 @@ void Viewer::drawImGui() {
 
                 // If we are changing the compile mode, we want to reset the cache and redo
                 // everything.
+                static bool sDoDeferredView = false;
                 if (doDump || newOptLevel != fOptLevel) {
                     sksl = doDump || (newOptLevel == kShaderOptLevel_Source);
                     fOptLevel = (ShaderOptLevel)newOptLevel;
@@ -2589,11 +2590,12 @@ void Viewer::drawImGui() {
                             sksl ? GrContextOptions::ShaderCacheStrategy::kSkSL
                                  : GrContextOptions::ShaderCacheStrategy::kBackendSource;
                     displayParamsChanged = true;
-                    doView = true;
 
                     fDeferredActions.push_back([=]() {
                         // Reset the cache.
                         fPersistentCache.reset();
+                        sDoDeferredView = true;
+
                         // Dump the cache once we have drawn a frame with it.
                         if (doDump) {
                             fDeferredActions.push_back([this]() {
@@ -2630,10 +2632,11 @@ void Viewer::drawImGui() {
                 }
                 ImGui::EndChild();
 
-                if (doView) {
+                if (doView || sDoDeferredView) {
                     fPersistentCache.reset();
                     ctx->priv().getGpu()->resetShaderCacheForTesting();
                     gLoadPending = true;
+                    sDoDeferredView = false;
                 }
 
                 // We don't support updating SPIRV shaders. We could re-assemble them (with edits),

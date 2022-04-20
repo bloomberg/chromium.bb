@@ -37,26 +37,22 @@ const base::Feature kDefaultBrowserFullscreenPromoExperiment{
 const base::Feature kIOSNewOmniboxImplementation{
     "kIOSNewOmniboxImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kIOSOmniboxAllowEditsDuringDictation{
-    "IOSOmniboxAllowEditsDuringDictation", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kIOSOmniboxUpdatedPopupUI{
     "kIOSOmniboxUpdatedPopupUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const char kIOSOmniboxUpdatedPopupUIVariationName[] = "PopupUIVariant";
+
+extern const char kIOSOmniboxUpdatedPopupUIVariation1[] = "variant-one";
+extern const char kIOSOmniboxUpdatedPopupUIVariation2[] = "variant-two";
+
 const base::Feature kIOSLocationBarUseNativeContextMenu{
     "IOSLocationBarUseNativeContextMenu", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kSearchHistoryLinkIOS{"SearchHistoryLinkIOS",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUseLensToSearchForImage{"UseLensToSearchForImage",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCredentialProviderExtensionPromo{
-    "CredentialProviderExtensionPromo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRemoveExcessNTPs{"RemoveExcessNTPs",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

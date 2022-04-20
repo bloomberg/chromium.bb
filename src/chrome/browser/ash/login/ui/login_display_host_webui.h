@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -261,7 +262,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   RestorePath restore_path_ = RESTORE_UNKNOWN;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
-  OobeScreenId first_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId first_screen_ = ash::OOBE_SCREEN_UNKNOWN;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.

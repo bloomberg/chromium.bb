@@ -13,14 +13,17 @@ title: chroot_version_hooks
 On occasion changes are made to some component of the Chromium OS source that
 are not backwards-compatible with existing chroots. When this happens a "chroot
 version hook" should be used to make whatever changes are necessary to an
-existing chroot to make it compatible. Usually this involves deleting some
+existing chroot to make it compatible. Often this involves deleting some
 previously compiled/generated component in order to force it to be
-compiled/generated again.
+compiled/generated again.  Another possible scenario is when there is a Chromium
+OS source change that is dependent on a change coming in a future version of the
+SDK, a version hook is needed to bridge that gap between SDK releases and make
+that change directly in existing chroots (e.g. a config file change).
 
 ### Details
 
 The version hooks all exist under
-[src/scripts/chroot_version_hooks.d](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/master/chroot_version_hooks.d/).
+[src/scripts/chroot_version_hooks.d](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/HEAD/chroot_version_hooks.d/).
 Each hook script has a name that begins with "&lt;num&gt;_", where &lt;num&gt;
 is an integer that represents the version number of a chroot. Whenever a new
 chroot is entered (via "cros_sdk") or "build_packages" is run all upgrade hooks

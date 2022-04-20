@@ -8,12 +8,47 @@
 #include "gm/gm.h"
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkPaint.h"
+#include "include/core/SkRRect.h"
 #include "include/effects/SkGradientShader.h"
+#include "include/gpu/GrRecordingContext.h"
 #include "tools/Resources.h"
 
 namespace {
+
+class MetaContext {
+public:
+    MetaContext(SkCanvas* canvas) {
+#ifdef SK_GRAPHITE_ENABLED
+        fRecorder = canvas->recorder();
+#endif
+        fContext = canvas->recordingContext() ? canvas->recordingContext()->asDirectContext()
+                                              : nullptr;
+    }
+
+    sk_sp<SkImage> makeTextureImage(sk_sp<SkImage> orig) const {
+#ifdef SK_GRAPHITE_ENABLED
+        if (fRecorder) {
+            return orig->makeTextureImage(fRecorder);
+        }
+#endif
+
+        if (fContext) {
+            return orig->makeTextureImage(fContext);
+        }
+
+        return orig;
+    }
+
+private:
+#ifdef SK_GRAPHITE_ENABLED
+    skgpu::graphite::Recorder* fRecorder;
+#endif
+
+    GrDirectContext* fContext;
+};
 
 sk_sp<SkShader> create_gradient_shader(SkRect r) {
     // TODO: it seems like only the x-component of sk_FragCoord is making it to the shader!
@@ -25,8 +60,8 @@ sk_sp<SkShader> create_gradient_shader(SkRect r) {
                                         SkTileMode::kClamp);
 }
 
-sk_sp<SkShader> create_image_shader() {
-    SkImageInfo ii = SkImageInfo::Make(100, 100, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+sk_sp<SkShader> create_image_shader(const MetaContext& context) {
+    SkImageInfo ii = SkImageInfo::Make(128, 128, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
     SkBitmap bitmap;
 
     bitmap.allocPixels(ii);
@@ -34,24 +69,34 @@ sk_sp<SkShader> create_image_shader() {
 
     SkCanvas canvas(bitmap);
 
-    SkPaint redPaint;
-    redPaint.setColor(SK_ColorRED);
-    canvas.drawCircle(50, 50, 50, redPaint);
+    SkColor colors[3][3] = {
+            { SK_ColorRED,    SK_ColorDKGRAY, SK_ColorBLUE },
+            { SK_ColorLTGRAY, SK_ColorCYAN,   SK_ColorYELLOW },
+            { SK_ColorGREEN,  SK_ColorWHITE,  SK_ColorMAGENTA }
+    };
+
+    for (int y = 0; y < 3; ++y) {
+        for (int x = 0; x < 3; ++x) {
+            SkPaint paint;
+            paint.setColor(colors[y][x]);
+            canvas.drawRect(SkRect::MakeXYWH(x*42, y*42, 43, 43), paint);
+        }
+    }
 
     bitmap.setAlphaType(kOpaque_SkAlphaType);
     bitmap.setImmutable();
 
     sk_sp<SkImage> img = SkImage::MakeFromBitmap(bitmap);
-    // TODO: we'll need a 'makeTextureImage' call here
+    img = context.makeTextureImage(std::move(img));
 
     return img->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, SkSamplingOptions());
 }
 
-sk_sp<SkShader> create_blend_shader(SkBlendMode bm) {
+sk_sp<SkShader> create_blend_shader(const MetaContext& context, SkBlendMode bm) {
     constexpr SkColor4f kTransYellow = {1.0f, 1.0f, 0.0f, 0.5f};
 
     sk_sp<SkShader> dst = SkShaders::Color(kTransYellow, nullptr);
-    return SkShaders::Blend(bm, std::move(dst), create_image_shader());
+    return SkShaders::Blend(bm, std::move(dst), create_image_shader(context));
 }
 
 void draw_blend_mode_swatches(SkCanvas* canvas, SkRect clipRect) {
@@ -119,11 +164,24 @@ protected:
 
     void onDraw(SkCanvas* canvas) override {
 
+        MetaContext context(canvas);
+
+        canvas->save();
+        canvas->clipRRect(SkRRect::MakeRectXY({16.f, 16.f, 240.f, 366.f}, 32.f, 32.f), true);
+
         // UL corner
         {
             SkPaint p;
-            p.setColor(SK_ColorRED);
-            canvas->drawRect({2, 2, 127, 127}, p);
+            p.setShader(create_image_shader(context));
+
+            SkPath path;
+            path.moveTo(1,   1);
+            path.lineTo(64,  127);
+            path.lineTo(127, 1);
+            path.lineTo(63,  63);
+            path.close();
+
+            canvas->drawPath(path, p);
         }
 
         // UR corner
@@ -137,16 +195,18 @@ protected:
         // LL corner
         {
             SkPaint p;
-            p.setShader(create_image_shader());
+            p.setColor(SK_ColorRED);
             canvas->drawRect({2, 129, 127, 255}, p);
         }
 
         // LR corner
         {
             SkPaint p;
-            p.setShader(create_blend_shader(SkBlendMode::kModulate));
+            p.setShader(create_blend_shader(context, SkBlendMode::kModulate));
             canvas->drawRect({129, 129, 255, 255}, p);
         }
+
+        canvas->restore();
 
 #ifdef SK_GRAPHITE_ENABLED
         // TODO: failing serialize test on Linux, not sure what's going on

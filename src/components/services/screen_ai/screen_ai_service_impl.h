@@ -30,8 +30,6 @@ class ScreenAIService : public mojom::ScreenAIService,
   ScreenAIService& operator=(const ScreenAIService&) = delete;
   ~ScreenAIService() override;
 
-  static base::FilePath GetLibraryPath();
-
  private:
   base::ScopedNativeLibrary library_;
 
@@ -42,10 +40,9 @@ class ScreenAIService : public mojom::ScreenAIService,
   void BindAnnotator(
       mojo::PendingReceiver<mojom::ScreenAIAnnotator> annotator) override;
 
-  // Translates proto output form screen-ai library to vector of
+  // Converts the serialized proto from Screen AI library to a vector of
   // screen_ai::mojom::Node.
-  bool DecodeProto(const std::string& proto_text,
-                   std::vector<mojom::NodePtr>& annotations);
+  std::vector<mojom::Node> DecodeProto(const std::string& serialized_proto);
 
   typedef bool (*ScreenAIInitFunction)();
   ScreenAIInitFunction init_function_;

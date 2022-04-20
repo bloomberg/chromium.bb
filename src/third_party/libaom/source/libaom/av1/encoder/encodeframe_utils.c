@@ -323,6 +323,28 @@ void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,
     }
     if (mi_addr->uv_mode == UV_CFL_PRED && !is_cfl_allowed(xd))
       mi_addr->uv_mode = UV_DC_PRED;
+
+    if (!dry_run && !mi_addr->skip_txfm) {
+      int cdf_num;
+      const int spatial_pred = av1_get_spatial_seg_pred(cm, xd, &cdf_num);
+      const int coded_id = av1_neg_interleave(mi_addr->segment_id, spatial_pred,
+                                              seg->last_active_segid + 1);
+      int64_t spatial_cost = x->mode_costs.spatial_pred_cost[cdf_num][coded_id];
+      td->rd_counts.seg_tmp_pred_cost[0] += spatial_cost;
+
+      const int pred_segment_id =
+          cm->last_frame_seg_map
+              ? get_segment_id(mi_params, cm->last_frame_seg_map, bsize, mi_row,
+                               mi_col)
+              : 0;
+      const int use_tmp_pred = pred_segment_id == mi_addr->segment_id;
+      const int tmp_pred_ctx = av1_get_pred_context_seg_id(xd);
+      td->rd_counts.seg_tmp_pred_cost[1] +=
+          x->mode_costs.tmp_pred_cost[tmp_pred_ctx][use_tmp_pred];
+      if (!use_tmp_pred) {
+        td->rd_counts.seg_tmp_pred_cost[1] += spatial_cost;
+      }
+    }
   }
 
   // Count zero motion vector.
@@ -357,7 +379,7 @@ void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,
   }
 
   if (cpi->oxcf.q_cfg.aq_mode)
-    av1_init_plane_quantizers(cpi, x, mi_addr->segment_id);
+    av1_init_plane_quantizers(cpi, x, mi_addr->segment_id, 0);
 
   if (dry_run) return;
 
@@ -761,7 +783,9 @@ int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
     return orig_rdmult;
   }
 
+#ifndef NDEBUG
   int mi_count = 0;
+#endif
   const int mi_col_sr =
       coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
   const int mi_col_end_sr =
@@ -781,7 +805,9 @@ int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                  this_stats->mc_dep_dist);
       intra_cost += this_stats->recrf_dist << RDDIV_BITS;
       mc_dep_cost += (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
+#ifndef NDEBUG
       mi_count++;
+#endif
     }
   }
   assert(mi_count <= MAX_TPL_BLK_IN_SB * MAX_TPL_BLK_IN_SB);
@@ -968,7 +994,9 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, ThreadData *td,
   int tpl_stride = tpl_frame->stride;
   if (!tpl_frame->is_valid) return base_qindex;
 
+#ifndef NDEBUG
   int mi_count = 0;
+#endif
   const int mi_col_sr =
       coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
   const int mi_col_end_sr =
@@ -994,7 +1022,9 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, ThreadData *td,
       srcrf_dist += (double)(this_stats->srcrf_dist << RDDIV_BITS);
       srcrf_sse += (double)(this_stats->srcrf_sse << RDDIV_BITS);
       srcrf_rate += (double)this_stats->srcrf_rate;
+#ifndef NDEBUG
       mi_count++;
+#endif
       cbcmp_base += cbcmp;
     }
   }
@@ -1082,6 +1112,7 @@ int av1_get_q_for_hdr(AV1_COMP *const cpi, MACROBLOCK *const x,
 
 void av1_reset_simple_motion_tree_partition(SIMPLE_MOTION_DATA_TREE *sms_tree,
                                             BLOCK_SIZE bsize) {
+  if (sms_tree == NULL) return;
   sms_tree->partitioning = PARTITION_NONE;
 
   if (bsize >= BLOCK_8X8) {
@@ -1220,7 +1251,6 @@ void av1_avg_cdf_symbols(FRAME_CONTEXT *ctx_left, FRAME_CONTEXT *ctx_tr,
   avg_nmv(&ctx_left->nmvc, &ctx_tr->nmvc, wt_left, wt_tr);
   avg_nmv(&ctx_left->ndvc, &ctx_tr->ndvc, wt_left, wt_tr);
   AVERAGE_CDF(ctx_left->intrabc_cdf, ctx_tr->intrabc_cdf, 2);
-  AVERAGE_CDF(ctx_left->seg.tree_cdf, ctx_tr->seg.tree_cdf, MAX_SEGMENTS);
   AVERAGE_CDF(ctx_left->seg.pred_cdf, ctx_tr->seg.pred_cdf, 2);
   AVERAGE_CDF(ctx_left->seg.spatial_pred_seg_cdf,
               ctx_tr->seg.spatial_pred_seg_cdf, MAX_SEGMENTS);

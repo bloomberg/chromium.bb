@@ -580,10 +580,6 @@ void CreditCard::SetNickname(const std::u16string& nickname) {
   base::TrimString(nickname_, u" ", &nickname_);
 }
 
-bool CreditCard::IsGoogleIssuedCard() const {
-  return card_issuer_ == CreditCard::Issuer::GOOGLE;
-}
-
 void CreditCard::operator=(const CreditCard& credit_card) {
   set_use_count(credit_card.use_count());
   set_use_date(credit_card.use_date());
@@ -608,6 +604,7 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   instrument_id_ = credit_card.instrument_id_;
   virtual_card_enrollment_state_ = credit_card.virtual_card_enrollment_state_;
   card_art_url_ = GURL(credit_card.card_art_url_);
+  product_description_ = credit_card.product_description_;
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());
@@ -681,6 +678,10 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
     return comparison;
 
   comparison = nickname_.compare(credit_card.nickname_);
+  if (comparison != 0)
+    return comparison;
+
+  comparison = product_description_.compare(credit_card.product_description_);
   if (comparison != 0)
     return comparison;
 
@@ -908,10 +909,6 @@ std::u16string CreditCard::ObfuscatedLastFourDigitsForSplitFields() const {
 }
 
 std::string CreditCard::CardIconStringForAutofillSuggestion() const {
-  if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
-      IsGoogleIssuedCard()) {
-    return kGoogleIssuedCard;
-  }
   return network_;
 }
 
@@ -937,16 +934,7 @@ std::u16string CreditCard::CardIdentifierStringForAutofillDisplay(
   if (HasNonEmptyValidNickname() || !customized_nickname.empty()) {
     return NicknameAndLastFourDigits(customized_nickname, obfuscation_length);
   }
-  std::u16string networkAndLastFourDigits =
-      NetworkAndLastFourDigits(obfuscation_length);
-  // Add Plex before the network and last four digits to identify it as a Google
-  // Plex card.
-  if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
-      IsGoogleIssuedCard()) {
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GOOGLE_ISSUED) + u" " +
-           networkAndLastFourDigits;
-  }
-  return networkAndLastFourDigits;
+  return NetworkAndLastFourDigits(obfuscation_length);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1158,7 +1146,8 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
             << " " << credit_card.card_issuer() << " "
             << credit_card.instrument_id() << " "
             << credit_card.virtual_card_enrollment_state() << " "
-            << credit_card.card_art_url().spec();
+            << credit_card.card_art_url().spec() << " "
+            << base::UTF16ToUTF8(credit_card.product_description());
 }
 
 void CreditCard::SetNameOnCardFromSeparateParts() {
@@ -1172,7 +1161,6 @@ const char kDinersCard[] = "dinersCC";
 const char kDiscoverCard[] = "discoverCC";
 const char kEloCard[] = "eloCC";
 const char kGenericCard[] = "genericCC";
-const char kGoogleIssuedCard[] = "googleIssuedCC";
 const char kJCBCard[] = "jcbCC";
 const char kMasterCard[] = "masterCardCC";
 const char kMirCard[] = "mirCC";

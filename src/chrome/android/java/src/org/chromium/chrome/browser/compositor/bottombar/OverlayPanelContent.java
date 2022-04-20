@@ -220,7 +220,8 @@ public class OverlayPanelContent {
             }
 
             @Override
-            public void enterFullscreenModeForTab(boolean prefersNavigationBar) {
+            public void enterFullscreenModeForTab(
+                    boolean prefersNavigationBar, boolean prefersStatusBar) {
                 mIsFullscreen = true;
             }
 
@@ -395,6 +396,11 @@ public class OverlayPanelContent {
                                     isHttpFailureCode(navigation.httpStatusCode()),
                                     navigation.isErrorPage());
                         }
+                    }
+
+                    @Override
+                    public void didFirstVisuallyNonEmptyPaint() {
+                        mContentDelegate.onFirstNonEmptyPaint();
                     }
                 };
 

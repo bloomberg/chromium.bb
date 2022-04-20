@@ -12,8 +12,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_generated_resources.h"
-#include "ui/resources/grit/webui_resources.h"
-#include "ui/resources/grit/webui_resources_map.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
@@ -24,6 +22,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -124,15 +123,26 @@ const ui::ThemeProvider* GetThemeProvider(content::WebContents* web_contents) {
   if (browser_window)
     return browser_window->GetThemeProvider();
 
-  // Fallback: get the theme provider from the last created browser.
-  // This is used in newly created tabs, e.g. NewTabPageUI. They need access to
-  // the theme browser before the WebContents is attached to a browser window.
+  // Fallback 1: get the theme provider from the profile's associated browser.
+  // This is used in newly created tabs, e.g. NewTabPageUI, where theming is
+  // required before the WebContents is attached to a browser window.
+  // TODO(crbug.com/1298767): Remove this fallback by associating the
+  // WebContents during navigation.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  const Browser* browser = chrome::FindBrowserWithProfile(profile);
+  if (browser)
+    return browser->window()->GetThemeProvider();
+
+  // Fallback 2: get the theme provider from the last created browser.
+  // This is used in ChromeOS, where under multi-signin a browser window can
+  // be sent to another profile.
   // TODO(crbug.com/1298767): Remove this fallback by associating the
   // WebContents during navigation.
   BrowserList* browser_list = BrowserList::GetInstance();
-  const Browser* browser = browser_list->empty()
-                               ? nullptr
-                               : *std::prev(BrowserList::GetInstance()->end());
+  browser = browser_list->empty()
+                ? nullptr
+                : *std::prev(BrowserList::GetInstance()->end());
   return browser ? browser->window()->GetThemeProvider() : nullptr;
 }
 

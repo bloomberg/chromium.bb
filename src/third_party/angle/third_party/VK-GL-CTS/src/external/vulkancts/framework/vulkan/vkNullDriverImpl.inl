@@ -2814,10 +2814,28 @@ VKAPI_ATTR void VKAPI_CALL cmdSetPatchControlPointsEXT (VkCommandBuffer commandB
 	DE_UNREF(patchControlPoints);
 }
 
+VKAPI_ATTR void VKAPI_CALL cmdSetRasterizerDiscardEnableEXT (VkCommandBuffer commandBuffer, VkBool32 rasterizerDiscardEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(rasterizerDiscardEnable);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetDepthBiasEnableEXT (VkCommandBuffer commandBuffer, VkBool32 depthBiasEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(depthBiasEnable);
+}
+
 VKAPI_ATTR void VKAPI_CALL cmdSetLogicOpEXT (VkCommandBuffer commandBuffer, VkLogicOp logicOp)
 {
 	DE_UNREF(commandBuffer);
 	DE_UNREF(logicOp);
+}
+
+VKAPI_ATTR void VKAPI_CALL cmdSetPrimitiveRestartEnableEXT (VkCommandBuffer commandBuffer, VkBool32 primitiveRestartEnable)
+{
+	DE_UNREF(commandBuffer);
+	DE_UNREF(primitiveRestartEnable);
 }
 
 VKAPI_ATTR void VKAPI_CALL cmdSetColorWriteEnableEXT (VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkBool32* pColorWriteEnables)
@@ -2853,6 +2871,20 @@ VKAPI_ATTR void VKAPI_CALL setDeviceMemoryPriorityEXT (VkDevice device, VkDevice
 	DE_UNREF(device);
 	DE_UNREF(memory);
 	DE_UNREF(priority);
+}
+
+VKAPI_ATTR void VKAPI_CALL getDescriptorSetLayoutHostMappingInfoVALVE (VkDevice device, const VkDescriptorSetBindingReferenceVALVE* pBindingReference, VkDescriptorSetLayoutHostMappingInfoVALVE* pHostMapping)
+{
+	DE_UNREF(device);
+	DE_UNREF(pBindingReference);
+	DE_UNREF(pHostMapping);
+}
+
+VKAPI_ATTR void VKAPI_CALL getDescriptorSetHostMappingVALVE (VkDevice device, VkDescriptorSet descriptorSet, void** ppData)
+{
+	DE_UNREF(device);
+	DE_UNREF(descriptorSet);
+	DE_UNREF(ppData);
 }
 
 VKAPI_ATTR void VKAPI_CALL cmdBuildAccelerationStructuresKHR (VkCommandBuffer commandBuffer, uint32_t infoCount, const VkAccelerationStructureBuildGeometryInfoKHR* pInfos, const VkAccelerationStructureBuildRangeInfoKHR* const* ppBuildRangeInfos)
@@ -3778,14 +3810,16 @@ static const tcu::StaticFunctionLibrary::Entry s_deviceFunctions[] =
 	VK_NULL_FUNC_ENTRY(vkCmdBindInvocationMaskHUAWEI,						cmdBindInvocationMaskHUAWEI),
 	VK_NULL_FUNC_ENTRY(vkGetMemoryRemoteAddressNV,							getMemoryRemoteAddressNV),
 	VK_NULL_FUNC_ENTRY(vkCmdSetPatchControlPointsEXT,						cmdSetPatchControlPointsEXT),
-	VK_NULL_FUNC_ENTRY(vkCmdSetRasterizerDiscardEnableEXT,					cmdSetRasterizerDiscardEnable),
-	VK_NULL_FUNC_ENTRY(vkCmdSetDepthBiasEnableEXT,							cmdSetDepthBiasEnable),
+	VK_NULL_FUNC_ENTRY(vkCmdSetRasterizerDiscardEnableEXT,					cmdSetRasterizerDiscardEnableEXT),
+	VK_NULL_FUNC_ENTRY(vkCmdSetDepthBiasEnableEXT,							cmdSetDepthBiasEnableEXT),
 	VK_NULL_FUNC_ENTRY(vkCmdSetLogicOpEXT,									cmdSetLogicOpEXT),
-	VK_NULL_FUNC_ENTRY(vkCmdSetPrimitiveRestartEnableEXT,					cmdSetPrimitiveRestartEnable),
+	VK_NULL_FUNC_ENTRY(vkCmdSetPrimitiveRestartEnableEXT,					cmdSetPrimitiveRestartEnableEXT),
 	VK_NULL_FUNC_ENTRY(vkCmdSetColorWriteEnableEXT,							cmdSetColorWriteEnableEXT),
 	VK_NULL_FUNC_ENTRY(vkCmdDrawMultiEXT,									cmdDrawMultiEXT),
 	VK_NULL_FUNC_ENTRY(vkCmdDrawMultiIndexedEXT,							cmdDrawMultiIndexedEXT),
 	VK_NULL_FUNC_ENTRY(vkSetDeviceMemoryPriorityEXT,						setDeviceMemoryPriorityEXT),
+	VK_NULL_FUNC_ENTRY(vkGetDescriptorSetLayoutHostMappingInfoVALVE,		getDescriptorSetLayoutHostMappingInfoVALVE),
+	VK_NULL_FUNC_ENTRY(vkGetDescriptorSetHostMappingVALVE,					getDescriptorSetHostMappingVALVE),
 	VK_NULL_FUNC_ENTRY(vkCreateAccelerationStructureKHR,					createAccelerationStructureKHR),
 	VK_NULL_FUNC_ENTRY(vkDestroyAccelerationStructureKHR,					destroyAccelerationStructureKHR),
 	VK_NULL_FUNC_ENTRY(vkCmdBuildAccelerationStructuresKHR,					cmdBuildAccelerationStructuresKHR),

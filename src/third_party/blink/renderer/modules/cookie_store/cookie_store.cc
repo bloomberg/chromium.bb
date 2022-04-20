@@ -67,7 +67,8 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
     const KURL& cookie_url,
     const CookieInit* options,
     ExceptionState& exception_state,
-    bool partitioned_cookies_runtime_feature_enabled) {
+    bool partitioned_cookies_runtime_feature_enabled,
+    net::CookieInclusionStatus& status_out) {
   const String& name = options->name();
   const String& value = options->value();
   if (name.IsEmpty() && value.Contains('=')) {
@@ -162,12 +163,23 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
     cookie_partition_key = net::CookiePartitionKey::FromScript();
   }
 
-  return net::CanonicalCookie::CreateSanitizedCookie(
-      cookie_url, name.Utf8(), value.Utf8(), domain.Utf8(), path.Utf8(),
-      base::Time() /*creation*/, expires, base::Time() /*last_access*/,
-      true /*secure*/, false /*http_only*/, same_site,
-      net::CookiePriority::COOKIE_PRIORITY_DEFAULT, options->sameParty(),
-      cookie_partition_key);
+  std::unique_ptr<net::CanonicalCookie> cookie =
+      net::CanonicalCookie::CreateSanitizedCookie(
+          cookie_url, name.Utf8(), value.Utf8(), domain.Utf8(), path.Utf8(),
+          base::Time() /*creation*/, expires, base::Time() /*last_access*/,
+          true /*secure*/, false /*http_only*/, same_site,
+          net::CookiePriority::COOKIE_PRIORITY_DEFAULT, options->sameParty(),
+          cookie_partition_key, &status_out);
+
+  // TODO(crbug.com/1310444): Improve serialization validation comments and
+  // associate them with ExceptionState codes.
+  if (!status_out.IsInclude()) {
+    exception_state.ThrowTypeError(
+        "Cookie was malformed and could not be stored, due to problem(s) while "
+        "parsing.");
+  }
+
+  return cookie;
 }
 
 const KURL DefaultCookieURL(ExecutionContext* execution_context) {
@@ -490,13 +502,19 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  net::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> canonical_cookie = ToCanonicalCookie(
       default_cookie_url_, options, exception_state,
-      RuntimeEnabledFeatures::PartitionedCookiesEnabled(GetExecutionContext()));
+      RuntimeEnabledFeatures::PartitionedCookiesEnabled(GetExecutionContext()),
+      status);
+
   if (!canonical_cookie) {
     DCHECK(exception_state.HadException());
     return ScriptPromise();
   }
+  // Since a canonical cookie exists, the status should have no exclusion
+  // reasons associated with it.
+  DCHECK(status.IsInclude());
 
   if (!backend_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -507,7 +525,7 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   backend_->SetCanonicalCookie(
       *std::move(canonical_cookie), default_cookie_url_,
-      default_site_for_cookies_, default_top_frame_origin_,
+      default_site_for_cookies_, default_top_frame_origin_, status,
       WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
                 WrapPersistent(resolver)));
   return resolver->Promise();

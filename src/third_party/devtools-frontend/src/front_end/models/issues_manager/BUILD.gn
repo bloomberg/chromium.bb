@@ -76,6 +76,7 @@ devtools_issue_description_files = [
   "CoepCorpNotSameSite.md",
   "CoepFrameResourceNeedsCoepHeader.md",
   "CompatibilityModeQuirks.md",
+  "CookieAttributeValueExceedsMaxSize.md",
   "corsAllowCredentialsRequired.md",
   "corsDisabledScheme.md",
   "corsDisallowedByMode.md",
@@ -167,6 +168,7 @@ devtools_entrypoint("bundle") {
     "../../ui/components/docs/issue_counter/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
+    "../../../test/unittests/front_end/helpers/*",
     "../../../test/unittests/front_end/ui/components/issue_counter/*",
     "../../ui/components/issue_counter/*",
     "../../ui/legacy/components/cookie_table/*",

@@ -24,12 +24,12 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/ssl/ssl_info.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_stream_sequencer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_frame_builder.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_framer.h"
 #include "url/origin.h"
 #include "url/scheme_host_port.h"
 
@@ -118,14 +118,19 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
   return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
 }
 
-int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
-                                     bool can_send_early,
+void QuicHttpStream::RegisterRequest(const HttpRequestInfo* request_info) {
+  DCHECK(request_info);
+  DCHECK(request_info->traffic_annotation.is_valid());
+  request_info_ = request_info;
+}
+
+int QuicHttpStream::InitializeStream(bool can_send_early,
                                      RequestPriority priority,
                                      const NetLogWithSource& stream_net_log,
                                      CompletionOnceCallback callback) {
   CHECK(callback_.is_null());
+  DCHECK(request_info_);
   DCHECK(!stream_);
-  DCHECK(request_info->traffic_annotation.is_valid());
 
   // HttpNetworkTransaction will retry any request that fails with
   // ERR_QUIC_HANDSHAKE_FAILED. It will retry any request with
@@ -143,14 +148,13 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       static_cast<int>(quic_session()->connection_migration_mode()));
 
   stream_net_log_ = stream_net_log;
-  request_info_ = request_info;
   can_send_early_ = can_send_early;
   request_time_ = base::Time::Now();
   priority_ = priority;
 
   SaveSSLInfo();
 
-  std::string url(request_info->url.spec());
+  std::string url(request_info_->url.spec());
   quic::QuicClientPromisedInfo* promised =
       quic_session()->GetPushPromiseIndex()->GetPromised(url);
   if (promised) {

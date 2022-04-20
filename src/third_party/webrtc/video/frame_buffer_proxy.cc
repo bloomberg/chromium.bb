@@ -42,10 +42,11 @@ class FrameBuffer2Proxy : public FrameBufferProxy {
                     rtc::TaskQueue* decode_queue,
                     FrameSchedulingReceiver* receiver,
                     TimeDelta max_wait_for_keyframe,
-                    TimeDelta max_wait_for_frame)
+                    TimeDelta max_wait_for_frame,
+                    const FieldTrialsView& field_trials)
       : max_wait_for_keyframe_(max_wait_for_keyframe),
         max_wait_for_frame_(max_wait_for_frame),
-        frame_buffer_(clock, timing, stats_proxy),
+        frame_buffer_(clock, timing, stats_proxy, field_trials),
         decode_queue_(decode_queue),
         stats_proxy_(stats_proxy),
         receiver_(receiver) {
@@ -181,8 +182,9 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
       TimeDelta max_wait_for_keyframe,
       TimeDelta max_wait_for_frame,
       std::unique_ptr<FrameDecodeScheduler> frame_decode_scheduler,
-      const WebRtcKeyValueConfig& field_trials)
-      : max_wait_for_keyframe_(max_wait_for_keyframe),
+      const FieldTrialsView& field_trials)
+      : field_trials_(field_trials),
+        max_wait_for_keyframe_(max_wait_for_keyframe),
         max_wait_for_frame_(max_wait_for_frame),
         clock_(clock),
         worker_queue_(worker_queue),
@@ -191,9 +193,10 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
         receiver_(receiver),
         timing_(timing),
         frame_decode_scheduler_(std::move(frame_decode_scheduler)),
-        jitter_estimator_(clock_),
+        jitter_estimator_(clock_, field_trials),
         buffer_(std::make_unique<FrameBuffer>(kMaxFramesBuffered,
-                                              kMaxFramesHistory)),
+                                              kMaxFramesHistory,
+                                              field_trials)),
         decode_timing_(clock_, timing_),
         timeout_tracker_(clock_,
                          worker_queue_,
@@ -237,8 +240,8 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
   void Clear() override {
     RTC_DCHECK_RUN_ON(&worker_sequence_checker_);
     stats_proxy_->OnDroppedFrames(buffer_->CurrentSize());
-    buffer_ =
-        std::make_unique<FrameBuffer>(kMaxFramesBuffered, kMaxFramesHistory);
+    buffer_ = std::make_unique<FrameBuffer>(kMaxFramesBuffered,
+                                            kMaxFramesHistory, field_trials_);
     frame_decode_scheduler_->CancelOutstanding();
   }
 
@@ -405,18 +408,12 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
   }
 
   void UpdateJitterDelay() {
-    TimeDelta max_decode = TimeDelta::Zero();
-    TimeDelta current_delay = TimeDelta::Zero();
-    TimeDelta target_delay = TimeDelta::Zero();
-    TimeDelta jitter_buffer = TimeDelta::Zero();
-    TimeDelta min_playout_delay = TimeDelta::Zero();
-    TimeDelta render_delay = TimeDelta::Zero();
-    if (timing_->GetTimings(&max_decode, &current_delay, &target_delay,
-                            &jitter_buffer, &min_playout_delay,
-                            &render_delay)) {
+    auto timings = timing_->GetTimings();
+    if (timings.num_decoded_frames) {
       stats_proxy_->OnFrameBufferTimingsUpdated(
-          max_decode.ms(), current_delay.ms(), target_delay.ms(),
-          jitter_buffer.ms(), min_playout_delay.ms(), render_delay.ms());
+          timings.max_decode_duration.ms(), timings.current_delay.ms(),
+          timings.target_delay.ms(), timings.jitter_buffer_delay.ms(),
+          timings.min_playout_delay.ms(), timings.render_delay.ms());
     }
   }
 
@@ -491,6 +488,7 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
   }
 
   RTC_NO_UNIQUE_ADDRESS SequenceChecker worker_sequence_checker_;
+  const FieldTrialsView& field_trials_;
   const TimeDelta max_wait_for_keyframe_;
   const TimeDelta max_wait_for_frame_;
   const absl::optional<RttMultExperiment::Settings> rtt_mult_settings_ =
@@ -546,8 +544,7 @@ enum class FrameBufferArm {
 
 constexpr const char* kFrameBufferFieldTrial = "WebRTC-FrameBuffer3";
 
-FrameBufferArm ParseFrameBufferFieldTrial(
-    const WebRtcKeyValueConfig& field_trials) {
+FrameBufferArm ParseFrameBufferFieldTrial(const FieldTrialsView& field_trials) {
   webrtc::FieldTrialEnum<FrameBufferArm> arm(
       "arm", FrameBufferArm::kFrameBuffer2,
       {
@@ -571,7 +568,7 @@ std::unique_ptr<FrameBufferProxy> FrameBufferProxy::CreateFromFieldTrial(
     TimeDelta max_wait_for_keyframe,
     TimeDelta max_wait_for_frame,
     DecodeSynchronizer* decode_sync,
-    const WebRtcKeyValueConfig& field_trials) {
+    const FieldTrialsView& field_trials) {
   switch (ParseFrameBufferFieldTrial(field_trials)) {
     case FrameBufferArm::kFrameBuffer3: {
       auto scheduler =
@@ -603,7 +600,7 @@ std::unique_ptr<FrameBufferProxy> FrameBufferProxy::CreateFromFieldTrial(
     default:
       return std::make_unique<FrameBuffer2Proxy>(
           clock, timing, stats_proxy, decode_queue, receiver,
-          max_wait_for_keyframe, max_wait_for_frame);
+          max_wait_for_keyframe, max_wait_for_frame, field_trials);
   }
 }
 

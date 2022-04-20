@@ -20,6 +20,7 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/util.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -82,7 +83,6 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
-#include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
@@ -98,6 +98,7 @@
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/browser/voice/voice_search_prefs.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -882,13 +883,17 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
 }
 
 - (TableViewItem*)privacyDetailItem {
-  return [self
-           detailItemWithType:SettingsItemTypePrivacy
-                         text:l10n_util::GetNSString(
-                                  IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)
-                   detailText:nil
-                iconImageName:kSettingsPrivacyImageName
-      accessibilityIdentifier:kSettingsPrivacyCellId];
+  NSString* title = nil;
+  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
+    title = l10n_util::GetNSString(IDS_IOS_SETTINGS_PRIVACY_TITLE);
+  } else {
+    title = l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
+  }
+  return [self detailItemWithType:SettingsItemTypePrivacy
+                             text:title
+                       detailText:nil
+                    iconImageName:kSettingsPrivacyImageName
+          accessibilityIdentifier:kSettingsPrivacyCellId];
 }
 
 - (TableViewItem*)languageSettingsDetailItem {

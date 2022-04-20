@@ -5,97 +5,6 @@
 import SwiftUI
 import ios_chrome_common_ui_colors_swift
 
-/// GradientOverlayRight applies a fading effect as an overlay from left to right.
-struct GradientOverlayRight: ViewModifier {
-  func body(content: Content) -> some View {
-    content
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .overlay(
-        LinearGradient(
-          gradient: Gradient(stops: [
-            Gradient.Stop(color: .white.opacity((0)), location: 0.9),
-            Gradient.Stop(color: .white, location: 1),
-          ]),
-          startPoint: .leading, endPoint: .trailing)
-      )
-  }
-}
-
-/// GradientOverlayRight applies a fading effect as an overlay from right to left.
-struct GradientOverlayLeft: ViewModifier {
-  func body(content: Content) -> some View {
-    content
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .overlay(
-        LinearGradient(
-          gradient: Gradient(stops: [
-            Gradient.Stop(color: .white.opacity((0)), location: 0.1),
-            Gradient.Stop(color: .white, location: 0),
-          ]),
-          startPoint: .leading, endPoint: .trailing)
-      )
-  }
-}
-
-/// PreferenceKey to listen to changes of a view's size.
-struct SizePreferenceKey: PreferenceKey {
-  static var defaultValue = CGSize.zero
-  static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
-    value = nextValue()
-  }
-}
-
-/// A view modifier that applies a transparent gradient effect when the content
-/// is too wide to fit in its container. The content is clipped on the trailing
-/// edge.
-struct TruncatedWithGradient: ViewModifier {
-
-  // Child view size (width,height)
-  @State var childSize = CGSize.zero
-
-  // Widths comparison tracker
-  @State var truncated = false
-
-  func body(content: Content) -> some View {
-    let rawContent = GeometryReader { outerGeo in
-      content
-        .fixedSize(horizontal: true, vertical: true)
-        .overlay(
-          GeometryReader { innerGeo in
-            Rectangle()
-              .hidden()
-              .preference(key: SizePreferenceKey.self, value: innerGeo.size)
-              .onPreferenceChange(SizePreferenceKey.self) {
-                newSize in
-                childSize = newSize
-                truncated = childSize.width > outerGeo.size.width
-              }
-          }
-        )
-    }
-    .frame(height: childSize.height)
-    .clipped()
-
-    if truncated {
-      rawContent.gradientOverlayRight()
-    } else {
-      rawContent
-    }
-  }
-}
-
-extension View {
-  func truncatedWithGradient() -> some View {
-    self.modifier(TruncatedWithGradient())
-  }
-  func gradientOverlayLeft() -> some View {
-    self.modifier(GradientOverlayLeft())
-  }
-  func gradientOverlayRight() -> some View {
-    self.modifier(GradientOverlayRight())
-  }
-}
-
 struct PopupMatchRowView: View {
 
   enum Dimensions {
@@ -105,7 +14,6 @@ struct PopupMatchRowView: View {
     static let minHeight: CGFloat = 58
     static let maxHeight: CGFloat = 98
     static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 16)
-    static let textHeight: CGFloat = 40
   }
 
   let match: PopupMatch
@@ -116,54 +24,119 @@ struct PopupMatchRowView: View {
   @State var isPressed = false
   @State var childView = CGSize.zero
 
+  var button: some View {
+
+    let button =
+      Button(action: selectionHandler) {
+        Color.clear.contentShape(Rectangle())
+      }
+      .buttonStyle(PressedPreferenceKeyButtonStyle())
+      .onPreferenceChange(PressedPreferenceKey.self) { isPressed in
+        self.isPressed = isPressed
+      }
+      .accessibilityElement()
+      .accessibilityLabel(match.text.string)
+      .accessibilityValue(match.detailText?.string ?? "")
+      .accessibilityRemoveTraits(.isButton)
+
+    if match.isAppendable || match.isTabMatch {
+      let trailingActionAccessibilityTitle =
+        match.isTabMatch
+        ? L10NUtils.string(forMessageId: IDS_IOS_OMNIBOX_POPUP_SWITCH_TO_OPEN_TAB)
+        : L10NUtils.string(forMessageId: IDS_IOS_OMNIBOX_POPUP_APPEND)
+
+      return
+        button
+        .accessibilityAction(
+          named: trailingActionAccessibilityTitle!, trailingButtonHandler
+        )
+    } else {
+      return button
+    }
+  }
+
   var body: some View {
     ZStack {
-      if self.isPressed || self.isHighlighted { Color.cr_tableRowViewHighlight }
+      if isHighlighted {
+        LinearGradient(
+          gradient:
+            Gradient(colors: [backgroundColor.opacity(0.85), backgroundColor]), startPoint: .top,
+          endPoint: .bottom
+        )
 
-      Button(action: selectionHandler) { Rectangle().fill(.clear).contentShape(Rectangle()) }
-        .buttonStyle(PressedPreferenceKeyButtonStyle())
-        .onPreferenceChange(PressedPreferenceKey.self) { isPressed in
-          self.isPressed = isPressed
-        }
+      } else if self.isPressed {
+        Color.cr_tableRowViewHighlight
+      }
 
-      /// The content is in front of the button, for proper hit testing.
+      button
+
+      // The content is in front of the button, for proper hit testing.
       HStack(alignment: .center, spacing: 0) {
         HStack(alignment: .center, spacing: 0) {
           Spacer()
-          match.image.map { image in PopupMatchImageView(image: image) }
+          match.image
+            .map { image in
+              PopupMatchImageView(
+                image: image, highlightColor: isHighlighted ? foregroundColorPrimary : nil
+              )
+              .accessibilityHidden(true)
+            }
           Spacer()
         }.frame(width: Dimensions.leadingSpacing)
         VStack(alignment: .leading, spacing: 0) {
           VStack(alignment: .leading, spacing: 0) {
-            Text(match.text)
+            OmniboxText(match.text, highlightColor: isHighlighted ? foregroundColorPrimary : nil)
               .lineLimit(1)
               .truncatedWithGradient()
+              .accessibilityHidden(true)
 
-            if let subtitle = match.detailText, !subtitle.isEmpty {
-              Text(subtitle)
+            if let subtitle = match.detailText, !subtitle.string.isEmpty {
+              OmniboxText(subtitle, highlightColor: isHighlighted ? foregroundColorPrimary : nil)
                 .font(.footnote)
-                .foregroundColor(Color.gray)
+                .foregroundColor(foregroundColorSecondary)
                 .lineLimit(1)
                 .truncatedWithGradient()
+                .accessibilityHidden(true)
             }
           }
-          .frame(height: Dimensions.textHeight)
           .allowsHitTesting(false)
-
-          if let pedal = match.pedal {
-            PopupMatchRowActionButton(pedal: pedal)
-              .padding(Dimensions.actionButtonOuterPadding)
-              .offset(Dimensions.actionButtonOffset)
-          }
         }
         Spacer()
         if match.isAppendable || match.isTabMatch {
           PopupMatchTrailingButton(match: match, action: trailingButtonHandler)
+            .foregroundColor(isHighlighted ? foregroundColorPrimary : .cr_blue)
         }
       }
       .padding(Dimensions.padding)
     }
     .frame(maxWidth: .infinity, minHeight: Dimensions.minHeight, maxHeight: Dimensions.maxHeight)
+  }
+
+  var backgroundColor: Color {
+    if isHighlighted {
+      return Color(red: 26 / 255, green: 115 / 255, blue: 232 / 255, opacity: 1)
+    }
+    if self.isPressed {
+      return .cr_tableRowViewHighlight
+    } else {
+      return .cr_groupedSecondaryBackground
+    }
+  }
+
+  var foregroundColorPrimary: Color {
+    if isHighlighted {
+      return .white
+    } else {
+      return .black
+    }
+  }
+
+  var foregroundColorSecondary: Color {
+    if isHighlighted {
+      return .white
+    } else {
+      return .gray
+    }
   }
 }
 

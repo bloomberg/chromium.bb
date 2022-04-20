@@ -12,14 +12,8 @@
 #include <stdbool.h>
 #include "common/rawenc.h"
 
+// Number of bytes to write per batch in write_greyscale.
 #define BATCH_SIZE 8
-// When writing greyscale color, batch 8 writes for low bit-depth, 4 writes
-// for high bit-depth.
-static const uint8_t batched[BATCH_SIZE] = { 128, 128, 128, 128,
-                                             128, 128, 128, 128 };
-static const uint8_t batched_hbd[BATCH_SIZE] = {
-  0, 128, 0, 128, 0, 128, 0, 128
-};
 
 // Interface to writing to either a file or MD5Context. Takes a pointer to
 // either the file or MD5Context, the buffer, the size of each element, and
@@ -37,25 +31,34 @@ static void write_md5(void *md5, const uint8_t *buffer, unsigned int size,
   MD5Update((MD5Context *)md5, buffer, size * nmemb);
 }
 
-// Writes out n greyscale values.
-static void write_greyscale(const bool high_bitdepth, int n, WRITER writer_func,
+// Writes out n neutral chroma samples (for greyscale).
+static void write_greyscale(const aom_image_t *img, int n, WRITER writer_func,
                             void *file_or_md5) {
-  const uint8_t *b = batched;
-  if (high_bitdepth) {
-    b = batched_hbd;
-  }
-  const int num_batched_writes =
-      high_bitdepth ? n / (BATCH_SIZE / 2) : n / BATCH_SIZE;
-  for (int i = 0; i < num_batched_writes; ++i) {
-    writer_func(file_or_md5, b, sizeof(uint8_t), BATCH_SIZE);
-  }
-  const int remaining = high_bitdepth ? n % (BATCH_SIZE / 2) : n % BATCH_SIZE;
-  for (int i = 0; i < remaining; ++i) {
-    if (high_bitdepth) {
-      writer_func(file_or_md5, batched_hbd, sizeof(uint8_t), 2);
-    } else {
-      writer_func(file_or_md5, batched, sizeof(uint8_t), 1);
+  // Batch 8 writes for low bit-depth, 4 writes for high bit-depth.
+  int bytes_per_sample;
+  union {
+    uint8_t u8[BATCH_SIZE];
+    uint16_t u16[BATCH_SIZE / 2];
+  } batched;
+  if (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
+    bytes_per_sample = 2;
+    for (int i = 0; i < BATCH_SIZE / 2; ++i) {
+      batched.u16[i] = 1 << (img->bit_depth - 1);
     }
+  } else {
+    bytes_per_sample = 1;
+    for (int i = 0; i < BATCH_SIZE; ++i) {
+      batched.u8[i] = 0x80;
+    }
+  }
+  const int samples_per_batch = BATCH_SIZE / bytes_per_sample;
+  const int num_batched_writes = n / samples_per_batch;
+  for (int i = 0; i < num_batched_writes; ++i) {
+    writer_func(file_or_md5, batched.u8, sizeof(uint8_t), BATCH_SIZE);
+  }
+  const int remaining = n % samples_per_batch;
+  for (int i = 0; i < remaining; ++i) {
+    writer_func(file_or_md5, batched.u8, sizeof(uint8_t), bytes_per_sample);
   }
 }
 
@@ -73,7 +76,7 @@ static void raw_write_image_file_or_md5(const aom_image_t *img,
     // If we're on a color plane and the output is monochrome, write a greyscale
     // value. Since there are only YUV planes, compare against Y.
     if (img->monochrome && plane != AOM_PLANE_Y) {
-      write_greyscale(high_bitdepth, w * h, writer_func, file_or_md5);
+      write_greyscale(img, w * h, writer_func, file_or_md5);
       continue;
     }
     const unsigned char *buf = img->planes[plane];

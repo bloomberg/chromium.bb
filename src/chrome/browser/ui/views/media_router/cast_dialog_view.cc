@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast_ui.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/access_code_cast/common/access_code_cast_metrics.h"
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/media_router/common/media_sink.h"
 #include "components/media_router/common/mojom/media_route_provider_id.mojom-shared.h"
@@ -245,13 +246,13 @@ CastDialogView::~CastDialogView() {
 
 void CastDialogView::Init() {
   auto* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      gfx::Insets(provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
-                  0,
-                  provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                  0));
+  set_margins(gfx::Insets::TLBR(
+      provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
+      0,
+      provider->GetDistanceMetric(
+          views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
+      0));
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   controller_->AddObserver(this);
@@ -284,7 +285,8 @@ void CastDialogView::ShowAccessCodeCastDialog() {
   }
 
   AccessCodeCastDialog::Show(cast_mode_set, controller_->GetInitiator(),
-                             controller_->TakeStartPresentationContext());
+      controller_->TakeStartPresentationContext(),
+      AccessCodeCastDialogOpenLocation::kBrowserCastMenu);
 }
 
 void CastDialogView::MaybeShowAccessCodeCastButton() {

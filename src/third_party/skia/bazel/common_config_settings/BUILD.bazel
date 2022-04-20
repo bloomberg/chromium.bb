@@ -1,4 +1,7 @@
 load(":defs.bzl", "bool_flag", "string_flag_with_values")
+load("//bazel:macros.bzl", "selects")
+
+licenses(["notice"])
 
 # @platforms is found at https://github.com/bazelbuild/platforms
 package(default_visibility = ["//:__subpackages__"])
@@ -59,6 +62,23 @@ config_setting(
     },
 )
 
+selects.config_setting_group(
+    name = "has_gpu_backend",
+    match_any = [
+        ":gl_backend",
+        ":dawn_backend",
+        ":vulkan_backend",
+    ],
+)
+
+selects.config_setting_group(
+    name = "vulkan_with_vma",
+    match_all = [
+        ":vulkan_backend",
+        ":use_vulkan_memory_allocator_true",
+    ],
+)
+
 # =============================================================================
 #                     Configurable Skia Features
 # =============================================================================
@@ -81,6 +101,7 @@ string_flag_with_values(
     values = [
         "gl_backend",
         "vulkan_backend",
+        "dawn_backend",
     ],
 )
 
@@ -162,21 +183,38 @@ string_flag_with_values(
 )
 
 bool_flag(
-    default = False,
-    flag_name = "use_icu",
+    default = True,
+    flag_name = "enable_effect_serialization",
 )
 
 bool_flag(
     default = False,
-    flag_name = "disable_tracing",
+    flag_name = "enable_skslc",
 )
 
 bool_flag(
     default = False,
-    flag_name = "disable_effect_serialization",
+    flag_name = "enable_sksl_tracing",
+)
+
+bool_flag(
+    # See SkTraceVentCommon.h for more on this type of tracing.
+    default = True,
+    flag_name = "enable_tracing",
 )
 
 bool_flag(
     default = False,
     flag_name = "is_skia_dev_build",
+)
+
+bool_flag(
+    default = False,
+    flag_name = "use_icu",
+)
+
+bool_flag(
+    default = True,
+    flag_name = "use_vulkan_memory_allocator",
+    public = False,  # Users should use :vulkan_with_vma
 )

@@ -27,7 +27,6 @@ class DiscardableSharedMemoryManager;
 }
 
 namespace content {
-class ContentClient;
 class MojoIpcSupport;
 
 class CONTENT_EXPORT ContentMainRunnerImpl : public ContentMainRunner {
@@ -89,7 +88,6 @@ class CONTENT_EXPORT ContentMainRunnerImpl : public ContentMainRunner {
 // GetContentMainDelegateForTesting() and GetContentClientForTesting().
 // BrowserTestBase is implemented in content/public and GetContentClient() is
 // only available to the implementation of content. Hence these functions.
-CONTENT_EXPORT ContentClient* GetContentClientForTesting();
 #if BUILDFLAG(IS_ANDROID)
 CONTENT_EXPORT ContentMainDelegate* GetContentMainDelegateForTesting();
 #endif

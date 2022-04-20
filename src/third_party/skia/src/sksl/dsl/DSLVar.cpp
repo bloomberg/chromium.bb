@@ -7,17 +7,40 @@
 
 #include "include/sksl/DSLVar.h"
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLLayout.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLStatement.h"
+#include "include/private/SkSLString.h"
+#include "include/private/SkSLSymbol.h"
+#include "include/private/gpu/ganesh/GrTypesPriv.h"
 #include "include/sksl/DSLModifiers.h"
 #include "include/sksl/DSLType.h"
+#include "include/sksl/SkSLOperator.h"
+#include "src/core/SkSLTypeShared.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLContext.h"
+#include "src/sksl/SkSLModifiersPool.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
+#include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVariable.h"
-#include "src/sksl/ir/SkSLVariableReference.h"
+
+#include <string>
+#include <type_traits>
+
+#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/glsl/GrGLSLUniformHandler.h"
+#endif
 
 namespace SkSL {
 
@@ -121,7 +144,8 @@ DSLGlobalVar::DSLGlobalVar(const char* name)
                                 SkSL::Modifiers::kNo_Flag));
 
         fVar = ThreadContext::SymbolTable()->takeOwnershipOfIRNode(std::make_unique<SkSL::Variable>(
-                Position(),
+                /*pos=*/Position(),
+                /*modifiersPosition=*/Position(),
                 modifiers,
                 fName,
                 ThreadContext::Context().fTypes.fFloat2.get(),
@@ -159,8 +183,8 @@ DSLPossibleExpression DSLVarBase::operator[](DSLExpression&& index) {
 }
 
 DSLPossibleExpression DSLVarBase::assign(DSLExpression expr) {
-    return BinaryExpression::Convert(ThreadContext::Context(),
-            DSLExpression(*this, Position()).release(), SkSL::Token::Kind::TK_EQ,
+    return BinaryExpression::Convert(ThreadContext::Context(), Position(),
+            DSLExpression(*this, Position()).release(), SkSL::Operator::Kind::EQ,
             expr.release());
 }
 
@@ -182,8 +206,8 @@ std::unique_ptr<SkSL::Expression> DSLGlobalVar::methodCall(std::string_view meth
         ThreadContext::ReportError("type does not support method calls", pos);
         return nullptr;
     }
-    return FieldAccess::Convert(ThreadContext::Context(), *ThreadContext::SymbolTable(),
-            DSLExpression(*this, Position()).release(), methodName);
+    return FieldAccess::Convert(ThreadContext::Context(), pos, *ThreadContext::SymbolTable(),
+            DSLExpression(*this, pos).release(), methodName);
 }
 
 DSLExpression DSLGlobalVar::eval(ExpressionArray args, Position pos) {

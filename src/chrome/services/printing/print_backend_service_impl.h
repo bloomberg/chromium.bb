@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -105,9 +104,15 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
     gfx::NativeView GetParentView() override;
     std::string GetAppLocale() override;
 
+#if BUILDFLAG(IS_WIN)
+    void SetParentWindow(uint32_t parent_window_id);
+#endif
     void SetAppLocale(const std::string& locale);
 
    private:
+#if BUILDFLAG(IS_WIN)
+    gfx::NativeView parent_native_view_ = nullptr;
+#endif
     std::string locale_;
   };
 
@@ -128,8 +133,16 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
       mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
   void UseDefaultSettings(
       mojom::PrintBackendService::UseDefaultSettingsCallback callback) override;
+#if BUILDFLAG(IS_WIN)
+  void AskUserForSettings(
+      uint32_t parent_window_id,
+      int max_pages,
+      bool has_selection,
+      bool is_scripted,
+      mojom::PrintBackendService::AskUserForSettingsCallback callback) override;
+#endif
   void UpdatePrintSettings(
-      base::flat_map<std::string, base::Value> job_settings,
+      base::Value::Dict job_settings,
       mojom::PrintBackendService::UpdatePrintSettingsCallback callback)
       override;
   void StartPrinting(
@@ -149,6 +162,12 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
       float shrink_factor,
       mojom::PrintBackendService::RenderPrintedPageCallback callback) override;
 #endif  // BUILDFLAG(IS_WIN)
+  void RenderPrintedDocument(
+      int32_t document_cookie,
+      mojom::MetafileDataType data_type,
+      base::ReadOnlySharedMemoryRegion serialized_doc,
+      mojom::PrintBackendService::RenderPrintedDocumentCallback callback)
+      override;
   void DocumentDone(
       int32_t document_cookie,
       mojom::PrintBackendService::DocumentDoneCallback callback) override;
@@ -162,6 +181,10 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
       mojom::PrintBackendService::RenderPrintedPageCallback callback,
       mojom::ResultCode result);
 #endif
+  void OnDidRenderPrintedDocument(
+      DocumentHelper& document_helper,
+      mojom::PrintBackendService::RenderPrintedDocumentCallback callback,
+      mojom::ResultCode result);
   void OnDidDocumentDone(
       DocumentHelper& document_helper,
       mojom::PrintBackendService::DocumentDoneCallback callback,

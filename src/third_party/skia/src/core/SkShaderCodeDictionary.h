@@ -19,6 +19,16 @@
 #include "src/core/SkPipelineData.h"
 #include "src/core/SkUniform.h"
 
+// TODO: How to represent the type (e.g., 2D) of texture being sampled?
+class SkTextureAndSampler {
+public:
+    constexpr SkTextureAndSampler(const char* name) : fName(name) {}
+
+    const char* name() const { return fName; }
+
+private:
+    const char* fName;
+};
 
 struct SkShaderSnippet {
     using GenerateGlueCodeForEntry = std::string (*)(const std::string& resultName,
@@ -31,12 +41,14 @@ struct SkShaderSnippet {
     SkShaderSnippet() = default;
 
     SkShaderSnippet(SkSpan<const SkUniform> uniforms,
+                    SkSpan<const SkTextureAndSampler> texturesAndSamplers,
                     const char* functionName,
                     const char* code,
                     GenerateGlueCodeForEntry glueCodeGenerator,
                     int numChildren,
                     SkSpan<const SkPaintParamsKey::DataPayloadField> dataPayloadExpectations)
             : fUniforms(uniforms)
+            , fTexturesAndSamplers(texturesAndSamplers)
             , fStaticFunctionName(functionName)
             , fStaticSkSL(code)
             , fGlueCodeGenerator(glueCodeGenerator)
@@ -47,6 +59,7 @@ struct SkShaderSnippet {
     std::string getMangledUniformName(int uniformIndex, int mangleId) const;
 
     SkSpan<const SkUniform> fUniforms;
+    SkSpan<const SkTextureAndSampler> fTexturesAndSamplers;
     const char* fStaticFunctionName = nullptr;
     const char* fStaticSkSL = nullptr;
     GenerateGlueCodeForEntry fGlueCodeGenerator = nullptr;
@@ -62,10 +75,10 @@ public:
         fBlockReaders.push_back(reader);
     }
 #ifdef SK_GRAPHITE_ENABLED
-    void setBlendInfo(const SkPipelineData::BlendInfo& blendInfo) {
+    void setBlendInfo(const SkPipelineDataGatherer::BlendInfo& blendInfo) {
         fBlendInfo = blendInfo;
     }
-    const SkPipelineData::BlendInfo& blendInfo() const { return fBlendInfo; }
+    const SkPipelineDataGatherer::BlendInfo& blendInfo() const { return fBlendInfo; }
 #endif
 
 #if SK_SUPPORT_GPU && defined(SK_GRAPHITE_ENABLED) && defined(SK_METAL)
@@ -83,7 +96,7 @@ private:
 #ifdef SK_GRAPHITE_ENABLED
     // The blendInfo doesn't actually contribute to the program's creation but, it contains the
     // matching fixed-function settings that the program's caller needs to set up.
-    SkPipelineData::BlendInfo fBlendInfo;
+    SkPipelineDataGatherer::BlendInfo fBlendInfo;
 #endif
 };
 
@@ -99,14 +112,14 @@ public:
         }
         const SkPaintParamsKey& paintParamsKey() const { return fKey; }
 #ifdef SK_GRAPHITE_ENABLED
-        const SkPipelineData::BlendInfo& blendInfo() const { return fBlendInfo; }
+        const SkPipelineDataGatherer::BlendInfo& blendInfo() const { return fBlendInfo; }
 #endif
 
     private:
         friend class SkShaderCodeDictionary;
 
 #ifdef SK_GRAPHITE_ENABLED
-        Entry(const SkPaintParamsKey& key, const SkPipelineData::BlendInfo& blendInfo)
+        Entry(const SkPaintParamsKey& key, const SkPipelineDataGatherer::BlendInfo& blendInfo)
                 : fKey(key.asSpan())
                 , fBlendInfo(blendInfo) {
         }
@@ -126,13 +139,13 @@ public:
         // The BlendInfo isn't used in the hash (that is the key's job) but it does directly vary
         // with the key. It could, theoretically, be recreated from the key but that would add
         // extra complexity.
-        SkPipelineData::BlendInfo fBlendInfo;
+        SkPipelineDataGatherer::BlendInfo fBlendInfo;
 #endif
     };
 
 #ifdef SK_GRAPHITE_ENABLED
     const Entry* findOrCreate(const SkPaintParamsKey&,
-                              const SkPipelineData::BlendInfo&) SK_EXCLUDES(fSpinLock);
+                              const SkPipelineDataGatherer::BlendInfo&) SK_EXCLUDES(fSpinLock);
 #else
     const Entry* findOrCreate(const SkPaintParamsKey&) SK_EXCLUDES(fSpinLock);
 #endif
@@ -163,7 +176,7 @@ public:
 
 private:
 #ifdef SK_GRAPHITE_ENABLED
-    Entry* makeEntry(const SkPaintParamsKey&, const SkPipelineData::BlendInfo&);
+    Entry* makeEntry(const SkPaintParamsKey&, const SkPipelineDataGatherer::BlendInfo&);
 #else
     Entry* makeEntry(const SkPaintParamsKey&);
 #endif

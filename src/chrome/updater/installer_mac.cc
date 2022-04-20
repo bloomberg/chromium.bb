@@ -10,20 +10,25 @@
 #include "base/strings/strcat.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/mac/install_from_archive.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
-Installer::Result Installer::RunApplicationInstaller(
+AppInstallerResult RunApplicationInstaller(
+    const AppInfo& app_info,
     const base::FilePath& app_installer,
     const std::string& arguments,
-    ProgressCallback /*progress_callback*/) {
+    const absl::optional<base::FilePath>& installer_data_file,
+    InstallProgressCallback /*progress_callback*/) {
   DVLOG(1) << "Running application install from DMG at " << app_installer;
   // InstallFromArchive() returns the exit code of the script. 0 is success and
   // anything else should be an error.
-  const int exit_code = InstallFromArchive(app_installer, checker_path_, ap_,
-                                           updater_scope_, pv_, arguments);
-  return exit_code == 0 ? Result()
-                        : Result(kErrorApplicationInstallerFailed, exit_code);
+  const int exit_code = InstallFromArchive(
+      app_installer, app_info.ecp, app_info.ap, app_info.scope,
+      app_info.version, arguments, installer_data_file);
+  return exit_code == 0
+             ? AppInstallerResult()
+             : AppInstallerResult(kErrorApplicationInstallerFailed, exit_code);
 }
 
 }  // namespace updater

@@ -376,6 +376,9 @@ class ContextMtl : public ContextImpl, public mtl::Context
 
     const mtl::ContextDevice &getMetalDevice() const { return mContextDevice; }
 
+    angle::Result copy2DTextureSlice0Level0ToWorkTexture(const mtl::TextureRef &srcTexture);
+    const mtl::TextureRef &getWorkTexture() const { return mWorkTexture; }
+
   private:
     void ensureCommandBufferReady();
     angle::Result ensureIncompleteTexturesCreated(const gl::Context *context);
@@ -400,11 +403,13 @@ class ContextMtl : public ContextImpl, public mtl::Context
     angle::Result drawTriFanArrays(const gl::Context *context,
                                    GLint first,
                                    GLsizei count,
-                                   GLsizei instances);
+                                   GLsizei instances,
+                                   GLuint baseInstance);
     angle::Result drawTriFanArraysWithBaseVertex(const gl::Context *context,
                                                  GLint first,
                                                  GLsizei count,
-                                                 GLsizei instances);
+                                                 GLsizei instances,
+                                                 GLuint baseInstance);
     angle::Result drawTriFanArraysLegacy(const gl::Context *context,
                                          GLint first,
                                          GLsizei count,
@@ -413,7 +418,9 @@ class ContextMtl : public ContextImpl, public mtl::Context
                                      GLsizei count,
                                      gl::DrawElementsType type,
                                      const void *indices,
-                                     GLsizei instances);
+                                     GLsizei instances,
+                                     GLint baseVertex,
+                                     GLuint baseInstance);
 
     angle::Result drawLineLoopArraysNonInstanced(const gl::Context *context,
                                                  GLint first,
@@ -421,7 +428,8 @@ class ContextMtl : public ContextImpl, public mtl::Context
     angle::Result drawLineLoopArrays(const gl::Context *context,
                                      GLint first,
                                      GLsizei count,
-                                     GLsizei instances);
+                                     GLsizei instances,
+                                     GLuint baseInstance);
     angle::Result drawLineLoopElementsNonInstancedNoPrimitiveRestart(const gl::Context *context,
                                                                      GLsizei count,
                                                                      gl::DrawElementsType type,
@@ -430,26 +438,32 @@ class ContextMtl : public ContextImpl, public mtl::Context
                                        GLsizei count,
                                        gl::DrawElementsType type,
                                        const void *indices,
-                                       GLsizei instances);
+                                       GLsizei instances,
+                                       GLint baseVertex,
+                                       GLuint baseInstance);
 
     angle::Result drawArraysProvokingVertexImpl(const gl::Context *context,
                                                 gl::PrimitiveMode mode,
                                                 GLsizei first,
                                                 GLsizei count,
-                                                GLsizei instances);
+                                                GLsizei instances,
+                                                GLuint baseInstance);
 
     angle::Result drawArraysImpl(const gl::Context *context,
                                  gl::PrimitiveMode mode,
                                  GLint first,
                                  GLsizei count,
-                                 GLsizei instanceCount);
+                                 GLsizei instanceCount,
+                                 GLuint baseInstance);
 
     angle::Result drawElementsImpl(const gl::Context *context,
                                    gl::PrimitiveMode mode,
                                    GLsizei count,
                                    gl::DrawElementsType type,
                                    const void *indices,
-                                   GLsizei instanceCount);
+                                   GLsizei instanceCount,
+                                   GLint baseVertex,
+                                   GLuint baseInstance);
     void flushCommandBufferIfNeeded();
     void updateExtendedState(const gl::State &glState);
 
@@ -559,6 +573,7 @@ class ContextMtl : public ContextImpl, public mtl::Context
     VertexArrayMtl *mVertexArray     = nullptr;
     ProgramMtl *mProgram             = nullptr;
     QueryMtl *mOcclusionQuery        = nullptr;
+    mtl::TextureRef mWorkTexture;
 
     using DirtyBits = angle::BitSet<DIRTY_BIT_MAX>;
 

@@ -8,6 +8,7 @@
 #include "src/core/SkGlyph.h"
 
 #include "include/core/SkDrawable.h"
+#include "include/core/SkScalar.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkScalerContext.h"
 #include "src/pathops/SkPathOpsCubic.h"
@@ -29,6 +30,7 @@ SkMask SkGlyph::mask() const {
 }
 
 SkMask SkGlyph::mask(SkPoint position) const {
+    SkASSERT(SkScalarIsInt(position.x()) && SkScalarIsInt(position.y()));
     SkMask answer = this->mask();
     answer.fBounds.offset(SkScalarFloorToInt(position.x()), SkScalarFloorToInt(position.y()));
     return answer;
@@ -117,7 +119,7 @@ size_t SkGlyph::setMetricsAndImage(SkArenaAlloc* alloc, const SkGlyph& from) {
         fHeight = from.fHeight;
         fTop = from.fTop;
         fLeft = from.fLeft;
-        fForceBW = from.fForceBW;
+        fScalerContextBits = from.fScalerContextBits;
         fMaskFormat = from.fMaskFormat;
 
         // From glyph may not have an image because the glyph is too large.
@@ -395,10 +397,12 @@ void SkGlyph::ensureIntercepts(const SkScalar* bounds, SkScalar scale, SkScalar 
 }
 
 SkGlyphDigest::SkGlyphDigest(size_t index, const SkGlyph& glyph)
-        : fPackedGlyphID{glyph.getPackedID().value()}
-        , fIndex{SkTo<uint32_t>(index)}
+        : fIndex{SkTo<uint32_t>(index)}
         , fIsEmpty(glyph.isEmpty())
         , fIsColor(glyph.isColor())
         , fCanDrawAsMask{SkStrikeForGPU::CanDrawAsMask(glyph)}
         , fCanDrawAsSDFT{SkStrikeForGPU::CanDrawAsSDFT(glyph)}
-        , fMaxDimension{(uint16_t)glyph.maxDimension()} {}
+        , fLeft{SkTo<int16_t>(glyph.left())}
+        , fTop{SkTo<int16_t>(glyph.top())}
+        , fWidth{SkTo<uint16_t>(glyph.width())}
+        , fHeight{SkTo<uint16_t>(glyph.height())} {}

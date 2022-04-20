@@ -12,24 +12,38 @@
 
 #include "modules/desktop_capture/desktop_capture_options.h"
 #include "modules/desktop_capture/desktop_capturer.h"
+#include "modules/desktop_capture/linux/wayland/xdg_desktop_portal_utils.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 
 namespace webrtc {
 
+namespace {
+
+using xdg_portal::RequestResponse;
+using xdg_portal::ScreenCapturePortalInterface;
+using xdg_portal::SessionDetails;
+
+}  // namespace
+
 BaseCapturerPipeWire::BaseCapturerPipeWire(const DesktopCaptureOptions& options)
-    : options_(options) {
-  screencast_portal_ = std::make_unique<ScreenCastPortal>(
-      ScreenCastPortal::CaptureSourceType::kAnyScreenContent, this);
-}
+    : BaseCapturerPipeWire(
+          options,
+          std::make_unique<ScreenCastPortal>(
+              ScreenCastPortal::CaptureSourceType::kAnyScreenContent,
+              this)) {}
+
+BaseCapturerPipeWire::BaseCapturerPipeWire(
+    const DesktopCaptureOptions& options,
+    std::unique_ptr<ScreenCapturePortalInterface> portal)
+    : options_(options), portal_(std::move(portal)) {}
 
 BaseCapturerPipeWire::~BaseCapturerPipeWire() {}
 
-void BaseCapturerPipeWire::OnScreenCastRequestResult(
-    ScreenCastPortal::RequestResponse result,
-    uint32_t stream_node_id,
-    int fd) {
-  if (result != ScreenCastPortal::RequestResponse::kSuccess ||
+void BaseCapturerPipeWire::OnScreenCastRequestResult(RequestResponse result,
+                                                     uint32_t stream_node_id,
+                                                     int fd) {
+  if (result != RequestResponse::kSuccess ||
       !options_.screencast_stream()->StartScreenCastStream(stream_node_id,
                                                            fd)) {
     capturer_failed_ = true;
@@ -50,7 +64,7 @@ void BaseCapturerPipeWire::Start(Callback* callback) {
 
   callback_ = callback;
 
-  screencast_portal_->Start();
+  portal_->Start();
 }
 
 void BaseCapturerPipeWire::CaptureFrame() {
@@ -89,6 +103,10 @@ bool BaseCapturerPipeWire::GetSourceList(SourceList* sources) {
 bool BaseCapturerPipeWire::SelectSource(SourceId id) {
   // Screen selection is handled by the xdg-desktop-portal.
   return true;
+}
+
+SessionDetails BaseCapturerPipeWire::GetSessionDetails() {
+  return portal_->GetSessionDetails();
 }
 
 }  // namespace webrtc

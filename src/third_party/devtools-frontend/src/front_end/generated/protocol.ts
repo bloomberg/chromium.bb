@@ -1024,6 +1024,11 @@ export namespace Audits {
     frameId?: Page.FrameId;
   }
 
+  export const enum DeprecationIssueType {
+    DeprecationExample = 'DeprecationExample',
+    Untranslated = 'Untranslated',
+  }
+
   /**
    * This issue tracks information needed to print a deprecation message.
    * The formatting is inherited from the old console.log version, see more at:
@@ -1035,14 +1040,18 @@ export namespace Audits {
     affectedFrame?: AffectedFrame;
     sourceCodeLocation: SourceCodeLocation;
     /**
-     * The content of the deprecation issue (this won't be translated),
+     * The content of an untranslated deprecation issue,
      * e.g. "window.inefficientLegacyStorageMethod will be removed in M97,
      * around January 2022. Please use Web Storage or Indexed Database
      * instead. This standard was abandoned in January, 1970. See
      * https://www.chromestatus.com/feature/5684870116278272 for more details."
      */
     message?: string;
-    deprecationType: string;
+    /**
+     * The id of an untranslated deprecation issue e.g. PrefixedStorageInfo.
+     */
+    deprecationType?: string;
+    type: DeprecationIssueType;
   }
 
   export const enum ClientHintIssueReason {
@@ -2189,6 +2198,10 @@ export namespace CSS {
      * Supports rule text.
      */
     text: string;
+    /**
+     * Whether the supports condition is satisfied.
+     */
+    active: boolean;
     /**
      * The associated rule header range in the enclosing stylesheet (if
      * available).
@@ -10112,6 +10125,7 @@ export namespace Page {
     AmbientLightSensor = 'ambient-light-sensor',
     AttributionReporting = 'attribution-reporting',
     Autoplay = 'autoplay',
+    BrowsingTopics = 'browsing-topics',
     Camera = 'camera',
     ChDpr = 'ch-dpr',
     ChDeviceMemory = 'ch-device-memory',
@@ -10152,6 +10166,7 @@ export namespace Page {
     Gyroscope = 'gyroscope',
     Hid = 'hid',
     IdleDetection = 'idle-detection',
+    InterestCohort = 'interest-cohort',
     JoinAdInterestGroup = 'join-ad-interest-group',
     KeyboardMap = 'keyboard-map',
     Magnetometer = 'magnetometer',
@@ -10625,10 +10640,6 @@ export namespace Page {
      * The fantasy font-family.
      */
     fantasy?: string;
-    /**
-     * The pictograph font-family.
-     */
-    pictograph?: string;
   }
 
   /**
@@ -10796,6 +10807,8 @@ export namespace Page {
     NoResponseHead = 'NoResponseHead',
     Unknown = 'Unknown',
     ActivationNavigationsDisallowedForBug1234857 = 'ActivationNavigationsDisallowedForBug1234857',
+    ErrorDocument = 'ErrorDocument',
+    FencedFramesEmbedder = 'FencedFramesEmbedder',
     WebSocket = 'WebSocket',
     WebTransport = 'WebTransport',
     WebRTC = 'WebRTC',
@@ -10908,6 +10921,13 @@ export namespace Page {
      * Array of children frame
      */
     children: BackForwardCacheNotRestoredExplanationTree[];
+  }
+
+  /**
+   * List of FinalStatus reasons for Prerender2.
+   */
+  export const enum PrerenderFinalStatus {
+    Activated = 'Activated',
   }
 
   export interface AddScriptToEvaluateOnLoadRequest {
@@ -11907,6 +11927,18 @@ export namespace Page {
      * Tree structure of reasons why the page could not be cached for each frame.
      */
     notRestoredExplanationsTree?: BackForwardCacheNotRestoredExplanationTree;
+  }
+
+  /**
+   * Fired when a prerender attempt is completed.
+   */
+  export interface PrerenderAttemptCompletedEvent {
+    /**
+     * The frame id of the frame initiating prerendering.
+     */
+    initiatingFrameId: FrameId;
+    prerenderingUrl: string;
+    finalStatus: PrerenderFinalStatus;
   }
 
   export interface LoadEventFiredEvent {
@@ -14466,24 +14498,38 @@ export namespace Media {
     value: string;
   }
 
-  export const enum PlayerErrorType {
-    Pipeline_error = 'pipeline_error',
-    Media_error = 'media_error',
+  /**
+   * Represents logged source line numbers reported in an error.
+   * NOTE: file and line are from chromium c++ implementation code, not js.
+   */
+  export interface PlayerErrorSourceLocation {
+    file: string;
+    line: integer;
   }
 
   /**
    * Corresponds to kMediaError
    */
   export interface PlayerError {
-    type: PlayerErrorType;
+    errorType: string;
     /**
-     * When this switches to using media::Status instead of PipelineStatus
-     * we can remove "errorCode" and replace it with the fields from
-     * a Status instance. This also seems like a duplicate of the error
-     * level enum - there is a todo bug to have that level removed and
-     * use this instead. (crbug.com/1068454)
+     * Code is the numeric enum entry for a specific set of error codes, such
+     * as PipelineStatusCodes in media/base/pipeline_status.h
      */
-    errorCode: string;
+    code: integer;
+    /**
+     * A trace of where this error was caused / where it passed through.
+     */
+    stack: PlayerErrorSourceLocation[];
+    /**
+     * Errors potentially have a root cause error, ie, a DecoderError might be
+     * caused by an WindowsError
+     */
+    cause: PlayerError[];
+    /**
+     * Extra data attached to an error, such as an HRESULT, Video Codec, etc.
+     */
+    data: any;
   }
 
   /**

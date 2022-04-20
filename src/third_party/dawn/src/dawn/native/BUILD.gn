@@ -99,6 +99,11 @@ config("vulkan_rpath") {
   }
 }
 
+# Config that adds include directory for vulkan-tools.
+config("vulkan_tools_include") {
+  include_dirs = [ "${dawn_vulkan_tools_dir}" ]
+}
+
 dawn_json_generator("utils_gen") {
   target = "native_utils"
   outputs = [
@@ -114,6 +119,7 @@ dawn_json_generator("utils_gen") {
     "src/dawn/native/webgpu_absl_format_autogen.cpp",
     "src/dawn/native/ObjectType_autogen.h",
     "src/dawn/native/ObjectType_autogen.cpp",
+    "src/dawn/native/CacheKey_autogen.cpp",
   ]
 }
 
@@ -161,9 +167,9 @@ source_set("sources") {
     ":headers",
     ":utils_gen",
     "${dawn_root}/src/dawn/common",
+    "${dawn_root}/src/tint:libtint",
     "${dawn_spirv_tools_dir}:spvtools_opt",
     "${dawn_spirv_tools_dir}:spvtools_val",
-    "${dawn_tint_dir}/src/tint:libtint",
   ]
   defines = []
   libs = []
@@ -571,7 +577,9 @@ source_set("sources") {
   }
 
   if (dawn_enable_vulkan) {
-    public_deps += [ "${dawn_root}/third_party/khronos:vulkan_headers" ]
+    configs += [ ":vulkan_tools_include" ]
+    deps += [ "${dawn_vulkan_tools_dir}:vulkan_tools_headers" ]
+    public_deps += [ "${dawn_vulkan_headers_dir}:vulkan_headers" ]
     sources += [
       "vulkan/AdapterVk.cpp",
       "vulkan/AdapterVk.h",
@@ -583,6 +591,8 @@ source_set("sources") {
       "vulkan/BindGroupVk.h",
       "vulkan/BufferVk.cpp",
       "vulkan/BufferVk.h",
+      "vulkan/CacheKeyVk.cpp",
+      "vulkan/CacheKeyVk.h",
       "vulkan/CommandBufferVk.cpp",
       "vulkan/CommandBufferVk.h",
       "vulkan/CommandRecordingContext.h",

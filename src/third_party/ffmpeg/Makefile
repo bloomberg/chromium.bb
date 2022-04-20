@@ -79,10 +79,10 @@ CONFIGURABLE_COMPONENTS =                                           \
     $(SRC_PATH)/libavcodec/parsers.c                                \
     $(SRC_PATH)/libavformat/protocols.c                             \
 
-config.h: ffbuild/.config
+config_components.h: ffbuild/.config
 ffbuild/.config: $(CONFIGURABLE_COMPONENTS)
 	@-tput bold 2>/dev/null
-	@-printf '\nWARNING: $(?) newer than config.h, rerun configure\n\n'
+	@-printf '\nWARNING: $(?) newer than config_components.h, rerun configure\n\n'
 	@-tput sgr0 2>/dev/null
 
 SUBDIR_VARS := CLEANFILES FFLIBS HOSTPROGS TESTPROGS TOOLS               \
@@ -159,7 +159,7 @@ clean::
 	$(RM) -rf coverage.info coverage.info.in lcov
 
 distclean:: clean
-	$(RM) .version avversion.h config.asm config.h mapfile  \
+	$(RM) .version config.asm config.h config_components.h mapfile  \
 		ffbuild/.config ffbuild/config.* libavutil/avconfig.h \
 		version.h libavutil/ffversion.h libavcodec/codec_names.h \
 		libavcodec/bsf_list.c libavformat/protocol_list.c \

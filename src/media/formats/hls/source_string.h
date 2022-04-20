@@ -11,8 +11,7 @@
 #include "media/base/media_export.h"
 #include "media/formats/hls/parse_status.h"
 
-namespace media {
-namespace hls {
+namespace media::hls {
 
 struct SourceLineIterator;
 
@@ -28,13 +27,6 @@ struct MEDIA_EXPORT SourceString {
                                        size_t column,
                                        base::StringPiece str);
 
-  // TODO(crbug.com/1275317): These should be removed
-  ~SourceString();
-  SourceString(const SourceString&);
-  SourceString(SourceString&&);
-  SourceString& operator=(const SourceString&);
-  SourceString& operator=(SourceString&&);
-
   // Returns the 1-based line index of this SourceString within the manifest.
   size_t Line() const { return line_; }
 
@@ -48,11 +40,13 @@ struct MEDIA_EXPORT SourceString {
 
   bool Empty() const { return str_.empty(); }
 
+  size_t Size() const { return str_.size(); }
+
   SourceString Substr(size_t pos = 0,
                       size_t count = base::StringPiece::npos) const;
 
   // Consumes this string up to the given count, which may be longer than this
-  // string.
+  // string. Returns the substring that was consumed.
   SourceString Consume(size_t count = base::StringPiece::npos);
 
  private:
@@ -66,13 +60,6 @@ struct MEDIA_EXPORT SourceString {
 // Exposes a line-based iteration API over the source text of an HLS manifest.
 struct MEDIA_EXPORT SourceLineIterator {
   explicit SourceLineIterator(base::StringPiece source);
-
-  // TODO(crbug.com/1275317): These should be removed
-  ~SourceLineIterator();
-  SourceLineIterator(const SourceLineIterator&);
-  SourceLineIterator(SourceLineIterator&&);
-  SourceLineIterator& operator=(const SourceLineIterator&);
-  SourceLineIterator& operator=(SourceLineIterator&&);
 
   // Moves this SourceLineIterator to the next line, and returns the contents of
   // the current line. Returns `ParseStatusCode::kInvalidEOL` if invalid line
@@ -88,7 +75,6 @@ struct MEDIA_EXPORT SourceLineIterator {
   base::StringPiece source_;
 };
 
-}  // namespace hls
-}  // namespace media
+}  // namespace media::hls
 
 #endif  // MEDIA_FORMATS_HLS_SOURCE_STRING_H_

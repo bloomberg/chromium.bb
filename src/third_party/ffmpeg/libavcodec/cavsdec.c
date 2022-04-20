@@ -30,8 +30,11 @@
 #include "get_bits.h"
 #include "golomb.h"
 #include "cavs.h"
+#include "codec_internal.h"
 #include "internal.h"
+#include "mathops.h"
 #include "mpeg12data.h"
+#include "startcode.h"
 
 static const uint8_t mv_scan[4] = {
     MV_FWD_X0, MV_FWD_X1,
@@ -504,7 +507,7 @@ static inline int get_ue_code(GetBitContext *gb, int order)
 {
     unsigned ret = get_ue_golomb(gb);
     if (ret >= ((1U<<31)>>order)) {
-        av_log(NULL, AV_LOG_ERROR, "get_ue_code: value too larger\n");
+        av_log(NULL, AV_LOG_ERROR, "get_ue_code: value too large\n");
         return AVERROR_INVALIDDATA;
     }
     if (order) {
@@ -1307,15 +1310,16 @@ static int cavs_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     }
 }
 
-const AVCodec ff_cavs_decoder = {
-    .name           = "cavs",
-    .long_name      = NULL_IF_CONFIG_SMALL("Chinese AVS (Audio Video Standard) (AVS1-P2, JiZhun profile)"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_CAVS,
+const FFCodec ff_cavs_decoder = {
+    .p.name         = "cavs",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Chinese AVS (Audio Video Standard) (AVS1-P2, JiZhun profile)"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_CAVS,
     .priv_data_size = sizeof(AVSContext),
     .init           = ff_cavs_init,
     .close          = ff_cavs_end,
     .decode         = cavs_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
     .flush          = cavs_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

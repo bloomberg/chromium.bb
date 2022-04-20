@@ -359,7 +359,7 @@ TEST_F(VkLayerTest, PipelineRenderpassCompatibility) {
     att_state1.blendEnable = VK_TRUE;
 
     auto set_info = [&](CreatePipelineHelper &helper) {
-        helper.cb_attachments_ = att_state1;
+        helper.cb_attachments_[0] = att_state1;
         helper.gp_ci_.pColorBlendState = nullptr;
     };
     CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit,
@@ -1566,7 +1566,7 @@ TEST_F(VkLayerTest, InvalidPipeline) {
 
     // Enable VK_KHR_draw_indirect_count for KHR variants
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    VkPhysicalDeviceVulkan12Features features12 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan12Features features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>();
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME);
         if (DeviceValidationVersion() >= VK_API_VERSION_1_2) {
@@ -2142,8 +2142,7 @@ TEST_F(VkLayerTest, MissingStorageImageFormatReadForFormat) {
         image_info.imageView = image.targetView(format);
         image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-        VkWriteDescriptorSet descriptor_write = {};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
         descriptor_write.dstSet = ds.set_;
         descriptor_write.dstBinding = 0;
         descriptor_write.descriptorCount = 1;
@@ -2155,8 +2154,7 @@ TEST_F(VkLayerTest, MissingStorageImageFormatReadForFormat) {
         m_commandBuffer->begin();
 
         {
-            VkImageMemoryBarrier img_barrier = {};
-            img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier img_barrier = LvlInitStruct<VkImageMemoryBarrier>();
             img_barrier.srcAccessMask = VK_ACCESS_HOST_READ_BIT;
             img_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             img_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2311,8 +2309,7 @@ TEST_F(VkLayerTest, MissingStorageImageFormatWriteForFormat) {
         image_info.imageView = image.targetView(format);
         image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-        VkWriteDescriptorSet descriptor_write = {};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
         descriptor_write.dstSet = ds.set_;
         descriptor_write.dstBinding = 0;
         descriptor_write.descriptorCount = 1;
@@ -2324,8 +2321,7 @@ TEST_F(VkLayerTest, MissingStorageImageFormatWriteForFormat) {
         m_commandBuffer->begin();
 
         {
-            VkImageMemoryBarrier img_barrier = {};
-            img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier img_barrier = LvlInitStruct<VkImageMemoryBarrier>();
             img_barrier.srcAccessMask = VK_ACCESS_HOST_READ_BIT;
             img_barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
             img_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2355,6 +2351,131 @@ TEST_F(VkLayerTest, MissingStorageImageFormatWriteForFormat) {
         else
             m_errorMonitor->VerifyFound();
     }
+}
+
+TEST_F(VkLayerTest, MissingStorageTexelBufferFormatWriteForFormat) {
+    TEST_DESCRIPTION("Create a shader writing a storage texel buffer without an image format");
+
+    if (!EnableDeviceProfileLayer()) {
+        printf("%s Failed to enable device profile layer.\n", kSkipPrefix);
+        return;
+    }
+
+    AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_FORMAT_FEATURE_FLAGS_2_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Required extensions not supported, skipping.\n", kSkipPrefix);
+        return;
+    }
+
+    PFN_vkSetPhysicalDeviceFormatProperties2EXT fpvkSetPhysicalDeviceFormatProperties2EXT = nullptr;
+    PFN_vkGetOriginalPhysicalDeviceFormatProperties2EXT fpvkGetOriginalPhysicalDeviceFormatProperties2EXT = nullptr;
+    if (!LoadDeviceProfileLayer(fpvkSetPhysicalDeviceFormatProperties2EXT, fpvkGetOriginalPhysicalDeviceFormatProperties2EXT)) {
+        printf("%s Failed to device profile layer.\n", kSkipPrefix);
+        return;
+    }
+
+    const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    auto fmt_props_3 = LvlInitStruct<VkFormatProperties3>();
+    auto fmt_props = LvlInitStruct<VkFormatProperties2>(&fmt_props_3);
+
+    // set so format can be used as a storage texel buffer, but no WITH_FORMAT support
+    fpvkGetOriginalPhysicalDeviceFormatProperties2EXT(gpu(), format, &fmt_props);
+    fmt_props.formatProperties.bufferFeatures |= VK_FORMAT_FEATURE_2_STORAGE_TEXEL_BUFFER_BIT;
+    fmt_props_3.bufferFeatures |= VK_FORMAT_FEATURE_2_STORAGE_TEXEL_BUFFER_BIT;
+    fmt_props_3.bufferFeatures = (fmt_props_3.bufferFeatures & ~VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT);
+    fpvkSetPhysicalDeviceFormatProperties2EXT(gpu(), format, fmt_props);
+
+    const std::string csSource = R"(
+                  OpCapability Shader
+                  OpCapability ImageBuffer
+                  OpCapability StorageImageWriteWithoutFormat
+             %1 = OpExtInstImport "GLSL.std.450"
+                  OpMemoryModel Logical GLSL450
+                  OpEntryPoint GLCompute %main "main"
+                  OpExecutionMode %main LocalSize 1 1 1
+                  OpSource GLSL 450
+                  OpDecorate %img DescriptorSet 0
+                  OpDecorate %img Binding 0
+                  OpDecorate %img NonWritable
+          %void = OpTypeVoid
+             %3 = OpTypeFunction %void
+         %float = OpTypeFloat 32
+             %7 = OpTypeImage %float Buffer 0 0 0 2 Unknown
+%_ptr_UniformConstant_7 = OpTypePointer UniformConstant %7
+           %img = OpVariable %_ptr_UniformConstant_7 UniformConstant
+           %int = OpTypeInt 32 1
+         %v2int = OpTypeVector %int 2
+         %int_0 = OpConstant %int 0
+            %14 = OpConstantComposite %v2int %int_0 %int_0
+       %v4float = OpTypeVector %float 4
+       %float_0 = OpConstant %float 0
+            %17 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
+          %uint = OpTypeInt 32 0
+        %v3uint = OpTypeVector %uint 3
+        %uint_1 = OpConstant %uint 1
+          %main = OpFunction %void None %3
+             %5 = OpLabel
+            %10 = OpLoad %7 %img
+                  OpImageWrite %10 %14 %17
+                  OpReturn
+                  OpFunctionEnd
+                  )";
+
+    OneOffDescriptorSet ds(m_device, {
+                                         {0, VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+                                     });
+
+    CreateComputePipelineHelper cs_pipeline(*this);
+    cs_pipeline.InitInfo();
+    cs_pipeline.cs_.reset(new VkShaderObj(this, csSource.c_str(), VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_ASM));
+    cs_pipeline.InitState();
+    cs_pipeline.pipeline_layout_ = VkPipelineLayoutObj(m_device, {&ds.layout_});
+    cs_pipeline.LateBindPipelineInfo();
+    cs_pipeline.cp_ci_.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;  // override with wrong value
+    cs_pipeline.CreateComputePipeline(true, false);                // need false to prevent late binding
+
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.size = 1024;
+    buffer_create_info.usage = VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+    VkBufferObj buffer;
+    buffer.init(*m_device, buffer_create_info);
+
+    VkBufferViewCreateInfo buff_view_ci = LvlInitStruct<VkBufferViewCreateInfo>();
+    buff_view_ci.buffer = buffer.handle();
+    buff_view_ci.format = format;
+    buff_view_ci.range = VK_WHOLE_SIZE;
+    VkBufferView buffer_view;
+    VkResult err = vk::CreateBufferView(m_device->device(), &buff_view_ci, NULL, &buffer_view);
+    if (err != VK_SUCCESS) {
+        // device profile layer might hide fact this is not a supported buffer view format
+        printf("%s Device will not be able to initialize buffer view skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_write.dstSet = ds.set_;
+    descriptor_write.dstBinding = 0;
+    descriptor_write.descriptorCount = 1;
+    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+    descriptor_write.pTexelBufferView = &buffer_view;
+    vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, NULL);
+
+    m_commandBuffer->reset();
+    m_commandBuffer->begin();
+
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_COMPUTE, cs_pipeline.pipeline_);
+    vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_COMPUTE, cs_pipeline.pipeline_layout_.handle(), 0,
+                              1, &ds.set_, 0, nullptr);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDispatch-OpTypeImage-06423");
+    vk::CmdDispatch(m_commandBuffer->handle(), 1, 1, 1);
+    m_errorMonitor->VerifyFound();
+    m_commandBuffer->end();
+
+    vk::DestroyBufferView(m_device->handle(), buffer_view, nullptr);
 }
 
 TEST_F(VkLayerTest, MissingNonReadableDecorationStorageImageFormatRead) {
@@ -4171,7 +4292,7 @@ TEST_F(VkLayerTest, ColorBlendUnsupportedDualSourceBlend) {
 
     VkPipelineColorBlendAttachmentState cb_attachments = {};
 
-    const auto set_dsb_src_color_enable = [&](CreatePipelineHelper &helper) { helper.cb_attachments_ = cb_attachments; };
+    const auto set_dsb_src_color_enable = [&](CreatePipelineHelper &helper) { helper.cb_attachments_[0] = cb_attachments; };
 
     cb_attachments.blendEnable = VK_TRUE;
     cb_attachments.srcColorBlendFactor = VK_BLEND_FACTOR_SRC1_COLOR;  // bad!
@@ -4353,7 +4474,7 @@ TEST_F(VkLayerTest, CreatePipelineCheckShaderSpecializationApplied) {
         helper.shader_stages_ = {helper.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
         helper.shader_stages_[1].pSpecializationInfo = &specialization_info;
     };
-    CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkPipelineShaderStageCreateInfo-module-04145");
+    CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-VkPipelineShaderStageCreateInfo-pSpecializationInfo-06719");
 }
 
 TEST_F(VkLayerTest, CreatePipelineCheckShaderBadSpecializationOffsetOutOfBounds) {
@@ -5367,7 +5488,7 @@ TEST_F(VkLayerTest, CreatePipelineFragmentOutputNotWritten) {
 
     const auto set_info = [&](CreatePipelineHelper &helper) {
         helper.shader_stages_ = {helper.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
-        helper.cb_attachments_.colorWriteMask = 1;
+        helper.cb_attachments_[0].colorWriteMask = 1;
     };
     CreatePipelineHelper::OneshotTest(*this, set_info, kWarningBit, "Attachment 0 not written by fragment shader");
 }
@@ -7141,13 +7262,13 @@ TEST_F(VkLayerTest, CooperativeMatrixNV) {
     pipe.cs_.reset(new VkShaderObj(this, csSource, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_GLSL, &specInfo));
     pipe.InitState();
     pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {});
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineShaderStageCreateInfo-module-04145");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineShaderStageCreateInfo-pSpecializationInfo-06719");
     pipe.CreateComputePipeline();
     m_errorMonitor->VerifyFound();
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-CooperativeMatrixType");
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-CooperativeMatrixMulAdd");
-    m_errorMonitor->SetUnexpectedError("VUID-VkPipelineShaderStageCreateInfo-module-04145");
+    m_errorMonitor->SetUnexpectedError("VUID-VkPipelineShaderStageCreateInfo-pSpecializationInfo-06719");
     pipe.CreateComputePipeline();
     m_errorMonitor->VerifyFound();
 }
@@ -7650,8 +7771,7 @@ TEST_F(VkLayerTest, GraphicsPipelineStageCreationFeedbackCount) {
     auto set_feedback = [&feedback_info](CreatePipelineHelper &helper) { helper.gp_ci_.pNext = &feedback_info; };
 
     CreatePipelineHelper::OneshotTest(*this, set_feedback, kErrorBit,
-                                      "VUID-VkPipelineCreationFeedbackCreateInfo-pipelineStageCreationFeedbackCount-02668",
-                                      true);
+                                      "VUID-VkGraphicsPipelineCreateInfo-pipelineStageCreationFeedbackCount-06594", true);
 
     if (IsPlatform(kMockICD) || DeviceSimulation()) {
         printf("%s Driver data writeback check not supported by MockICD, skipping.\n", kSkipPrefix);
@@ -7665,8 +7785,7 @@ TEST_F(VkLayerTest, GraphicsPipelineStageCreationFeedbackCount) {
 
     feedback_info.pipelineStageCreationFeedbackCount = 1;
     CreatePipelineHelper::OneshotTest(*this, set_feedback, kErrorBit,
-                                      "VUID-VkPipelineCreationFeedbackCreateInfo-pipelineStageCreationFeedbackCount-02668",
-                                      false);
+                                      "VUID-VkGraphicsPipelineCreateInfo-pipelineStageCreationFeedbackCount-06594", false);
 }
 
 TEST_F(VkLayerTest, ComputePipelineStageCreationFeedbackCount) {
@@ -7693,8 +7812,8 @@ TEST_F(VkLayerTest, ComputePipelineStageCreationFeedbackCount) {
     CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "", true);
 
     feedback_info.pipelineStageCreationFeedbackCount = 2;
-    CreateComputePipelineHelper::OneshotTest(
-        *this, set_info, kErrorBit, "VUID-VkPipelineCreationFeedbackCreateInfo-pipelineStageCreationFeedbackCount-02669");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit,
+                                             "VUID-VkComputePipelineCreateInfo-pipelineStageCreationFeedbackCount-06566");
 }
 
 TEST_F(VkLayerTest, NVRayTracingPipelineStageCreationFeedbackCount) {
@@ -7730,8 +7849,8 @@ TEST_F(VkLayerTest, NVRayTracingPipelineStageCreationFeedbackCount) {
     CreateNVRayTracingPipelineHelper::OneshotPositiveTest(*this, set_feedback);
 
     feedback_info.pipelineStageCreationFeedbackCount = 2;
-    CreateNVRayTracingPipelineHelper::OneshotTest(
-        *this, set_feedback, "VUID-VkPipelineCreationFeedbackCreateInfo-pipelineStageCreationFeedbackCount-02969");
+    CreateNVRayTracingPipelineHelper::OneshotTest(*this, set_feedback,
+                                                  "VUID-VkRayTracingPipelineCreateInfoNV-pipelineStageCreationFeedbackCount-06651");
 }
 
 TEST_F(VkLayerTest, CreatePipelineCheckShaderImageFootprintEnabled) {
@@ -11309,7 +11428,8 @@ TEST_F(VkLayerTest, Storage8and16bit) {
             };
             CreatePipelineHelper::OneshotTest(
                 *this, set_info, kErrorBit,
-                vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091",    // StorageInputOutput16 vert
+                vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091",    // Float16 vert
+                               "VUID-VkShaderModuleCreateInfo-pCode-01091",    // StorageInputOutput16 vert
                                "VUID-VkShaderModuleCreateInfo-pCode-01091"});  // StorageInputOutput16 frag
         }
     }
@@ -11432,7 +11552,8 @@ TEST_F(VkLayerTest, Storage8and16bit) {
             };
             CreatePipelineHelper::OneshotTest(
                 *this, set_info, kErrorBit,
-                vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091",    // StorageInputOutput16 vert
+                vector<string>{"VUID-VkShaderModuleCreateInfo-pCode-01091",    // Int16 vert
+                               "VUID-VkShaderModuleCreateInfo-pCode-01091",    // StorageInputOutput16 vert
                                "VUID-VkShaderModuleCreateInfo-pCode-01091"});  // StorageInputOutput16 frag
         }
     }
@@ -13135,6 +13256,13 @@ TEST_F(VkLayerTest, TestPipelineColorWriteCreateInfoEXT) {
     pipe.CreateGraphicsPipeline();
     m_errorMonitor->VerifyFound();
 
+    std::vector<VkBool32> max_enabled(m_device->props.limits.maxColorAttachments + 1, VK_TRUE);
+    color_write.attachmentCount = m_device->props.limits.maxColorAttachments + 1;
+    color_write.pColorWriteEnables = max_enabled.data();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineColorWriteCreateInfoEXT-attachmentCount-06655");
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyFound();
+
     VkBool32 enabled = VK_FALSE;
     color_write.attachmentCount = 1;
     color_write.pColorWriteEnables = &enabled;
@@ -13757,19 +13885,17 @@ TEST_F(VkLayerTest, SpecializationInvalidSizeMismatch) {
     }
 }
 
-TEST_F(VkLayerTest, ValidateComputeShaderLocalSize) {
-    TEST_DESCRIPTION("Validate compute shader shared memory does not exceed maxComputeSharedMemorySize");
+TEST_F(VkLayerTest, ComputeWorkGroupSizeSpecConstant) {
+    TEST_DESCRIPTION("Validate compute shader shared memory does not exceed maxComputeWorkGroupSize");
 
     ASSERT_NO_FATAL_FAILURE(Init());
+    const VkPhysicalDeviceLimits limits = m_device->phy().properties().limits;
 
     // Make sure compute pipeline has a compute shader stage set
-    char const *csSource = R"glsl(
+    const std::string cs_source = R"glsl(
         #version 450
-
         layout(local_size_x_id = 3, local_size_y_id = 4) in;
-
-        void main(){
-        }
+        void main(){}
     )glsl";
 
     VkSpecializationMapEntry entries[2];
@@ -13781,8 +13907,8 @@ TEST_F(VkLayerTest, ValidateComputeShaderLocalSize) {
     entries[1].size = sizeof(uint32_t);
 
     uint32_t data[2] = {
-        m_device->phy().properties().limits.maxComputeWorkGroupSize[0],
-        m_device->phy().properties().limits.maxComputeWorkGroupSize[1] + 1,  // Invalid
+        1,
+        limits.maxComputeWorkGroupSize[1] + 1,  // Invalid
     };
 
     VkSpecializationInfo specialization_info = {};
@@ -13791,14 +13917,254 @@ TEST_F(VkLayerTest, ValidateComputeShaderLocalSize) {
     specialization_info.dataSize = sizeof(uint32_t) * 2;
     specialization_info.pData = data;
 
-    CreateComputePipelineHelper pipe(*this);
-    pipe.InitInfo();
-    pipe.cs_.reset(
-        new VkShaderObj(this, csSource, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_GLSL, &specialization_info));
-    pipe.InitState();
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-MaxComputeWorkGroupSize");
-    pipe.CreateComputePipeline();
-    m_errorMonitor->VerifyFound();
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, cs_source, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_GLSL,
+                                         &specialization_info));
+    };
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-y-06430");
+
+    data[0] = limits.maxComputeWorkGroupSize[0] + 1;  // Invalid
+    data[1] = 1;
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06429");
+
+    data[0] = limits.maxComputeWorkGroupSize[0];
+    data[1] = limits.maxComputeWorkGroupSize[1];
+    if ((data[0] + data[1]) > limits.maxComputeWorkGroupInvocations) {
+        CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06432");
+    }
+}
+
+TEST_F(VkLayerTest, ComputeWorkGroupSizeConstantDefault) {
+    TEST_DESCRIPTION("Make sure constant are applied for maxComputeWorkGroupSize using WorkgroupSize");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    uint32_t x_size_limit = m_device->props.limits.maxComputeWorkGroupSize[0];
+
+    std::stringstream spv_source;
+    spv_source << R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpDecorate %gl_WorkGroupSize BuiltIn WorkgroupSize
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+      %limit = OpConstant %uint )";
+    spv_source << std::to_string(x_size_limit + 1);
+    spv_source << R"(
+     %uint_1 = OpConstant %uint 1
+     %v3uint = OpTypeVector %uint 3
+%gl_WorkGroupSize = OpConstantComposite %v3uint %limit %uint_1 %uint_1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source.str(), VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_ASM));
+    };
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06429");
+}
+
+TEST_F(VkLayerTest, ComputeWorkGroupSizeSpecConstantDefault) {
+    TEST_DESCRIPTION("Make sure spec constant are applied for maxComputeWorkGroupSize using WorkgroupSize");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    uint32_t x_size_limit = m_device->props.limits.maxComputeWorkGroupSize[0];
+
+    std::stringstream spv_source;
+    spv_source << R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpDecorate %limit SpecId 0
+               OpDecorate %gl_WorkGroupSize BuiltIn WorkgroupSize
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+      %limit = OpSpecConstant %uint )";
+    spv_source << std::to_string(x_size_limit + 1);
+    spv_source << R"(
+     %uint_1 = OpConstant %uint 1
+     %v3uint = OpTypeVector %uint 3
+%gl_WorkGroupSize = OpSpecConstantComposite %v3uint %limit %uint_1 %uint_1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source.str(), VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_ASM));
+    };
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06429");
+}
+
+TEST_F(VkLayerTest, ComputeWorkGroupSizeLocalSizeId) {
+    TEST_DESCRIPTION("Validate LocalSizeId also triggers maxComputeWorkGroupSize limit");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
+        printf("%s test requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto features13 = LvlInitStruct<VkPhysicalDeviceVulkan13Features>();
+    features13.maintenance4 = VK_TRUE;  // required to be supported in 1.3
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features13));
+
+    uint32_t x_size_limit = m_device->props.limits.maxComputeWorkGroupSize[0];
+
+    std::stringstream spv_source;
+    spv_source << R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionModeId %main LocalSizeId %limit %uint_1 %uint_1
+               OpSource GLSL 450
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+    %limit = OpConstant %uint )";
+    spv_source << std::to_string(x_size_limit + 1);
+    spv_source << R"(
+     %uint_1 = OpConstant %uint 1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source.str(), VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_3, SPV_SOURCE_ASM));
+    };
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06429");
+}
+
+TEST_F(VkLayerTest, ComputeWorkGroupSizeLocalSizeIdSpecConstantDefault) {
+    TEST_DESCRIPTION("Validate LocalSizeId also triggers maxComputeWorkGroupSize limit with spec constants default");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
+        printf("%s test requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto features13 = LvlInitStruct<VkPhysicalDeviceVulkan13Features>();
+    features13.maintenance4 = VK_TRUE;  // required to be supported in 1.3
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features13));
+
+    uint32_t x_size_limit = m_device->props.limits.maxComputeWorkGroupSize[0];
+
+    // layout(local_size_x_id = 18, local_size_z_id = 19) in;
+    // layout(local_size_x = 32) in;
+    std::stringstream spv_source;
+    spv_source << R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionModeId %main LocalSizeId %spec_x %uint_1 %spec_z
+               OpSource GLSL 450
+               OpDecorate %spec_x SpecId 18
+               OpDecorate %spec_z SpecId 19
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+      %spec_x = OpSpecConstant %uint )";
+    spv_source << std::to_string(x_size_limit + 1);
+    spv_source << R"(
+     %uint_1 = OpConstant %uint 1
+     %spec_z = OpSpecConstant %uint 1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source.str(), VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_3, SPV_SOURCE_ASM));
+    };
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06429");
+}
+
+TEST_F(VkLayerTest, ComputeWorkGroupSizeLocalSizeIdSpecConstantSet) {
+    TEST_DESCRIPTION("Validate LocalSizeId also triggers maxComputeWorkGroupSize limit with spec constants");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
+        printf("%s test requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto features13 = LvlInitStruct<VkPhysicalDeviceVulkan13Features>();
+    features13.maintenance4 = VK_TRUE;  // required to be supported in 1.3
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features13));
+
+    uint32_t x_size_limit = m_device->props.limits.maxComputeWorkGroupSize[0];
+
+    // layout(local_size_x_id = 18, local_size_z_id = 19) in;
+    // layout(local_size_x = 32) in;
+    std::stringstream spv_source;
+    spv_source << R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionModeId %main LocalSizeId %spec_x %uint_1 %spec_z
+               OpSource GLSL 450
+               OpDecorate %spec_x SpecId 18
+               OpDecorate %spec_z SpecId 19
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %spec_x = OpSpecConstant %uint 32
+     %uint_1 = OpConstant %uint 1
+     %spec_z = OpSpecConstant %uint 1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    uint32_t data = x_size_limit + 1;
+
+    VkSpecializationMapEntry entry;
+    entry.constantID = 18;
+    entry.offset = 0;
+    entry.size = sizeof(uint32_t);
+
+    VkSpecializationInfo specialization_info = {};
+    specialization_info.mapEntryCount = 1;
+    specialization_info.pMapEntries = &entry;
+    specialization_info.dataSize = sizeof(uint32_t);
+    specialization_info.pData = &data;
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source.str(), VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_3, SPV_SOURCE_ASM,
+                                         &specialization_info));
+    };
+    m_errorMonitor->SetUnexpectedError("VUID-RuntimeSpirv-x-06432");
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-x-06429");
 }
 
 TEST_F(VkLayerTest, UsingRasterizationStateStreamExtWithoutEnabled) {
@@ -15277,7 +15643,7 @@ TEST_F(VkLayerTest, CreateGraphicsPipelineNullRenderPass) {
 
     m_errorMonitor->VerifyNotFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-dynamicRendering-06052");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06575");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
 }
@@ -15532,7 +15898,7 @@ TEST_F(VkLayerTest, CreateGraphicsPipelineRasterizationOrderAttachmentAccessNoSu
         create_render_pass(VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_ARM, render_pass);
         render_pass_handle = render_pass.handle();
         CreatePipelineHelper::OneshotTest(*this, set_stages_pipeline_createinfo, kErrorBit,
-                                          "VUID-VkGraphicsPipelineCreateInfo-pStages-06466");
+                                          "VUID-VkGraphicsPipelineCreateInfo-flags-06591");
     }
 }
 
@@ -15613,28 +15979,40 @@ TEST_F(VkLayerTest, InvalidPipelineRenderingParameters) {
     pipeline_rendering_info.pColorAttachmentFormats = &color_formats;
 
     // Invalid color format
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineRenderingCreateInfo-pColorAttachmentFormats-06064");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06581");
+    pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
+    m_errorMonitor->VerifyFound();
+
+    // Invalid color format array
+    pipeline_rendering_info.pColorAttachmentFormats = nullptr;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06579");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
 
     // Invalid depth format
     pipeline_rendering_info.colorAttachmentCount = 0;
+    pipeline_rendering_info.pColorAttachmentFormats = &color_formats;
     pipeline_rendering_info.depthAttachmentFormat = VK_FORMAT_R8G8B8A8_UNORM;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineRenderingCreateInfo-depthAttachmentFormat-06065");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06587");
+    // TODO (ncesario) Seems impossible hit 06585 without also hitting 06587. Since 06587 happens in stateless validation, 06585
+    // never gets triggered, though has been manually tested separately by removing 06587.
+    // m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06585");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
 
     // Invalid stecil format
     pipeline_rendering_info.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
     pipeline_rendering_info.stencilAttachmentFormat = VK_FORMAT_R8G8B8A8_UNORM;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineRenderingCreateInfo-stencilAttachmentFormat-06164");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06588");
+    // TODO (ncesario) Same scenario as with 06585 and 06587
+    // m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06586");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
 
     // mismatching depth/stencil formats
     pipeline_rendering_info.depthAttachmentFormat = depth_format;
     pipeline_rendering_info.stencilAttachmentFormat = stencil_format;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineRenderingCreateInfo-depthAttachmentFormat-06165");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06589");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
 
@@ -15644,7 +16022,7 @@ TEST_F(VkLayerTest, InvalidPipelineRenderingParameters) {
     pipeline_rendering_info.pColorAttachmentFormats = &color_formats;
     pipeline_rendering_info.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
     pipeline_rendering_info.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineRenderingCreateInfo-multiview-06066");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-multiview-06577");
     pipeline_rendering_info.viewMask = 1;
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
@@ -15724,8 +16102,419 @@ TEST_F(VkLayerTest, InvalidPipelineRenderingViewMaskParameter) {
         return;
     }
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineRenderingCreateInfo-viewMask-06067");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06578");
     pipeline_rendering_info.viewMask = 1 << multiview_props.maxMultiviewViewCount;
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, TestMismatchedRenderPassAndPipelineAttachments) {
+    TEST_DESCRIPTION("Test creating a pipeline with no attachments with a render pass with attachments.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06042");
+
+    char const *vsSource = R"glsl(
+                #version 450
+
+                void main() {
+                }
+            )glsl";
+
+    char const *fsSource = R"glsl(
+                #version 450
+
+                void main() {
+                }
+            )glsl";
+
+    VkShaderObj vs(this, vsSource, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddShader(&fs);
+    VkViewport viewport = {0.0f, 0.0f, 64.0f, 64.0f, 0.0f, 1.0f};
+    m_viewports.push_back(viewport);
+    pipe.SetViewport(m_viewports);
+    VkRect2D rect = {};
+    m_scissors.push_back(rect);
+    pipe.SetScissor(m_scissors);
+
+    VkDescriptorSetLayoutBinding layout_binding = {};
+    layout_binding.binding = 1;
+    layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    layout_binding.descriptorCount = 1;
+    layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    layout_binding.pImmutableSamplers = nullptr;
+    const VkDescriptorSetLayoutObj descriptor_set_layout(m_device, {layout_binding});
+
+    const VkPipelineLayoutObj pipeline_layout(DeviceObj(), {&descriptor_set_layout});
+    pipe.CreateVKPipeline(pipeline_layout.handle(), m_renderPass);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, IncompatibleScissorCountAndViewportCount) {
+    TEST_DESCRIPTION("Validate creating a pipeline with incompatible scissor and viewport count, without dynamic states.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
+        printf("%s test requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkViewport viewports[2] = {{0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f}};
+
+    auto set_viewport_state_createinfo = [&](CreatePipelineHelper &helper) {
+        helper.vp_state_ci_.viewportCount = 2;
+        helper.vp_state_ci_.pViewports = viewports;
+    };
+
+    CreatePipelineHelper::OneshotTest(*this, set_viewport_state_createinfo, kErrorBit,
+                                      "VUID-VkPipelineViewportStateCreateInfo-scissorCount-04134");
+}
+
+TEST_F(VkLayerTest, TestCreatingPipelineWithScissorWithCount) {
+    TEST_DESCRIPTION("Validate creating graphics pipeline with dynamic state scissor with count.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_3) {
+        printf("%s test requires Vulkan 1.3+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    {
+        const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT};
+        VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+        dyn_state_ci.dynamicStateCount = 1;
+        dyn_state_ci.pDynamicStates = dyn_states;
+
+        auto set_viewport_state_createinfo = [&](CreatePipelineHelper &helper) {
+            helper.dyn_state_ci_ = dyn_state_ci;
+            helper.vp_state_ci_.scissorCount = 0;
+            helper.vp_state_ci_.viewportCount = 0;
+        };
+
+        CreatePipelineHelper::OneshotTest(*this, set_viewport_state_createinfo, kErrorBit,
+                                          "VUID-VkPipelineViewportStateCreateInfo-scissorCount-04136");
+    }
+
+    {
+        const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT, VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT};
+        VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+        dyn_state_ci.dynamicStateCount = 2;
+        dyn_state_ci.pDynamicStates = dyn_states;
+
+        VkRect2D scissors = {};
+
+        auto set_viewport_state_createinfo = [&](CreatePipelineHelper &helper) {
+            helper.dyn_state_ci_ = dyn_state_ci;
+            helper.vp_state_ci_.scissorCount = 1;
+            helper.vp_state_ci_.pScissors = &scissors;
+            helper.vp_state_ci_.viewportCount = 0;
+        };
+
+        CreatePipelineHelper::OneshotTest(*this, set_viewport_state_createinfo, kErrorBit,
+                                          "VUID-VkPipelineViewportStateCreateInfo-scissorCount-04136");
+    }
+}
+
+TEST_F(VkLayerTest, DynamicSampleLocations) {
+    TEST_DESCRIPTION("Validate dynamic sample locations.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required, skipping test.\n", kSkipPrefix);
+        return;
+    }
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto sample_locations_props = LvlInitStruct<VkPhysicalDeviceSampleLocationsPropertiesEXT>();
+    auto properties2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&sample_locations_props);
+    vk::GetPhysicalDeviceProperties2(gpu(), &properties2);
+
+    if ((sample_locations_props.sampleLocationSampleCounts & VK_SAMPLE_COUNT_1_BIT) == 0) {
+        printf("%s Required sample location sample count VK_SAMPLE_COUNT_1_BIT not supported, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    auto vkCmdSetSampleLocationsEXT =
+        reinterpret_cast<PFN_vkCmdSetSampleLocationsEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdSetSampleLocationsEXT"));
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.InitState();
+
+    const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT};
+    auto dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
+    dyn_state_ci.dynamicStateCount = 1;
+    dyn_state_ci.pDynamicStates = dyn_states;
+    pipe.dyn_state_ci_ = dyn_state_ci;
+
+    pipe.CreateGraphicsPipeline();
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-None-06666");
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    VkSampleLocationEXT sample_location = {0.5f, 0.5f};
+
+    auto sample_locations_info = LvlInitStruct<VkSampleLocationsInfoEXT>();
+    sample_locations_info.sampleLocationsPerPixel = VK_SAMPLE_COUNT_1_BIT;
+    sample_locations_info.sampleLocationGridSize = {1u, 1u};
+    sample_locations_info.sampleLocationsCount = 1;
+    sample_locations_info.pSampleLocations = &sample_location;
+
+    m_errorMonitor->ExpectSuccess();
+    vkCmdSetSampleLocationsEXT(m_commandBuffer->handle(), &sample_locations_info);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_errorMonitor->VerifyNotFound();
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, PrimitivesGeneratedQueryAndDiscardEnabled) {
+    TEST_DESCRIPTION("Test missing primitivesGeneratedQueryWithRasterizerDiscard feature.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
+        return;
+    }
+    auto primitives_generated_features = LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>();
+    primitives_generated_features.primitivesGeneratedQueryWithRasterizerDiscard = VK_FALSE;
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&primitives_generated_features);
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto rs_ci = LvlInitStruct<VkPipelineRasterizationStateCreateInfo>();
+    rs_ci.lineWidth = 1.0f;
+    rs_ci.rasterizerDiscardEnable = VK_TRUE;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.rs_state_ci_ = rs_ci;
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    auto query_pool_ci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    query_pool_ci.queryCount = 1;
+    query_pool_ci.queryType = VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT;
+
+    vk_testing::QueryPool query_pool;
+    query_pool.init(*m_device, query_pool_ci);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-primitivesGeneratedQueryWithRasterizerDiscard-06708");
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+
+    vk::CmdBeginQuery(m_commandBuffer->handle(), query_pool.handle(), 0, 0);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    vk::CmdEndQuery(m_commandBuffer->handle(), query_pool.handle(), 0);
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, PrimitivesGeneratedQueryStreams) {
+    TEST_DESCRIPTION("Test missing primitivesGeneratedQueryWithNonZeroStreams feature.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Required extensions are not supported.\n", kSkipPrefix);
+        return;
+    }
+    auto transform_feedback_features = LvlInitStruct<VkPhysicalDeviceTransformFeedbackFeaturesEXT>();
+    auto primitives_generated_features =
+        LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>(&transform_feedback_features);
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&primitives_generated_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (transform_feedback_features.geometryStreams == VK_FALSE) {
+        printf("%s geometryStreams feature not supported, skipping tests.\n", kSkipPrefix);
+    }
+    if (primitives_generated_features.primitivesGeneratedQuery == VK_FALSE) {
+        printf("%s geometryStreams feature not supported, skipping tests.\n", kSkipPrefix);
+    }
+    primitives_generated_features.primitivesGeneratedQueryWithNonZeroStreams = VK_FALSE;
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    auto rasterization_streams = LvlInitStruct<VkPipelineRasterizationStateStreamCreateInfoEXT>();
+    rasterization_streams.rasterizationStream = 1;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.rs_state_ci_.pNext = &rasterization_streams;
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    auto query_pool_ci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    query_pool_ci.queryCount = 1;
+    query_pool_ci.queryType = VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT;
+
+    vk_testing::QueryPool query_pool;
+    query_pool.init(*m_device, query_pool_ci);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-primitivesGeneratedQueryWithNonZeroStreams-06709");
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+
+    vk::CmdBeginQuery(m_commandBuffer->handle(), query_pool.handle(), 0, 0);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    vk::CmdEndQuery(m_commandBuffer->handle(), query_pool.handle(), 0);
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidFragmentShadingRateOps) {
+    TEST_DESCRIPTION("Specify invalid fsr pipeline settings for the enabled features");
+    m_errorMonitor->ExpectSuccess();
+
+    // Enable KHR_fragment_shading_rate and all of its required extensions
+    AddRequiredExtensions(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s required but not available\n", kSkipPrefix, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
+        return;
+    }
+
+    auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
+        vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR"));
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+    VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = LvlInitStruct<VkPhysicalDeviceFragmentShadingRateFeaturesKHR>();
+    VkPhysicalDeviceFeatures2KHR features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&fsr_features);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+
+    if (!fsr_features.primitiveFragmentShadingRate) {
+        printf("%s primitiveFragmentShadingRate not available.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+    m_errorMonitor->VerifyNotFound();
+
+    VkPipelineFragmentShadingRateStateCreateInfoKHR fsr_ci = LvlInitStruct<VkPipelineFragmentShadingRateStateCreateInfoKHR>();
+    fsr_ci.fragmentSize.width = 1;
+    fsr_ci.fragmentSize.height = 1;
+    fsr_ci.combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR;
+    fsr_ci.combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR;
+
+    auto set_fsr_ci = [&](CreatePipelineHelper &helper) { helper.gp_ci_.pNext = &fsr_ci; };
+
+    // Pass an invalid value for op 0
+    fsr_ci.combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_ENUM_KHR;
+    CreatePipelineHelper::OneshotTest(*this, set_fsr_ci, kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-pDynamicState-06567");
+    fsr_ci.combinerOps[0] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR;
+
+    // Pass an invalid value for op 1
+    fsr_ci.combinerOps[1] = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_ENUM_KHR;
+    CreatePipelineHelper::OneshotTest(*this, set_fsr_ci, kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-pDynamicState-06568");
+}
+
+TEST_F(VkLayerTest, TestMaxFragmentDualSrcAttachments) {
+    TEST_DESCRIPTION("Test drawing with dual source blending with too many fragment output attachments.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s At least Vulkan version 1.1 is required, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>();
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    if (features2.features.dualSrcBlend == VK_FALSE) {
+        printf("%s dualSrcBlend feature is not available, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    uint32_t count = m_device->props.limits.maxFragmentDualSrcAttachments + 1;
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget(count));
+
+    std::stringstream fsSource;
+    fsSource << "#version 450\n";
+    for (uint32_t i = 0; i < count; ++i) {
+        fsSource << "layout(location = " << i << ") out vec4 c" << i << ";\n";
+    }
+    fsSource << " void main() {\n";
+    for (uint32_t i = 0; i < count; ++i) {
+        fsSource << "c" << i << " = vec4(0.0f);\n";
+    }
+
+    fsSource << "}";
+    VkShaderObj fs(this, fsSource.str().c_str(), VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    VkPipelineColorBlendAttachmentState cb_attachments = {};
+    cb_attachments.blendEnable = VK_TRUE;
+    cb_attachments.srcColorBlendFactor = VK_BLEND_FACTOR_SRC1_COLOR;  // bad!
+    cb_attachments.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+    cb_attachments.colorBlendOp = VK_BLEND_OP_ADD;
+    cb_attachments.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    cb_attachments.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    cb_attachments.alphaBlendOp = VK_BLEND_OP_ADD;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.cb_attachments_[0] = cb_attachments;
+    pipe.shader_stages_ = {pipe.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
+    pipe.InitState();
+    pipe.CreateGraphicsPipeline();
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-Fragment-06427");
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
 }

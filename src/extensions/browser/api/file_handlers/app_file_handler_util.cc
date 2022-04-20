@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -41,6 +41,7 @@ namespace extensions {
 
 namespace app_file_handler_util {
 
+const char kFallbackMimeType[] = "application/octet-stream";
 const char kInvalidParameters[] = "Invalid parameters";
 const char kSecurityError[] = "Security error";
 
@@ -503,6 +504,21 @@ bool ValidateFileEntryAndGetPath(const std::string& filesystem_name,
   }
 
   return true;
+}
+
+std::vector<extensions::EntryInfo> CreateEntryInfos(
+    const std::vector<base::FilePath>& entry_paths,
+    const std::vector<std::string>& mime_types,
+    const std::set<base::FilePath>& directory_paths) {
+  CHECK_EQ(entry_paths.size(), mime_types.size());
+  std::vector<extensions::EntryInfo> entry_infos;
+  for (size_t i = 0; i < entry_paths.size(); ++i) {
+    const std::string mime_type =
+        mime_types[i].empty() ? kFallbackMimeType : mime_types[i];
+    bool is_directory = base::Contains(directory_paths, entry_paths[i]);
+    entry_infos.emplace_back(entry_paths[i], mime_type, is_directory);
+  }
+  return entry_infos;
 }
 
 }  // namespace app_file_handler_util

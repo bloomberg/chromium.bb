@@ -382,22 +382,13 @@ void PackPixels(const PackPixelsParams &params,
         return;
     }
 
-    PixelCopyFunction fastCopyFunc = sourceFormat.fastCopyFunctions.get(params.destFormat->id);
+    FastCopyFunction fastCopyFunc = sourceFormat.fastCopyFunctions.get(params.destFormat->id);
 
     if (fastCopyFunc)
     {
         // Fast copy is possible through some special function
-        for (int y = 0; y < destHeight; ++y)
-        {
-            for (int x = 0; x < destWidth; ++x)
-            {
-                uint8_t *dest =
-                    destWithOffset + y * params.outputPitch + x * params.destFormat->pixelBytes;
-                const uint8_t *src = source + y * yAxisPitch + x * xAxisPitch;
-
-                fastCopyFunc(src, dest);
-            }
-        }
+        fastCopyFunc(source, xAxisPitch, yAxisPitch, destWithOffset, params.destFormat->pixelBytes,
+                     params.outputPitch, destWidth, destHeight);
         return;
     }
 
@@ -435,17 +426,32 @@ bool FastCopyFunctionMap::has(angle::FormatID formatID) const
     return (get(formatID) != nullptr);
 }
 
-PixelCopyFunction FastCopyFunctionMap::get(angle::FormatID formatID) const
+namespace
 {
-    for (size_t index = 0; index < mSize; ++index)
+
+const FastCopyFunctionMap::Entry *getEntry(const FastCopyFunctionMap::Entry *entry,
+                                           size_t numEntries,
+                                           angle::FormatID formatID)
+{
+    const FastCopyFunctionMap::Entry *end = entry + numEntries;
+    while (entry != end)
     {
-        if (mData[index].formatID == formatID)
+        if (entry->formatID == formatID)
         {
-            return mData[index].func;
+            return entry;
         }
+        ++entry;
     }
 
     return nullptr;
+}
+
+}  // namespace
+
+FastCopyFunction FastCopyFunctionMap::get(angle::FormatID formatID) const
+{
+    const FastCopyFunctionMap::Entry *entry = getEntry(mData, mSize, formatID);
+    return entry ? entry->func : nullptr;
 }
 
 bool ShouldUseDebugLayers(const egl::AttributeMap &attribs)
@@ -591,12 +597,26 @@ angle::Result IncompleteTextureSet::getIncompleteTexture(
 
     ContextImpl *implFactory = context->getImplementation();
 
-    const gl::Extents colorSize(1, 1, 1);
+    gl::Extents colorSize(1, 1, 1);
     gl::PixelUnpackState unpack;
     unpack.alignment = 1;
-    const gl::Box area(0, 0, 0, 1, 1, 1);
+    gl::Box area(0, 0, 0, 1, 1, 1);
     const IncompleteTextureParameters &incompleteTextureParam =
         kIncompleteTextureParameters[format];
+
+    // Cube map arrays are expected to have layer counts that are multiples of 6
+    constexpr int kCubeMapArraySize = 6;
+    if (type == gl::TextureType::CubeMapArray)
+    {
+        // From the GLES 3.2 spec:
+        //   8.18. IMMUTABLE-FORMAT TEXTURE IMAGES
+        //   TexStorage3D Errors
+        //   An INVALID_OPERATION error is generated if any of the following conditions hold:
+        //     * target is TEXTURE_CUBE_MAP_ARRAY and depth is not a multiple of 6
+        // Since ANGLE treats incomplete textures as immutable, respect that here.
+        colorSize.depth = kCubeMapArraySize;
+        area.depth      = kCubeMapArraySize;
+    }
 
     // If a texture is external use a 2D texture for the incomplete texture
     gl::TextureType createType = (type == gl::TextureType::External) ? gl::TextureType::_2D : type;
@@ -637,6 +657,23 @@ angle::Result IncompleteTextureSet::getIncompleteTexture(
                                      incompleteTextureParam.format, incompleteTextureParam.type,
                                      incompleteTextureParam.clearColor));
         }
+    }
+    else if (type == gl::TextureType::CubeMapArray)
+    {
+        // We need to provide enough pixel data to fill the array of six faces
+        GLubyte incompleteCubeArrayPixels[kCubeMapArraySize][4];
+        for (int i = 0; i < kCubeMapArraySize; ++i)
+        {
+            incompleteCubeArrayPixels[i][0] = incompleteTextureParam.clearColor[0];
+            incompleteCubeArrayPixels[i][1] = incompleteTextureParam.clearColor[1];
+            incompleteCubeArrayPixels[i][2] = incompleteTextureParam.clearColor[2];
+            incompleteCubeArrayPixels[i][3] = incompleteTextureParam.clearColor[3];
+        }
+
+        ANGLE_TRY(t->setSubImage(mutableContext, unpack, nullptr,
+                                 gl::NonCubeTextureTypeToTarget(createType), 0, area,
+                                 incompleteTextureParam.format, incompleteTextureParam.type,
+                                 *incompleteCubeArrayPixels));
     }
     else if (type == gl::TextureType::_2DMultisample)
     {

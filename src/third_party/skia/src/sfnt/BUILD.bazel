@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 cc_library(
     name = "srcs",
     visibility = ["//:__subpackages__"],
@@ -327,5 +329,15 @@ generated_cc_atom(
     deps = [
         ":SkOTTableTypes_hdr",
         ":SkSFNTHeader_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkOTTable_hmtx_hdr",
+    hdrs = ["SkOTTable_hmtx.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkOTTableTypes_hdr",
+        "//src/core:SkEndian_hdr",
     ],
 )

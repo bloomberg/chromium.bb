@@ -31,7 +31,7 @@
 #include "third_party/microsoft_webauthn/webauthn.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "device/fido/cros/authenticator.h"
 #endif
 
@@ -135,7 +135,7 @@ MakeCredentialStatus IsCandidateAuthenticatorPostTouch(
     return MakeCredentialStatus::kSuccess;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Allow dispatch of UP-only cross-platform requests to the platform
   // authenticator to ensure backwards compatibility with the legacy
   // DeviceSecondFactorAuthentication enterprise policy.
@@ -382,7 +382,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
   base::flat_set<FidoTransportProtocol> allowed_transports =
       GetTransportsAllowedByRP(options.authenticator_attachment);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Attempt to instantiate the ChromeOS platform authenticator for
   // power-button-only requests for compatibility with the legacy
   // DeviceSecondFactorAuthentication policy, if that policy is enabled.
@@ -456,7 +456,7 @@ void MakeCredentialRequestHandler::DispatchRequest(
     // If the Windows API cannot handle a request, just reject the request
     // outright. There are no other authenticators to attempt, so calling
     // GetTouch() would not make sense.
-    if (authenticator->IsWinNativeApiAuthenticator()) {
+    if (authenticator->GetType() == FidoAuthenticator::Type::kWinNative) {
       HandleInapplicableAuthenticator(authenticator, post_touch_status);
       return;
     }
@@ -721,7 +721,7 @@ void MakeCredentialRequestHandler::HandleResponse(
   }
 
 #if BUILDFLAG(IS_WIN)
-  if (authenticator->IsWinNativeApiAuthenticator()) {
+  if (authenticator->GetType() == FidoAuthenticator::Type::kWinNative) {
     state_ = State::kFinished;
     if (status != CtapDeviceResponseCode::kSuccess) {
       std::move(completion_callback_)
@@ -933,7 +933,7 @@ void MakeCredentialRequestHandler::DispatchRequestWithToken(
 void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
     CtapMakeCredentialRequest* request,
     const FidoAuthenticator* authenticator) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   if (authenticator->AuthenticatorTransport() ==
           FidoTransportProtocol::kInternal &&
       options_.authenticator_attachment ==
@@ -948,8 +948,8 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
   // Only Windows cares about |authenticator_attachment| on the request.
   request->authenticator_attachment = options_.authenticator_attachment;
 
-  const absl::optional<AuthenticatorSupportedOptions>& auth_options =
-      authenticator->Options();
+  const absl::optional<AuthenticatorSupportedOptions>&
+      auth_options_empty_on_win = authenticator->Options();
   switch (options_.resident_key) {
     case ResidentKeyRequirement::kRequired:
       request->resident_key_required = true;
@@ -961,12 +961,13 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
       request->resident_key_required =
 #if BUILDFLAG(IS_WIN)
           // Windows does not yet support rk=preferred.
-          !authenticator->IsWinNativeApiAuthenticator() &&
+          authenticator->GetType() != FidoAuthenticator::Type::kWinNative &&
 #endif
-          auth_options && auth_options->supports_resident_key &&
+          auth_options_empty_on_win &&
+          auth_options_empty_on_win->supports_resident_key &&
           !authenticator->DiscoverableCredentialStorageFull() &&
           (observer()->SupportsPIN() ||
-           auth_options->user_verification_availability ==
+           auth_options_empty_on_win->user_verification_availability ==
                AuthenticatorSupportedOptions::UserVerificationAvailability::
                    kSupportedAndConfigured);
       break;
@@ -981,9 +982,10 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
       request->large_blob_key = true;
       break;
     case LargeBlobSupport::kPreferred:
-      request->large_blob_key = auth_options &&
-                                auth_options->supports_large_blobs &&
-                                request->resident_key_required;
+      request->large_blob_key =
+          auth_options_empty_on_win &&
+          auth_options_empty_on_win->supports_large_blobs &&
+          request->resident_key_required;
       break;
     case LargeBlobSupport::kNotRequested:
       request->large_blob_key = false;
@@ -992,7 +994,7 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
 
   if (!options_.make_u2f_api_credential &&
       (request->resident_key_required ||
-       (auth_options && auth_options->always_uv))) {
+       (auth_options_empty_on_win && auth_options_empty_on_win->always_uv))) {
     request->user_verification = UserVerificationRequirement::kRequired;
   } else {
     request->user_verification = options_.user_verification;
@@ -1009,12 +1011,13 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
     request->hmac_secret = false;
   }
 
-  if (request->large_blob_key && !auth_options->supports_large_blobs) {
+  if (request->large_blob_key && auth_options_empty_on_win &&
+      !auth_options_empty_on_win->supports_large_blobs) {
     request->large_blob_key = false;
   }
 
-  if (request->min_pin_length_requested &&
-      !auth_options->supports_min_pin_length_extension) {
+  if (request->min_pin_length_requested && auth_options_empty_on_win &&
+      !auth_options_empty_on_win->supports_min_pin_length_extension) {
     request->min_pin_length_requested = false;
   }
 

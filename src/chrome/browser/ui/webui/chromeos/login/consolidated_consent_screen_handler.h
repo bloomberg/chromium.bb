@@ -35,7 +35,7 @@ class ConsolidatedConsentScreenView {
 
     bool is_arc_enabled = true;
     bool is_demo = false;
-    bool is_enterprise_managed_account = false;
+    bool is_tos_hidden = false;
     bool is_child_account = false;
     std::string country_code = "us";
 
@@ -73,8 +73,7 @@ class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
  public:
   using TView = ConsolidatedConsentScreenView;
 
-  explicit ConsolidatedConsentScreenHandler(
-      JSCallsContainer* js_calls_container);
+  ConsolidatedConsentScreenHandler();
 
   ~ConsolidatedConsentScreenHandler() override;
 
@@ -100,7 +99,7 @@ class ConsolidatedConsentScreenHandler : public ConsolidatedConsentScreenView,
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void Initialize() override;
+  void InitializeDeprecated() override;
 
   void HandleAccept(bool enable_stats_usage,
                     bool enable_backup_restore,

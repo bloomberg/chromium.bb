@@ -36,6 +36,7 @@
 - [Driver Manifest File Format](#driver-manifest-file-format)
     - [Driver Manifest File Versions](#driver-manifest-file-versions)
     - [Driver Manifest File Version 1.0.0](#driver-manifest-file-version-100)
+    - [Driver Manifest File Version 1.0.1](#driver-manifest-file-version-101)
 - [Driver Vulkan Entry Point Discovery](#driver-vulkan-entry-point-discovery)
 - [Driver API Version](#driver-api-version)
 - [Mixed Driver Instance Extension Support](#mixed-driver-instance-extension-support)
@@ -58,6 +59,7 @@
     - [Loader Version 0 Interface Requirements](#loader-version-0-interface-requirements)
     - [Additional Interface Notes:](#additional-interface-notes)
   - [Android Driver Negotiation](#android-driver-negotiation)
+- [Loader implementation of VK_KHR_portability_enumeration](#loader-implementation-of-vkkhrportabilityenumeration)
 - [Loader and Driver Policy](#loader-and-driver-policy)
   - [Number Format](#number-format)
   - [Android Differences](#android-differences)
@@ -99,27 +101,48 @@ Driver.
 This could be for many reasons including using a beta driver, or forcing the
 loader to skip a problematic driver.
 In order to support this, the loader can be forced to look at specific
-drivers with the `VK_ICD_FILENAMES` environment variable.
+drivers with either the `VK_DRIVER_FILES` or the older `VK_ICD_FILENAMES`
+environment variable.
+Both these environment variables behave the same, but `VK_ICD_FILENAMES`
+should be considered deprecated.
+If both `VK_DRIVER_FILES` and `VK_ICD_FILENAMES` environment variables are
+present, then the newer `VK_DRIVER_FILES` will be used, and the values in
+`VK_ICD_FILENAMES` will be ignored.
 
-The `VK_ICD_FILENAMES` environment variable is a list of Driver Manifest
+The `VK_DRIVER_FILES` environment variable is a list of Driver Manifest
 files, containing the full path to the driver JSON Manifest file.
 This list is colon-separated on Linux and macOS, and semicolon-separated on
 Windows.
-Typically, `VK_ICD_FILENAMES` will only contain a full pathname to one info
+Typically, `VK_DRIVER_FILES` will only contain a full pathname to one info
 file for a single driver.
 A separator (colon or semicolon) is only used if more than one driver is needed.
 
+### Additional Driver Discovery
+
+There may be times that a developer wishes to force the loader to use a specific
+Driver in addition to the standard drivers (without replacing the standard
+search paths.
+The `VK_ADD_DRIVER_FILES` environment variable can be used to add a list of
+Driver Manifest files, containing the full path to the driver JSON Manifest file.
+This list is colon-separated on Linux and macOS, and semicolon-separated on
+Windows.
+It will be added prior to the standard driver search files.
+If `VK_DRIVER_FILES` or `VK_ICD_FILENAMES` is present, then
+`VK_ADD_DRIVER_FILES` will not be used by the loader and any values will be
+ignored.
+
 #### Exception for Elevated Privileges
 
-For security reasons, `VK_ICD_FILENAMES` is ignored if running the Vulkan
-application with elevated privileges.
-Because of this, `VK_ICD_FILENAMES` can only be used for applications that do not
-use elevated privileges.
+For security reasons, `VK_ICD_FILENAMES`, `VK_DRIVER_FILES` and
+`VK_ADD_DRIVER_FILES` are all ignored if running the Vulkan application with
+elevated privileges.
+Because of this, these environment variables can only be used for applications
+that do not use elevated privileges.
 
 For more information see
 [Elevated Privilege Caveats](LoaderInterfaceArchitecture.md#elevated-privilege-caveats)
 in the top-level
-[LoaderInterfaceArchitecture.md][LoaderInterfaceArchitecture.md] document.
+[LoaderInterfaceArchitecture.md](LoaderInterfaceArchitecture.md) document.
 
 #### Examples
 
@@ -132,28 +155,44 @@ For example:
 ##### On Windows
 
 ```
-set VK_ICD_FILENAMES=\windows\system32\nv-vk64.json
+set VK_DRIVER_FILES=\windows\system32\nv-vk64.json
 ```
 
-This is an example which is using the `VK_ICD_FILENAMES` override on Windows to
+This is an example which is using the `VK_DRIVER_FILES` override on Windows to
 point to the Nvidia Vulkan Driver's Manifest file.
+
+```
+set VK_ADD_DRIVER_FILES=\windows\system32\nv-vk64.json
+```
+
+This is an example which is using the `VK_ADD_DRIVER_FILES` on Windows to
+point to the Nvidia Vulkan Driver's Manifest file which will be loaded first
+before all other drivers.
 
 ##### On Linux
 
 ```
-export VK_ICD_FILENAMES=/home/user/dev/mesa/share/vulkan/icd.d/intel_icd.x86_64.json
+export VK_DRIVER_FILES=/home/user/dev/mesa/share/vulkan/icd.d/intel_icd.x86_64.json
 ```
 
-This is an example which is using the `VK_ICD_FILENAMES` override on Linux to
+This is an example which is using the `VK_DRIVER_FILES` override on Linux to
 point to the Intel Mesa Driver's Manifest file.
+
+```
+export VK_ADD_DRIVER_FILES=/home/user/dev/mesa/share/vulkan/icd.d/intel_icd.x86_64.json
+```
+
+This is an example which is using the `VK_ADD_DRIVER_FILES` on Linux to
+point to the Intel Mesa Driver's Manifest file which will be loaded first
+before all other drivers.
 
 ##### On macOS
 
 ```
-export VK_ICD_FILENAMES=/home/user/MoltenVK/Package/Latest/MoltenVK/macOS/MoltenVK_icd.json
+export VK_DRIVER_FILES=/home/user/MoltenVK/Package/Latest/MoltenVK/macOS/MoltenVK_icd.json
 ```
 
-This is an example which is using the `VK_ICD_FILENAMES` override on macOS to
+This is an example which is using the `VK_DRIVER_FILES` override on macOS to
 point to an installation and build of the MoltenVK GitHub repository that
 contains the MoltenVK driver.
 
@@ -238,16 +277,16 @@ For example, let us assume the registry contains the following data:
 ```
 [HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\Drivers\]
 
-"C:\vendor a\vk_vendora.json"=dword:00000000
-"C:\windows\system32\vendorb_vk.json"=dword:00000001
-"C:\windows\system32\vendorc_icd.json"=dword:00000000
+"C:\vendor a\vk_vendor_a.json"=dword:00000000
+"C:\windows\system32\vendor_b_vk.json"=dword:00000001
+"C:\windows\system32\vendor_c_icd.json"=dword:00000000
 ```
 
 In this case, the loader will step through each entry, and check the value.
 If the value is 0, then the loader will attempt to load the file.
 In this case, the loader will open the first and last listings, but not the
 middle.
-This is because the value of 1 for vendorb_vk.json disables the driver.
+This is because the value of 1 for vendor_b_vk.json disables the driver.
 
 The Vulkan loader will open each enabled manifest file found to obtain the name
 or pathname of a driver's shared library (".DLL") file.
@@ -348,7 +387,7 @@ See the
 [Driver Manifest File Format](#driver-manifest-file-format)
 section for more details.
 
-It is also important to note that while `VK_LAYER_PATH` will point the loader
+It is also important to note that while `VK_DRIVER_FILES` will point the loader
 to finding the manifest files, it does not guarantee the library files mentioned
 by the manifest will immediately be found.
 Often, the Driver Manifest file will point to the library file using a
@@ -439,11 +478,11 @@ developer's build tree.
 In this case, there should be a way to allow developers to point to such an
 ICD without modifying the system-installed ICD(s) on their system.
 
-This need is met with the use of the `VK_ICD_FILENAMES` environment variable,
+This need is met with the use of the `VK_DRIVER_FILES` environment variable,
 which will override the mechanism used for finding system-installed
 drivers.
 
-In other words, only the drivers listed in `VK_ICD_FILENAMES` will be
+In other words, only the drivers listed in `VK_DRIVER_FILES` will be
 used.
 
 See
@@ -462,19 +501,19 @@ The loader will load the driver via `hw_get_module` with the ID of "vulkan".
 
 ## Driver Manifest File Format
 
-The following section discusses the details of the Driver Manifest JSON
-file format.
+The following section discusses the details of the Driver Manifest JSON file format.
 The JSON file itself does not have any requirements for naming.
 The only requirement is that the extension suffix of the file is ".json".
 
 Here is an example driver JSON Manifest file:
 
-```
+```json
 {
-   "file_format_version": "1.0.0",
+   "file_format_version": "1.0.1",
    "ICD": {
       "library_path": "path to driver library",
-      "api_version": "1.0.5"
+      "api_version": "1.2.205",
+      "is_portability_driver": false
    }
 }
 ```
@@ -514,6 +553,12 @@ Here is an example driver JSON Manifest file:
         library files for the driver was built against.<br/>
         For example: 1.0.33.</td>
   </tr>
+  <tr>
+    <td>"is_portability_driver" </td>
+    <td>Defines whether the driver contains any VkPhysicalDevices which implement
+        the VK_KHR_portability_subset extension.<br/>
+    </td>
+  </tr>
 </table>
 
 **NOTE:** If the same driver shared library supports multiple, incompatible
@@ -522,8 +567,8 @@ for each (all of which may point to the same shared library).
 
 #### Driver Manifest File Versions
 
-There has only been one version of the Driver Manifest files supported.
-This is version 1.0.0.
+The current highest supported Layer Manifest file format supported is 1.0.1.
+Information about each version is detailed in the following sub-sections:
 
 #### Driver Manifest File Version 1.0.0
 
@@ -534,6 +579,13 @@ The fields supported in version 1.0.0 of the file format include:
  * "ICD"
  * "library\_path"
  * "api\_version"
+
+#### Driver Manifest File Version 1.0.1
+
+Added the `is_portability_driver` boolean field for drivers to self report that
+they contain VkPhysicalDevices which support the VK_KHR_portability_subset
+extension. This is an optional field. Omitting the field has the same effect as
+setting the field to `false`.
 
 
 ##  Driver Vulkan Entry Point Discovery
@@ -703,12 +755,15 @@ In this way, it compares "pName" to every physical device function supported in
 the driver.
 
 The following rules apply:
-* If it is the name of a physical device function supported by the driver, the
-pointer to the driver's corresponding function should be returned.
-* If it is the name of a valid function which is **not** a physical device
-function (i.e. an instance, device, or other function implemented by the
-driver), then the value of `NULL` should be returned.
-* If the driver has no idea what this function is, it should return `NULL`.
+* If `pName` is the name of a Vulkan API entrypoint that takes a `VkPhysicalDevice`
+  as its primary dispatch handle, and the driver supports the entrypoint, then
+  the driver **must** return the valid function pointer to the driver's
+  implementation of that entrypoint.
+* If `pName` is the name of a Vulkan API entrypoint that takes something other than
+  a `VkPhysicalDevice` as its primary dispatch handle, then the driver **must**
+  return `NULL`.
+* If the driver is unaware of any entrypoint with the name `pName`, it **must**
+  return `NULL`.
 
 This support is optional and should not be considered a requirement.
 This is only required if a driver intends to support some functionality not
@@ -1160,6 +1215,24 @@ information directly from the respective libraries and does not use the JSON
 manifest files used by the Windows, Linux and macOS loaders.
 
 
+## Loader implementation of VK_KHR_portability_enumeration
+
+The loader implements the `VK_KHR_portability_enumeration` instance extension,
+which filters out any drivers that report support for the portability subset
+device extension. Unless the application explicitly requests enumeration of
+portability devices by setting the VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+bit in the VkInstanceCreateInfo::flags, the loader does not load any drivers
+that declare themselves to be portability drivers.
+
+Drivers declare whether they are portability drivers or not in the Driver Manifest
+Json file, with the `is_portability_driver` boolean field.
+[More information here](#driver-manifest-file-version-101)
+
+The initial support for this extension only reported errors when an application
+did not enable the portability enumeration feature. It did not filter out
+portability drivers. This was done to give a grace period for applications to
+update their instance creation logic without outright breaking the application.
+
 ## Loader and Driver Policy
 
 This section is intended to define proper behavior expected between the loader
@@ -1169,7 +1242,7 @@ maintaining consistency across platforms.
 In fact, much of the language can be found throughout this document, but is
 summarized here for convenience.
 Additionally, there should be a way to identify bad or non-conformant behavior
-in adriver and remedy it as soon as possible.
+in a driver and remedy it as soon as possible.
 Therefore, a policy numbering system is provided to clearly identify each
 policy statement in a unique way.
 
@@ -1294,29 +1367,12 @@ Android Vulkan documentation</a>.
   </tr>
   <tr>
     <td><small><b>LDP_DRIVER_6</b></small></td>
-    <td>A driver supporting loader/driver interface version 1 or newer <b>must
-        not</b> directly export standard Vulkan entry-points.
-        <br/>
-        Instead, it <b>must</b> export only the loader interface functions
-        required by the interface versions it does support (for example
-        <i>vk_icdGetInstanceProcAddr</i>). <br/>
-        This is because the dynamic linking on some platforms has been
-        problematic in the past and incorrectly links to exported functions from
-        the wrong dynamic library at times. <br/>
-        <b>NOTE:</b> This is actually true for all exports.
-        When in doubt, don't export any items from a driver that could cause
-        conflicts in other libraries.
+    <td>Removed - See <a href="#removed-driver-policies">Removed Driver Policies</a>
     </td>
-    <td>The behavior is undefined and may result in crashes or corruption.</td>
-    <td>Yes (except it always applies)</td>
-    <td>Yes</td>
-    <td><small>
-        <a href="#loader-and-driver-interface-negotiation">
-        Interface Negotiation</a></small>
-        and
-        <a href="#driver-vulkan-entry-point-discovery">
-        Vulkan Entry-point Discovery</a></small>
-    </td>
+    <td>-</td>
+    <td>-</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
   <tr>
     <td><small><b>LDP_DRIVER_7</b></small></td>
@@ -1420,6 +1476,39 @@ Android Vulkan documentation</a>.
   </tr>
 </table>
 
+#### Removed Driver Policies
+
+These policies were in the loader source at some point but later removed. They are documented here for reference.
+
+<table>
+  <tr>
+    <th>Requirement Number</th>
+    <th>Requirement Description</th>
+    <th>Removal Reason</th>
+  </tr>
+  <tr>
+    <td><small><b>LDP_DRIVER_6</b></small></td>
+    <td>A driver supporting loader/driver interface version 1 or newer <b>must
+        not</b> directly export standard Vulkan entry-points.
+        <br/>
+        Instead, it <b>must</b> export only the loader interface functions
+        required by the interface versions it does support (for example
+        <i>vk_icdGetInstanceProcAddr</i>). <br/>
+        This is because the dynamic linking on some platforms has been
+        problematic in the past and incorrectly links to exported functions from
+        the wrong dynamic library at times. <br/>
+        <b>NOTE:</b> This is actually true for all exports.
+        When in doubt, don't export any items from a driver that could cause
+        conflicts in other libraries.<br/>
+    </td>
+    <td>
+        This policy has been removed due to there being valid circumstances for
+        drivers to export core entrypoints.
+        Additionally, it was not found that dynamic linking would cause many
+        issues in practice.
+    </td>
+  </tr>
+</table>
 
 ### Requirements of a Well-Behaved Loader
 
@@ -1611,8 +1700,9 @@ Android Vulkan documentation</a>.
   <tr>
     <td><small><b>LDP_LOADER_13</b></small></td>
     <td>A loader <b>must</b> not load from user-defined paths (including the
-        use of the <i>VK_ICD_FILENAMES</i> environment variable) when running
-        elevated (Administrator/Super-user) applications.<br/>
+        use of any of <i>VK_ICD_FILENAMES</i>, <i>VK_DRIVER_FILES</i>, or
+        <i>VK_ADD_DRIVER_FILES</i> environment variables) when running elevated
+        (Administrator/Super-user) applications.<br/>
         <b>This is for security reasons.</b>
     </td>
     <td>The behavior is undefined and may result in computer security lapses,

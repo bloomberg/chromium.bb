@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "constants/font_encodings.h"
 #include "core/fpdfapi/font/cpdf_cidfont.h"
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
 #include "core/fpdfapi/font/cpdf_fontglobals.h"
@@ -293,7 +294,8 @@ RetainPtr<CPDF_Font> CPDF_Font::GetStockFont(CPDF_Document* pDoc,
   pDict->SetNewFor<CPDF_Name>("Type", "Font");
   pDict->SetNewFor<CPDF_Name>("Subtype", "Type1");
   pDict->SetNewFor<CPDF_Name>("BaseFont", fontname);
-  pDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
+  pDict->SetNewFor<CPDF_Name>("Encoding",
+                              pdfium::font_encodings::kWinAnsiEncoding);
   pFont = CPDF_Font::Create(nullptr, pDict.Get(), nullptr);
   pFontGlobals->Set(pDoc, font_id.value(), pFont);
   return pFont;
@@ -349,7 +351,7 @@ bool CPDF_Font::IsStandardFont() const {
 
 // static
 const char* CPDF_Font::GetAdobeCharName(
-    int iBaseEncoding,
+    FontEncoding base_encoding,
     const std::vector<ByteString>& charnames,
     uint32_t charcode) {
   if (charcode >= 256)
@@ -359,8 +361,8 @@ const char* CPDF_Font::GetAdobeCharName(
     return charnames[charcode].c_str();
 
   const char* name = nullptr;
-  if (iBaseEncoding)
-    name = PDF_CharNameFromPredefinedCharSet(iBaseEncoding, charcode);
+  if (base_encoding != FontEncoding::kBuiltin)
+    name = CharNameFromPredefinedCharSet(base_encoding, charcode);
   if (!name)
     return nullptr;
 
@@ -412,14 +414,13 @@ int CPDF_Font::TT2PDF(FT_Pos m, FXFT_FaceRec* face) {
 }
 
 // static
-bool CPDF_Font::FT_UseTTCharmap(FXFT_FaceRec* face,
-                                int platform_id,
-                                int encoding_id) {
-  auto** pCharMap = FXFT_Get_Face_Charmaps(face);
-  for (int i = 0; i < FXFT_Get_Face_CharmapCount(face); i++) {
-    if (FXFT_Get_Charmap_PlatformID(pCharMap[i]) == platform_id &&
-        FXFT_Get_Charmap_EncodingID(pCharMap[i]) == encoding_id) {
-      FT_Set_Charmap(face, pCharMap[i]);
+bool CPDF_Font::UseTTCharmap(FXFT_FaceRec* face,
+                             int platform_id,
+                             int encoding_id) {
+  for (int i = 0; i < face->num_charmaps; i++) {
+    if (FXFT_Get_Charmap_PlatformID(face->charmaps[i]) == platform_id &&
+        FXFT_Get_Charmap_EncodingID(face->charmaps[i]) == encoding_id) {
+      FT_Set_Charmap(face, face->charmaps[i]);
       return true;
     }
   }

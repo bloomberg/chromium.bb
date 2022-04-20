@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/thread_annotations.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -3047,7 +3046,7 @@ IndexedDBBackingStore::Transaction::~Transaction() {
   DCHECK(!committing_);
 }
 
-void IndexedDBBackingStore::Transaction::Begin(std::vector<ScopeLock> locks) {
+void IndexedDBBackingStore::Transaction::Begin(std::vector<LeveledLock> locks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backing_store_->sequence_checker_);
   DCHECK(backing_store_);

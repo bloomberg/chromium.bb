@@ -62,7 +62,10 @@ rtc_library("video_file_reader") {
     "../api/video:video_frame",
     "../api/video:video_rtp_headers",
     "../rtc_base:checks",
+    "../rtc_base:logging",
+    "../rtc_base:refcount",
     "../rtc_base:rtc_base_approved",
+    "../rtc_base:stringutils",
   ]
   absl_deps = [
     "//third_party/abseil-cpp/absl/strings",
@@ -80,6 +83,7 @@ rtc_library("video_file_writer") {
     "../api:scoped_refptr",
     "../api/video:video_frame",
     "../api/video:video_rtp_headers",
+    "../rtc_base:logging",
     "../rtc_base:rtc_base_approved",
   ]
   absl_deps = [
@@ -110,6 +114,8 @@ rtc_library("video_quality_analysis") {
     "../api/video:video_rtp_headers",
     "../common_video",
     "../rtc_base:checks",
+    "../rtc_base:logging",
+    "../rtc_base:refcount",
     "../rtc_base:rtc_base_approved",
     "../test:perf_test",
     "//third_party/libyuv",
@@ -376,6 +382,9 @@ if (!build_with_chromium) {
         "../api:function_view",
         "../api:network_state_predictor_api",
         "../rtc_base:ignore_wundef",
+        "../rtc_base:logging",
+        "../rtc_base:macromagic",
+        "../rtc_base:refcount",
 
         # TODO(kwiberg): Remove this dependency.
         "../api/audio_codecs:audio_codecs_api",
@@ -471,6 +480,7 @@ if (rtc_include_tests) {
           "../modules/audio_coding:neteq",
           "../modules/rtp_rtcp:rtp_rtcp_format",
           "../rtc_base:checks",
+          "../rtc_base:logging",
           "../rtc_base:protobuf_utils",
           "../rtc_base:rtc_base_approved",
           "../system_wrappers:field_trial",
@@ -579,8 +589,10 @@ if (rtc_include_tests) {
           "../modules/audio_processing:audioproc_protobuf_utils",
           "../modules/audio_processing:audioproc_test_utils",
           "../rtc_base:ignore_wundef",
+          "../rtc_base:macromagic",
           "../rtc_base:protobuf_utils",
           "../rtc_base:rtc_base_approved",
+          "../rtc_base:stringutils",
           "//third_party/abseil-cpp/absl/flags:flag",
           "//third_party/abseil-cpp/absl/flags:parse",
         ]

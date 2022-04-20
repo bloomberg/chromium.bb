@@ -141,6 +141,8 @@ component("gfx") {
   ]
   if (is_android) {
     sources += [
+      "android/achoreographer_compat.cc",
+      "android/achoreographer_compat.h",
       "android/android_surface_control_compat.cc",
       "android/android_surface_control_compat.h",
       "android/java_bitmap.cc",
@@ -695,6 +697,7 @@ test("gfx_unittests") {
     "font_names_testing.cc",
     "font_names_testing.h",
     "font_unittest.cc",
+    "geometry/linear_gradient_unittest.cc",
     "geometry/rrect_f_unittest.cc",
     "geometry/transform_operations_unittest.cc",
     "geometry/transform_unittest.cc",

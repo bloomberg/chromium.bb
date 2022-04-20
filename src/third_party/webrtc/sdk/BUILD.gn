@@ -101,6 +101,7 @@ if (is_ios || is_mac) {
       "objc/base/RTCMacros.h",
       "objc/base/RTCMutableI420Buffer.h",
       "objc/base/RTCMutableYUVPlanarBuffer.h",
+      "objc/base/RTCSSLCertificateVerifier.h",
       "objc/base/RTCVideoCapturer.h",
       "objc/base/RTCVideoCapturer.m",
       "objc/base/RTCVideoCodecInfo.h",
@@ -123,6 +124,7 @@ if (is_ios || is_mac) {
     deps = [
       "../rtc_base",
       "../rtc_base:checks",
+      "../rtc_base:logging",
     ]
     configs += [
       "..:common_objc",
@@ -231,6 +233,8 @@ if (is_ios || is_mac) {
           "../modules/audio_device:audio_device_api",
           "../modules/audio_device:audio_device_generic",
           "../rtc_base:checks",
+          "../rtc_base:logging",
+          "../rtc_base:refcount",
           "../rtc_base:rtc_base_approved",
           "../system_wrappers",
         ]
@@ -266,14 +270,20 @@ if (is_ios || is_mac) {
           ":audio_session_observer",
           ":base_objc",
           "../api:array_view",
+          "../api:sequence_checker",
           "../api/task_queue",
           "../api/task_queue:default_task_queue_factory",
           "../modules/audio_device:audio_device_api",
           "../modules/audio_device:audio_device_buffer",
           "../modules/audio_device:audio_device_generic",
           "../rtc_base",
+          "../rtc_base:atomicops",
           "../rtc_base:checks",
+          "../rtc_base:logging",
+          "../rtc_base:macromagic",
+          "../rtc_base:refcount",
           "../rtc_base:threading",
+          "../rtc_base:timeutils",
           "../system_wrappers:field_trial",
           "../system_wrappers:metrics",
         ]
@@ -337,6 +347,7 @@ if (is_ios || is_mac) {
           ":base_objc",
           ":helpers_objc",
           "../rtc_base",
+          "../rtc_base:atomicops",
           "../rtc_base:checks",
           "../rtc_base:rtc_base_approved",
           "../rtc_base/synchronization:mutex",
@@ -353,8 +364,11 @@ if (is_ios || is_mac) {
         deps = [
           "../rtc_base",
           "../rtc_base:network_constants",
+          "../rtc_base:stringutils",
           "../rtc_base:threading",
         ]
+
+        absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
       }
 
       rtc_library("network_monitor_objc") {
@@ -374,6 +388,7 @@ if (is_ios || is_mac) {
           ":base_objc",
           ":helpers_objc",
           ":network_monitor_observer",
+          "../rtc_base:stringutils",
           "../rtc_base/system:gcd_helpers",
         ]
       }
@@ -397,7 +412,7 @@ if (is_ios || is_mac) {
         "../api/video:video_rtp_headers",
         "../common_video",
         "../media:rtc_media_base",
-        "../pc:rtc_pc_base",
+        "../pc:video_track_source_proxy",
         "../rtc_base",
         "../rtc_base:checks",
         "../rtc_base:threading",
@@ -423,6 +438,7 @@ if (is_ios || is_mac) {
       ]
       deps = [
         ":base_objc",
+        "../rtc_base:logging",
         "//api/video:video_frame",
         "//api/video:video_rtp_headers",
         "//common_video",
@@ -488,6 +504,7 @@ if (is_ios || is_mac) {
         "../media:rtc_media_base",
         "../rtc_base",
         "../rtc_base:checks",
+        "../rtc_base:logging",
       ]
       absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 
@@ -856,6 +873,8 @@ if (is_ios || is_mac) {
         "../api/video_codecs:video_codecs_api",
         "../modules/video_coding:video_codec_interface",
         "../rtc_base",
+        "../rtc_base:refcount",
+        "../rtc_base:safe_conversions",
       ]
     }
 
@@ -1014,10 +1033,15 @@ if (is_ios || is_mac) {
         "../modules/audio_processing",
         "../modules/audio_processing:api",
         "../modules/video_coding:video_codec_interface",
-        "../pc:peerconnection",
+        "../pc:peer_connection_factory",
+        "../pc:webrtc_sdp",
         "../rtc_base",
         "../rtc_base:checks",
+        "../rtc_base:logging",
         "../rtc_base:network_constants",
+        "../rtc_base:safe_conversions",
+        "../rtc_base:timeutils",
+        "../stats:rtc_stats",
         "../system_wrappers:field_trial",
         "../system_wrappers:metrics",
       ]
@@ -1088,6 +1112,8 @@ if (is_ios || is_mac) {
             "../media:rtc_media_tests_utils",
             "../rtc_base",
             "../rtc_base:gunit_helpers",
+            "../rtc_base:macromagic",
+            "../rtc_base:refcount",
             "../rtc_base/system:unused",
             "../system_wrappers",
             "//third_party/libyuv",
@@ -1218,7 +1244,7 @@ if (is_ios || is_mac) {
     }
 
     if (is_ios) {
-      ios_framework_bundle_with_umbrella_header("framework_objc") {
+      apple_framework_bundle_with_umbrella_header("framework_objc") {
         info_plist = "objc/Info.plist"
         output_name = "WebRTC"
 
@@ -1230,6 +1256,7 @@ if (is_ios || is_mac) {
           "objc/base/RTCMacros.h",
           "objc/base/RTCMutableI420Buffer.h",
           "objc/base/RTCMutableYUVPlanarBuffer.h",
+          "objc/base/RTCSSLCertificateVerifier.h",
           "objc/base/RTCVideoCapturer.h",
           "objc/base/RTCVideoCodecInfo.h",
           "objc/base/RTCVideoDecoder.h",
@@ -1354,7 +1381,7 @@ if (is_ios || is_mac) {
           "CoreMedia.framework",
         ]
 
-        configs += [
+        configs = [
           "..:common_objc",
           ":used_from_extension",
         ]
@@ -1370,7 +1397,7 @@ if (is_ios || is_mac) {
     }
 
     if (is_mac) {
-      mac_framework_bundle_with_umbrella_header("mac_framework_objc") {
+      apple_framework_bundle_with_umbrella_header("mac_framework_objc") {
         info_plist = "objc/Info.plist"
         output_name = "WebRTC"
 
@@ -1426,6 +1453,7 @@ if (is_ios || is_mac) {
           "objc/base/RTCMacros.h",
           "objc/base/RTCMutableI420Buffer.h",
           "objc/base/RTCMutableYUVPlanarBuffer.h",
+          "objc/base/RTCSSLCertificateVerifier.h",
           "objc/base/RTCVideoCapturer.h",
           "objc/base/RTCVideoCodecInfo.h",
           "objc/base/RTCVideoDecoder.h",
@@ -1525,6 +1553,8 @@ if (is_ios || is_mac) {
       sources = [
         "objc/native/api/network_monitor_factory.h",
         "objc/native/api/network_monitor_factory.mm",
+        "objc/native/api/ssl_certificate_verifier.h",
+        "objc/native/api/ssl_certificate_verifier.mm",
         "objc/native/api/video_capturer.h",
         "objc/native/api/video_capturer.mm",
         "objc/native/api/video_decoder_factory.h",
@@ -1555,6 +1585,8 @@ if (is_ios || is_mac) {
         "../api/video_codecs:video_codecs_api",
         "../common_video",
         "../rtc_base",
+        "../rtc_base:logging",
+        "../rtc_base:refcount",
         "../rtc_base:threading",
       ]
       if (is_ios) {
@@ -1575,12 +1607,18 @@ if (is_ios || is_mac) {
         deps = [
           ":network_monitor_objc",
           ":network_monitor_observer",
+          "../api:field_trials_view",
           "../api:sequence_checker",
           "../rtc_base",
+          "../rtc_base:logging",
+          "../rtc_base:macromagic",
+          "../rtc_base:stringutils",
           "../rtc_base:threading",
           "../rtc_base/task_utils:pending_task_safety_flag",
           "../rtc_base/task_utils:to_queued_task",
         ]
+
+        absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
       }
     }
 
@@ -1621,6 +1659,8 @@ if (is_ios || is_mac) {
         "../modules/video_coding:video_codec_interface",
         "../rtc_base",
         "../rtc_base:checks",
+        "../rtc_base:logging",
+        "../rtc_base:timeutils",
       ]
     }
 
@@ -1639,6 +1679,7 @@ if (is_ios || is_mac) {
         "../common_video",
         "../modules/video_coding:webrtc_h264",
         "../rtc_base:checks",
+        "../rtc_base:logging",
         "../rtc_base:rtc_base_approved",
       ]
     }
@@ -1677,7 +1718,9 @@ if (is_ios || is_mac) {
         "../common_video",
         "../modules/video_coding:video_codec_interface",
         "../rtc_base:checks",
+        "../rtc_base:logging",
         "../rtc_base:rtc_base_approved",
+        "../rtc_base:timeutils",
         "//third_party/libyuv",
       ]
 

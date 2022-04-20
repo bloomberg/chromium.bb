@@ -126,7 +126,9 @@ public class BookmarkTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_BOOKMARKS)
+                    .build();
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
@@ -744,7 +746,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @FlakyTest(message = "crbug.com/1075804")
+    @FlakyTest(message = "crbug.com/1315415")
     public void testEndIconVisiblityInSearchMode() throws Exception {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addFolder(TEST_TITLE_A);

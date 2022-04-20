@@ -48,6 +48,7 @@
 #include "src/heap/incremental-marking.h"
 #include "src/heap/large-spaces.h"
 #include "src/heap/mark-compact.h"
+#include "src/heap/marking-barrier.h"
 #include "src/heap/memory-chunk.h"
 #include "src/heap/memory-reducer.h"
 #include "src/heap/parked-scope.h"
@@ -1271,6 +1272,62 @@ UNINITIALIZED_TEST(Regress10843) {
   isolate->Dispose();
 }
 
+size_t near_heap_limit_invocation_count = 0;
+size_t InvokeGCNearHeapLimitCallback(void* data, size_t current_heap_limit,
+                                     size_t initial_heap_limit) {
+  near_heap_limit_invocation_count++;
+  if (near_heap_limit_invocation_count > 1) {
+    // We are already in a GC triggered in this callback, raise the limit
+    // to avoid an OOM.
+    return current_heap_limit * 5;
+  }
+
+  DCHECK_EQ(near_heap_limit_invocation_count, 1);
+  // Operations that may cause GC (e.g. taking heap snapshots) in the
+  // near heap limit callback should not hit the AllowGarbageCollection
+  // assertion.
+  static_cast<v8::Isolate*>(data)->GetHeapProfiler()->TakeHeapSnapshot();
+  return current_heap_limit * 5;
+}
+
+UNINITIALIZED_TEST(Regress12777) {
+  v8::Isolate::CreateParams create_params;
+  create_params.constraints.set_max_old_generation_size_in_bytes(10 * i::MB);
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+
+  isolate->AddNearHeapLimitCallback(InvokeGCNearHeapLimitCallback, isolate);
+
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+
+    Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
+    // Allocate data to trigger the NearHeapLimitCallback.
+    HandleScope scope(i_isolate);
+    int length = 2 * i::MB / i::kTaggedSize;
+    std::vector<Handle<FixedArray>> arrays;
+    for (int i = 0; i < 5; i++) {
+      arrays.push_back(i_isolate->factory()->NewFixedArray(length));
+    }
+    CcTest::CollectAllGarbage(i_isolate);
+    for (int i = 0; i < 5; i++) {
+      arrays.push_back(i_isolate->factory()->NewFixedArray(length));
+    }
+    CcTest::CollectAllGarbage(i_isolate);
+    for (int i = 0; i < 5; i++) {
+      arrays.push_back(i_isolate->factory()->NewFixedArray(length));
+    }
+
+    // The work done above should trigger the heap limit callback at least
+    // twice to prove that the callback can raise the limit in the second
+    // or later calls to avoid an OOM.
+    CHECK_GE(near_heap_limit_invocation_count, 2);
+  }
+
+  isolate->GetHeapProfiler()->DeleteAllHeapSnapshots();
+  isolate->Dispose();
+}
+
 #ifndef V8_LITE_MODE
 
 TEST(TestOptimizeAfterBytecodeFlushingCandidate) {
@@ -1505,7 +1562,8 @@ TEST(TestInternalWeakLists) {
   // Some flags turn Scavenge collections into Mark-sweep collections
   // and hence are incompatible with this test case.
   if (FLAG_gc_global || FLAG_stress_compaction ||
-      FLAG_stress_incremental_marking || FLAG_single_generation)
+      FLAG_stress_incremental_marking || FLAG_single_generation ||
+      FLAG_separate_gc_phases)
     return;
   FLAG_retain_maps_for_n_gc = 0;
 
@@ -5394,8 +5452,9 @@ AllocationResult HeapTester::AllocateByteArrayForTest(
 }
 
 bool HeapTester::CodeEnsureLinearAllocationArea(Heap* heap, int size_in_bytes) {
-  bool result = heap->code_space()->EnsureLabMain(size_in_bytes,
-                                                  AllocationOrigin::kRuntime);
+  bool result = heap->code_space()->EnsureAllocation(
+      size_in_bytes, AllocationAlignment::kTaggedAligned,
+      AllocationOrigin::kRuntime, nullptr);
   heap->code_space()->UpdateInlineAllocationLimit(0);
   return result;
 }
@@ -5653,6 +5712,7 @@ TEST(Regress598319) {
                   StepOrigin::kV8);
     if (marking->IsReadyToOverApproximateWeakClosure()) {
       SafepointScope safepoint_scope(heap);
+      MarkingBarrier::PublishAll(heap);
       marking->FinalizeIncrementally();
     }
   }
@@ -5772,7 +5832,7 @@ class StaticOneByteResource : public v8::String::ExternalOneByteStringResource {
 };
 
 TEST(Regress631969) {
-  if (!FLAG_incremental_marking) return;
+  if (!FLAG_incremental_marking || FLAG_separate_gc_phases) return;
   FLAG_manual_evacuation_candidates_selection = true;
   FLAG_parallel_compaction = false;
   ManualGCScope manual_gc_scope;
@@ -6199,7 +6259,7 @@ TEST(RememberedSet_InsertInLargePage) {
 }
 
 TEST(RememberedSet_InsertOnPromotingObjectToOld) {
-  if (FLAG_single_generation) return;
+  if (FLAG_single_generation || FLAG_stress_incremental_marking) return;
   FLAG_stress_concurrent_allocation = false;  // For SealCurrentObjects.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -6225,11 +6285,12 @@ TEST(RememberedSet_InsertOnPromotingObjectToOld) {
   CcTest::CollectGarbage(i::NEW_SPACE);
 
   CHECK(heap->InOldSpace(*arr));
+  CHECK(heap->InYoungGeneration(arr->get(0)));
   CHECK_EQ(1, GetRememberedSetSize<OLD_TO_NEW>(*arr));
 }
 
 TEST(RememberedSet_RemoveStaleOnScavenge) {
-  if (FLAG_single_generation) return;
+  if (FLAG_single_generation || FLAG_stress_incremental_marking) return;
   FLAG_stress_concurrent_allocation = false;  // For SealCurrentObjects.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -6401,7 +6462,7 @@ HEAP_TEST(Regress670675) {
     collector->EnsureSweepingCompleted(
         MarkCompactCollector::SweepingForcedFinalizationMode::kV8Only);
   }
-  heap->tracer()->StopCycleIfNeeded();
+  heap->tracer()->StopFullCycleIfNeeded();
   i::IncrementalMarking* marking = CcTest::heap()->incremental_marking();
   if (marking->IsStopped()) {
     SafepointScope safepoint_scope(heap);
@@ -6504,7 +6565,7 @@ Isolate* oom_isolate = nullptr;
 
 void OOMCallback(const char* location, bool is_heap_oom) {
   Heap* heap = oom_isolate->heap();
-  size_t kSlack = heap->new_space() ? heap->new_space()->Capacity() : 0;
+  size_t kSlack = heap->new_space() ? heap->MaxSemiSpaceSize() : 0;
   CHECK_LE(heap->OldGenerationCapacity(), kHeapLimit + kSlack);
   CHECK_LE(heap->memory_allocator()->Size(), heap->MaxReserved() + kSlack);
   base::OS::ExitProcess(0);
@@ -6709,9 +6770,9 @@ UNINITIALIZED_TEST(OutOfMemorySmallObjects) {
     }
   }
   CHECK_LE(state.old_generation_capacity_at_oom,
-           kOldGenerationLimit + state.new_space_capacity_at_oom);
-  CHECK_LE(kOldGenerationLimit, state.old_generation_capacity_at_oom +
-                                    state.new_space_capacity_at_oom);
+           kOldGenerationLimit + heap->MaxSemiSpaceSize());
+  CHECK_LE(kOldGenerationLimit,
+           state.old_generation_capacity_at_oom + heap->MaxSemiSpaceSize());
   CHECK_LE(
       state.memory_allocator_size_at_oom,
       MemoryAllocatorSizeFromHeapCapacity(state.old_generation_capacity_at_oom +
@@ -6931,7 +6992,7 @@ TEST(CodeObjectRegistry) {
 
 TEST(Regress9701) {
   ManualGCScope manual_gc_scope;
-  if (!FLAG_incremental_marking) return;
+  if (!FLAG_incremental_marking || FLAG_separate_gc_phases) return;
   CcTest::InitializeVM();
   Heap* heap = CcTest::heap();
   // Start with an empty new space.

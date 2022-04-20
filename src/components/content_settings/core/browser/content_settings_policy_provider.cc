@@ -40,6 +40,9 @@ constexpr PrefsForManagedContentSettingsMapEntry
          CONTENT_SETTING_BLOCK},
         {prefs::kManagedCookiesSessionOnlyForUrls, ContentSettingsType::COOKIES,
          CONTENT_SETTING_SESSION_ONLY},
+        {prefs::kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls,
+         ContentSettingsType::GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS,
+         CONTENT_SETTING_ALLOW},
         {prefs::kManagedImagesAllowedForUrls, ContentSettingsType::IMAGES,
          CONTENT_SETTING_ALLOW},
         {prefs::kManagedImagesBlockedForUrls, ContentSettingsType::IMAGES,
@@ -96,6 +99,10 @@ constexpr PrefsForManagedContentSettingsMapEntry
          ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW},
         {prefs::kManagedWindowPlacementBlockedForUrls,
          ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_BLOCK},
+        {prefs::kManagedLocalFontsAllowedForUrls,
+         ContentSettingsType::LOCAL_FONTS, CONTENT_SETTING_ALLOW},
+        {prefs::kManagedLocalFontsBlockedForUrls,
+         ContentSettingsType::LOCAL_FONTS, CONTENT_SETTING_BLOCK},
 };
 
 constexpr const char* kManagedPrefs[] = {
@@ -103,12 +110,11 @@ constexpr const char* kManagedPrefs[] = {
     prefs::kManagedCookiesAllowedForUrls,
     prefs::kManagedCookiesBlockedForUrls,
     prefs::kManagedCookiesSessionOnlyForUrls,
-    prefs::kManagedFileHandlingAllowedForUrls,
-    prefs::kManagedFileHandlingBlockedForUrls,
     prefs::kManagedFileSystemReadAskForUrls,
     prefs::kManagedFileSystemReadBlockedForUrls,
     prefs::kManagedFileSystemWriteAskForUrls,
     prefs::kManagedFileSystemWriteBlockedForUrls,
+    prefs::kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls,
     prefs::kManagedImagesAllowedForUrls,
     prefs::kManagedImagesBlockedForUrls,
     prefs::kManagedInsecureContentAllowedForUrls,
@@ -116,6 +122,8 @@ constexpr const char* kManagedPrefs[] = {
     prefs::kManagedInsecurePrivateNetworkAllowedForUrls,
     prefs::kManagedJavaScriptAllowedForUrls,
     prefs::kManagedJavaScriptBlockedForUrls,
+    prefs::kManagedJavaScriptJitAllowedForSites,
+    prefs::kManagedJavaScriptJitBlockedForSites,
     prefs::kManagedLegacyCookieAccessAllowedForDomains,
     prefs::kManagedNotificationsAllowedForUrls,
     prefs::kManagedNotificationsBlockedForUrls,
@@ -125,15 +133,15 @@ constexpr const char* kManagedPrefs[] = {
     prefs::kManagedSensorsBlockedForUrls,
     prefs::kManagedSerialAskForUrls,
     prefs::kManagedSerialBlockedForUrls,
+    prefs::kManagedWebHidAskForUrls,
+    prefs::kManagedWebHidBlockedForUrls,
     prefs::kManagedWebUsbAllowDevicesForUrls,
     prefs::kManagedWebUsbAskForUrls,
     prefs::kManagedWebUsbBlockedForUrls,
-    prefs::kManagedJavaScriptJitAllowedForSites,
-    prefs::kManagedJavaScriptJitBlockedForSites,
-    prefs::kManagedWebHidAskForUrls,
-    prefs::kManagedWebHidBlockedForUrls,
     prefs::kManagedWindowPlacementAllowedForUrls,
     prefs::kManagedWindowPlacementBlockedForUrls,
+    prefs::kManagedLocalFontsAllowedForUrls,
+    prefs::kManagedLocalFontsBlockedForUrls,
 };
 
 // The following preferences are only used to indicate if a default content
@@ -145,7 +153,6 @@ constexpr const char* kManagedPrefs[] = {
 constexpr const char* kManagedDefaultPrefs[] = {
     prefs::kManagedDefaultAdsSetting,
     prefs::kManagedDefaultCookiesSetting,
-    prefs::kManagedDefaultFileHandlingGuardSetting,
     prefs::kManagedDefaultFileSystemReadGuardSetting,
     prefs::kManagedDefaultFileSystemWriteGuardSetting,
     prefs::kManagedDefaultGeolocationSetting,
@@ -163,6 +170,7 @@ constexpr const char* kManagedDefaultPrefs[] = {
     prefs::kManagedDefaultJavaScriptJitSetting,
     prefs::kManagedDefaultWebHidGuardSetting,
     prefs::kManagedDefaultWindowPlacementSetting,
+    prefs::kManagedDefaultLocalFontsSetting,
 };
 
 }  // namespace
@@ -214,6 +222,8 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultWebHidGuardSetting},
         {ContentSettingsType::WINDOW_PLACEMENT,
          prefs::kManagedDefaultWindowPlacementSetting},
+        {ContentSettingsType::LOCAL_FONTS,
+         prefs::kManagedDefaultLocalFontsSetting},
 };
 
 // static

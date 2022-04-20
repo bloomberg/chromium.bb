@@ -118,6 +118,7 @@ void RecordModelExecutionSaveResult(OptimizationTarget segment_id,
                                     bool success);
 // Records the final execution status for any ML model execution.
 void RecordModelExecutionStatus(OptimizationTarget segment_id,
+                                bool default_provider,
                                 ModelExecutionStatus status);
 // Records the percent of features in a tensor that are equal to 0 when the
 // segmentation model is executed.
@@ -159,7 +160,11 @@ enum class SegmentationSelectionFailureReason {
   kFailedToSaveModelResult = 8,
   kInvalidSelectionResultInPrefs = 9,
   kDBInitFailure = 10,
-  kMaxValue = kDBInitFailure
+  kAtLeastOneSegmentNotAvailable = 11,
+  kAtLeastOneSegmentDefaultSignalNotCollected = 12,
+  kAtLeastOneSegmentDefaultExecFailed = 13,
+  kAtLeastOneSegmentDefaultMissingMetadata = 14,
+  kMaxValue = kAtLeastOneSegmentDefaultMissingMetadata
 };
 
 // Records the reason for failure or success to compute a segment selection.
@@ -182,6 +187,23 @@ void RecordModelAvailability(OptimizationTarget segment_id,
 // Records the number of input tensor that's causing a failure to upload
 // structured metrics.
 void RecordTooManyInputTensors(int tensor_size);
+
+// Analytics events for training data collection. Sync with
+// SegmentationPlatformTrainingDataCollectionEvent in enums.xml.
+enum class TrainingDataCollectionEvent {
+  kImmediateCollectionStart = 0,
+  kImmediateCollectionSuccess = 1,
+  kModelInfoMissing = 2,
+  kMetadataValidationFailed = 3,
+  kGetInputTensorsFailed = 4,
+  kNotEnoughCollectionTime = 5,
+  kUkmReportingFailed = 6,
+  kMaxValue = kUkmReportingFailed,
+};
+
+// Records analytics for training data collection.
+void RecordTrainingDataCollectionEvent(OptimizationTarget segment_id,
+                                       TrainingDataCollectionEvent event);
 
 }  // namespace segmentation_platform::stats
 

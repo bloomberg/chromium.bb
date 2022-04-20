@@ -32,7 +32,7 @@ enum DisplayScale   { LINEAR, SQRT, CBRT, LOG, RLOG, NB_SCALES };
 enum AmplitudeScale { ALINEAR, ALOG, NB_ASCALES };
 enum SlideMode      { REPLACE, SCROLL, NB_SLIDES };
 enum DisplayMode    { SINGLE, SEPARATE, NB_DMODES };
-enum HistogramMode  { ACCUMULATE, CURRENT, NB_HMODES };
+enum HistogramMode  { ABS, SIGN, NB_HMODES };
 
 typedef struct AudioHistogramContext {
     const AVClass *class;
@@ -49,6 +49,7 @@ typedef struct AudioHistogramContext {
     int ypos;
     int slide;
     int dmode;
+    int hmode;
     int dchannels;
     int count;
     int frame_count;
@@ -56,6 +57,8 @@ typedef struct AudioHistogramContext {
     AVFrame *in[101];
     int first;
     int nb_samples;
+
+    int (*get_bin)(float in, int w);
 } AudioHistogramContext;
 
 #define OFFSET(x) offsetof(AudioHistogramContext, x)
@@ -83,6 +86,9 @@ static const AVOption ahistogram_options[] = {
     { "slide", "set sonogram sliding", OFFSET(slide), AV_OPT_TYPE_INT, {.i64=REPLACE}, 0, NB_SLIDES-1, FLAGS, "slide" },
         { "replace", "replace old rows with new", 0, AV_OPT_TYPE_CONST, {.i64=REPLACE},    0, 0, FLAGS, "slide" },
         { "scroll",  "scroll from top to bottom", 0, AV_OPT_TYPE_CONST, {.i64=SCROLL}, 0, 0, FLAGS, "slide" },
+    { "hmode", "set histograms mode", OFFSET(hmode), AV_OPT_TYPE_INT, {.i64=ABS}, 0, NB_HMODES-1, FLAGS, "hmode" },
+        { "abs",  "use absolute samples",  0, AV_OPT_TYPE_CONST, {.i64=ABS}, 0, 0, FLAGS, "hmode" },
+        { "sign", "use unchanged samples", 0, AV_OPT_TYPE_CONST, {.i64=SIGN},0, 0, FLAGS, "hmode" },
     { NULL }
 };
 
@@ -121,7 +127,7 @@ static int config_input(AVFilterLink *inlink)
     AudioHistogramContext *s = ctx->priv;
 
     s->nb_samples = FFMAX(1, av_rescale(inlink->sample_rate, s->frame_rate.den, s->frame_rate.num));
-    s->dchannels = s->dmode == SINGLE ? 1 : inlink->channels;
+    s->dchannels = s->dmode == SINGLE ? 1 : inlink->ch_layout.nb_channels;
     s->shistogram = av_calloc(s->w, s->dchannels * sizeof(*s->shistogram));
     if (!s->shistogram)
         return AVERROR(ENOMEM);
@@ -131,6 +137,26 @@ static int config_input(AVFilterLink *inlink)
         return AVERROR(ENOMEM);
 
     return 0;
+}
+
+static int get_lin_bin_abs(float in, int w)
+{
+    return lrintf(av_clipf(fabsf(in), 0.f, 1.f) * (w - 1));
+}
+
+static int get_lin_bin_sign(float in, int w)
+{
+    return lrintf((1.f + av_clipf(in, -1.f, 1.f)) * 0.5f * (w - 1));
+}
+
+static int get_log_bin_abs(float in, int w)
+{
+    return lrintf(av_clipf(1.f + log10f(fabsf(in)) / 6.f, 0.f, 1.f) * (w - 1));
+}
+
+static int get_log_bin_sign(float in, int w)
+{
+    return (w / 2) + FFSIGN(in) * lrintf(av_clipf(1.f + log10f(fabsf(in)) / 6.f, 0.f, 1.f) * (w / 2));
 }
 
 static int config_output(AVFilterLink *outlink)
@@ -144,6 +170,27 @@ static int config_output(AVFilterLink *outlink)
 
     s->histogram_h = s->h * s->phisto;
     s->ypos = s->h * s->phisto;
+
+    switch (s->ascale) {
+    case ALINEAR:
+        switch (s->hmode) {
+        case ABS:  s->get_bin = get_lin_bin_abs;  break;
+        case SIGN: s->get_bin = get_lin_bin_sign; break;
+        default:
+            return AVERROR_BUG;
+        }
+        break;
+    case ALOG:
+        switch (s->hmode) {
+        case ABS:  s->get_bin = get_log_bin_abs;  break;
+        case SIGN: s->get_bin = get_log_bin_sign; break;
+        default:
+            return AVERROR_BUG;
+        }
+        break;
+    default:
+        return AVERROR_BUG;
+    }
 
     if (s->dmode == SEPARATE) {
         s->combine_buffer = av_malloc_array(outlink->w * 3, sizeof(*s->combine_buffer));
@@ -181,6 +228,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         }
     }
 
+    av_frame_make_writable(s->out);
     if (s->dmode == SEPARATE) {
         for (y = 0; y < w; y++) {
             s->combine_buffer[3 * y    ] = 0;
@@ -201,12 +249,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     switch (s->ascale) {
     case ALINEAR:
-        for (c = 0; c < inlink->channels; c++) {
+        for (c = 0; c < inlink->ch_layout.nb_channels; c++) {
             const float *src = (const float *)in->extended_data[c];
             uint64_t *achistogram = &s->achistogram[(s->dmode == SINGLE ? 0: c) * w];
 
             for (n = 0; n < in->nb_samples; n++) {
-                bin = lrint(av_clipf(fabsf(src[n]), 0, 1) * (w - 1));
+                bin = s->get_bin(src[n], w);
 
                 achistogram[bin]++;
             }
@@ -216,7 +264,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 const float *src2 = (const float *)s->in[s->first]->extended_data[c];
 
                 for (n = 0; n < in->nb_samples; n++) {
-                    bin = lrint(av_clipf(fabsf(src2[n]), 0, 1) * (w - 1));
+                    bin = s->get_bin(src2[n], w);
 
                     shistogram[bin]++;
                 }
@@ -224,12 +272,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         }
         break;
     case ALOG:
-        for (c = 0; c < inlink->channels; c++) {
+        for (c = 0; c < inlink->ch_layout.nb_channels; c++) {
             const float *src = (const float *)in->extended_data[c];
             uint64_t *achistogram = &s->achistogram[(s->dmode == SINGLE ? 0: c) * w];
 
             for (n = 0; n < in->nb_samples; n++) {
-                bin = lrint(av_clipf(1 + log10(fabsf(src[n])) / 6, 0, 1) * (w - 1));
+                bin = s->get_bin(src[n], w);
 
                 achistogram[bin]++;
             }
@@ -239,7 +287,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 const float *src2 = (const float *)s->in[s->first]->extended_data[c];
 
                 for (n = 0; n < in->nb_samples; n++) {
-                    bin = lrint(av_clipf(1 + log10(fabsf(src2[n])) / 6, 0, 1) * (w - 1));
+                    bin = s->get_bin(src2[n], w);
 
                     shistogram[bin]++;
                 }
@@ -264,7 +312,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         float yf, uf, vf;
 
         if (s->dmode == SEPARATE) {
-            yf = 256.0f / s->dchannels;
+            yf = 255.0f / s->dchannels;
             uf = yf * M_PI;
             vf = yf * M_PI;
             uf *= 0.5 * sin((2 * M_PI * c) / s->dchannels);
@@ -311,7 +359,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 if (s->h - H > 0) {
                     h = aa * 255;
 
-                    s->out->data[0][s->ypos * s->out->linesize[0] + n] = h;
+                    s->out->data[0][s->ypos * s->out->linesize[0] + n] = av_clip_uint8(h);
                     s->out->data[1][s->ypos * s->out->linesize[1] + n] = 127;
                     s->out->data[2][s->ypos * s->out->linesize[2] + n] = 127;
                     s->out->data[3][s->ypos * s->out->linesize[3] + n] = 255;
@@ -325,9 +373,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                     if (s->out->data[0][y * s->out->linesize[0] + n] != old)
                         break;
                     old = s->out->data[0][y * s->out->linesize[0] + n];
-                    s->out->data[0][y * s->out->linesize[0] + n] = yf;
-                    s->out->data[1][y * s->out->linesize[1] + n] = 128+uf;
-                    s->out->data[2][y * s->out->linesize[2] + n] = 128+vf;
+                    s->out->data[0][y * s->out->linesize[0] + n] = av_clip_uint8(yf);
+                    s->out->data[1][y * s->out->linesize[1] + n] = av_clip_uint8(128.f+uf);
+                    s->out->data[2][y * s->out->linesize[2] + n] = av_clip_uint8(128.f+vf);
                     s->out->data[3][y * s->out->linesize[3] + n] = 255;
                 }
 
@@ -352,7 +400,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
         if (s->slide == SCROLL) {
             for (p = 0; p < 4; p++) {
-                for (y = s->h; y >= H + 1; y--) {
+                for (y = s->h - 1; y >= H + 1; y--) {
                     memmove(s->out->data[p] + (y  ) * s->out->linesize[p],
                             s->out->data[p] + (y-1) * s->out->linesize[p], w);
                 }

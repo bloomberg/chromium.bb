@@ -98,11 +98,13 @@ struct TrackEventTlsState {
   explicit TrackEventTlsState(const TraceContext& trace_context) {
     auto locked_ds = trace_context.GetDataSourceLocked();
     if (locked_ds.valid()) {
-      disable_incremental_timestamps =
-          locked_ds->GetConfig().disable_incremental_timestamps();
+      const auto& config = locked_ds->GetConfig();
+      disable_incremental_timestamps = config.disable_incremental_timestamps();
+      filter_debug_annotations = config.filter_debug_annotations();
     }
   }
   bool disable_incremental_timestamps = false;
+  bool filter_debug_annotations = false;
 };
 
 struct TrackEventIncrementalState {
@@ -150,6 +152,11 @@ struct TrackEventIncrementalState {
   // ClockSnapshot. The increment between this timestamp and the current trace
   // time (GetTimeNs) is a value in kClockIdIncremental's domain.
   uint64_t last_timestamp_ns = 0;
+
+  // The latest known counter values that was used in a TracePacket for each
+  // counter track. The key (uint64_t) is the uuid of counter track.
+  // The value is used for delta encoding of counter values.
+  std::unordered_map<uint64_t, int64_t> last_counter_value_per_track;
 };
 
 // The backend portion of the track event trace point implemention. Outlined to

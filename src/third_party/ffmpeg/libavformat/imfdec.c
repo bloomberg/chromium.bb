@@ -65,8 +65,10 @@
 #include "avio_internal.h"
 #include "imf.h"
 #include "internal.h"
+#include "libavcodec/packet.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
+#include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "mxf.h"
 #include "url.h"
@@ -94,20 +96,23 @@ typedef struct IMFAssetLocatorMap {
 } IMFAssetLocatorMap;
 
 typedef struct IMFVirtualTrackResourcePlaybackCtx {
-    IMFAssetLocator *locator;
-    FFIMFTrackFileResource *resource;
-    AVFormatContext *ctx;
+    IMFAssetLocator *locator;          /**< Location of the resource */
+    FFIMFTrackFileResource *resource;  /**< Underlying IMF CPL resource */
+    AVFormatContext *ctx;              /**< Context associated with the resource */
+    AVRational start_time;             /**< inclusive start time of the resource on the CPL timeline (s) */
+    AVRational end_time;               /**< exclusive end time of the resource on the CPL timeline (s) */
+    AVRational ts_offset;              /**< start_time minus the entry point into the resource (s) */
 } IMFVirtualTrackResourcePlaybackCtx;
 
 typedef struct IMFVirtualTrackPlaybackCtx {
     int32_t index;                                 /**< Track index in playlist */
     AVRational current_timestamp;                  /**< Current temporal position */
     AVRational duration;                           /**< Overall duration */
-    uint32_t resource_count;                       /**< Number of resources */
+    uint32_t resource_count;                       /**< Number of resources (<= INT32_MAX) */
     unsigned int resources_alloc_sz;               /**< Size of the buffer holding the resource */
     IMFVirtualTrackResourcePlaybackCtx *resources; /**< Buffer holding the resources */
-    uint32_t current_resource_index;               /**< Current resource */
-    int64_t last_pts;                              /**< Last timestamp */
+    int32_t current_resource_index;                /**< Index of the current resource in resources,
+                                                        or < 0 if a current resource has yet to be selected */
 } IMFVirtualTrackPlaybackCtx;
 
 typedef struct IMFContext {
@@ -149,6 +154,25 @@ static int imf_uri_is_dos_abs_path(const char *string)
     return 0;
 }
 
+static int imf_time_to_ts(int64_t *ts, AVRational t, AVRational time_base)
+{
+    int dst_num;
+    int dst_den;
+    AVRational r;
+
+    r = av_div_q(t, time_base);
+
+    if ((av_reduce(&dst_num, &dst_den, r.num, r.den, INT64_MAX) != 1))
+        return 1;
+
+    if (dst_den != 1)
+        return 1;
+
+    *ts = dst_num;
+
+    return 0;
+}
+
 /**
  * Parse a ASSETMAP XML file to extract the UUID-URI mapping of assets.
  * @param s the current format context, if any (can be NULL).
@@ -179,11 +203,8 @@ static int parse_imf_asset_map_from_xml_dom(AVFormatContext *s,
     }
 
     if (asset_map_element->type != XML_ELEMENT_NODE || av_strcasecmp(asset_map_element->name, "AssetMap")) {
-        av_log(s,
-               AV_LOG_ERROR,
-               "Unable to parse asset map XML - wrong root node name[%s] type[%d]\n",
-               asset_map_element->name,
-               (int)asset_map_element->type);
+        av_log(s, AV_LOG_ERROR, "Unable to parse asset map XML - wrong root node name[%s] type[%d]\n",
+               asset_map_element->name, (int)asset_map_element->type);
         return AVERROR_INVALIDDATA;
     }
 
@@ -261,7 +282,7 @@ static void imf_asset_locator_map_init(IMFAssetLocatorMap *asset_map)
  */
 static void imf_asset_locator_map_deinit(IMFAssetLocatorMap *asset_map)
 {
-    for (uint32_t i = 0; i < asset_map->asset_count; ++i)
+    for (uint32_t i = 0; i < asset_map->asset_count; i++)
         av_freep(&asset_map->assets[i].absolute_uri);
 
     av_freep(&asset_map->assets);
@@ -309,11 +330,8 @@ static int parse_assetmap(AVFormatContext *s, const char *url)
 
     ret = parse_imf_asset_map_from_xml_dom(s, doc, &c->asset_locator_map, base_url);
     if (!ret)
-        av_log(s,
-               AV_LOG_DEBUG,
-               "Found %d assets from %s\n",
-               c->asset_locator_map.asset_count,
-               url);
+        av_log(s, AV_LOG_DEBUG, "Found %d assets from %s\n",
+               c->asset_locator_map.asset_count, url);
 
     xmlFreeDoc(doc);
 
@@ -327,7 +345,7 @@ clean_up:
 
 static IMFAssetLocator *find_asset_map_locator(IMFAssetLocatorMap *asset_map, FFIMFUUID uuid)
 {
-    for (uint32_t i = 0; i < asset_map->asset_count; ++i) {
+    for (uint32_t i = 0; i < asset_map->asset_count; i++) {
         if (memcmp(asset_map->assets[i].uuid, uuid, 16) == 0)
             return &(asset_map->assets[i]);
     }
@@ -335,17 +353,18 @@ static IMFAssetLocator *find_asset_map_locator(IMFAssetLocatorMap *asset_map, FF
 }
 
 static int open_track_resource_context(AVFormatContext *s,
-                                       IMFVirtualTrackResourcePlaybackCtx *track_resource)
+                                       IMFVirtualTrackPlaybackCtx *track,
+                                       int32_t resource_index)
 {
     IMFContext *c = s->priv_data;
     int ret = 0;
-    int64_t entry_point;
+    int64_t seek_offset = 0;
     AVDictionary *opts = NULL;
+    AVStream *st;
+    IMFVirtualTrackResourcePlaybackCtx *track_resource = track->resources + resource_index;
 
     if (track_resource->ctx) {
-        av_log(s,
-               AV_LOG_DEBUG,
-               "Input context already opened for %s.\n",
+        av_log(s, AV_LOG_DEBUG, "Input context already opened for %s.\n",
                track_resource->locator->absolute_uri);
         return 0;
     }
@@ -373,45 +392,41 @@ static int open_track_resource_context(AVFormatContext *s,
                               NULL,
                               &opts);
     if (ret < 0) {
-        av_log(s,
-               AV_LOG_ERROR,
-               "Could not open %s input context: %s\n",
-               track_resource->locator->absolute_uri,
-               av_err2str(ret));
+        av_log(s, AV_LOG_ERROR, "Could not open %s input context: %s\n",
+               track_resource->locator->absolute_uri, av_err2str(ret));
         goto cleanup;
     }
     av_dict_free(&opts);
 
-    /* Compare the source timebase to the resource edit rate,
-     * considering the first stream of the source file
+    /* make sure there is only one stream in the file */
+
+    if (track_resource->ctx->nb_streams != 1) {
+        ret = AVERROR_INVALIDDATA;
+        goto cleanup;
+    }
+
+    st = track_resource->ctx->streams[0];
+
+    /* Determine the seek offset into the Track File, taking into account:
+     * - the current timestamp within the virtual track
+     * - the entry point of the resource
      */
-    if (av_cmp_q(track_resource->ctx->streams[0]->time_base,
-                 av_inv_q(track_resource->resource->base.edit_rate)))
-        av_log(s,
-               AV_LOG_WARNING,
-               "Incoherent source stream timebase %d/%d regarding resource edit rate: %d/%d",
-               track_resource->ctx->streams[0]->time_base.num,
-               track_resource->ctx->streams[0]->time_base.den,
-               track_resource->resource->base.edit_rate.den,
-               track_resource->resource->base.edit_rate.num);
+    if (imf_time_to_ts(&seek_offset,
+                       av_sub_q(track->current_timestamp, track_resource->ts_offset),
+                       st->time_base))
+        av_log(s, AV_LOG_WARNING, "Incoherent stream timebase " AVRATIONAL_FORMAT
+               "and composition timeline position: " AVRATIONAL_FORMAT "\n",
+               AVRATIONAL_ARG(st->time_base), AVRATIONAL_ARG(track->current_timestamp));
 
-    entry_point = (int64_t)track_resource->resource->base.entry_point
-        * track_resource->resource->base.edit_rate.den
-        * AV_TIME_BASE
-        / track_resource->resource->base.edit_rate.num;
-
-    if (entry_point) {
-        av_log(s,
-               AV_LOG_DEBUG,
-               "Seek at resource %s entry point: %" PRIu32 "\n",
-               track_resource->locator->absolute_uri,
-               track_resource->resource->base.entry_point);
-        ret = avformat_seek_file(track_resource->ctx, -1, entry_point, entry_point, entry_point, 0);
+    if (seek_offset) {
+        av_log(s, AV_LOG_DEBUG, "Seek at resource %s entry point: %" PRIi64 "\n",
+               track_resource->locator->absolute_uri, seek_offset);
+        ret = avformat_seek_file(track_resource->ctx, 0, seek_offset, seek_offset, seek_offset, 0);
         if (ret < 0) {
             av_log(s,
                    AV_LOG_ERROR,
                    "Could not seek at %" PRId64 "on %s: %s\n",
-                   entry_point,
+                   seek_offset,
                    track_resource->locator->absolute_uri,
                    av_err2str(ret));
             avformat_close_input(&track_resource->ctx);
@@ -435,13 +450,10 @@ static int open_track_file_resource(AVFormatContext *s,
     IMFContext *c = s->priv_data;
     IMFAssetLocator *asset_locator;
     void *tmp;
-    int ret;
 
     asset_locator = find_asset_map_locator(&c->asset_locator_map, track_file_resource->track_file_uuid);
     if (!asset_locator) {
-        av_log(s,
-               AV_LOG_ERROR,
-               "Could not find asset locator for UUID: " FF_IMF_UUID_FORMAT "\n",
+        av_log(s, AV_LOG_ERROR, "Could not find asset locator for UUID: " FF_IMF_UUID_FORMAT "\n",
                UID_ARG(track_file_resource->track_file_uuid));
         return AVERROR_INVALIDDATA;
     }
@@ -452,7 +464,7 @@ static int open_track_file_resource(AVFormatContext *s,
            UID_ARG(asset_locator->uuid),
            asset_locator->absolute_uri);
 
-    if (track->resource_count > UINT32_MAX - track_file_resource->base.repeat_count
+    if (track->resource_count > INT32_MAX - track_file_resource->base.repeat_count
         || (track->resource_count + track_file_resource->base.repeat_count)
             > INT_MAX / sizeof(IMFVirtualTrackResourcePlaybackCtx))
         return AVERROR(ENOMEM);
@@ -464,19 +476,22 @@ static int open_track_file_resource(AVFormatContext *s,
         return AVERROR(ENOMEM);
     track->resources = tmp;
 
-    for (uint32_t i = 0; i < track_file_resource->base.repeat_count; ++i) {
+    for (uint32_t i = 0; i < track_file_resource->base.repeat_count; i++) {
         IMFVirtualTrackResourcePlaybackCtx vt_ctx;
 
         vt_ctx.locator = asset_locator;
         vt_ctx.resource = track_file_resource;
         vt_ctx.ctx = NULL;
-        if ((ret = open_track_resource_context(s, &vt_ctx)) != 0)
-            return ret;
-        track->resources[track->resource_count++] = vt_ctx;
-        track->duration = av_add_q(track->duration,
+        vt_ctx.start_time = track->duration;
+        vt_ctx.ts_offset = av_sub_q(vt_ctx.start_time,
+                                    av_div_q(av_make_q((int)track_file_resource->base.entry_point, 1),
+                                             track_file_resource->base.edit_rate));
+        vt_ctx.end_time = av_add_q(track->duration,
                                    av_make_q((int)track_file_resource->base.duration
                                                  * track_file_resource->base.edit_rate.den,
                                              track_file_resource->base.edit_rate.num));
+        track->resources[track->resource_count++] = vt_ctx;
+        track->duration = vt_ctx.end_time;
     }
 
     return 0;
@@ -484,7 +499,7 @@ static int open_track_file_resource(AVFormatContext *s,
 
 static void imf_virtual_track_playback_context_deinit(IMFVirtualTrackPlaybackCtx *track)
 {
-    for (uint32_t i = 0; i < track->resource_count; ++i)
+    for (uint32_t i = 0; i < track->resource_count; i++)
         avformat_close_input(&track->resources[i].ctx);
 
     av_freep(&track->resources);
@@ -501,6 +516,7 @@ static int open_virtual_track(AVFormatContext *s,
 
     if (!(track = av_mallocz(sizeof(IMFVirtualTrackPlaybackCtx))))
         return AVERROR(ENOMEM);
+    track->current_resource_index = -1;
     track->index = track_index;
     track->duration = av_make_q(0, 1);
 
@@ -546,11 +562,14 @@ static int set_context_streams_from_tracks(AVFormatContext *s)
     IMFContext *c = s->priv_data;
     int ret = 0;
 
-    for (uint32_t i = 0; i < c->track_count; ++i) {
+    for (uint32_t i = 0; i < c->track_count; i++) {
         AVStream *asset_stream;
         AVStream *first_resource_stream;
 
         /* Open the first resource of the track to get stream information */
+        ret = open_track_resource_context(s, c->tracks[i], 0);
+        if (ret)
+            return ret;
         first_resource_stream = c->tracks[i]->resources[0].ctx->streams[0];
         av_log(s, AV_LOG_DEBUG, "Open the first resource of track %d\n", c->tracks[i]->index);
 
@@ -585,19 +604,15 @@ static int open_cpl_tracks(AVFormatContext *s)
 
     if (c->cpl->main_image_2d_track) {
         if ((ret = open_virtual_track(s, c->cpl->main_image_2d_track, track_index++)) != 0) {
-            av_log(s,
-                   AV_LOG_ERROR,
-                   "Could not open image track " FF_IMF_UUID_FORMAT "\n",
+            av_log(s, AV_LOG_ERROR, "Could not open image track " FF_IMF_UUID_FORMAT "\n",
                    UID_ARG(c->cpl->main_image_2d_track->base.id_uuid));
             return ret;
         }
     }
 
-    for (uint32_t i = 0; i < c->cpl->main_audio_track_count; ++i) {
+    for (uint32_t i = 0; i < c->cpl->main_audio_track_count; i++) {
         if ((ret = open_virtual_track(s, &c->cpl->main_audio_tracks[i], track_index++)) != 0) {
-            av_log(s,
-                   AV_LOG_ERROR,
-                   "Could not open audio track " FF_IMF_UUID_FORMAT "\n",
+            av_log(s, AV_LOG_ERROR, "Could not open audio track " FF_IMF_UUID_FORMAT "\n",
                    UID_ARG(c->cpl->main_audio_tracks[i].base.id_uuid));
             return ret;
         }
@@ -673,13 +688,9 @@ static IMFVirtualTrackPlaybackCtx *get_next_track_with_minimum_timestamp(AVForma
 
     AVRational minimum_timestamp = av_make_q(INT32_MAX, 1);
     for (uint32_t i = c->track_count; i > 0; i--) {
-        av_log(s,
-               AV_LOG_DEBUG,
-               "Compare track %d timestamp " AVRATIONAL_FORMAT
+        av_log(s, AV_LOG_TRACE, "Compare track %d timestamp " AVRATIONAL_FORMAT
                " to minimum " AVRATIONAL_FORMAT
-               " (over duration: " AVRATIONAL_FORMAT
-               ")\n",
-               i,
+               " (over duration: " AVRATIONAL_FORMAT ")\n", i,
                AVRATIONAL_ARG(c->tracks[i - 1]->current_timestamp),
                AVRATIONAL_ARG(minimum_timestamp),
                AVRATIONAL_ARG(c->tracks[i - 1]->duration));
@@ -690,140 +701,173 @@ static IMFVirtualTrackPlaybackCtx *get_next_track_with_minimum_timestamp(AVForma
         }
     }
 
-    av_log(s,
-           AV_LOG_DEBUG,
-           "Found next track to read: %d (timestamp: %lf / %lf)\n",
-           track->index,
-           av_q2d(track->current_timestamp),
-           av_q2d(minimum_timestamp));
+    av_log(s, AV_LOG_DEBUG, "Found next track to read: %d (timestamp: %lf / %lf)\n",
+           track->index, av_q2d(track->current_timestamp), av_q2d(minimum_timestamp));
     return track;
 }
 
-static IMFVirtualTrackResourcePlaybackCtx *get_resource_context_for_timestamp(AVFormatContext *s,
-                                                                              IMFVirtualTrackPlaybackCtx *track)
+static int get_resource_context_for_timestamp(AVFormatContext *s, IMFVirtualTrackPlaybackCtx *track, IMFVirtualTrackResourcePlaybackCtx **resource)
 {
-    AVRational edit_unit_duration = av_inv_q(track->resources[0].resource->base.edit_rate);
-    AVRational cumulated_duration = av_make_q(0, edit_unit_duration.den);
+    *resource = NULL;
+
+    if (av_cmp_q(track->current_timestamp, track->duration) >= 0) {
+        av_log(s, AV_LOG_DEBUG, "Reached the end of the virtual track\n");
+        return AVERROR_EOF;
+    }
 
     av_log(s,
-           AV_LOG_DEBUG,
+           AV_LOG_TRACE,
            "Looking for track %d resource for timestamp = %lf / %lf\n",
            track->index,
            av_q2d(track->current_timestamp),
            av_q2d(track->duration));
-    for (uint32_t i = 0; i < track->resource_count; ++i) {
-        cumulated_duration = av_add_q(cumulated_duration,
-                                      av_make_q((int)track->resources[i].resource->base.duration
-                                                    * edit_unit_duration.num,
-                                                edit_unit_duration.den));
+    for (uint32_t i = 0; i < track->resource_count; i++) {
 
-        if (av_cmp_q(av_add_q(track->current_timestamp, edit_unit_duration), cumulated_duration) <= 0) {
-            av_log(s,
-                   AV_LOG_DEBUG,
-                   "Found resource %d in track %d to read for timestamp %lf "
-                   "(on cumulated=%lf): entry=%" PRIu32
-                   ", duration=%" PRIu32
-                   ", editrate=" AVRATIONAL_FORMAT
-                   " | edit_unit_duration=%lf\n",
-                   i,
-                   track->index,
-                   av_q2d(track->current_timestamp),
-                   av_q2d(cumulated_duration),
+        if (av_cmp_q(track->resources[i].end_time, track->current_timestamp) > 0) {
+            av_log(s, AV_LOG_DEBUG, "Found resource %d in track %d to read at timestamp %lf: "
+                   "entry=%" PRIu32 ", duration=%" PRIu32 ", editrate=" AVRATIONAL_FORMAT "\n",
+                   i, track->index, av_q2d(track->current_timestamp),
                    track->resources[i].resource->base.entry_point,
                    track->resources[i].resource->base.duration,
-                   AVRATIONAL_ARG(track->resources[i].resource->base.edit_rate),
-                   av_q2d(edit_unit_duration));
+                   AVRATIONAL_ARG(track->resources[i].resource->base.edit_rate));
 
             if (track->current_resource_index != i) {
-                av_log(s,
-                       AV_LOG_DEBUG,
-                       "Switch resource on track %d: re-open context\n",
+                int ret;
+
+                av_log(s, AV_LOG_TRACE, "Switch resource on track %d: re-open context\n",
                        track->index);
-                if (open_track_resource_context(s, &(track->resources[i])) != 0)
-                    return NULL;
-                avformat_close_input(&(track->resources[track->current_resource_index].ctx));
+
+                ret = open_track_resource_context(s, track, i);
+                if (ret != 0)
+                    return ret;
+                if (track->current_resource_index > 0)
+                    avformat_close_input(&track->resources[track->current_resource_index].ctx);
                 track->current_resource_index = i;
             }
 
-            return &(track->resources[track->current_resource_index]);
+            *resource = track->resources + track->current_resource_index;
+            return 0;
         }
     }
-    return NULL;
+
+    av_log(s, AV_LOG_ERROR, "Could not find IMF track resource to read\n");
+    return AVERROR_STREAM_NOT_FOUND;
 }
 
 static int imf_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    IMFContext *c = s->priv_data;
-    IMFVirtualTrackResourcePlaybackCtx *resource_to_read = NULL;
-    AVRational edit_unit_duration;
+    IMFVirtualTrackResourcePlaybackCtx *resource = NULL;
     int ret = 0;
     IMFVirtualTrackPlaybackCtx *track;
-    FFStream *track_stream;
+    int64_t delta_ts;
+    AVStream *st;
+    AVRational next_timestamp;
 
     track = get_next_track_with_minimum_timestamp(s);
 
-    if (av_cmp_q(track->current_timestamp, track->duration) == 0)
-        return AVERROR_EOF;
+    ret = get_resource_context_for_timestamp(s, track, &resource);
+    if (ret)
+        return ret;
 
-    resource_to_read = get_resource_context_for_timestamp(s, track);
+    ret = av_read_frame(resource->ctx, pkt);
+    if (ret)
+        return ret;
 
-    if (!resource_to_read) {
-        edit_unit_duration
-            = av_inv_q(track->resources[track->current_resource_index].resource->base.edit_rate);
+    av_log(s, AV_LOG_DEBUG, "Got packet: pts=%" PRId64 ", dts=%" PRId64
+            ", duration=%" PRId64 ", stream_index=%d, pos=%" PRId64
+            ", time_base=" AVRATIONAL_FORMAT "\n", pkt->pts, pkt->dts, pkt->duration,
+            pkt->stream_index, pkt->pos, AVRATIONAL_ARG(pkt->time_base));
 
-        if (av_cmp_q(av_add_q(track->current_timestamp, edit_unit_duration), track->duration) > 0)
-            return AVERROR_EOF;
+    /* IMF resources contain only one stream */
 
-        av_log(s, AV_LOG_ERROR, "Could not find IMF track resource to read\n");
-        return AVERROR_STREAM_NOT_FOUND;
+    if (pkt->stream_index != 0)
+        return AVERROR_INVALIDDATA;
+    st = resource->ctx->streams[0];
+
+    pkt->stream_index = track->index;
+
+    /* adjust the packet PTS and DTS based on the temporal position of the resource within the timeline */
+
+    ret = imf_time_to_ts(&delta_ts, resource->ts_offset, st->time_base);
+
+    if (!ret) {
+        if (pkt->pts != AV_NOPTS_VALUE)
+            pkt->pts += delta_ts;
+        if (pkt->dts != AV_NOPTS_VALUE)
+            pkt->dts += delta_ts;
+    } else {
+        av_log(s, AV_LOG_WARNING, "Incoherent time stamp " AVRATIONAL_FORMAT
+               " for time base " AVRATIONAL_FORMAT,
+               AVRATIONAL_ARG(resource->ts_offset),
+               AVRATIONAL_ARG(pkt->time_base));
     }
 
-    while (!ff_check_interrupt(c->interrupt_callback) && !ret) {
-        ret = av_read_frame(resource_to_read->ctx, pkt);
-        av_log(s,
-               AV_LOG_DEBUG,
-               "Got packet: pts=%" PRId64
-               ", dts=%" PRId64
-               ", duration=%" PRId64
-               ", stream_index=%d, pos=%" PRId64
-               "\n",
-               pkt->pts,
-               pkt->dts,
-               pkt->duration,
-               pkt->stream_index,
-               pkt->pos);
+    /* advance the track timestamp by the packet duration */
 
-        track_stream = ffstream(s->streams[track->index]);
-        if (ret >= 0) {
-            /* Update packet info from track */
-            if (pkt->dts < track_stream->cur_dts && track->last_pts > 0)
-                pkt->dts = track_stream->cur_dts;
+    next_timestamp = av_add_q(track->current_timestamp,
+                              av_mul_q(av_make_q((int)pkt->duration, 1), st->time_base));
 
-            pkt->pts = track->last_pts;
-            pkt->dts = pkt->dts
-                - (int64_t)track->resources[track->current_resource_index].resource->base.entry_point;
-            pkt->stream_index = track->index;
+    /* if necessary, clamp the next timestamp to the end of the current resource */
 
-            /* Update track cursors */
-            track->current_timestamp
-                = av_add_q(track->current_timestamp,
-                           av_make_q((int)pkt->duration
-                                         * resource_to_read->ctx->streams[0]->time_base.num,
-                                     resource_to_read->ctx->streams[0]->time_base.den));
-            track->last_pts += pkt->duration;
+    if (av_cmp_q(next_timestamp, resource->end_time) > 0) {
 
-            return 0;
-        } else if (ret != AVERROR_EOF) {
-            av_log(s,
-                   AV_LOG_ERROR,
-                   "Could not get packet from track %d: %s\n",
-                   track->index,
-                   av_err2str(ret));
-            return ret;
+        int64_t new_pkt_dur;
+
+        /* shrink the packet duration */
+
+        ret = imf_time_to_ts(&new_pkt_dur,
+                             av_sub_q(resource->end_time, track->current_timestamp),
+                             st->time_base);
+
+        if (!ret)
+            pkt->duration = new_pkt_dur;
+        else
+            av_log(s, AV_LOG_WARNING, "Incoherent time base in packet duration calculation\n");
+
+        /* shrink the packet itself for audio essence */
+
+        if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+
+            if (st->codecpar->codec_id == AV_CODEC_ID_PCM_S24LE) {
+                /* AV_CODEC_ID_PCM_S24LE is the only PCM format supported in IMF */
+                /* in this case, explicitly shrink the packet */
+
+                int bytes_per_sample = av_get_exact_bits_per_sample(st->codecpar->codec_id) >> 3;
+                int64_t nbsamples = av_rescale_q(pkt->duration,
+                                                 st->time_base,
+                                                 av_make_q(1, st->codecpar->sample_rate));
+                av_shrink_packet(pkt, nbsamples * st->codecpar->ch_layout.nb_channels * bytes_per_sample);
+
+            } else {
+                /* in all other cases, use side data to skip samples */
+                int64_t skip_samples;
+
+                ret = imf_time_to_ts(&skip_samples,
+                                     av_sub_q(next_timestamp, resource->end_time),
+                                     av_make_q(1, st->codecpar->sample_rate));
+
+                if (ret || skip_samples < 0 || skip_samples > UINT32_MAX) {
+                    av_log(s, AV_LOG_WARNING, "Cannot skip audio samples\n");
+                } else {
+                    uint8_t *side_data = av_packet_new_side_data(pkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
+                    if (!side_data)
+                        return AVERROR(ENOMEM);
+
+                    AV_WL32(side_data + 4, skip_samples); /* skip from end of this packet */
+                    side_data[6] = 1;                     /* reason for end is convergence */
+                }
+            }
+
+            next_timestamp = resource->end_time;
+
+        } else {
+            av_log(s, AV_LOG_WARNING, "Non-audio packet duration reduced\n");
         }
     }
 
-    return AVERROR_EOF;
+    track->current_timestamp = next_timestamp;
+
+    return 0;
 }
 
 static int imf_close(AVFormatContext *s)
@@ -836,7 +880,7 @@ static int imf_close(AVFormatContext *s)
     imf_asset_locator_map_deinit(&c->asset_locator_map);
     ff_imf_cpl_free(c->cpl);
 
-    for (uint32_t i = 0; i < c->track_count; ++i) {
+    for (uint32_t i = 0; i < c->track_count; i++) {
         imf_virtual_track_playback_context_deinit(c->tracks[i]);
         av_freep(&c->tracks[i]);
     }
@@ -858,6 +902,75 @@ static int imf_probe(const AVProbeData *p)
         return 0;
 
     return AVPROBE_SCORE_MAX;
+}
+
+static int coherent_ts(int64_t ts, AVRational in_tb, AVRational out_tb)
+{
+    int dst_num;
+    int dst_den;
+    int ret;
+
+    ret = av_reduce(&dst_num, &dst_den, ts * in_tb.num * out_tb.den,
+                    in_tb.den * out_tb.num, INT64_MAX);
+    if (!ret || dst_den != 1)
+        return 0;
+
+    return 1;
+}
+
+static int imf_seek(AVFormatContext *s, int stream_index, int64_t min_ts,
+                    int64_t ts, int64_t max_ts, int flags)
+{
+    IMFContext *c = s->priv_data;
+    uint32_t i;
+
+    if (flags & (AVSEEK_FLAG_BYTE | AVSEEK_FLAG_FRAME))
+        return AVERROR(ENOSYS);
+
+    /* rescale timestamps to Composition edit units */
+    if (stream_index < 0)
+        ff_rescale_interval(AV_TIME_BASE_Q,
+                            av_make_q(c->cpl->edit_rate.den, c->cpl->edit_rate.num),
+                            &min_ts, &ts, &max_ts);
+    else
+        ff_rescale_interval(s->streams[stream_index]->time_base,
+                            av_make_q(c->cpl->edit_rate.den, c->cpl->edit_rate.num),
+                            &min_ts, &ts, &max_ts);
+
+    /* requested timestamp bounds are too close */
+    if (max_ts < min_ts)
+        return -1;
+
+    /* clamp requested timestamp to provided bounds */
+    ts = FFMAX(FFMIN(ts, max_ts), min_ts);
+
+    av_log(s, AV_LOG_DEBUG, "Seeking to Composition Playlist edit unit %" PRIi64 "\n", ts);
+
+    /* set the dts of each stream and temporal offset of each track */
+    for (i = 0; i < c->track_count; i++) {
+        AVStream *st = s->streams[i];
+        IMFVirtualTrackPlaybackCtx *t = c->tracks[i];
+        int64_t dts;
+
+        if (!coherent_ts(ts, av_make_q(c->cpl->edit_rate.den, c->cpl->edit_rate.num),
+                         st->time_base))
+            av_log(s, AV_LOG_WARNING, "Seek position is not coherent across tracks\n");
+
+        dts = av_rescale(ts,
+                         st->time_base.den * c->cpl->edit_rate.den,
+                         st->time_base.num * c->cpl->edit_rate.num);
+
+        av_log(s, AV_LOG_DEBUG, "Seeking to dts=%" PRId64 " on stream_index=%d\n",
+               dts, i);
+
+        t->current_timestamp = av_mul_q(av_make_q(dts, 1), st->time_base);
+        if (t->current_resource_index >= 0) {
+            avformat_close_input(&t->resources[t->current_resource_index].ctx);
+            t->current_resource_index = -1;
+        }
+    }
+
+    return 0;
 }
 
 static const AVOption imf_options[] = {
@@ -884,7 +997,7 @@ static const AVClass imf_class = {
 const AVInputFormat ff_imf_demuxer = {
     .name           = "imf",
     .long_name      = NULL_IF_CONFIG_SMALL("IMF (Interoperable Master Format)"),
-    .flags          = AVFMT_EXPERIMENTAL,
+    .flags          = AVFMT_EXPERIMENTAL | AVFMT_NO_BYTE_SEEK,
     .flags_internal = FF_FMT_INIT_CLEANUP,
     .priv_class     = &imf_class,
     .priv_data_size = sizeof(IMFContext),
@@ -892,4 +1005,5 @@ const AVInputFormat ff_imf_demuxer = {
     .read_header    = imf_read_header,
     .read_packet    = imf_read_packet,
     .read_close     = imf_close,
+    .read_seek2     = imf_seek,
 };

@@ -20,10 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+// #define UNCHECKED_BITSTREAM_READER 1  // Chromium: Required for security.
+
 #include "internal.h"
 #include "parser.h"
 #include "mpegvideo.h"
 #include "mpeg4video.h"
+#include "mpeg4videodec.h"
 #if FF_API_FLAG_TRUNCATED
 /* Nuke this header when removing FF_API_FLAG_TRUNCATED */
 #include "mpeg4video_parser.h"

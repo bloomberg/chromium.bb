@@ -542,7 +542,8 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
     }
 
     url::Origin embedding_origin = url::Origin::Create(
-        permissions::PermissionUtil::GetLastCommittedOriginAsURL(web_contents));
+        permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+            rfh->GetMainFrame()));
     if (embedding_origin != origin_) {
       // Third party iframes are not allowed to request more permissions.
       RunCallbackAndRecordPermissionRequestOutcome(
@@ -698,25 +699,27 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
       PermissionRequestOutcome outcome) {
     if (type_ == GrantType::kWrite) {
       base::UmaHistogramEnumeration(
-          "NativeFileSystemAPI.WritePermissionRequestOutcome", outcome);
+          "Storage.FileSystemAccess.WritePermissionRequestOutcome", outcome);
       if (handle_type_ == HandleType::kDirectory) {
         base::UmaHistogramEnumeration(
-            "NativeFileSystemAPI.WritePermissionRequestOutcome.Directory",
+            "Storage.FileSystemAccess.WritePermissionRequestOutcome.Directory",
             outcome);
       } else {
         base::UmaHistogramEnumeration(
-            "NativeFileSystemAPI.WritePermissionRequestOutcome.File", outcome);
+            "Storage.FileSystemAccess.WritePermissionRequestOutcome.File",
+            outcome);
       }
     } else {
       base::UmaHistogramEnumeration(
-          "NativeFileSystemAPI.ReadPermissionRequestOutcome", outcome);
+          "Storage.FileSystemAccess.ReadPermissionRequestOutcome", outcome);
       if (handle_type_ == HandleType::kDirectory) {
         base::UmaHistogramEnumeration(
-            "NativeFileSystemAPI.ReadPermissionRequestOutcome.Directory",
+            "Storage.FileSystemAccess.ReadPermissionRequestOutcome.Directory",
             outcome);
       } else {
         base::UmaHistogramEnumeration(
-            "NativeFileSystemAPI.ReadPermissionRequestOutcome.File", outcome);
+            "Storage.FileSystemAccess.ReadPermissionRequestOutcome.File",
+            outcome);
       }
     }
 
@@ -1408,7 +1411,7 @@ void ChromeFileSystemAccessPermissionContext::MaybeCleanupActivePermissions(
       content::WebContents* web_contents = tabs->GetWebContentsAt(i);
       url::Origin tab_origin = url::Origin::Create(
           permissions::PermissionUtil::GetLastCommittedOriginAsURL(
-              web_contents));
+              web_contents->GetMainFrame()));
       // Found a tab for this origin, so early exit and don't revoke grants.
       if (tab_origin == origin)
         return;

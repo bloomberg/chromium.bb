@@ -27,103 +27,30 @@
 
 #include "test_environment.h"
 
-class EnvVarICDOverrideSetup : public ::testing::Test {
-   protected:
-    virtual void SetUp() { env = std::unique_ptr<FrameworkEnvironment>(new FrameworkEnvironment()); }
-
-    virtual void TearDown() {
-        remove_env_var("VK_ICD_FILENAMES");
-        env.reset();
-    }
-    std::unique_ptr<FrameworkEnvironment> env;
-};
-
-// Don't support vk_icdNegotiateLoaderICDInterfaceVersion
-// Loader calls vk_icdGetInstanceProcAddr second
-// does not support vk_icdGetInstanceProcAddr
-// must export vkGetInstanceProcAddr, vkCreateInstance, vkEnumerateInstanceExtensionProperties
-TEST_F(EnvVarICDOverrideSetup, version_0_none) {
-    env->add_icd(TestICDDetails(TEST_ICD_PATH_EXPORT_NONE).set_use_env_var_icd_filenames(true));
-    auto& driver = env->reset_icd();
-
-    InstWrapper inst{env->vulkan_functions};
-    inst.CheckCreate();
-
-    ASSERT_EQ(driver.called_vk_icd_gipa, CalledICDGIPA::vk_gipa);
-}
-
-// Don't support vk_icdNegotiateLoaderICDInterfaceVersion
-// the loader calls vk_icdGetInstanceProcAddr first
-TEST_F(EnvVarICDOverrideSetup, version_1_icd_gipa) {
-    env->add_icd(TestICDDetails(TEST_ICD_PATH_EXPORT_ICD_GIPA).set_use_env_var_icd_filenames(true));
-    auto& driver = env->reset_icd();
-
-    InstWrapper inst{env->vulkan_functions};
-    inst.CheckCreate();
-
-    ASSERT_EQ(driver.called_vk_icd_gipa, CalledICDGIPA::vk_icd_gipa);
-}
-
-// support vk_icdNegotiateLoaderICDInterfaceVersion but not vk_icdGetInstanceProcAddr
-// should assert that `interface_vers == 0` due to version mismatch, only checkable in Debug Mode
-TEST_F(EnvVarICDOverrideSetup, version_negotiate_interface_version_death_test) {
-    env->add_icd(TestICDDetails(TEST_ICD_PATH_EXPORT_NEGOTIATE_INTERFACE_VERSION).set_use_env_var_icd_filenames(true));
-    env->reset_icd();
-
-    InstWrapper inst{env->vulkan_functions};
-
-#if !defined(NDEBUG)
-#if defined(WIN32)
-    ASSERT_DEATH(inst.CheckCreate(), "");
-#else
-    ASSERT_DEATH(inst.CheckCreate(), "interface_vers == 0");
-#endif
-#else
-    inst.CheckCreate();
-#endif
-}
-
-// export vk_icdNegotiateLoaderICDInterfaceVersion and vk_icdGetInstanceProcAddr
-TEST_F(EnvVarICDOverrideSetup, version_2_negotiate_interface_version_and_icd_gipa) {
-    env->add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2).set_use_env_var_icd_filenames(true));
-    auto& driver = env->reset_icd();
-
-    InstWrapper inst{env->vulkan_functions};
-    inst.CheckCreate();
-
-    ASSERT_EQ(driver.called_vk_icd_gipa, CalledICDGIPA::vk_icd_gipa);
-}
-
-class ICDInterfaceVersion2Plus : public ::testing::Test {
-   protected:
-    virtual void SetUp() {
-        env = std::unique_ptr<FrameworkEnvironment>(new FrameworkEnvironment());
-        env->add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
-    }
-    virtual void TearDown() { env.reset(); }
-    std::unique_ptr<FrameworkEnvironment> env;
-};
-
-TEST_F(ICDInterfaceVersion2Plus, vk_icdNegotiateLoaderICDInterfaceVersion) {
-    auto& driver = env->get_test_icd();
+TEST(ICDInterfaceVersion2Plus, vk_icdNegotiateLoaderICDInterfaceVersion) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
+    auto& driver = env.get_test_icd();
 
     for (uint32_t i = 0; i <= 6; i++) {
         for (uint32_t j = i; j <= 6; j++) {
             driver.min_icd_interface_version = i;
             driver.max_icd_interface_version = j;
-            InstWrapper inst{env->vulkan_functions};
+            InstWrapper inst{env.vulkan_functions};
             inst.CheckCreate();
         }
     }
 }
 
-TEST_F(ICDInterfaceVersion2Plus, version_3) {
-    auto& driver = env->get_test_icd();
+TEST(ICDInterfaceVersion2Plus, version_3) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
+    auto& driver = env.get_test_icd();
     driver.physical_devices.emplace_back("physical_device_0");
     {
         driver.min_icd_interface_version = 2;
         driver.enable_icd_wsi = true;
-        InstWrapper inst{env->vulkan_functions};
+        InstWrapper inst{env.vulkan_functions};
         inst.CheckCreate();
 
         ASSERT_EQ(driver.is_using_icd_wsi, UsingICDProvidedWSI::not_using);
@@ -131,7 +58,7 @@ TEST_F(ICDInterfaceVersion2Plus, version_3) {
     {
         driver.min_icd_interface_version = 3;
         driver.enable_icd_wsi = false;
-        InstWrapper inst{env->vulkan_functions};
+        InstWrapper inst{env.vulkan_functions};
         inst.CheckCreate();
 
         ASSERT_EQ(driver.is_using_icd_wsi, UsingICDProvidedWSI::not_using);
@@ -139,57 +66,47 @@ TEST_F(ICDInterfaceVersion2Plus, version_3) {
     {
         driver.min_icd_interface_version = 3;
         driver.enable_icd_wsi = true;
-        InstWrapper inst{env->vulkan_functions};
+        InstWrapper inst{env.vulkan_functions};
         inst.CheckCreate();
 
         ASSERT_EQ(driver.is_using_icd_wsi, UsingICDProvidedWSI::is_using);
     }
 }
 
-TEST_F(ICDInterfaceVersion2Plus, version_4) {
-    auto& driver = env->get_test_icd();
+TEST(ICDInterfaceVersion2Plus, version_4) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
+    auto& driver = env.get_test_icd();
     driver.physical_devices.emplace_back("physical_device_0");
-    InstWrapper inst{env->vulkan_functions};
+    InstWrapper inst{env.vulkan_functions};
     inst.CheckCreate();
 }
 
-TEST_F(ICDInterfaceVersion2Plus, l4_icd4) {
+TEST(ICDInterfaceVersion2Plus, l4_icd4) {
     // ICD must fail with VK_ERROR_INCOMPATIBLE_DRIVER for all vkCreateInstance calls with apiVersion set to > Vulkan 1.0
     // because both the loader and ICD support interface version <= 4. Otherwise, the ICD should behave as normal.
 }
-TEST_F(ICDInterfaceVersion2Plus, l4_icd5) {
+TEST(ICDInterfaceVersion2Plus, l4_icd5) {
     // ICD must fail with VK_ERROR_INCOMPATIBLE_DRIVER for all vkCreateInstance calls with apiVersion set to > Vulkan 1.0
     // because the loader is still at interface version <= 4. Otherwise, the ICD should behave as normal.
 }
-TEST_F(ICDInterfaceVersion2Plus, l5_icd4) {
+TEST(ICDInterfaceVersion2Plus, l5_icd4) {
     // Loader will fail with VK_ERROR_INCOMPATIBLE_DRIVER if it can't handle the apiVersion. ICD may pass for all apiVersions,
     // but since its interface is <= 4, it is best if it assumes it needs to do the work of rejecting anything > Vulkan 1.0 and
     // fail with VK_ERROR_INCOMPATIBLE_DRIVER. Otherwise, the ICD should behave as normal.
 }
-TEST_F(ICDInterfaceVersion2Plus, l5_icd5) {
+TEST(ICDInterfaceVersion2Plus, l5_icd5) {
     // Loader will fail with VK_ERROR_INCOMPATIBLE_DRIVER if it can't handle the apiVersion, and ICDs should fail with
     // VK_ERROR_INCOMPATIBLE_DRIVER only if they can not support the specified apiVersion. Otherwise, the ICD should behave as
     // normal.
 }
 
-class ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices : public ::testing::Test {
-   protected:
-    virtual void SetUp() {
-        env = std::unique_ptr<FrameworkEnvironment>(new FrameworkEnvironment());
-        env->add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES));
-    }
-
-    virtual void TearDown() { env.reset(); }
-    std::unique_ptr<FrameworkEnvironment> env;
-};
-
-// Need more work to shim dxgi for this test to work
 #if defined(WIN32)
-// Version 6 provides a mechanism to allow the loader to sort physical devices.
-// The loader will only attempt to sort physical devices on an ICD if version 6 of the interface is supported.
-// This version provides the vk_icdEnumerateAdapterPhysicalDevices function.
-TEST_F(ICDInterfaceVersion2Plus, version_5) {
-    auto& driver = env->get_test_icd();
+// This test makes sure that EnumerateAdapterPhysicalDevices on drivers found in the Khronos/Vulkan/Drivers registry
+TEST(ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices, version_6_in_drivers_registry) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES));
+    auto& driver = env.get_test_icd();
     driver.physical_devices.emplace_back("physical_device_1");
     driver.physical_devices.emplace_back("physical_device_0");
     uint32_t physical_count = static_cast<uint32_t>(driver.physical_devices.size());
@@ -198,73 +115,200 @@ TEST_F(ICDInterfaceVersion2Plus, version_5) {
 
     driver.min_icd_interface_version = 5;
 
-    InstWrapper inst{env->vulkan_functions};
+    auto& known_driver = known_driver_list.at(2);  // which drive this test pretends to be
+    DXGI_ADAPTER_DESC1 desc1{};
+    desc1.AdapterLuid = _LUID{10, 1000};
+    desc1.VendorId = known_driver.vendor_id;
+    env.platform_shim->add_dxgi_adapter(GpuType::discrete, desc1);
+    driver.set_adapterLUID(desc1.AdapterLuid);
+
+    InstWrapper inst{env.vulkan_functions};
     inst.CheckCreate();
 
-    ASSERT_EQ(VK_SUCCESS, env->vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count,
-                                                                           physical_device_handles.data()));
+    ASSERT_EQ(VK_SUCCESS,
+              env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, physical_device_handles.data()));
     ASSERT_EQ(physical_count, returned_physical_count);
-    ASSERT_EQ(driver.called_enumerate_adapter_physical_devices, CalledEnumerateAdapterPhysicalDevices::not_called);
+    ASSERT_TRUE(driver.called_enumerate_adapter_physical_devices);
 }
-TEST_F(ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices, version_6) {
+// Make the version_6 driver found through the D3DKMT driver discovery mechanism of the loader
+TEST(ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices, version_6) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails{TEST_ICD_PATH_VERSION_6, VK_API_VERSION_1_3}.set_discovery_type(ManifestDiscoveryType::none));
     // Version 6 provides a mechanism to allow the loader to sort physical devices.
     // The loader will only attempt to sort physical devices on an ICD if version 6 of the interface is supported.
     // This version provides the vk_icdEnumerateAdapterPhysicalDevices function.
-    auto& driver = env->get_test_icd();
+    auto& driver = env.get_test_icd(0);
     driver.physical_devices.emplace_back("physical_device_1");
     driver.physical_devices.emplace_back("physical_device_0");
-    uint32_t physical_count = static_cast<uint32_t>(driver.physical_devices.size());
-    uint32_t returned_physical_count = static_cast<uint32_t>(driver.physical_devices.size());
-    std::vector<VkPhysicalDevice> physical_device_handles = std::vector<VkPhysicalDevice>(physical_count);
+    uint32_t physical_count = 2;
+    uint32_t returned_physical_count = physical_count;
+    std::vector<VkPhysicalDevice> physical_device_handles{physical_count};
 
     driver.min_icd_interface_version = 6;
 
-    uint32_t driver_index = 2;  // which drive this test pretends to be
-    auto& known_driver = known_driver_list.at(2);
+    auto& known_driver = known_driver_list.at(2);  // which drive this test pretends to be
     DXGI_ADAPTER_DESC1 desc1{};
-    wcsncpy_s(&desc1.Description[0], 128, L"TestDriver1", 128);
+    desc1.AdapterLuid = _LUID{10, 1000};
     desc1.VendorId = known_driver.vendor_id;
-    desc1.AdapterLuid;
-    desc1.Flags = DXGI_ADAPTER_FLAG_NONE;
-    env->platform_shim->add_dxgi_adapter(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES, GpuType::discrete,
-                                         driver_index, desc1);
+    env.platform_shim->add_dxgi_adapter(GpuType::discrete, desc1);
+    driver.set_adapterLUID(desc1.AdapterLuid);
 
-    InstWrapper inst{env->vulkan_functions};
+    env.platform_shim->add_d3dkmt_adapter(
+        D3DKMT_Adapter{0, desc1.AdapterLuid}.add_driver_manifest_path(env.get_icd_manifest_path(0)));
+
+    InstWrapper inst{env.vulkan_functions};
     inst.CheckCreate();
 
-    ASSERT_EQ(VK_SUCCESS, env->vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, nullptr));
+    ASSERT_EQ(VK_SUCCESS, env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, nullptr));
     ASSERT_EQ(physical_count, returned_physical_count);
-    ASSERT_EQ(VK_SUCCESS, env->vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count,
-                                                                           physical_device_handles.data()));
+    ASSERT_EQ(VK_SUCCESS,
+              env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, physical_device_handles.data()));
     ASSERT_EQ(physical_count, returned_physical_count);
-    ASSERT_EQ(driver.called_enumerate_adapter_physical_devices, CalledEnumerateAdapterPhysicalDevices::called);
+    ASSERT_TRUE(driver.called_enumerate_adapter_physical_devices);
+
+    // Make sure that the loader doesn't write past the the end of the pointer
+    auto temp_ptr = std::unique_ptr<int>(new int());
+    for (auto& phys_dev : physical_device_handles) {
+        phys_dev = reinterpret_cast<VkPhysicalDevice>(temp_ptr.get());
+    }
+
+    ASSERT_EQ(VK_SUCCESS, env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, nullptr));
+    returned_physical_count = 0;
+    ASSERT_EQ(VK_INCOMPLETE,
+              env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, physical_device_handles.data()));
+    ASSERT_EQ(0U, returned_physical_count);
+    for (auto& phys_dev : physical_device_handles) {
+        ASSERT_EQ(phys_dev, reinterpret_cast<VkPhysicalDevice>(temp_ptr.get()));
+    }
 }
 
-TEST_F(ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices, EnumAdapters2) {
-    InstWrapper inst{env->vulkan_functions};
-    auto& driver = env->get_test_icd();
+// Declare drivers using the D3DKMT driver interface and make sure the loader can find them - but don't export
+// EnumerateAdapterPhysicalDevices
+TEST(ICDInterfaceVersion2, EnumAdapters2) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails{TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA}.set_discovery_type(ManifestDiscoveryType::none));
+    InstWrapper inst{env.vulkan_functions};
+    auto& driver = env.get_test_icd();
     driver.physical_devices.emplace_back("physical_device_1");
     driver.physical_devices.emplace_back("physical_device_0");
     uint32_t physical_count = static_cast<uint32_t>(driver.physical_devices.size());
     uint32_t returned_physical_count = static_cast<uint32_t>(driver.physical_devices.size());
     std::vector<VkPhysicalDevice> physical_device_handles = std::vector<VkPhysicalDevice>(physical_count);
-
-    SHIM_D3DKMT_ADAPTERINFO d3dkmt_adapter_info{};
-    d3dkmt_adapter_info.hAdapter = 0;  //
-    d3dkmt_adapter_info.AdapterLuid = _LUID{10, 1000};
-    d3dkmt_adapter_info.NumOfSources = 1;
-    d3dkmt_adapter_info.bPresentMoveRegionsPreferred = true;
-
-    env->platform_shim->add_d3dkmt_adapter(d3dkmt_adapter_info, env->get_test_icd_path());
+    driver.adapterLUID = _LUID{10, 1000};
+    env.platform_shim->add_d3dkmt_adapter(D3DKMT_Adapter{0, _LUID{10, 1000}}.add_driver_manifest_path(env.get_icd_manifest_path()));
 
     inst.CheckCreate();
 
-    ASSERT_EQ(VK_SUCCESS, env->vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, nullptr));
+    ASSERT_EQ(VK_SUCCESS, env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, nullptr));
     ASSERT_EQ(physical_count, returned_physical_count);
-    ASSERT_EQ(VK_SUCCESS, env->vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count,
-                                                                           physical_device_handles.data()));
+    ASSERT_EQ(VK_SUCCESS,
+              env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, physical_device_handles.data()));
     ASSERT_EQ(physical_count, returned_physical_count);
+    ASSERT_FALSE(driver.called_enumerate_adapter_physical_devices);
 }
+
+// Make sure that physical devices are found through EnumerateAdapterPhysicalDevices
+// Verify that the handles are correct by calling vkGetPhysicalDeviceProperties with them
+TEST(ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices, VerifyPhysDevResults) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails{TEST_ICD_PATH_VERSION_2_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES}.set_discovery_type(
+        ManifestDiscoveryType::none));
+    auto& driver = env.get_test_icd();
+    driver.min_icd_interface_version = 6;
+    driver.set_icd_api_version(VK_API_VERSION_1_1);
+    const std::vector<std::string> physical_device_names = {"physical_device_4", "physical_device_3", "physical_device_2",
+                                                            "physical_device_1", "physical_device_0"};
+    for (const auto& dev_name : physical_device_names) driver.physical_devices.push_back(dev_name);
+
+    auto& known_driver = known_driver_list.at(2);  // which drive this test pretends to be
+    DXGI_ADAPTER_DESC1 desc1{};
+    desc1.VendorId = known_driver.vendor_id;
+    desc1.AdapterLuid = _LUID{10, 1000};
+    env.platform_shim->add_dxgi_adapter(GpuType::discrete, desc1);
+    env.get_test_icd().set_adapterLUID(desc1.AdapterLuid);
+
+    env.platform_shim->add_d3dkmt_adapter(D3DKMT_Adapter{0, _LUID{10, 1000}}.add_driver_manifest_path(env.get_icd_manifest_path()));
+
+    InstWrapper inst{env.vulkan_functions};
+    inst.CheckCreate();
+
+    const size_t phys_dev_count = physical_device_names.size();
+
+    // The test ICD should completely swap the order of devices.
+    // Since we can't compare VkPhysicalDevice handles because they will be different per VkInstance, we will
+    // compare the property names returned, which should still be equal.
+
+    std::vector<VkPhysicalDevice> adapter_pds{phys_dev_count};
+    uint32_t count = static_cast<uint32_t>(adapter_pds.size());
+    ASSERT_EQ(VK_SUCCESS, env.vulkan_functions.vkEnumeratePhysicalDevices(inst, &count, adapter_pds.data()));
+    ASSERT_EQ(phys_dev_count, count);
+
+    for (uint32_t dev = 0; dev < phys_dev_count; ++dev) {
+        VkPhysicalDeviceProperties props;
+        env.vulkan_functions.vkGetPhysicalDeviceProperties(adapter_pds[dev], &props);
+        std::string dev_name = props.deviceName;
+        // index in reverse
+        ASSERT_EQ(dev_name, physical_device_names[physical_device_names.size() - 1 - dev]);
+    }
+}
+
+// Make sure physical device groups enumerated through EnumerateAdapterPhysicalDevices are properly found
+TEST(ICDInterfaceVersion2PlusEnumerateAdapterPhysicalDevices, VerifyGroupResults) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails{TEST_ICD_PATH_VERSION_2_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES}.set_discovery_type(
+        ManifestDiscoveryType::none));
+    auto& driver = env.get_test_icd();
+    driver.min_icd_interface_version = 6;
+    driver.set_icd_api_version(VK_API_VERSION_1_1);
+    const std::vector<std::string> physical_device_names = {"physical_device_4", "physical_device_3", "physical_device_2",
+                                                            "physical_device_1", "physical_device_0"};
+    for (const auto& dev_name : physical_device_names) driver.physical_devices.push_back(dev_name);
+
+    driver.physical_device_groups.emplace_back(driver.physical_devices[0]);
+    driver.physical_device_groups.back().use_physical_device(driver.physical_devices[1]);
+    driver.physical_device_groups.emplace_back(driver.physical_devices[2]);
+    driver.physical_device_groups.emplace_back(driver.physical_devices[3]);
+    driver.physical_device_groups.back().use_physical_device(driver.physical_devices[4]);
+
+    auto& known_driver = known_driver_list.at(2);  // which driver this test pretends to be
+    DXGI_ADAPTER_DESC1 desc1{};
+    desc1.VendorId = known_driver.vendor_id;
+    desc1.AdapterLuid = _LUID{10, 1000};
+    env.platform_shim->add_dxgi_adapter(GpuType::discrete, desc1);
+    env.get_test_icd().set_adapterLUID(desc1.AdapterLuid);
+
+    env.platform_shim->add_d3dkmt_adapter(D3DKMT_Adapter{0, _LUID{10, 1000}}.add_driver_manifest_path(env.get_icd_manifest_path()));
+
+    InstWrapper inst{env.vulkan_functions};
+    inst.CheckCreate();
+
+    // The test ICD should completely swap the order of devices.
+    // Since we can't compare VkPhysicalDevice handles because they will be different per VkInstance, we will
+    // compare the property names returned, which should still be equal.
+    // And, since this is device groups, the groups themselves should also be in reverse order with the devices
+    // inside each group in revers order.
+
+    const uint32_t actual_group_count = 3;
+    uint32_t count = actual_group_count;
+    std::array<VkPhysicalDeviceGroupProperties, actual_group_count> groups{};
+    for (uint32_t group = 0; group < actual_group_count; ++group) {
+        groups[group].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES;
+    }
+    ASSERT_EQ(VK_SUCCESS, inst->vkEnumeratePhysicalDeviceGroups(inst, &count, groups.data()));
+    ASSERT_EQ(actual_group_count, count);
+
+    size_t cur_device_name_index = physical_device_names.size() - 1;  // start at last index and reverse through it
+    for (uint32_t group = 0; group < actual_group_count; ++group) {
+        for (uint32_t dev = 0; dev < groups[group].physicalDeviceCount; ++dev) {
+            VkPhysicalDeviceProperties props;
+            env.vulkan_functions.vkGetPhysicalDeviceProperties(groups[group].physicalDevices[dev], &props);
+            std::string dev_name = props.deviceName;
+            ASSERT_EQ(dev_name, physical_device_names[cur_device_name_index]);
+            cur_device_name_index--;
+        }
+    }
+}
+
 #endif  // defined(WIN32)
 
 TEST(MultipleICDConfig, Basic) {
@@ -291,7 +335,7 @@ TEST(MultipleICDConfig, Basic) {
     std::array<VkPhysicalDevice, 3> phys_devs_array;
     uint32_t phys_dev_count = 3;
     ASSERT_EQ(env.vulkan_functions.vkEnumeratePhysicalDevices(inst, &phys_dev_count, phys_devs_array.data()), VK_SUCCESS);
-    ASSERT_EQ(phys_dev_count, 3);
+    ASSERT_EQ(phys_dev_count, 3U);
     ASSERT_EQ(env.get_test_icd(0).physical_devices.at(0).properties.deviceType, VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
     ASSERT_EQ(env.get_test_icd(1).physical_devices.at(0).properties.deviceType, VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU);
     ASSERT_EQ(env.get_test_icd(2).physical_devices.at(0).properties.deviceType, VK_PHYSICAL_DEVICE_TYPE_CPU);
@@ -318,8 +362,174 @@ TEST(MultipleDriverConfig, DifferentICDInterfaceVersions) {
     std::array<VkPhysicalDevice, 2> phys_devs_array;
     uint32_t phys_dev_count = 2;
     ASSERT_EQ(env.vulkan_functions.vkEnumeratePhysicalDevices(inst, &phys_dev_count, phys_devs_array.data()), VK_SUCCESS);
-    ASSERT_EQ(phys_dev_count, 2);
+    ASSERT_EQ(phys_dev_count, 2U);
 }
+
+TEST(MultipleDriverConfig, DifferentICDsWithDevices) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_EXPORT_ICD_GIPA));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
+
+    // Make sure the loader returns all devices from all active ICDs.  Many of the other
+    // tests add multiple devices to a single ICD, this just makes sure the loader combines
+    // device info across multiple drivers properly.
+    TestICD& icd0 = env.get_test_icd(0);
+    icd0.physical_devices.emplace_back("physical_device_0");
+    icd0.min_icd_interface_version = 5;
+    icd0.max_icd_interface_version = 5;
+
+    TestICD& icd1 = env.get_test_icd(1);
+    icd1.physical_devices.emplace_back("physical_device_1");
+    icd1.physical_devices.emplace_back("physical_device_2");
+    icd1.min_icd_interface_version = 5;
+    icd1.max_icd_interface_version = 5;
+
+    TestICD& icd2 = env.get_test_icd(2);
+    icd2.physical_devices.emplace_back("physical_device_3");
+    icd2.min_icd_interface_version = 5;
+    icd2.max_icd_interface_version = 5;
+
+    InstWrapper inst{env.vulkan_functions};
+    inst.CheckCreate();
+
+    std::array<VkPhysicalDevice, 4> phys_devs_array;
+    uint32_t phys_dev_count = 4;
+    ASSERT_EQ(env.vulkan_functions.vkEnumeratePhysicalDevices(inst, &phys_dev_count, phys_devs_array.data()), VK_SUCCESS);
+    ASSERT_EQ(phys_dev_count, 4U);
+}
+
+TEST(MultipleDriverConfig, DifferentICDsWithDevicesAndGroups) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_EXPORT_ICD_GIPA));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
+
+    // The loader has to be able to handle drivers that support device groups in combination
+    // with drivers that don't support device groups.  When this is the case, the loader needs
+    // to take every driver that doesn't support device groups and put each of its devices in
+    // a separate group.  Then it combines that information with the drivers that support
+    // device groups returned info.
+
+    // ICD 0 :  No 1.1 support (so 1 device will become 1 group in loader)
+    TestICD& icd0 = env.get_test_icd(0);
+    icd0.physical_devices.emplace_back("physical_device_0");
+    icd0.min_icd_interface_version = 5;
+    icd0.max_icd_interface_version = 5;
+    icd0.set_icd_api_version(VK_API_VERSION_1_0);
+
+    // ICD 1 :  1.1 support (with 1 group with 2 devices)
+    TestICD& icd1 = env.get_test_icd(1);
+    icd1.physical_devices.emplace_back("physical_device_1");
+    icd1.physical_devices.emplace_back("physical_device_2");
+    icd1.physical_device_groups.emplace_back(icd1.physical_devices[0]);
+    icd1.physical_device_groups.back().use_physical_device(icd1.physical_devices[1]);
+    icd1.min_icd_interface_version = 5;
+    icd1.max_icd_interface_version = 5;
+    icd1.set_icd_api_version(VK_API_VERSION_1_1);
+
+    // ICD 2 :  No 1.1 support (so 3 devices will become 3 groups in loader)
+    TestICD& icd2 = env.get_test_icd(2);
+    icd2.physical_devices.emplace_back("physical_device_3");
+    icd2.physical_devices.emplace_back("physical_device_4");
+    icd2.physical_devices.emplace_back("physical_device_5");
+    icd2.min_icd_interface_version = 5;
+    icd2.max_icd_interface_version = 5;
+    icd2.set_icd_api_version(VK_API_VERSION_1_0);
+
+    InstWrapper inst{env.vulkan_functions};
+    inst.create_info.set_api_version(1, 1, 0);
+    inst.CheckCreate();
+
+    uint32_t group_count = static_cast<uint32_t>(5);
+    uint32_t returned_group_count = 0;
+    ASSERT_EQ(VK_SUCCESS, inst->vkEnumeratePhysicalDeviceGroups(inst, &returned_group_count, nullptr));
+    ASSERT_EQ(group_count, returned_group_count);
+
+    std::vector<VkPhysicalDeviceGroupProperties> group_props{};
+    group_props.resize(group_count, VkPhysicalDeviceGroupProperties{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES});
+    ASSERT_EQ(VK_SUCCESS, inst->vkEnumeratePhysicalDeviceGroups(inst, &returned_group_count, group_props.data()));
+    ASSERT_EQ(group_count, returned_group_count);
+}
+
+#if defined(WIN32)
+// This is testing when there are drivers that support the Windows device adapter sorting mechanism by exporting
+// EnumerateAdapterPhysicalDevices and drivers that do not expose that functionality
+TEST(MultipleICDConfig, version_5_and_version_6) {
+    FrameworkEnvironment env;
+
+    const char* regular_layer_name = "VK_LAYER_TestLayer1";
+    env.add_implicit_layer(ManifestLayer{}.add_layer(ManifestLayer::LayerDescription{}
+                                                         .set_name(regular_layer_name)
+                                                         .set_lib_path(TEST_LAYER_PATH_EXPORT_VERSION_2)
+                                                         .set_api_version(VK_MAKE_API_VERSION(0, 1, 1, 0))
+                                                         .set_disable_environment("DisableMeIfYouCan")),
+                           "regular_test_layer.json");
+
+    MockQueueFamilyProperties family_props{{VK_QUEUE_GRAPHICS_BIT, 1, 0, {1, 1, 1}}, true};
+
+    uint32_t physical_count = 0;
+    for (uint32_t i = 0; i < 3; i++) {
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_ENUMERATE_ADAPTER_PHYSICAL_DEVICES));
+        env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2));
+        auto& driver_5 = env.get_test_icd(i * 2 + 1);
+        driver_5.set_max_icd_interface_version(5);
+        driver_5.set_min_icd_interface_version(5);
+        setup_WSI_in_ICD(driver_5);
+        driver_5.physical_devices.push_back({});
+        driver_5.physical_devices.back().queue_family_properties.push_back(family_props);
+        driver_5.physical_devices.push_back({});
+        driver_5.physical_devices.back().queue_family_properties.push_back(family_props);
+        driver_5.physical_devices.push_back({});
+        driver_5.physical_devices.back().queue_family_properties.push_back(family_props);
+        physical_count += static_cast<uint32_t>(driver_5.physical_devices.size());
+
+        auto& driver_6 = env.get_test_icd(i * 2);
+        setup_WSI_in_ICD(driver_6);
+        driver_6.physical_devices.emplace_back("physical_device_0");
+        driver_6.physical_devices.back().queue_family_properties.push_back(family_props);
+        driver_6.physical_devices.emplace_back("physical_device_1");
+        driver_6.physical_devices.back().queue_family_properties.push_back(family_props);
+        physical_count += static_cast<uint32_t>(driver_6.physical_devices.size());
+
+        driver_6.set_max_icd_interface_version(6);
+        driver_6.set_min_icd_interface_version(5);
+
+        uint32_t driver_index = i % 4;  // which drive this test pretends to be, must stay below 4
+        auto& known_driver = known_driver_list.at(driver_index);
+        DXGI_ADAPTER_DESC1 desc1{};
+        desc1.VendorId = known_driver.vendor_id;
+        desc1.AdapterLuid = LUID{100 + i, static_cast<LONG>(100 + i)};
+        driver_6.set_adapterLUID(desc1.AdapterLuid);
+        env.platform_shim->add_dxgi_adapter(GpuType::discrete, desc1);
+        env.get_test_icd().set_adapterLUID(desc1.AdapterLuid);
+    }
+    uint32_t returned_physical_count = 0;
+    InstWrapper inst{env.vulkan_functions};
+    setup_WSI_in_create_instance(inst);
+    inst.CheckCreate();
+
+    ASSERT_EQ(VK_SUCCESS, env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, nullptr));
+    ASSERT_EQ(physical_count, returned_physical_count);
+    std::vector<VkPhysicalDevice> physical_device_handles{returned_physical_count};
+    ASSERT_EQ(VK_SUCCESS,
+              env.vulkan_functions.vkEnumeratePhysicalDevices(inst.inst, &returned_physical_count, physical_device_handles.data()));
+    ASSERT_EQ(physical_count, returned_physical_count);
+
+    VkSurfaceKHR surface = create_surface(inst);
+    for (const auto& handle : physical_device_handles) {
+        handle_assert_has_value(handle);
+
+        VkBool32 supported = false;
+        EXPECT_EQ(VK_SUCCESS, env.vulkan_functions.vkGetPhysicalDeviceSurfaceSupportKHR(handle, 0, surface, &supported));
+    }
+    for (uint32_t i = 0; i < 3; i++) {
+        auto& driver_6 = env.get_test_icd(i * 2);
+        EXPECT_EQ(driver_6.called_enumerate_adapter_physical_devices, true);
+    }
+}
+#endif  // defined(WIN32)
+
 // shim function pointers for 1.3
 // Should use autogen for this - it generates 'shim' functions for validation layers, maybe that could be used here.
 void test_vkCmdBeginRendering(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin,
@@ -379,7 +589,7 @@ VkResult test_vkSetPrivateData(VkDevice device, VkObjectType objectType, uint64_
 
 TEST(MinorVersionUpdate, Version1_3) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd().physical_devices.push_back({});
     auto& icd_phys_dev = env.get_test_icd().physical_devices.back();
     icd_phys_dev.known_device_functions.insert(
@@ -435,7 +645,7 @@ TEST(MinorVersionUpdate, Version1_3) {
         inst.functions->vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceToolProperties"));
     uint32_t tool_count = 0;
     ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceToolProperties(phys_dev, &tool_count, nullptr));
-    ASSERT_EQ(tool_count, 0);
+    ASSERT_EQ(tool_count, 0U);
     VkPhysicalDeviceToolProperties props;
     ASSERT_EQ(VK_SUCCESS, GetPhysicalDeviceToolProperties(phys_dev, &tool_count, &props));
 
@@ -599,7 +809,7 @@ TEST(MinorVersionUpdate, Version1_3) {
 
 TEST(ApplicationInfoVersion, NonVulkanVariant) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
     env.get_test_icd().physical_devices.push_back({});
 
     DebugUtilsLogger log;
@@ -614,7 +824,7 @@ TEST(ApplicationInfoVersion, NonVulkanVariant) {
 
 TEST(DriverManifest, NonVulkanVariant) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6, VK_MAKE_API_VERSION(1, 1, 0, 0)));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA, VK_MAKE_API_VERSION(1, 1, 0, 0)));
     env.get_test_icd().physical_devices.push_back({});
 
     DebugUtilsLogger log;
@@ -629,7 +839,7 @@ TEST(DriverManifest, NonVulkanVariant) {
 
 TEST(LayerManifest, ImplicitNonVulkanVariant) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6, VK_MAKE_API_VERSION(0, 1, 0, 0)));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA, VK_MAKE_API_VERSION(0, 1, 0, 0)));
     env.get_test_icd().physical_devices.push_back({});
 
     const char* implicit_layer_name = "ImplicitTestLayer";
@@ -651,7 +861,7 @@ TEST(LayerManifest, ImplicitNonVulkanVariant) {
 
 TEST(LayerManifest, ExplicitNonVulkanVariant) {
     FrameworkEnvironment env{};
-    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_6, VK_MAKE_API_VERSION(0, 1, 0, 0)));
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA, VK_MAKE_API_VERSION(0, 1, 0, 0)));
     env.get_test_icd().physical_devices.push_back({});
 
     const char* explicit_layer_name = "ExplicitTestLayer";
@@ -668,4 +878,45 @@ TEST(LayerManifest, ExplicitNonVulkanVariant) {
     inst.CheckCreate(VK_ERROR_LAYER_NOT_PRESENT);
     ASSERT_TRUE(log.find(std::string("Layer ") + explicit_layer_name +
                          " has an \'api_version\' field which contains a non-zero variant value of 1.  Skipping Layer."));
+}
+
+TEST(DriverManifest, UnknownManifestVersion) {
+    FrameworkEnvironment env{};
+    env.add_icd(
+        TestICDDetails(ManifestICD{}.set_lib_path(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA).set_file_format_version({3, 2, 1})));
+    env.get_test_icd().physical_devices.push_back({});
+
+    DebugUtilsLogger log;
+    InstWrapper inst{env.vulkan_functions};
+    inst.create_info.set_api_version(VK_MAKE_API_VERSION(0, 1, 0, 0));
+    FillDebugUtilsCreateDetails(inst.create_info, log);
+    inst.CheckCreate();
+    ASSERT_TRUE(log.find("loader_icd_scan: "));
+    // log prints the path to the file, don't look for it since it is hard to determine inside the test what the path should be.
+    ASSERT_TRUE(log.find("has unknown icd manifest file version 3.2.1. May cause errors."));
+}
+
+TEST(LayerManifest, UnknownManifestVersion) {
+    FrameworkEnvironment env{};
+    env.add_icd(TestICDDetails(TEST_ICD_PATH_VERSION_2_EXPORT_ICD_GPDPA));
+    env.get_test_icd().physical_devices.push_back({});
+
+    const char* implicit_layer_name = "ImplicitTestLayer";
+    env.add_implicit_layer(ManifestLayer{}
+                               .add_layer(ManifestLayer::LayerDescription{}
+                                              .set_name(implicit_layer_name)
+                                              .set_api_version(VK_MAKE_API_VERSION(1, 1, 0, 0))
+                                              .set_lib_path(TEST_LAYER_PATH_EXPORT_VERSION_2)
+                                              .set_disable_environment("DISABLE_ME"))
+                               .set_file_format_version({3, 2, 1}),
+                           "implicit_test_layer.json");
+
+    DebugUtilsLogger log;
+    InstWrapper inst{env.vulkan_functions};
+    inst.create_info.set_api_version(VK_MAKE_API_VERSION(0, 1, 0, 0));
+    FillDebugUtilsCreateDetails(inst.create_info, log);
+    inst.CheckCreate();
+    ASSERT_TRUE(log.find("loader_add_layer_properties: "));
+    // log prints the path to the file, don't look for it since it is hard to determine inside the test what the path should be.
+    ASSERT_TRUE(log.find("has unknown layer manifest file version 3.2.1.  May cause errors."));
 }

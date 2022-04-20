@@ -23,6 +23,7 @@
 #include "dcadata.h"
 #include "dcamath.h"
 #include "dca_syncwords.h"
+#include "internal.h"
 #include "unary.h"
 
 static int get_linear(GetBitContext *gb, int n)
@@ -1442,7 +1443,7 @@ int ff_dca_xll_filter_frame(DCAXllDecoder *s, AVFrame *frame)
                                        s->output_mask);
     }
 
-    for (i = 0; i < avctx->channels; i++) {
+    for (i = 0; i < avctx->ch_layout.nb_channels; i++) {
         int32_t *samples = s->output_samples[ch_remap[i]];
         if (frame->format == AV_SAMPLE_FMT_S16P) {
             int16_t *plane = (int16_t *)frame->extended_data[i];

@@ -19,7 +19,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
-#include "api/webrtc_key_value_config.h"
+#include "api/field_trials_view.h"
 #include "media/base/media_constants.h"
 #include "modules/pacing/packet_router.h"
 #include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
@@ -59,7 +59,7 @@ namespace {
 constexpr int kPacketBufferStartSize = 512;
 constexpr int kPacketBufferMaxSize = 2048;
 
-int PacketBufferMaxSize(const WebRtcKeyValueConfig& field_trials) {
+int PacketBufferMaxSize(const FieldTrialsView& field_trials) {
   // The group here must be a positive power of 2, in which case that is used as
   // size. All other values shall result in the default value being used.
   const std::string group_name =
@@ -212,7 +212,7 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     OnCompleteFrameCallback* complete_frame_callback,
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
     rtc::scoped_refptr<FrameTransformerInterface> frame_transformer,
-    const WebRtcKeyValueConfig* field_trials)
+    const FieldTrialsView* field_trials)
     : RtpVideoStreamReceiver(clock,
                              transport,
                              rtt_stats,
@@ -244,7 +244,7 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
     OnCompleteFrameCallback* complete_frame_callback,
     rtc::scoped_refptr<FrameDecryptorInterface> frame_decryptor,
     rtc::scoped_refptr<FrameTransformerInterface> frame_transformer,
-    const WebRtcKeyValueConfig* field_trials)
+    const FieldTrialsView* field_trials)
     : field_trials_(field_trials ? *field_trials : owned_field_trials_),
       clock_(clock),
       config_(*config),
@@ -322,7 +322,7 @@ RtpVideoStreamReceiver::RtpVideoStreamReceiver(
 
   if (config_.rtp.nack.rtp_history_ms != 0) {
     nack_module_ = std::make_unique<DEPRECATED_NackModule>(
-        clock_, &rtcp_feedback_buffer_, &rtcp_feedback_buffer_);
+        clock_, &rtcp_feedback_buffer_, &rtcp_feedback_buffer_, field_trials_);
     process_thread_->RegisterModule(nack_module_.get(), RTC_FROM_HERE);
   }
 
@@ -1110,18 +1110,18 @@ bool RtpVideoStreamReceiver::DeliverRtcp(const uint8_t* rtcp_packet,
   uint32_t ntp_secs = 0;
   uint32_t ntp_frac = 0;
   uint32_t rtp_timestamp = 0;
-  uint32_t recieved_ntp_secs = 0;
-  uint32_t recieved_ntp_frac = 0;
-  if (rtp_rtcp_->RemoteNTP(&ntp_secs, &ntp_frac, &recieved_ntp_secs,
-                           &recieved_ntp_frac, &rtp_timestamp) != 0) {
+  uint32_t received_ntp_secs = 0;
+  uint32_t received_ntp_frac = 0;
+  if (rtp_rtcp_->RemoteNTP(&ntp_secs, &ntp_frac, &received_ntp_secs,
+                           &received_ntp_frac, &rtp_timestamp) != 0) {
     // Waiting for RTCP.
     return true;
   }
-  NtpTime recieved_ntp(recieved_ntp_secs, recieved_ntp_frac);
-  int64_t time_since_recieved =
-      clock_->CurrentNtpInMilliseconds() - recieved_ntp.ToMs();
+  NtpTime received_ntp(received_ntp_secs, received_ntp_frac);
+  int64_t time_since_received =
+      clock_->CurrentNtpInMilliseconds() - received_ntp.ToMs();
   // Don't use old SRs to estimate time.
-  if (time_since_recieved <= 1) {
+  if (time_since_received <= 1) {
     ntp_estimator_.UpdateRtcpTimestamp(rtt, ntp_secs, ntp_frac, rtp_timestamp);
     absl::optional<int64_t> remote_to_local_clock_offset_ms =
         ntp_estimator_.EstimateRemoteToLocalClockOffsetMs();

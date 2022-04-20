@@ -529,6 +529,17 @@ RValue<Float4> reciprocalSquareRoot(RValue<Float4> x, bool absolute, bool pp)
 	return Rcp(abs, pp);
 }
 
+// TODO(chromium:1299047): Eliminate when Chromium tests accept both fused and unfused multiply-add.
+RValue<Float4> mulAdd(RValue<Float4> x, RValue<Float4> y, RValue<Float4> z)
+{
+	if(SWIFTSHADER_LEGACY_PRECISION)
+	{
+		return x * y + z;
+	}
+
+	return rr::MulAdd(x, y, z);
+}
+
 void transpose4x4(Short4 &row0, Short4 &row1, Short4 &row2, Short4 &row3)
 {
 	Int2 tmp0 = UnpackHigh(row0, row1);
@@ -688,6 +699,23 @@ UInt r11g11b10Pack(const Float4 &value)
 	return (UInt(truncBits.x) >> 20) | (UInt(truncBits.y) >> 9) | (UInt(truncBits.z) << 1);
 }
 
+Float4 linearToSRGB(const Float4 &c)
+{
+	Float4 lc = Min(c, 0.0031308f) * 12.92f;
+	Float4 ec = MulAdd(1.055f, Pow<Mediump>(c, (1.0f / 2.4f)), -0.055f);  // TODO(b/149574741): Use a custom approximation.
+
+	return Max(lc, ec);
+}
+
+Float4 sRGBtoLinear(const Float4 &c)
+{
+	Float4 lc = c * (1.0f / 12.92f);
+	Float4 ec = Pow<Mediump>(MulAdd(c, 1.0f / 1.055f, 0.055f / 1.055f), 2.4f);  // TODO(b/149574741): Use a custom approximation.
+
+	Int4 linear = CmpLT(c, 0.04045f);
+	return As<Float4>((linear & As<Int4>(lc)) | (~linear & As<Int4>(ec)));  // TODO: IfThenElse()
+}
+
 RValue<Bool> AnyTrue(const RValue<SIMD::Int> &bools)
 {
 	return SignMask(bools) != 0;
@@ -790,7 +818,6 @@ rr::RValue<sw::SIMD::Int> Exponent(rr::RValue<sw::SIMD::Float> f)
 // If both operands are NaN, the result is a NaN.
 rr::RValue<sw::SIMD::Float> NMin(rr::RValue<sw::SIMD::Float> const &x, rr::RValue<sw::SIMD::Float> const &y)
 {
-	using namespace rr;
 	auto xIsNan = IsNan(x);
 	auto yIsNan = IsNan(y);
 	return As<sw::SIMD::Float>(
@@ -807,7 +834,6 @@ rr::RValue<sw::SIMD::Float> NMin(rr::RValue<sw::SIMD::Float> const &x, rr::RValu
 // If both operands are NaN, the result is a NaN.
 rr::RValue<sw::SIMD::Float> NMax(rr::RValue<sw::SIMD::Float> const &x, rr::RValue<sw::SIMD::Float> const &y)
 {
-	using namespace rr;
 	auto xIsNan = IsNan(x);
 	auto yIsNan = IsNan(y);
 	return As<sw::SIMD::Float>(

@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 
-"""Generic retry wrapper for Git operations. 
+"""Generic retry wrapper for Git operations.
 
 This is largely DEPRECATED in favor of the Infra Git wrapper:
 https://chromium.googlesource.com/infra/infra/+/HEAD/go/src/infra/tools/git
@@ -95,7 +95,7 @@ class GitRetry(object):
 
   def __call__(self, *args):
     returncode = 0
-    for i in xrange(self.retry_count):
+    for i in range(self.retry_count):
       # If the previous run failed and a delay is configured, delay before the
       # next run.
       delay = self.computeDelay(i)

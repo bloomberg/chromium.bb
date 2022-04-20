@@ -89,7 +89,7 @@ class ConsolidatedConsentScreen
   bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
-  void OnUserAction(const std::string& action_id) override;
+  void OnUserActionDeprecated(const std::string& action_id) override;
   ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
@@ -114,11 +114,12 @@ class ConsolidatedConsentScreen
   // demo setup flow.
   void ExitScreenWithAcceptedResult();
 
+  // Updates the state of the metrics toggle.
+  void UpdateMetricsMode(bool enabled, bool managed);
+
   absl::optional<bool> is_owner_;
 
   bool is_child_account_ = false;
-
-  bool is_enterprise_managed_account_ = false;
 
   // To track if optional ARC features are managed preferences.
   bool backup_restore_managed_ = false;

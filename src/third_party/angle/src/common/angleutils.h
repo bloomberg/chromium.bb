@@ -133,15 +133,30 @@ struct PerfMonitorTriplet
 #define ANGLE_VK_PERF_COUNTERS_X(FN)              \
     FN(primaryBuffers)                            \
     FN(renderPasses)                              \
+    FN(submittedCommands)                         \
     FN(writeDescriptorSets)                       \
     FN(flushedOutsideRenderPassCommandBuffers)    \
+    FN(swapchainResolveInSubpass)                 \
+    FN(swapchainResolveOutsideSubpass)            \
     FN(resolveImageCommands)                      \
-    FN(depthClears)                               \
-    FN(depthLoads)                                \
-    FN(depthStores)                               \
-    FN(stencilClears)                             \
-    FN(stencilLoads)                              \
-    FN(stencilStores)                             \
+    FN(colorLoadOpClears)                         \
+    FN(colorLoadOpLoads)                          \
+    FN(colorLoadOpNones)                          \
+    FN(colorStoreOpStores)                        \
+    FN(colorStoreOpNones)                         \
+    FN(colorClearAttachments)                     \
+    FN(depthLoadOpClears)                         \
+    FN(depthLoadOpLoads)                          \
+    FN(depthLoadOpNones)                          \
+    FN(depthStoreOpStores)                        \
+    FN(depthStoreOpNones)                         \
+    FN(depthClearAttachments)                     \
+    FN(stencilLoadOpClears)                       \
+    FN(stencilLoadOpLoads)                        \
+    FN(stencilLoadOpNones)                        \
+    FN(stencilStoreOpStores)                      \
+    FN(stencilStoreOpNones)                       \
+    FN(stencilClearAttachments)                   \
     FN(colorAttachmentUnresolves)                 \
     FN(depthAttachmentUnresolves)                 \
     FN(stencilAttachmentUnresolves)               \

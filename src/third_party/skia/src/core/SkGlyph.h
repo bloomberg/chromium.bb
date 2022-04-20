@@ -46,11 +46,17 @@ struct SkPackedGlyphID {
         kFixedPointSubPixelPosBits = kFixedPointBinaryPointPos - kSubPixelPosLen,
     };
 
-    inline static constexpr SkScalar kSubpixelRound =
+    inline static const constexpr SkScalar kSubpixelRound =
             1.f / (1u << (SkPackedGlyphID::kSubPixelPosLen + 1));
 
-    inline static constexpr SkIPoint kXYFieldMask{kSubPixelPosMask << kSubPixelX,
-                                                  kSubPixelPosMask << kSubPixelY};
+    inline static const constexpr SkIPoint kXYFieldMask{kSubPixelPosMask << kSubPixelX,
+                                                        kSubPixelPosMask << kSubPixelY};
+
+    struct Hash {
+         uint32_t operator() (SkPackedGlyphID packedID) const {
+            return packedID.hash();
+        }
+    };
 
     constexpr explicit SkPackedGlyphID(SkGlyphID glyphID)
             : fID{(uint32_t)glyphID << kGlyphID} { }
@@ -198,27 +204,30 @@ class SkGlyphRect {
 public:
     SkGlyphRect() = default;
     SkGlyphRect(int16_t left, int16_t top, int16_t right, int16_t bottom)
-            : fRect{left, top, (int16_t)-right, (int16_t)-bottom} {
+            : fRect{(int16_t)-left, (int16_t)-top, right, bottom} {
         SkDEBUGCODE(const int32_t min = std::numeric_limits<int16_t>::min());
         SkASSERT(left != min && top != min && right != min && bottom != min);
     }
     bool empty() const {
-        return fRect[0] >= -fRect[2] || fRect[1] >= -fRect[3];
+        return -fRect[0] >= fRect[2] || -fRect[1] >= fRect[3];
     }
     SkRect rect() const {
-        return SkRect::MakeLTRB(fRect[0], fRect[1], -fRect[2], -fRect[3]);
+        return SkRect::MakeLTRB(-fRect[0], -fRect[1], fRect[2], fRect[3]);
     }
     SkIRect iRect() const {
-        return SkIRect::MakeLTRB(fRect[0], fRect[1], -fRect[2], -fRect[3]);
+        return SkIRect::MakeLTRB(-fRect[0], -fRect[1], fRect[2], fRect[3]);
     }
     SkGlyphRect offset(int16_t x, int16_t y) const {
-        return SkGlyphRect{fRect + Storage{x, y, SkTo<int16_t>(-x), SkTo<int16_t>(-y)}};
+        return SkGlyphRect{fRect + Storage{SkTo<int16_t>(-x), SkTo<int16_t>(-y), x, y}};
     }
-    skvx::Vec<2, int16_t> topLeft() const { return {fRect[0], fRect[1]}; }
+    skvx::Vec<2, int16_t> leftTop() const { return -this->negLeftTop(); }
+    skvx::Vec<2, int16_t> rightBottom() const { return {fRect[2], fRect[3]}; }
+    skvx::Vec<2, int16_t> widthHeight() const { return this->rightBottom() + negLeftTop(); }
     friend SkGlyphRect skglyph::rect_union(SkGlyphRect, SkGlyphRect);
     friend SkGlyphRect skglyph::rect_intersection(SkGlyphRect, SkGlyphRect);
 
 private:
+    skvx::Vec<2, int16_t> negLeftTop() const { return {fRect[0], fRect[1]}; }
     using Storage = skvx::Vec<4, int16_t>;
     SkGlyphRect(Storage rect) : fRect{rect} { }
     Storage fRect;
@@ -227,17 +236,17 @@ private:
 namespace skglyph {
 inline SkGlyphRect empty_rect() {
     constexpr int16_t max = std::numeric_limits<int16_t>::max();
-    return {max,  max, -max, -max};
+    return {max, max, -max, -max};
 }
 inline SkGlyphRect full_rect() {
     constexpr int16_t max = std::numeric_limits<int16_t>::max();
-    return {-max,  -max, max, max};
+    return {-max, -max, max, max};
 }
 inline SkGlyphRect rect_union(SkGlyphRect a, SkGlyphRect b) {
-    return skvx::min(a.fRect, b.fRect);
+    return skvx::max(a.fRect, b.fRect);
 }
 inline SkGlyphRect rect_intersection(SkGlyphRect a, SkGlyphRect b) {
-    return skvx::max(a.fRect, b.fRect);
+    return skvx::min(a.fRect, b.fRect);
 }
 }  // namespace skglyph
 
@@ -251,31 +260,26 @@ public:
     // Default ctor is only needed for the hash table.
     SkGlyphDigest() = default;
     SkGlyphDigest(size_t index, const SkGlyph& glyph);
-    int index()          const {return fIndex;        }
-    bool isEmpty()       const {return fIsEmpty;      }
-    bool isColor()       const {return fIsColor;      }
-    bool canDrawAsMask() const {return fCanDrawAsMask;}
-    bool canDrawAsSDFT() const {return fCanDrawAsSDFT;}
-    uint32_t packedGlyphID() const {return fPackedGlyphID;}
-    uint16_t maxDimension()  const {return fMaxDimension; }
-
-    // Support mapping from SkPackedGlyphID stored in the digest.
-    static uint32_t GetKey(SkGlyphDigest digest) {
-        return digest.packedGlyphID();
-    }
-    static uint32_t Hash(uint32_t packedGlyphID) {
-        return SkGoodHash()(packedGlyphID);
+    int index()          const { return fIndex;         }
+    bool isEmpty()       const { return fIsEmpty;       }
+    bool isColor()       const { return fIsColor;       }
+    bool canDrawAsMask() const { return fCanDrawAsMask; }
+    bool canDrawAsSDFT() const { return fCanDrawAsSDFT; }
+    uint16_t maxDimension()  const {
+        return std::max(fWidth, fHeight);
     }
 
 private:
     static_assert(SkPackedGlyphID::kEndData == 20);
-    uint64_t fPackedGlyphID : SkPackedGlyphID::kEndData;
-    uint64_t fIndex         : SkPackedGlyphID::kEndData;
-    uint64_t fIsEmpty       : 1;
-    uint64_t fIsColor       : 1;
-    uint64_t fCanDrawAsMask : 1;
-    uint64_t fCanDrawAsSDFT : 1;
-    uint64_t fMaxDimension  : 16;
+    struct {
+        uint32_t fIndex         : SkPackedGlyphID::kEndData;
+        uint32_t fIsEmpty       : 1;
+        uint32_t fIsColor       : 1;
+        uint32_t fCanDrawAsMask : 1;
+        uint32_t fCanDrawAsSDFT : 1;
+    };
+    int16_t fLeft, fTop;
+    uint16_t fWidth, fHeight;
 };
 
 class SkGlyph {
@@ -477,8 +481,9 @@ private:
 
     SkMask::Format fMaskFormat{SkMask::kBW_Format};
 
-    // Used by the DirectWrite scaler to track state.
-    int8_t    fForceBW = 0;
+    // Used by the SkScalerContext to pass state from generateMetrics to generateImage.
+    // Usually specifies which glyph representation was used to generate the metrics.
+    uint16_t  fScalerContextBits = 0;
 
     // An SkGlyph can be created with just a packedID, but generally speaking some glyph factory
     // needs to actually fill out the glyph before it can be used as part of that system.

@@ -35,7 +35,7 @@ static jlong JNI_AssistantStaticDependenciesChrome_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& jstatic_dependencies) {
   // The dynamic_cast is necessary here to safely cast the resulting intptr back
-  // to DependenciesAndroid using reinterpret_cast.
+  // to Dependencies using reinterpret_cast.
   return reinterpret_cast<intptr_t>(dynamic_cast<Dependencies*>(
       new DependenciesChrome(env, jstatic_dependencies)));
 }
@@ -66,11 +66,14 @@ PasswordManagerClient* DependenciesChrome::GetPasswordManagerClient(
 
 std::string DependenciesChrome::GetChromeSignedInEmailAddress(
     WebContents* web_contents) const {
-  CoreAccountInfo account_info =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
-  return account_info.email;
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (!identity_manager) {
+    return std::string();
+  }
+  return identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+      .email;
 }
 
 AnnotateDomModelService* DependenciesChrome::GetOrCreateAnnotateDomModelService(
@@ -85,6 +88,10 @@ bool DependenciesChrome::IsCustomTab(const WebContents& web_contents) const {
   }
 
   return tab_android->IsCustomTab();
+}
+
+bool DependenciesChrome::IsWebLayer() const {
+  return false;
 }
 
 }  // namespace autofill_assistant

@@ -46,6 +46,7 @@
 #if CONFIG_NETWORK
 #include "network.h"
 #endif
+#include "version.h"
 
 #include "libavutil/ffversion.h"
 const char av_format_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
@@ -532,7 +533,7 @@ int av_find_best_stream(AVFormatContext *ic, enum AVMediaType type,
             continue;
         if (wanted_stream_nb >= 0 && real_stream_index != wanted_stream_nb)
             continue;
-        if (type == AVMEDIA_TYPE_AUDIO && !(par->channels && par->sample_rate))
+        if (type == AVMEDIA_TYPE_AUDIO && !(par->ch_layout.nb_channels && par->sample_rate))
             continue;
         if (decoder_ret) {
             decoder = ff_find_decoder(ic, st, par->codec_id);
@@ -902,10 +903,11 @@ AVChapter *avpriv_new_chapter(AVFormatContext *s, int64_t id, AVRational time_ba
     if (!s->nb_chapters) {
         si->chapter_ids_monotonic = 1;
     } else if (!si->chapter_ids_monotonic || s->chapters[s->nb_chapters-1]->id >= id) {
-        si->chapter_ids_monotonic = 0;
         for (unsigned i = 0; i < s->nb_chapters; i++)
             if (s->chapters[i]->id == id)
                 chapter = s->chapters[i];
+        if (!chapter)
+            si->chapter_ids_monotonic = 0;
     }
 
     if (!chapter) {
@@ -1142,7 +1144,7 @@ int ff_mkdir_p(const char *path)
         }
     }
 
-    if ((*(pos - 1) != '/') || (*(pos - 1) != '\\')) {
+    if ((*(pos - 1) != '/') && (*(pos - 1) != '\\')) {
         ret = mkdir(temp, 0755);
     }
 
@@ -1250,7 +1252,7 @@ void ff_parse_key_value(const char *str, ff_parse_key_val_cb callback_get_buf,
         key_len = ptr - key;
 
         callback_get_buf(context, key, key_len, &dest, &dest_len);
-        dest_end = dest + dest_len - 1;
+        dest_end = dest ? dest + dest_len - 1 : NULL;
 
         if (*ptr == '\"') {
             ptr++;
@@ -1335,6 +1337,9 @@ int ff_add_param_change(AVPacket *pkt, int32_t channels,
     uint8_t *data;
     if (!pkt)
         return AVERROR(EINVAL);
+
+#if FF_API_OLD_CHANNEL_LAYOUT
+FF_DISABLE_DEPRECATION_WARNINGS
     if (channels) {
         size  += 4;
         flags |= AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT;
@@ -1343,6 +1348,8 @@ int ff_add_param_change(AVPacket *pkt, int32_t channels,
         size  += 8;
         flags |= AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_LAYOUT;
     }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     if (sample_rate) {
         size  += 4;
         flags |= AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE;
@@ -1355,10 +1362,14 @@ int ff_add_param_change(AVPacket *pkt, int32_t channels,
     if (!data)
         return AVERROR(ENOMEM);
     bytestream_put_le32(&data, flags);
+#if FF_API_OLD_CHANNEL_LAYOUT
+FF_DISABLE_DEPRECATION_WARNINGS
     if (channels)
         bytestream_put_le32(&data, channels);
     if (channel_layout)
         bytestream_put_le64(&data, channel_layout);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     if (sample_rate)
         bytestream_put_le32(&data, sample_rate);
     if (width || height) {
@@ -1520,7 +1531,7 @@ static int match_stream_specifier(const AVFormatContext *s, const AVStream *st,
             int val;
             switch (par->codec_type) {
             case AVMEDIA_TYPE_AUDIO:
-                val = par->sample_rate && par->channels;
+                val = par->sample_rate && par->ch_layout.nb_channels;
                 if (par->format == AV_SAMPLE_FMT_NONE)
                     return 0;
                 break;

@@ -184,6 +184,17 @@ vpx_svc_ref_frame_config_t Vp9References(
   return ref_config;
 }
 
+bool AllowDenoising() {
+  // Do not enable the denoiser on ARM since optimization is pending.
+  // Denoiser is on by default on other platforms.
+#if !defined(WEBRTC_ARCH_ARM) && !defined(WEBRTC_ARCH_ARM64) && \
+    !defined(ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 void LibvpxVp9Encoder::EncoderOutputCodedPacketCallback(vpx_codec_cx_pkt* pkt,
@@ -194,7 +205,7 @@ void LibvpxVp9Encoder::EncoderOutputCodedPacketCallback(vpx_codec_cx_pkt* pkt,
 
 LibvpxVp9Encoder::LibvpxVp9Encoder(const cricket::VideoCodec& codec,
                                    std::unique_ptr<LibvpxInterface> interface,
-                                   const WebRtcKeyValueConfig& trials)
+                                   const FieldTrialsView& trials)
     : libvpx_(std::move(interface)),
       encoded_image_(),
       encoded_complete_callback_(nullptr),
@@ -384,6 +395,15 @@ bool LibvpxVp9Encoder::SetSvcRates(
     } else {
       expect_no_more_active_layers = seen_active_layer;
     }
+  }
+
+  if (seen_active_layer && performance_flags_.use_per_layer_speed) {
+    bool denoiser_on =
+        AllowDenoising() && codec_.VP9()->denoisingOn &&
+        performance_flags_by_spatial_index_[num_active_spatial_layers_ - 1]
+            .allow_denoising;
+    libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
+                           denoiser_on ? 1 : 0);
   }
 
   if (higher_layers_enabled && !force_key_frame_) {
@@ -775,6 +795,10 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
     }
   }
 
+  UpdatePerformanceFlags();
+  RTC_DCHECK_EQ(performance_flags_by_spatial_index_.size(),
+                static_cast<size_t>(num_spatial_layers_));
+
   SvcRateAllocator init_allocator(codec_);
   current_bitrate_allocation_ =
       init_allocator.Allocate(VideoBitrateAllocationParameters(
@@ -791,9 +815,6 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
-  UpdatePerformanceFlags();
-  RTC_DCHECK_EQ(performance_flags_by_spatial_index_.size(),
-                static_cast<size_t>(num_spatial_layers_));
   if (performance_flags_.use_per_layer_speed) {
     for (int si = 0; si < num_spatial_layers_; ++si) {
       svc_params_.speed_per_layer[si] =
@@ -801,6 +822,12 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
       svc_params_.loopfilter_ctrl[si] =
           performance_flags_by_spatial_index_[si].deblock_mode;
     }
+    bool denoiser_on =
+        AllowDenoising() && inst->VP9().denoisingOn &&
+        performance_flags_by_spatial_index_[num_spatial_layers_ - 1]
+            .allow_denoising;
+    libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
+                           denoiser_on ? 1 : 0);
   }
 
   libvpx_->codec_control(encoder_, VP8E_SET_MAX_INTRA_BITRATE_PCT,
@@ -888,13 +915,10 @@ int LibvpxVp9Encoder::InitAndSetControlSettings(const VideoCodec* inst) {
   // Turn on row-based multithreading.
   libvpx_->codec_control(encoder_, VP9E_SET_ROW_MT, 1);
 
-#if !defined(WEBRTC_ARCH_ARM) && !defined(WEBRTC_ARCH_ARM64) && \
-    !defined(ANDROID)
-  // Do not enable the denoiser on ARM since optimization is pending.
-  // Denoiser is on by default on other platforms.
-  libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
-                         inst->VP9().denoisingOn ? 1 : 0);
-#endif
+  if (AllowDenoising() && !performance_flags_.use_per_layer_speed) {
+    libvpx_->codec_control(encoder_, VP9E_SET_NOISE_SENSITIVITY,
+                           inst->VP9().denoisingOn ? 1 : 0);
+  }
 
   if (codec_.mode == VideoCodecMode::kScreensharing) {
     // Adjust internal parameters to screen content.
@@ -1811,8 +1835,7 @@ size_t LibvpxVp9Encoder::SteadyStateSize(int sid, int tid) {
 
 // static
 LibvpxVp9Encoder::VariableFramerateExperiment
-LibvpxVp9Encoder::ParseVariableFramerateConfig(
-    const WebRtcKeyValueConfig& trials) {
+LibvpxVp9Encoder::ParseVariableFramerateConfig(const FieldTrialsView& trials) {
   FieldTrialFlag enabled = FieldTrialFlag("Enabled");
   FieldTrialParameter<double> framerate_limit("min_fps", 5.0);
   FieldTrialParameter<int> qp("min_qp", 32);
@@ -1834,7 +1857,7 @@ LibvpxVp9Encoder::ParseVariableFramerateConfig(
 
 // static
 LibvpxVp9Encoder::QualityScalerExperiment
-LibvpxVp9Encoder::ParseQualityScalerConfig(const WebRtcKeyValueConfig& trials) {
+LibvpxVp9Encoder::ParseQualityScalerConfig(const FieldTrialsView& trials) {
   FieldTrialFlag disabled = FieldTrialFlag("Disabled");
   FieldTrialParameter<int> low_qp("low_qp", kLowVp9QpThreshold);
   FieldTrialParameter<int> high_qp("hihg_qp", kHighVp9QpThreshold);
@@ -1851,14 +1874,30 @@ LibvpxVp9Encoder::ParseQualityScalerConfig(const WebRtcKeyValueConfig& trials) {
 }
 
 void LibvpxVp9Encoder::UpdatePerformanceFlags() {
+  flat_map<int, PerformanceFlags::ParameterSet> params_by_resolution;
+  if (codec_.GetVideoEncoderComplexity() ==
+      VideoCodecComplexity::kComplexityLow) {
+    // For low tier devices, always use speed 9. Only disable upper
+    // layer deblocking below QCIF.
+    params_by_resolution[0] = {.base_layer_speed = 9,
+                               .high_layer_speed = 9,
+                               .deblock_mode = 1,
+                               .allow_denoising = true};
+    params_by_resolution[352 * 288] = {.base_layer_speed = 9,
+                                       .high_layer_speed = 9,
+                                       .deblock_mode = 0,
+                                       .allow_denoising = true};
+  } else {
+    params_by_resolution = performance_flags_.settings_by_resolution;
+  }
+
   const auto find_speed = [&](int min_pixel_count) {
-    RTC_DCHECK(!performance_flags_.settings_by_resolution.empty());
-    auto it =
-        performance_flags_.settings_by_resolution.upper_bound(min_pixel_count);
+    RTC_DCHECK(!params_by_resolution.empty());
+    auto it = params_by_resolution.upper_bound(min_pixel_count);
     return std::prev(it)->second;
   };
-
   performance_flags_by_spatial_index_.clear();
+
   if (is_svc_) {
     for (int si = 0; si < num_spatial_layers_; ++si) {
       performance_flags_by_spatial_index_.push_back(find_speed(
@@ -1873,7 +1912,7 @@ void LibvpxVp9Encoder::UpdatePerformanceFlags() {
 // static
 LibvpxVp9Encoder::PerformanceFlags
 LibvpxVp9Encoder::ParsePerformanceFlagsFromTrials(
-    const WebRtcKeyValueConfig& trials) {
+    const FieldTrialsView& trials) {
   struct Params : public PerformanceFlags::ParameterSet {
     int min_pixel_count = 0;
   };
@@ -1886,7 +1925,9 @@ LibvpxVp9Encoder::ParsePerformanceFlagsFromTrials(
        FieldTrialStructMember("base_layer_speed",
                               [](Params* p) { return &p->base_layer_speed; }),
        FieldTrialStructMember("deblock_mode",
-                              [](Params* p) { return &p->deblock_mode; })},
+                              [](Params* p) { return &p->deblock_mode; }),
+       FieldTrialStructMember("denoiser",
+                              [](Params* p) { return &p->allow_denoising; })},
       {});
 
   FieldTrialFlag per_layer_speed("use_per_layer_speed");
@@ -1927,18 +1968,38 @@ LibvpxVp9Encoder::GetDefaultPerformanceFlags() {
   flags.use_per_layer_speed = true;
 #if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_ARM64) || defined(ANDROID)
   // Speed 8 on all layers for all resolutions.
-  flags.settings_by_resolution[0] = {8, 8, 0};
+  flags.settings_by_resolution[0] = {.base_layer_speed = 8,
+                                     .high_layer_speed = 8,
+                                     .deblock_mode = 0,
+                                     .allow_denoising = true};
 #else
+
   // For smaller resolutions, use lower speed setting for the temporal base
   // layer (get some coding gain at the cost of increased encoding complexity).
   // Set encoder Speed 5 for TL0, encoder Speed 8 for upper temporal layers, and
   // disable deblocking for upper-most temporal layers.
-  flags.settings_by_resolution[0] = {5, 8, 1};
+  flags.settings_by_resolution[0] = {.base_layer_speed = 5,
+                                     .high_layer_speed = 8,
+                                     .deblock_mode = 1,
+                                     .allow_denoising = true};
 
   // Use speed 7 for QCIF and above.
   // Set encoder Speed 7 for TL0, encoder Speed 8 for upper temporal layers, and
   // enable deblocking for all temporal layers.
-  flags.settings_by_resolution[352 * 288] = {7, 8, 0};
+  flags.settings_by_resolution[352 * 288] = {.base_layer_speed = 7,
+                                             .high_layer_speed = 8,
+                                             .deblock_mode = 0,
+                                             .allow_denoising = true};
+
+  // For very high resolution (1080p and up), turn the speed all the way up
+  // since this is very CPU intensive. Also disable denoising to save CPU, at
+  // these resolutions denoising appear less effective and hopefully you also
+  // have a less noisy video source at this point.
+  flags.settings_by_resolution[1920 * 1080] = {.base_layer_speed = 9,
+                                               .high_layer_speed = 9,
+                                               .deblock_mode = 0,
+                                               .allow_denoising = false};
+
 #endif
   return flags;
 }

@@ -105,6 +105,7 @@ cr.define('cr.login', function() {
    *   isDeviceOwner: boolean,
    *   ssoProfile: string,
    *   enableCloseView: boolean,
+   *   enableAzureADIntegration: boolean
    * }}
    */
   /* #export */ let AuthParams;
@@ -126,6 +127,10 @@ cr.define('cr.login', function() {
   const GAIA_MESSAGE_GAIA_USER_INFO = 'ChromeOS.Gaia.Message.Gaia.UserInfo';
   const GAIA_MESSAGE_SAML_CLOSE_VIEW = 'ChromeOS.Gaia.Message.Saml.CloseView';
   const GAIA_MESSAGE_GAIA_CLOSE_VIEW = 'ChromeOS.Gaia.Message.Gaia.CloseView';
+
+  // Regular expressions used to check for Azure AD-related hosts
+  const AZURE_AD_HOST = /login\.microsoftonline\.com$/;
+  const AZURE_AD_B2B_HOST = /b2clogin\.com$/;
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -221,6 +226,8 @@ cr.define('cr.login', function() {
     'enableCloseView',   // True if authenticator should wait for the closeView
                          // message from Gaia.
     'rart',              // Encrypted reauth request token.
+    'enableAzureADIntegration'  // True if features specific to Azure AD are
+                                // enabled
   ];
 
   // Timeout in ms to wait for the message from Gaia indicating end of the flow.
@@ -251,7 +258,6 @@ cr.define('cr.login', function() {
       if (this.authMode === AuthMode.DESKTOP) {
         this.password_ = msg.password;
       }
-      this.isSamlUserPasswordless_ = null;
 
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       // We need to dispatch only first event, before user enters password.
@@ -434,30 +440,17 @@ cr.define('cr.login', function() {
       this.samlApiUsedCallback = null;
       this.recordSAMLProviderCallback = null;
       this.missingGaiaInfoCallback = null;
-      /**
-       * Callback allowing to request whether the specified user which
-       * authenticates via SAML is a user without a password (neither a manually
-       * entered one nor one provided via Credentials Passing API).
-       * @type {?function(string, string, function(boolean))} Arguments are the
-       * e-mail, the GAIA ID, and the response callback.
-       */
-      this.getIsSamlUserPasswordlessCallback = null;
       this.needPassword = true;
       this.services_ = null;
       this.gaiaDoneTimer_ = null;
-      /**
-       * Caches the result of |getIsSamlUserPasswordlessCallback| invocation for
-       * the current user. Null if no result is obtained yet.
-       * @type {?boolean}
-       * @private
-       */
-      this.isSamlUserPasswordless_ = null;
       /** @private {boolean} */
       this.isConstrainedWindow_ = false;
       this.samlAclUrl_ = null;
       /** @private {?SyncTrustedVaultKeys} */
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
+      /** @private {boolean} */
+      this.isAzureADIntegrationEnabled_ = false;
 
       window.addEventListener(
           'message', e => this.onMessageFromWebview_(e), false);
@@ -496,9 +489,9 @@ cr.define('cr.login', function() {
       this.videoEnabled = false;
       this.services_ = null;
       this.gaiaDoneTimer_ = null;
-      this.isSamlUserPasswordless_ = null;
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
+      this.isAzureADIntegrationEnabled_ = false;
     }
 
     /**
@@ -663,15 +656,12 @@ cr.define('cr.login', function() {
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
       this.enableGaiaActionButtons_ = data.enableGaiaActionButtons;
       this.enableCloseView_ = !!data.enableCloseView;
+      this.isAzureADIntegrationEnabled_ = data.enableAzureADIntegration;
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
       this.samlAclUrl_ = data.samlAclUrl;
-      // The email field is repurposed as public session email in SAML guest
-      // mode, ie when frameUrl is not empty.
-      if (data.samlAclUrl) {
-        this.email_ = data.email;
-      }
+      this.email_ = data.email;
 
       if (data.startsOnSamlPage) {
         this.samlHandler_.startsOnSamlPage = true;
@@ -904,6 +894,37 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Check url's host to determine if it comes from Azure AD
+     * @param {URL?} url
+     * @private
+     */
+    isAzureAD_(url) {
+      return Boolean(
+          url.host.match(AZURE_AD_HOST) || url.host.match(AZURE_AD_B2B_HOST));
+    }
+
+    /**
+     * Try to auto-fill email on sign-in page if IdP is Azure AD
+     * @param {string} url url from location header
+     * @private
+     */
+    maybeAutofillUsernameIfAzureAD_(url) {
+      if (!this.isAzureADIntegrationEnabled_) {
+        return;
+      }
+      if (!url.startsWith('https')) {
+        return;
+      }
+      if (!this.email_) {
+        return;
+      }
+      if (this.isAzureAD_(new URL(url))) {
+        url = appendParam(url, 'login_hint', this.email_);
+        this.webview_.src = url;
+      }
+    }
+
+    /**
      * Invoked when headers are received in the main frame of the webview. It
      * 1) reads the authenticated user info from a signin header,
      * 2) signals the start of a saml flow upon receiving a saml header.
@@ -938,13 +959,13 @@ cr.define('cr.login', function() {
           this.email_ = signinDetails['email'].slice(1, -1);
           this.gaiaId_ = signinDetails['obfuscatedid'].slice(1, -1);
           this.sessionIndex_ = signinDetails['sessionindex'];
-          this.isSamlUserPasswordless_ = null;
         } else if (headerName === LOCATION_HEADER) {
           // If the "choose what to sync" checkbox was clicked, then the
           // continue URL will contain a source=3 field.
           assert(header.value !== undefined);
           const location = decodeURIComponent(header.value);
           this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
+          this.maybeAutofillUsernameIfAzureAD_(header.value);
         }
       }
     }
@@ -1033,14 +1054,8 @@ cr.define('cr.login', function() {
      */
     verifyConfirmedPassword(password) {
       if (!this.samlHandler_.verifyConfirmedPassword(password)) {
-        // Invoke confirm password callback asynchronously because the
-        // verification was based on messages and caller (GaiaSigninScreen)
-        // does not expect it to be called immediately.
-        // TODO(xiyuan): Change to synchronous call when iframe based code
-        // is removed.
-        const invokeConfirmPassword = () => this.confirmPasswordCallback(
+        this.confirmPasswordCallback(
             this.email_, this.samlHandler_.scrapedPasswordCount);
-        window.setTimeout(invokeConfirmPassword, 0);
         return;
       }
 
@@ -1092,30 +1107,10 @@ cr.define('cr.login', function() {
         return;
       }
 
-      if (this.isSamlUserPasswordless_ === null &&
-          this.authFlow === AuthFlow.SAML && this.email_ && this.gaiaId_ &&
-          this.getIsSamlUserPasswordlessCallback) {
-        // Start a request to obtain the |isSamlUserPasswordless_| value for
-        // the current user. Once the response arrives, maybeCompleteAuth_()
-        // will be called again.
-        this.getIsSamlUserPasswordlessCallback(
-            this.email_, this.gaiaId_,
-            this.onGotIsSamlUserPasswordless_.bind(
-                this, this.email_, this.gaiaId_));
-        return;
-      }
-
       if (this.recordSAMLProviderCallback && this.authFlow === AuthFlow.SAML) {
         // Makes distinction between different SAML providers
         this.recordSAMLProviderCallback(
             this.samlHandler_.x509certificate || '');
-      }
-
-      if (this.isSamlUserPasswordless_ && this.authFlow === AuthFlow.SAML &&
-          this.email_ && this.gaiaId_) {
-        // No password needed for this user, so complete immediately.
-        this.onAuthCompleted_();
-        return;
       }
 
       if (this.samlHandler_.samlApiUsed) {
@@ -1174,22 +1169,6 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Invoked when the result of |getIsSamlUserPasswordlessCallback| arrives.
-     * @param {string} email
-     * @param {string} gaiaId
-     * @param {boolean} isSamlUserPasswordless
-     * @private
-     */
-    onGotIsSamlUserPasswordless_(email, gaiaId, isSamlUserPasswordless) {
-      // Compare the request's user identifier with the currently set one, in
-      // order to ignore responses to old requests.
-      if (this.email_ && this.email_ === email && this.gaiaId_ &&
-          this.gaiaId_ === gaiaId) {
-        this.isSamlUserPasswordless_ = isSamlUserPasswordless;
-        this.maybeCompleteAuth_();
-      }
-    }
-
     /**
      * Asserts the |arr| which is known as |nameOfArr| is an array of strings.
      * @private
@@ -1230,22 +1209,18 @@ cr.define('cr.login', function() {
       assert(
           this.skipForNow_ ||
           (this.email_ && this.gaiaId_ && this.sessionIndex_));
+      let scrapedPasswords = [];
+      if (this.authFlow === AuthFlow.SAML && !this.samlHandler_.samlApiUsed) {
+        scrapedPasswords = this.samlHandler_.scrapedPasswords;
+      }
       // Chrome will crash on incorrect data type, so log some error message
       // here.
       if (this.services_) {
         this.assertStringArray_(this.services_, 'services');
       }
-      if (this.isSamlUserPasswordless_ && this.authFlow === AuthFlow.SAML &&
-          this.email_) {
-        // In the passwordless case, the user data will be protected by non
-        // password based mechanisms. Clear anything that got collected into
-        // |password_|, if any.
-        this.password_ = '';
-      }
       let passwordAttributes = {};
       if (this.authFlow === AuthFlow.SAML &&
-          this.samlHandler_.extractSamlPasswordAttributes &&
-          !this.isSamlUserPasswordless_) {
+          this.samlHandler_.extractSamlPasswordAttributes) {
         passwordAttributes = this.samlHandler_.passwordAttributes;
       }
       this.assertStringDict_(passwordAttributes, 'passwordAttributes');
@@ -1258,6 +1233,7 @@ cr.define('cr.login', function() {
               gaiaId: this.gaiaId_ || '',
               password: this.password_ || '',
               usingSAML: this.authFlow === AuthFlow.SAML,
+              scrapedSAMLPasswords: scrapedPasswords,
               publicSAML: this.samlAclUrl_ || false,
               chooseWhatToSync: this.chooseWhatToSync_,
               skipForNow: this.skipForNow_,

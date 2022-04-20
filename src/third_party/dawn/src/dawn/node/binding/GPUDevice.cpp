@@ -77,7 +77,10 @@ namespace wgpu::binding {
     // wgpu::bindings::GPUDevice
     ////////////////////////////////////////////////////////////////////////////////
     GPUDevice::GPUDevice(Napi::Env env, wgpu::Device device)
-        : env_(env), device_(device), async_(std::make_shared<AsyncRunner>(env, device)) {
+        : env_(env),
+          device_(device),
+          async_(std::make_shared<AsyncRunner>(env, device)),
+          lost_promise_(env, PROMISE_INFO) {
         device_.SetLoggingCallback(
             [](WGPULoggingType type, char const* message, void* userdata) {
                 std::cout << type << ": " << message << std::endl;
@@ -102,8 +105,8 @@ namespace wgpu::binding {
                         break;
                 }
                 auto* self = static_cast<GPUDevice*>(userdata);
-                for (auto promise : self->lost_promises_) {
-                    promise.Resolve(
+                if (self->lost_promise_.GetState() == interop::PromiseState::Pending) {
+                    self->lost_promise_.Resolve(
                         interop::GPUDeviceLostInfo::Create<DeviceLostInfo>(self->env_, r, message));
                 }
             },
@@ -135,17 +138,15 @@ namespace wgpu::binding {
     }
 
     interop::Interface<interop::GPUQueue> GPUDevice::getQueue(Napi::Env env) {
-        // TODO(crbug.com/dawn/1144): Should probably return the same Queue JS object.
         return interop::GPUQueue::Create<GPUQueue>(env, device_.GetQueue(), async_);
     }
 
     void GPUDevice::destroy(Napi::Env env) {
-        for (auto promise : lost_promises_) {
-            promise.Resolve(interop::GPUDeviceLostInfo::Create<DeviceLostInfo>(
+        if (lost_promise_.GetState() == interop::PromiseState::Pending) {
+            lost_promise_.Resolve(interop::GPUDeviceLostInfo::Create<DeviceLostInfo>(
                 env_, interop::GPUDeviceLostReason::kDestroyed, "device was destroyed"));
         }
-        lost_promises_.clear();
-        device_.Release();
+        device_.Destroy();
     }
 
     interop::Interface<interop::GPUBuffer> GPUDevice::createBuffer(
@@ -399,7 +400,9 @@ namespace wgpu::binding {
         if (!conv(desc.label, descriptor.label) ||
             !conv(desc.colorFormats, desc.colorFormatsCount, descriptor.colorFormats) ||
             !conv(desc.depthStencilFormat, descriptor.depthStencilFormat) ||
-            !conv(desc.sampleCount, descriptor.sampleCount)) {
+            !conv(desc.sampleCount, descriptor.sampleCount) ||
+            !conv(desc.depthReadOnly, descriptor.depthReadOnly) ||
+            !conv(desc.stencilReadOnly, descriptor.stencilReadOnly)) {
             return {};
         }
 
@@ -423,10 +426,7 @@ namespace wgpu::binding {
 
     interop::Promise<interop::Interface<interop::GPUDeviceLostInfo>> GPUDevice::getLost(
         Napi::Env env) {
-        auto promise =
-            interop::Promise<interop::Interface<interop::GPUDeviceLostInfo>>(env, PROMISE_INFO);
-        lost_promises_.emplace_back(promise);
-        return promise;
+        return lost_promise_;
     }
 
     void GPUDevice::pushErrorScope(Napi::Env env, interop::GPUErrorFilter filter) {
@@ -456,7 +456,7 @@ namespace wgpu::binding {
         auto* ctx = new Context{env, Promise(env, PROMISE_INFO), async_};
         auto promise = ctx->promise;
 
-        bool ok = device_.PopErrorScope(
+        device_.PopErrorScope(
             [](WGPUErrorType type, char const* message, void* userdata) {
                 auto c = std::unique_ptr<Context>(static_cast<Context*>(userdata));
                 auto env = c->env;
@@ -467,11 +467,13 @@ namespace wgpu::binding {
                     case WGPUErrorType::WGPUErrorType_OutOfMemory:
                         c->promise.Resolve(interop::GPUOutOfMemoryError::Create<OOMError>(env));
                         break;
-                    case WGPUErrorType::WGPUErrorType_Unknown:
-                    case WGPUErrorType::WGPUErrorType_DeviceLost:
                     case WGPUErrorType::WGPUErrorType_Validation:
                         c->promise.Resolve(
                             interop::GPUValidationError::Create<ValidationError>(env, message));
+                        break;
+                    case WGPUErrorType::WGPUErrorType_Unknown:
+                    case WGPUErrorType::WGPUErrorType_DeviceLost:
+                        c->promise.Reject(Errors::OperationError(env, message));
                         break;
                     default:
                         c->promise.Reject("unhandled error type");
@@ -480,29 +482,25 @@ namespace wgpu::binding {
             },
             ctx);
 
-        if (ok) {
-            return promise;
-        }
-
-        delete ctx;
-        promise.Reject(Errors::OperationError(env));
         return promise;
     }
 
     std::variant<std::string, interop::UndefinedType> GPUDevice::getLabel(Napi::Env) {
         UNIMPLEMENTED();
-    };
+    }
 
     void GPUDevice::setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) {
         UNIMPLEMENTED();
-    };
+    }
 
     interop::Interface<interop::EventHandler> GPUDevice::getOnuncapturederror(Napi::Env) {
+        // TODO(dawn:1348): Implement support for the "unhandlederror" event.
         UNIMPLEMENTED();
     }
 
     void GPUDevice::setOnuncapturederror(Napi::Env,
                                          interop::Interface<interop::EventHandler> value) {
+        // TODO(dawn:1348): Implement support for the "unhandlederror" event.
         UNIMPLEMENTED();
     }
 
@@ -511,6 +509,7 @@ namespace wgpu::binding {
         std::string type,
         std::optional<interop::Interface<interop::EventListener>> callback,
         std::optional<std::variant<interop::AddEventListenerOptions, bool>> options) {
+        // TODO(dawn:1348): Implement support for the "unhandlederror" event.
         UNIMPLEMENTED();
     }
 
@@ -519,10 +518,12 @@ namespace wgpu::binding {
         std::string type,
         std::optional<interop::Interface<interop::EventListener>> callback,
         std::optional<std::variant<interop::EventListenerOptions, bool>> options) {
+        // TODO(dawn:1348): Implement support for the "unhandlederror" event.
         UNIMPLEMENTED();
     }
 
     bool GPUDevice::dispatchEvent(Napi::Env, interop::Interface<interop::Event> event) {
+        // TODO(dawn:1348): Implement support for the "unhandlederror" event.
         UNIMPLEMENTED();
     }
 

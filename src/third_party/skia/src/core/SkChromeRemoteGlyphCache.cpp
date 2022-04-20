@@ -33,9 +33,9 @@
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContextOptions.h"
-#include "src/gpu/GrDrawOpAtlas.h"
-#include "src/gpu/text/GrSDFTControl.h"
-#include "src/gpu/text/GrTextBlob.h"
+#include "src/gpu/ganesh/GrDrawOpAtlas.h"
+#include "src/gpu/ganesh/text/GrSDFTControl.h"
+#include "src/gpu/ganesh/text/GrTextBlob.h"
 #endif
 
 namespace {
@@ -291,7 +291,7 @@ private:
     LowerRangeBitVector fSentLowGlyphIDs;
 
     // The masks and paths that currently reside in the GPU process.
-    SkTHashTable<SkGlyphDigest, uint32_t, SkGlyphDigest> fSentGlyphs;
+    SkTHashMap<SkPackedGlyphID, SkGlyphDigest, SkPackedGlyphID::Hash> fSentGlyphs;
     SkTHashTable<PathSummary, SkPackedGlyphID, PathSummaryTraits> fSentPaths;
     SkTHashTable<DrawableSummary, SkGlyphID, DrawableSummaryTraits> fSentDrawables;
 
@@ -319,8 +319,7 @@ RemoteStrike::RemoteStrike(
     SkASSERT(fContext != nullptr);
 }
 
-// No need to write fForceBW because it is a flag private to SkScalerContext_DW, which will never
-// be called on the GPU side.
+// No need to write fScalerContextBits because any needed image is already generated.
 void write_glyph(const SkGlyph& glyph, Serializer* serializer) {
     serializer->write<SkPackedGlyphID>(glyph.getPackedID());
     serializer->write<float>(glyph.advanceX());
@@ -438,7 +437,7 @@ void RemoteStrike::commonMaskLoop(
         SkDrawableGlyphBuffer* accepted, SkSourceGlyphBuffer* rejected, Rejector&& reject) {
     accepted->forEachInput(
             [&](size_t i, SkPackedGlyphID packedID, SkPoint position) {
-                SkGlyphDigest* digest = fSentGlyphs.find(packedID.value());
+                SkGlyphDigest* digest = fSentGlyphs.find(packedID);
                 if (digest == nullptr) {
                     // Put the new SkGlyph in the glyphs to send.
                     this->ensureScalerContext();
@@ -446,7 +445,7 @@ void RemoteStrike::commonMaskLoop(
                     SkGlyph* glyph = &fMasksToSend.back();
 
                     SkGlyphDigest newDigest{0, *glyph};
-                    digest = fSentGlyphs.set(newDigest);
+                    digest = fSentGlyphs.set(packedID, newDigest);
                 }
 
                 // Reject things that are too big.
@@ -462,14 +461,14 @@ void RemoteStrike::prepareForMaskDrawing(
         SkPackedGlyphID packedID = variant.packedID();
         if (fSentLowGlyphIDs.test(packedID)) {
             #ifdef SK_DEBUG
-            SkGlyphDigest* digest = fSentGlyphs.find(packedID.value());
+            SkGlyphDigest* digest = fSentGlyphs.find(packedID);
             SkASSERT(digest != nullptr);
             SkASSERT(digest->canDrawAsMask() && digest->canDrawAsSDFT());
             #endif
             continue;
         }
 
-        SkGlyphDigest* digest = fSentGlyphs.find(packedID.value());
+        SkGlyphDigest* digest = fSentGlyphs.find(packedID);
         if (digest == nullptr) {
 
             // Put the new SkGlyph in the glyphs to send.
@@ -479,7 +478,7 @@ void RemoteStrike::prepareForMaskDrawing(
 
             SkGlyphDigest newDigest{0, *glyph};
 
-            digest = fSentGlyphs.set(newDigest);
+            digest = fSentGlyphs.set(packedID, newDigest);
 
             if (digest->canDrawAsMask() && digest->canDrawAsSDFT()) {
                 fSentLowGlyphIDs.setIfLower(packedID);
@@ -969,8 +968,7 @@ SkStrikeClientImpl::SkStrikeClientImpl(
       fStrikeCache{strikeCache ? strikeCache : SkStrikeCache::GlobalStrikeCache()},
       fIsLogging{isLogging} {}
 
-// No need to read fForceBW because it is a flag private to SkScalerContext_DW, which will never
-// be called on the GPU side.
+// No need to write fScalerContextBits because any needed image is already generated.
 bool SkStrikeClientImpl::ReadGlyph(SkTLazy<SkGlyph>& glyph, Deserializer* deserializer) {
     SkPackedGlyphID glyphID;
     if (!deserializer->read<SkPackedGlyphID>(&glyphID)) return false;

@@ -47,6 +47,13 @@ class MockCookieManager
                     const GURL& source_url,
                     const net::CookieOptions& cookie_options,
                     SetCanonicalCookieCallback callback));
+
+  MOCK_METHOD4(GetCookieList,
+               void(const GURL& url,
+                    const net::CookieOptions& cookie_options,
+                    const net::CookiePartitionKeyCollection&
+                        cookie_partition_key_collection,
+                    GetCookieListCallback callback));
 };
 
 class TestAccountReconcilor : public AccountReconcilor {
@@ -92,18 +99,30 @@ class WebSigninHelperLacrosTest : public testing::Test {
         std::make_unique<AccountProfileMapper>(
             &mock_facade_, storage(),
             testing_profile_manager_.local_state()->Get()));
+
+    // Configure the cookie manager.
     std::unique_ptr<MockCookieManager> mock_cookie_manager =
         std::make_unique<MockCookieManager>();
     cookie_manager_ = mock_cookie_manager.get();
+    std::unique_ptr<net::CanonicalCookie> cookie =
+        signin::ConsistencyCookieManager::CreateConsistencyCookie("dummy");
+    net::CookieAccessResultList cookie_list = {
+        {*cookie, net::CookieAccessResult()}};
+    ON_CALL(*cookie_manager_, GetCookieList(GaiaUrls::GetInstance()->gaia_url(),
+                                            testing::_, testing::_, testing::_))
+        .WillByDefault(testing::WithArg<3>(testing::Invoke(
+            [cookie_list](
+                network::mojom::CookieManager::GetCookieListCallback callback) {
+              std::move(callback).Run(cookie_list, {});
+            })));
+
     signin_client_.set_cookie_manager(std::move(mock_cookie_manager));
     identity_test_env_.WaitForRefreshTokensLoaded();
     identity_test_env_.SetCookieAccounts({});
+    ExpectCookieSet("Updating");
+    ExpectCookieSet("Consistent");
     reconcilor_.Initialize(/*start_reconcile_if_tokens_available=*/true);
     WaitForConsistentReconcilorState();
-    ExpectCookieSet("Consistent");
-    consistency_cookie_manager_ =
-        std::make_unique<signin::ConsistencyCookieManager>(&signin_client_,
-                                                           &reconcilor_);
   }
 
   ~WebSigninHelperLacrosTest() override { reconcilor_.Shutdown(); }
@@ -112,15 +131,16 @@ class WebSigninHelperLacrosTest : public testing::Test {
   // the `IdentityManager` are not connected to each other, and must be managed
   // separately.
   std::unique_ptr<WebSigninHelperLacros> CreateWebSigninHelperLacros(
-      base::OnceClosure closure) {
+      base::OnceCallback<void(const CoreAccountId&)> callback) {
     return std::make_unique<WebSigninHelperLacros>(
         profile_path_,
         testing_profile_manager_.profile_manager()->GetAccountProfileMapper(),
         identity_test_env_.identity_manager(),
-        consistency_cookie_manager_.get(), std::move(closure));
+        reconcilor_.GetConsistencyCookieManager(), std::move(callback));
   }
 
   void ExpectCookieSet(const std::string& value) {
+    EXPECT_CALL(*cookie_manager_, GetCookieList).Times(testing::AnyNumber());
     EXPECT_CALL(
         *cookie_manager_,
         SetCanonicalCookie(
@@ -186,14 +206,13 @@ class WebSigninHelperLacrosTest : public testing::Test {
                                     &signin_client_};
 
   MockCookieManager* cookie_manager_ = nullptr;  // Owned by `signin_client_`.
-
-  std::unique_ptr<signin::ConsistencyCookieManager> consistency_cookie_manager_;
 };
 
 // Checks that creating a deleting the helper updates the cookie and that the
 // destruction callback is run.
 TEST_F(WebSigninHelperLacrosTest, DeletionCallback) {
-  testing::StrictMock<base::MockOnceClosure> helper_deleted;
+  testing::StrictMock<base::MockOnceCallback<void(const CoreAccountId&)>>
+      helper_deleted;
 
   // Create the helper.
   ExpectCookieSet("Updating");
@@ -201,7 +220,7 @@ TEST_F(WebSigninHelperLacrosTest, DeletionCallback) {
       CreateWebSigninHelperLacros(helper_deleted.Get());
 
   // Delete the helper.
-  EXPECT_CALL(helper_deleted, Run).Times(1);
+  EXPECT_CALL(helper_deleted, Run(CoreAccountId())).Times(1);
   ExpectCookieSet("Consistent");
   web_signin_helper.reset();
 }
@@ -209,7 +228,8 @@ TEST_F(WebSigninHelperLacrosTest, DeletionCallback) {
 // Checks that an account can be added through the OS when there is no available
 // account.
 TEST_F(WebSigninHelperLacrosTest, NoAccountAvailable) {
-  testing::StrictMock<base::MockOnceClosure> helper_complete;
+  testing::StrictMock<base::MockOnceCallback<void(const CoreAccountId&)>>
+      helper_complete;
 
   const std::string email("testemail");
   std::string gaia_id = signin::GetTestGaiaIdForEmail(email);
@@ -241,7 +261,7 @@ TEST_F(WebSigninHelperLacrosTest, NoAccountAvailable) {
   // Simmulate the mapper adding the account to the profile.
   identity_test_env()->MakeAccountAvailable(email);
 
-  EXPECT_CALL(helper_complete, Run).Times(1);
+  EXPECT_CALL(helper_complete, Run(CoreAccountId(gaia_id))).Times(1);
 
   // `AccountProfileMapper` expects a call of `OnAccountUpserted()` before
   // completing the account addition.

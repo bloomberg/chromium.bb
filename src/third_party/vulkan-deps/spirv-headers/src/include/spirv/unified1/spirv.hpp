@@ -66,6 +66,7 @@ enum SourceLanguage {
     SourceLanguageOpenCL_CPP = 4,
     SourceLanguageHLSL = 5,
     SourceLanguageCPP_for_OpenCL = 6,
+    SourceLanguageSYCL = 7,
     SourceLanguageMax = 0x7fffffff,
 };
 
@@ -180,6 +181,7 @@ enum ExecutionMode {
     ExecutionModeNoGlobalOffsetINTEL = 5895,
     ExecutionModeNumSIMDWorkitemsINTEL = 5896,
     ExecutionModeSchedulerTargetFmaxMhzINTEL = 5903,
+    ExecutionModeNamedBarrierCountINTEL = 6417,
     ExecutionModeMax = 0x7fffffff,
 };
 
@@ -1083,6 +1085,8 @@ enum Capability {
     CapabilityOptNoneINTEL = 6094,
     CapabilityAtomicFloat16AddEXT = 6095,
     CapabilityDebugInfoModuleINTEL = 6114,
+    CapabilitySplitBarrierINTEL = 6141,
+    CapabilityGroupUniformArithmeticKHR = 6400,
     CapabilityMax = 0x7fffffff,
 };
 
@@ -1845,10 +1849,23 @@ enum Op {
     OpTypeStructContinuedINTEL = 6090,
     OpConstantCompositeContinuedINTEL = 6091,
     OpSpecConstantCompositeContinuedINTEL = 6092,
+    OpControlBarrierArriveINTEL = 6142,
+    OpControlBarrierWaitINTEL = 6143,
+    OpGroupIMulKHR = 6401,
+    OpGroupFMulKHR = 6402,
+    OpGroupBitwiseAndKHR = 6403,
+    OpGroupBitwiseOrKHR = 6404,
+    OpGroupBitwiseXorKHR = 6405,
+    OpGroupLogicalAndKHR = 6406,
+    OpGroupLogicalOrKHR = 6407,
+    OpGroupLogicalXorKHR = 6408,
     OpMax = 0x7fffffff,
 };
 
 #ifdef SPV_ENABLE_UTILITY_CODE
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
 inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     *hasResult = *hasResultType = false;
     switch (opcode) {
@@ -2499,6 +2516,16 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpTypeStructContinuedINTEL: *hasResult = false; *hasResultType = false; break;
     case OpConstantCompositeContinuedINTEL: *hasResult = false; *hasResultType = false; break;
     case OpSpecConstantCompositeContinuedINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpControlBarrierArriveINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpControlBarrierWaitINTEL: *hasResult = false; *hasResultType = false; break;
+    case OpGroupIMulKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupFMulKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupBitwiseAndKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupBitwiseOrKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupBitwiseXorKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupLogicalAndKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupLogicalOrKHR: *hasResult = true; *hasResultType = true; break;
+    case OpGroupLogicalXorKHR: *hasResult = true; *hasResultType = true; break;
     }
 }
 #endif /* SPV_ENABLE_UTILITY_CODE */

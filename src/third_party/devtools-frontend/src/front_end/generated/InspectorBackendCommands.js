@@ -278,6 +278,8 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'Audits.GenericIssueErrorType', {CrossOriginPortalPostMessageError: 'CrossOriginPortalPostMessageError'});
   inspectorBackend.registerEnum(
+      'Audits.DeprecationIssueType', {DeprecationExample: 'DeprecationExample', Untranslated: 'Untranslated'});
+  inspectorBackend.registerEnum(
       'Audits.ClientHintIssueReason',
       {MetaTagAllowListInvalidOrigin: 'MetaTagAllowListInvalidOrigin', MetaTagModifiedHTML: 'MetaTagModifiedHTML'});
   inspectorBackend.registerEnum('Audits.FederatedAuthRequestIssueReason', {
@@ -2024,6 +2026,7 @@ export function registerCommands(inspectorBackend) {
     AmbientLightSensor: 'ambient-light-sensor',
     AttributionReporting: 'attribution-reporting',
     Autoplay: 'autoplay',
+    BrowsingTopics: 'browsing-topics',
     Camera: 'camera',
     ChDpr: 'ch-dpr',
     ChDeviceMemory: 'ch-device-memory',
@@ -2064,6 +2067,7 @@ export function registerCommands(inspectorBackend) {
     Gyroscope: 'gyroscope',
     Hid: 'hid',
     IdleDetection: 'idle-detection',
+    InterestCohort: 'interest-cohort',
     JoinAdInterestGroup: 'join-ad-interest-group',
     KeyboardMap: 'keyboard-map',
     Magnetometer: 'magnetometer',
@@ -2206,6 +2210,8 @@ export function registerCommands(inspectorBackend) {
     NoResponseHead: 'NoResponseHead',
     Unknown: 'Unknown',
     ActivationNavigationsDisallowedForBug1234857: 'ActivationNavigationsDisallowedForBug1234857',
+    ErrorDocument: 'ErrorDocument',
+    FencedFramesEmbedder: 'FencedFramesEmbedder',
     WebSocket: 'WebSocket',
     WebTransport: 'WebTransport',
     WebRTC: 'WebRTC',
@@ -2281,6 +2287,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum(
       'Page.BackForwardCacheNotRestoredReasonType',
       {SupportPending: 'SupportPending', PageSupportNeeded: 'PageSupportNeeded', Circumstantial: 'Circumstantial'});
+  inspectorBackend.registerEnum('Page.PrerenderFinalStatus', {Activated: 'Activated'});
   inspectorBackend.registerEvent('Page.domContentEventFired', ['timestamp']);
   inspectorBackend.registerEnum(
       'Page.FileChooserOpenedEventMode', {SelectSingle: 'selectSingle', SelectMultiple: 'selectMultiple'});
@@ -2309,6 +2316,8 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEvent(
       'Page.backForwardCacheNotUsed',
       ['loaderId', 'frameId', 'notRestoredExplanations', 'notRestoredExplanationsTree']);
+  inspectorBackend.registerEvent(
+      'Page.prerenderAttemptCompleted', ['initiatingFrameId', 'prerenderingUrl', 'finalStatus']);
   inspectorBackend.registerEvent('Page.loadEventFired', ['timestamp']);
   inspectorBackend.registerEvent('Page.navigatedWithinDocument', ['frameId', 'url']);
   inspectorBackend.registerEvent('Page.screencastFrame', ['data', 'metadata', 'sessionId']);
@@ -3026,8 +3035,6 @@ export function registerCommands(inspectorBackend) {
   // Media.
   inspectorBackend.registerEnum(
       'Media.PlayerMessageLevel', {Error: 'error', Warning: 'warning', Info: 'info', Debug: 'debug'});
-  inspectorBackend.registerEnum(
-      'Media.PlayerErrorType', {Pipeline_error: 'pipeline_error', Media_error: 'media_error'});
   inspectorBackend.registerEvent('Media.playerPropertiesChanged', ['playerId', 'properties']);
   inspectorBackend.registerEvent('Media.playerEventsAdded', ['playerId', 'events']);
   inspectorBackend.registerEvent('Media.playerMessagesLogged', ['playerId', 'messages']);

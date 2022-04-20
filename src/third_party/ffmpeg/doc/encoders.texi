@@ -1775,27 +1775,14 @@ This is the default.
 @item high
 @end table
 
-@item rc
-Set the rate control mode to use.
-
-Possible modes:
-@table @option
-@item cqp
-Constant quantizer: use fixed values of qindex (dependent on the frame type)
-throughout the stream.  This mode is the default.
-
-@item vbr
-Variable bitrate: use a target bitrate for the whole stream.
-
-@item cvbr
-Constrained variable bitrate: use a target bitrate for each GOP.
-@end table
-
 @item qmax
 Set the maximum quantizer to use when using a bitrate mode.
 
 @item qmin
 Set the minimum quantizer to use when using a bitrate mode.
+
+@item crf
+Constant rate factor value used in crf rate control mode (0-63).
 
 @item qp
 Set the quantizer used in cqp rate control mode (0-63).
@@ -1807,14 +1794,18 @@ Enable scene change detection.
 Set number of frames to look ahead (0-120).
 
 @item preset
-Set the quality-speed tradeoff, in the range 0 to 8.  Higher values are
-faster but lower quality.  Defaults to 8 (highest speed).
+Set the quality-speed tradeoff, in the range 0 to 13.  Higher values are
+faster but lower quality.
 
 @item tile_rows
 Set log2 of the number of rows of tiles to use (0-6).
 
 @item tile_columns
 Set log2 of the number of columns of tiles to use (0-4).
+
+@item svtav1-params
+Set SVT-AV1 options using a list of @var{key}=@var{value} pairs separated
+by ":". See the SVT-AV1 encoder user guide for a list of accepted parameters.
 
 @end table
 
@@ -2270,11 +2261,10 @@ and compression tools used, and varies the combination of these tools. This
 maps to the @var{method} option in libwebp. The valid range is 0 to 6.
 Default is 4.
 
-@item -qscale @var{float}
-For lossy encoding, this controls image quality, 0 to 100. For lossless
-encoding, this controls the effort and time spent at compressing more. The
-default value is 75. Note that for usage via libavcodec, this option is called
-@var{global_quality} and must be multiplied by @var{FF_QP2LAMBDA}.
+@item -quality @var{float}
+For lossy encoding, this controls image quality. For lossless encoding, this
+controls the effort and time spent in compression.
+Range is 0 to 100. Default is 75.
 
 @item -preset @var{type}
 Configuration preset. This does some automatic settings based on the general
@@ -3344,7 +3334,8 @@ Specifies intra refresh type. The major goal of intra refresh is improvement of
 error resilience without significant impact on encoded bitstream size caused by
 I frames. The SDK encoder achieves this by encoding part of each frame in
 refresh cycle using intra MBs. @var{none} means no refresh. @var{vertical} means
-vertical refresh, by column of MBs.
+vertical refresh, by column of MBs. To enable intra refresh, B frame should be
+set to 0.
 
 @item @var{int_ref_cycle_size}
 Specifies number of pictures within refresh cycle starting from 2. 0 and 1 are
@@ -3354,6 +3345,9 @@ invalid values.
 Specifies QP difference for inserted intra MBs. This is signed value in
 [-51, 51] range if target encoding bit-depth for luma samples is 8 and this
 range is [-63, 63] for 10 bit-depth or [-75, 75] for 12 bit-depth respectively.
+
+@item @var{int_ref_cycle_dist}
+Distance between the beginnings of the intra-refresh cycles in frames.
 
 @item @var{profile}
 @table @samp
@@ -3397,8 +3391,19 @@ Enable rate distortion optimization.
 @item @var{max_frame_size}
 Maximum encoded frame size in bytes.
 
+@item @var{max_slice_size}
+Maximum encoded slice size in bytes.
+
+@item @var{mbbrc}
+Setting this flag enables macroblock level bitrate control that generally
+improves subjective visual quality. Enabling this flag may have negative impact
+on performance and objective visual quality metric.
+
 @item @var{p_strategy}
 Enable P-pyramid: 0-default 1-simple 2-pyramid(bf need to be set to 0).
+
+@item @var{b_strategy}
+This option controls usage of B frames as reference.
 
 @item @var{dblk_idc}
 This option disable deblocking. It has value in range 0~2.
@@ -3457,6 +3462,26 @@ Insert picture timing SEI with pic_struct_syntax element.
 @item @var{transform_skip}
 Turn this option ON to enable transformskip. It is supported on platform equal
 or newer than ICL.
+
+@item @var{int_ref_type}
+Specifies intra refresh type. The major goal of intra refresh is improvement of
+error resilience without significant impact on encoded bitstream size caused by
+I frames. The SDK encoder achieves this by encoding part of each frame in
+refresh cycle using intra MBs. @var{none} means no refresh. @var{vertical} means
+vertical refresh, by column of MBs. To enable intra refresh, B frame should be
+set to 0.
+
+@item @var{int_ref_cycle_size}
+Specifies number of pictures within refresh cycle starting from 2. 0 and 1 are
+invalid values.
+
+@item @var{int_ref_qp_delta}
+Specifies QP difference for inserted intra MBs. This is signed value in
+[-51, 51] range if target encoding bit-depth for luma samples is 8 and this
+range is [-63, 63] for 10 bit-depth or [-75, 75] for 12 bit-depth respectively.
+
+@item @var{int_ref_cycle_dist}
+Distance between the beginnings of the intra-refresh cycles in frames.
 @end table
 
 @subsection MPEG2 Options
@@ -3482,6 +3507,12 @@ These options are used by vp9_qsv
 @item profile2
 @item profile3
 @end table
+
+@item @var{tile_cols}
+Number of columns for tiled encoding (requires libmfx >= 1.29).
+
+@item @var{tile_rows}
+Number of rows for tiled encoding (requires libmfx  >= 1.29).
 @end table
 
 @section snow
@@ -3563,6 +3594,12 @@ Set the B-frame reference depth.  When set to one (the default), all B-frames
 will refer only to P- or I-frames.  When set to greater values multiple layers
 of B-frames will be present, frames in each layer only referring to frames in
 higher layers.
+
+@item async_depth
+Maximum processing parallelism. Increase this to improve single channel
+performance. This option doesn't work if driver doesn't implement vaSyncBuffer
+function. Please make sure there are enough hw_frames allocated if a large
+number of async_depth is used.
 
 @item rc_mode
 Set the rate control mode to use.  A given driver may only support a subset of

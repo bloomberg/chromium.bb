@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_NULL_DEVICENULL_H_
-#define DAWNNATIVE_NULL_DEVICENULL_H_
+#ifndef SRC_DAWN_NATIVE_NULL_DEVICENULL_H_
+#define SRC_DAWN_NATIVE_NULL_DEVICENULL_H_
 
 #include "dawn/native/Adapter.h"
 #include "dawn/native/BindGroup.h"
@@ -90,7 +90,7 @@ namespace dawn::native::null {
                                                  const DeviceDescriptor* descriptor);
         ~Device() override;
 
-        MaybeError Initialize();
+        MaybeError Initialize(const DeviceDescriptor* descriptor);
 
         ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
             CommandEncoder* encoder,
@@ -168,7 +168,7 @@ namespace dawn::native::null {
 
     class Adapter : public AdapterBase {
       public:
-        Adapter(InstanceBase* instance);
+        explicit Adapter(InstanceBase* instance);
         ~Adapter() override;
 
         // AdapterBase Implementation
@@ -250,7 +250,7 @@ namespace dawn::native::null {
 
     class Queue final : public QueueBase {
       public:
-        Queue(Device* device);
+        Queue(Device* device, const QueueDescriptor* descriptor);
 
       private:
         ~Queue() override;
@@ -297,7 +297,7 @@ namespace dawn::native::null {
         Ref<Texture> mTexture;
 
         MaybeError PresentImpl() override;
-        ResultOrError<TextureViewBase*> GetCurrentTextureViewImpl() override;
+        ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() override;
         void DetachFromSurfaceImpl() override;
     };
 
@@ -337,4 +337,4 @@ namespace dawn::native::null {
 
 }  // namespace dawn::native::null
 
-#endif  // DAWNNATIVE_NULL_DEVICENULL_H_
+#endif  // SRC_DAWN_NATIVE_NULL_DEVICENULL_H_

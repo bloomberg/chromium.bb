@@ -4,10 +4,11 @@
 include_rules = [
   "+components/services/app_service/public",
   "+components/webapps/browser",
+  "+components/policy/core/common",
 ]
 
 specific_include_rules = {
-  "app_service_types_traits_unittest\.cc": [
+  "app_service_types_mojom_traits_unittest\.cc": [
     "+ui/gfx/image/image_unittest_util.h"
   ]
 }

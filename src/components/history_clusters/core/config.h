@@ -29,11 +29,14 @@ struct Config {
   // annotations; i.e. `kPersistContextAnnotationsInHistoryDb` is true.
   int max_days_to_cluster = 9;
 
-  // A soft cap on the number of keyword phrases to cache. If 0, there is no
-  // limit.
-  // 20k should be more than enough for most cases and should avoid consuming
-  // large amounts of memory in extreme cases.
-  int max_keyword_phrases = 20000;
+  // A soft cap on the number of keyword phrases to cache. 5000 should be more
+  // than enough, as the 99.9th percentile of users has 2000. A few nuances:
+  //  - We cache both entity keywords and URLs, each limited separately.
+  //  - We have both a long and short duration cache, each limited separately.
+  //  - We complete processing each cluster even if it means slightly going over
+  //    this limit.
+  //  - 0 and -1 are not interpreted as sentinel values. We always have a limit.
+  size_t max_keyword_phrases = 5000;
 
   // If enabled, updating clusters will persist the results to the history DB
   // and accessing clusters will retrieve them from the history DB. If disabled,
@@ -51,8 +54,14 @@ struct Config {
   double min_score_to_always_show_above_the_fold = 0.5;
 
   // If enabled, this is the number of non-zero scored visits to always show
-  // above the fold regardless of score.
-  int num_visits_to_always_show_above_the_fold = 3;
+  // above the fold regardless of score. Note, this value includes the
+  // "top visit". In the unlabeled "top visit" UI configuration, that means the
+  // one "top visit" and three subordinate looking visits will be always shown.
+  size_t num_visits_to_always_show_above_the_fold = 4;
+
+  // If enabled, hidden visits are dropped entirely, instead of being gated
+  // behind a "Show More" UI control.
+  bool drop_hidden_visits = false;
 
   // If enabled, when there is a Journeys search query, the backend re-scores
   // visits within a cluster to account for whether or not that visit matches.
@@ -63,13 +72,13 @@ struct Config {
   // reverse chronologically, but the clusters within batches will be resorted.
   bool sort_clusters_within_batch_for_query = false;
 
-  // If enabled, changes the History Clusters omnibox action text to be:
-  // "Resume your research" instead of "Resume your journey".
-  bool alternate_omnibox_action_text = true;
-
   // Enables the Journeys Omnibox Action chip. `kJourneys` must also be enabled
   // for this to take effect.
   bool omnibox_action = false;
+
+  // If enabled, allows the Omnibox Action chip to also appear on URLs. This
+  // does nothing if `omnibox_action` is disabled.
+  bool omnibox_action_on_urls = false;
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.
   // Does nothing if `kJourneys` is disabled.
@@ -95,9 +104,17 @@ struct Config {
   // a visit can be considered for the same cluster.
   base::TimeDelta cluster_navigation_time_cutoff = base::Minutes(60);
 
+  // The minimum threshold for whether an entity is considered relevant to the
+  // visit.
+  int entity_relevance_threshold = 60;
+
+  // The minimum threshold for whether a category is considered relevant to the
+  // visit.
+  int category_relevance_threshold = 36;  // 60 * 0.6 = 36.
+
   // Returns whether content clustering is enabled and
   // should be performed by the clustering backend.
-  bool content_clustering_enabled = true;
+  bool content_clustering_enabled = false;
 
   // Returns the weight that should be placed on entity similarity for
   // determining if two clusters are similar enough to be combined into one.
@@ -184,9 +201,22 @@ struct Config {
   // in the UI. If the label doesn't exist, the UI will emphasize the top visit.
   bool should_label_clusters = false;
 
+  // Whether to assign labels to clusters from the hostnames of the cluster.
+  // Does nothing if `should_label_clusters` is false. Note that since every
+  // cluster has a hostname, this flag in conjunction with
+  // `should_label_clusters` will give every cluster a label.
+  bool labels_from_hostnames = true;
+
+  // Whether to assign labels to clusters from the Entities of the cluster.
+  // Does nothing if `should_label_clusters` is false.
+  bool labels_from_entities = false;
+
   // The set of hosts for which all visits belonging to that host will not be in
   // any cluster.
   base::flat_set<std::string> hosts_to_skip_clustering_for;
+
+  // True if the task runner should use trait CONTINUE_ON_SHUTDOWN.
+  bool use_continue_on_shutdown = true;
 
   Config();
   Config(const Config& other);

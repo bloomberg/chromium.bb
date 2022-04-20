@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_event_router_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
+#include "chrome/browser/extensions/api/web_authentication_proxy/web_authentication_proxy_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/chrome_extension_cookies_factory.h"
@@ -57,12 +58,14 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/chromeos/extensions/login_screen/login/external_logout_done/external_logout_done_event_handler_factory.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
 #include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/login_screen/login/external_logout_request/external_logout_request_event_handler_factory.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #endif
 
@@ -90,6 +93,12 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ExtensionManagementFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::ExtensionWebUIOverrideRegistrar::GetFactoryInstance();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  extensions::ExternalLogoutDoneEventHandlerFactory::GetInstance();
+#endif
+#if BUILDFLAG(IS_CHROMEOS)
+  extensions::ExternalLogoutRequestEventHandlerFactory::GetInstance();
+#endif
   extensions::FontSettingsAPI::GetFactoryInstance();
   extensions::HistoryAPI::GetFactoryInstance();
   extensions::IdentityAPI::GetFactoryInstance();
@@ -138,6 +147,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   extensions::WarningBadgeServiceFactory::GetInstance();
+  extensions::WebAuthenticationProxyAPI::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
 }

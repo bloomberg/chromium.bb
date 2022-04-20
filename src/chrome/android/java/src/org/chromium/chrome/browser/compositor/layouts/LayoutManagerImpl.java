@@ -83,8 +83,7 @@ import java.util.Map;
  * A class that is responsible for managing an active {@link Layout} to show to the screen.  This
  * includes lifecycle managment like showing/hiding this {@link Layout}.
  */
-public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost, LayoutProvider,
-                                          TabModelSelector.CloseAllTabsDelegate {
+public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost, LayoutProvider {
     /** Sampling at 60 fps. */
     private static final long FRAME_DELTA_TIME_MS = 16;
 
@@ -208,6 +207,7 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
                 boolean incognito = tab.isIncognito();
                 boolean willBeSelected = launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                                 && launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP
+                                && launchType != TabLaunchType.FROM_RECENT_TABS
                         || (!getTabModelSelector().isIncognitoSelected() && incognito);
                 float lastTapX = LocalizationUtils.isLayoutRtl() ? mHost.getWidth() * mPxToDp : 0.f;
                 float lastTapY = 0.f;
@@ -220,6 +220,11 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
                 tabCreated(tabId, getTabModelSelector().getCurrentTabId(), launchType, incognito,
                         willBeSelected, lastTapX, lastTapY);
             }
+        }
+
+        @Override
+        public void willCloseAllTabs(boolean isIncognito) {
+            onTabsAllClosing(isIncognito);
         }
 
         @Override
@@ -524,7 +529,6 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
             }
         };
         selector.addObserver(mTabModelSelectorObserver);
-        selector.setCloseAllTabsDelegate(this);
 
         mTabModelFilterObserver = createTabModelObserver();
         getTabModelSelector().getTabModelFilterProvider().addTabModelFilterObserver(
@@ -747,12 +751,10 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
         if (getActiveLayout() != null) getActiveLayout().onTabModelSwitched(incognito);
     }
 
-    @Override
-    public boolean closeAllTabsRequest(boolean incognito) {
-        if (!getActiveLayout().handlesCloseAll()) return false;
+    public void onTabsAllClosing(boolean incognito) {
+        if (getActiveLayout() == null) return;
 
-        getActiveLayout().onTabsAllClosing(time(), incognito);
-        return true;
+        getActiveLayout().onTabsAllClosing(incognito);
     }
 
     @Override

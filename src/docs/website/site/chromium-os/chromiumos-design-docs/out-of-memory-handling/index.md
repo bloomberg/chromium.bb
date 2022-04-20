@@ -32,22 +32,22 @@ userspace to reduce our footprint. We propose to continue closing tabs to free
 up RAM, but to start with closing individual tabs rather than the whole set
 owned by one renderer. We like this direction because:
 
-*   The user experience is better than killing a process - one thing
-            dies at a time, rather than a seemingly random group.
+*   The user experience is better than killing a process - one thing dies at a
+    time, rather than a seemingly random group.
 *   This strategy is commonly used on phones and tablets.
-*   We can close tabs quickly, so the user experience should be Chrome
-            running fast, dropping data, and continuing to run fast, rather than
-            a gradual slowdown we would anticipate from trying to
-            compress/hibernate the state of a tab.
-*   We can try to be intelligent about which tabs we close, preferring
-            those which are rarely or never used, or which are unlikely to have
-            user-created state.
-*   We know that closing a tab will rapidly return a large block of
-            memory to the OS, as opposed to flushing caches, running garbage
-            collection, etc. which return variable amount of RAM and may quickly
-            result in the tab reclaiming it.
-*   The strategy is relatively simple - we already know how to close
-            tabs and automatically reload them.
+*   We can close tabs quickly, so the user experience should be Chrome running
+    fast, dropping data, and continuing to run fast, rather than a gradual
+    slowdown we would anticipate from trying to compress/hibernate the state of
+    a tab.
+*   We can try to be intelligent about which tabs we close, preferring those
+    which are rarely or never used, or which are unlikely to have user-created
+    state.
+*   We know that closing a tab will rapidly return a large block of memory to
+    the OS, as opposed to flushing caches, running garbage collection, etc.
+    which return variable amount of RAM and may quickly result in the tab
+    reclaiming it.
+*   The strategy is relatively simple - we already know how to close tabs and
+    automatically reload them.
 
 We should kill renderer processes only as a last resort, and even then avoid
 killing the process associated with the page the user is viewing. The user
@@ -98,11 +98,10 @@ The chrome browser process will iterate through its list of tabs to choose one
 to close or blank out. The browser prefers closing tabs in this order:
 
 *   A background tab which the user has opened, but never seen (e.g., a
-            control-click on a link)
-*   A background tab into which the user has never
-            typed/clicked/scrolled
-*   Any background tab (ordered by most recently clicked in buckets of
-            10 min, then by memory consumption)
+    control-click on a link)
+*   A background tab into which the user has never typed/clicked/scrolled
+*   Any background tab (ordered by most recently clicked in buckets of 10 min,
+    then by memory consumption)
 *   The foreground tab
 
 Within each group, tabs are ordered by the last time that the user clicked on
@@ -119,7 +118,7 @@ memory reserve back to 10 MB.
 Our hard wall is the OOM process killer. We hit the hard wall in two situations:
 
 1.  During chrome’s memory cleanup, we still run out of physical memory
-            (a fast leak)
+    (a fast leak)
 2.  Chrome doesn’t send the done event promptly
 
 If Chrome sends the done event, but didn’t free enough memory, we send the soft
@@ -146,7 +145,7 @@ The current Linux OOM killer algorithm only considers allowed memory usage, and
 not run time or process start time in its “badness” score. Note that this
 algorithm does not guarantee that the processes will be killed in the order
 specified, it is only a hint. Please check out [this
-description](http://www.mjmwired.net/kernel/Documentation/filesystems/proc.txt#1276)
+description](https://www.kernel.org/doc/html/latest/filesystems/proc.html#chapter-3-per-process-parameters)
 for more detailed information.
 
 By default all processes started by init on ChromeOS are set to an initial value
@@ -154,15 +153,20 @@ of -1000, which is inherited by sub-processes, so that only processes which we
 explicitly set to higher values will be killed by the OOM killer. We score
 processes as follows:
 
-1.  Linux daemons and other processes = -1000
-2.  CrOS daemons that are critical to the system (updater, dbus) = -1000
-3.  CrOS daemons that can recover (shill, system metrics) = -100
-4.  Android system processes = -100
-5.  Chrome browser and zygote = 0
-6.  Plugins, NaCl loader = 100
-7.  Chrome GPU process, workers, plugin broker process = 200
-8.  Chrome extensions = 300
-9.  Chrome renderers= 300-1000 (1000 is killed first)
+| Score | Description |
+| ----- | ----------- |
+| -1000 | Processes are never killed (Upstart uses `oom score never`) |
+| -1000 | Linux daemons and other processes |
+| -1000 | CrOS daemons that are critical to the system (dbus) |
+|  -900 | CrOS daemons that are needed to auto-update, but can restart |
+|  -100 | CrOS daemons that can recover (shill, system metrics) |
+|  -100 | Android system processes |
+|     0 | Chrome browser and zygote |
+|   100 | Plugins, NaCl loader |
+|   200 | Chrome GPU process, workers, plugin broker process |
+|   300 | Chrome extensions |
+| 300-1000 | Chrome renderers |
+|  1000 | Processes that are killed first |
 
 The renderer scoring will follow the algorithm for tab closing above. However,
 since each renderer process might be servicing multiple tabs, we select the
@@ -273,9 +277,9 @@ objects. We will always need some mechanism to handle the out-of-memory case.
 A. We can take three general approaches in OOM situations:
 
 1.  Stop the user from consuming more RAM. (Warn them with a butter-bar,
-            then eventually block them from opening more tabs, etc.)
+    then eventually block them from opening more tabs, etc.)
 2.  Spend CPU to simulate having more RAM (zram memory compression,
-            process hibernation?)
+    process hibernation?)
 3.  Throw away data we can quickly/safely regenerate
 
 We’re afraid 1 is annoying and 2 may be slow. We’re proposing trying 3, and we

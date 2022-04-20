@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
@@ -254,6 +255,9 @@ class DriveIntegrationService : public KeyedService,
   void GetSyncingPaths(
       drivefs::mojom::DriveFs::GetSyncingPathsCallback callback);
 
+  // Tells DriveFS to update its cached pin states of hosted files (once).
+  void PollHostedFilePinStates();
+
   // Returns whether mirroring is enabled.
   bool IsMirroringEnabled();
 
@@ -343,6 +347,12 @@ class DriveIntegrationService : public KeyedService,
   void OnEnableMirroringStatusUpdate(drivefs::mojom::MirrorSyncStatus status);
 
   void OnDisableMirroringStatusUpdate(drivefs::mojom::MirrorSyncStatus status);
+
+  // Toggle syncing for |path| if the the directory exists.
+  void ToggleSyncForPathIfDirectoryExists(
+      const base::FilePath& path,
+      drivefs::mojom::DriveFs::ToggleSyncForPathCallback callback,
+      bool exists);
 
   friend class DriveIntegrationServiceFactory;
 

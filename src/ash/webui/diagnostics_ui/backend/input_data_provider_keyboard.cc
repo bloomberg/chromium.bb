@@ -85,6 +85,8 @@ constexpr auto kCustomScancodeMapping =
         {0x98, mojom::TopRowKey::kKeyboardBacklightUp},
         {0x99, mojom::TopRowKey::kNextTrack},
         {0x9A, mojom::TopRowKey::kPlayPause},
+        {0x9B, mojom::TopRowKey::kMicrophoneMute},
+        {0x9E, mojom::TopRowKey::kKeyboardBacklightToggle},
         {0xA0, mojom::TopRowKey::kVolumeMute},
         {0xAE, mojom::TopRowKey::kVolumeDown},
         {0xB0, mojom::TopRowKey::kVolumeUp},
@@ -94,6 +96,7 @@ constexpr auto kCustomScancodeMapping =
 
         // HID 32-bit usage codes
         {0x070046, mojom::TopRowKey::kScreenshot},
+        {0x0B002F, mojom::TopRowKey::kMicrophoneMute},
         {0x0C00E2, mojom::TopRowKey::kVolumeMute},
         {0x0C00E9, mojom::TopRowKey::kVolumeUp},
         {0x0C00EA, mojom::TopRowKey::kVolumeDown},
@@ -101,6 +104,7 @@ constexpr auto kCustomScancodeMapping =
         {0x0C0070, mojom::TopRowKey::kScreenBrightnessDown},
         {0x0C0079, mojom::TopRowKey::kKeyboardBacklightUp},
         {0x0C007A, mojom::TopRowKey::kKeyboardBacklightDown},
+        {0x0C007C, mojom::TopRowKey::kKeyboardBacklightToggle},
         {0x0C00B5, mojom::TopRowKey::kNextTrack},
         {0x0C00B6, mojom::TopRowKey::kPreviousTrack},
         {0x0C00CD, mojom::TopRowKey::kPlayPause},
@@ -402,6 +406,27 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
     result->number_pad_present = device_info->event_device_info.HasNumberpad()
                                      ? mojom::NumberPadPresence::kUnknown
                                      : mojom::NumberPadPresence::kNotPresent;
+  }
+
+  // Logic in InputDataProvider will change kUnknown to the most likely one in
+  // cases where we can't be sure.
+  result->top_right_key = mojom::TopRightKey::kUnknown;
+  if (device_info->keyboard_type ==
+      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
+    if (result->physical_layout ==
+        mojom::PhysicalLayout::kChromeOSDellEnterpriseWilco) {
+      // The first generation of Wilco devices both have lock in the top-right
+      // (and a separate power key).
+      result->top_right_key = mojom::TopRightKey::kLock;
+    } else if (device_info->event_device_info.bustype() == BUS_USB) {
+      // It's a detachable keyboard (counted as internal USB), so it definitely
+      // has Lock in the top-right.
+      result->top_right_key = mojom::TopRightKey::kLock;
+    } else if (device_info->event_device_info.HasKeyEvent(KEY_CONTROLPANEL)) {
+      // All actual internal keyboards (not detachable) with KEY_CONTROLPANEL
+      // (i.e. Eve) have the Control Panel key in the top right.
+      result->top_right_key = mojom::TopRightKey::kControlPanel;
+    }
   }
 
   result->has_assistant_key =

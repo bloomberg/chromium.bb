@@ -11,12 +11,12 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/system/hps/hps_configuration.h"
 #include "ash/system/power/hps_sense_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_tick_clock.h"
+#include "chromeos/components/hps/hps_configuration.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -80,6 +80,12 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs, 0);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 510000);
+  registry->RegisterBooleanPref(
+      prefs::kPowerAdaptiveChargingEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPowerAdaptiveChargingNudgeShown, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenBrightnessPercent,
                                 -1);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000);
@@ -113,6 +119,26 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kEnableAutoScreenLock, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+}
+
+double GetAdaptiveChargingMinProbability() {
+  // An AdaptiveCharging decision is considered to be reliable if the inference
+  // score is higher than this number.
+  constexpr double kDefaultAdaptiveChargingMinProbability = 0.2;
+
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      ash::features::kAdaptiveCharging, "adaptive_charging_min_probability",
+      kDefaultAdaptiveChargingMinProbability);
+}
+
+int GetAdaptiveChargingHoldPercent() {
+  // The AdaptiveCharging will delay the charging when the battery level is at
+  // or higher than this number until AdaptiveCharging is over.
+  constexpr int kDefaultAdaptiveChargingHoldPercent = 80;
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      ash::features::kAdaptiveCharging, "adaptive_charging_hold_percent",
+      kDefaultAdaptiveChargingHoldPercent);
 }
 
 }  // namespace
@@ -313,14 +339,14 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   if (hps_sense_controller_) {
     if (prefs->GetBoolean(prefs::kPowerQuickDimEnabled)) {
       values.battery_quick_dim_delay_ms =
-          ash::GetQuickDimDelay().InMilliseconds();
-      values.ac_quick_dim_delay_ms = ash::GetQuickDimDelay().InMilliseconds();
+          hps::GetQuickDimDelay().InMilliseconds();
+      values.ac_quick_dim_delay_ms = hps::GetQuickDimDelay().InMilliseconds();
 
       values.battery_quick_lock_delay_ms =
-          ash::GetQuickLockDelay().InMilliseconds();
-      values.ac_quick_lock_delay_ms = ash::GetQuickLockDelay().InMilliseconds();
+          hps::GetQuickLockDelay().InMilliseconds();
+      values.ac_quick_lock_delay_ms = hps::GetQuickLockDelay().InMilliseconds();
 
-      values.send_feedback_if_undimmed = ash::GetQuickDimFeedbackEnabled();
+      values.send_feedback_if_undimmed = hps::GetQuickDimFeedbackEnabled();
 
       hps_sense_controller_->EnableHpsSense();
     } else {
@@ -405,6 +431,16 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
         local_state_->GetBoolean(prefs::kUsbPowerShareEnabled);
   }
 
+  if (features::IsAdaptiveChargingEnabled()) {
+    values.adaptive_charging_enabled =
+        prefs->GetBoolean(prefs::kPowerAdaptiveChargingEnabled);
+    if (values.adaptive_charging_enabled) {
+      values.adaptive_charging_min_probability =
+          GetAdaptiveChargingMinProbability();
+      values.adaptive_charging_hold_percent = GetAdaptiveChargingHoldPercent();
+    }
+  }
+
   power_policy_controller_->ApplyPrefs(values);
 }
 
@@ -461,6 +497,8 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
                           update_callback);
   profile_registrar_->Add(prefs::kPowerAlsLoggingEnabled, update_callback);
   profile_registrar_->Add(prefs::kPowerQuickDimEnabled, update_callback);
+  profile_registrar_->Add(prefs::kPowerAdaptiveChargingEnabled,
+                          update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }

@@ -37,8 +37,8 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "hap.h"
-#include "internal.h"
 #include "snappy.h"
 #include "texturedsp.h"
 #include "thread.h"
@@ -305,7 +305,7 @@ static int hap_decode(AVCodecContext *avctx, void *data,
                       int *got_frame, AVPacket *avpkt)
 {
     HapContext *ctx = avctx->priv_data;
-    ThreadFrame tframe;
+    AVFrame *const frame = data;
     int ret, i, t;
     int section_size;
     enum HapSectionType section_type;
@@ -330,8 +330,7 @@ static int hap_decode(AVCodecContext *avctx, void *data,
     }
 
     /* Get the output frame ready to receive data */
-    tframe.f = data;
-    ret = ff_thread_get_buffer(avctx, &tframe, 0);
+    ret = ff_thread_get_buffer(avctx, frame, 0);
     if (ret < 0)
         return ret;
 
@@ -351,9 +350,6 @@ static int hap_decode(AVCodecContext *avctx, void *data,
         }
 
         start_texture_section += ctx->texture_section_size + 4;
-
-        if (avctx->codec->update_thread_context)
-            ff_thread_finish_setup(avctx);
 
         /* Unpack the DXT texture */
         if (hap_can_use_tex_in_place(ctx)) {
@@ -386,16 +382,15 @@ static int hap_decode(AVCodecContext *avctx, void *data,
 
         /* Use the decompress function on the texture, one block per thread */
         if (t == 0){
-            avctx->execute2(avctx, decompress_texture_thread, tframe.f, NULL, ctx->slice_count);
+            avctx->execute2(avctx, decompress_texture_thread, frame, NULL, ctx->slice_count);
         } else{
-            tframe.f = data;
-            avctx->execute2(avctx, decompress_texture2_thread, tframe.f, NULL, ctx->slice_count);
+            avctx->execute2(avctx, decompress_texture2_thread, frame, NULL, ctx->slice_count);
         }
     }
 
     /* Frame is ready to be output */
-    tframe.f->pict_type = AV_PICTURE_TYPE_I;
-    tframe.f->key_frame = 1;
+    frame->pict_type = AV_PICTURE_TYPE_I;
+    frame->key_frame = 1;
     *got_frame = 1;
 
     return avpkt->size;
@@ -478,16 +473,16 @@ static av_cold int hap_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_hap_decoder = {
-    .name           = "hap",
-    .long_name      = NULL_IF_CONFIG_SMALL("Vidvox Hap"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_HAP,
+const FFCodec ff_hap_decoder = {
+    .p.name         = "hap",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Vidvox Hap"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_HAP,
     .init           = hap_init,
     .decode         = hap_decode,
     .close          = hap_close,
     .priv_data_size = sizeof(HapContext),
-    .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_SLICE_THREADS |
+    .p.capabilities = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_SLICE_THREADS |
                       AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE |
                       FF_CODEC_CAP_INIT_CLEANUP,

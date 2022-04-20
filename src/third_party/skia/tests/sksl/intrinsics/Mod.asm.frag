@@ -30,32 +30,25 @@ OpDecorate %_UniformBuffer Block
 OpDecorate %10 Binding 0
 OpDecorate %10 DescriptorSet 0
 OpDecorate %expectedA RelaxedPrecision
-OpDecorate %30 RelaxedPrecision
 OpDecorate %expectedB RelaxedPrecision
-OpDecorate %33 RelaxedPrecision
 OpDecorate %40 RelaxedPrecision
 OpDecorate %41 RelaxedPrecision
 OpDecorate %42 RelaxedPrecision
 OpDecorate %43 RelaxedPrecision
 OpDecorate %49 RelaxedPrecision
 OpDecorate %50 RelaxedPrecision
-OpDecorate %51 RelaxedPrecision
 OpDecorate %52 RelaxedPrecision
 OpDecorate %53 RelaxedPrecision
 OpDecorate %62 RelaxedPrecision
 OpDecorate %63 RelaxedPrecision
-OpDecorate %65 RelaxedPrecision
 OpDecorate %66 RelaxedPrecision
 OpDecorate %67 RelaxedPrecision
 OpDecorate %76 RelaxedPrecision
-OpDecorate %77 RelaxedPrecision
 OpDecorate %78 RelaxedPrecision
 OpDecorate %85 RelaxedPrecision
 OpDecorate %86 RelaxedPrecision
-OpDecorate %91 RelaxedPrecision
 OpDecorate %92 RelaxedPrecision
 OpDecorate %93 RelaxedPrecision
-OpDecorate %99 RelaxedPrecision
 OpDecorate %100 RelaxedPrecision
 OpDecorate %101 RelaxedPrecision
 OpDecorate %107 RelaxedPrecision
@@ -82,10 +75,8 @@ OpDecorate %159 RelaxedPrecision
 OpDecorate %160 RelaxedPrecision
 OpDecorate %166 RelaxedPrecision
 OpDecorate %167 RelaxedPrecision
-OpDecorate %172 RelaxedPrecision
 OpDecorate %173 RelaxedPrecision
 OpDecorate %174 RelaxedPrecision
-OpDecorate %180 RelaxedPrecision
 OpDecorate %181 RelaxedPrecision
 OpDecorate %182 RelaxedPrecision
 OpDecorate %188 RelaxedPrecision
@@ -104,8 +95,8 @@ OpDecorate %202 RelaxedPrecision
 %10 = OpVariable %_ptr_Uniform__UniformBuffer Uniform
 %void = OpTypeVoid
 %15 = OpTypeFunction %void
-%v2float = OpTypeVector %float 2
 %float_0 = OpConstant %float 0
+%v2float = OpTypeVector %float 2
 %19 = OpConstantComposite %v2float %float_0 %float_0
 %_ptr_Function_v2float = OpTypePointer Function %v2float
 %23 = OpTypeFunction %v4float %_ptr_Function_v2float
@@ -119,9 +110,12 @@ OpDecorate %202 RelaxedPrecision
 %_ptr_Uniform_v4float = OpTypePointer Uniform %v4float
 %int = OpTypeInt 32 1
 %int_0 = OpConstant %int 0
+%51 = OpConstantComposite %v2float %float_1 %float_1
 %v2bool = OpTypeVector %bool 2
 %v3float = OpTypeVector %float 3
+%65 = OpConstantComposite %v3float %float_1 %float_1 %float_1
 %v3bool = OpTypeVector %bool 3
+%77 = OpConstantComposite %v4float %float_1 %float_1 %float_1 %float_1
 %v4bool = OpTypeVector %bool 4
 %91 = OpConstantComposite %v2float %float_0_75 %float_0
 %99 = OpConstantComposite %v3float %float_0_75 %float_0 %float_0_75
@@ -159,7 +153,6 @@ OpBranchConditional %44 %45 %46
 %48 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %49 = OpLoad %v4float %48
 %50 = OpVectorShuffle %v2float %49 %49 0 1
-%51 = OpCompositeConstruct %v2float %float_1 %float_1
 %47 = OpFMod %v2float %50 %51
 %52 = OpLoad %v4float %expectedA
 %53 = OpVectorShuffle %v2float %52 %52 0 1
@@ -174,7 +167,6 @@ OpBranchConditional %57 %58 %59
 %61 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %62 = OpLoad %v4float %61
 %63 = OpVectorShuffle %v3float %62 %62 0 1 2
-%65 = OpCompositeConstruct %v3float %float_1 %float_1 %float_1
 %60 = OpFMod %v3float %63 %65
 %66 = OpLoad %v4float %expectedA
 %67 = OpVectorShuffle %v3float %66 %66 0 1 2
@@ -188,7 +180,6 @@ OpBranchConditional %71 %72 %73
 %72 = OpLabel
 %75 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %76 = OpLoad %v4float %75
-%77 = OpCompositeConstruct %v4float %float_1 %float_1 %float_1 %float_1
 %74 = OpFMod %v4float %76 %77
 %78 = OpLoad %v4float %expectedA
 %79 = OpFOrdEqual %v4bool %74 %78

@@ -51,7 +51,7 @@ std::unique_ptr<views::WebView> CreateWebView(
   // prevent personal color themes from showing in the side panel when
   // navigating to a new Lens results panel.
   webview->SetBackground(
-      views::CreateThemedSolidBackground(host, ui::kColorWindowBackground));
+      views::CreateThemedSolidBackground(ui::kColorWindowBackground));
   return webview;
 }
 
@@ -136,7 +136,7 @@ void LensSidePanelView::CreateAndInstallHeader(
       ChromeLayoutProvider::Get();
 
   // Set the interior margins of the header on the left and right sides.
-  header->SetInteriorMargin(gfx::Insets(
+  header->SetInteriorMargin(gfx::Insets::TLBR(
       0,
       chrome_layout_provider->GetDistanceMetric(
           views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL),
@@ -150,7 +150,7 @@ void LensSidePanelView::CreateAndInstallHeader(
   // The minimum cross axis size should the expected height of the header.
   header->SetMinimumCrossAxisSize(kDefaultSidePanelHeaderHeight);
   header->SetBackground(
-      views::CreateThemedSolidBackground(this, ui::kColorWindowBackground));
+      views::CreateThemedSolidBackground(ui::kColorWindowBackground));
 
   // Create Google Lens Logo branding.
   branding_ = header->AddChildView(std::make_unique<views::ImageView>());
@@ -167,9 +167,10 @@ void LensSidePanelView::CreateAndInstallHeader(
 
   launch_button_ = header->AddChildView(CreateControlButton(
       this, launch_callback, views::kLaunchIcon,
-      gfx::Insets(0, 0, 0,
-                  chrome_layout_provider->GetDistanceMetric(
-                      views::DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN)),
+      gfx::Insets::TLBR(
+          0, 0, 0,
+          chrome_layout_provider->GetDistanceMetric(
+              views::DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN)),
       l10n_util::GetStringUTF16(IDS_ACCNAME_OPEN),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE)));

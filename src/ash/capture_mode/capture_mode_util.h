@@ -48,6 +48,22 @@ void SetStopRecordingButtonVisibility(aura::Window* root, bool visible);
 void TriggerAccessibilityAlert(const std::string& message);
 void TriggerAccessibilityAlert(int message_id);
 
+// Same as TriggerAccessibilityAlert above, but triggers the alert
+// asynchronously as soon as possible. This is used to make sure consecutive
+// alerts do not override one another, so all of them can be announced by
+// ChromeVox.
+void TriggerAccessibilityAlertSoon(int message_id);
+
+// Returns the next horizontal or vertical snap position based on the current
+// camera preview snap position `current` and the movement. Returns `current` if
+// the movement is not doable based on current snap position.
+CameraPreviewSnapPosition GetCameraNextHorizontalSnapPosition(
+    CameraPreviewSnapPosition current,
+    bool going_left);
+CameraPreviewSnapPosition GetCameraNextVerticalSnapPosition(
+    CameraPreviewSnapPosition current,
+    bool going_up);
+
 // Notification Utils //
 // Constants related to the banner view on the image capture notifications.
 constexpr int kBannerHeightDip = 36;

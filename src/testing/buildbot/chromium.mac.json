@@ -4632,9 +4632,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "precommit_args": [
-          "--gtest_filter=-*"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -9922,9 +9919,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "precommit_args": [
-          "--gtest_filter=-*"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12171,7 +12165,8 @@
   },
   "ios-catalyst": {
     "additional_compile_targets": [
-      "form_activity_tab_helper_fuzzer"
+      "form_activity_tab_helper_fuzzer",
+      "ios/chrome/app:chrome"
     ]
   },
   "ios-device": {
@@ -12202,7 +12197,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 14.4",
+        "name": "absl_hardening_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12254,7 +12249,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 15.2",
+        "name": "absl_hardening_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12306,7 +12301,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPad Air 2 14.4",
+        "name": "base_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12358,7 +12353,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPad Air 2 15.2",
+        "name": "base_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12410,7 +12405,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s 14.4",
+        "name": "base_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12462,7 +12457,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s 15.2",
+        "name": "base_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12514,7 +12509,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s Plus 14.4",
+        "name": "base_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12566,7 +12561,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s Plus 15.2",
+        "name": "base_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12618,7 +12613,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone SE (1st generation) 14.4",
+        "name": "base_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12670,7 +12665,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone SE (1st generation) 15.2",
+        "name": "base_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12722,7 +12717,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 14.4",
+        "name": "boringssl_crypto_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12774,7 +12769,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 15.2",
+        "name": "boringssl_crypto_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12826,7 +12821,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 14.4",
+        "name": "boringssl_ssl_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12878,7 +12873,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 15.2",
+        "name": "boringssl_ssl_tests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12930,7 +12925,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPad Air 2 14.4",
+        "name": "components_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -12982,7 +12977,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPad Air 2 15.2",
+        "name": "components_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13034,7 +13029,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s 14.4",
+        "name": "components_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13086,7 +13081,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s 15.2",
+        "name": "components_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13138,7 +13133,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s Plus 14.4",
+        "name": "components_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13190,7 +13185,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s Plus 15.2",
+        "name": "components_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13242,7 +13237,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone SE (1st generation) 14.4",
+        "name": "components_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13294,7 +13289,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone SE (1st generation) 15.2",
+        "name": "components_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13346,7 +13341,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 14.4",
+        "name": "crypto_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13398,7 +13393,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 15.2",
+        "name": "crypto_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13450,7 +13445,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPad Air 2 14.4",
+        "name": "gfx_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13502,7 +13497,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPad Air 2 15.2",
+        "name": "gfx_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13554,7 +13549,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s 14.4",
+        "name": "gfx_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13606,7 +13601,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s 15.2",
+        "name": "gfx_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13658,7 +13653,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s Plus 14.4",
+        "name": "gfx_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13710,7 +13705,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s Plus 15.2",
+        "name": "gfx_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13762,7 +13757,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone SE (1st generation) 14.4",
+        "name": "gfx_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13814,7 +13809,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone SE (1st generation) 15.2",
+        "name": "gfx_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13866,7 +13861,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 14.4",
+        "name": "google_apis_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13918,7 +13913,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 15.2",
+        "name": "google_apis_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13971,7 +13966,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14025,7 +14020,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14079,7 +14074,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14109,7 +14104,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -14132,7 +14128,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14162,7 +14158,8 @@
               "path": "Runtime-ios-15.2"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -14185,7 +14182,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14239,7 +14236,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14292,7 +14289,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPad Air 2 14.4",
+        "name": "ios_chrome_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14344,7 +14341,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPad Air 2 15.2",
+        "name": "ios_chrome_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14396,7 +14393,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s 14.4",
+        "name": "ios_chrome_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14448,7 +14445,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s 15.2",
+        "name": "ios_chrome_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14500,7 +14497,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14552,7 +14549,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s Plus 15.2",
+        "name": "ios_chrome_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14604,7 +14601,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14656,7 +14653,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ios_chrome_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14708,7 +14705,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 14.4",
+        "name": "ios_components_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14760,7 +14757,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 15.2",
+        "name": "ios_components_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14812,7 +14809,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 14.4",
+        "name": "ios_net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14865,7 +14862,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 15.2",
+        "name": "ios_net_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14918,7 +14915,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 14.4",
+        "name": "ios_remoting_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14970,7 +14967,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 15.2",
+        "name": "ios_remoting_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15022,7 +15019,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 14.4",
+        "name": "ios_testing_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15074,7 +15071,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 15.2",
+        "name": "ios_testing_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15126,7 +15123,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPad Air 2 14.4",
+        "name": "ios_web_inttests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15178,7 +15175,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPad Air 2 15.2",
+        "name": "ios_web_inttests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15230,7 +15227,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s 14.4",
+        "name": "ios_web_inttests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15282,7 +15279,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s 15.2",
+        "name": "ios_web_inttests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15334,7 +15331,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s Plus 14.4",
+        "name": "ios_web_inttests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15386,7 +15383,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s Plus 15.2",
+        "name": "ios_web_inttests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15438,7 +15435,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_inttests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15490,7 +15487,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_inttests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15543,7 +15540,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15596,7 +15593,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 15.2",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15648,7 +15645,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPad Air 2 14.4",
+        "name": "ios_web_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15700,7 +15697,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPad Air 2 15.2",
+        "name": "ios_web_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15752,7 +15749,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s 14.4",
+        "name": "ios_web_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15804,7 +15801,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s 15.2",
+        "name": "ios_web_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15856,7 +15853,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s Plus 14.4",
+        "name": "ios_web_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15908,7 +15905,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s Plus 15.2",
+        "name": "ios_web_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15960,7 +15957,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16012,7 +16009,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16064,7 +16061,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPad Air 2 14.4",
+        "name": "ios_web_view_inttests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16116,7 +16113,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPad Air 2 15.2",
+        "name": "ios_web_view_inttests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16168,7 +16165,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s 14.4",
+        "name": "ios_web_view_inttests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16220,7 +16217,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s 15.2",
+        "name": "ios_web_view_inttests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16272,7 +16269,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s Plus 14.4",
+        "name": "ios_web_view_inttests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16324,7 +16321,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s Plus 15.2",
+        "name": "ios_web_view_inttests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16376,7 +16373,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_view_inttests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16428,7 +16425,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_view_inttests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16480,7 +16477,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPad Air 2 14.4",
+        "name": "ios_web_view_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16532,7 +16529,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPad Air 2 15.2",
+        "name": "ios_web_view_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16584,7 +16581,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s 14.4",
+        "name": "ios_web_view_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16636,7 +16633,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s 15.2",
+        "name": "ios_web_view_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16688,7 +16685,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s Plus 14.4",
+        "name": "ios_web_view_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16740,7 +16737,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone 6s Plus 15.2",
+        "name": "ios_web_view_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16792,7 +16789,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_view_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16844,7 +16841,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ios_web_view_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16896,7 +16893,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 14.4",
+        "name": "net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -16948,7 +16945,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 15.2",
+        "name": "net_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17000,7 +16997,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 14.4",
+        "name": "services_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17052,7 +17049,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 15.2",
+        "name": "services_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17104,7 +17101,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPad Air 2 14.4",
+        "name": "skia_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17156,7 +17153,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPad Air 2 15.2",
+        "name": "skia_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17208,7 +17205,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s 14.4",
+        "name": "skia_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17260,7 +17257,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s 15.2",
+        "name": "skia_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17312,7 +17309,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s Plus 14.4",
+        "name": "skia_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17364,7 +17361,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s Plus 15.2",
+        "name": "skia_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17416,7 +17413,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone SE (1st generation) 14.4",
+        "name": "skia_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17468,7 +17465,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone SE (1st generation) 15.2",
+        "name": "skia_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17520,7 +17517,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 14.4",
+        "name": "sql_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17572,7 +17569,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 15.2",
+        "name": "sql_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17624,7 +17621,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPad Air 2 14.4",
+        "name": "ui_base_unittests iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17676,7 +17673,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPad Air 2 15.2",
+        "name": "ui_base_unittests iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17728,7 +17725,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s 14.4",
+        "name": "ui_base_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17780,7 +17777,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s 15.2",
+        "name": "ui_base_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17832,7 +17829,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s Plus 14.4",
+        "name": "ui_base_unittests iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17884,7 +17881,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s Plus 15.2",
+        "name": "ui_base_unittests iPhone 6s Plus 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17936,7 +17933,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone SE (1st generation) 14.4",
+        "name": "ui_base_unittests iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -17988,7 +17985,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone SE (1st generation) 15.2",
+        "name": "ui_base_unittests iPhone SE (1st generation) 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18040,7 +18037,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 14.4",
+        "name": "url_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18092,7 +18089,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 15.2",
+        "name": "url_unittests iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18152,7 +18149,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18205,7 +18202,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18258,7 +18255,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18311,7 +18308,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18364,7 +18361,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18417,7 +18414,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18470,7 +18467,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18524,7 +18521,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18578,7 +18575,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18632,7 +18629,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18686,7 +18683,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18740,7 +18737,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_settings_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18794,7 +18791,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18848,7 +18845,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18902,7 +18899,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18956,7 +18953,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_settings_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19010,7 +19007,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19040,7 +19037,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -19063,7 +19061,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19093,7 +19091,8 @@
               "path": "Runtime-ios-15.2"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -19116,7 +19115,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19146,7 +19145,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -19169,7 +19169,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19199,7 +19199,8 @@
               "path": "Runtime-ios-15.2"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -19222,7 +19223,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19275,7 +19276,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_smoke_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19328,7 +19329,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19381,7 +19382,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19434,7 +19435,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19487,7 +19488,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19540,7 +19541,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19594,7 +19595,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19648,7 +19649,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19702,7 +19703,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19756,7 +19757,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19809,7 +19810,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_chrome_web_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19862,7 +19863,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19915,7 +19916,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_chrome_web_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19968,7 +19969,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone X 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20021,7 +20022,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone X 15.2",
+        "name": "ios_chrome_web_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20074,7 +20075,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_showcase_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20127,7 +20128,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_showcase_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20180,7 +20181,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_showcase_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20233,7 +20234,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_showcase_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20286,7 +20287,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone X 14.4",
+        "name": "ios_showcase_eg2tests_module iPhone X 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20339,7 +20340,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone X 15.2",
+        "name": "ios_showcase_eg2tests_module iPhone X 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20392,7 +20393,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_web_shell_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20445,7 +20446,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 15.2",
+        "name": "ios_web_shell_eg2tests_module iPad Air 2 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20498,7 +20499,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 7 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20551,7 +20552,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 7 15.2",
+        "name": "ios_web_shell_eg2tests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20609,7 +20610,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 14.4",
+        "name": "absl_hardening_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20660,7 +20661,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 14.4",
+        "name": "boringssl_crypto_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20711,7 +20712,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 14.4",
+        "name": "boringssl_ssl_tests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20762,7 +20763,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 14.4",
+        "name": "crypto_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20813,7 +20814,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 14.4",
+        "name": "google_apis_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20865,7 +20866,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20917,7 +20918,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20970,7 +20971,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21023,7 +21024,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21076,7 +21077,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21129,7 +21130,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21182,7 +21183,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21212,7 +21213,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -21234,7 +21236,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21264,7 +21266,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -21286,7 +21289,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21316,7 +21319,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -21338,7 +21342,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21368,7 +21372,8 @@
               "path": "Runtime-ios-14.4"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/"
       },
@@ -21390,7 +21395,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21442,7 +21447,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21495,7 +21500,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21548,7 +21553,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21601,7 +21606,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21654,7 +21659,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21705,7 +21710,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests_iPhone 6s 14.4",
+        "name": "ios_components_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21757,7 +21762,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_crash_xcuitests_module_iPhone 7 14.4",
+        "name": "ios_crash_xcuitests_module iPhone 7 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21809,7 +21814,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_crash_xcuitests_module_iPhone 7 15.2",
+        "name": "ios_crash_xcuitests_module iPhone 7 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21860,7 +21865,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 14.4",
+        "name": "ios_net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21912,7 +21917,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests_iPhone 6s 14.4",
+        "name": "ios_remoting_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21964,7 +21969,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_showcase_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22015,7 +22020,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests_iPhone 6s 14.4",
+        "name": "ios_testing_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22067,7 +22072,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Air 2 14.4",
+        "name": "ios_web_shell_eg2tests_module iPad Air 2 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22119,7 +22124,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22171,7 +22176,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone 6s Plus 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 6s Plus 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22223,7 +22228,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPhone SE (1st generation) 14.4",
+        "name": "ios_web_shell_eg2tests_module iPhone SE (1st generation) 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22274,7 +22279,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 14.4",
+        "name": "net_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22325,7 +22330,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests_iPhone 6s 14.4",
+        "name": "services_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22376,7 +22381,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 14.4",
+        "name": "sql_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22427,7 +22432,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 14.4",
+        "name": "url_unittests iPhone 6s 14.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true

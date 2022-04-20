@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -108,8 +109,14 @@ void NavigatorManagedData::OnServiceConnectionError() {
       !managed_configuration_service_.is_connected()) {
     managed_configuration_service_.reset();
   }
+
+  // Move the set to a local variable to prevent script execution in Reject()
+  // from invalidating the iterator used by the loop.
+  HeapHashSet<Member<ScriptPromiseResolver>> pending_promises;
+  pending_promises_.swap(pending_promises);
+
   // Resolve all pending promises with a failure.
-  for (ScriptPromiseResolver* resolver : pending_promises_) {
+  for (ScriptPromiseResolver* resolver : pending_promises) {
     resolver->Reject(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
                                            kNotHighTrustedAppExceptionMessage));

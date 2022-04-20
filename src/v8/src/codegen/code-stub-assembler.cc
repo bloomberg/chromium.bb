@@ -8296,6 +8296,13 @@ TNode<Uint32T> CodeStubAssembler::LoadDetailsByDescriptorEntry(
 }
 
 TNode<Object> CodeStubAssembler::LoadValueByDescriptorEntry(
+    TNode<DescriptorArray> container, TNode<IntPtrT> descriptor_entry) {
+  return LoadDescriptorArrayElement<Object>(
+      container, DescriptorEntryToIndex(descriptor_entry),
+      DescriptorArray::ToValueIndex(0) * kTaggedSize);
+}
+
+TNode<Object> CodeStubAssembler::LoadValueByDescriptorEntry(
     TNode<DescriptorArray> container, int descriptor_entry) {
   return LoadDescriptorArrayElement<Object>(
       container, IntPtrConstant(0),
@@ -15953,7 +15960,7 @@ void CodeStubAssembler::SharedValueBarrier(
   GotoIf(TaggedIsSmi(value), &done);
   // Fast path: Shared memory features imply shared RO space, so RO objects are
   // trivially shared.
-  DCHECK(ReadOnlyHeap::IsReadOnlySpaceShared());
+  CSA_DCHECK(this, BoolConstant(ReadOnlyHeap::IsReadOnlySpaceShared()));
   TNode<IntPtrT> page_flags = LoadBasicMemoryChunkFlags(CAST(value));
   GotoIf(WordNotEqual(WordAnd(page_flags,
                               IntPtrConstant(BasicMemoryChunk::READ_ONLY_HEAP)),

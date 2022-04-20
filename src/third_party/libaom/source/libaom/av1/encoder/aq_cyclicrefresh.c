@@ -234,12 +234,22 @@ void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi, MACROBLOCK *const x,
 
   // Update entries in the cyclic refresh map with new_map_value, and
   // copy mbmi->segment_id into global segmentation map.
-  for (int mi_y = 0; mi_y < ymis; mi_y += sh) {
-    for (int mi_x = 0; mi_x < xmis; mi_x += sh) {
-      const int map_offset = block_index + mi_y * cm->mi_params.mi_cols + mi_x;
-      cr->map[map_offset] = new_map_value;
-      cpi->enc_seg.map[map_offset] = mbmi->segment_id;
-      cm->cur_frame->seg_map[map_offset] = mbmi->segment_id;
+  if (sh == 1) {
+    for (int mi_y = 0; mi_y < ymis; mi_y += sh) {
+      const int map_offset = block_index + mi_y * cm->mi_params.mi_cols;
+      memset(&cr->map[map_offset], new_map_value, xmis);
+      memset(&cpi->enc_seg.map[map_offset], mbmi->segment_id, xmis);
+      memset(&cm->cur_frame->seg_map[map_offset], mbmi->segment_id, xmis);
+    }
+  } else {
+    for (int mi_y = 0; mi_y < ymis; mi_y += sh) {
+      for (int mi_x = 0; mi_x < xmis; mi_x += sh) {
+        const int map_offset =
+            block_index + mi_y * cm->mi_params.mi_cols + mi_x;
+        cr->map[map_offset] = new_map_value;
+        cpi->enc_seg.map[map_offset] = mbmi->segment_id;
+        cm->cur_frame->seg_map[map_offset] = mbmi->segment_id;
+      }
     }
   }
   // Accumulate cyclic refresh update counters.

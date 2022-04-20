@@ -90,6 +90,13 @@ namespace dawn::native {
               "recently used resources local to the GPU. Turning this component off can cause "
               "allocation failures when application memory exceeds physical device memory.",
               "https://crbug.com/dawn/193"}},
+            {Toggle::DisableResourceSuballocation,
+             {"disable_resource_suballocation",
+              "Force the backends to not perform resource suballocation. This may expose "
+              "allocation "
+              "patterns which would otherwise only occur with large or specific types of "
+              "resources.",
+              "https://crbug.com/1313172"}},
             {Toggle::SkipValidation,
              {"skip_validation", "Skip expensive validation of Dawn commands.",
               "https://crbug.com/dawn/271"}},
@@ -99,6 +106,12 @@ namespace dawn::native {
               "backend will use D32S8 (toggle to on) but setting the toggle to off will make it "
               "use the D24S8 format when possible.",
               "https://crbug.com/dawn/286"}},
+            {Toggle::VulkanUseS8,
+             {"vulkan_use_s8",
+              "Vulkan has a pure stencil8 format but it is not universally available. When this "
+              "toggle is on, the backend will use S8 for the stencil8 format, otherwise it will "
+              "fallback to D32S8 or D24S8.",
+              "https://crbug.com/dawn/666"}},
             {Toggle::MetalDisableSamplerCompare,
              {"metal_disable_sampler_compare",
               "Disables the use of sampler compare on Metal. This is unsupported before A9 "
@@ -182,8 +195,8 @@ namespace dawn::native {
               "https://crbug.com/dawn/776"}},
             {Toggle::DisallowSpirv,
              {"disallow_spirv",
-              "Disallow usage of SPIR-V completely so that only WGSL is used for shader modules."
-              "This is useful to prevent a Chromium renderer process from successfully sending"
+              "Disallow usage of SPIR-V completely so that only WGSL is used for shader modules. "
+              "This is useful to prevent a Chromium renderer process from successfully sending "
               "SPIR-V code to be compiled in the GPU process.",
               "https://crbug.com/1214923"}},
             {Toggle::DumpShaders,

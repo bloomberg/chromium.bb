@@ -20,9 +20,9 @@
 #include "net/base/host_port_pair.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_stream_factory.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -92,7 +92,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(quic_params_.migrate_sessions_early_v2);
   EXPECT_FALSE(quic_params_.retry_on_alternate_network_before_handshake);
   EXPECT_FALSE(quic_params_.migrate_idle_sessions);
-  EXPECT_FALSE(quic_params_.go_away_on_path_degrading);
   EXPECT_TRUE(quic_params_.initial_rtt_for_handshake.is_zero());
   EXPECT_FALSE(quic_params_.allow_server_migration);
   EXPECT_TRUE(params_.quic_host_allowlist.empty());
@@ -443,18 +442,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(quic_params_.retry_on_alternate_network_before_handshake);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicGoawayOnPathDegradingFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["go_away_on_path_degrading"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(quic_params_.go_away_on_path_degrading);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

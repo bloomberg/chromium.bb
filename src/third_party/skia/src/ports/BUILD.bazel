@@ -1,6 +1,6 @@
-# https://github.com/bazelbuild/bazel-skylib
-load("@bazel_skylib//lib:selects.bzl", "selects")
-load("//bazel:macros.bzl", "generated_cc_atom", "select_multi")
+load("//bazel:macros.bzl", "generated_cc_atom", "select_multi", "selects")
+
+licenses(["notice"])
 
 cc_library(
     name = "typeface_freetype",
@@ -109,6 +109,7 @@ cc_library(
 
 cc_library(
     name = "osfile",
+    visibility = ["//tools/skslc:__pkg__"],
     deps = [":SkOSFile_stdio_src"] + select({
         "@platforms//os:windows": [":SkOSFile_win_src"],
         "//conditions:default": [":SkOSFile_posix_src"],
@@ -287,8 +288,8 @@ generated_cc_atom(
         "//include/core:SkColor_hdr",
         "//include/core:SkDrawable_hdr",
         "//include/core:SkPath_hdr",
-        "//include/core:SkPictureRecorder_hdr",
         "//include/effects:SkGradientShader_hdr",
+        "//include/pathops:SkPathOps_hdr",
         "//include/private:SkColorData_hdr",
         "//include/private:SkTo_hdr",
         "//src/core:SkFDot6_hdr",
@@ -309,6 +310,7 @@ generated_cc_atom(
         "//include/core:SkDrawable_hdr",
         "//include/core:SkFontMetrics_hdr",
         "//include/core:SkPath_hdr",
+        "//include/core:SkPictureRecorder_hdr",
         "//include/core:SkStream_hdr",
         "//include/core:SkString_hdr",
         "//include/private:SkColorData_hdr",

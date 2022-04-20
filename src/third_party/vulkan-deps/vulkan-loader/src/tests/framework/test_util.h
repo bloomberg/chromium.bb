@@ -43,10 +43,6 @@
  */
 #pragma once
 
-// Following items are needed for C++ to work with PRIxLEAST64
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-
 #include <algorithm>
 #include <array>
 #include <iostream>
@@ -62,6 +58,7 @@
 #include <cassert>
 #include <cstring>
 #include <ctime>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -108,14 +105,14 @@
  */
 
 #if defined(WIN32)
-bool set_env_var(std::string const& name, std::string const& value);
-bool remove_env_var(std::string const& name);
+void set_env_var(std::string const& name, std::string const& value);
+void remove_env_var(std::string const& name);
 #define ENV_VAR_BUFFER_SIZE 4096
 std::string get_env_var(std::string const& name, bool report_failure = true);
 
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-bool set_env_var(std::string const& name, std::string const& value);
-bool remove_env_var(std::string const& name);
+void set_env_var(std::string const& name, std::string const& value);
+void remove_env_var(std::string const& name);
 std::string get_env_var(std::string const& name, bool report_failure = true);
 #endif
 
@@ -126,13 +123,6 @@ const long ERROR_REMOVEDIRECTORY_FAILED = 10544;  // chosen at random, attempts 
 const char* win_api_error_str(LSTATUS status);
 void print_error_message(LSTATUS status, const char* function_name, std::string optional_message = "");
 #endif
-
-enum class DebugMode {
-    none,
-    log,       // log all folder and file creation & deletion
-    no_delete  // Will not delete create folders & files, but will report 'deleting them' to show when something *should* of been
-               // deleted
-};
 
 struct ManifestICD;    // forward declaration for FolderManager::write
 struct ManifestLayer;  // forward declaration for FolderManager::write
@@ -196,7 +186,7 @@ struct path {
     // get C++ style string
     std::string const& str() const { return contents; }
     std::string& str() { return contents; }
-    size_t size() const { return contents.size(); };
+    size_t size() const { return contents.size(); }
 
     // equality
     bool operator==(path const& other) const noexcept { return contents == other.contents; }
@@ -214,7 +204,7 @@ int delete_folder(path const& folder);
 
 class FolderManager {
    public:
-    explicit FolderManager(path root_path, std::string name, DebugMode debug = DebugMode::none);
+    explicit FolderManager(path root_path, std::string name);
     ~FolderManager();
     FolderManager(FolderManager const&) = delete;
     FolderManager& operator=(FolderManager const&) = delete;
@@ -231,7 +221,6 @@ class FolderManager {
     path location() const { return folder; }
 
    private:
-    DebugMode debug;
     path folder;
     std::vector<std::string> files;
 };
@@ -258,9 +247,9 @@ typedef HMODULE loader_platform_dl_handle;
 static loader_platform_dl_handle loader_platform_open_library(const char* lib_path) {
     // Try loading the library the original way first.
     loader_platform_dl_handle lib_handle = LoadLibrary(lib_path);
-    if (lib_handle == NULL && GetLastError() == ERROR_MOD_NOT_FOUND) {
+    if (lib_handle == nullptr && GetLastError() == ERROR_MOD_NOT_FOUND) {
         // If that failed, then try loading it with broader search folders.
-        lib_handle = LoadLibraryEx(lib_path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+        lib_handle = LoadLibraryEx(lib_path, nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
     }
     return lib_handle;
 }
@@ -273,7 +262,7 @@ inline void loader_platform_close_library(loader_platform_dl_handle library) { F
 inline void* loader_platform_get_proc_address(loader_platform_dl_handle library, const char* name) {
     assert(library);
     assert(name);
-    return (void*)GetProcAddress(library, name);
+    return reinterpret_cast<void*>(GetProcAddress(library, name));
 }
 inline char* loader_platform_get_proc_address_error(const char* name) {
     static char errorMsg[120];
@@ -315,14 +304,14 @@ struct LibraryWrapper {
     explicit LibraryWrapper() noexcept {}
     explicit LibraryWrapper(fs::path const& lib_path) noexcept : lib_path(lib_path) {
         lib_handle = loader_platform_open_library(lib_path.c_str());
-        if (lib_handle == NULL) {
+        if (lib_handle == nullptr) {
             fprintf(stderr, "Unable to open library %s: %s\n", lib_path.c_str(),
                     loader_platform_open_library_error(lib_path.c_str()));
-            assert(lib_handle != NULL && "Must be able to open library");
+            assert(lib_handle != nullptr && "Must be able to open library");
         }
     }
     ~LibraryWrapper() noexcept {
-        if (lib_handle != NULL) {
+        if (lib_handle != nullptr) {
             loader_platform_close_library(lib_handle);
             lib_handle = nullptr;
         }
@@ -502,7 +491,7 @@ inline std::string version_to_string(uint32_t version) {
 // class_name = class the member variable is apart of
 // type = type of the variable
 // name = name of the variable
-// singular_name = used for the `add_singluar_name` member function
+// singular_name = used for the `add_singular_name` member function
 #define BUILDER_VECTOR(class_name, type, name, singular_name)                    \
     std::vector<type> name;                                                      \
     class_name& add_##singular_name(type const& singular_name) {                 \
@@ -539,6 +528,7 @@ struct ManifestICD {
     BUILDER_VALUE(ManifestICD, ManifestVersion, file_format_version, ManifestVersion())
     BUILDER_VALUE(ManifestICD, uint32_t, api_version, 0)
     BUILDER_VALUE(ManifestICD, std::string, lib_path, {})
+    BUILDER_VALUE(ManifestICD, bool, is_portability_driver, false)
     std::string get_manifest_str() const;
 };
 
@@ -598,7 +588,9 @@ struct Extension {
     BUILDER_VALUE(Extension, std::string, extensionName, {})
     BUILDER_VALUE(Extension, uint32_t, specVersion, VK_API_VERSION_1_0)
 
-    Extension(std::string extensionName, uint32_t specVersion = VK_API_VERSION_1_0)
+    Extension(const char* name, uint32_t specVersion = VK_API_VERSION_1_0) noexcept
+        : extensionName(name), specVersion(specVersion) {}
+    Extension(std::string extensionName, uint32_t specVersion = VK_API_VERSION_1_0) noexcept
         : extensionName(extensionName), specVersion(specVersion) {}
 
     VkExtensionProperties get() const noexcept {
@@ -763,6 +755,7 @@ struct InstanceCreateInfo {
     BUILDER_VALUE(InstanceCreateInfo, VkApplicationInfo, application_info, {})
     BUILDER_VALUE(InstanceCreateInfo, std::string, app_name, {})
     BUILDER_VALUE(InstanceCreateInfo, std::string, engine_name, {})
+    BUILDER_VALUE(InstanceCreateInfo, uint32_t, flags, 0)
     BUILDER_VALUE(InstanceCreateInfo, uint32_t, app_version, 0)
     BUILDER_VALUE(InstanceCreateInfo, uint32_t, engine_version, 0)
     BUILDER_VALUE(InstanceCreateInfo, uint32_t, api_version, VK_API_VERSION_1_0)
@@ -853,4 +846,13 @@ bool check_permutation(std::initializer_list<const char*> expected, std::vector<
         if (!found) return false;
     }
     return true;
+}
+
+inline bool contains(std::vector<VkExtensionProperties> const& vec, const char* name) {
+    return std::any_of(std::begin(vec), std::end(vec),
+                       [name](VkExtensionProperties const& elem) { return string_eq(name, elem.extensionName); });
+}
+inline bool contains(std::vector<VkLayerProperties> const& vec, const char* name) {
+    return std::any_of(std::begin(vec), std::end(vec),
+                       [name](VkLayerProperties const& elem) { return string_eq(name, elem.layerName); });
 }

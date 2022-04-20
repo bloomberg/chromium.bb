@@ -116,7 +116,8 @@ class NavigationURLLoaderTest : public testing::Test {
             net::IsolationInfo::Create(
                 net::IsolationInfo::RequestType::kMainFrame, origin, origin,
                 net::SiteForCookies::FromUrl(url)),
-            true /* is_primary_main_frame */, true /* is_main_frame */,
+            true /* is_primary_main_frame */,
+            true /* is_outermost_main_frame */, true /* is_main_frame */,
             false /* are_ancestors_secure */, frame_tree_node_id,
             false /* report_raw_headers */, false /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
@@ -132,8 +133,7 @@ class NavigationURLLoaderTest : public testing::Test {
         browser_context_.get(), storage_partition, std::move(request_info),
         nullptr, nullptr, nullptr, delegate,
         NavigationURLLoader::LoaderType::kRegular, mojo::NullRemote(),
-        storage_partition->CreateURLLoaderNetworkObserverForNavigationRequest(
-            frame_tree_node_id),
+        /* url_loader_network_observer */ mojo::NullRemote(),
         /*devtools_observer=*/mojo::NullRemote());
   }
 

@@ -9,6 +9,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -53,7 +57,7 @@ class CrostiniUpgraderUIDelegate {
   // chooser.
   virtual void Backup(const ContainerId& container_id,
                       bool show_file_chooser,
-                      content::WebContents* web_contents) = 0;
+                      base::WeakPtr<content::WebContents> web_contents) = 0;
 
   virtual void StartPrechecks() = 0;
 
@@ -62,7 +66,7 @@ class CrostiniUpgraderUIDelegate {
 
   // Restore the container to the backed up state if an upgrade has failed.
   virtual void Restore(const ContainerId& container_id,
-                       content::WebContents* web_contents) = 0;
+                       base::WeakPtr<content::WebContents> web_contents) = 0;
 
   // Cancel the ongoing upgrade.
   virtual void Cancel() = 0;

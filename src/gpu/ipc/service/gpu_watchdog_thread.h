@@ -75,6 +75,13 @@ constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 3;
 #endif
 constexpr int kMaxExtraCyclesBeforeKill = 0;
 
+// If the scheduled timeout function is delayed by more than
+// kUnreasonableTimeoutDelay, we assume the system is in a unexpected state and
+// the GPU watchdog will NOT terminate the GPU process if no progress is made in
+// the GPU main thread or in the GPU display compositor thread. This is used in
+// determining SlowWatchdogThread.
+constexpr base::TimeDelta kUnreasonableTimeoutDelay = base::Seconds(5);
+
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
@@ -177,7 +184,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   void ContinueWithNextWatchdogTimeoutTask();
 
   // Records "GPU.WatchdogThread.Event".
-  void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event);
+  void GpuWatchdogThreadEventHistogram(GpuWatchdogThreadEvent thread_event);
 
   // Histogram recorded in OnWatchdogTimeout()
   // Records "GPU.WatchdogThread.Timeout"
@@ -295,15 +302,20 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   bool foregrounded_event_ = false;
   bool power_resumed_event_ = false;
 
-  const std::string thread_name_;
+  // The watched thread name string used for UMA and crash key.
+  std::string watched_thread_name_str_uma_;
+
+  // The thread id string of the watched thread.
+  std::string watched_thread_id_str_;
 
   // For gpu testing only.
   const bool is_test_mode_;
+
   // Set by the watchdog thread and Read by the test thread.
   base::AtomicFlag test_result_timeout_and_gpu_hang_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> watched_gpu_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> watchdog_thread_task_runner_;
+  SEQUENCE_CHECKER(watchdog_thread_sequence_checker_);
+  SEQUENCE_CHECKER(watched_thread_sequence_checker_);
 
   base::WeakPtr<GpuWatchdogThread> weak_ptr_;
   base::WeakPtrFactory<GpuWatchdogThread> weak_factory_{this};

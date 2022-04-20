@@ -7,96 +7,79 @@
 
 #include "tests/Test.h"
 
-#include "experimental/graphite/include/Context.h"
-#include "experimental/graphite/include/Recorder.h"
-#include "experimental/graphite/src/PipelineDataCache.h"
-#include "experimental/graphite/src/RecorderPriv.h"
+#include "include/gpu/graphite/Context.h"
+#include "include/gpu/graphite/Recorder.h"
 #include "src/core/SkPipelineData.h"
 #include "src/core/SkUniform.h"
+#include "src/gpu/graphite/PipelineDataCache.h"
+#include "src/gpu/graphite/RecorderPriv.h"
 
-using namespace skgpu;
-
-namespace {
-
-std::unique_ptr<SkPipelineData> make_pd(int numUniforms, int dataSize) {
-    static constexpr int kMaxUniforms = 3;
-    static constexpr SkUniform kUniforms[kMaxUniforms] {
-        {"point0",   SkSLType::kFloat2 },
-        {"point1",   SkSLType::kFloat2 },
-        {"point2",   SkSLType::kFloat2 },
-    };
-
-    SkASSERT(numUniforms <= kMaxUniforms);
-
-    sk_sp<SkUniformData> ud = SkUniformData::Make(SkSpan<const SkUniform>(kUniforms, numUniforms),
-                                                  dataSize);
-    for (int i = 0; i < numUniforms; ++i) {
-        ud->offsets()[i] = i;
-    }
-    for (int i = 0; i < dataSize; ++i) {
-        ud->data()[i] = i % 255;
-    }
-
-    return std::make_unique<SkPipelineData>(std::move(ud));
-}
-
-} // anonymous namespace
+using namespace skgpu::graphite;
 
 DEF_GRAPHITE_TEST_FOR_CONTEXTS(PipelineDataCacheTest, reporter, context) {
     std::unique_ptr<Recorder> recorder = context->makeRecorder();
 
-    auto cache = recorder->priv().pipelineDataCache();
+    auto cache = recorder->priv().uniformDataCache();
 
     REPORTER_ASSERT(reporter, cache->count() == 0);
 
-    // Nullptr should already be in the cache and return kInvalidUniformID
+    // Nullptr should already be in the cache
     {
-        uint32_t result0 = cache->insert(nullptr);
-        REPORTER_ASSERT(reporter, result0 == PipelineDataCache::kInvalidUniformID);
-        REPORTER_ASSERT(reporter, cache->count() == 0);
+        UniformDataCache::Index invalid;
+        REPORTER_ASSERT(reporter, !invalid.isValid());
+
+        const SkUniformDataBlock* lookup = cache->lookup(invalid);
+        REPORTER_ASSERT(reporter, !lookup);
     }
 
-    // Add a new unique PD
-    SkPipelineData* danglingPD1 = nullptr;
-    uint32_t result1;
+    static const int kSize = 16;
+
+    // Add a new unique UDB
+    static const char kMemory1[kSize] = {
+            7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
+    };
+    SkUniformDataBlock udb1(SkMakeSpan(kMemory1, kSize));
+    UniformDataCache::Index id1;
     {
-        std::unique_ptr<SkPipelineData> pd1 = make_pd(2, 16);
-        danglingPD1 = pd1.get();
-        result1 = cache->insert(std::move(pd1));
-        REPORTER_ASSERT(reporter, result1 != PipelineDataCache::kInvalidUniformID);
-        SkPipelineData* lookup = cache->lookup(result1);
-        REPORTER_ASSERT(reporter, lookup == danglingPD1);
+        id1 = cache->insert(udb1);
+        REPORTER_ASSERT(reporter, id1.isValid());
+        const SkUniformDataBlock* lookup = cache->lookup(id1);
+        REPORTER_ASSERT(reporter, *lookup == udb1);
 
         REPORTER_ASSERT(reporter, cache->count() == 1);
     }
 
-    // Try to add a duplicate PD
+    // Try to add a duplicate UDB
     {
-        std::unique_ptr<SkPipelineData> pd2 = make_pd(2, 16);
-        SkPipelineData* danglingPD2 = pd2.get();
-        uint32_t result2 = cache->insert(std::move(pd2));
-        REPORTER_ASSERT(reporter, result2 != PipelineDataCache::kInvalidUniformID);
-        REPORTER_ASSERT(reporter, result2 == result1);
-        SkPipelineData* lookup = cache->lookup(result2);
-        REPORTER_ASSERT(reporter, lookup != danglingPD2);
-        REPORTER_ASSERT(reporter, lookup == danglingPD1);
+        static const char kMemory2[kSize] = {
+                7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
+        };
+        SkUniformDataBlock udb2(SkMakeSpan(kMemory2, kSize));
+        UniformDataCache::Index id2 = cache->insert(udb2);
+        REPORTER_ASSERT(reporter, id2.isValid());
+        REPORTER_ASSERT(reporter, id2 == id1);
+        const SkUniformDataBlock* lookup = cache->lookup(id2);
+        REPORTER_ASSERT(reporter, *lookup == udb1);
+        REPORTER_ASSERT(reporter, *lookup == udb2);
 
         REPORTER_ASSERT(reporter, cache->count() == 1);
     }
 
-    // Add a second new unique PD
+    // Add a second new unique UDB
     {
-        std::unique_ptr<SkPipelineData> pd3 = make_pd(3, 16);
-        SkPipelineData* danglingPD3 = pd3.get();
-        uint32_t result3 = cache->insert(std::move(pd3));
-        REPORTER_ASSERT(reporter, result3 != PipelineDataCache::kInvalidUniformID);
-        REPORTER_ASSERT(reporter, result3 != result1);
-        SkPipelineData* lookup = cache->lookup(result3);
-        REPORTER_ASSERT(reporter, lookup == danglingPD3);
-        REPORTER_ASSERT(reporter, lookup != danglingPD1);
+        static const char kMemory3[kSize] = {
+                6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
+        };
+        SkUniformDataBlock udb3(SkMakeSpan(kMemory3, kSize));
+        UniformDataCache::Index id3 = cache->insert(udb3);
+        REPORTER_ASSERT(reporter, id3.isValid());
+        REPORTER_ASSERT(reporter, id3 != id1);
+        const SkUniformDataBlock* lookup = cache->lookup(id3);
+        REPORTER_ASSERT(reporter, *lookup == udb3);
+        REPORTER_ASSERT(reporter, *lookup != udb1);
 
         REPORTER_ASSERT(reporter, cache->count() == 2);
     }
 
-    // TODO(robertphillips): expand this test to exercise all the PD comparison failure modes
+    // TODO(robertphillips): expand this test to exercise all the UDB comparison failure modes
 }

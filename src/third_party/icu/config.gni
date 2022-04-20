@@ -15,6 +15,11 @@ declare_args() {
   # If true, compile icu into a standalone static library. Currently this is
   # only useful on Chrome OS.
   icu_disable_thin_archive = false
+
+  # If set to nonempty, this is the label of the directory to be used to pull
+  # the ICU data files content.  The setting has effect only when building
+  # inside the Fuchsia source tree.
+  icu_fuchsia_override_data_dir = ""
 }
 
 # Set to true if icu is being built from the Fuchsia tree.

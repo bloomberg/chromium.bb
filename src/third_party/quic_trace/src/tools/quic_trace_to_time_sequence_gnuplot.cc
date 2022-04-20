@@ -22,7 +22,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "lib/quic_trace.pb.h"
+#include "quic_trace/quic_trace.pb.h"
 
 ABSL_FLAG(std::string,
           sequence,

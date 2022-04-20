@@ -220,7 +220,6 @@ bool IsPinnedToTaskbarHelper::GetResult(bool check_verbs) {
                                       base::FileEnumerator::DIRECTORIES);
   for (base::FilePath directory = directory_enum.Next(); !directory.empty();
        directory = directory_enum.Next()) {
-    current_exe.value();
     if (DirectoryContainsPinnedShortcutForProgram(
             directory, current_exe_compare, check_verbs)) {
       return true;
@@ -253,13 +252,16 @@ void UtilWinImpl::UnpinShortcuts(
   std::move(callback).Run();
 }
 
-void UtilWinImpl::CreateOrUpdateShortcutLink(
-    const base::FilePath& shortcut_path,
+void UtilWinImpl::CreateOrUpdateShortcutLinks(
+    const std::vector<base::FilePath>& shortcut_paths,
     const base::win::ShortcutProperties& properties,
     base::win::ShortcutOperation operation,
-    CreateOrUpdateShortcutLinkCallback callback) {
-  bool ret = base::win::CreateOrUpdateShortcutLink(shortcut_path, properties,
-                                                   operation);
+    CreateOrUpdateShortcutLinksCallback callback) {
+  bool ret = true;
+  for (const auto& shortcut_path : shortcut_paths) {
+    ret &= base::win::CreateOrUpdateShortcutLink(shortcut_path, properties,
+                                                 operation);
+  }
   std::move(callback).Run(ret);
 }
 

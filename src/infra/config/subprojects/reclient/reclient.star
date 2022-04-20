@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "cpu", "os")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
+load("//lib/structs.star", "structs")
 load("//console-header.star", "HEADER")
 
 luci.bucket(
@@ -90,6 +92,20 @@ fyi_reclient_test_builder(
 
 fyi_reclient_staging_builder(
     name = "Win x64 Builder reclient staging",
+    builder_spec = builder_config.copy_from(
+        "ci/Win x64 Builder",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "enable_reclient",
+                    "reclient_staging",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     builderless = True,
     console_view_category = "win",
     cores = 32,
@@ -99,9 +115,65 @@ fyi_reclient_staging_builder(
 
 fyi_reclient_test_builder(
     name = "Win x64 Builder reclient test",
+    builder_spec = builder_config.copy_from(
+        "ci/Win x64 Builder",
+        lambda spec: structs.evolve(
+            spec,
+            gclient_config = structs.extend(
+                spec.gclient_config,
+                apply_configs = [
+                    "enable_reclient",
+                    "reclient_test",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     builderless = True,
     console_view_category = "win",
     cores = 32,
     execution_timeout = 5 * time.hour,
     os = os.WINDOWS_ANY,
+)
+
+fyi_reclient_staging_builder(
+    name = "Simple Chrome Builder reclient staging",
+    console_view_category = "linux",
+    os = os.LINUX_BIONIC_REMOVE,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
+            cros_boards_with_qemu_images = "amd64-generic-vm",
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["chromeos", "enable_reclient", "reclient_staging"],
+        ),
+    ),
+)
+
+fyi_reclient_test_builder(
+    name = "Simple Chrome Builder reclient test",
+    console_view_category = "linux",
+    os = os.LINUX_BIONIC_REMOVE,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.CHROMEOS,
+            cros_boards_with_qemu_images = "amd64-generic-vm",
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["chromeos", "enable_reclient", "reclient_test"],
+        ),
+    ),
 )

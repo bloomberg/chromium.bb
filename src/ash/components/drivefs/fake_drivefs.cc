@@ -21,7 +21,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
@@ -544,5 +543,7 @@ void FakeDriveFs::GetSyncingPaths(
     drivefs::mojom::DriveFs::GetSyncingPathsCallback callback) {
   std::move(callback).Run(drive::FILE_ERROR_OK, syncing_paths_);
 }
+
+void FakeDriveFs::PollHostedFilePinStates() {}
 
 }  // namespace drivefs

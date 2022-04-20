@@ -38,12 +38,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.UiThreadTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.webrtc.NetworkChangeDetector.ConnectionType;
 import org.webrtc.NetworkChangeDetector.NetworkInformation;
 import org.webrtc.NetworkMonitorAutoDetect.ConnectivityManagerDelegate;
@@ -58,10 +55,10 @@ import org.webrtc.NetworkMonitorAutoDetect.SimpleNetworkCallback;
  * class is used in practice in WebRTC.
  */
 @SuppressLint("NewApi")
-@RunWith(BaseJUnit4ClassRunner.class)
 public class NetworkMonitorTest {
   private static final long INVALID_NET_ID = -1;
   private NetworkChangeDetector detector;
+  private String fieldTrialsString = "";
 
   /**
    * Listens for alerts fired by the NetworkMonitor when network status changes.
@@ -98,7 +95,7 @@ public class NetworkMonitorTest {
     }
 
     MockConnectivityManagerDelegate(Set<Network> availableNetworks, String fieldTrialsString) {
-      super(null, availableNetworks, fieldTrialsString);
+      super((ConnectivityManager) null, availableNetworks, fieldTrialsString);
     }
 
     @Override
@@ -164,7 +161,13 @@ public class NetworkMonitorTest {
 
   // A dummy NetworkMonitorAutoDetect.Observer.
   private static class TestNetworkMonitorAutoDetectObserver
-      implements NetworkMonitorAutoDetect.Observer {
+      extends NetworkMonitorAutoDetect.Observer {
+    final String fieldTrialsString;
+
+    TestNetworkMonitorAutoDetectObserver(String fieldTrialsString) {
+      this.fieldTrialsString = fieldTrialsString;
+    }
+
     @Override
     public void onConnectionTypeChanged(ConnectionType newConnectionType) {}
 
@@ -177,6 +180,11 @@ public class NetworkMonitorTest {
     @Override
     public void onNetworkPreference(List<ConnectionType> types, @NetworkPreference int preference) {
     }
+
+    // @Override
+    // public String getFieldTrialsString() {
+    //   return fieldTrialsString;
+    // }
   }
 
   private NetworkMonitorAutoDetect receiver;
@@ -199,7 +207,7 @@ public class NetworkMonitorTest {
           }
         });
 
-    receiver = NetworkMonitor.createAndSetAutoDetectForTest(context);
+    receiver = NetworkMonitor.createAndSetAutoDetectForTest(context, fieldTrialsString);
     assertNotNull(receiver);
 
     connectivityDelegate = new MockConnectivityManagerDelegate();
@@ -226,12 +234,12 @@ public class NetworkMonitorTest {
    * Tests that the receiver registers for connectivity intents during construction.
    */
   @Test
-  @UiThreadTest
   @SmallTest
   public void testNetworkMonitorRegistersInConstructor() throws InterruptedException {
     Context context = InstrumentationRegistry.getTargetContext();
 
-    NetworkMonitorAutoDetect.Observer observer = new TestNetworkMonitorAutoDetectObserver();
+    NetworkMonitorAutoDetect.Observer observer =
+        new TestNetworkMonitorAutoDetectObserver(fieldTrialsString);
 
     NetworkMonitorAutoDetect receiver = new NetworkMonitorAutoDetect(observer, context);
 
@@ -243,7 +251,6 @@ public class NetworkMonitorTest {
    * notification to Java observers.
    */
   @Test
-  @UiThreadTest
   @MediumTest
   public void testNetworkMonitorJavaObservers() throws InterruptedException {
     // Initialize the NetworkMonitor with a connection.
@@ -290,11 +297,10 @@ public class NetworkMonitorTest {
    * that the functions don't crash.
    */
   @Test
-  @UiThreadTest
   @SmallTest
   public void testConnectivityManagerDelegateDoesNotCrash() {
     ConnectivityManagerDelegate delegate = new ConnectivityManagerDelegate(
-        InstrumentationRegistry.getTargetContext(), new HashSet<>());
+        InstrumentationRegistry.getTargetContext(), new HashSet<>(), fieldTrialsString);
     delegate.getNetworkState();
     Network[] networks = delegate.getAllNetworks();
     if (networks.length >= 1) {
@@ -312,7 +318,7 @@ public class NetworkMonitorTest {
     ConnectivityManagerDelegate delegate = new ConnectivityManagerDelegate(
         (ConnectivityManager) InstrumentationRegistry.getTargetContext().getSystemService(
             Context.CONNECTIVITY_SERVICE),
-        availableNetworks, "getAllNetworksFromCache/Enabled/");
+        availableNetworks, "getAllNetworksFromCache:true");
 
     Network[] networks = delegate.getAllNetworks();
     assertTrue(networks.length == 0);
@@ -328,7 +334,8 @@ public class NetworkMonitorTest {
   @Test
   @SmallTest
   public void testConnectivityManager_requestVPN_disabled() {
-    NetworkRequest request = getNetworkRequestForFieldTrials("requestVPN/Disabled");
+    NetworkRequest request =
+        getNetworkRequestForFieldTrials("anyothertext,requestVPN:false,anyothertext");
     assertTrue(request.equals(new NetworkRequest.Builder()
                                   .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                                   .build()));
@@ -337,7 +344,7 @@ public class NetworkMonitorTest {
   @Test
   @SmallTest
   public void testConnectivityManager_requestVPN_enabled() {
-    NetworkRequest request = getNetworkRequestForFieldTrials("requestVPN/Enabled");
+    NetworkRequest request = getNetworkRequestForFieldTrials("requestVPN:true");
     assertTrue(request.equals(new NetworkRequest.Builder()
                                   .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                                   .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
@@ -347,7 +354,7 @@ public class NetworkMonitorTest {
   @Test
   @SmallTest
   public void testConnectivityManager_includeOtherUidNetworks_disabled() {
-    NetworkRequest request = getNetworkRequestForFieldTrials("includeOtherUidNetworks/Disabled");
+    NetworkRequest request = getNetworkRequestForFieldTrials("includeOtherUidNetworks:false");
     assertTrue(request.equals(new NetworkRequest.Builder()
                                   .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                                   .build()));
@@ -356,7 +363,7 @@ public class NetworkMonitorTest {
   @Test
   @SmallTest
   public void testConnectivityManager_includeOtherUidNetworks_enabled() {
-    NetworkRequest request = getNetworkRequestForFieldTrials("includeOtherUidNetworks/Enabled");
+    NetworkRequest request = getNetworkRequestForFieldTrials("includeOtherUidNetworks:true");
     NetworkRequest.Builder builder =
         new NetworkRequest.Builder().addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -365,8 +372,9 @@ public class NetworkMonitorTest {
     assertTrue(request.equals(builder.build()));
   }
 
-  private NetworkRequest getNetworkRequestForFieldTrials(String fieldTrials) {
-    return new ConnectivityManagerDelegate(null, new HashSet<>(), fieldTrials)
+  private NetworkRequest getNetworkRequestForFieldTrials(String fieldTrialsString) {
+    return new ConnectivityManagerDelegate(
+        (ConnectivityManager) null, new HashSet<>(), fieldTrialsString)
         .createNetworkRequest();
   }
 
@@ -376,10 +384,10 @@ public class NetworkMonitorTest {
    * least check that the functions don't crash.
    */
   @Test
-  @UiThreadTest
   @SmallTest
   public void testQueryableAPIsDoNotCrash() {
-    NetworkMonitorAutoDetect.Observer observer = new TestNetworkMonitorAutoDetectObserver();
+    NetworkMonitorAutoDetect.Observer observer =
+        new TestNetworkMonitorAutoDetectObserver(fieldTrialsString);
     NetworkMonitorAutoDetect ncn =
         new NetworkMonitorAutoDetect(observer, InstrumentationRegistry.getTargetContext());
     ncn.getDefaultNetId();
@@ -393,7 +401,7 @@ public class NetworkMonitorTest {
   public void testStartStopMonitoring() {
     NetworkMonitor networkMonitor = NetworkMonitor.getInstance();
     Context context = ContextUtils.getApplicationContext();
-    networkMonitor.startMonitoring(context);
+    networkMonitor.startMonitoring(context, fieldTrialsString);
     assertEquals(1, networkMonitor.getNumObservers());
     assertEquals(detector, networkMonitor.getNetworkChangeDetector());
     networkMonitor.stopMonitoring();

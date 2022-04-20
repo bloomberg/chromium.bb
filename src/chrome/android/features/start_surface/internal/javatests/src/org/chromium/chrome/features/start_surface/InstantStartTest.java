@@ -117,7 +117,10 @@ public class InstantStartTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(1)
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_START)
+                    .build();
 
     @Rule
     public ErrorCollector collector = new ErrorCollector();
@@ -142,7 +145,7 @@ public class InstantStartTest {
     @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
         UiRestriction.RESTRICTION_TYPE_PHONE, UiRestriction.RESTRICTION_TYPE_TABLET})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
-            "force-fieldtrial-params=Study.Group:allow_to_refetch/true"})
+            "force-fieldtrial-params=Study.Group:allow_to_refetch/true/thumbnail_aspect_ratio/2.0"})
     public void fetchThumbnailsPreNativeTest() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);

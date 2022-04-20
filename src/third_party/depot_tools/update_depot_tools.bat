@@ -15,7 +15,7 @@ IF "%~nx0"=="update_depot_tools.bat" (
   if errorlevel 1 goto :EOF
   :: Use call/exit to avoid leaving an orphaned window title.
   call "%TEMP%\update_depot_tools_tmp.bat" "%~dp0" %*
-  exit /b
+  exit /b %ERRORLEVEL%
 )
 
 set DEPOT_TOOLS_DIR=%~1

@@ -1,4 +1,4 @@
-# Copyright 2020 The Dawn Authors
+# Copyright 2022 The Dawn & Tint Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,13 +23,41 @@ if (NOT TARGET SPIRV-Headers)
     add_subdirectory(${DAWN_SPIRV_HEADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-headers")
 endif()
 
+if(${TINT_BUILD_GLSL_WRITER})
+  if(${TINT_BUILD_SAMPLES})
+    add_subdirectory("${DAWN_THIRD_PARTY_DIR}/vulkan-deps/glslang/src" "${CMAKE_CURRENT_BINARY_DIR}/glslang" EXCLUDE_FROM_ALL)
+  endif()
+endif()
+
+# Needs to come before SPIR-V Tools
+if ((${TINT_BUILD_SPIRV_TOOLS_FUZZER} OR ${TINT_BUILD_AST_FUZZER}) AND
+    (NOT TARGET protobuf::libprotobuf OR NOT TARGET protobuf::protoc))
+  set(protobuf_BUILD_TESTS OFF CACHE BOOL "Controls whether protobuf tests are built" FORCE)
+  set(protobuf_MSVC_STATIC_RUNTIME OFF CACHE BOOL "Controls whether a protobuf static runtime is built" FORCE)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/protobuf/cmake)
+endif()
+
+if(${TINT_BUILD_SPV_READER} OR ${TINT_BUILD_SPV_WRITER})
+  if (NOT IS_DIRECTORY "${SPIRV-Headers_SOURCE_DIR}")
+    set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spirv-headers CACHE STRING "Source directory for SPIR-V headers")
+  endif()
+endif()
+
 if (NOT TARGET SPIRV-Tools)
     set(SPIRV_SKIP_TESTS ON CACHE BOOL "" FORCE)
     set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "" FORCE)
     set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "" FORCE)
 
+    if(${TINT_BUILD_SPV_READER} OR ${TINT_BUILD_SPV_WRITER})
+      set(SPIRV_SKIP_TESTS ON CACHE BOOL "Controls whether SPIR-V tests are run" FORCE)
+      set(SPIRV_WERROR OFF CACHE BOOL OFF FORCE)
+      if (${TINT_BUILD_SPIRV_TOOLS_FUZZER})
+        set(SPIRV_BUILD_FUZZER ON CACHE BOOL "Controls whether spirv-fuzz is built" FORCE)
+      endif()
+    endif()
+
     message(STATUS "Dawn: using SPIRV-Tools at ${DAWN_SPIRV_TOOLS_DIR}")
-    add_subdirectory(${DAWN_SPIRV_TOOLS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-tools")
+    add_subdirectory(${DAWN_SPIRV_TOOLS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-tools" EXCLUDE_FROM_ALL)
 endif()
 
 if (NOT TARGET glfw)
@@ -41,23 +69,14 @@ if (NOT TARGET glfw)
     add_subdirectory(${DAWN_GLFW_DIR} "${CMAKE_CURRENT_BINARY_DIR}/glfw")
 endif()
 
-if (NOT TARGET libtint)
-    message(STATUS "Dawn: using Tint at ${DAWN_TINT_DIR}")
-    set(TINT_BUILD_GLSL_WRITER ON)
-    # Don't build the samples because they require glslang and Dawn does not
-    # provide this third_party dependency.
-    set(TINT_BUILD_SAMPLES OFF)
-    # TODO(crbug.com/tint/455): Tint does not currently build with CMake when
-    # BUILD_SHARED_LIBS=1, so always build it as static for now.
-    set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
-    set(BUILD_SHARED_LIBS 0)
-    add_subdirectory(${DAWN_TINT_DIR} "${CMAKE_CURRENT_BINARY_DIR}/tint")
-    set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_SAVED})
-endif()
-
 if (NOT TARGET libabsl)
     message(STATUS "Dawn: using Abseil at ${DAWN_ABSEIL_DIR}")
     add_subdirectory(${DAWN_ABSEIL_DIR} "${CMAKE_CURRENT_BINARY_DIR}/abseil")
+endif()
+
+if (NOT TARGET Vulkan-Headers)
+    message(STATUS "Dawn: using Vulkan-Headers at ${DAWN_VULKAN_HEADERS_DIR}")
+    add_subdirectory(${DAWN_VULKAN_HEADERS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/vulkan-headers")
 endif()
 
 # Header-only library for khrplatform.h
@@ -76,3 +95,21 @@ target_sources(dawn_vulkan_headers INTERFACE
     "${CMAKE_CURRENT_SOURCE_DIR}/khronos/vulkan/vulkan_core.h"
 )
 target_include_directories(dawn_vulkan_headers INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/khronos")
+
+if (${DAWN_ENABLE_SWIFTSHADER} AND NOT TARGET vk_swiftshader)
+    set(SWIFTSHADER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(SWIFTSHADER_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+
+    message(STATUS "Dawn: using Swiftshader at ${DAWN_SWIFTSHADER_DIR}")
+    add_subdirectory(${DAWN_SWIFTSHADER_DIR} "${CMAKE_CURRENT_BINARY_DIR}/swiftshader")
+endif()
+
+if (${TINT_BUILD_BENCHMARKS})
+  set(BENCHMARK_ENABLE_TESTING FALSE CACHE BOOL FALSE FORCE)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/benchmark EXCLUDE_FROM_ALL)
+endif()
+
+if (${TINT_BUILD_TESTS} AND NOT TARGET gmock)
+  set(gtest_force_shared_crt ON CACHE BOOL "Controls whether a shared run-time library should be used even when Google Test is built as static library" FORCE)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/googletest EXCLUDE_FROM_ALL)
+endif()

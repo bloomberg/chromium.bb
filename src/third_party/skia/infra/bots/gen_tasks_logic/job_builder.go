@@ -105,12 +105,6 @@ func (b *jobBuilder) genTasksForJob() {
 		return
 	}
 
-	// Update Go Dependencies.
-	if b.extraConfig("UpdateGoDeps") {
-		b.updateGoDeps()
-		return
-	}
-
 	// Create docker image.
 	if b.extraConfig("CreateDockerImage") {
 		b.createDockerImage(b.extraConfig("WASM"))
@@ -141,6 +135,11 @@ func (b *jobBuilder) genTasksForJob() {
 		b.checkGeneratedFiles()
 		return
 	}
+	if b.Name == "Housekeeper-PerCommit-CheckGeneratedBazelFiles" {
+		b.checkGeneratedBazelFiles()
+		return
+	}
+
 	if b.Name == "Housekeeper-PerCommit-RunGnToBp" {
 		b.checkGnToBp()
 		return

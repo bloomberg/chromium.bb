@@ -56,19 +56,19 @@ constexpr gfx::Size kLabelsContainerBaseSize = {
     kInfoContainerSize.height()};
 constexpr gfx::Size kPipButtonSize = {30, 20};
 constexpr int kPipButtonIconSize = 16;
-constexpr gfx::Insets kNotificationControlsInsets = {8, 0, 0, 8};
+constexpr auto kNotificationControlsInsets = gfx::Insets::TLBR(8, 0, 0, 8);
 constexpr gfx::Size kButtonsContainerSize = {
     kMediaNotificationViewBaseSize.width(), 40};
 constexpr gfx::Size kMediaControlsContainerSize = {
     328 /* base width - dismissbutton size - margin*/, 32};
-constexpr gfx::Insets kMediaControlsContainerInsets = {0, 22, 0, 0};
+constexpr auto kMediaControlsContainerInsets = gfx::Insets::TLBR(0, 22, 0, 0);
 constexpr int kMediaControlsButtonSpacing = 16;
-constexpr gfx::Insets kProgressBarInsets = {0, 16, 0, 16};
-constexpr gfx::Insets kInfoContainerInsets = {0, 15, 0, 16};
+constexpr auto kProgressBarInsets = gfx::Insets::TLBR(0, 16, 0, 16);
+constexpr auto kInfoContainerInsets = gfx::Insets::TLBR(0, 15, 0, 16);
 constexpr int kInfoContainerSpacing = 12;
 constexpr gfx::Size kUtilButtonsContainerSize = {
     kMediaNotificationViewBaseSize.width(), 39};
-constexpr gfx::Insets kUtilButtonsContainerInsets = {7, 16, 12, 16};
+constexpr auto kUtilButtonsContainerInsets = gfx::Insets::TLBR(7, 16, 12, 16);
 constexpr int kUtilButtonsSpacing = 8;
 
 constexpr int kTitleArtistLineHeight = 20;
@@ -184,12 +184,14 @@ class MediaButton : public views::ImageButton {
     SetPreferredSize(button_size);
   }
 
-  void SetButtonColor(SkColor foreground_color) {
+  void SetButtonColor(SkColor foreground_color,
+                      SkColor foreground_disabled_color) {
     foreground_color_ = foreground_color;
+    foreground_disabled_color_ = foreground_disabled_color;
 
     views::SetImageFromVectorIconWithColor(
         this, *GetVectorIconForMediaAction(GetActionFromButtonTag(*this)),
-        icon_size_, foreground_color_);
+        icon_size_, foreground_color_, foreground_disabled_color_);
 
     SchedulePaint();
   }
@@ -203,13 +205,14 @@ class MediaButton : public views::ImageButton {
         GetAccessibleNameForMediaAction(GetActionFromButtonTag(*this)));
     views::SetImageFromVectorIconWithColor(
         this, *GetVectorIconForMediaAction(GetActionFromButtonTag(*this)),
-        icon_size_, foreground_color_);
+        icon_size_, foreground_color_, foreground_disabled_color_);
   }
 
  private:
   SkColor GetForegroundColor() { return foreground_color_; }
 
   SkColor foreground_color_ = gfx::kPlaceholderColor;
+  SkColor foreground_disabled_color_ = gfx::kPlaceholderColor;
   int icon_size_;
 };
 
@@ -240,7 +243,7 @@ MediaNotificationViewModernImpl::MediaNotificationViewModernImpl(
   DCHECK(notification_width >= kMediaNotificationViewBaseSize.width())
       << "MediaNotificationViewModernImpl expects a width of at least "
       << kMediaNotificationViewBaseSize.width();
-  auto border_insets = gfx::Insets(
+  auto border_insets = gfx::Insets::VH(
       0, (kMediaNotificationViewBaseSize.width() - notification_width) / 2);
   SetBorder(views::CreateEmptyBorder(border_insets));
 
@@ -722,7 +725,7 @@ void MediaNotificationViewModernImpl::UpdateForegroundColor() {
   if (mute_button_) {
     views::SetImageFromVectorIconWithColor(
         mute_button_, vector_icons::kVolumeUpIcon, kMuteButtonIconSize,
-        theme.enabled_icon_color);
+        theme.enabled_icon_color, theme.disabled_icon_color);
     views::SetToggledImageFromVectorIconWithColor(
         mute_button_, vector_icons::kVolumeOffIcon, kMediaButtonIconSize,
         theme.enabled_icon_color, theme.disabled_icon_color);
@@ -737,10 +740,12 @@ void MediaNotificationViewModernImpl::UpdateForegroundColor() {
 
   // Update the colors for the toggle buttons (play/pause and
   // picture-in-picture)
-  play_pause_button_->SetButtonColor(theme.enabled_icon_color);
+  play_pause_button_->SetButtonColor(theme.enabled_icon_color,
+                                     theme.disabled_icon_color);
 
   if (picture_in_picture_button_)
-    picture_in_picture_button_->SetButtonColor(theme.enabled_icon_color);
+    picture_in_picture_button_->SetButtonColor(theme.enabled_icon_color,
+                                               theme.disabled_icon_color);
 
   // Update the colors for the media control buttons.
   for (views::View* child : media_controls_container_->children()) {
@@ -750,11 +755,12 @@ void MediaNotificationViewModernImpl::UpdateForegroundColor() {
 
     MediaButton* button = static_cast<MediaButton*>(child);
 
-    button->SetButtonColor(theme.enabled_icon_color);
+    button->SetButtonColor(theme.enabled_icon_color, theme.disabled_icon_color);
   }
 
   SchedulePaint();
-  container_->OnColorsChanged(theme.enabled_icon_color, background);
+  container_->OnColorsChanged(theme.enabled_icon_color,
+                              theme.disabled_icon_color, background);
 }
 
 void MediaNotificationViewModernImpl::ButtonPressed(views::Button* button) {

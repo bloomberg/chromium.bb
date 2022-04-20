@@ -32,9 +32,15 @@ You must also send the `Accept-CH: Sec-CH-Partitioned-Cookies` header in each HT
 
 If you have successfully opted into the origin trial, subsequent requests from the Chrome client will include the `Sec-CH-Partitioned-Cookies: ?1` request header until the current session is ended.
 If you store persistent partitioned cookies then you will receive the `Sec-CH-Partitioned-Cookies: ?0` request header for the first request to the cookies' origin.
+
+**Not all Chrome clients using versions 100-102 will be in the trial.**
+**If the client does not send the Sec-CH-Partitioned-Cookies header, then partitioned cookies are not enabled.**
+
 If you do not respond with a valid token in the `Origin-Trial` header and `Accept-CH: Partitioned-Cookies`, then the partitioned cookies on the machine will be converted to unpartitioned cookies.
 
 You can register your site for the origin trial [here](https://developer.chrome.com/origintrials/#/view_trial/1239615797433729025).
+
+**The origin trial is only available in Chrome versions 100-102.**
 
 ### Example usage
 
@@ -98,11 +104,20 @@ The CHIPS Origin Trial will not be supported in service workers.
 
 You can view the more detailed design document of the CHIPS Origin Trial [here](https://docs.google.com/document/d/1EPHnfHpZHpV09vITXu8cEEIMt1DYiRN_pZfeBal8UQw).
 
+### Local testing
+
+If you want to test your changes locally on your machine, you can enable the CHIPS origin trial bypass feature (chrome://flags/#partitioned-cookies-bypass-origin-trial) on your local device to use partitioned cookies on any site without them needing to opt into the trial.
+
+### A/B testing
+
+Sites can use the origin trial for [A/B testing](https://en.wikipedia.org/wiki/A/B_testing) by sending the `Origin-Trial` and `Accept-CH: Sec-CH-Partitioned-Cookies` headers to users in the experiment group and not send those headers to users in the control group.
+However, determining which users should belong to which group is the responsibility of the origin trial participant's servers.
+
 ## End-to-End Testing
 
 These instructions describe how a web developer can perform end-to-end testing of Partitioned cookies in Chromium.
 
-Note: these instructions will only work with a Chromium instance M99 or above.
+Note: these instructions will only work with a Chromium instance M100 or above.
 
 1. Go to chrome://flags/#partitioned-cookies and change the setting to "Enabled".
 
@@ -136,7 +151,7 @@ One you have followed the instructions in the [End-to-End Testing](#end-to-end-t
 
 1. Go to chrome://settings/cookies and make sure that the radio button is set to "Allow all cookies" or "Block third-party cookies in Incognito".
 
-1. Open a new tab and navigate to https://cr2.kungfoo.net/cookies.
+1. Open a new tab and navigate to https://cr2.kungfoo.net/cookies/index.php.
 
 1. Click "Set cookie (SameSite=None)" to set an **unpartitioned** SameSite=None cookie named "unpartitioned".
 
@@ -159,6 +174,14 @@ One you have followed the instructions in the [End-to-End Testing](#end-to-end-t
 
 1. Open DevTools to the "Network" tab and refresh the page. Click on the request to "thirdparty.html" and click on the "Cookies" tab.
   You should see that the unpartitioned cookie was blocked in a third-party context, but the partitioned cookie was allowed.
+
+1. Go back to the tab which has chrome://settings/cookies open. Change the setting back to "Allow all cookies" or "Block third-party cookies in Incognito".
+
+1. Open the tab which has https://lying-river-tablecloth.glitch.me open. You should see that both the "unpartitioned" and "__Host-3P_partitioned" cookies are available again.
+
+1. Click the "Clear cookies" button. This will cause cr2.kungfoo.net to send the `Clear-Site-Data: "cookies"` header. You should see that both the "unpartitioned" and "__Host-3P_partitioned" cookies were removed.
+
+1. Navigate the tab back to https://cr2.kungfoo.net/cookies/index.php. You should see that the "__Host-1P_partitioned" cookie was not removed after cr2.kungfoo.net sent the `Clear-Site-Data` header on a different top-level site.
 
 ## Resources
 - [CHIPS explainer](https://github.com/WICG/CHIPS)

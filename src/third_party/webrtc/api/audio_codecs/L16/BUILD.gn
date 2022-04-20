@@ -21,10 +21,12 @@ rtc_library("audio_encoder_L16") {
   ]
   deps = [
     "..:audio_codecs_api",
-    "../../../api:webrtc_key_value_config",
+    "../../../api:field_trials_view",
     "../../../modules/audio_coding:pcm16b",
     "../../../rtc_base:rtc_base_approved",
+    "../../../rtc_base:safe_conversions",
     "../../../rtc_base:safe_minmax",
+    "../../../rtc_base:stringutils",
     "../../../rtc_base/system:rtc_export",
   ]
   absl_deps = [
@@ -42,9 +44,10 @@ rtc_library("audio_decoder_L16") {
   ]
   deps = [
     "..:audio_codecs_api",
-    "../../../api:webrtc_key_value_config",
+    "../../../api:field_trials_view",
     "../../../modules/audio_coding:pcm16b",
     "../../../rtc_base:rtc_base_approved",
+    "../../../rtc_base:safe_conversions",
     "../../../rtc_base/system:rtc_export",
   ]
   absl_deps = [

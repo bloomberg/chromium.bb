@@ -18,7 +18,7 @@
 #include "include/gpu/GrTypes.h"
 #endif
 #if SK_GRAPHITE_ENABLED
-#include "experimental/graphite/include/GraphiteTypes.h"
+#include "include/gpu/graphite/GraphiteTypes.h"
 #endif
 #include <functional>  // std::function
 #include <optional>
@@ -50,7 +50,7 @@ class SkYUVAPixmaps;
 enum class SkEncodedImageFormat;
 
 #if SK_GRAPHITE_ENABLED
-namespace skgpu {
+namespace skgpu::graphite {
 class Recorder;
 };
 #endif
@@ -404,9 +404,18 @@ public:
     static sk_sp<SkImage> MakeFromAdoptedTexture(GrRecordingContext* context,
                                                  const GrBackendTexture& backendTexture,
                                                  GrSurfaceOrigin textureOrigin,
+                                                 SkColorType colorType);
+    static sk_sp<SkImage> MakeFromAdoptedTexture(GrRecordingContext* context,
+                                                 const GrBackendTexture& backendTexture,
+                                                 GrSurfaceOrigin textureOrigin,
                                                  SkColorType colorType,
-                                                 SkAlphaType alphaType = kPremul_SkAlphaType,
-                                                 sk_sp<SkColorSpace> colorSpace = nullptr);
+                                                 SkAlphaType alphaType);
+    static sk_sp<SkImage> MakeFromAdoptedTexture(GrRecordingContext* context,
+                                                 const GrBackendTexture& backendTexture,
+                                                 GrSurfaceOrigin textureOrigin,
+                                                 SkColorType colorType,
+                                                 SkAlphaType alphaType,
+                                                 sk_sp<SkColorSpace> colorSpace);
 
     /** Creates an SkImage from YUV[A] planar textures. This requires that the textures stay valid
         for the lifetime of the image. The ReleaseContext can be used to know when it is safe to
@@ -1154,8 +1163,8 @@ public:
         @param Mipmapped       whether created SkImage texture must allocate mip map levels
         @return                created SkImage, or nullptr
     */
-    sk_sp<SkImage> makeTextureImage(skgpu::Recorder*,
-                                    skgpu::Mipmapped = skgpu::Mipmapped::kNo,
+    sk_sp<SkImage> makeTextureImage(skgpu::graphite::Recorder*,
+                                    skgpu::graphite::Mipmapped = skgpu::graphite::Mipmapped::kNo,
                                     SkBudgeted = SkBudgeted::kYes) const;
 
 #endif

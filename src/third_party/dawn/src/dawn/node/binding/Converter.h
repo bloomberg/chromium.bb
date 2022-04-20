@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWN_NODE_BINDING_CONVERTER_H_
-#define DAWN_NODE_BINDING_CONVERTER_H_
+#ifndef SRC_DAWN_NODE_BINDING_CONVERTER_H_
+#define SRC_DAWN_NODE_BINDING_CONVERTER_H_
 
 #include <functional>
 #include <type_traits>
 
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-#include "napi.h"
+
 #include "src/dawn/node/binding/Errors.h"
+#include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
@@ -95,7 +96,8 @@ namespace wgpu::binding {
         // BufferSource is the converted type of interop::BufferSource.
         struct BufferSource {
             void* data;
-            size_t size;
+            size_t size;             // in bytes
+            size_t bytesPerElement;  // 1 for ArrayBuffers
         };
 
       private:
@@ -280,6 +282,20 @@ namespace wgpu::binding {
             return true;
         }
 
+        // ClampedInteger<T>
+        template <typename T>
+        inline bool Convert(T& out, const interop::ClampedInteger<T>& in) {
+            out = in;
+            return true;
+        }
+
+        // EnforceRangeInteger<T>
+        template <typename T>
+        inline bool Convert(T& out, const interop::EnforceRangeInteger<T>& in) {
+            out = in;
+            return true;
+        }
+
         template <typename OUT, typename... IN_TYPES>
         inline bool Convert(OUT& out, const std::variant<IN_TYPES...>& in) {
             return std::visit([&](auto&& i) { return Convert(out, i); }, in);
@@ -392,4 +408,4 @@ namespace wgpu::binding {
 
 }  // namespace wgpu::binding
 
-#endif  // DAWN_NODE_BINDING_CONVERTER_H_
+#endif  // SRC_DAWN_NODE_BINDING_CONVERTER_H_

@@ -27,9 +27,6 @@ _EXCLUDED_PATHS = (
   # Exclude all of third_party/ except for BUILD.gns that we maintain.
   r'third_party[\\\/].*(?<!BUILD.gn)$',
 
-  # Exclude everything under third_party/chromium_quic/{src|build}
-  r'third_party/chromium_quic/(src|build)/.*',
-
   # Output directories (just in case)
   r'.*\bDebug[\\\/].*',
   r'.*\bRelease[\\\/].*',

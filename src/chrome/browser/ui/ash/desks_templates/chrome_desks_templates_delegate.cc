@@ -49,11 +49,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/themed_vector_icon.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/themed_vector_icon.h"
 #include "url/gurl.h"
 
 namespace {
@@ -100,49 +100,55 @@ bool IsAppAvailable(const std::string& app_id,
   return app != nullptr;
 }
 
-// Check app availability from `launch_list`, return a vector of unavailable app
-// names.
-std::vector<std::string> GetUnavailableAppNames(
-    const app_restore::RestoreData::AppIdToLaunchList& launch_list) {
-  std::vector<std::string> app_names;
+// Returns a vector of human readable unavailable app names from
+// `desk_template`.
+std::vector<std::u16string> GetUnavailableAppNames(
+    const ash::DeskTemplate& desk_template) {
+  const auto& launch_lists =
+      desk_template.desk_restore_data()->app_id_to_launch_list();
+  std::vector<std::u16string> app_names;
   auto* app_service_proxy = apps::AppServiceProxyFactory::GetForProfile(
       ProfileManager::GetActiveUserProfile());
   if (!app_service_proxy)
     return app_names;
 
-  for (const auto& iter : launch_list) {
-    std::string name;
-    app_service_proxy->AppRegistryCache().ForOneApp(
-        iter.first,
-        [&name](const apps::AppUpdate& update) { name = update.ShortName(); });
-    if (!IsAppAvailable(iter.first, app_service_proxy))
-      app_names.push_back(name);
+  // Return the human readable app names of the unavailable apps on this device.
+  for (const auto& [app_id, launch_list] : launch_lists) {
+    if (launch_list.empty())
+      continue;
+
+    if (!IsAppAvailable(app_id, app_service_proxy)) {
+      // `launch_list` is a list of windows associated with `app_id`, so we only
+      // need the title of the first window.
+      auto it = launch_list.begin();
+      app_restore::AppRestoreData* app_restore_data = it->second.get();
+      app_names.push_back(app_restore_data->title.value_or(u""));
+    }
   }
   return app_names;
 }
 
 // Show unavailable app toast based on size of `unavailable_apps`.
-void ShowUnavailableAppToast(const std::vector<std::string>& unavailable_apps) {
+void ShowUnavailableAppToast(
+    const std::vector<std::u16string>& unavailable_apps) {
   std::u16string toast_string;
   switch (unavailable_apps.size()) {
     case 1:
       toast_string = l10n_util::GetStringFUTF16(
           IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_ONE,
-          base::ASCIIToUTF16(unavailable_apps.front()));
+          unavailable_apps[0]);
       break;
     case 2:
       toast_string = l10n_util::GetStringFUTF16(
           IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_TWO,
-          base::ASCIIToUTF16(unavailable_apps.front()),
-          base::ASCIIToUTF16(unavailable_apps[1]));
+          unavailable_apps[0], unavailable_apps[1]);
       break;
     default:
       DCHECK_GT(unavailable_apps.size(), 2u);
       toast_string = l10n_util::GetStringFUTF16(
           IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_MORE,
-          base::ASCIIToUTF16(unavailable_apps.front()),
-          base::ASCIIToUTF16(unavailable_apps[1]),
-          base::FormatNumber((unavailable_apps.size() - 2)));
+          unavailable_apps[0], unavailable_apps[1],
+          base::FormatNumber(unavailable_apps.size() - 2));
       break;
   }
 
@@ -248,11 +254,11 @@ void ChromeDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
   auto& app_registry_cache =
       apps::AppServiceProxyFactory::GetForProfile(user_profile)
           ->AppRegistryCache();
-  const apps::mojom::AppType app_type = app_registry_cache.GetAppType(app_id);
+  const auto app_type = app_registry_cache.GetAppType(app_id);
   if (app_id != app_constants::kChromeAppId &&
       app_id != app_constants::kLacrosAppId &&
-      (app_type == apps::mojom::AppType::kChromeApp ||
-       app_type == apps::mojom::AppType::kWeb)) {
+      (app_type == apps::AppType::kChromeApp ||
+       app_type == apps::AppType::kWeb)) {
     // If these values are not present, we will not be able to restore the
     // application. See http://crbug.com/1232520 for more information.
     if (!app_launch_info->container.has_value() ||
@@ -336,14 +342,14 @@ void ChromeDesksTemplatesDelegate::GetIconForAppId(
 
   auto app_type = app_service_proxy->AppRegistryCache().GetAppType(app_id);
   if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
-    app_service_proxy->LoadIcon(apps::ConvertMojomAppTypToAppType(app_type),
-                                app_id, apps::IconType::kStandard,
+    app_service_proxy->LoadIcon(app_type, app_id, apps::IconType::kStandard,
                                 desired_icon_size,
                                 /*allow_placeholder_icon=*/false,
                                 AppIconResultToImageSkia(std::move(callback)));
   } else {
     app_service_proxy->LoadIcon(
-        app_type, app_id, apps::mojom::IconType::kStandard, desired_icon_size,
+        apps::ConvertAppTypeToMojomAppType(app_type), app_id,
+        apps::mojom::IconType::kStandard, desired_icon_size,
         /*allow_placeholder_icon=*/false,
         apps::MojomIconValueToIconValueCallback(
             AppIconResultToImageSkia(std::move(callback))));
@@ -366,10 +372,8 @@ void ChromeDesksTemplatesDelegate::LaunchAppsFromTemplate(
     std::unique_ptr<ash::DeskTemplate> desk_template,
     base::Time time_launch_started,
     base::TimeDelta delay) {
-  const auto& launch_list =
-      desk_template->desk_restore_data()->app_id_to_launch_list();
-  std::vector<std::string> unavailable_apps =
-      GetUnavailableAppNames(launch_list);
+  std::vector<std::u16string> unavailable_apps =
+      GetUnavailableAppNames(*desk_template);
   // Show app unavailable toast.
   if (!unavailable_apps.empty())
     ShowUnavailableAppToast(unavailable_apps);
@@ -436,6 +440,6 @@ void ChromeDesksTemplatesDelegate::GetLacrosChromeUrls(
   browser_manager->GetTabStripModelUrls(
       window_unique_id,
       base::BindOnce(&ChromeDesksTemplatesDelegate::OnLacrosChromeUrlsReturned,
-                     base::Unretained(this), std::move(callback),
+                     weak_factory_.GetWeakPtr(), std::move(callback),
                      std::move(app_launch_info)));
 }

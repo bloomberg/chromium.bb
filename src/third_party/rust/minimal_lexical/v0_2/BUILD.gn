@@ -18,5 +18,9 @@ cargo_crate("lib") {
   build_native_rust_unit_tests = false
   sources = [ "crate/src/lib.rs" ]
   edition = "2018"
+  cargo_pkg_version = "0.2.1"
+  cargo_pkg_authors = "Alex Huszagh <ahuszagh@gmail.com>"
+  cargo_pkg_name = "minimal-lexical"
+  cargo_pkg_description = "Fast float parsing conversion routines."
   features = [ "std" ]
 }

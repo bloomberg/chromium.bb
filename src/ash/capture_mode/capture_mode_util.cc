@@ -112,6 +112,45 @@ void TriggerAccessibilityAlert(int message_id) {
   TriggerAccessibilityAlert(l10n_util::GetStringUTF8(message_id));
 }
 
+void TriggerAccessibilityAlertSoon(int message_id) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AccessibilityControllerImpl::TriggerAccessibilityAlertWithMessage,
+          Shell::Get()->accessibility_controller()->GetWeakPtr(),
+          l10n_util::GetStringUTF8(message_id)));
+}
+
+CameraPreviewSnapPosition GetCameraNextHorizontalSnapPosition(
+    CameraPreviewSnapPosition current,
+    bool going_left) {
+  switch (current) {
+    case CameraPreviewSnapPosition::kTopLeft:
+      return going_left ? current : CameraPreviewSnapPosition::kTopRight;
+    case CameraPreviewSnapPosition::kTopRight:
+      return going_left ? CameraPreviewSnapPosition::kTopLeft : current;
+    case CameraPreviewSnapPosition::kBottomLeft:
+      return going_left ? current : CameraPreviewSnapPosition::kBottomRight;
+    case CameraPreviewSnapPosition::kBottomRight:
+      return going_left ? CameraPreviewSnapPosition::kBottomLeft : current;
+  }
+}
+
+CameraPreviewSnapPosition GetCameraNextVerticalSnapPosition(
+    CameraPreviewSnapPosition current,
+    bool going_up) {
+  switch (current) {
+    case CameraPreviewSnapPosition::kTopLeft:
+      return going_up ? current : CameraPreviewSnapPosition::kBottomLeft;
+    case CameraPreviewSnapPosition::kTopRight:
+      return going_up ? current : CameraPreviewSnapPosition::kBottomRight;
+    case CameraPreviewSnapPosition::kBottomLeft:
+      return going_up ? CameraPreviewSnapPosition::kTopLeft : current;
+    case CameraPreviewSnapPosition::kBottomRight:
+      return going_up ? CameraPreviewSnapPosition::kTopRight : current;
+  }
+}
+
 std::unique_ptr<views::View> CreateClipboardShortcutView() {
   std::unique_ptr<views::View> clipboard_shortcut_view =
       std::make_unique<views::View>();
@@ -162,7 +201,7 @@ std::unique_ptr<views::View> CreateBannerView() {
   auto* layout =
       banner_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(kBannerVerticalInsetDip, kBannerHorizontalInsetDip),
+          gfx::Insets::VH(kBannerVerticalInsetDip, kBannerHorizontalInsetDip),
           kBannerIconTextSpacingDip));
 
   if (features::IsNotificationsRefreshEnabled()) {
@@ -186,10 +225,8 @@ std::unique_ptr<views::View> CreateBannerView() {
   label->SetEnabledColor(text_icon_color);
 
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    if (features::IsClipboardHistoryScreenshotNudgeEnabled()) {
-      banner_view->AddChildView(CreateClipboardShortcutView());
-      layout->SetFlexForView(label, 1);
-    }
+    banner_view->AddChildView(CreateClipboardShortcutView());
+    layout->SetFlexForView(label, 1);
 
     // Notify the clipboard history of the created notification.
     ClipboardHistoryController::Get()->OnScreenshotNotificationCreated();

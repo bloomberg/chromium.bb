@@ -32,6 +32,10 @@ namespace content_settings {
 class CookieSettings;
 }
 
+namespace browsing_topics {
+class BrowsingTopicsService;
+}
+
 // Service which encapsulates logic related to displaying and controlling the
 // users Privacy Sandbox settings. This service contains the chrome/ specific
 // logic used by the UI, including decision making around what the users'
@@ -91,7 +95,8 @@ class PrivacySandboxService : public KeyedService,
       signin::IdentityManager* identity_manager,
       content::InterestGroupManager* interest_group_manager,
       profile_metrics::BrowserProfileType profile_type,
-      content::BrowsingDataRemover* browsing_data_remover);
+      content::BrowsingDataRemover* browsing_data_remover,
+      browsing_topics::BrowsingTopicsService* browsing_topics_service_);
   ~PrivacySandboxService() override;
 
   // Returns the dialog type that should be shown to the user. This consults
@@ -197,7 +202,7 @@ class PrivacySandboxService : public KeyedService,
   // Returns whether the Privacy Sandbox is currently restricted for the
   // profile. UI code should consult this to ensure that when restricted,
   // Privacy Sandbox related UI is updated appropriately.
-  bool IsPrivacySandboxRestricted();
+  virtual bool IsPrivacySandboxRestricted();
 
   // Called when a preference relevant to the the V1 Privacy Sandbox page is
   // changed.
@@ -442,6 +447,7 @@ class PrivacySandboxService : public KeyedService,
   raw_ptr<content::InterestGroupManager> interest_group_manager_;
   profile_metrics::BrowserProfileType profile_type_;
   raw_ptr<content::BrowsingDataRemover> browsing_data_remover_;
+  raw_ptr<browsing_topics::BrowsingTopicsService> browsing_topics_service_;
 
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_{this};

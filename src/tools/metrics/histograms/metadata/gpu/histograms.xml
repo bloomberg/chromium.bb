@@ -256,7 +256,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D11FeatureLevel" enum="D3DFeatureLevel"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -270,7 +270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D11InitializeResult" enum="D3D11InitializeResult"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -281,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D9InitializeResult" enum="D3D9InitializeResult"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -291,7 +291,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.ANGLE.D3DCompileMS" units="ms" expires_after="2022-07-31">
+<histogram name="GPU.ANGLE.D3DCompileMS" units="ms" expires_after="2022-10-04">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -494,7 +494,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.D3D11FeatureLevel" enum="D3D11FeatureLevel"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>sadrul@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -504,7 +504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.D3D12FeatureLevel" enum="D3D12FeatureLevel"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -514,7 +514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.D3D12HighestShaderModel" enum="D3DShaderModel"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -524,7 +524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.D3DShaderModel" enum="ShaderModel"
-    expires_after="2022-07-31">
+    expires_after="2022-10-04">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -610,7 +610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="GPU.DirectComposition.DCLayerResult.Video"
-    enum="DCLayerResult" expires_after="2022-06-19">
+    enum="DCLayerResult" expires_after="2022-09-18">
 <!-- Name completed by histogram_suffixes name="GPU.ProtectedVideoType" -->
 
   <owner>magchen@chromium.org</owner>
@@ -771,7 +771,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.EnsureWorkVisibleDuration" units="microseconds"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>alemate@chromium.org</owner>
   <owner>magchen@chromium.org</owner>
   <owner>oshima@chromium.org</owner>
@@ -787,7 +787,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.EnsureWorkVisibleDurationLowRes" units="ms"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>alemate@chromium.org</owner>
   <owner>magchen@chromium.org</owner>
   <owner>oshima@chromium.org</owner>
@@ -811,7 +811,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.EstablishGpuChannelSyncTime" units="ms"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -874,7 +874,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.GpuCount" units="gpus" expires_after="2022-08-07">
+<histogram name="GPU.GpuCount" units="gpus" expires_after="2022-10-09">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1043,7 +1043,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Gpu.Metal.ReadWriteTextureSupport"
-    enum="MetalReadWriteTextureSupportTier" expires_after="2022-07-31">
+    enum="MetalReadWriteTextureSupportTier" expires_after="2022-10-04">
   <owner>cwallez@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1103,7 +1103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.MultiGpu.AMD" enum="AMDDeviceId"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1113,7 +1113,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.MultiGpu.Nvidia" enum="NvidiaDeviceId"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1369,7 +1369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.Scheduler.TaskSchedulingDelayTime" units="microseconds"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>berlu@chromium.org</owner>
   <owner>chrome-gpu-metrics@google.com</owner>
   <summary>
@@ -1383,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.Scheduler.ThreadSuspendedTime" units="microseconds"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>berlu@chromium.org</owner>
   <owner>chrome-gpu-metrics@google.com</owner>
   <summary>
@@ -1419,6 +1419,19 @@ chromium-metrics-reviews@google.com.
     Whether or not the content of a SharedImage is consumed. False indicates the
     content of a SharedImage is never used due to destroying the SharedImage or
     writing new content to it before using it.
+  </summary>
+</histogram>
+
+<histogram name="GPU.SharedImage.DmaBufSupportedType"
+    enum="DmaBufSupportedType" expires_after="2022-09-30">
+  <owner>vasilyt@chromium.org</owner>
+  <owner>hitawala@chromium.org</owner>
+  <summary>
+    Tracks which extensions are supported for creating shared images using DMA
+    buffers. Result is an enum that represents three flags - are native pixmaps
+    supported for the ozone platform, are Vulkan extensions supported and are GL
+    extensions supported. This is logged once per gpu process launch through
+    SharedImageFactory constructor call.
   </summary>
 </histogram>
 
@@ -1474,7 +1487,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.SwapTimeUs" units="microseconds"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -1541,7 +1554,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.Vulkan.PipelineCache.vkCreateGraphicsPipelines"
-    units="microseconds" expires_after="2022-05-08">
+    units="microseconds" expires_after="2022-09-18">
   <owner>backer@chromium.org</owner>
   <owner>penghuang@chromium.org</owner>
   <owner>vasilyt@chromium.org</owner>
@@ -1562,25 +1575,39 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="GPU.WatchdogThread.Event" enum="GpuWatchdogThreadEvent"
-    expires_after="2022-08-14">
+<histogram name="GPU.WatchdogThread.Event{ThreadType}"
+    enum="GpuWatchdogThreadEvent" expires_after="2022-10-01">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
     Recorded for each time the GPU watchdog thread starts, crashes and ends.
-    This includes data from both watchdog V1 and V2.
   </summary>
+  <token key="ThreadType">
+    <variant name=""/>
+    <variant name=".compositor"/>
+    <variant name=".main"/>
+  </token>
 </histogram>
 
-<histogram name="GPU.WatchdogThread.Timeout" enum="GpuWatchdogTimeoutEvent"
-    expires_after="2022-08-21">
-<!-- Name completed by histogram_suffixes name="GPU.WatchdogStage" -->
-
+<histogram name="GPU.WatchdogThread.Timeout{WatchdogStage}{ThreadType}"
+    enum="GpuWatchdogTimeoutEvent" expires_after="2022-10-01">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
-    Recorded timeout events when the GPU watchdog V2 enters OnWatchdogTimeout.
+    Recorded timeout events when the GPU watchdog enters OnWatchdogTimeout.
   </summary>
+  <token key="WatchdogStage">
+    <variant name=""/>
+    <variant name=".Foregrounded"/>
+    <variant name=".Init"/>
+    <variant name=".Normal"/>
+    <variant name=".PowerResume"/>
+  </token>
+  <token key="ThreadType">
+    <variant name=""/>
+    <variant name=".compositor"/>
+    <variant name=".main"/>
+  </token>
 </histogram>
 
 <histogram name="GPU.WebGraphicsContext3D_Init_CanLoseContext"
@@ -1679,7 +1706,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DelegatedCompositing.Status" enum="DelegatedStatus"
-    expires_after="2022-07-15">
+    expires_after="2022-10-09">
   <owner>petermcneeley@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -1711,7 +1738,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlayStrategy"
-    enum="OverlayStrategies" expires_after="2022-07-17">
+    enum="OverlayStrategies" expires_after="2022-09-18">
   <owner>dcastagna@chromium.org</owner>
   <owner>hoegsberg@chromium.org</owner>
   <summary>
@@ -1778,6 +1805,41 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Viz.FrameSinkVideoCapturer.CaptureDuration" units="ms"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    The time it took from when FrameSinkVideoCapturerImpl sent a request for
+    frame capture until the result becomes available to the capturer.
+
+    Format-agnostic version of
+    `Viz.FrameSinkVideoCapturer.[NV12/I420].CaptureDuration` histograms.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.CaptureSucceeded"
+    units="BooleanSuccess" expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    Whether a capture initiated by FrameSinkVideoCapturerImpl succeeded.
+
+    Format-agnostic version of
+    `Viz.FrameSinkVideoCapturer.[NV12/I420].CaptureSucceeded` histograms.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.FrameResurrected" units="Boolean"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    True if the capturer has used a resurrected video frame, thus avoiding
+    having to reserve it from a frame pool, false otherwise.
+  </summary>
+</histogram>
+
 <histogram name="Viz.FrameSinkVideoCapturer.I420.CaptureDuration" units="ms"
     expires_after="2023-03-01">
   <owner>bialpio@chromium.org</owner>
@@ -1823,6 +1885,11 @@ chromium-metrics-reviews@google.com.
   <summary>
     The time it took from when FrameSinkVideoCapturerImpl sent a request for an
     NV12 copy until the result comes back.
+
+    Note: The histogram logging was adjusted in M102 to align with how
+    `Viz.FrameSinkVideoCapturer.[RGBA/I420].CaptureDuration` histograms behave.
+    After the change, this histogram also started including the time taken to
+    set the color space on a video frame.
   </summary>
 </histogram>
 
@@ -1847,6 +1914,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Viz.FrameSinkVideoCapturer.ReserveFrameDuration" units="ms"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    The time it took for a frame pool to reserve a video frame that would then
+    have its contents populated by the capturer. Will be logged only when
+    `Viz.FrameSinkVideoCapturer.FrameResurrected` is false.
+  </summary>
+</histogram>
+
 <histogram name="Viz.FrameSinkVideoCapturer.RGBA.CaptureDuration" units="ms"
     expires_after="2022-09-11">
   <owner>samans@chromium.org</owner>
@@ -1866,6 +1944,21 @@ chromium-metrics-reviews@google.com.
   <owner>viz-team-wat@google.com</owner>
   <summary>
     Whether an RGBA readback initiated by FrameSinkVideoCapturerImpl succeeded.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.TotalDuration" units="ms"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    The time it took from when FrameSinkVideoCapturerImpl decided that a new
+    frame needs to be produced to the moment when it was ready to deliver it.
+    This encompasses the `Viz.FrameSinkVideoCapturer.CaptureDuration` time, but
+    also includes time taken to render video capture overlays.
+
+    Format-agnostic version of
+    `Viz.FrameSinkVideoCapturer.[NV12/I420].TotalDuration` histograms.
   </summary>
 </histogram>
 

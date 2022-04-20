@@ -13,6 +13,7 @@
 
 class Browser;
 class BrowserView;
+class ReadAnythingCoordinator;
 class SidePanelComboboxModel;
 
 namespace views {
@@ -44,6 +45,10 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   void Close();
   void Toggle();
 
+  ReadAnythingCoordinator* read_anything_coordinator() {
+    return read_anything_coordinator_.get();
+  }
+
  private:
   friend class SidePanelCoordinatorTest;
 
@@ -57,6 +62,10 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // and populates the side panel with the provided SidePanelEntry.
   void PopulateSidePanel(SidePanelEntry* entry);
 
+  // Clear cached views for registry entries for global and contextual
+  // registries.
+  void ClearCachedEntryViews();
+
   // Returns the last active entry or the reading list entry if no last active
   // entry exists.
   absl::optional<SidePanelEntry::Id> GetLastActiveEntryId() const;
@@ -68,7 +77,8 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   void OnComboboxChanged();
 
   std::unique_ptr<views::View> CreateBookmarksWebView(Browser* browser);
-  std::unique_ptr<views::View> CreateReaderModeWebView(Browser* browser);
+  std::unique_ptr<views::View> CreateReadAnythingWebView(Browser* browser);
+  std::unique_ptr<views::View> CreateUserNoteView(Browser* browser);
 
   // SidePanelRegistryObserver:
   void OnEntryRegistered(SidePanelEntry* entry) override;
@@ -88,6 +98,10 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   // their availability in the observed side panel registries.
   std::unique_ptr<SidePanelComboboxModel> combobox_model_;
   raw_ptr<views::Combobox> header_combobox_ = nullptr;
+
+  // Used to coordinate the "Read Anything" component, instantiated in
+  // CreateReadAnythingWebView.
+  std::unique_ptr<ReadAnythingCoordinator> read_anything_coordinator_;
 
   // TODO(pbos): Add awareness of tab registries here. This probably needs to
   // know the tab registry it's currently monitoring.

@@ -56,7 +56,6 @@ repack("resource_pack_data") {
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
 
   deps = [
@@ -1009,19 +1008,6 @@ static_library("headless_shell_lib") {
   }
 
   configs += [ ":headless_defines_config" ]
-}
-
-if (is_fuchsia) {
-  cr_fuchsia_package("headless_shell_pkg") {
-    binary = ":headless_shell"
-    package_name = "headless_shell"
-    manifest = "//build/config/fuchsia/test/minimum_capabilities.test-cmx"
-  }
-
-  fuchsia_package_installer("headless_shell_fuchsia") {
-    package = ":headless_shell_pkg"
-    package_name = "headless_shell"
-  }
 }
 
 executable("headless_shell") {

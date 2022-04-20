@@ -12,13 +12,13 @@
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_http_utils.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/http_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/null_encrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/http_constants.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_framer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_stream.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_test_utils.h"
 
 namespace net {
 namespace test {
@@ -37,6 +37,11 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
       case quic::STREAMS_BLOCKED_FRAME:
       case quic::STREAM_FRAME:
       case quic::HANDSHAKE_DONE_FRAME:
+      case quic::BLOCKED_FRAME:
+      case quic::WINDOW_UPDATE_FRAME:
+      case quic::STOP_SENDING_FRAME:
+      case quic::PATH_CHALLENGE_FRAME:
+      case quic::PATH_RESPONSE_FRAME:
         break;
       case quic::ACK_FRAME:
         frame.ack_frame = new quic::QuicAckFrame(*frame.ack_frame);
@@ -52,21 +57,6 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
       case quic::GOAWAY_FRAME:
         frame.goaway_frame = new quic::QuicGoAwayFrame(*frame.goaway_frame);
         break;
-      case quic::BLOCKED_FRAME:
-        frame.blocked_frame = new quic::QuicBlockedFrame(*frame.blocked_frame);
-        break;
-      case quic::WINDOW_UPDATE_FRAME:
-        frame.window_update_frame =
-            new quic::QuicWindowUpdateFrame(*frame.window_update_frame);
-        break;
-      case quic::PATH_CHALLENGE_FRAME:
-        frame.path_challenge_frame =
-            new quic::QuicPathChallengeFrame(*frame.path_challenge_frame);
-        break;
-      case quic::STOP_SENDING_FRAME:
-        frame.stop_sending_frame =
-            new quic::QuicStopSendingFrame(*frame.stop_sending_frame);
-        break;
       case quic::NEW_CONNECTION_ID_FRAME:
         frame.new_connection_id_frame =
             new quic::QuicNewConnectionIdFrame(*frame.new_connection_id_frame);
@@ -75,10 +65,6 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
         frame.retire_connection_id_frame =
             new quic::QuicRetireConnectionIdFrame(
                 *frame.retire_connection_id_frame);
-        break;
-      case quic::PATH_RESPONSE_FRAME:
-        frame.path_response_frame =
-            new quic::QuicPathResponseFrame(*frame.path_response_frame);
         break;
       case quic::MESSAGE_FRAME:
         DCHECK(false) << "Message frame not supported";
@@ -1478,7 +1464,7 @@ void QuicTestPacketMaker::AddQuicPathResponseFrame() {
   quic::test::MockRandom rand(0);
   quic::QuicPathFrameBuffer payload;
   rand.RandBytes(payload.data(), payload.size());
-  auto* path_response_frame = new quic::QuicPathResponseFrame(0, payload);
+  auto path_response_frame = quic::QuicPathResponseFrame(0, payload);
   frames_.push_back(quic::QuicFrame(path_response_frame));
   DVLOG(1) << "Adding frame: " << frames_.back();
 }
@@ -1487,7 +1473,7 @@ void QuicTestPacketMaker::AddQuicPathChallengeFrame() {
   quic::test::MockRandom rand(0);
   quic::QuicPathFrameBuffer payload;
   rand.RandBytes(payload.data(), payload.size());
-  auto* path_challenge_frame = new quic::QuicPathChallengeFrame(0, payload);
+  auto path_challenge_frame = quic::QuicPathChallengeFrame(0, payload);
   frames_.push_back(quic::QuicFrame(path_challenge_frame));
   DVLOG(1) << "Adding frame: " << frames_.back();
 }
@@ -1495,8 +1481,8 @@ void QuicTestPacketMaker::AddQuicPathChallengeFrame() {
 void QuicTestPacketMaker::AddQuicStopSendingFrame(
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code) {
-  auto* stop_sending_frame =
-      new quic::QuicStopSendingFrame(1, stream_id, error_code);
+  auto stop_sending_frame =
+      quic::QuicStopSendingFrame(1, stream_id, error_code);
   frames_.push_back(quic::QuicFrame(stop_sending_frame));
   DVLOG(1) << "Adding frame: " << frames_.back();
 }
