@@ -25,6 +25,8 @@ struct V8_EXPORT AtomicGCInfoIndex final {
 
   AtomicGCInfoIndex(const AtomicGCInfoIndex&) = delete;
 
+  AtomicGCInfoIndex& operator=(const AtomicGCInfoIndex&) = delete;
+
   GCInfoIndex load_acquire() const noexcept;
   GCInfoIndex load_acquire() const volatile noexcept;
 
