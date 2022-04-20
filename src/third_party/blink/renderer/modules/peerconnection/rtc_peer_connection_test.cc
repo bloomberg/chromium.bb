@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -419,8 +422,8 @@ class RTCPeerConnectionTest : public testing::Test {
     auto* source = MakeGarbageCollected<MediaStreamSource>("sourceId", type,
                                                            "sourceName", false);
     auto* component = MakeGarbageCollected<MediaStreamComponent>(id, source);
-    return MakeGarbageCollected<MediaStreamTrack>(scope.GetExecutionContext(),
-                                                  component);
+    return MakeGarbageCollected<MediaStreamTrackImpl>(
+        scope.GetExecutionContext(), component);
   }
 
   std::string GetExceptionMessage(V8TestingScope& scope) {
@@ -583,7 +586,10 @@ TEST_F(RTCPeerConnectionTest,
   EXPECT_FALSE(pc->GetTrackForTesting(track_component.Get()));
 }
 
-TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsPlanB) {
+#if BUILDFLAG(IS_FUCHSIA)
+
+TEST_F(RTCPeerConnectionTest,
+       CheckForComplexSdpWithSdpSemanticsPlanBOnFuchsia) {
   V8TestingScope scope;
   Persistent<RTCPeerConnection> pc = CreatePC(scope, "plan-b");
   RTCSessionDescriptionInit* sdp = RTCSessionDescriptionInit::Create();
@@ -611,6 +617,8 @@ TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsPlanB) {
   ASSERT_FALSE(
       pc->CheckForComplexSdp(ParsedSessionDescription::Parse(sdp)).has_value());
 }
+
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsUnifiedPlan) {
   V8TestingScope scope;
@@ -1204,6 +1212,7 @@ TEST_F(RTCPeerConnectionTest, SdpSemanticsUseCounters) {
     EXPECT_TRUE(scope.GetDocument().IsUseCounted(
         WebFeature::kRTCPeerConnectionUsingComplexUnifiedPlan));
   }
+#if BUILDFLAG(IS_FUCHSIA)
   // Constructor with {sdpSemantics:"plan-b"}.
   {
     V8TestingScope scope;
@@ -1232,6 +1241,7 @@ TEST_F(RTCPeerConnectionTest, SdpSemanticsUseCounters) {
     EXPECT_FALSE(scope.GetDocument().IsUseCounted(
         WebFeature::kRTCPeerConnectionUsingComplexUnifiedPlan));
   }
+#endif  // BUILDFLAG(IS_FUCHSIA)
   // Constructor with {sdpSemantics:"unified-plan"}.
   {
     V8TestingScope scope;

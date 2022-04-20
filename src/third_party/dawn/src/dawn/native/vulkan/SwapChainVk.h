@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_SWAPCHAINVK_H_
-#define DAWNNATIVE_VULKAN_SWAPCHAINVK_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_SWAPCHAINVK_H_
+#define SRC_DAWN_NATIVE_VULKAN_SWAPCHAINVK_H_
 
 #include "dawn/native/SwapChain.h"
 
@@ -75,11 +75,11 @@ namespace dawn::native::vulkan {
             bool needsBlit = false;
         };
         ResultOrError<Config> ChooseConfig(const VulkanSurfaceInfo& surfaceInfo) const;
-        ResultOrError<TextureViewBase*> GetCurrentTextureViewInternal(bool isReentrant = false);
+        ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewInternal(bool isReentrant = false);
 
         // NewSwapChainBase implementation
         MaybeError PresentImpl() override;
-        ResultOrError<TextureViewBase*> GetCurrentTextureViewImpl() override;
+        ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() override;
         void DetachFromSurfaceImpl() override;
 
         Config mConfig;
@@ -95,4 +95,4 @@ namespace dawn::native::vulkan {
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_SWAPCHAINVK_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_SWAPCHAINVK_H_

@@ -8,6 +8,7 @@
 #include "src/core/SkDevice.h"
 
 #include "include/core/SkColorFilter.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkDrawable.h"
 #include "include/core/SkImageFilter.h"
 #include "include/core/SkPathMeasure.h"
@@ -62,6 +63,7 @@ bool SkBaseDevice::setDeviceCoordinateSystem(const SkM44& deviceToGlobal,
         fLocalToDevice.postTranslate(-bufferOriginX, -bufferOriginY);
     }
     fLocalToDevice33 = fLocalToDevice.asM33();
+    fLocalToDeviceDirty = true;
     return true;
 }
 
@@ -71,6 +73,7 @@ void SkBaseDevice::setGlobalCTM(const SkM44& ctm) {
     // Map from the global CTM state to this device's coordinate system.
     fLocalToDevice.postConcat(fGlobalToDevice);
     fLocalToDevice33 = fLocalToDevice.asM33();
+    fLocalToDeviceDirty = true;
 }
 
 bool SkBaseDevice::isPixelAlignedToGlobal() const {
@@ -498,6 +501,20 @@ sk_sp<SkSurface> SkBaseDevice::makeSurface(SkImageInfo const&, SkSurfaceProps co
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
+
+SkNoPixelsDevice::SkNoPixelsDevice(const SkIRect& bounds, const SkSurfaceProps& props)
+    : SkNoPixelsDevice(bounds, props, nullptr) {}
+
+SkNoPixelsDevice::SkNoPixelsDevice(const SkIRect& bounds, const SkSurfaceProps& props,
+                                   sk_sp<SkColorSpace> colorSpace)
+    : SkBaseDevice(SkImageInfo::Make(bounds.size(), kUnknown_SkColorType, kUnknown_SkAlphaType,
+                                     std::move(colorSpace)), props) {
+    // this fails if we enable this assert: DiscardableImageMapTest.GetDiscardableImagesInRectMaxImage
+    //SkASSERT(bounds.width() >= 0 && bounds.height() >= 0);
+
+    this->setOrigin(SkM44(), bounds.left(), bounds.top());
+    this->resetClipStack();
+}
 
 void SkNoPixelsDevice::onSave() {
     SkASSERT(!fClipStack.empty());

@@ -10,6 +10,8 @@ title: User-Agent Reduction
 
 ## Updates
 
+April 11, 2022: Add a table to map from UA to UA-CH
+
 March 3, 2022: Added frozen Chrome OS platform version to
 <code>&lt;unifiedPlatform&gt;</code> value
 
@@ -164,6 +166,71 @@ Chrome/<strong>&lt;majorVersion&gt;</strong>.0.0.0 <strong>&lt;deviceCompat&gt;<
       <p><em>* Note that these strings are literal values; they will
         not update even if a user is on an updated operating system
         or device.</em></p>
+</table>
+
+## UA Token to UA-CH Mapping
+
+<table>
+  <tr>
+    <th>UA string token</th>
+    <th>
+      HTTP UA-CH token
+      (<a href="https://wicg.github.io/ua-client-hints/#http-ua-hints">ref</a>)
+    </th>
+    <th>
+      UA-CH JS API
+      (<a href="https://wicg.github.io/ua-client-hints/#interface">ref</a>)
+    </th>
+  </tr>
+  <tr>
+    <td>&lt;androidVersion&gt;</td>
+    <td><code>Sec-CH-UA-Platform-Version</code></td>
+    <td><code>UADataValues.platformVersion</code></td>
+  </tr>
+  <tr>
+    <td>&lt;deviceCompat&gt;</td>
+    <td><code>Sec-CH-UA-Mobile</code></td>
+    <td><code>NavigatorUAData.mobile</code></td>
+  </tr>
+  <tr>
+    <td>&lt;deviceModel&gt;</td>
+    <td><code>Sec-CH-UA-Model</code></td>
+    <td><code>UADataValues.model</code></td>
+  </tr>
+  <tr>
+    <td>&lt;majorVersion&gt;</td>
+    <td><code>Sec-CH-UA</code></td>
+    <td><code>NavigatorUAData.brands</code></td>
+  </tr>
+  <tr>
+    <td>&lt;minorVersion&gt;</td>
+    <td><code>Sec-CH-UA-Full-Version-List</code></td>
+    <td><code>UADataValues.fullVersionList</code></td>
+  </tr>
+  <tr>
+    <td>&lt;oscpu&gt;</td>
+    <td>
+      Any combination of the following, as relevant:<br>
+      <code>Sec-CH-UA-WoW64</code>, <code>Sec-CH-UA-Arch</code>,
+      <code>Sec-CH-UA-Bitness</code>
+    </td>
+    <td>
+      Any combination of the following, as relevant:<br>
+      <code>UADataValues.wow64</code>, <code>UADataValues.arch</code>,
+      <code>UADataValues.bitness</code>
+    </td>
+  </tr>
+  <tr>
+    <td>&lt;unifiedPlatform&gt;</td>
+    <td>
+      <code>Sec-CH-UA-Platform</code> and
+      <code>Sec-CH-UA-Platform-Version</code>
+    </td>
+    <td>
+      <code>UADataValues.platform</code> and
+      <code>UADataValues.platformVersion</code>
+    </td>
+  </tr>
 </table>
 
 ## Sample UA Strings: Phase 4

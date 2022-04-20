@@ -48,7 +48,7 @@ class MockCallback : public PacketRouter {
               (override));
 };
 
-class ProcessModeTrials : public WebRtcKeyValueConfig {
+class ProcessModeTrials : public FieldTrialsView {
  public:
   explicit ProcessModeTrials(bool dynamic_process) : mode_(dynamic_process) {}
 
@@ -78,8 +78,8 @@ class PacedSenderTest
     EXPECT_CALL(process_thread_, RegisterModule)
         .WillOnce(SaveArg<0>(&paced_module_));
 
-    pacer_ = std::make_unique<PacedSender>(&clock_, &callback_, nullptr,
-                                           trials_, &process_thread_);
+    pacer_ = std::make_unique<PacedSender>(&clock_, &callback_, trials_,
+                                           &process_thread_);
     EXPECT_CALL(process_thread_, WakeUp).WillRepeatedly([&](Module* module) {
       clock_.AdvanceTimeMilliseconds(module->TimeUntilNextProcess());
     });

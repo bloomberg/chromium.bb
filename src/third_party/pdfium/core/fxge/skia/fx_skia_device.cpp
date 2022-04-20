@@ -31,6 +31,7 @@
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
+#include "core/fxge/cfx_substfont.h"
 #include "core/fxge/cfx_textrenderoptions.h"
 #include "core/fxge/dib/cfx_bitmapcomposer.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -624,19 +625,30 @@ void SetBitmapMatrix(const CFX_Matrix& m,
                    -m.d / height, m.d + m.f, 0, 0, 1);
 }
 
-void SetBitmapPaint(bool isAlphaMask,
+void SetBitmapPaint(bool is_mask,
                     bool anti_alias,
                     uint32_t argb,
-                    int bitmap_alpha,
                     BlendMode blend_type,
                     SkPaint* paint) {
+  if (is_mask)
+    paint->setColor(argb);
+
   paint->setAntiAlias(anti_alias);
-  if (isAlphaMask)
+  paint->setBlendMode(GetSkiaBlendMode(blend_type));
+}
+
+void SetBitmapPaintForMerge(bool is_mask,
+                            bool anti_alias,
+                            uint32_t argb,
+                            int bitmap_alpha,
+                            BlendMode blend_type,
+                            SkPaint* paint) {
+  if (is_mask)
     paint->setColorFilter(SkColorFilters::Blend(argb, SkBlendMode::kSrc));
 
-  // paint->setFilterQuality(kHigh_SkFilterQuality);
-  paint->setBlendMode(GetSkiaBlendMode(blend_type));
   paint->setAlpha(bitmap_alpha);
+  paint->setAntiAlias(anti_alias);
+  paint->setBlendMode(GetSkiaBlendMode(blend_type));
 }
 
 bool Upsample(const RetainPtr<CFX_DIBBase>& pSource,
@@ -1039,17 +1051,7 @@ class SkiaState {
       skCanvas->drawTextBlob(blob, 0, 0, skPaint);
     } else {
       const SkTDArray<SkPoint>& positions = m_charDetails.GetPositions();
-      const SkTDArray<uint32_t>& widths = m_charDetails.GetFontCharWidths();
       for (int i = 0; i < m_charDetails.Count(); ++i) {
-        uint32_t font_glyph_width =
-            m_pFont ? m_pFont->GetGlyphWidth(glyphs[i]) : 0;
-        uint32_t pdf_glyph_width = widths[i];
-        if (font_glyph_width && pdf_glyph_width &&
-            font_glyph_width > pdf_glyph_width) {
-          font.setScaleX(SkIntToScalar(pdf_glyph_width) / font_glyph_width);
-        } else {
-          font.setScaleX(SkIntToScalar(1));
-        }
         sk_sp<SkTextBlob> blob = SkTextBlob::MakeFromText(
             &glyphs[i], sizeof(glyphs[i]), font, SkTextEncoding::kGlyphID);
         skCanvas->drawTextBlob(blob, positions[i].fX, positions[i].fY, skPaint);
@@ -1723,6 +1725,20 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(
     float font_size,
     uint32_t color,
     const CFX_TextRenderOptions& options) {
+  // If a glyph's default width is larger than its width defined in the PDF,
+  // draw the glyph with path since it can be scaled to avoid overlapping with
+  // the adjacent glyphs (if there are any). Otherwise, use the device driver
+  // to render the glyph without any adjustments.
+  const CFX_SubstFont* subst_font = pFont->GetSubstFont();
+  const int subst_font_weight =
+      (subst_font && subst_font->m_bFlagMM) ? subst_font->m_Weight : 0;
+  for (const TextCharPos& cp : pCharPos) {
+    const int glyph_width = pFont->GetGlyphWidth(
+        cp.m_GlyphIndex, cp.m_FontCharWidth, subst_font_weight);
+    if (cp.m_FontCharWidth < glyph_width)
+      return false;
+  }
+
   int nChars = fxcrt::CollectionSize<int>(pCharPos);
   if (m_pCache->DrawText(nChars, pCharPos.data(), pFont, mtObject2Device,
                          font_size, color, options)) {
@@ -1843,16 +1859,6 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(
     }
   } else {
     for (int index = 0; index < nChars; ++index) {
-      const TextCharPos& cp = pCharPos[index];
-      uint32_t font_glyph_width =
-          pFont ? pFont->GetGlyphWidth(cp.m_GlyphIndex) : 0;
-      uint32_t pdf_glyph_width = cp.m_FontCharWidth;
-      if (font_glyph_width && pdf_glyph_width &&
-          font_glyph_width > pdf_glyph_width) {
-        font.setScaleX(SkIntToScalar(pdf_glyph_width) / font_glyph_width);
-      } else {
-        font.setScaleX(SkIntToScalar(1));
-      }
       auto blob =
           SkTextBlob::MakeFromText(&glyphs[index], sizeof(glyphs[index]), font,
                                    SkTextEncoding::kGlyphID);
@@ -2562,7 +2568,7 @@ bool CFX_SkiaDeviceDriver::StartDIBits(
     m_pCanvas->concat(skMatrix);
     SkPaint paint;
     SetBitmapPaint(pSource->IsMaskFormat(), !m_FillOptions.aliased_path, argb,
-                   bitmap_alpha, blend_type, &paint);
+                   blend_type, &paint);
     // TODO(caryclark) Once Skia supports 8 bit src to 8 bit dst remove this
     if (m_pBitmap && m_pBitmap->GetBPP() == 8 && pSource->GetBPP() == 8) {
       SkMatrix inv;
@@ -2707,8 +2713,8 @@ bool CFX_SkiaDeviceDriver::DrawBitsWithMask(
     SetBitmapMatrix(matrix, srcWidth, srcHeight, &skMatrix);
     m_pCanvas->concat(skMatrix);
     SkPaint paint;
-    SetBitmapPaint(pSource->IsMaskFormat(), !m_FillOptions.aliased_path,
-                   0xFFFFFFFF, bitmap_alpha, blend_type, &paint);
+    SetBitmapPaintForMerge(pSource->IsMaskFormat(), !m_FillOptions.aliased_path,
+                           0xFFFFFFFF, bitmap_alpha, blend_type, &paint);
     sk_sp<SkImage> skSrc = SkImage::MakeFromBitmap(skBitmap);
     sk_sp<SkShader> skSrcShader = skSrc->makeShader(
         SkTileMode::kClamp, SkTileMode::kClamp, SkSamplingOptions());

@@ -200,6 +200,7 @@ static const char DECORATE_UNUSED *kVUID_Core_Shader_MaxComputeWorkGroupSize = "
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_MissingEntrypoint = "UNASSIGNED-CoreValidation-Shader-MissingEntrypoint";
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_NonSpirvShader = "UNASSIGNED-CoreValidation-Shader-NonSpirvShader";
 //static const char DECORATE_UNUSED *kVUID_Core_Shader_UnknownStage = "UNASSIGNED-CoreValidation-Shader-UnknownStage";
+static const char DECORATE_UNUSED *kVUID_Stateless_InvalidShaderStagesArray = "UNASSIGNED-Stateless-InvalidShaderStagesArray";
 
 static const char DECORATE_UNUSED *kVUID_Core_DevLimit_CountMismatch = "UNASSIGNED-CoreValidation-DevLimitCountMismatch";
 // static const char DECORATE_UNUSED *kVUID_Core_DevLimit_InvalidFeatureRequested = "UNASSIGNED-CoreValidation-DevLimit-InvalidFeatureRequested";
@@ -242,7 +243,7 @@ static const char DECORATE_UNUSED *kVUID_Core_NonAcquiredSwapchainImageUsed = "U
 //static const char DECORATE_UNUSED *kVUID_Core_Swapchain_ZeroValue = "UNASSIGNED-CoreValidation-SwapchainZeroValue";
 
 static const char DECORATE_UNUSED *kVUID_Core_Image_InvalidFormatLimitsViolation = "UNASSIGNED-CoreValidation-Image-InvalidFormatLimitsViolation";
-static const char DECORATE_UNUSED *kVUID_Core_Image_ZeroAreaSubregion = "UNASSIGNED-CoreValidation-Image-ZeroAreaSubregion";
+// static const char DECORATE_UNUSED *kVUID_Core_Image_ZeroAreaSubregion = "UNASSIGNED-CoreValidation-Image-ZeroAreaSubregion";
 // static const char DECORATE_UNUSED *kVUID_Core_Image_FormatNotSupported = "UNASSIGNED-CoreValidation-Image-FormatNotSupported";
 
 static const char DECORATE_UNUSED *kVUID_Core_PushDescriptorUpdate_TemplateType = "UNASSIGNED-CoreValidation-vkCmdPushDescriptorSetWithTemplateKHR-descriptorUpdateTemplate-templateType";

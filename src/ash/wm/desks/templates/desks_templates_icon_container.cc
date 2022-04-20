@@ -28,6 +28,11 @@ namespace {
 // The space between icon views.
 constexpr int kIconSpacingDp = 8;
 
+bool IsBrowserAppId(const std::string& app_id) {
+  return app_id == app_constants::kChromeAppId ||
+         app_id == app_constants::kLacrosAppId;
+}
+
 // Given a map of unique icon identifiers to icon info, returns a vector of the
 // same key, value pair ordered by icons' activation index.
 std::vector<DesksTemplatesIconContainer::IconIdentifierAndIconInfo>
@@ -102,7 +107,7 @@ void InsertIconIdentifierToIconInfoFromLaunchList(
     // id so to determine whether `restore_data` is an SWA we need to check
     // whether it's a browser.
     const bool is_browser =
-        app_id == app_constants::kChromeAppId &&
+        IsBrowserAppId(app_id) &&
         (!restore_data.second->app_type_browser.has_value() ||
          !restore_data.second->app_type_browser.value());
     const int activation_index = restore_data.second->activation_index.value();
@@ -124,7 +129,7 @@ void InsertIconIdentifierToIconInfoFromLaunchList(
       // their app id from their app name if possible.
       std::string new_app_id = app_id;
       absl::optional<std::string> app_name = restore_data.second->app_name;
-      if (app_id == app_constants::kChromeAppId && app_name.has_value())
+      if (IsBrowserAppId(app_id) && app_name.has_value())
         new_app_id = app_restore::GetAppIdFromAppName(app_name.value());
 
       InsertIconIdentifierToIconInfo(app_id, new_app_id, activation_index,
@@ -220,19 +225,20 @@ void DesksTemplatesIconContainer::Layout() {
     int num_hidden_icons = 0;
     for (auto it = ++icon_views.rbegin(); it != icon_views.rend(); ++it) {
       if ((*it)->GetVisible()) {
-        used_horizontal_space -= (*it)->GetPreferredSize().width();
+        used_horizontal_space -=
+            ((*it)->GetPreferredSize().width() + kIconSpacingDp);
         (*it)->SetVisible(false);
-        ++num_hidden_icons;
+        num_hidden_icons +=
+            static_cast<DesksTemplatesIconView*>((*it))->count();
       }
 
       if (used_horizontal_space <= available_horizontal_space)
         break;
     }
     // Overflow icon count = the number of hidden icons + the number of
-    // unavailable windows + 1 to account for the overflow itself taking an
-    // icon.
+    // unavailable windows.
     overflow_icon_view->UpdateCount(overflow_icon_view->count() +
-                                    num_hidden_icons + 1);
+                                    num_hidden_icons);
   } else if (overflow_icon_view->count() == 0) {
     // There is no overflow so hide the overflow icon view.
     overflow_icon_view->SetVisible(false);
@@ -270,7 +276,7 @@ void DesksTemplatesIconContainer::CreateIconViewsFromIconIdentifiers(
       icon_view->SetIconIdentifierAndCount(icon_identifier, icon_info.app_id,
                                            icon_info.count, /*show_plus=*/true);
     } else {
-      num_hidden_icons++;
+      num_hidden_icons += icon_info.count;
     }
   }
 

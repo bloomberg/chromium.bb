@@ -96,7 +96,8 @@
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "use_afl": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "ChromiumOS ASAN Release": {
@@ -109,6 +110,20 @@
       "is_lsan": true,
       "target_os": "chromeos",
       "use_goma": true,
+      "v8_enable_verify_heap": true
+    }
+  },
+  "ChromiumOS ASAN Release (reclient shadow)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_ipc_fuzzer": true,
+      "is_asan": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_lsan": true,
+      "target_os": "chromeos",
+      "use_rbe": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   },
@@ -460,7 +475,8 @@
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   },
@@ -474,7 +490,8 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "use_goma": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "v8_enable_verify_heap": true
     }
   }

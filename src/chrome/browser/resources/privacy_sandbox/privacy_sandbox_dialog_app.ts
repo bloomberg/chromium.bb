@@ -16,7 +16,7 @@ import {PrivacySandboxDialogAction, PrivacySandboxDialogBrowserProxy} from './pr
 const PrivacySandboxDialogAppElementBase = PolymerElement;
 
 export interface PrivacySandboxDialogAppElement {
-  $: {contentArea: HTMLElement; expandSection: HTMLElement;};
+  $: {contentArea: HTMLElement, expandSection: HTMLElement};
 }
 
 export class PrivacySandboxDialogAppElement extends
@@ -75,6 +75,13 @@ export class PrivacySandboxDialogAppElement extends
 
         proxy.showDialog();
       });
+    });
+
+    window.addEventListener('keydown', event => {
+      // Only notice dialog can be dismissed by pressing "Esc".
+      if (event.key === 'Escape' && !this.isConsent_) {
+        this.dialogActionOccurred(PrivacySandboxDialogAction.NOTICE_DISMISS);
+      }
     });
   }
 

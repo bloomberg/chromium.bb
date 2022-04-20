@@ -74,6 +74,12 @@ namespace scripting {
     // The JavaScript "world" to run the script in. Defaults to
     // <code>ISOLATED</code>.
     ExecutionWorld? world;
+
+    // Whether the injection should be triggered in the target as soon as
+    // possible. Note that this is not a guarantee that injection will occur
+    // prior to page load, as the page may have already loaded by the time the
+    // script reaches the target.
+    boolean? injectImmediately;
   };
 
   dictionary CSSInjection {
@@ -144,6 +150,9 @@ namespace scripting {
     // Specifies if this content script will persist into future sessions. The
     // default is true.
     boolean? persistAcrossSessions;
+    // The JavaScript "world" to run the script in. Defaults to
+    // <code>ISOLATED</code>.
+    ExecutionWorld? world;
   };
 
   // An object used to filter content scripts for

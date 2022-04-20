@@ -26,17 +26,72 @@ namespace fuzzy {
 // of algorithm robustness.
 // If the `replacement` character is 0, it is interpreted as deletion.
 struct Correction {
-  size_t at;
-  char16_t replacement;
-  std::unique_ptr<Correction> next;
+  // The kind of change to apply to text. Note, KEEP essentially means
+  // no edit, and will never be applied or kept as part of a correction chain.
+  enum class Kind {
+    KEEP,
+    DELETE,
+    INSERT,
+    REPLACE,
+  };
 
-  Correction(Correction&) = delete;
+  Correction(const Correction&);
   Correction(Correction&&);
-  Correction(size_t at, char16_t replacement);
+  Correction& operator=(Correction&&) = default;
+  Correction(Kind kind, size_t at, char16_t new_char);
+  Correction(Kind kind,
+             size_t at,
+             char16_t new_char,
+             std::unique_ptr<Correction> next);
   ~Correction();
 
   // Applies this correction to given text, mutating it in place.
   void ApplyTo(std::u16string& text) const;
+
+  // This is a utility method to eliminate the need for allocation of
+  // non-applicable corrections. It returns a copy of this, or `next` if
+  // this `kind` is KEEP.
+  std::unique_ptr<Correction> GetApplicableCorrection();
+
+  // This correction's edit operation.
+  Kind kind;
+
+  // Text index at which to apply correction.
+  size_t at;
+
+  // Character data; relevant only for REPLACE and INSERT.
+  char16_t new_char;
+
+  // A short chain of additional related corrections to apply with this one.
+  std::unique_ptr<Correction> next;
+};
+
+// This utility struct defines how tolerance changes across the length
+// of input text being processed.
+// Example: this schedule `{ .start_index = 1, .step_length = 4, .limit = 3 }`
+// means the first character must match, then starting from the second
+// character, one correction is tolerated per four characters, up to a maximum
+// of three total corrections.
+struct ToleranceSchedule {
+  int ToleranceAt(int index) {
+    if (index < start_index) {
+      return 0;
+    }
+    if (step_length <= 0) {
+      return limit;
+    }
+    return std::min(limit, 1 + (index - start_index) / step_length);
+  }
+
+  // Index at which tolerance is allowed to exceed zero.
+  int start_index = 0;
+
+  // Number of index steps between successive tolerance increases.
+  // When nonpositive, the `limit` value is used directly instead of stepping.
+  int step_length = 0;
+
+  // Regardless of index, tolerance will not exceed this limit.
+  int limit = 0;
 };
 
 // Nodes form a trie structure used to find potential input corrections.
@@ -50,17 +105,17 @@ struct Node {
   void Insert(const std::u16string& text, size_t from);
 
   // Produce corrections necessary to get `text` back on trie. Each correction
-  // will be of size `tolerance` or smaller.
+  // will be of size bounded by `tolerance_schedule`, and none will have smaller
+  // edit distance than any other (i.e. all corrections are equally optimal).
   // Returns whether input `text` starting at `from` is present in this trie.
   //  - true without corrections -> `text` on trie.
-  //  - false without corrections -> cannot complete on trie within `tolerance`.
+  //  - false without corrections -> cannot complete on trie within schedule.
   //  - true with corrections -> never happens because `text` is on trie.
   //  - false with corrections -> `text` off trie but corrections are on trie.
   // Note: For efficiency, not all possible corrections are returned; any found
   // valid corrections will preclude further more elaborate subcorrections.
   bool FindCorrections(const std::u16string& text,
-                       size_t from,
-                       int tolerance,
+                       ToleranceSchedule tolerance_schedule,
                        std::vector<Correction>& corrections) const;
 
   // TODO(orinj): Remove this. It's a development-only debugging utility.

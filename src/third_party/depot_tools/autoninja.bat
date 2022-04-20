@@ -7,8 +7,10 @@ setlocal
 
 set scriptdir=%~dp0
 
-:: Set unique build ID.
-FOR /f "usebackq tokens=*" %%a in (`%scriptdir%python-bin\python3.bat -c "import uuid; print(uuid.uuid4())"`) do set AUTONINJA_BUILD_ID=%%a
+if not defined AUTONINJA_BUILD_ID (
+  :: Set unique build ID.
+  FOR /f "usebackq tokens=*" %%a in (`%scriptdir%python-bin\python3.bat -c "import uuid; print(uuid.uuid4())"`) do set AUTONINJA_BUILD_ID=%%a
+)
 
 :: If a build performance summary has been requested then also set NINJA_STATUS
 :: to trigger more verbose status updates. In particular this makes it possible
@@ -44,7 +46,7 @@ FOR /f "usebackq tokens=*" %%a in (`%scriptdir%python-bin\python3.bat %scriptdir
 @if "%NINJA_SUMMARIZE_BUILD%" == "1" call %scriptdir%python-bin\python3.bat %scriptdir%post_build_ninja_summary.py %*
 @call %scriptdir%python-bin\python3.bat %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*
 
-exit /b
+exit /b %ERRORLEVEL%
 :buildfailure
 
 @call %scriptdir%python-bin\python3.bat %scriptdir%ninjalog_uploader_wrapper.py --cmdline %*

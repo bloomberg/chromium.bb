@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2019 Valve Corporation
-# Copyright (c) 2014-2019 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment ve
 set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION_MAXIMUM OFF)
 
 project(Vulkan-Loader)
-
-set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS API_NAME="Vulkan")
-
-# Enable beta Vulkan extensions
-add_definitions(-DVK_ENABLE_BETA_EXTENSIONS)
 
 if (UPDATE_DEPS)
     find_package(PythonInterp 3 REQUIRED)
@@ -89,6 +84,9 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PythonInterp 3 QUIET)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 option(BUILD_TESTS "Build Tests" OFF)
 
 if(BUILD_TESTS)
@@ -103,8 +101,6 @@ if(WIN32)
     # Optional: Allow specify the exact version used in the loader dll
     # Format is major.minor.patch.build
     set(BUILD_DLL_VERSIONINFO "" CACHE STRING "Set the version to be used in the loader.rc file. Default value is the currently generated header version")
-
-    option(RELEASE_BUILD "Configures the loader.rc file for a \"Release\" build. Used for SDK builds primarily. Does not change CMAKE_BUILD_TYPE. Default is off." OFF)
 endif()
 
 if(BUILD_STATIC_LOADER)
@@ -187,25 +183,24 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(LOADER_HELPER_FOLDER "Helper Targets")
 
 if(UNIX)
-    set(
-        FALLBACK_CONFIG_DIRS "/etc/xdg"
-        CACHE
-            STRING
-            "Search path to use when XDG_CONFIG_DIRS is unset or empty or the current process is SUID/SGID. Default is freedesktop compliant."
-        )
-    set(
-        FALLBACK_DATA_DIRS "/usr/local/share:/usr/share"
-        CACHE
-            STRING
-            "Search path to use when XDG_DATA_DIRS is unset or empty or the current process is SUID/SGID. Default is freedesktop compliant."
-        )
-    set(
-        SYSCONFDIR ""
-        CACHE
-            STRING
-            "System-wide search directory. If not set or empty, CMAKE_INSTALL_FULL_SYSCONFDIR and /etc are used."
-        )
+    set(FALLBACK_CONFIG_DIRS "/etc/xdg" CACHE STRING
+            "Search path to use when XDG_CONFIG_DIRS is unset or empty or the current process is SUID/SGID. Default is freedesktop compliant.")
+    set(FALLBACK_DATA_DIRS "/usr/local/share:/usr/share" CACHE STRING
+            "Search path to use when XDG_DATA_DIRS is unset or empty or the current process is SUID/SGID. Default is freedesktop compliant.")
+    set(SYSCONFDIR "" CACHE STRING
+            "System-wide search directory. If not set or empty, CMAKE_INSTALL_FULL_SYSCONFDIR and /etc are used.")
 endif()
+
+# Because we use CMake 3.10.2, we can't use the policy which would disable adding /W3 by default. In the interim, replace the flags
+# When this project is updated to 3.15 and above, use the following line.
+#     cmake_policy(SET CMP0092 NEW)
+string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+string(REGEX REPLACE "/W3" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+# For MSVC/Windows, replace /GR with an empty string, this prevents warnings of /GR being overriden by /GR-
+# Newer CMake versions (3.20) have better solutions for this through policy - using the old
+# way while waiting for when updating can occur
+string(REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 if(UNIX AND NOT APPLE) # i.e.: Linux
     option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
@@ -241,55 +236,128 @@ if(WIN32)
     option(ENABLE_WIN10_ONECORE "Link the loader with OneCore umbrella libraries" OFF)
 endif()
 
-option(BUILD_LOADER "Build loader" ON)
+add_library(platform_wsi_defines INTERFACE)
+if(WIN32)
+    target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_WIN32_KHR)
+elseif(ANDROID)
+    target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_ANDROID_KHR)
+elseif(APPLE)
+    target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_MACOS_MVK VK_USE_PLATFORM_METAL_EXT)
+elseif(UNIX AND NOT APPLE) # i.e.: Linux
+    if(BUILD_WSI_XCB_SUPPORT)
+        target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_XCB_KHR)
+    endif()
+    if(BUILD_WSI_XLIB_SUPPORT)
+        target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_XLIB_KHR VK_USE_PLATFORM_XLIB_XRANDR_EXT)
+    endif()
+    if(BUILD_WSI_WAYLAND_SUPPORT)
+        target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_WAYLAND_KHR)
+    endif()
+    if(BUILD_WSI_DIRECTFB_SUPPORT)
+        target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_DIRECTFB_EXT)
+    endif()
+    if(BUILD_WSI_SCREEN_QNX_SUPPORT)
+        target_compile_definitions(platform_wsi_defines INTERFACE VK_USE_PLATFORM_SCREEN_QNX)
+    endif()
+else()
+    message(FATAL_ERROR "Unsupported Platform!")
+endif()
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    set(COMMON_COMPILE_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
-    set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -fno-strict-aliasing -fno-builtin-memcmp")
+add_library(loader_common_options INTERFACE)
+target_compile_definitions(loader_common_options INTERFACE API_NAME="Vulkan")
+target_link_libraries(loader_common_options INTERFACE platform_wsi_defines)
+
+# Enable beta Vulkan extensions
+target_compile_definitions(loader_common_options INTERFACE VK_ENABLE_BETA_EXTENSIONS)
+
+target_compile_features(loader_common_options INTERFACE c_std_99)
+target_compile_features(loader_common_options INTERFACE cxx_std_11)
+set(LOADER_STANDARD_C_PROPERTIES PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED YES C_EXTENSIONS OFF)
+set(LOADER_STANDARD_CXX_PROPERTIES PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS OFF)
+
+option(ENABLE_WERROR "Enable warnings as errors" ON)
+
+# Set warnings as errors and the main diagnostic flags
+# Must be set first so the warning silencing later on works properly
+# Note that clang-cl.exe should use MSVC flavor flags, not GNU
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND "${CMAKE_CXX_SIMULATE_ID}" MATCHES "MSVC"))
+    if (ENABLE_WERROR)
+        target_compile_options(loader_common_options INTERFACE /WX)
+    endif()
+    target_compile_options(loader_common_options INTERFACE /W4)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # using GCC or Clang with the regular front end
+    if (ENABLE_WERROR)
+        target_compile_options(loader_common_options INTERFACE -Werror)
+    endif()
+    target_compile_options(loader_common_options INTERFACE -Wall -Wextra)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(loader_common_options INTERFACE -Wno-unused-parameter -Wno-unused-function -Wno-missing-field-initializers)
+
+    # need to prepend /clang: to compiler arguments when using clang-cl
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND "${CMAKE_CXX_SIMULATE_ID}" MATCHES "MSVC")
+        target_compile_options(loader_common_options INTERFACE /clang:-fno-strict-aliasing /clang:-fno-builtin-memcmp)
+    else()
+        target_compile_options(loader_common_options INTERFACE -fno-strict-aliasing -fno-builtin-memcmp)
+    endif()
 
     # For GCC version 7.1 or greater, we need to disable the implicit fallthrough warning since there's no consistent way to satisfy
     # all compilers until they all accept the C++17 standard
-    if(CMAKE_COMPILER_IS_GNUCC)
-        set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Wno-stringop-truncation -Wno-stringop-overflow")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(loader_common_options INTERFACE -Wno-stringop-truncation -Wno-stringop-overflow)
         if(CMAKE_CXX_COMPILER_VERSION GREATER_EQUAL 7.1)
-            set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Wimplicit-fallthrough=0")
+            target_compile_options(loader_common_options INTERFACE -Wimplicit-fallthrough=0)
         endif()
     endif()
 
-    if(APPLE)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_COMPILE_FLAGS}")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_FLAGS} -std=c++11 -fno-rtti")
-    #clang-cl on Windows
-    elseif((CMAKE_C_COMPILER_ID MATCHES "Clang") AND (CMAKE_CXX_SIMULATE_ID MATCHES "MSVC"))
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Xclang -std=c99 ${COMMON_COMPILE_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -std=c++11 -fno-rtti")
-    # clang (not clang-cl) or gcc
-    else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${COMMON_COMPILE_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti")
-    endif()
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILE_FLAGS}")
-
     if(UNIX)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+        target_compile_options(loader_common_options INTERFACE -fvisibility=hidden)
     endif()
+
+    target_compile_options(loader_common_options INTERFACE -Wpointer-arith)
 endif()
 
-if(MSVC)
-    # /WX: Treat warnings as errors
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND "${CMAKE_CXX_SIMULATE_ID}" MATCHES "MSVC"))
     # /GR-: Disable RTTI
-    # /w34456: Warn about nested declarations
-    # /w34701, /w34703: Warn about potentially uninitialized variables
-    # /w34057: Warn about different indirection types.
-    # /w34245: Warn about signed/unsigned mismatch.
-    set(MSVC_LOADER_COMPILE_OPTIONS /WX /GR- /w34456 /w34701 /w34703 /w34057 /w34245)
+    # /guard:cf: Enable control flow guard
+    # /wd4100: Disable warning on unreferenced formal parameter
+    # /wd4152: Disable warning on conversion of a function pointer to a data pointer
+    # /wd4201: Disable warning on anonymous struct/unions
+    target_compile_options(loader_common_options INTERFACE /GR- /guard:cf /wd4100 /wd4152 /wd4201)
 
-    # Replace /GR with an empty string, prevents warnings of /GR being overriden by /GR-
-    # Newer CMake versions (3.20) have better solutions for this through policy - using the old
-    # way while waiting for when updating can occur
-    string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    # Enable control flow guard
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0")
+        target_link_options(loader_common_options INTERFACE "LINKER:/guard:cf")
+    else()
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:cf")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /guard:cf")
+    endif()
+
+    # Prevent <windows.h> from polluting the code. guards against things like MIN and MAX
+    target_compile_definitions(loader_common_options INTERFACE WIN32_LEAN_AND_MEAN)
+endif()
+
+# DEBUG enables runtime loader ICD verification
+# Add git branch and tag info in debug mode
+target_compile_definitions(loader_common_options INTERFACE $<$<CONFIG:DEBUG>:DEBUG;GIT_BRANCH_NAME=${GIT_BRANCH_NAME};GIT_TAG_INFO=${GIT_TAG_INFO}>)
+
+# Check for the existance of the secure_getenv or __secure_getenv commands
+include(CheckFunctionExists)
+include(CheckIncludeFile)
+
+check_function_exists(secure_getenv HAVE_SECURE_GETENV)
+check_function_exists(__secure_getenv HAVE___SECURE_GETENV)
+
+if (HAVE_SECURE_GETENV)
+    target_compile_definitions(loader_common_options INTERFACE HAVE_SECURE_GETENV)
+endif()
+if (HAVE___SECURE_GETENV)
+    target_compile_definitions(loader_common_options INTERFACE HAVE___SECURE_GETENV)
+endif()
+if(NOT MSVC AND NOT (HAVE_SECURE_GETENV OR HAVE___SECURE_GETENV))
+    message(WARNING "Using non-secure environmental lookups. This loader will not properly disable environent variables when run with elevated permissions.")
 endif()
 
 # Optional codegen target
@@ -304,17 +372,17 @@ endif()
 
 
 if(UNIX)
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS FALLBACK_CONFIG_DIRS="${FALLBACK_CONFIG_DIRS}" FALLBACK_DATA_DIRS="${FALLBACK_DATA_DIRS}")
+    target_compile_definitions(loader_common_options INTERFACE FALLBACK_CONFIG_DIRS="${FALLBACK_CONFIG_DIRS}" FALLBACK_DATA_DIRS="${FALLBACK_DATA_DIRS}")
 
     if(NOT (SYSCONFDIR STREQUAL ""))
         # SYSCONFDIR is specified, use it and do not force /etc.
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS SYSCONFDIR="${SYSCONFDIR}")
+        target_compile_definitions(loader_common_options INTERFACE SYSCONFDIR="${SYSCONFDIR}")
     else()
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS SYSCONFDIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}")
+        target_compile_definitions(loader_common_options INTERFACE SYSCONFDIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}")
 
         # Make sure /etc is searched by the loader
         if(NOT (CMAKE_INSTALL_FULL_SYSCONFDIR STREQUAL "/etc"))
-            set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS EXTRASYSCONFDIR="/etc")
+            target_compile_definitions(loader_common_options INTERFACE EXTRASYSCONFDIR="/etc")
         endif()
     endif()
 endif()
@@ -329,9 +397,7 @@ if(NOT TARGET uninstall)
     set_target_properties(uninstall PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
 endif()
 
-if(BUILD_LOADER)
-    add_subdirectory(loader)
-endif()
+add_subdirectory(loader)
 
 if(BUILD_TESTS)
     # Set gtest build configuration
@@ -426,6 +492,10 @@ if(BUILD_TESTS)
                 set_target_properties(detours PROPERTIES COMPILE_FLAGS /EHsc)
             endif()
 
+            # Silence errors found in clang-cl
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND "${CMAKE_CXX_SIMULATE_ID}" MATCHES "MSVC")
+                target_compile_options(detours PRIVATE -Wno-sizeof-pointer-memaccess -Wno-microsoft-goto -Wno-microsoft-cast)
+            endif()
         endif()
     endif()
 

@@ -31,6 +31,32 @@ const char* GetVirtualCardEnrollmentRequestType(
 
 }  // namespace
 
+void LogVirtualCardEnrollmentBubbleShownMetric(
+    VirtualCardEnrollmentBubbleSource source,
+    bool is_reshow) {
+  base::UmaHistogramBoolean(
+      "Autofill.VirtualCardEnrollBubble.Shown." +
+          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source),
+      is_reshow);
+}
+
+void LogVirtualCardEnrollmentBubbleResultMetric(
+    VirtualCardEnrollmentBubbleResult result,
+    VirtualCardEnrollmentBubbleSource source,
+    bool is_reshow,
+    bool previously_declined) {
+  std::string base_histogram_name =
+      "Autofill.VirtualCardEnrollBubble.Result." +
+      VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) +
+      (is_reshow ? ".Reshows" : ".FirstShow");
+  base::UmaHistogramEnumeration(base_histogram_name, result);
+
+  base::UmaHistogramEnumeration(
+      base_histogram_name + (previously_declined ? ".WithPreviousStrikes"
+                                                 : ".WithNoPreviousStrike"),
+      result);
+}
+
 void LogGetDetailsForEnrollmentRequestAttempt(
     VirtualCardEnrollmentSource source) {
   base::UmaHistogramBoolean(
@@ -70,41 +96,6 @@ void LogUpdateVirtualCardEnrollmentRequestResult(
       succeeded);
 }
 
-void LogVirtualCardEnrollBubbleCardArtAvailable(
-    bool card_art_available,
-    VirtualCardEnrollmentSource source) {
-  base::UmaHistogramBoolean(
-      "Autofill.VirtualCardEnroll.CardArtImageUsed." +
-          VirtualCardEnrollmentSourceToMetricSuffix(source),
-      card_art_available);
-}
-
-void LogVirtualCardEnrollBubbleLatencySinceUpstream(
-    const base::TimeDelta& latency) {
-  base::UmaHistogramTimes(
-      "Autofill.VirtualCardEnrollBubble.LatencySinceUpstream", latency);
-}
-
-void LogVirtualCardEnrollmentBubbleResultMetric(
-    VirtualCardEnrollmentBubbleResult result,
-    VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow) {
-  base::UmaHistogramEnumeration(
-      "Autofill.VirtualCardEnrollBubble.Result." +
-          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) +
-          (is_reshow ? ".Reshows" : ".FirstShow"),
-      result);
-}
-
-void LogVirtualCardEnrollmentBubbleShownMetric(
-    VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow) {
-  base::UmaHistogramBoolean(
-      "Autofill.VirtualCardEnrollBubble.Shown." +
-          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source),
-      is_reshow);
-}
-
 void LogVirtualCardEnrollmentLinkClickedMetric(
     VirtualCardEnrollmentLinkType link_type,
     VirtualCardEnrollmentBubbleSource source) {
@@ -129,6 +120,21 @@ void LogVirtualCardEnrollmentBubbleMaxStrikesLimitReached(
   DCHECK_NE(source, VirtualCardEnrollmentSource::kSettingsPage);
   base::UmaHistogramEnumeration(
       "Autofill.VirtualCardEnrollBubble.MaxStrikesLimitReached", source);
+}
+
+void LogVirtualCardEnrollBubbleCardArtAvailable(
+    bool card_art_available,
+    VirtualCardEnrollmentSource source) {
+  base::UmaHistogramBoolean(
+      "Autofill.VirtualCardEnroll.CardArtImageAvailable." +
+          VirtualCardEnrollmentSourceToMetricSuffix(source),
+      card_art_available);
+}
+
+void LogVirtualCardEnrollBubbleLatencySinceUpstream(
+    const base::TimeDelta& latency) {
+  base::UmaHistogramTimes(
+      "Autofill.VirtualCardEnrollBubble.LatencySinceUpstream", latency);
 }
 
 std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(

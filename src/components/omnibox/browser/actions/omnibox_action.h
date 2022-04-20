@@ -128,10 +128,8 @@ class OmniboxAction : public base::RefCounted<OmniboxAction> {
   const GURL& getUrl() const { return url_; }
 
   // Records that the action was shown at index `position` in the popup.
-  virtual void RecordActionShown(size_t position) const {}
-
-  // Records that the action was executed at index `position` in the popup.
-  virtual void RecordActionExecuted(size_t position) const {}
+  // `executed` is set to true if the action was also executed by the user.
+  virtual void RecordActionShown(size_t position, bool executed) const {}
 
   // Takes the action associated with this Action.  Non-navigation
   // Actions must override the default, but Navigation Actions don't need to.
@@ -148,14 +146,10 @@ class OmniboxAction : public base::RefCounted<OmniboxAction> {
   virtual const gfx::VectorIcon& GetVectorIcon() const;
 #endif
 
-  // Returns SK_ColorTRANSPARENT by default to indicate usage of normal theme
-  // color for suggestion row buttons; or override to force icon color.
-  virtual SkColor GetVectorIconColor() const;
-
   // Estimates RAM usage in bytes for this Action.
   virtual size_t EstimateMemoryUsage() const;
 
-  // Returns an ID used to identify some actions. Not defined for all Actions.
+  // Returns an ID used to identify the action.
   virtual int32_t GetID() const;
 
 #if BUILDFLAG(IS_ANDROID)

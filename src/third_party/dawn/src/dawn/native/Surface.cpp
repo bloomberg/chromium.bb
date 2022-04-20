@@ -35,6 +35,9 @@ namespace dawn::native {
         const absl::FormatConversionSpec& spec,
         absl::FormatSink* s) {
         switch (value) {
+            case Surface::Type::AndroidWindow:
+                s->Append("AndroidWindow");
+                break;
             case Surface::Type::MetalLayer:
                 s->Append("MetalLayer");
                 break;
@@ -47,8 +50,8 @@ namespace dawn::native {
             case Surface::Type::WindowsSwapChainPanel:
                 s->Append("WindowsSwapChainPanel");
                 break;
-            case Surface::Type::Xlib:
-                s->Append("Xlib");
+            case Surface::Type::XlibWindow:
+                s->Append("XlibWindow");
                 break;
         }
         return {true};
@@ -65,6 +68,7 @@ namespace dawn::native {
                         descriptor);
 
         DAWN_TRY(ValidateSingleSType(descriptor->nextInChain,
+                                     wgpu::SType::SurfaceDescriptorFromAndroidNativeWindow,
                                      wgpu::SType::SurfaceDescriptorFromMetalLayer,
                                      wgpu::SType::SurfaceDescriptorFromWindowsHWND,
                                      wgpu::SType::SurfaceDescriptorFromWindowsCoreWindow,
@@ -81,6 +85,17 @@ namespace dawn::native {
             return {};
         }
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
+
+#if defined(DAWN_PLATFORM_ANDROID)
+        const SurfaceDescriptorFromAndroidNativeWindow* androidDesc = nullptr;
+        FindInChain(descriptor->nextInChain, &androidDesc);
+        // Currently the best validation we can do since it's not possible to check if the pointer
+        // to a ANativeWindow is valid.
+        if (androidDesc) {
+            DAWN_INVALID_IF(androidDesc->window == nullptr, "Android window is not set.");
+            return {};
+        }
+#endif  // defined(DAWN_PLATFORM_ANDROID)
 
 #if defined(DAWN_PLATFORM_WINDOWS)
 #    if defined(DAWN_PLATFORM_WIN32)
@@ -142,20 +157,24 @@ namespace dawn::native {
     Surface::Surface(InstanceBase* instance, const SurfaceDescriptor* descriptor)
         : mInstance(instance) {
         ASSERT(descriptor->nextInChain != nullptr);
+        const SurfaceDescriptorFromAndroidNativeWindow* androidDesc = nullptr;
         const SurfaceDescriptorFromMetalLayer* metalDesc = nullptr;
         const SurfaceDescriptorFromWindowsHWND* hwndDesc = nullptr;
         const SurfaceDescriptorFromWindowsCoreWindow* coreWindowDesc = nullptr;
         const SurfaceDescriptorFromWindowsSwapChainPanel* swapChainPanelDesc = nullptr;
         const SurfaceDescriptorFromXlibWindow* xDesc = nullptr;
+        FindInChain(descriptor->nextInChain, &androidDesc);
         FindInChain(descriptor->nextInChain, &metalDesc);
         FindInChain(descriptor->nextInChain, &hwndDesc);
         FindInChain(descriptor->nextInChain, &coreWindowDesc);
         FindInChain(descriptor->nextInChain, &swapChainPanelDesc);
         FindInChain(descriptor->nextInChain, &xDesc);
-        ASSERT(metalDesc || hwndDesc || xDesc);
         if (metalDesc) {
             mType = Type::MetalLayer;
             mMetalLayer = metalDesc->layer;
+        } else if (androidDesc) {
+            mType = Type::AndroidWindow;
+            mAndroidNativeWindow = androidDesc->window;
         } else if (hwndDesc) {
             mType = Type::WindowsHWND;
             mHInstance = hwndDesc->hinstance;
@@ -171,7 +190,7 @@ namespace dawn::native {
             mSwapChainPanel = static_cast<IUnknown*>(swapChainPanelDesc->swapChainPanel);
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
         } else if (xDesc) {
-            mType = Type::Xlib;
+            mType = Type::XlibWindow;
             mXDisplay = xDesc->display;
             mXWindow = xDesc->window;
         } else {
@@ -200,6 +219,11 @@ namespace dawn::native {
 
     Surface::Type Surface::GetType() const {
         return mType;
+    }
+
+    void* Surface::GetAndroidNativeWindow() const {
+        ASSERT(mType == Type::AndroidWindow);
+        return mAndroidNativeWindow;
     }
 
     void* Surface::GetMetalLayer() const {
@@ -235,11 +259,11 @@ namespace dawn::native {
     }
 
     void* Surface::GetXDisplay() const {
-        ASSERT(mType == Type::Xlib);
+        ASSERT(mType == Type::XlibWindow);
         return mXDisplay;
     }
     uint32_t Surface::GetXWindow() const {
-        ASSERT(mType == Type::Xlib);
+        ASSERT(mType == Type::XlibWindow);
         return mXWindow;
     }
 

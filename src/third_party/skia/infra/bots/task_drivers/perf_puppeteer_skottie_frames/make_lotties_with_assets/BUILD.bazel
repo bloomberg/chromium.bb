@@ -1,5 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
+licenses(["notice"])
+
 go_library(
     name = "make_lotties_with_assets_lib",
     srcs = ["make_lotties_with_assets.go"],

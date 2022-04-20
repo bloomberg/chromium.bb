@@ -16,6 +16,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
+namespace ash {
+namespace personalization_app {
+
 namespace {
 const char kFakeCollectionId[] = "fake_collection_id";
 }  // namespace
@@ -113,6 +116,7 @@ void FakePersonalizationAppWallpaperProvider::SelectWallpaper(
 void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosPhoto(
     const std::string& id,
     ash::WallpaperLayout layout,
+    bool preview_mode,
     SelectGooglePhotosPhotoCallback callback) {
   std::move(callback).Run(/*success=*/true);
 }
@@ -157,3 +161,6 @@ void FakePersonalizationAppWallpaperProvider::ConfirmPreviewWallpaper() {
 void FakePersonalizationAppWallpaperProvider::CancelPreviewWallpaper() {
   return;
 }
+
+}  // namespace personalization_app
+}  // namespace ash

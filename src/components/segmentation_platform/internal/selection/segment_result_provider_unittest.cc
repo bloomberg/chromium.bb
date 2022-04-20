@@ -7,15 +7,16 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
-#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/segmentation_platform/internal/database/mock_signal_database.h"
 #include "components/segmentation_platform/internal/database/mock_signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
 #include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/mock_feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
-#include "components/segmentation_platform/internal/execution/model_execution_manager.h"
-#include "components/segmentation_platform/internal/execution/model_execution_manager_factory.h"
+#include "components/segmentation_platform/internal/execution/model_executor_impl.h"
+#include "components/segmentation_platform/internal/platform_options.h"
+#include "components/segmentation_platform/internal/scheduler/execution_service.h"
+#include "components/segmentation_platform/internal/signals/signal_handler.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,13 +73,16 @@ class SegmentResultProviderTest : public testing::Test {
         &provider_factory_,
         std::vector<OptimizationTarget>({kTestSegment, kTestSegment2}));
     segment_database_ = std::make_unique<test::TestSegmentInfoDatabase>();
-    model_execution_ = CreateModelExecutionManager(
-        &provider_factory_, task_environment_.GetMainThreadTaskRunner(),
-        {kTestSegment}, &clock_, segment_database_.get(), &signal_database_,
-        &mock_query_processor_, base::DoNothing());
+    execution_service_ = std::make_unique<ExecutionService>();
+    auto query_processor = std::make_unique<MockFeatureListQueryProcessor>();
+    mock_query_processor_ = query_processor.get();
+    execution_service_->InitForTesting(
+        std::move(query_processor),
+        std::make_unique<ModelExecutorImpl>(&clock_, mock_query_processor_),
+        nullptr);
     score_provider_ = SegmentResultProvider::Create(
         segment_database_.get(), &signal_storage_config_,
-        default_manager_.get(), model_execution_.get(), &clock_,
+        default_manager_.get(), execution_service_.get(), &clock_,
         /*force_refresh_results=*/false);
   }
 
@@ -146,9 +150,10 @@ class SegmentResultProviderTest : public testing::Test {
   TestModelProviderFactory::Data model_providers_;
   TestModelProviderFactory provider_factory_;
   MockSignalDatabase signal_database_;
-  MockFeatureListQueryProcessor mock_query_processor_;
+  MockFeatureListQueryProcessor* mock_query_processor_ = nullptr;
+  SignalHandler signal_handler_;
   std::unique_ptr<DefaultModelManager> default_manager_;
-  std::unique_ptr<ModelExecutionManager> model_execution_;
+  std::unique_ptr<ExecutionService> execution_service_;
   base::SimpleTestClock clock_;
   std::unique_ptr<test::TestSegmentInfoDatabase> segment_database_;
   MockSignalStorageConfig signal_storage_config_;
@@ -219,23 +224,15 @@ TEST_F(SegmentResultProviderTest, DefaultModelFailedExecution) {
       .WillOnce(Return(true))
       .WillOnce(Return(true));
 
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   // Set error while computing features.
-  EXPECT_CALL(mock_query_processor_, ProcessFeatureList(_, _, _, _))
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _))
       .WillOnce(RunOnceCallback<3>(/*error=*/true, std::vector<float>{{1, 2}}));
   ExpectSegmentResultOnGet(
       kTestSegment,
       SegmentResultProvider::ResultState::kDefaultModelExecutionFailed,
       absl::nullopt);
-#else
-  ExpectSegmentResultOnGet(
-      kTestSegment,
-      SegmentResultProvider::ResultState::kDefaultModelExecutionFailed,
-      absl::nullopt);
-#endif
 }
 
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 TEST_F(SegmentResultProviderTest, GetFromDefault) {
   SetSegmentResult(kTestSegment, absl::nullopt);
   std::map<OptimizationTarget, std::unique_ptr<ModelProvider>> p;
@@ -245,7 +242,7 @@ TEST_F(SegmentResultProviderTest, GetFromDefault) {
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
       .WillOnce(Return(true))
       .WillOnce(Return(true));
-  EXPECT_CALL(mock_query_processor_, ProcessFeatureList(_, _, _, _))
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _))
       .WillOnce(
           RunOnceCallback<3>(/*error=*/false, std::vector<float>{{1, 2}}));
   ExpectSegmentResultOnGet(
@@ -269,7 +266,7 @@ TEST_F(SegmentResultProviderTest, MultipleRequests) {
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
       .WillOnce(Return(true))
       .WillOnce(Return(true));
-  EXPECT_CALL(mock_query_processor_, ProcessFeatureList(_, _, _, _))
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _))
       .WillOnce(
           RunOnceCallback<3>(/*error=*/false, std::vector<float>{{1, 2}}));
   ExpectSegmentResultOnGet(
@@ -279,11 +276,10 @@ TEST_F(SegmentResultProviderTest, MultipleRequests) {
   // For the second request the database has valid result.
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(mock_query_processor_, ProcessFeatureList(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _)).Times(0);
   ExpectSegmentResultOnGet(
       kTestSegment2, SegmentResultProvider::ResultState::kSuccessFromDatabase,
       kModelRank);
 }
-#endif
 
 }  // namespace segmentation_platform

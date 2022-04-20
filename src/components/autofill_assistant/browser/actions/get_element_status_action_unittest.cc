@@ -51,6 +51,8 @@ class GetElementStatusActionTest : public testing::Test {
 
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
+    ON_CALL(mock_action_delegate_, GetUserModel)
+        .WillByDefault(Return(&user_model_));
     ON_CALL(mock_action_delegate_, GetWebController)
         .WillByDefault(Return(&mock_web_controller_));
     ON_CALL(mock_action_delegate_, GetWebsiteLoginManager)
@@ -149,9 +151,9 @@ TEST_F(GetElementStatusActionTest, ActionReportsAllVariationsForSelector) {
 }
 
 TEST_F(GetElementStatusActionTest, ActionReportsAllVariationsForClientId) {
-  ElementFinder::Result element;
+  ElementFinderResult element;
   mock_action_delegate_.GetElementStore()->AddElement("element",
-                                                      element.dom_object);
+                                                      element.dom_object());
   proto_.mutable_client_id()->set_identifier("element");
   proto_.mutable_expected_value_match()
       ->mutable_text_match()
@@ -700,9 +702,9 @@ TEST_F(GetElementStatusActionTest, SucceedsWithPasswordManagerValue) {
 
   EXPECT_CALL(mock_action_delegate_, FindElement(_, _))
       .WillOnce(WithArgs<1>([this](auto&& callback) {
-        std::unique_ptr<ElementFinder::Result> element =
-            std::make_unique<ElementFinder::Result>();
-        element->container_frame_host = web_contents_->GetMainFrame();
+        std::unique_ptr<ElementFinderResult> element =
+            std::make_unique<ElementFinderResult>();
+        element->SetRenderFrameHost(web_contents_->GetMainFrame());
         std::move(callback).Run(OkClientStatus(), std::move(element));
       }));
   EXPECT_CALL(mock_website_login_manager_, GetPasswordForLogin(_, _))

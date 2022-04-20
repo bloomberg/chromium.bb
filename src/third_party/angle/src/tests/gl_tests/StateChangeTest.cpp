@@ -550,8 +550,6 @@ TEST_P(StateChangeTestES3, CopyTexSubImage3DSync)
 // Ensure that BlitFramebuffer syncs framebuffer changes.
 TEST_P(StateChangeTestES3, BlitFramebufferSync)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsVulkan());
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
 
     // Init first texture to red
@@ -621,8 +619,6 @@ TEST_P(StateChangeTestES3, ReadBufferAndDrawBuffersSync)
 // Adapted partially from WebGL 2 test "renderbuffers/invalidate-framebuffer"
 TEST_P(StateChangeTestES3, IncompleteRenderbufferAttachmentInvalidateSync)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsVulkan());
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, mRenderbuffer);
     GLint samples = 0;
@@ -1217,8 +1213,6 @@ TEST_P(StateChangeTestES3, SamplerMetadataUpdateOnSetProgram)
 // Tests that redefining Buffer storage syncs with the Transform Feedback object.
 TEST_P(StateChangeTestES3, RedefineTransformFeedbackBuffer)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsVulkan());
     // Create the most simple program possible - simple a passthrough for a float attribute.
     constexpr char kVertexShader[] = R"(#version 300 es
 in float valueIn;
@@ -3285,6 +3279,83 @@ TEST_P(SimpleStateChangeTestES3, DepthInvalidateThenClear)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
 }
 
+// Invalidate an RGB framebuffer and verify that the alpha channel is not destroyed and remains
+// valid after a draw call.
+TEST_P(SimpleStateChangeTestES3, InvalidateRGBThenDraw)
+{
+    ANGLE_GL_PROGRAM(blueProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    // Verify that clearing alpha is ineffective on an RGB format.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Invalidate the framebuffer contents.
+    const GLenum discards[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
+
+    // Without an explicit clear, draw blue and make sure alpha is unaffected.  If RGB is emulated
+    // with RGBA, the previous invalidate shouldn't affect the alpha value.
+    drawQuad(blueProgram, essl1_shaders::PositionAttrib(), 0.5f);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+}
+
+// Invalidate an RGB framebuffer and verify that the alpha channel is not destroyed, even if the
+// color channels may be garbage.
+TEST_P(SimpleStateChangeTestES3, DrawAndInvalidateRGBThenVerifyAlpha)
+{
+    ANGLE_GL_PROGRAM(drawColor, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+    glUseProgram(drawColor);
+    GLint uniformLocation = glGetUniformLocation(drawColor, essl1_shaders::ColorUniform());
+    ASSERT_NE(uniformLocation, -1);
+
+    const int w = getWindowWidth();
+    const int h = getWindowHeight();
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glUniform4f(uniformLocation, 0.1f, 0.2f, 0.3f, 0.4f);
+    drawQuad(drawColor, essl1_shaders::PositionAttrib(), 0.5f);
+
+    // Invalidate the framebuffer contents.
+    const GLenum discards[] = {GL_COLOR_ATTACHMENT0};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, discards);
+
+    // Read back the contents of the framebuffer.  The color channels are invalid, but as an RGB
+    // format, readback should always return 1 in alpha.
+    std::vector<GLColor> readback(w * h);
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, readback.data());
+    for (int y = 0; y < h; ++y)
+    {
+        for (int x = 0; x < w; ++x)
+        {
+            EXPECT_EQ(readback[y * w + x].A, 255) << x << " " << y;
+        }
+    }
+}
+
 // Tests deleting a Framebuffer that is in use.
 TEST_P(SimpleStateChangeTest, DeleteFramebufferInUse)
 {
@@ -4489,9 +4560,6 @@ void main()
 // call works correctly.  This requires a barrier in between the draw calls.
 TEST_P(SimpleStateChangeTestES31, DrawWithUBOThenDrawWithSSBO)
 {
-    // http://anglebug.com/5593
-    ANGLE_SKIP_TEST_IF(IsD3D11());
-
     GLint maxFragmentShaderStorageBlocks;
     glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &maxFragmentShaderStorageBlocks);
 
@@ -4589,6 +4657,115 @@ void main()
     EXPECT_NEAR(ptr[1], 0.6f, 0.001);
     EXPECT_NEAR(ptr[2], 0.4f, 0.001);
     EXPECT_NEAR(ptr[3], 0.3f, 0.001);
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+}
+
+// Tests that writing to an SSBO in the fragment shader before and after a change to the drawbuffers
+// still works
+TEST_P(SimpleStateChangeTestES31, FragWriteSSBOThenChangeDrawbuffersThenWriteSSBO)
+{
+    GLint maxFragmentShaderStorageBlocks;
+    glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &maxFragmentShaderStorageBlocks);
+
+    ANGLE_SKIP_TEST_IF(maxFragmentShaderStorageBlocks < 1);
+
+    constexpr GLsizei kSize = 1;
+
+    GLTexture color;
+    glBindTexture(GL_TEXTURE_2D, color);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSize, kSize);
+    EXPECT_GL_NO_ERROR();
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+    EXPECT_GL_NO_ERROR();
+
+    constexpr std::array<float, 4> kBufferInitValue = {0.125f, 0.25f, 0.5f, 1.0f};
+    GLBuffer buffer;
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(kBufferInitValue), kBufferInitValue.data(),
+                 GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
+
+    // Create a program that writes to the SSBO in the fragment shader.
+    constexpr char kFS[] = R"(#version 310 es
+precision mediump float;
+layout(binding = 0, std430) buffer Output {
+    vec4 value;
+} b;
+out vec4 colorOut;
+uniform vec4 value;
+void main()
+{
+    b.value = value;
+    colorOut = vec4(1, 1, 1, 0);
+})";
+
+    GLuint vs = CompileShader(GL_VERTEX_SHADER, essl31_shaders::vs::Simple());
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFS);
+
+    const GLuint program = glCreateProgram();
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    CheckLinkStatusAndReturnProgram(program, true);
+
+    // Detach the shaders, so any draw-time shader rewriting won't be able to use them.
+    glDetachShader(program, vs);
+    glDetachShader(program, fs);
+
+    glUseProgram(program);
+    GLint positionLoc = glGetAttribLocation(program, essl31_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+    GLint valueLoc = glGetUniformLocation(program, "value");
+    ASSERT_NE(-1, valueLoc);
+
+    const std::array<Vector3, 6> &quadVertices = GetQuadVertices();
+    const size_t posBufferSize                 = quadVertices.size() * sizeof(Vector3);
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, posBufferSize, quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    glUseProgram(program);
+    constexpr float kValue1[4] = {0.1f, 0.2f, 0.3f, 0.4f};
+
+    glUniform4fv(valueLoc, 1, kValue1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    // Verify that the program wrote the SSBO correctly.
+    const float *ptr = reinterpret_cast<const float *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kBufferInitValue), GL_MAP_READ_BIT));
+
+    for (int i = 0; i < 4; ++i)
+    {
+        EXPECT_NEAR(ptr[i], kValue1[i], 0.001);
+    }
+
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    GLenum drawBuffers[] = {GL_NONE};
+    glDrawBuffers(1, drawBuffers);
+
+    constexpr float kValue2[4] = {0.5f, 0.6f, 0.7f, 0.9f};
+    glUniform4fv(valueLoc, 1, kValue2);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    EXPECT_GL_NO_ERROR();
+    // Verify that the program wrote the SSBO correctly.
+    ptr = reinterpret_cast<const float *>(
+        glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, sizeof(kBufferInitValue), GL_MAP_READ_BIT));
+
+    for (int i = 0; i < 4; ++i)
+    {
+        EXPECT_NEAR(ptr[i], kValue2[i], 0.001);
+    }
 
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
@@ -8018,7 +8195,8 @@ ANGLE_INSTANTIATE_TEST_ES3(StateChangeRenderTestES3);
 ANGLE_INSTANTIATE_TEST_ES2(SimpleStateChangeTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SimpleStateChangeTestES3);
-ANGLE_INSTANTIATE_TEST_ES3(SimpleStateChangeTestES3);
+ANGLE_INSTANTIATE_TEST_ES3_AND(SimpleStateChangeTestES3,
+                               ES3_VULKAN().enable(Feature::AllocateNonZeroMemory));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ImageRespecificationTest);
 ANGLE_INSTANTIATE_TEST_ES3(ImageRespecificationTest);

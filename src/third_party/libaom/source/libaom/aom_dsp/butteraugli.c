@@ -36,8 +36,8 @@ int aom_calc_butteraugli(const YV12_BUFFER_CONFIG *source,
                                                      : &kYuvI601Constants;
   }
 
-  const size_t stride_argb = width * 4;
-  const size_t buffer_size = height * stride_argb;
+  const int stride_argb = width * 4;
+  const size_t buffer_size = (size_t)height * stride_argb;
   uint8_t *src_argb = (uint8_t *)aom_malloc(buffer_size);
   uint8_t *distorted_argb = (uint8_t *)aom_malloc(buffer_size);
   if (!src_argb || !distorted_argb) {

@@ -10,7 +10,13 @@ namespace ash {
 
 OobeScreenId::OobeScreenId(const std::string& name) : name(name) {}
 
-OobeScreenId::OobeScreenId(const StaticOobeScreenId& id) : name(id.name) {}
+OobeScreenId::OobeScreenId(const StaticOobeScreenId& id)
+    : name(id.name) {
+  if (id.external_api_prefix)
+    external_api_prefix = id.external_api_prefix;
+  // TODO(https://crbug.com/1312879): Uncomment when the bug is fixed.
+  // DCHECK(!external_api_prefix.empty());
+}
 
 bool OobeScreenId::operator==(const OobeScreenId& rhs) const {
   return name == rhs.name;
@@ -31,18 +37,5 @@ std::ostream& operator<<(std::ostream& stream, const OobeScreenId& id) {
 OobeScreenId StaticOobeScreenId::AsId() const {
   return OobeScreenId(name);
 }
-
-// OobeScreenId instances should always be attached to their associated handler;
-// the list below contains only OobeScreenId instances that do not have a
-// handler.
-//
-// Ideally this list should contain only special or helper screens, e.g., those
-// without a JS counterpart.
-//
-// TODO(crbug.com/958905): Reduce this list to only special or helper screens
-
-// static
-constexpr StaticOobeScreenId OobeScreen::SCREEN_CONFIRM_PASSWORD;
-constexpr StaticOobeScreenId OobeScreen::SCREEN_UNKNOWN;
 
 }  // namespace ash

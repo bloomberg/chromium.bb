@@ -61,6 +61,7 @@ post](http://googleblog.blogspot.com/2009/11/releasing-chromium-os-open-source.h
             (groups/etc...)
 *   [Report
             bugs](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/reporting_bugs.md)
+*   [Steam on Chrome OS](/chromium-os/steam-on-chromeos)
 
 </div>
 <div class="column">

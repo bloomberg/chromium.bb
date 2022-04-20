@@ -246,6 +246,26 @@ ios_builder(
 )
 
 ios_builder(
+    name = "ios-fieldtrial-fyi-rel",
+    builderless = True,
+    mirrors = ["ci/ios-fieldtrial-rel"],
+)
+
+ios_builder(
+    name = "ios-m1-simulator",
+    mirrors = ["ci/ios-m1-simulator"],
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+)
+
+ios_builder(
+    name = "ios-m1-simulator-cronet",
+    mirrors = ["ci/ios-m1-simulator-cronet"],
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+)
+
+ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
@@ -314,7 +334,6 @@ ios_builder(
 ios_builder(
     name = "ios14-sdk-simulator",
     os = os.MAC_11,
-    cpu = cpu.ARM64,
 )
 
 ios_builder(

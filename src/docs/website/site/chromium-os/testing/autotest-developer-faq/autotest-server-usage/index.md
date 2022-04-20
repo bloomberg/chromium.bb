@@ -18,7 +18,7 @@ and have the local Autotest Web Frontend running. To verify simply navigate to
 ## Add Hosts
 
 Add hosts. *Note you need to ensure that you have SSH Access Setup Properly:
-<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>*
+<https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md#Set-up-SSH-connection-between-chroot-and-DUT>*
 
 ```none
 /usr/local/autotest/cli/atest host create hostname

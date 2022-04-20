@@ -190,6 +190,7 @@ BUILD_DEPS_HOST = [
     # This is the amalgamated source whose compiled output is meant to be faster.
     # We still pull the full source for the extensions (which are not available
     # in the amalgamation).
+    # If updating the version, also update bazel/deps.bzl.
     Dependency(
         'buildtools/sqlite.zip',
         'https://storage.googleapis.com/perfetto/sqlite-amalgamation-3350400.zip',
@@ -204,12 +205,24 @@ BUILD_DEPS_HOST = [
 
     # JsonCpp for legacy json import. Used only by the trace processor in
     # standalone builds.
+    # If updating the version, also update bazel/deps.bzl.
     Dependency(
         'buildtools/jsoncpp',
         'https://chromium.googlesource.com/external/github.com/open-source-parsers/jsoncpp.git',
         '6aba23f4a8628d599a9ef7fa4811c4ff6e4070e2',  # refs/tags/1.9.3.
         'all',
         'all'),
+
+    # Archive with only the demangling sources from llvm-project.
+    # See tools/repackage_llvm_demangler.sh on how to update this.
+    # File suffix is the git reference to the commit at which we rearchived the
+    # sources, as hosted on https://llvm.googlesource.com/llvm-project.
+    # If updating the version, also update bazel/deps.bzl.
+    Dependency(
+        'buildtools/llvm-project.tgz',
+        'https://storage.googleapis.com/perfetto/llvm-project-3b4c59c156919902c785ce3cbae0eee2ee53064d.tgz',
+        'f4a52e7f36edd7cacc844d5ae0e5f60b6f57c5afc40683e99f295886c9ce8ff4',
+        'all', 'all'),
 
     # These dependencies are for libunwindstack, which is used by src/profiling.
     Dependency('buildtools/android-core',
@@ -232,14 +245,19 @@ BUILD_DEPS_HOST = [
     Dependency('buildtools/lzma',
                'https://android.googlesource.com/platform/external/lzma.git',
                '7851dce6f4ca17f5caa1c93a4e0a45686b1d56c3', 'all', 'all'),
-    Dependency('buildtools/zlib',
-               'https://android.googlesource.com/platform/external/zlib.git',
-               '5c85a2da4c13eda07f69d81a1579a5afddd35f59', 'all', 'all'),
     Dependency('buildtools/bionic',
                'https://android.googlesource.com/platform/bionic.git',
                '332065d57e734b65f56474d136d22d767e36cbcd', 'all', 'all'),
 
+    # Zlib used both in the tracing binaries, as well as the trace processor and
+    # assorted tools.
+    # If updating the version, also update bazel/deps.bzl.
+    Dependency('buildtools/zlib',
+               'https://android.googlesource.com/platform/external/zlib.git',
+               '5c85a2da4c13eda07f69d81a1579a5afddd35f59', 'all', 'all'),
+
     # Linenoise, used only by trace_processor in standalone builds.
+    # If updating the version, also update bazel/deps.bzl.
     Dependency('buildtools/linenoise',
                'https://fuchsia.googlesource.com/third_party/linenoise.git',
                'c894b9e59f02203dbe4e2be657572cf88c4230c3', 'all', 'all'),
@@ -618,8 +636,10 @@ def Main():
       InstallNodeModules(force_clean=nodejs_updated)
 
   cur_python_interpreter = sys.executable
-  test_data_synced = 0 == subprocess.call(
-      [cur_python_interpreter, TEST_DATA_SCRIPT, 'status', '--quiet'])
+  test_data_synced = 0 == subprocess.call([
+      cur_python_interpreter, TEST_DATA_SCRIPT, 'status', '--quiet',
+      '--ignore-new'
+  ])
   if args.check_only:
     if not deps_updated and test_data_synced:
       with open(args.check_only, 'w') as f:
@@ -629,6 +649,8 @@ def Main():
         [x for x in sys.argv[1:] if not x.startswith('--check-only')])
     print('\033[91mBuild deps are stale. ' +
           'Please run tools/install-build-deps %s\033[0m' % argz)
+    if not test_data_synced:
+      print('//test/data/ is out of sync. `tools/test_data status` for details')
     return 1
 
   if not test_data_synced:

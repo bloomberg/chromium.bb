@@ -373,7 +373,8 @@ public:
     Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
     Result onDraw(const Src&, SkBitmap*, SkWStream*, SkString*,
                   const GrContextOptions& baseOptions,
-                  std::function<void(GrDirectContext*)> initContext = nullptr) const;
+                  std::function<void(GrDirectContext*)> initContext = nullptr,
+                  std::function<SkCanvas*(SkCanvas*)> wrapCanvas = nullptr) const;
 
     sk_gpu_test::GrContextFactory::ContextType contextType() const { return fContextType; }
     const sk_gpu_test::GrContextFactory::ContextOverrides& contextOverrides() const {
@@ -408,6 +409,15 @@ private:
     sk_sp<SkColorSpace>                               fColorSpace;
     GrContextOptions                                  fBaseContextOptions;
     sk_gpu_test::MemoryCache                          fMemoryCache;
+};
+
+// Wrap a gpu canvas in one that routes all text draws through GrSlugs.
+// Note that text blobs that have an RSXForm aren't converted.
+class GPUSlugSink : public GPUSink {
+public:
+    GPUSlugSink(const SkCommandLineConfigGpu*, const GrContextOptions&);
+
+    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
 };
 
 class GPUThreadTestingSink : public GPUSink {

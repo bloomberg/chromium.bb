@@ -23,6 +23,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_
 
+#include "base/auto_reset.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -139,6 +140,9 @@ class CORE_EXPORT ElementRuleCollector {
   void FinishAddingUARules() { result_.FinishAddingUARules(); }
   void FinishAddingUserRules() {
     result_.FinishAddingUserRules();
+  }
+  void FinishAddingPresentationalHints() {
+    result_.FinishAddingPresentationalHints();
   }
   void FinishAddingAuthorRulesForTreeScope(const TreeScope& tree_scope) {
     result_.FinishAddingAuthorRulesForTreeScope(tree_scope);

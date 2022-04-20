@@ -1,6 +1,6 @@
 # Nearby C++ Library
 
-The repository contains the Nearby project C++ library code. This is not an
+The repository contains the Nearby project C++ library source code. This is not an
 officially supported Google product.
 
 # About the Nearby Project
@@ -30,7 +30,7 @@ We support multiple platforms including Linux, iOS & Windows.
 ## Building for Linux
 Currently we support building from source using [bazel] (https://bazel.build). Other BUILD system such as cmake may be added later.
 
-Prerequisites:
+###Prerequisites:
 
 1. Bazel
 2. clang with support for c++ 17+
@@ -43,10 +43,27 @@ To build the Nearby Connection Core library:
 CC=clang CXX=clang++ bazel build -s --check_visibility=false //connections:core  --spawn_strategy=standalone --verbose_failures
 ```
 
-## iOS
-Currently we provide precompiled libraries. See the following page for instructions.
 
-* [iOS](https://github.com/google/nearby/blob/master/docs/ios_build.md)
+## Building for macOS and iOS
+
+Currently we support building with [Swift Package Manager](https://www.swift.org/package-manager).
+
+###Prerequisites:
+
+1. Xcode. Available from Apple Store.
+2. Google Protobuf Compiler (protoc). If you have [homebrew](https://brew.sh/) installed, you can do `brew install protobuf`.
+
+To build the Nearby Connection library:
+
+```shell
+swift build
+```
+
+We also provide a iOS [sample app using the Nearby Connections library]
+(https://github.com/google/nearby/blob/master/internal/platform/implementation/ios/Example/NearbyConnectionsExample/README.md).
 
 
-**Last Updated:** Febrary 2022
+###Limitation
+The only Medium supported is Wifi LAN.
+
+**Last Updated:** April 7, 2022

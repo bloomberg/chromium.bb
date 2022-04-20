@@ -18,7 +18,7 @@ import {BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper} fr
 import * as ElementsComponents from './components/components.js';
 import {ElementsPanel} from './ElementsPanel.js';
 import {StyleEditorWidget} from './StyleEditorWidget.js';
-import type {StylePropertiesSection} from './StylesSidebarPane.js';
+import type {StylePropertiesSection} from './StylePropertiesSection.js';
 import {CSSPropertyPrompt, StylesSidebarPane, StylesSidebarPropertyRenderer} from './StylesSidebarPane.js';
 import {getCssDeclarationAsJavascriptProperty} from './StylePropertyUtils.js';
 
@@ -73,6 +73,10 @@ const UIStrings = {
   *@description A context menu item in Styles panel to copy all CSS declarations
   */
   copyAllDeclarations: 'Copy all declarations',
+  /**
+  *@description  A context menu item in Styles panel to copy all the CSS changes
+  */
+  copyAllCSSChanges: 'Copy all CSS changes',
   /**
   *@description A context menu item in Styles panel to view the computed CSS property value.
   */
@@ -884,6 +888,13 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
 
     contextMenu.defaultSection().appendItem(
         i18nString(UIStrings.copyAllCssDeclarationsAsJs), this.copyAllCssDeclarationAsJs.bind(this));
+
+    // TODO(changhaohan): conditionally add this item only when there are changes to copy
+    contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyAllCSSChanges), async () => {
+      const allChanges = await this.parentPane().getFormattedChanges();
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
+      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane);
+    });
 
     void contextMenu.show();
   }

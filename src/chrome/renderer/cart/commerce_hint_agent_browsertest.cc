@@ -1037,8 +1037,10 @@ class CommerceHintTimeoutTest : public CommerceHintAgentTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Flaky on Linux and ChromeOS: https://crbug.com/1257964.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// Flaky on Linux, ChromeOS and Windows: https://crbug.com/1257964.
+// Falky on Mac: https://crbug.com/1312849.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_ExtractCart DISABLED_ExtractCart
 #else
 #define MAYBE_ExtractCart ExtractCart
@@ -1159,6 +1161,7 @@ IN_PROC_BROWSER_TEST_F(CommerceHintSkippAddToCartTest, AddToCartByForm) {
   WaitForCartCount(result);
 }
 
+#if BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER)
 // Override per-domain and generic cart pattern.
 class CommerceHintCartPatternTest : public CommerceHintAgentTest {
  public:
@@ -1206,6 +1209,7 @@ IN_PROC_BROWSER_TEST_F(CommerceHintCartPatternTest, VisitCart) {
   NavigateToURL("https://www.example.com/Egg");
   WaitForUmaCount("Commerce.Carts.VisitCart", 4);
 }
+#endif  // BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER)
 
 // Override per-domain and generic checkout pattern.
 class CommerceHintCheckoutPatternTest : public CommerceHintAgentTest {

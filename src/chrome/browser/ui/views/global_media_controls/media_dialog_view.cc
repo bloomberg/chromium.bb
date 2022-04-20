@@ -24,6 +24,7 @@
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/global_media_controls/public/views/media_item_ui_list_view.h"
 #include "components/global_media_controls/public/views/media_item_ui_view.h"
+#include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
 #include "components/soda/constants.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -218,7 +219,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
 
 void MediaDialogView::UpdateBubbleSize() {
   SizeToContents();
-  if (!media::IsLiveCaptionFeatureEnabled())
+  if (!captions::IsLiveCaptionFeatureSupported())
     return;
 
   const int width = active_sessions_view_->GetPreferredSize().width();
@@ -297,7 +298,7 @@ MediaDialogView::~MediaDialogView() {
 void MediaDialogView::Init() {
   // Remove margins.
   set_margins(gfx::Insets());
-  if (!media::IsLiveCaptionFeatureEnabled()) {
+  if (!captions::IsLiveCaptionFeatureSupported()) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     return;
   }
@@ -310,8 +311,10 @@ void MediaDialogView::Init() {
       live_caption_container->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(kLiveCaptionHorizontalMarginDip,
-                          kLiveCaptionVerticalMarginDip),
+              // TODO(crbug.com/1305767): The order of the parameters to
+              // gfx::Insets::VH() seems wrong.
+              gfx::Insets::VH(kLiveCaptionHorizontalMarginDip,
+                              kLiveCaptionVerticalMarginDip),
               kLiveCaptionBetweenChildSpacing));
 
   auto live_caption_image = std::make_unique<views::ImageView>();
@@ -385,9 +388,6 @@ void MediaDialogView::OnSodaError(speech::LanguageCode language_code) {
                                            profile_->GetPrefs()) &&
       language_code != speech::LanguageCode::kNone) {
     return;
-  }
-  if (!base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
-    ToggleLiveCaption(false);
   }
 
   live_caption_title_->SetText(l10n_util::GetStringUTF16(

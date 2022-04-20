@@ -57,6 +57,12 @@
           'quickrun_shards': 3,
         },
       },
+      'android-marshmallow-x86-fyi-rel-reviver': {
+        'swarming': {
+          'shards': 2,
+          'quickrun_shards': 6,
+        },
+      },
       'android-marshmallow-x86-rel': {
         'swarming': {
           'shards': 2,
@@ -142,13 +148,13 @@
       },
     },
   },
-  'aura_unittests_amd64-generic': {
+  'aura_unittests amd64-generic': {
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
       'lacros-amd64-generic-rel',
     ]
   },
-  'aura_unittests_eve': {
+  'aura_unittests eve': {
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
       'lacros-amd64-generic-rel',
@@ -478,11 +484,6 @@
           '--flag-specific=enable-editing-ng',
         ],
       },
-      'linux-xenial-rel': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
       # TODO (crbug.com/1254971) Re-enable once fixed
       'mac-osxbeta-rel': {
         'experiment_percentage': 0,
@@ -592,7 +593,9 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          'shards': 48,
+          # This should be reverted to 48 before end of April 2022, when the slowdown is fixed.
+          # crbug.com/1313907
+          'shards': 72,
         },
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
@@ -774,11 +777,6 @@
         'swarming': {
           'quickrun_shards': 20,
         },
-      },
-      'linux-trusty-rel': {
-       'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter',
-        ],
       },
       'mac-code-coverage': {
         'args': [
@@ -970,6 +968,13 @@
           'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
         },
       },
+      'android-marshmallow-x86-fyi-rel-reviver': {
+        'swarming': {
+          # TODO(crbug.com/1127110): Revisit shards and machine_type if there
+          # are n2 machines available in the test pool.
+          'shards': 25,
+        },
+      },
       'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter',
@@ -1001,6 +1006,7 @@
   'chrome_public_test_apk_with_playstore': {
     'remove_from': [
       # Android Emulator does not ship playstore image on Marshmallow.
+      'android-marshmallow-x86-fyi-rel-reviver',
       'android-marshmallow-x86-rel',
     ],
     'modifications': {
@@ -1456,6 +1462,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_shell_test_apk.filter',
         ],
       },
+      'android-marshmallow-x86-fyi-rel-reviver': {
+        'swarming': {
+          'quickrun_shards': 8,
+        },
+      },
       'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.content_shell_test_apk.filter',
@@ -1518,6 +1529,12 @@
       'CFI Linux ToT',
     ],
     'modifications': {
+      # TODO(crbug.com/1254975): dyld was rebuilt for macOS 12, which breaks
+      # the tests. Run this experimentally on all the macOS bots >= 12 and
+      # remove this exception once fixed.
+      'Mac Builder Next': {
+        'experiment_percentage': 100,
+      },
       'android-11-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.crashpad_tests.filter',
@@ -1528,11 +1545,19 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.crashpad_tests.filter',
         ],
       },
-      # TODO (crbug.com/1254975) Re-enable once fixed
+      # TODO(crbug.com/1254975): dyld was rebuilt for macOS 12, which breaks
+      # the tests. Run this experimentally on all the macOS bots >= 12 and
+      # remove this exception once fixed.
       'mac-osxbeta-rel': {
         'experiment_percentage': 100,
       },
     },
+  },
+  'dawn_perf_tests': {
+    'remove_from': [
+      'Dawn Win10 x86 DEPS Release (Intel HD 630)',
+      'Dawn Win10 x86 Release (Intel HD 630)',
+    ],
   },
   'device_unittests': {
     'modifications': {
@@ -1931,6 +1956,13 @@
           'quickrun_shards': 12,
         },
       },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        # These are slow on the ASan trybot for some reason, crbug.com/1257927
+        'swarming': {
+          'shards': 6,
+          'quickrun_shards': 12,
+        },
+      },
       'Linux ChromiumOS MSan Tests': {
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
@@ -1992,6 +2024,11 @@
           'shards': 10,
         },
       },
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
       'linux-code-coverage': {
         'swarming': {
           'shards': 10,
@@ -2026,14 +2063,14 @@
       },
     },
   },
-  'interactive_ui_tests_amd64-generic': {
+  'interactive_ui_tests amd64-generic': {
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
       'lacros-amd64-generic-rel',
       'lacros-amd64-generic-rel-fyi',
     ]
   },
-  'interactive_ui_tests_eve': {
+  'interactive_ui_tests eve': {
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
       'lacros-amd64-generic-rel',
@@ -2172,6 +2209,11 @@
     },
   },
   'mediapipe_validating_tests': {
+    'modifications': { # TODO(crbug.com/1201887): Remove once tests are stable.
+      'fuchsia-fyi-x64-rel': {
+        'experiment_percentage': 100,
+      },
+    },
     'remove_from': [
       # TODO(crbug.com/1201887): Remove once tests are stable.
       'Fuchsia x64',
@@ -2340,6 +2382,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.net_unittests.filter',
         ],
       },
+      'android-cronet-x86-rel-kitkat-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_k.net_unittests.filter',
+        ],
+      },
       'android-marshmallow-x86-rel-non-cq': {
         # crbug.com/1046060
         'args': [
@@ -2405,11 +2452,6 @@
         'swarming': {
           'shards': 20,
         },
-      },
-      'linux-xenial-rel': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
       },
     },
   },
@@ -2599,6 +2641,9 @@
           # See above.
           '--extra-browser-args=--disable-wcg-for-test',
         ],
+      },
+      'fuchsia-fyi-x64-rel': { # https://crbug.com/1302427
+        'experiment_percentage': 100,
       },
     },
     'remove_from': [
@@ -2826,15 +2871,6 @@
       },
     },
   },
-  'swiftshader_unittests': {
-    'remove_from': [
-      # Save capacity on the hardware where we have only a few machines.
-      'Mac FYI Experimental Release (Intel)',
-      'Mac FYI Experimental Retina Release (AMD)',
-      'Mac FYI Experimental Retina Release (NVIDIA)',
-      'Mac Pro FYI Release (AMD)',
-    ],
-  },
   'sync_integration_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
@@ -2849,18 +2885,6 @@
         'swarming': {
           'shards': 6,
         },
-      },
-      # TODO(crbug.com/1131588) Tests are flaky only on CQ.
-      'Mac10.13 Tests': {
-        'precommit_args': [
-            '--gtest_filter=-*',
-          ],
-      },
-      # TODO(crbug.com/1131588) Tests are flaky only on CQ.
-      'Mac11 Tests': {
-        'precommit_args': [
-            '--gtest_filter=-*',
-          ],
       },
       'ToTLinuxTSan': {
         'swarming': {
@@ -3007,24 +3031,6 @@
         # TODO(b/188822176): Restore to 100% when we have additional capacity.
         'experiment_percentage': 0,
       },
-      'linux-bionic-rel': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
-      'linux-trusty-rel': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
-      'linux-xenial-rel': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
     },
     'remove_from': [
       'android-marshmallow-x86-rel-non-cq', # crbug.com/1084352
@@ -3076,6 +3082,13 @@
       # crbug.com/1080749
       'Optional Linux Release (NVIDIA)',
     ],
+  },
+  'trace_test': {
+    'modifications': {
+      'fuchsia-fyi-x64-rel': { # https://crbug.com/1269976
+        'experiment_percentage': 100,
+      },
+    },
   },
   'unit_tests': {
     'remove_from': [
@@ -3289,7 +3302,6 @@
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
-      'linux-xenial-rel',
     ],
   },
   'webgl2_conformance_gl_passthrough_tests': {
@@ -3552,15 +3564,6 @@
       },
     },
   },
-  'weblayer_instrumentation_test_apk_ToT_Tests': {
-    'modifications': {
-      'android-weblayer-marshmallow-x86-rel-tests': {
-        'args': [
-          '--replace-system-package=org.chromium.weblayer.shell,apks/WebLayerShellSystemWebView.apk'
-        ]
-      }
-    }
-  },
   'weblayer_private_instrumentation_test_apk': {
     'modifications': {
       # TODO(crbug.com/1189403): Remove the filter once the issue is fixed.
@@ -3658,6 +3661,11 @@
           # crbug.com/1292197
           '--gtest_filter=-org.chromium.android_webview.test.devui.HomeFragmentTest.testLongPressCopy*',
         ],
+      },
+      'android-marshmallow-x86-fyi-rel-reviver': {
+        'swarming': {
+          'shards': 9,
+        },
       },
       'android-marshmallow-x86-rel': {
         'swarming': {

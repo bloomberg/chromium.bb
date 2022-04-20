@@ -103,6 +103,8 @@ UnifiedMessageCenterView::~UnifiedMessageCenterView() {
 void UnifiedMessageCenterView::Init() {
   message_list_view_->Init();
 
+  AddChildView(notification_bar_);
+
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
   // TODO(crbug.com/1247455): Be able to do
@@ -118,11 +120,6 @@ void UnifiedMessageCenterView::Init() {
         gfx::RoundedCornersF{kMessageCenterScrollViewCornerRadius});
   }
   AddChildView(scroller_);
-
-  // The `notification_bar_` needs to be placed after the `scroller_` since it
-  // should be the last element that the user focuses on before focusing out of
-  // the `UnifiedMessageCenterView`.
-  AddChildView(notification_bar_);
 
   notification_bar_->Update(
       message_list_view_->GetTotalNotificationCount(),
@@ -263,7 +260,7 @@ void UnifiedMessageCenterView::Layout() {
     gfx::Rect scroller_bounds(GetContentsBounds());
     int scroller_side_padding =
         is_notifications_refresh_enabled_ ? kMessageCenterSidePadding : 0;
-    scroller_bounds.Inset(gfx::Insets(
+    scroller_bounds.Inset(gfx::Insets::TLBR(
         notification_bar_height - notification_bar_offset,
         scroller_side_padding, scroller_bottom_inset, scroller_side_padding));
     scroller_->SetBoundsRect(scroller_bounds);
@@ -435,8 +432,10 @@ void UnifiedMessageCenterView::UpdateVisibility() {
 
     // Transfer focus to quick settings when going invisible.
     auto* widget = GetWidget();
-    if (widget && widget->IsActive())
+    if (widget && widget->IsActive()) {
+      widget->GetFocusManager()->ClearFocus();
       message_center_bubble_->ActivateQuickSettingsBubble();
+    }
   }
 }
 

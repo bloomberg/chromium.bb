@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 
-#include "ash/public/cpp/new_window_delegate.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
@@ -12,7 +11,14 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/quick_answers/quick_answers_state_ash.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/quick_answers/lacros/quick_answers_state_lacros.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -23,9 +29,6 @@ using ::quick_answers::QuickAnswersClient;
 using ::quick_answers::QuickAnswersExitPoint;
 using ::quick_answers::QuickAnswersRequest;
 using ::quick_answers::ResultType;
-
-constexpr char kQuickAnswersSettingsUrl[] =
-    "chrome://os-settings/osSearch/search";
 
 constexpr char kQuickAnswersExitPoint[] = "QuickAnswers.ExitPoint";
 
@@ -67,7 +70,13 @@ QuickAnswersControllerImpl::QuickAnswersControllerImpl()
     : quick_answers_ui_controller_(
           std::make_unique<QuickAnswersUiController>(this)),
       quick_answers_access_token_fetcher_(
-          std::make_unique<QuickAnswersAccessTokenFetcher>()) {}
+          std::make_unique<QuickAnswersAccessTokenFetcher>()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  quick_answers_state_ = std::make_unique<QuickAnswersStateAsh>();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  quick_answers_state_ = std::make_unique<QuickAnswersStateLacros>();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
 
 QuickAnswersControllerImpl::~QuickAnswersControllerImpl() = default;
 
@@ -259,12 +268,6 @@ void QuickAnswersControllerImpl::OnUserConsentResult(bool consented) {
     // been granted.
     MaybeShowQuickAnswers(anchor_bounds_, title_, context_);
   }
-}
-
-void QuickAnswersControllerImpl::OpenQuickAnswersSettings() {
-  ash::NewWindowDelegate::GetInstance()->OpenUrl(
-      GURL(kQuickAnswersSettingsUrl),
-      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
 }
 
 void QuickAnswersControllerImpl::MaybeDismissQuickAnswersConsent() {

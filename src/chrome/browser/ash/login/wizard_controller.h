@@ -51,15 +51,18 @@
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/screens/terms_of_service_screen.h"
+#include "chrome/browser/ash/login/screens/theme_selection_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
 #include "components/account_id/account_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -140,7 +143,7 @@ class WizardController : public OobeUI::Observer {
 
   // Advances to screen defined by `screen` and shows it. Might show HID
   // detection screen in case HID connection is needed and screen_id ==
-  // OobeScreen::SCREEN_UNKNOWN.
+  // ash::OOBE_SCREEN_UNKNOWN.
   void AdvanceToScreen(OobeScreenId screen_id);
 
   // Advances to screen defined by `screen` and shows it.
@@ -243,7 +246,8 @@ class WizardController : public OobeUI::Observer {
 
  private:
   // Create BaseScreen instances. These are owned by `screen_manager_`.
-  std::vector<std::unique_ptr<BaseScreen>> CreateScreens();
+  std::vector<std::pair<OobeScreenId, std::unique_ptr<BaseScreen>>>
+  CreateScreens();
 
   // Show specific screen.
   void ShowWelcomeScreen();
@@ -284,6 +288,7 @@ class WizardController : public OobeUI::Observer {
   void ShowLacrosDataMigrationScreen();
   void ShowConsolidatedConsentScreen();
   void ShowGuestTosScreen();
+  void ShowThemeSelectionScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -346,6 +351,8 @@ class WizardController : public OobeUI::Observer {
   void OnFamilyLinkNoticeScreenExit(FamilyLinkNoticeScreen::Result result);
   void OnUserCreationScreenExit(UserCreationScreen::Result result);
   void OnGaiaScreenExit(GaiaScreen::Result result);
+  void OnSamlConfirmPasswordScreenExit(
+      SamlConfirmPasswordScreen::Result result);
   void OnPasswordChangeScreenExit(GaiaPasswordChangedScreen::Result result);
   void OnActiveDirectoryLoginScreenExit();
   void OnSignInFatalErrorScreenExit();
@@ -361,6 +368,7 @@ class WizardController : public OobeUI::Observer {
   void OnHWDataCollectionScreenExit(HWDataCollectionScreen::Result result);
   void OnSmartPrivacyProtectionScreenExit(
       SmartPrivacyProtectionScreen::Result result);
+  void OnThemeSelectionScreenExit(ThemeSelectionScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -466,7 +474,7 @@ class WizardController : public OobeUI::Observer {
   bool is_out_of_box_ = false;
 
   // Value of the screen name that WizardController was started with.
-  OobeScreenId first_screen_for_testing_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId first_screen_for_testing_ = ash::OOBE_SCREEN_UNKNOWN;
 
   // The prescribed enrollment configuration for the device.
   policy::EnrollmentConfig prescribed_enrollment_config_;

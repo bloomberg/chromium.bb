@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_D3D12_QUEUED3D12_H_
-#define DAWNNATIVE_D3D12_QUEUED3D12_H_
+#ifndef SRC_DAWN_NATIVE_D3D12_QUEUED3D12_H_
+#define SRC_DAWN_NATIVE_D3D12_QUEUED3D12_H_
 
 #include "dawn/native/Queue.h"
 
@@ -26,12 +26,19 @@ namespace dawn::native::d3d12 {
 
     class Queue final : public QueueBase {
       public:
-        Queue(Device* device);
+        static Ref<Queue> Create(Device* device, const QueueDescriptor* descriptor);
 
       private:
+        Queue(Device* device, const QueueDescriptor* descriptor);
+
+        void Initialize();
+
         MaybeError SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) override;
+
+        // Dawn API
+        void SetLabelImpl() override;
     };
 
 }  // namespace dawn::native::d3d12
 
-#endif  // DAWNNATIVE_D3D12_QUEUED3D12_H_
+#endif  // SRC_DAWN_NATIVE_D3D12_QUEUED3D12_H_

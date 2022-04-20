@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "Request_hdr",
     hdrs = ["Request.h"],
@@ -21,10 +23,13 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Request_hdr",
+        "//include/core:SkBitmap_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkPictureRecorder_hdr",
         "//include/gpu:GrDirectContext_hdr",
         "//src/utils:SkJSONWriter_hdr",
         "//tools:ToolUtils_hdr",
+        "//tools/debugger:DrawCommand_hdr",
     ],
 )
 

@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2021-2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@
 
 #include "connections/core.h"
 #include "connections/payload.h"
-#include "internal/platform/logging.h"
 #include "internal/platform/file.h"
+#include "internal/platform/logging.h"
 
 namespace location {
 namespace nearby {
@@ -424,15 +424,31 @@ void AcceptConnectionDart(Core *pCore, const char *endpoint_id,
     dart_object_offset.type = Dart_CObject_kInt64;
     dart_object_offset.value.as_int64 = payload.GetOffset();
 
-    Dart_CObject *elements[4];
+    Dart_CObject dart_object_payload_data;
+    dart_object_offset.type = Dart_CObject_kString;
+    switch (payload.GetType()) {
+      case location::nearby::connections::PayloadType::kBytes:
+        dart_object_offset.value.as_string =
+            const_cast<char *>(payload.AsBytes().data());
+        break;
+      case location::nearby::connections::PayloadType::kFile:
+        dart_object_offset.value.as_string =
+            const_cast<char *>(payload.AsFile()->GetFilePath().data());
+        break;
+      default:
+        dart_object_offset.value.as_string = const_cast<char *>("");
+    }
+
+    Dart_CObject *elements[5];
     elements[0] = &dart_object_endpoint_id;
     elements[1] = &dart_object_payload_id;
     elements[2] = &dart_object_payload_type;
     elements[3] = &dart_object_offset;
+    elements[4] = &dart_object_payload_data;
 
     Dart_CObject dart_object_payload;
     dart_object_payload.type = Dart_CObject_kArray;
-    dart_object_payload.value.as_array.length = 4;
+    dart_object_payload.value.as_array.length = 5;
     dart_object_payload.value.as_array.values = elements;
 
     if (!Dart_PostCObject_DL(listener_dart.payload_cb, &dart_object_payload)) {
@@ -502,34 +518,6 @@ void DisconnectFromEndpointDart(Core *pCore, char *endpoint_id,
   DisconnectFromEndpoint(pCore, endpoint_id, callback);
 }
 
-std::string GetPayloadPath(location::nearby::PayloadId payload_id) {
-  PWSTR basePath;
-
-  // Retrieves the full path of a known folder identified by the folder's
-  // KNOWNFOLDERID.
-  // https://docs.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shgetknownfolderpath
-  SHGetKnownFolderPath(
-      FOLDERID_Downloads,  //  rfid: A reference to the KNOWNFOLDERID that
-                           //  identifies the folder.
-      0,           // dwFlags: Flags that specify special retrieval options.
-      NULL,        // hToken: An access token that represents a particular user.
-      &basePath);  // ppszPath: When this method returns, contains the address
-                   // of a pointer to a null-terminated Unicode string that
-                   // specifies the path of the known folder. The calling
-                   // process is responsible for freeing this resource once it
-                   // is no longer needed by calling CoTaskMemFree, whether
-                   // SHGetKnownFolderPath succeeds or not.
-  size_t bufferSize;
-  wcstombs_s(&bufferSize, NULL, 0, basePath, 0);
-  char *fullpathUTF8 = new char[bufferSize + 1];
-  memset(fullpathUTF8, 0, bufferSize);
-  wcstombs_s(&bufferSize, fullpathUTF8, bufferSize, basePath, bufferSize - 1);
-  std::string fullPath = std::string(fullpathUTF8);
-  auto retval = absl::StrCat(fullPath, "\\", payload_id);
-  delete[] fullpathUTF8;
-  return retval;
-}
-
 void SendPayloadDart(Core *pCore, const char *endpoint_id,
                      PayloadDart payload_dart, Dart_Port result_cb) {
   if (!pCore) {
@@ -558,20 +546,10 @@ void SendPayloadDart(Core *pCore, const char *endpoint_id,
       NEARBY_LOG(INFO, "File name: %s, size %d", payload_dart.data,
                  payload_dart.size);
       std::string file_name_str(payload_dart.data);
-
-      // TODO(yanfangliu) Clean this up when John's file payload change rolls
-      // out
-      Payload::Id id = std::hash<std::string>()(file_name_str);
-      std::string download_path = GetPayloadPath(id);
-      CopyFileA((LPSTR)payload_dart.data, (LPSTR)download_path.c_str(),
-                /*FailIfFileAlreadyExists=*/ false);
-      NEARBY_LOGS(INFO) << "Copy File to " << download_path;
-
-      InputFile input_file(std::to_string(id), payload_dart.size);
-      Payload payload = Payload(id, std::move(input_file));
+      InputFile input_file(file_name_str, payload_dart.size);
+      Payload payload(std::move(input_file));
       SendPayload(pCore, absl::Span<const std::string>(endpoint_ids),
                   std::move(payload), callback);
-
       SetResultCallback(callback, result_cb);
 
       break;

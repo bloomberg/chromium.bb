@@ -35,6 +35,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "components/sync/model/string_ordinal.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
@@ -525,7 +526,8 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
 
   base::ObserverList<AppListControllerObserver> observers_;
 
-  // Sub-controller to handle app item badges.
+  // Sub-controller to handle app item badges. Must be constructed after
+  // `model_provider_`.
   std::unique_ptr<AppListBadgeController> badge_controller_;
 
   // Whether the wallpaper is being previewed. The home screen should be hidden
@@ -534,6 +536,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
 
   // Whether we're currently in a window dragging process.
   bool in_window_dragging_ = false;
+
+  // Whether a session was ever set ACTIVE for the app list.
+  bool has_session_started_ = false;
 
   // The last overview mode exit type - cached when the overview exit starts, so
   // it can be used to decide how to update home screen when overview mode exit

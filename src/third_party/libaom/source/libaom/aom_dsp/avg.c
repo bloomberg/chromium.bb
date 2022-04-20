@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "config/aom_dsp_rtcd.h"
@@ -233,6 +234,14 @@ void aom_hadamard_lp_8x8_c(const int16_t *src_diff, ptrdiff_t src_stride,
   }
 
   for (int idx = 0; idx < 64; ++idx) coeff[idx] = buffer2[idx];
+}
+
+void aom_hadamard_8x8_dual_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                             int16_t *coeff) {
+  for (int i = 0; i < 2; i++) {
+    aom_hadamard_lp_8x8_c(src_diff + (i * 8), src_stride,
+                          (int16_t *)coeff + (i * 64));
+  }
 }
 
 // In place 16x16 2D Hadamard transform
@@ -510,6 +519,7 @@ void aom_int_pro_row_c(int16_t hbuf[16], const uint8_t *ref,
                        const int ref_stride, const int height) {
   int idx;
   const int norm_factor = height >> 1;
+  assert(height >= 2);
   for (idx = 0; idx < 16; ++idx) {
     int i;
     hbuf[idx] = 0;

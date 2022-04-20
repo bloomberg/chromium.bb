@@ -4,11 +4,14 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_
 #define CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_
 
+#include <memory>
+
 #include "ash/components/login/auth/user_context.h"
 #include "base/callback.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "components/account_id/account_id.h"
+#include "components/login/base_screen_handler_utils.h"
 
 namespace ash {
 
@@ -50,6 +53,9 @@ class SigninUI {
   virtual void StartManagementTransition() = 0;
   // Show additional terms of service on login.
   virtual void ShowTosForExistingUser() = 0;
+  // After users update from CloudReady to a new OS version show them new
+  // license agreement and data collection consent.
+  virtual void ShowNewTermsForFlexUsers() = 0;
 
   virtual void StartEncryptionMigration(
       const UserContext& user_context,
@@ -73,6 +79,12 @@ class SigninUI {
 
   // Show the browser data migration UI and start the migration.
   virtual void StartBrowserDataMigration() = 0;
+
+  // Show the SAML Confirm Password screen and continue authentication after
+  // that (or show the error screen).
+  virtual void SAMLConfirmPassword(
+      ::login::StringList scraped_passwords,
+      std::unique_ptr<UserContext> user_context) = 0;
 };
 
 }  // namespace ash

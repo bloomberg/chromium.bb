@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -74,11 +73,10 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
     url_request_context_ = url_request_context_builder.Build();
     url_loader_context_.set_url_request_context(url_request_context_.get());
 
-    constexpr int child_id = 4;
-    constexpr int route_id = 8;
+    constexpr network::ResourceScheduler::ClientId kClientId(3);
     resource_scheduler_client_ =
         base::MakeRefCounted<network::ResourceSchedulerClient>(
-            child_id, route_id, &resource_scheduler_,
+            kClientId, network::IsBrowserInitiated(false), &resource_scheduler_,
             url_request_context_->network_quality_estimator());
     url_loader_context_.set_resource_scheduler_client(
         resource_scheduler_client_);
@@ -241,6 +239,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
     uint32_t frame_tree_node_id =
         web_contents_->GetMainFrame()->GetFrameTreeNodeId();
 
+    bool is_primary_main_frame = is_main_frame;
+    bool is_outermost_main_frame = is_main_frame;
+
     std::unique_ptr<NavigationRequestInfo> request_info(
         std::make_unique<NavigationRequestInfo>(
             std::move(common_params), std::move(begin_params),
@@ -248,7 +249,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             net::IsolationInfo::Create(
                 net::IsolationInfo::RequestType::kMainFrame, origin, origin,
                 net::SiteForCookies::FromUrl(url)),
-            true /* is_primary_main_frame */, is_main_frame,
+            is_primary_main_frame, is_outermost_main_frame, is_main_frame,
             false /* are_ancestors_secure */, frame_tree_node_id,
             false /* report_raw_headers */,
             upgrade_if_insecure /* upgrade_if_insecure */,

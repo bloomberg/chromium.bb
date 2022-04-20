@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/units/time_delta.h"
 #include "api/video_codecs/video_decoder.h"
@@ -31,7 +32,9 @@ enum { kDecoderFrameMemoryLength = 10 };
 
 class VCMDecodedFrameCallback : public DecodedImageCallback {
  public:
-  VCMDecodedFrameCallback(VCMTiming* timing, Clock* clock);
+  VCMDecodedFrameCallback(VCMTiming* timing,
+                          Clock* clock,
+                          const FieldTrialsView& field_trials);
   ~VCMDecodedFrameCallback() override;
   void SetUserReceiveCallback(VCMReceiveCallback* receiveCallback);
   VCMReceiveCallback* UserReceiveCallback();

@@ -207,7 +207,7 @@ static int query_formats(AVFilterContext *ctx)
 
     formats = ff_make_format_list(sample_fmts);
     if ((ret = ff_formats_ref         (formats, &inlink->outcfg.formats        )) < 0 ||
-        (ret = ff_add_channel_layout  (&layout, AV_CH_LAYOUT_STEREO         )) < 0 ||
+        (ret = ff_add_channel_layout  (&layout, &(AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO)) < 0 ||
         (ret = ff_channel_layouts_ref (layout , &inlink->outcfg.channel_layouts)) < 0)
         return ret;
 
@@ -275,6 +275,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     }
     s->outpicref->pts = insamples->pts;
 
+    av_frame_make_writable(s->outpicref);
     ff_filter_execute(ctx, fade, NULL, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
 
     if (zoom < 1) {

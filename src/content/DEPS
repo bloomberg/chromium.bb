@@ -27,6 +27,7 @@ include_rules = [
 
   "+components/browsing_topics/common",
   "+components/memory_pressure",
+  "+components/ml/mojom",
   "+components/power_scheduler",
   "+components/services/filesystem",
   "+components/services/font/public",
@@ -96,8 +97,6 @@ include_rules = [
   "+ui/resources/grit/ui_resources.h",
   "+ui/resources/grit/webui_generated_resources.h",
   "+ui/resources/grit/webui_generated_resources_map.h",
-  "+ui/resources/grit/webui_resources.h",
-  "+ui/resources/grit/webui_resources_map.h",
   "+ui/shell_dialogs",
   "+ui/snapshot",
   "+ui/strings/grit/ui_strings.h",

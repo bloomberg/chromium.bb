@@ -32,7 +32,7 @@ function escapeSnippetName(name: Platform.DevToolsPath.RawPathString): Platform.
   return Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(name);
 }
 
-function unescapeSnippetName(name: Platform.DevToolsPath.EncodedPathString): string {
+function unescapeSnippetName(name: Platform.DevToolsPath.EncodedPathString): Platform.DevToolsPath.RawPathString {
   return Common.ParsedURL.ParsedURL.encodedPathToRawPathString(name);
 }
 
@@ -40,7 +40,7 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
   private readonly lastSnippetIdentifierSetting: Common.Settings.Setting<number>;
   private readonly snippetsSetting: Common.Settings.Setting<Snippet[]>;
   constructor() {
-    super('snippet://', 'snippets');
+    super('snippet://' as Platform.DevToolsPath.UrlString, 'snippets');
     this.lastSnippetIdentifierSetting =
         Common.Settings.Settings.instance().createSetting('scriptSnippets_lastIdentifier', 0);
     this.snippetsSetting = Common.Settings.Settings.instance().createSetting('scriptSnippets', []);
@@ -123,7 +123,7 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
     return matchedSnippets.map(snippet => `snippet:///${escapeSnippetName(snippet.name)}`);
   }
 
-  mimeFromPath(_path: string): string {
+  mimeFromPath(_path: Platform.DevToolsPath.UrlString): string {
     return 'text/javascript';
   }
 
@@ -170,7 +170,7 @@ export async function evaluateScriptSnippet(uiSourceCode: Workspace.UISourceCode
         generatePreview: true,
         replMode: true,
       } as SDK.RuntimeModel.EvaluationOptions,
-      false, true);
+      true, true);
 
   if ('exceptionDetails' in result && result.exceptionDetails) {
     SDK.ConsoleModel.ConsoleModel.instance().addMessage(SDK.ConsoleModel.ConsoleMessage.fromException(

@@ -14,6 +14,8 @@
 
 #include "dawn/tests/unittests/validation/ValidationTest.h"
 
+#include <array>
+
 namespace {
 
     class TextureViewValidationTest : public ValidationTest {};
@@ -405,6 +407,41 @@ namespace {
         // a single mip and layer.
     }
 
+    // Test creating texture view on a multisampled 2D texture
+    TEST_F(TextureViewValidationTest, CreateTextureViewOnMultisampledTexture2D) {
+        wgpu::Texture texture =
+            Create2DArrayTexture(device, /* arrayLayerCount */ 1, kWidth, kHeight,
+                                 /* mipLevelCount */ 1, /* sampleCount */ 4);
+
+        // It is OK to create a 2D texture view on a multisampled 2D texture.
+        {
+            wgpu::TextureViewDescriptor descriptor = {};
+            texture.CreateView(&descriptor);
+        }
+
+        // It is an error to create a 1-layer 2D array texture view on a multisampled 2D texture.
+        {
+            wgpu::TextureViewDescriptor descriptor = {};
+            descriptor.dimension = wgpu::TextureViewDimension::e2DArray;
+            descriptor.arrayLayerCount = 1;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+        }
+
+        // It is an error to create a 1D texture view on a multisampled 2D texture.
+        {
+            wgpu::TextureViewDescriptor descriptor = {};
+            descriptor.dimension = wgpu::TextureViewDimension::e1D;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+        }
+
+        // It is an error to create a 3D texture view on a multisampled 2D texture.
+        {
+            wgpu::TextureViewDescriptor descriptor = {};
+            descriptor.dimension = wgpu::TextureViewDimension::e3D;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+        }
+    }
+
     // Using the "none" ("default") values validates the same as explicitly
     // specifying the values they're supposed to default to.
     // Variant for a 2D texture with more than 1 array layer.
@@ -553,6 +590,20 @@ namespace {
         }
     }
 
+    // Regression test for crbug.com/1314049. Format default depends on the aspect.
+    // Test that computing the default does not crash if the aspect is invalid.
+    TEST_F(TextureViewValidationTest, TextureViewDescriptorDefaultsInvalidAspect) {
+        wgpu::Texture texture =
+            CreateDepthStencilTexture(device, wgpu::TextureFormat::Depth24PlusStencil8);
+
+        wgpu::TextureViewDescriptor viewDesc = {};
+        viewDesc.aspect = static_cast<wgpu::TextureAspect>(-1);
+
+        // Validation should catch the invalid aspect.
+        ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc),
+                            testing::HasSubstr("Invalid value for WGPUTextureAspect"));
+    }
+
     // Test creating cube map texture view
     TEST_F(TextureViewValidationTest, CreateCubeMapTextureView) {
         constexpr uint32_t kDefaultArrayLayers = 16;
@@ -632,18 +683,176 @@ namespace {
     }
 
     // Test the format compatibility rules when creating a texture view.
-    // TODO(jiawei.shao@intel.com): add more tests when the rules are fully implemented.
     TEST_F(TextureViewValidationTest, TextureViewFormatCompatibility) {
-        wgpu::Texture texture = Create2DArrayTexture(device, 1);
+        wgpu::TextureDescriptor textureDesc = {};
+        textureDesc.size.width = 4;
+        textureDesc.size.height = 4;
+        textureDesc.usage = wgpu::TextureUsage::TextureBinding;
 
-        wgpu::TextureViewDescriptor base2DTextureViewDescriptor =
-            CreateDefaultViewDescriptor(wgpu::TextureViewDimension::e2D);
+        wgpu::TextureViewDescriptor viewDesc = {};
 
-        // It is an error to create a texture view in depth-stencil format on a RGBA texture.
+        // It is an error to create an sRGB texture view from an RGB texture, without viewFormats.
         {
-            wgpu::TextureViewDescriptor descriptor = base2DTextureViewDescriptor;
-            descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
-            ASSERT_DEVICE_ERROR(texture.CreateView(&descriptor));
+            textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            viewDesc.format = wgpu::TextureFormat::RGBA8UnormSrgb;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // It is an error to create an RGB texture view from an sRGB texture, without viewFormats.
+        {
+            textureDesc.format = wgpu::TextureFormat::BGRA8UnormSrgb;
+            viewDesc.format = wgpu::TextureFormat::BGRA8Unorm;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // It is an error to create a texture view with a depth-stencil format of an RGBA texture.
+        {
+            textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            viewDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // It is an error to create a texture view with a depth format of a depth-stencil texture.
+        {
+            textureDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.format = wgpu::TextureFormat::Depth24Plus;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // It is invalid to create a texture view with a combined depth-stencil format if only
+        // the depth aspect is selected.
+        {
+            textureDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // It is invalid to create a texture view with a combined depth-stencil format if only
+        // the stencil aspect is selected.
+        {
+            textureDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.aspect = wgpu::TextureAspect::StencilOnly;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // Regression test for crbug.com/1312780.
+        // viewFormat is not supported (Null backend does not support any optional features).
+        {
+            textureDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.format = wgpu::TextureFormat::Depth24UnormStencil8;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc), testing::HasSubstr("Unsupported"));
+        }
+
+        // It is valid to create a texture view with a depth format of a depth-stencil texture
+        // if the depth only aspect is selected.
+        {
+            textureDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.format = wgpu::TextureFormat::Depth24Plus;
+            viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+            texture.CreateView(&viewDesc);
+
+            viewDesc = {};
+        }
+
+        // Prep for testing a single view format in viewFormats.
+        wgpu::TextureFormat viewFormat;
+        textureDesc.viewFormats = &viewFormat;
+        textureDesc.viewFormatCount = 1;
+
+        // An aspect format is not a valid view format of a depth-stencil texture.
+        {
+            textureDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewFormat = wgpu::TextureFormat::Depth24Plus;
+            ASSERT_DEVICE_ERROR(device.CreateTexture(&textureDesc));
+        }
+
+        // Test that a RGBA texture can be viewed as both RGBA and RGBASrgb, but not BGRA or
+        // BGRASrgb
+        {
+            textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            viewFormat = wgpu::TextureFormat::RGBA8UnormSrgb;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8UnormSrgb;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::BGRA8Unorm;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+
+            viewDesc.format = wgpu::TextureFormat::BGRA8UnormSrgb;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // Test that a BGRASrgb texture can be viewed as both BGRA and BGRASrgb, but not RGBA or
+        // RGBASrgb
+        {
+            textureDesc.format = wgpu::TextureFormat::BGRA8UnormSrgb;
+            viewFormat = wgpu::TextureFormat::BGRA8Unorm;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+
+            viewDesc.format = wgpu::TextureFormat::BGRA8Unorm;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::BGRA8UnormSrgb;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8UnormSrgb;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // Test an RGBA format may be viewed as RGBA (same)
+        {
+            textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            viewFormat = wgpu::TextureFormat::RGBA8Unorm;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8UnormSrgb;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+        }
+
+        // Test that duplicate, and multiple view formats are allowed.
+        {
+            std::array<wgpu::TextureFormat, 5> viewFormats = {
+                wgpu::TextureFormat::RGBA8UnormSrgb, wgpu::TextureFormat::RGBA8Unorm,
+                wgpu::TextureFormat::RGBA8Unorm,     wgpu::TextureFormat::RGBA8UnormSrgb,
+                wgpu::TextureFormat::RGBA8Unorm,
+            };
+            textureDesc.viewFormats = viewFormats.data();
+            textureDesc.viewFormatCount = viewFormats.size();
+
+            textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            wgpu::Texture texture = device.CreateTexture(&textureDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8UnormSrgb;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            texture.CreateView(&viewDesc);
+
+            viewDesc.format = wgpu::TextureFormat::BGRA8Unorm;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
+
+            viewDesc.format = wgpu::TextureFormat::BGRA8UnormSrgb;
+            ASSERT_DEVICE_ERROR(texture.CreateView(&viewDesc));
         }
     }
 

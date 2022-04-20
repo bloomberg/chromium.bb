@@ -9,7 +9,7 @@
 #define SkKeyHelpers_DEFINED
 
 #ifdef SK_GRAPHITE_ENABLED
-#include "experimental/graphite/include/Context.h"
+#include "include/gpu/graphite/Context.h"
 #endif
 
 #include "include/core/SkBlendMode.h"
@@ -20,11 +20,11 @@
 
 enum class SkBackend : uint8_t;
 class SkPaintParamsKeyBuilder;
-class SkPipelineData;
+class SkPipelineDataGatherer;
 class SkUniquePaintParamsID;
 class SkKeyContext;
 
-namespace skgpu { class TextureProxy; }
+namespace skgpu::graphite { class TextureProxy; }
 
 // The KeyHelpers can be used to manually construct an SkPaintParamsKey
 
@@ -32,7 +32,7 @@ namespace DepthStencilOnlyBlock {
 
     void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkPipelineData*);
+                  SkPipelineDataGatherer*);
 
 } // namespace DepthStencilOnlyBlock
 
@@ -40,7 +40,7 @@ namespace SolidColorShaderBlock {
 
     void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkPipelineData*,
+                  SkPipelineDataGatherer*,
                   const SkPMColor4f&);
 
 } // namespace SolidColorShaderBlock
@@ -93,7 +93,7 @@ namespace GradientShaderBlocks {
 
     void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkPipelineData*,
+                  SkPipelineDataGatherer*,
                   const GradientData&);
 
 } // namespace GradientShaderBlocks
@@ -114,13 +114,13 @@ namespace ImageShaderBlock {
         // TODO: Currently this is only filled in when we're generating the key from an actual
         // SkImageShader. In the pre-compile case we will need to create a Graphite promise
         // image which holds the appropriate data.
-        sk_sp<skgpu::TextureProxy> fTextureProxy;
+        sk_sp<skgpu::graphite::TextureProxy> fTextureProxy;
 #endif
     };
 
     void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkPipelineData*,
+                  SkPipelineDataGatherer*,
                   const ImageData&);
 
 } // namespace ImageShaderBlock
@@ -136,7 +136,7 @@ namespace BlendShaderBlock {
 
     void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkPipelineData*,
+                  SkPipelineDataGatherer*,
                   const BlendData&);
 
 } // namespace BlendShaderBlock
@@ -145,7 +145,7 @@ namespace BlendModeBlock {
 
     void AddToKey(const SkKeyContext&,
                   SkPaintParamsKeyBuilder*,
-                  SkPipelineData*,
+                  SkPipelineDataGatherer*,
                   SkBlendMode);
 
 } // namespace BlendModeBlock
@@ -154,7 +154,7 @@ namespace BlendModeBlock {
 // Bridge between the combinations system and the SkPaintParamsKey
 SkUniquePaintParamsID CreateKey(const SkKeyContext&,
                                 SkPaintParamsKeyBuilder*,
-                                skgpu::ShaderCombo::ShaderType,
+                                skgpu::graphite::ShaderCombo::ShaderType,
                                 SkTileMode,
                                 SkBlendMode);
 #endif

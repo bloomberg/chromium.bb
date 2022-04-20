@@ -21,6 +21,8 @@ class CPDF_TrueTypeFont final : public CPDF_SimpleFont {
   CPDF_TrueTypeFont* AsTrueTypeFont() override;
 
  private:
+  enum class CharmapType { kMSUnicode, kMSSymbol, kMacRoman, kOther };
+
   CPDF_TrueTypeFont(CPDF_Document* pDocument, CPDF_Dictionary* pFontDict);
 
   // CPDF_Font:
@@ -28,6 +30,11 @@ class CPDF_TrueTypeFont final : public CPDF_SimpleFont {
 
   // CPDF_SimpleFont:
   void LoadGlyphMap() override;
+
+  bool HasAnyGlyphIndex() const;
+  CharmapType DetermineCharmapType() const;
+  FontEncoding DetermineEncoding() const;
+  void SetGlyphIndicesFromFirstChar();
 };
 
 #endif  // CORE_FPDFAPI_FONT_CPDF_TRUETYPEFONT_H_

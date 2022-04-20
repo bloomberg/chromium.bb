@@ -17,8 +17,6 @@
 #include "src/core/SkOpts.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
-#include "src/core/SkSamplingPriv.h"
-#include "src/core/SkScopeExit.h"
 #include "src/core/SkVM.h"
 #include "src/core/SkWriteBuffer.h"
 #include "src/image/SkImage_Base.h"
@@ -29,7 +27,7 @@
 #ifdef SK_ENABLE_SKSL
 
 #ifdef SK_GRAPHITE_ENABLED
-#include "experimental/graphite/src/Image_Graphite.h"
+#include "src/gpu/graphite/Image_Graphite.h"
 #endif
 
 #include "src/core/SkKeyContext.h"
@@ -138,7 +136,7 @@ sk_sp<SkFlattenable> SkImageShader::CreateProc(SkReadBuffer& buffer) {
         // we just default to Nearest in sampling
     }
     if (readSampling) {
-        sampling = SkSamplingPriv::Read(buffer);
+        sampling = buffer.readSampling();
     }
 
     SkMatrix localMatrix;
@@ -162,7 +160,7 @@ void SkImageShader::flatten(SkWriteBuffer& buffer) const {
     buffer.writeUInt((unsigned)fTileModeX);
     buffer.writeUInt((unsigned)fTileModeY);
 
-    SkSamplingPriv::Write(buffer, fSampling);
+    buffer.writeSampling(fSampling);
 
     buffer.writeMatrix(this->getLocalMatrix());
     buffer.writeImage(fImage.get());
@@ -336,8 +334,8 @@ sk_sp<SkShader> SkImageShader::MakeSubset(sk_sp<SkImage> image,
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/GrColorInfo.h"
-#include "src/gpu/effects/GrBlendFragmentProcessor.h"
+#include "src/gpu/ganesh/GrColorInfo.h"
+#include "src/gpu/ganesh/effects/GrBlendFragmentProcessor.h"
 
 std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
         const GrFPArgs& args) const {
@@ -366,7 +364,7 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
                                            kPremul_SkAlphaType);
 
         if (fImage->isAlphaOnly()) {
-            fp = GrBlendFragmentProcessor::Make(std::move(fp), nullptr, SkBlendMode::kDstIn);
+            fp = GrBlendFragmentProcessor::Make<SkBlendMode::kDstIn>(std::move(fp), nullptr);
         }
     }
 
@@ -378,15 +376,15 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
 #ifdef SK_ENABLE_SKSL
 void SkImageShader::addToKey(const SkKeyContext& keyContext,
                              SkPaintParamsKeyBuilder* builder,
-                             SkPipelineData* pipelineData) const {
+                             SkPipelineDataGatherer* gatherer) const {
     ImageShaderBlock::ImageData imgData(fSampling, fTileModeX, fTileModeY, fSubset);
 
 #ifdef SK_GRAPHITE_ENABLED
     if (as_IB(fImage)->isGraphiteBacked()) {
-        skgpu::Image* grImage = static_cast<skgpu::Image*>(fImage.get());
+        skgpu::graphite::Image* grImage = static_cast<skgpu::graphite::Image*>(fImage.get());
 
-        auto mipmapped = (fSampling.mipmap != SkMipmapMode::kNone) ? skgpu::Mipmapped::kYes
-                                                                   : skgpu::Mipmapped::kNo;
+        auto mipmapped = (fSampling.mipmap != SkMipmapMode::kNone) ?
+                skgpu::graphite::Mipmapped::kYes : skgpu::graphite::Mipmapped::kNo;
         // TODO: In practice which SkBudgeted value used shouldn't matter because we're not going
         // to create a new texture here. But should the SkImage know its SkBudgeted state?
         auto[view, ct] = grImage->asView(keyContext.recorder(), mipmapped, SkBudgeted::kNo);
@@ -394,7 +392,7 @@ void SkImageShader::addToKey(const SkKeyContext& keyContext,
     }
 #endif
 
-    ImageShaderBlock::AddToKey(keyContext, builder, pipelineData, imgData);
+    ImageShaderBlock::AddToKey(keyContext, builder, gatherer, imgData);
 }
 #endif
 

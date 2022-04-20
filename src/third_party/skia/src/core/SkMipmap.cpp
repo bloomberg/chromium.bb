@@ -384,6 +384,11 @@ template <typename F> void downsample_3_3(void* dst, const void* src, size_t src
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+SkMipmap::SkMipmap(void* malloc, size_t size) : SkCachedData(malloc, size) {}
+SkMipmap::SkMipmap(size_t size, SkDiscardableMemory* dm) : SkCachedData(size, dm) {}
+
+SkMipmap::~SkMipmap() = default;
+
 size_t SkMipmap::AllocLevelsSize(int levelCount, size_t pixelSize) {
     if (levelCount < 0) {
         return 0;
@@ -723,23 +728,23 @@ float SkMipmap::ComputeLevel(SkSize scaleSize) {
 
 #ifndef SK_SUPPORT_LEGACY_ANISOTROPIC_MIPMAP_SCALE
     // Use the smallest scale to match the GPU impl.
-    const SkScalar scale = std::min(scaleSize.width(), scaleSize.height());
+    const float scale = std::min(scaleSize.width(), scaleSize.height());
 #else
     // Ideally we'd pick the smaller scale, to match Ganesh.  But ignoring one of the
     // scales can produce some atrocious results, so for now we use the geometric mean.
     // (https://bugs.chromium.org/p/skia/issues/detail?id=4863)
-    const SkScalar scale = SkScalarSqrt(scaleSize.width() * scaleSize.height());
+    const float scale = sk_float_sqrt(scaleSize.width() * scaleSize.height());
 #endif
 
     if (scale >= SK_Scalar1 || scale <= 0 || !SkScalarIsFinite(scale)) {
         return -1;
     }
 
-    SkScalar L = -SkScalarLog2(scale);
+    // The -0.5 bias here is to emulate GPU's sharpen mipmap option.
+    float L = std::max(-SkScalarLog2(scale) - 0.5f, 0.f);
     if (!SkScalarIsFinite(L)) {
         return -1;
     }
-    SkASSERT(L >= 0);
     return L;
 }
 
@@ -749,7 +754,7 @@ bool SkMipmap::extractLevel(SkSize scaleSize, Level* levelPtr) const {
     }
 
     float L = ComputeLevel(scaleSize);
-    int level = SkScalarFloorToInt(L);
+    int level = sk_float_round2int(L);
     if (level <= 0) {
         return false;
     }

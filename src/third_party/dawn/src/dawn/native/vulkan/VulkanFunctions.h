@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_VULKANFUNCTIONS_H_
-#define DAWNNATIVE_VULKAN_VULKANFUNCTIONS_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_VULKANFUNCTIONS_H_
+#define SRC_DAWN_NATIVE_VULKAN_VULKANFUNCTIONS_H_
 
 #include "dawn/common/vulkan_platform.h"
 
@@ -131,6 +131,10 @@ namespace dawn::native::vulkan {
         PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR
             GetPhysicalDeviceWin32PresentationSupportKHR = nullptr;
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
+
+#if defined(DAWN_PLATFORM_ANDROID)
+        PFN_vkCreateAndroidSurfaceKHR CreateAndroidSurfaceKHR = nullptr;
+#endif  // defined(DAWN_PLATFORM_ANDROID)
 
 #if defined(DAWN_USE_X11)
         // KHR_xlib_surface
@@ -315,7 +319,7 @@ namespace dawn::native::vulkan {
 
       private:
         // Private. Use VkResult::WrapUnsafe instead.
-        constexpr VkResult(::VkResult value) : mValue(value) {
+        explicit constexpr VkResult(::VkResult value) : mValue(value) {
         }
 
         ::VkResult mValue;
@@ -323,4 +327,4 @@ namespace dawn::native::vulkan {
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_VULKANFUNCTIONS_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_VULKANFUNCTIONS_H_

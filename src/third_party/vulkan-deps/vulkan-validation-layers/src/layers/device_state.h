@@ -59,12 +59,14 @@ struct DeviceFeatures {
     VkPhysicalDeviceRobustness2FeaturesEXT robustness2_features;
     VkPhysicalDeviceFragmentDensityMapFeaturesEXT fragment_density_map_features;
     VkPhysicalDeviceFragmentDensityMap2FeaturesEXT fragment_density_map2_features;
+    VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM fragment_density_map_offset_features;
     VkPhysicalDeviceASTCDecodeFeaturesEXT astc_decode_features;
     VkPhysicalDeviceCustomBorderColorFeaturesEXT custom_border_color_features;
     VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extended_dynamic_state_features;
     VkPhysicalDeviceMultiviewFeatures multiview_features;
     VkPhysicalDevicePortabilitySubsetFeaturesKHR portability_subset_features;
     VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragment_shading_rate_features;
+    VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV fragment_shading_rate_enums_features;
     VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL shader_integer_functions2_features;
     VkPhysicalDeviceShaderSMBuiltinsFeaturesNV shader_sm_builtins_features;
     VkPhysicalDeviceShaderAtomicFloatFeaturesEXT shader_atomic_float_features;
@@ -82,11 +84,13 @@ struct DeviceFeatures {
     VkPhysicalDevicePresentIdFeaturesKHR present_id_features;
     VkPhysicalDevicePresentWaitFeaturesKHR present_wait_features;
     VkPhysicalDeviceRayTracingMotionBlurFeaturesNV ray_tracing_motion_blur_features;
-    VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR shader_integer_dot_product_features;																						   
+    VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR shader_integer_dot_product_features;
     VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT primitive_topology_list_restart_features;
     VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR zero_initialize_work_group_memory_features;
     VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT rgba10x6_formats_features;
     VkPhysicalDeviceImageViewMinLodFeaturesEXT image_view_min_lod_features;
+    VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT primitives_generated_query_features;
+    VkPhysicalDeviceImage2DViewOf3DFeaturesEXT image_2d_view_of_3d_features;
     // If a new feature is added here that involves a SPIR-V capability add also in spirv_validation_generator.py
     // This is known by checking the table in the spec or if the struct is in a <spirvcapability> in vk.xml
 };
@@ -94,6 +98,13 @@ struct DeviceFeatures {
 class QUEUE_FAMILY_PERF_COUNTERS {
   public:
     std::vector<VkPerformanceCounterKHR> counters;
+};
+
+class SURFACELESS_QUERY_STATE {
+  public:
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> present_modes;
+    VkSurfaceCapabilitiesKHR capabilities;
 };
 
 class PHYSICAL_DEVICE_STATE : public BASE_NODE {
@@ -106,6 +117,9 @@ class PHYSICAL_DEVICE_STATE : public BASE_NODE {
 
     // Map of queue family index to QUEUE_FAMILY_PERF_COUNTERS
     layer_data::unordered_map<uint32_t, std::unique_ptr<QUEUE_FAMILY_PERF_COUNTERS>> perf_counters;
+
+    // Surfaceless Query extension needs 'global' surface_state data
+    SURFACELESS_QUERY_STATE surfaceless_query_state{};
 
     PHYSICAL_DEVICE_STATE(VkPhysicalDevice phys_dev)
         : BASE_NODE(phys_dev, kVulkanObjectTypePhysicalDevice), queue_family_properties(GetQueueFamilyProps(phys_dev)) {}

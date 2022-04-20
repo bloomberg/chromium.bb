@@ -532,7 +532,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     return Boolean(regex && regex.test(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
   }
 
-  excludedFolders(): Set<string> {
+  excludedFolders(): Set<Platform.DevToolsPath.EncodedPathString> {
     return this.excludedFoldersInternal;
   }
 
@@ -556,7 +556,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         requestId, this.embedderPathInternal, JSON.stringify(this.excludedEmbedderFolders));
   }
 
-  mimeFromPath(path: string): string {
+  mimeFromPath(path: Platform.DevToolsPath.UrlString): string {
     return Common.ResourceType.ResourceType.mimeFromURL(path) || 'text/plain';
   }
 

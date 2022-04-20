@@ -12,6 +12,7 @@
 
 #include "constants/annotation_common.h"
 #include "constants/appearance.h"
+#include "constants/font_encodings.h"
 #include "constants/form_fields.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
@@ -406,7 +407,8 @@ RetainPtr<CPDF_Dictionary> GenerateResourceFontDict(
   pFontDict->SetNewFor<CPDF_Name>("Type", "Font");
   pFontDict->SetNewFor<CPDF_Name>("Subtype", "Type1");
   pFontDict->SetNewFor<CPDF_Name>("BaseFont", CFX_Font::kDefaultAnsiFontName);
-  pFontDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
+  pFontDict->SetNewFor<CPDF_Name>("Encoding",
+                                  pdfium::font_encodings::kWinAnsiEncoding);
 
   auto pResourceFontDict = pDoc->New<CPDF_Dictionary>();
   pResourceFontDict->SetNewFor<CPDF_Reference>(sFontDictName, pDoc,
@@ -511,10 +513,8 @@ void GenerateAndSetAPDict(CPDF_Document* pDoc,
   CPDF_Stream* pNormalStream = pDoc->NewIndirect<CPDF_Stream>();
   pNormalStream->SetDataFromStringstream(psAppStream);
 
-  CPDF_Dictionary* pAPDict = pAnnotDict->GetDictFor(pdfium::annotation::kAP);
-  if (!pAPDict)
-    pAPDict = pAnnotDict->SetNewFor<CPDF_Dictionary>(pdfium::annotation::kAP);
-
+  CPDF_Dictionary* pAPDict =
+      GetOrCreateDict(pAnnotDict, pdfium::annotation::kAP);
   pAPDict->SetNewFor<CPDF_Reference>("N", pDoc, pNormalStream->GetObjNum());
 
   CPDF_Dictionary* pStreamDict = pNormalStream->GetDict();
@@ -956,7 +956,8 @@ void CPDF_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
     pFontDict->SetNewFor<CPDF_Name>("Type", "Font");
     pFontDict->SetNewFor<CPDF_Name>("Subtype", "Type1");
     pFontDict->SetNewFor<CPDF_Name>("BaseFont", CFX_Font::kDefaultAnsiFontName);
-    pFontDict->SetNewFor<CPDF_Name>("Encoding", "WinAnsiEncoding");
+    pFontDict->SetNewFor<CPDF_Name>("Encoding",
+                                    pdfium::font_encodings::kWinAnsiEncoding);
     pDRFontDict->SetNewFor<CPDF_Reference>(font_name, pDoc,
                                            pFontDict->GetObjNum());
   }
@@ -1063,10 +1064,8 @@ void CPDF_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
                     rcBBox.right - fBorderWidth, rcBBox.top - fBorderWidth);
   rcBody.Normalize();
 
-  CPDF_Dictionary* pAPDict = pAnnotDict->GetDictFor(pdfium::annotation::kAP);
-  if (!pAPDict)
-    pAPDict = pAnnotDict->SetNewFor<CPDF_Dictionary>(pdfium::annotation::kAP);
-
+  CPDF_Dictionary* pAPDict =
+      GetOrCreateDict(pAnnotDict, pdfium::annotation::kAP);
   CPDF_Stream* pNormalStream = pAPDict->GetStreamFor("N");
   if (!pNormalStream) {
     pNormalStream = pDoc->NewIndirect<CPDF_Stream>();

@@ -125,6 +125,13 @@ int cdef_find_dir_c(const uint16_t *img, int stride, int32_t *var,
   return best_dir;
 }
 
+void cdef_find_dir_dual_c(const uint16_t *img1, const uint16_t *img2,
+                          int stride, int32_t *var1, int32_t *var2,
+                          int coeff_shift, int *out1, int *out2) {
+  *out1 = cdef_find_dir_c(img1, stride, var1, coeff_shift);
+  *out2 = cdef_find_dir_c(img2, stride, var2, coeff_shift);
+}
+
 const int cdef_pri_taps[2][2] = { { 4, 2 }, { 3, 3 } };
 const int cdef_sec_taps[2] = { 2, 1 };
 
@@ -285,6 +292,34 @@ static INLINE int adjust_strength(int strength, int32_t var) {
   return var ? (strength * (4 + i) + 8) >> 4 : 0;
 }
 
+static AOM_INLINE void aom_cdef_find_dir(uint16_t *in, cdef_list *dlist,
+                                         int var[CDEF_NBLOCKS][CDEF_NBLOCKS],
+                                         int cdef_count, int coeff_shift,
+                                         int dir[CDEF_NBLOCKS][CDEF_NBLOCKS]) {
+  int bi;
+
+  // Find direction of two 8x8 blocks together.
+  for (bi = 0; bi < cdef_count - 1; bi += 2) {
+    const int by = dlist[bi].by;
+    const int bx = dlist[bi].bx;
+    const int by2 = dlist[bi + 1].by;
+    const int bx2 = dlist[bi + 1].bx;
+    const int pos1 = 8 * by * CDEF_BSTRIDE + 8 * bx;
+    const int pos2 = 8 * by2 * CDEF_BSTRIDE + 8 * bx2;
+    cdef_find_dir_dual(&in[pos1], &in[pos2], CDEF_BSTRIDE, &var[by][bx],
+                       &var[by2][bx2], coeff_shift, &dir[by][bx],
+                       &dir[by2][bx2]);
+  }
+
+  // Process remaining 8x8 blocks here. One 8x8 at a time.
+  if (cdef_count % 2) {
+    const int by = dlist[bi].by;
+    const int bx = dlist[bi].bx;
+    dir[by][bx] = cdef_find_dir(&in[8 * by * CDEF_BSTRIDE + 8 * bx],
+                                CDEF_BSTRIDE, &var[by][bx], coeff_shift);
+  }
+}
+
 void av1_cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride,
                         uint16_t *in, int xdec, int ydec,
                         int dir[CDEF_NBLOCKS][CDEF_NBLOCKS], int *dirinit,
@@ -319,12 +354,7 @@ void av1_cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride,
 
   if (pli == 0) {
     if (!dirinit || !*dirinit) {
-      for (bi = 0; bi < cdef_count; bi++) {
-        by = dlist[bi].by;
-        bx = dlist[bi].bx;
-        dir[by][bx] = cdef_find_dir(&in[8 * by * CDEF_BSTRIDE + 8 * bx],
-                                    CDEF_BSTRIDE, &var[by][bx], coeff_shift);
-      }
+      aom_cdef_find_dir(in, dlist, var, cdef_count, coeff_shift, dir);
       if (dirinit) *dirinit = 1;
     }
   }

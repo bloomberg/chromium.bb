@@ -5,8 +5,6 @@
 import '../strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {isChromeOS, isLacros} from 'chrome://resources/js/cr.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 // <if expr="chromeos_ash or chromeos_lacros">
 import {NativeLayerCrosImpl} from '../native_layer_cros.js';
@@ -19,53 +17,35 @@ import {getStatusReasonFromPrinterStatus, PrinterStatus, PrinterStatusReason} fr
 // </if>
 
 /**
- * Enumeration of the types of destinations.
- */
-export enum DestinationType {
-  GOOGLE = 'google',
-  GOOGLE_PROMOTED = 'google_promoted',
-  LOCAL = 'local',
-  MOBILE = 'mobile',
-}
-
-/**
- * Enumeration of the origin types for cloud destinations.
+ * Enumeration of the origin types for destinations.
  */
 export enum DestinationOrigin {
   LOCAL = 'local',
+  // Note: Cookies, device and privet are deprecated, but used to filter any
+  // legacy entries in the recent destinations, since we can't guarantee all
+  // such recent printers have been overridden.
   COOKIES = 'cookies',
   // <if expr="chromeos_ash or chromeos_lacros">
   DEVICE = 'device',
   // </if>
-  // Note: Privet is deprecated, but used to filter any legacy entries in the
-  // recent destinations, since we can't guarantee all recent privet printers
-  // have been overridden.
   PRIVET = 'privet',
   EXTENSION = 'extension',
   CROS = 'chrome_os',
 }
 
 /**
- * Cloud Print origins.
+ * Printer types for capabilities and printer list requests.
+ * Must match PrinterType in printing/mojom/print.mojom
  */
-export const CloudOrigins: DestinationOrigin[] = [
-  DestinationOrigin.COOKIES,
-  // <if expr="chromeos_ash or chromeos_lacros">
-  DestinationOrigin.DEVICE,
-  // </if>
-];
-
-/**
- * Enumeration of the connection statuses of printer destinations.
- */
-export enum DestinationConnectionStatus {
-  DORMANT = 'DORMANT',
-  OFFLINE = 'OFFLINE',
-  ONLINE = 'ONLINE',
-  UNKNOWN = 'UNKNOWN',
-  UNREGISTERED = 'UNREGISTERED',
+export enum PrinterType {
+  PRIVET_PRINTER_DEPRECATED = 0,
+  EXTENSION_PRINTER = 1,
+  PDF_PRINTER = 2,
+  LOCAL_PRINTER = 3,
+  CLOUD_PRINTER_DEPRECATED = 4
 }
 
+// <if expr="chromeos_ash or chromeos_lacros">
 /**
  * Enumeration specifying whether a destination is provisional and the reason
  * the destination is provisional.
@@ -77,22 +57,7 @@ export enum DestinationProvisionalType {
   // Used for destinations with extension origin.
   NEEDS_USB_PERMISSION = 'NEEDS_USB_PERMISSION',
 }
-
-/**
- * Enumeration specifying the status of a destination's 2018 certificate.
- * Values UNKNOWN and YES are returned directly by the GCP server.
- */
-export enum DestinationCertificateStatus {
-  // Destination is not a cloud printer or no status was retrieved.
-  NONE = 'NONE',
-  // Printer does not have a valid 2018 certificate. Currently unused, to be
-  // sent by GCP server.
-  NO = 'NO',
-  // Printer may or may not have a valid certificate. Sent by GCP server.
-  UNKNOWN = 'UNKNOWN',
-  // Printer has a valid 2018 certificate. Sent by GCP server.
-  YES = 'YES',
-}
+// </if>
 
 /**
  * Enumeration of color modes used by Chromium.
@@ -105,13 +70,22 @@ export enum ColorMode {
 export type RecentDestination = {
   id: string,
   origin: DestinationOrigin,
-  account: string,
   capabilities: Cdd|null,
   displayName: string,
   extensionId: string,
   extensionName: string,
   icon?: string,
 };
+
+export function isPdfPrinter(id: string): boolean {
+  // <if expr="chromeos_ash or chromeos_lacros">
+  if (id === GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS) {
+    return true;
+  }
+  // </if>
+
+  return id === GooglePromotedDestinationId.SAVE_AS_PDF;
+}
 
 /**
  * Creates a |RecentDestination| to represent |destination| in the app
@@ -122,7 +96,6 @@ export function makeRecentDestination(destination: Destination):
   return {
     id: destination.id,
     origin: destination.origin,
-    account: destination.account || '',
     capabilities: destination.capabilities,
     displayName: destination.displayName || '',
     extensionId: destination.extensionId || '',
@@ -132,12 +105,11 @@ export function makeRecentDestination(destination: Destination):
 }
 
 /**
- * @return key that maps to a destination with the selected |id|,
- *     |origin|, and |account|.
+ * @return key that maps to a destination with the selected |id| and |origin|.
  */
 export function createDestinationKey(
-    id: string, origin: DestinationOrigin, account: string): string {
-  return `${id}/${origin}/${account}`;
+    id: string, origin: DestinationOrigin): string {
+  return `${id}/${origin}/`;
 }
 
 /**
@@ -146,39 +118,28 @@ export function createDestinationKey(
  */
 export function createRecentDestinationKey(
     recentDestination: RecentDestination): string {
-  return createDestinationKey(
-      recentDestination.id, recentDestination.origin,
-      recentDestination.account);
+  return createDestinationKey(recentDestination.id, recentDestination.origin);
 }
 
 export type DestinationOptionalParams = {
-  tags?: string[],
-  isOwned?: boolean,
   isEnterprisePrinter?: boolean,
-  account?: string,
-  lastAccessTime?: number,
-  cloudID?: string,
+  // <if expr="chromeos_ash or chromeos_lacros">
   provisionalType?: DestinationProvisionalType,
+  // </if>
   extensionId?: string,
   extensionName?: string,
   description?: string,
-  certificateStatus?: DestinationCertificateStatus,
+  location?: string,
 };
 
 /**
- * Print destination data object that holds data for both local and cloud
- * destinations.
+ * Print destination data object.
  */
 export class Destination {
   /**
    * ID of the destination.
    */
   private id_: string;
-
-  /**
-   * Type of the destination.
-   */
-  private type_: DestinationType;
 
   /**
    * Origin of the destination.
@@ -191,19 +152,9 @@ export class Destination {
   private displayName_: string;
 
   /**
-   * Tags associated with the destination.
-   */
-  private tags_: string[];
-
-  /**
    * Print capabilities of the destination.
    */
   private capabilities_: Cdd|null = null;
-
-  /**
-   * Whether the destination is owned by the user.
-   */
-  private isOwned_: boolean;
 
   /**
    * Whether the destination is an enterprise policy controlled printer.
@@ -211,35 +162,14 @@ export class Destination {
   private isEnterprisePrinter_: boolean;
 
   /**
-   * Account this destination is registered for, if known.
+   * Destination location.
    */
-  private account_: string;
-
-  /**
-   * Cache of destination location fetched from tags.
-   */
-  private location_: string|null = null;
+  private location_: string = '';
 
   /**
    * Printer description.
    */
   private description_: string;
-
-  /**
-   * Connection status of the destination.
-   */
-  private connectionStatus_: DestinationConnectionStatus;
-
-  /**
-   * Number of milliseconds since the epoch when the printer was last
-   * accessed.
-   */
-  private lastAccessTime_: number;
-
-  /**
-   * Cloud ID for Privet printers.
-   */
-  private cloudID_: string;
 
   /**
    * Extension ID for extension managed printers.
@@ -251,6 +181,7 @@ export class Destination {
    */
   private extensionName_: string;
 
+  // <if expr="chromeos_ash or chromeos_lacros">
   /**
    * Different from  DestinationProvisionalType.NONE if
    * the destination is provisional. Provisional destinations cannot be
@@ -262,12 +193,6 @@ export class Destination {
    */
   private provisionalType_: DestinationProvisionalType;
 
-  /**
-   * Printer 2018 certificate status
-   */
-  private certificateStatus_: DestinationCertificateStatus;
-
-  // <if expr="chromeos_ash or chromeos_lacros">
   /**
    * EULA url for printer's PPD. Empty string indicates no provided EULA.
    */
@@ -294,6 +219,8 @@ export class Destination {
   private printerStatusRetryTimerMs_: number = 3000;
   // </if>
 
+  private type_: PrinterType;
+
   /**
    * List of capability types considered color.
    */
@@ -306,43 +233,45 @@ export class Destination {
       ['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'];
 
   constructor(
-      id: string, type: DestinationType, origin: DestinationOrigin,
-      displayName: string, connectionStatus: DestinationConnectionStatus,
-      opt_params?: DestinationOptionalParams) {
+      id: string, origin: DestinationOrigin, displayName: string,
+      params?: DestinationOptionalParams) {
     this.id_ = id;
-    this.type_ = type;
     this.origin_ = origin;
     this.displayName_ = displayName || '';
-    this.tags_ = (opt_params && opt_params.tags) || [];
-    this.isOwned_ = (opt_params && opt_params.isOwned) || false;
-    this.isEnterprisePrinter_ =
-        (opt_params && opt_params.isEnterprisePrinter) || false;
-    this.account_ = (opt_params && opt_params.account) || '';
-    this.description_ = (opt_params && opt_params.description) || '';
-    this.connectionStatus_ = connectionStatus;
-    this.lastAccessTime_ =
-        (opt_params && opt_params.lastAccessTime) || Date.now();
-    this.cloudID_ = (opt_params && opt_params.cloudID) || '';
-    this.extensionId_ = (opt_params && opt_params.extensionId) || '';
-    this.extensionName_ = (opt_params && opt_params.extensionName) || '';
-    this.provisionalType_ = (opt_params && opt_params.provisionalType) ||
-        DestinationProvisionalType.NONE;
-    this.certificateStatus_ = opt_params && opt_params.certificateStatus ||
-        DestinationCertificateStatus.NONE;
+    this.isEnterprisePrinter_ = (params && params.isEnterprisePrinter) || false;
+    this.description_ = (params && params.description) || '';
+    this.extensionId_ = (params && params.extensionId) || '';
+    this.extensionName_ = (params && params.extensionName) || '';
+    this.location_ = (params && params.location) || '';
+    this.type_ = this.computeType_(id, origin);
+    // <if expr="chromeos_ash or chromeos_lacros">
+    this.provisionalType_ =
+        (params && params.provisionalType) || DestinationProvisionalType.NONE;
 
     assert(
         this.provisionalType_ !==
                 DestinationProvisionalType.NEEDS_USB_PERMISSION ||
             this.isExtension,
         'Provisional USB destination only supprted with extension origin.');
+    // </if>
+  }
+
+  private computeType_(id: string, origin: DestinationOrigin): PrinterType {
+    if (isPdfPrinter(id)) {
+      return PrinterType.PDF_PRINTER;
+    }
+
+    return origin === DestinationOrigin.EXTENSION ?
+        PrinterType.EXTENSION_PRINTER :
+        PrinterType.LOCAL_PRINTER;
+  }
+
+  get type(): PrinterType {
+    return this.type_;
   }
 
   get id(): string {
     return this.id_;
-  }
-
-  get type(): DestinationType {
-    return this.type_;
   }
 
   get origin(): DestinationOrigin {
@@ -354,28 +283,6 @@ export class Destination {
   }
 
   /**
-   * @return Whether the user owns the destination. Only applies to
-   *     cloud-based destinations.
-   */
-  get isOwned(): boolean {
-    return this.isOwned_;
-  }
-
-  /**
-   * @return Account this destination is registered for, if known.
-   */
-  get account(): string {
-    return this.account_;
-  }
-
-  /** @return Whether the destination is local (vs cloud-based). */
-  get isLocal(): boolean {
-    return this.origin_ === DestinationOrigin.LOCAL ||
-        this.origin_ === DestinationOrigin.EXTENSION ||
-        this.origin_ === DestinationOrigin.CROS;
-  }
-
-  /**
    * @return Whether the destination is an extension managed printer.
    */
   get isExtension(): boolean {
@@ -383,51 +290,11 @@ export class Destination {
   }
 
   /**
-   * @return The location of the destination, or an empty string if
-   *     the location is unknown.
-   */
-  get location(): string {
-    if (this.location_ === null) {
-      this.location_ = '';
-      this.tags_.some(tag => {
-        return LOCATION_TAG_PREFIXES.some(prefix => {
-          if (tag.startsWith(prefix)) {
-            this.location_ = tag.substring(prefix.length) || '';
-            return true;
-          } else {
-            return false;
-          }
-        });
-      });
-    }
-    return this.location_;
-  }
-
-  /**
-   * @return The description of the destination, or an empty string,
-   *     if it was not provided.
-   */
-  get description(): string {
-    return this.description_;
-  }
-
-  /**
    * @return Most relevant string to help user to identify this
    *     destination.
    */
   get hint(): string {
-    if (this.id_ === GooglePromotedDestinationId.DOCS) {
-      return this.account_;
-    }
-    return this.location || this.extensionName || this.description;
-  }
-
-  get tags(): string[] {
-    return this.tags_.slice(0);
-  }
-
-  get cloudID(): string {
-    return this.cloudID_;
+    return this.location_ || this.extensionName || this.description_;
   }
 
   /**
@@ -551,86 +418,21 @@ export class Destination {
         });
   }
 
-  // </if>
-
-  get connectionStatus(): DestinationConnectionStatus {
-    return this.connectionStatus_;
-  }
-
-  set connectionStatus(status: DestinationConnectionStatus) {
-    this.connectionStatus_ = status;
-  }
-
-  /**
-   * @return Whether the destination has an invalid 2018 certificate.
-   */
-  get hasInvalidCertificate(): boolean {
-    return this.certificateStatus_ === DestinationCertificateStatus.NO;
-  }
-
-  /**
-   * @return Whether the destination should display an invalid
-   *     certificate UI warning in the selection dialog and cause a UI
-   *     warning to appear in the preview area when selected.
-   */
-  get shouldShowInvalidCertificateError(): boolean {
-    return this.certificateStatus_ === DestinationCertificateStatus.NO &&
-        !loadTimeData.getBoolean('isEnterpriseManaged');
-  }
-
-  /** @return Whether the destination is considered offline. */
-  get isOffline(): boolean {
-    return [
-      DestinationConnectionStatus.OFFLINE, DestinationConnectionStatus.DORMANT
-    ].includes(this.connectionStatus_);
-  }
-
-  /**
-   * @return Whether the destination is offline or has an invalid certificate.
-   */
-  get isOfflineOrInvalid(): boolean {
-    return this.isOffline || this.shouldShowInvalidCertificateError;
-  }
-
   /** @return Whether the destination is ready to be selected. */
   get readyForSelection(): boolean {
-    return (!(isChromeOS || isLacros) ||
-            this.origin_ !== DestinationOrigin.CROS ||
+    return (this.origin_ !== DestinationOrigin.CROS ||
             this.capabilities_ !== null) &&
         !this.isProvisional;
   }
 
-  /**
-   * @return Human readable status for a destination that is offline
-   *     or has a bad certificate.
-   */
-  get connectionStatusText(): string {
-    if (!this.isOfflineOrInvalid) {
-      return '';
-    }
-    const offlineDurationMs = Date.now() - this.lastAccessTime_;
-    let statusMessageId;
-    if (this.shouldShowInvalidCertificateError) {
-      statusMessageId = 'noLongerSupported';
-    } else if (offlineDurationMs > 31622400000.0) {  // One year.
-      statusMessageId = 'offlineForYear';
-    } else if (offlineDurationMs > 2678400000.0) {  // One month.
-      statusMessageId = 'offlineForMonth';
-    } else if (offlineDurationMs > 604800000.0) {  // One week.
-      statusMessageId = 'offlineForWeek';
-    } else {
-      statusMessageId = 'offline';
-    }
-    return loadTimeData.getString(statusMessageId);
+  get provisionalType(): DestinationProvisionalType {
+    return this.provisionalType_;
   }
 
-  /**
-   * @return Number of milliseconds since the epoch when the printer
-   *     was last accessed.
-   */
-  get lastAccessTime(): number {
-    return this.lastAccessTime_;
+  get isProvisional(): boolean {
+    return this.provisionalType_ !== DestinationProvisionalType.NONE;
   }
+  // </if>
 
   /** @return Path to the SVG for the destination's icon. */
   get icon(): string {
@@ -639,32 +441,20 @@ export class Destination {
       return 'print-preview:save-to-drive';
     }
     // </if>
-    if (this.id_ === GooglePromotedDestinationId.DOCS) {
-      return 'print-preview:save-to-drive';
-    }
     if (this.id_ === GooglePromotedDestinationId.SAVE_AS_PDF) {
       return 'cr:insert-drive-file';
     }
     if (this.isEnterprisePrinter) {
       return 'print-preview:business';
     }
-    if (this.isLocal) {
-      return 'print-preview:print';
-    }
-    if (this.type_ === DestinationType.MOBILE) {
-      return 'print-preview:smartphone';
-    }
-    if (this.isOwned_) {
-      return 'print-preview:print';
-    }
-    return 'print-preview:printer-shared';
+    return 'print-preview:print';
   }
 
   /**
    * @return Properties (besides display name) to match search queries against.
    */
   get extraPropertiesToMatch(): string[] {
-    return [this.location, this.description];
+    return [this.location_, this.description_];
   }
 
   /**
@@ -674,20 +464,8 @@ export class Destination {
    */
   matches(query: RegExp): boolean {
     return !!this.displayName_.match(query) ||
-        !!this.extensionName_.match(query) ||
-        this.extraPropertiesToMatch.some(p => p.match(query));
-  }
-
-  get provisionalType(): DestinationProvisionalType {
-    return this.provisionalType_;
-  }
-
-  get certificateStatus(): DestinationCertificateStatus {
-    return this.certificateStatus_;
-  }
-
-  get isProvisional(): boolean {
-    return this.provisionalType_ !== DestinationProvisionalType.NONE;
+        !!this.extensionName_.match(query) || !!this.location_.match(query) ||
+        !!this.description_.match(query);
   }
 
   /**
@@ -766,10 +544,9 @@ export class Destination {
    * @return Native color model of the destination.
    */
   getNativeColorModel(isColor: boolean): number {
-    // For non-local printers or printers without capability, native color
-    // model is ignored.
+    // For printers without capability, native color model is ignored.
     const capability = this.colorCapability_();
-    if (!capability || !capability.option || !this.isLocal) {
+    if (!capability || !capability.option) {
       return isColor ? ColorMode.COLOR : ColorMode.GRAY;
     }
     const selected = this.getSelectedColorOption(isColor);
@@ -796,22 +573,15 @@ export class Destination {
 
   /** @return A unique identifier for this destination. */
   get key(): string {
-    return `${this.id_}/${this.origin_}/${this.account_}`;
+    return `${this.id_}/${this.origin_}/`;
   }
 }
-
-/**
- * Prefix of the location destination tag.
- */
-const LOCATION_TAG_PREFIXES: string[] =
-    ['__cp__location=', '__cp__printer-location='];
 
 /**
  * Enumeration of Google-promoted destination IDs.
  * @enum {string}
  */
 export enum GooglePromotedDestinationId {
-  DOCS = '__google__docs',
   SAVE_AS_PDF = 'Save as PDF',
   // <if expr="chromeos_ash or chromeos_lacros">
   SAVE_TO_DRIVE_CROS = 'Save to Drive CrOS',

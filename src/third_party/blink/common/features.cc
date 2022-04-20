@@ -58,12 +58,6 @@ const base::FeatureParam<double> kMinimumEntropyForLCP{
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether the HandwritingRecognition API can be enabled by origin trial.
-// Disabling this feature disables both the origin trial and the mojo interface.
-const base::Feature kHandwritingRecognitionWebPlatformApiFinch{
-    "HandwritingRecognitionWebPlatformApiFinch",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable defer commits to avoid flash of unstyled content, for same origin
 // navigation only.
 const base::Feature kPaintHolding{"PaintHolding",
@@ -131,14 +125,8 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 const base::Feature kJSONModules{"JSONModules",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kForceSynchronousHTMLParsing{
-    "ForceSynchronousHTMLParsing", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDeferredFontShaping{"DeferredShaping",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable EditingNG by default. This feature is for a kill switch.
-const base::Feature kEditingNG{"EditingNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -247,10 +235,8 @@ const base::FeatureParam<int> kMaxSharedStorageCacheSize = {
     &kSharedStorageAPI, "MaxSharedStorageCacheSize", 1024};
 const base::FeatureParam<int> kMaxSharedStorageInitTries = {
     &kSharedStorageAPI, "MaxSharedStorageInitTries", 2};
-const base::FeatureParam<int>
-    kMaxSharedStorageConsecutiveOperationErrorsAllowed = {
-        &kSharedStorageAPI, "MaxSharedStorageConsecutiveOperationErrorsAllowed",
-        8};
+const base::FeatureParam<int> kMaxSharedStorageIteratorBatchSize = {
+    &kSharedStorageAPI, "MaxSharedStorageIteratorBatchSize", 100};
 const base::FeatureParam<base::TimeDelta>
     kSharedStorageStaleOriginPurgeInitialInterval = {
         &kSharedStorageAPI, "SharedStorageStaleOriginPurgeInitialInterval",
@@ -338,11 +324,6 @@ const base::Feature kWindowOpenNewPopupBehavior{
 // The feature is still used by virtual test suites exercising Plan B.
 const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-// When enabled, throw an exception when an RTCPeerConnection is constructed
-// with {sdpSemantics:"plan-b"} and the Deprecation Trial is not enabled.
-const base::Feature kRTCDisallowPlanBOutsideDeprecationTrial{
-    "RTCDisallowPlanBOutsideDeprecationTrial",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Determines if the SDP attrbute extmap-allow-mixed should be offered by
 // default or not. The default value can be overridden by passing
@@ -714,7 +695,7 @@ const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
 // TODO(crbug.com/920069): Remove this once the feature has
 // landed and no compat issues are reported.
 const base::Feature kOffsetParentNewSpecBehavior{
-    "OffsetParentNewSpecBehavior", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OffsetParentNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -886,11 +867,12 @@ const base::Feature kWebAppEnableHandleLinks{"WebAppEnableHandleLinks",
 const base::Feature kWebAppEnableLaunchHandler{
     "WebAppEnableLaunchHandler", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables declarative link capturing in web apps.
-// Explainer:
-// https://github.com/WICG/sw-launch/blob/master/declarative_link_capturing.md
-const base::Feature kWebAppEnableLinkCapturing{
-    "WebAppEnableLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the deprecated syntax for the above "launch_handler": {
+//   "route_to": "existing-client",
+//   "navigate_existing_client: "always" | "never"
+// }
+const base::Feature kWebAppEnableLaunchHandlerV1API{
+    "WebAppEnableLaunchHandlerV1API", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Unique ID feature in web apps. Controls parsing of "id" field in web
 // app manifests. See explainer for more information:
@@ -912,20 +894,6 @@ const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
 // the page is frozen.
 const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// BackForwardCache:
-// Only use per-process buffer limit and not per-request limt. When this flag is
-// on network requests can continue buffering data as long as it is under per
-// process limit.
-// TODO(crbug.com/1243600): Remove this flag eventually.
-const base::Feature kNetworkRequestUsesOnlyPerProcessBufferLimit{
-    "NetworkRequestUsesOnlyPerProcessBufferLimit",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Kill switch for the new behavior whereby anchors with target=_blank get
-// noopener behavior by default. TODO(crbug.com/898942): Remove in Chrome 95.
-const base::Feature kTargetBlankImpliesNoOpener{
-    "TargetBlankImpliesNoOpener", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls how max frame rates are enforced in MediaStreamTracks.
 // TODO(crbug.com/1152307): Remove in M91.
@@ -992,7 +960,7 @@ const base::Feature kManagedConfiguration{"ManagedConfiguration",
 // have their rendering throttled on display:none or zero-area.
 const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
     "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill switch for the Interest Group API, i.e. if disabled, the
 // API exposure will be disabled regardless of the OT config.
@@ -1106,13 +1074,6 @@ const base::Feature kBrowsingTopicsBypassIPIsPubliclyRoutableCheck{
     "BrowsingTopicsBypassIPIsPubliclyRoutableCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the ability to minimize processing in the WebRTC APM when all audio
-// tracks are disabled. If disabled, the APM in WebRTC will ignore attempts to
-// set it in a low-processing mode when all audio tracks are disabled.
-const base::Feature kMinimizeAudioProcessingForUnusedOutput{
-    "MinimizeAudioProcessingForUnusedOutput",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When <dialog>s are closed, this focuses the "previously focused" element
 // which had focus when the <dialog> was first opened.
 // TODO(crbug.com/649162): Remove DialogFocusNewSpecBehavior after
@@ -1176,6 +1137,9 @@ const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode{
     &kDelayLowPriorityRequestsAccordingToNetworkState,
     "MaxNumOfThrottleableRequestsInTightMode", 5};
 
+const base::Feature kHTMLParamElementUrlSupport{
+    "HTMLParamElementUrlSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::FeatureParam<base::TimeDelta> kHttpRttThreshold{
     &kDelayLowPriorityRequestsAccordingToNetworkState, "HttpRttThreshold",
     base::Milliseconds(450)};
@@ -1219,10 +1183,6 @@ const base::Feature kClientHintsResourceWidth_DEPRECATED{
 // Enable legacy `viewport-width` client hint.
 const base::Feature kClientHintsViewportWidth_DEPRECATED{
     "ClientHintsViewportWidth_DEPRECATED", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// https://drafts.csswg.org/css-cascade-5/#layering
-const base::Feature kCSSCascadeLayers{"CSSCascadeLayers",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the setTimeout(..., 0) will not clamp to 1ms.
 // Tracking bug: https://crbug.com/402694.
@@ -1306,10 +1266,6 @@ const base::Feature kTabSwitchMetrics2{"TabSwitchMetrics2",
 const base::Feature kLCPAnimatedImagesReporting{
     "LCPAnimatedImagesReporting", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// https://blog.whatwg.org/newline-normalizations-in-form-submission
-const base::Feature kLateFormNewlineNormalization{
-    "LateFormNewlineNormalization", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // TODO(crbug.com/1185950): Remove this flag when the feature is fully launched
 // and released to stable with no issues.
 const base::Feature kAutoExpandDetailsElement{"AutoExpandDetailsElement",
@@ -1317,11 +1273,11 @@ const base::Feature kAutoExpandDetailsElement{"AutoExpandDetailsElement",
 
 // Enables loading the response body earlier in navigation.
 const base::Feature kEarlyBodyLoad{"EarlyBodyLoad",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables fetching the code cache earlier in navigation.
 const base::Feature kEarlyCodeCache{"EarlyCodeCache",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow use of an http-equiv meta tag to set client hints.
 const base::Feature kClientHintsMetaHTTPEquivAcceptCH{
@@ -1344,12 +1300,8 @@ const base::Feature kClientHintThirdPartyDelegation{
 #if BUILDFLAG(IS_ANDROID)
 // Enables prefetching Android fonts on renderer startup.
 const base::Feature kPrefetchAndroidFonts{"PrefetchAndroidFonts",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
-
-// Lazy initialize TimeZoneController.
-const base::Feature kLazyInitializeTimeZoneController{
-    "LazyInitializeTimeZoneController", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCompositedCaret{"CompositedCaret",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1359,7 +1311,7 @@ const base::Feature kBackForwardCacheAppBanner{
 
 // Initialize CSSDefaultStyleSheets early in renderer startup.
 const base::Feature kDefaultStyleSheetsEarlyInit{
-    "DefaultStyleSheetsEarlyInit", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DefaultStyleSheetsEarlyInit", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSystemColorChooser{"SystemColorChooser",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1391,19 +1343,34 @@ const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
 const base::Feature kEditContext{"EditContext",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kFreeNonRequiredTileResourcesForInactiveWindows{
-    "FreeNonRequiredTileResourcesForInactiveWindows",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the WindowPlacement RuntimeEnabledFeature.
+// Enables basic Multi-Screen Window Placement functionality.
 const base::Feature kWindowPlacement{"WindowPlacement",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allows sites to request fullscreen and open a popup from a single gesture.
+const base::Feature kWindowPlacementFullscreenCompanionWindow{
+    "WindowPlacementFullscreenCompanionWindow",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allows sites to request fullscreen when the set of screens change.
+const base::Feature kWindowPlacementFullscreenOnScreensChange{
+    "WindowPlacementFullscreenOnScreensChange",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1277431): This flag should be eventually disabled.
 const base::Feature kEventPath{"EventPath", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Removes a paint invalidation of viewport constrained objects (sticky or
+// fixed) after scrolling.
+const base::Feature kOptimizeViewportConstrainedPaintInvalidation{
+    "OptimizeViewportConstrainedPaintInvalidation",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kReduceUserAgentMinorVersion{
     "ReduceUserAgentMinorVersion", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kReportFCPOnlyOnSuccessfulCommit{
+    "ReportFCPOnlyOnSuccessfulCommit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables correctly computing whether dedicated workers are secure contexts.
 // TODO(https://crbug.com/780031): Remove this once fully shipped.
@@ -1424,6 +1391,30 @@ const base::Feature kWebSQLAccess{"kWebSQLAccess",
 // User-Agent string is overridden, instead of disabling the headers altogether.
 const base::Feature kUACHOverrideBlank{"UACHOverrideBlank",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_WIN)
+const base::Feature kPrewarmDefaultFontFamilies{
+    "PrewarmDefaultFontFamilies", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<bool> kPrewarmStandard = {&kPrewarmDefaultFontFamilies,
+                                                   "prewarm_standard", true};
+const base::FeatureParam<bool> kPrewarmFixed = {&kPrewarmDefaultFontFamilies,
+                                                "prewarm_fixed", true};
+const base::FeatureParam<bool> kPrewarmSerif = {&kPrewarmDefaultFontFamilies,
+                                                "prewarm_serif", true};
+const base::FeatureParam<bool> kPrewarmSansSerif = {
+    &kPrewarmDefaultFontFamilies, "prewarm_sans_serif", true};
+const base::FeatureParam<bool> kPrewarmCursive = {&kPrewarmDefaultFontFamilies,
+                                                  "prewarm_cursive", true};
+const base::FeatureParam<bool> kPrewarmFantasy = {&kPrewarmDefaultFontFamilies,
+                                                  "prewarm_fantasy", true};
+#endif
+
+// Enable `save-data` client hint.
+const base::Feature kClientHintsSaveData{"ClientHintsSaveData",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kEstablishGpuChannelAsync{
+    "EstablishGpuChannelAsync", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

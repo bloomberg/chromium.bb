@@ -12,6 +12,17 @@ DiscoverFeedService::DiscoverFeedService() = default;
 
 DiscoverFeedService::~DiscoverFeedService() = default;
 
+// TODO(crbug.com/1277974): Remove this when implemented downstream.
+BOOL DiscoverFeedService::GetFollowingFeedHasUnseenContent() {
+  return YES;
+}
+void DiscoverFeedService::SetFollowingFeedContentSeen() {}
+
+// TODO(crbug.com/1314418): Remove this when downstream implementation is
+// landed.
+void DiscoverFeedService::SetIsShownOnStartSurface(
+    bool shown_on_start_surface) {}
+
 void DiscoverFeedService::AddObserver(DiscoverFeedObserver* observer) {
   observer_list_.AddObserver(observer);
 }

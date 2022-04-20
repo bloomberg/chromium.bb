@@ -12,7 +12,6 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -20,16 +19,18 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/user_education/feature_promo_specification.h"
 #include "chrome/browser/ui/user_education/help_bubble_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
+#include "chrome/browser/ui/views/passwords/views_utils.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -57,6 +58,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/animating_layout_manager.h"
@@ -68,6 +70,8 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
+
+constexpr int kIconHeight = 20;
 
 int ComboboxIconSize() {
   // Use the line height of the body small text. This allows the icons to adapt
@@ -85,10 +89,8 @@ std::unique_ptr<views::View> CreateRow() {
       .SetCollapseMargins(true)
       .SetDefault(
           views::kMarginsKey,
-          gfx::Insets(
-              /*vertical=*/0,
-              /*horizontal=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                  views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+          gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   return row;
 }
 
@@ -244,7 +246,7 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
 }
 
 std::unique_ptr<views::Combobox> CreateDestinationCombobox(
-    std::string primary_account_email,
+    std::u16string primary_account_email,
     ui::ImageModel primary_account_avatar,
     bool is_using_account_store) {
   ui::ImageModel computer_image = ui::ImageModel::FromVectorIcon(
@@ -253,8 +255,7 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
   ui::SimpleComboboxModel::Item account_destination(
       /*text=*/l10n_util::GetStringUTF16(
           IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_ACCOUNT),
-      /*dropdown_secondary_text=*/
-      base::UTF8ToUTF16(primary_account_email),
+      /*dropdown_secondary_text=*/primary_account_email,
       /*icon=*/primary_account_avatar);
 
   ui::SimpleComboboxModel::Item device_destination(
@@ -342,10 +343,9 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
         .SetCollapseMargins(true)
         .SetDefault(
             views::kMarginsKey,
-            gfx::Insets(
-                /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                    DISTANCE_CONTROL_LIST_VERTICAL),
-                /*horizontal=*/0));
+            gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                DISTANCE_CONTROL_LIST_VERTICAL),
+                            0));
 
     if (destination_dropdown)
       AddChildView(std::move(destination_dropdown));
@@ -390,10 +390,9 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
         .SetCollapseMargins(true)
         .SetDefault(
             views::kMarginsKey,
-            gfx::Insets(
-                /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
-                    DISTANCE_CONTROL_LIST_VERTICAL),
-                /*horizontal=*/0));
+            gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                DISTANCE_CONTROL_LIST_VERTICAL),
+                            0));
 
     username_dropdown_ = username_dropdown.get();
     password_dropdown_ = password_dropdown.get();
@@ -441,9 +440,11 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
         is_update_bubble_ ? &Controller::OnNopeUpdateClicked
                           : &Controller::OnNeverForThisSiteClicked));
   }
-  SetShowIcon(false);
 
+  SetShowIcon(base::FeatureList::IsEnabled(
+      password_manager::features::kUnifiedPasswordManagerDesktop));
   SetFootnoteView(CreateFooterView());
+
   UpdateBubbleUIElements();
 
   Profile* profile =
@@ -515,13 +516,23 @@ bool PasswordSaveUpdateView::IsDialogButtonEnabled(
 }
 
 ui::ImageModel PasswordSaveUpdateView::GetWindowIcon() {
-  return ui::ImageModel();
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    return ui::ImageModel();
+  }
+  return ui::ImageModel::FromVectorIcon(GooglePasswordManagerVectorIcon(),
+                                        ui::kColorIcon, kIconHeight);
 }
 
 void PasswordSaveUpdateView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
-  SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    SetBubbleHeader(IDR_SAVE_PASSWORD_V2, IDR_SAVE_PASSWORD_V2_DARK);
+  } else {
+    SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
+  }
   if (ShouldShowFailedReauthIPH())
     MaybeShowIPH(IPHType::kFailedReauth);
   else
@@ -537,7 +548,7 @@ void PasswordSaveUpdateView::OnThemeChanged() {
         color_provider->GetColor(ui::kColorIconDisabled);
     views::SetImageFromVectorIconWithColor(password_view_button_, kEyeIcon,
                                            GetDefaultSizeOfVectorIcon(kEyeIcon),
-                                           icon_color);
+                                           icon_color, disabled_icon_color);
     views::SetToggledImageFromVectorIconWithColor(
         password_view_button_, kEyeCrossedIcon,
         GetDefaultSizeOfVectorIcon(kEyeCrossedIcon), icon_color,
@@ -605,6 +616,8 @@ void PasswordSaveUpdateView::UpdateBubbleUIElements() {
   if (!GetWidget())
     return;
 
+  UpdateFootnote();
+
   if (should_announce_save_update_change)
     AnnounceSaveUpdateChange();
 
@@ -622,15 +635,37 @@ void PasswordSaveUpdateView::UpdateBubbleUIElements() {
 }
 
 std::unique_ptr<views::View> PasswordSaveUpdateView::CreateFooterView() {
-  if (!controller_.ShouldShowFooter())
-    return nullptr;
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
-      ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    if (!controller_.ShouldShowFooter())
+      return nullptr;
+    auto label = std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
+        ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
+        views::style::STYLE_SECONDARY);
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    return label;
+  }
+  base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
+      [](PasswordSaveUpdateView* dialog) {
+        dialog->controller_.OnGooglePasswordManagerLinkClicked();
+      },
+      base::Unretained(this));
+  if (controller_.IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount()) {
+    return CreateGooglePasswordManagerLabel(
+        /*text_message_id=*/
+        IDS_PASSWORD_BUBBLES_FOOTER_SYNCED_TO_ACCOUNT,
+        /*link_message_id=*/
+        IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
+        controller_.GetPrimaryAccountEmail(), open_password_manager_closure);
+  }
+  return CreateGooglePasswordManagerLabel(
+      /*text_message_id=*/
+      IDS_PASSWORD_BUBBLES_FOOTER_SAVING_ON_DEVICE,
+      /*link_message_id=*/
+      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE,
+      open_password_manager_closure);
 }
 
 bool PasswordSaveUpdateView::ShouldShowFailedReauthIPH() {
@@ -652,11 +687,6 @@ void PasswordSaveUpdateView::MaybeShowIPH(IPHType type) {
       BrowserFeaturePromoController::GetForView(GetAnchorView());
   if (!promo_controller)
     return;
-
-  // Make sure the Save/Update bubble doesn't get closed when the IPH bubble is
-  // opened.
-  const bool old_close_on_deactivate = close_on_deactivate();
-  set_close_on_deactivate(false);
 
   switch (type) {
     case IPHType::kRegular:
@@ -688,8 +718,6 @@ void PasswordSaveUpdateView::MaybeShowIPH(IPHType type) {
       break;
     }
   }
-
-  set_close_on_deactivate(old_close_on_deactivate);
 }
 
 void PasswordSaveUpdateView::CloseIPHBubbleIfOpen() {
@@ -730,6 +758,8 @@ void PasswordSaveUpdateView::OnContentChanged() {
   bool is_update_state_before = controller_.IsCurrentStateUpdate();
   bool is_ok_button_enabled_before =
       IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
+  bool changes_synced_to_account_before =
+      controller_.IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount();
   UpdateUsernameAndPasswordInModel();
   // Maybe the buttons should be updated.
   if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
@@ -737,5 +767,24 @@ void PasswordSaveUpdateView::OnContentChanged() {
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     UpdateBubbleUIElements();
     DialogModelChanged();
+  } else if (changes_synced_to_account_before !=
+             controller_
+                 .IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount()) {
+    // For account store users, there is a different footnote when affecting the
+    // account store.
+    UpdateFootnote();
   }
+}
+
+void PasswordSaveUpdateView::UpdateFootnote() {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kUnifiedPasswordManagerDesktop)) {
+    return;
+  }
+  DCHECK(GetBubbleFrameView());
+  GetBubbleFrameView()->SetFootnoteView(CreateFooterView());
+
+  // The footnote size could have changed since it depends on whether it
+  // affects the account store, and hence resize.
+  SizeToContents();
 }

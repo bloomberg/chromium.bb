@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -51,9 +52,9 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     private TabContentManager mTabContentManager;
 
-    private Tab mVisibleTab;
+    private RecentlyClosedBridge mRecentlyClosedBridge;
 
-    private CloseAllTabsDelegate mCloseAllTabsDelegate;
+    private Tab mVisibleTab;
 
     private final Supplier<WindowAndroid> mWindowAndroidSupplier;
 
@@ -111,6 +112,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 (ChromeTabCreator) getTabCreatorManager().getTabCreator(false);
         ChromeTabCreator incognitoTabCreator =
                 (ChromeTabCreator) getTabCreatorManager().getTabCreator(true);
+        mRecentlyClosedBridge = new RecentlyClosedBridge(Profile.getLastUsedRegularProfile(), this);
         TabModelImpl normalModel = new TabModelImpl(Profile.getLastUsedRegularProfile(),
                 mActivityType, regularTabCreator, incognitoTabCreator, mOrderController,
                 tabContentProvider, mNextTabPolicySupplier, mAsyncTabParamsManager, this,
@@ -174,6 +176,19 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         };
     }
 
+    @Override
+    public void openMostRecentlyClosedEntry(TabModel tabModel) {
+        assert tabModel
+                == getModel(false) : "Trying to restore a tab from an off-the-record tab model.";
+        mRecentlyClosedBridge.openMostRecentlyClosedEntry(tabModel);
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        if (mRecentlyClosedBridge != null) mRecentlyClosedBridge.destroy();
+    }
+
     /**
      * Exposed to allow tests to initialize the selector with different tab models.
      * @param normalModel The normal tab model.
@@ -182,11 +197,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @VisibleForTesting
     public void initializeForTesting(TabModel normalModel, IncognitoTabModel incognitoModel) {
         initialize(normalModel, incognitoModel);
-    }
-
-    @Override
-    public void setCloseAllTabsDelegate(CloseAllTabsDelegate delegate) {
-        mCloseAllTabsDelegate = delegate;
     }
 
     @Override
@@ -217,11 +227,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         for (int i = 0; i < getModels().size(); i++) {
             getModels().get(i).commitAllTabClosures();
         }
-    }
-
-    @Override
-    public boolean closeAllTabsRequest(boolean incognito) {
-        return mCloseAllTabsDelegate.closeAllTabsRequest(incognito);
     }
 
     @Override

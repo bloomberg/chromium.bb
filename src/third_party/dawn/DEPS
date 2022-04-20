@@ -16,8 +16,13 @@ vars = {
   'dawn_node': False, # Also fetches dependencies required for building NodeJS bindings.
   'dawn_cmake_version': 'version:3.13.5',
   'dawn_cmake_win32_sha1': 'b106d66bcdc8a71ea2cdf5446091327bfdb1bcd7',
-  'dawn_gn_version': 'git_revision:fc295f3ac7ca4fe7acc6cb5fb052d22909ef3a8f',
+  'dawn_gn_version': 'git_revision:bd99dbf98cbdefe18a4128189665c5761263bcfb',
   'dawn_go_version': 'version:1.16',
+
+  'node_darwin_arm64_sha': '31859fc1fa0994a95f44f09c367d6ff63607cfde',
+  'node_darwin_x64_sha': '16dfd094763b71988933a31735f9dea966f9abd6',
+  'node_linux_x64_sha': 'ab9544e24e752d3d17f335fb7b2055062e582d11',
+  'node_win_x64_sha': '5ef847033c517c499f56f9d136d159b663bab717',
 
   # GN variable required by //testing that will be output in the gclient_args.gni
   'generate_location_tags': False,
@@ -26,18 +31,17 @@ vars = {
 deps = {
   # Dependencies required to use GN/Clang in standalone
   'build': {
-    'url': '{chromium_git}/chromium/src/build@555c8b467c21e2c4b22d00e87e3faa0431df9ac2',
+    'url': '{chromium_git}/chromium/src/build@c7876b5a44308b94074287939244bc562007de69',
     'condition': 'dawn_standalone',
   },
   'buildtools': {
-    'url': '{chromium_git}/chromium/src/buildtools@f78b4b9f33bd8ef9944d5ce643daff1c31880189',
+    'url': '{chromium_git}/chromium/src/buildtools@e1471b21ee9c6765ee95e9db0c76fe997ccad35c',
     'condition': 'dawn_standalone',
   },
   'buildtools/clang_format/script': {
     'url': '{chromium_git}/external/github.com/llvm/llvm-project/clang/tools/clang-format.git@99803d74e35962f63a775f29477882afd4d57d94',
     'condition': 'dawn_standalone',
   },
-
   'buildtools/linux64': {
     'packages': [{
       'package': 'gn/gn/linux-amd64',
@@ -69,12 +73,12 @@ deps = {
   },
 
   'buildtools/third_party/libc++abi/trunk': {
-    'url': '{chromium_git}/external/github.com/llvm/llvm-project/libcxxabi.git@2715a6c0de8dac4c7674934a6b3d30ba0c685271',
+    'url': '{chromium_git}/external/github.com/llvm/llvm-project/libcxxabi.git@edde7bbc4049ae4a32257d9f16451312c763c601',
     'condition': 'dawn_standalone',
   },
 
   'tools/clang': {
-    'url': '{chromium_git}/chromium/src/tools/clang@8b7330592cb85ba09505a6be7bacabd0ad6160a3',
+    'url': '{chromium_git}/chromium/src/tools/clang@df9b14e26c163dd8e2c0ab081e2689f038ae7141',
     'condition': 'dawn_standalone',
   },
   'tools/clang/dsymutil': {
@@ -111,11 +115,6 @@ deps = {
     'condition': 'dawn_standalone',
   },
 
-  # WGSL support
-  'third_party/tint': {
-    'url': '{dawn_git}/tint@453d5ae84ec30ab51ac592c13d472412ae8b5fc9',
-  },
-
   # GLFW for tests and samples
   'third_party/glfw': {
     'url': '{chromium_git}/external/github.com/glfw/glfw@94773111300fee0453844a4c9407af7e880b4df8',
@@ -128,17 +127,17 @@ deps = {
   },
 
   'third_party/angle': {
-    'url': '{chromium_git}/angle/angle@98bb4f32ded001ead85c6e1480e319163c3720de',
+    'url': '{chromium_git}/angle/angle@8718783526307a3fbb35d4c1ad4e8101262a0d73',
     'condition': 'dawn_standalone',
   },
 
   'third_party/swiftshader': {
-    'url': '{swiftshader_git}/SwiftShader@d01dca1d18d03f055d0dabd99a210b5f666715ed',
+    'url': '{swiftshader_git}/SwiftShader@1d450ae99a0f4ade28dd55dac962f8b28d990376',
     'condition': 'dawn_standalone',
   },
 
   'third_party/vulkan-deps': {
-    'url': '{chromium_git}/vulkan-deps@b5358195f58f52aac9bdd1c32fd3ad6620b6b8de',
+    'url': '{chromium_git}/vulkan-deps@7e9ab0686bf4d4fa9c52eeb8def33b2057624987',
     'condition': 'dawn_standalone',
   },
 
@@ -152,7 +151,13 @@ deps = {
     'condition': 'dawn_standalone',
   },
 
-  # Dependencies required to build Dawn NodeJS bindings
+  # WebGPU CTS - not used directly by Dawn, only transitively by Chromium.
+  'third_party/webgpu-cts': {
+    'url': '{chromium_git}/external/github.com/gpuweb/cts@9861f5e1d92559c03a8d769117124de97adc47c4',
+    'condition': 'build_with_chromium',
+  },
+
+  # Dependencies required to build / run Dawn NodeJS bindings
   'third_party/node-api-headers': {
     'url': '{github_git}/nodejs/node-api-headers.git@d68505e4055ecb630e14c26c32e5c2c65e179bba',
     'condition': 'dawn_node',
@@ -164,6 +169,10 @@ deps = {
   'third_party/gpuweb': {
     'url': '{github_git}/gpuweb/gpuweb.git@881403b5fda2d9ac9ffc5daa24e34738205bf155',
     'condition': 'dawn_node',
+  },
+  'third_party/gpuweb-cts': {
+    'url': '{chromium_git}/external/github.com/gpuweb/cts@9861f5e1d92559c03a8d769117124de97adc47c4',
+    'condition': 'dawn_standalone',
   },
 
   'tools/golang': {
@@ -182,6 +191,16 @@ deps = {
       'version': Var('dawn_cmake_version'),
     }],
     'dep_type': 'cipd',
+  },
+
+  # Misc dependencies inherited from Tint
+  'third_party/benchmark': {
+    'url': '{chromium_git}/external/github.com/google/benchmark.git@e991355c02b93fe17713efe04cbc2e278e00fdbd',
+    'condition': 'dawn_standalone',
+  },
+  'third_party/protobuf': {
+    'url': '{chromium_git}/external/github.com/protocolbuffers/protobuf.git@fde7cf7358ec7cd69e8db9be4f1fa6a5c431386a',
+    'condition': 'dawn_standalone',
   },
 }
 
@@ -248,14 +267,27 @@ hooks = [
     ],
   },
   {
-    'name': 'clang_format_mac',
+    'name': 'clang_format_mac_x64',
     'pattern': '.',
-    'condition': 'dawn_standalone and host_os == "mac"',
+    'condition': 'dawn_standalone and host_os == "mac" and host_cpu == "x64"',
     'action': [ 'download_from_google_storage',
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-clang-format',
-                '-s', 'buildtools/mac/clang-format.sha1',
+                '-s', 'buildtools/mac/clang-format.x64.sha1',
+                '-o', 'buildtools/mac/clang-format',
+    ],
+  },
+  {
+    'name': 'clang_format_mac_arm64',
+    'pattern': '.',
+    'condition': 'dawn_standalone and host_os == "mac" and host_cpu == "arm64"',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-clang-format',
+                '-s', 'buildtools/mac/clang-format.arm64.sha1',
+                '-o', 'buildtools/mac/clang-format',
     ],
   },
   {
@@ -301,6 +333,60 @@ hooks = [
                 'tools/cmake-win32/',
     ],
   },
+
+  # Node binaries, when dawn_node is enabled
+  {
+    'name': 'node_linux64',
+    'pattern': '.',
+    'condition': 'dawn_node and host_os == "linux"',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/16.13.0',
+                Var('node_linux_x64_sha'),
+                '-o', 'third_party/node/node-linux-x64.tar.gz',
+    ],
+  },
+  {
+    'name': 'node_mac',
+    'pattern': '.',
+    'condition': 'dawn_node and host_os == "mac"',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/16.13.0',
+                Var('node_darwin_x64_sha'),
+                '-o', 'third_party/node/node-darwin-x64.tar.gz',
+    ],
+  },
+  {
+    'name': 'node_mac_arm64',
+    'pattern': '.',
+    'condition': 'dawn_node and host_os == "mac"',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--extract',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/16.13.0',
+                Var('node_darwin_arm64_sha'),
+                '-o', 'third_party/node/node-darwin-arm64.tar.gz',
+    ],
+  },
+  {
+    'name': 'node_win',
+    'pattern': '.',
+    'condition': 'dawn_node and host_os == "win"',
+    'action': [ 'download_from_google_storage',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-nodejs/16.13.0',
+                Var('node_win_x64_sha'),
+                '-o', 'third_party/node/node.exe',
+    ],
+  },
+
 ]
 
 recursedeps = [

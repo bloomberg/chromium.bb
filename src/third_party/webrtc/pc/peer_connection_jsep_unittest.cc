@@ -21,6 +21,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/call/call_factory_interface.h"
+#include "api/field_trials_view.h"
 #include "api/jsep.h"
 #include "api/media_stream_interface.h"
 #include "api/media_types.h"
@@ -36,7 +37,6 @@
 #include "api/task_queue/task_queue_factory.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/sctp_transport_factory_interface.h"
-#include "api/transport/webrtc_key_value_config.h"
 #include "media/base/media_engine.h"
 #include "media/base/stream_params.h"
 #include "media/engine/webrtc_media_engine.h"
@@ -117,15 +117,15 @@ class PeerConnectionJsepTest : public ::testing::Test {
         CreateModularPeerConnectionFactory(
             CreatePeerConnectionFactoryDependencies());
     auto observer = std::make_unique<MockPeerConnectionObserver>();
-    auto pc = pc_factory->CreatePeerConnection(config, nullptr, nullptr,
-                                               observer.get());
-    if (!pc) {
+    auto result = pc_factory->CreatePeerConnectionOrError(
+        config, PeerConnectionDependencies(observer.get()));
+    if (!result.ok()) {
       return nullptr;
     }
 
-    observer->SetPeerConnectionInterface(pc.get());
-    return std::make_unique<PeerConnectionWrapper>(pc_factory, pc,
-                                                   std::move(observer));
+    observer->SetPeerConnectionInterface(result.value());
+    return std::make_unique<PeerConnectionWrapper>(
+        pc_factory, result.MoveValue(), std::move(observer));
   }
 
   std::unique_ptr<rtc::VirtualSocketServer> vss_;
@@ -1640,7 +1640,7 @@ TEST_F(PeerConnectionJsepTest, AnswerBeforeOfferFails) {
 // two video tracks.
 TEST_F(PeerConnectionJsepTest, TwoVideoPlanBToUnifiedPlanFails) {
   RTCConfiguration config_planb;
-  config_planb.sdp_semantics = SdpSemantics::kPlanB;
+  config_planb.sdp_semantics = SdpSemantics::kPlanB_DEPRECATED;
   auto caller = CreatePeerConnection(config_planb);
   auto callee = CreatePeerConnection();
   caller->AddVideoTrack("video1");
@@ -1656,7 +1656,7 @@ TEST_F(PeerConnectionJsepTest, TwoVideoPlanBToUnifiedPlanFails) {
 TEST_F(PeerConnectionJsepTest, OneVideoUnifiedPlanToTwoVideoPlanBFails) {
   auto caller = CreatePeerConnection();
   RTCConfiguration config_planb;
-  config_planb.sdp_semantics = SdpSemantics::kPlanB;
+  config_planb.sdp_semantics = SdpSemantics::kPlanB_DEPRECATED;
   auto callee = CreatePeerConnection(config_planb);
   caller->AddVideoTrack("video");
   callee->AddVideoTrack("video1");
@@ -1809,7 +1809,7 @@ TEST_F(PeerConnectionJsepTest, RollbackSupportedInUnifiedPlan) {
 
 TEST_F(PeerConnectionJsepTest, RollbackNotSupportedInPlanB) {
   RTCConfiguration config;
-  config.sdp_semantics = SdpSemantics::kPlanB;
+  config.sdp_semantics = SdpSemantics::kPlanB_DEPRECATED;
   config.enable_implicit_rollback = true;
   auto caller = CreatePeerConnection(config);
   auto callee = CreatePeerConnection(config);

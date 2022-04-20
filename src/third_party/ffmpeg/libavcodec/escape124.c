@@ -21,6 +21,7 @@
 
 #define BITSTREAM_READER_LE
 #include "avcodec.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "internal.h"
 
@@ -376,15 +377,15 @@ static int escape124_decode_frame(AVCodecContext *avctx,
 }
 
 
-const AVCodec ff_escape124_decoder = {
-    .name           = "escape124",
-    .long_name      = NULL_IF_CONFIG_SMALL("Escape 124"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_ESCAPE124,
+const FFCodec ff_escape124_decoder = {
+    .p.name         = "escape124",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Escape 124"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_ESCAPE124,
     .priv_data_size = sizeof(Escape124Context),
     .init           = escape124_decode_init,
     .close          = escape124_decode_close,
     .decode         = escape124_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

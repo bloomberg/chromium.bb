@@ -200,8 +200,9 @@ class AndroidApiLevels:
 
     # Query the API levels in the generated build config.
     print('Retrieving config vars')
-    config_output = subprocess.check_output([
-        'gn', 'args', tmp_dir, '--short', '--list'], cwd=CHROMIUM_ROOT_DIR)
+    config_output = subprocess.check_output(
+        ['gn', 'args', tmp_dir, '--short', '--list'],
+        cwd=CHROMIUM_ROOT_DIR).decode('utf-8')
 
     # Remove the temporary GN build output folder
     print('removing temp dir ' + tmp_dir)
@@ -304,7 +305,7 @@ def SetupWindowsCrossCompileToolchain(target_arch):
   output = subprocess.check_output([
       os.path.join(CHROMIUM_ROOT_DIR, 'build', 'vs_toolchain.py'),
       'get_toolchain_dir'
-  ])
+  ]).decode('utf-8')
 
   new_args = [
       '--enable-cross-compile',
@@ -342,7 +343,7 @@ def SetupWindowsCrossCompileToolchain(target_arch):
       os.path.join(CHROMIUM_ROOT_DIR, 'build', 'toolchain', 'win',
                    'setup_toolchain.py'), win_dirs['vs_path'],
       win_dirs['sdk_path'], win_dirs['runtime_dirs'], 'win', target_arch, 'none'
-  ])
+  ]).decode('utf-8')
 
   flags = gn_helpers.FromGNArgs(output)
 
@@ -356,6 +357,7 @@ def SetupWindowsCrossCompileToolchain(target_arch):
   # approach is determined to be better or more consistent.
   new_args += [
       '--extra-cflags=/winsysroot' + win_dirs['vs_path'],
+      '--extra-ldflags=/winsysroot:' + win_dirs['vs_path'],
   ]
 
   # FFmpeg configure doesn't like arguments with spaces in them even if quoted
@@ -380,26 +382,6 @@ def SetupWindowsCrossCompileToolchain(target_arch):
     assert os.path.islink(temp_name)
     atexit.register(do_remove_temp_link, temp_name)
     return temp_name
-
-  # Even with the /winsysroot option, the libpaths still require explicit
-  # configuration (for now at least); /winsysroot is not recognized as a valid
-  # extra-ldflags option by lld-link.
-
-  # TODO(dalecurtis): Why isn't the ucrt path printed?
-  flags['vc_lib_ucrt_path'] = flags['vc_lib_um_path'].replace('/um/', '/ucrt/')
-
-  # The lib include paths are each in a separate key.
-  for k in flags:
-    # libpath_flags is like cflags. Since it is also redundant, skip it.
-    if 'lib' in k and k != 'libpath_flags':
-      lib_path = flags[k]
-      if ' ' in lib_path:
-        # Use a temporary symbolic link instead of the real path if there is a
-        # space in the real path. Arguably, injection of these into environment
-        # variables may be better, especially if /winsysroot continues to not
-        # provide appropriate lib paths.
-        lib_path = do_make_temp_link(lib_path)
-      new_args += [ '--extra-ldflags=-libpath:' + lib_path ]
 
   return new_args
 
@@ -699,7 +681,6 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       '--disable-bzlib',
       '--disable-error-resilience',
       '--disable-iconv',
-      '--disable-lzo',
       '--disable-network',
       '--disable-schannel',
       '--disable-sdl2',

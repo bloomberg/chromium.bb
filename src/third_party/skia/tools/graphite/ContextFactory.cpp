@@ -7,7 +7,7 @@
 
 #include "tools/graphite/ContextFactory.h"
 
-#include "experimental/graphite/include/Context.h"
+#include "include/gpu/graphite/Context.h"
 
 #ifdef SK_METAL
 #include "tools/graphite/mtl/GraphiteMtlTestContext.h"
@@ -23,14 +23,14 @@ ContextFactory::ContextInfo::ContextInfo(ContextInfo&& other)
 
 ContextFactory::ContextInfo::ContextInfo(ContextFactory::ContextType type,
                                          std::unique_ptr<GraphiteTestContext> testContext,
-                                         std::unique_ptr<skgpu::Context> context)
+                                         std::unique_ptr<skgpu::graphite::Context> context)
     : fType(type)
     , fTestContext(std::move(testContext))
     , fContext(std::move(context)) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-std::tuple<GraphiteTestContext*, skgpu::Context*> ContextFactory::getContextInfo(
+std::tuple<GraphiteTestContext*, skgpu::graphite::Context*> ContextFactory::getContextInfo(
         ContextType type) {
 
     for (ContextInfo& c : fContexts) {
@@ -44,7 +44,7 @@ std::tuple<GraphiteTestContext*, skgpu::Context*> ContextFactory::getContextInfo
     switch (type) {
         case ContextType::kMetal: {
 #ifdef SK_METAL
-            testCtx = mtl::TestContext::Make();
+            testCtx = graphite::MtlTestContext::Make();
 #endif
         } break;
 
@@ -56,7 +56,7 @@ std::tuple<GraphiteTestContext*, skgpu::Context*> ContextFactory::getContextInfo
         return {};
     }
 
-    std::unique_ptr<skgpu::Context> context = testCtx->makeContext();
+    std::unique_ptr<skgpu::graphite::Context> context = testCtx->makeContext();
     if (!context) {
         return {};
     }

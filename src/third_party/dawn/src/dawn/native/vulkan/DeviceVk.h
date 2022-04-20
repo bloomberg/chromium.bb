@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_DEVICEVK_H_
-#define DAWNNATIVE_VULKAN_DEVICEVK_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_DEVICEVK_H_
+#define SRC_DAWN_NATIVE_VULKAN_DEVICEVK_H_
 
 #include "dawn/native/dawn_platform.h"
 
@@ -47,7 +47,7 @@ namespace dawn::native::vulkan {
                                                  const DeviceDescriptor* descriptor);
         ~Device() override;
 
-        MaybeError Initialize();
+        MaybeError Initialize(const DeviceDescriptor* descriptor);
 
         // Contains all the Vulkan entry points, vkDoFoo is called via device->fn.DoFoo.
         const VulkanFunctions fn;
@@ -105,6 +105,8 @@ namespace dawn::native::vulkan {
 
         float GetTimestampPeriodInNS() const override;
 
+        void SetLabelImpl() override;
+
       private:
         Device(Adapter* adapter, const DeviceDescriptor* descriptor);
 
@@ -151,7 +153,7 @@ namespace dawn::native::vulkan {
 
         uint32_t FindComputeSubgroupSize() const;
         void InitTogglesFromDriver();
-        void ApplyDepth24PlusS8Toggle();
+        void ApplyDepthStencilFormatToggles();
         void ApplyUseZeroInitializeWorkgroupMemoryExtensionToggle();
 
         void DestroyImpl() override;
@@ -211,4 +213,4 @@ namespace dawn::native::vulkan {
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_DEVICEVK_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_DEVICEVK_H_

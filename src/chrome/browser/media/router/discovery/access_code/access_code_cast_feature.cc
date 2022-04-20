@@ -14,6 +14,12 @@
 #include "components/prefs/pref_registry_simple.h"
 #endif
 
+namespace features {
+// Enables remembering of access code cast devices.
+const base::Feature kAccessCodeCastRememberDevices{
+    "AccessCodeCastRememberDevices", base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace features
+
 namespace media_router {
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -23,6 +29,9 @@ void RegisterAccessCodeProfilePrefs(PrefRegistrySimple* registry) {
                                 PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(prefs::kAccessCodeCastDeviceDuration, 0,
                                 PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kAccessCodeCastDevices);
+  registry->RegisterDictionaryPref(prefs::kAccessCodeCastDiscoveredNetworks);
+  registry->RegisterDictionaryPref(prefs::kAccessCodeCastDeviceAdditionTime);
 }
 
 bool GetAccessCodeCastEnabledPref(PrefService* pref_service) {
@@ -36,6 +45,7 @@ base::TimeDelta GetAccessCodeDeviceDurationPref(PrefService* pref_service) {
   return base::Seconds(
       pref_service->GetInteger(prefs::kAccessCodeCastDeviceDuration));
 }
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace media_router

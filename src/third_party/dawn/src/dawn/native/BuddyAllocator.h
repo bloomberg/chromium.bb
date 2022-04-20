@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_BUDDYALLOCATOR_H_
-#define DAWNNATIVE_BUDDYALLOCATOR_H_
+#ifndef SRC_DAWN_NATIVE_BUDDYALLOCATOR_H_
+#define SRC_DAWN_NATIVE_BUDDYALLOCATOR_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -35,7 +35,7 @@ namespace dawn::native {
     //
     class BuddyAllocator {
       public:
-        BuddyAllocator(uint64_t maxSize);
+        explicit BuddyAllocator(uint64_t maxSize);
         ~BuddyAllocator();
 
         // Required methods.
@@ -114,4 +114,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_BUDDYALLOCATOR_H_
+#endif  // SRC_DAWN_NATIVE_BUDDYALLOCATOR_H_

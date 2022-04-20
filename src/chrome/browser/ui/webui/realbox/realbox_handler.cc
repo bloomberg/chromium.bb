@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
@@ -20,6 +21,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service.h"
+#include "chrome/browser/prefetch/search_prefetch/search_prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -722,7 +725,9 @@ void RealboxHandler::ExecuteAction(uint8_t line,
       /*middle_button=*/mouse_button == 1, alt_key, ctrl_key, meta_key,
       shift_key);
 
-  match.action->RecordActionExecuted(line);
+  // TODO(tommycli): Add recording of action shown in the realbox when the user
+  //  uses the realbox to go somewhere OTHER than executing an action.
+  match.action->RecordActionShown(line, /*executed=*/true);
   OmniboxAction::ExecutionContext context(
       *(autocomplete_controller_->autocomplete_provider_client()),
       base::BindOnce(&RealboxHandler::OpenURL, weak_ptr_factory_.GetWeakPtr()),
@@ -744,6 +749,14 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
       autocomplete_controller_->result(),
       BookmarkModelFactory::GetForBrowserContext(profile_),
       profile_->GetPrefs()));
+
+  if (autocomplete_controller_->done()) {
+    if (SearchPrefetchService* search_prefetch_service =
+            SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+      search_prefetch_service->OnResultChanged(
+          autocomplete_controller_->result());
+    }
+  }
 
   // Clear pending bitmap requests before requesting new ones.
   for (auto bitmap_request_id : bitmap_request_ids_) {

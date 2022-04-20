@@ -163,6 +163,14 @@ DSP_SRCS-$(HAVE_DSPR2)  += mips/convolve8_vert_dspr2.c
 
 DSP_SRCS-$(HAVE_VSX)  += ppc/vpx_convolve_vsx.c
 
+# common (lsx)
+DSP_SRCS-$(HAVE_LSX) += loongarch/vpx_convolve8_horiz_lsx.c
+DSP_SRCS-$(HAVE_LSX) += loongarch/vpx_convolve8_vert_lsx.c
+DSP_SRCS-$(HAVE_LSX) += loongarch/vpx_convolve8_lsx.c
+DSP_SRCS-$(HAVE_LSX) += loongarch/vpx_convolve8_avg_lsx.c
+DSP_SRCS-$(HAVE_LSX) += loongarch/vpx_convolve_avg_lsx.c
+DSP_SRCS-$(HAVE_LSX) += loongarch/vpx_convolve_lsx.h
+
 # loop filters
 DSP_SRCS-yes += loopfilter.c
 
@@ -188,6 +196,10 @@ DSP_SRCS-$(HAVE_DSPR2)  += mips/loopfilter_masks_dspr2.h
 DSP_SRCS-$(HAVE_DSPR2)  += mips/loopfilter_mb_dspr2.c
 DSP_SRCS-$(HAVE_DSPR2)  += mips/loopfilter_mb_horiz_dspr2.c
 DSP_SRCS-$(HAVE_DSPR2)  += mips/loopfilter_mb_vert_dspr2.c
+
+DSP_SRCS-$(HAVE_LSX)    += loongarch/loopfilter_lsx.h
+DSP_SRCS-$(HAVE_LSX)    += loongarch/loopfilter_16_lsx.c
+DSP_SRCS-$(HAVE_LSX)    += loongarch/loopfilter_8_lsx.c
 
 ifeq ($(CONFIG_VP9_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_NEON)   += arm/highbd_loopfilter_neon.c

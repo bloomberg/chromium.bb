@@ -32,6 +32,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -172,7 +174,7 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
         FROM_HERE,
         base::BindLambdaForTesting(
             [&, app_id, url, code, callback = std::move(callback)]() mutable {
-              auto web_app = test::CreateWebApp(url, Source::kPolicy);
+              auto web_app = test::CreateWebApp(url, WebAppManagement::kPolicy);
               RegisterApp(std::move(web_app));
               std::move(callback).Run(app_id, code, OsHooksErrors());
             }));
@@ -189,10 +191,10 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
     NOTREACHED();
   }
 
-  void UninstallExternalWebApp(
-      const AppId& app_id,
-      webapps::WebappUninstallSource external_install_source,
-      UninstallWebAppCallback callback) override {
+  void UninstallExternalWebApp(const AppId& app_id,
+                               WebAppManagement::Type external_source,
+                               webapps::WebappUninstallSource uninstall_source,
+                               UninstallWebAppCallback callback) override {
     UnregisterApp(app_id);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -202,7 +204,8 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
 
   void UninstallExternalWebAppByUrl(
       const GURL& app_url,
-      webapps::WebappUninstallSource external_install_source,
+      WebAppManagement::Type external_source,
+      webapps::WebappUninstallSource uninstall_source,
       UninstallWebAppCallback callback) override {
     DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
     uninstall_external_web_app_urls_.push_back(app_url);
@@ -316,9 +319,11 @@ class ExternallyManagedAppInstallTaskTest
     auto ui_manager = std::make_unique<FakeWebAppUiManager>();
     ui_manager_ = ui_manager.get();
 
+    auto command_manager = std::make_unique<WebAppCommandManager>();
+
     auto sync_bridge = std::make_unique<WebAppSyncBridge>(registrar.get());
     sync_bridge->SetSubsystems(&provider->GetDatabaseFactory(),
-                               install_manager_);
+                               install_manager_, command_manager.get());
 
     provider->SetRegistrar(std::move(registrar));
     provider->SetSyncBridge(std::move(sync_bridge));
@@ -326,6 +331,7 @@ class ExternallyManagedAppInstallTaskTest
     provider->SetInstallFinalizer(std::move(install_finalizer));
     provider->SetWebAppUiManager(std::move(ui_manager));
     provider->SetOsIntegrationManager(std::move(os_integration_manager));
+    provider->SetCommandManager(std::move(command_manager));
 
     provider->Start();
     // Start only WebAppInstallManager for real.
@@ -435,7 +441,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallSucceeds) {
 
             EXPECT_EQ(web_app_info().user_display_mode, DisplayMode::kBrowser);
             EXPECT_EQ(webapps::WebappInstallSource::INTERNAL_DEFAULT,
-                      finalize_options().install_source);
+                      finalize_options().install_surface);
 
             run_loop.Quit();
           }));
@@ -544,7 +550,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallPreinstalledApp) {
                       EXPECT_TRUE(result.app_id.has_value());
 
                       EXPECT_EQ(webapps::WebappInstallSource::INTERNAL_DEFAULT,
-                                finalize_options().install_source);
+                                finalize_options().install_surface);
                       run_loop.Quit();
                     }));
 
@@ -570,7 +576,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallAppFromPolicy) {
                       EXPECT_TRUE(result.app_id.has_value());
 
                       EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_POLICY,
-                                finalize_options().install_source);
+                                finalize_options().install_surface);
                       run_loop.Quit();
                     }));
 
@@ -600,7 +606,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallPlaceholder) {
 
             EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
             EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_POLICY,
-                      finalize_options().install_source);
+                      finalize_options().install_surface);
             const WebAppInstallInfo& web_app_info =
                 finalizer()->web_app_info_list().at(0);
 
@@ -638,7 +644,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallPlaceholderDefaultSource) {
 
             EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
             EXPECT_EQ(webapps::WebappInstallSource::EXTERNAL_DEFAULT,
-                      finalize_options().install_source);
+                      finalize_options().install_surface);
             const WebAppInstallInfo& web_app_info =
                 finalizer()->web_app_info_list().at(0);
 
@@ -1012,7 +1018,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallWithWebAppInfoSucceeds) {
 
         EXPECT_EQ(web_app_info().user_display_mode, DisplayMode::kStandalone);
         EXPECT_EQ(webapps::WebappInstallSource::SYSTEM_DEFAULT,
-                  finalize_options().install_source);
+                  finalize_options().install_surface);
 
         run_loop.Quit();
       }));

@@ -749,7 +749,7 @@ angle::Result CreateRenderPass2(Context *context,
                                 const VkRenderPassMultiviewCreateInfo &multiviewInfo,
                                 bool unresolveDepth,
                                 bool unresolveStencil,
-                                bool isRenderToTexture,
+                                bool isRenderToTextureThroughExtension,
                                 uint8_t renderToTextureSamples,
                                 RenderPass *renderPass)
 {
@@ -845,14 +845,14 @@ angle::Result CreateRenderPass2(Context *context,
     // Append the depth/stencil resolve attachment to the pNext chain of last subpass, if any.
     if (depthStencilResolve.pDepthStencilResolveAttachment != nullptr)
     {
-        ASSERT(!isRenderToTexture);
+        ASSERT(!isRenderToTextureThroughExtension);
         subpassDescriptions.back().pNext = &depthStencilResolve;
     }
     else
     {
         RendererVk *renderer = context->getRenderer();
 
-        ASSERT(isRenderToTexture);
+        ASSERT(isRenderToTextureThroughExtension);
         ASSERT(renderer->getFeatures().supportsMultisampledRenderToSingleSampled.enabled);
         ASSERT(subpassDescriptions.size() == 1);
 
@@ -886,8 +886,29 @@ angle::Result CreateRenderPass2(Context *context,
 }
 
 void UpdateRenderPassColorPerfCounters(const VkRenderPassCreateInfo &createInfo,
-                                       const VkSubpassDescription &subpass,
+                                       FramebufferAttachmentMask depthStencilAttachmentIndices,
                                        RenderPassPerfCounters *countersOut)
+{
+    for (uint32_t index = 0; index < createInfo.attachmentCount; index++)
+    {
+        if (depthStencilAttachmentIndices.test(index))
+        {
+            continue;
+        }
+
+        VkAttachmentLoadOp loadOp   = createInfo.pAttachments[index].loadOp;
+        VkAttachmentStoreOp storeOp = createInfo.pAttachments[index].storeOp;
+        countersOut->colorLoadOpClears += loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
+        countersOut->colorLoadOpLoads += loadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
+        countersOut->colorLoadOpNones += loadOp == VK_ATTACHMENT_LOAD_OP_NONE_EXT ? 1 : 0;
+        countersOut->colorStoreOpStores += storeOp == VK_ATTACHMENT_STORE_OP_STORE ? 1 : 0;
+        countersOut->colorStoreOpNones += storeOp == VK_ATTACHMENT_STORE_OP_NONE_EXT ? 1 : 0;
+    }
+}
+
+void UpdateSubpassColorPerfCounters(const VkRenderPassCreateInfo &createInfo,
+                                    const VkSubpassDescription &subpass,
+                                    RenderPassPerfCounters *countersOut)
 {
     // Color resolve counters.
     if (subpass.pResolveAttachments == nullptr)
@@ -918,15 +939,18 @@ void UpdateRenderPassDepthStencilPerfCounters(const VkRenderPassCreateInfo &crea
     // Depth/stencil ops counters.
     const VkAttachmentDescription &ds = createInfo.pAttachments[renderPassIndex];
 
-    countersOut->depthClears += ds.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
-    countersOut->depthLoads += ds.loadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
-    countersOut->depthStores +=
-        ds.storeOp == static_cast<uint16_t>(RenderPassStoreOp::Store) ? 1 : 0;
+    countersOut->depthLoadOpClears += ds.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
+    countersOut->depthLoadOpLoads += ds.loadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
+    countersOut->depthLoadOpNones += ds.loadOp == VK_ATTACHMENT_LOAD_OP_NONE_EXT ? 1 : 0;
+    countersOut->depthStoreOpStores += ds.storeOp == VK_ATTACHMENT_STORE_OP_STORE ? 1 : 0;
+    countersOut->depthStoreOpNones += ds.storeOp == VK_ATTACHMENT_STORE_OP_NONE_EXT ? 1 : 0;
 
-    countersOut->stencilClears += ds.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
-    countersOut->stencilLoads += ds.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
-    countersOut->stencilStores +=
-        ds.stencilStoreOp == static_cast<uint16_t>(RenderPassStoreOp::Store) ? 1 : 0;
+    countersOut->stencilLoadOpClears += ds.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
+    countersOut->stencilLoadOpLoads += ds.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
+    countersOut->stencilLoadOpNones += ds.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_NONE_EXT ? 1 : 0;
+    countersOut->stencilStoreOpStores += ds.stencilStoreOp == VK_ATTACHMENT_STORE_OP_STORE ? 1 : 0;
+    countersOut->stencilStoreOpNones +=
+        ds.stencilStoreOp == VK_ATTACHMENT_STORE_OP_NONE_EXT ? 1 : 0;
 
     // Depth/stencil read-only mode.
     countersOut->readOnlyDepthStencil +=
@@ -954,14 +978,16 @@ void UpdateRenderPassDepthStencilResolvePerfCounters(
     const VkAttachmentDescription &dsResolve = createInfo.pAttachments[resolveRenderPassIndex];
 
     // Resolve depth/stencil ops counters.
-    countersOut->depthClears += dsResolve.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
-    countersOut->depthLoads += dsResolve.loadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
-    countersOut->depthStores +=
+    countersOut->depthLoadOpClears += dsResolve.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
+    countersOut->depthLoadOpLoads += dsResolve.loadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
+    countersOut->depthStoreOpStores +=
         dsResolve.storeOp == static_cast<uint16_t>(RenderPassStoreOp::Store) ? 1 : 0;
 
-    countersOut->stencilClears += dsResolve.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
-    countersOut->stencilLoads += dsResolve.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
-    countersOut->stencilStores +=
+    countersOut->stencilLoadOpClears +=
+        dsResolve.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? 1 : 0;
+    countersOut->stencilLoadOpLoads +=
+        dsResolve.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_LOAD ? 1 : 0;
+    countersOut->stencilStoreOpStores +=
         dsResolve.stencilStoreOp == static_cast<uint16_t>(RenderPassStoreOp::Store) ? 1 : 0;
 
     // Depth/stencil resolve counters.
@@ -985,9 +1011,9 @@ void UpdateRenderPassPerfCounters(
     {
         const VkSubpassDescription &subpass = createInfo.pSubpasses[subpassIndex];
 
-        // Color counters.  Note: currently there are no counters for load/store ops of color
-        // attachments, so there's no risk of double counting.
-        UpdateRenderPassColorPerfCounters(createInfo, subpass, countersOut);
+        // Color counters.
+        // NOTE: For simplicity, this will accumulate counts for all subpasses in the renderpass.
+        UpdateSubpassColorPerfCounters(createInfo, subpass, countersOut);
 
         // Record index of depth/stencil attachment.
         if (subpass.pDepthStencilAttachment != nullptr)
@@ -999,6 +1025,8 @@ void UpdateRenderPassPerfCounters(
             }
         }
     }
+
+    UpdateRenderPassColorPerfCounters(createInfo, depthStencilAttachmentIndices, countersOut);
 
     // Depth/stencil counters.  Currently, both subpasses use the same depth/stencil attachment (if
     // any).
@@ -1030,11 +1058,15 @@ angle::Result InitializeRenderPassFromDesc(ContextVk *contextVk,
         VK_IMAGE_LAYOUT_UNDEFINED, 0};
 
     const bool needInputAttachments = desc.getFramebufferFetchMode();
-    const bool isRenderToTexture    = desc.isRenderToTexture();
+    const bool isRenderToTextureThroughExtension =
+        desc.isRenderToTexture() &&
+        contextVk->getFeatures().supportsMultisampledRenderToSingleSampled.enabled;
+    const bool isRenderToTextureThroughEmulation =
+        desc.isRenderToTexture() && !isRenderToTextureThroughExtension;
 
     const uint8_t descSamples            = desc.samples();
-    const uint8_t attachmentSamples      = isRenderToTexture ? 1 : descSamples;
-    const uint8_t renderToTextureSamples = isRenderToTexture ? descSamples : 1;
+    const uint8_t attachmentSamples      = isRenderToTextureThroughExtension ? 1 : descSamples;
+    const uint8_t renderToTextureSamples = isRenderToTextureThroughExtension ? descSamples : 1;
 
     // Unpack the packed and split representation into the format required by Vulkan.
     gl::DrawBuffersVector<VkAttachmentReference> colorAttachmentRefs;
@@ -1156,9 +1188,13 @@ angle::Result InitializeRenderPassFromDesc(ContextVk *contextVk,
             colorResolveAttachmentRefs.push_back(colorRef);
         }
 
+        // When multisampled-render-to-texture is used, invalidating an attachment invalidates both
+        // the multisampled and the resolve attachments.  Otherwise, the resolve attachment is
+        // independent of the multisampled attachment, and is never invalidated.
         UnpackColorResolveAttachmentDesc(
             &attachmentDescs[attachmentCount.get()], attachmentFormatID,
-            desc.hasColorUnresolveAttachment(colorIndexGL), isColorInvalidated.test(colorIndexGL));
+            desc.hasColorUnresolveAttachment(colorIndexGL),
+            isColorInvalidated.test(colorIndexGL) && isRenderToTextureThroughEmulation);
 
         ++attachmentCount;
     }
@@ -1316,12 +1352,14 @@ angle::Result InitializeRenderPassFromDesc(ContextVk *contextVk,
     // If depth/stencil resolve is used, we need to create the render pass with
     // vkCreateRenderPass2KHR.  Same when using the VK_EXT_multisampled_render_to_single_sampled
     // extension.
-    if (depthStencilResolve.pDepthStencilResolveAttachment != nullptr || desc.isRenderToTexture())
+    if (depthStencilResolve.pDepthStencilResolveAttachment != nullptr ||
+        isRenderToTextureThroughExtension)
     {
         ANGLE_TRY(CreateRenderPass2(contextVk, createInfo, depthStencilResolve, multiviewInfo,
                                     desc.hasDepthUnresolveAttachment(),
-                                    desc.hasStencilUnresolveAttachment(), desc.isRenderToTexture(),
-                                    renderToTextureSamples, &renderPassHelper->getRenderPass()));
+                                    desc.hasStencilUnresolveAttachment(),
+                                    isRenderToTextureThroughExtension, renderToTextureSamples,
+                                    &renderPassHelper->getRenderPass()));
     }
     else
     {
@@ -1349,12 +1387,21 @@ void GetRenderPassAndUpdateCounters(ContextVk *contextVk,
         angle::VulkanPerfCounters &counters      = contextVk->getPerfCounters();
         const RenderPassPerfCounters &rpCounters = renderPassHelper->getPerfCounters();
 
-        counters.depthClears += rpCounters.depthClears;
-        counters.depthLoads += rpCounters.depthLoads;
-        counters.depthStores += rpCounters.depthStores;
-        counters.stencilClears += rpCounters.stencilClears;
-        counters.stencilLoads += rpCounters.stencilLoads;
-        counters.stencilStores += rpCounters.stencilStores;
+        counters.colorLoadOpClears += rpCounters.colorLoadOpClears;
+        counters.colorLoadOpLoads += rpCounters.colorLoadOpLoads;
+        counters.colorLoadOpNones += rpCounters.colorLoadOpNones;
+        counters.colorStoreOpStores += rpCounters.colorStoreOpStores;
+        counters.colorStoreOpNones += rpCounters.colorStoreOpNones;
+        counters.depthLoadOpClears += rpCounters.depthLoadOpClears;
+        counters.depthLoadOpLoads += rpCounters.depthLoadOpLoads;
+        counters.depthLoadOpNones += rpCounters.depthLoadOpNones;
+        counters.depthStoreOpStores += rpCounters.depthStoreOpStores;
+        counters.depthStoreOpNones += rpCounters.depthStoreOpNones;
+        counters.stencilLoadOpClears += rpCounters.stencilLoadOpClears;
+        counters.stencilLoadOpLoads += rpCounters.stencilLoadOpLoads;
+        counters.stencilLoadOpNones += rpCounters.stencilLoadOpNones;
+        counters.stencilStoreOpStores += rpCounters.stencilStoreOpStores;
+        counters.stencilStoreOpNones += rpCounters.stencilStoreOpNones;
         counters.colorAttachmentUnresolves += rpCounters.colorAttachmentUnresolves;
         counters.colorAttachmentResolves += rpCounters.colorAttachmentResolves;
         counters.depthAttachmentUnresolves += rpCounters.depthAttachmentUnresolves;
@@ -1412,6 +1459,92 @@ void InitializeSpecializationInfo(
     specializationInfoOut->pMapEntries   = specializationEntriesOut->data();
     specializationInfoOut->dataSize      = sizeof(specConsts);
     specializationInfoOut->pData         = &specConsts;
+}
+
+// Adjust border color value according to intended format.
+gl::ColorGeneric AdjustBorderColor(const angle::ColorGeneric &borderColorGeneric,
+                                   const angle::Format &format,
+                                   bool stencilMode)
+{
+    gl::ColorGeneric adjustedBorderColor = borderColorGeneric;
+
+    // Handle depth formats
+    if (format.hasDepthOrStencilBits())
+    {
+        if (stencilMode)
+        {
+            // Stencil component
+            adjustedBorderColor.colorUI.red = gl::clampForBitCount<unsigned int>(
+                borderColorGeneric.colorUI.red, format.stencilBits);
+        }
+        else
+        {
+            // Depth component
+            if (format.isUnorm())
+            {
+                adjustedBorderColor.colorF.red = gl::clamp01(borderColorGeneric.colorF.red);
+            }
+        }
+
+        return adjustedBorderColor;
+    }
+
+    // Handle LUMA formats
+    if (format.isLUMA() && format.alphaBits > 0)
+    {
+        if (format.luminanceBits > 0)
+        {
+            adjustedBorderColor.colorF.green = borderColorGeneric.colorF.alpha;
+        }
+        else
+        {
+            adjustedBorderColor.colorF.red = borderColorGeneric.colorF.alpha;
+        }
+
+        return adjustedBorderColor;
+    }
+
+    // Handle all other formats
+    if (format.isSint())
+    {
+        adjustedBorderColor.colorI.red =
+            gl::clampForBitCount<int>(borderColorGeneric.colorI.red, format.redBits);
+        adjustedBorderColor.colorI.green =
+            gl::clampForBitCount<int>(borderColorGeneric.colorI.green, format.greenBits);
+        adjustedBorderColor.colorI.blue =
+            gl::clampForBitCount<int>(borderColorGeneric.colorI.blue, format.blueBits);
+        adjustedBorderColor.colorI.alpha =
+            gl::clampForBitCount<int>(borderColorGeneric.colorI.alpha, format.alphaBits);
+    }
+    else if (format.isUint())
+    {
+        adjustedBorderColor.colorUI.red =
+            gl::clampForBitCount<unsigned int>(borderColorGeneric.colorUI.red, format.redBits);
+        adjustedBorderColor.colorUI.green =
+            gl::clampForBitCount<unsigned int>(borderColorGeneric.colorUI.green, format.greenBits);
+        adjustedBorderColor.colorUI.blue =
+            gl::clampForBitCount<unsigned int>(borderColorGeneric.colorUI.blue, format.blueBits);
+        adjustedBorderColor.colorUI.alpha =
+            gl::clampForBitCount<unsigned int>(borderColorGeneric.colorUI.alpha, format.alphaBits);
+    }
+    else if (format.isSnorm())
+    {
+        // clamp between -1.0f and 1.0f
+        adjustedBorderColor.colorF.red   = gl::clamp(borderColorGeneric.colorF.red, -1.0f, 1.0f);
+        adjustedBorderColor.colorF.green = gl::clamp(borderColorGeneric.colorF.green, -1.0f, 1.0f);
+        adjustedBorderColor.colorF.blue  = gl::clamp(borderColorGeneric.colorF.blue, -1.0f, 1.0f);
+        adjustedBorderColor.colorF.alpha = gl::clamp(borderColorGeneric.colorF.alpha, -1.0f, 1.0f);
+    }
+    else if (format.isUnorm())
+    {
+        // clamp between 0.0f and 1.0f
+        adjustedBorderColor.colorF.red   = gl::clamp01(borderColorGeneric.colorF.red);
+        adjustedBorderColor.colorF.green = gl::clamp01(borderColorGeneric.colorF.green);
+        adjustedBorderColor.colorF.blue  = gl::clamp01(borderColorGeneric.colorF.blue);
+        adjustedBorderColor.colorF.alpha = gl::clamp01(borderColorGeneric.colorF.alpha);
+    }
+
+    return adjustedBorderColor;
 }
 
 // Utility for setting a value on a packed 4-bit integer array.
@@ -2155,8 +2288,18 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
                             ->getFormat(mRenderPassDesc[colorIndexGL])
                             .getActualRenderableImageFormat()
                             .isInt());
-                state.blendEnable = VK_TRUE;
-                UnpackBlendAttachmentState(inputAndBlend.attachments[colorIndexGL], &state);
+
+                // The blend fixed-function is enabled with normal blend as well as advanced blend
+                // when the Vulkan extension is present.  When emulating advanced blend in the
+                // shader, the blend fixed-function must be disabled.
+                const PackedColorBlendAttachmentState &packedBlendState =
+                    inputAndBlend.attachments[colorIndexGL];
+                if (packedBlendState.colorBlendOp <= static_cast<uint8_t>(VK_BLEND_OP_MAX) ||
+                    contextVk->getFeatures().supportsBlendOperationAdvanced.enabled)
+                {
+                    state.blendEnable = VK_TRUE;
+                    UnpackBlendAttachmentState(packedBlendState, &state);
+                }
             }
         }
 
@@ -3303,15 +3446,21 @@ void SamplerDesc::update(ContextVk *contextVk,
 {
     const angle::FeaturesVk &featuresVk = contextVk->getFeatures();
     mMipLodBias                         = 0.0f;
-    for (size_t lodOffsetFeatureIdx = 0;
-         lodOffsetFeatureIdx < featuresVk.forceTextureLODOffset.size(); lodOffsetFeatureIdx++)
+    if (featuresVk.forceTextureLodOffset1.enabled)
     {
-        if (featuresVk.forceTextureLODOffset[lodOffsetFeatureIdx].enabled)
-        {
-            // Make sure only one forceTextureLODOffset feature is set.
-            ASSERT(mMipLodBias == 0.0f);
-            mMipLodBias = static_cast<float>(lodOffsetFeatureIdx + 1);
-        }
+        mMipLodBias = 1.0f;
+    }
+    else if (featuresVk.forceTextureLodOffset2.enabled)
+    {
+        mMipLodBias = 2.0f;
+    }
+    else if (featuresVk.forceTextureLodOffset3.enabled)
+    {
+        mMipLodBias = 3.0f;
+    }
+    else if (featuresVk.forceTextureLodOffset4.enabled)
+    {
+        mMipLodBias = 4.0f;
     }
 
     mMaxAnisotropy = samplerState.getMaxAnisotropy();
@@ -3370,13 +3519,11 @@ void SamplerDesc::update(ContextVk *contextVk,
     mBorderColorType =
         (samplerState.getBorderColor().type == angle::ColorGeneric::Type::Float) ? 0 : 1;
 
+    // Adjust border color according to intended format
     const vk::Format &vkFormat = contextVk->getRenderer()->getFormat(intendedFormatID);
-    mBorderColor               = samplerState.getBorderColor().colorF;
-    if (vkFormat.getIntendedFormatID() != angle::FormatID::NONE)
-    {
-        LoadTextureBorderFunctionInfo loadFunction = vkFormat.getTextureBorderLoadFunctions();
-        loadFunction.loadFunction(mBorderColor);
-    }
+    gl::ColorGeneric adjustedBorderColor =
+        AdjustBorderColor(samplerState.getBorderColor(), vkFormat.getIntendedFormat(), stencilMode);
+    mBorderColor = adjustedBorderColor.colorF;
 
     mReserved = 0;
 }
@@ -4036,13 +4183,5 @@ void DriverUniformsDescriptorSetCache::destroy(RendererVk *rendererVk)
 {
     accumulateCacheStats(rendererVk);
     mPayload.clear();
-}
-
-// DescriptorSetCache implementation.
-void DescriptorSetCache::destroy(RendererVk *rendererVk, VulkanCacheType cacheType)
-{
-    accumulateCacheStats(cacheType, rendererVk);
-    mPayload.clear();
-    mCacheStats.reset();
 }
 }  // namespace rx

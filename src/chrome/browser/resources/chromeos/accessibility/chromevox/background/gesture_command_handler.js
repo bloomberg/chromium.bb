@@ -5,6 +5,10 @@
 /**
  * @fileoverview Handles gesture-based commands.
  */
+import {EventGenerator} from '../../common/event_generator.js';
+
+import {GestureCommandData, GestureGranularity} from '../common/gesture_command_data.js';
+
 import {GestureInterface} from './gesture_interface.js';
 import {PointerHandler} from './pointer_handler.js';
 

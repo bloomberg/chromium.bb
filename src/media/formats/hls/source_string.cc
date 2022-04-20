@@ -9,8 +9,7 @@
 #include "base/types/pass_key.h"
 #include "media/formats/hls/parse_status.h"
 
-namespace media {
-namespace hls {
+namespace media::hls {
 
 SourceString SourceString::Create(base::PassKey<SourceLineIterator>,
                                   size_t line,
@@ -31,12 +30,6 @@ SourceString SourceString::CreateForTesting(size_t line,
 SourceString::SourceString(size_t line, size_t column, base::StringPiece str)
     : line_(line), column_(column), str_(str) {}
 
-SourceString::~SourceString() = default;
-SourceString::SourceString(const SourceString&) = default;
-SourceString::SourceString(SourceString&&) = default;
-SourceString& SourceString::operator=(const SourceString&) = default;
-SourceString& SourceString::operator=(SourceString&&) = default;
-
 SourceString SourceString::Substr(size_t pos, size_t count) const {
   const auto column = column_ + pos;
   return SourceString(line_, column, str_.substr(pos, count));
@@ -53,14 +46,6 @@ SourceString SourceString::Consume(size_t count) {
 
 SourceLineIterator::SourceLineIterator(base::StringPiece source)
     : current_line_(1), source_(source) {}
-
-SourceLineIterator::~SourceLineIterator() = default;
-SourceLineIterator::SourceLineIterator(const SourceLineIterator&) = default;
-SourceLineIterator::SourceLineIterator(SourceLineIterator&&) = default;
-SourceLineIterator& SourceLineIterator::operator=(const SourceLineIterator&) =
-    default;
-SourceLineIterator& SourceLineIterator::operator=(SourceLineIterator&&) =
-    default;
 
 ParseStatus::Or<SourceString> SourceLineIterator::Next() {
   if (source_.empty()) {
@@ -90,5 +75,4 @@ ParseStatus::Or<SourceString> SourceLineIterator::Next() {
   return SourceString::Create({}, line_number, line_content);
 }
 
-}  // namespace hls
-}  // namespace media
+}  // namespace media::hls

@@ -5,12 +5,14 @@
 #include "content/browser/webid/federated_auth_request_impl.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/webid/fake_identity_request_dialog_controller.h"
 #include "content/browser/webid/fedcm_metrics.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/webid/webid_utils.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "ui/accessibility/ax_mode.h"
@@ -46,6 +49,10 @@ static constexpr base::TimeDelta kIdTokenRequestDelay = base::Seconds(3);
 // for a successful flow based on `Blink.FedCm.Timing.TurnaroundTime`.
 // https://crbug.com/1298316.
 static constexpr base::TimeDelta kRequestRejectionDelay = base::Seconds(60);
+
+// Maximum number of provider URLs in the manifest list.
+// TODO(cbiesinger): Determine what the right number is.
+static constexpr size_t kMaxProvidersInManifestList = 1ul;
 
 std::string FormatRequestParamsWithoutScope(const std::string& client_id,
                                             const std::string& nonce,
@@ -88,6 +95,23 @@ std::string GetConsoleErrorMessage(FederatedAuthRequestResult status) {
       return "Only one navigator.credentials.get request may be outstanding at "
              "one time.";
     }
+    case FederatedAuthRequestResult::kErrorFetchingManifestListHttpNotFound: {
+      return "The provider's FedCM manifest list file cannot be found.";
+    }
+    case FederatedAuthRequestResult::kErrorFetchingManifestListNoResponse: {
+      return "The provider's FedCM manifest list file fetch resulted in an "
+             "error response code.";
+    }
+    case FederatedAuthRequestResult::
+        kErrorFetchingManifestListInvalidResponse: {
+      return "Provider's FedCM manifest list file is invalid.";
+    }
+    case FederatedAuthRequestResult::kErrorManifestNotInManifestList: {
+      return "Provider's FedCM manifest not listed in its manifest list.";
+    }
+    case FederatedAuthRequestResult::kErrorManifestListTooBig: {
+      return "Provider's FedCM manifest list contains too many providers.";
+    }
     case FederatedAuthRequestResult::kErrorFetchingManifestHttpNotFound: {
       return "The provider's FedCM manifest configuration cannot be found.";
     }
@@ -113,12 +137,6 @@ std::string GetConsoleErrorMessage(FederatedAuthRequestResult status) {
         kErrorClientMetadataMissingPrivacyPolicyUrl: {
       return "Provider's client metadata is missing or has an invalid privacy "
              "policy url.";
-    }
-    case FederatedAuthRequestResult::kErrorFetchingSignin: {
-      return "Error attempting to reach the provider's sign-in endpoint.";
-    }
-    case FederatedAuthRequestResult::kErrorInvalidSigninResponse: {
-      return "Provider's sign-in response is invalid.";
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound: {
       return "The provider's accounts list endpoint cannot be found.";
@@ -172,16 +190,15 @@ RequestIdTokenStatus FederatedAuthRequestResultToRequestIdTokenStatus(
     case FederatedAuthRequestResult::kErrorTooManyRequests: {
       return RequestIdTokenStatus::kErrorTooManyRequests;
     }
-    case FederatedAuthRequestResult::kErrorFetchingSignin: {
-      return RequestIdTokenStatus::kErrorFetchingSignin;
-    }
-    case FederatedAuthRequestResult::kErrorInvalidSigninResponse: {
-      return RequestIdTokenStatus::kErrorInvalidSigninResponse;
-    }
     case FederatedAuthRequestResult::kErrorCanceled: {
       return RequestIdTokenStatus::kErrorCanceled;
     }
     case FederatedAuthRequestResult::kErrorDisabledInSettings:
+    case FederatedAuthRequestResult::kErrorFetchingManifestListHttpNotFound:
+    case FederatedAuthRequestResult::kErrorFetchingManifestListNoResponse:
+    case FederatedAuthRequestResult::kErrorFetchingManifestListInvalidResponse:
+    case FederatedAuthRequestResult::kErrorManifestNotInManifestList:
+    case FederatedAuthRequestResult::kErrorManifestListTooBig:
     case FederatedAuthRequestResult::kErrorFetchingManifestHttpNotFound:
     case FederatedAuthRequestResult::kErrorFetchingManifestNoResponse:
     case FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse:
@@ -298,8 +315,7 @@ void FederatedAuthRequestImpl::RequestIdToken(
 
   request_dialog_controller_ = CreateDialogController();
 
-  FetchManifest(base::BindOnce(&FederatedAuthRequestImpl::OnManifestFetched,
-                               weak_ptr_factory_.GetWeakPtr()));
+  FetchManifest(kForToken);
 }
 
 void FederatedAuthRequestImpl::CancelTokenRequest() {
@@ -383,9 +399,7 @@ void FederatedAuthRequestImpl::Revoke(
     return;
   }
 
-  FetchManifest(
-      base::BindOnce(&FederatedAuthRequestImpl::OnManifestFetchedForRevoke,
-                     weak_ptr_factory_.GetWeakPtr()));
+  FetchManifest(kForRevoke);
 }
 
 void FederatedAuthRequestImpl::Logout(
@@ -482,8 +496,7 @@ bool FederatedAuthRequestImpl::IsEndpointUrlValid(const GURL& endpoint_url) {
   return url::Origin::Create(provider_).IsSameOriginWith(endpoint_url);
 }
 
-void FederatedAuthRequestImpl::FetchManifest(
-    IdpNetworkRequestManager::FetchManifestCallback callback) {
+void FederatedAuthRequestImpl::FetchManifest(FetchManifestType type) {
   absl::optional<int> icon_ideal_size = absl::nullopt;
   absl::optional<int> icon_minimum_size = absl::nullopt;
   if (request_dialog_controller_) {
@@ -491,8 +504,157 @@ void FederatedAuthRequestImpl::FetchManifest(
     icon_minimum_size = request_dialog_controller_->GetBrandIconMinimumSize();
   }
 
-  network_manager_->FetchManifest(icon_ideal_size, icon_minimum_size,
-                                  std::move(callback));
+  IdpNetworkRequestManager::FetchManifestCallback manifest_callback;
+  IdpNetworkRequestManager::FetchManifestListCallback manifest_list_callback;
+  switch (type) {
+    case kForToken: {
+      manifest_callback =
+          base::BindOnce(&FederatedAuthRequestImpl::OnManifestFetched,
+                         weak_ptr_factory_.GetWeakPtr());
+      manifest_list_callback =
+          base::BindOnce(&FederatedAuthRequestImpl::OnManifestListFetched,
+                         weak_ptr_factory_.GetWeakPtr());
+      break;
+    }
+    case kForRevoke: {
+      manifest_callback =
+          base::BindOnce(&FederatedAuthRequestImpl::OnManifestFetchedForRevoke,
+                         weak_ptr_factory_.GetWeakPtr());
+      manifest_list_callback = base::BindOnce(
+          &FederatedAuthRequestImpl::OnManifestListFetchedForRevoke,
+          weak_ptr_factory_.GetWeakPtr());
+      break;
+    }
+  }
+  if (IsFedCmManifestValidationEnabled()) {
+    network_manager_->FetchManifestList(std::move(manifest_list_callback));
+  } else {
+    manifest_list_checked_ = true;
+  }
+  // network_manager_ can be null here during tests when FetchManifestList
+  // synchronously calls the callback with an error, in which case CleanUp()
+  // will set the network_manager_ to null. If that happens we can safely
+  // skip calling FetchManifest.
+  if (network_manager_) {
+    network_manager_->FetchManifest(icon_ideal_size, icon_minimum_size,
+                                    std::move(manifest_callback));
+  }
+}
+
+void FederatedAuthRequestImpl::OnManifestListFetched(
+    IdpNetworkRequestManager::FetchStatus status,
+    const std::set<std::string>& urls) {
+  switch (status) {
+    case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
+      RecordRequestIdTokenStatus(IdTokenStatus::kManifestListHttpNotFound,
+                                 render_frame_host_->GetPageUkmSourceId());
+      CompleteRequest(
+          FederatedAuthRequestResult::kErrorFetchingManifestListHttpNotFound,
+          "",
+          /*should_call_callback=*/false);
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kNoResponseError: {
+      RecordRequestIdTokenStatus(IdTokenStatus::kManifestListNoResponse,
+                                 render_frame_host_->GetPageUkmSourceId());
+      CompleteRequest(
+          FederatedAuthRequestResult::kErrorFetchingManifestListNoResponse, "",
+          /*should_call_callback=*/false);
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kInvalidResponseError: {
+      RecordRequestIdTokenStatus(IdTokenStatus::kManifestListInvalidResponse,
+                                 render_frame_host_->GetPageUkmSourceId());
+      CompleteRequest(
+          FederatedAuthRequestResult::kErrorFetchingManifestListInvalidResponse,
+          "",
+          /*should_call_callback=*/false);
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kInvalidRequestError: {
+      NOTREACHED();
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kSuccess: {
+      // Intentional fall-through.
+    }
+  }
+
+  if (urls.size() > kMaxProvidersInManifestList) {
+    RecordRequestIdTokenStatus(IdTokenStatus::kManifestListTooBig,
+                               render_frame_host_->GetPageUkmSourceId());
+    CompleteRequest(FederatedAuthRequestResult::kErrorManifestListTooBig, "",
+                    /*should_call_callback=*/false);
+    return;
+  }
+
+  if (urls.count(provider_.spec()) == 0) {
+    RecordRequestIdTokenStatus(IdTokenStatus::kManifestNotInManifestList,
+                               render_frame_host_->GetPageUkmSourceId());
+    CompleteRequest(FederatedAuthRequestResult::kErrorManifestNotInManifestList,
+                    "",
+                    /*should_call_callback=*/false);
+    return;
+  }
+
+  manifest_list_checked_ = true;
+  if (idp_metadata_)
+    OnManifestReady(*idp_metadata_);
+}
+
+void FederatedAuthRequestImpl::OnManifestListFetchedForRevoke(
+    IdpNetworkRequestManager::FetchStatus status,
+    const std::set<std::string>& urls) {
+  switch (status) {
+    case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
+      RecordRevokeStatus(RevokeStatusForMetrics::kManifestListHttpNotFound,
+                         render_frame_host_->GetPageUkmSourceId());
+      CompleteRevokeRequest(RevokeStatus::kError,
+                            /*should_call_callback=*/false);
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kNoResponseError: {
+      RecordRevokeStatus(RevokeStatusForMetrics::kManifestListNoResponse,
+                         render_frame_host_->GetPageUkmSourceId());
+      CompleteRevokeRequest(RevokeStatus::kError,
+                            /*should_call_callback=*/false);
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kInvalidResponseError: {
+      RecordRevokeStatus(RevokeStatusForMetrics::kManifestListInvalidResponse,
+                         render_frame_host_->GetPageUkmSourceId());
+      CompleteRevokeRequest(RevokeStatus::kError,
+                            /*should_call_callback=*/false);
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kInvalidRequestError: {
+      NOTREACHED();
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kSuccess: {
+      // Intentional fall-through.
+    }
+  }
+
+  if (urls.size() > kMaxProvidersInManifestList) {
+    RecordRevokeStatus(RevokeStatusForMetrics::kManifestListTooBig,
+                       render_frame_host_->GetPageUkmSourceId());
+    CompleteRevokeRequest(RevokeStatus::kError,
+                          /*should_call_callback=*/false);
+    return;
+  }
+
+  if (urls.count(provider_.spec()) == 0) {
+    RecordRevokeStatus(RevokeStatusForMetrics::kManifestNotInManifestList,
+                       render_frame_host_->GetPageUkmSourceId());
+    CompleteRevokeRequest(RevokeStatus::kError,
+                          /*should_call_callback=*/false);
+    return;
+  }
+
+  manifest_list_checked_ = true;
+  if (idp_metadata_)
+    OnManifestReadyForRevoke(*idp_metadata_);
 }
 
 void FederatedAuthRequestImpl::OnManifestFetched(
@@ -536,7 +698,14 @@ void FederatedAuthRequestImpl::OnManifestFetched(
   endpoints_.token = ResolveManifestUrl(endpoints.token);
   endpoints_.accounts = ResolveManifestUrl(endpoints.accounts);
   endpoints_.client_metadata = ResolveManifestUrl(endpoints.client_metadata);
+  idp_metadata_ = idp_metadata;
 
+  if (manifest_list_checked_)
+    OnManifestReady(idp_metadata);
+}
+
+void FederatedAuthRequestImpl::OnManifestReady(
+    IdentityProviderMetadata idp_metadata) {
   bool is_token_valid = IsEndpointUrlValid(endpoints_.token);
   bool is_accounts_valid = IsEndpointUrlValid(endpoints_.accounts);
   bool is_client_metadata_valid =
@@ -607,8 +776,8 @@ void FederatedAuthRequestImpl::OnManifestFetchedForRevoke(
     }
   }
 
-  GURL revocation_url = ResolveManifestUrl(endpoints.revocation);
-  if (!IsEndpointUrlValid(revocation_url)) {
+  endpoints_.revoke = ResolveManifestUrl(endpoints.revocation);
+  if (!IsEndpointUrlValid(endpoints_.revoke)) {
     render_frame_host_->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kError,
         "Manifest is missing or has an invalid URL for the following required "
@@ -619,8 +788,16 @@ void FederatedAuthRequestImpl::OnManifestFetchedForRevoke(
                           /*should_call_callback=*/false);
     return;
   }
+
+  idp_metadata_ = idp_metadata;
+  if (manifest_list_checked_)
+    OnManifestReadyForRevoke(idp_metadata);
+}
+
+void FederatedAuthRequestImpl::OnManifestReadyForRevoke(
+    IdentityProviderMetadata idp_metadata) {
   network_manager_->SendRevokeRequest(
-      revocation_url, client_id_, hint_,
+      endpoints_.revoke, client_id_, hint_,
       base::BindOnce(&FederatedAuthRequestImpl::OnRevokeResponse,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -639,8 +816,8 @@ void FederatedAuthRequestImpl::OnRevokeResponse(
                                                              idp_origin);
     }
     if (GetSharingPermissionContext()) {
-      GetSharingPermissionContext()->RevokeSharingPermissionForAccount(
-          idp_origin, origin_, hint_);
+      GetSharingPermissionContext()->RevokeSharingPermission(origin_,
+                                                             idp_origin, hint_);
     }
     if (GetActiveSessionPermissionContext()) {
       GetActiveSessionPermissionContext()->RevokeActiveSession(
@@ -668,6 +845,8 @@ void FederatedAuthRequestImpl::CompleteRevokeRequest(
   provider_ = GURL();
   hint_ = std::string();
   client_id_ = std::string();
+  manifest_list_checked_ = false;
+  idp_metadata_.reset();
 
   if (should_run_callback)
     std::move(revoke_callback_).Run(status);
@@ -826,8 +1005,8 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
         // Consider this a sign-in if we have seen a successful sign-up for
         // this account before.
         if (GetSharingPermissionContext() &&
-            GetSharingPermissionContext()->HasSharingPermissionForAccount(
-                url::Origin::Create(provider_), origin_, account.id)) {
+            GetSharingPermissionContext()->HasSharingPermission(
+                origin_, url::Origin::Create(provider_), account.id)) {
           login_state = LoginState::kSignIn;
         }
         account.login_state = login_state;
@@ -972,8 +1151,8 @@ void FederatedAuthRequestImpl::CompleteIdTokenRequest(
         // moot since we don't actually inspect the returned idtoken.
         // https://crbug.com/1199088
         CHECK(!account_id_.empty());
-        GetSharingPermissionContext()->GrantSharingPermissionForAccount(
-            url::Origin::Create(provider_), origin_, account_id_);
+        GetSharingPermissionContext()->GrantSharingPermission(
+            origin_, url::Origin::Create(provider_), account_id_);
       }
 
       if (GetActiveSessionPermissionContext()) {
@@ -1076,6 +1255,8 @@ void FederatedAuthRequestImpl::CleanUp() {
   show_accounts_dialog_time_ = base::TimeTicks();
   select_account_time_ = base::TimeTicks();
   id_token_response_time_ = base::TimeTicks();
+  manifest_list_checked_ = false;
+  idp_metadata_.reset();
 }
 
 void FederatedAuthRequestImpl::AddInspectorIssue(
@@ -1119,6 +1300,17 @@ std::unique_ptr<IdentityRequestDialogController>
 FederatedAuthRequestImpl::CreateDialogController() {
   if (mock_dialog_controller_)
     return std::move(mock_dialog_controller_);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeUIForFedCM)) {
+    std::string selected_account =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kUseFakeUIForFedCM);
+    return std::make_unique<FakeIdentityRequestDialogController>(
+        selected_account.empty()
+            ? absl::nullopt
+            : absl::optional<std::string>(selected_account));
+  }
 
   return GetContentClient()->browser()->CreateIdentityRequestDialogController();
 }

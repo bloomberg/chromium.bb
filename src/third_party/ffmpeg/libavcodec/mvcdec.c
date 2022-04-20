@@ -24,10 +24,13 @@
  * Silicon Graphics Motion Video Compressor 1 & 2 decoder
  */
 
+#include "config_components.h"
+
 #include "libavutil/intreadwrite.h"
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "internal.h"
 
 typedef struct MvcContext {
@@ -253,29 +256,29 @@ static int mvc_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 }
 
 #if CONFIG_MVC1_DECODER
-const AVCodec ff_mvc1_decoder = {
-    .name           = "mvc1",
-    .long_name      = NULL_IF_CONFIG_SMALL("Silicon Graphics Motion Video Compressor 1"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_MVC1,
+const FFCodec ff_mvc1_decoder = {
+    .p.name         = "mvc1",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Silicon Graphics Motion Video Compressor 1"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_MVC1,
     .priv_data_size = sizeof(MvcContext),
     .init           = mvc_decode_init,
     .decode         = mvc_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 
 #if CONFIG_MVC2_DECODER
-const AVCodec ff_mvc2_decoder = {
-    .name           = "mvc2",
-    .long_name      = NULL_IF_CONFIG_SMALL("Silicon Graphics Motion Video Compressor 2"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_MVC2,
+const FFCodec ff_mvc2_decoder = {
+    .p.name         = "mvc2",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Silicon Graphics Motion Video Compressor 2"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_MVC2,
     .priv_data_size = sizeof(MvcContext),
     .init           = mvc_decode_init,
     .decode         = mvc_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif

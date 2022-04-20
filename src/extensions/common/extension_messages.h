@@ -364,6 +364,13 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_PostMessage,
                      extensions::PortId /* port_id */,
                      extensions::Message)
 
+// Send a message to tell the browser that one of the listeners for a message
+// indicated they are intending to reply later. The handle is the value returned
+// by ExtensionHostMsg_OpenChannelTo*.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_ResponsePending,
+                     extensions::PortContext /* port_context */,
+                     extensions::PortId /*port_id */)
+
 // Used to get the extension message bundle.
 IPC_SYNC_MESSAGE_CONTROL1_1(
     ExtensionHostMsg_GetMessageBundle,
@@ -451,14 +458,15 @@ IPC_MESSAGE_CONTROL1(ExtensionHostMsg_RequestWorker,
                      extensions::mojom::RequestParams)
 
 // The browser sends this message in response to all service worker extension
-// api calls. The response data (if any) is one of the base::Value subclasses,
-// wrapped as the first element in a ListValue.
-IPC_MESSAGE_CONTROL5(ExtensionMsg_ResponseWorker,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     bool /* success */,
-                     base::ListValue /* response wrapper (see comment above) */,
-                     std::string /* error */)
+// api calls. The response data (if any) is the first element in the Value::List
+// parameter.
+IPC_MESSAGE_CONTROL5(
+    ExtensionMsg_ResponseWorker,
+    int /* thread_id */,
+    int /* request_id */,
+    bool /* success */,
+    base::Value::List /* response wrapper (see comment above) */,
+    std::string /* error */)
 
 // Asks the browser to increment the pending activity count for
 // the worker with version id |service_worker_version_id|.

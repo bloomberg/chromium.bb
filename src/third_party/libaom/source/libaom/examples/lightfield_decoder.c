@@ -306,8 +306,11 @@ int main(int argc, char **argv) {
         // Write out the tile list.
         if (tile_list_cnt) {
           out = &output;
-          if (output_bit_depth != 0)
-            aom_shift_img(output_bit_depth, &out, &output_shifted);
+          if (output_bit_depth != 0) {
+            if (!aom_shift_img(output_bit_depth, &out, &output_shifted)) {
+              die("Error allocating image");
+            }
+          }
           img_write_to_file(out, outfile, output_format);
           tile_list_writes++;
         }
@@ -338,8 +341,11 @@ int main(int argc, char **argv) {
                 &output, &tile_idx, &output_bit_depth, &img, output_format);
     if (output_format == YUV1D) {
       out = img;
-      if (output_bit_depth != 0)
-        aom_shift_img(output_bit_depth, &out, &output_shifted);
+      if (output_bit_depth != 0) {
+        if (!aom_shift_img(output_bit_depth, &out, &output_shifted)) {
+          die("Error allocating image");
+        }
+      }
       aom_img_write(out, outfile);
     }
   }
@@ -348,8 +354,11 @@ int main(int argc, char **argv) {
     // Write out the last tile list.
     if (tile_list_writes < tile_list_cnt) {
       out = &output;
-      if (output_bit_depth != 0)
-        aom_shift_img(output_bit_depth, &out, &output_shifted);
+      if (output_bit_depth != 0) {
+        if (!aom_shift_img(output_bit_depth, &out, &output_shifted)) {
+          die("Error allocating image");
+        }
+      }
       img_write_to_file(out, outfile, output_format);
     }
   }

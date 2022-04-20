@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_METAL_DEVICEMTL_H_
-#define DAWNNATIVE_METAL_DEVICEMTL_H_
+#ifndef SRC_DAWN_NATIVE_METAL_DEVICEMTL_H_
+#define SRC_DAWN_NATIVE_METAL_DEVICEMTL_H_
 
 #include "dawn/native/dawn_platform.h"
 
@@ -43,7 +43,7 @@ namespace dawn::native::metal {
                                                  const DeviceDescriptor* descriptor);
         ~Device() override;
 
-        MaybeError Initialize();
+        MaybeError Initialize(const DeviceDescriptor* descriptor);
 
         MaybeError TickImpl() override;
 
@@ -54,8 +54,7 @@ namespace dawn::native::metal {
         MaybeError SubmitPendingCommandBuffer();
 
         Ref<Texture> CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
-                                                    IOSurfaceRef ioSurface,
-                                                    uint32_t plane);
+                                                    IOSurfaceRef ioSurface);
         void WaitForCommandsToBeScheduled();
 
         ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) override;
@@ -151,4 +150,4 @@ namespace dawn::native::metal {
 
 }  // namespace dawn::native::metal
 
-#endif  // DAWNNATIVE_METAL_DEVICEMTL_H_
+#endif  // SRC_DAWN_NATIVE_METAL_DEVICEMTL_H_

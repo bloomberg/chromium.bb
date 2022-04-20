@@ -101,7 +101,7 @@ skvm::F32 SkSweepGradient::transformT(skvm::Builder* p, skvm::Uniforms* uniforms
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/gradients/GrGradientShader.h"
+#include "src/gpu/ganesh/gradients/GrGradientShader.h"
 
 std::unique_ptr<GrFragmentProcessor> SkSweepGradient::asFragmentProcessor(
         const GrFPArgs& args) const {
@@ -113,7 +113,7 @@ std::unique_ptr<GrFragmentProcessor> SkSweepGradient::asFragmentProcessor(
 #ifdef SK_ENABLE_SKSL
 void SkSweepGradient::addToKey(const SkKeyContext& keyContext,
                                SkPaintParamsKeyBuilder* builder,
-                               SkPipelineData* pipelineData) const {
+                               SkPipelineDataGatherer* gatherer) const {
     GradientShaderBlocks::GradientData data(kSweep_GradientType,
                                             fCenter, { 0.0f, 0.0f },
                                             0.0, 0.0f,
@@ -122,6 +122,6 @@ void SkSweepGradient::addToKey(const SkKeyContext& keyContext,
                                             fOrigColors4f,
                                             fOrigPos);
 
-    GradientShaderBlocks::AddToKey(keyContext, builder, pipelineData, data);
+    GradientShaderBlocks::AddToKey(keyContext, builder, gatherer, data);
 }
 #endif

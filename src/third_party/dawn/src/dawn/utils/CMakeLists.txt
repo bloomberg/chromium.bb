@@ -13,6 +13,7 @@
 # limitations under the License.
 
 add_library(dawn_utils STATIC ${DAWN_DUMMY_FILE})
+common_compile_options(dawn_utils)
 target_sources(dawn_utils PRIVATE
     "ComboRenderBundleEncoderDescriptor.cpp"
     "ComboRenderBundleEncoderDescriptor.h"
@@ -43,7 +44,6 @@ target_link_libraries(dawn_utils
             dawn_proc
             dawn_wire
             SPIRV-Tools-opt
-            glfw
 )
 
 if(WIN32 AND NOT WINDOWS_STORE)

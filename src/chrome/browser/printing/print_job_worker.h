@@ -50,20 +50,19 @@ class PrintJobWorker {
 
   /* The following functions may only be called before calling SetPrintJob(). */
 
-  // Initializes the print settings. If `ask_user_for_settings` is true, a
-  // Print... dialog box will be shown to ask the user their preference.
+  void GetDefaultSettings(SettingsCallback callback);
+
+  // Initializes the print settings. A Print... dialog box will be shown to ask
+  // the user their preference.
   // `is_scripted` should be true for calls coming straight from window.print().
-  // `is_modifiable` implies HTML and not other formats like PDF.
-  void GetSettings(bool ask_user_for_settings,
-                   uint32_t document_page_count,
-                   bool has_selection,
-                   mojom::MarginType margin_type,
-                   bool is_scripted,
-                   bool is_modifiable,
-                   SettingsCallback callback);
+  void GetSettingsFromUser(uint32_t document_page_count,
+                           bool has_selection,
+                           mojom::MarginType margin_type,
+                           bool is_scripted,
+                           SettingsCallback callback);
 
   // Set the new print settings from a dictionary value.
-  void SetSettings(base::Value new_settings, SettingsCallback callback);
+  void SetSettings(base::Value::Dict new_settings, SettingsCallback callback);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Set the new print settings from a POD type.
@@ -117,10 +116,13 @@ class PrintJobWorker {
   std::u16string GetDocumentName(const PrintedDocument* new_document) const;
 
 #if BUILDFLAG(IS_WIN)
-  // Renders a page in the printer.
+  // Renders a page in the printer.  Returns false if any errors occur.
   // This is applicable when using the Windows GDI print API.
-  virtual void SpoolPage(PrintedPage* page);
+  virtual bool SpoolPage(PrintedPage* page);
 #endif
+
+  // Renders the document to the printer.  Returns false if any errors occur.
+  virtual bool SpoolDocument();
 
   // Internal state verification that spooling of the document is complete.
   void CheckDocumentSpoolingComplete();
@@ -134,8 +136,16 @@ class PrintJobWorker {
   // Reports settings back to `callback`.
   void GetSettingsDone(SettingsCallback callback, mojom::ResultCode result);
 
+  // Helper functions to invoke the desired way of getting system print
+  // settings.
+  virtual void InvokeUseDefaultSettings(SettingsCallback callback);
+  virtual void InvokeGetSettingsWithUI(uint32_t document_page_count,
+                                       bool has_selection,
+                                       bool is_scripted,
+                                       SettingsCallback callback);
+
   // Called on the UI thread to update the print settings.
-  virtual void UpdatePrintSettings(base::Value new_settings,
+  virtual void UpdatePrintSettings(base::Value::Dict new_settings,
                                    SettingsCallback callback);
 
   // Discards the current document, the current page and cancels the printing
@@ -163,9 +173,6 @@ class PrintJobWorker {
   // Windows print GDI-specific handling for OnNewPage().
   bool OnNewPageHelperGdi();
 #endif  // BUILDFLAG(IS_WIN)
-
-  // Renders the document to the printer.
-  void SpoolJob();
 
   // Asks the user for print settings. Must be called on the UI thread.
   // Required on Mac and Linux. Windows can display UI from non-main threads,

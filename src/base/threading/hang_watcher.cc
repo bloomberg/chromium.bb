@@ -174,13 +174,13 @@ constexpr base::FeatureParam<int> kThreadPoolLogLevel{
 // GPU process.
 constexpr base::FeatureParam<int> kGPUProcessIOThreadLogLevel{
     &kEnableHangWatcher, "gpu_process_io_thread_log_level",
-    static_cast<int>(LoggingLevel::kUmaOnly)};
+    static_cast<int>(LoggingLevel::kNone)};
 constexpr base::FeatureParam<int> kGPUProcessMainThreadLogLevel{
     &kEnableHangWatcher, "gpu_process_main_thread_log_level",
-    static_cast<int>(LoggingLevel::kUmaOnly)};
+    static_cast<int>(LoggingLevel::kNone)};
 constexpr base::FeatureParam<int> kGPUProcessThreadPoolLogLevel{
     &kEnableHangWatcher, "gpu_process_threadpool_log_level",
-    static_cast<int>(LoggingLevel::kUmaOnly)};
+    static_cast<int>(LoggingLevel::kNone)};
 
 // Renderer process.
 constexpr base::FeatureParam<int> kRendererProcessIOThreadLogLevel{
@@ -717,6 +717,16 @@ void HangWatcher::WatchStateSnapShot::Init(
       if (ThreadTypeLoggingLevelGreaterOrEqual(watch_state.get()->thread_type(),
                                                LoggingLevel::kUmaAndCrash)) {
         any_hung_thread_has_dumping_enabled = true;
+      }
+
+      // Emit trace events for monitored threads.
+      if (ThreadTypeLoggingLevelGreaterOrEqual(watch_state.get()->thread_type(),
+                                               LoggingLevel::kUmaOnly)) {
+        const uint64_t thread_id = watch_state.get()->GetThreadID();
+        const auto track = perfetto::Track::FromPointer(
+            this, perfetto::ThreadTrack::ForThread(thread_id));
+        TRACE_EVENT_BEGIN("base", "HangWatcher::ThreadHung", track, deadline);
+        TRACE_EVENT_END("base", track, now);
       }
 
       // Attempt to mark the thread as needing to stay within its current

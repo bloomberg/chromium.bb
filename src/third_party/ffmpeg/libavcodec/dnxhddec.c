@@ -29,6 +29,8 @@
 
 #include "avcodec.h"
 #include "blockdsp.h"
+#include "codec_internal.h"
+// #define  UNCHECKED_BITSTREAM_READER 1  // Chromium: Required for security.
 #include "get_bits.h"
 #include "dnxhddata.h"
 #include "idctdsp.h"
@@ -617,7 +619,6 @@ static int dnxhd_decode_frame(AVCodecContext *avctx, void *data,
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     DNXHDContext *ctx = avctx->priv_data;
-    ThreadFrame frame = { .f = data };
     AVFrame *picture = data;
     int first_field = 1;
     int ret, i;
@@ -649,7 +650,7 @@ decode_coding_unit:
         return ret;
 
     if (first_field) {
-        if ((ret = ff_thread_get_buffer(avctx, &frame, 0)) < 0)
+        if ((ret = ff_thread_get_buffer(avctx, picture, 0)) < 0)
             return ret;
         picture->pict_type = AV_PICTURE_TYPE_I;
         picture->key_frame = 1;
@@ -724,17 +725,17 @@ static av_cold int dnxhd_decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_dnxhd_decoder = {
-    .name           = "dnxhd",
-    .long_name      = NULL_IF_CONFIG_SMALL("VC3/DNxHD"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_DNXHD,
+const FFCodec ff_dnxhd_decoder = {
+    .p.name         = "dnxhd",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("VC3/DNxHD"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_DNXHD,
     .priv_data_size = sizeof(DNXHDContext),
     .init           = dnxhd_decode_init,
     .close          = dnxhd_decode_close,
     .decode         = dnxhd_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
                       AV_CODEC_CAP_SLICE_THREADS,
-    .profiles       = NULL_IF_CONFIG_SMALL(ff_dnxhd_profiles),
+    .p.profiles     = NULL_IF_CONFIG_SMALL(ff_dnxhd_profiles),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

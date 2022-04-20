@@ -28,7 +28,8 @@ namespace dawn::native {
 
     namespace {
         struct ComboDeprecatedDawnDeviceDescriptor : DeviceDescriptor {
-            ComboDeprecatedDawnDeviceDescriptor(const DawnDeviceDescriptor* deviceDescriptor) {
+            explicit ComboDeprecatedDawnDeviceDescriptor(
+                const DawnDeviceDescriptor* deviceDescriptor) {
                 dawn::WarningLog() << "DawnDeviceDescriptor is deprecated. Please use "
                                       "WGPUDeviceDescriptor instead.";
 
@@ -188,7 +189,7 @@ namespace dawn::native {
     // Instance
 
     Instance::Instance(const WGPUInstanceDescriptor* desc)
-        : mImpl(InstanceBase::Create(reinterpret_cast<const InstanceDescriptor*>(desc))) {
+        : mImpl(APICreateInstance(reinterpret_cast<const InstanceDescriptor*>(desc))) {
     }
 
     Instance::~Instance() {
@@ -210,7 +211,7 @@ namespace dawn::native {
         // Adapters are owned by mImpl so it is safe to return non RAII pointers to them
         std::vector<Adapter> adapters;
         for (const Ref<AdapterBase>& adapter : mImpl->GetAdapters()) {
-            adapters.push_back({adapter.Get()});
+            adapters.push_back(Adapter(adapter.Get()));
         }
         return adapters;
     }

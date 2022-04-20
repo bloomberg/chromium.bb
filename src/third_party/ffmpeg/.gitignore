@@ -36,8 +36,8 @@
 /ffprobe
 /config.asm
 /config.h
+/config_components.h
 /coverage.info
-/avversion.h
 /lcov/
 /src
 /mapfile

@@ -19,7 +19,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -66,6 +65,7 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
     private ObjectAnimator mVisiblityAnimator;
 
     private boolean mIsGridTabSwitcherEnabled;
+    private boolean mIsTabletGtsPolishEnabled;
     private boolean mShowZoomingAnimation;
 
     public TabSwitcherModeTopToolbar(Context context, AttributeSet attrs) {
@@ -89,9 +89,10 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         mNewTabViewButton.setOnClickListener(this);
     }
 
-    void initialize(boolean isGridTabSwitcherEnabled, boolean isTabToGtsAnimationEnabled,
-            BooleanSupplier isIncognitoModeEnabledSupplier) {
+    void initialize(boolean isGridTabSwitcherEnabled, boolean isTabletGtsPolishEnabled,
+            boolean isTabToGtsAnimationEnabled, BooleanSupplier isIncognitoModeEnabledSupplier) {
         mIsGridTabSwitcherEnabled = isGridTabSwitcherEnabled;
+        mIsTabletGtsPolishEnabled = isTabletGtsPolishEnabled;
         mShowZoomingAnimation = isGridTabSwitcherEnabled && isTabToGtsAnimationEnabled;
         mIsIncognitoModeEnabledSupplier = isIncognitoModeEnabledSupplier;
 
@@ -137,9 +138,18 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
      * @param inTabSwitcherMode Whether or not tab switcher mode should be shown or hidden.
      */
     void setTabSwitcherMode(boolean inTabSwitcherMode) {
+        // TODO(https://crbug.com/914868): Use consistent logic here for setting clickable/enabled
+        // on mIncognitoToggleTabLayout & mNewTabButton?
+        if (!inTabSwitcherMode) {
+            if (mIncognitoToggleTabLayout != null) mIncognitoToggleTabLayout.setClickable(false);
+        } else {
+            if (mNewTabImageButton != null) mNewTabImageButton.setEnabled(true);
+            if (mNewTabViewButton != null) mNewTabViewButton.setEnabled(true);
+        }
+
         // Skip the animations and visibility logic when Tablet GTS polish param is enabled, since
         // they will instead be handled by the container view.
-        if (isTabletGridTabSwitcherPolishEnabled()) return;
+        if (mIsTabletGtsPolishEnabled) return;
 
         if (mVisiblityAnimator != null) mVisiblityAnimator.cancel();
 
@@ -156,15 +166,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         mVisiblityAnimator.setDuration(duration);
         if (mShowZoomingAnimation && inTabSwitcherMode) mVisiblityAnimator.setStartDelay(duration);
         mVisiblityAnimator.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
-
-        // TODO(https://crbug.com/914868): Use consistent logic here for setting clickable/enabled
-        // on mIncognitoToggleTabLayout & mNewTabButton?
-        if (!inTabSwitcherMode) {
-            if (mIncognitoToggleTabLayout != null) mIncognitoToggleTabLayout.setClickable(false);
-        } else {
-            if (mNewTabImageButton != null) mNewTabImageButton.setEnabled(true);
-            if (mNewTabViewButton != null) mNewTabViewButton.setEnabled(true);
-        }
 
         mVisiblityAnimator.addListener(new CancelAwareAnimatorListener() {
             @Override
@@ -370,7 +371,7 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
     private boolean shouldShowIncognitoToggle() {
         return mIsGridTabSwitcherEnabled && mIsIncognitoModeEnabledSupplier.getAsBoolean()
                 && (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
-                        || isTabletGridTabSwitcherPolishEnabled());
+                        || mIsTabletGtsPolishEnabled);
     }
 
     /**
@@ -391,10 +392,5 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         }
 
         return !incognitoTabExists;
-    }
-
-    private boolean isTabletGridTabSwitcherPolishEnabled() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS, "enable_launch_polish", false);
     }
 }

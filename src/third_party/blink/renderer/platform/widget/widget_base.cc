@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
@@ -150,7 +151,6 @@ WidgetBase::WidgetBase(
     bool is_for_child_local_root)
     : never_composited_(never_composited),
       is_for_child_local_root_(is_for_child_local_root),
-      use_zoom_for_dsf_(Platform::Current()->IsUseZoomForDSFEnabled()),
       client_(client),
       widget_host_(std::move(widget_host), task_runner),
       receiver_(this, std::move(widget), task_runner),
@@ -431,7 +431,6 @@ void WidgetBase::WasHidden() {
 }
 
 void WidgetBase::WasShown(bool was_evicted,
-                          bool in_active_window,
                           mojom::blink::RecordContentToVisibleTimeRequestPtr
                               record_tab_switch_time_request) {
   // The frame must be attached to the frame tree (which makes it no longer
@@ -442,7 +441,6 @@ void WidgetBase::WasShown(bool was_evicted,
                          TRACE_EVENT_FLAG_FLOW_IN);
 
   SetHidden(false);
-  UpdateCompositorPriorityCutoff(in_active_window);
 
   if (record_tab_switch_time_request) {
     LayerTreeHost()->RequestPresentationTimeForNextFrame(
@@ -456,10 +454,6 @@ void WidgetBase::WasShown(bool was_evicted,
   }
 
   client_->WasShown(was_evicted);
-}
-
-void WidgetBase::OnActiveWindowChanged(bool in_active_window) {
-  UpdateCompositorPriorityCutoff(in_active_window);
 }
 
 void WidgetBase::RequestPresentationTimeForNextFrame(
@@ -576,19 +570,20 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
-  params.io_thread_id = Platform::Current()->GetIOThreadId();
-  params.compositor_task_runner =
+  auto params = std::make_unique<
+      cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams>();
+  params->io_thread_id = Platform::Current()->GetIOThreadId();
+  params->compositor_task_runner =
       Platform::Current()->CompositorThreadTaskRunner();
-  if (for_web_tests && !params.compositor_task_runner) {
+  if (for_web_tests && !params->compositor_task_runner) {
     // The frame sink provider expects a compositor task runner, but we might
     // not have that if we're running web tests in single threaded mode.
     // Set it to be our thread's task runner instead.
-    params.compositor_task_runner = main_thread_compositor_task_runner_;
+    params->compositor_task_runner = main_thread_compositor_task_runner_;
   }
 
   // The renderer runs animations and layout for animate_only BeginFrames.
-  params.wants_animate_only_begin_frames = true;
+  params->wants_animate_only_begin_frames = true;
 
   // In disable frame rate limit mode, also let the renderer tick as fast as it
   // can. The top level begin frame source will also be running as a back to
@@ -596,18 +591,18 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
   // reduces latency when in this mode (at least for frames starting--it
   // potentially increases it for input on the other hand.)
   if (command_line.HasSwitch(::switches::kDisableFrameRateLimit))
-    params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
+    params->synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
 
-  params.client_name = client_name;
+  params->client_name = client_name;
 
   mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSink>
       compositor_frame_sink_receiver = CrossVariantMojoReceiver<
           viz::mojom::blink::CompositorFrameSinkInterfaceBase>(
-          params.pipes.compositor_frame_sink_remote
+          params->pipes.compositor_frame_sink_remote
               .InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<viz::mojom::blink::CompositorFrameSinkClient>
       compositor_frame_sink_client;
-  params.pipes.client_receiver = CrossVariantMojoReceiver<
+  params->pipes.client_receiver = CrossVariantMojoReceiver<
       viz::mojom::blink::CompositorFrameSinkClientInterfaceBase>(
       compositor_frame_sink_client.InitWithNewPipeAndPassReceiver());
 
@@ -620,13 +615,45 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
         std::move(render_frame_metadata_observer_remote));
     std::move(callback).Run(
         std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-            nullptr, nullptr, &params),
+            nullptr, nullptr, params.get()),
         std::move(render_frame_metadata_observer));
     return;
   }
 
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-      Platform::Current()->EstablishGpuChannelSync();
+  Platform::EstablishGpuChannelCallback finish_callback =
+      base::BindOnce(&WidgetBase::FinishRequestNewLayerTreeFrameSink,
+                     weak_ptr_factory_.GetWeakPtr(), url,
+                     std::move(compositor_frame_sink_receiver),
+                     std::move(compositor_frame_sink_client),
+                     std::move(render_frame_metadata_observer_client_receiver),
+                     std::move(render_frame_metadata_observer_remote),
+                     std::move(render_frame_metadata_observer),
+                     std::move(params), std::move(callback));
+  if (base::FeatureList::IsEnabled(features::kEstablishGpuChannelAsync)) {
+    Platform::Current()->EstablishGpuChannel(std::move(finish_callback));
+  } else {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+        Platform::Current()->EstablishGpuChannelSync();
+    std::move(finish_callback).Run(gpu_channel_host);
+  }
+}
+
+void WidgetBase::FinishRequestNewLayerTreeFrameSink(
+    const KURL& url,
+    mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSink>
+        compositor_frame_sink_receiver,
+    mojo::PendingRemote<viz::mojom::blink::CompositorFrameSinkClient>
+        compositor_frame_sink_client,
+    mojo::PendingReceiver<cc::mojom::blink::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_client_receiver,
+    mojo::PendingRemote<cc::mojom::blink::RenderFrameMetadataObserver>
+        render_frame_metadata_observer_remote,
+    std::unique_ptr<RenderFrameMetadataObserverImpl>
+        render_frame_metadata_observer,
+    std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams>
+        params,
+    LayerTreeFrameSinkCallback callback,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   if (!gpu_channel_host) {
     // Wait and try again. We may hear that the compositing mode has switched
     // to software in the meantime.
@@ -692,14 +719,14 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
             std::move(context_provider), std::move(worker_context_provider),
             Platform::Current()->CompositorThreadTaskRunner(),
             gpu_memory_buffer_manager, g_next_layer_tree_frame_sink_id++,
-            std::move(params.synthetic_begin_frame_source),
+            std::move(params->synthetic_begin_frame_source),
             widget_input_handler_manager_->GetSynchronousCompositorRegistry(),
             CrossVariantMojoRemote<
                 viz::mojom::blink::CompositorFrameSinkInterfaceBase>(
-                std::move(params.pipes.compositor_frame_sink_remote)),
+                std::move(params->pipes.compositor_frame_sink_remote)),
             CrossVariantMojoReceiver<
                 viz::mojom::blink::CompositorFrameSinkClientInterfaceBase>(
-                std::move(params.pipes.client_receiver))),
+                std::move(params->pipes.client_receiver))),
         std::move(render_frame_metadata_observer));
     return;
   }
@@ -709,11 +736,11 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
   widget_host_->RegisterRenderFrameMetadataObserver(
       std::move(render_frame_metadata_observer_client_receiver),
       std::move(render_frame_metadata_observer_remote));
-  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
+  params->gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   std::move(callback).Run(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
-          &params),
+          params.get()),
       std::move(render_frame_metadata_observer));
 }
 
@@ -1053,9 +1080,9 @@ void WidgetBase::ProcessTouchAction(cc::TouchAction touch_action) {
   widget_input_handler_manager_->ProcessTouchAction(touch_action);
 }
 
-void WidgetBase::SetFocus(bool enable) {
-  has_focus_ = enable;
-  client_->FocusChanged(enable);
+void WidgetBase::SetFocus(mojom::blink::FocusState focus_state) {
+  has_focus_ = focus_state == mojom::blink::FocusState::kFocused;
+  client_->FocusChanged(focus_state);
 }
 
 void WidgetBase::BindWidgetCompositor(
@@ -1572,32 +1599,24 @@ void WidgetBase::CountDroppedPointerDownForEventTiming(unsigned count) {
 }
 
 gfx::PointF WidgetBase::DIPsToBlinkSpace(const gfx::PointF& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScalePoint(point, GetOriginalDeviceScaleFactor());
 }
 
 gfx::Point WidgetBase::DIPsToRoundedBlinkSpace(const gfx::Point& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScaleToRoundedPoint(point, GetOriginalDeviceScaleFactor());
 }
 
 gfx::PointF WidgetBase::BlinkSpaceToDIPs(const gfx::PointF& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScalePoint(point, 1.f / GetOriginalDeviceScaleFactor());
 }
 
 gfx::Point WidgetBase::BlinkSpaceToFlooredDIPs(const gfx::Point& point) {
-  if (!use_zoom_for_dsf_)
-    return point;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   float reverse = 1 / GetOriginalDeviceScaleFactor();
@@ -1605,60 +1624,34 @@ gfx::Point WidgetBase::BlinkSpaceToFlooredDIPs(const gfx::Point& point) {
 }
 
 gfx::Size WidgetBase::DIPsToCeiledBlinkSpace(const gfx::Size& size) {
-  if (!use_zoom_for_dsf_)
-    return size;
   return gfx::ScaleToCeiledSize(size, GetOriginalDeviceScaleFactor());
 }
 
 gfx::RectF WidgetBase::DIPsToBlinkSpace(const gfx::RectF& rect) {
-  if (!use_zoom_for_dsf_)
-    return rect;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return gfx::ScaleRect(rect, GetOriginalDeviceScaleFactor());
 }
 
 float WidgetBase::DIPsToBlinkSpace(float scalar) {
-  if (!use_zoom_for_dsf_)
-    return scalar;
   // TODO(danakj): Should this use non-original scale factor so it changes under
   // emulation?
   return GetOriginalDeviceScaleFactor() * scalar;
 }
 
 gfx::Size WidgetBase::BlinkSpaceToFlooredDIPs(const gfx::Size& size) {
-  if (!use_zoom_for_dsf_)
-    return size;
   float reverse = 1 / GetOriginalDeviceScaleFactor();
   return gfx::ScaleToFlooredSize(size, reverse);
 }
 
 gfx::Rect WidgetBase::BlinkSpaceToEnclosedDIPs(const gfx::Rect& rect) {
-  if (!use_zoom_for_dsf_)
-    return rect;
   float reverse = 1 / GetOriginalDeviceScaleFactor();
   return gfx::ScaleToEnclosedRect(rect, reverse);
 }
 
 gfx::RectF WidgetBase::BlinkSpaceToDIPs(const gfx::RectF& rect) {
-  if (!use_zoom_for_dsf_)
-    return rect;
   float reverse = 1 / GetOriginalDeviceScaleFactor();
   return gfx::ScaleRect(rect, reverse);
-}
-
-void WidgetBase::UpdateCompositorPriorityCutoff(bool in_active_window) {
-  if (never_composited_ ||
-      !base::FeatureList::IsEnabled(
-          features::kFreeNonRequiredTileResourcesForInactiveWindows)) {
-    return;
-  }
-
-  LayerTreeHost()->SetPriorityCutoffOverride(
-      in_active_window
-          ? absl::nullopt
-          : absl::make_optional(gpu::MemoryAllocation::PriorityCutoff::
-                                    CUTOFF_ALLOW_REQUIRED_ONLY));
 }
 
 }  // namespace blink

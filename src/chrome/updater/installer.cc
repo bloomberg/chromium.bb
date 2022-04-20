@@ -10,10 +10,10 @@
 
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
@@ -49,6 +49,17 @@ absl::optional<base::FilePath> GetAppInstallDir(UpdaterScope scope,
 }
 
 }  // namespace
+
+AppInfo::AppInfo(const UpdaterScope scope,
+                 const std::string& app_id,
+                 const std::string& ap,
+                 const base::Version& app_version,
+                 const base::FilePath& ecp)
+    : scope(scope), app_id(app_id), ap(ap), version(app_version), ecp(ecp) {}
+
+AppInfo::AppInfo(const AppInfo&) = default;
+AppInfo& AppInfo::operator=(const AppInfo&) = default;
+AppInfo::~AppInfo() = default;
 
 Installer::Installer(
     const std::string& app_id,
@@ -163,9 +174,12 @@ Installer::Result Installer::InstallHelper(
   // the prefs are updated asynchronously with the new |pv| and |fingerprint|.
   // The task sequencing guarantees that the prefs will be updated by the
   // time another CrxDataCallback is invoked, which needs updated values.
-  return RunApplicationInstaller(application_installer,
-                                 install_params->arguments,
-                                 std::move(progress_callback));
+  return RunApplicationInstaller(
+      AppInfo(updater_scope_, app_id_, ap_, pv_, checker_path_),
+      application_installer, install_params->arguments,
+      WriteInstallerDataToTempFile(unpack_path,
+                                   install_params->server_install_data),
+      std::move(progress_callback));
 }
 
 void Installer::InstallWithSyncPrimitives(
@@ -229,13 +243,17 @@ absl::optional<base::FilePath> Installer::GetCurrentInstallDir() const {
 }
 
 #if BUILDFLAG(IS_LINUX)
-Installer::Result Installer::RunApplicationInstaller(
+
+AppInstallerResult RunApplicationInstaller(
+    const AppInfo& /*app_info*/,
     const base::FilePath& /*app_installer*/,
     const std::string& /*arguments*/,
-    ProgressCallback /*progress_callback*/) {
+    const absl::optional<base::FilePath>& /*install_data_file*/,
+    InstallProgressCallback /*progress_callback*/) {
   NOTIMPLEMENTED();
-  return Installer::Result(-1);
+  return AppInstallerResult(-1);
 }
+
 #endif  // BUILDFLAG(IS_LINUX)
 
 }  // namespace updater

@@ -8,11 +8,14 @@
 #ifndef SKSL_DSL_FPS
 #define SKSL_DSL_FPS
 
-#include "include/sksl/DSL.h"
+#include "include/core/SkTypes.h" // IWYU pragma: keep
 
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
 
-#include "src/gpu/GrFragmentProcessor.h"
+#include "include/sksl/DSLExpression.h"
+#include "include/sksl/DSLVar.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/glsl/GrGLSLUniformHandler.h"
 
 namespace SkSL {
 

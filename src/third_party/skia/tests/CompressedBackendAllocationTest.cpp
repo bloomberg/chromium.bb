@@ -6,14 +6,15 @@
  */
 
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkCompressedDataUtils.h"
 #include "src/core/SkMipmap.h"
 #include "src/core/SkPaintPriv.h"
-#include "src/gpu/GrBackendUtils.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrBackendUtils.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #include "src/image/SkImage_Base.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -73,8 +74,10 @@ static void check_compressed_mipmaps(GrRecordingContext* rContext, sk_sp<SkImage
 
     SkCanvas* canvas = surf->getCanvas();
 
+    // Given that we bias LOD selection with MIP maps, hitting a level exactly using
+    // SkMipmap::kLinear is difficult so we use kNearest.
     const SkSamplingOptions sampling(SkFilterMode::kLinear,
-                                     SkMipmapMode::kLinear);
+                                     SkMipmapMode::kNearest);
     SkPaint p;
     p.setBlendMode(SkBlendMode::kSrc);
 

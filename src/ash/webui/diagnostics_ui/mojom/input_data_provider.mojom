@@ -61,9 +61,11 @@ enum TopRowKey {
   kScreenBrightnessDown,
   kScreenBrightnessUp,
   kPrivacyScreenToggle,
+  kMicrophoneMute,
   kVolumeMute,
   kVolumeDown,
   kVolumeUp,
+  kKeyboardBacklightToggle,
   kKeyboardBacklightDown,
   kKeyboardBacklightUp,
   kNextTrack,
@@ -71,6 +73,13 @@ enum TopRowKey {
   kPlayPause,
   kScreenMirror,
   kDelete,
+};
+
+enum TopRightKey {
+  kUnknown,
+  kPower,
+  kLock,
+  kControlPanel,
 };
 
 // Describes a connected keyboard.
@@ -90,6 +99,9 @@ struct KeyboardInfo {
   // If a keyboard has F11-F15 keys beyond the rightmost action key, they may
   // not be included in this list (even as kNone).
   array<TopRowKey> top_row_keys;
+  // For CrOS keyboards, the glyph shown on the key at the far right end of the
+  // top row. This data may not be completely reliable.
+  TopRightKey top_right_key;
   // Only applicable to CrOS keyboards.
   bool has_assistant_key;
 };

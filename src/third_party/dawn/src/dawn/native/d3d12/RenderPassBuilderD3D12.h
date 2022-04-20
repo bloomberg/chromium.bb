@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_D3D12_RENDERPASSBUILDERD3D12_H_
-#define DAWNNATIVE_D3D12_RENDERPASSBUILDERD3D12_H_
+#ifndef SRC_DAWN_NATIVE_D3D12_RENDERPASSBUILDERD3D12_H_
+#define SRC_DAWN_NATIVE_D3D12_RENDERPASSBUILDERD3D12_H_
 
 #include "dawn/common/Constants.h"
 #include "dawn/common/ityp_array.h"
@@ -52,7 +52,7 @@ namespace dawn::native::d3d12 {
         // Returns attachment RTVs to use with OMSetRenderTargets.
         const D3D12_CPU_DESCRIPTOR_HANDLE* GetRenderTargetViews() const;
 
-        bool HasDepth() const;
+        bool HasDepthOrStencil() const;
 
         // Functions that set the appropriate values in the render pass descriptors.
         void SetDepthAccess(wgpu::LoadOp loadOp,
@@ -83,7 +83,7 @@ namespace dawn::native::d3d12 {
 
       private:
         ColorAttachmentIndex mHighestColorAttachmentIndexPlusOne{uint8_t(0)};
-        bool mHasDepth = false;
+        bool mHasDepthOrStencil = false;
         D3D12_RENDER_PASS_FLAGS mRenderPassFlags = D3D12_RENDER_PASS_FLAG_NONE;
         D3D12_RENDER_PASS_DEPTH_STENCIL_DESC mRenderPassDepthStencilDesc;
         ityp::
@@ -98,4 +98,4 @@ namespace dawn::native::d3d12 {
     };
 }  // namespace dawn::native::d3d12
 
-#endif  // DAWNNATIVE_D3D12_RENDERPASSBUILDERD3D12_H_
+#endif  // SRC_DAWN_NATIVE_D3D12_RENDERPASSBUILDERD3D12_H_

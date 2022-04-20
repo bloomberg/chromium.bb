@@ -1282,89 +1282,143 @@ Denoise audio samples with FFT.
 A description of the accepted parameters follows.
 
 @table @option
-@item nr
+@item noise_reduction, nr
 Set the noise reduction in dB, allowed range is 0.01 to 97.
 Default value is 12 dB.
 
-@item nf
+@item noise_floor, nf
 Set the noise floor in dB, allowed range is -80 to -20.
 Default value is -50 dB.
 
-@item nt
+@item noise_type, nt
 Set the noise type.
 
 It accepts the following values:
 @table @option
-@item w
+@item white, w
 Select white noise.
 
-@item v
+@item vinyl, v
 Select vinyl noise.
 
-@item s
+@item shellac, s
 Select shellac noise.
 
-@item c
+@item custom, c
 Select custom noise, defined in @code{bn} option.
 
 Default value is white noise.
 @end table
 
-@item bn
-Set custom band noise for every one of 15 bands.
+@item band_noise, bn
+Set custom band noise profile for every one of 15 bands.
 Bands are separated by ' ' or '|'.
 
-@item rf
+@item residual_floor, rf
 Set the residual floor in dB, allowed range is -80 to -20.
 Default value is -38 dB.
 
-@item tn
-Enable noise tracking. By default is disabled.
+@item track_noise, tn
+Enable noise floor tracking. By default is disabled.
 With this enabled, noise floor is automatically adjusted.
 
-@item tr
+@item track_residual, tr
 Enable residual tracking. By default is disabled.
 
-@item om
+@item output_mode, om
 Set the output mode.
 
 It accepts the following values:
 @table @option
-@item i
+@item input, i
 Pass input unchanged.
 
-@item o
+@item output, o
 Pass noise filtered out.
 
-@item n
+@item noise, n
 Pass only noise.
 
-Default value is @var{o}.
+Default value is @var{output}.
+@end table
+
+@item adaptivity, ad
+Set the adaptivity factor, used how fast to adapt gains adjustments per
+each frequency bin. Value @var{0} enables instant adaptation, while higher values
+react much slower.
+Allowed range is from @var{0} to @var{1}. Default value is @var{0.5}.
+
+@item floor_offset, fo
+Set the noise floor offset factor. This option is used to adjust offset applied to measured
+noise floor. It is only effective when noise floor tracking is enabled.
+Allowed range is from @var{-2.0} to @var{2.0}. Default value is @var{1.0}.
+
+@item noise_link, nl
+Set the noise link used for multichannel audio.
+
+It accepts the following values:
+@table @option
+@item none
+Use unchanged channel's noise floor.
+
+@item min
+Use measured min noise floor of all channels.
+
+@item max
+Use measured max noise floor of all channels.
+
+@item average
+Use measured average noise floor of all channels.
+
+Default value is @var{min}.
+@end table
+
+@item band_multiplier, bm
+Set the band multiplier factor, used how much to spread bands across frequency bins.
+Allowed range is from @var{0.2} to @var{5}. Default value is @var{1.25}.
+
+@item sample_noise, sn
+Toggle capturing and measurement of noise profile from input audio.
+
+It accepts the following values:
+@table @option
+@item start, begin
+Start sample noise capture.
+
+@item stop, end
+Stop sample noise capture and measure new noise band profile.
+
+Default value is @code{none}.
 @end table
 @end table
 
 @subsection Commands
 
-This filter supports the following commands:
-@table @option
-@item sample_noise, sn
-Start or stop measuring noise profile.
-Syntax for the command is : "start" or "stop" string.
-After measuring noise profile is stopped it will be
-automatically applied in filtering.
+This filter supports the some above mentioned options as @ref{commands}.
 
-@item noise_reduction, nr
-Change noise reduction. Argument is single float number.
-Syntax for the command is : "@var{noise_reduction}"
+@subsection Examples
 
-@item noise_floor, nf
-Change noise floor. Argument is single float number.
-Syntax for the command is : "@var{noise_floor}"
+@itemize
+@item
+Reduce white noise by 10dB, and use previously measured noise floor of -40dB:
+@example
+afftdn=nr=10:nf=-40
+@end example
 
-@item output_mode, om
-Change output mode operation.
-Syntax for the command is : "i", "o" or "n" string.
-@end table
+@item
+Reduce white noise by 10dB, also set initial noise floor to -80dB and enable automatic
+tracking of noise floor so noise floor will gradually change during processing:
+@example
+afftdn=nr=10:nf=-80:tn=1
+@end example
+
+@item
+Reduce noise by 20dB, using noise floor of -40dB and using commands to take noise profile
+of first 0.4 seconds of input audio:
+@example
+asendcmd=0.0 afftdn sn start,asendcmd=0.4 afftdn sn stop,afftdn=nr=20:nf=-40
+@end example
+@end itemize
 
 @section afftfilt
 Apply arbitrary expressions to samples in frequency domain.
@@ -2266,7 +2320,7 @@ The filter accepts the following options:
 
 @table @option
 @item strength, s
-Set denoising strength. Allowed range is from 0.00001 to 10. Default value is 0.00001.
+Set denoising strength. Allowed range is from 0.00001 to 10000. Default value is 0.00001.
 
 @item patch, p
 Set patch radius duration. Allowed range is from 1 to 100 milliseconds.
@@ -2294,7 +2348,7 @@ Default value is @var{o}.
 @end table
 
 @item smooth, m
-Set smooth factor. Default value is @var{11}. Allowed range is from @var{1} to @var{15}.
+Set smooth factor. Default value is @var{11}. Allowed range is from @var{1} to @var{1000}.
 @end table
 
 @subsection Commands
@@ -4066,6 +4120,10 @@ Set temperature in degrees Celsius. This is the temperature of the environment.
 Default is 20.
 @end table
 
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section crossfeed
 Apply headphone crossfeed filter.
 
@@ -4177,6 +4235,34 @@ Default value is @var{o}.
 @end table
 
 @end table
+
+@section dialoguenhance
+Enhance dialogue in stereo audio.
+
+This filter accepts stereo input and produce surround (3.0) channels output.
+The newly produced front center channel have enhanced speech dialogue originally
+available in both stereo channels.
+This filter outputs front left and front right channels same as available in stereo input.
+
+The filter accepts the following options:
+
+@table @option
+@item original
+Set the original center factor to keep in front center channel output.
+Allowed range is from 0 to 1. Default value is 1.
+
+@item enhance
+Set the dialogue enhance factor to put in front center channel output.
+Allowed range is from 0 to 3. Default value is 1.
+
+@item voice
+Set the voice detection factor.
+Allowed range is from 2 to 32. Default value is 2.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section drmeter
 Measure audio dynamic range.
@@ -4357,6 +4443,16 @@ If input frame volume is above this value frame will be normalized.
 Otherwise frame may not be normalized at all. The default value is set
 to 0, which means all input frames will be normalized.
 This option is mostly useful if digital noise is not wanted to be amplified.
+
+@item channels, h
+Specify which channels to filter, by default all available channels are filtered.
+
+@item overlap, o
+Specify overlap for frames. If set to 0 (default) no frame overlapping is done.
+Using >0 and <1 values will make less conservative gain adjustments, like
+when framelen option is set to smaller value, if framelen option value is
+compensated for non-zero overlap then gain adjustments will be smoother across time
+compared to zero overlap case.
 @end table
 
 @subsection Commands
@@ -5183,7 +5279,7 @@ Range is -70.0 - -5.0. Default value is -24.0.
 
 @item LRA, lra
 Set loudness range target.
-Range is 1.0 - 20.0. Default value is 7.0.
+Range is 1.0 - 50.0. Default value is 7.0.
 
 @item TP, tp
 Set maximum true peak.
@@ -5390,6 +5486,10 @@ Apply bit crusher plugin from ArtyFX:
 lv2=p=http\\\\://www.openavproductions.com/artyfx#bitta:c=crush=0.3
 @end example
 @end itemize
+
+@subsection Commands
+
+This filter supports all options that are exported by plugin as commands.
 
 @section mcompand
 Multiband Compress or expand the audio's dynamic range.
@@ -6404,15 +6504,23 @@ Set LFE output volume. By default, this is @var{1}.
 
 @item allx
 Set spread usage of stereo image across X axis for all channels.
+Allowed range is from @var{-1} to @var{15}.
+By default this value is negative @var{-1}, and thus unused.
 
 @item ally
 Set spread usage of stereo image across Y axis for all channels.
+Allowed range is from @var{-1} to @var{15}.
+By default this value is negative @var{-1}, and thus unused.
 
 @item fcx, flx, frx, blx, brx, slx, srx, bcx
 Set spread usage of stereo image across X axis for each channel.
+Allowed range is from @var{0.06} to @var{15}.
+By default this value is @var{0.5}.
 
 @item fcy, fly, fry, bly, bry, sly, sry, bcy
 Set spread usage of stereo image across Y axis for each channel.
+Allowed range is from @var{0.06} to @var{15}.
+By default this value is @var{0.5}.
 
 @item win_size
 Set window size. Allowed range is from @var{1024} to @var{65536}. Default size is @var{4096}.
@@ -6743,8 +6851,9 @@ volume='if(lt(t,10),1,max(1-(t-10)/5,0))':eval=frame
 
 Detect the volume of the input video.
 
-The filter has no parameters. The input is not modified. Statistics about
-the volume will be printed in the log when the input stream end is reached.
+The filter has no parameters. It supports only 16-bit signed integer samples,
+so the input will be converted when needed. Statistics about the volume will
+be printed in the log when the input stream end is reached.
 
 In particular it will show the mean volume (root mean square), maximum
 volume (on a per-sample basis), and the beginning of a histogram of the
@@ -11227,8 +11336,10 @@ text data in detection bboxes of side data. So please do not use this parameter
 if you are not sure about the text source.
 
 @item reload
-If set to 1, the @var{textfile} will be reloaded before each frame.
-Be sure to update it atomically, or it may be read partially, or even fail.
+The @var{textfile} will be reloaded at specified frame interval.
+Be sure to update @var{textfile} atomically, or it may be read partially,
+or even fail.
+Range is 0 to INT_MAX. Default is 0.
 
 @item x
 @item y
@@ -11378,10 +11489,14 @@ It can be used to add padding with zeros from the left.
 @item gmtime
 The time at which the filter is running, expressed in UTC.
 It can accept an argument: a strftime() format string.
+The format string is extended to support the variable @var{%[1-6]N}
+which prints fractions of the second with optionally specified number of digits.
 
 @item localtime
 The time at which the filter is running, expressed in the local time zone.
 It can accept an argument: a strftime() format string.
+The format string is extended to support the variable @var{%[1-6]N}
+which prints fractions of the second with optionally specified number of digits.
 
 @item metadata
 Frame metadata. Takes one or two arguments.
@@ -12227,7 +12342,9 @@ case of @code{b} it will use only bottom field.
 If line starts with @code{#} or @code{;} that line is skipped.
 
 @item mode
-Can be item @code{absolute} or @code{relative}. Default is @code{absolute}.
+Can be item @code{absolute} or @code{relative} or @code{pattern}. Default is @code{absolute}.
+The @code{pattern} mode is same as @code{relative} mode, except at last entry of file if there
+are more frames to process than @code{hint} file is seek back to start.
 @end table
 
 Example of first several lines of @code{hint} file for @code{relative} mode:
@@ -13379,11 +13496,20 @@ Display number of frames taken from filter.
 @item frame_count_out
 Display number of frames given out from filter.
 
+@item frame_count_delta
+Display delta number of frames between above two values.
+
 @item pts
 Display current filtered frame pts.
 
+@item pts_delta
+Display pts delta between current and previous frame.
+
 @item time
 Display current filtered frame time.
+
+@item time_delta
+Display time delta between current and previous frame.
 
 @item timebase
 Display time base for filter link.
@@ -13405,6 +13531,9 @@ Display number of samples taken from filter.
 
 @item sample_count_out
 Display number of samples given out from filter.
+
+@item sample_count_delta
+Display delta number of samples between above two values.
 @end table
 
 @item rate, r
@@ -14666,68 +14795,60 @@ ffmpeg -i input.mov -vf lensfun=make=Canon:model="Canon EOS 100D":lens_model="Ca
 
 @section libvmaf
 
-Obtain the VMAF (Video Multi-Method Assessment Fusion)
-score between two input videos.
+Calulate the VMAF (Video Multi-Method Assessment Fusion) score for a
+reference/distorted pair of input videos.
 
-The first input is the encoded video, and the second input is the reference video.
+The first input is the distorted video, and the second input is the reference video.
 
 The obtained VMAF score is printed through the logging system.
 
 It requires Netflix's vmaf library (libvmaf) as a pre-requisite.
 After installing the library it can be enabled using:
 @code{./configure --enable-libvmaf}.
-If no model path is specified it uses the default model: @code{vmaf_v0.6.1.pkl}.
 
 The filter has following options:
 
 @table @option
+@item model
+A `|` delimited list of vmaf models. Each model can be configured with a number of parameters.
+Default value: @code{"version=vmaf_v0.6.1"}
+
 @item model_path
-Set the model path which is to be used for SVM.
-Default value: @code{"/usr/local/share/model/vmaf_v0.6.1.pkl"}
-
-@item log_path
-Set the file path to be used to store logs.
-
-@item log_fmt
-Set the format of the log file (csv, json or xml).
+Deprecated, use model='path=...'.
 
 @item enable_transform
-This option can enable/disable the @code{score_transform} applied to the final predicted VMAF score,
-if you have specified score_transform option in the input parameter file passed to @code{run_vmaf_training.py}
-Default value: @code{false}
+Deprecated, use model='enable_transform=true'.
 
 @item phone_model
-Invokes the phone model which will generate VMAF scores higher than in the
-regular model, which is more suitable for laptop, TV, etc. viewing conditions.
-Default value: @code{false}
-
-@item psnr
-Enables computing psnr along with vmaf.
-Default value: @code{false}
-
-@item ssim
-Enables computing ssim along with vmaf.
-Default value: @code{false}
-
-@item ms_ssim
-Enables computing ms_ssim along with vmaf.
-Default value: @code{false}
-
-@item pool
-Set the pool method to be used for computing vmaf.
-Options are @code{min}, @code{harmonic_mean} or @code{mean} (default).
-
-@item n_threads
-Set number of threads to be used when computing vmaf.
-Default value: @code{0}, which makes use of all available logical processors.
-
-@item n_subsample
-Set interval for frame subsampling used when computing vmaf.
-Default value: @code{1}
+Deprecated, use model='enable_transform=true'.
 
 @item enable_conf_interval
-Enables confidence interval.
-Default value: @code{false}
+Deprecated, use model='enable_conf_interval=true'.
+
+@item feature
+A `|` delimited list of features. Each feature can be configured with a number of parameters.
+
+@item psnr
+Deprecated, use feature='name=psnr'.
+
+@item ssim
+Deprecated, use feature='name=ssim'.
+
+@item ms_ssim
+Deprecated, use feature='name=ms_ssim'.
+
+@item log_path
+Set the file path to be used to store log files.
+
+@item log_fmt
+Set the format of the log file (xml, json, csv, or sub).
+
+@item n_threads
+Set number of threads to be used when initializing libvmaf.
+Default value: @code{0}, no threads.
+
+@item n_subsample
+Set frame subsampling interval to be used.
 @end table
 
 This filter also supports the @ref{framesync} options.
@@ -14735,23 +14856,31 @@ This filter also supports the @ref{framesync} options.
 @subsection Examples
 @itemize
 @item
-On the below examples the input file @file{main.mpg} being processed is
-compared with the reference file @file{ref.mpg}.
+In the examples below, a distorted video @file{distorted.mpg} is
+compared with a reference file @file{reference.mpg}.
 
+@item
+Basic usage:
 @example
-ffmpeg -i main.mpg -i ref.mpg -lavfi libvmaf -f null -
+ffmpeg -i distorted.mpg -i reference.mpg -lavfi libvmaf=log_path=output.xml -f null -
 @end example
 
 @item
-Example with options:
+Example with multiple models:
 @example
-ffmpeg -i main.mpg -i ref.mpg -lavfi libvmaf="psnr=1:log_fmt=json" -f null -
+ffmpeg -i distorted.mpg -i reference.mpg -lavfi libvmaf='model=version=vmaf_v0.6.1\\:name=vmaf|version=vmaf_v0.6.1neg\\:name=vmaf_neg' -f null -
+@end example
+
+@item
+Example with multiple addtional features:
+@example
+ffmpeg -i distorted.mpg -i reference.mpg -lavfi libvmaf='feature=name=psnr|name=ciede' -f null -
 @end example
 
 @item
 Example with options and different containers:
 @example
-ffmpeg -i main.mpg -i ref.mkv -lavfi "[0:v]settb=AVTB,setpts=PTS-STARTPTS[main];[1:v]settb=AVTB,setpts=PTS-STARTPTS[ref];[main][ref]libvmaf=psnr=1:log_fmt=json" -f null -
+ffmpeg -i distorted.mpg -i reference.mkv -lavfi "[0:v]settb=AVTB,setpts=PTS-STARTPTS[main];[1:v]settb=AVTB,setpts=PTS-STARTPTS[ref];[main][ref]libvmaf=log_fmt=json:log_path=output.json" -f null -
 @end example
 @end itemize
 
@@ -15043,7 +15172,7 @@ expression
 
 @end table
 
-All expressions default to "val".
+All expressions default to "clipval".
 
 @subsection Commands
 
@@ -15643,6 +15772,9 @@ Specify scale, if it is set it will be multiplied with sum
 of each weight multiplied with pixel values to give final destination
 pixel value. By default @var{scale} is auto scaled to sum of weights.
 
+@item planes
+Set which planes to filter. Default is all. Allowed range is from 0 to 15.
+
 @item duration
 Specify how end of stream is determined.
 @table @samp
@@ -15663,6 +15795,7 @@ This filter supports the following commands:
 @table @option
 @item weights
 @item scale
+@item planes
 Syntax is same as option with same name.
 @end table
 
@@ -21090,6 +21223,9 @@ unset weights.
 Specify scale, if it is set it will be multiplied with sum
 of each weight multiplied with pixel values to give final destination
 pixel value. By default @var{scale} is auto scaled to sum of weights.
+
+@item planes
+Set which planes to filter. Default is all. Allowed range is from 0 to 15.
 @end table
 
 @subsection Examples
@@ -21120,6 +21256,7 @@ This filter supports the following commands:
 @table @option
 @item weights
 @item scale
+@item planes
 Syntax is same as option with same name.
 @end table
 
@@ -21519,6 +21656,23 @@ between 3 and 23. The default value is 5.
 
 @item chroma_amount, ca
 Set the chroma effect strength. It must be a floating point number, reasonable
+values lay between -1.5 and 1.5.
+
+Negative values will blur the input video, while positive values will
+sharpen it, a value of zero will disable the effect.
+
+Default value is 0.0.
+
+@item alpha_msize_x, ax
+Set the alpha matrix horizontal size. It must be an odd integer
+between 3 and 23. The default value is 5.
+
+@item alpha_msize_y, ay
+Set the alpha matrix vertical size. It must be an odd integer
+between 3 and 23. The default value is 5.
+
+@item alpha_amount, aa
+Set the alpha effect strength. It must be a floating point number, reasonable
 values lay between -1.5 and 1.5.
 
 Negative values will blur the input video, while positive values will
@@ -25179,6 +25333,9 @@ supposed to be generated forever.
 
 @item speed
 Set speed of gradients rotation.
+
+@item type, t
+Set type of gradients, can be @code{linear} or @code{radial}.
 @end table
 
 
@@ -25789,6 +25946,9 @@ Default value is @code{1024x256}.
 Specify list of colors separated by space or by '|' which will be used to
 draw channels. Unrecognized or missing colors will be replaced
 by white color.
+
+@item mode, m
+Set output mode. Can be @code{bars} or @code{trace}. Default is @code{bars}.
 @end table
 
 @section adrawgraph
@@ -25876,6 +26036,18 @@ replace old rows with new ones.
 scroll from top to bottom.
 @end table
 Default is @code{replace}.
+
+@item hmode
+Set histogram mode.
+
+It accepts the following values:
+@table @samp
+@item abs
+Use absolute values of samples.
+@item sign
+Use untouched values of samples.
+@end table
+Default is @code{abs}.
 @end table
 
 @section aphasemeter
@@ -26585,6 +26757,10 @@ A processing speed faster than what is possible without these filters cannot
 be achieved.
 @end table
 
+@subsection Commands
+
+Both filters supports the all above options as @ref{commands}.
+
 @section segment, asegment
 
 Split single input stream into multiple streams.
@@ -26933,6 +27109,12 @@ The end time in seconds of the current command interval.
 
 @item TI
 The interpolated time of the current command interval, TI = (T - TS) / (TE - TS).
+
+@item W
+The video frame width.
+
+@item H
+The video frame height.
 @end table
 
 @end table

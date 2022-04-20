@@ -132,42 +132,22 @@ have an idea about to understand the big picture:
             ebuilds at the tip of tree
 *   Try - a build that updates the repos, applies a patch, updates
             ebuilds and tries to build
-*   Paladin - a build that updates the repos, applies a known set of
-            patches, updates ebuilds and tries to build
-*   Chromium PFQ - updates repos, attempts to find find a new version of
-            Chromium, try a build with the new browser.
-*   Canary Orchestrator - launches a coordinated set of Canary builds
-            and summarizes the coordinated results.
-*   CQ Orchestrator - launches a coordinated set of Paladin builds and
-            commits the results if successful.
-*   Pre-CQ Launcher - launches individual try jobs for calidation of
-            ready CLs before the CQ tries them on all boards.
 *   [ChromeOS ASAN information](/system/errors/NodeNotFound)ASAN - see
 *   SDK - try new toolsets and update the prepackaged information for
             the chromeos SDK
 *   Toolchain - try newer compilers
-*   refresh packages - manage some sort of package status
 *   (chrome) - try building and testing chromeos with tip of tree chrome
             version
 *   branch - pull a branch of the source code and try building there
             (factory, firmware, releases)
-*   PFQ - pull in changes, update ebuilds, try a representative build,
-            push a new manifest if successful
 *   LKGM - distribute a successful and stable manifest to other
             interested parties
-*   Pacakges - I don't know yet
 
 ## When the columns aren't right
 
 Currently the set of columns and the allocations of bots to back them is managed
-by the Chrome Infrastructure team, please file a [Build
-Infrastructure](https://code.google.com/p/chromium/issues/entry?template=Build%20Infrastructure)
-bug and add the label OS-Chrome to start the process of correcting it. Please
+by the Chrome Infrastructure team, please file an
+[Infrastructure](https://goto.google.com/cros-infra-bug)
+bug OS-Chrome to start the process of correcting it. Please
 describe the type of build, and the cbuildbot configuration it should be
 running.
-
-## When the builds aren't right
-
-If you think the steps coming from the build aren't right, contact the build
-deputy. If you think the code being compiled has just broken on the tree,
-contact a sheriff.

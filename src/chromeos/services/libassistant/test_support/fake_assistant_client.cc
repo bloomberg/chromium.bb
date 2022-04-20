@@ -48,8 +48,10 @@ void FakeAssistantClient::CancelSpeakerIdEnrollment(
     const CancelSpeakerIdEnrollmentRequest& request) {}
 
 void FakeAssistantClient::GetSpeakerIdEnrollmentInfo(
-    const ::assistant::api::GetSpeakerIdEnrollmentInfoRequest& request,
-    base::OnceCallback<void(bool user_model_exists)> on_done) {}
+    const GetSpeakerIdEnrollmentInfoRequest& request,
+    base::OnceCallback<void(bool user_model_exists)> on_done) {
+  std::move(on_done).Run(false);
+}
 
 void FakeAssistantClient::ResetAllDataAndShutdown() {}
 
@@ -84,6 +86,12 @@ void FakeAssistantClient::SendScreenContextRequest(
 void FakeAssistantClient::StartVoiceInteraction() {}
 
 void FakeAssistantClient::StopAssistantInteraction(bool cancel_conversation) {}
+
+void FakeAssistantClient::AddConversationStateEventObserver(
+    GrpcServicesObserver<OnConversationStateEventRequest>* observer) {}
+
+void FakeAssistantClient::AddMediaActionFallbackEventObserver(
+    GrpcServicesObserver<OnMediaActionFallbackEventRequest>* observer) {}
 
 void FakeAssistantClient::SetInternalOptions(const std::string& locale,
                                              bool spoken_feedback_enabled) {}

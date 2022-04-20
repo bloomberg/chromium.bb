@@ -46,11 +46,12 @@ static void append_rtadjust_fixup_to_vertex_main(const Context& context,
             return VariableReference::Make(Position(), var);
         };
         auto Field = [&](const Variable* var, int idx) -> std::unique_ptr<Expression> {
-            return FieldAccess::Make(context, Ref(var), idx, OwnerKind::kAnonymousInterfaceBlock);
+            return FieldAccess::Make(context, Position(), Ref(var), idx,
+                    OwnerKind::kAnonymousInterfaceBlock);
         };
         auto Pos = [&]() -> DSLExpression {
-            return DSLExpression(FieldAccess::Make(context, Ref(skPerVertex), /*fieldIndex=*/0,
-                                                   OwnerKind::kAnonymousInterfaceBlock));
+            return DSLExpression(FieldAccess::Make(context, Position(), Ref(skPerVertex),
+                    /*fieldIndex=*/0, OwnerKind::kAnonymousInterfaceBlock));
         };
         auto Adjust = [&]() -> DSLExpression {
             return DSLExpression(rtAdjust.fInterfaceBlock
@@ -127,7 +128,8 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
                 const FunctionDeclaration& func = expr.as<FunctionCall>().function();
                 if (func.isBuiltin()) {
                     if (func.intrinsicKind() == k_dFdy_IntrinsicKind) {
-                        ThreadContext::Inputs().fUseFlipRTUniform = true;
+                        ThreadContext::Inputs().fUseFlipRTUniform =
+                                !fContext.fConfig->fSettings.fForceNoRTFlip;
                     }
                     if (func.definition()) {
                         fReferencedBuiltinFunctions->insert(&func);
@@ -136,7 +138,6 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
                         this->copyBuiltinFunctionIfNeeded(func);
                     }
                 }
-
             }
             return INHERITED::visitExpression(expr);
         }
@@ -180,9 +181,9 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
                                     std::move(returnStmt.expression()), fContext));
                         } else {
                             // Returning something from a function with a void return type.
-                            returnStmt.setExpression(nullptr);
-                            fContext.fErrors->error(returnStmt.fPosition,
+                            fContext.fErrors->error(returnStmt.expression()->fPosition,
                                                     "may not return a value from a void function");
+                            returnStmt.setExpression(nullptr);
                         }
                     } else {
                         if (this->functionReturnsValue()) {
@@ -259,7 +260,7 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
     }
 
     if (Analysis::CanExitWithoutReturningValue(function, *body)) {
-        context.fErrors->error(function.fPosition, "function '" + std::string(function.name()) +
+        context.fErrors->error(body->fPosition, "function '" + std::string(function.name()) +
                 "' can exit without returning a value");
     }
 

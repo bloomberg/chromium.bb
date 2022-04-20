@@ -5,32 +5,44 @@
  * found in the LICENSE file.
  */
 
-#include "gm/gm.h"
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
 #include "include/core/SkData.h"
-#include "include/core/SkFont.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkM44.h"
 #include "include/core/SkPaint.h"
-#include "include/core/SkSize.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkSpan.h"
 #include "include/core/SkString.h"
 #include "include/core/SkSurface.h"
-#include "include/effects/SkGradientShader.h"
-#include "include/effects/SkImageFilters.h"
+#include "include/core/SkTypes.h"
 #include "include/effects/SkRuntimeEffect.h"
-#include "include/private/SkSLDefines.h"  // for kDefaultInlineThreshold
+#include "include/gpu/GrDirectContext.h"
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLProgramKind.h"
 #include "include/sksl/DSLCore.h"
-#include "include/utils/SkRandom.h"
 #include "src/core/SkRuntimeEffectPriv.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrShaderCaps.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLDehydrator.h"
 #include "src/sksl/SkSLRehydrator.h"
-#include "src/sksl/SkSLThreadContext.h"
+#include "src/sksl/SkSLStringStream.h"
+#include "src/sksl/SkSLUtil.h"
+#include "src/sksl/ir/SkSLProgram.h"
 #include "tests/Test.h"
 #include "tests/TestHarness.h"
 #include "tools/Resources.h"
-#include "tools/ToolUtils.h"
+#include "tools/gpu/GrContextFactory.h"
+
+#include <array>
+#include <memory>
+#include <string>
+#include <vector>
 
 static constexpr int kWidth = 2;
 static constexpr int kHeight = 2;
@@ -333,11 +345,14 @@ SKSL_TEST(CPU + GPU + SkQP, FloatFolding,                    "folding/FloatFoldi
 SKSL_TEST(CPU + GPU + SkQP, MatrixFoldingES2,                "folding/MatrixFoldingES2.sksl")
 SKSL_TEST(GPU_ES3,          MatrixFoldingES3,                "folding/MatrixFoldingES3.sksl")
 SKSL_TEST(CPU + GPU + SkQP, Negation,                        "folding/Negation.sksl")
-SKSL_TEST(CPU + GPU + SkQP, PreserveSideEffects,             "folding/PreserveSideEffects.sksl")
+// TODO(skia:13035): This test fails on Nvidia GPUs on OpenGL but passes Vulkan. Re-enable the test
+// on Vulkan when granular GPU backend selection is supported.
+SKSL_TEST(CPU + SkQP,       PreserveSideEffects,             "folding/PreserveSideEffects.sksl")
 SKSL_TEST(CPU + GPU + SkQP, SelfAssignment,                  "folding/SelfAssignment.sksl")
 SKSL_TEST(CPU + GPU + SkQP, ShortCircuitBoolFolding,         "folding/ShortCircuitBoolFolding.sksl")
 SKSL_TEST(CPU + GPU + SkQP, SwitchCaseFolding,               "folding/SwitchCaseFolding.sksl")
 SKSL_TEST(CPU + GPU + SkQP, SwizzleFolding,                  "folding/SwizzleFolding.sksl")
+SKSL_TEST(CPU + GPU + SkQP, TernaryFolding,                  "folding/TernaryFolding.sksl")
 SKSL_TEST(CPU + GPU + SkQP, VectorScalarFolding,             "folding/VectorScalarFolding.sksl")
 SKSL_TEST(CPU + GPU + SkQP, VectorVectorFolding,             "folding/VectorVectorFolding.sksl")
 
@@ -441,6 +456,7 @@ SKSL_TEST(CPU + GPU + SkQP, DeadReturn,                      "shared/DeadReturn.
 // SKSL_TEST(GPU_ES3,       SkSLDeadReturnES3,               "shared/DeadReturnES3.sksl")
 SKSL_TEST(CPU + GPU + SkQP, DeadStripFunctions,              "shared/DeadStripFunctions.sksl")
 SKSL_TEST(CPU + GPU + SkQP, DependentInitializers,           "shared/DependentInitializers.sksl")
+SKSL_TEST(CPU + GPU + SkQP, DoubleNegation,                  "shared/DoubleNegation.sksl")
 SKSL_TEST(GPU_ES3,          DoWhileControlFlow,              "shared/DoWhileControlFlow.sksl")
 SKSL_TEST(CPU + GPU + SkQP, EmptyBlocksES2,                  "shared/EmptyBlocksES2.sksl")
 SKSL_TEST(GPU_ES3,          EmptyBlocksES3,                  "shared/EmptyBlocksES3.sksl")
@@ -455,6 +471,7 @@ SKSL_TEST(CPU + GPU + SkQP, HelloWorld,                      "shared/HelloWorld.
 SKSL_TEST(CPU + GPU + SkQP, Hex,                             "shared/Hex.sksl")
 SKSL_TEST(GPU_ES3,          HexUnsigned,                     "shared/HexUnsigned.sksl")
 SKSL_TEST(CPU + GPU + SkQP, InoutParameters,                 "shared/InoutParameters.sksl")
+SKSL_TEST(CPU + GPU + SkQP, InoutParamsAreDistinct,          "shared/InoutParamsAreDistinct.sksl")
 SKSL_TEST(CPU + GPU + SkQP, Matrices,                        "shared/Matrices.sksl")
 SKSL_TEST(GPU_ES3,          MatricesNonsquare,               "shared/MatricesNonsquare.sksl")
 // TODO(skia:12443) These tests actually don't work on MANY devices. The GLSL SkQP suite
@@ -471,6 +488,7 @@ SKSL_TEST(GPU_ES3,          OperatorsES3,                    "shared/OperatorsES
 SKSL_TEST(CPU + GPU + SkQP, Ossfuzz36852,                    "shared/Ossfuzz36852.sksl")
 SKSL_TEST(CPU + GPU + SkQP, OutParams,                       "shared/OutParams.sksl")
 SKSL_TEST(CPU + GPU + SkQP, OutParamsAreDistinct,            "shared/OutParamsAreDistinct.sksl")
+SKSL_TEST(CPU + GPU + SkQP, OutParamsAreDistinctFromGlobal,  "shared/OutParamsAreDistinctFromGlobal.sksl")
 SKSL_TEST(CPU + GPU + SkQP, OutParamsTricky,                 "shared/OutParamsTricky.sksl")
 SKSL_TEST(CPU + GPU + SkQP, ResizeMatrix,                    "shared/ResizeMatrix.sksl")
 SKSL_TEST(GPU_ES3,          ResizeMatrixNonsquare,           "shared/ResizeMatrixNonsquare.sksl")

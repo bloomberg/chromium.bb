@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWN_NODE_BINDING_GPUSUPPORTEDLIMITS_H_
-#define DAWN_NODE_BINDING_GPUSUPPORTEDLIMITS_H_
+#ifndef SRC_DAWN_NODE_BINDING_GPUSUPPORTEDLIMITS_H_
+#define SRC_DAWN_NODE_BINDING_GPUSUPPORTEDLIMITS_H_
 
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-#include "napi.h"
+
+#include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
@@ -61,4 +62,4 @@ namespace wgpu::binding {
 
 }  // namespace wgpu::binding
 
-#endif  // DAWN_NODE_BINDING_GPUSUPPORTEDLIMITS_H_
+#endif  // SRC_DAWN_NODE_BINDING_GPUSUPPORTEDLIMITS_H_

@@ -36,11 +36,19 @@ case "${UNAME}" in
     exit 1
 esac
 
+
 if [ -z $ARCH ]; then
   UNAME=`uname -m | tr '[:upper:]' '[:lower:]'`
   case "${UNAME}" in
     x86_64|amd64)
       ARCH=amd64
+      # Check if Mac ARM running under Rosetta
+      if [ $OS == 'mac' ]; then
+        TRANSLATED=`/usr/sbin/sysctl -n sysctl.proc_translated 2> /dev/null || echo 0`
+        if [ $TRANSLATED == "1" ]; then
+          ARCH="arm64"
+        fi
+      fi
       ;;
     s390x|ppc64|ppc64le)  # best-effort support
       ARCH="${UNAME}"

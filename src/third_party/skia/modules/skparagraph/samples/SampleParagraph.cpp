@@ -2076,8 +2076,8 @@ protected:
             auto impl = static_cast<ParagraphImpl*>(paragraph.get());
             for (auto& line : impl->lines()) {
                 if (this->isVerbose()) {
-                    SkDebugf("line[%d]: %f + %f\n", (int)(&line - impl->lines().begin()),
-                                                    line.offset().fX, line.shift());
+                    SkDebugf("line[%d]: %f\n", (int)(&line - impl->lines().begin()),
+                                                    line.offset().fX);
                 }
                 line.iterateThroughVisualRuns(true,
                     [&](const Run* run, SkScalar runOffset, TextRange textRange, SkScalar* width) {
@@ -2932,8 +2932,7 @@ protected:
         ParagraphStyle paragraph_style;
 
         auto column = width()/3;
-        auto draw = [&](DrawOptions options, SkScalar x) {
-            paragraph_style.setDrawOptions(options);
+        auto draw = [&](SkScalar x) {
             ParagraphBuilderImpl builder(paragraph_style, fontCollection);
             TextStyle text_style;
             text_style.setColor(SK_ColorBLACK);
@@ -2948,9 +2947,7 @@ protected:
             paragraph->paint(canvas, x, 400);
         };
 
-        draw(DrawOptions::kReplay, column*0);
-        draw(DrawOptions::kRecord, column*1);
-        draw(DrawOptions::kDirect, column*2);
+        draw(column*0);
     }
 
 private:
@@ -3620,37 +3617,27 @@ protected:
     void onDrawContent(SkCanvas* canvas) override {
 
         canvas->drawColor(SK_ColorWHITE);
-        auto fontCollection = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), true, true);
+        auto fontCollection = sk_make_sp<FontCollection>();
+        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
         TextStyle text_style;
-        text_style.setFontFamilies({SkString("Ahem")});
-        text_style.setFontSize(10);
-        SkPaint black; black.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Roboto")});
+        text_style.setFontSize(100);
+        SkPaint black;
+        black.setColor(SK_ColorBLACK);
         text_style.setForegroundColor(black);
+        SkPaint red;
+        red.setColor(SK_ColorRED);
+        text_style.setBackgroundColor(red);
 
         ParagraphStyle paragraph_style;
         paragraph_style.setTextStyle(text_style);
-        paragraph_style.setTextDirection(TextDirection::kLtr);
-        StrutStyle strut_style;
-        strut_style.setStrutEnabled(true);
-        strut_style.setFontFamilies({SkString("Ahem")});
-        strut_style.setFontSize(16);
-        strut_style.setHeight(4.0f);
-        strut_style.setHeightOverride(true);
-        strut_style.setLeading(-1.0f);
-        strut_style.setForceStrutHeight(true);
-        paragraph_style.setStrutStyle(strut_style);
         ParagraphBuilderImpl builder(paragraph_style, fontCollection);
 
         builder.pushStyle(text_style);
-        builder.addText(u"Atwater Peel Sherbrooke Bonaventure\nhi\nwasssup!");
+        builder.addText(".");
         auto paragraph = builder.Build();
-        paragraph->layout(797);
+        paragraph->layout(SK_ScalarInfinity);
         paragraph->paint(canvas, 0, 0);
-        auto boxes = paragraph->getRectsForRange(0, 60,
-                                                 RectHeightStyle::kIncludeLineSpacingTop, RectWidthStyle::kMax);
-        for (auto& box : boxes) {
-            SkDebugf("[%f, %f, %f, %f]: %s\n", box.rect.left(), box.rect.top(), box.rect.right(), box.rect.bottom(), box.direction == TextDirection::kLtr ? "left" : "right");
-        }
     }
 
 private:

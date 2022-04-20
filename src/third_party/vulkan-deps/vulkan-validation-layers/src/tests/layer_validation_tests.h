@@ -458,7 +458,7 @@ struct CreatePipelineHelper {
     VkPipelineDynamicStateCreateInfo dyn_state_ci_ = {};
     VkPipelineRasterizationStateCreateInfo rs_state_ci_ = {};
     VkPipelineRasterizationLineStateCreateInfoEXT line_state_ci_ = {};
-    VkPipelineColorBlendAttachmentState cb_attachments_ = {};
+    std::vector<VkPipelineColorBlendAttachmentState> cb_attachments_ = {};
     VkPipelineColorBlendStateCreateInfo cb_ci_ = {};
     VkPipelineDepthStencilStateCreateInfo ds_ci_ = {};
     VkGraphicsPipelineCreateInfo gp_ci_ = {};
@@ -468,7 +468,8 @@ struct CreatePipelineHelper {
     std::unique_ptr<VkShaderObj> vs_;
     std::unique_ptr<VkShaderObj> fs_;
     VkLayerTest &layer_test_;
-    CreatePipelineHelper(VkLayerTest &test);
+    layer_data::optional<VkGraphicsPipelineLibraryCreateInfoEXT> gpl_info;
+    CreatePipelineHelper(VkLayerTest &test, uint32_t color_attachments_count = 1u);
     ~CreatePipelineHelper();
 
     void InitDescriptorSetInfo();
@@ -492,6 +493,22 @@ struct CreatePipelineHelper {
     void InitState();
     void LateBindPipelineInfo();
     VkResult CreateGraphicsPipeline(bool implicit_destroy = true, bool do_late_bind = true);
+
+    void InitVertexInputLibInfo(void *p_next = nullptr);
+
+    template <typename StageContainer>
+    void InitPreRasterLibInfoFromContainer(const StageContainer &stages, void *p_next = nullptr) {
+        InitPreRasterLibInfo(static_cast<uint32_t>(stages.size()), stages.data(), p_next);
+    }
+    void InitPreRasterLibInfo(uint32_t count, const VkPipelineShaderStageCreateInfo *info, void *p_next = nullptr);
+
+    template <typename StageContainer>
+    void InitFragmentLibInfoFromContainer(const StageContainer &stages, void *p_next = nullptr) {
+        InitFragmentLibInfo(static_cast<uint32_t>(stages.size()), stages.data(), p_next);
+    }
+    void InitFragmentLibInfo(uint32_t count, const VkPipelineShaderStageCreateInfo *info, void *p_next = nullptr);
+
+    void InitFragmentOutputLibInfo(void *p_next = nullptr);
 
     // Helper function to create a simple test case (positive or negative)
     //
@@ -859,7 +876,7 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
                                     bool deferred_state_init = false, VkPhysicalDeviceFeatures2KHR *features2 = nullptr);
 
 void GetSimpleGeometryForAccelerationStructureTests(const VkDeviceObj &device, VkBufferObj *vbo, VkBufferObj *ibo,
-                                                    VkGeometryNV *geometry);
+                                                    VkGeometryNV *geometry, VkDeviceSize offset = 0);
 
 void print_android(const char *c);
 #endif  // VKLAYERTEST_H

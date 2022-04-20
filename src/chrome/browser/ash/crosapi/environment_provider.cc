@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 
+#include "ash/components/tpm/install_attributes.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
@@ -13,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/policy_namespace.mojom.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/account_manager_core/account.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -53,7 +54,7 @@ mojom::SessionType EnvironmentProvider::GetSessionType() {
 }
 
 mojom::DeviceMode EnvironmentProvider::GetDeviceMode() {
-  policy::DeviceMode mode = chromeos::InstallAttributes::Get()->GetMode();
+  policy::DeviceMode mode = ash::InstallAttributes::Get()->GetMode();
   switch (mode) {
     case policy::DEVICE_MODE_PENDING:
       // "Pending" is an internal detail of InstallAttributes and doesn't need
@@ -179,6 +180,15 @@ void EnvironmentProvider::SetDeviceAccountPolicy(
 
 std::string EnvironmentProvider::GetDeviceAccountPolicy() {
   return device_account_policy_blob_;
+}
+
+const MojoPolicyMap& EnvironmentProvider::GetDeviceAccountComponentPolicy() {
+  return component_policy_;
+}
+
+void EnvironmentProvider::SetDeviceAccountComponentPolicy(
+    MojoPolicyMap component_policy) {
+  component_policy_ = std::move(component_policy);
 }
 
 bool EnvironmentProvider::GetUseNewAccountManager() {

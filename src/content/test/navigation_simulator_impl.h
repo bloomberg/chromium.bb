@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -80,6 +81,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   RenderFrameHost* GetFinalRenderFrameHost() override;
   void Wait() override;
   bool IsDeferred() override;
+  bool HasFailed() override;
   void SetInitiatorFrame(RenderFrameHost* initiator_frame_host) override;
   void SetTransition(ui::PageTransition transition) override;
   void SetHasUserGesture(bool has_user_gesture) override;

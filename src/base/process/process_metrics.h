@@ -133,6 +133,27 @@ class BASE_EXPORT ProcessMetrics {
   // will result in a time delta of 2 seconds/per 1 wall-clock second.
   [[nodiscard]] TimeDelta GetCumulativeCPUUsage();
 
+#if BUILDFLAG(IS_WIN)
+  // TODO(pmonette): Remove the precise version of the CPU usage functions once
+  // we're validated that they are indeed better than the regular version above
+  // and that they can replace the old implementation.
+
+  // Returns the percentage of time spent executing, across all threads of the
+  // process, in the interval since the last time the method was called.
+  //
+  // Same as GetPlatformIndependentCPUUSage() but implemented using
+  // `QueryProcessCycleTime` for higher precision.
+  [[nodiscard]] double GetPreciseCPUUsage();
+
+  // Returns the cumulative CPU usage across all threads of the process since
+  // process start. In case of multi-core processors, a process can consume CPU
+  // at a rate higher than wall-clock time, e.g. two cores at full utilization
+  // will result in a time delta of 2 seconds/per 1 wall-clock second.
+  //
+  // This is implemented using `QueryProcessCycleTime` for higher precision.
+  [[nodiscard]] TimeDelta GetPreciseCumulativeCPUUsage();
+#endif  // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
     BUILDFLAG(IS_AIX)
   // Emits the cumulative CPU usage for all currently active threads since they
@@ -267,11 +288,10 @@ class BASE_EXPORT ProcessMetrics {
   TimeDelta last_cumulative_cpu_;
 #endif
 
-  // Used to store the previous times and disk usage counts so we can
-  // compute the disk usage between calls.
-  TimeTicks last_disk_usage_time_;
-  // Number of bytes transferred to/from disk in bytes.
-  uint64_t last_cumulative_disk_usage_ = 0;
+#if BUILDFLAG(IS_WIN)
+  TimeTicks last_cpu_time_for_precise_cpu_usage_;
+  TimeDelta last_precise_cumulative_cpu_;
+#endif
 
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)

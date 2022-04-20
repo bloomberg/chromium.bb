@@ -8,8 +8,7 @@
 #ifndef SKSL_BINARYEXPRESSION
 #define SKSL_BINARYEXPRESSION
 
-#include "src/sksl/SkSLLexer.h"
-#include "src/sksl/SkSLOperators.h"
+#include "include/sksl/SkSLOperator.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
@@ -40,6 +39,7 @@ public:
     // Creates a potentially-simplified form of the expression. Determines the result type
     // programmatically. Typechecks and coerces input expressions; reports errors via ErrorReporter.
     static std::unique_ptr<Expression> Convert(const Context& context,
+                                               Position pos,
                                                std::unique_ptr<Expression> left,
                                                Operator op,
                                                std::unique_ptr<Expression> right);
@@ -47,6 +47,7 @@ public:
     // Creates a potentially-simplified form of the expression. Determines the result type
     // programmatically. Asserts if the expressions do not typecheck or are otherwise invalid.
     static std::unique_ptr<Expression> Make(const Context& context,
+                                            Position pos,
                                             std::unique_ptr<Expression> left,
                                             Operator op,
                                             std::unique_ptr<Expression> right);
@@ -54,6 +55,7 @@ public:
     // Creates a potentially-simplified form of the expression. Result type is passed in.
     // Asserts if the expressions do not typecheck or are otherwise invalid.
     static std::unique_ptr<Expression> Make(const Context& context,
+                                            Position pos,
                                             std::unique_ptr<Expression> left,
                                             Operator op,
                                             std::unique_ptr<Expression> right,

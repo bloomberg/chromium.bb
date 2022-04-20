@@ -170,6 +170,7 @@ struct SwapchainImage : angle::NonCopyable
     vk::ImageViewHelper imageViews;
     vk::Framebuffer framebuffer;
     vk::Framebuffer fetchFramebuffer;
+    vk::Framebuffer framebufferResolveMS;
 
     // A circular array of semaphores used for presenting this image.
     static constexpr size_t kPresentHistorySize = kSwapHistorySize + 1;
@@ -179,6 +180,12 @@ struct SwapchainImage : angle::NonCopyable
 }  // namespace impl
 
 enum class FramebufferFetchMode
+{
+    Disabled,
+    Enabled,
+};
+
+enum class SwapchainResolveMode
 {
     Disabled,
     Enabled,
@@ -242,11 +249,12 @@ class WindowSurfaceVk : public SurfaceVk
     angle::Result initializeContents(const gl::Context *context,
                                      const gl::ImageIndex &imageIndex) override;
 
-    vk::Framebuffer &chooseFramebuffer();
+    vk::Framebuffer &chooseFramebuffer(const SwapchainResolveMode swapchainResolveMode);
 
     angle::Result getCurrentFramebuffer(ContextVk *context,
                                         FramebufferFetchMode fetchMode,
                                         const vk::RenderPass &compatibleRenderPass,
+                                        const SwapchainResolveMode swapchainResolveMode,
                                         vk::Framebuffer **framebufferOut);
 
     const vk::Semaphore *getAndResetAcquireImageSemaphore();
@@ -410,6 +418,9 @@ class WindowSurfaceVk : public SurfaceVk
 
     // EGL_KHR_lock_surface3
     vk::BufferHelper mLockBufferHelper;
+
+    // EGL_KHR_partial_update
+    uint64_t mBufferAgeQueryFrameNumber;
 
     // GL_EXT_shader_framebuffer_fetch
     FramebufferFetchMode mFramebufferFetchMode = FramebufferFetchMode::Disabled;

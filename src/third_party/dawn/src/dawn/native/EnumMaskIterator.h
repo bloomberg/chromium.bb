@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_ENUMMASKITERATOR_H_
-#define DAWNNATIVE_ENUMMASKITERATOR_H_
+#ifndef SRC_DAWN_NATIVE_ENUMMASKITERATOR_H_
+#define SRC_DAWN_NATIVE_ENUMMASKITERATOR_H_
 
 #include "dawn/common/BitSetIterator.h"
 #include "dawn/native/EnumClassBitmasks.h"
@@ -28,14 +28,15 @@ namespace dawn::native {
         using U = std::underlying_type_t<T>;
 
       public:
-        EnumMaskIterator(const T& mask) : mBitSetIterator(std::bitset<N>(static_cast<U>(mask))) {
+        explicit EnumMaskIterator(const T& mask)
+            : mBitSetIterator(std::bitset<N>(static_cast<U>(mask))) {
             // If you hit this ASSERT it means that you forgot to update EnumBitmaskSize<T>::value;
             ASSERT(U(mask) == 0 || Log2(uint64_t(U(mask))) < N);
         }
 
         class Iterator final {
           public:
-            Iterator(const typename BitSetIterator<N, U>::Iterator& iter) : mIter(iter) {
+            explicit Iterator(const typename BitSetIterator<N, U>::Iterator& iter) : mIter(iter) {
             }
 
             Iterator& operator++() {
@@ -79,4 +80,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_ENUMMASKITERATOR_H_
+#endif  // SRC_DAWN_NATIVE_ENUMMASKITERATOR_H_

@@ -203,9 +203,20 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     // otherwise.
     const gl::Offset &getTextureOffset() const { return mTextureOffset; }
 
-    Error getBufferAge(const gl::Context *context, EGLint *age) const;
+    Error getBufferAge(const gl::Context *context, EGLint *age);
 
     Error setRenderBuffer(EGLint renderBuffer);
+
+    bool bufferAgeQueriedSinceLastSwap() const { return mBufferAgeQueriedSinceLastSwap; }
+    void setDamageRegion(const EGLint *rects, EGLint n_rects);
+    bool isDamageRegionSet() const { return mIsDamageRegionSet; }
+
+    void addRef() { mRefCount++; }
+    void release()
+    {
+        ASSERT(mRefCount > 0);
+        mRefCount--;
+    }
 
   protected:
     Surface(EGLint surfaceType,
@@ -269,7 +280,12 @@ class Surface : public LabeledObject, public gl::FramebufferAttachmentObject
     uint8_t *mLockBufferPtr;      // Memory owned by backend.
     EGLint mLockBufferPitch;
 
+    bool mBufferAgeQueriedSinceLastSwap;
+    bool mIsDamageRegionSet;
+
   private:
+    Error getBufferAgeImpl(const gl::Context *context, EGLint *age) const;
+
     Error destroyImpl(const Display *display);
 
     void postSwap(const gl::Context *context);
@@ -322,6 +338,28 @@ class PixmapSurface final : public Surface
 
   protected:
     ~PixmapSurface() override;
+};
+
+class ANGLE_NO_DISCARD ScopedSurfaceRef
+{
+  public:
+    ScopedSurfaceRef(Surface *surface) : mSurface(surface)
+    {
+        if (mSurface)
+        {
+            mSurface->addRef();
+        }
+    }
+    ~ScopedSurfaceRef()
+    {
+        if (mSurface)
+        {
+            mSurface->release();
+        }
+    }
+
+  private:
+    Surface *const mSurface;
 };
 
 class SurfaceDeleter final

@@ -1089,8 +1089,6 @@ bool CFX_RenderDevice::DrawNormalText(pdfium::span<const TextCharPos> pCharPos,
     }
   }
   std::vector<TextGlyphPos> glyphs(pCharPos.size());
-  CFX_Matrix deviceCtm = char2device;
-
   for (size_t i = 0; i < glyphs.size(); ++i) {
     TextGlyphPos& glyph = glyphs[i];
     const TextCharPos& charpos = pCharPos[i];
@@ -1102,19 +1100,10 @@ bool CFX_RenderDevice::DrawNormalText(pdfium::span<const TextCharPos> pCharPos,
       glyph.m_Origin.x = static_cast<int>(floor(glyph.m_fDeviceOrigin.x));
     glyph.m_Origin.y = FXSYS_roundf(glyph.m_fDeviceOrigin.y);
 
-    if (charpos.m_bGlyphAdjust) {
-      CFX_Matrix new_matrix(
-          charpos.m_AdjustMatrix[0], charpos.m_AdjustMatrix[1],
-          charpos.m_AdjustMatrix[2], charpos.m_AdjustMatrix[3], 0, 0);
-      new_matrix.Concat(deviceCtm);
-      glyph.m_pGlyph = pFont->LoadGlyphBitmap(
-          charpos.m_GlyphIndex, charpos.m_bFontStyle, new_matrix,
-          charpos.m_FontCharWidth, anti_alias, &text_options);
-    } else {
-      glyph.m_pGlyph = pFont->LoadGlyphBitmap(
-          charpos.m_GlyphIndex, charpos.m_bFontStyle, deviceCtm,
-          charpos.m_FontCharWidth, anti_alias, &text_options);
-    }
+    CFX_Matrix matrix = charpos.GetEffectiveMatrix(char2device);
+    glyph.m_pGlyph = pFont->LoadGlyphBitmap(
+        charpos.m_GlyphIndex, charpos.m_bFontStyle, matrix,
+        charpos.m_FontCharWidth, anti_alias, &text_options);
   }
   if (anti_alias < FT_RENDER_MODE_LCD && glyphs.size() > 1)
     AdjustGlyphSpace(&glyphs);
@@ -1234,19 +1223,14 @@ bool CFX_RenderDevice::DrawTextPath(pdfium::span<const TextCharPos> pCharPos,
                                     CFX_Path* pClippingPath,
                                     const CFX_FillRenderOptions& fill_options) {
   for (const auto& charpos : pCharPos) {
-    CFX_Matrix matrix;
-    if (charpos.m_bGlyphAdjust) {
-      matrix = CFX_Matrix(charpos.m_AdjustMatrix[0], charpos.m_AdjustMatrix[1],
-                          charpos.m_AdjustMatrix[2], charpos.m_AdjustMatrix[3],
-                          0, 0);
-    }
-    matrix.Concat(CFX_Matrix(font_size, 0, 0, font_size, charpos.m_Origin.x,
-                             charpos.m_Origin.y));
     const CFX_Path* pPath =
         pFont->LoadGlyphPath(charpos.m_GlyphIndex, charpos.m_FontCharWidth);
     if (!pPath)
       continue;
 
+    CFX_Matrix matrix(font_size, 0, 0, font_size, charpos.m_Origin.x,
+                      charpos.m_Origin.y);
+    matrix = charpos.GetEffectiveMatrix(matrix);
     matrix.Concat(mtText2User);
 
     CFX_Path transformed_path(*pPath);
@@ -1327,8 +1311,6 @@ void CFX_RenderDevice::DrawFillRect(const CFX_Matrix* pUser2Device,
 }
 
 void CFX_RenderDevice::DrawShadow(const CFX_Matrix& mtUser2Device,
-                                  bool bVertical,
-                                  bool bHorizontal,
                                   const CFX_FloatRect& rect,
                                   int32_t nTransparency,
                                   int32_t nStartGray,
@@ -1337,34 +1319,17 @@ void CFX_RenderDevice::DrawShadow(const CFX_Matrix& mtUser2Device,
   constexpr float kSegmentWidth = 1.0f;
   constexpr float kLineWidth = 1.5f;
 
-  if (bVertical) {
-    float fStepGray = (nEndGray - nStartGray) / rect.Height();
-    CFX_PointF start(rect.left, 0);
-    CFX_PointF end(rect.right, 0);
+  float fStepGray = (nEndGray - nStartGray) / rect.Height();
+  CFX_PointF start(rect.left, 0);
+  CFX_PointF end(rect.right, 0);
 
-    for (float fy = rect.bottom + kBorder; fy <= rect.top - kBorder;
-         fy += kSegmentWidth) {
-      start.y = fy;
-      end.y = fy;
-      int nGray = nStartGray + static_cast<int>(fStepGray * (fy - rect.bottom));
-      FX_ARGB color = ArgbEncode(nTransparency, nGray, nGray, nGray);
-      DrawStrokeLine(&mtUser2Device, start, end, color, kLineWidth);
-    }
-  }
-
-  if (bHorizontal) {
-    float fStepGray = (nEndGray - nStartGray) / rect.Width();
-    CFX_PointF start(0, rect.bottom);
-    CFX_PointF end(0, rect.top);
-
-    for (float fx = rect.left + kBorder; fx <= rect.right - kBorder;
-         fx += kSegmentWidth) {
-      start.x = fx;
-      end.x = fx;
-      int nGray = nStartGray + static_cast<int>(fStepGray * (fx - rect.left));
-      FX_ARGB color = ArgbEncode(nTransparency, nGray, nGray, nGray);
-      DrawStrokeLine(&mtUser2Device, start, end, color, kLineWidth);
-    }
+  for (float fy = rect.bottom + kBorder; fy <= rect.top - kBorder;
+       fy += kSegmentWidth) {
+    start.y = fy;
+    end.y = fy;
+    int nGray = nStartGray + static_cast<int>(fStepGray * (fy - rect.bottom));
+    FX_ARGB color = ArgbEncode(nTransparency, nGray, nGray, nGray);
+    DrawStrokeLine(&mtUser2Device, start, end, color, kLineWidth);
   }
 }
 

@@ -22,6 +22,12 @@ bool CallSiteInfo::IsPromiseAll() const {
   return fun == fun.native_context().promise_all();
 }
 
+bool CallSiteInfo::IsPromiseAllSettled() const {
+  if (!IsAsync()) return false;
+  JSFunction fun = JSFunction::cast(function());
+  return fun == fun.native_context().promise_all_settled();
+}
+
 bool CallSiteInfo::IsPromiseAny() const {
   if (!IsAsync()) return false;
   JSFunction fun = JSFunction::cast(function());
@@ -507,6 +513,7 @@ int CallSiteInfo::GetSourcePosition(Handle<CallSiteInfo> info) {
     return info->code_offset_or_source_position();
   }
   DCHECK(!info->IsPromiseAll());
+  DCHECK(!info->IsPromiseAllSettled());
   DCHECK(!info->IsPromiseAny());
   int source_position =
       ComputeSourcePosition(info, info->code_offset_or_source_position());
@@ -629,12 +636,6 @@ void AppendFileLocation(Isolate* isolate, Handle<CallSiteInfo> frame,
   }
 }
 
-int StringIndexOf(Isolate* isolate, Handle<String> subject,
-                  Handle<String> pattern) {
-  if (pattern->length() > subject->length()) return -1;
-  return String::IndexOf(isolate, subject, pattern, 0);
-}
-
 // Returns true iff
 // 1. the subject ends with '.' + pattern, or
 // 2. subject == pattern.
@@ -672,13 +673,20 @@ void AppendMethodCall(Isolate* isolate, Handle<CallSiteInfo> frame,
   Handle<Object> method_name = CallSiteInfo::GetMethodName(frame);
   Handle<Object> function_name = CallSiteInfo::GetFunctionName(frame);
 
+  Handle<Object> receiver(frame->receiver_or_instance(), isolate);
+  if (receiver->IsJSClassConstructor()) {
+    Handle<JSFunction> function = Handle<JSFunction>::cast(receiver);
+    Handle<String> class_name = JSFunction::GetDebugName(function);
+    if (class_name->length() != 0) {
+      type_name = class_name;
+    }
+  }
   if (IsNonEmptyString(function_name)) {
     Handle<String> function_string = Handle<String>::cast(function_name);
     if (IsNonEmptyString(type_name)) {
       Handle<String> type_string = Handle<String>::cast(type_name);
-      bool starts_with_type_name =
-          (StringIndexOf(isolate, function_string, type_string) == 0);
-      if (!starts_with_type_name) {
+      if (String::IsIdentifier(isolate, function_string) &&
+          !String::Equals(isolate, function_string, type_string)) {
         builder->AppendString(type_string);
         builder->AppendCharacter('.');
       }
@@ -711,7 +719,8 @@ void SerializeJSStackFrame(Isolate* isolate, Handle<CallSiteInfo> frame,
   Handle<Object> function_name = CallSiteInfo::GetFunctionName(frame);
   if (frame->IsAsync()) {
     builder->AppendCStringLiteral("async ");
-    if (frame->IsPromiseAll() || frame->IsPromiseAny()) {
+    if (frame->IsPromiseAll() || frame->IsPromiseAny() ||
+        frame->IsPromiseAllSettled()) {
       builder->AppendCStringLiteral("Promise.");
       builder->AppendString(Handle<String>::cast(function_name));
       builder->AppendCStringLiteral(" (index ");

@@ -58,11 +58,8 @@ bool IsComboBoxOrTextField(const CPDF_FormField* pFormField) {
 
 void UpdateFormField(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                      CPDF_FormField* pFormField,
-                     bool bChangeMark,
-                     bool bResetAP,
-                     bool bRefresh) {
+                     bool bResetAP) {
   CPDFSDK_InteractiveForm* pForm = pFormFillEnv->GetInteractiveForm();
-
   if (bResetAP) {
     std::vector<ObservedPtr<CPDFSDK_Annot>> widgets;
     pForm->GetWidgets(pFormField, &widgets);
@@ -89,39 +86,31 @@ void UpdateFormField(CPDFSDK_FormFillEnvironment* pFormFillEnv,
     }
   }
 
-  if (bRefresh) {
-    // Refresh the widget list. The calls in |bResetAP| may have caused widgets
-    // to be removed from the list. We need to call |GetWidgets| again to be
-    // sure none of the widgets have been deleted.
-    std::vector<ObservedPtr<CPDFSDK_Annot>> widgets;
-    pForm->GetWidgets(pFormField, &widgets);
+  // Refresh the widget list. The calls in |bResetAP| may have caused widgets
+  // to be removed from the list. We need to call |GetWidgets| again to be
+  // sure none of the widgets have been deleted.
+  std::vector<ObservedPtr<CPDFSDK_Annot>> widgets;
+  pForm->GetWidgets(pFormField, &widgets);
 
-    // TODO(dsinclair): Determine if all widgets share the same
-    // CPDFSDK_InteractiveForm. If that's the case, we can move the code to
-    // |GetFormFillEnv| out of the loop.
-    for (auto& pObserved : widgets) {
-      if (pObserved) {
-        CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pObserved.Get());
-        pWidget->GetInteractiveForm()->GetFormFillEnv()->UpdateAllViews(
-            pWidget);
-      }
+  // TODO(dsinclair): Determine if all widgets share the same
+  // CPDFSDK_InteractiveForm. If that's the case, we can move the code to
+  // |GetFormFillEnv| out of the loop.
+  for (auto& pObserved : widgets) {
+    if (pObserved) {
+      CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pObserved.Get());
+      pWidget->GetInteractiveForm()->GetFormFillEnv()->UpdateAllViews(pWidget);
     }
   }
 
-  if (bChangeMark)
-    pFormFillEnv->SetChangeMark();
+  pFormFillEnv->SetChangeMark();
 }
 
 void UpdateFormControl(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                        CPDF_FormControl* pFormControl,
-                       bool bChangeMark,
-                       bool bResetAP,
-                       bool bRefresh) {
+                       bool bResetAP) {
   DCHECK(pFormControl);
-
   CPDFSDK_InteractiveForm* pForm = pFormFillEnv->GetInteractiveForm();
   CPDFSDK_Widget* pWidget = pForm->GetWidget(pFormControl);
-
   if (pWidget) {
     ObservedPtr<CPDFSDK_Widget> observed_widget(pWidget);
     if (bResetAP) {
@@ -139,15 +128,10 @@ void UpdateFormControl(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       if (!observed_widget)
         return;
     }
-
-    if (bRefresh) {
-      CPDFSDK_InteractiveForm* pWidgetForm = pWidget->GetInteractiveForm();
-      pWidgetForm->GetFormFillEnv()->UpdateAllViews(pWidget);
-    }
+    CPDFSDK_InteractiveForm* pWidgetForm = pWidget->GetInteractiveForm();
+    pWidgetForm->GetFormFillEnv()->UpdateAllViews(pWidget);
   }
-
-  if (bChangeMark)
-    pFormFillEnv->SetChangeMark();
+  pFormFillEnv->SetChangeMark();
 }
 
 struct FieldNameData {
@@ -294,7 +278,7 @@ void SetBorderStyle(CPDFSDK_FormFillEnvironment* pFormFillEnv,
         }
       }
       if (bSet)
-        UpdateFormField(pFormFillEnv, pFormField, true, true, true);
+        UpdateFormField(pFormFillEnv, pFormField, true);
     } else {
       if (nControlIndex >= pFormField->CountControls())
         return;
@@ -304,7 +288,7 @@ void SetBorderStyle(CPDFSDK_FormFillEnvironment* pFormFillEnv,
         if (pWidget) {
           if (pWidget->GetBorderStyle() != nBorderStyle) {
             pWidget->SetBorderStyle(nBorderStyle);
-            UpdateFormControl(pFormFillEnv, pFormControl, true, true, true);
+            UpdateFormControl(pFormFillEnv, pFormControl, true);
           }
         }
       }
@@ -335,7 +319,7 @@ void SetCurrentValueIndices(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                                      NotificationOption::kDoNotNotify);
       }
     }
-    UpdateFormField(pFormFillEnv, pFormField, true, true, true);
+    UpdateFormField(pFormFillEnv, pFormField, true);
   }
 }
 
@@ -359,7 +343,7 @@ void SetDisplay(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       }
 
       if (bAnySet)
-        UpdateFormField(pFormFillEnv, pFormField, true, false, true);
+        UpdateFormField(pFormFillEnv, pFormField, false);
     } else {
       if (nControlIndex >= pFormField->CountControls())
         return;
@@ -370,7 +354,7 @@ void SetDisplay(CPDFSDK_FormFillEnvironment* pFormFillEnv,
 
       CPDFSDK_Widget* pWidget = pForm->GetWidget(pFormControl);
       if (SetWidgetDisplayStatus(pWidget, number))
-        UpdateFormControl(pFormFillEnv, pFormControl, true, false, true);
+        UpdateFormControl(pFormFillEnv, pFormControl, false);
     }
   }
 }
@@ -405,7 +389,7 @@ void SetLineWidth(CPDFSDK_FormFillEnvironment* pFormFillEnv,
         }
       }
       if (bSet)
-        UpdateFormField(pFormFillEnv, pFormField, true, true, true);
+        UpdateFormField(pFormFillEnv, pFormField, true);
     } else {
       if (nControlIndex >= pFormField->CountControls())
         return;
@@ -414,7 +398,7 @@ void SetLineWidth(CPDFSDK_FormFillEnvironment* pFormFillEnv,
         if (CPDFSDK_Widget* pWidget = pForm->GetWidget(pFormControl)) {
           if (number != pWidget->GetBorderWidth()) {
             pWidget->SetBorderWidth(number);
-            UpdateFormControl(pFormFillEnv, pFormControl, true, true, true);
+            UpdateFormControl(pFormFillEnv, pFormControl, true);
           }
         }
       }
@@ -454,7 +438,7 @@ void SetRect(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       }
 
       if (bSet)
-        UpdateFormField(pFormFillEnv, pFormField, true, true, true);
+        UpdateFormField(pFormFillEnv, pFormField, true);
 
       continue;
     }
@@ -472,7 +456,7 @@ void SetRect(CPDFSDK_FormFillEnvironment* pFormFillEnv,
           if (crRect.left != rcOld.left || crRect.right != rcOld.right ||
               crRect.top != rcOld.top || crRect.bottom != rcOld.bottom) {
             pWidget->SetRect(crRect);
-            UpdateFormControl(pFormFillEnv, pFormControl, true, true, true);
+            UpdateFormControl(pFormFillEnv, pFormControl, true);
           }
         }
       }
@@ -500,14 +484,14 @@ void SetFieldValue(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       case FormFieldType::kComboBox:
         if (pFormField->GetValue() != strArray[0]) {
           pFormField->SetValue(strArray[0], NotificationOption::kNotify);
-          UpdateFormField(pFormFillEnv, pFormField, true, false, true);
+          UpdateFormField(pFormFillEnv, pFormField, false);
         }
         break;
       case FormFieldType::kCheckBox:
       case FormFieldType::kRadioButton:
         if (pFormField->GetValue() != strArray[0]) {
           pFormField->SetValue(strArray[0], NotificationOption::kNotify);
-          UpdateFormField(pFormFillEnv, pFormField, true, false, true);
+          UpdateFormField(pFormFillEnv, pFormField, false);
         }
         break;
       case FormFieldType::kListBox: {
@@ -525,7 +509,7 @@ void SetFieldValue(CPDFSDK_FormFillEnvironment* pFormFillEnv,
             if (!pFormField->IsItemSelected(index))
               pFormField->SetItemSelection(index, NotificationOption::kNotify);
           }
-          UpdateFormField(pFormFillEnv, pFormField, true, false, true);
+          UpdateFormField(pFormFillEnv, pFormField, false);
         }
         break;
       }
@@ -1628,7 +1612,7 @@ CJS_Result CJS_Field::set_print(CJS_Runtime* pRuntime,
       }
 
       if (bSet)
-        UpdateFormField(m_pFormFillEnv.Get(), pFormField, true, false, true);
+        UpdateFormField(m_pFormFillEnv.Get(), pFormField, false);
 
       continue;
     }
@@ -1648,8 +1632,7 @@ CJS_Result CJS_Field::set_print(CJS_Runtime* pRuntime,
         if (dwFlags != pWidget->GetFlags()) {
           pWidget->SetFlags(dwFlags);
           UpdateFormControl(m_pFormFillEnv.Get(),
-                            pFormField->GetControl(m_nFormControlIndex), true,
-                            false, true);
+                            pFormField->GetControl(m_nFormControlIndex), false);
         }
       }
     }
@@ -2221,7 +2204,7 @@ CJS_Result CJS_Field::browseForFileToSubmit(
     WideString wsFileName = m_pFormFillEnv->JS_fieldBrowse();
     if (!wsFileName.IsEmpty()) {
       pFormField->SetValue(wsFileName, NotificationOption::kDoNotNotify);
-      UpdateFormField(m_pFormFillEnv.Get(), pFormField, true, true, true);
+      UpdateFormField(m_pFormFillEnv.Get(), pFormField, true);
     }
     return CJS_Result::Success();
   }
@@ -2338,7 +2321,7 @@ CJS_Result CJS_Field::checkThisBox(
   // TODO(weili): Check whether anything special needed for radio button.
   // (When pFormField->GetFieldType() == FormFieldType::kRadioButton.)
   pFormField->CheckControl(nWidget, bCheckit, NotificationOption::kNotify);
-  UpdateFormField(m_pFormFillEnv.Get(), pFormField, true, true, true);
+  UpdateFormField(m_pFormFillEnv.Get(), pFormField, true);
   return CJS_Result::Success();
 }
 

@@ -736,7 +736,7 @@ void av1_set_qmatrix(const CommonQuantParams *quant_params, int segment_id,
 }
 
 void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
-                               int segment_id) {
+                               int segment_id, const int do_update) {
   const AV1_COMMON *const cm = &cpi->common;
   const CommonQuantParams *const quant_params = &cm->quant_params;
   const int current_qindex = AOMMAX(
@@ -747,21 +747,30 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_qindex);
   const int rdmult =
       av1_compute_rd_mult(cpi, qindex + quant_params->y_dc_delta_q);
-  av1_set_q_index(&cpi->enc_quant_dequant_params, qindex, x);
+  const int qindex_change = x->qindex != qindex;
+  if (qindex_change || do_update) {
+    av1_set_q_index(&cpi->enc_quant_dequant_params, qindex, x);
+  }
 
   MACROBLOCKD *const xd = &x->e_mbd;
-  av1_set_qmatrix(quant_params, segment_id, xd);
+  if ((segment_id != x->prev_segment_id) ||
+      av1_use_qmatrix(quant_params, xd, segment_id)) {
+    av1_set_qmatrix(quant_params, segment_id, xd);
+  }
 
   x->seg_skip_block = segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP);
 
   av1_set_error_per_bit(&x->errorperbit, rdmult);
   av1_set_sad_per_bit(cpi, &x->sadperbit, qindex);
+
+  x->prev_segment_id = segment_id;
 }
 
 void av1_frame_init_quantizer(AV1_COMP *cpi) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
+  x->prev_segment_id = -1;
+  av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id, 1);
 }
 
 static int adjust_hdr_cb_deltaq(int base_qindex) {

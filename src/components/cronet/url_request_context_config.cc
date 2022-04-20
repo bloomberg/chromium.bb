@@ -34,8 +34,8 @@
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_tag.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_tag.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "url/origin.h"
 
@@ -160,8 +160,6 @@ const char kNetworkErrorLoggingValue[] = "value";
 const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
-
-const char kGoAwayOnPathDegrading[] = "go_away_on_path_degrading";
 
 const char kAllowPortMigration[] = "allow_port_migration";
 
@@ -506,9 +504,6 @@ void URLRequestContextConfig::SetContextBuilderExperimentalOptions(
       quic_params->goaway_sessions_on_ip_change =
           quic_args.FindBoolKey(kQuicGoAwaySessionsOnIpChange)
               .value_or(quic_params->goaway_sessions_on_ip_change);
-      quic_params->go_away_on_path_degrading =
-          quic_args.FindBoolKey(kGoAwayOnPathDegrading)
-              .value_or(quic_params->go_away_on_path_degrading);
       quic_params->allow_server_migration =
           quic_args.FindBoolKey(kQuicAllowServerMigration)
               .value_or(quic_params->allow_server_migration);

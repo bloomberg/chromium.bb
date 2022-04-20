@@ -69,7 +69,7 @@ namespace wgpu::binding {
         auto ctx = new Context{env, interop::Promise<void>(env, PROMISE_INFO), async_, state_};
         auto promise = ctx->promise;
 
-        uint64_t s = size.has_value() ? size.value() : (desc_.size - offset);
+        uint64_t s = size.has_value() ? size.value().value : (desc_.size - offset);
 
         state_ = State::MappingPending;
 
@@ -114,7 +114,7 @@ namespace wgpu::binding {
             return {};
         }
 
-        uint64_t s = size.has_value() ? size.value() : (desc_.size - offset);
+        uint64_t s = size.has_value() ? size.value().value : (desc_.size - offset);
 
         uint64_t start = offset;
         uint64_t end = offset + s;
@@ -139,23 +139,32 @@ namespace wgpu::binding {
     }
 
     void GPUBuffer::unmap(Napi::Env env) {
+        buffer_.Unmap();
+
+        if (state_ != State::Destroyed && state_ != State::Unmapped) {
+            DetachMappings();
+            state_ = State::Unmapped;
+        }
+    }
+
+    void GPUBuffer::destroy(Napi::Env) {
         if (state_ == State::Destroyed) {
-            device_.InjectError(wgpu::ErrorType::Validation,
-                                "unmap() called on a destroyed buffer");
             return;
         }
 
+        if (state_ != State::Unmapped) {
+            DetachMappings();
+        }
+
+        buffer_.Destroy();
+        state_ = State::Destroyed;
+    }
+
+    void GPUBuffer::DetachMappings() {
         for (auto& mapping : mapped_) {
             mapping.buffer.Value().Detach();
         }
         mapped_.clear();
-        buffer_.Unmap();
-        state_ = State::Unmapped;
-    }
-
-    void GPUBuffer::destroy(Napi::Env) {
-        buffer_.Destroy();
-        state_ = State::Destroyed;
     }
 
     std::variant<std::string, interop::UndefinedType> GPUBuffer::getLabel(Napi::Env) {

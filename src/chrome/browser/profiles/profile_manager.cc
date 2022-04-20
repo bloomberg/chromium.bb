@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -66,6 +67,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/primary_account_policy_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1439,6 +1441,15 @@ bool ProfileManager::HasKeepAliveForTesting(const Profile* profile,
   return info->keep_alives[origin] > 0;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ProfileManager::SetAccountProfileMapperForTests(
+    std::unique_ptr<AccountProfileMapper> mapper) {
+  DCHECK(!account_profile_mapper_)
+      << "AccountProfileMapper must be set before the first usage";
+  account_profile_mapper_ = std::move(mapper);
+}
+#endif
+
 void ProfileManager::DisableProfileMetricsForTesting() {
   zombie_metrics_timer_.Stop();
 }
@@ -1597,7 +1608,7 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   // had enough time to initialize and should have updated the user signout
   // flag attached to the profile.
   signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(profile);
-  signin_util::EnsurePrimaryAccountAllowedForProfile(profile);
+  PrimaryAccountPolicyManagerFactory::GetForProfile(profile)->Initialize();
 
 #if !BUILDFLAG(IS_ANDROID)
   // The caret browsing command-line switch toggles caret browsing on

@@ -56,6 +56,8 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -154,6 +156,7 @@ void RunSynchronousOnceClosure(base::OnceClosure closure,
 
 // Converter functions from Blink types to WebRTC types.
 
+#if BUILDFLAG(IS_FUCHSIA)
 absl::optional<bool> ConstraintToOptional(
     const MediaConstraints& constraints,
     const blink::BooleanConstraint MediaTrackConstraintSetPlatform::*picker) {
@@ -163,6 +166,7 @@ absl::optional<bool> ConstraintToOptional(
   }
   return absl::nullopt;
 }
+#endif
 
 void CopyConstraintsIntoRtcConfiguration(
     const MediaConstraints constraints,
@@ -180,12 +184,6 @@ void CopyConstraintsIntoRtcConfiguration(
   } else {
     // Note: IPv6 WebRTC value is "disable" while Blink is "enable".
     configuration->disable_ipv6 = false;
-  }
-
-  if (GetConstraintValueAsBoolean(constraints,
-                                  &MediaTrackConstraintSetPlatform::enable_dscp,
-                                  &the_value)) {
-    configuration->set_dscp(the_value);
   }
 
   if (GetConstraintValueAsBoolean(
@@ -210,11 +208,11 @@ void CopyConstraintsIntoRtcConfiguration(
           &rate)) {
     configuration->screencast_min_bitrate = rate;
   }
-  configuration->combined_audio_video_bwe = ConstraintToOptional(
-      constraints,
-      &MediaTrackConstraintSetPlatform::goog_combined_audio_video_bwe);
+#if BUILDFLAG(IS_FUCHSIA)
+  // TODO(crbug.com/804275): Delete when Fuchsia no longer depends on it.
   configuration->enable_dtls_srtp = ConstraintToOptional(
       constraints, &MediaTrackConstraintSetPlatform::enable_dtls_srtp);
+#endif
 }
 
 // Class mapping responses from calls to libjingle CreateOffer/Answer and

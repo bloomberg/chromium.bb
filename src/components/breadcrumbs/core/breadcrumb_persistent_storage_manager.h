@@ -10,8 +10,10 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/breadcrumbs/core/breadcrumb_manager_observer.h"
+#include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -32,17 +34,10 @@ constexpr size_t kPersistedFilesizeInBytes = kMaxDataLength * 2;
 // application sessions.
 class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
  public:
-  // Breadcrumbs will be stored in a file in |directory|. If
-  // |old_breadcrumbs_file_path| and |old_breadcrumbs_temp_file_path| are
-  // provided, the files at those paths will be migrated to the new filenames
-  // for breadcrumb files (only needed on iOS, which previously used different
-  // filenames).
+  // Breadcrumbs will be stored in a file in |directory|.
   explicit BreadcrumbPersistentStorageManager(
       const base::FilePath& directory,
-      const absl::optional<base::FilePath>& old_breadcrumbs_file_path =
-          absl::nullopt,
-      const absl::optional<base::FilePath>& old_breadcrumbs_temp_file_path =
-          absl::nullopt);
+      base::RepeatingCallback<bool()> is_metrics_enabled_callback);
   ~BreadcrumbPersistentStorageManager() override;
   BreadcrumbPersistentStorageManager(
       const BreadcrumbPersistentStorageManager&) = delete;
@@ -67,6 +62,11 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
       BreadcrumbManagerKeyedService* service);
 
  private:
+  // Returns whether metrics consent has been provided and the persistent
+  // storage manager can therefore create its breadcrumbs files. Deletes any
+  // existing breadcrumbs files if consent has been revoked.
+  bool CheckForFileConsent();
+
   // Initializes |file_position_| to |file_size| and writes any events so far.
   void InitializeFilePosition(size_t file_size);
 
@@ -88,10 +88,6 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
 
   // Writes breadcrumbs stored in |pending_breadcrumbs_| to |breadcrumbs_file_|.
   void WritePendingBreadcrumbs();
-
-  // Writes |event| to |breadcrumbs_file_|.
-  // NOTE: Writing may be delayed if the file has recently been written into.
-  void WriteEvent(const std::string& event);
 
   // BreadcrumbManagerObserver
   void EventAdded(BreadcrumbManager* manager,
@@ -118,6 +114,10 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
   // NOTE: The optional will not have a value until the size of the existing
   // file, if any, is retrieved.
   absl::optional<size_t> file_position_;
+
+  // Used to check whether the user has consented to metrics reporting.
+  // Breadcrumbs should only be written to persistent storage if true.
+  base::RepeatingCallback<bool()> is_metrics_enabled_callback_;
 
   // The SequencedTaskRunner on which File IO operations are performed.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

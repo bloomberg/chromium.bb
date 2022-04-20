@@ -53,7 +53,7 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_versions.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -112,6 +112,11 @@ void CronetContextAdapter::ConfigureNetworkQualityEstimatorForTesting(
   context_->ConfigureNetworkQualityEstimatorForTesting(
       use_local_host_requests == JNI_TRUE, use_smaller_responses == JNI_TRUE,
       disable_offline_check == JNI_TRUE);
+}
+
+bool CronetContextAdapter::URLRequestContextExistsForTesting(
+    net::NetworkChangeNotifier::NetworkHandle network) {
+  return context_->URLRequestContextExistsForTesting(network);  // IN-TEST
 }
 
 void CronetContextAdapter::ProvideRTTObservations(

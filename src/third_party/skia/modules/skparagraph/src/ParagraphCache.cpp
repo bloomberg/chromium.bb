@@ -1,6 +1,7 @@
 // Copyright 2019 Google LLC.
 #include <memory>
 
+#include "modules/skparagraph/include/FontArguments.h"
 #include "modules/skparagraph/include/ParagraphCache.h"
 #include "modules/skparagraph/src/ParagraphImpl.h"
 
@@ -66,6 +67,8 @@ public:
     ParagraphCacheValue(ParagraphCacheKey&& key, const ParagraphImpl* paragraph)
         : fKey(std::move(key))
         , fRuns(paragraph->fRuns)
+        , fClusters(paragraph->fClusters)
+        , fClustersIndexFromCodeUnit(paragraph->fClustersIndexFromCodeUnit)
         , fCodeUnitProperties(paragraph->fCodeUnitProperties)
         , fWords(paragraph->fWords)
         , fBidiRegions(paragraph->fBidiRegions)
@@ -77,6 +80,8 @@ public:
 
     // Shaped results
     SkTArray<Run, false> fRuns;
+    SkTArray<Cluster, true> fClusters;
+    SkTArray<size_t, true> fClustersIndexFromCodeUnit;
     // ICU results
     SkTArray<CodeUnitFlags> fCodeUnitProperties;
     std::vector<size_t> fWords;
@@ -125,6 +130,7 @@ uint32_t ParagraphCacheKey::computeHash() const {
             hash = mix(hash, SkGoodHash()(ff.fValue));
             hash = mix(hash, SkGoodHash()(ff.fName));
         }
+        hash = mix(hash, std::hash<std::optional<FontArguments>>()(ts.fStyle.getFontArguments()));
         hash = mix(hash, SkGoodHash()(ts.fStyle.getFontStyle()));
         hash = mix(hash, SkGoodHash()(relax(ts.fStyle.getFontSize())));
         hash = mix(hash, SkGoodHash()(ts.fRange));
@@ -240,13 +246,18 @@ void ParagraphCache::updateTo(ParagraphImpl* paragraph, const Entry* entry) {
 
     paragraph->fRuns.reset();
     paragraph->fRuns = entry->fValue->fRuns;
+    paragraph->fClusters = entry->fValue->fClusters;
+    paragraph->fClustersIndexFromCodeUnit = entry->fValue->fClustersIndexFromCodeUnit;
     paragraph->fCodeUnitProperties = entry->fValue->fCodeUnitProperties;
     paragraph->fWords = entry->fValue->fWords;
     paragraph->fBidiRegions = entry->fValue->fBidiRegions;
     paragraph->fUTF8IndexForUTF16Index = entry->fValue->fUTF8IndexForUTF16Index;
     paragraph->fUTF16IndexForUTF8Index = entry->fValue->fUTF16IndexForUTF8Index;
     for (auto& run : paragraph->fRuns) {
-      run.setOwner(paragraph);
+        run.setOwner(paragraph);
+    }
+    for (auto& cluster : paragraph->fClusters) {
+        cluster.setOwner(paragraph);
     }
 }
 

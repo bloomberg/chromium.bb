@@ -189,6 +189,12 @@ enum AVPixelFormat ff_qsv_map_fourcc(uint32_t fourcc)
     case MFX_FOURCC_NV12: return AV_PIX_FMT_NV12;
     case MFX_FOURCC_P010: return AV_PIX_FMT_P010;
     case MFX_FOURCC_P8:   return AV_PIX_FMT_PAL8;
+#if QSV_VERSION_ATLEAST(1, 9)
+    case MFX_FOURCC_A2RGB10: return AV_PIX_FMT_X2RGB10;
+#endif
+#if QSV_VERSION_ATLEAST(1, 17)
+    case MFX_FOURCC_RGB4: return AV_PIX_FMT_BGRA;
+#endif
 #if CONFIG_VAAPI
     case MFX_FOURCC_YUY2: return AV_PIX_FMT_YUYV422;
 #if QSV_VERSION_ATLEAST(1, 27)
@@ -211,6 +217,16 @@ int ff_qsv_map_pixfmt(enum AVPixelFormat format, uint32_t *fourcc)
     case AV_PIX_FMT_P010:
         *fourcc = MFX_FOURCC_P010;
         return AV_PIX_FMT_P010;
+#if QSV_VERSION_ATLEAST(1, 9)
+    case AV_PIX_FMT_X2RGB10:
+        *fourcc = MFX_FOURCC_A2RGB10;
+        return AV_PIX_FMT_X2RGB10;
+#endif
+#if QSV_VERSION_ATLEAST(1, 17)
+    case AV_PIX_FMT_BGRA:
+        *fourcc = MFX_FOURCC_RGB4;
+        return AV_PIX_FMT_BGRA;
+#endif
 #if CONFIG_VAAPI
     case AV_PIX_FMT_YUV422P:
     case AV_PIX_FMT_YUYV422:
@@ -408,7 +424,10 @@ int ff_qsv_init_internal_session(AVCodecContext *avctx, QSVSession *qs,
         return ret;
     }
 
-    MFXQueryIMPL(qs->session, &impl);
+    ret = MFXQueryIMPL(qs->session, &impl);
+    if (ret != MFX_ERR_NONE)
+        return ff_qsv_print_error(avctx, ret,
+                                  "Error querying the session attributes");
 
     switch (MFX_IMPL_BASETYPE(impl)) {
     case MFX_IMPL_SOFTWARE:
@@ -827,4 +846,31 @@ int ff_qsv_close_internal_session(QSVSession *qs)
     av_buffer_unref(&qs->va_device_ref);
 #endif
     return 0;
+}
+
+void ff_qsv_frame_add_ext_param (AVCodecContext *avctx, QSVFrame *frame,
+                                 mfxExtBuffer * param)
+{
+    int i;
+
+    for (i = 0; i < frame->num_ext_params; i++) {
+        mfxExtBuffer *ext_buffer = frame->ext_param[i];
+
+        if (ext_buffer->BufferId == param->BufferId) {
+            av_log(avctx, AV_LOG_WARNING, "A buffer with the same type has been "
+                   "added\n");
+            return;
+        }
+    }
+
+    if (frame->num_ext_params < QSV_MAX_FRAME_EXT_PARAMS) {
+        frame->ext_param[frame->num_ext_params] = param;
+        frame->num_ext_params++;
+        frame->surface.Data.NumExtParam = frame->num_ext_params;
+    } else {
+        av_log(avctx, AV_LOG_WARNING, "Ignore this extra buffer because do not "
+               "have enough space\n");
+    }
+
+
 }

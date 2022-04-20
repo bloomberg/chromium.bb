@@ -315,7 +315,7 @@ function getPercentageFormatter(): Intl.NumberFormat {
 export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
   coverageInfo: URLCoverageInfo;
   private lastUsedSize!: number|undefined;
-  private url: string;
+  private url: Platform.DevToolsPath.UrlString;
   private maxSize: number;
   private highlightRegExp: RegExp|null;
 

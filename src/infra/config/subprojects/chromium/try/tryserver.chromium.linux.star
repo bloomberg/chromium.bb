@@ -199,12 +199,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-bionic-rel",
-    goma_jobs = goma.jobs.J150,
-    os = os.LINUX_BIONIC,
-)
-
-try_.builder(
     name = "linux-blink-heap-verification-try",
 )
 
@@ -304,6 +298,9 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 50,
+    },
 )
 
 try_.compilator_builder(
@@ -334,18 +331,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-)
-
-try_.builder(
-    name = "linux-trusty-rel",
-    goma_jobs = goma.jobs.J150,
-    os = os.LINUX_TRUSTY,
-)
-
-try_.builder(
-    name = "linux-xenial-rel",
-    goma_jobs = goma.jobs.J150,
-    os = os.LINUX_XENIAL,
 )
 
 try_.builder(
@@ -418,10 +403,6 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_clobber_rel_ng",
-)
-
-try_.builder(
-    name = "linux_chromium_compile_dbg_32_ng",
 )
 
 try_.builder(
@@ -508,14 +489,6 @@ try_.builder(
             ".+/[+]/third_party/blink/web_tests/.+",
         ],
     ),
-)
-
-try_.builder(
-    name = "linux_mojo",
-)
-
-try_.builder(
-    name = "linux_mojo_chromeos",
 )
 
 try_.builder(

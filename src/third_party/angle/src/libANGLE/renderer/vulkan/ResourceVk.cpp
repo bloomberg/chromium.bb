@@ -139,7 +139,8 @@ bool SharedBufferSuballocationGarbage::destroyIfComplete(RendererVk *renderer,
         return false;
     }
 
-    mGarbage.destroy(renderer);
+    mBuffer.destroy(renderer->getDevice());
+    mSuballocation.destroy(renderer);
     mLifetime.release();
     return true;
 }
@@ -197,6 +198,16 @@ ResourceUseList::ResourceUseList(ResourceUseList &&other)
 ResourceUseList::~ResourceUseList()
 {
     ASSERT(mResourceUses.empty());
+}
+
+void ResourceUseList::copy(ResourceUseList &srcResourceUse)
+{
+    size_t size = srcResourceUse.mResourceUses.size();
+    mResourceUses.resize(size);
+    for (size_t i = 0; i < size; i++)
+    {
+        mResourceUses[i].copy(srcResourceUse.mResourceUses[i]);
+    }
 }
 
 ResourceUseList &ResourceUseList::operator=(ResourceUseList &&rhs)

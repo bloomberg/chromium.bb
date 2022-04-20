@@ -23,7 +23,8 @@
 
 namespace dawn::native::opengl {
 
-    Queue::Queue(Device* device) : QueueBase(device) {
+    Queue::Queue(Device* device, const QueueDescriptor* descriptor)
+        : QueueBase(device, descriptor) {
     }
 
     MaybeError Queue::SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) {
@@ -74,6 +75,7 @@ namespace dawn::native::opengl {
             ToBackend(destination.texture)->EnsureSubresourceContentInitialized(range);
         }
         DoTexSubImage(ToBackend(GetDevice())->gl, textureCopy, data, dataLayout, writeSizePixel);
+        ToBackend(destination.texture)->Touch();
         return {};
     }
 

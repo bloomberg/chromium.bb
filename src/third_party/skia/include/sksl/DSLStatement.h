@@ -8,19 +8,16 @@
 #ifndef SKSL_DSL_STATEMENT
 #define SKSL_DSL_STATEMENT
 
-#include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkSLStatement.h"
-#include "include/sksl/SkSLErrorReporter.h"
 
 #include <memory>
-
-class GrGLSLShaderBuilder;
+#include <utility>
 
 namespace SkSL {
 
 class Expression;
-class Statement;
+class Position;
 
 namespace dsl {
 
@@ -28,7 +25,6 @@ class DSLBlock;
 class DSLExpression;
 class DSLPossibleExpression;
 class DSLPossibleStatement;
-class DSLVar;
 
 class DSLStatement {
 public:
@@ -36,9 +32,9 @@ public:
 
     DSLStatement(DSLExpression expr);
 
-    DSLStatement(DSLPossibleExpression expr, Position pos = Position::Capture());
+    DSLStatement(DSLPossibleExpression expr, Position pos = {});
 
-    DSLStatement(DSLPossibleStatement stmt, Position pos = Position::Capture());
+    DSLStatement(DSLPossibleStatement stmt, Position pos = {});
 
     DSLStatement(DSLBlock block);
 

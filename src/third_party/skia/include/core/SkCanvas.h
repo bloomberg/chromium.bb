@@ -66,7 +66,8 @@ class SkSurface_Base;
 class SkTextBlob;
 class SkVertices;
 
-namespace skgpu { class Recorder; }
+namespace skgpu::graphite { class Recorder; }
+namespace SkRecords { class Draw; }
 
 /** \class SkCanvas
     SkCanvas provides an interface for drawing, and how the drawing is clipped and transformed.
@@ -303,7 +304,7 @@ public:
 
         @return  Recorder, if available; nullptr otherwise
      */
-    virtual skgpu::Recorder* recorder();
+    virtual skgpu::graphite::Recorder* recorder();
 
     /** Sometimes a canvas is owned by a surface. If it is, getSurface() will return a bare
      *  pointer to that surface, else this will return nullptr.
@@ -1444,6 +1445,7 @@ public:
         SrcRectConstraint controls the behavior at the edge of source SkRect,
         provided to drawImageRect() when there is any filtering. If kStrict is set,
         then extra code is used to ensure it nevers samples outside of the src-rect.
+        kStrict_SrcRectConstraint disables the use of mipmaps.
     */
     enum SrcRectConstraint {
         kStrict_SrcRectConstraint, //!< sample only inside bounds; slower
@@ -2271,12 +2273,12 @@ protected:
 #if SK_SUPPORT_GPU
     /** Experimental
      */
-    virtual sk_sp<GrSlug> doConvertBlobToSlug(
-            const SkTextBlob& blob, SkPoint origin, const SkPaint& paint);
+    virtual sk_sp<GrSlug> onConvertGlyphRunListToSlug(
+            const SkGlyphRunList& glyphRunList, const SkPaint& paint);
 
     /** Experimental
      */
-    virtual void doDrawSlug(const GrSlug* slug);
+    virtual void onDrawSlug(const GrSlug* slug);
 #endif
 
 private:
@@ -2402,6 +2404,10 @@ private:
     friend class SkPictureRecord;   // predrawNotify (why does it need it? <reed>)
     friend class SkOverdrawCanvas;
     friend class SkRasterHandleAllocator;
+    friend class SkRecords::Draw;
+    template <typename Key>
+    friend class SkTestCanvas;
+
 protected:
     // For use by SkNoDrawCanvas (via SkCanvasVirtualEnforcer, which can't be a friend)
     SkCanvas(const SkIRect& bounds);

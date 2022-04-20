@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_PERSTAGE_H_
-#define DAWNNATIVE_PERSTAGE_H_
+#ifndef SRC_DAWN_NATIVE_PERSTAGE_H_
+#define SRC_DAWN_NATIVE_PERSTAGE_H_
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/BitSetIterator.h"
@@ -27,11 +27,6 @@
 namespace dawn::native {
 
     enum class SingleShaderStage { Vertex, Fragment, Compute };
-
-    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
-        SingleShaderStage value,
-        const absl::FormatConversionSpec& spec,
-        absl::FormatSink* s);
 
     static_assert(static_cast<uint32_t>(SingleShaderStage::Vertex) < kNumStages);
     static_assert(static_cast<uint32_t>(SingleShaderStage::Fragment) < kNumStages);
@@ -54,7 +49,7 @@ namespace dawn::native {
     class PerStage {
       public:
         PerStage() = default;
-        PerStage(const T& initialValue) {
+        explicit PerStage(const T& initialValue) {
             mData.fill(initialValue);
         }
 
@@ -84,4 +79,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_PERSTAGE_H_
+#endif  // SRC_DAWN_NATIVE_PERSTAGE_H_

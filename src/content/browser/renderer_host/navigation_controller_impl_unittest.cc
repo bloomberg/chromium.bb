@@ -110,7 +110,8 @@ class MockPageBroadcast : public blink::mojom::PageBroadcast {
   MOCK_METHOD(void, SetInsidePortal, (bool is_inside_portal), (override));
   MOCK_METHOD(void,
               ActivatePrerenderedPage,
-              (base::TimeTicks navigation_start,
+              (blink::mojom::PrerenderPageActivationParamsPtr
+                   prerender_page_activation_params,
                ActivatePrerenderedPageCallback callback),
               (override));
   MOCK_METHOD(void,
@@ -4480,7 +4481,8 @@ TEST_F(NavigationControllerTest,
 
   // Attempte to provide the cross-site-instance key to
   // NavigateToNavigationApiKey(). No navigation should occur.
-  controller.NavigateToNavigationApiKey(root_ftn(), first_key);
+  controller.NavigateToNavigationApiKey(
+      root_ftn(), FrameTreeNode::kFrameTreeNodeInvalidId, first_key);
   EXPECT_FALSE(controller.GetPendingEntry());
 }
 
@@ -4514,12 +4516,14 @@ TEST_F(NavigationControllerTest, NavigateToNavigationApiKey_KeyForWrongFrame) {
   // for the target frame.
   FrameTreeNode* subframe_node =
       main_test_rfh()->frame_tree_node()->child_at(0);
-  controller_impl().NavigateToNavigationApiKey(subframe_node, first_main_key);
+  controller_impl().NavigateToNavigationApiKey(
+      subframe_node, FrameTreeNode::kFrameTreeNodeInvalidId, first_main_key);
   EXPECT_FALSE(controller_impl().GetPendingEntry());
 
   // Call NavigateToNavigationApiKey() on the main frame with the key from the
   // main frame. This time a navigation should begin.
-  controller_impl().NavigateToNavigationApiKey(root_ftn(), first_main_key);
+  controller_impl().NavigateToNavigationApiKey(
+      root_ftn(), FrameTreeNode::kFrameTreeNodeInvalidId, first_main_key);
   EXPECT_TRUE(controller_impl().GetPendingEntry());
 }
 

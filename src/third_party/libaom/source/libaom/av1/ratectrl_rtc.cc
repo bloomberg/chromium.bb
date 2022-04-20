@@ -172,8 +172,7 @@ void AV1RateControlRTC::UpdateRateControl(
   cpi_->svc.number_spatial_layers = rc_cfg.ss_number_layers;
   cpi_->svc.number_temporal_layers = rc_cfg.ts_number_layers;
   set_primary_rc_buffer_sizes(oxcf, cpi_->ppi);
-  enc_set_mb_mi(&cm->mi_params, cm->width, cm->height, cpi_->oxcf.mode,
-                BLOCK_8X8);
+  enc_set_mb_mi(&cm->mi_params, cm->width, cm->height, BLOCK_8X8);
   int64_t target_bandwidth_svc = 0;
   for (int sl = 0; sl < cpi_->svc.number_spatial_layers; ++sl) {
     for (int tl = 0; tl < cpi_->svc.number_temporal_layers; ++tl) {
@@ -222,8 +221,7 @@ void AV1RateControlRTC::ComputeQP(const AV1FrameParamsRTC &frame_params) {
     cm->width = width;
     cm->height = height;
   }
-  enc_set_mb_mi(&cm->mi_params, cm->width, cm->height, cpi_->oxcf.mode,
-                BLOCK_8X8);
+  enc_set_mb_mi(&cm->mi_params, cm->width, cm->height, BLOCK_8X8);
   cm->current_frame.frame_type = frame_params.frame_type;
   cpi_->refresh_frame.golden_frame =
       (cm->current_frame.frame_type == KEY_FRAME) ? 1 : 0;

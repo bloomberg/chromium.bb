@@ -33,6 +33,8 @@ using SingleDayEventList = std::list<google_apis::calendar::CalendarEvent>;
 // Controller of the `CalendarView`.
 class ASH_EXPORT CalendarModel : public SessionObserver {
  public:
+  enum FetchingStatus { kNever, kFetching, kSuccess, kError };
+
   CalendarModel();
   CalendarModel(const CalendarModel& other) = delete;
   CalendarModel& operator=(const CalendarModel& other) = delete;
@@ -41,10 +43,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
-
-  // Number of months, before and after the month currently on-display, that we
-  // cache-ahead.
-  static constexpr int kNumSurroundingMonthsCached = 2;
 
   // Maps a day, i.e. midnight on the day of the event's start_time, to a
   // SingleDayEventList.
@@ -58,6 +56,8 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
    public:
     // Invoked when a set of events has been fetched.
     virtual void OnEventsFetched(
+        const FetchingStatus status,
+        const base::Time start_time,
         const google_apis::calendar::EventList* events) {}
   };
 
@@ -68,23 +68,44 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // we log out or switch users.
   void ClearAllCachedEvents();
 
-  // Requests events that fall in |months|.
+  // Clears out all events that start in a non-prunable month.
+  void ClearAllPrunableEvents();
+
+  // Resets to defaults the values of all event fetch metrics recorded over the
+  // lifetime of a calendar session, i.e. between a single open and close of the
+  // calendar.
+  void ResetLifetimeMetrics(const base::Time& currently_shown_date);
+
+  // Logs to UMA all event fetch metrics recorded over the lifetime of a
+  // calendar session.
+  void UploadLifetimeMetrics();
+
+  // Adds `month` to the set of non-prunable months.
+  void AddNonPrunableMonth(const base::Time& month);
+
+  // Adds every month in `months` to the set of non-prunable months.
+  void AddNonPrunableMonths(const std::set<base::Time>& months);
+
+  // Requests events that fall in `months`.
   void FetchEvents(const std::set<base::Time>& months);
 
-  // Requests events that fall in |num_months| months surrounding |day|.
+  // Requests events that fall in `num_months` months surrounding `day`.
   void FetchEventsSurrounding(int num_months, const base::Time day);
 
   // Same as `FindEvents`, except that return of any events on `day` constitutes
   // "use" in the most-recently-used sense, so the month that includes day will
   // then be promoted to most-recently-used status.  Use this to get events if
-  // you want to make the month in which |day| resides less likely to be pruned
+  // you want to make the month in which `day` resides less likely to be pruned
   // if we need to trim down to stay within storage limits.
   int EventsNumberOfDay(base::Time day, SingleDayEventList* events);
 
-  // Find the event list of the given day, with no impact on our MRU list.  Use
-  // this if you don't care about making the month in which |day| resides less
+  // Finds the event list of the given day, with no impact on our MRU list.  Use
+  // this if you don't care about making the month in which `day` resides less
   // likely to be pruned if we need to trim down to stay within storage limits.
   SingleDayEventList FindEvents(base::Time day) const;
+
+  // Checks the `FetchingStatus` of a given start time.
+  FetchingStatus FindFetchingStaus(base::Time start_time) const;
 
   // Redistributes all the fetched events to the date map with the
   // `time_difference_minutes_`. This only happens once per calendar view's life
@@ -97,8 +118,7 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   }
 
  protected:
-  // Fetch events for |start_of_month| if we haven't already done so since the
-  // calendar was opened.  This registers our callback OnCalendarEventsFetched.
+  // Fetch events for `start_of_month`.
   virtual void MaybeFetchMonth(base::Time start_of_month);
 
  private:
@@ -107,11 +127,12 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   friend class CalendarModelTest;
   friend class CalendarViewEventListViewTest;
   friend class CalendarMonthViewTest;
+  friend class CalendarModelFunctionTest;
 
-  // Insert a single |event| in the EventCache.
+  // Inserts a single `event` in the EventCache.
   void InsertEvent(const google_apis::calendar::CalendarEvent* event);
 
-  // Insert a single |event| in the EventMap for the month that contains its
+  // Inserts a single `event` in the EventMap for the month that contains its
   // start date.
   void InsertEventInMonth(SingleMonthEventMap& month,
                           const google_apis::calendar::CalendarEvent* event);
@@ -122,22 +143,19 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   base::Time GetStartTimeMidnightAdjusted(
       const google_apis::calendar::CalendarEvent* event) const;
 
-  // Insert EventList |events| in the EventCache.
+  // Inserts EventList `events` in the EventCache.
   void InsertEvents(const google_apis::calendar::EventList* events);
 
-  // Free up months of events as needed to keep us within storage limits.
+  // Inserts EventList `events` in the EventCache. For testing only, it clears
+  // out the entire cache and inserts the `events`.
+  void InsertEventsForTesting(const google_apis::calendar::EventList* events);
+
+  // Frees up months of events as needed to keep us within storage limits.
   void PruneEventCache();
 
-  // Returns true if we've already fetched events for |start_of_month| since the
-  // calendar was opened, false otherwise.
-  bool IsMonthAlreadyFetched(base::Time start_of_month) const;
-
-  // Officially declare the month denoted by |start_of_month| as "fetched."
-  void MarkMonthAsFetched(base::Time start_of_month);
-
-  // Add a month to the queue of months eligible for pruning when we need to
-  // limit the amount we cache.
-  void QueuePrunableMonth(base::Time start_of_month);
+  // Moves this month to the top of our queue that's ordered from
+  // most-recently-used to least-recently-used.
+  void PromoteMonth(base::Time start_of_month);
 
   // Returns the number of events that this `day` contains. If `events` is
   // non-nullptr then we assign it to the EventList for `day`. Callers should
@@ -156,19 +174,38 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
       base::Time start_of_month,
       CalendarEventFetchInternalErrorCode error);
 
+  // Checks whether `start_of_month` is further than we've gone, so far, from
+  // the on-screen month with which the calendar was opened and, if it has, then
+  // update our max distance.
+  void UpdateMaxDistanceBrowsed(const base::Time& start_of_month);
+
   // Internal storage for fetched events, with each fetched month having a
   // map of days to events.
   MonthToEventsMap event_months_;
 
-  // Months whose events we've fetched, that are eligible for pruning, in
-  // most-recently-used (MRU) order.
-  std::deque<base::Time> prunable_months_mru_;
+  // Months whose events we've fetched, in most-recently-used (MRU) order.
+  std::deque<base::Time> mru_months_;
+
+  // Set of months that are not prunable.
+  std::set<base::Time> non_prunable_months_;
+
+  // Set of months we've already fetched.
+  std::set<base::Time> months_fetched_;
 
   // All fetch requests that are still in-progress.
   std::map<base::Time, std::unique_ptr<CalendarEventFetch>> pending_fetches_;
 
   // Time difference between the UTC time and the local time in minutes.
   absl::optional<int> time_difference_minutes_;
+
+  // The first on-screen month to have been displayed when the calendar was
+  // opened.
+  base::Time first_on_screen_month_;
+
+  // Maximum distance, in months, from the on-screen month first displayed in
+  // the calendar when it was opened. This is logged as a metric when the
+  // calendar is closed.
+  size_t max_distance_browsed_;
 
   ScopedSessionObserver session_observer_;
 

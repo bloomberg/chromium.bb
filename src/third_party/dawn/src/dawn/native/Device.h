@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_DEVICE_H_
-#define DAWNNATIVE_DEVICE_H_
+#ifndef SRC_DAWN_NATIVE_DEVICE_H_
+#define SRC_DAWN_NATIVE_DEVICE_H_
 
+#include "dawn/native/CacheKey.h"
 #include "dawn/native/Commands.h"
 #include "dawn/native/ComputePipeline.h"
 #include "dawn/native/Error.h"
@@ -137,6 +138,7 @@ namespace dawn::native {
         // valid and supported.
         // The reference returned has the same lifetime as the device.
         const Format& GetValidInternalFormat(wgpu::TextureFormat format) const;
+        const Format& GetValidInternalFormat(FormatIndex formatIndex) const;
 
         virtual ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
             CommandEncoder* encoder,
@@ -170,6 +172,8 @@ namespace dawn::native {
 
         void UncacheComputePipeline(ComputePipelineBase* obj);
 
+        ResultOrError<Ref<TextureViewBase>> GetOrCreateDummyTextureViewForExternalTexture();
+
         ResultOrError<Ref<PipelineLayoutBase>> GetOrCreatePipelineLayout(
             const PipelineLayoutDescriptor* descriptor);
         void UncachePipelineLayout(PipelineLayoutBase* obj);
@@ -199,7 +203,7 @@ namespace dawn::native {
             bool allowInternalBinding = false);
         ResultOrError<Ref<BufferBase>> CreateBuffer(const BufferDescriptor* descriptor);
         ResultOrError<Ref<CommandEncoder>> CreateCommandEncoder(
-            const CommandEncoderDescriptor* descriptor);
+            const CommandEncoderDescriptor* descriptor = nullptr);
         ResultOrError<Ref<ComputePipelineBase>> CreateComputePipeline(
             const ComputePipelineDescriptor* descriptor);
         MaybeError CreateComputePipelineAsync(const ComputePipelineDescriptor* descriptor,
@@ -216,7 +220,8 @@ namespace dawn::native {
         MaybeError CreateRenderPipelineAsync(const RenderPipelineDescriptor* descriptor,
                                              WGPUCreateRenderPipelineAsyncCallback callback,
                                              void* userdata);
-        ResultOrError<Ref<SamplerBase>> CreateSampler(const SamplerDescriptor* descriptor);
+        ResultOrError<Ref<SamplerBase>> CreateSampler(
+            const SamplerDescriptor* descriptor = nullptr);
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModule(
             const ShaderModuleDescriptor* descriptor,
             OwnedCompilationMessages* compilationMessages = nullptr);
@@ -366,7 +371,7 @@ namespace dawn::native {
 
         PipelineCompatibilityToken GetNextPipelineCompatibilityToken();
 
-        const std::string& GetCacheIsolationKey() const;
+        const CacheKey& GetCacheKey() const;
         const std::string& GetLabel() const;
         void APISetLabel(const char* label);
         void APIDestroy();
@@ -378,7 +383,7 @@ namespace dawn::native {
         void SetToggle(Toggle toggle, bool isEnabled);
         void ForceSetToggle(Toggle toggle, bool isEnabled);
 
-        MaybeError Initialize(QueueBase* defaultQueue);
+        MaybeError Initialize(Ref<QueueBase> defaultQueue);
         void DestroyObjects();
         void Destroy();
 
@@ -507,6 +512,8 @@ namespace dawn::native {
 
         Ref<BindGroupLayoutBase> mEmptyBindGroupLayout;
 
+        Ref<TextureViewBase> mExternalTextureDummyView;
+
         std::unique_ptr<DynamicUploader> mDynamicUploader;
         std::unique_ptr<AsyncTaskManager> mAsyncTaskManager;
         Ref<QueueBase> mQueue;
@@ -541,9 +548,9 @@ namespace dawn::native {
         std::unique_ptr<CallbackTaskManager> mCallbackTaskManager;
         std::unique_ptr<dawn::platform::WorkerTaskPool> mWorkerTaskPool;
         std::string mLabel;
-        std::string mCacheIsolationKey = "";
+        CacheKey mDeviceCacheKey;
     };
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_DEVICE_H_
+#endif  // SRC_DAWN_NATIVE_DEVICE_H_

@@ -1,5 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
+licenses(["notice"])
+
 go_library(
     name = "push_bazel_apps_from_wasm_image_lib",
     srcs = ["push_bazel_apps_from_wasm_image.go"],

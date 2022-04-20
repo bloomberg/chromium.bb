@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_COMMANDBUFFERVK_H_
-#define DAWNNATIVE_VULKAN_COMMANDBUFFERVK_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_COMMANDBUFFERVK_H_
+#define SRC_DAWN_NATIVE_VULKAN_COMMANDBUFFERVK_H_
 
 #include "dawn/native/CommandBuffer.h"
 #include "dawn/native/Error.h"
@@ -44,12 +44,12 @@ namespace dawn::native::vulkan {
                                      const ComputePassResourceUsage& resourceUsages);
         MaybeError RecordRenderPass(CommandRecordingContext* recordingContext,
                                     BeginRenderPassCmd* renderPass);
-        void RecordCopyImageWithTemporaryBuffer(CommandRecordingContext* recordingContext,
-                                                const TextureCopy& srcCopy,
-                                                const TextureCopy& dstCopy,
-                                                const Extent3D& copySize);
+        MaybeError RecordCopyImageWithTemporaryBuffer(CommandRecordingContext* recordingContext,
+                                                      const TextureCopy& srcCopy,
+                                                      const TextureCopy& dstCopy,
+                                                      const Extent3D& copySize);
     };
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_COMMANDBUFFERVK_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_COMMANDBUFFERVK_H_

@@ -36,6 +36,7 @@
 #include "blockdsp.h"
 #include "bswapdsp.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "internal.h"
 
@@ -1008,10 +1009,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
     f->frame_buffer      = av_mallocz(avctx->width * avctx->height * 2);
     f->last_frame_buffer = av_mallocz(avctx->width * avctx->height * 2);
-    if (!f->frame_buffer || !f->last_frame_buffer) {
-        decode_end(avctx);
+    if (!f->frame_buffer || !f->last_frame_buffer)
         return AVERROR(ENOMEM);
-    }
 
     f->version = AV_RL32(avctx->extradata) >> 16;
     ff_blockdsp_init(&f->bdsp, avctx);
@@ -1028,15 +1027,15 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_fourxm_decoder = {
-    .name           = "4xm",
-    .long_name      = NULL_IF_CONFIG_SMALL("4X Movie"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_4XM,
+const FFCodec ff_fourxm_decoder = {
+    .p.name         = "4xm",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("4X Movie"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_4XM,
     .priv_data_size = sizeof(FourXContext),
     .init           = decode_init,
     .close          = decode_end,
     .decode         = decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .p.capabilities = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

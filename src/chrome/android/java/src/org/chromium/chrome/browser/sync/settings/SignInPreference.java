@@ -13,7 +13,6 @@ import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
@@ -71,7 +70,6 @@ public class SignInPreference
                 .getSigninManager(Profile.getLastUsedRegularProfile())
                 .addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
-        FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
         SyncService syncService = SyncService.get();
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
@@ -139,7 +137,6 @@ public class SignInPreference
         setSummary(R.string.sign_in_to_chrome_disabled_summary);
         setFragment(null);
         setIcon(ManagedPreferencesUtils.getManagedByEnterpriseIconId());
-        setWidgetLayoutResource(0);
         setViewEnabled(false);
         setOnPreferenceClickListener(pref -> {
             ManagedPreferencesUtils.showManagedByAdministratorToast(getContext());
@@ -158,7 +155,6 @@ public class SignInPreference
 
         setFragment(null);
         setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
-        setWidgetLayoutResource(0);
         setViewEnabled(true);
         setOnPreferenceClickListener(pref
                 -> SyncConsentActivityLauncherImpl.get().launchActivityIfAllowed(
@@ -178,7 +174,6 @@ public class SignInPreference
         setSummary(accountName);
         setFragment(AccountManagementFragment.class.getName());
         setIcon(profileData.getImage());
-        setWidgetLayoutResource(0);
         setViewEnabled(true);
         setOnPreferenceClickListener(null);
 

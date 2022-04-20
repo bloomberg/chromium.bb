@@ -31,13 +31,14 @@
 #include "avcodec.h"
 #include "blockdsp.h"
 #include "bswapdsp.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "aandcttab.h"
 #include "eaidct.h"
 #include "idctdsp.h"
 #include "internal.h"
-#include "mpeg12.h"
 #include "mpeg12data.h"
+#include "mpeg12dec.h"
 
 typedef struct TqiContext {
     AVCodecContext *avctx;
@@ -182,15 +183,15 @@ static av_cold int tqi_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_eatqi_decoder = {
-    .name           = "eatqi",
-    .long_name      = NULL_IF_CONFIG_SMALL("Electronic Arts TQI Video"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_TQI,
+const FFCodec ff_eatqi_decoder = {
+    .p.name         = "eatqi",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Electronic Arts TQI Video"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_TQI,
     .priv_data_size = sizeof(TqiContext),
     .init           = tqi_decode_init,
     .close          = tqi_decode_end,
     .decode         = tqi_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

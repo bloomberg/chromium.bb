@@ -4,8 +4,9 @@
 # found in the LICENSE file.
 
 # Things are easiest for everyone if these source paths are absolute.
-_src = get_path_info("../experimental/graphite/src", "abspath")
-_include = get_path_info("../experimental/graphite/include", "abspath")
+_src = get_path_info("../src/gpu/graphite", "abspath")
+_include = get_path_info("../include/gpu/graphite", "abspath")
+_include_private = get_path_info("../include/private/gpu/graphite", "abspath")
 
 skia_graphite_public = [
   "$_include/BackendTexture.h",
@@ -24,6 +25,8 @@ skia_graphite_sources = [
   "$_src/Buffer.h",
   "$_src/Caps.cpp",
   "$_src/Caps.h",
+  "$_src/ClipStack.cpp",
+  "$_src/ClipStack_graphite.h",
   "$_src/CommandBuffer.cpp",
   "$_src/CommandBuffer.h",
   "$_src/Context.cpp",
@@ -52,6 +55,7 @@ skia_graphite_sources = [
   "$_src/GlobalCache.h",
   "$_src/Gpu.cpp",
   "$_src/Gpu.h",
+  "$_src/GpuWorkSubmission.cpp",
   "$_src/GpuWorkSubmission.h",
   "$_src/GraphicsPipeline.cpp",
   "$_src/GraphicsPipeline.h",
@@ -64,7 +68,6 @@ skia_graphite_sources = [
   "$_src/Log.h",
   "$_src/PaintParams.cpp",
   "$_src/PaintParams.h",
-  "$_src/PipelineDataCache.cpp",
   "$_src/PipelineDataCache.h",
   "$_src/Recorder.cpp",
   "$_src/RecorderPriv.cpp",
@@ -95,6 +98,8 @@ skia_graphite_sources = [
   "$_src/TextureProxy.cpp",
   "$_src/TextureProxy.h",
   "$_src/TextureProxyView.h",
+  "$_src/TextureUtils.cpp",
+  "$_src/TextureUtils.h",
   "$_src/UniformManager.cpp",
   "$_src/UniformManager.h",
   "$_src/UploadTask.cpp",
@@ -108,13 +113,22 @@ skia_graphite_sources = [
   "$_src/geom/Transform.cpp",
   "$_src/geom/Transform_graphite.h",
   "$_src/geom/VectorTypes.h",
+  "$_src/render/CoverBoundsRenderStep.cpp",
+  "$_src/render/CoverBoundsRenderStep.h",
+  "$_src/render/MiddleOutFanRenderStep.cpp",
+  "$_src/render/MiddleOutFanRenderStep.h",
+  "$_src/render/StencilAndCoverDSS.h",
   "$_src/render/StencilAndFillPathRenderer.cpp",
+  "$_src/render/TessellateCurvesRenderStep.cpp",
+  "$_src/render/TessellateCurvesRenderStep.h",
+  "$_src/render/TessellateWedgesRenderStep.cpp",
+  "$_src/render/TessellateWedgesRenderStep.h",
 ]
 
 skia_graphite_mtl_sources = [
   "$_include/mtl/MtlBackendContext.h",
   "$_include/mtl/MtlTypes.h",
-  "$_include/private/MtlTypesPriv.h",
+  "$_include_private/MtlTypesPriv.h",
   "$_src/mtl/MtlBlitCommandEncoder.h",
   "$_src/mtl/MtlBuffer.h",
   "$_src/mtl/MtlBuffer.mm",

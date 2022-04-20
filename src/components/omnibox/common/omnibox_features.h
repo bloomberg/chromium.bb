@@ -18,6 +18,7 @@ extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kImageSearchSuggestionThumbnail;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
+extern const base::Feature kAndroidAuxiliarySearch;
 
 // Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
 // TODO(tommycli): There are more flags above that belong in this category.
@@ -57,7 +58,6 @@ extern const base::Feature kHistoryQuickProviderAblateInMemoryURLIndexCacheFile;
 extern const base::Feature kDisableCGIParamMatching;
 extern const base::Feature kShortBookmarkSuggestions;
 extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
-extern const base::Feature kPreserveLongerShortcutsText;
 extern const base::Feature kAggregateShortcuts;
 extern const base::Feature kBookmarkPaths;
 
@@ -76,10 +76,7 @@ extern const base::Feature kNtpRealboxSuggestionAnswers;
 extern const base::Feature kNtpRealboxTailSuggest;
 extern const base::Feature kOmniboxFuzzyUrlSuggestions;
 extern const base::Feature kOmniboxPedalsAndroidBatch1;
-extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsBatch3NonEnglish;
-extern const base::Feature kOmniboxPedalsTranslationConsole;
-extern const base::Feature kWebUIOmniboxPopup;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).

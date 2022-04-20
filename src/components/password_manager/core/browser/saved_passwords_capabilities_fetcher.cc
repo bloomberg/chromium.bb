@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "url/gurl.h"
 
 namespace password_manager {
@@ -93,6 +94,11 @@ void SavedPasswordsCapabilitiesFetcher::FetchScriptAvailability(
 
 bool SavedPasswordsCapabilitiesFetcher::IsScriptAvailable(
     const url::Origin& origin) const {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kForceEnablePasswordDomainCapabilities)) {
+    return true;
+  }
+
   auto domains_it = cache_.find(origin);
   // Domain not present.
   if (domains_it == cache_.end() || domains_it->second.IsResultStale()) {
@@ -279,6 +285,32 @@ bool SavedPasswordsCapabilitiesFetcher::CapabilitiesFetchResult::IsResultStale()
   static const base::TimeDelta kCacheTimeout = base::Minutes(5);
   return last_fetch_timestamp.is_null() ||
          base::TimeTicks::Now() - last_fetch_timestamp >= kCacheTimeout;
+}
+
+base::Value::Dict
+SavedPasswordsCapabilitiesFetcher::GetDebugInformationForInternals() const {
+  base::Value::Dict result;
+
+  result.Set("engine", "hash-prefix-based lookup");
+
+  std::string cache_state;
+  switch (GetCacheState()) {
+    case CacheState::kReady:
+      cache_state = "ready";
+      break;
+    case CacheState::kStale:
+      cache_state = "stale";
+      break;
+    case CacheState::kNeverSet:
+      cache_state = "never set";
+      break;
+    case CacheState::kWaiting:
+      cache_state = "waiting";
+      break;
+  }
+  result.Set("cache state", cache_state);
+
+  return result;
 }
 
 }  // namespace password_manager

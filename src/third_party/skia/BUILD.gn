@@ -628,42 +628,29 @@ if (skia_lex) {
   }
 }
 
-# `Compile SkSL Tests` relies on skslc.
-if (skia_compile_sksl_tests) {
-  skia_executable("skslc") {
+if (skia_compile_modules || skia_compile_sksl_tests) {
+  # Copy the module source files into the out directory.
+  copy("sksl_pre_includes") {
+    sources = [
+      "src/sksl/sksl_frag.sksl",
+      "src/sksl/sksl_gpu.sksl",
+      "src/sksl/sksl_public.sksl",
+      "src/sksl/sksl_rt_shader.sksl",
+      "src/sksl/sksl_vert.sksl",
+    ]
+    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+  }
+}
+
+if (skia_compile_modules) {
+  # Generate the sksl-precompile binary.
+  skia_executable("sksl-precompile") {
     defines = [
       "SKSL_STANDALONE",
       "SK_DISABLE_TRACING",
-      "SK_ENABLE_SPIRV_CROSS",
-      "SK_ENABLE_SPIRV_VALIDATION",
     ]
-    sources = [
-      "src/core/SkArenaAlloc.cpp",
-      "src/core/SkBlockAllocator.cpp",
-      "src/core/SkCpu.cpp",
-      "src/core/SkData.cpp",
-      "src/core/SkHalf.cpp",
-      "src/core/SkMalloc.cpp",
-      "src/core/SkMath.cpp",
-      "src/core/SkMatrixInvert.cpp",
-      "src/core/SkSemaphore.cpp",
-      "src/core/SkStream.cpp",
-      "src/core/SkString.cpp",
-      "src/core/SkStringUtils.cpp",
-      "src/core/SkThreadID.cpp",
-      "src/core/SkUtils.cpp",
-      "src/core/SkVM.cpp",
-      "src/gpu/GrMemoryPool.cpp",
-      "src/ports/SkMemory_malloc.cpp",
-      "src/ports/SkOSFile_stdio.cpp",
-      "src/sksl/SkSLMain.cpp",
-      "src/utils/SkJSON.cpp",
-      "src/utils/SkJSONWriter.cpp",
-      "src/utils/SkParse.cpp",
-      "src/utils/SkShaderUtils.cpp",
-      "src/utils/SkUTF.cpp",
-      "src/utils/SkVMVisualizer.cpp",
-    ]
+    sources = skslc_deps
+    sources += [ "tools/sksl-precompile/SkSLPrecompile.cpp" ]
     libs = []
     if (is_win) {
       sources += [ "src/ports/SkOSFile_win.cpp" ]
@@ -673,6 +660,75 @@ if (skia_compile_sksl_tests) {
     }
     sources += skia_sksl_sources
     sources += skia_sksl_gpu_sources
+    include_dirs = [ "." ]
+    deps = [ ":run_sksllex" ]
+  }
+
+  sksl_precompile_path = "$root_out_dir/"
+  if (host_toolchain != default_toolchain_name) {
+    sksl_precompile_path += "$host_toolchain/"
+  }
+  sksl_precompile_path += "sksl-precompile"
+  if (host_os == "win") {
+    sksl_precompile_path += ".exe"
+  }
+
+  # Use dehydrate_sksl.py to precompile all of the modules.
+  dehydrate_sksl_sources = get_target_outputs(":sksl_pre_includes")
+
+  dehydrate_sksl_outputs = []
+  foreach(src, dehydrate_sksl_sources) {
+    name = get_path_info(src, "name")
+
+    # GN insists its outputs should go somewhere underneath target_out_dir, so we trick it with a
+    # path that starts with target_out_dir and then uses ".." to back up into the src dir.
+    dehydrate_sksl_outputs += [ "$target_out_dir/" + rebase_path(
+                                    "src/sksl/generated/$name.dehydrated.sksl",
+                                    target_out_dir) ]
+  }
+
+  action("dehydrate_sksl") {
+    script = "gn/dehydrate_sksl.py"
+    deps = [
+      ":sksl-precompile(//gn/toolchain:$host_toolchain)",
+      ":sksl_pre_includes",
+    ]
+    sources = dehydrate_sksl_sources
+    outputs = dehydrate_sksl_outputs
+    args = [
+      rebase_path(sksl_precompile_path),
+      rebase_path("src/sksl/generated"),
+    ]
+    args += rebase_path(dehydrate_sksl_sources)
+  }
+} else {
+  group("dehydrate_sksl") {
+  }
+}
+
+# `Compile SkSL Tests` relies on skslc and the precompiled modules.
+if (skia_compile_sksl_tests) {
+  # Build skslc.
+  skia_executable("skslc") {
+    defines = [
+      "SKSL_ENABLE_TRACING",
+      "SKSL_STANDALONE",
+      "SK_DISABLE_TRACING",
+      "SK_ENABLE_SPIRV_CROSS",
+      "SK_ENABLE_SPIRV_VALIDATION",
+    ]
+    sources = skslc_deps
+    sources += [ "tools/skslc/Main.cpp" ]
+    libs = []
+    if (is_win) {
+      sources += [ "src/ports/SkOSFile_win.cpp" ]
+    } else {
+      sources += [ "src/ports/SkOSFile_posix.cpp" ]
+      libs += [ "dl" ]
+    }
+    sources += skia_sksl_sources
+    sources += skia_sksl_gpu_sources
+    sources += skia_sksl_tracing_sources
     include_dirs = [ "." ]
     deps = [
       ":run_sksllex",
@@ -692,52 +748,8 @@ if (skia_compile_sksl_tests) {
     skslc_path += ".exe"
   }
 
-  copy("sksl_pre_includes") {
-    sources = [
-      "src/sksl/sksl_frag.sksl",
-      "src/sksl/sksl_gpu.sksl",
-      "src/sksl/sksl_public.sksl",
-      "src/sksl/sksl_rt_shader.sksl",
-      "src/sksl/sksl_vert.sksl",
-    ]
-    outputs = [ "$root_out_dir/{{source_file_part}}" ]
-  }
-
-  dehydrate_sksl_sources = get_target_outputs(":sksl_pre_includes")
-
-  dehydrate_sksl_outputs = []
-  foreach(src, dehydrate_sksl_sources) {
-    name = get_path_info(src, "name")
-
-    # GN insists its outputs should go somewhere underneath target_out_dir, so we trick it with a
-    # path that starts with target_out_dir and then uses ".." to back up into the src dir.
-    dehydrate_sksl_outputs += [ "$target_out_dir/" + rebase_path(
-                                    "src/sksl/generated/$name.dehydrated.sksl",
-                                    target_out_dir) ]
-  }
-
-  action("dehydrate_sksl") {
-    script = "gn/dehydrate_sksl.py"
-    deps = [
-      ":sksl_pre_includes",
-      ":skslc(//gn/toolchain:$host_toolchain)",
-    ]
-    sources = dehydrate_sksl_sources
-    outputs = dehydrate_sksl_outputs
-    args = [
-      rebase_path(skslc_path),
-      rebase_path("src/sksl/generated"),
-    ]
-    args += rebase_path(dehydrate_sksl_sources)
-  }
-} else {
-  group("dehydrate_sksl") {
-  }
-}
-
-if (skia_compile_sksl_tests) {
+  # Build the test files using skslc.
   import("gn/sksl_tests.gni")
-
   template("compile_sksl") {
     # Compile the passed-in `sources` into `outputs` using skslc, with the given language/settings.
     action("compile_sksl_${target_name}") {
@@ -764,15 +776,8 @@ if (skia_compile_sksl_tests) {
         src = resourcesDir + partialPath
 
         dir = get_path_info(dst, "dir")
-
-        # We want to support double-extensions (for '.dsl.cpp') but GN doesn't natively handle this.
-        # Workaround: http://go/ggroup/a/chromium.org/g/gn-dev/c/RdEpjeYtb-4
-        # For input path "file.aa.bb", name will contain "file" and ext will contain ".aa.bb".
-        # For input path "file.cc", name will contain "file" and ext will contain ".cc".
-        nameTmp = get_path_info(dst, "name")
-        name = get_path_info(nameTmp, "name")
-        ext = get_path_info(nameTmp, "extension")
-        ext += get_path_info(dst, "extension")
+        name = get_path_info(dst, "name")
+        ext = get_path_info(dst, "extension")
         response_file_contents += rebase_path([
                                                 src,
                                                 dir,
@@ -827,6 +832,12 @@ if (skia_compile_sksl_tests) {
     lang = "--spirv"
     settings = "--settings"
   }
+  compile_sksl("wgsl_tests") {
+    sources = sksl_wgsl_tests_sources
+    outExtensions = [ ".wgsl" ]
+    lang = "--wgsl"
+    settings = "--settings"
+  }
 } else {
   group("compile_sksl_glsl_tests") {
   }
@@ -838,12 +849,24 @@ if (skia_compile_sksl_tests) {
   }
   group("compile_sksl_spirv_tests") {
   }
+  group("compile_sksl_wgsl_tests") {
+  }
 }
 
 optional("gpu_shared") {
   enabled = skia_enable_gpu || skia_enable_graphite
 
-  sources = skia_shared_gpu_sources
+  deps = []
+  public_defines = []
+
+  if (skia_use_direct3d) {
+    # Must be defined when 'skia_sksl_gpu_sources' is built, even if the rest of skia_use_direct3d
+    # is handled only in the 'gpu' component.
+    public_defines += [ "SK_ENABLE_SPIRV_CROSS" ]
+    deps += [ "//third_party/spirv-cross:spirv_cross" ]
+  }
+
+  sources = skia_shared_gpu_sources + skia_sksl_gpu_sources
 }
 
 optional("gpu") {
@@ -865,7 +888,7 @@ optional("gpu") {
   public_configs = []
   public_deps = []
 
-  sources = skia_gpu_sources + skia_sksl_gpu_sources
+  sources = skia_gpu_sources
   if (!skia_enable_skgpu_v1) {
     sources -= skia_skgpu_v1_sources
   }
@@ -877,8 +900,8 @@ optional("gpu") {
     public_defines += [ "SK_GL" ]
     if (is_android) {
       sources += [
-        "src/gpu/gl/egl/GrGLMakeEGLInterface.cpp",
-        "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp",
+        "src/gpu/ganesh/gl/egl/GrGLMakeEGLInterface.cpp",
+        "src/gpu/ganesh/gl/egl/GrGLMakeNativeInterface_egl.cpp",
       ]
 
       # this lib is required to link against AHardwareBuffer
@@ -887,29 +910,29 @@ optional("gpu") {
       }
     } else if (skia_use_egl) {
       sources += [
-        "src/gpu/gl/egl/GrGLMakeEGLInterface.cpp",
-        "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp",
+        "src/gpu/ganesh/gl/egl/GrGLMakeEGLInterface.cpp",
+        "src/gpu/ganesh/gl/egl/GrGLMakeNativeInterface_egl.cpp",
       ]
       libs += [ "EGL" ]
     } else if (skia_use_webgl) {
-      sources += [ "src/gpu/gl/webgl/GrGLMakeNativeInterface_webgl.cpp" ]
+      sources += [ "src/gpu/ganesh/gl/webgl/GrGLMakeNativeInterface_webgl.cpp" ]
     } else if (is_linux && skia_use_x11) {
       sources += [
-        "src/gpu/gl/glx/GrGLMakeGLXInterface.cpp",
-        "src/gpu/gl/glx/GrGLMakeNativeInterface_glx.cpp",
+        "src/gpu/ganesh/gl/glx/GrGLMakeGLXInterface.cpp",
+        "src/gpu/ganesh/gl/glx/GrGLMakeNativeInterface_glx.cpp",
       ]
       libs += [ "GL" ]
     } else if (is_mac) {
-      sources += [ "src/gpu/gl/mac/GrGLMakeNativeInterface_mac.cpp" ]
+      sources += [ "src/gpu/ganesh/gl/mac/GrGLMakeNativeInterface_mac.cpp" ]
     } else if (is_ios) {
-      sources += [ "src/gpu/gl/iOS/GrGLMakeNativeInterface_iOS.cpp" ]
+      sources += [ "src/gpu/ganesh/gl/iOS/GrGLMakeNativeInterface_iOS.cpp" ]
     } else if (is_win && !skia_enable_winuwp) {
-      sources += [ "src/gpu/gl/win/GrGLMakeNativeInterface_win.cpp" ]
+      sources += [ "src/gpu/ganesh/gl/win/GrGLMakeNativeInterface_win.cpp" ]
       if (target_cpu != "arm64") {
         libs += [ "OpenGL32.lib" ]
       }
     } else {
-      sources += [ "src/gpu/gl/GrGLMakeNativeInterface_none.cpp" ]
+      sources += [ "src/gpu/ganesh/gl/GrGLMakeNativeInterface_none.cpp" ]
     }
     sources += skia_gl_gpu_sources
   }
@@ -942,14 +965,14 @@ optional("gpu") {
   if (skia_use_dawn) {
     public_defines += [ "SK_DAWN" ]
     sources += skia_dawn_sources
-    public_deps += [ "//third_party/externals/dawn/src/dawn:dawn_headers" ]
+    public_deps += [ "//third_party/externals/dawn/include/dawn:cpp_headers" ]
     deps += [
-      "//third_party/externals/dawn/src/dawn:dawn_proc",
-      "//third_party/externals/dawn/src/dawn:dawncpp",
+      "//third_party/externals/dawn/src/dawn:cpp",
+      "//third_party/externals/dawn/src/dawn:proc",
     ]
     if (dawn_enable_d3d12 || dawn_enable_desktop_gl || dawn_enable_metal ||
         dawn_enable_opengles || dawn_enable_vulkan) {
-      deps += [ "//third_party/externals/dawn/src/dawn_native" ]
+      deps += [ "//third_party/externals/dawn/src/dawn/native" ]
     }
     if (dawn_enable_d3d12) {
       libs += [
@@ -963,14 +986,8 @@ optional("gpu") {
   }
 
   if (skia_use_direct3d) {
-    public_defines += [
-      "SK_DIRECT3D",
-      "SK_ENABLE_SPIRV_CROSS",
-    ]
-    deps += [
-      "//third_party/d3d12allocator",
-      "//third_party/spirv-cross:spirv_cross",
-    ]
+    public_defines += [ "SK_DIRECT3D" ]
+    deps += [ "//third_party/d3d12allocator" ]
     sources += skia_direct3d_sources
     if (skia_enable_direct3d_debug_layer) {
       public_defines += [ "SK_ENABLE_D3D_DEBUG_LAYER" ]
@@ -997,7 +1014,7 @@ optional("gpu") {
     cflags_objcc += [ "-fobjc-arc" ]
   }
 
-  if (is_debug) {
+  if (is_debug || skia_build_for_debugger) {
     public_defines += [ "SK_ENABLE_DUMP_GPU" ]
   }
 }
@@ -1366,6 +1383,15 @@ skia_component("skia") {
   if (skia_enable_sksl) {
     deps += [ ":dehydrate_sksl" ]
     sources += skia_sksl_sources
+
+    if (skia_enable_sksl_tracing) {
+      defines += [ "SKSL_ENABLE_TRACING" ]
+      sources += skia_sksl_tracing_sources
+    }
+  }
+
+  if (skia_build_for_debugger) {
+    defines += [ "SK_BUILD_FOR_DEBUGGER" ]
   }
 
   if (is_win) {
@@ -2858,6 +2884,19 @@ if (skia_enable_tools) {
         ":skia",
         ":tool_utils",
       ]
+    }
+  }
+
+  if (skia_use_vulkan) {
+    test_app("VulkanBasic") {
+      # Bots and even devs may not have Vulkan headers, so put
+      # include/third_party/vulkan on our path so they're always available.
+      all_dependent_configs = [ ":our_vulkan_headers" ]
+
+      sources = [ "example/VulkanBasic.cpp" ]
+      sources += [ "tools/gpu/vk/VkTestUtils.h" ]
+      sources += [ "tools/gpu/vk/VkTestUtils.cpp" ]
+      deps = [ ":skia" ]
     }
   }
 

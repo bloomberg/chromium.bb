@@ -644,3 +644,86 @@ uint64_t aom_mse_wxh_16bit_avx2(uint8_t *dst, int dstride, uint16_t *src,
     default: assert(0 && "unsupported width"); return -1;
   }
 }
+
+static INLINE void sum_final_256bit_avx2(__m256i sum_8x16[2], int *const sum) {
+  const __m256i sum_result_0 = _mm256_hadd_epi16(sum_8x16[0], sum_8x16[1]);
+  const __m256i sum_result_1 =
+      _mm256_add_epi16(_mm256_srli_si256(sum_result_0, 4), sum_result_0);
+  const __m256i sum_result_2 =
+      _mm256_add_epi16(_mm256_srli_si256(sum_result_1, 2), sum_result_1);
+  const __m128i sum_128_high = _mm256_extractf128_si256(sum_result_2, 1);
+  const __m128i sum_result_3 =
+      _mm_unpacklo_epi16(_mm256_castsi256_si128(sum_result_2), sum_128_high);
+  const __m128i sum_result_4 =
+      _mm_unpackhi_epi16(_mm256_castsi256_si128(sum_result_2), sum_128_high);
+  const __m128i sum_result_5 = _mm_unpacklo_epi32(sum_result_3, sum_result_4);
+
+  _mm_storeu_si128((__m128i *)sum, _mm_cvtepi16_epi32(sum_result_5));
+}
+
+static INLINE void calc_sum_sse_for_8x32_block_avx2(const uint8_t *src,
+                                                    const uint8_t *ref,
+                                                    __m256i sse_8x16[2],
+                                                    __m256i sum_8x16[2]) {
+  const __m256i s0_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)src));
+  const __m256i r0_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)ref));
+  const __m256i s1_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)(src + 16)));
+  const __m256i r1_256 =
+      _mm256_cvtepu8_epi16(_mm_loadu_si128((const __m128i *)(ref + 16)));
+  const __m256i diff0 = _mm256_sub_epi16(s0_256, r0_256);
+  const __m256i diff1 = _mm256_sub_epi16(s1_256, r1_256);
+
+  sse_8x16[0] = _mm256_add_epi32(sse_8x16[0], _mm256_madd_epi16(diff0, diff0));
+  sse_8x16[1] = _mm256_add_epi32(sse_8x16[1], _mm256_madd_epi16(diff1, diff1));
+  sum_8x16[0] = _mm256_add_epi16(sum_8x16[0], diff0);
+  sum_8x16[1] = _mm256_add_epi16(sum_8x16[1], diff1);
+}
+
+static INLINE void get_sse_sum_8x8_quad_avx2(const uint8_t *src,
+                                             const int src_stride,
+                                             const uint8_t *ref,
+                                             const int ref_stride, const int h,
+                                             unsigned int *const sse,
+                                             int *const sum) {
+  assert(h <= 128);  // May overflow for larger height.
+  __m256i sse_8x16[2], sum_8x16[2];
+  sum_8x16[0] = _mm256_setzero_si256();
+  sse_8x16[0] = _mm256_setzero_si256();
+  sum_8x16[1] = sum_8x16[0];
+  sse_8x16[1] = sse_8x16[0];
+
+  for (int i = 0; i < h; i += 2) {
+    // Process 8x32 block of first row.
+    calc_sum_sse_for_8x32_block_avx2(src, ref, sse_8x16, sum_8x16);
+
+    // Process 8x32 block of second row.
+    calc_sum_sse_for_8x32_block_avx2(src + src_stride, ref + ref_stride,
+                                     sse_8x16, sum_8x16);
+
+    src += src_stride << 1;
+    ref += ref_stride << 1;
+  }
+
+  // Add sse registers appropriately to get each 8x8 block sse separately.
+  const __m256i sse_result_1 = _mm256_hadd_epi32(sse_8x16[0], sse_8x16[1]);
+  const __m256i sse_result_2 =
+      _mm256_hadd_epi32(sse_result_1, _mm256_setzero_si256());
+  const __m256i sse_result_3 = _mm256_permute4x64_epi64(sse_result_2, 0xd8);
+
+  _mm_storeu_si128(
+      (__m128i *)sse,
+      _mm_shuffle_epi32(_mm256_castsi256_si128(sse_result_3), 0xd8));
+
+  // Add sum registers appropriately to get each 8x8 block sum separately.
+  sum_final_256bit_avx2(sum_8x16, sum);
+}
+
+void aom_get_sse_sum_8x8_quad_avx2(const uint8_t *src_ptr, int src_stride,
+                                   const uint8_t *ref_ptr, int ref_stride,
+                                   unsigned int *sse, int *sum) {
+  get_sse_sum_8x8_quad_avx2(src_ptr, src_stride, ref_ptr, ref_stride, 8, sse,
+                            sum);
+}

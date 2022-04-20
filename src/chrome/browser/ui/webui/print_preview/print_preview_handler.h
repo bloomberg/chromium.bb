@@ -26,6 +26,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
 namespace crosapi {
@@ -38,7 +39,6 @@ class LocalPrinter;
 
 namespace base {
 class DictionaryValue;
-class RefCountedMemory;
 }
 
 namespace content {
@@ -114,9 +114,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   virtual PrinterHandler* GetPrinterHandler(mojom::PrinterType printer_type);
 
  protected:
-  // Protected so unit tests can override.
-  virtual bool IsCloudPrintEnabled();
-
   // Shuts down the initiator renderer. Called when a bad IPC message is
   // received.
   virtual void BadMessageReceived();
@@ -201,13 +198,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   void HandleShowSystemDialog(const base::Value::List& args);
 #endif
 
-  // Opens a new tab to allow the user to add an account to sign into cloud
-  // print. |args| is unused.
-  void HandleSignin(const base::Value::List& args);
-
-  // Called when the tab opened by HandleSignIn() is closed.
-  void OnSignInTabClosed();
-
   // Gathers UMA stats when the print preview dialog is about to close.
   // |args| is unused.
   void HandleClosePreviewDialog(const base::Value::List& args);
@@ -236,11 +226,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   // error notification to the Web UI instead.
   void SendPrinterCapabilities(const std::string& callback_id,
                                base::Value settings_info);
-
-  // Send the PDF data to Print Preview so that it can be sent to the cloud
-  // print server to print.
-  void SendCloudPrintJob(const std::string& callback_id,
-                         const base::RefCountedMemory* data);
 
   // Closes the preview dialog.
   void ClosePreviewDialog();
@@ -285,7 +270,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler {
   bool has_logged_printers_count_ = false;
 
   // The settings used for the most recent preview request.
-  base::Value last_preview_settings_;
+  absl::optional<base::Value::Dict> last_preview_settings_;
 
   // Handles requests for extension printers. Created lazily by calling
   // GetPrinterHandler().

@@ -51,6 +51,10 @@ export class Runtime {
     return queryParamsObject.get(name);
   }
 
+  static setQueryParamForTesting(name: string, value: string): void {
+    queryParamsObject.set(name, value);
+  }
+
   static experimentsSetting(): {
     [x: string]: boolean,
   } {
@@ -276,6 +280,7 @@ export enum ExperimentName {
   STYLES_PANE_CSS_CHANGES = 'stylesPaneCSSChanges',
   HEADER_OVERRIDES = 'headerOverrides',
   CSS_LAYERS = 'cssLayers',
+  EYEDROPPER_COLOR_PICKER = 'eyedropperColorPicker',
 }
 
 // TODO(crbug.com/1167717): Make this a const enum again

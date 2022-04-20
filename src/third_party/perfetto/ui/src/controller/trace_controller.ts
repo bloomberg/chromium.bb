@@ -110,7 +110,9 @@ const METRICS = [
   'android_sysui_cuj',
   'android_jank',
   'android_camera',
+  'android_other_traces',
   'chrome_dropped_frames',
+  'chrome_long_latency',
   'trace_metadata',
   'android_trusty_workqueues',
 ];

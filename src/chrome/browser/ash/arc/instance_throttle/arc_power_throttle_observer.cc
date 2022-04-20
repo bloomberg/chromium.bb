@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/arc/instance_throttle/arc_power_throttle_observer.h"
+#include "base/time/time.h"
 
 namespace arc {
 
@@ -16,7 +17,7 @@ constexpr base::TimeDelta kHandleServiceAnrTime = base::Seconds(20);
 }  // namespace
 
 ArcPowerThrottleObserver::ArcPowerThrottleObserver()
-    : ThrottleObserver("ArcPower") {}
+    : ThrottleObserver(kArcPowerThrottleObserverName) {}
 
 ArcPowerThrottleObserver::~ArcPowerThrottleObserver() = default;
 

@@ -152,10 +152,18 @@ void NetworkTelemetrySampler::HandleNetworkTelemetryResult(
   bool should_report = false;
   bool should_collect_latency = false;
   for (const auto* network : network_state_list) {
-    bool item_reported = full_telemetry_reporting_enabled;
-    NetworkTelemetry* network_telemetry = nullptr;
     ::ash::NetworkTypePattern type =
         ::ash::NetworkTypePattern::Primitive(network->type());
+    // Only collect and report networks of any types that are connected, or wifi
+    // networks that have signal strength regardless of their connection states.
+    if (!network->IsConnectedState() &&
+        (!type.Equals(::ash::NetworkTypePattern::WiFi()) ||
+         network->signal_strength() == 0)) {
+      continue;
+    }
+
+    bool item_reported = full_telemetry_reporting_enabled;
+    NetworkTelemetry* network_telemetry = nullptr;
     if (full_telemetry_reporting_enabled) {
       if (network->IsOnline()) {
         should_collect_latency = true;
@@ -204,7 +212,8 @@ void NetworkTelemetrySampler::HandleNetworkTelemetryResult(
 
         // wireless link info is only available when the device is
         // connected to the access point.
-        if (!wireless_info->wireless_link_info.is_null()) {
+        if (!wireless_info->wireless_link_info.is_null() &&
+            network->IsConnectedState()) {
           const auto& wireless_link_info = wireless_info->wireless_link_info;
           network_telemetry->set_tx_bit_rate_mbps(
               wireless_link_info->tx_bit_rate_mbps);

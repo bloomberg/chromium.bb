@@ -137,7 +137,6 @@ set_aom_config_var(CONFIG_BITSTREAM_DEBUG 0
 set_aom_config_var(CONFIG_RD_DEBUG 0 "AV1 experiment.")
 set_aom_config_var(CONFIG_RD_COMMAND 0
                    "AV1 experiment: Use external rdmult and q_index.")
-set_aom_config_var(CONFIG_SHARP_SETTINGS 0 "AV1 experiment.")
 set_aom_config_var(
   CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
   "AV1 experiment: Disable full_pixel_motion_search_based_split on BLOCK_8X8.")
@@ -161,6 +160,8 @@ set_aom_config_var(
   "AV1 experiment: Baseline of improve bitrate accuracy experiment.")
 set_aom_config_var(CONFIG_BITRATE_ACCURACY 0
                    "AV1 experiment: Improve bitrate accuracy.")
+set_aom_config_var(CONFIG_RATECTRL_LOG 0
+                   "AV1 experiment: Log rate control decision.")
 set_aom_config_var(CONFIG_THREE_PASS 0
                    "AV1 experiment: Enable three-pass encoding.")
 

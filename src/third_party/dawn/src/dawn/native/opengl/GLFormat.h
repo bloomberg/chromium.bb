@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_OPENGL_GLFORMAT_H_
-#define DAWNNATIVE_OPENGL_GLFORMAT_H_
+#ifndef SRC_DAWN_NATIVE_OPENGL_GLFORMAT_H_
+#define SRC_DAWN_NATIVE_OPENGL_GLFORMAT_H_
 
 #include "dawn/native/Format.h"
 #include "dawn/native/opengl/opengl_platform.h"
@@ -34,9 +34,9 @@ namespace dawn::native::opengl {
         ComponentType componentType;
     };
 
-    using GLFormatTable = std::array<GLFormat, kKnownFormatCount>;
+    using GLFormatTable = ityp::array<FormatIndex, GLFormat, kKnownFormatCount>;
     GLFormatTable BuildGLFormatTable();
 
 }  // namespace dawn::native::opengl
 
-#endif  // DAWNNATIVE_OPENGL_GLFORMAT_H_
+#endif  // SRC_DAWN_NATIVE_OPENGL_GLFORMAT_H_

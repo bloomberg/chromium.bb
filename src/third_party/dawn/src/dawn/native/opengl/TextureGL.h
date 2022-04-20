@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_OPENGL_TEXTUREGL_H_
-#define DAWNNATIVE_OPENGL_TEXTUREGL_H_
+#ifndef SRC_DAWN_NATIVE_OPENGL_TEXTUREGL_H_
+#define SRC_DAWN_NATIVE_OPENGL_TEXTUREGL_H_
 
 #include "dawn/native/Texture.h"
 
@@ -35,6 +35,8 @@ namespace dawn::native::opengl {
         GLuint GetHandle() const;
         GLenum GetGLTarget() const;
         const GLFormat& GetGLFormat() const;
+        uint32_t GetGenID() const;
+        void Touch();
 
         void EnsureSubresourceContentInitialized(const SubresourceRange& range);
 
@@ -46,6 +48,7 @@ namespace dawn::native::opengl {
 
         GLuint mHandle;
         GLenum mTarget;
+        uint32_t mGenID = 0;
     };
 
     class TextureView final : public TextureViewBase {
@@ -54,16 +57,22 @@ namespace dawn::native::opengl {
 
         GLuint GetHandle() const;
         GLenum GetGLTarget() const;
+        void BindToFramebuffer(GLenum target, GLenum attachment);
+        void CopyIfNeeded();
 
       private:
         ~TextureView() override;
         void DestroyImpl() override;
+        GLenum GetInternalFormat() const;
 
+        // TODO(crbug.com/dawn/1355): Delete this handle on texture destroy.
         GLuint mHandle;
         GLenum mTarget;
         bool mOwnsHandle;
+        bool mUseCopy = false;
+        uint32_t mGenID = 0;
     };
 
 }  // namespace dawn::native::opengl
 
-#endif  // DAWNNATIVE_OPENGL_TEXTUREGL_H_
+#endif  // SRC_DAWN_NATIVE_OPENGL_TEXTUREGL_H_

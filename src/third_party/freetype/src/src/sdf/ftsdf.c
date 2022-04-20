@@ -1077,7 +1077,7 @@
   static FT_Error
   split_sdf_conic( FT_Memory     memory,
                    FT_26D6_Vec*  control_points,
-                   FT_Int        max_splits,
+                   FT_UInt       max_splits,
                    SDF_Edge**    out )
   {
     FT_Error     error = FT_Err_Ok;
@@ -1146,7 +1146,7 @@
   static FT_Error
   split_sdf_cubic( FT_Memory     memory,
                    FT_26D6_Vec*  control_points,
-                   FT_Int        max_splits,
+                   FT_UInt       max_splits,
                    SDF_Edge**    out )
   {
     FT_Error       error = FT_Err_Ok;
@@ -3014,7 +3014,7 @@
         diff = current_dist.distance - min_dist.distance;
 
 
-        if ( FT_ABS(diff ) < CORNER_CHECK_EPSILON )
+        if ( FT_ABS( diff ) < CORNER_CHECK_EPSILON )
           min_dist = resolve_corner( min_dist, current_dist );
         else if ( diff < 0 )
           min_dist = current_dist;
@@ -3288,7 +3288,7 @@
     buffer   = (FT_SDFFormat*)bitmap->buffer;
 
     if ( USE_SQUARED_DISTANCES )
-      sp_sq = FT_INT_16D16( spread * spread );
+      sp_sq = FT_INT_16D16( (FT_Int)( spread * spread ) );
     else
       sp_sq = fixed_spread;
 

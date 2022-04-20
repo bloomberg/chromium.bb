@@ -44,6 +44,7 @@
 #include <dwrite_3.h>
 
 namespace {
+static inline const constexpr bool kSkShowTextBlitCoverage = false;
 
 /* Note:
  * In versions 8 and 8.1 of Windows, some calls in DWrite are not thread safe.
@@ -776,7 +777,7 @@ void SkScalerContext_DW::generateMetrics(SkGlyph* glyph, SkArenaAlloc* alloc) {
                                   &bbox),
              "Fallback bounding box could not be determined.");
         if (glyphCheckAndSetBounds(glyph, bbox)) {
-            glyph->fForceBW = 1;
+            glyph->fScalerContextBits |= ScalerContextBits::ForceBW;
             glyph->fMaskFormat = SkMask::kBW_Format;
         }
     }
@@ -1119,11 +1120,11 @@ void SkScalerContext_DW::generateColorGlyphImage(const SkGlyph& glyph) {
     dstBitmap.setPixels(glyph.fImage);
 
     SkCanvas canvas(dstBitmap);
-#ifdef SK_SHOW_TEXT_BLIT_COVERAGE
-    canvas.clear(0x33FF0000);
-#else
-    canvas.clear(SK_ColorTRANSPARENT);
-#endif
+    if constexpr (kSkShowTextBlitCoverage) {
+        canvas.clear(0x33FF0000);
+    } else {
+        canvas.clear(SK_ColorTRANSPARENT);
+    }
     canvas.translate(-SkIntToScalar(glyph.fLeft), -SkIntToScalar(glyph.fTop));
 
     this->drawColorGlyphImage(glyph, canvas);
@@ -1179,7 +1180,7 @@ void SkScalerContext_DW::generateImage(const SkGlyph& glyph) {
     //Create the mask.
     DWRITE_RENDERING_MODE renderingMode = fRenderingMode;
     DWRITE_TEXTURE_TYPE textureType = fTextureType;
-    if (glyph.fForceBW) {
+    if (glyph.fScalerContextBits & ScalerContextBits::ForceBW) {
         renderingMode = DWRITE_RENDERING_MODE_ALIASED;
         textureType = DWRITE_TEXTURE_ALIASED_1x1;
     }

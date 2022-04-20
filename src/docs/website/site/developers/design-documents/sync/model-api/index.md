@@ -16,8 +16,8 @@ implementing their own local storage and responding to remote changes. This
 guide is for developers interested in syncing data for their model type to the
 cloud using Chrome Sync. It describes the newest version of the API, known as
 Unified Sync and Storage (USS). There is also the deprecated [SyncableService
-API] (aka Directory), which as of mid-2019 is still used by several legacy model
-types, but "wrapped into" USS (see [SyncableServiceBasedBridge]).
+API] (aka Directory), which as of early 2022 is still used by several legacy
+model types, but "wrapped into" USS (see [SyncableServiceBasedBridge]).
 
 [SyncableService API]: https://www.chromium.org/developers/design-documents/sync/syncable-service-api
 [SyncableServiceBasedBridge]: https://cs.chromium.org/chromium/src/components/sync/model/syncable_service_based_bridge.h
@@ -265,11 +265,16 @@ the next client restart.
 
 ## Sync Integration Checklist
 
+Before starting any integration work, please reach out to us at
+chrome-sync-dev@google.com and share your plans / design doc!
+
 *   Define your specifics proto in [`//components/sync/protocol/`][protocol].
+*   Add it to the [proto value conversions][conversions] files.
 *   Add a field for it to [`EntitySpecifics`][EntitySpecifics].
+*   At this point, there are also some server-side integration steps to be done.
+    Reach out to chrome-sync-dev@google.com for details.
 *   Add it to the [`ModelType`][ModelType] enum and
     [`kModelTypeInfoMap`][info_map].
-*   Add it to the [proto value conversions][conversions] files.
 *   Register a [`ModelTypeController`][ModelTypeController] for your type in
     [`SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers`][CreateCommonDataTypeControllers] or platform-specific equivalent in
     [`ChromeSyncClient::CreateDataTypeControllers`][CreateDataTypeControllers].

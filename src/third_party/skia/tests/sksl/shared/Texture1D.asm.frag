@@ -1,7 +1,7 @@
 ### Compilation failed:
 
 error: SPIR-V validation error: Operand 3 of TypeImage requires one of these capabilities: Sampled1D Image1D 
-  %13 = OpTypeImage %float 1D 0 0 0 1 Unknown
+  %11 = OpTypeImage %float 1D 0 0 0 1 Unknown
 
 OpCapability Shader
 %1 = OpExtInstImport "GLSL.std.450"
@@ -35,8 +35,8 @@ OpDecorate %35 RelaxedPrecision
 %bool = OpTypeBool
 %_ptr_Input_bool = OpTypePointer Input %bool
 %sk_Clockwise = OpVariable %_ptr_Input_bool Input
-%13 = OpTypeImage %float 1D 0 0 0 1 Unknown
-%12 = OpTypeSampledImage %13
+%11 = OpTypeImage %float 1D 0 0 0 1 Unknown
+%12 = OpTypeSampledImage %11
 %_ptr_UniformConstant_12 = OpTypePointer UniformConstant %12
 %tex = OpVariable %_ptr_UniformConstant_12 UniformConstant
 %void = OpTypeVoid

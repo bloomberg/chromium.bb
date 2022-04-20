@@ -127,19 +127,37 @@ class UnifiedMessageListView::MessageViewContainer
     is_top_ = is_top;
     is_bottom_ = is_bottom;
 
-    message_view_->SetBorder(
-        is_bottom ? views::NullBorder()
-                  : views::CreateSolidSidedBorder(
-                        0, 0, kUnifiedNotificationSeparatorThickness, 0,
-                        message_center_style::kSeperatorColor));
-    const int top_radius = is_top ? kBubbleCornerRadius : 0;
-    const int bottom_radius = is_bottom ? kBubbleCornerRadius : 0;
+    // We do not need to have a separate border with rounded corners with the
+    // new UI. This is because the entire scroll view has rounded corners now.
+    if (!features::IsNotificationsRefreshEnabled()) {
+      message_view_->SetBorder(
+          is_bottom ? views::NullBorder()
+                    : views::CreateSolidSidedBorder(
+                          gfx::Insets::TLBR(
+                              0, 0, kUnifiedNotificationSeparatorThickness, 0),
+                          message_center_style::kSeperatorColor));
+    }
+
+    int message_center_notification_corner_radius =
+        features::IsNotificationsRefreshEnabled()
+            ? kMessageCenterNotificationCornerRadius
+            : 0;
+    const int top_radius = is_top ? kBubbleCornerRadius
+                                  : message_center_notification_corner_radius;
+    const int bottom_radius = is_bottom
+                                  ? kBubbleCornerRadius
+                                  : message_center_notification_corner_radius;
     message_view_->UpdateCornerRadius(top_radius, bottom_radius);
     control_view_->UpdateCornerRadius(top_radius, bottom_radius);
   }
 
   // Reset rounding the corner of the view. This is called when we end a slide.
-  void ResetCornerRadius() { message_view_->UpdateCornerRadius(0, 0); }
+  void ResetCornerRadius() {
+    int corner_radius = features::IsNotificationsRefreshEnabled()
+                            ? kMessageCenterNotificationCornerRadius
+                            : 0;
+    message_view_->UpdateCornerRadius(corner_radius, corner_radius);
+  }
 
   // Collapses the notification if its state haven't changed manually by a user.
   void Collapse() {
@@ -268,13 +286,15 @@ class UnifiedMessageListView::MessageViewContainer
 
     above_view_ = (index == 0) ? nullptr : AsMVC(list_child_views[index - 1]);
     if (above_view_)
-      above_view_->message_view()->UpdateCornerRadius(0, kBubbleCornerRadius);
+      above_view_->message_view()->UpdateCornerRadius(
+          kMessageCenterNotificationCornerRadius, kBubbleCornerRadius);
 
     below_view_ = (index == static_cast<int>(list_child_views.size()) - 1)
                       ? nullptr
                       : AsMVC(list_child_views[index + 1]);
     if (below_view_)
-      below_view_->message_view()->UpdateCornerRadius(kBubbleCornerRadius, 0);
+      below_view_->message_view()->UpdateCornerRadius(
+          kBubbleCornerRadius, kMessageCenterNotificationCornerRadius);
   }
 
   void OnSlideEnded(const std::string& notification_id) override {
@@ -413,8 +433,6 @@ void UnifiedMessageListView::Init() {
         notification->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
     is_latest = false;
   }
-
-  ReverseChildrenFocusOrder();
   UpdateBorders(/*force_update=*/true);
   UpdateBounds();
 }
@@ -688,7 +706,6 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
   auto* view = CreateMessageView(*notification);
   view->SetExpanded(view->IsAutoExpandingAllowed());
   AddChildViewAt(new MessageViewContainer(view, this), index_to_insert);
-  ReverseChildrenFocusOrder();
   UpdateBorders(/*force_update=*/false);
   ResetBounds();
 }
@@ -822,16 +839,26 @@ void UnifiedMessageListView::AnimationCanceled(
 
 MessageView* UnifiedMessageListView::CreateMessageView(
     const Notification& notification) {
-  auto* view =
+  auto* message_view =
       MessageViewFactory::Create(notification, /*shown_in_popup=*/false)
           .release();
+  ConfigureMessageView(message_view);
+  return message_view;
+}
+
+void UnifiedMessageListView::ConfigureMessageView(
+    message_center::MessageView* message_view) {
   // Setting grouped notifications as nested is handled in
   // `AshNotificationView`.
-  if (!notification.group_child())
-    view->SetIsNested();
-  view->AddObserver(this);
-  message_center_view_->ConfigureMessageView(view);
-  return view;
+  auto* notification = MessageCenter::Get()->FindNotificationById(
+      message_view->notification_id());
+  // `notification` may not exist in tests.
+  if (notification && !notification->group_child())
+    message_view->SetIsNested();
+  message_view_multi_source_observation_.AddObservation(message_view);
+  // `message_center_view_` may not exist in tests.
+  if (message_center_view_)
+    message_center_view_->ConfigureMessageView(message_view);
 }
 
 std::vector<message_center::Notification*>
@@ -879,14 +906,8 @@ void UnifiedMessageListView::CollapseAllNotifications() {
 }
 
 void UnifiedMessageListView::UpdateBorders(bool force_update) {
-  // We do not need individual notifications to have rounded corners
-  // on the borders with the new UI. This is because the entire
-  // scroll view has rounded corners now.
-  if (is_notifications_refresh_enabled_)
-    return;
-
-  // The top notification is drawn with rounded corners when the stacking bar is
-  // not shown.
+  // The top notification is drawn with rounded corners when the stacking bar
+  // is not shown.
   bool is_top = state_ != State::MOVE_DOWN;
   if (!is_notifications_refresh_enabled_)
     is_top = is_top && children().size() == 1;
@@ -958,25 +979,13 @@ void UnifiedMessageListView::DeleteRemovedNotifications() {
     base::AutoReset<bool> auto_reset(&is_deleting_removed_notifications_, true);
     for (auto* view : removed_views) {
       model_->RemoveNotificationExpanded(AsMVC(view)->GetNotificationId());
+      message_view_multi_source_observation_.RemoveObservation(
+          AsMVC(view)->message_view());
       delete view;
     }
   }
 
   UpdateBorders(/*force_update=*/false);
-}
-
-void UnifiedMessageListView::ReverseChildrenFocusOrder() {
-  auto children_views = children();
-  if (children_views.size() > 1) {
-    views::View* first_child = children_views.front();
-    // Insert elements in reverse order since the last element should be the
-    // first focusable.
-    // Note that we are excluding the first element from the iteration.
-    for (int i = children_views.size() - 1; i > 0; i--) {
-      views::View* child = children_views[i];
-      child->InsertBeforeInFocusList(first_child);
-    }
-  }
 }
 
 void UnifiedMessageListView::StartAnimation() {

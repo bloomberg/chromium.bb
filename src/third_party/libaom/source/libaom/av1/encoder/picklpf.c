@@ -287,17 +287,10 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   } else {
     int last_frame_filter_level[4] = { 0 };
     if (!frame_is_intra_only(cm)) {
-#if CONFIG_FRAME_PARALLEL_ENCODE
       last_frame_filter_level[0] = cpi->ppi->filter_level[0];
       last_frame_filter_level[1] = cpi->ppi->filter_level[1];
       last_frame_filter_level[2] = cpi->ppi->filter_level_u;
       last_frame_filter_level[3] = cpi->ppi->filter_level_v;
-#else
-      last_frame_filter_level[0] = lf->filter_level[0];
-      last_frame_filter_level[1] = lf->filter_level[1];
-      last_frame_filter_level[2] = lf->filter_level_u;
-      last_frame_filter_level[3] = lf->filter_level_v;
-#endif
     }
     // The frame buffer last_frame_uf is used to store the non-loop filtered
     // reconstructed frame in search_filter_level().

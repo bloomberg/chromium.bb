@@ -41,6 +41,7 @@ typedef struct TPL_INFO {
   int tpl_ready;
   TplTxfmStats txfm_stats_list[MAX_LENGTH_TPL_FRAME_STATS];
   double qstep_ratio_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  FRAME_UPDATE_TYPE update_type_list[MAX_LENGTH_TPL_FRAME_STATS];
 } TPL_INFO;
 #endif  // CONFIG_BITRATE_ACCURACY
 

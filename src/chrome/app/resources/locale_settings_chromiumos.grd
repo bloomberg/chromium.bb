@@ -11,6 +11,7 @@
     <output filename="platform_locale_settings_bn.pak" type="data_package" lang="bn" />
     <output filename="platform_locale_settings_ca.pak" type="data_package" lang="ca" />
     <output filename="platform_locale_settings_cs.pak" type="data_package" lang="cs" />
+    <output filename="platform_locale_settings_cy.pak" type="data_package" lang="cy" />
     <output filename="platform_locale_settings_da.pak" type="data_package" lang="da" />
     <output filename="platform_locale_settings_de.pak" type="data_package" lang="de" />
     <output filename="platform_locale_settings_el.pak" type="data_package" lang="el" />
@@ -158,11 +159,6 @@
       <!-- The default value for |WebPreference::fantasy_font_family| -->
       <message name="IDS_FANTASY_FONT_FAMILY" use_name_for_id="true">
         Impact
-      </message>
-
-      <!-- The default value for |WebPreference::pictograph_font_family| -->
-      <message name="IDS_PICTOGRAPH_FONT_FAMILY" use_name_for_id="true">
-        Noto Color Emoji
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for

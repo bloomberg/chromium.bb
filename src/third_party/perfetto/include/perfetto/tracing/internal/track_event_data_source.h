@@ -53,7 +53,7 @@ template <>
 struct TraceTimestampTraits<uint64_t> {
   static inline TraceTimestamp ConvertTimestampToTraceTimeNs(
       const uint64_t& timestamp) {
-    return {internal::TrackEventInternal::GetClockId(), timestamp};
+    return {static_cast<uint32_t>(internal::TrackEventInternal::GetClockId()), timestamp};
   }
 };
 
@@ -338,7 +338,19 @@ class TrackEventDataSource
         instances, category, /*name=*/nullptr, type, track, timestamp,
         [&](EventContext event_ctx) {
           if (std::is_integral<ValueType>::value) {
-            event_ctx.event()->set_counter_value(static_cast<int64_t>(value));
+            int64_t value_int64 = static_cast<int64_t>(value);
+            if (track.is_incremental()) {
+              TrackEventIncrementalState* incr_state =
+                  event_ctx.GetIncrementalState();
+              PERFETTO_DCHECK(incr_state != nullptr);
+              auto prv_value =
+                  incr_state->last_counter_value_per_track[track.uuid];
+              event_ctx.event()->set_counter_value(value_int64 - prv_value);
+              prv_value = value_int64;
+              incr_state->last_counter_value_per_track[track.uuid] = prv_value;
+            } else {
+              event_ctx.event()->set_counter_value(value_int64);
+            }
           } else {
             event_ctx.event()->set_double_counter_value(
                 static_cast<double>(value));

@@ -166,7 +166,7 @@ public:
 	class Type;
 	class Object;
 
-	// Pseudo-iterator over SPIRV instructions, designed to support range-based-for.
+	// Pseudo-iterator over SPIR-V instructions, designed to support range-based-for.
 	class InsnIterator
 	{
 	public:
@@ -195,14 +195,14 @@ public:
 			return iter[n];
 		}
 
-		uint32_t const *wordPointer(uint32_t n) const
+		const uint32_t *data() const
 		{
-			return &iter[n];
+			return &iter[0];
 		}
 
 		const char *string(uint32_t n) const
 		{
-			return reinterpret_cast<const char *>(wordPointer(n));
+			return reinterpret_cast<const char *>(&iter[n]);
 		}
 
 		// Returns the number of whole-words that a string literal starting at
@@ -214,8 +214,7 @@ public:
 			uint32_t c = wordCount();
 			for(uint32_t i = n; n < c; i++)
 			{
-				auto *u32 = wordPointer(i);
-				auto *u8 = reinterpret_cast<const uint8_t *>(u32);
+				const char *s = string(i);
 				// SPIR-V spec 2.2.1. Instructions:
 				// A string is interpreted as a nul-terminated stream of
 				// characters. The character set is Unicode in the UTF-8
@@ -225,7 +224,7 @@ public:
 				// The final word contains the string's nul-termination
 				// character (0), and all contents past the end of the string in
 				// the final word are padded with 0.
-				if(u8[3] == 0)
+				if(s[3] == 0)
 				{
 					return 1 + i - n;
 				}
@@ -302,6 +301,32 @@ public:
 	{
 		return InsnIterator{ insns.cend() };
 	}
+
+	// A range of contiguous instruction words.
+	struct Span
+	{
+		Span(const InsnIterator &insn, uint32_t offset, uint32_t size)
+		    : insn(insn)
+		    , offset(offset)
+		    , wordCount(size)
+		{}
+
+		uint32_t operator[](uint32_t index) const
+		{
+			ASSERT(index < wordCount);
+			return insn.word(offset + index);
+		}
+
+		uint32_t size() const
+		{
+			return wordCount;
+		}
+
+	private:
+		const InsnIterator &insn;
+		const uint32_t offset;
+		const uint32_t wordCount;
+	};
 
 	class Type
 	{
@@ -644,7 +669,7 @@ public:
 
 	struct Analysis
 	{
-		bool ContainsKill : 1;
+		bool ContainsDiscard : 1;  // OpKill, OpTerminateInvocation, or OpDemoteToHelperInvocation
 		bool ContainsControlBarriers : 1;
 		bool NeedsCentroid : 1;
 		bool ContainsSampleQualifier : 1;
@@ -688,6 +713,7 @@ public:
 		bool GroupNonUniformArithmetic : 1;
 		bool DeviceGroup : 1;
 		bool MultiView : 1;
+		bool DemoteToHelperInvocation : 1;
 		bool StencilExportEXT : 1;
 		bool VulkanMemoryModel : 1;
 		bool VulkanMemoryModelDeviceScope : 1;
@@ -932,7 +958,7 @@ private:
 	Decorations GetDecorationsForId(TypeOrObjectID id) const;
 	void ApplyDecorationsForId(Decorations *d, TypeOrObjectID id) const;
 	void ApplyDecorationsForIdMember(Decorations *d, Type::ID id, uint32_t member) const;
-	void ApplyDecorationsForAccessChain(Decorations *d, DescriptorDecorations *dd, Object::ID baseId, uint32_t numIndexes, uint32_t const *indexIds) const;
+	void ApplyDecorationsForAccessChain(Decorations *d, DescriptorDecorations *dd, Object::ID baseId, const Span &indexIds) const;
 
 	// Creates an Object for the instruction's result in 'defs'.
 	void DefineResult(const InsnIterator &insn);
@@ -1252,11 +1278,11 @@ private:
 
 	OutOfBoundsBehavior getOutOfBoundsBehavior(Object::ID pointerId, EmitState const *state) const;
 
-	SIMD::Pointer WalkExplicitLayoutAccessChain(Object::ID id, uint32_t numIndexes, uint32_t const *indexIds, EmitState const *state) const;
-	SIMD::Pointer WalkAccessChain(Object::ID id, uint32_t numIndexes, uint32_t const *indexIds, EmitState const *state) const;
+	SIMD::Pointer WalkExplicitLayoutAccessChain(Object::ID id, const Span &indexIds, const EmitState *state) const;
+	SIMD::Pointer WalkAccessChain(Object::ID id, const Span &indexIds, const EmitState *state) const;
 
 	// Returns the *component* offset in the literal for the given access chain.
-	uint32_t WalkLiteralAccessChain(Type::ID id, uint32_t numIndexes, uint32_t const *indexes) const;
+	uint32_t WalkLiteralAccessChain(Type::ID id, const Span &indexes) const;
 
 	// Lookup the active lane mask for the edge from -> to.
 	// If from is unreachable, then a mask of all zeros is returned.
@@ -1265,6 +1291,7 @@ private:
 
 	// Updates the current active lane mask.
 	void SetActiveLaneMask(RValue<SIMD::Int> mask, EmitState *state) const;
+	void SetStoresAndAtomicsMask(RValue<SIMD::Int> mask, EmitState *state) const;
 
 	// Emit all the unvisited blocks (except for ignore) in DFS order,
 	// starting with id.
@@ -1307,7 +1334,9 @@ private:
 	EmitResult EmitSwitch(InsnIterator insn, EmitState *state) const;
 	EmitResult EmitUnreachable(InsnIterator insn, EmitState *state) const;
 	EmitResult EmitReturn(InsnIterator insn, EmitState *state) const;
-	EmitResult EmitKill(InsnIterator insn, EmitState *state) const;
+	EmitResult EmitTerminateInvocation(InsnIterator insn, EmitState *state) const;
+	EmitResult EmitDemoteToHelperInvocation(InsnIterator insn, EmitState *state) const;
+	EmitResult EmitIsHelperInvocation(InsnIterator insn, EmitState *state) const;
 	EmitResult EmitFunctionCall(InsnIterator insn, EmitState *state) const;
 	EmitResult EmitPhi(InsnIterator insn, EmitState *state) const;
 	EmitResult EmitImageSample(const ImageInstruction &instruction, EmitState *state) const;
@@ -1511,7 +1540,7 @@ public:
 	Pointer<Int> descriptorDynamicOffsets;
 	Pointer<Byte> pushConstants;
 	Pointer<Byte> constants;
-	Int killMask = Int{ 0 };
+	Int discardMask = 0;
 
 	// Shader invocation state.
 	// Not all of these variables are used for every type of shader, and some

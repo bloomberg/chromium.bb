@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_RESOURCEMEMORYALLOCATORVK_H_
-#define DAWNNATIVE_VULKAN_RESOURCEMEMORYALLOCATORVK_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_RESOURCEMEMORYALLOCATORVK_H_
+#define SRC_DAWN_NATIVE_VULKAN_RESOURCEMEMORYALLOCATORVK_H_
 
 #include "dawn/common/SerialQueue.h"
 #include "dawn/common/vulkan_platform.h"
@@ -39,7 +39,7 @@ namespace dawn::native::vulkan {
 
     class ResourceMemoryAllocator {
       public:
-        ResourceMemoryAllocator(Device* device);
+        explicit ResourceMemoryAllocator(Device* device);
         ~ResourceMemoryAllocator();
 
         ResultOrError<ResourceMemoryAllocation> Allocate(const VkMemoryRequirements& requirements,
@@ -63,4 +63,4 @@ namespace dawn::native::vulkan {
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_RESOURCEMEMORYALLOCATORVK_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_RESOURCEMEMORYALLOCATORVK_H_

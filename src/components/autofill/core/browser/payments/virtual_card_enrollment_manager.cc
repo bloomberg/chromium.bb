@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
+#include <string>
 
+#include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/payments/virtual_card_enrollment_metrics.h"
@@ -126,6 +128,8 @@ void VirtualCardEnrollmentManager::Enroll() {
       VirtualCardEnrollmentRequestType::kEnroll;
   request_details.billing_customer_number =
       payments::GetBillingCustomerId(personal_data_manager_);
+  request_details.instrument_id =
+      state_.virtual_card_enrollment_fields.credit_card.instrument_id();
   request_details.vcn_context_token = state_.vcn_context_token;
 
   payments_client_->UpdateVirtualCardEnrollment(
@@ -272,6 +276,25 @@ void VirtualCardEnrollmentManager::ShowVirtualCardEnrollBubble() {
         AutofillClock::Now() - save_card_bubble_accepted_timestamp_.value());
     save_card_bubble_accepted_timestamp_.reset();
   }
+
+  // Check in StrikeDatabase whether enrollment has been offered for this card
+  // and got declined before and whether this is the last time this offer is
+  // shown before previous records expire.
+  state_.virtual_card_enrollment_fields.previously_declined = false;
+  state_.virtual_card_enrollment_fields.last_show = false;
+  if (GetVirtualCardEnrollmentStrikeDatabase()) {
+    std::string card_instrument_id = base::NumberToString(
+        state_.virtual_card_enrollment_fields.credit_card.instrument_id());
+    if (GetVirtualCardEnrollmentStrikeDatabase()->GetStrikes(
+            card_instrument_id) > 0) {
+      state_.virtual_card_enrollment_fields.previously_declined = true;
+    }
+    if (GetVirtualCardEnrollmentStrikeDatabase()->IsLastOffer(
+            card_instrument_id)) {
+      state_.virtual_card_enrollment_fields.last_show = true;
+    }
+  }
+
   autofill_client_->ShowVirtualCardEnrollDialog(
       state_.virtual_card_enrollment_fields,
       base::BindOnce(&VirtualCardEnrollmentManager::Enroll,

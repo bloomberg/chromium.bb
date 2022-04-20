@@ -1037,55 +1037,6 @@ Reduction JSNativeContextSpecialization::ReduceJSStoreGlobal(Node* node) {
   }
 }
 
-Reduction JSNativeContextSpecialization::ReduceMinimorphicPropertyAccess(
-    Node* node, Node* value,
-    MinimorphicLoadPropertyAccessFeedback const& feedback,
-    FeedbackSource const& source) {
-  DCHECK(node->opcode() == IrOpcode::kJSLoadNamed ||
-         node->opcode() == IrOpcode::kJSLoadProperty ||
-         node->opcode() == IrOpcode::kJSLoadNamedFromSuper);
-  STATIC_ASSERT(JSLoadNamedNode::ObjectIndex() == 0 &&
-                JSLoadPropertyNode::ObjectIndex() == 0);
-
-  Node* effect = NodeProperties::GetEffectInput(node);
-  Node* control = NodeProperties::GetControlInput(node);
-
-  Node* lookup_start_object;
-  if (node->opcode() == IrOpcode::kJSLoadNamedFromSuper) {
-    DCHECK(FLAG_super_ic);
-    JSLoadNamedFromSuperNode n(node);
-    // Lookup start object is the __proto__ of the home object.
-    lookup_start_object = effect =
-        BuildLoadPrototypeFromObject(n.home_object(), effect, control);
-  } else {
-    lookup_start_object = NodeProperties::GetValueInput(node, 0);
-  }
-
-  MinimorphicLoadPropertyAccessInfo access_info =
-      broker()->GetPropertyAccessInfo(feedback, source);
-  if (access_info.IsInvalid()) return NoChange();
-
-  PropertyAccessBuilder access_builder(jsgraph(), broker(), nullptr);
-  CheckMapsFlags flags = CheckMapsFlag::kNone;
-  if (feedback.has_migration_target_maps()) {
-    flags |= CheckMapsFlag::kTryMigrateInstance;
-  }
-
-  ZoneHandleSet<Map> maps;
-  for (const MapRef& map : feedback.maps()) {
-    maps.insert(map.object(), graph()->zone());
-  }
-
-  effect = graph()->NewNode(
-      simplified()->DynamicCheckMaps(flags, feedback.handler(), maps, source),
-      lookup_start_object, effect, control);
-  value = access_builder.BuildMinimorphicLoadDataField(
-      feedback.name(), access_info, lookup_start_object, &effect, &control);
-
-  ReplaceWithValue(node, value, effect, control);
-  return Replace(value);
-}
-
 Reduction JSNativeContextSpecialization::ReduceNamedAccess(
     Node* node, Node* value, NamedAccessFeedback const& feedback,
     AccessMode access_mode, Node* key) {
@@ -2007,17 +1958,12 @@ Reduction JSNativeContextSpecialization::ReducePropertyAccess(
       broker()->GetFeedbackForPropertyAccess(source, access_mode, static_name);
   switch (feedback.kind()) {
     case ProcessedFeedback::kInsufficient:
-      return ReduceSoftDeoptimize(
+      return ReduceEagerDeoptimize(
           node,
           DeoptimizeReason::kInsufficientTypeFeedbackForGenericNamedAccess);
     case ProcessedFeedback::kNamedAccess:
       return ReduceNamedAccess(node, value, feedback.AsNamedAccess(),
                                access_mode, key);
-    case ProcessedFeedback::kMinimorphicPropertyAccess:
-      DCHECK_EQ(access_mode, AccessMode::kLoad);
-      DCHECK_NULL(key);
-      return ReduceMinimorphicPropertyAccess(
-          node, value, feedback.AsMinimorphicPropertyAccess(), source);
     case ProcessedFeedback::kElementAccess:
       DCHECK_EQ(feedback.AsElementAccess().keyed_mode().access_mode(),
                 access_mode);
@@ -2028,7 +1974,7 @@ Reduction JSNativeContextSpecialization::ReducePropertyAccess(
   }
 }
 
-Reduction JSNativeContextSpecialization::ReduceSoftDeoptimize(
+Reduction JSNativeContextSpecialization::ReduceEagerDeoptimize(
     Node* node, DeoptimizeReason reason) {
   if (!(flags() & kBailoutOnUninitialized)) return NoChange();
 
@@ -2036,9 +1982,9 @@ Reduction JSNativeContextSpecialization::ReduceSoftDeoptimize(
   Node* control = NodeProperties::GetControlInput(node);
   Node* frame_state =
       NodeProperties::FindFrameStateBefore(node, jsgraph()->Dead());
-  Node* deoptimize = graph()->NewNode(
-      common()->Deoptimize(DeoptimizeKind::kSoft, reason, FeedbackSource()),
-      frame_state, effect, control);
+  Node* deoptimize =
+      graph()->NewNode(common()->Deoptimize(reason, FeedbackSource()),
+                       frame_state, effect, control);
   // TODO(bmeurer): This should be on the AdvancedReducer somehow.
   NodeProperties::MergeControlToEnd(graph(), common(), deoptimize);
   Revisit(graph()->end());
@@ -2196,9 +2142,10 @@ Reduction JSNativeContextSpecialization::ReduceJSDefineKeyedOwnProperty(
 }
 
 Node* JSNativeContextSpecialization::InlinePropertyGetterCall(
-    Node* receiver, ConvertReceiverMode receiver_mode, Node* context,
-    Node* frame_state, Node** effect, Node** control,
-    ZoneVector<Node*>* if_exceptions, PropertyAccessInfo const& access_info) {
+    Node* receiver, ConvertReceiverMode receiver_mode,
+    Node* lookup_start_object, Node* context, Node* frame_state, Node** effect,
+    Node** control, ZoneVector<Node*>* if_exceptions,
+    PropertyAccessInfo const& access_info) {
   ObjectRef constant = access_info.constant().value();
 
   if (access_info.IsDictionaryProtoAccessorConstant()) {
@@ -2220,6 +2167,11 @@ Node* JSNativeContextSpecialization::InlinePropertyGetterCall(
                                       receiver_mode),
         target, receiver, feedback, context, frame_state, *effect, *control);
   } else {
+    // Disable optimizations for super ICs using API getters, so that we get
+    // the correct receiver checks.
+    if (receiver != lookup_start_object) {
+      return nullptr;
+    }
     Node* holder = access_info.holder().has_value()
                        ? jsgraph()->Constant(access_info.holder().value())
                        : receiver;
@@ -2343,9 +2295,9 @@ JSNativeContextSpecialization::BuildPropertyLoad(
         receiver == lookup_start_object
             ? ConvertReceiverMode::kNotNullOrUndefined
             : ConvertReceiverMode::kAny;
-    value =
-        InlinePropertyGetterCall(receiver, receiver_mode, context, frame_state,
-                                 &effect, &control, if_exceptions, access_info);
+    value = InlinePropertyGetterCall(
+        receiver, receiver_mode, lookup_start_object, context, frame_state,
+        &effect, &control, if_exceptions, access_info);
   } else if (access_info.IsModuleExport()) {
     Node* cell = jsgraph()->Constant(access_info.constant().value().AsCell());
     value = effect =
@@ -2368,8 +2320,10 @@ JSNativeContextSpecialization::BuildPropertyLoad(
           name, access_info, lookup_start_object, &effect, &control);
     }
   }
-
-  return ValueEffectControl(value, effect, control);
+  if (value != nullptr) {
+    return ValueEffectControl(value, effect, control);
+  }
+  return base::Optional<ValueEffectControl>();
 }
 
 JSNativeContextSpecialization::ValueEffectControl

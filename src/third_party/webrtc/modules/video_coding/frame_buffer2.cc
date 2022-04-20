@@ -33,7 +33,6 @@
 #include "rtc_base/numerics/sequence_number_util.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 namespace video_coding {
@@ -58,11 +57,12 @@ constexpr int64_t kLogNonDecodedIntervalMs = 5000;
 
 FrameBuffer::FrameBuffer(Clock* clock,
                          VCMTiming* timing,
-                         VCMReceiveStatisticsCallback* stats_callback)
+                         VCMReceiveStatisticsCallback* stats_callback,
+                         const FieldTrialsView& field_trials)
     : decoded_frames_history_(kMaxFramesHistory),
       clock_(clock),
       callback_queue_(nullptr),
-      jitter_estimator_(clock),
+      jitter_estimator_(clock, field_trials),
       timing_(timing),
       stopped_(false),
       protection_mode_(kProtectionNack),
@@ -73,7 +73,7 @@ FrameBuffer::FrameBuffer(Clock* clock,
           "max_decode_queue_size",
           kZeroPlayoutDelayDefaultMaxDecodeQueueSize) {
   ParseFieldTrial({&zero_playout_delay_max_decode_queue_size_},
-                  field_trial::FindFullName("WebRTC-ZeroPlayoutDelay"));
+                  field_trials.Lookup("WebRTC-ZeroPlayoutDelay"));
   callback_checker_.Detach();
 }
 
@@ -596,17 +596,12 @@ void FrameBuffer::UpdateJitterDelay() {
   if (!stats_callback_)
     return;
 
-  TimeDelta max_decode = TimeDelta::Zero();
-  TimeDelta current_delay = TimeDelta::Zero();
-  TimeDelta target_delay = TimeDelta::Zero();
-  TimeDelta jitter_buffer = TimeDelta::Zero();
-  TimeDelta min_playout_delay = TimeDelta::Zero();
-  TimeDelta render_delay = TimeDelta::Zero();
-  if (timing_->GetTimings(&max_decode, &current_delay, &target_delay,
-                          &jitter_buffer, &min_playout_delay, &render_delay)) {
+  auto timings = timing_->GetTimings();
+  if (timings.num_decoded_frames > 0) {
     stats_callback_->OnFrameBufferTimingsUpdated(
-        max_decode.ms(), current_delay.ms(), target_delay.ms(),
-        jitter_buffer.ms(), min_playout_delay.ms(), render_delay.ms());
+        timings.max_decode_duration.ms(), timings.current_delay.ms(),
+        timings.target_delay.ms(), timings.jitter_buffer_delay.ms(),
+        timings.min_playout_delay.ms(), timings.render_delay.ms());
   }
 }
 

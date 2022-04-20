@@ -230,6 +230,14 @@ static const MODE_DEFINITION av1_mode_defs[MAX_MODES] = {
   { D45_PRED, { INTRA_FRAME, NONE_FRAME } },
 };
 
+// Number of winner modes allowed for different values of the speed feature
+// multi_winner_mode_type.
+static const int winner_mode_count_allowed[MULTI_WINNER_MODE_LEVELS] = {
+  1,  // MULTI_WINNER_MODE_OFF
+  2,  // MULTI_WINNER_MODE_FAST
+  3   // MULTI_WINNER_MODE_DEFAULT
+};
+
 static AOM_INLINE void restore_dst_buf(MACROBLOCKD *xd, const BUFFER_SET dst,
                                        const int num_planes) {
   for (int i = 0; i < num_planes; i++) {
@@ -630,12 +638,7 @@ static INLINE void store_winner_mode_stats(
   // mode in Inter frames. Clean-up the following code, once support is added
   if (!frame_is_intra_only(cm) && is_palette_mode) return;
 
-  int max_winner_mode_count = frame_is_intra_only(cm)
-                                  ? MAX_WINNER_MODE_COUNT_INTRA
-                                  : MAX_WINNER_MODE_COUNT_INTER;
-  max_winner_mode_count = (multi_winner_mode_type == MULTI_WINNER_MODE_FAST)
-                              ? AOMMIN(max_winner_mode_count, 2)
-                              : max_winner_mode_count;
+  int max_winner_mode_count = winner_mode_count_allowed[multi_winner_mode_type];
   assert(x->winner_mode_count >= 0 &&
          x->winner_mode_count <= max_winner_mode_count);
 
@@ -700,6 +703,18 @@ unsigned int av1_high_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
 
 static INLINE int is_mode_intra(PREDICTION_MODE mode) {
   return mode < INTRA_MODE_END;
+}
+
+// This function will copy usable ref_mv_stack[ref_frame][4] and
+// weight[ref_frame][4] information from ref_mv_stack[ref_frame][8] and
+// weight[ref_frame][8].
+static INLINE void av1_copy_usable_ref_mv_stack_and_weight(
+    const MACROBLOCKD *xd, MB_MODE_INFO_EXT *const mbmi_ext,
+    MV_REFERENCE_FRAME ref_frame) {
+  memcpy(mbmi_ext->weight[ref_frame], xd->weight[ref_frame],
+         USABLE_REF_MV_STACK_SIZE * sizeof(xd->weight[0][0]));
+  memcpy(mbmi_ext->ref_mv_stack[ref_frame], xd->ref_mv_stack[ref_frame],
+         USABLE_REF_MV_STACK_SIZE * sizeof(xd->ref_mv_stack[0][0]));
 }
 
 #ifdef __cplusplus

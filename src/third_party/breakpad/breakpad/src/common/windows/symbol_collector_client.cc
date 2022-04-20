@@ -78,7 +78,8 @@ namespace google_breakpad {
         L"{ symbol_id: {"
         L"debug_file: \"" + debug_file + L"\", "
         L"debug_id: \"" + debug_id + L"\" "
-        L"} }";
+        L"}, "
+        L"use_async_processing: true }";
     wstring response;
     int response_code;
 

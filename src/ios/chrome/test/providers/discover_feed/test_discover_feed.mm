@@ -17,7 +17,10 @@ class TestDiscoverFeedService final : public DiscoverFeedService {
  public:
   // DiscoverFeedService implementation:
   void CreateFeedModels() final {}
+  void CreateFeedModel(FeedModelConfiguration* feed_model_config) final {}
   void ClearFeedModels() final {}
+  void SetFollowingFeedSortType(FollowingFeedSortType sort_type) final {}
+  void SetIsShownOnStartSurface(bool shown_on_start_surface) final {}
   FeedMetricsRecorder* GetFeedMetricsRecorder() final { return nil; }
   UIViewController* NewDiscoverFeedViewControllerWithConfiguration(
       DiscoverFeedViewControllerConfiguration* configuration) final {
@@ -31,6 +34,8 @@ class TestDiscoverFeedService final : public DiscoverFeedService {
   void UpdateTheme() final {}
   void RefreshFeedIfNeeded() final {}
   void RefreshFeed() final {}
+  BOOL GetFollowingFeedHasUnseenContent() final { return NO; }
+  void SetFollowingFeedContentSeen() final {}
 };
 
 }  // anonymous namespace

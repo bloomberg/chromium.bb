@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_RENDERPASSCACHE_H_
-#define DAWNNATIVE_VULKAN_RENDERPASSCACHE_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_RENDERPASSCACHE_H_
+#define SRC_DAWN_NATIVE_VULKAN_RENDERPASSCACHE_H_
 
 #include "dawn/common/Constants.h"
 #include "dawn/common/ityp_array.h"
@@ -76,7 +76,7 @@ namespace dawn::native::vulkan {
     // TODO(cwallez@chromium.org): Make it an LRU cache somehow?
     class RenderPassCache {
       public:
-        RenderPassCache(Device* device);
+        explicit RenderPassCache(Device* device);
         ~RenderPassCache();
 
         ResultOrError<VkRenderPass> GetRenderPass(const RenderPassCacheQuery& query);
@@ -103,4 +103,4 @@ namespace dawn::native::vulkan {
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_RENDERPASSCACHE_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_RENDERPASSCACHE_H_

@@ -154,7 +154,7 @@ namespace dawn::native {
 
         class ErrorQueue : public QueueBase {
           public:
-            ErrorQueue(DeviceBase* device) : QueueBase(device, ObjectBase::kError) {
+            explicit ErrorQueue(DeviceBase* device) : QueueBase(device, ObjectBase::kError) {
             }
 
           private:
@@ -170,7 +170,8 @@ namespace dawn::native {
     QueueBase::TaskInFlight::~TaskInFlight() {
     }
 
-    QueueBase::QueueBase(DeviceBase* device) : ApiObjectBase(device, kLabelNotImplemented) {
+    QueueBase::QueueBase(DeviceBase* device, const QueueDescriptor* descriptor)
+        : ApiObjectBase(device, descriptor->label) {
     }
 
     QueueBase::QueueBase(DeviceBase* device, ObjectBase::ErrorTag tag)

@@ -7,13 +7,20 @@
 
 #include "src/sksl/SkSLInliner.h"
 
-#include <limits.h>
-#include <memory>
-
-#include "include/private/SkSLLayout.h"
+#include "include/core/SkSpan.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLStatement.h"
+#include "include/private/SkTArray.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLOperator.h"
+#include "include/sksl/SkSLPosition.h"
+#include "src/sksl/SkSLAnalysis.h"
+#include "src/sksl/SkSLMangler.h"
 #include "src/sksl/analysis/SkSLProgramVisitor.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
-#include "src/sksl/ir/SkSLBreakStatement.h"
 #include "src/sksl/ir/SkSLChildCall.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorArray.h"
@@ -25,37 +32,37 @@
 #include "src/sksl/ir/SkSLConstructorScalarCast.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
 #include "src/sksl/ir/SkSLConstructorStruct.h"
-#include "src/sksl/ir/SkSLContinueStatement.h"
-#include "src/sksl/ir/SkSLDiscardStatement.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLExternalFunctionCall.h"
-#include "src/sksl/ir/SkSLExternalFunctionReference.h"
-#include "src/sksl/ir/SkSLField.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLForStatement.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
-#include "src/sksl/ir/SkSLFunctionReference.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLInlineMarker.h"
-#include "src/sksl/ir/SkSLInterfaceBlock.h"
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
-#include "src/sksl/ir/SkSLSetting.h"
 #include "src/sksl/ir/SkSLSwitchCase.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
+#include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
-#include "src/sksl/ir/SkSLUnresolvedFunction.h"
+#include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
+
+#include <limits.h>
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
 
 namespace SkSL {
 namespace {
@@ -278,7 +285,7 @@ void Inliner::ensureScopedBlocks(Statement* inlinedBody, Statement* parentStmt) 
         if (nestedBlock->children().size() != 1) {
             // We found a block with multiple (or zero) statements, but no scope? Let's add a scope
             // to the outermost block.
-            block.setIsScope(true);
+            block.setBlockKind(Block::Kind::kBracedScope);
             return;
         }
         if (!nestedBlock->children()[0]->is<Block>()) {
@@ -319,6 +326,7 @@ std::unique_ptr<Expression> Inliner::inlineExpression(Position pos,
         case Expression::Kind::kBinary: {
             const BinaryExpression& binaryExpr = expression.as<BinaryExpression>();
             return BinaryExpression::Make(*fContext,
+                                          pos,
                                           expr(binaryExpr.left()),
                                           binaryExpr.getOperator(),
                                           expr(binaryExpr.right()));
@@ -396,7 +404,7 @@ std::unique_ptr<Expression> Inliner::inlineExpression(Position pos,
             return expression.clone();
         case Expression::Kind::kFieldAccess: {
             const FieldAccess& f = expression.as<FieldAccess>();
-            return FieldAccess::Make(*fContext, expr(f.base()), f.fieldIndex(), f.ownerKind());
+            return FieldAccess::Make(*fContext, pos, expr(f.base()), f.fieldIndex(), f.ownerKind());
         }
         case Expression::Kind::kFunctionCall: {
             const FunctionCall& funcCall = expression.as<FunctionCall>();
@@ -410,27 +418,27 @@ std::unique_ptr<Expression> Inliner::inlineExpression(Position pos,
             return expression.clone();
         case Expression::Kind::kIndex: {
             const IndexExpression& idx = expression.as<IndexExpression>();
-            return IndexExpression::Make(*fContext, expr(idx.base()), expr(idx.index()));
+            return IndexExpression::Make(*fContext, pos, expr(idx.base()), expr(idx.index()));
         }
         case Expression::Kind::kMethodReference:
             return expression.clone();
         case Expression::Kind::kPrefix: {
             const PrefixExpression& p = expression.as<PrefixExpression>();
-            return PrefixExpression::Make(*fContext, p.getOperator(), expr(p.operand()));
+            return PrefixExpression::Make(*fContext, pos, p.getOperator(), expr(p.operand()));
         }
         case Expression::Kind::kPostfix: {
             const PostfixExpression& p = expression.as<PostfixExpression>();
-            return PostfixExpression::Make(*fContext, expr(p.operand()), p.getOperator());
+            return PostfixExpression::Make(*fContext, pos, expr(p.operand()), p.getOperator());
         }
         case Expression::Kind::kSetting:
             return expression.clone();
         case Expression::Kind::kSwizzle: {
             const Swizzle& s = expression.as<Swizzle>();
-            return Swizzle::Make(*fContext, expr(s.base()), s.components());
+            return Swizzle::Make(*fContext, pos, expr(s.base()), s.components());
         }
         case Expression::Kind::kTernary: {
             const TernaryExpression& t = expression.as<TernaryExpression>();
-            return TernaryExpression::Make(*fContext, expr(t.test()),
+            return TernaryExpression::Make(*fContext, pos, expr(t.test()),
                                            expr(t.ifTrue()), expr(t.ifFalse()));
         }
         case Expression::Kind::kTypeReference:
@@ -483,9 +491,8 @@ std::unique_ptr<Statement> Inliner::inlineStatement(Position pos,
     switch (statement.kind()) {
         case Statement::Kind::kBlock: {
             const Block& b = statement.as<Block>();
-            return Block::Make(pos, blockStmts(b),
-                               SymbolTable::WrapIfBuiltin(b.symbolTable()),
-                               b.isScope());
+            return Block::Make(pos, blockStmts(b), b.blockKind(),
+                               SymbolTable::WrapIfBuiltin(b.symbolTable()));
         }
 
         case Statement::Kind::kBreak:
@@ -495,7 +502,7 @@ std::unique_ptr<Statement> Inliner::inlineStatement(Position pos,
 
         case Statement::Kind::kDo: {
             const DoStatement& d = statement.as<DoStatement>();
-            return DoStatement::Make(*fContext, stmt(d.statement()), expr(d.test()));
+            return DoStatement::Make(*fContext, pos, stmt(d.statement()), expr(d.test()));
         }
         case Statement::Kind::kExpression: {
             const ExpressionStatement& e = statement.as<ExpressionStatement>();
@@ -551,8 +558,9 @@ std::unique_ptr<Statement> Inliner::inlineStatement(Position pos,
                     *fContext,
                     BinaryExpression::Make(
                             *fContext,
+                            pos,
                             clone_with_ref_kind(**resultExpr, VariableRefKind::kWrite),
-                            Token::Kind::TK_EQ,
+                            Operator::Kind::EQ,
                             expr(r.expression())));
 
             // Functions without early returns aren't wrapped in a for loop and don't need to worry
@@ -586,6 +594,7 @@ std::unique_ptr<Statement> Inliner::inlineStatement(Position pos,
                     fContext->fMangler->uniqueName(variable.name(), symbolTableForStatement));
             auto clonedVar = std::make_unique<Variable>(
                                                      pos,
+                                                     variable.modifiersPosition(),
                                                      &variable.modifiers(),
                                                      name->c_str(),
                                                      variable.type().clone(symbolTableForStatement),
@@ -692,12 +701,11 @@ Inliner::InlinedCall Inliner::inlineCall(FunctionCall* call,
 
     SkASSERT(inlineStatements.count() <= expectedStmtCount);
 
-    // Wrap all of the generated statements in a block. We need a real Block here, so we can't use
-    // MakeUnscoped. This is because we need to add another child statement to the Block later.
+    // Wrap all of the generated statements in a block. We need a real Block here, because we need
+    // to add another child statement to the Block later.
     InlinedCall inlinedCall;
-    inlinedCall.fInlinedBody = Block::Make(pos, std::move(inlineStatements),
-                                           /*symbols=*/nullptr, /*isScope=*/false);
-
+    inlinedCall.fInlinedBody = Block::MakeBlock(pos, std::move(inlineStatements),
+                                                Block::Kind::kUnbracedBlock);
     if (resultExpr) {
         // Return our result expression as-is.
         inlinedCall.fReplacementExpr = std::move(resultExpr);
@@ -960,8 +968,8 @@ public:
                 // enforce that rule is to avoid inlining the right side entirely. However, it is
                 // safe for other types of binary expression to inline both sides.
                 Operator op = binaryExpr.getOperator();
-                bool shortCircuitable = (op.kind() == Token::Kind::TK_LOGICALAND ||
-                                         op.kind() == Token::Kind::TK_LOGICALOR);
+                bool shortCircuitable = (op.kind() == Operator::Kind::LOGICALAND ||
+                                         op.kind() == Operator::Kind::LOGICALOR);
                 if (!shortCircuitable) {
                     this->visitExpression(&binaryExpr.right());
                 }

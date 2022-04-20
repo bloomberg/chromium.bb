@@ -33,6 +33,8 @@
 #include <memory>
 #include <string>
 
+#include "test/cctest/cctest.h"
+
 #if V8_OS_POSIX
 #include <unistd.h>
 #endif
@@ -7895,6 +7897,7 @@ static void ResetUseValueAndSetFlag(
 }
 
 void v8::internal::heap::HeapTester::ResetWeakHandle(bool global_gc) {
+  if (FLAG_stress_incremental_marking) return;
   using v8::Context;
   using v8::Local;
   using v8::Object;
@@ -20712,201 +20715,6 @@ TEST(StringEmpty) {
   CHECK(*v8::Utils::OpenHandle(*v8::String::Empty(isolate)) == *empty_string);
 }
 
-
-static int instance_checked_getter_count = 0;
-static void InstanceCheckedGetter(
-    Local<String> name,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
-  CHECK(name->Equals(info.GetIsolate()->GetCurrentContext(), v8_str("foo"))
-            .FromJust());
-  instance_checked_getter_count++;
-  info.GetReturnValue().Set(v8_num(11));
-}
-
-
-static int instance_checked_setter_count = 0;
-static void InstanceCheckedSetter(Local<String> name,
-                      Local<Value> value,
-                      const v8::PropertyCallbackInfo<void>& info) {
-  CHECK(name->Equals(info.GetIsolate()->GetCurrentContext(), v8_str("foo"))
-            .FromJust());
-  CHECK(value->Equals(info.GetIsolate()->GetCurrentContext(), v8_num(23))
-            .FromJust());
-  instance_checked_setter_count++;
-}
-
-
-static void CheckInstanceCheckedResult(int getters, int setters,
-                                       bool expects_callbacks,
-                                       TryCatch* try_catch) {
-  if (expects_callbacks) {
-    CHECK(!try_catch->HasCaught());
-    CHECK_EQ(getters, instance_checked_getter_count);
-    CHECK_EQ(setters, instance_checked_setter_count);
-  } else {
-    CHECK(try_catch->HasCaught());
-    CHECK_EQ(0, instance_checked_getter_count);
-    CHECK_EQ(0, instance_checked_setter_count);
-  }
-  try_catch->Reset();
-}
-
-
-static void CheckInstanceCheckedAccessors(bool expects_callbacks) {
-  instance_checked_getter_count = 0;
-  instance_checked_setter_count = 0;
-  TryCatch try_catch(CcTest::isolate());
-
-  // Test path through generic runtime code.
-  CompileRun("obj.foo");
-  CheckInstanceCheckedResult(1, 0, expects_callbacks, &try_catch);
-  CompileRun("obj.foo = 23");
-  CheckInstanceCheckedResult(1, 1, expects_callbacks, &try_catch);
-
-  // Test path through generated LoadIC and StoredIC.
-  CompileRun(
-      "function test_get(o) { o.foo; };"
-      "%PrepareFunctionForOptimization(test_get);"
-      "test_get(obj);");
-  CheckInstanceCheckedResult(2, 1, expects_callbacks, &try_catch);
-  CompileRun("test_get(obj);");
-  CheckInstanceCheckedResult(3, 1, expects_callbacks, &try_catch);
-  CompileRun("test_get(obj);");
-  CheckInstanceCheckedResult(4, 1, expects_callbacks, &try_catch);
-  CompileRun(
-      "function test_set(o) { o.foo = 23; }"
-      "%PrepareFunctionForOptimization(test_set);"
-      "test_set(obj);");
-  CheckInstanceCheckedResult(4, 2, expects_callbacks, &try_catch);
-  CompileRun("test_set(obj);");
-  CheckInstanceCheckedResult(4, 3, expects_callbacks, &try_catch);
-  CompileRun("test_set(obj);");
-  CheckInstanceCheckedResult(4, 4, expects_callbacks, &try_catch);
-
-  // Test path through optimized code.
-  CompileRun("%OptimizeFunctionOnNextCall(test_get);"
-             "test_get(obj);");
-  CheckInstanceCheckedResult(5, 4, expects_callbacks, &try_catch);
-  CompileRun("%OptimizeFunctionOnNextCall(test_set);"
-             "test_set(obj);");
-  CheckInstanceCheckedResult(5, 5, expects_callbacks, &try_catch);
-
-  // Cleanup so that closures start out fresh in next check.
-  CompileRun(
-      "%DeoptimizeFunction(test_get);"
-      "%ClearFunctionFeedback(test_get);"
-      "%DeoptimizeFunction(test_set);"
-      "%ClearFunctionFeedback(test_set);");
-}
-
-
-THREADED_TEST(InstanceCheckOnInstanceAccessor) {
-  v8::internal::FLAG_allow_natives_syntax = true;
-  LocalContext context;
-  v8::HandleScope scope(context->GetIsolate());
-
-  Local<FunctionTemplate> templ = FunctionTemplate::New(context->GetIsolate());
-  Local<ObjectTemplate> inst = templ->InstanceTemplate();
-  inst->SetAccessor(v8_str("foo"), InstanceCheckedGetter, InstanceCheckedSetter,
-                    Local<Value>(), v8::DEFAULT, v8::None,
-                    v8::AccessorSignature::New(context->GetIsolate(), templ));
-  CHECK(context->Global()
-            ->Set(context.local(), v8_str("f"),
-                  templ->GetFunction(context.local()).ToLocalChecked())
-            .FromJust());
-
-  printf("Testing positive ...\n");
-  CompileRun("var obj = new f();");
-  CHECK(templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(true);
-
-  printf("Testing negative ...\n");
-  CompileRun("var obj = {};"
-             "obj.__proto__ = new f();");
-  CHECK(!templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(false);
-}
-
-static void EmptyInterceptorGetter(
-    Local<Name> name, const v8::PropertyCallbackInfo<v8::Value>& info) {}
-
-static void EmptyInterceptorSetter(
-    Local<Name> name, Local<Value> value,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {}
-
-THREADED_TEST(InstanceCheckOnInstanceAccessorWithInterceptor) {
-  v8::internal::FLAG_allow_natives_syntax = true;
-  LocalContext context;
-  v8::HandleScope scope(context->GetIsolate());
-
-  Local<FunctionTemplate> templ = FunctionTemplate::New(context->GetIsolate());
-  Local<ObjectTemplate> inst = templ->InstanceTemplate();
-  templ->InstanceTemplate()->SetHandler(v8::NamedPropertyHandlerConfiguration(
-      EmptyInterceptorGetter, EmptyInterceptorSetter));
-  inst->SetAccessor(v8_str("foo"), InstanceCheckedGetter, InstanceCheckedSetter,
-                    Local<Value>(), v8::DEFAULT, v8::None,
-                    v8::AccessorSignature::New(context->GetIsolate(), templ));
-  CHECK(context->Global()
-            ->Set(context.local(), v8_str("f"),
-                  templ->GetFunction(context.local()).ToLocalChecked())
-            .FromJust());
-
-  printf("Testing positive ...\n");
-  CompileRun("var obj = new f();");
-  CHECK(templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(true);
-
-  printf("Testing negative ...\n");
-  CompileRun("var obj = {};"
-             "obj.__proto__ = new f();");
-  CHECK(!templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(false);
-}
-
-
-THREADED_TEST(InstanceCheckOnPrototypeAccessor) {
-  v8::internal::FLAG_allow_natives_syntax = true;
-  LocalContext context;
-  v8::HandleScope scope(context->GetIsolate());
-
-  Local<FunctionTemplate> templ = FunctionTemplate::New(context->GetIsolate());
-  Local<ObjectTemplate> proto = templ->PrototypeTemplate();
-  proto->SetAccessor(v8_str("foo"), InstanceCheckedGetter,
-                     InstanceCheckedSetter, Local<Value>(), v8::DEFAULT,
-                     v8::None,
-                     v8::AccessorSignature::New(context->GetIsolate(), templ));
-  CHECK(context->Global()
-            ->Set(context.local(), v8_str("f"),
-                  templ->GetFunction(context.local()).ToLocalChecked())
-            .FromJust());
-
-  printf("Testing positive ...\n");
-  CompileRun("var obj = new f();");
-  CHECK(templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(true);
-
-  printf("Testing negative ...\n");
-  CompileRun("var obj = {};"
-             "obj.__proto__ = new f();");
-  CHECK(!templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(false);
-
-  printf("Testing positive with modified prototype chain ...\n");
-  CompileRun("var obj = new f();"
-             "var pro = {};"
-             "pro.__proto__ = obj.__proto__;"
-             "obj.__proto__ = pro;");
-  CHECK(templ->HasInstance(
-      context->Global()->Get(context.local(), v8_str("obj")).ToLocalChecked()));
-  CheckInstanceCheckedAccessors(true);
-}
-
 THREADED_TEST(CheckIsLeafTemplateForApiObject) {
   LocalContext context;
   v8::HandleScope scope(context->GetIsolate());
@@ -23297,14 +23105,8 @@ TEST(ThrowOnJavascriptExecution) {
 
 namespace {
 
-class MockPlatform : public TestPlatform {
+class MockPlatform final : public TestPlatform {
  public:
-  MockPlatform() : old_platform_(i::V8::GetCurrentPlatform()) {
-    // Now that it's completely constructed, make this the current platform.
-    i::V8::SetPlatformForTesting(this);
-  }
-  ~MockPlatform() override { i::V8::SetPlatformForTesting(old_platform_); }
-
   bool dump_without_crashing_called() const {
     return dump_without_crashing_called_;
   }
@@ -23312,15 +23114,12 @@ class MockPlatform : public TestPlatform {
   void DumpWithoutCrashing() override { dump_without_crashing_called_ = true; }
 
  private:
-  v8::Platform* old_platform_;
   bool dump_without_crashing_called_ = false;
 };
 
 }  // namespace
 
-TEST(DumpOnJavascriptExecution) {
-  MockPlatform platform;
-
+TEST_WITH_PLATFORM(DumpOnJavascriptExecution, MockPlatform) {
   LocalContext context;
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope scope(isolate);
@@ -29691,38 +29490,6 @@ TEST(CodeLikeFunction) {
       });
   CHECK(CompileRun("new Function(new Other())()").IsEmpty());
   ExpectInt32("new Function(new CodeLike())()", 7);
-}
-
-UNINITIALIZED_TEST(SingleThreadedDefaultPlatform) {
-  v8::V8::SetFlagsFromString("--single-threaded");
-  auto old_platform = i::V8::GetCurrentPlatform();
-  std::unique_ptr<v8::Platform> new_platform(
-      v8::platform::NewSingleThreadedDefaultPlatform());
-  i::V8::SetPlatformForTesting(new_platform.get());
-  v8::Isolate::CreateParams create_params;
-  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
-  v8::Isolate* isolate = v8::Isolate::New(create_params);
-  isolate->Enter();
-  i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(isolate);
-  {
-    i::HandleScope scope(i_isolate);
-    v8::Local<Context> env = Context::New(isolate);
-    env->Enter();
-
-    CompileRunChecked(isolate,
-                      "function f() {"
-                      "  for (let i = 0; i < 10; i++)"
-                      "    (new Array(10)).fill(0);"
-                      "  return 0;"
-                      "}"
-                      "f();");
-    env->Exit();
-  }
-  CcTest::CollectGarbage(i::NEW_SPACE, i_isolate);
-  CcTest::CollectAllAvailableGarbage(i_isolate);
-  isolate->Exit();
-  isolate->Dispose();
-  i::V8::SetPlatformForTesting(old_platform);
 }
 
 THREADED_TEST(MicrotaskQueueOfContext) {

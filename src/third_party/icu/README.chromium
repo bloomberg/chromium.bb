@@ -216,6 +216,10 @@ D. Local Modifications
     upstream bug: https://unicode-org.atlassian.net/browse/ICU-21664
     fix: https://github.com/unicode-org/icu/commit/1d560c37e559b36f951c79c48af03679f6831b7a
 
+  - patches/unused-var-unary-operators.patch:
+    upstream bug: https://unicode-org.atlassian.net/browse/ICU-21966
+    upstream PR: https://github.com/unicode-org/icu/pull/2055
+
 5. ISO-2022-JP encoding (fromUnicode) change per WHATWG encoding spec.
   - patches/iso2022jp.patch
   - upstream bug:

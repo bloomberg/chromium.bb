@@ -90,6 +90,12 @@ try_.builder(
 )
 
 try_.builder(
+    name = "chromeos-amd64-generic-lacros-dbg",
+    branch_selector = branches.STANDARD_MILESTONE,
+    os = os.LINUX_BIONIC_REMOVE,
+)
+
+try_.builder(
     name = "lacros-arm-generic-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
@@ -210,8 +216,8 @@ try_.builder(
         location_regexp = [
             ".+/[+]/chromeos/components/chromebox_for_meetings/.+",
             ".+/[+]/chromeos/dbus/chromebox_for_meetings/.+",
-            ".+/[+]/chromeos/services/chromebox_for_meetings/.+",
-            ".+/[+]/chrome/browser/chromeos/chromebox_for_meetings/.+",
+            ".+/[+]/ash/services/chromebox_for_meetings/.+",
+            ".+/[+]/chrome/browser/ash/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/resources/chromeos/chromebox_for_meetings/.+",
             ".+/[+]/chrome/browser/ui/webui/chromeos/chromebox_for_meetings/.+",
             ".+/[+]/chrome/test/data/webui/chromeos/chromebox_for_meetings/.+",

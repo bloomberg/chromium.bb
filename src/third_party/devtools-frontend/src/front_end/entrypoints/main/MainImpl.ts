@@ -111,9 +111,14 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 export class MainImpl {
   #lateInitDonePromise!: Promise<void>;
+  #readyForTestPromise: Promise<void>;
+  #resolveReadyForTestPromise!: () => void;
 
   constructor() {
     MainImpl.instanceForTest = this;
+    this.#readyForTestPromise = new Promise(resolve => {
+      this.#resolveReadyForTestPromise = resolve;
+    });
     void this.#loaded();
   }
 
@@ -388,6 +393,10 @@ export class MainImpl {
     Root.Runtime.experiments.register(
         Root.Runtime.ExperimentName.CSS_LAYERS, 'Tooling for CSS layers in the Styles pane');
 
+    // Enable color picking outside the browser window (using Eyedropper API)
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.EYEDROPPER_COLOR_PICKER, 'Enable color picking outside the browser window');
+
     Root.Runtime.experiments.enableExperimentsByDefault([
       'sourceOrderViewer',
       'hideIssuesFeature',
@@ -618,6 +627,7 @@ export class MainImpl {
     }
     // Used for browser tests.
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
+    this.#resolveReadyForTestPromise();
     // Asynchronously run the extensions.
     window.setTimeout(this.#lateInitialization.bind(this), 100);
     MainImpl.timeEnd('Main._initializeTarget');
@@ -652,6 +662,10 @@ export class MainImpl {
 
   lateInitDonePromiseForTest(): Promise<void>|null {
     return this.#lateInitDonePromise;
+  }
+
+  readyForTest(): Promise<void> {
+    return this.#readyForTestPromise;
   }
 
   #registerMessageSinkListener(): void {

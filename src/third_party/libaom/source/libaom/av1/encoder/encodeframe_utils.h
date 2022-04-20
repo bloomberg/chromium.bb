@@ -301,7 +301,7 @@ static AOM_INLINE int set_segment_rdmult(const AV1_COMP *const cpi,
                                          MACROBLOCK *const x,
                                          int8_t segment_id) {
   const AV1_COMMON *const cm = &cpi->common;
-  av1_init_plane_quantizers(cpi, x, segment_id);
+  av1_init_plane_quantizers(cpi, x, segment_id, 0);
   const int segment_qindex =
       av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
   return av1_compute_rd_mult(cpi,
@@ -430,14 +430,31 @@ static AOM_INLINE void av1_dealloc_mb_data(struct AV1Common *cm,
   mb->winner_mode_stats = NULL;
 }
 
-static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
-                                         struct macroblock *mb,
-                                         int use_nonrd_pick_mode,
-                                         int use_mb_rd_hash) {
-  if (!use_nonrd_pick_mode) {
+static AOM_INLINE void allocate_winner_mode_stats(const AV1_COMP *cpi,
+                                                  struct macroblock *mb) {
+  const SPEED_FEATURES *sf = &cpi->sf;
+  // The winner_mode_stats buffer is not required in these cases.
+  if (is_stat_generation_stage(cpi) ||
+      (sf->rt_sf.use_nonrd_pick_mode && !sf->rt_sf.hybrid_intra_pickmode) ||
+      (sf->winner_mode_sf.multi_winner_mode_type == MULTI_WINNER_MODE_OFF))
+    return;
+
+  const AV1_COMMON *cm = &cpi->common;
+  const int winner_mode_count =
+      winner_mode_count_allowed[sf->winner_mode_sf.multi_winner_mode_type];
+  CHECK_MEM_ERROR(cm, mb->winner_mode_stats,
+                  (WinnerModeStats *)aom_malloc(
+                      winner_mode_count * sizeof(mb->winner_mode_stats[0])));
+}
+
+static AOM_INLINE void av1_alloc_mb_data(const AV1_COMP *cpi,
+                                         struct macroblock *mb) {
+  const AV1_COMMON *cm = &cpi->common;
+  const SPEED_FEATURES *sf = &cpi->sf;
+  if (!sf->rt_sf.use_nonrd_pick_mode) {
     // Memory for mb_rd_record is allocated only when use_mb_rd_hash sf is
     // enabled.
-    if (use_mb_rd_hash)
+    if (sf->rd_sf.use_mb_rd_hash)
       mb->txfm_search_info.mb_rd_record =
           (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD));
     if (!frame_is_intra_only(cm))
@@ -458,12 +475,8 @@ static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
   CHECK_MEM_ERROR(cm, mb->e_mbd.seg_mask,
                   (uint8_t *)aom_memalign(
                       16, 2 * MAX_SB_SQUARE * sizeof(mb->e_mbd.seg_mask[0])));
-  const int winner_mode_count = frame_is_intra_only(cm)
-                                    ? MAX_WINNER_MODE_COUNT_INTRA
-                                    : MAX_WINNER_MODE_COUNT_INTER;
-  CHECK_MEM_ERROR(cm, mb->winner_mode_stats,
-                  (WinnerModeStats *)aom_malloc(
-                      winner_mode_count * sizeof(mb->winner_mode_stats[0])));
+
+  allocate_winner_mode_stats(cpi, mb);
 }
 
 // This function will compute the number of reference frames to be disabled

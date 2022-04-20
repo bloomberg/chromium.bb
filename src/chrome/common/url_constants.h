@@ -121,12 +121,6 @@ extern const char kChromeUIUntrustedNewTabPageUrl[];
 // The URL for the Chromium project used in the About dialog.
 extern const char kChromiumProjectURL[];
 
-// "Learn more" URL for the Cloud Print section under Options.
-extern const char kCloudPrintLearnMoreURL[];
-
-// "Learn more" URL for the Cloud Print Preview certificate error.
-extern const char kCloudPrintCertificateErrorLearnMoreURL[];
-
 extern const char kContentSettingsExceptionsLearnMoreURL[];
 
 // "Learn more" URL for cookies.
@@ -425,8 +419,8 @@ extern const char kFingerprintLearnMoreURL[];
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];
 
-// The URL for the "learn more" link on the 10.10 obsolescence infobar.
-extern const char kMac10_10_ObsoleteURL[];
+// The URL for the "learn more" link on the macOS version obsolescence infobar.
+extern const char kMacOsObsoleteURL[];
 #endif
 
 #if BUILDFLAG(IS_WIN)

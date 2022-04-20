@@ -706,17 +706,14 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
         extensions = self.instanceExtensions
 
         union = ''
-        union += 'union loader_instance_extension_enables {\n'
-        union += '    struct {\n'
+        union += 'struct loader_instance_extension_enables {\n'
         for ext in extensions:
             if ('VK_VERSION_' in ext.name or ext.name in WSI_EXT_NAMES or
                 ext.type == 'device' or ext.num_commands == 0):
                 continue
 
-            union += '        uint8_t %s : 1;\n' % ext.name[3:].lower()
+            union += '    uint8_t %s;\n' % ext.name[3:].lower()
 
-        union += '    };\n'
-        union += '    uint64_t padding[4];\n'
         union += '};\n\n'
         return union
 
@@ -768,7 +765,7 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                 tables += '                                                             VkDevice dev) {\n'
                 tables += '    VkLayerDispatchTable *table = &dev_table->core_dispatch;\n'
                 tables += '    table->magic = DEVICE_DISP_TABLE_MAGIC_NUMBER;\n'
-                tables += '    for (uint32_t i = 0; i < MAX_NUM_UNKNOWN_EXTS; i++) dev_table->ext_dispatch.dev_ext[i] = (PFN_vkDevExt)vkDevExtError;\n'
+                tables += '    for (uint32_t i = 0; i < MAX_NUM_UNKNOWN_EXTS; i++) dev_table->ext_dispatch[i] = (PFN_vkDevExt)vkDevExtError;\n'
 
             elif x == 1:
                 cur_type = 'device'
@@ -1143,6 +1140,8 @@ class LoaderExtensionOutputGenerator(OutputGenerator):
                     # error here.
                     if ext_cmd.ext_type =='instance' and has_return_type:
                         funcs += '        return VK_ERROR_INITIALIZATION_FAILED;\n'
+                    else:
+                        funcs += '        abort(); /* Intentionally fail so user can correct issue. */\n'
                     funcs += '    }\n'
 
                     if has_surface == 1:

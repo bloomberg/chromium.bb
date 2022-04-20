@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021 The Khronos Group Inc.
- * Copyright (c) 2021 Valve Corporation
- * Copyright (c) 2021 LunarG, Inc.
+ * Copyright (c) 2021-2022 The Khronos Group Inc.
+ * Copyright (c) 2021-2022 Valve Corporation
+ * Copyright (c) 2021-2022 LunarG, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and/or associated documentation files (the "Materials"), to
@@ -45,7 +45,7 @@ enum class InterfaceVersionCheck {
     version_is_supported
 };
 
-enum class CalledEnumerateAdapterPhysicalDevices { not_called, called, called_but_not_supported };
+enum class CalledEnumerateAdapterPhysicalDevices { not_called, called };
 
 enum class UsingICDProvidedWSI { not_using, is_using };
 
@@ -60,8 +60,7 @@ struct TestICD {
     BUILDER_VALUE(TestICD, uint32_t, max_icd_interface_version, 6)
     uint32_t icd_interface_version_received = 0;
 
-    CalledEnumerateAdapterPhysicalDevices called_enumerate_adapter_physical_devices =
-        CalledEnumerateAdapterPhysicalDevices::not_called;
+    bool called_enumerate_adapter_physical_devices = false;
 
     BUILDER_VALUE(TestICD, bool, enable_icd_wsi, false);
     UsingICDProvidedWSI is_using_icd_wsi = UsingICDProvidedWSI::not_using;
@@ -69,6 +68,7 @@ struct TestICD {
     BUILDER_VALUE(TestICD, uint32_t, icd_api_version, VK_API_VERSION_1_0)
     BUILDER_VECTOR(TestICD, LayerDefinition, instance_layers, instance_layer)
     BUILDER_VECTOR(TestICD, Extension, instance_extensions, instance_extension)
+    BUILDER_VECTOR(TestICD, Extension, enabled_instance_extensions, enabled_instance_extension)
 
     BUILDER_VECTOR_MOVE_ONLY(TestICD, PhysicalDevice, physical_devices, physical_device);
 
@@ -108,6 +108,10 @@ struct TestICD {
         for (auto& ext : instance_extensions) info.enabled_extensions.push_back(ext.extensionName.data());
         return info;
     }
+
+#if defined(WIN32)
+    BUILDER_VALUE(TestICD, LUID, adapterLUID, {})
+#endif  // defined(WIN32)
 };
 
 using GetTestICDFunc = TestICD* (*)();

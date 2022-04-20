@@ -2363,18 +2363,23 @@ IN_PROC_BROWSER_TEST_P(SSLPrerenderBrowserTest,
 // request is intercepted by a service worker.
 IN_PROC_BROWSER_TEST_P(SSLPrerenderBrowserTest,
                        CertificateValidation_SWSubResource) {
+  // Skip the test when the block type is kCertError. With the type, this test
+  // times out due to https://crbug.com/1311887.
+  // TODO(https://crbug.com/1311887): Enable the test with kCertError.
+  if (GetParam() == SSLPrerenderTestErrorBlockType::kCertError)
+    return;
+
   base::HistogramTester histogram_tester;
 
-  const GURL kInitialUrl = GetUrl("/title1.html");
+  // Load an initial page and register a service worker that intercepts
+  // resources requests.
+  const GURL kInitialUrl = GetUrl("/workers/service_worker_setup.html");
   ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  EXPECT_EQ("ok", EvalJs(current_frame_host(), "setup();"));
 
-  // Prerender a page, then register a service worker that intercepts resource
-  // requests.
-  const GURL kPrerenderingUrl = GetUrl("/workers/service_worker_setup.html");
+  // Prerender a page.
+  const GURL kPrerenderingUrl = GetUrl("/workers/empty.html");
   int host_id = prerender_helper()->AddPrerender(kPrerenderingUrl);
-  EXPECT_EQ("ok",
-            EvalJs(prerender_helper()->GetPrerenderedMainFrameHost(host_id),
-                   "setup();"));
   test::PrerenderHostObserver host_observer(*web_contents(), host_id);
   RequireClientCertsOrSendExpiredCerts();
 
@@ -4279,16 +4284,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheBrowserTest,
 }
 
 #if !BUILDFLAG(IS_ANDROID)
-// StorageServiceOutOfProcess is not implemented on Android. Also as commented
-// below, test_api->CrashNow() won't work on x86 and x86_64 Android.
+// The out-of-process StorageService is not implemented on Android. Also as
+// commented below, test_api->CrashNow() won't work on x86 and x86_64 Android.
 
 class PrerenderRestartStorageServiceBrowserTest : public PrerenderBrowserTest {
  public:
-  PrerenderRestartStorageServiceBrowserTest() {
-    // These tests only make sense when the service is running
-    // out-of-process.
-    feature_list_.InitAndEnableFeature(features::kStorageServiceOutOfProcess);
-  }
+  PrerenderRestartStorageServiceBrowserTest() = default;
 
  protected:
   void CrashStorageServiceAndWaitForRestart() {
@@ -4307,9 +4308,6 @@ class PrerenderRestartStorageServiceBrowserTest : public PrerenderBrowserTest {
     test_api->CrashNow();
     loop.Run();
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(PrerenderRestartStorageServiceBrowserTest,
@@ -5607,9 +5605,16 @@ class PrerenderPurposePrefetchBrowserTest : public PrerenderBrowserTest {
   bool TestPurposePrefetchHeader(const GURL& url) {
     net::test_server::HttpRequest::HeaderMap headers = GetRequestHeaders(url);
     auto it = headers.find("Purpose");
-    if (it == headers.end())
+    if (it == headers.end()) {
       return false;
+    }
     EXPECT_EQ("prefetch", it->second);
+
+    it = headers.find("Sec-Purpose");
+    if (it == headers.end()) {
+      return false;
+    }
+    EXPECT_EQ("prefetch;prerender", it->second);
     return true;
   }
 };
@@ -5901,5 +5906,138 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   }
   NavigatePrimaryPage(kPrerenderingUrl);
 }
+
+// Tests that FrameTreeNode::has_received_user_gesture_before_nav_ is not set on
+// the prerendered main frame or the activated main frame when the primary main
+// frame doesn't have it.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       HasReceivedUserGestureBeforeNavigation) {
+  // Navigate to an initial page.
+  const GURL initial_url = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // The primary main frame doesn't have the
+  // has_received_user_gesture_before_nav bit.
+  ASSERT_FALSE(current_frame_host()
+                   ->frame_tree_node()
+                   ->has_received_user_gesture_before_nav());
+
+  // Start prerendering.
+  const GURL prerendering_url = GetUrl("/empty.html?prerender");
+  int host_id = AddPrerender(prerendering_url);
+  RenderFrameHostImpl* prerendered_render_frame_host =
+      GetPrerenderedMainFrameHost(host_id);
+
+  // The prerendered main frame should not have the bit.
+  EXPECT_FALSE(prerendered_render_frame_host->frame_tree_node()
+                   ->has_received_user_gesture_before_nav());
+
+  // Activate the prerendered page.
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  NavigatePrimaryPage(prerendering_url);
+  ASSERT_TRUE(host_observer.was_activated());
+
+  // The activated main frame should not have the bit.
+  EXPECT_FALSE(current_frame_host()
+                   ->frame_tree_node()
+                   ->has_received_user_gesture_before_nav());
+}
+
+// Tests that FrameTreeNode::has_received_user_gesture_before_nav_ is not
+// propagated from the primary main frame to the prerendered main frame but it
+// is propagated to the activated main frame.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       HasReceivedUserGestureBeforeNavigation_Propagation) {
+  // Navigate to an initial page.
+  const GURL initial_url = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Set the has_received_user_gesture_before_nav bit on the primary main frame.
+  current_frame_host()->HadStickyUserActivationBeforeNavigationChanged(true);
+  ASSERT_TRUE(current_frame_host()
+                  ->frame_tree_node()
+                  ->has_received_user_gesture_before_nav());
+
+  // Start prerendering.
+  const GURL prerendering_url = GetUrl("/empty.html?prerender");
+  int host_id = AddPrerender(prerendering_url);
+  RenderFrameHostImpl* prerendered_render_frame_host =
+      GetPrerenderedMainFrameHost(host_id);
+
+  // The prerendered main frame should not have the bit.
+  EXPECT_FALSE(prerendered_render_frame_host->frame_tree_node()
+                   ->has_received_user_gesture_before_nav());
+
+  // Activate the prerendered page.
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
+  NavigatePrimaryPage(prerendering_url);
+  ASSERT_TRUE(host_observer.was_activated());
+
+  // The activated main frame should have the bit.
+  EXPECT_TRUE(current_frame_host()
+                  ->frame_tree_node()
+                  ->has_received_user_gesture_before_nav());
+}
+
+class PrerenderFencedFrameBrowserTest
+    : public PrerenderBrowserTest,
+      public testing::WithParamInterface<bool /* shadow_dom_fenced_frames */> {
+ public:
+  PrerenderFencedFrameBrowserTest() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kFencedFrames,
+        {{"implementation_type", GetParam() ? "shadow_dom" : "mparch"}});
+  }
+  ~PrerenderFencedFrameBrowserTest() override = default;
+
+  bool IsShadowDomImpl() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PrerenderFencedFrameBrowserTest,
+                       PrerenderFencedFrameBrowserTest) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+  const GURL kFencedFrameUrl = GetUrl("/title1.html");
+  constexpr char kAddFencedFrameScript[] = R"({
+    const fenced_frame = document.createElement('fencedframe');
+    fenced_frame.src = $1;
+    document.body.appendChild(fenced_frame);
+  })";
+
+  // We see a navigation to about:blank for Shadow DOM, but not MPArch, so we
+  // need to account for another navigation with that implementation.
+  const int kNumNavigations = IsShadowDomImpl() ? 4 : 3;
+  TestNavigationObserver nav_observer(web_contents(), kNumNavigations);
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start a prerender.
+  int host_id = AddPrerender(kPrerenderingUrl);
+  auto* prerendered_rfh = GetPrerenderedMainFrameHost(host_id);
+  EXPECT_EQ(kPrerenderingUrl, nav_observer.last_navigation_url());
+  EXPECT_TRUE(ExecJs(prerendered_rfh,
+                     JsReplace(kAddFencedFrameScript, kFencedFrameUrl)));
+  // Since we've deferred creating the fenced frame delegate, we should see no
+  // child frames.
+  size_t child_frame_count = 0;
+  prerendered_rfh->ForEachRenderFrameHost(
+      base::BindLambdaForTesting([&](RenderFrameHostImpl* rfh) {
+        if (rfh != prerendered_rfh)
+          child_frame_count++;
+      }));
+  EXPECT_EQ(0lu, child_frame_count);
+
+  NavigatePrimaryPage(kPrerenderingUrl);
+  EXPECT_EQ(kPrerenderingUrl, nav_observer.last_navigation_url());
+  nav_observer.Wait();
+  EXPECT_EQ(kFencedFrameUrl, nav_observer.last_navigation_url());
+}
+
+INSTANTIATE_TEST_SUITE_P(PrerenderFencedFrameBrowserTest,
+                         PrerenderFencedFrameBrowserTest,
+                         testing::Bool());
 
 }  // namespace content

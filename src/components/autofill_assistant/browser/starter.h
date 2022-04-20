@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/startup_util.h"
 #include "components/autofill_assistant/browser/trigger_scripts/trigger_script_coordinator.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -30,10 +31,11 @@ namespace autofill_assistant {
 
 // Starts autofill-assistant flows. Uses a platform delegate to show UI and
 // access platform-dependent features.
-class Starter : public content::WebContentsObserver {
+class Starter : public content::WebContentsObserver,
+                public content::WebContentsUserData<Starter> {
  public:
   explicit Starter(content::WebContents* web_contents,
-                   StarterPlatformDelegate* platform_delegate,
+                   base::WeakPtr<StarterPlatformDelegate> platform_delegate,
                    ukm::UkmRecorder* ukm_recorder,
                    base::WeakPtr<RuntimeManager> runtime_manager,
                    const base::TickClock* tick_clock);
@@ -56,6 +58,15 @@ class Starter : public content::WebContentsObserver {
   // cancelled.
   void Start(std::unique_ptr<TriggerContext> trigger_context);
 
+  // Runs the same checks as |Start| but instead of starting the regular script
+  // at the end, it calls |preconditions_checked_callback|.
+  void CanStart(
+      std::unique_ptr<TriggerContext> trigger_context,
+      base::OnceCallback<void(bool success,
+                              absl::optional<GURL> url,
+                              std::unique_ptr<TriggerContext> trigger_contexts)>
+          preconditions_checked_callback);
+
   // content::WebContentsObserver:
   void PrimaryPageChanged(content::Page& page) override;
 
@@ -64,14 +75,17 @@ class Starter : public content::WebContentsObserver {
 
   // Re-check settings. This may cancel ongoing startup requests if the required
   // settings are no longer enabled.
-  void CheckSettings();
+  void Init();
 
   // Records the invalidation of platform-specific depencendies. For example:
   // When the activity is changed on Android.
   void OnDependenciesInvalidated();
 
+  base::WeakPtr<Starter> GetWeakPtr();
+
  private:
   friend class StarterTest;
+  friend class content::WebContentsUserData<Starter>;
 
   // Starts a flow for |url| if possible. Will fail (do nothing) if the feature
   // is disabled or if there is already a pending startup.
@@ -87,11 +101,11 @@ class Starter : public content::WebContentsObserver {
 
   // Installs the feature module if necessary, otherwise directly invokes
   // |OnFeatureModuleInstalled|.
-  void MaybeInstallFeatureModule(StartupUtil::StartupMode startup_mode);
+  void MaybeInstallFeatureModule(StartupMode startup_mode);
 
   // Stops the startup if the installation failed. Otherwise, proceeds with the
   // next step of the startup process.
-  void OnFeatureModuleInstalled(StartupUtil::StartupMode startup_mode,
+  void OnFeatureModuleInstalled(StartupMode startup_mode,
                                 Metrics::FeatureModuleInstallation result);
 
   // Starts a trigger script and waits for it to finish in
@@ -118,7 +132,7 @@ class Starter : public content::WebContentsObserver {
 
   // Called at the end of each |Start| invocation.
   void OnStartDone(
-      bool start_regular_script,
+      bool start_script,
       absl::optional<TriggerScriptProto> trigger_script = absl::nullopt);
 
   // Called when the heuristic result for |url| is available.
@@ -144,6 +158,12 @@ class Starter : public content::WebContentsObserver {
   // Registers the synthetic field trials for triggering and experiments.
   void RegisterSyntheticFieldTrials(
       const TriggerContext& trigger_context) const;
+
+  // Calls |preconditions_checked_callback_| to notify whether the checks were
+  // successful.
+  void ReportPreconditionsChecked(bool start_script);
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   // The UKM source id to use for UKM metrics.
   ukm::SourceId current_ukm_source_id_ = ukm::kInvalidSourceId;
@@ -175,14 +195,18 @@ class Starter : public content::WebContentsObserver {
   bool waiting_for_onboarding_ = false;
   bool waiting_for_deeplink_navigation_ = false;
   bool is_custom_tab_ = false;
-  const raw_ptr<StarterPlatformDelegate> platform_delegate_;
+  base::WeakPtr<StarterPlatformDelegate> platform_delegate_;
   raw_ptr<ukm::UkmRecorder> ukm_recorder_ = nullptr;
   base::WeakPtr<RuntimeManager> runtime_manager_;
   bool fetch_trigger_scripts_on_navigation_ = false;
   std::unique_ptr<TriggerContext> pending_trigger_context_;
   std::unique_ptr<TriggerScriptCoordinator> trigger_script_coordinator_;
   const scoped_refptr<StarterHeuristic> starter_heuristic_;
-  raw_ptr<const base::TickClock> tick_clock_;
+  const raw_ptr<const base::TickClock> tick_clock_;
+  base::OnceCallback<void(bool success,
+                          absl::optional<GURL> url,
+                          std::unique_ptr<TriggerContext> trigger_contexts)>
+      preconditions_checked_callback_;
   base::WeakPtrFactory<Starter> weak_ptr_factory_{this};
 };
 

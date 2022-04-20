@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">กำลังสำรอง <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">นำข้อยกเว้นออกสำหรับ <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">งานนำเสนอของ Google</translation>
+<translation id="4277536868133419688">ตัวกรอง <ph name="FILTER_NAME" /> เปิดอยู่</translation>
 <translation id="4290535918735525311">แชร์กับ Linux แล้ว 1 โฟลเดอร์</translation>
 <translation id="4299729908419173967">บราซิล</translation>
 <translation id="4302605047395093221">ทุกคนที่ใช้อุปกรณ์นี้จะต้องป้อน PIN เพื่อเชื่อมต่อกับเครือข่ายมือถือนี้</translation>
@@ -407,6 +408,7 @@
 <translation id="457386861538956877">เพิ่มเติม...</translation>
 <translation id="4579744207439506346">เพิ่ม <ph name="ENTRY_NAME" /> ไปยังรายการที่เลือกแล้ว</translation>
 <translation id="4594543368593301662">กำลังแสดงผลการค้นหาสำหรับ <ph name="SEARCH_TERM" /></translation>
+<translation id="4599600860674643278">รีเซ็ตตัวกรองแล้ว</translation>
 <translation id="4603392156942865207">กำลังคัดลอก <ph name="FILE_NAME" /> ไปยัง <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">ศิลปิน</translation>
 <translation id="4642769377300286600">กำลังติดตั้งโปรไฟล์อุปกรณ์เคลื่อนที่, เครือข่าย <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -530,6 +532,7 @@
 <translation id="5469868506864199649">อิตาลี</translation>
 <translation id="5473333559083690127">ป้อน PIN ใหม่อีกครั้ง</translation>
 <translation id="5489067830765222292">ลัตเวีย</translation>
+<translation id="5489965683297092283">ตัวกรอง <ph name="FILTER_NAME" /> ปิดอยู่</translation>
 <translation id="5494920125229734069">เลือกทั้งหมด</translation>
 <translation id="5500122897333236901">ไอซ์แลนดิก</translation>
 <translation id="5508696409934741614">จุด</translation>
@@ -596,6 +599,7 @@
 <translation id="6082256976217156453">ที่เก็บถาวรซึ่งบีบอัดโดย LZMA</translation>
 <translation id="6096979789310008754">ล้างข้อความค้นหาแล้ว กำลังแสดงไฟล์และโฟลเดอร์ทั้งหมด</translation>
 <translation id="610101264611565198">กำลังย้าย <ph name="FILE_NAME" /> ไปยัง <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">ข้อความ CSV</translation>
 <translation id="6129953537138746214">ช่องว่าง</translation>
 <translation id="6133173853026656527">กำลังย้าย <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">ญี่ปุ่นด้วยแป้นพิมพ์สหรัฐฯ</translation>
@@ -846,6 +850,7 @@
 <translation id="8208580316430297579">งานศิลปะ</translation>
 <translation id="8223479393428528563">หากต้องการบันทึกไฟล์เหล่านี้เพื่อใช้งานแบบออฟไลน์ ให้คลิกขวาที่ไฟล์ และเลือกตัวเลือก <ph name="OFFLINE_CHECKBOX_NAME" /></translation>
 <translation id="8249296373107784235">ล้มเลิก</translation>
+<translation id="8250920743982581267">เอกสาร</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8261561378965667560">จีน (Array)</translation>
 <translation id="8269755669432358899">ยุบแผงความคิดเห็นเกี่ยวกับไฟล์</translation>

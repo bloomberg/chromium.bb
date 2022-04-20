@@ -22,6 +22,7 @@
 #include "libavutil/channel_layout.h"
 #include "libavutil/thread.h"
 
+#include "codec_internal.h"
 #include "internal.h"
 #include "get_bits.h"
 #include "fft.h"
@@ -938,8 +939,8 @@ static av_cold int atrac9_decode_init(AVCodecContext *avctx)
     }
     s->block_config = &at9_block_layout[block_config_idx];
 
-    avctx->channel_layout = s->block_config->channel_layout;
-    avctx->channels       = av_get_channel_layout_nb_channels(avctx->channel_layout);
+    av_channel_layout_uninit(&avctx->ch_layout);
+    avctx->ch_layout      = s->block_config->channel_layout;
     avctx->sample_fmt     = AV_SAMPLE_FMT_FLTP;
 
     if (get_bits1(&gb)) {
@@ -987,16 +988,16 @@ static av_cold int atrac9_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_atrac9_decoder = {
-    .name           = "atrac9",
-    .long_name      = NULL_IF_CONFIG_SMALL("ATRAC9 (Adaptive TRansform Acoustic Coding 9)"),
-    .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = AV_CODEC_ID_ATRAC9,
+const FFCodec ff_atrac9_decoder = {
+    .p.name         = "atrac9",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("ATRAC9 (Adaptive TRansform Acoustic Coding 9)"),
+    .p.type         = AVMEDIA_TYPE_AUDIO,
+    .p.id           = AV_CODEC_ID_ATRAC9,
     .priv_data_size = sizeof(ATRAC9Context),
     .init           = atrac9_decode_init,
     .close          = atrac9_decode_close,
     .decode         = atrac9_decode_frame,
     .flush          = atrac9_decode_flush,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
-    .capabilities   = AV_CODEC_CAP_SUBFRAMES | AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
+    .p.capabilities = AV_CODEC_CAP_SUBFRAMES | AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
 };

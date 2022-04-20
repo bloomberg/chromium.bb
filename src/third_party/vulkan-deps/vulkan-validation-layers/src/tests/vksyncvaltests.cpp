@@ -1320,7 +1320,7 @@ TEST_F(VkSyncValTest, SyncCmdDispatchDrawHazards) {
 
     // Enable VK_KHR_draw_indirect_count for KHR variants
     ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
-    VkPhysicalDeviceVulkan12Features features12 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan12Features features12 = LvlInitStruct<VkPhysicalDeviceVulkan12Features>();
     if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME)) {
         m_device_extension_names.push_back(VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME);
         if (DeviceValidationVersion() >= VK_API_VERSION_1_2) {
@@ -1948,8 +1948,7 @@ TEST_F(VkSyncValTest, SyncCmdQuery) {
     }
 
     vk_testing::QueryPool query_pool;
-    VkQueryPoolCreateInfo query_pool_create_info{};
-    query_pool_create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+    VkQueryPoolCreateInfo query_pool_create_info = LvlInitStruct<VkQueryPoolCreateInfo>();
     query_pool_create_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
     query_pool_create_info.queryCount = 1;
     query_pool.init(*m_device, query_pool_create_info);
@@ -2847,9 +2846,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     constexpr uint32_t kWidth = 32, kHeight = 32;
     constexpr uint32_t kNumImages = 4;
 
-    VkImageCreateInfo src_img_info = {};
-    src_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    src_img_info.pNext = NULL;
+    VkImageCreateInfo src_img_info = LvlInitStruct<VkImageCreateInfo>();
     src_img_info.flags = 0;
     src_img_info.imageType = VK_IMAGE_TYPE_2D;
     src_img_info.format = kFormat;
@@ -2864,9 +2861,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     src_img_info.pQueueFamilyIndices = nullptr;
     src_img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    VkImageCreateInfo dst_img_info = {};
-    dst_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    dst_img_info.pNext = nullptr;
+    VkImageCreateInfo dst_img_info = LvlInitStruct<VkImageCreateInfo>();
     dst_img_info.flags = 0;
     dst_img_info.imageType = VK_IMAGE_TYPE_2D;
     dst_img_info.format = kFormat;
@@ -2911,7 +2906,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
 
         color_refs[i] = {i, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
-        img_barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        img_barriers[i] = LvlInitStruct<VkImageMemoryBarrier>();
         img_barriers[i].srcAccessMask = 0;
         img_barriers[i].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         img_barriers[i].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2944,9 +2939,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
         subpasses[i].pPreserveAttachments = preserve_subpass[i - 1].data();
     }
 
-    VkRenderPassCreateInfo renderpass_info = {};
-    renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderpass_info.pNext = nullptr;
+    VkRenderPassCreateInfo renderpass_info = LvlInitStruct<VkRenderPassCreateInfo>();
     renderpass_info.flags = 0;
     renderpass_info.attachmentCount = attachment_descriptions.size();
     renderpass_info.pAttachments = attachment_descriptions.data();
@@ -2955,9 +2948,7 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     renderpass_info.dependencyCount = 0;
     renderpass_info.pDependencies = nullptr;
 
-    VkFramebufferCreateInfo fbci = {};
-    fbci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fbci.pNext = nullptr;
+    VkFramebufferCreateInfo fbci = LvlInitStruct<VkFramebufferCreateInfo>();
     fbci.flags = 0;
     fbci.attachmentCount = attachments.size();
     fbci.pAttachments = attachments.data();
@@ -3561,7 +3552,7 @@ TEST_F(VkSyncValTest, SyncEventsCommandHazards) {
 TEST_F(VkLayerTest, CmdWaitEvents2KHRUsedButSynchronizaion2Disabled) {
     TEST_DESCRIPTION("Using CmdWaitEvents2KHR when synchronization2 is not enabled");
     SetTargetApiVersion(VK_API_VERSION_1_3);
- 
+
     AddRequiredExtensions(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     AddRequiredExtensions(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework());
@@ -3722,7 +3713,8 @@ TEST_F(VkSyncValTest, DestroyedUnusedDescriptors) {
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
     m_errorMonitor->ExpectSuccess();
 
-    VkDescriptorSetLayoutBindingFlagsCreateInfoEXT layout_createinfo_binding_flags = {};
+    VkDescriptorSetLayoutBindingFlagsCreateInfoEXT layout_createinfo_binding_flags =
+        LvlInitStruct<VkDescriptorSetLayoutBindingFlagsCreateInfoEXT>();
     constexpr size_t kNumDescriptors = 6;
 
     std::array<VkDescriptorBindingFlagsEXT, kNumDescriptors> ds_binding_flags;
@@ -3730,8 +3722,6 @@ TEST_F(VkSyncValTest, DestroyedUnusedDescriptors) {
         elem = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT;
     }
 
-    layout_createinfo_binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT;
-    layout_createinfo_binding_flags.pNext = NULL;
     layout_createinfo_binding_flags.bindingCount = ds_binding_flags.size();
     layout_createinfo_binding_flags.pBindingFlags = ds_binding_flags.data();
 
@@ -3896,8 +3886,7 @@ TEST_F(VkSyncValTest, DestroyedUnusedDescriptors) {
     pipe.AddShader(&vs);
     pipe.AddDefaultColorAttachment();
     pipe.CreateVKPipeline(pipeline_layout.handle(), m_renderPass);
-    VkCommandBufferBeginInfo begin_info = {};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo begin_info = LvlInitStruct<VkCommandBufferBeginInfo>();
     m_commandBuffer->begin(&begin_info);
     vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
     m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
@@ -3921,4 +3910,252 @@ TEST_F(VkSyncValTest, DestroyedUnusedDescriptors) {
     m_commandBuffer->QueueCommandBuffer();
     vk::QueueWaitIdle(m_device->m_queue);
     m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkSyncValTest, TestInvalidExternalSubpassDependency) {
+    TEST_DESCRIPTION("Test write after write hazard with invalid external subpass dependency");
+
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkSubpassDependency subpass_dependency = {};
+    subpass_dependency.srcSubpass = 0;
+    subpass_dependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+    subpass_dependency.srcStageMask = 0;
+    subpass_dependency.dstStageMask = 0;
+    subpass_dependency.srcAccessMask = 0;
+    subpass_dependency.dstAccessMask = 0;
+    subpass_dependency.dependencyFlags = 0;
+
+    VkAttachmentReference attach_ref1 = {};
+    attach_ref1.attachment = 0;
+    attach_ref1.layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference attach_ref2 = {};
+    attach_ref2.attachment = 0;
+    attach_ref2.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    VkSubpassDescription subpass_descriptions[2] = {};
+    subpass_descriptions[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_descriptions[0].pDepthStencilAttachment = &attach_ref1;
+    subpass_descriptions[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_descriptions[1].pDepthStencilAttachment = &attach_ref2;
+
+    VkAttachmentDescription attachment_description = {};
+    attachment_description.format = VK_FORMAT_D32_SFLOAT;
+    attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment_description.initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    attachment_description.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    auto rp_ci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rp_ci.subpassCount = 1;
+    rp_ci.pSubpasses = subpass_descriptions;
+    rp_ci.attachmentCount = 1;
+    rp_ci.pAttachments = &attachment_description;
+    rp_ci.dependencyCount = 1;
+    rp_ci.pDependencies = &subpass_dependency;
+
+    vk_testing::RenderPass render_pass;
+    render_pass.init(*m_device, rp_ci);
+
+    VkClearValue clear_value = {};
+    clear_value.color = {{0, 0, 0, 0}};
+
+    VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>();
+    image_ci.imageType = VK_IMAGE_TYPE_2D;
+    image_ci.format = VK_FORMAT_D32_SFLOAT;
+    image_ci.extent.width = 32;
+    image_ci.extent.height = 32;
+    image_ci.extent.depth = 1;
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    VkImageObj image1(m_device);
+    image1.init(&image_ci);
+    ASSERT_TRUE(image1.initialized());
+
+    vk_testing::ImageView image_view1;
+    VkImageViewCreateInfo iv_ci = LvlInitStruct<VkImageViewCreateInfo>();
+    iv_ci.image = image1.handle();
+    iv_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    iv_ci.format = VK_FORMAT_D32_SFLOAT;
+    iv_ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    iv_ci.subresourceRange.baseMipLevel = 0;
+    iv_ci.subresourceRange.levelCount = 1;
+    iv_ci.subresourceRange.baseArrayLayer = 0;
+    iv_ci.subresourceRange.layerCount = 1;
+    image_view1.init(*m_device, iv_ci);
+
+    VkImageView framebuffer_attachments[1] = {image_view1.handle()};
+
+    auto fb_ci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fb_ci.renderPass = render_pass.handle();
+    fb_ci.attachmentCount = 1;
+    fb_ci.pAttachments = framebuffer_attachments;
+    fb_ci.width = 32;
+    fb_ci.height = 32;
+    fb_ci.layers = 1;
+
+    vk_testing::Framebuffer framebuffer;
+    framebuffer.init(*m_device, fb_ci);
+
+    auto rp_bi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rp_bi.renderPass = render_pass.handle();
+    rp_bi.framebuffer = framebuffer.handle();
+    rp_bi.renderArea.extent.width = 32;
+    rp_bi.renderArea.extent.height = 32;
+    rp_bi.clearValueCount = 1;
+    rp_bi.pClearValues = &clear_value;
+
+    auto ds_ci = LvlInitStruct<VkPipelineDepthStencilStateCreateInfo>();
+    ds_ci.depthTestEnable = VK_FALSE;
+    ds_ci.depthWriteEnable = VK_FALSE;
+    ds_ci.depthCompareOp = VK_COMPARE_OP_NEVER;
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.gp_ci_.renderPass = render_pass.handle();
+    pipe.gp_ci_.pDepthStencilState = &ds_ci;
+    pipe.InitState();
+    ASSERT_VK_SUCCESS(pipe.CreateGraphicsPipeline());
+
+    m_errorMonitor->SetDesiredFailureMsg(VK_DEBUG_REPORT_ERROR_BIT_EXT, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(rp_bi);
+    vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.pipeline_);
+    vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkSyncValTest, TestCopyingToCompressedImage) {
+    TEST_DESCRIPTION("Copy from uncompressed to compressed image with and without overlap.");
+
+    ASSERT_NO_FATAL_FAILURE(InitSyncValFramework());
+    bool copy_commands_2 = false;
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME);
+        copy_commands_2 = true;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+
+    VkFormatProperties format_properties;
+    VkFormat mp_format = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+    vk::GetPhysicalDeviceFormatProperties(gpu(), mp_format, &format_properties);
+    if ((format_properties.linearTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT) == 0) {
+        printf(
+            "%s Device does not support VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT for VK_FORMAT_BC1_RGBA_UNORM_BLOCK, skipping test.\n",
+            kSkipPrefix);
+        return;
+    }
+
+    VkImageObj src_image(m_device);
+    src_image.Init(1, 1, 1, VK_FORMAT_R32G32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT, VK_IMAGE_TILING_LINEAR);
+    VkImageObj dst_image(m_device);
+    dst_image.Init(12, 4, 1, VK_FORMAT_BC1_RGBA_UNORM_BLOCK, VK_IMAGE_USAGE_TRANSFER_DST_BIT, VK_IMAGE_TILING_LINEAR);
+
+    VkImageCopy copy_regions[2] = {};
+    copy_regions[0].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[0].srcSubresource.mipLevel = 0;
+    copy_regions[0].srcSubresource.baseArrayLayer = 0;
+    copy_regions[0].srcSubresource.layerCount = 1;
+    copy_regions[0].srcOffset = {0, 0, 0};
+    copy_regions[0].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[0].dstSubresource.mipLevel = 0;
+    copy_regions[0].dstSubresource.baseArrayLayer = 0;
+    copy_regions[0].dstSubresource.layerCount = 1;
+    copy_regions[0].dstOffset = {0, 0, 0};
+    copy_regions[0].extent = {1, 1, 1};
+    copy_regions[1].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[1].srcSubresource.mipLevel = 0;
+    copy_regions[1].srcSubresource.baseArrayLayer = 0;
+    copy_regions[1].srcSubresource.layerCount = 1;
+    copy_regions[1].srcOffset = {0, 0, 0};
+    copy_regions[1].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy_regions[1].dstSubresource.mipLevel = 0;
+    copy_regions[1].dstSubresource.baseArrayLayer = 0;
+    copy_regions[1].dstSubresource.layerCount = 1;
+    copy_regions[1].dstOffset = {4, 0, 0};
+    copy_regions[1].extent = {1, 1, 1};
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->ExpectSuccess();
+    vk::CmdCopyImage(m_commandBuffer->handle(), src_image.handle(), VK_IMAGE_LAYOUT_GENERAL, dst_image.handle(),
+                     VK_IMAGE_LAYOUT_GENERAL, 1, &copy_regions[0]);
+    vk::CmdCopyImage(m_commandBuffer->handle(), src_image.handle(), VK_IMAGE_LAYOUT_GENERAL, dst_image.handle(),
+                     VK_IMAGE_LAYOUT_GENERAL, 1, &copy_regions[1]);
+    m_errorMonitor->VerifyNotFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+    copy_regions[1].dstOffset = {7, 0, 0};
+    vk::CmdCopyImage(m_commandBuffer->handle(), src_image.handle(), VK_IMAGE_LAYOUT_GENERAL, dst_image.handle(),
+                     VK_IMAGE_LAYOUT_GENERAL, 1, &copy_regions[1]);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+
+    if (copy_commands_2) {
+        auto vkCmdCopyImage2KHR =
+            reinterpret_cast<PFN_vkCmdCopyImage2KHR>(vk::GetInstanceProcAddr(instance(), "vkCmdCopyImage2KHR"));
+        assert(vkCmdCopyImage2KHR != nullptr);
+
+        m_commandBuffer->reset();
+
+        VkImageCopy2KHR copy_regions2[2];
+        copy_regions2[0] = LvlInitStruct<VkImageCopy2KHR>();
+        copy_regions2[0].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[0].srcSubresource.mipLevel = 0;
+        copy_regions2[0].srcSubresource.baseArrayLayer = 0;
+        copy_regions2[0].srcSubresource.layerCount = 1;
+        copy_regions2[0].srcOffset = {0, 0, 0};
+        copy_regions2[0].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[0].dstSubresource.mipLevel = 0;
+        copy_regions2[0].dstSubresource.baseArrayLayer = 0;
+        copy_regions2[0].dstSubresource.layerCount = 1;
+        copy_regions2[0].dstOffset = {0, 0, 0};
+        copy_regions2[0].extent = {1, 1, 1};
+        copy_regions2[1] = LvlInitStruct<VkImageCopy2KHR>();
+        copy_regions2[1].srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[1].srcSubresource.mipLevel = 0;
+        copy_regions2[1].srcSubresource.baseArrayLayer = 0;
+        copy_regions2[1].srcSubresource.layerCount = 1;
+        copy_regions2[1].srcOffset = {0, 0, 0};
+        copy_regions2[1].dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy_regions2[1].dstSubresource.mipLevel = 0;
+        copy_regions2[1].dstSubresource.baseArrayLayer = 0;
+        copy_regions2[1].dstSubresource.layerCount = 1;
+        copy_regions2[1].dstOffset = {4, 0, 0};
+        copy_regions2[1].extent = {1, 1, 1};
+
+        auto copy_image_info = LvlInitStruct<VkCopyImageInfo2KHR>();
+        copy_image_info.srcImage = src_image.handle();
+        copy_image_info.srcImageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        copy_image_info.dstImage = dst_image.handle();
+        copy_image_info.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        copy_image_info.regionCount = 2;
+        copy_image_info.pRegions = copy_regions2;
+
+        m_commandBuffer->begin();
+
+        m_errorMonitor->ExpectSuccess();
+        vkCmdCopyImage2KHR(m_commandBuffer->handle(), &copy_image_info);
+        m_errorMonitor->VerifyNotFound();
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "SYNC-HAZARD-WRITE_AFTER_WRITE");
+        copy_image_info.regionCount = 1;
+        copy_image_info.pRegions = &copy_regions2[1];
+        copy_regions[1].dstOffset = {7, 0, 0};
+        vkCmdCopyImage2KHR(m_commandBuffer->handle(), &copy_image_info);
+        m_errorMonitor->VerifyFound();
+
+        m_commandBuffer->end();
+    }
 }

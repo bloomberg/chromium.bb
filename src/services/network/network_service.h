@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -27,6 +28,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/schemeful_site.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/secure_dns_mode.h"
@@ -34,7 +36,7 @@
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/first_party_sets/first_party_sets.h"
+#include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_quality_estimator_manager.h"
@@ -194,10 +196,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void ConfigureSCTAuditing(
       mojom::SCTAuditingConfigurationPtr configuration) override;
   void UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
-                       base::Time update_time) override;
+                       base::Time update_time,
+                       UpdateCtLogListCallback callback) override;
   void UpdateCtKnownPopularSCTs(
-      const std::vector<std::vector<uint8_t>>& sct_hashes) override;
-  void SetCtEnforcementEnabled(bool enabled) override;
+      const std::vector<std::vector<uint8_t>>& sct_hashes,
+      UpdateCtKnownPopularSCTsCallback callback) override;
+  void SetCtEnforcementEnabled(
+      bool enabled,
+      SetCtEnforcementEnabledCallback callback) override;
 #endif
 
   void UpdateKeyPinsList(mojom::PinListPtr pin_list,
@@ -208,11 +214,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void BindTestInterface(
       mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
-  void SetFirstPartySets(base::File sets_file) override;
-  void SetPersistedFirstPartySetsAndGetCurrentSets(
-      const std::string& persisted_sets,
-      mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
-          callback) override;
+  void SetFirstPartySets(
+      const base::flat_map<net::SchemefulSite, net::SchemefulSite>& sets)
+      override;
   void SetExplicitlyAllowedPorts(const std::vector<uint16_t>& ports) override;
 
   // Returns an HttpAuthHandlerFactory for the given NetworkContext.
@@ -249,7 +253,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   }
 #endif
 
-  FirstPartySets* first_party_sets() const { return first_party_sets_.get(); }
+  FirstPartySetsManager* first_party_sets() const {
+    return first_party_sets_manager_.get();
+  }
 
   void set_host_resolver_factory_for_testing(
       std::unique_ptr<net::HostResolver::Factory> host_resolver_factory) {
@@ -275,6 +281,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   base::Time ct_log_list_update_time() const {
     return ct_log_list_update_time_;
+  }
+
+  bool is_ct_enforcement_enabled_for_testing() const {
+    return ct_enforcement_enabled_;
   }
 #endif
 
@@ -339,11 +349,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
-  // Globally-scoped state for First-Party Sets. Must be above the `receiver_`
-  // so it's destroyed after, to make sure even when the reply callback owned by
-  // the `first_party_sets_` is never run when destroyed, the receiver which the
-  // reply callback associated with is already disconnected.
-  std::unique_ptr<FirstPartySets> first_party_sets_;
+  // Globally-scoped state for First-Party Sets.
+  std::unique_ptr<FirstPartySetsManager> first_party_sets_manager_;
 
   mojo::Receiver<mojom::NetworkService> receiver_{this};
 
@@ -411,6 +418,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<CtLogListDistributor> ct_log_list_distributor_;
 
   base::Time ct_log_list_update_time_;
+
+  bool ct_enforcement_enabled_ = true;
 #endif
 
   bool pins_list_updated_ = false;

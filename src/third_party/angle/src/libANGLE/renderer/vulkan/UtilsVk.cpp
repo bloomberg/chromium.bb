@@ -13,10 +13,10 @@
 
 #include "libANGLE/renderer/glslang_wrapper_utils.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
-#include "libANGLE/renderer/vulkan/DisplayVk.h"
 #include "libANGLE/renderer/vulkan/FramebufferVk.h"
 #include "libANGLE/renderer/vulkan/RenderTargetVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
+#include "libANGLE/renderer/vulkan/SurfaceVk.h"
 #include "libANGLE/renderer/vulkan/vk_utils.h"
 
 namespace rx
@@ -989,6 +989,59 @@ angle::Result GetUnresolveFrag(
     return vk::InitShaderAndSerial(context, &shader->get(), shaderCode.data(),
                                    shaderCode.size() * 4);
 }
+
+gl::DrawBufferMask MakeColorBufferMask(uint32_t colorAttachmentIndexGL)
+{
+    gl::DrawBufferMask mask;
+    mask.set(colorAttachmentIndexGL);
+    return mask;
+}
+
+void UpdateColorAccess(ContextVk *contextVk,
+                       gl::DrawBufferMask colorAttachmentMask,
+                       gl::DrawBufferMask colorEnabledMask)
+{
+    vk::RenderPassCommandBufferHelper *renderPassCommands =
+        &contextVk->getStartedRenderPassCommands();
+
+    // Explicitly mark a color write because we are modifying the color buffer.
+    vk::PackedAttachmentIndex colorIndexVk(0);
+    for (size_t colorIndexGL : colorAttachmentMask)
+    {
+        if (colorEnabledMask.test(colorIndexGL))
+        {
+            renderPassCommands->onColorAccess(colorIndexVk, vk::ResourceAccess::Write);
+        }
+        ++colorIndexVk;
+    }
+}
+
+void UpdateDepthStencilAccess(ContextVk *contextVk,
+                              FramebufferVk *framebuffer,
+                              bool depthWrite,
+                              bool stencilWrite)
+{
+    vk::RenderPassCommandBufferHelper *renderPassCommands =
+        &contextVk->getStartedRenderPassCommands();
+
+    if (depthWrite)
+    {
+        // Explicitly mark a depth write because we are modifying the depth buffer.
+        renderPassCommands->onDepthAccess(vk::ResourceAccess::Write);
+    }
+    if (stencilWrite)
+    {
+        // Explicitly mark a stencil write because we are modifying the stencil buffer.
+        renderPassCommands->onStencilAccess(vk::ResourceAccess::Write);
+    }
+    if (depthWrite || stencilWrite)
+    {
+        // Because we may have changed the depth stencil access mode, update read only depth mode
+        // now.
+        framebuffer->updateRenderPassReadOnlyDepthMode(contextVk, renderPassCommands);
+    }
+}
+
 }  // namespace
 
 UtilsVk::ConvertVertexShaderParams::ConvertVertexShaderParams() = default;
@@ -1013,15 +1066,13 @@ uint32_t UtilsVk::GetGenerateMipmapMaxLevels(ContextVk *contextVk)
                : kGenerateMipmapMaxLevels;
 }
 
-UtilsVk::UtilsVk() : mPerfCounters{}, mCumulativePerfCounters{} {}
+UtilsVk::UtilsVk() = default;
 
 UtilsVk::~UtilsVk() = default;
 
 void UtilsVk::destroy(RendererVk *renderer)
 {
     VkDevice device = renderer->getDevice();
-
-    outputCumulativePerfCounters();
 
     for (Function f : angle::AllEnums<Function>())
     {
@@ -1961,7 +2012,8 @@ angle::Result UtilsVk::clearFramebuffer(ContextVk *contextVk,
     vk::RenderPassCommandBuffer *commandBuffer;
 
     // Start a new render pass if not already started
-    ANGLE_TRY(framebuffer->getFramebuffer(contextVk, &currentFramebuffer, nullptr));
+    ANGLE_TRY(framebuffer->getFramebuffer(contextVk, &currentFramebuffer, nullptr,
+                                          SwapchainResolveMode::Disabled));
     if (contextVk->hasStartedRenderPassWithFramebuffer(currentFramebuffer))
     {
         commandBuffer = &contextVk->getStartedRenderPassCommands().getCommandBuffer();
@@ -1971,26 +2023,9 @@ angle::Result UtilsVk::clearFramebuffer(ContextVk *contextVk,
         ANGLE_TRY(contextVk->startRenderPass(scissoredRenderArea, &commandBuffer, nullptr));
     }
 
-    if (params.clearStencil || params.clearDepth)
-    {
-        vk::RenderPassCommandBufferHelper *renderpassCommands;
-        renderpassCommands = &contextVk->getStartedRenderPassCommands();
-
-        // Because clear is not affected by depth/stencil test, we have to explicitly mark
-        // depth/stencil write here.
-        if (params.clearDepth)
-        {
-            renderpassCommands->onDepthAccess(vk::ResourceAccess::Write);
-        }
-        if (params.clearStencil)
-        {
-            renderpassCommands->onStencilAccess(vk::ResourceAccess::Write);
-        }
-
-        // We may have changed depth stencil access mode, so update read only depth stencil mode
-        // here.
-        framebuffer->updateRenderPassReadOnlyDepthMode(contextVk, renderpassCommands);
-    }
+    UpdateColorAccess(contextVk, framebuffer->getState().getColorAttachmentsMask(),
+                      MakeColorBufferMask(params.colorAttachmentIndexGL));
+    UpdateDepthStencilAccess(contextVk, framebuffer, params.clearDepth, params.clearStencil);
 
     ImageClearShaderParams shaderParams;
     shaderParams.clearValue = params.colorClearValue;
@@ -2163,6 +2198,8 @@ angle::Result UtilsVk::clearImage(ContextVk *contextVk,
     ANGLE_TRY(startRenderPass(contextVk, dst, &destView.get(), renderPassDesc, renderArea,
                               &commandBuffer));
 
+    UpdateColorAccess(contextVk, MakeColorBufferMask(0), MakeColorBufferMask(0));
+
     VkViewport viewport;
     gl_vk::GetViewport(renderArea, 0.0f, 1.0f, false, false, dst->getExtents().height, &viewport);
     commandBuffer->setViewport(0, 1, &viewport);
@@ -2294,11 +2331,10 @@ angle::Result UtilsVk::blitResolveImpl(ContextVk *contextVk,
     shaderParams.srcLayer        = params.srcLayer;
     shaderParams.samples         = src->getSamples();
     shaderParams.invSamples      = 1.0f / shaderParams.samples;
-    shaderParams.outputMask =
-        static_cast<uint32_t>(framebuffer->getState().getEnabledDrawBuffers().to_ulong());
-    shaderParams.flipX    = params.flipX;
-    shaderParams.flipY    = params.flipY;
-    shaderParams.rotateXY = 0;
+    shaderParams.outputMask      = framebuffer->getState().getEnabledDrawBuffers().bits();
+    shaderParams.flipX           = params.flipX;
+    shaderParams.flipY           = params.flipY;
+    shaderParams.rotateXY        = 0;
 
     // Potentially make adjustments for pre-rotation.  Depending on the angle some of the
     // shaderParams need to be adjusted.
@@ -2405,24 +2441,9 @@ angle::Result UtilsVk::blitResolveImpl(ContextVk *contextVk,
     contextVk->onImageRenderPassRead(src->getAspectFlags(), vk::ImageLayout::FragmentShaderReadOnly,
                                      src);
 
-    vk::RenderPassCommandBufferHelper *renderPassCommands =
-        &contextVk->getStartedRenderPassCommands();
-    if (blitDepth)
-    {
-        // Explicitly mark a depth write because we are modifying the depth buffer.
-        renderPassCommands->onDepthAccess(vk::ResourceAccess::Write);
-    }
-    if (blitStencil)
-    {
-        // Explicitly mark a stencil write because we are modifying the stencil buffer.
-        renderPassCommands->onStencilAccess(vk::ResourceAccess::Write);
-    }
-    if (blitDepth || blitStencil)
-    {
-        // Because we may have changed the depth stencil access mode, update read only depth mode
-        // now.
-        framebuffer->updateRenderPassReadOnlyDepthMode(contextVk, renderPassCommands);
-    }
+    UpdateColorAccess(contextVk, framebuffer->getState().getColorAttachmentsMask(),
+                      framebuffer->getState().getEnabledDrawBuffers());
+    UpdateDepthStencilAccess(contextVk, framebuffer, blitDepth, blitStencil);
 
     VkDescriptorImageInfo imageInfos[2] = {};
 
@@ -2529,7 +2550,7 @@ angle::Result UtilsVk::stencilBlitResolveNoShaderExport(ContextVk *contextVk,
 
     ANGLE_TRY(blitBuffer.get().initSuballocation(
         contextVk, contextVk->getRenderer()->getDeviceLocalMemoryTypeIndex(),
-        static_cast<size_t>(bufferSize), GetDefaultBufferAlignment(contextVk->getRenderer())));
+        static_cast<size_t>(bufferSize), contextVk->getRenderer()->getDefaultBufferAlignment()));
     blitBuffer.get().retainReadWrite(&contextVk->getResourceUseList());
 
     BlitResolveStencilNoExportShaderParams shaderParams;
@@ -2836,6 +2857,8 @@ angle::Result UtilsVk::copyImage(ContextVk *contextVk,
     vk::RenderPassCommandBuffer *commandBuffer;
     ANGLE_TRY(
         startRenderPass(contextVk, dst, destView, renderPassDesc, renderArea, &commandBuffer));
+
+    UpdateColorAccess(contextVk, MakeColorBufferMask(0), MakeColorBufferMask(0));
 
     VkViewport viewport;
     gl_vk::GetViewport(renderArea, 0.0f, 1.0f, false, false, dst->getExtents().height, &viewport);
@@ -3417,6 +3440,8 @@ angle::Result UtilsVk::drawOverlay(ContextVk *contextVk,
     ANGLE_TRY(
         startRenderPass(contextVk, dst, destView, renderPassDesc, renderArea, &commandBuffer));
 
+    UpdateColorAccess(contextVk, MakeColorBufferMask(0), MakeColorBufferMask(0));
+
     VkViewport viewport;
     gl_vk::GetViewport(renderArea, 0.0f, 1.0f, false, false, dst->getExtents().height, &viewport);
     commandBuffer->setViewport(0, 1, &viewport);
@@ -3513,8 +3538,6 @@ angle::Result UtilsVk::allocateDescriptorSet(ContextVk *contextVk,
         mDescriptorSetLayouts[function][DescriptorSetIndex::Internal].get(), 1, bindingOut,
         descriptorSetOut));
 
-    mPerfCounters.descriptorSetsAllocated++;
-
     return angle::Result::Continue;
 }
 
@@ -3529,25 +3552,4 @@ UtilsVk::ClearFramebufferParameters::ClearFramebufferParameters()
       colorClearValue{},
       depthStencilClearValue{}
 {}
-
-// Requires that trace is enabled to see the output, which is supported with is_debug=true
-void UtilsVk::outputCumulativePerfCounters()
-{
-    if (!vk::kOutputCumulativePerfCounters)
-    {
-        return;
-    }
-
-    INFO() << "Utils Descriptor Set Allocations: "
-           << mCumulativePerfCounters.descriptorSetsAllocated;
-}
-
-InternalShaderPerfCounters UtilsVk::getAndResetObjectPerfCounters()
-{
-    mCumulativePerfCounters.descriptorSetsAllocated += mPerfCounters.descriptorSetsAllocated;
-
-    InternalShaderPerfCounters counters   = mPerfCounters;
-    mPerfCounters.descriptorSetsAllocated = 0;
-    return counters;
-}
 }  // namespace rx

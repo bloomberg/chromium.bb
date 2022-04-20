@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/render_view_host.h"
 #include "third_party/blink/public/common/loader/loader_constants.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 
 namespace content {
@@ -41,7 +42,7 @@ const absl::optional<GURL>& PageImpl::GetManifestUrl() const {
 
 void PageImpl::GetManifest(GetManifestCallback callback) {
   ManifestManagerHost* manifest_manager_host =
-      ManifestManagerHost::GetOrCreateForCurrentDocument(&main_document_);
+      ManifestManagerHost::GetOrCreateForPage(*this);
   manifest_manager_host->GetManifest(std::move(callback));
 }
 
@@ -79,7 +80,7 @@ base::WeakPtr<PageImpl> PageImpl::GetWeakPtrImpl() {
 }
 
 bool PageImpl::IsPageScaleFactorOne() {
-  return page_scale_factor_ == 1.f;
+  return GetPageScaleFactor() == 1.f;
 }
 
 void PageImpl::OnFirstVisuallyNonEmptyPaint() {
@@ -175,7 +176,13 @@ void PageImpl::ActivateForPrerendering(
     if (main_document_.GetRenderViewHost() == rvh)
       navigation_start_to_send = *activation_start_time_for_prerendering_;
 
-    rvh->ActivatePrerenderedPage(navigation_start_to_send, barrier);
+    auto params = blink::mojom::PrerenderPageActivationParams::New();
+    params->was_user_activated =
+        main_document_.frame_tree_node()->has_received_user_gesture_before_nav()
+            ? blink::mojom::WasActivatedOption::kYes
+            : blink::mojom::WasActivatedOption::kNo;
+    params->activation_start = navigation_start_to_send;
+    rvh->ActivatePrerenderedPage(std::move(params), barrier);
   }
 
   // Prepare each RenderFrameHostImpl in this Page for activation.
@@ -251,6 +258,10 @@ void PageImpl::UpdateBrowserControlsState(cc::BrowserControlsState constraints,
 
   GetMainDocument().GetAssociatedLocalMainFrame()->UpdateBrowserControlsState(
       constraints, current, animate);
+}
+
+float PageImpl::GetPageScaleFactor() const {
+  return GetMainDocument().GetPageScaleFactor();
 }
 
 void PageImpl::UpdateEncoding(const std::string& encoding_name) {

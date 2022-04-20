@@ -100,6 +100,12 @@ namespace dawn::native {
     }
 
     bool Format::CopyCompatibleWith(const Format& format) const {
+        // TODO(crbug.com/dawn/1332): Add a Format compatibility matrix.
+        return baseFormat == format.baseFormat;
+    }
+
+    bool Format::ViewCompatibleWith(const Format& format) const {
+        // TODO(crbug.com/dawn/1332): Add a Format compatibility matrix.
         return baseFormat == format.baseFormat;
     }
 
@@ -115,31 +121,41 @@ namespace dawn::native {
         return aspectInfo[aspectIndex];
     }
 
-    size_t Format::GetIndex() const {
+    FormatIndex Format::GetIndex() const {
         return ComputeFormatIndex(format);
+    }
+
+    // FormatSet implementation
+
+    bool FormatSet::operator[](const Format& format) const {
+        return Base::operator[](format.GetIndex());
+    }
+
+    typename std::bitset<kKnownFormatCount>::reference FormatSet::operator[](const Format& format) {
+        return Base::operator[](format.GetIndex());
     }
 
     // Implementation details of the format table of the DeviceBase
 
     // For the enum for formats are packed but this might change when we have a broader feature
     // mechanism for webgpu.h. Formats start at 1 because 0 is the undefined format.
-    size_t ComputeFormatIndex(wgpu::TextureFormat format) {
+    FormatIndex ComputeFormatIndex(wgpu::TextureFormat format) {
         // This takes advantage of overflows to make the index of TextureFormat::Undefined outside
         // of the range of the FormatTable.
         static_assert(static_cast<uint32_t>(wgpu::TextureFormat::Undefined) - 1 >
                       kKnownFormatCount);
-        return static_cast<size_t>(static_cast<uint32_t>(format) - 1);
+        return static_cast<FormatIndex>(static_cast<uint32_t>(format) - 1);
     }
 
     FormatTable BuildFormatTable(const DeviceBase* device) {
         FormatTable table;
-        std::bitset<kKnownFormatCount> formatsSet;
+        FormatSet formatsSet;
 
         static constexpr SampleTypeBit kAnyFloat =
             SampleTypeBit::Float | SampleTypeBit::UnfilterableFloat;
 
         auto AddFormat = [&table, &formatsSet](Format format) {
-            size_t index = ComputeFormatIndex(format.format);
+            FormatIndex index = ComputeFormatIndex(format.format);
             ASSERT(index < table.size());
 
             // This checks that each format is set at most once, the first part of checking that all
@@ -211,11 +227,11 @@ namespace dawn::native {
                 AddFormat(internalFormat);
             };
 
-        auto AddDepthFormat = [&AddFormat](
-                                  wgpu::TextureFormat format, uint32_t byteSize, bool isSupported,
-                                  wgpu::TextureFormat baseFormat = wgpu::TextureFormat::Undefined) {
+        auto AddDepthFormat = [&AddFormat](wgpu::TextureFormat format, uint32_t byteSize,
+                                           bool isSupported) {
             Format internalFormat;
             internalFormat.format = format;
+            internalFormat.baseFormat = format;
             internalFormat.isRenderable = true;
             internalFormat.isCompressed = false;
             internalFormat.isSupported = isSupported;
@@ -224,13 +240,6 @@ namespace dawn::native {
             internalFormat.supportsResolveTarget = false;
             internalFormat.aspects = Aspect::Depth;
             internalFormat.componentCount = 1;
-
-            // Default baseFormat of each depth formats should be themselves.
-            if (baseFormat == wgpu::TextureFormat::Undefined) {
-                internalFormat.baseFormat = format;
-            } else {
-                internalFormat.baseFormat = baseFormat;
-            }
 
             AspectInfo* firstAspect = internalFormat.aspectInfo.data();
             firstAspect->block.byteSize = byteSize;
@@ -242,11 +251,10 @@ namespace dawn::native {
             AddFormat(internalFormat);
         };
 
-        auto AddStencilFormat = [&AddFormat](wgpu::TextureFormat format, bool isSupported,
-                                             wgpu::TextureFormat baseFormat =
-                                                 wgpu::TextureFormat::Undefined) {
+        auto AddStencilFormat = [&AddFormat](wgpu::TextureFormat format, bool isSupported) {
             Format internalFormat;
             internalFormat.format = format;
+            internalFormat.baseFormat = format;
             internalFormat.isRenderable = true;
             internalFormat.isCompressed = false;
             internalFormat.isSupported = isSupported;
@@ -255,22 +263,23 @@ namespace dawn::native {
             internalFormat.supportsResolveTarget = false;
             internalFormat.aspects = Aspect::Stencil;
             internalFormat.componentCount = 1;
-            internalFormat.baseFormat = baseFormat;
 
-            // Default baseFormat of each stencil formats should be themselves.
-            if (baseFormat == wgpu::TextureFormat::Undefined) {
-                internalFormat.baseFormat = format;
-            } else {
-                internalFormat.baseFormat = baseFormat;
-            }
+            // Duplicate the data for the stencil aspect in both the first and second aspect info.
+            //  - aspectInfo[0] is used by AddMultiAspectFormat to copy the info for the whole
+            //    stencil8 aspect of depth-stencil8 formats.
+            //  - aspectInfo[1] is the actual info used in the rest of Dawn since
+            //    GetAspectIndex(Aspect::Stencil) is 1.
+            ASSERT(GetAspectIndex(Aspect::Stencil) == 1);
 
-            AspectInfo* firstAspect = internalFormat.aspectInfo.data();
-            firstAspect->block.byteSize = 1;
-            firstAspect->block.width = 1;
-            firstAspect->block.height = 1;
-            firstAspect->baseType = wgpu::TextureComponentType::Uint;
-            firstAspect->supportedSampleTypes = SampleTypeBit::Uint;
-            firstAspect->format = format;
+            internalFormat.aspectInfo[0].block.byteSize = 1;
+            internalFormat.aspectInfo[0].block.width = 1;
+            internalFormat.aspectInfo[0].block.height = 1;
+            internalFormat.aspectInfo[0].baseType = wgpu::TextureComponentType::Uint;
+            internalFormat.aspectInfo[0].supportedSampleTypes = SampleTypeBit::Uint;
+            internalFormat.aspectInfo[0].format = format;
+
+            internalFormat.aspectInfo[1] = internalFormat.aspectInfo[0];
+
             AddFormat(internalFormat);
         };
 
@@ -306,38 +315,38 @@ namespace dawn::native {
                 AddFormat(internalFormat);
             };
 
-        auto AddMultiAspectFormat =
-            [&AddFormat, &table](wgpu::TextureFormat format, Aspect aspects,
-                                 wgpu::TextureFormat firstFormat, wgpu::TextureFormat secondFormat,
-                                 bool isRenderable, bool isSupported, bool supportsMultisample,
-                                 uint8_t componentCount,
-                                 wgpu::TextureFormat baseFormat = wgpu::TextureFormat::Undefined) {
-                Format internalFormat;
-                internalFormat.format = format;
-                internalFormat.isRenderable = isRenderable;
-                internalFormat.isCompressed = false;
-                internalFormat.isSupported = isSupported;
-                internalFormat.supportsStorageUsage = false;
-                internalFormat.supportsMultisample = supportsMultisample;
-                internalFormat.supportsResolveTarget = false;
-                internalFormat.aspects = aspects;
-                internalFormat.componentCount = componentCount;
+        auto AddMultiAspectFormat = [&AddFormat, &table](wgpu::TextureFormat format, Aspect aspects,
+                                                         wgpu::TextureFormat firstFormat,
+                                                         wgpu::TextureFormat secondFormat,
+                                                         bool isRenderable, bool isSupported,
+                                                         bool supportsMultisample,
+                                                         uint8_t componentCount) {
+            Format internalFormat;
+            internalFormat.format = format;
+            internalFormat.baseFormat = format;
+            internalFormat.isRenderable = isRenderable;
+            internalFormat.isCompressed = false;
+            internalFormat.isSupported = isSupported;
+            internalFormat.supportsStorageUsage = false;
+            internalFormat.supportsMultisample = supportsMultisample;
+            internalFormat.supportsResolveTarget = false;
+            internalFormat.aspects = aspects;
+            internalFormat.componentCount = componentCount;
 
-                // Default baseFormat of each multi aspect formats should be themselves.
-                if (baseFormat == wgpu::TextureFormat::Undefined) {
-                    internalFormat.baseFormat = format;
-                } else {
-                    internalFormat.baseFormat = baseFormat;
-                }
+            // Multi aspect formats just copy information about single-aspect formats. This
+            // means that the single-plane formats must have been added before multi-aspect
+            // ones. (it is ASSERTed below).
+            const FormatIndex firstFormatIndex = ComputeFormatIndex(firstFormat);
+            const FormatIndex secondFormatIndex = ComputeFormatIndex(secondFormat);
 
-                const size_t firstFormatIndex = ComputeFormatIndex(firstFormat);
-                const size_t secondFormatIndex = ComputeFormatIndex(secondFormat);
+            ASSERT(table[firstFormatIndex].aspectInfo[0].format != wgpu::TextureFormat::Undefined);
+            ASSERT(table[secondFormatIndex].aspectInfo[0].format != wgpu::TextureFormat::Undefined);
 
-                internalFormat.aspectInfo[0] = table[firstFormatIndex].aspectInfo[0];
-                internalFormat.aspectInfo[1] = table[secondFormatIndex].aspectInfo[0];
+            internalFormat.aspectInfo[0] = table[firstFormatIndex].aspectInfo[0];
+            internalFormat.aspectInfo[1] = table[secondFormatIndex].aspectInfo[0];
 
-                AddFormat(internalFormat);
-            };
+            AddFormat(internalFormat);
+        };
 
         // clang-format off
         // 1 byte color formats
@@ -388,8 +397,7 @@ namespace dawn::native {
         AddColorFormat(wgpu::TextureFormat::RGBA32Float, true, true, false, false, 16, SampleTypeBit::UnfilterableFloat, 4);
 
         // Depth-stencil formats
-        // TODO(dawn:666): Implement the stencil8 format
-        AddStencilFormat(wgpu::TextureFormat::Stencil8, false);
+        AddStencilFormat(wgpu::TextureFormat::Stencil8, true);
         AddDepthFormat(wgpu::TextureFormat::Depth16Unorm, 2, true);
         // TODO(crbug.com/dawn/843): This is 4 because we read this to perform zero initialization,
         // and textures are always use depth32float. We should improve this to be more robust. Perhaps,

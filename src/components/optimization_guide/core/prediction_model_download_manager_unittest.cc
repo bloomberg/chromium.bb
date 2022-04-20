@@ -45,6 +45,11 @@ class TestPredictionModelDownloadObserver
     last_ready_model_ = model;
   }
 
+  void OnModelDownloadStarted(
+      proto::OptimizationTarget optimization_target) override {}
+  void OnModelDownloadFailed(
+      proto::OptimizationTarget optimization_target) override {}
+
   absl::optional<proto::PredictionModel> last_ready_model() const {
     return last_ready_model_;
   }
@@ -96,6 +101,8 @@ class PredictionModelDownloadManagerTest : public testing::Test {
     return mock_download_service_.get();
   }
 
+  base::FilePath models_dir() const { return temp_models_dir_.GetPath(); }
+
  protected:
   void SetDownloadServiceReady(
       const std::set<std::string>& pending_guids,
@@ -118,11 +125,13 @@ class PredictionModelDownloadManagerTest : public testing::Test {
                             PredictionModelDownloadFileStatus file_status) {
     WriteFileForStatus(file_status);
     download_manager()->OnDownloadSucceeded(
-        guid, GetFilePathForDownloadFileStatus(file_status));
+        proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, guid,
+        GetFilePathForDownloadFileStatus(file_status));
   }
 
   void SetDownloadFailed(const std::string& guid) {
-    download_manager()->OnDownloadFailed(guid);
+    download_manager()->OnDownloadFailed(
+        proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, guid);
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -619,13 +628,13 @@ TEST_F(
   EXPECT_EQ(observer.last_ready_model()->model_info().optimization_target(),
             proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
   EXPECT_EQ(observer.last_ready_model()->model_info().version(), 123);
+  // Make sure that there is a file path is written to the model file.
   EXPECT_EQ(StringToFilePath(
                 observer.last_ready_model().value().model().download_url())
                 .value()
                 .DirName()
-                .BaseName()
-                .value(),
-            FILE_PATH_LITERAL("OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD_123"));
+                .DirName(),
+            models_dir());
   EXPECT_EQ(StringToFilePath(
                 observer.last_ready_model().value().model().download_url())
                 .value()

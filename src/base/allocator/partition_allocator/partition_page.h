@@ -5,25 +5,26 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_PAGE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_PAGE_H_
 
-#include <string.h>
-
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <utility>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
+#include "base/allocator/partition_allocator/base/bits.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
+#include "base/allocator/partition_allocator/partition_tag_bitmap.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/state_bitmap.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "base/base_export.h"
-#include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 #include "base/thread_annotations.h"
@@ -63,8 +64,8 @@ static_assert(
 // CAUTION! |extent| must point to the extent of the first super page in the
 // range of consecutive super pages.
 template <bool thread_safe>
-ALWAYS_INLINE uintptr_t
-SuperPagesBeginFromExtent(PartitionSuperPageExtentEntry<thread_safe>* extent) {
+ALWAYS_INLINE uintptr_t SuperPagesBeginFromExtent(
+    const PartitionSuperPageExtentEntry<thread_safe>* extent) {
   PA_DCHECK(0 < extent->number_of_consecutive_super_pages);
   uintptr_t extent_as_uintptr = reinterpret_cast<uintptr_t>(extent);
   PA_DCHECK(IsManagedByNormalBuckets(extent_as_uintptr));
@@ -77,13 +78,13 @@ SuperPagesBeginFromExtent(PartitionSuperPageExtentEntry<thread_safe>* extent) {
 // CAUTION! |extent| must point to the extent of the first super page in the
 // range of consecutive super pages.
 template <bool thread_safe>
-ALWAYS_INLINE uintptr_t
-SuperPagesEndFromExtent(PartitionSuperPageExtentEntry<thread_safe>* extent) {
+ALWAYS_INLINE uintptr_t SuperPagesEndFromExtent(
+    const PartitionSuperPageExtentEntry<thread_safe>* extent) {
   return SuperPagesBeginFromExtent(extent) +
          (extent->number_of_consecutive_super_pages * kSuperPageSize);
 }
 
-using AllocationStateMap = ::base::internal::
+using AllocationStateMap =
     StateBitmap<kSuperPageSize, kSuperPageAlignment, kAlignment>;
 
 // Metadata of the slot span.
@@ -132,6 +133,12 @@ struct __attribute__((packed)) SlotSpanMetadata {
   // System page size is not a constant on Apple OSes, but is either 4 or 16kiB
   // (1 << 12 or 1 << 14), as checked in PartitionRoot::Init(). And
   // PartitionPageSize() is 4 times the OS page size.
+  static constexpr size_t kMaxSlotsPerSlotSpan =
+      4 * (1 << 14) / kSmallestBucket;
+#elif BUILDFLAG(IS_LINUX) && defined(ARCH_CPU_ARM64)
+  // System page size can be 4, 16, or 64 kiB on Linux on arm64. 64 kiB is
+  // currently (kMaxSlotsPerSlotSpanBits == 13) not supported by the code,
+  // so we use the 16 kiB maximum (64 kiB will crash).
   static constexpr size_t kMaxSlotsPerSlotSpan =
       4 * (1 << 14) / kSmallestBucket;
 #else
@@ -410,17 +417,27 @@ CommittedStateBitmapSize() {
 // caller's responsibility to ensure that the bitmaps even exist.
 ALWAYS_INLINE uintptr_t SuperPageStateBitmapAddr(uintptr_t super_page) {
   PA_DCHECK(!(super_page % kSuperPageAlignment));
-  return super_page + PartitionPageSize();
+  return super_page + PartitionPageSize() +
+         (IsManagedByNormalBuckets(super_page) ? ReservedTagBitmapSize() : 0);
 }
 ALWAYS_INLINE AllocationStateMap* SuperPageStateBitmap(uintptr_t super_page) {
   return reinterpret_cast<AllocationStateMap*>(
       SuperPageStateBitmapAddr(super_page));
 }
 
+// Returns the address of the tag bitmap of the `super_page`. Caller must ensure
+// that bitmap exists.
+ALWAYS_INLINE uintptr_t SuperPageTagBitmapAddr(uintptr_t super_page) {
+  PA_DCHECK(IsReservationStart(super_page));
+  // Skip over the guard pages / metadata.
+  return super_page + PartitionPageSize();
+}
+
 ALWAYS_INLINE uintptr_t SuperPagePayloadBegin(uintptr_t super_page,
                                               bool with_quarantine) {
   PA_DCHECK(!(super_page % kSuperPageAlignment));
   return super_page + PartitionPageSize() +
+         (IsManagedByNormalBuckets(super_page) ? ReservedTagBitmapSize() : 0) +
          (with_quarantine ? ReservedStateBitmapSize() : 0);
 }
 

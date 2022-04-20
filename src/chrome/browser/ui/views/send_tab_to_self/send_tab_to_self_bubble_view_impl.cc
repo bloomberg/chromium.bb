@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
@@ -63,7 +62,7 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     content::WebContents* web_contents,
     SendTabToSelfBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
-      controller_(controller) {
+      controller_(controller->AsWeakPtr()) {
   DCHECK(controller_);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_fixed_width(ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -107,8 +106,7 @@ void SendTabToSelfBubbleViewImpl::DeviceButtonPressed(
   if (!controller_)
     return;
 
-  controller_->OnDeviceSelected(device_button->device_name(),
-                                device_button->device_guid());
+  controller_->OnDeviceSelected(device_button->device_guid());
 
   GetViewAccessibility().AnnounceText(l10n_util::GetStringFUTF16(
       IDS_SEND_TAB_TO_SELF_SENDING_ANNOUNCE,
@@ -132,7 +130,7 @@ void SendTabToSelfBubbleViewImpl::Init() {
   auto* provider = ChromeLayoutProvider::Get();
   const int top_margin = provider->GetDistanceMetric(
       views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT);
-  set_margins(gfx::Insets(top_margin, 0, 0, 0));
+  set_margins(gfx::Insets::TLBR(top_margin, 0, 0, 0));
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -161,15 +159,15 @@ void SendTabToSelfBubbleViewImpl::CreateHintTextLabel() {
   auto* provider = ChromeLayoutProvider::Get();
   container->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(0, 0,
-                  provider->GetDistanceMetric(
-                      views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
-                  0));
+      gfx::Insets::TLBR(0, 0,
+                        provider->GetDistanceMetric(
+                            views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
+                        0));
   auto* container_layout =
       container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical,
-          gfx::Insets(0, provider->GetDistanceMetric(
-                             views::DISTANCE_BUTTON_HORIZONTAL_PADDING))));
+          gfx::Insets::VH(0, provider->GetDistanceMetric(
+                                 views::DISTANCE_BUTTON_HORIZONTAL_PADDING))));
   container_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
@@ -202,7 +200,7 @@ void SendTabToSelfBubbleViewImpl::CreateDevicesScrollView() {
 void SendTabToSelfBubbleViewImpl::CreateManageDevicesLink() {
   auto* container = AddChildView(std::make_unique<views::View>());
   container->SetBackground(views::CreateThemedSolidBackground(
-      container, ui::kColorMenuItemBackgroundHighlighted));
+      ui::kColorMenuItemBackgroundHighlighted));
 
   auto* provider = ChromeLayoutProvider::Get();
   gfx::Insets margins = provider->GetInsetsMetric(views::INSETS_DIALOG);

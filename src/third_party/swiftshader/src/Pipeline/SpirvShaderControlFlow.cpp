@@ -572,11 +572,27 @@ SpirvShader::EmitResult SpirvShader::EmitReturn(InsnIterator insn, EmitState *st
 	return EmitResult::Terminator;
 }
 
-SpirvShader::EmitResult SpirvShader::EmitKill(InsnIterator insn, EmitState *state) const
+SpirvShader::EmitResult SpirvShader::EmitTerminateInvocation(InsnIterator insn, EmitState *state) const
 {
-	state->routine->killMask |= SignMask(state->activeLaneMask());
+	state->routine->discardMask |= SignMask(state->activeLaneMask());
 	SetActiveLaneMask(SIMD::Int(0), state);
 	return EmitResult::Terminator;
+}
+
+SpirvShader::EmitResult SpirvShader::EmitDemoteToHelperInvocation(InsnIterator insn, EmitState *state) const
+{
+	state->routine->helperInvocation |= state->activeLaneMask();
+	state->routine->discardMask |= SignMask(state->activeLaneMask());
+	SetStoresAndAtomicsMask(state->storesAndAtomicsMask() & ~state->activeLaneMask(), state);
+	return EmitResult::Continue;
+}
+
+SpirvShader::EmitResult SpirvShader::EmitIsHelperInvocation(InsnIterator insn, EmitState *state) const
+{
+	auto &type = getType(insn.resultTypeId());
+	auto &dst = state->createIntermediate(insn.resultId(), type.componentCount);
+	dst.move(0, state->routine->helperInvocation);
+	return EmitResult::Continue;
 }
 
 SpirvShader::EmitResult SpirvShader::EmitFunctionCall(InsnIterator insn, EmitState *state) const
@@ -722,6 +738,11 @@ void SpirvShader::SetActiveLaneMask(RValue<SIMD::Int> mask, EmitState *state) co
 {
 	state->activeLaneMaskValue = mask.value();
 	dbgUpdateActiveLaneMask(mask, state);
+}
+
+void SpirvShader::SetStoresAndAtomicsMask(RValue<SIMD::Int> mask, EmitState *state) const
+{
+	state->storesAndAtomicsMaskValue = mask.value();
 }
 
 void SpirvShader::WriteCFGGraphVizDotFile(const char *path) const

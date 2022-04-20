@@ -40,21 +40,24 @@ typedef struct {
   VmafModel *vmaf_model;
 } TuneVMAFInfo;
 
-typedef struct AV1_COMP AV1_COMP;
+struct AV1_COMP;
 
-void av1_vmaf_blk_preprocessing(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source);
+void av1_vmaf_blk_preprocessing(struct AV1_COMP *cpi,
+                                YV12_BUFFER_CONFIG *source);
 
-void av1_vmaf_frame_preprocessing(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source);
+void av1_vmaf_frame_preprocessing(struct AV1_COMP *cpi,
+                                  YV12_BUFFER_CONFIG *source);
 
-void av1_vmaf_neg_preprocessing(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source);
+void av1_vmaf_neg_preprocessing(struct AV1_COMP *cpi,
+                                YV12_BUFFER_CONFIG *source);
 
-void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi);
+void av1_set_mb_vmaf_rdmult_scaling(struct AV1_COMP *cpi);
 
-void av1_set_vmaf_rdmult(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                         int mi_row, int mi_col, int *rdmult);
+void av1_set_vmaf_rdmult(const struct AV1_COMP *cpi, MACROBLOCK *x,
+                         BLOCK_SIZE bsize, int mi_row, int mi_col, int *rdmult);
 
-int av1_get_vmaf_base_qindex(const AV1_COMP *cpi, int current_qindex);
+int av1_get_vmaf_base_qindex(const struct AV1_COMP *cpi, int current_qindex);
 
-void av1_update_vmaf_curve(AV1_COMP *cpi);
+void av1_update_vmaf_curve(struct AV1_COMP *cpi);
 
 #endif  // AOM_AV1_ENCODER_TUNE_VMAF_H_

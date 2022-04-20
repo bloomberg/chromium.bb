@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/fuchsia/process_lifecycle.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 #include "fuchsia/engine/browser/context_impl.h"
@@ -34,11 +33,14 @@ namespace cr_fuchsia {
 class LegacyMetricsClient;
 }
 
+namespace media {
+class FuchsiaCdmManager;
+}
+
 namespace sys {
 class ComponentInspector;
 }
 
-class CdmProviderService;
 class WebEngineMemoryInspector;
 
 class WEB_ENGINE_EXPORT WebEngineBrowserMainParts
@@ -56,11 +58,9 @@ class WEB_ENGINE_EXPORT WebEngineBrowserMainParts
   WebEngineDevToolsController* devtools_controller() const {
     return devtools_controller_.get();
   }
-  CdmProviderService* cdm_provider_service() const {
-    return cdm_provider_service_.get();
-  }
 
   // content::BrowserMainParts overrides.
+  int PreEarlyInitialization() override;
   void PostEarlyInitialization() override;
   int PreMainMessageLoopRun() override;
   void WillRunMainMessageLoop(
@@ -88,9 +88,6 @@ class WEB_ENGINE_EXPORT WebEngineBrowserMainParts
   content::ContentBrowserClient* const browser_client_;
   content::MainFunctionParams parameters_;
 
-  // Used to gracefully teardown in response to requests from the ELF runner.
-  std::unique_ptr<base::ProcessLifecycle> lifecycle_;
-
   std::unique_ptr<display::Screen> screen_;
 
   // Used to publish diagnostics including the active Contexts and FrameHosts.
@@ -106,7 +103,7 @@ class WEB_ENGINE_EXPORT WebEngineBrowserMainParts
 
   std::unique_ptr<WebEngineDevToolsController> devtools_controller_;
   std::unique_ptr<cr_fuchsia::LegacyMetricsClient> legacy_metrics_client_;
-  std::unique_ptr<CdmProviderService> cdm_provider_service_;
+  std::unique_ptr<media::FuchsiaCdmManager> cdm_manager_;
 
   // Used to respond to changes to the system's current locale.
   std::unique_ptr<base::FuchsiaIntlProfileWatcher> intl_profile_watcher_;

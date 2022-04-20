@@ -19,18 +19,19 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/task_queue/queued_task.h"
 #include "api/task_queue/task_queue_base.h"
 #include "api/video/encoded_image.h"
 #include "api/video/i420_buffer.h"
+#include "api/video/render_resolution.h"
 #include "api/video/video_adaptation_reason.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "api/video/video_codec_constants.h"
 #include "api/video/video_layers_allocation.h"
 #include "api/video_codecs/sdp_video_format.h"
 #include "api/video_codecs/video_encoder.h"
-#include "api/webrtc_key_value_config.h"
 #include "call/adaptation/resource_adaptation_processor.h"
 #include "call/adaptation/video_stream_adapter.h"
 #include "modules/video_coding/include/video_codec_initializer.h"
@@ -502,6 +503,18 @@ void ApplyEncoderBitrateLimitsIfSingleActiveStream(
                encoder_bitrate_limits->max_bitrate_bps);
 }
 
+absl::optional<int> ParseVp9LowTierCoreCountThreshold(
+    const webrtc::FieldTrialsView& trials) {
+  FieldTrialFlag disable_low_tier("Disabled");
+  FieldTrialParameter<int> max_core_count("max_core_count", 2);
+  ParseFieldTrial({&disable_low_tier, &max_core_count},
+                  trials.Lookup("WebRTC-VP9-LowTierOptimizations"));
+  if (disable_low_tier.Get()) {
+    return absl::nullopt;
+  }
+  return max_core_count.Get();
+}
+
 }  //  namespace
 
 VideoStreamEncoder::EncoderRateSettings::EncoderRateSettings()
@@ -598,7 +611,7 @@ VideoStreamEncoder::VideoStreamEncoder(
     std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
         encoder_queue,
     BitrateAllocationCallbackType allocation_cb_type,
-    const WebRtcKeyValueConfig& field_trials)
+    const FieldTrialsView& field_trials)
     : field_trials_(field_trials),
       worker_queue_(TaskQueueBase::Current()),
       number_of_cores_(number_of_cores),
@@ -668,6 +681,8 @@ VideoStreamEncoder::VideoStreamEncoder(
           !field_trials.IsEnabled("WebRTC-QpParsingKillSwitch")),
       switch_encoder_on_init_failures_(!field_trials.IsDisabled(
           kSwitchEncoderOnInitializationFailuresFieldTrial)),
+      vp9_low_tier_core_threshold_(
+          ParseVp9LowTierCoreCountThreshold(field_trials)),
       encoder_queue_(std::move(encoder_queue)) {
   TRACE_EVENT0("webrtc", "VideoStreamEncoder::VideoStreamEncoder");
   RTC_DCHECK_RUN_ON(worker_queue_);
@@ -889,9 +904,12 @@ void VideoStreamEncoder::ReconfigureEncoder() {
 
     encoder_ = settings_.encoder_factory->CreateVideoEncoder(
         encoder_config_.video_format);
-    // TODO(nisse): What to do if creating the encoder fails? Crash,
-    // or just discard incoming frames?
-    RTC_CHECK(encoder_);
+    if (!encoder_) {
+      RTC_LOG(LS_ERROR) << "CreateVideoEncoder failed, failing encoder format: "
+                        << encoder_config_.video_format.ToString();
+      RequestEncoderSwitch();
+      return;
+    }
 
     if (encoder_selector_) {
       encoder_selector_->OnCurrentEncoder(encoder_config_.video_format);
@@ -1145,6 +1163,12 @@ void VideoStreamEncoder::ReconfigureEncoder() {
     encoder_reset_required = RequiresEncoderReset(
         send_codec_, codec, was_encode_called_since_last_initialization_);
   }
+
+  if (codec.codecType == VideoCodecType::kVideoCodecVP9 &&
+      number_of_cores_ <= vp9_low_tier_core_threshold_.value_or(0)) {
+    codec.SetVideoEncoderComplexity(VideoCodecComplexity::kComplexityLow);
+  }
+
   send_codec_ = codec;
 
   // Keep the same encoder, as long as the video_format is unchanged.
@@ -1586,6 +1610,16 @@ void VideoStreamEncoder::MaybeEncodeVideoFrame(const VideoFrame& video_frame,
   if (!last_frame_info_ || video_frame.width() != last_frame_info_->width ||
       video_frame.height() != last_frame_info_->height ||
       video_frame.is_texture() != last_frame_info_->is_texture) {
+    if ((!last_frame_info_ || video_frame.width() != last_frame_info_->width ||
+         video_frame.height() != last_frame_info_->height) &&
+        settings_.encoder_switch_request_callback && encoder_selector_) {
+      if (auto encoder = encoder_selector_->OnResolutionChange(
+              {video_frame.width(), video_frame.height()})) {
+        settings_.encoder_switch_request_callback->RequestEncoderSwitch(
+            *encoder, /*allow_default_fallback=*/false);
+      }
+    }
+
     pending_encoder_reconfiguration_ = true;
     last_frame_info_ = VideoFrameInfo(video_frame.width(), video_frame.height(),
                                       video_frame.is_texture());
@@ -2151,7 +2185,7 @@ void VideoStreamEncoder::OnBitrateUpdated(DataRate target_bitrate,
 }
 
 bool VideoStreamEncoder::DropDueToSize(uint32_t pixel_count) const {
-  if (!stream_resource_manager_.DropInitialFrames() ||
+  if (!encoder_ || !stream_resource_manager_.DropInitialFrames() ||
       !encoder_target_bitrate_bps_.has_value()) {
     return false;
   }

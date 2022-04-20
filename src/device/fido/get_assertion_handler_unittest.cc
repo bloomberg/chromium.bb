@@ -38,7 +38,7 @@
 #include "device/fido/win/fake_webauthn_api.h"
 #endif  // BUILDFLAG(IS_WIN)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/dbus/u2f/u2f_client.h"
 #endif
 
@@ -65,13 +65,13 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     bluetooth_config_->SetLESupported(true);
     BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     chromeos::U2FClient::InitializeFake();
 #endif
   }
 
   void TearDown() override {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     task_environment_.RunUntilIdle();
     chromeos::U2FClient::Shutdown();
 #endif
@@ -852,9 +852,8 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
 
     ASSERT_FALSE(cb.was_called());
     EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);
-    EXPECT_EQ(handler->AuthenticatorsForTesting()
-                  .begin()
-                  ->second->IsWinNativeApiAuthenticator(),
+    EXPECT_EQ(handler->AuthenticatorsForTesting().begin()->second->GetType() ==
+                  FidoAuthenticator::Type::kWinNative,
               enable_api);
   }
 }

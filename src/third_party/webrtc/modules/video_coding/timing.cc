@@ -16,7 +16,6 @@
 #include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/time/timestamp_extrapolator.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 namespace {
@@ -25,7 +24,7 @@ namespace {
 constexpr TimeDelta kZeroPlayoutDelayDefaultMinPacing = TimeDelta::Millis(8);
 }  // namespace
 
-VCMTiming::VCMTiming(Clock* clock)
+VCMTiming::VCMTiming(Clock* clock, const FieldTrialsView& field_trials)
     : clock_(clock),
       ts_extrapolator_(
           std::make_unique<TimestampExtrapolator>(clock_->CurrentTime())),
@@ -42,9 +41,9 @@ VCMTiming::VCMTiming(Clock* clock)
                                      kZeroPlayoutDelayDefaultMinPacing),
       last_decode_scheduled_(Timestamp::Zero()) {
   ParseFieldTrial({&low_latency_renderer_enabled_},
-                  field_trial::FindFullName("WebRTC-LowLatencyRenderer"));
+                  field_trials.Lookup("WebRTC-LowLatencyRenderer"));
   ParseFieldTrial({&zero_playout_delay_min_pacing_},
-                  field_trial::FindFullName("WebRTC-ZeroPlayoutDelay"));
+                  field_trials.Lookup("WebRTC-ZeroPlayoutDelay"));
 }
 
 void VCMTiming::Reset() {
@@ -68,19 +67,9 @@ void VCMTiming::set_min_playout_delay(TimeDelta min_playout_delay) {
   min_playout_delay_ = min_playout_delay;
 }
 
-TimeDelta VCMTiming::min_playout_delay() {
-  MutexLock lock(&mutex_);
-  return min_playout_delay_;
-}
-
 void VCMTiming::set_max_playout_delay(TimeDelta max_playout_delay) {
   MutexLock lock(&mutex_);
   max_playout_delay_ = max_playout_delay;
-}
-
-TimeDelta VCMTiming::max_playout_delay() {
-  MutexLock lock(&mutex_);
-  return max_playout_delay_;
 }
 
 void VCMTiming::SetJitterDelay(TimeDelta jitter_delay) {
@@ -238,20 +227,16 @@ TimeDelta VCMTiming::TargetDelayInternal() const {
                   jitter_delay_ + RequiredDecodeTime() + render_delay_);
 }
 
-bool VCMTiming::GetTimings(TimeDelta* max_decode,
-                           TimeDelta* current_delay,
-                           TimeDelta* target_delay,
-                           TimeDelta* jitter_buffer,
-                           TimeDelta* min_playout_delay,
-                           TimeDelta* render_delay) const {
+VCMTiming::VideoDelayTimings VCMTiming::GetTimings() const {
   MutexLock lock(&mutex_);
-  *max_decode = RequiredDecodeTime();
-  *current_delay = current_delay_;
-  *target_delay = TargetDelayInternal();
-  *jitter_buffer = jitter_delay_;
-  *min_playout_delay = min_playout_delay_;
-  *render_delay = render_delay_;
-  return (num_decoded_frames_ > 0);
+  return VideoDelayTimings{.max_decode_duration = RequiredDecodeTime(),
+                           .current_delay = current_delay_,
+                           .target_delay = TargetDelayInternal(),
+                           .jitter_buffer_delay = jitter_delay_,
+                           .min_playout_delay = min_playout_delay_,
+                           .max_playout_delay = max_playout_delay_,
+                           .render_delay = render_delay_,
+                           .num_decoded_frames = num_decoded_frames_};
 }
 
 void VCMTiming::SetTimingFrameInfo(const TimingFrameInfo& info) {

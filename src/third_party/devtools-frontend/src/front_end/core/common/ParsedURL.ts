@@ -38,26 +38,26 @@ export function normalizePath(path: string): string {
     return path;
   }
 
+  // Remove leading slash (will be added back below) so we
+  // can handle all (including empty) segments consistently.
+  const segments = (path[0] === '/' ? path.substring(1) : path).split('/');
   const normalizedSegments = [];
-  const segments = path.split('/');
   for (const segment of segments) {
     if (segment === '.') {
       continue;
     } else if (segment === '..') {
       normalizedSegments.pop();
-    } else if (segment) {
+    } else {
       normalizedSegments.push(segment);
     }
   }
   let normalizedPath = normalizedSegments.join('/');
-  if (normalizedPath[normalizedPath.length - 1] === '/') {
-    return normalizedPath;
-  }
   if (path[0] === '/' && normalizedPath) {
     normalizedPath = '/' + normalizedPath;
   }
-  if ((path[path.length - 1] === '/') || (segments[segments.length - 1] === '.') ||
-      (segments[segments.length - 1] === '..')) {
+  if (normalizedPath[normalizedPath.length - 1] !== '/' &&
+      ((path[path.length - 1] === '/') || (segments[segments.length - 1] === '.') ||
+       (segments[segments.length - 1] === '..'))) {
     normalizedPath = normalizedPath + '/';
   }
 
@@ -114,12 +114,12 @@ export class ParsedURL {
       } else {
         this.scheme = match[2].toLowerCase();
       }
-      this.user = match[3];
-      this.host = match[4];
-      this.port = match[5];
-      this.path = match[6] || '/';
-      this.queryParams = match[7] || '';
-      this.fragment = match[8];
+      this.user = match[3] ?? '';
+      this.host = match[4] ?? '';
+      this.port = match[5] ?? '';
+      this.path = match[6] ?? '/';
+      this.queryParams = match[7] ?? '';
+      this.fragment = match[8] ?? '';
     } else {
       if (this.url.startsWith('data:')) {
         this.scheme = 'data';
@@ -259,10 +259,18 @@ export class ParsedURL {
     return devToolsPath.slice(start, end) as DevToolsPathType;
   }
 
-  static join<DevToolsPathType extends Platform.DevToolsPath.UrlString|Platform.DevToolsPath.RawPathString|
-                                       Platform.DevToolsPath.EncodedPathString>(
-      devToolsPaths: DevToolsPathType[], separator?: string): DevToolsPathType {
+  static join<DevToolsPathType extends BrandedPathString>(devToolsPaths: DevToolsPathType[], separator?: string):
+      DevToolsPathType {
     return devToolsPaths.join(separator) as DevToolsPathType;
+  }
+
+  static split<DevToolsPathType extends BrandedPathString>(devToolsPath: DevToolsPathType, separator: string|RegExp):
+      DevToolsPathType[] {
+    return devToolsPath.split(separator) as DevToolsPathType[];
+  }
+
+  static toLowerCase<DevToolsPathType extends BrandedPathString>(devToolsPath: DevToolsPathType): DevToolsPathType {
+    return devToolsPath.toLowerCase() as DevToolsPathType;
   }
 
   static urlWithoutHash(url: string): string {
@@ -351,9 +359,10 @@ export class ParsedURL {
     const parsedHref = this.fromString(trimmedHref);
     if (parsedHref && parsedHref.scheme) {
       const securityOrigin = parsedHref.securityOrigin();
-      const pathText = parsedHref.path;
-      const hrefSuffix = trimmedHref.substring(securityOrigin.length + pathText.length);
-      return securityOrigin + normalizePath(pathText) + hrefSuffix as Platform.DevToolsPath.UrlString;
+      const pathText = normalizePath(parsedHref.path);
+      const queryText = parsedHref.queryParams && `?${parsedHref.queryParams}`;
+      const fragmentText = parsedHref.fragment && `#${parsedHref.fragment}`;
+      return securityOrigin + pathText + queryText + fragmentText as Platform.DevToolsPath.UrlString;
     }
 
     const parsedURL = this.fromString(baseURL);
@@ -400,7 +409,7 @@ export class ParsedURL {
   }
 
   static splitLineAndColumn(string: string): {
-    url: string,
+    url: Platform.DevToolsPath.UrlString,
     lineNumber: (number|undefined),
     columnNumber: (number|undefined),
   } {
@@ -419,7 +428,7 @@ export class ParsedURL {
     let columnNumber;
     console.assert(Boolean(lineColumnMatch));
     if (!lineColumnMatch) {
-      return {url: string, lineNumber: 0, columnNumber: 0};
+      return {url: string as Platform.DevToolsPath.UrlString, lineNumber: 0, columnNumber: 0};
     }
 
     if (typeof (lineColumnMatch[1]) === 'string') {
@@ -432,7 +441,9 @@ export class ParsedURL {
       columnNumber = isNaN(columnNumber) ? undefined : columnNumber - 1;
     }
 
-    let url: string = beforePath + pathAndAfter.substring(0, pathAndAfter.length - lineColumnMatch[0].length);
+    let url: Platform.DevToolsPath.UrlString =
+        beforePath + pathAndAfter.substring(0, pathAndAfter.length - lineColumnMatch[0].length) as
+        Platform.DevToolsPath.UrlString;
     if (lineColumnMatch[1] === undefined && lineColumnMatch[2] === undefined) {
       const wasmCodeOffsetRegex = /wasm-function\[\d+\]:0x([a-z0-9]+)$/g;
       const wasmCodeOffsetMatch = wasmCodeOffsetRegex.exec(pathAndAfter);
@@ -446,13 +457,13 @@ export class ParsedURL {
     return {url, lineNumber, columnNumber};
   }
 
-  static removeWasmFunctionInfoFromURL(url: string): string {
+  static removeWasmFunctionInfoFromURL(url: string): Platform.DevToolsPath.UrlString {
     const wasmFunctionRegEx = /:wasm-function\[\d+\]/;
     const wasmFunctionIndex = url.search(wasmFunctionRegEx);
     if (wasmFunctionIndex === -1) {
-      return url;
+      return url as Platform.DevToolsPath.UrlString;
     }
-    return url.substring(0, wasmFunctionIndex);
+    return ParsedURL.substring(url as Platform.DevToolsPath.UrlString, 0, wasmFunctionIndex);
   }
 
   static isRelativeURL(url: string): boolean {
@@ -522,12 +533,12 @@ export class ParsedURL {
     return this.host + (this.port ? ':' + this.port : '');
   }
 
-  securityOrigin(): string {
+  securityOrigin(): Platform.DevToolsPath.UrlString {
     if (this.isDataURL()) {
-      return 'data:';
+      return 'data:' as Platform.DevToolsPath.UrlString;
     }
     const scheme = this.isBlobURL() ? this.blobInnerScheme : this.scheme;
-    return scheme + '://' + this.domain();
+    return scheme + '://' + this.domain() as Platform.DevToolsPath.UrlString;
   }
 
   urlWithoutScheme(): string {

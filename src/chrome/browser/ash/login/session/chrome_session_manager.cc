@@ -85,7 +85,7 @@ void StartKioskSession() {
 // Starts the login/oobe screen.
 void StartLoginOobeSession() {
   // State will be defined once out-of-box/login branching is complete.
-  ShowLoginWizard(OobeScreen::SCREEN_UNKNOWN);
+  ShowLoginWizard(ash::OOBE_SCREEN_UNKNOWN);
 
   // Reset reboot after update flag when login screen is shown.
   policy::BrowserPolicyConnectorAsh* connector =
@@ -242,20 +242,17 @@ void ChromeSessionManager::Initialize(
   }
 
   if (ash::shimless_rma::IsShimlessRmaAllowed()) {
-    // If the RMA state is detected later, OnRmaIsRequiredResponse() is invoked
-    // to reboot the device in RMA mode.
-    const bool was_rma_state_detected_now =
-        chromeos::RmadClient::Get()->WasRmaStateDetectedForSessionManager(
-            base::BindOnce(&OnRmaIsRequiredResponse));
-    const bool has_launch_rma_switch =
-        ash::shimless_rma::HasLaunchRmaSwitchAndIsAllowed();
-
     // If we should be in Shimless RMA, start it and skip the rest of
     // initialization.
-    if (has_launch_rma_switch || was_rma_state_detected_now) {
+    if (ash::shimless_rma::HasLaunchRmaSwitchAndIsAllowed()) {
       LaunchShimlessRma();
       return;
     }
+
+    // If the RMA state is detected later, OnRmaIsRequiredResponse() is invoked
+    // to append the kLaunchRma switch and restart Chrome in RMA mode.
+    chromeos::RmadClient::Get()->SetRmaRequiredCallbackForSessionManager(
+        base::BindOnce(&OnRmaIsRequiredResponse));
   }
 
   // Tests should be able to tune login manager before showing it. Thus only

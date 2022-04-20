@@ -7,16 +7,19 @@
 
 #include "include/sksl/DSLStatement.h"
 
+#include "include/private/SkSLDefines.h"
 #include "include/sksl/DSLBlock.h"
 #include "include/sksl/DSLExpression.h"
-#include "src/sksl/SkSLCompiler.h"
+#include "include/sksl/SkSLPosition.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/ir/SkSLBlock.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLNop.h"
 
 #if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
 #endif
 
 namespace SkSL {
@@ -55,7 +58,7 @@ DSLStatement::DSLStatement(DSLPossibleStatement stmt, Position pos) {
     } else {
         fStatement = SkSL::Nop::Make();
     }
-    if (pos.valid()) {
+    if (pos.valid() && !fStatement->fPosition.valid()) {
         fStatement->fPosition = pos;
     }
 }
@@ -88,7 +91,7 @@ DSLStatement operator,(DSLStatement left, DSLStatement right) {
     stmts.reserve_back(2);
     stmts.push_back(left.release());
     stmts.push_back(right.release());
-    return DSLStatement(SkSL::Block::MakeUnscoped(pos, std::move(stmts)));
+    return DSLStatement(SkSL::Block::Make(pos, std::move(stmts), Block::Kind::kCompoundStatement));
 }
 
 } // namespace dsl

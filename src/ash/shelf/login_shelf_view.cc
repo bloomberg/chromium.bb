@@ -16,6 +16,8 @@
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/metrics/login_metrics_recorder.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -196,8 +198,8 @@ gfx::Insets GetButtonInsets() {
   const int height_inset =
       (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
       2;
-  return gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
-                     height_inset, 0);
+  return gfx::Insets::TLBR(height_inset, ShelfConfig::Get()->button_spacing(),
+                           height_inset, 0);
 }
 
 SkPath GetButtonHighlightPath(const views::View* view) {
@@ -263,7 +265,7 @@ class LoginShelfButton : public views::LabelButton {
 
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(0, kButtonMarginLeftDp, 0, kButtonMarginRightDp);
+    return gfx::Insets::TLBR(0, kButtonMarginLeftDp, 0, kButtonMarginRightDp);
   }
 
   const char* GetClassName() const override {
@@ -300,15 +302,6 @@ class LoginShelfButton : public views::LabelButton {
   const int text_resource_id_;
   const gfx::VectorIcon& icon_;
 };
-
-bool ShutdownButtonHidden(OobeDialogState state) {
-  return state == OobeDialogState::MIGRATION ||
-         state == OobeDialogState::ENROLLMENT ||
-         state == OobeDialogState::ENROLLMENT_CANCEL_ENABLED ||
-         state == OobeDialogState::ONBOARDING ||
-         state == OobeDialogState::KIOSK_LAUNCH ||
-         state == OobeDialogState::PASSWORD_CHANGED;
-}
 
 }  // namespace
 
@@ -394,8 +387,8 @@ class KioskAppsButton : public views::MenuButton,
 
   // views::MenuButton:
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
-                       kButtonMarginBottomDp, kButtonMarginRightDp);
+    return gfx::Insets::TLBR(kButtonMarginTopDp, kButtonMarginLeftDp,
+                             kButtonMarginBottomDp, kButtonMarginRightDp);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -875,10 +868,10 @@ void LoginShelfView::UpdateUi() {
 
   GetViewByID(kShutdown)->SetVisible(!show_reboot &&
                                      !is_lock_screen_note_in_foreground &&
-                                     !ShutdownButtonHidden(dialog_state_));
+                                     ShouldShowShutdownButton());
   GetViewByID(kRestart)->SetVisible(show_reboot &&
                                     !is_lock_screen_note_in_foreground &&
-                                    !ShutdownButtonHidden(dialog_state_));
+                                    ShouldShowShutdownButton());
   GetViewByID(kSignOut)->SetVisible(is_locked &&
                                     !is_lock_screen_note_in_foreground);
   GetViewByID(kCloseNote)
@@ -961,6 +954,29 @@ bool LoginShelfView::ShouldShowGuestAndAppsButtons() const {
       Shell::Get()->session_controller()->NumberOfLoggedInUsers() != 0;
 
   return dialog_state_allowed && !user_session_started;
+}
+
+// If OobeRemoveShutdownButton feature is ON: show Shutdown button only in one
+// of the cases:
+//  1. On general login screen, when OOBE is completed and device is owned;
+//  2. On enrollment success step (admins/resellers may use the on screen button
+//     to shut down the device after enrollment);
+//  3. On first screen of gaia login flow (same reason as 2).
+bool LoginShelfView::ShouldShowShutdownButton() const {
+  if (features::IsOobeRemoveShutdownButtonEnabled()) {
+    return dialog_state_ == OobeDialogState::HIDDEN ||
+           dialog_state_ == OobeDialogState::ENROLLMENT_SUCCESS ||
+           dialog_state_ == OobeDialogState::EXTENSION_LOGIN ||
+           dialog_state_ == OobeDialogState::BLOCKING ||
+           (dialog_state_ == OobeDialogState::GAIA_SIGNIN &&
+            is_first_signin_step_);
+  }
+  return !(dialog_state_ == OobeDialogState::MIGRATION ||
+           dialog_state_ == OobeDialogState::ENROLLMENT ||
+           dialog_state_ == OobeDialogState::ENROLLMENT_CANCEL_ENABLED ||
+           dialog_state_ == OobeDialogState::ONBOARDING ||
+           dialog_state_ == OobeDialogState::KIOSK_LAUNCH ||
+           dialog_state_ == OobeDialogState::PASSWORD_CHANGED);
 }
 
 // Show guest button if:

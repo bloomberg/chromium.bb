@@ -41,6 +41,7 @@ namespace dawn::native::opengl {
                         }
                     }
                 case wgpu::TextureDimension::e3D:
+                    ASSERT(descriptor->sampleCount == 1);
                     return GL_TEXTURE_3D;
 
                 case wgpu::TextureDimension::e1D:
@@ -63,8 +64,12 @@ namespace dawn::native::opengl {
                     ASSERT(sampleCount == 1);
                     return GL_TEXTURE_2D_ARRAY;
                 case wgpu::TextureViewDimension::Cube:
+                    ASSERT(sampleCount == 1);
+                    ASSERT(arrayLayerCount == 6);
                     return GL_TEXTURE_CUBE_MAP;
                 case wgpu::TextureViewDimension::CubeArray:
+                    ASSERT(sampleCount == 1);
+                    ASSERT(arrayLayerCount % 6 == 0);
                     return GL_TEXTURE_CUBE_MAP_ARRAY;
                 case wgpu::TextureViewDimension::e3D:
                     return GL_TEXTURE_3D;
@@ -82,16 +87,27 @@ namespace dawn::native::opengl {
             return handle;
         }
 
-        bool UsageNeedsTextureView(wgpu::TextureUsage usage) {
-            constexpr wgpu::TextureUsage kUsageNeedingTextureView =
-                wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
-            return usage & kUsageNeedingTextureView;
-        }
-
         bool RequiresCreatingNewTextureView(const TextureBase* texture,
                                             const TextureViewDescriptor* textureViewDescriptor) {
-            if (texture->GetFormat().format != textureViewDescriptor->format) {
+            constexpr wgpu::TextureUsage kShaderUsageNeedsView =
+                wgpu::TextureUsage::StorageBinding | wgpu::TextureUsage::TextureBinding;
+            constexpr wgpu::TextureUsage kUsageNeedsView =
+                kShaderUsageNeedsView | wgpu::TextureUsage::RenderAttachment;
+            if ((texture->GetInternalUsage() & kUsageNeedsView) == 0) {
+                return false;
+            }
+
+            if (texture->GetFormat().format != textureViewDescriptor->format &&
+                !texture->GetFormat().HasDepthOrStencil()) {
+                // Color format reinterpretation required. Note: Depth/stencil formats don't support
+                // reinterpretation.
                 return true;
+            }
+
+            // Reinterpretation not required. Now, we only need a new view if the view dimension or
+            // set of subresources for the shader is different from the base texture.
+            if ((texture->GetInternalUsage() & kShaderUsageNeedsView) == 0) {
+                return false;
             }
 
             if (texture->GetArrayLayers() != textureViewDescriptor->arrayLayerCount ||
@@ -129,6 +145,34 @@ namespace dawn::native::opengl {
             return false;
         }
 
+        void AllocateTexture(const OpenGLFunctions& gl,
+                             GLenum target,
+                             GLsizei samples,
+                             GLuint levels,
+                             GLenum internalFormat,
+                             const Extent3D& size) {
+            // glTextureView() requires the value of GL_TEXTURE_IMMUTABLE_FORMAT for origtexture to
+            // be GL_TRUE, so the storage of the texture must be allocated with glTexStorage*D.
+            // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTextureView.xhtml
+            switch (target) {
+                case GL_TEXTURE_2D_ARRAY:
+                case GL_TEXTURE_3D:
+                    gl.TexStorage3D(target, levels, internalFormat, size.width, size.height,
+                                    size.depthOrArrayLayers);
+                    break;
+                case GL_TEXTURE_2D:
+                case GL_TEXTURE_CUBE_MAP:
+                    gl.TexStorage2D(target, levels, internalFormat, size.width, size.height);
+                    break;
+                case GL_TEXTURE_2D_MULTISAMPLE:
+                    gl.TexStorage2DMultisample(target, samples, internalFormat, size.width,
+                                               size.height, true);
+                    break;
+                default:
+                    UNREACHABLE();
+            }
+        }
+
     }  // namespace
 
     // Texture
@@ -137,44 +181,13 @@ namespace dawn::native::opengl {
         : Texture(device, descriptor, GenTexture(device->gl), TextureState::OwnedInternal) {
         const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
 
-        uint32_t width = GetWidth();
-        uint32_t height = GetHeight();
         uint32_t levels = GetNumMipLevels();
-        uint32_t arrayLayers = GetArrayLayers();
-        uint32_t sampleCount = GetSampleCount();
 
         const GLFormat& glFormat = GetGLFormat();
 
         gl.BindTexture(mTarget, mHandle);
 
-        // glTextureView() requires the value of GL_TEXTURE_IMMUTABLE_FORMAT for origtexture to be
-        // GL_TRUE, so the storage of the texture must be allocated with glTexStorage*D.
-        // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTextureView.xhtml
-        switch (GetDimension()) {
-            case wgpu::TextureDimension::e2D:
-                if (arrayLayers > 1) {
-                    ASSERT(!IsMultisampledTexture());
-                    gl.TexStorage3D(mTarget, levels, glFormat.internalFormat, width, height,
-                                    arrayLayers);
-                } else {
-                    if (IsMultisampledTexture()) {
-                        gl.TexStorage2DMultisample(mTarget, sampleCount, glFormat.internalFormat,
-                                                   width, height, true);
-                    } else {
-                        gl.TexStorage2D(mTarget, levels, glFormat.internalFormat, width, height);
-                    }
-                }
-                break;
-            case wgpu::TextureDimension::e3D:
-                ASSERT(!IsMultisampledTexture());
-                ASSERT(arrayLayers == 1);
-                gl.TexStorage3D(mTarget, levels, glFormat.internalFormat, width, height,
-                                GetDepth());
-                break;
-
-            case wgpu::TextureDimension::e1D:
-                UNREACHABLE();
-        }
+        AllocateTexture(gl, mTarget, GetSampleCount(), levels, glFormat.internalFormat, GetSize());
 
         // The texture is not complete if it uses mipmapping and not all levels up to
         // MAX_LEVEL have been defined.
@@ -184,6 +197,14 @@ namespace dawn::native::opengl {
             GetDevice()->ConsumedError(
                 ClearTexture(GetAllSubresources(), TextureBase::ClearValue::NonZero));
         }
+    }
+
+    void Texture::Touch() {
+        mGenID++;
+    }
+
+    uint32_t Texture::GetGenID() const {
+        return mGenID;
     }
 
     Texture::Texture(Device* device,
@@ -256,6 +277,7 @@ namespace dawn::native::opengl {
                 GLuint framebuffer = 0;
                 gl.GenFramebuffers(1, &framebuffer);
                 gl.BindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+                gl.Disable(GL_SCISSOR_TEST);
 
                 GLenum attachment;
                 if (range.aspects == (Aspect::Depth | Aspect::Stencil)) {
@@ -326,6 +348,7 @@ namespace dawn::native::opengl {
                     }
                 }
 
+                gl.Enable(GL_SCISSOR_TEST);
                 gl.DeleteFramebuffers(1, &framebuffer);
             } else {
                 ASSERT(range.aspects == Aspect::Color);
@@ -523,6 +546,7 @@ namespace dawn::native::opengl {
             SetIsSubresourceContentInitialized(true, range);
             device->IncrementLazyClearCountForTesting();
         }
+        Touch();
         return {};
     }
 
@@ -547,21 +571,22 @@ namespace dawn::native::opengl {
             return;
         }
 
-        if (!UsageNeedsTextureView(texture->GetUsage())) {
-            mHandle = 0;
-        } else if (!RequiresCreatingNewTextureView(texture, descriptor)) {
+        if (!RequiresCreatingNewTextureView(texture, descriptor)) {
             mHandle = ToBackend(texture)->GetHandle();
         } else {
-            // glTextureView() is supported on OpenGL version >= 4.3
-            // TODO(crbug.com/dawn/593): support texture view on OpenGL version <= 4.2 and ES
             const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
-            mHandle = GenTexture(gl);
-            const Texture* textureGL = ToBackend(texture);
-            const GLFormat& glFormat = ToBackend(GetDevice())->GetGLFormat(GetFormat());
-            gl.TextureView(mHandle, mTarget, textureGL->GetHandle(), glFormat.internalFormat,
-                           descriptor->baseMipLevel, descriptor->mipLevelCount,
-                           descriptor->baseArrayLayer, descriptor->arrayLayerCount);
-            mOwnsHandle = true;
+            if (gl.IsAtLeastGL(4, 3)) {
+                mHandle = GenTexture(gl);
+                const Texture* textureGL = ToBackend(texture);
+                gl.TextureView(mHandle, mTarget, textureGL->GetHandle(), GetInternalFormat(),
+                               descriptor->baseMipLevel, descriptor->mipLevelCount,
+                               descriptor->baseArrayLayer, descriptor->arrayLayerCount);
+                mOwnsHandle = true;
+            } else {
+                // Simulate glTextureView() with texture-to-texture copies.
+                mUseCopy = true;
+                mHandle = 0;
+            }
         }
     }
 
@@ -582,6 +607,84 @@ namespace dawn::native::opengl {
 
     GLenum TextureView::GetGLTarget() const {
         return mTarget;
+    }
+
+    void TextureView::BindToFramebuffer(GLenum target, GLenum attachment) {
+        const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
+
+        // Use the base texture where possible to minimize the amount of copying required on GLES.
+        bool useOwnView = GetFormat().format != GetTexture()->GetFormat().format &&
+                          !GetTexture()->GetFormat().HasDepthOrStencil();
+
+        GLuint handle, textarget, mipLevel, arrayLayer;
+        if (useOwnView) {
+            // Use our own texture handle and target which points to a subset of the texture's
+            // subresources.
+            handle = GetHandle();
+            textarget = GetGLTarget();
+            mipLevel = 0;
+            arrayLayer = 0;
+        } else {
+            // Use the texture's handle and target, with the view's base mip level and base array
+
+            handle = ToBackend(GetTexture())->GetHandle();
+            textarget = ToBackend(GetTexture())->GetGLTarget();
+            mipLevel = GetBaseMipLevel();
+            arrayLayer = GetBaseArrayLayer();
+        }
+
+        ASSERT(handle != 0);
+        if (textarget == GL_TEXTURE_2D_ARRAY || textarget == GL_TEXTURE_3D) {
+            gl.FramebufferTextureLayer(target, attachment, handle, mipLevel, arrayLayer);
+        } else {
+            gl.FramebufferTexture2D(target, attachment, textarget, handle, mipLevel);
+        }
+    }
+
+    void TextureView::CopyIfNeeded() {
+        if (!mUseCopy) {
+            return;
+        }
+
+        const Texture* texture = ToBackend(GetTexture());
+        if (mGenID == texture->GetGenID()) {
+            return;
+        }
+
+        Device* device = ToBackend(GetDevice());
+        const OpenGLFunctions& gl = device->gl;
+        uint32_t srcLevel = GetBaseMipLevel();
+        uint32_t numLevels = GetLevelCount();
+
+        uint32_t width = texture->GetWidth() >> srcLevel;
+        uint32_t height = texture->GetHeight() >> srcLevel;
+        Extent3D size{width, height, GetLayerCount()};
+
+        if (mHandle == 0) {
+            mHandle = GenTexture(gl);
+            gl.BindTexture(mTarget, mHandle);
+            AllocateTexture(gl, mTarget, texture->GetSampleCount(), numLevels, GetInternalFormat(),
+                            size);
+            mOwnsHandle = true;
+        }
+
+        Origin3D src{0, 0, GetBaseArrayLayer()};
+        Origin3D dst{0, 0, 0};
+        for (GLuint level = 0; level < numLevels; ++level) {
+            CopyImageSubData(gl, GetAspects(), texture->GetHandle(), texture->GetGLTarget(),
+                             srcLevel + level, src, mHandle, mTarget, level, dst, size);
+        }
+
+        mGenID = texture->GetGenID();
+    }
+
+    GLenum TextureView::GetInternalFormat() const {
+        // Depth/stencil don't support reinterpretation, and the aspect is specified at
+        // bind time. In that case, we use the base texture format.
+        const Format& format =
+            GetFormat().HasDepthOrStencil() ? GetTexture()->GetFormat() : GetFormat();
+        const GLFormat& glFormat = ToBackend(GetDevice())->GetGLFormat(format);
+        return glFormat.internalFormat;
     }
 
 }  // namespace dawn::native::opengl

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string>
 #include <algorithm>
 #include <assert.h>
@@ -173,7 +174,8 @@ VKAPI_ATTR VkResult VKAPI_CALL wrap_vkCreateInstance(const VkInstanceCreateInfo 
     bool found = false;
     for (uint32_t layer = 0; layer < pCreateInfo->enabledLayerCount; ++layer) {
         std::string layer_name = pCreateInfo->ppEnabledLayerNames[layer];
-        std::transform(layer_name.begin(), layer_name.end(), layer_name.begin(), ::tolower);
+        std::transform(layer_name.begin(), layer_name.end(), layer_name.begin(),
+                       [](char c) { return static_cast<char>(::tolower(static_cast<char>(c))); });
         if (layer_name.find("wrap") != std::string::npos && layer_name.find("obj") != std::string::npos) {
             found = true;
             break;
@@ -425,14 +427,26 @@ VKAPI_ATTR VkResult VKAPI_CALL wrap_vkEnumerateDeviceExtensionProperties(VkPhysi
                 ext_count = 0;
 #if TEST_LAYER_EXPORT_MAINT_1
                 if (ext_count < count) {
-                    strcpy(pProperties[ext_count].extensionName, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+#if defined(_WIN32)
+                    strncpy_s(pProperties[ext_count].extensionName, VK_MAX_EXTENSION_NAME_SIZE, VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+                              strlen(VK_KHR_MAINTENANCE1_EXTENSION_NAME) + 1);
+#else
+                    strncpy(pProperties[ext_count].extensionName, VK_KHR_MAINTENANCE1_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE);
+#endif
                     pProperties[ext_count].specVersion = 2;
                     ext_count++;
                 }
 #endif
 #if TEST_LAYER_EXPORT_PRESENT_IMAGE
                 if (ext_count < count) {
-                    strcpy(pProperties[ext_count].extensionName, VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME);
+#if defined(_WIN32)
+                    strncpy_s(pProperties[ext_count].extensionName, VK_MAX_EXTENSION_NAME_SIZE,
+                              VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
+                              strlen(VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME) + 1);
+#else
+                    strncpy(pProperties[ext_count].extensionName, VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
+                            VK_MAX_EXTENSION_NAME_SIZE);
+#endif
                     pProperties[ext_count].specVersion = 1;
                     ext_count++;
                 }
@@ -587,7 +601,7 @@ PFN_vkVoidFunction layer_intercept_instance_proc(wrapped_inst_obj *inst, const c
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     if (!strcmp(name, "CreateAndroidSurfaceKHR")) return (PFN_vkVoidFunction)wrap_vkCreateAndroidSurfaceKHR;
-#endif  // VK_USE_PLATFORM_WIN32_KHR
+#endif  // VK_USE_PLATFORM_ANDROID_KHR
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
     if (!strcmp(name, "CreateWin32SurfaceKHR")) return (PFN_vkVoidFunction)wrap_vkCreateWin32SurfaceKHR;

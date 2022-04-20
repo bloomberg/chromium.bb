@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -91,15 +90,16 @@ bool HasFiredDomContentLoaded(const Document& document) {
   return !document.GetTiming().DomContentLoadedEventStart().is_null();
 }
 
-mojom::ServiceWorkerUpdateViaCache ParseUpdateViaCache(const String& value) {
+mojom::blink::ServiceWorkerUpdateViaCache ParseUpdateViaCache(
+    const String& value) {
   if (value == "imports")
-    return mojom::ServiceWorkerUpdateViaCache::kImports;
+    return mojom::blink::ServiceWorkerUpdateViaCache::kImports;
   if (value == "all")
-    return mojom::ServiceWorkerUpdateViaCache::kAll;
+    return mojom::blink::ServiceWorkerUpdateViaCache::kAll;
   if (value == "none")
-    return mojom::ServiceWorkerUpdateViaCache::kNone;
+    return mojom::blink::ServiceWorkerUpdateViaCache::kNone;
   // Default value.
-  return mojom::ServiceWorkerUpdateViaCache::kImports;
+  return mojom::blink::ServiceWorkerUpdateViaCache::kImports;
 }
 
 class GetRegistrationCallback : public WebServiceWorkerProvider::
@@ -343,7 +343,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     }
   }
 
-  mojom::ServiceWorkerUpdateViaCache update_via_cache =
+  mojom::blink::ServiceWorkerUpdateViaCache update_via_cache =
       ParseUpdateViaCache(options->updateViaCache());
   absl::optional<mojom::blink::ScriptType> script_type =
       Script::ParseScriptType(options->type());
@@ -354,10 +354,40 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
           ->GetProperties()
           .GetFetchClientSettingsObject());
 
+  // Defer register() from a prerendered page until page activation.
+  // https://wicg.github.io/nav-speculation/prerendering.html#patch-service-workers
+  if (GetExecutionContext()->IsWindow()) {
+    Document* document = To<LocalDOMWindow>(GetExecutionContext())->document();
+    if (document->IsPrerendering()) {
+      document->AddPostPrerenderingActivationStep(WTF::Bind(
+          &ServiceWorkerContainer::RegisterServiceWorkerInternal,
+          WrapWeakPersistent(this), scope_url, script_url,
+          std::move(script_type), update_via_cache,
+          std::move(fetch_client_settings_object), std::move(callbacks)));
+      return promise;
+    }
+  }
+
+  RegisterServiceWorkerInternal(
+      scope_url, script_url, std::move(script_type), update_via_cache,
+      std::move(fetch_client_settings_object), std::move(callbacks));
+  return promise;
+}
+
+void ServiceWorkerContainer::RegisterServiceWorkerInternal(
+    const KURL& scope_url,
+    const KURL& script_url,
+    absl::optional<mojom::blink::ScriptType> script_type,
+    mojom::blink::ServiceWorkerUpdateViaCache update_via_cache,
+    WebFetchClientSettingsObject fetch_client_settings_object,
+    std::unique_ptr<CallbackPromiseAdapter<ServiceWorkerRegistration,
+                                           ServiceWorkerErrorForUpdate>>
+        callbacks) {
+  if (!provider_)
+    return;
   provider_->RegisterServiceWorker(
       scope_url, script_url, *script_type, update_via_cache,
       std::move(fetch_client_settings_object), std::move(callbacks));
-  return promise;
 }
 
 ScriptPromise ServiceWorkerContainer::getRegistration(

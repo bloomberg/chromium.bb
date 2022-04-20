@@ -7,7 +7,7 @@
 /* at a redacted point in time
  */
 /* Compiler settings for gen/chrome/updater/app/server/win/updater_idl.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0622 
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0626 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -16,7 +16,7 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#if defined(_M_ARM64)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
 
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
@@ -47,7 +47,7 @@
 #include "updater_idl.h"
 
 #define TYPE_FORMAT_STRING_SIZE   145                               
-#define PROC_FORMAT_STRING_SIZE   811                               
+#define PROC_FORMAT_STRING_SIZE   887                               
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   1            
@@ -73,6 +73,58 @@ typedef struct _updater_idl_MIDL_EXPR_FORMAT_STRING
 
 static const RPC_SYNTAX_IDENTIFIER  _RpcTransferSyntax = 
 {{0x8A885D04,0x1CEB,0x11C9,{0x9F,0xE8,0x08,0x00,0x2B,0x10,0x48,0x60}},{2,0}};
+
+#if defined(_CONTROL_FLOW_GUARD_XFG)
+#define XFG_TRAMPOLINES(ObjectType)\
+static unsigned long ObjectType ## _UserSize_XFG(unsigned long * pFlags, unsigned long Offset, void * pObject)\
+{\
+return  ObjectType ## _UserSize(pFlags, Offset, pObject);\
+}\
+static unsigned char * ObjectType ## _UserMarshal_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserMarshal(pFlags, pBuffer, pObject);\
+}\
+static unsigned char * ObjectType ## _UserUnmarshal_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserUnmarshal(pFlags, pBuffer, pObject);\
+}\
+static void ObjectType ## _UserFree_XFG(unsigned long * pFlags, void * pObject)\
+{\
+ObjectType ## _UserFree(pFlags, pObject);\
+}
+#define XFG_TRAMPOLINES64(ObjectType)\
+static unsigned long ObjectType ## _UserSize64_XFG(unsigned long * pFlags, unsigned long Offset, void * pObject)\
+{\
+return  ObjectType ## _UserSize64(pFlags, Offset, pObject);\
+}\
+static unsigned char * ObjectType ## _UserMarshal64_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserMarshal64(pFlags, pBuffer, pObject);\
+}\
+static unsigned char * ObjectType ## _UserUnmarshal64_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserUnmarshal64(pFlags, pBuffer, pObject);\
+}\
+static void ObjectType ## _UserFree64_XFG(unsigned long * pFlags, void * pObject)\
+{\
+ObjectType ## _UserFree64(pFlags, pObject);\
+}
+#define XFG_BIND_TRAMPOLINES(HandleType, ObjectType)\
+static void* ObjectType ## _bind_XFG(HandleType pObject)\
+{\
+return ObjectType ## _bind((ObjectType) pObject);\
+}\
+static void ObjectType ## _unbind_XFG(HandleType pObject, handle_t ServerHandle)\
+{\
+ObjectType ## _unbind((ObjectType) pObject, ServerHandle);\
+}
+#define XFG_TRAMPOLINE_FPTR(Function) Function ## _XFG
+#else
+#define XFG_TRAMPOLINES(ObjectType)
+#define XFG_TRAMPOLINES64(ObjectType)
+#define XFG_BIND_TRAMPOLINES(HandleType, ObjectType)
+#define XFG_TRAMPOLINE_FPTR(Function) Function
+#endif
 
 
 extern const updater_idl_MIDL_TYPE_FORMAT_STRING updater_idl__MIDL_TypeFormatString;
@@ -853,6 +905,75 @@ static const updater_idl_MIDL_PROC_FORMAT_STRING updater_idl__MIDL_ProcFormatStr
 /* 808 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
+	/* Procedure RunInstaller */
+
+/* 810 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 812 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 816 */	NdrFcShort( 0x9 ),	/* 9 */
+/* 818 */	NdrFcShort( 0x40 ),	/* ARM64 Stack size/offset = 64 */
+/* 820 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 822 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 824 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+			0x7,		/* 7 */
+/* 826 */	0x12,		/* 18 */
+			0x1,		/* Ext Flags:  new corr desc, */
+/* 828 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 830 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 832 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 834 */	NdrFcShort( 0x7 ),	/* 7 */
+/* 836 */	0x7,		/* 7 */
+			0x80,		/* 128 */
+/* 838 */	0x81,		/* 129 */
+			0x82,		/* 130 */
+/* 840 */	0x83,		/* 131 */
+			0x84,		/* 132 */
+/* 842 */	0x85,		/* 133 */
+			0x86,		/* 134 */
+
+	/* Parameter app_id */
+
+/* 844 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 846 */	NdrFcShort( 0x8 ),	/* ARM64 Stack size/offset = 8 */
+/* 848 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter installer_path */
+
+/* 850 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 852 */	NdrFcShort( 0x10 ),	/* ARM64 Stack size/offset = 16 */
+/* 854 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter install_args */
+
+/* 856 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 858 */	NdrFcShort( 0x18 ),	/* ARM64 Stack size/offset = 24 */
+/* 860 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter install_data */
+
+/* 862 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 864 */	NdrFcShort( 0x20 ),	/* ARM64 Stack size/offset = 32 */
+/* 866 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter install_settings */
+
+/* 868 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 870 */	NdrFcShort( 0x28 ),	/* ARM64 Stack size/offset = 40 */
+/* 872 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter observer */
+
+/* 874 */	NdrFcShort( 0xb ),	/* Flags:  must size, must free, in, */
+/* 876 */	NdrFcShort( 0x30 ),	/* ARM64 Stack size/offset = 48 */
+/* 878 */	NdrFcShort( 0x7e ),	/* Type Offset=126 */
+
+	/* Return value */
+
+/* 880 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 882 */	NdrFcShort( 0x38 ),	/* ARM64 Stack size/offset = 56 */
+/* 884 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
 			0x0
         }
     };
@@ -981,15 +1102,19 @@ static const updater_idl_MIDL_TYPE_FORMAT_STRING updater_idl__MIDL_TypeFormatStr
         }
     };
 
+XFG_TRAMPOLINES(BSTR)
+
 static const USER_MARSHAL_ROUTINE_QUADRUPLE UserMarshalRoutines[ WIRE_MARSHAL_TABLE_SIZE ] = 
         {
             
             {
-            BSTR_UserSize
-            ,BSTR_UserMarshal
-            ,BSTR_UserUnmarshal
-            ,BSTR_UserFree
+            XFG_TRAMPOLINE_FPTR(BSTR_UserSize)
+            ,XFG_TRAMPOLINE_FPTR(BSTR_UserMarshal)
+            ,XFG_TRAMPOLINE_FPTR(BSTR_UserUnmarshal)
+            ,XFG_TRAMPOLINE_FPTR(BSTR_UserFree)
+            
             }
+            
 
         };
 
@@ -1280,7 +1405,8 @@ static const unsigned short IUpdater_FormatStringOffsetTable[] =
     588,
     664,
     706,
-    768
+    768,
+    810
     };
 
 static const MIDL_STUBLESS_PROXY_INFO IUpdater_ProxyInfo =
@@ -1304,7 +1430,7 @@ static const MIDL_SERVER_INFO IUpdater_ServerInfo =
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(9) _IUpdaterProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(10) _IUpdaterProxyVtbl = 
 {
     &IUpdater_ProxyInfo,
     &IID_IUpdater,
@@ -1316,14 +1442,15 @@ CINTERFACE_PROXY_VTABLE(9) _IUpdaterProxyVtbl =
     (void *) (INT_PTR) -1 /* IUpdater::RegisterApp */ ,
     (void *) (INT_PTR) -1 /* IUpdater::RunPeriodicTasks */ ,
     (void *) (INT_PTR) -1 /* IUpdater::Update */ ,
-    (void *) (INT_PTR) -1 /* IUpdater::UpdateAll */
+    (void *) (INT_PTR) -1 /* IUpdater::UpdateAll */ ,
+    (void *) (INT_PTR) -1 /* IUpdater::RunInstaller */
 };
 
 const CInterfaceStubVtbl _IUpdaterStubVtbl =
 {
     &IID_IUpdater,
     &IUpdater_ServerInfo,
-    9,
+    10,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
@@ -1342,7 +1469,7 @@ static const MIDL_STUB_DESC Object_StubDesc =
     1, /* -error bounds_check flag */
     0x50002, /* Ndr library version */
     0,
-    0x801026e, /* MIDL Version 8.1.622 */
+    0x8010272, /* MIDL Version 8.1.626 */
     0,
     UserMarshalRoutines,
     0,  /* notify & notify_flag routine table */
@@ -1418,5 +1545,5 @@ const ExtendedProxyFileInfo updater_idl_ProxyFileInfo =
 #endif
 
 
-#endif /* defined(_M_ARM64)*/
+#endif /* defined(_M_ARM64) || defined(_M_ARM64EC)*/
 

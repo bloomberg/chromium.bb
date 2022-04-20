@@ -77,46 +77,14 @@ enum class PatchAttribs {
     kFanPoint = 1 << 1,  // [float2] Used by wedges. This is the center point the wedges fan around.
     kStrokeParams = 1 << 2,  // [float2] Used when strokes have different widths or join types.
     kColor = 1 << 3,  // [ubyte4 or float4] Used when patches have different colors.
-    kExplicitCurveType = 1 << 4,  // [float] Used when GPU can't infer curve type based on infinity.
+    kPaintDepth = 1 << 4, // [float] Used in Graphite to specify depth attachment value for draw.
+    kExplicitCurveType = 1 << 5,  // [float] Used when GPU can't infer curve type based on infinity.
 
     // Extra flags.
-    kWideColorIfEnabled = 1 << 5,  // If kColor is set, specifies it to be float4 wide color.
+    kWideColorIfEnabled = 1 << 6,  // If kColor is set, specifies it to be float4 wide color.
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(PatchAttribs)
-
-// We encode all of a join's information in a single float value:
-//
-//     Negative => Round Join
-//     Zero     => Bevel Join
-//     Positive => Miter join, and the value is also the miter limit
-//
-static float GetJoinType(const SkStrokeRec& stroke) {
-    switch (stroke.getJoin()) {
-        case SkPaint::kRound_Join: return -1;
-        case SkPaint::kBevel_Join: return 0;
-        case SkPaint::kMiter_Join: SkASSERT(stroke.getMiter() >= 0); return stroke.getMiter();
-    }
-    SkUNREACHABLE;
-}
-
-// This float2 gets written out with each patch/instance if PatchAttribs::kStrokeParams is enabled.
-struct StrokeParams {
-    StrokeParams() = default;
-    StrokeParams(const SkStrokeRec& stroke) {
-        this->set(stroke);
-    }
-    void set(const SkStrokeRec& stroke) {
-        fRadius = stroke.getWidth() * .5f;
-        fJoinType = GetJoinType(stroke);
-    }
-    static bool StrokesHaveEqualParams(const SkStrokeRec& a, const SkStrokeRec& b) {
-        return a.getWidth() == b.getWidth() && a.getJoin() == b.getJoin() &&
-               (a.getJoin() != SkPaint::kMiter_Join || a.getMiter() == b.getMiter());
-    }
-    float fRadius;
-    float fJoinType;  // See GetJoinType().
-};
 
 // When PatchAttribs::kExplicitCurveType is set, these are the values that tell the GPU what type of
 // curve is being drawn.
@@ -133,6 +101,7 @@ constexpr size_t PatchAttribsStride(PatchAttribs attribs) {
            (attribs & PatchAttribs::kColor
                     ? (attribs & PatchAttribs::kWideColorIfEnabled ? sizeof(float)
                                                                    : sizeof(uint8_t)) * 4 : 0) +
+           (attribs & PatchAttribs::kPaintDepth ? sizeof(float) : 0) +
            (attribs & PatchAttribs::kExplicitCurveType ? sizeof(float) : 0);
 }
 constexpr size_t PatchStride(PatchAttribs attribs) {
@@ -173,6 +142,86 @@ inline bool ConicHasCusp(const SkPoint p[3]) {
     // (a.cross(b) == 0) and pointing in opposite directions (a.dot(b) < 0).
     return a.cross(b) == 0 && a.dot(b) < 0;
 }
+
+// We encode all of a join's information in a single float value:
+//
+//     Negative => Round Join
+//     Zero     => Bevel Join
+//     Positive => Miter join, and the value is also the miter limit
+//
+static float GetJoinType(const SkStrokeRec& stroke) {
+    switch (stroke.getJoin()) {
+        case SkPaint::kRound_Join: return -1;
+        case SkPaint::kBevel_Join: return 0;
+        case SkPaint::kMiter_Join: SkASSERT(stroke.getMiter() >= 0); return stroke.getMiter();
+    }
+    SkUNREACHABLE;
+}
+
+// This float2 gets written out with each patch/instance if PatchAttribs::kStrokeParams is enabled.
+struct StrokeParams {
+    StrokeParams() = default;
+    StrokeParams(const SkStrokeRec& stroke) {
+        this->set(stroke);
+    }
+    void set(const SkStrokeRec& stroke) {
+        fRadius = stroke.getWidth() * .5f;
+        fJoinType = GetJoinType(stroke);
+    }
+    static bool StrokesHaveEqualParams(const SkStrokeRec& a, const SkStrokeRec& b) {
+        return a.getWidth() == b.getWidth() && a.getJoin() == b.getJoin() &&
+               (a.getJoin() != SkPaint::kMiter_Join || a.getMiter() == b.getMiter());
+    }
+    float fRadius;
+    float fJoinType;  // See GetJoinType().
+};
+
+// These tolerances decide the number of parametric and radial segments the tessellator will
+// linearize strokes into. These decisions are made in (pre-viewMatrix) local path space.
+class StrokeTolerances {
+    StrokeTolerances() = delete;
+public:
+    // Decides the number of radial segments the tessellator adds for each curve. (Uniform steps
+    // in tangent angle.) The tessellator will add this number of radial segments for each
+    // radian of rotation in local path space.
+    static float CalcNumRadialSegmentsPerRadian(float matrixMaxScale, float strokeWidth) {
+        float cosTheta = 1.f - (1.f / kTessellationPrecision) / (matrixMaxScale * strokeWidth);
+        return .5f / acosf(std::max(cosTheta, -1.f));
+    }
+    template<int N>
+    static vec<N> ApproxNumRadialSegmentsPerRadian(float matrixMaxScale, vec<N> strokeWidths) {
+        vec<N> cosTheta = 1.f - (1.f / kTessellationPrecision) / (matrixMaxScale * strokeWidths);
+        // Subtract SKVX_APPROX_ACOS_MAX_ERROR so we never account for too few segments.
+        return .5f / (approx_acos(max(cosTheta, -1.f)) - SKVX_APPROX_ACOS_MAX_ERROR);
+    }
+    // Returns the equivalent stroke width in (pre-viewMatrix) local path space that the
+    // tessellator will use when rendering this stroke. This only differs from the actual stroke
+    // width for hairlines.
+    static float GetLocalStrokeWidth(const float matrixMinMaxScales[2], float strokeWidth) {
+        SkASSERT(strokeWidth >= 0);
+        float localStrokeWidth = strokeWidth;
+        if (localStrokeWidth == 0) {  // Is the stroke a hairline?
+            float matrixMinScale = matrixMinMaxScales[0];
+            float matrixMaxScale = matrixMinMaxScales[1];
+            // If the stroke is hairline then the tessellator will operate in post-transform
+            // space instead. But for the sake of CPU methods that need to conservatively
+            // approximate the number of segments to emit, we use
+            // localStrokeWidth ~= 1/matrixMinScale.
+            float approxScale = matrixMinScale;
+            // If the matrix has strong skew, don't let the scale shoot off to infinity. (This
+            // does not affect the tessellator; only the CPU methods that approximate the number
+            // of segments to emit.)
+            approxScale = std::max(matrixMinScale, matrixMaxScale * .25f);
+            localStrokeWidth = 1/approxScale;
+            if (localStrokeWidth == 0) {
+                // We just can't accidentally return zero from this method because zero means
+                // "hairline". Otherwise return whatever we calculated above.
+                localStrokeWidth = SK_ScalarNearlyZero;
+            }
+        }
+        return localStrokeWidth;
+    }
+};
 
 }  // namespace skgpu
 

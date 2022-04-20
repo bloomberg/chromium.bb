@@ -21,6 +21,7 @@ limitations under the License.
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"  // from @llvm-project
 #include "mlir/Dialect/Quant/QuantOps.h"  // from @llvm-project
 #include "mlir/Dialect/Quant/QuantTypes.h"  // from @llvm-project
 #include "mlir/IR/BuiltinAttributes.h"  // from @llvm-project
@@ -37,6 +38,7 @@ limitations under the License.
 #include "tensorflow/compiler/mlir/lite/quantization/quantization_utils.h"
 #include "tensorflow/compiler/mlir/lite/transforms/passes.h"
 #include "tensorflow/compiler/mlir/quantization/tensorflow/passes/passes.h"
+#include "tensorflow/compiler/mlir/quantization/tensorflow/passes/util.h"
 #include "tensorflow/compiler/mlir/tensorflow/ir/tf_dialect.h"
 #include "tensorflow/compiler/mlir/tensorflow/ir/tf_ops.h"
 
@@ -52,7 +54,12 @@ class QuantizeCompositeFunctionsPass
     : public mlir::PassWrapper<QuantizeCompositeFunctionsPass,
                                OperationPass<ModuleOp>> {
  public:
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(QuantizeCompositeFunctionsPass)
+
   explicit QuantizeCompositeFunctionsPass() {}
+  explicit QuantizeCompositeFunctionsPass(
+      QuantizationMethod quantization_method)
+      : quantization_method_(quantization_method) {}
 
   StringRef getArgument() const final {
     // This is the argument used to refer to the pass in
@@ -71,6 +78,9 @@ class QuantizeCompositeFunctionsPass
 
  private:
   void runOnOperation() override;
+
+  QuantizationMethod quantization_method_ =
+      QuantizationMethod::kQuantizationAwareTraining;
 };
 
 LogicalResult CreateUniformQuantizedTypeParams(UniformQuantizedType qtype,
@@ -482,7 +492,7 @@ void QuantizeCompositeFunctionsPass::runOnOperation() {
   // This can be removed when the composite call supports quantized types.
   pm.enableVerifier(false);
 
-  pm.addNestedPass<FuncOp>(CreatePrepareQuantizePass());
+  pm.addNestedPass<FuncOp>(CreatePrepareQuantizePass(quantization_method_));
   pm.addNestedPass<FuncOp>(CreateQuantizePass());
   pm.addNestedPass<FuncOp>(CreatePostQuantizePass());
   if (failed(pm.run(module))) {
@@ -509,9 +519,9 @@ void QuantizeCompositeFunctionsPass::runOnOperation() {
 
 }  // namespace
 
-std::unique_ptr<OperationPass<ModuleOp>>
-CreateQuantizeCompositeFunctionsPass() {
-  return std::make_unique<QuantizeCompositeFunctionsPass>();
+std::unique_ptr<OperationPass<ModuleOp>> CreateQuantizeCompositeFunctionsPass(
+    QuantizationMethod quantization_method) {
+  return std::make_unique<QuantizeCompositeFunctionsPass>(quantization_method);
 }
 
 }  // namespace quant

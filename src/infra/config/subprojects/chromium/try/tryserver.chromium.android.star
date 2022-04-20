@@ -33,23 +33,8 @@ try_.builder(
     name = "android-10-arm64-rel",
 )
 
-try_.orchestrator_builder(
+try_.builder(
     name = "android-11-x86-rel",
-    compilator = "android-11-x86-rel-compilator",
-    # TODO(crbug.com/1137474): Enable it on branch after running on CQ
-    # branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    # TODO(crbug.com/1137474): Fully enable once it works fine
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-)
-
-try_.compilator_builder(
-    name = "android-11-x86-rel-compilator",
-    # TODO(crbug.com/1137474): Enable it on branch after running on CQ
-    # branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
 )
 
 try_.builder(
@@ -67,7 +52,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 100,
     ),
 )
 
@@ -152,10 +137,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-cronet-kitkat-arm-rel",
-)
-
-try_.builder(
     name = "android-cronet-x86-dbg",
 )
 
@@ -194,6 +175,10 @@ try_.builder(
 )
 
 try_.builder(
+    name = "android-cronet-x86-rel-kitkat-tests",
+)
+
+try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
@@ -209,8 +194,15 @@ try_.builder(
     name = "android-inverse-fieldtrials-pie-x86-fyi-rel",
 )
 
+try_.builder(
+    name = "android-marshmallow-x86-fyi-rel-reviver",
+)
+
 try_.orchestrator_builder(
     name = "android-marshmallow-arm64-rel",
+    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
+    # no longer timeout.
+    #check_for_flakiness = True,
     compilator = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -222,12 +214,16 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
+    # no longer timeout.
+    #check_for_flakiness = True,
     cores = 64 if settings.is_main else 32,
     main_list_view = "try",
 )
 
 try_.orchestrator_builder(
     name = "android-marshmallow-x86-rel",
+    check_for_flakiness = True,
     compilator = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -239,6 +235,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
 )
 
@@ -334,6 +331,10 @@ try_.builder(
 
 try_.builder(
     name = "android-10-x86-fyi-rel-tests",
+)
+
+try_.builder(
+    name = "android-11-x86-fyi-rel",
 )
 
 try_.builder(
@@ -478,10 +479,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-)
-
-try_.builder(
-    name = "android_mojo",
 )
 
 try_.builder(

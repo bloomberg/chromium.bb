@@ -166,6 +166,45 @@ chromium-metrics-reviews@google.com.
   <token key="ProcessName" variants="ProcessName"/>
 </histogram>
 
+<histogram name="PerformanceMonitor.AverageCPU3.Total{UsageScenario}"
+    units="1/100 %" expires_after="2022-11-30">
+  <owner>fdoray@chromium.org</owner>
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    See definition of PerformanceClass.AverageCPU3.ProcessName. This is recorded
+    for {UsageScenario} (see go/chrome_power_use_per_scenario).
+
+    Only recorded on Windows.
+  </summary>
+  <token key="UsageScenario" variants="UsageScenario"/>
+</histogram>
+
+<histogram name="PerformanceMonitor.AverageCPU3.{ProcessName}" units="1/100 %"
+    expires_after="2022-11-30">
+  <owner>fdoray@chromium.org</owner>
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Average CPU utilization of process type {ProcessName}, read out at each
+    two-minute interval. The utilization is in the 0-100% range per CPU, which
+    is then summed up and multiplied by 100. The histogram is capped at 20000
+    (equivalent to 2 cores fully loaded). I.e. 4 cores busy at 25% each will
+    read as 25 * 4 * 100 = 10000.
+
+    Only recorded on Windows, and is more precise than AverageCPU2 because it
+    uses `QueryProcessCycleTime` instead of `GetProcessTimes`.
+
+    NOTE: This metric has one signigicant limitation, it doesn't report the CPU
+    usage of processes that terminate before the end of the interval. This means
+    that short lived processes will rarely be included in the data. Furthermore,
+    we know that short-lived processes are very common (see
+    Renderer.ProcessLifetime). A future version of this metric will address this
+    limitation.
+  </summary>
+  <token key="ProcessName" variants="ProcessName"/>
+</histogram>
+
 <histogram name="PerformanceMonitor.EnergyImpact.Total{UsageScenario}"
     units="ScaledUnits" expires_after="2022-11-30">
   <owner>olivierli@chromium.org</owner>
@@ -726,6 +765,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.CpuAffinityExperiments.ProcessAffinityMode"
     enum="CpuAffinityMode" expires_after="2022-10-04">
+  <obsolete>
+    Deprecated in 03/2022 because the Power Scheduler feature did not launch.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -738,6 +780,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.CpuAffinityExperiments.ProcessAffinityUpdateSuccess"
     enum="BooleanSuccess" expires_after="2022-10-04">
+  <obsolete>
+    Deprecated in 03/2022 because the Power Scheduler feature did not launch.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -797,7 +842,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType" enum="ProcessType2"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -862,6 +907,22 @@ chromium-metrics-reviews@google.com.
     <variant name="GPU" summary="GPU"/>
     <variant name="Other" summary="other type of"/>
     <variant name="Renderer" summary="renderer"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Power.DarkMode{prefers-color-scheme}.InferredDarkPageColorScheme"
+    enum="BooleanIsDarkColorScheme" expires_after="2022-09-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Whether the primary main document has an inferred dark color scheme. Emitted
+    each time WebContents infers a new non-empty color scheme.
+  </summary>
+  <token key="prefers-color-scheme">
+    <variant name=""/>
+    <variant name=".DarkColorScheme" summary="when the embedder prefers dark."/>
   </token>
 </histogram>
 
@@ -1469,7 +1530,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-09-11">
+<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-10-09">
   <owner>olivierli@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -1481,7 +1542,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -1614,6 +1675,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.PowerScheduler.ThrottlingDuration" units="ms"
     expires_after="2022-10-04">
+  <obsolete>
+    Deprecated in 03/2022 because the Power Scheduler feature did not launch.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1626,6 +1690,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.PowerScheduler.ThrottlingDurationPerCpuAffinityMode"
     enum="CpuAffinityMode" expires_after="2022-10-04">
+  <obsolete>
+    Deprecated in 03/2022 because the Power Scheduler feature did not launch.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1684,7 +1751,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SmartCharging.Messages" enum="SmartChargingMessages"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
   <owner>thanhdng@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>Type of messages that are reported by smart charging.</summary>
@@ -1789,7 +1856,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.DimImminent.Action" enum="PowerMLDimImminentAction"
-    expires_after="2022-05-01">
+    expires_after="2023-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1799,7 +1866,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2022-05-01">
+    expires_after="2023-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1809,7 +1876,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelNoDim.Result" enum="PowerMLFinalResult"
-    expires_after="2022-05-01">
+    expires_after="2023-05-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -1819,7 +1886,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.NonModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2022-05-29">
+    expires_after="2023-05-29">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>

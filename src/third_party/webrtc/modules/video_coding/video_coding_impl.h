@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "modules/video_coding/decoder_database.h"
 #include "modules/video_coding/frame_buffer.h"
@@ -56,7 +57,9 @@ class VCMProcessTimer {
 
 class VideoReceiver : public Module {
  public:
-  VideoReceiver(Clock* clock, VCMTiming* timing);
+  VideoReceiver(Clock* clock,
+                VCMTiming* timing,
+                const FieldTrialsView& field_trials);
   ~VideoReceiver() override;
 
   void RegisterReceiveCodec(uint8_t payload_type,

@@ -12,16 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_OPENGL_UTILSGL_H_
-#define DAWNNATIVE_OPENGL_UTILSGL_H_
+#ifndef SRC_DAWN_NATIVE_OPENGL_UTILSGL_H_
+#define SRC_DAWN_NATIVE_OPENGL_UTILSGL_H_
 
+#include "dawn/native/Format.h"
 #include "dawn/native/dawn_platform.h"
 #include "dawn/native/opengl/opengl_platform.h"
 
 namespace dawn::native::opengl {
+    struct OpenGLFunctions;
 
     GLuint ToOpenGLCompareFunction(wgpu::CompareFunction compareFunction);
     GLint GetStencilMaskFromStencilFormat(wgpu::TextureFormat depthStencilFormat);
+    void CopyImageSubData(const OpenGLFunctions& gl,
+                          Aspect srcAspects,
+                          GLuint srcHandle,
+                          GLenum srcTarget,
+                          GLint srcLevel,
+                          const Origin3D& src,
+                          GLuint dstHandle,
+                          GLenum dstTarget,
+                          GLint dstLevel,
+                          const Origin3D& dst,
+                          const Extent3D& size);
+
 }  // namespace dawn::native::opengl
 
-#endif  // DAWNNATIVE_OPENGL_UTILSGL_H_
+#endif  // SRC_DAWN_NATIVE_OPENGL_UTILSGL_H_

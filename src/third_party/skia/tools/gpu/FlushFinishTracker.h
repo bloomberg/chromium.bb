@@ -9,8 +9,13 @@
 #define FlushFinishTracker_DEFINED
 
 #include "include/core/SkRefCnt.h"
+#include "include/gpu/GpuTypes.h"
 
 class GrDirectContext;
+
+#ifdef SK_GRAPHITE_ENABLED
+namespace skgpu::graphite { class Context; }
+#endif
 
 namespace sk_gpu_test {
 
@@ -22,14 +27,24 @@ public:
         tracker->unref();
     }
 
+    static void FlushFinishedResult(void* finishedContext, skgpu::CallbackResult) {
+        FlushFinished(finishedContext);
+    }
+
     FlushFinishTracker(GrDirectContext* context) : fContext(context) {}
+#ifdef SK_GRAPHITE_ENABLED
+    FlushFinishTracker(skgpu::graphite::Context* context) : fGraphiteContext(context) {}
+#endif
 
     void setFinished() { fIsFinished = true; }
 
     void waitTillFinished();
 
 private:
-    GrDirectContext* fContext;
+    GrDirectContext* fContext = nullptr;
+#ifdef SK_GRAPHITE_ENABLED
+    skgpu::graphite::Context*  fGraphiteContext = nullptr;
+#endif
 
     // Currently we don't have the this bool be atomic cause all current uses of this class happen
     // on a single thread. In other words we call flush, checkAsyncWorkCompletion, and

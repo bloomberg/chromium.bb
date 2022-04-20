@@ -26,37 +26,52 @@ Payload::~Payload() = default;
 Payload& Payload::operator=(Payload&& other) noexcept = default;
 
 // Default (invalid) payload.
-Payload::Payload() : content_(absl::monostate()) {}
+Payload::Payload()
+    : type_(PayloadType::kUnknown), content_(absl::monostate()) {}
 
 // Constructors for outgoing payloads.
-Payload::Payload(ByteArray&& bytes) : content_(std::move(bytes)) {}
+Payload::Payload(ByteArray&& bytes)
+    : type_(PayloadType::kBytes), content_(bytes) {}
 
-Payload::Payload(const ByteArray& bytes) : content_(bytes) {}
+Payload::Payload(const ByteArray& bytes)
+    : type_(PayloadType::kBytes), content_(bytes) {}
 
 Payload::Payload(InputFile input_file)
-    : content_(std::move(input_file)),
-      id_(std::hash<std::string>()(input_file.GetFilePath())) {}
+    : id_(std::hash<std::string>()(input_file.GetFilePath())),
+      type_(PayloadType::kFile),
+      content_(std::move(input_file)) {}
 
 Payload::Payload(Id id, InputFile input_file)
-    : content_(std::move(input_file)), id_(id) {}
+    : id_(id), type_(PayloadType::kFile), content_(std::move(input_file)) {}
 
 Payload::Payload(std::string parent_folder, std::string file_name,
                  InputFile input_file)
-    : content_(std::move(input_file)),
+    : id_(std::hash<std::string>()(input_file.GetFilePath())),
       parent_folder_(parent_folder),
-      file_name_(file_name) {}
+      file_name_(file_name),
+      type_(PayloadType::kFile),
+      content_(std::move(input_file)) {}
 
 Payload::Payload(std::function<InputStream&()> stream)
-    : content_(std::move(stream)) {}
+    : type_(PayloadType::kStream), content_(std::move(stream)) {}
 
 // Constructors for incoming payloads.
 Payload::Payload(Id id, ByteArray&& bytes)
-    : content_(std::move(bytes)), id_(id) {}
+    : id_(id), type_(PayloadType::kBytes), content_(std::move(bytes)) {}
 
-Payload::Payload(Id id, const ByteArray& bytes) : content_(bytes), id_(id) {}
+Payload::Payload(Id id, const ByteArray& bytes)
+    : id_(id), type_(PayloadType::kBytes), content_(bytes) {}
+
+Payload::Payload(Id id, std::string parent_folder, std::string file_name,
+                 InputFile input_file)
+    : id_(id),
+      parent_folder_(parent_folder),
+      file_name_(file_name),
+      type_(PayloadType::kFile),
+      content_(std::move(input_file)) {}
 
 Payload::Payload(Id id, std::function<InputStream&()> stream)
-    : content_(std::move(stream)), id_(id) {}
+    : id_(id), type_(PayloadType::kStream), content_(std::move(stream)) {}
 
 // Returns ByteArray payload, if it has been defined, or empty ByteArray.
 const ByteArray& Payload::AsBytes() const& {
@@ -80,11 +95,11 @@ InputFile* Payload::AsFile() { return absl::get_if<InputFile>(&content_); }
 Payload::Id Payload::GetId() const { return id_; }
 
 // Returns Payload type.
-Payload::Type Payload::GetType() const { return type_; }
+PayloadType Payload::GetType() const { return type_; }
 
 // Sets the payload offset in bytes
 void Payload::SetOffset(size_t offset) {
-  CHECK(type_ == Type::kFile || type_ == Type::kStream);
+  CHECK(type_ == PayloadType::kFile || type_ == PayloadType::kStream);
   InputFile* file = AsFile();
   if (file != nullptr) {
     CHECK(file->GetTotalSize() > 0 && offset < (size_t)file->GetTotalSize());
@@ -97,8 +112,8 @@ size_t Payload::GetOffset() { return offset_; }
 // Generate Payload Id; to be passed to outgoing file constructor.
 Payload::Id Payload::GenerateId() { return Prng().NextInt64(); }
 
-Payload::Type Payload::FindType() const {
-  return static_cast<Type>(content_.index());
+PayloadType Payload::FindType() const {
+  return static_cast<PayloadType>(content_.index());
 }
 
 const std::string& Payload::GetParentFolder() const { return parent_folder_; }

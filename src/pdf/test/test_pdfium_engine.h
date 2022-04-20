@@ -47,6 +47,12 @@ class TestPDFiumEngine : public PDFiumEngine {
               (const blink::WebInputEvent&),
               (override));
 
+  MOCK_METHOD(std::vector<uint8_t>,
+              PrintPages,
+              (const std::vector<int>& page_numbers,
+               const blink::WebPrintParams& print_params),
+              (override));
+
   MOCK_METHOD(void, ZoomUpdated, (double), (override));
 
   MOCK_METHOD(gfx::Size,
@@ -64,7 +70,7 @@ class TestPDFiumEngine : public PDFiumEngine {
   int GetNumberOfPages() const override;
 
   // Returns an empty bookmark list.
-  base::Value GetBookmarks() override;
+  base::Value::List GetBookmarks() override;
 
   MOCK_METHOD(void, SetGrayscale, (bool), (override));
 

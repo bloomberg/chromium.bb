@@ -38,8 +38,11 @@ namespace dawn::native::vulkan {
         // this constraints at the Dawn level?
         uint32_t numSetLayouts = 0;
         std::array<VkDescriptorSetLayout, kMaxBindGroups> setLayouts;
+        std::array<const CachedObject*, kMaxBindGroups> cachedObjects;
         for (BindGroupIndex setIndex : IterateBitSet(GetBindGroupLayoutsMask())) {
-            setLayouts[numSetLayouts] = ToBackend(GetBindGroupLayout(setIndex))->GetHandle();
+            const BindGroupLayoutBase* bindGroupLayout = GetBindGroupLayout(setIndex);
+            setLayouts[numSetLayouts] = ToBackend(bindGroupLayout)->GetHandle();
+            cachedObjects[numSetLayouts] = bindGroupLayout;
             numSetLayouts++;
         }
 
@@ -51,6 +54,9 @@ namespace dawn::native::vulkan {
         createInfo.pSetLayouts = AsVkArray(setLayouts.data());
         createInfo.pushConstantRangeCount = 0;
         createInfo.pPushConstantRanges = nullptr;
+
+        // Record cache key information now since the createInfo is not stored.
+        GetCacheKey()->RecordIterable(cachedObjects.data(), numSetLayouts).Record(createInfo);
 
         Device* device = ToBackend(GetDevice());
         DAWN_TRY(CheckVkSuccess(
@@ -77,8 +83,7 @@ namespace dawn::native::vulkan {
     }
 
     void PipelineLayout::SetLabelImpl() {
-        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_PIPELINE_LAYOUT,
-                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_PipelineLayout", GetLabel());
+        SetDebugName(ToBackend(GetDevice()), mHandle, "Dawn_PipelineLayout", GetLabel());
     }
 
 }  // namespace dawn::native::vulkan

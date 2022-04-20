@@ -13,6 +13,14 @@ generation.
 
 Local Modifications:
 - Remove everything but:
+  googlemock/
+   cmake
+   CMakeLists.txt
+   CONTRIBUTORS
+   include
+   LICENSE
+   README.md
+   src
   googletest/
    cmake
    CMakeLists.txt

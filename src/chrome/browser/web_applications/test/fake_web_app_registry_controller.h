@@ -24,11 +24,13 @@ class Profile;
 namespace web_app {
 
 class FakeWebAppDatabaseFactory;
+class WebAppCommandManager;
 class WebAppSyncBridge;
 class WebAppTranslationManager;
 class WebApp;
 class WebAppPolicyManager;
 
+// Deprecated: Prefer to use `FakeWebAppProvider::SetDefaultFakeSubsystems()`.
 class FakeWebAppRegistryController : public SyncInstallDelegate {
  public:
   FakeWebAppRegistryController();
@@ -100,6 +102,7 @@ class FakeWebAppRegistryController : public SyncInstallDelegate {
   std::unique_ptr<WebAppPolicyManager> policy_manager_;
   std::unique_ptr<FakeExternallyManagedAppManager>
       fake_externally_managed_app_manager_;
+  std::unique_ptr<WebAppCommandManager> command_manager_;
 };
 
 }  // namespace web_app

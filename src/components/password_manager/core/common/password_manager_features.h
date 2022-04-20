@@ -23,11 +23,12 @@ namespace password_manager::features {
 
 extern const base::Feature kBiometricTouchToFill;
 extern const base::Feature kDetectFormSubmissionOnFormClear;
+extern const base::Feature kForceEnablePasswordDomainCapabilities;
 extern const base::Feature kEnableFaviconForPasswords;
-extern const base::Feature kEnableManualPasswordGeneration;
 extern const base::Feature kEnableOverwritingPlaceholderUsernames;
 extern const base::Feature kEnablePasswordsAccountStorage;
 extern const base::Feature KEnablePasswordGenerationForClearTextFields;
+extern const base::Feature kEnablePasswordManagerWithinFencedFrame;
 extern const base::Feature kFillingAcrossAffiliatedWebsites;
 extern const base::Feature kFillOnAccountSelect;
 #if BUILDFLAG(IS_LINUX)
@@ -40,15 +41,14 @@ extern const base::Feature kPasswordNotes;
 extern const base::Feature kSendPasswords;
 extern const base::Feature kLeakDetectionUnauthenticated;
 extern const base::Feature kPasswordChange;
-extern const base::Feature kPasswordChangeOnlyRecentCredentials;
 extern const base::Feature kPasswordChangeInSettings;
+extern const base::Feature kPasswordChangeWellKnown;
 extern const base::Feature kPasswordDomainCapabilitiesFetching;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordReuseDetectionEnabled;
 extern const base::Feature kPasswordsAccountStorageRevisedOptInFlow;
 extern const base::Feature kPasswordScriptsFetching;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
-extern const base::Feature kReparseServerPredictionsFollowingFormChange;
 extern const base::Feature kSecondaryServerFieldPredictions;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 extern const base::Feature kSkipUndecryptablePasswords;
@@ -60,14 +60,11 @@ extern const base::Feature kSyncUndecryptablePasswordsLinux;
 #if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kTouchToFillPasswordSubmission;
 #endif
-extern const base::Feature kTreatNewPasswordHeuristicsAsReliable;
 #if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kUnifiedCredentialManagerDryRun;
 extern const base::Feature kUnifiedPasswordManagerAndroid;
-extern const base::Feature kUnifiedPasswordManagerMigration;
-extern const base::Feature kUnifiedPasswordManagerShadowAndroid;
-extern const base::Feature kUnifiedPasswordManagerShadowWriteOperationsAndroid;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
+extern const base::Feature kPasswordEditDialogWithDetails;
 #endif
 extern const base::Feature kUnifiedPasswordManagerDesktop;
 extern const base::Feature kUsernameFirstFlow;
@@ -75,13 +72,22 @@ extern const base::Feature kUsernameFirstFlowFilling;
 extern const base::Feature kUsernameFirstFlowFallbackCrowdsourcing;
 
 // All features parameters are in alphabetical order.
-extern const base::FeatureParam<bool> kPasswordChangeLiveExperimentParam;
+
+// True if the client is part of the live_experiment group for
+// |kPasswordDomainCapabilitiesFetching|, otherwise, the client is assumed to be
+// in the regular launch group.
+constexpr base::FeatureParam<bool> kPasswordChangeLiveExperimentParam = {
+    &kPasswordDomainCapabilitiesFetching, "live_experiment", false};
+
 #if BUILDFLAG(IS_ANDROID)
 extern const base::FeatureParam<int> kMigrationVersion;
 constexpr base::FeatureParam<UpmExperimentVariation>::Option
     kUpmExperimentVariationOption[] = {
         {UpmExperimentVariation::kEnableForSyncingUsers, "0"},
-        {UpmExperimentVariation::kShadowSyncingUsers, "1"}};
+        {UpmExperimentVariation::kShadowSyncingUsers, "1"},
+        {UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers, "2"},
+        {UpmExperimentVariation::kEnableForAllUsers, "3"},
+};
 
 constexpr base::FeatureParam<UpmExperimentVariation>
     kUpmExperimentVariationParam{&kUnifiedPasswordManagerAndroid, "stage",
@@ -120,6 +126,19 @@ bool IsPasswordScriptsFetchingEnabled();
 // Returns true if the unified password manager feature is active and in a stage
 // that allows to use the new UI.
 bool UsesUnifiedPasswordManagerUi();
+#endif  // IS_ANDROID
+
+#if BUILDFLAG(IS_ANDROID)
+// Returns true if the unified password manager feature is active and in a stage
+// that requires migrating existing credentials. Independent of
+// whether only non-syncable data needs to be migrated or full credentials.
+bool RequiresMigrationForUnifiedPasswordManager();
+#endif  // IS_ANDROID
+
+#if BUILDFLAG(IS_ANDROID)
+// Returns true if the unified password manager feature is active and in a stage
+// that uses the unified storage for passwords that remain local on the device.
+bool ManagesLocalPasswordsInUnifiedPasswordManager();
 #endif  // IS_ANDROID
 
 }  // namespace password_manager::features

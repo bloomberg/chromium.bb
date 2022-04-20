@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_device_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_external_texture_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_feature_name.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_queue_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_render_pipeline_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_uncaptured_error_event_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuoutofmemoryerror_gpuvalidationerror.h"
@@ -98,6 +99,9 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
 
   if (descriptor->hasLabel())
     setLabel(descriptor->label());
+
+  if (descriptor->defaultQueue()->hasLabel())
+    queue_->setLabel(descriptor->defaultQueue()->label());
 }
 
 GPUDevice::~GPUDevice() {
@@ -134,6 +138,11 @@ void GPUDevice::AddConsoleWarning(const char* message) {
 
 void GPUDevice::OnUncapturedError(WGPUErrorType errorType,
                                   const char* message) {
+  // Suppress errors once the device is lost.
+  if (lost_property_->GetState() == LostProperty::kResolved) {
+    return;
+  }
+
   DCHECK_NE(errorType, WGPUErrorType_NoError);
   DCHECK_NE(errorType, WGPUErrorType_DeviceLost);
   LOG(ERROR) << "GPUDevice: " << message;
@@ -381,7 +390,7 @@ ScriptPromise GPUDevice::createComputePipelineAsync(
   std::string label;
   OwnedProgrammableStageDescriptor computeStageDescriptor;
   WGPUComputePipelineDescriptor dawn_desc =
-      AsDawnType(descriptor, &label, &computeStageDescriptor, this);
+      AsDawnType(descriptor, &label, &computeStageDescriptor);
 
   auto* callback =
       BindDawnOnceCallback(&GPUDevice::OnCreateComputePipelineAsyncCallback,
@@ -424,13 +433,8 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
       BindDawnOnceCallback(&GPUDevice::OnPopErrorScopeCallback,
                            WrapPersistent(this), WrapPersistent(resolver));
 
-  if (!GetProcs().devicePopErrorScope(GetHandle(), callback->UnboundCallback(),
-                                      callback->AsUserdata())) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError, "No error scopes to pop."));
-    delete callback;
-    return promise;
-  }
+  GetProcs().devicePopErrorScope(GetHandle(), callback->UnboundCallback(),
+                                 callback->AsUserdata());
 
   // WebGPU guarantees that promises are resolved in finite time so we
   // need to ensure commands are flushed.

@@ -1363,8 +1363,9 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   set_mode_eval_params(cpi, x, MODE_EVAL);
 
   MB_MODE_INFO best_mbmi = *mbmi;
-  zero_winner_mode_stats(bsize, MAX_WINNER_MODE_COUNT_INTRA,
-                         x->winner_mode_stats);
+  const int max_winner_mode_count =
+      winner_mode_count_allowed[cpi->sf.winner_mode_sf.multi_winner_mode_type];
+  zero_winner_mode_stats(bsize, max_winner_mode_count, x->winner_mode_stats);
   x->winner_mode_count = 0;
 
   // Searches the intra-modes except for intrabc, palette, and filter_intra.

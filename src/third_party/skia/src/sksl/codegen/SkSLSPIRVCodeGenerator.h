@@ -8,16 +8,35 @@
 #ifndef SKSL_SPIRVCODEGENERATOR
 #define SKSL_SPIRVCODEGENERATOR
 
-#include <stack>
-
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLLayout.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLProgramKind.h"
+#include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "src/core/SkOpts.h"
 #include "src/sksl/SkSLMemoryLayout.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/codegen/SkSLCodeGenerator.h"
+#include "src/sksl/ir/SkSLFunctionDeclaration.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
+#include "src/sksl/ir/SkSLInterfaceBlock.h"
+#include "src/sksl/ir/SkSLSymbolTable.h"
+#include "src/sksl/ir/SkSLType.h"
+#include "src/sksl/ir/SkSLVariable.h"
+#include "src/sksl/spirv.h"
+
+#include <cstdint>
+#include <memory>
+#include <stack>
+#include <string>
+#include <string_view>
+#include <vector>
+
+template <typename T> class SkSpan;
 
 namespace SkSL {
 
+class AnyConstructor;
 class BinaryExpression;
 class Block;
 class ConstructorCompound;
@@ -26,79 +45,50 @@ class ConstructorDiagonalMatrix;
 class ConstructorMatrixResize;
 class ConstructorScalarCast;
 class ConstructorSplat;
+class Context;
 class DoStatement;
+class Expression;
 class FieldAccess;
 class ForStatement;
 class FunctionCall;
-class FunctionDeclaration;
-class FunctionDefinition;
-class FunctionPrototype;
 class IfStatement;
-struct IndexExpression;
-class InterfaceBlock;
-enum IntrinsicKind : int8_t;
 class Literal;
 class Operator;
+class OutputStream;
+class Position;
 class PostfixExpression;
 class PrefixExpression;
+class ProgramElement;
 class ReturnStatement;
-class Setting;
-class StructDefinition;
+class Statement;
 class SwitchStatement;
-struct Swizzle;
 class TernaryExpression;
 class VarDeclaration;
 class VariableReference;
-
-struct SPIRVNumberConstant {
-    bool operator==(const SPIRVNumberConstant& that) const {
-        return fValueBits == that.fValueBits &&
-               fKind      == that.fKind;
-    }
-    int32_t                fValueBits;
-    SkSL::Type::NumberKind fKind;
-
-    struct Hash {
-        uint32_t operator()(const SPIRVNumberConstant& key) const {
-            return key.fValueBits ^ (int)key.fKind;
-        }
-    };
-};
-
-struct SPIRVVectorConstant {
-    bool operator==(const SPIRVVectorConstant& that) const {
-        return fTypeId     == that.fTypeId &&
-               fValueId[0] == that.fValueId[0] &&
-               fValueId[1] == that.fValueId[1] &&
-               fValueId[2] == that.fValueId[2] &&
-               fValueId[3] == that.fValueId[3];
-    }
-    SpvId fTypeId;
-    SpvId fValueId[4];
-
-    struct Hash {
-        uint32_t operator()(const SPIRVVectorConstant& key) const {
-            return SkOpts::hash(&key, sizeof(key));
-        }
-    };
-};
+enum IntrinsicKind : int8_t;
+struct IndexExpression;
+struct Program;
+struct Swizzle;
 
 /**
  * Converts a Program into a SPIR-V binary.
  */
 class SPIRVCodeGenerator : public CodeGenerator {
 public:
+    // We reserve an impossible SpvId as a sentinel. (NA meaning none, n/a, etc.)
+    static constexpr SpvId NA = (SpvId)-1;
+
     class LValue {
     public:
         virtual ~LValue() {}
 
         // returns a pointer to the lvalue, if possible. If the lvalue cannot be directly referenced
-        // by a pointer (e.g. vector swizzles), returns -1.
-        virtual SpvId getPointer() { return -1; }
+        // by a pointer (e.g. vector swizzles), returns NA.
+        virtual SpvId getPointer() { return NA; }
 
         // Returns true if a valid pointer returned by getPointer represents a memory object
         // (see https://github.com/KhronosGroup/SPIRV-Tools/issues/2892). Has no meaning if
-        // getPointer() returns -1.
+        // getPointer() returns NA.
         virtual bool isMemoryObjectPointer() const { return true; }
 
         // Applies a swizzle to the components of the LValue, if possible. This is used to create
@@ -190,7 +180,7 @@ private:
 
     void writeFieldLayout(const Layout& layout, SpvId target, int member);
 
-    void writeStruct(const Type& type, const MemoryLayout& layout, SpvId resultId);
+    SpvId writeStruct(const Type& type, const MemoryLayout& memoryLayout);
 
     void writeProgramElement(const ProgramElement& pe, OutputStream& out);
 
@@ -248,8 +238,6 @@ private:
 
     SpvId writeSpecialIntrinsic(const FunctionCall& c, SpecialIntrinsic kind, OutputStream& out);
 
-    SpvId writeConstantVector(const AnyConstructor& c);
-
     SpvId writeScalarToMatrixSplat(const Type& matrixType, SpvId scalarId, OutputStream& out);
 
     SpvId writeFloatConstructor(const AnyConstructor& c, OutputStream& out);
@@ -276,20 +264,14 @@ private:
                            OutputStream& out);
 
     /**
-     * Writes a matrix with the diagonal entries all equal to the provided expression, and all other
-     * entries equal to zero.
-     */
-    void writeUniformScaleMatrix(SpvId id, SpvId diagonal, const Type& type, OutputStream& out);
-
-    /**
      * Writes a potentially-different-sized copy of a matrix. Entries which do not exist in the
      * source matrix are filled with zero; entries which do not exist in the destination matrix are
      * ignored.
      */
     SpvId writeMatrixCopy(SpvId src, const Type& srcType, const Type& dstType, OutputStream& out);
 
-    void addColumnEntry(const Type& columnType, std::vector<SpvId>* currentColumn,
-                        std::vector<SpvId>* columnIds, int rows, SpvId entry, OutputStream& out);
+    void addColumnEntry(const Type& columnType, SkTArray<SpvId>* currentColumn,
+                        SkTArray<SpvId>* columnIds, int rows, SpvId entry, OutputStream& out);
 
     SpvId writeConstructorCompound(const ConstructorCompound& c, OutputStream& out);
 
@@ -437,6 +419,43 @@ private:
                           int32_t word5, int32_t word6, int32_t word7, int32_t word8,
                           OutputStream& out);
 
+    // This form of writeInstruction can deduplicate redundant ops.
+    struct Word;
+    // 8 Words is enough for nearly all instructions (except variable-length instructions like
+    // OpAccessChain or OpConstantComposite).
+    using Words = SkSTArray<8, Word>;
+    SpvId writeInstruction(SpvOp_ opCode, const SkTArray<Word>& words, OutputStream& out);
+
+    struct Instruction {
+        SpvId                  fOp;
+        int32_t                fResultKind;
+        SkSTArray<8, int32_t>  fWords;
+
+        bool operator==(const Instruction& that) const;
+        struct Hash;
+    };
+
+    static Instruction BuildInstructionKey(SpvOp_ opCode, const SkTArray<Word>& words);
+
+    // The writeOpXxxxx calls will simplify and deduplicate ops where possible.
+    SpvId writeOpConstantTrue(const Type& type);
+    SpvId writeOpConstantFalse(const Type& type);
+    SpvId writeOpConstant(const Type& type, int32_t valueBits);
+    SpvId writeOpConstantComposite(const Type& type, const SkTArray<SpvId>& values);
+    SpvId writeOpCompositeConstruct(const Type& type, const SkTArray<SpvId>&, OutputStream& out);
+    SpvId writeOpCompositeExtract(const Type& type, SpvId base, int component, OutputStream& out);
+    SpvId writeOpCompositeExtract(const Type& type, SpvId base, int componentA, int componentB,
+                                  OutputStream& out);
+
+    // Converts the provided SpvId(s) into an array of scalar OpConstants, if it can be done.
+    bool toConstants(SpvId value, SkTArray<SpvId>* constants);
+    bool toConstants(SkSpan<const SpvId> values, SkTArray<SpvId>* constants);
+
+    // Extracts the requested component SpvId from a composite instruction, if it can be done.
+    SpvId toComponent(const Instruction& instr, int component);
+
+    void pruneReachableOps(size_t numReachableOps);
+
     bool isDead(const Variable& var) const;
 
     MemoryLayout memoryLayoutForVariable(const Variable&) const;
@@ -475,15 +494,29 @@ private:
     SkTHashMap<IntrinsicKind, Intrinsic> fIntrinsicMap;
     SkTHashMap<const FunctionDeclaration*, SpvId> fFunctionMap;
     SkTHashMap<const Variable*, SpvId> fVariableMap;
-    SkTHashMap<std::string, SpvId> fTypeMap;
+    SkTHashMap<const Type*, SpvId> fStructMap;
     StringStream fGlobalInitializersBuffer;
     StringStream fConstantBuffer;
     StringStream fVariableBuffer;
     StringStream fNameBuffer;
     StringStream fDecorationBuffer;
 
-    SkTHashMap<SPIRVNumberConstant, SpvId, SPIRVNumberConstant::Hash> fNumberConstants;
-    SkTHashMap<SPIRVVectorConstant, SpvId, SPIRVVectorConstant::Hash> fVectorConstants;
+    // These caches map SpvIds to Instructions, and vice-versa. This enables us to deduplicate code
+    // (by detecting an Instruction we've already issued and reusing the SpvId), and to introspect
+    // and simplify code we've already emitted  (by taking a SpvId from an Instruction and following
+    // it back to its source).
+    SkTHashMap<Instruction, SpvId, Instruction::Hash> fOpCache;  // maps instruction -> SpvId
+    SkTHashMap<SpvId, Instruction> fSpvIdCache;                  // maps SpvId -> instruction
+
+    // "Reachable" ops are instructions which can safely be accessed from the current block.
+    // For instance, if our SPIR-V contains `%3 = OpFAdd %1 %2`, we would be able to access and
+    // reuse that computation on following lines. However, if that Add operation occurred inside an
+    // `if` block, then its SpvId becomes inaccessible once we complete the if statement (since
+    // depending on the if condition, we may or may not have actually done that computation). The
+    // same logic applies to other control-flow blocks as well. Once an instruction becomes
+    // unreachable, we remove it from both op-caches.
+    std::vector<SpvId> fReachableOps;
+
     // label of the current block, or 0 if we are not in a block
     SpvId fCurrentBlock;
     std::stack<SpvId> fBreakTarget;
@@ -497,7 +530,7 @@ private:
     std::vector<const VarDeclaration*> fTopLevelUniforms;
     SkTHashMap<const Variable*, int> fTopLevelUniformMap; // <var, UniformBuffer field index>
     SkTHashSet<const Variable*> fSPIRVBonusVariables;
-    SpvId fUniformBufferId = -1;
+    SpvId fUniformBufferId = NA;
 
     friend class PointerLValue;
     friend class SwizzleLValue;

@@ -10,8 +10,17 @@ title: Highlights Archive
 
 This page contains an archive of previous Chromium Animations team highlights.
 
+[February 2022
+highlights!](https://docs.google.com/document/d/1l_zGo07HRoj1ffvrc4VQKh4q1oI-qx6N1jnuc_abIXY/edit?usp=sharing&resourcekey=0-u6ySQmvFaOB3vs9nHtA3Fg)
+
+[January 2022
+highlights!](https://docs.google.com/document/d/1LGl_0kpUKsvX17sJOn-0hXuVDGZRpxit481FpkCIXS0/edit?usp=sharing)
+
+[November 2021 
+highlights!](https://docs.google.com/document/d/1s1gbZ_2LZEM_-HJtv8W_15hzWzuVVMlSMdli5JKW8yI/edit?usp=sharing&resourcekey=0-o0n9VKkG9jC_WsFGx0GDaA)
+
 [October 2021 - 2 sprint's worth of
-highlights!](/teams/animations/highlights-archive/october-2021---2-sprints-worth-of-highlights)
+highlights!](https://docs.google.com/document/d/14hFArq_0KHZ9HncBpiMR8RF_a7wEl-hvWob5DIgWqvc/edit?usp=sharing)
 
 [September 2021 - New features, testing, code health, interop fixes and
 more!](/teams/animations/highlights-archive/september-2021---new-features-testing-code-health-interop-fixes-and-more)

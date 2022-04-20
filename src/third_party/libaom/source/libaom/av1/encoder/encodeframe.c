@@ -253,7 +253,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   x->delta_qindex = current_qindex - cm->quant_params.base_qindex;
   av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
   xd->mi[0]->current_qindex = current_qindex;
-  av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
+  av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id, 0);
 
   // keep track of any non-zero delta-q used
   td->deltaq_used |= (x->delta_qindex != 0);
@@ -479,7 +479,10 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
   if (sf->rt_sf.source_metrics_sb_nonrd &&
       cpi->svc.number_spatial_layers <= 1 &&
       cm->current_frame.frame_type != KEY_FRAME) {
-    av1_source_content_sb(cpi, x, mi_row, mi_col);
+    if (!cpi->sf.rt_sf.check_scene_detection || cpi->rc.frame_source_sad > 0)
+      av1_source_content_sb(cpi, x, mi_row, mi_col);
+    else
+      x->content_state_sb.source_sad = kZeroSad;
   }
 #if CONFIG_RT_ML_PARTITIONING
   if (sf->part_sf.partition_search_type == ML_BASED_PARTITION) {
@@ -1107,8 +1110,7 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
   if (cpi->allocated_tiles < tile_cols * tile_rows) av1_alloc_tile_data(cpi);
 
   av1_init_tile_data(cpi);
-  av1_alloc_mb_data(cm, mb, cpi->sf.rt_sf.use_nonrd_pick_mode,
-                    cpi->sf.rd_sf.use_mb_rd_hash);
+  av1_alloc_mb_data(cpi, mb);
 
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
@@ -1117,6 +1119,8 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
       cpi->td.intrabc_used = 0;
       cpi->td.deltaq_used = 0;
       cpi->td.abs_sum_level = 0;
+      cpi->td.rd_counts.seg_tmp_pred_cost[0] = 0;
+      cpi->td.rd_counts.seg_tmp_pred_cost[1] = 0;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       cpi->td.mb.tile_pb_ctx = &this_tile->tctx;
       // Reset cyclic refresh counters.
@@ -1361,6 +1365,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->tx_type_used);
   av1_zero(rdc->obmc_used);
   av1_zero(rdc->warped_used);
+  av1_zero(rdc->seg_tmp_pred_cost);
 
   // Reset the flag.
   cpi->intrabc_used = 0;
@@ -1695,6 +1700,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         }
       }
     }
+  }
+
+  if (cm->seg.enabled) {
+    cm->seg.temporal_update = 1;
+    if (rdc->seg_tmp_pred_cost[0] < rdc->seg_tmp_pred_cost[1])
+      cm->seg.temporal_update = 0;
   }
 
   if (cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&

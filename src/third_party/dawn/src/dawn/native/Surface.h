@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_SURFACE_H_
-#define DAWNNATIVE_SURFACE_H_
+#ifndef SRC_DAWN_NATIVE_SURFACE_H_
+#define SRC_DAWN_NATIVE_SURFACE_H_
 
 #include "dawn/common/RefCounted.h"
 #include "dawn/native/Error.h"
@@ -50,12 +50,22 @@ namespace dawn::native {
         NewSwapChainBase* GetAttachedSwapChain();
 
         // These are valid to call on all Surfaces.
-        enum class Type { MetalLayer, WindowsHWND, WindowsCoreWindow, WindowsSwapChainPanel, Xlib };
+        enum class Type {
+            AndroidWindow,
+            MetalLayer,
+            WindowsHWND,
+            WindowsCoreWindow,
+            WindowsSwapChainPanel,
+            XlibWindow,
+        };
         Type GetType() const;
         InstanceBase* GetInstance();
 
         // Valid to call if the type is MetalLayer
         void* GetMetalLayer() const;
+
+        // Valid to call if the type is Android
+        void* GetAndroidNativeWindow() const;
 
         // Valid to call if the type is WindowsHWND
         void* GetHInstance() const;
@@ -83,6 +93,9 @@ namespace dawn::native {
         // MetalLayer
         void* mMetalLayer = nullptr;
 
+        // ANativeWindow
+        void* mAndroidNativeWindow = nullptr;
+
         // WindowsHwnd
         void* mHInstance = nullptr;
         void* mHWND = nullptr;
@@ -100,6 +113,7 @@ namespace dawn::native {
         uint32_t mXWindow = 0;
     };
 
+    // Not defined in webgpu_absl_format.h/cpp because you can't forward-declare a nested type.
     absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
         Surface::Type value,
         const absl::FormatConversionSpec& spec,
@@ -107,4 +121,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_SURFACE_H_
+#endif  // SRC_DAWN_NATIVE_SURFACE_H_

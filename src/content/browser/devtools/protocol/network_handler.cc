@@ -19,7 +19,6 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
@@ -2113,7 +2112,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
   }
 
   if (host_) {
-    if (nav_request.frame_tree_node()->IsMainFrame()) {
+    if (nav_request.frame_tree_node()->IsOutermostMainFrame()) {
       request->SetIsSameSite(true);
     } else {
       request->SetIsSameSite(

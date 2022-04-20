@@ -25,8 +25,8 @@ ParseStatus::Or<M3uTag> CheckM3uTag(SourceLineIterator* src_iter) {
   auto item = std::move(item_result).value();
   if (auto* tag_item = absl::get_if<TagItem>(&item)) {
     // The #EXTM3U tag must be the first line in the playlist
-    if (tag_item->name != ToTagName(CommonTagName::kM3u) ||
-        tag_item->content.Line() != 1) {
+    if (tag_item->GetName() != ToTagName(CommonTagName::kM3u) ||
+        tag_item->GetLineNumber() != 1) {
       return ParseStatusCode::kPlaylistMissingM3uTag;
     }
 
@@ -51,14 +51,14 @@ void HandleUnknownTag(TagItem /*tag*/) {
 
 absl::optional<ParseStatus> ParseCommonTag(TagItem tag,
                                            CommonParserState* state) {
-  DCHECK(GetTagKind(tag.name) == TagKind::kCommonTag);
+  DCHECK(tag.GetName() && GetTagKind(*tag.GetName()) == TagKind::kCommonTag);
 
-  switch (static_cast<CommonTagName>(tag.name)) {
+  switch (static_cast<CommonTagName>(*tag.GetName())) {
     case CommonTagName::kM3u:
       // This tag is meant to occur on the first line (which we've already
       // checked), however the spec does not explicitly regard this as an
       // error if it appears elsewhere as well.
-      DCHECK(tag.content.Line() != 1);
+      DCHECK(tag.GetLineNumber() != 1);
       break;
     case CommonTagName::kXVersion: {
       auto error = ParseUniqueTag(tag, state->version_tag);
@@ -75,16 +75,52 @@ absl::optional<ParseStatus> ParseCommonTag(TagItem tag,
     case CommonTagName::kXIndependentSegments: {
       return ParseUniqueTag(tag, state->independent_segments_tag);
     }
-    case CommonTagName::kXDefine:
-      // TODO(crbug.com/1266991): Implement variable substitution.
-      break;
+    case CommonTagName::kXDefine: {
+      auto tag_result = XDefineTag::Parse(tag);
+      if (tag_result.has_error()) {
+        return std::move(tag_result).error();
+      }
+      auto tag_value = std::move(tag_result).value();
+
+      // Imported variables have a null `value` member. If that's the case, look
+      // up the value in the parent playlist dictionary.
+      if (!tag_value.value) {
+        if (!state->parent_variable_dict) {
+          return ParseStatusCode::kImportedVariableInParentlessPlaylist;
+        }
+
+        auto value = state->parent_variable_dict->Find(tag_value.name);
+        if (!value) {
+          return ParseStatusCode::kImportedVariableUndefined;
+        }
+
+        tag_value.value = *value;
+      }
+
+      // Insert the definition, ensuring it has not been defined twice
+      if (!state->variable_dict.Insert(tag_value.name,
+                                       std::string{*tag_value.value})) {
+        return ParseStatusCode::kVariableDefinedMultipleTimes;
+      }
+    } break;
   }
 
   return absl::nullopt;
 }
 
-ParseStatus::Or<GURL> ParseUri(UriItem item, const GURL& playlist_uri) {
-  auto resolved_uri = playlist_uri.Resolve(item.content.Str());
+ParseStatus::Or<GURL> ParseUri(
+    UriItem item,
+    const GURL& playlist_uri,
+    const CommonParserState& state,
+    VariableDictionary::SubstitutionBuffer& sub_buffer) {
+  // Variables may appear in URIs, check for any occurrences and resolve them.
+  auto uri_str_result = state.variable_dict.Resolve(item.content, sub_buffer);
+  if (uri_str_result.has_error()) {
+    return std::move(uri_str_result).error();
+  }
+
+  // URIs may be relative to the playlist URI, resolve it against that.
+  auto resolved_uri = playlist_uri.Resolve(std::move(uri_str_result).value());
   if (!resolved_uri.is_valid()) {
     return ParseStatusCode::kInvalidUri;
   }

@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWN_NODE_BINDING_GPUBUFFER_H_
-#define DAWN_NODE_BINDING_GPUBUFFER_H_
+#ifndef SRC_DAWN_NODE_BINDING_GPUBUFFER_H_
+#define SRC_DAWN_NODE_BINDING_GPUBUFFER_H_
 
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-#include "napi.h"
+
 #include "src/dawn/node/binding/AsyncRunner.h"
+#include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
@@ -51,10 +52,12 @@ namespace wgpu::binding {
                                             std::optional<interop::GPUSize64> size) override;
         void unmap(Napi::Env) override;
         void destroy(Napi::Env) override;
-        std::variant<std::string, interop::UndefinedType>getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType>value) override;
+        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
+        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
 
       private:
+        void DetachMappings();
+
         struct Mapping {
             uint64_t start;
             uint64_t end;
@@ -83,4 +86,4 @@ namespace wgpu::binding {
 
 }  // namespace wgpu::binding
 
-#endif  // DAWN_NODE_BINDING_GPUBUFFER_H_
+#endif  // SRC_DAWN_NODE_BINDING_GPUBUFFER_H_

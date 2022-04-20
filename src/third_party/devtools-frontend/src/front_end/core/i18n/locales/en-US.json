@@ -1352,6 +1352,12 @@
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | samesiteAndSameorigin": {
     "message": "Same-Site and Same-Origin"
   },
+  "models/issues_manager/DeprecationIssue.ts | deprecationExample": {
+    "message": "This is an example of a translated deprecation issue message."
+  },
+  "models/issues_manager/DeprecationIssue.ts | title": {
+    "message": "Deprecated Feature Used"
+  },
   "models/issues_manager/FederatedAuthRequestIssue.ts | fedCm": {
     "message": "Federated Credential Management API"
   },
@@ -2549,6 +2555,12 @@
   "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
     "message": "A service worker was activated while the page was in back/forward cache."
   },
+  "panels/application/components/BackForwardCacheStrings.ts | errorDocument": {
+    "message": "Back/forward cache is disabled due to a document error."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | fencedFramesEmbedder": {
+    "message": "Pages using FencedFrames cannot be stored in bfcache."
+  },
   "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
     "message": "The page was evicted from the cache to allow another page to be cached."
   },
@@ -2770,6 +2782,15 @@
   },
   "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
     "message": "These reasons are not actionable i.e. caching was prevented by something outside of the direct control of the page."
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesPerIssue": {
+    "message": "{n, plural, =1 {# frame} other {# frames}}"
+  },
+  "panels/application/components/BackForwardCacheView.ts | framesTitle": {
+    "message": "Frames"
+  },
+  "panels/application/components/BackForwardCacheView.ts | issuesInFrames": {
+    "message": "{x, plural, =1 {# issue} other {# issues}} found in {y, plural, =1 {# frame} other {# frames}}."
   },
   "panels/application/components/BackForwardCacheView.ts | learnMore": {
     "message": "Learn more: back/forward cache eligibility"
@@ -3683,6 +3704,12 @@
   "panels/changes/ChangesView.ts | binaryData": {
     "message": "Binary data"
   },
+  "panels/changes/ChangesView.ts | copy": {
+    "message": "Copy"
+  },
+  "panels/changes/ChangesView.ts | copyAllChangesFromCurrentFile": {
+    "message": "Copy all changes from current file"
+  },
   "panels/changes/ChangesView.ts | noChanges": {
     "message": "No changes"
   },
@@ -3842,6 +3869,9 @@
   "panels/console/ConsoleView.ts | allLevels": {
     "message": "All levels"
   },
+  "panels/console/ConsoleView.ts | autocompleteFromHistory": {
+    "message": "Autocomplete from history"
+  },
   "panels/console/ConsoleView.ts | consoleCleared": {
     "message": "Console cleared"
   },
@@ -3923,6 +3953,9 @@
   "panels/console/ConsoleView.ts | logLevelS": {
     "message": "Log level: {PH1}"
   },
+  "panels/console/ConsoleView.ts | logXMLHttpRequests": {
+    "message": "Log XMLHttpRequests"
+  },
   "panels/console/ConsoleView.ts | onlyShowMessagesFromTheCurrentContext": {
     "message": "Only show messages from the current context (top, iframe, worker, extension)"
   },
@@ -3955,6 +3988,9 @@
   },
   "panels/console/ConsoleView.ts | sOnly": {
     "message": "{PH1} only"
+  },
+  "panels/console/ConsoleView.ts | treatEvaluationAsUserActivation": {
+    "message": "Treat evaluation as user activation"
   },
   "panels/console/ConsoleView.ts | verbose": {
     "message": "Verbose"
@@ -4796,6 +4832,48 @@
   "panels/elements/PropertiesWidget.ts | showAllTooltip": {
     "message": "When unchecked, only properties whose values are neither null nor undefined will be shown"
   },
+  "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
+    "message": "constructed stylesheet"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllCSSChanges": {
+    "message": "Copy all CSS changes"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyAllDeclarations": {
+    "message": "Copy all declarations"
+  },
+  "panels/elements/StylePropertiesSection.ts | copyRule": {
+    "message": "Copy rule"
+  },
+  "panels/elements/StylePropertiesSection.ts | copySelector": {
+    "message": "Copy selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | cssSelector": {
+    "message": "CSS selector"
+  },
+  "panels/elements/StylePropertiesSection.ts | injectedStylesheet": {
+    "message": "injected stylesheet"
+  },
+  "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
+    "message": "Insert Style Rule Below"
+  },
+  "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
+    "message": "{PH1}[Attributes Style]"
+  },
+  "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
+    "message": "Show All Properties ({PH1} more)"
+  },
+  "panels/elements/StylePropertiesSection.ts | styleAttribute": {
+    "message": "style attribute"
+  },
+  "panels/elements/StylePropertiesSection.ts | userAgentStylesheet": {
+    "message": "user agent stylesheet"
+  },
+  "panels/elements/StylePropertiesSection.ts | viaInspector": {
+    "message": "via inspector"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | copyAllCSSChanges": {
+    "message": "Copy all CSS changes"
+  },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Copy all declarations as JS"
   },
@@ -4841,35 +4919,17 @@
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "View computed value"
   },
+  "panels/elements/StylesSidebarPane.ts | automaticDarkMode": {
+    "message": "Automatic dark mode"
+  },
   "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
     "message": "Click to reveal layer in layer tree"
-  },
-  "panels/elements/StylesSidebarPane.ts | constructedStylesheet": {
-    "message": "constructed stylesheet"
-  },
-  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
-    "message": "Copied to clipboard"
-  },
-  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
-    "message": "Copy all the CSS changes"
-  },
-  "panels/elements/StylesSidebarPane.ts | copyAllDeclarations": {
-    "message": "Copy all declarations"
-  },
-  "panels/elements/StylesSidebarPane.ts | copyRule": {
-    "message": "Copy rule"
-  },
-  "panels/elements/StylesSidebarPane.ts | copySelector": {
-    "message": "Copy selector"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
     "message": "CSS property name: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
     "message": "CSS property value: {PH1}"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssSelector": {
-    "message": "CSS selector"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "Filter"
@@ -4886,11 +4946,8 @@
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "Inherited from "
   },
-  "panels/elements/StylesSidebarPane.ts | injectedStylesheet": {
-    "message": "injected stylesheet"
-  },
-  "panels/elements/StylesSidebarPane.ts | insertStyleRuleBelow": {
-    "message": "Insert Style Rule Below"
+  "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
+    "message": "Inherited from ::{PH1} pseudo of "
   },
   "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
     "message": "Invalid property value"
@@ -4910,23 +4967,11 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "Pseudo ::{PH1} element"
   },
-  "panels/elements/StylesSidebarPane.ts | sattributesStyle": {
-    "message": "{PH1}[Attributes Style]"
-  },
-  "panels/elements/StylesSidebarPane.ts | showAllPropertiesSMore": {
-    "message": "Show All Properties ({PH1} more)"
-  },
-  "panels/elements/StylesSidebarPane.ts | styleAttribute": {
-    "message": "style attribute"
+  "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
+    "message": "Toggle common rendering emulations"
   },
   "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
     "message": "Unknown property name"
-  },
-  "panels/elements/StylesSidebarPane.ts | userAgentStylesheet": {
-    "message": "user agent stylesheet"
-  },
-  "panels/elements/StylesSidebarPane.ts | viaInspector": {
-    "message": "via inspector"
   },
   "panels/emulation/DeviceModeToolbar.ts | addDevicePixelRatio": {
     "message": "Add device pixel ratio"
@@ -5341,6 +5386,9 @@
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | untrustworthyOrigin": {
     "message": "Untrustworthy origin"
+  },
+  "panels/issues/ComboBoxOfCheckBoxes.ts | genericMenuLabel": {
+    "message": "Menu"
   },
   "panels/issues/components/HideIssuesMenu.ts | tooltipTitle": {
     "message": "Hide issues"
@@ -6551,6 +6599,9 @@
   "panels/network/NetworkConfigView.ts | enterACustomUserAgent": {
     "message": "Enter a custom user agent"
   },
+  "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
+    "message": "Network conditions shown"
+  },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "Network throttling"
   },
@@ -7165,6 +7216,9 @@
   },
   "panels/network/RequestHeadersView.ts | general": {
     "message": "General"
+  },
+  "panels/network/RequestHeadersView.ts | headerOverrides": {
+    "message": "Header overrides"
   },
   "panels/network/RequestHeadersView.ts | learnMore": {
     "message": "Learn more"

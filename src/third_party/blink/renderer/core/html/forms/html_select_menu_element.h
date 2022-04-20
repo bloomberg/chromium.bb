@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_SELECT_MENU_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_SELECT_MENU_ELEMENT_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
@@ -104,7 +105,8 @@ class CORE_EXPORT HTMLSelectMenuElement final
   bool IsValidOptionPart(const Node* node, bool show_warning) const;
 
   void SetButtonPart(Element* new_button_part);
-  void SetListboxPart(HTMLPopupElement* new_listbox_part);
+  // Returns true if the listbox part actually changed to something different.
+  bool SetListboxPart(Element* new_listbox_part);
 
   bool IsRequiredFormControl() const override;
   bool IsOptionalFormControl() const override;
@@ -161,7 +163,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
 
   Member<Element> button_part_;
   Member<Element> selected_value_part_;
-  Member<HTMLPopupElement> listbox_part_;
+  Member<Element> listbox_part_;
   HeapLinkedHashSet<Member<HTMLOptionElement>> option_parts_;
   Member<HTMLSlotElement> button_slot_;
   Member<HTMLSlotElement> listbox_slot_;

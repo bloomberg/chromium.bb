@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/multidevice/remote_device_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "ash/services/multidevice_setup/fake_feature_state_manager.h"
@@ -17,7 +18,6 @@
 #include "base/containers/contains.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -980,6 +980,7 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Eche) {
 
   // The top-level Phone Hub enabled pref is disabled for existing Better
   // Together users; they must go to settings to explicitly enable PhoneHub.
+  test_pref_service()->SetBoolean(kEcheEnabledPrefName, true);
   SetSoftwareFeatureState(false /* use_local_device */,
                           multidevice::SoftwareFeature::kEcheHost,
                           multidevice::SoftwareFeatureState::kSupported);

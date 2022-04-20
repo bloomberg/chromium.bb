@@ -8,6 +8,7 @@
 
 #import "base/check.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
@@ -192,6 +193,12 @@
   }
 
   [self.bubblePresenter presentDiscoverFeedHeaderTipBubble];
+
+  // Scrolls NTP into feed initially if |shouldScrollIntoFeed|.
+  if (self.shouldScrollIntoFeed) {
+    [self setContentOffset:[self offsetWhenScrolledIntoFeed]];
+    self.shouldScrollIntoFeed = NO;
+  }
 
   self.viewDidAppear = YES;
 }
@@ -726,22 +733,25 @@
 // omnibox.
 - (void)stickFeedHeaderToTop {
   DCHECK(self.feedHeaderViewController);
-
+  DCHECK(IsWebChannelsEnabled());
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
-
   self.feedHeaderConstraints = @[
     [self.feedHeaderViewController.view.topAnchor
-        constraintEqualToAnchor:self.headerController.view.bottomAnchor],
+        constraintEqualToAnchor:self.headerController.view.bottomAnchor
+                       constant:-(content_suggestions::headerBottomPadding() +
+                                  [self.feedHeaderViewController
+                                          customSearchEngineViewHeight])],
     [self.collectionView.topAnchor
         constraintEqualToAnchor:[self contentSuggestionsViewController]
                                     .view.bottomAnchor],
   ];
-
+  [self.feedHeaderViewController toggleBackgroundBlur:YES animated:YES];
   [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
 }
 
 // Sets initial feed header constraints, between content suggestions and feed.
 - (void)setInitialFeedHeaderConstraints {
+  DCHECK(self.feedHeaderViewController);
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
   self.feedHeaderConstraints = @[
     [self.feedHeaderViewController.view.topAnchor
@@ -751,6 +761,7 @@
         constraintEqualToAnchor:self.feedHeaderViewController.view
                                     .bottomAnchor],
   ];
+  [self.feedHeaderViewController toggleBackgroundBlur:NO animated:YES];
   [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
 }
 
@@ -954,7 +965,8 @@
 // Height of the feed header, returns 0 if it is not visible.
 - (CGFloat)feedHeaderHeight {
   return self.feedHeaderViewController
-             ? self.feedHeaderViewController.view.frame.size.height
+             ? [self.feedHeaderViewController feedHeaderHeight] +
+                   [self.feedHeaderViewController customSearchEngineViewHeight]
              : 0;
 }
 
@@ -962,14 +974,18 @@
 // the Feed.
 - (CGFloat)offsetWhenScrolledIntoFeed {
   return -(self.headerController.view.frame.size.height -
-           [self stickyOmniboxHeight]);
+           [self stickyOmniboxHeight] -
+           [self.feedHeaderViewController customSearchEngineViewHeight] -
+           content_suggestions::headerBottomPadding());
 }
 
 // The y-position content offset for when the fake omnibox
 // should stick to the top of the NTP.
 - (CGFloat)offsetToStickOmnibox {
-  CGFloat offset = -(self.headerController.view.frame.size.height -
-                     [self stickyOmniboxHeight]);
+  CGFloat offset =
+      -(self.headerController.view.frame.size.height -
+        [self stickyOmniboxHeight] -
+        [self.feedHeaderViewController customSearchEngineViewHeight]);
   if (IsSplitToolbarMode(self) &&
       IsContentSuggestionsHeaderMigrationEnabled()) {
     return offset - [self contentSuggestionsContentHeight];
@@ -1116,6 +1132,10 @@
 - (void)setContentOffset:(CGFloat)offset {
   self.collectionView.contentOffset = CGPointMake(0, offset);
   self.scrolledIntoFeed = offset > -[self offsetWhenScrolledIntoFeed];
+  if (self.feedHeaderViewController) {
+    [self.feedHeaderViewController toggleBackgroundBlur:self.scrolledIntoFeed
+                                               animated:NO];
+  }
 }
 
 @end

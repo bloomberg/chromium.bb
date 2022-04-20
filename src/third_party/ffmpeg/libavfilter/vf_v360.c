@@ -2941,8 +2941,8 @@ static int xyz_to_fisheye(const V360Context *s,
     const int visible = -0.5f < uf && uf < 0.5f && -0.5f < vf && vf < 0.5f;
     int ui, vi;
 
-    uf = (uf + 0.5f) * width;
-    vf = (vf + 0.5f) * height;
+    uf = scale(uf * 2.f, width);
+    vf = scale(vf * 2.f, height);
 
     ui = floorf(uf);
     vi = floorf(vf);
@@ -3468,7 +3468,7 @@ static int xyz_to_dfisheye(const V360Context *s,
         u_shift = ceilf(ew);
     } else {
         u_shift = 0;
-        uf = ew - uf;
+        uf = ew - uf - 1.f;
     }
 
     ui = floorf(uf);
@@ -3479,7 +3479,7 @@ static int xyz_to_dfisheye(const V360Context *s,
 
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            us[i][j] = av_clip(u_shift + ui + j - 1, 0, width  - 1);
+            us[i][j] = u_shift + av_clip(ui + j - 1, 0, ew - 1);
             vs[i][j] = av_clip(          vi + i - 1, 0, height - 1);
         }
     }

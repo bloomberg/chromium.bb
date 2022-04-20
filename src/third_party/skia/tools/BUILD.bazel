@@ -1,5 +1,6 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("//bazel:macros.bzl", "generated_cc_atom", "py_binary")
+
+licenses(["notice"])
 
 py_binary(
     name = "embed_resources",
@@ -96,7 +97,7 @@ generated_cc_atom(
         "//src/core:SkCachedData_hdr",
         "//src/core:SkMipmap_hdr",
         "//src/core:SkTaskGroup_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
         "//src/image:SkImage_Base_hdr",
         "//src/image:SkImage_GpuYUVA_hdr",
     ],
@@ -130,7 +131,7 @@ generated_cc_atom(
         "//include/gpu:GrDirectContext_hdr",
         "//src/core:SkDeferredDisplayListPriv_hdr",
         "//src/core:SkTaskGroup_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
         "//src/image:SkImage_Gpu_hdr",
     ],
 )
@@ -152,8 +153,10 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":HashAndEncode_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkICC_hdr",
         "//include/core:SkString_hdr",
+        "//include/third_party/skcms:skcms_hdr",
         "//third_party:libpng",
     ],
 )
@@ -255,6 +258,7 @@ generated_cc_atom(
         ":ResourceFactory_hdr",
         ":Resources_hdr",
         "//include/core:SkBitmap_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkData_hdr",
         "//include/core:SkImageGenerator_hdr",
         "//include/core:SkImage_hdr",
@@ -598,6 +602,7 @@ generated_cc_atom(
     srcs = ["remote_demo.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkGraphics_hdr",
         "//include/core:SkSurface_hdr",
         "//include/private/chromium:SkChromeRemoteGlyphCache_hdr",
@@ -631,9 +636,11 @@ generated_cc_atom(
     srcs = ["skp_parser.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [
+        ":UrlDataManager_hdr",
         "//include/core:SkPicture_hdr",
         "//include/core:SkStream_hdr",
         "//include/utils:SkNullCanvas_hdr",
+        "//src/utils:SkJSONWriter_hdr",
         "//tools/debugger:DebugCanvas_hdr",
     ],
 )

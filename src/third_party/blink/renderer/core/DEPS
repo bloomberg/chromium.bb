@@ -4,6 +4,7 @@ include_rules = [
     "+base/cancelable_callback.h",
     "+base/memory/values_equivalent.h",
     "+base/files/file.h",
+    "+base/files/file_path.h",
     "+base/guid.h",
     "+base/mac/foundation_util.h",
     "+base/memory/scoped_policy.h",
@@ -137,6 +138,9 @@ specific_include_rules = {
         "+gin",
         "+url/url_util.h"
     ],
+    ".*_fuzzer.cc" : [
+        "+testing/libfuzzer",
+    ],
     "data_object_item.cc" : [ "+ui/gfx/codec" ],
     "chrome_client.h" : [
         "+ui/gfx/delegated_ink_metadata.h",
@@ -166,6 +170,9 @@ specific_include_rules = {
     ],
     "media_query_evaluator.cc": [
         "+ui/base/pointer/pointer_device.h",
+    ],
+    "media_query_evaluator_test.cc": [
+        "+ui/gfx/display_color_spaces.h",
     ],
     "media_values.h": [
         "+ui/base/pointer/pointer_device.h",

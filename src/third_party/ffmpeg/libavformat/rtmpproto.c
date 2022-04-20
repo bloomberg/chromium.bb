@@ -24,6 +24,8 @@
  * RTMP protocol
  */
 
+#include "config_components.h"
+
 #include "libavcodec/bytestream.h"
 #include "libavutil/avstring.h"
 #include "libavutil/base64.h"
@@ -42,6 +44,7 @@
 #include "rtmpcrypt.h"
 #include "rtmppkt.h"
 #include "url.h"
+#include "version.h"
 
 #if CONFIG_ZLIB
 #include <zlib.h>

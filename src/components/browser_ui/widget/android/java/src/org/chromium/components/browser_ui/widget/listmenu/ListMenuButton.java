@@ -38,15 +38,16 @@ public class ListMenuButton
         default void onPopupMenuDismissed() {}
     }
 
-    private final int mMenuMaxWidth;
     private final boolean mMenuVerticalOverlapAnchor;
     private final boolean mMenuHorizontalOverlapAnchor;
 
+    private int mMenuMaxWidth;
     private AnchoredPopupWindow mPopupMenu;
     private ListMenuButtonDelegate mDelegate;
     private ObserverList<PopupMenuShownListener> mPopupListeners = new ObserverList<>();
     private boolean mTryToFitLargestItem;
     private boolean mPositionedAtEnd;
+    private boolean mIsAttachedToWindow;
 
     /**
      * Creates a new {@link ListMenuButton}.
@@ -128,9 +129,18 @@ public class ListMenuButton
      * Shows a popupWindow built by ListMenuButton
      */
     public void showMenu() {
+        if (!mIsAttachedToWindow) return;
         initPopupWindow();
         mPopupMenu.show();
         notifyPopupListeners(true);
+    }
+
+    /**
+     * Set the max width of the popup menu.
+     * @param maxWidth The max width of the popup.
+     */
+    public void setMenuMaxWidth(int maxWidth) {
+        mMenuMaxWidth = maxWidth;
     }
 
     /**
@@ -218,8 +228,15 @@ public class ListMenuButton
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mIsAttachedToWindow = true;
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         dismiss();
+        mIsAttachedToWindow = false;
         super.onDetachedFromWindow();
     }
 

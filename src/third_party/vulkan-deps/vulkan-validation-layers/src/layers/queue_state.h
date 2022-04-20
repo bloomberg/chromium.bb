@@ -185,6 +185,8 @@ class SEMAPHORE_STATE : public REFCOUNTED_NODE {
     // next payload value for binary semaphore operations
     uint64_t next_payload_;
 
+    std::vector<std::shared_ptr<std::function<void()>>> waiting_functions_;
+
     // Set of pending operations ordered by payload. This must be a multiset because
     // timeline operations can be added in any order and multiple operations
     // can use the same payload value.
@@ -231,6 +233,8 @@ class QUEUE_STATE : public BASE_NODE {
     VkQueue Queue() const { return handle_.Cast<VkQueue>(); }
 
     uint64_t Submit(CB_SUBMISSION &&submission);
+
+    bool HasWait(VkSemaphore semaphore, VkFence fence) const;
 
     void Retire(uint64_t until_seq = UINT64_MAX);
 

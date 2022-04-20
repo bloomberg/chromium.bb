@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "GrVulkanDefines_hdr",
     hdrs = ["GrVulkanDefines.h"],
@@ -99,8 +101,8 @@ generated_cc_atom(
     deps = [
         ":VkYcbcrSamplerHelper_hdr",
         "//include/gpu:GrDirectContext_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu/vk:GrVkGpu_hdr",
-        "//src/gpu/vk:GrVkUtil_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh/vk:GrVkGpu_hdr",
+        "//src/gpu/ganesh/vk:GrVkUtil_hdr",
     ],
 )

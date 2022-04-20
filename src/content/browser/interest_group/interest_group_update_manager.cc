@@ -48,14 +48,21 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         semantics {
           sender: "Interest group periodic update fetcher"
           description:
-            "Fetches periodic updates of interest groups previously joined by "
-            "navigator.joinAdInterestGroup(). JavaScript running in the "
-            "context of a frame cannot read interest groups, but it can "
-            "request that all interest groups owned by the current frame's "
-            "origin be updated by fetching JSON from the registered update URL."
-            "See https://github.com/WICG/turtledove/blob/main/FLEDGE.md"
+            "Fetches periodic updates of FLEDGE interest groups previously "
+            "joined by navigator.joinAdInterestGroup(). FLEDGE allow sites to "
+            "store persistent interest groups that are only accessible to "
+            "special on-device ad auction worklets run via "
+            "navigator.runAdAuction(). JavaScript running in the context of a "
+            "frame cannot read interest groups, but it can request that all "
+            "interest groups owned by the current frame's origin be updated by "
+            "fetching JSON from the registered update URL for each interest "
+            "group."
+            "See https://github.com/WICG/turtledove/blob/main/FLEDGE.md and "
+            "https://developer.chrome.com/docs/privacy-sandbox/fledge/"
           trigger:
-            "Fetched upon a navigator.updateAdInterestGroups() call."
+            "Fetched upon a navigator.updateAdInterestGroups() call. Also "
+            "triggered upon navigator.runAdAuction() completion for interest "
+            "groups that participated in the auction."
           data: "URL registered for updating this interest group."
           destination: WEBSITE
         }
@@ -368,15 +375,15 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
       net::IsolationInfo::CreateTransient();
 
   for (auto& storage_group : storage_groups) {
-    if (!storage_group.interest_group.update_url)
+    if (!storage_group.interest_group.daily_update_url)
       continue;
     ++num_in_flight_updates_;
     base::UmaHistogramCounts100000(
         "Ads.InterestGroup.Net.RequestUrlSizeBytes.Update",
-        storage_group.interest_group.update_url->spec().size());
+        storage_group.interest_group.daily_update_url->spec().size());
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url =
-        std::move(storage_group.interest_group.update_url).value();
+        std::move(storage_group.interest_group.daily_update_url).value();
     resource_request->redirect_mode = network::mojom::RedirectMode::kError;
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     resource_request->request_initiator = owner;

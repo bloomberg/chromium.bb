@@ -33,10 +33,10 @@ rtc_library("video_adaptation") {
   ]
 
   deps = [
+    "../../api:field_trials_view",
     "../../api:rtp_parameters",
     "../../api:scoped_refptr",
     "../../api:sequence_checker",
-    "../../api:webrtc_key_value_config",
     "../../api/adaptation:resource_adaptation_api",
     "../../api/task_queue:task_queue",
     "../../api/units:data_rate",
@@ -49,10 +49,14 @@ rtc_library("video_adaptation") {
     "../../modules/video_coding:video_coding_utility",
     "../../rtc_base:checks",
     "../../rtc_base:logging",
+    "../../rtc_base:macromagic",
+    "../../rtc_base:refcount",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_event",
     "../../rtc_base:rtc_numerics",
     "../../rtc_base:rtc_task_queue",
+    "../../rtc_base:safe_conversions",
+    "../../rtc_base:stringutils",
     "../../rtc_base:timeutils",
     "../../rtc_base/experiments:balanced_degradation_settings",
     "../../rtc_base/experiments:field_trial_parser",

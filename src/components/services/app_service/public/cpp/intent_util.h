@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -26,6 +27,12 @@ extern const char kIntentActionView[];
 extern const char kIntentActionSend[];
 extern const char kIntentActionSendMultiple[];
 extern const char kIntentActionCreateNote[];
+// A request to edit a file in an app. Must include an attached file.
+extern const char kIntentActionEdit[];
+
+// App ID value which can be used as a Preferred App to denote that the browser
+// will open the link, and that we should not prompt the user about it.
+extern const char kUseBrowserForLink[];
 
 struct SharedText {
   std::string text;
@@ -69,6 +76,11 @@ apps::mojom::IntentPtr CreateShareIntentFromText(
     const std::string& share_text,
     const std::string& share_title);
 
+// Create an edit intent struct for the file with a given filesystem:// URL and
+// mime type.
+apps::mojom::IntentPtr CreateEditIntentFromFile(const GURL& filesystem_url,
+                                                const std::string& mime_type);
+
 // Create an intent struct from activity and start type.
 apps::mojom::IntentPtr CreateIntentForActivity(const std::string& activity,
                                                const std::string& start_type,
@@ -101,6 +113,11 @@ bool IntentMatchesFilter(const apps::mojom::IntentPtr& intent,
 // Return true if |filter| only contains file extension pattern matches.
 bool FilterIsForFileExtensions(const apps::mojom::IntentFilterPtr& filter);
 
+bool IsGenericFileHandler(const apps::IntentPtr& intent,
+                          const apps::IntentFilterPtr& filter);
+
+// TODO(crbug.com/1253250): Remove this function after migrating to non-mojo
+// AppService.
 bool IsGenericFileHandler(const apps::mojom::IntentPtr& intent,
                           const apps::mojom::IntentFilterPtr& filter);
 

@@ -28,33 +28,26 @@ OpDecorate %_UniformBuffer Block
 OpDecorate %10 Binding 0
 OpDecorate %10 DescriptorSet 0
 OpDecorate %constGreen RelaxedPrecision
-OpDecorate %29 RelaxedPrecision
 OpDecorate %expectedA RelaxedPrecision
-OpDecorate %31 RelaxedPrecision
 OpDecorate %expectedB RelaxedPrecision
-OpDecorate %33 RelaxedPrecision
 OpDecorate %41 RelaxedPrecision
 OpDecorate %42 RelaxedPrecision
 OpDecorate %43 RelaxedPrecision
 OpDecorate %44 RelaxedPrecision
-OpDecorate %49 RelaxedPrecision
 OpDecorate %51 RelaxedPrecision
 OpDecorate %52 RelaxedPrecision
 OpDecorate %53 RelaxedPrecision
 OpDecorate %54 RelaxedPrecision
-OpDecorate %62 RelaxedPrecision
 OpDecorate %65 RelaxedPrecision
 OpDecorate %66 RelaxedPrecision
 OpDecorate %67 RelaxedPrecision
 OpDecorate %68 RelaxedPrecision
-OpDecorate %76 RelaxedPrecision
 OpDecorate %78 RelaxedPrecision
 OpDecorate %79 RelaxedPrecision
 OpDecorate %86 RelaxedPrecision
 OpDecorate %87 RelaxedPrecision
 OpDecorate %92 RelaxedPrecision
 OpDecorate %93 RelaxedPrecision
-OpDecorate %99 RelaxedPrecision
 OpDecorate %100 RelaxedPrecision
 OpDecorate %101 RelaxedPrecision
 OpDecorate %107 RelaxedPrecision
@@ -64,12 +57,10 @@ OpDecorate %117 RelaxedPrecision
 OpDecorate %118 RelaxedPrecision
 OpDecorate %125 RelaxedPrecision
 OpDecorate %126 RelaxedPrecision
-OpDecorate %127 RelaxedPrecision
 OpDecorate %128 RelaxedPrecision
 OpDecorate %129 RelaxedPrecision
 OpDecorate %137 RelaxedPrecision
 OpDecorate %138 RelaxedPrecision
-OpDecorate %139 RelaxedPrecision
 OpDecorate %140 RelaxedPrecision
 OpDecorate %141 RelaxedPrecision
 OpDecorate %149 RelaxedPrecision
@@ -77,10 +68,8 @@ OpDecorate %150 RelaxedPrecision
 OpDecorate %151 RelaxedPrecision
 OpDecorate %157 RelaxedPrecision
 OpDecorate %158 RelaxedPrecision
-OpDecorate %163 RelaxedPrecision
 OpDecorate %164 RelaxedPrecision
 OpDecorate %165 RelaxedPrecision
-OpDecorate %171 RelaxedPrecision
 OpDecorate %172 RelaxedPrecision
 OpDecorate %173 RelaxedPrecision
 OpDecorate %179 RelaxedPrecision
@@ -99,8 +88,8 @@ OpDecorate %193 RelaxedPrecision
 %10 = OpVariable %_ptr_Uniform__UniformBuffer Uniform
 %void = OpTypeVoid
 %15 = OpTypeFunction %void
-%v2float = OpTypeVector %float 2
 %float_0 = OpConstant %float 0
+%v2float = OpTypeVector %float 2
 %19 = OpConstantComposite %v2float %float_0 %float_0
 %_ptr_Function_v2float = OpTypePointer Function %v2float
 %23 = OpTypeFunction %v4float %_ptr_Function_v2float
@@ -114,9 +103,12 @@ OpDecorate %193 RelaxedPrecision
 %_ptr_Uniform_v4float = OpTypePointer Uniform %v4float
 %int = OpTypeInt 32 1
 %int_0 = OpConstant %int 0
+%49 = OpConstantComposite %v2float %float_0_5 %float_0_5
 %v2bool = OpTypeVector %bool 2
 %v3float = OpTypeVector %float 3
+%63 = OpConstantComposite %v3float %float_0_5 %float_0_5 %float_0_5
 %v3bool = OpTypeVector %bool 3
+%76 = OpConstantComposite %v4float %float_0_5 %float_0_5 %float_0_5 %float_0_5
 %v4bool = OpTypeVector %bool 4
 %99 = OpConstantComposite %v3float %float_0 %float_0 %float_1
 %127 = OpConstantComposite %v2float %float_0 %float_1
@@ -153,7 +145,6 @@ OpStore %expectedB %33
 OpSelectionMerge %47 None
 OpBranchConditional %45 %46 %47
 %46 = OpLabel
-%49 = OpCompositeConstruct %v2float %float_0_5 %float_0_5
 %50 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %51 = OpLoad %v4float %50
 %52 = OpVectorShuffle %v2float %51 %51 0 1
@@ -168,11 +159,10 @@ OpBranch %47
 OpSelectionMerge %60 None
 OpBranchConditional %58 %59 %60
 %59 = OpLabel
-%62 = OpCompositeConstruct %v3float %float_0_5 %float_0_5 %float_0_5
 %64 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %65 = OpLoad %v4float %64
 %66 = OpVectorShuffle %v3float %65 %65 0 1 2
-%61 = OpExtInst %v3float %1 Step %62 %66
+%61 = OpExtInst %v3float %1 Step %63 %66
 %67 = OpLoad %v4float %expectedA
 %68 = OpVectorShuffle %v3float %67 %67 0 1 2
 %69 = OpFOrdEqual %v3bool %61 %68
@@ -183,7 +173,6 @@ OpBranch %60
 OpSelectionMerge %74 None
 OpBranchConditional %72 %73 %74
 %73 = OpLabel
-%76 = OpCompositeConstruct %v4float %float_0_5 %float_0_5 %float_0_5 %float_0_5
 %77 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %78 = OpLoad %v4float %77
 %75 = OpExtInst %v4float %1 Step %76 %78

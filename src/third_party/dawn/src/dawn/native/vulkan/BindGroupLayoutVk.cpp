@@ -16,6 +16,7 @@
 
 #include "dawn/common/BitSetIterator.h"
 #include "dawn/common/ityp_vector.h"
+#include "dawn/native/CacheKey.h"
 #include "dawn/native/vulkan/BindGroupVk.h"
 #include "dawn/native/vulkan/DescriptorSetAllocator.h"
 #include "dawn/native/vulkan/DeviceVk.h"
@@ -100,8 +101,6 @@ namespace dawn::native::vulkan {
 
             VkDescriptorSetLayoutBinding vkBinding;
             vkBinding.binding = static_cast<uint32_t>(bindingIndex);
-            // TODO(dawn:728) In the future, special handling will be needed for external textures
-            // here because they encompass multiple views.
             vkBinding.descriptorType = VulkanDescriptorType(bindingInfo);
             vkBinding.descriptorCount = 1;
             vkBinding.stageFlags = VulkanShaderStageFlags(bindingInfo.visibility);
@@ -117,6 +116,9 @@ namespace dawn::native::vulkan {
         createInfo.bindingCount = static_cast<uint32_t>(bindings.size());
         createInfo.pBindings = bindings.data();
 
+        // Record cache key information now since the createInfo is not stored.
+        GetCacheKey()->Record(createInfo);
+
         Device* device = ToBackend(GetDevice());
         DAWN_TRY(CheckVkSuccess(device->fn.CreateDescriptorSetLayout(
                                     device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
@@ -126,8 +128,6 @@ namespace dawn::native::vulkan {
         std::map<VkDescriptorType, uint32_t> descriptorCountPerType;
 
         for (BindingIndex bindingIndex{0}; bindingIndex < GetBindingCount(); ++bindingIndex) {
-            // TODO(dawn:728) In the future, special handling will be needed for external textures
-            // here because they encompass multiple views.
             VkDescriptorType vulkanType = VulkanDescriptorType(GetBindingInfo(bindingIndex));
 
             // map::operator[] will return 0 if the key doesn't exist.
@@ -192,8 +192,7 @@ namespace dawn::native::vulkan {
     }
 
     void BindGroupLayout::SetLabelImpl() {
-        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
-                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_BindGroupLayout", GetLabel());
+        SetDebugName(ToBackend(GetDevice()), mHandle, "Dawn_BindGroupLayout", GetLabel());
     }
 
 }  // namespace dawn::native::vulkan

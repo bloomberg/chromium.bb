@@ -38,13 +38,13 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
+#include "third_party/blink/renderer/core/html/closewatcher/close_watcher.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
@@ -71,6 +71,7 @@ class Fence;
 class FrameConsole;
 class History;
 class IdleRequestOptions;
+class InputMethodController;
 class LocalFrame;
 class MediaQueryList;
 class MessageEvent;
@@ -111,10 +112,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     virtual void DidRemoveEventListener(LocalDOMWindow*,
                                         const AtomicString&) = 0;
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
-  };
-  class CORE_EXPORT UserActivationObserver : public GarbageCollectedMixin {
-   public:
-    virtual void DidReceiveUserActivation() = 0;
   };
 
   static LocalDOMWindow* From(const ScriptState*);
@@ -351,7 +348,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange)
 
   void RegisterEventListenerObserver(EventListenerObserver*);
-  void RegisterUserActivationObserver(UserActivationObserver*);
 
   void FrameDestroyed();
   void Reset();
@@ -467,6 +463,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   Fence* fence();
 
+  CloseWatcher::WatcherStack* closewatcher_stack() {
+    return closewatcher_stack_;
+  }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -527,7 +527,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   scoped_refptr<SerializedScriptValue> pending_state_object_;
 
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;
-  HeapHashSet<WeakMember<UserActivationObserver>> user_activation_observers_;
 
   // Tracker for delegated PaymentRequest.  This is related to
   // |Frame::user_activation_state_|.
@@ -597,6 +596,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Collection of fenced frame APIs.
   // https://github.com/shivanigithub/fenced-frame/issues/14
   Member<Fence> fence_;
+
+  Member<CloseWatcher::WatcherStack> closewatcher_stack_;
 };
 
 template <>

@@ -118,7 +118,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetReplicatedSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
-  void FrameRectsChanged(const gfx::Rect& local_frame_rect,
+  void FrameRectsChanged(const gfx::Size& local_frame_size,
                          const gfx::Rect& screen_space_rect);
   void InitializeFrameVisualProperties(const FrameVisualProperties& properties);
   // If 'propagate' is true, updated properties will be sent to the browser.
@@ -240,7 +240,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
  private:
   // Frame protected overrides:
-  bool DetachImpl(FrameDetachType) override;
+  bool DetachImpl(FrameDetachType type) override;
 
   // ChildFrameCompositor:
   void SetCcLayer(scoped_refptr<cc::Layer> layer,

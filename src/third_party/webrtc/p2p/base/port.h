@@ -20,8 +20,10 @@
 
 #include "absl/types/optional.h"
 #include "api/candidate.h"
+#include "api/field_trials_view.h"
 #include "api/packet_socket_factory.h"
 #include "api/rtc_error.h"
+#include "api/transport/field_trial_based_config.h"
 #include "api/transport/stun.h"
 #include "logging/rtc_event_log/events/rtc_event_ice_candidate_pair.h"
 #include "logging/rtc_event_log/events/rtc_event_ice_candidate_pair_config.h"
@@ -35,6 +37,7 @@
 #include "rtc_base/async_packet_socket.h"
 #include "rtc_base/callback_list.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/memory/always_valid_pointer.h"
 #include "rtc_base/net_helper.h"
 #include "rtc_base/network.h"
 #include "rtc_base/proxy_info.h"
@@ -183,17 +186,19 @@ class Port : public PortInterface,
   Port(rtc::Thread* thread,
        const std::string& type,
        rtc::PacketSocketFactory* factory,
-       rtc::Network* network,
+       const rtc::Network* network,
        const std::string& username_fragment,
-       const std::string& password);
+       const std::string& password,
+       const webrtc::FieldTrialsView* field_trials = nullptr);
   Port(rtc::Thread* thread,
        const std::string& type,
        rtc::PacketSocketFactory* factory,
-       rtc::Network* network,
+       const rtc::Network* network,
        uint16_t min_port,
        uint16_t max_port,
        const std::string& username_fragment,
-       const std::string& password);
+       const std::string& password,
+       const webrtc::FieldTrialsView* field_trials = nullptr);
   ~Port() override;
 
   // Note that the port type does NOT uniquely identify different subclasses of
@@ -202,7 +207,7 @@ class Port : public PortInterface,
   // conflit in the value of the 2-tuple, make sure that the implementation that
   // relies on this 2-tuple for RTTI is properly changed.
   const std::string& Type() const override;
-  rtc::Network* Network() const override;
+  const rtc::Network* Network() const override;
 
   // Methods to set/get ICE role and tiebreaker values.
   IceRole GetIceRole() const override;
@@ -288,9 +293,6 @@ class Port : public PortInterface,
   // Returns the connection to the given address or NULL if none exists.
   Connection* GetConnection(const rtc::SocketAddress& remote_addr) override;
 
-  // Called each time a connection is created.
-  sigslot::signal2<Port*, Connection*> SignalConnectionCreated;
-
   // In a shared socket mode each port which shares the socket will decide
   // to accept the packet based on the `remote_addr`. Currently only UDP
   // port implemented this method.
@@ -307,12 +309,12 @@ class Port : public PortInterface,
       const rtc::SocketAddress& remote_addr) const;
 
   // Sends a response error to the given request.
-  void SendBindingErrorResponse(StunMessage* request,
+  void SendBindingErrorResponse(StunMessage* message,
                                 const rtc::SocketAddress& addr,
                                 int error_code,
                                 const std::string& reason) override;
   void SendUnknownAttributesErrorResponse(
-      StunMessage* request,
+      StunMessage* message,
       const rtc::SocketAddress& addr,
       const std::vector<uint16_t>& unknown_types);
 
@@ -378,6 +380,9 @@ class Port : public PortInterface,
                                        const std::string& protocol,
                                        const std::string& relay_protocol,
                                        const rtc::SocketAddress& base_address);
+
+  // TODO(tommi): Make protected after updating ProxyConnection.
+  rtc::WeakPtr<Port> NewWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  protected:
   enum { MSG_DESTROY_IF_DEAD = 0, MSG_FIRST_AVAILABLE };
@@ -457,7 +462,7 @@ class Port : public PortInterface,
   rtc::PacketSocketFactory* const factory_;
   std::string type_;
   bool send_retransmit_count_attribute_;
-  rtc::Network* network_;
+  const rtc::Network* network_;
   uint16_t min_port_;
   uint16_t max_port_;
   std::string content_name_;
@@ -494,6 +499,9 @@ class Port : public PortInterface,
       MdnsNameRegistrationStatus::kNotStarted;
 
   rtc::WeakPtrFactory<Port> weak_factory_;
+  webrtc::AlwaysValidPointer<const webrtc::FieldTrialsView,
+                             webrtc::FieldTrialBasedConfig>
+      field_trials_;
 
   bool MaybeObfuscateAddress(Candidate* c,
                              const std::string& type,

@@ -80,7 +80,6 @@ class EffectControlLinearizer {
   Node* LowerChangeTaggedToTaggedSigned(Node* node);
   Node* LowerCheckInternalizedString(Node* node, Node* frame_state);
   void LowerCheckMaps(Node* node, Node* frame_state);
-  void LowerDynamicCheckMaps(Node* node, Node* frame_state);
   Node* LowerCompareMaps(Node* node);
   Node* LowerCheckNumber(Node* node, Node* frame_state);
   Node* LowerCheckClosure(Node* node, Node* frame_state);
@@ -163,6 +162,7 @@ class EffectControlLinearizer {
   Node* LowerStringConcat(Node* node);
   Node* LowerStringToNumber(Node* node);
   Node* LowerStringCharCodeAt(Node* node);
+  Node* StringCharCodeAt(Node* receiver, Node* position);
   Node* LowerStringCodePointAt(Node* node);
   Node* LowerStringToLowerCaseIntl(Node* node);
   Node* LowerStringToUpperCaseIntl(Node* node);
@@ -979,9 +979,6 @@ bool EffectControlLinearizer::TryWireInStateEffect(Node* node,
       break;
     case IrOpcode::kCheckMaps:
       LowerCheckMaps(node, frame_state);
-      break;
-    case IrOpcode::kDynamicCheckMaps:
-      LowerDynamicCheckMaps(node, frame_state);
       break;
     case IrOpcode::kCompareMaps:
       result = LowerCompareMaps(node);
@@ -1930,56 +1927,6 @@ void EffectControlLinearizer::TryMigrateInstance(Node* value, Node* value_map) {
           __ ExternalConstant(ExternalReference::Create(id)),
           __ Int32Constant(1), __ NoContextConstant());
   __ Goto(&done);
-  __ Bind(&done);
-}
-
-void EffectControlLinearizer::LowerDynamicCheckMaps(Node* node,
-                                                    Node* frame_state_node) {
-  DynamicCheckMapsParameters const& p =
-      DynamicCheckMapsParametersOf(node->op());
-  FrameState frame_state(frame_state_node);
-  Node* value = node->InputAt(0);
-
-  FeedbackSource const& feedback = p.feedback();
-  Node* feedback_vector = __ HeapConstant(feedback.vector);
-  Node* slot_index = __ IntPtrConstant(feedback.index());
-  Node* value_map = __ LoadField(AccessBuilder::ForMap(), value);
-  Node* actual_handler =
-      p.handler()->IsSmi()
-          ? __ SmiConstant(Smi::ToInt(*p.handler()))
-          : __ HeapConstant(Handle<HeapObject>::cast(p.handler()));
-
-  auto done = __ MakeLabel();
-
-  ZoneHandleSet<Map> maps = p.maps();
-  size_t const map_count = maps.size();
-  for (size_t i = 0; i < map_count; ++i) {
-    Node* map = __ HeapConstant(maps[i]);
-    Node* check = __ TaggedEqual(value_map, map);
-    if (i == map_count - 1) {
-      if (p.flags() & CheckMapsFlag::kTryMigrateInstance) {
-        auto migrate = __ MakeDeferredLabel();
-        __ BranchWithCriticalSafetyCheck(check, &done, &migrate);
-
-        __ Bind(&migrate);
-        TryMigrateInstance(value, value_map);
-
-        // Reload the current map of the {value} before performing the dynanmic
-        // map check.
-        value_map = __ LoadField(AccessBuilder::ForMap(), value);
-      }
-
-      __ DynamicCheckMapsWithDeoptUnless(check, slot_index, value_map,
-                                         actual_handler, feedback_vector,
-                                         frame_state);
-      __ Goto(&done);
-    } else {
-      auto next_map = __ MakeLabel();
-      __ BranchWithCriticalSafetyCheck(check, &done, &next_map);
-      __ Bind(&next_map);
-    }
-  }
-
   __ Bind(&done);
 }
 
@@ -3882,10 +3829,8 @@ Node* EffectControlLinearizer::LowerStringToNumber(Node* node) {
                  __ NoContextConstant());
 }
 
-Node* EffectControlLinearizer::LowerStringCharCodeAt(Node* node) {
-  Node* receiver = node->InputAt(0);
-  Node* position = node->InputAt(1);
-
+Node* EffectControlLinearizer::StringCharCodeAt(Node* receiver,
+                                                Node* position) {
   // We need a loop here to properly deal with indirect strings
   // (SlicedString, ConsString and ThinString).
   auto loop = __ MakeLoopLabel(MachineRepresentation::kTagged,
@@ -4031,19 +3976,41 @@ Node* EffectControlLinearizer::LowerStringCharCodeAt(Node* node) {
   return loop_done.PhiAt(0);
 }
 
+Node* EffectControlLinearizer::LowerStringCharCodeAt(Node* node) {
+  Node* receiver = node->InputAt(0);
+  Node* position = node->InputAt(1);
+  return StringCharCodeAt(receiver, position);
+}
+
 Node* EffectControlLinearizer::LowerStringCodePointAt(Node* node) {
   Node* receiver = node->InputAt(0);
   Node* position = node->InputAt(1);
 
-  Callable const callable =
-      Builtins::CallableFor(isolate(), Builtin::kStringCodePointAt);
-  Operator::Properties properties = Operator::kNoThrow | Operator::kNoWrite;
-  CallDescriptor::Flags flags = CallDescriptor::kNoFlags;
-  auto call_descriptor = Linkage::GetStubCallDescriptor(
-      graph()->zone(), callable.descriptor(),
-      callable.descriptor().GetStackParameterCount(), flags, properties);
-  return __ Call(call_descriptor, __ HeapConstant(callable.code()), receiver,
-                 position, __ NoContextConstant());
+  auto return_result = __ MakeLabel(MachineRepresentation::kWord32);
+  Node* first_code_unit = StringCharCodeAt(receiver, position);
+
+  __ GotoIfNot(
+      __ Word32Equal(__ Word32And(first_code_unit, __ Int32Constant(0xFC00)),
+                     __ Int32Constant(0xD800)),
+      &return_result, BranchHint::kFalse, first_code_unit);
+
+  auto length = __ LoadField(AccessBuilder::ForStringLength(), receiver);
+  auto next_index = __ IntAdd(position, __ IntPtrConstant(1));
+  __ GotoIfNot(__ IntLessThan(next_index, length), &return_result,
+               first_code_unit);
+  Node* second_code_unit = StringCharCodeAt(receiver, next_index);
+  __ GotoIfNot(
+      __ Word32Equal(__ Word32And(second_code_unit, __ Int32Constant(0xFC00)),
+                     __ Int32Constant(0xDC00)),
+      &return_result, first_code_unit);
+
+  auto surrogate_offset = __ Int32Constant(0x10000 - (0xD800 << 10) - 0xDC00);
+  auto result = __ Int32Add(__ Word32Shl(first_code_unit, __ Int32Constant(10)),
+                            __ Int32Add(second_code_unit, surrogate_offset));
+  __ Goto(&return_result, result);
+
+  __ Bind(&return_result);
+  return return_result.PhiAt(0);
 }
 
 Node* EffectControlLinearizer::LoadFromSeqString(Node* receiver, Node* position,

@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 cc_library(
     name = "gpu_tool_utils",
     testonly = True,
@@ -39,6 +41,7 @@ generated_cc_atom(
     hdrs = ["BackendSurfaceFactory.h"],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkRefCnt_hdr",
         "//include/core:SkSize_hdr",
         "//include/gpu:GrTypes_hdr",
@@ -55,8 +58,8 @@ generated_cc_atom(
         ":ManagedBackendTexture_hdr",
         "//include/core:SkSurface_hdr",
         "//include/gpu:GrDirectContext_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu:GrGpu_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrGpu_hdr",
     ],
 )
 
@@ -79,6 +82,7 @@ generated_cc_atom(
     deps = [
         ":BackendTextureImageFactory_hdr",
         ":ManagedBackendTexture_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkImage_hdr",
         "//include/core:SkPixmap_hdr",
         "//include/gpu:GrBackendSurface_hdr",
@@ -98,7 +102,10 @@ generated_cc_atom(
     name = "FlushFinishTracker_hdr",
     hdrs = ["FlushFinishTracker.h"],
     visibility = ["//:__subpackages__"],
-    deps = ["//include/core:SkRefCnt_hdr"],
+    deps = [
+        "//include/core:SkRefCnt_hdr",
+        "//include/gpu:GpuTypes_hdr",
+    ],
 )
 
 generated_cc_atom(
@@ -108,6 +115,7 @@ generated_cc_atom(
     deps = [
         ":FlushFinishTracker_hdr",
         "//include/gpu:GrDirectContext_hdr",
+        "//include/gpu/graphite:Context_hdr",
         "//src/core:SkTraceEvent_hdr",
     ],
 )
@@ -139,8 +147,8 @@ generated_cc_atom(
     deps = [
         ":GrContextFactory_hdr",
         "//include/gpu:GrDirectContext_hdr",
-        "//src/gpu:GrCaps_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrCaps_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
         "//tools/gpu/d3d:D3DTestContext_hdr",
         "//tools/gpu/dawn:DawnTestContext_hdr",
         "//tools/gpu/gl:GLTestContext_hdr",
@@ -163,22 +171,22 @@ generated_cc_atom(
         "//include/gpu:GrRecordingContext_hdr",
         "//include/private:SkTo_hdr",
         "//src/core:SkMathPriv_hdr",
-        "//src/gpu:GrClip_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu:GrDrawOpAtlas_hdr",
-        "//src/gpu:GrDrawingManager_hdr",
-        "//src/gpu:GrGpuResourceCacheAccess_hdr",
-        "//src/gpu:GrGpu_hdr",
-        "//src/gpu:GrMemoryPool_hdr",
-        "//src/gpu:GrRecordingContextPriv_hdr",
-        "//src/gpu:GrRenderTargetProxy_hdr",
-        "//src/gpu:GrResourceCache_hdr",
-        "//src/gpu:GrSemaphore_hdr",
-        "//src/gpu:GrTexture_hdr",
-        "//src/gpu:SkGr_hdr",
-        "//src/gpu/text:GrStrikeCache_hdr",
-        "//src/gpu/text:GrTextBlobRedrawCoordinator_hdr",
-        "//src/gpu/v1:SurfaceDrawContext_v1_hdr",
+        "//src/gpu/ganesh:GrClip_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrDrawOpAtlas_hdr",
+        "//src/gpu/ganesh:GrDrawingManager_hdr",
+        "//src/gpu/ganesh:GrGpuResourceCacheAccess_hdr",
+        "//src/gpu/ganesh:GrGpu_hdr",
+        "//src/gpu/ganesh:GrMemoryPool_hdr",
+        "//src/gpu/ganesh:GrRecordingContextPriv_hdr",
+        "//src/gpu/ganesh:GrRenderTargetProxy_hdr",
+        "//src/gpu/ganesh:GrResourceCache_hdr",
+        "//src/gpu/ganesh:GrSemaphore_hdr",
+        "//src/gpu/ganesh:GrTexture_hdr",
+        "//src/gpu/ganesh:SkGr_hdr",
+        "//src/gpu/ganesh/text:GrStrikeCache_hdr",
+        "//src/gpu/ganesh/text:GrTextBlobRedrawCoordinator_hdr",
+        "//src/gpu/ganesh/v1:SurfaceDrawContext_v1_hdr",
         "//src/image:SkImage_Gpu_hdr",
     ],
 )
@@ -202,8 +210,9 @@ generated_cc_atom(
         ":ManagedBackendTexture_hdr",
         "//include/core:SkBitmap_hdr",
         "//include/core:SkImageInfo_hdr",
-        "//include/private:GrTypesPriv_hdr",
+        "//include/private/gpu/ganesh:GrTypesPriv_hdr",
         "//src/core:SkMipmap_hdr",
+        "//src/gpu:RefCntedCallback_hdr",
     ],
 )
 
@@ -227,8 +236,8 @@ generated_cc_atom(
         "//include/utils:SkBase64_hdr",
         "//src/core:SkMD5_hdr",
         "//src/core:SkReadBuffer_hdr",
-        "//src/gpu:GrPersistentCacheUtils_hdr",
-        "//src/gpu/vk:GrVkGpu_hdr",
+        "//src/gpu/ganesh:GrPersistentCacheUtils_hdr",
+        "//src/gpu/ganesh/vk:GrVkGpu_hdr",
     ],
 )
 
@@ -237,10 +246,10 @@ generated_cc_atom(
     hdrs = ["ProxyUtils.h"],
     visibility = ["//:__subpackages__"],
     deps = [
-        "//include/private:GrTypesPriv_hdr",
-        "//src/gpu:GrImageInfo_hdr",
-        "//src/gpu:GrPipeline_hdr",
-        "//src/gpu:GrTextureProxy_hdr",
+        "//include/private/gpu/ganesh:GrTypesPriv_hdr",
+        "//src/gpu/ganesh:GrImageInfo_hdr",
+        "//src/gpu/ganesh:GrPipeline_hdr",
+        "//src/gpu/ganesh:GrTextureProxy_hdr",
     ],
 )
 
@@ -253,17 +262,17 @@ generated_cc_atom(
         "//include/core:SkColor_hdr",
         "//include/gpu:GrBackendSurface_hdr",
         "//include/gpu:GrDirectContext_hdr",
-        "//include/private:GrImageContext_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu:GrDrawingManager_hdr",
-        "//src/gpu:GrGpu_hdr",
-        "//src/gpu:GrImageContextPriv_hdr",
-        "//src/gpu:GrPixmap_hdr",
-        "//src/gpu:GrProgramInfo_hdr",
-        "//src/gpu:GrProxyProvider_hdr",
-        "//src/gpu:SkGr_hdr",
-        "//src/gpu:SurfaceContext_hdr",
-        "//src/gpu/ops:GrSimpleMeshDrawOpHelper_hdr",
+        "//include/private/gpu/ganesh:GrImageContext_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrDrawingManager_hdr",
+        "//src/gpu/ganesh:GrGpu_hdr",
+        "//src/gpu/ganesh:GrImageContextPriv_hdr",
+        "//src/gpu/ganesh:GrPixmap_hdr",
+        "//src/gpu/ganesh:GrProgramInfo_hdr",
+        "//src/gpu/ganesh:GrProxyProvider_hdr",
+        "//src/gpu/ganesh:SkGr_hdr",
+        "//src/gpu/ganesh:SurfaceContext_hdr",
+        "//src/gpu/ganesh/ops:GrSimpleMeshDrawOpHelper_hdr",
         "//src/image:SkImage_Base_hdr",
     ],
 )
@@ -302,8 +311,8 @@ generated_cc_atom(
     deps = [
         "//include/core:SkRefCnt_hdr",
         "//include/gpu:GrRecordingContext_hdr",
-        "//src/gpu:GrRecordingContextPriv_hdr",
-        "//src/gpu/ops:GrOp_hdr",
+        "//src/gpu/ganesh:GrRecordingContextPriv_hdr",
+        "//src/gpu/ganesh/ops:GrOp_hdr",
     ],
 )
 
@@ -315,16 +324,16 @@ generated_cc_atom(
         ":TestOps_hdr",
         "//src/core:SkPointPriv_hdr",
         "//src/gpu:BufferWriter_hdr",
-        "//src/gpu:GrCaps_hdr",
-        "//src/gpu:GrGeometryProcessor_hdr",
-        "//src/gpu:GrMemoryPool_hdr",
-        "//src/gpu:GrOpFlushState_hdr",
-        "//src/gpu:GrProgramInfo_hdr",
         "//src/gpu:KeyBuilder_hdr",
-        "//src/gpu/glsl:GrGLSLFragmentShaderBuilder_hdr",
-        "//src/gpu/glsl:GrGLSLVarying_hdr",
-        "//src/gpu/glsl:GrGLSLVertexGeoBuilder_hdr",
-        "//src/gpu/ops:GrSimpleMeshDrawOpHelper_hdr",
+        "//src/gpu/ganesh:GrCaps_hdr",
+        "//src/gpu/ganesh:GrGeometryProcessor_hdr",
+        "//src/gpu/ganesh:GrMemoryPool_hdr",
+        "//src/gpu/ganesh:GrOpFlushState_hdr",
+        "//src/gpu/ganesh:GrProgramInfo_hdr",
+        "//src/gpu/ganesh/glsl:GrGLSLFragmentShaderBuilder_hdr",
+        "//src/gpu/ganesh/glsl:GrGLSLVarying_hdr",
+        "//src/gpu/ganesh/glsl:GrGLSLVertexGeoBuilder_hdr",
+        "//src/gpu/ganesh/ops:GrSimpleMeshDrawOpHelper_hdr",
     ],
 )
 
@@ -333,6 +342,7 @@ generated_cc_atom(
     hdrs = ["YUVUtils.h"],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkImage_hdr",
         "//include/core:SkYUVAPixmaps_hdr",
         "//include/gpu:GrBackendSurface_hdr",
@@ -357,7 +367,7 @@ generated_cc_atom(
         "//src/codec:SkCodecImageGenerator_hdr",
         "//src/core:SkYUVAInfoLocation_hdr",
         "//src/core:SkYUVMath_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu:GrRecordingContextPriv_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh:GrRecordingContextPriv_hdr",
     ],
 )

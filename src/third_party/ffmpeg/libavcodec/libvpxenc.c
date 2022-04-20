@@ -23,12 +23,15 @@
  * VP8/9 encoder support via libvpx
  */
 
+#include "config_components.h"
+
 #define VPX_DISABLE_CTRL_TYPECHECKS 1
 #define VPX_CODEC_DISABLE_COMPAT    1
 #include <vpx/vpx_encoder.h>
 #include <vpx/vp8cx.h>
 
 #include "avcodec.h"
+#include "codec_internal.h"
 #include "encode.h"
 #include "internal.h"
 #include "libavutil/avassert.h"
@@ -127,8 +130,7 @@ typedef struct VPxEncoderContext {
     int tune_content;
     int corpus_complexity;
     int tpl_model;
-    int discard_hdr10_plus;
-    AVFifoBuffer *hdr10_plus_fifo;
+    AVFifo *hdr10_plus_fifo;
     /**
      * If the driver does not support ROI then warn the first time we
      * encounter a frame with ROI side data.
@@ -324,39 +326,23 @@ static av_cold void free_frame_list(struct FrameListData *list)
     }
 }
 
-static av_cold int add_hdr10_plus(AVFifoBuffer *fifo, struct FrameHDR10Plus *data)
-{
-    int err = av_fifo_grow(fifo, sizeof(*data));
-    if (err < 0)
-        return err;
-    av_fifo_generic_write(fifo, data, sizeof(*data), NULL);
-    return 0;
-}
-
-static av_cold void free_hdr10_plus_fifo(AVFifoBuffer **fifo)
+static av_cold void free_hdr10_plus_fifo(AVFifo **fifo)
 {
     FrameHDR10Plus frame_hdr10_plus;
-    while (av_fifo_size(*fifo) >= sizeof(frame_hdr10_plus)) {
-        av_fifo_generic_read(*fifo, &frame_hdr10_plus, sizeof(frame_hdr10_plus), NULL);
+    while (av_fifo_read(*fifo, &frame_hdr10_plus, 1) >= 0)
         av_buffer_unref(&frame_hdr10_plus.hdr10_plus);
-    }
-    av_fifo_freep(fifo);
+    av_fifo_freep2(fifo);
 }
 
-static int copy_hdr10_plus_to_pkt(AVFifoBuffer *fifo, AVPacket *pkt)
+static int copy_hdr10_plus_to_pkt(AVFifo *fifo, AVPacket *pkt)
 {
     FrameHDR10Plus frame_hdr10_plus;
     uint8_t *data;
-    if (!pkt)
+    if (!pkt || av_fifo_peek(fifo, &frame_hdr10_plus, 1, 0) < 0)
         return 0;
-    if (av_fifo_size(fifo) < sizeof(frame_hdr10_plus))
-        return 0;
-    av_fifo_generic_peek(fifo, &frame_hdr10_plus, sizeof(frame_hdr10_plus), NULL);
     if (!frame_hdr10_plus.hdr10_plus || frame_hdr10_plus.pts != pkt->pts)
         return 0;
-    av_fifo_generic_read(fifo, &frame_hdr10_plus, sizeof(frame_hdr10_plus), NULL);
-    if (!frame_hdr10_plus.hdr10_plus)
-        return 0;
+    av_fifo_drain2(fifo, 1);
 
     data = av_packet_new_side_data(pkt, AV_PKT_DATA_DYNAMIC_HDR10_PLUS, frame_hdr10_plus.hdr10_plus->size);
     if (!data) {
@@ -912,7 +898,6 @@ static av_cold int vpx_init(AVCodecContext *avctx,
 #endif
     AVDictionaryEntry* en = NULL;
 
-    ctx->discard_hdr10_plus = 1;
     av_log(avctx, AV_LOG_INFO, "%s\n", vpx_codec_version_str());
     av_log(avctx, AV_LOG_VERBOSE, "%s\n", vpx_codec_build_config());
 
@@ -932,8 +917,8 @@ static av_cold int vpx_init(AVCodecContext *avctx,
         // Keep HDR10+ if it has bit depth higher than 8 and
         // it has PQ trc (SMPTE2084).
         if (enccfg.g_bit_depth > 8 && avctx->color_trc == AVCOL_TRC_SMPTE2084) {
-            ctx->discard_hdr10_plus = 0;
-            ctx->hdr10_plus_fifo = av_fifo_alloc(sizeof(FrameHDR10Plus));
+            ctx->hdr10_plus_fifo = av_fifo_alloc2(1, sizeof(FrameHDR10Plus),
+                                                  AV_FIFO_FLAG_AUTO_GROW);
             if (!ctx->hdr10_plus_fifo)
                 return AVERROR(ENOMEM);
         }
@@ -1301,7 +1286,7 @@ static int storeframe(AVCodecContext *avctx, struct FrameListData *cx_frame,
     }
     if (cx_frame->frame_number != -1) {
         VPxContext *ctx = avctx->priv_data;
-        if (!ctx->discard_hdr10_plus) {
+        if (ctx->hdr10_plus_fifo) {
             int err = copy_hdr10_plus_to_pkt(ctx->hdr10_plus_fifo, pkt);
             if (err < 0)
                 return err;
@@ -1716,7 +1701,7 @@ static int vpx_encode(AVCodecContext *avctx, AVPacket *pkt,
             }
         }
 
-        if (!ctx->discard_hdr10_plus) {
+        if (ctx->hdr10_plus_fifo) {
             AVFrameSideData *hdr10_plus_metadata;
             // Add HDR10+ metadata to queue.
             hdr10_plus_metadata = av_frame_get_side_data(frame, AV_FRAME_DATA_DYNAMIC_HDR_PLUS);
@@ -1727,7 +1712,7 @@ static int vpx_encode(AVCodecContext *avctx, AVPacket *pkt,
                 data.hdr10_plus = av_buffer_ref(hdr10_plus_metadata->buf);
                 if (!data.hdr10_plus)
                     return AVERROR(ENOMEM);
-                err = add_hdr10_plus(ctx->hdr10_plus_fifo, &data);
+                err = av_fifo_write(ctx->hdr10_plus_fifo, &data, 1);
                 if (err < 0) {
                     av_buffer_unref(&data.hdr10_plus);
                     return err;
@@ -1918,7 +1903,7 @@ static const AVOption vp9_options[] = {
 #undef COMMON_OPTIONS
 #undef LEGACY_OPTIONS
 
-static const AVCodecDefault defaults[] = {
+static const FFCodecDefault defaults[] = {
     { "b",                 "0" },
     { "qmin",             "-1" },
     { "qmax",             "-1" },
@@ -1940,22 +1925,22 @@ static const AVClass class_vp8 = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_libvpx_vp8_encoder = {
-    .name           = "libvpx",
-    .long_name      = NULL_IF_CONFIG_SMALL("libvpx VP8"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_VP8,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
+const FFCodec ff_libvpx_vp8_encoder = {
+    .p.name         = "libvpx",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("libvpx VP8"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_VP8,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
                       AV_CODEC_CAP_OTHER_THREADS,
     .priv_data_size = sizeof(VPxContext),
     .init           = vp8_init,
     .encode2        = vpx_encode,
     .close          = vpx_free,
     .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
-    .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_NONE },
-    .priv_class     = &class_vp8,
+    .p.pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_NONE },
+    .p.priv_class   = &class_vp8,
     .defaults       = defaults,
-    .wrapper_name   = "libvpx",
+    .p.wrapper_name = "libvpx",
 };
 #endif /* CONFIG_LIBVPX_VP8_ENCODER */
 
@@ -1972,22 +1957,22 @@ static const AVClass class_vp9 = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_libvpx_vp9_encoder = {
-    .name           = "libvpx-vp9",
-    .long_name      = NULL_IF_CONFIG_SMALL("libvpx VP9"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_VP9,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
+FFCodec ff_libvpx_vp9_encoder = {
+    .p.name         = "libvpx-vp9",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("libvpx VP9"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_VP9,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |
                       AV_CODEC_CAP_OTHER_THREADS,
+    .p.profiles     = NULL_IF_CONFIG_SMALL(ff_vp9_profiles),
+    .p.priv_class   = &class_vp9,
+    .p.wrapper_name = "libvpx",
     .priv_data_size = sizeof(VPxContext),
     .init           = vp9_init,
     .encode2        = vpx_encode,
     .close          = vpx_free,
     .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
-    .profiles       = NULL_IF_CONFIG_SMALL(ff_vp9_profiles),
-    .priv_class     = &class_vp9,
     .defaults       = defaults,
     .init_static_data = ff_vp9_init_static,
-    .wrapper_name   = "libvpx",
 };
 #endif /* CONFIG_LIBVPX_VP9_ENCODER */

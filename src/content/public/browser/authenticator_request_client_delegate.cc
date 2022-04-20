@@ -43,6 +43,7 @@ WebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
 
 bool WebAuthenticationDelegate::ShouldPermitIndividualAttestation(
     BrowserContext* browser_context,
+    const url::Origin& caller_origin,
     const std::string& relying_party_id) {
   return false;
 }
@@ -97,7 +98,7 @@ WebAuthenticationDelegate::GetTouchIdAuthenticatorConfig(
 }
 #endif  // BUILDFLAG(IS_MAC)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 WebAuthenticationDelegate::ChromeOSGenerateRequestIdCallback
 WebAuthenticationDelegate::GetGenerateRequestIdCallback(
     RenderFrameHost* render_frame_host) {

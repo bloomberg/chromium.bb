@@ -14,6 +14,7 @@
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/presentation_time_recorder.h"
@@ -202,6 +203,9 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   int GetUnscaledFirstPageTilePadding() {
     return unscaled_first_page_vertical_tile_padding_;
   }
+
+  // Animates items to their ideal bounds when the reorder nudge gets removed.
+  void AnimateOnNudgeRemoved();
 
  private:
   friend class test::AppsGridViewTest;

@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "api/field_trials_view.h"
 #include "api/units/time_delta.h"
 #include "modules/include/module.h"
 #include "modules/include/module_common_types.h"
@@ -33,7 +34,8 @@ class DEPRECATED_NackModule : public Module {
  public:
   DEPRECATED_NackModule(Clock* clock,
                         NackSender* nack_sender,
-                        KeyFrameRequestSender* keyframe_request_sender);
+                        KeyFrameRequestSender* keyframe_request_sender,
+                        const FieldTrialsView& field_trials);
 
   int OnReceivedPacket(uint16_t seq_num, bool is_keyframe);
   int OnReceivedPacket(uint16_t seq_num, bool is_keyframe, bool is_recovered);
@@ -69,7 +71,8 @@ class DEPRECATED_NackModule : public Module {
 
   struct BackoffSettings {
     BackoffSettings(TimeDelta min_retry, TimeDelta max_rtt, double base);
-    static absl::optional<BackoffSettings> ParseFromFieldTrials();
+    static absl::optional<BackoffSettings> ParseFromFieldTrials(
+        const FieldTrialsView& field_trials);
 
     // Min time between nacks.
     const TimeDelta min_retry_interval;

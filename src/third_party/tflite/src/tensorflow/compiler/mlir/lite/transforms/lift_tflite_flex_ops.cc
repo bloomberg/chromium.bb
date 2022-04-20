@@ -106,7 +106,7 @@ class LiftFlexCustomOp : public OpRewritePattern<TFL::CustomOp> {
     }
     op_state.addAttributes(attrs);
 
-    Operation* tf_op = rewriter.createOperation(op_state);
+    Operation* tf_op = rewriter.create(op_state);
     rewriter.replaceOp(op, tf_op->getResults());
 
     // Special type fixes for TF Resource Tensors that are casted to
@@ -232,6 +232,8 @@ class LiftTfliteFlexOpsPass
   }
 
  public:
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(LiftTfliteFlexOpsPass)
+
   llvm::StringRef getArgument() const final {
     return "tfl-lift-tflite-flex-ops";
   }

@@ -17,15 +17,17 @@ FakeElementStore::~FakeElementStore() = default;
 
 ClientStatus FakeElementStore::GetElement(
     const std::string& client_id,
-    ElementFinder::Result* out_element) const {
+    ElementFinderResult* out_element) const {
   auto it = object_map_.find(client_id);
   if (it == object_map_.end()) {
     return ClientStatus(CLIENT_ID_RESOLUTION_FAILED);
   }
 
-  out_element->dom_object = it->second;
+  out_element->SetObjectId(it->second.object_data.object_id);
+  out_element->SetNodeFrameId(it->second.object_data.node_frame_id);
+  out_element->SetFrameStack(it->second.frame_stack);
   if (web_contents_ != nullptr) {
-    out_element->container_frame_host = web_contents_->GetMainFrame();
+    out_element->SetRenderFrameHost(web_contents_->GetMainFrame());
   }
   return OkClientStatus();
 }

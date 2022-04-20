@@ -15,16 +15,23 @@ import java.util.List;
  */
 public interface RecentlyClosedTabManager {
     /**
-     * Sets the {@link Runnable} to be called whenever the list of recently closed tabs changes.
+     * Sets the {@link Runnable} to be called whenever the list of recently closed entries changes.
      * @param runnable The {@link Runnable} to be called, or null.
      */
-    void setTabsUpdatedRunnable(@Nullable Runnable runnable);
+    void setEntriesUpdatedRunnable(@Nullable Runnable runnable);
 
     /**
      * @param maxTabCount The maximum number of recently closed tabs to return.
      * @return A snapshot of the list of recently closed tabs, with up to maxTabCount elements.
      */
     List<RecentlyClosedTab> getRecentlyClosedTabs(int maxTabCount);
+
+    // TODO(crbug/1307345): Replace calls to getRecentlyClosedTabs() with this method.
+    /**
+     * @param maxEntryCount The maximum number of recently closed entries to return.
+     * @return A snapshot of the list of recently closed entries, with up to maxEntryCount elements.
+     */
+    List<RecentlyClosedEntry> getRecentlyClosedEntries(int maxEntryCount);
 
     /**
      * Opens a recently closed tab in the current tab or a new tab. If opened in the current tab,
@@ -40,16 +47,25 @@ public interface RecentlyClosedTabManager {
             TabModel tabModel, RecentlyClosedTab recentTab, int windowOpenDisposition);
 
     /**
-     * Opens the most recently closed tab in a new tab.
+     * Opens a recently closed entry in new tab(s).
      *
      * @param tabModel The {@link TabModel} to open the tab into.
+     * @param recentEntry The RecentlyClosedEntry to open.
+     * @return Whether the tab was successfully opened.
      */
-    void openMostRecentlyClosedTab(TabModel tabModel);
+    boolean openRecentlyClosedEntry(TabModel tabModel, RecentlyClosedEntry recentEntry);
+
+    /**
+     * Opens the most recently closed entry in new tab(s).
+     *
+     * @param tabModel The {@link TabModel} to open the tab(s) into.
+     */
+    void openMostRecentlyClosedEntry(TabModel tabModel);
 
     /**
      * Clears all recently closed tabs.
      */
-    void clearRecentlyClosedTabs();
+    void clearRecentlyClosedEntries();
 
     /**
      * To be called before this instance is abandoned to the garbage collector so it can do any

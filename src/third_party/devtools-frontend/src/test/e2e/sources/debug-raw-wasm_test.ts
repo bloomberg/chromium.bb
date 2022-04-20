@@ -75,6 +75,11 @@ describe('Sources Tab', async function() {
       await removeBreakpointForLine(frontend, '0x027');
     });
 
+    await step('resume script execution', async () => {
+      await frontend.keyboard.press('F8');
+      await waitFor(TURNED_OFF_PAUSE_BUTTON_SELECTOR);
+    });
+
     await step('reload the page', async () => {
       await reloadPageAndWaitForSourceFile(frontend, target, fileName);
     });
@@ -182,6 +187,11 @@ describe('Sources Tab', async function() {
         '$var1: i32 {value: 8}',
         '$var2: i32 {value: 5}',
       ]);
+    });
+
+    await step('resume script execution', async () => {
+      await frontend.keyboard.press('F8');
+      await waitFor(TURNED_OFF_PAUSE_BUTTON_SELECTOR);
     });
 
     await step('remove the breakpoint from the line 0x060', async () => {

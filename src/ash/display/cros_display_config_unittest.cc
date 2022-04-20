@@ -432,7 +432,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesOverscan) {
           .GetSecondaryDisplay();
 
   auto properties = mojom::DisplayConfigProperties::New();
-  properties->overscan = gfx::Insets({199, 20, 51, 130});
+  properties->overscan = gfx::Insets::TLBR(199, 20, 51, 130);
   mojom::DisplayConfigResult result = SetDisplayProperties(
       base::NumberToString(secondary.id()), std::move(properties));
   EXPECT_EQ(mojom::DisplayConfigResult::kSuccess, result);
@@ -532,7 +532,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesDisplayZoomFactor) {
     SCOPED_TRACE(config);
     UpdateDisplay(config);
     display::DisplayIdList display_id_list =
-        display_manager()->GetCurrentDisplayIdList();
+        display_manager()->GetConnectedDisplayIdList();
 
     const float zoom_factor_1 = 1.23f;
     const float zoom_factor_2 = 2.34f;
@@ -614,13 +614,13 @@ TEST_F(CrosDisplayConfigTest, OverscanCalibration) {
   // Test that kAdjust succeeds after kComplete call.
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kStart,
                                   absl::nullopt));
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
 
-  gfx::Insets insets(10, 10, 10, 10);
+  gfx::Insets insets(10);
   EXPECT_TRUE(
       OverscanCalibration(id, mojom::DisplayConfigOperation::kAdjust, insets));
   // Adjust has no effect until Complete.
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
 
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kComplete,
                                   absl::nullopt));
@@ -633,12 +633,12 @@ TEST_F(CrosDisplayConfigTest, OverscanCalibration) {
   // Start clears any overscan values.
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kStart,
                                   absl::nullopt));
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
 
   // Reset + Complete restores previously set insets.
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kReset,
                                   absl::nullopt));
-  EXPECT_EQ(gfx::Insets(0, 0, 0, 0), display_manager()->GetOverscanInsets(id));
+  EXPECT_EQ(gfx::Insets(), display_manager()->GetOverscanInsets(id));
   EXPECT_TRUE(OverscanCalibration(id, mojom::DisplayConfigOperation::kComplete,
                                   absl::nullopt));
   EXPECT_EQ(insets, display_manager()->GetOverscanInsets(id));
@@ -674,7 +674,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationNonTouchDisplay) {
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
 
   // Pick the non internal display Id.
   const int64_t display_id = display_id_list[0] == internal_display_id
@@ -701,7 +701,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationInvalidPoints) {
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
 
   // Pick the non internal display Id.
   const int64_t display_id = display_id_list[0] == internal_display_id
@@ -732,7 +732,7 @@ TEST_F(CrosDisplayConfigTest, CustomTouchCalibrationSuccess) {
           .SetFirstDisplayAsInternalDisplay();
 
   display::DisplayIdList display_id_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
 
   // Pick the non internal display Id.
   const int64_t display_id = display_id_list[0] == internal_display_id

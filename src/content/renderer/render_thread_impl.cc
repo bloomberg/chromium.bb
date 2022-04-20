@@ -37,7 +37,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -77,7 +76,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_stream_constants.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -87,7 +85,6 @@
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/media_factory.h"
-#include "content/renderer/media/media_interface_factory.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -121,6 +118,7 @@
 #include "media/renderers/default_decoder_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
@@ -682,8 +680,6 @@ void RenderThreadImpl::Init() {
 
   is_elastic_overscroll_enabled_ = switches::IsElasticOverscrollEnabled();
 
-  is_zoom_for_dsf_enabled_ = content::IsUseZoomForDSFEnabled();
-
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
   } else if (command_line.HasSwitch(switches::kEnableLCDText)) {
@@ -996,9 +992,16 @@ void RenderThreadImpl::RegisterSchemes() {
       chrome_scheme);
   WebSecurityPolicy::RegisterURLSchemeAsWebUI(chrome_scheme);
 
-  // chrome-untrusted:
   WebString chrome_untrusted_scheme(
       WebString::FromASCII(kChromeUIUntrustedScheme));
+
+  // chrome-untrusted:
+  // Service workers for chrome-untrusted://
+  if (base::FeatureList::IsEnabled(
+          features::kEnableServiceWorkersForChromeUntrusted)) {
+    WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
+        chrome_untrusted_scheme);
+  }
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_untrusted_scheme);
   WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(
@@ -1152,30 +1155,6 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   return gpu_factories_.back().get();
 }
 
-media::DecoderFactory* RenderThreadImpl::GetMediaDecoderFactory() {
-  DCHECK(IsMainThread());
-
-  // Note that we don't reset this, ever. We instantiate it once and never reset
-  // it, even if the gpu process restarts.
-  if (media_decoder_factory_)
-    return media_decoder_factory_.get();
-
-  // MediaInterfaceFactory guarantees that the media::InterfaceFactory is
-  // accessed from the current (main) thread.
-  mojo::PendingRemote<media::mojom::InterfaceFactory> interface_factory;
-  BindHostReceiver(interface_factory.InitWithNewPipeAndPassReceiver());
-  media_interface_factory_ = std::make_unique<MediaInterfaceFactory>(
-      base::ThreadTaskRunnerHandle::Get(), std::move(interface_factory));
-  // TODO(liberato): Should destruction of `media_decoder_factory_` be posted
-  // to the media thread?  I don't think it's needed, since it's owned by us
-  // rather than tied to a particular frame.  Calls into it might happen on
-  // the media thread, but we own the media thread.
-  media_decoder_factory_ =
-      MediaFactory::CreateDecoderFactory(media_interface_factory_.get());
-
-  return media_decoder_factory_.get();
-}
-
 scoped_refptr<viz::RasterContextProvider>
 RenderThreadImpl::GetVideoFrameCompositorContextProvider(
     scoped_refptr<viz::RasterContextProvider> unwanted_context_provider) {
@@ -1322,10 +1301,6 @@ blink::WebString RenderThreadImpl::GetReducedUserAgent() {
 
 const blink::UserAgentMetadata& RenderThreadImpl::GetUserAgentMetadata() {
   return user_agent_metadata_;
-}
-
-bool RenderThreadImpl::IsUseZoomForDSF() {
-  return is_zoom_for_dsf_enabled_;
 }
 
 void RenderThreadImpl::WriteIntoTrace(
@@ -1656,6 +1631,25 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
   if (gpu_channel)
     GetContentClient()->SetGpuInfo(gpu_channel->gpu_info());
   return gpu_channel;
+}
+
+void RenderThreadImpl::EstablishGpuChannel(
+    EstablishGpuChannelCallback callback) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "gpu", "RenderThreadImpl::EstablishGpuChannel", this);
+  gpu_->EstablishGpuChannel(base::BindOnce(
+      [](EstablishGpuChannelCallback callback, RenderThreadImpl* thread,
+         scoped_refptr<gpu::GpuChannelHost> host) {
+        TRACE_EVENT_NESTABLE_ASYNC_END0(
+            "gpu", "RenderThreadImpl::EstablishGpuChannel", thread);
+        if (host)
+          GetContentClient()->SetGpuInfo(host->gpu_info());
+        std::move(callback).Run(std::move(host));
+      },
+      // The GPU process can crash; in that case, run the callback with no host
+      // to signal the compositor to wait and try again.
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), nullptr),
+      this));
 }
 
 blink::AssociatedInterfaceRegistry*

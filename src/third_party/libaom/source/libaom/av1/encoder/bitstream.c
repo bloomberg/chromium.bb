@@ -4010,7 +4010,16 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   *largest_tile_id = 0;
 
   // Select the coding strategy (temporal or spatial)
-  if (cm->seg.enabled) av1_choose_segmap_coding_method(cm, &cpi->td.mb.e_mbd);
+  if (cm->seg.enabled && cm->seg.update_map) {
+    if (cm->features.primary_ref_frame == PRIMARY_REF_NONE) {
+      cm->seg.temporal_update = 0;
+    } else {
+      cm->seg.temporal_update = 1;
+      if (cpi->td.rd_counts.seg_tmp_pred_cost[0] <
+          cpi->td.rd_counts.seg_tmp_pred_cost[1])
+        cm->seg.temporal_update = 0;
+    }
+  }
 
   if (tiles->large_scale)
     return pack_large_scale_tiles_in_tg_obus(cpi, dst, saved_wb,
@@ -4150,7 +4159,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
   } else {
     // Since length_field is determined adaptively after frame header
     // encoding, saved_wb must be adjusted accordingly.
-    saved_wb.bit_buffer += length_field;
+    if (saved_wb.bit_buffer != NULL) {
+      saved_wb.bit_buffer += length_field;
+    }
 
     //  Each tile group obu will be preceded by 4-byte size of the tile group
     //  obu

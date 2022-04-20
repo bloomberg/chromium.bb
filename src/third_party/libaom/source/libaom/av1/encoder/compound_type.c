@@ -208,7 +208,7 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
 #if CONFIG_AV1_HIGHBITDEPTH
   if (hbd) {
     aom_highbd_subtract_block(bh, bw, residual0, bw, src->buf, src->stride,
-                              CONVERT_TO_BYTEPTR(p0), bw, xd->bd);
+                              CONVERT_TO_BYTEPTR(p0), bw);
   } else {
     aom_subtract_block(bh, bw, residual0, bw, src->buf, src->stride, p0, bw);
   }
@@ -408,9 +408,9 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
-                              CONVERT_TO_BYTEPTR(p1), bw, xd->bd);
+                              CONVERT_TO_BYTEPTR(p1), bw);
     aom_highbd_subtract_block(bh, bw, diff10, bw, CONVERT_TO_BYTEPTR(p1), bw,
-                              CONVERT_TO_BYTEPTR(p0), bw, xd->bd);
+                              CONVERT_TO_BYTEPTR(p0), bw);
   } else {
     aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, p1, bw);
     aom_subtract_block(bh, bw, diff10, bw, p1, bw, p0, bw);
@@ -443,9 +443,9 @@ static AOM_INLINE void get_inter_predictors_masked_compound(
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     aom_highbd_subtract_block(bh, bw, residual1, bw, src->buf, src->stride,
-                              CONVERT_TO_BYTEPTR(*preds1), bw, xd->bd);
+                              CONVERT_TO_BYTEPTR(*preds1), bw);
     aom_highbd_subtract_block(bh, bw, diff10, bw, CONVERT_TO_BYTEPTR(*preds1),
-                              bw, CONVERT_TO_BYTEPTR(*preds0), bw, xd->bd);
+                              bw, CONVERT_TO_BYTEPTR(*preds0), bw);
   } else {
     aom_subtract_block(bh, bw, residual1, bw, src->buf, src->stride, *preds1,
                        bw);

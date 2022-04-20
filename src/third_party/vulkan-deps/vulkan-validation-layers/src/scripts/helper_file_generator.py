@@ -697,12 +697,14 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                         if member_index is not None and self.NeedSafeStruct(self.structMembers[member_index]) == True:
                             if member.ispointer:
                                 num_indirections = member.cdecl.count('*')
-                                safe_struct_header += '    safe_%s%s %s;\n' % (member.type, '*' * num_indirections, member.name)
+                                safe_struct_header += '    safe_%s%s %s{};\n' % (member.type, '*' * num_indirections, member.name)
                             else:
                                 safe_struct_header += '    safe_%s %s;\n' % (member.type, member.name)
                             continue
                     if member.len is not None and (self.TypeContainsObjectHandle(member.type, True) or self.TypeContainsObjectHandle(member.type, False)):
-                            safe_struct_header += '    %s* %s;\n' % (member.type, member.name)
+                            safe_struct_header += '    %s* %s{};\n' % (member.type, member.name)
+                    elif member.ispointer:
+                        safe_struct_header += '%s{};\n' % member.cdecl
                     else:
                         safe_struct_header += '%s;\n' % member.cdecl
                 safe_struct_header += '    safe_%s(const %s* in_struct%s);\n' % (item.name, item.name, self.custom_construct_params.get(item.name, ''))
@@ -1151,7 +1153,11 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
 
         for object_type in type_list:
             kenum_type = vko_dict[kenum_to_key(object_type)]
+            if object_type_info[object_type]['Guard']:
+                object_types_header += '#ifdef %s\n' % object_type_info[object_type]['Guard']
             object_types_header += '        case %s: return %s;\n' % (object_type, kenum_type)
+            if object_type_info[object_type]['Guard']:
+                object_types_header += '#endif\n'
             object_type_info[object_type]['VkoType'] = kenum_type
         object_types_header += '        default: return VK_OBJECT_TYPE_UNKNOWN;\n'
         object_types_header += '    }\n'
@@ -1165,7 +1171,11 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
 
         for object_type in type_list:
             kenum_type = vko_dict[kenum_to_key(object_type)]
+            if object_type_info[object_type]['Guard']:
+                object_types_header += '#ifdef %s\n' % object_type_info[object_type]['Guard']
             object_types_header += '        case %s: return %s;\n' % (kenum_type, object_type)
+            if object_type_info[object_type]['Guard']:
+                object_types_header += '#endif\n'
         object_types_header += '        default: return kVulkanObjectTypeUnknown;\n'
         object_types_header += '    }\n'
         object_types_header += '};\n'
@@ -1407,6 +1417,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
     def GenerateSafeStructHelperSource(self):
         safe_struct_helper_source = '\n'
         safe_struct_helper_source += '#include "vk_safe_struct.h"\n'
+        safe_struct_helper_source += '#include "vk_typemap_helper.h"\n'
         safe_struct_helper_source += '\n'
         safe_struct_helper_source += '#include <string.h>\n'
         safe_struct_helper_source += '#include <cassert>\n'
@@ -1519,6 +1530,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    }\n',
                 # VkGraphicsPipelineCreateInfo is special case because its pointers may be non-null but ignored
                 'VkGraphicsPipelineCreateInfo' :
+                    '    bool is_graphics_library = LvlFindInChain<VkGraphicsPipelineLibraryCreateInfoEXT>(in_struct->pNext) != nullptr;\n'
                     '    if (stageCount && in_struct->pStages) {\n'
                     '        pStages = new safe_VkPipelineShaderStageCreateInfo[stageCount];\n'
                     '        for (uint32_t i = 0; i < stageCount; ++i) {\n'
@@ -1549,7 +1561,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '                is_dynamic_has_rasterization = true;\n'
                     '    }\n'
                     '    bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;\n'
-                    '    if (in_struct->pViewportState && has_rasterization) {\n'
+                    '    if (in_struct->pViewportState && (has_rasterization || is_graphics_library)) {\n'
                     '        bool is_dynamic_viewports = false;\n'
                     '        bool is_dynamic_scissors = false;\n'
                     '        if (in_struct->pDynamicState && in_struct->pDynamicState->pDynamicStates) {\n'
@@ -1567,17 +1579,17 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '        pRasterizationState = new safe_VkPipelineRasterizationStateCreateInfo(in_struct->pRasterizationState);\n'
                     '    else\n'
                     '        pRasterizationState = NULL;\n'
-                    '    if (in_struct->pMultisampleState && has_rasterization)\n'
+                    '    if (in_struct->pMultisampleState && (has_rasterization || is_graphics_library))\n'
                     '        pMultisampleState = new safe_VkPipelineMultisampleStateCreateInfo(in_struct->pMultisampleState);\n'
                     '    else\n'
                     '        pMultisampleState = NULL; // original pMultisampleState pointer ignored\n'
                     '    // needs a tracked subpass state uses_depthstencil_attachment\n'
-                    '    if (in_struct->pDepthStencilState && has_rasterization && uses_depthstencil_attachment)\n'
+                    '    if (in_struct->pDepthStencilState && ((has_rasterization && uses_depthstencil_attachment) || is_graphics_library))\n'
                     '        pDepthStencilState = new safe_VkPipelineDepthStencilStateCreateInfo(in_struct->pDepthStencilState);\n'
                     '    else\n'
                     '        pDepthStencilState = NULL; // original pDepthStencilState pointer ignored\n'
                     '    // needs a tracked subpass state usesColorAttachment\n'
-                    '    if (in_struct->pColorBlendState && has_rasterization && uses_color_attachment)\n'
+                    '    if (in_struct->pColorBlendState && ((has_rasterization && uses_color_attachment) || is_graphics_library))\n'
                     '        pColorBlendState = new safe_VkPipelineColorBlendStateCreateInfo(in_struct->pColorBlendState);\n'
                     '    else\n'
                     '        pColorBlendState = NULL; // original pColorBlendState pointer ignored\n'
@@ -1875,7 +1887,8 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 destruct_txt = custom_destruct_txt[item.name]
 
             if copy_pnext:
-                destruct_txt += '    if (pNext)\n        FreePnextChain(pNext);\n'
+                destruct_txt += '    if (pNext)\n'
+                destruct_txt += '        FreePnextChain(pNext);\n'
 
             if (self.structOrUnion[item.name] == 'union'):
                 # Unions don't allow multiple members in the initialization list, so just call initialize
@@ -1895,7 +1908,8 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             safe_struct_body.append("\n%s::%s(const %s& copy_src)\n{\n%s%s}" % (ss_name, ss_name, ss_name, copy_construct_init, copy_construct_txt)) # Copy constructor
             safe_struct_body.append("\n%s& %s::operator=(const %s& copy_src)\n{\n%s\n}" % (ss_name, ss_name, ss_name, copy_assign_txt)) # Copy assignment operator
             safe_struct_body.append("\n%s::~%s()\n{\n%s}" % (ss_name, ss_name, destruct_txt))
-            safe_struct_body.append("\nvoid %s::initialize(const %s* in_struct%s)\n{\n%s%s}" % (ss_name, item.name, self.custom_construct_params.get(item.name, ''), init_func_txt, construct_txt))
+            safe_struct_body.append("\nvoid %s::initialize(const %s* in_struct%s)\n{\n%s%s%s}" % (ss_name, item.name, self.custom_construct_params.get(item.name, ''),
+                                    destruct_txt, init_func_txt, construct_txt))
             # Copy initializer uses same txt as copy constructor but has a ptr and not a reference
             init_copy = copy_construct_init.replace('copy_src.', 'copy_src->')
             init_construct = copy_construct_txt.replace('copy_src.', 'copy_src->')

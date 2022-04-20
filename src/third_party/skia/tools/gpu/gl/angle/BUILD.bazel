@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "GLTestContext_angle_hdr",
     hdrs = ["GLTestContext_angle.h"],
@@ -17,8 +19,8 @@ generated_cc_atom(
         "//include/gpu/gl:GrGLAssembleInterface_hdr",
         "//include/gpu/gl:GrGLInterface_hdr",
         "//src/core:SkTraceEvent_hdr",
-        "//src/gpu/gl:GrGLDefines_hdr",
-        "//src/gpu/gl:GrGLUtil_hdr",
+        "//src/gpu/ganesh/gl:GrGLDefines_impl_hdr",
+        "//src/gpu/ganesh/gl:GrGLUtil_hdr",
         "//src/ports:SkOSLibrary_hdr",
         "//third_party/externals/angle2/include/platform:Platform_hdr",
     ],
