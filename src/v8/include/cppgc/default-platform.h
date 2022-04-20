@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "cppgc/platform.h"
-#include "v8-default-platform.h"
+#include "libplatform/libplatform.h"
 #include "v8config.h"  // NOLINT(build/include_directory)
 
 namespace cppgc {
