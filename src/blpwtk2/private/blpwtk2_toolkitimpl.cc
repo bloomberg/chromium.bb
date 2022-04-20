@@ -102,6 +102,7 @@
 
 // patch section: embedder ipc
 #include <gin/v8_initializer.h>
+#include <v8/include/v8-cppgc.h>
 
 
 // patch section: multi-heap tracer
@@ -765,10 +766,15 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         d_isolateHolder.reset(new gin::IsolateHolder(taskRunner, gin::IsolateHolder::IsolateType::kBlinkMainThread));
         d_isolateHolder->isolate()->Enter();
 
-#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
-        d_multiHeapTracerForBrowserV8.reset(new gin::MultiHeapTracer());
-        d_isolateHolder->isolate()->SetEmbedderHeapTracer(d_multiHeapTracerForBrowserV8.get());
-#endif
+        v8::Platform *realPlatform = gin::V8Platform::Get();
+        cppgc::InitializeProcess(realPlatform->GetPageAllocator());
+        d_cppHeap = v8::CppHeap::Create(
+            realPlatform,
+            {
+                {},
+                v8::WrapperDescriptor(0, 1, 10)
+            });
+        d_isolateHolder->isolate()->AttachCppHeap(d_cppHeap.get());
     }
 
     ui::InitializeInputMethod();
