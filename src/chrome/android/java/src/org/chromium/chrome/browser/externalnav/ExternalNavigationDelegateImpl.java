@@ -10,12 +10,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Function;
@@ -336,7 +336,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean shouldLaunchWebApksOnInitialIntent() {
-        return BuildInfo.isAtLeastS()
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 && CachedFeatureFlags.isEnabled(
                         ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT);
     }
@@ -349,5 +349,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean shouldAvoidDisambiguationDialog(Intent intent) {
         return false;
+    }
+
+    @Override
+    public boolean shouldEmbedderInitiatedNavigationsStayInBrowser() {
+        // The initial navigation off of things like typed navigations or bookmarks should stay in
+        // the browser.
+        return true;
     }
 }

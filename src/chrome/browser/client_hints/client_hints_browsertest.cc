@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -137,6 +138,14 @@ class ThirdPartyURLLoaderInterceptor {
 
   size_t client_hints_count_seen() const { return client_hints_count_seen_; }
 
+  size_t unique_request_count_seen() const {
+    return unique_request_count_seen_;
+  }
+
+  size_t client_hints_count_seen_on_unique_request() const {
+    return client_hints_count_seen_on_unique_request_;
+  }
+
  private:
   bool InterceptURLRequest(URLLoaderInterceptor::RequestParams* params) {
     if (intercepted_urls_.find(params->url_request.url) ==
@@ -144,11 +153,24 @@ class ThirdPartyURLLoaderInterceptor {
       return false;
     }
 
+    bool url_has_not_visited =
+        visited_urls_.insert(params->url_request.url).second;
+
     request_count_seen_++;
+
+    if (url_has_not_visited) {
+      unique_request_count_seen_++;
+    }
+
     for (const auto& elem : network::GetClientHintToNameMap()) {
       const auto& header = elem.second;
-      if (params->url_request.headers.HasHeader(header))
+      if (params->url_request.headers.HasHeader(header)) {
         client_hints_count_seen_++;
+
+        if (url_has_not_visited) {
+          client_hints_count_seen_on_unique_request_++;
+        }
+      }
     }
     return false;
   }
@@ -160,6 +182,12 @@ class ThirdPartyURLLoaderInterceptor {
   size_t client_hints_count_seen_ = 0u;
 
   URLLoaderInterceptor interceptor_;
+
+  // Count to deduplicate third-party requests since the total number of third
+  // party request can be flaky on JS injected requests.
+  std::set<GURL> visited_urls_;
+  size_t unique_request_count_seen_ = 0u;
+  size_t client_hints_count_seen_on_unique_request_ = 0u;
 };
 
 // Returns true only if `header_value` satisfies ABNF: 1*DIGIT [ "." 1*DIGIT ]
@@ -223,7 +251,9 @@ void CheckUserAgentMinorVersion(const std::string& user_agent_value,
   std::string minor_version;
   EXPECT_TRUE(re2::RE2::PartialMatch(user_agent_value, kChromeVersionRegex,
                                      &minor_version));
-  if (expected_user_agent_reduced) {
+  if (expected_user_agent_reduced ||
+      base::FeatureList::IsEnabled(
+          blink::features::kReduceUserAgentMinorVersion)) {
     EXPECT_EQ(minor_version, kReducedMinorVersion);
   } else {
     EXPECT_NE(minor_version, kReducedMinorVersion);
@@ -313,13 +343,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
         https_cross_origin_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         http2_server_(net::EmbeddedTestServer::TYPE_HTTPS,
                       net::test_server::HttpConnection::Protocol::kHttp2),
-        expect_client_hints_on_main_frame_(false),
-        expect_client_hints_on_subresources_(false),
-        count_user_agent_hint_headers_seen_(0),
-        count_ua_mobile_client_hints_headers_seen_(0),
-        count_ua_platform_client_hints_headers_seen_(0),
-        count_client_hints_headers_seen_(0),
-        request_interceptor_(nullptr) {
+        expect_client_hints_on_subresources_(false) {
     http_server_.ServeFilesFromSourceDirectory("chrome/test/data/client_hints");
     https_server_.ServeFilesFromSourceDirectory(
         "chrome/test/data/client_hints");
@@ -662,6 +686,11 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
     return count_ua_platform_client_hints_headers_seen_;
   }
 
+  size_t count_save_data_client_hints_headers_seen() const {
+    base::AutoLock lock(count_headers_lock_);
+    return count_save_data_client_hints_headers_seen_;
+  }
+
   size_t count_client_hints_headers_seen() const {
     base::AutoLock lock(count_headers_lock_);
     return count_client_hints_headers_seen_;
@@ -673,6 +702,14 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 
   size_t third_party_client_hints_count_seen() const {
     return request_interceptor_->client_hints_count_seen();
+  }
+
+  size_t third_party_unique_request_count_seen() const {
+    return request_interceptor_->unique_request_count_seen();
+  }
+
+  size_t third_party_client_hints_count_seen_on_unique_request() const {
+    return request_interceptor_->client_hints_count_seen_on_unique_request();
   }
 
   const std::string& main_frame_ua_observed() const {
@@ -693,6 +730,10 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 
   const std::string& main_frame_ua_platform_observed() const {
     return main_frame_ua_platform_observed_;
+  }
+
+  const std::string& main_frame_save_data_observed() const {
+    return main_frame_save_data_observed_;
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -810,6 +851,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
           UpdateHeaderObservation(request, "sec-ch-ua-mobile");
       main_frame_ua_platform_observed_ =
           UpdateHeaderObservation(request, "sec-ch-ua-platform");
+      main_frame_save_data_observed_ =
+          UpdateHeaderObservation(request, "save-data");
 
       VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
       if (expect_client_hints_on_main_frame_) {
@@ -960,6 +1003,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
           count_ua_mobile_client_hints_headers_seen_++;
         } else if (header == "sec-ch-ua-platform") {
           count_ua_platform_client_hints_headers_seen_++;
+        } else if (header == "save-data") {
+          count_save_data_client_hints_headers_seen_++;
         } else {
           count_client_hints_headers_seen_++;
         }
@@ -979,9 +1024,9 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
       }
 
       // `Sec-CH-UA`, `Sec-CH-UA-Mobile`, and `Sec-CH-UA-Platform` is attached
-      // on all requests.
+      // on all requests. `Save-Data` is included by default when on.
       if (header == "sec-ch-ua" || header == "sec-ch-ua-mobile" ||
-          header == "sec-ch-ua-platform") {
+          header == "sec-ch-ua-platform" || header == "save-data") {
         continue;
       }
 
@@ -1115,6 +1160,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   std::string main_frame_ua_full_version_list_observed_;
   std::string main_frame_ua_mobile_observed_;
   std::string main_frame_ua_platform_observed_;
+  std::string main_frame_save_data_observed_;
 
   double main_frame_dpr_observed_deprecated_ = -1;
   double main_frame_dpr_observed_ = -1;
@@ -1124,19 +1170,20 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   double main_frame_device_memory_observed_ = -1;
 
   // Expect client hints on all the main frame request.
-  bool expect_client_hints_on_main_frame_;
+  bool expect_client_hints_on_main_frame_{false};
   // Expect client hints on all the subresource requests.
   bool expect_client_hints_on_subresources_
       GUARDED_BY(expect_client_hints_on_subresources_lock_);
 
   base::Lock expect_client_hints_on_subresources_lock_;
 
-  size_t count_user_agent_hint_headers_seen_;
-  size_t count_ua_mobile_client_hints_headers_seen_;
-  size_t count_ua_platform_client_hints_headers_seen_;
-  size_t count_client_hints_headers_seen_;
+  size_t count_user_agent_hint_headers_seen_{0};
+  size_t count_ua_mobile_client_hints_headers_seen_{0};
+  size_t count_ua_platform_client_hints_headers_seen_{0};
+  size_t count_save_data_client_hints_headers_seen_{0};
+  size_t count_client_hints_headers_seen_{0};
 
-  std::unique_ptr<ThirdPartyURLLoaderInterceptor> request_interceptor_;
+  std::unique_ptr<ThirdPartyURLLoaderInterceptor> request_interceptor_{nullptr};
 
   // Set to 2G in SetUpCommandLine().
   net::EffectiveConnectionType expected_ect = net::EFFECTIVE_CONNECTION_TYPE_2G;
@@ -1172,6 +1219,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
     if (header == "rtt" || header == "downlink" || header == "ect") {
       continue;
     }
+    // Save-Data can only have the 'on' value so it's tested below.
+    if (header == "save-data")
+      continue;
     EXPECT_TRUE(
         network::cors::IsCorsSafelistedHeader(header, "42" /* value */));
   }
@@ -1382,6 +1432,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -1410,6 +1461,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsClearSession) {
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -1463,6 +1515,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -1517,6 +1570,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -1573,6 +1627,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
   EXPECT_EQ(main_frame_ua_full_version_observed(), "");
   EXPECT_EQ(main_frame_ua_mobile_observed(), "?0");
   EXPECT_EQ(main_frame_ua_platform_observed(), "\"" + ua.platform + "\"");
+  EXPECT_EQ(main_frame_save_data_observed(), "");
 
   // Second request: table override, all hints.
   chrome::ToggleRequestTabletSite(browser());
@@ -1586,6 +1641,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
             expected_full_version_list);
   EXPECT_EQ(main_frame_ua_mobile_observed(), "?1");
   EXPECT_EQ(main_frame_ua_platform_observed(), "\"Android\"");
+  EXPECT_EQ(main_frame_save_data_observed(), "");
 }
 
 // TODO(morlovich): Move this into WebContentsImplBrowserTest once things are
@@ -1616,14 +1672,12 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
       .GetLastCommittedEntry()
       ->SetIsOverridingUserAgent(true);
 
-  // Since no value was provided for client hints, they are sent with blank or
-  // false values.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrl));
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       web_contents,
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
-  EXPECT_EQ("foo\n\n?0", header_value);
+  EXPECT_EQ("foo\nNone\nNone", header_value);
   EXPECT_TRUE(
       ExecuteScriptAndExtractString(web_contents,
                                     "window.domAutomationController.send(JSON."
@@ -1655,6 +1709,53 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
       header_value);
 }
 
+class ClientHintsUAOverrideBrowserTest : public ClientHintsBrowserTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kUACHOverrideBlank);
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ClientHintsUAOverrideBrowserTest,
+                       UserAgentOverrideClientHints) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const std::string kHeaderPath = std::string("/echoheader?") +
+                                  net::HttpRequestHeaders::kUserAgent +
+                                  "&sec-ch-ua&sec-ch-ua-mobile";
+  const GURL kUrl(embedded_test_server()->GetURL(kHeaderPath));
+
+  web_contents->SetUserAgentOverride(
+      blink::UserAgentOverride::UserAgentOnly("foo"), false);
+  web_contents->GetController()
+      .GetLastCommittedEntry()
+      ->SetIsOverridingUserAgent(true);
+
+  // Since no value was provided for client hints, they are sent with blank or
+  // false values.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrl));
+
+  std::string header_value;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_EQ("foo\n\n?0", header_value);
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(web_contents,
+                                    "window.domAutomationController.send(JSON."
+                                    "stringify(navigator.userAgentData));",
+                                    &header_value));
+  EXPECT_EQ(R"({"brands":[],"mobile":false})", header_value);
+}
+
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, EmptyAcceptCH) {
   // First navigate to a page that enables hints. No CH for it yet, since
   // nothing opted in.
@@ -1683,6 +1784,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, InjectAcceptCH_HttpEquiv) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 }
+
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, InjectAcceptCH_MetaName) {
   // Go to page where hints are injected via javascript into an named meta
   // tag. It shouldn't get hints itself (due to first visit),
@@ -1701,12 +1803,16 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_HttpEquiv) {
   SetClientHintExpectationsOnSubresources(false);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(0u, count_client_hints_headers_seen());
-  EXPECT_EQ(7u, third_party_request_count_seen());
-  EXPECT_EQ(expected_default_third_party_client_hints_number * 7,
-            third_party_client_hints_count_seen());
+  // Four unique requests are request to the following URLs:
+  // "https://foo.com/non-existing-image.jpg",
+  // "https://foo.com/non-existing-iframe.html",
+  // "https://bar.com/non-existing-image.jpg",
+  // "https://bar.com/non-existing-iframe.html"
+  EXPECT_EQ(4u, third_party_unique_request_count_seen());
+  EXPECT_EQ(expected_default_third_party_client_hints_number * 4,
+            third_party_client_hints_count_seen_on_unique_request());
 }
 
-// Flaky on all platforms. https://crbug.com/1285479.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_MetaName) {
   // Go to a page which delegates hints to `foo.com`.
   GURL gurl = meta_name_accept_ch_delegation_foo();
@@ -1715,10 +1821,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToFoo_MetaName) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
-  EXPECT_EQ(7u, third_party_request_count_seen());
-  EXPECT_EQ(expected_requested_third_party_client_hints_number * 5 +
+  EXPECT_EQ(4u, third_party_unique_request_count_seen());
+  EXPECT_EQ(expected_requested_third_party_client_hints_number * 2 +
                 expected_default_third_party_client_hints_number * 2,
-            third_party_client_hints_count_seen());
+            third_party_client_hints_count_seen_on_unique_request());
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_HttpEquiv) {
@@ -1728,9 +1834,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_HttpEquiv) {
   SetClientHintExpectationsOnSubresources(false);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(0u, count_client_hints_headers_seen());
-  EXPECT_EQ(7u, third_party_request_count_seen());
-  EXPECT_EQ(expected_default_third_party_client_hints_number * 7,
-            third_party_client_hints_count_seen());
+  EXPECT_EQ(4u, third_party_unique_request_count_seen());
+  EXPECT_EQ(expected_default_third_party_client_hints_number * 4,
+            third_party_client_hints_count_seen_on_unique_request());
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_MetaName) {
@@ -1741,10 +1847,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateToBar_MetaName) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
-  EXPECT_EQ(7u, third_party_request_count_seen());
+  EXPECT_EQ(4u, third_party_unique_request_count_seen());
   EXPECT_EQ(expected_requested_third_party_client_hints_number * 2 +
-                expected_default_third_party_client_hints_number * 5,
-            third_party_client_hints_count_seen());
+                expected_default_third_party_client_hints_number * 2,
+            third_party_client_hints_count_seen_on_unique_request());
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_HttpEquiv) {
@@ -1755,10 +1861,10 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_HttpEquiv) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
-  EXPECT_EQ(7u, third_party_request_count_seen());
+  EXPECT_EQ(4u, third_party_unique_request_count_seen());
   EXPECT_EQ(expected_pre_merge_third_party_client_hints_number * 2 +
-                expected_requested_third_party_client_hints_number * 5,
-            third_party_client_hints_count_seen());
+                expected_requested_third_party_client_hints_number * 2,
+            third_party_client_hints_count_seen_on_unique_request());
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_MetaName) {
@@ -1769,9 +1875,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DelegateAndMerge_MetaName) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
-  EXPECT_EQ(7u, third_party_request_count_seen());
-  EXPECT_EQ(expected_requested_third_party_client_hints_number * 7,
-            third_party_client_hints_count_seen());
+  EXPECT_EQ(4u, third_party_unique_request_count_seen());
+  EXPECT_EQ(expected_requested_third_party_client_hints_number * 4,
+            third_party_client_hints_count_seen_on_unique_request());
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH_HttpEquiv) {
@@ -1784,6 +1890,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH_HttpEquiv) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 }
+
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH_MetaName) {
   // Go to page where some hints are enabled by headers, some by
   // http-equiv. It shouldn't get hints itself (due to first visit),
@@ -1932,6 +2039,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
@@ -1966,6 +2074,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
@@ -2242,6 +2351,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -2294,6 +2404,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -2345,6 +2456,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -2421,6 +2533,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -2530,6 +2643,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(1u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
@@ -2553,6 +2667,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(1u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   SetJsEnabledForActiveView(true);
 
@@ -2567,6 +2682,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(1u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(1u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Allow JavaScript: Client hints should now be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -2582,6 +2698,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -2647,6 +2764,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(0u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(0u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(0u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
@@ -2664,6 +2782,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
@@ -2684,6 +2803,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
@@ -2715,6 +2835,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(0u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(0u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(0u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(0u, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(0u, third_party_client_hints_count_seen());
@@ -2732,6 +2853,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(2u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
@@ -2752,6 +2874,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(3u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
@@ -2789,6 +2912,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
@@ -2823,6 +2947,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(2u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
   EXPECT_EQ(1u, third_party_request_count_seen());
   EXPECT_EQ(3u, third_party_client_hints_count_seen());
@@ -2873,6 +2998,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
@@ -2888,6 +3014,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   EXPECT_EQ(5u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(5u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(5u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
 
   // No additional hints are sent.
   EXPECT_EQ(expected_client_hints_number * 2,
@@ -2968,6 +3095,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsWebHoldbackBrowserTest,
   EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
   EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
   EXPECT_EQ(3u, count_ua_platform_client_hints_headers_seen());
+  EXPECT_EQ(0u, count_save_data_client_hints_headers_seen());
   EXPECT_EQ(expected_client_hints_number * 2,
             count_client_hints_headers_seen());
   EXPECT_EQ(0u, third_party_request_count_seen());
@@ -3523,7 +3651,8 @@ class UaOriginTrialBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     std::unique_ptr<base::FeatureList> feature_list =
         std::make_unique<base::FeatureList>();
-    feature_list->InitializeFromCommandLine("CriticalClientHint", "");
+    feature_list->InitializeFromCommandLine(
+        "CriticalClientHint,UACHOverrideBlank", "");
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     InProcessBrowserTest::SetUp();

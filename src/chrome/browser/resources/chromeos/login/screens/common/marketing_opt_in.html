@@ -20,6 +20,7 @@
 <link rel="import" href="../../components/common_styles/common_styles.html">
 <link rel="import" href="../../components/common_styles/oobe_dialog_host_styles.html">
 <link rel="import" href="../../components/dialogs/oobe_adaptive_dialog.html">
+<link rel="import" href="../../components/display_manager_types.html">
 
 
 <dom-module id="marketing-opt-in-element">
@@ -48,7 +49,7 @@
       }
 
       .legal-info {
-        color: var(--google-grey-700);
+        color: var(--cros-text-color-secondary);
       }
 
       #toggleRow {
@@ -91,6 +92,17 @@
       #finalAccessibilityPage oobe-a11y-option:last-of-type {
         border-bottom: var(--oobe-a11y-dialog-list-item-border);
       }
+
+      h1 {
+        color: var(--cros-text-color-primary);
+      }
+
+      #marketingOptInSubtitleWithDeviceName,
+      #marketingOptInSubtitle,
+      #chromebookUpdatesOptionLabel {
+        color: var(--cros-text-color-secondary);
+      }
+
     </style>
     <oobe-adaptive-dialog id="marketingOptInOverviewDialog" role="dialog"
         for-step="overview"
@@ -103,11 +115,12 @@
       </h1>
       <div slot="subtitle">
         <!-- No marketing opt in -->
-        <div hidden="[[marketingOptInVisible_]]">
+        <div hidden="[[marketingOptInVisible_]]"
+          id="marketingOptInSubtitleWithDeviceName">
           [[i18nDynamic(locale, 'marketingOptInScreenSubtitleWithDeviceName')]]
         </div>
         <!-- Marketing opt in -->
-        <div hidden="[[!marketingOptInVisible_]]">
+        <div hidden="[[!marketingOptInVisible_]]" id="marketingOptInSubtitle">
           [[i18nDynamic(locale, 'marketingOptInScreenSubtitle')]]
         </div>
 

@@ -17,6 +17,7 @@
 #include "src/perfetto_cmd/perfetto_cmd.h"
 
 #include "perfetto/base/build_config.h"
+#include "perfetto/base/proc_utils.h"
 #include "perfetto/ext/base/scoped_file.h"
 
 #include <fcntl.h>
@@ -32,10 +33,13 @@
 #include <unistd.h>
 #endif
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <random>
 #include <sstream>
+#include <thread>
 
 #include "perfetto/base/compiler.h"
 #include "perfetto/base/logging.h"
@@ -162,6 +166,30 @@ base::Optional<PerfettoStatsdAtom> ConvertRateLimiterResponseToAtom(
   }
   PERFETTO_FATAL("For GCC");
 }
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+// Reports trace with `uuid` being finalized to the trace marker.
+//
+// This reimplements parts of android libcutils, because:
+// * libcutils is not exposed to the NDK and cannot be used from standalone
+//   perfetto
+// * libcutils atrace uses properties to enable tags, which are not required in
+//   this case.
+void ReportFinalizeTraceUuidToAtrace(const base::Uuid& uuid) {
+  base::ScopedFile file =
+      base::OpenFile("/sys/kernel/tracing/trace_marker", O_WRONLY);
+  if (!file) {
+    file = base::OpenFile("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
+    if (!file) {
+      return;
+    }
+  }
+  base::StackString<100> uuid_slice("N|%d|OtherTraces|finalize-uuid-%s",
+                                    base::GetProcessId(),
+                                    uuid.ToPrettyString().c_str());
+  PERFETTO_EINTR(write(file.get(), uuid_slice.c_str(), uuid_slice.len()));
+}
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
 
 }  // namespace
 
@@ -569,6 +597,12 @@ base::Optional<int> PerfettoCmd::ParseCmdlineAndMaybeDaemonize(int argc,
     uuid_ = uuid.ToString();
   }
 
+  const auto& delay = trace_config_->cmd_trace_start_delay();
+  if (delay.has_max_delay_ms() != delay.has_min_delay_ms()) {
+    PERFETTO_ELOG("cmd_trace_start_delay field is only partially specified.");
+    return 1;
+  }
+
   bool has_incidentd_package =
       !trace_config_->incident_report_config().destination_package().empty();
   if (has_incidentd_package && !upload_flag_) {
@@ -880,6 +914,16 @@ int PerfettoCmd::ConnectToServiceAndRun() {
     expected_duration_ms_ = timeout_ms + max_stop_delay_ms;
   }
 
+  const auto& delay = trace_config_->cmd_trace_start_delay();
+  if (delay.has_min_delay_ms()) {
+    PERFETTO_DCHECK(delay.has_max_delay_ms());
+    std::random_device r;
+    std::minstd_rand minstd(r());
+    std::uniform_int_distribution<uint32_t> dist(delay.min_delay_ms(),
+                                                 delay.max_delay_ms());
+    std::this_thread::sleep_for(std::chrono::milliseconds(dist(minstd)));
+  }
+
   if (trace_config_->trigger_config().trigger_timeout_ms() == 0) {
     LogUploadEvent(PerfettoStatsdAtom::kTraceBegin);
   } else {
@@ -1083,6 +1127,12 @@ void PerfettoCmd::FinalizeTraceAndExit() {
                    trace_out_path_ == "-" ? "stdout" : trace_out_path_.c_str());
     }
   }
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+  // When multiple traces are being recorded at the same time, this is used to
+  // correlate one trace with another.
+  ReportFinalizeTraceUuidToAtrace(base::Uuid(uuid_));
+#endif
 
   update_guardrail_state_ = true;
   task_runner_.Quit();

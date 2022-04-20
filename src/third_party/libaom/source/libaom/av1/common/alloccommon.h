@@ -36,7 +36,7 @@ int av1_alloc_above_context_buffers(struct CommonContexts *above_contexts,
                                     int num_planes);
 void av1_free_above_context_buffers(struct CommonContexts *above_contexts);
 int av1_alloc_context_buffers(struct AV1Common *cm, int width, int height,
-                              int mode, BLOCK_SIZE min_partition_size);
+                              BLOCK_SIZE min_partition_size);
 void av1_init_mi_buffers(struct CommonModeInfoParams *mi_params);
 void av1_free_context_buffers(struct AV1Common *cm);
 

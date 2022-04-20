@@ -18,6 +18,10 @@ cargo_crate("lib") {
   build_native_rust_unit_tests = false
   sources = [ "crate/src/lib.rs" ]
   edition = "2018"
+  cargo_pkg_version = "0.24.0"
+  cargo_pkg_authors = "Peter Glotfelty <peter.glotfelty@microsoft.com>"
+  cargo_pkg_name = "strum_macros"
+  cargo_pkg_description = "Helpful macros for working with enums and strings"
   deps = [
     "//third_party/rust/heck/v0_4:lib",
     "//third_party/rust/proc_macro2/v1:lib",

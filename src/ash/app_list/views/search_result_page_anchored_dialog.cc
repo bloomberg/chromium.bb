@@ -56,11 +56,12 @@ SearchResultPageAnchoredDialog::SearchResultPageAnchoredDialog(
   widget_observations_.AddObservation(widget_);
   widget_observations_.AddObservation(parent);
 
-  host_view_->AddObserver(this);
+  view_observations_.AddObservation(host_view_);
+  view_observations_.AddObservation(widget_->GetContentsView());
 }
 
 SearchResultPageAnchoredDialog::~SearchResultPageAnchoredDialog() {
-  host_view_->RemoveObserver(this);
+  view_observations_.RemoveAllObservations();
   widget_observations_.RemoveAllObservations();
   if (widget_)
     widget_->Close();
@@ -103,6 +104,13 @@ void SearchResultPageAnchoredDialog::OnWidgetClosing(views::Widget* widget) {
     std::move(callback_).Run();
 }
 
+void SearchResultPageAnchoredDialog::OnWidgetDestroying(views::Widget* widget) {
+  widget_ = nullptr;
+  widget_observations_.RemoveAllObservations();
+  if (callback_)
+    std::move(callback_).Run();
+}
+
 void SearchResultPageAnchoredDialog::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
@@ -116,7 +124,11 @@ void SearchResultPageAnchoredDialog::OnWidgetBoundsChanged(
 
 void SearchResultPageAnchoredDialog::OnViewBoundsChanged(
     views::View* observed_view) {
-  DCHECK_EQ(host_view_, observed_view);
+  UpdateBounds();
+}
+
+void SearchResultPageAnchoredDialog::OnViewPreferredSizeChanged(
+    views::View* observed_view) {
   UpdateBounds();
 }
 

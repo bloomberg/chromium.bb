@@ -354,8 +354,7 @@ const CollectUserDataOptions* ScriptExecutor::GetLastSuccessfulUserDataOptions()
 }
 
 void ScriptExecutor::WriteUserData(
-    base::OnceCallback<void(UserData*, UserData::FieldChange*)>
-        write_callback) {
+    base::OnceCallback<void(UserData*, UserDataFieldChange*)> write_callback) {
   delegate_->WriteUserData(std::move(write_callback));
 }
 
@@ -480,8 +479,8 @@ void ScriptExecutor::RetrieveElementFormAndFieldData(
 }
 
 void ScriptExecutor::StoreScrolledToElement(
-    const ElementFinder::Result& element) {
-  last_focused_element_ = element.dom_object;
+    const ElementFinderResult& element) {
+  last_focused_element_ = element.dom_object();
 }
 
 void ScriptExecutor::SetTouchableElementArea(
@@ -546,7 +545,7 @@ bool ScriptExecutor::WaitForNavigation(
 void ScriptExecutor::WaitForDocumentReadyState(
     base::TimeDelta max_wait_time,
     DocumentReadyState min_ready_state,
-    const ElementFinder::Result& optional_frame_element,
+    const ElementFinderResult& optional_frame_element,
     base::OnceCallback<void(const ClientStatus&,
                             DocumentReadyState,
                             base::TimeDelta)> callback) {
@@ -565,7 +564,7 @@ void ScriptExecutor::WaitForDocumentReadyState(
 void ScriptExecutor::WaitUntilDocumentIsInReadyState(
     base::TimeDelta max_wait_time,
     DocumentReadyState min_ready_state,
-    const ElementFinder::Result& optional_frame_element,
+    const ElementFinderResult& optional_frame_element,
     base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
   WaitForDocumentReadyState(
       max_wait_time, min_ready_state, optional_frame_element,
@@ -811,17 +810,19 @@ base::WeakPtr<ActionDelegate> ScriptExecutor::GetWeakPtr() const {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void ScriptExecutor::OnGetActions(base::TimeTicks start_time,
-                                  int http_status,
-                                  const std::string& response) {
+void ScriptExecutor::OnGetActions(
+    base::TimeTicks start_time,
+    int http_status,
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info) {
   VLOG(2) << __func__ << " http-status=" << http_status;
   batch_start_time_ = base::TimeTicks::Now();
   const base::TimeDelta& roundtrip_duration = batch_start_time_ - start_time;
   // Doesn't trigger when the script is completed.
   roundtrip_timing_stats_.set_roundtrip_time_ms(
       roundtrip_duration.InMilliseconds());
-  bool success =
-      http_status == net::HTTP_OK && ProcessNextActionResponse(response);
+  bool success = http_status == net::HTTP_OK &&
+                 ProcessNextActionResponse(response, response_info);
   if (should_stop_script_) {
     // The last action forced the script to stop. Sending the result of the
     // action is considered best effort in this situation. Report a successful
@@ -856,7 +857,9 @@ void ScriptExecutor::OnGetActions(base::TimeTicks start_time,
   RunCallback(true);
 }
 
-bool ScriptExecutor::ProcessNextActionResponse(const std::string& response) {
+bool ScriptExecutor::ProcessNextActionResponse(
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info) {
   processed_actions_.clear();
   actions_.clear();
 
@@ -869,6 +872,8 @@ bool ScriptExecutor::ProcessNextActionResponse(const std::string& response) {
     return false;
   }
 
+  roundtrip_network_stats_ =
+      ProtocolUtils::ComputeNetworkStats(response, response_info, actions_);
   ReportPayloadsToListener();
   if (should_update_scripts) {
     ReportScriptsUpdateToListener(std::move(scripts));
@@ -963,7 +968,7 @@ void ScriptExecutor::GetNextActions() {
       TriggerContext(
           {delegate_->GetTriggerContext(), additional_context_.get()}),
       last_global_payload_, last_script_payload_, processed_actions_,
-      roundtrip_timing_stats_,
+      roundtrip_timing_stats_, roundtrip_network_stats_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr(), get_next_actions_start));
 }
@@ -1082,7 +1087,8 @@ void ScriptExecutor::RequestUserData(
 void ScriptExecutor::OnRequestUserData(
     base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback,
     int http_status,
-    const std::string& response) {
+    const std::string& response,
+    const ServiceRequestSender::ResponseInfo& response_info) {
   if (http_status != net::HTTP_OK) {
     std::move(callback).Run(false, GetUserDataResponseProto());
     return;

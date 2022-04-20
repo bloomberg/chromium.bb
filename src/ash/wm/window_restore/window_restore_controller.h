@@ -14,7 +14,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "components/account_id/account_id.h"
-#include "components/app_restore/full_restore_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/window_info.h"
 #include "ui/aura/window_observer.h"
 
@@ -32,7 +32,7 @@ class WindowState;
 
 class ASH_EXPORT WindowRestoreController
     : public TabletModeObserver,
-      public full_restore::FullRestoreInfo::Observer,
+      public app_restore::AppRestoreInfo::Observer,
       public aura::WindowObserver {
  public:
   using SaveWindowCallback =
@@ -94,7 +94,7 @@ class ASH_EXPORT WindowRestoreController
   void OnTabletModeEnded() override;
   void OnTabletControllerDestroyed() override;
 
-  // full_restore::FullRestoreInfo::Observer:
+  // app_restore::AppRestoreInfo::Observer:
   void OnRestorePrefChanged(const AccountId& account_id,
                             bool could_restore) override;
   void OnAppLaunched(aura::Window* window) override;
@@ -108,7 +108,9 @@ class ASH_EXPORT WindowRestoreController
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  bool is_restoring_snap_state() const { return is_restoring_snap_state_; }
+  const aura::Window* to_be_snapped_window() const {
+    return to_be_snapped_window_;
+  }
 
  private:
   friend class WindowRestoreControllerTest;
@@ -147,7 +149,9 @@ class ASH_EXPORT WindowRestoreController
   void SetSaveWindowCallbackForTesting(SaveWindowCallback callback);
 
   // True whenever we are attempting to restore snap state.
-  bool is_restoring_snap_state_ = false;
+  // The window that is about to be snapped by window restore. Reset to nullptr
+  // if we aren't directly working with the window anymore.
+  aura::Window* to_be_snapped_window_ = nullptr;
 
   // The set of windows that have had their widgets initialized and will be
   // shown later.
@@ -163,9 +167,9 @@ class ASH_EXPORT WindowRestoreController
   base::ScopedObservation<TabletModeController, TabletModeObserver>
       tablet_mode_observation_{this};
 
-  base::ScopedObservation<full_restore::FullRestoreInfo,
-                          full_restore::FullRestoreInfo::Observer>
-      full_restore_info_observation_{this};
+  base::ScopedObservation<app_restore::AppRestoreInfo,
+                          app_restore::AppRestoreInfo::Observer>
+      app_restore_info_observation_{this};
 
   // Observes windows launched by window restore.
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>

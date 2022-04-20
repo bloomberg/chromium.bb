@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_RENDERPASSENCODER_H_
-#define DAWNNATIVE_RENDERPASSENCODER_H_
+#ifndef SRC_DAWN_NATIVE_RENDERPASSENCODER_H_
+#define SRC_DAWN_NATIVE_RENDERPASSENCODER_H_
 
 #include "dawn/native/Error.h"
 #include "dawn/native/Forward.h"
@@ -25,21 +25,20 @@ namespace dawn::native {
 
     class RenderPassEncoder final : public RenderEncoderBase {
       public:
-        RenderPassEncoder(DeviceBase* device,
-                          const RenderPassDescriptor* descriptor,
-                          CommandEncoder* commandEncoder,
-                          EncodingContext* encodingContext,
-                          RenderPassResourceUsageTracker usageTracker,
-                          Ref<AttachmentState> attachmentState,
-                          std::vector<TimestampWrite> timestampWritesAtEnd,
-                          uint32_t renderTargetWidth,
-                          uint32_t renderTargetHeight,
-                          bool depthReadOnly,
-                          bool stencilReadOnly);
-
-        static RenderPassEncoder* MakeError(DeviceBase* device,
-                                            CommandEncoder* commandEncoder,
-                                            EncodingContext* encodingContext);
+        static Ref<RenderPassEncoder> Create(DeviceBase* device,
+                                             const RenderPassDescriptor* descriptor,
+                                             CommandEncoder* commandEncoder,
+                                             EncodingContext* encodingContext,
+                                             RenderPassResourceUsageTracker usageTracker,
+                                             Ref<AttachmentState> attachmentState,
+                                             std::vector<TimestampWrite> timestampWritesAtEnd,
+                                             uint32_t renderTargetWidth,
+                                             uint32_t renderTargetHeight,
+                                             bool depthReadOnly,
+                                             bool stencilReadOnly);
+        static Ref<RenderPassEncoder> MakeError(DeviceBase* device,
+                                                CommandEncoder* commandEncoder,
+                                                EncodingContext* encodingContext);
 
         ObjectType GetType() const override;
 
@@ -63,6 +62,17 @@ namespace dawn::native {
         void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
       protected:
+        RenderPassEncoder(DeviceBase* device,
+                          const RenderPassDescriptor* descriptor,
+                          CommandEncoder* commandEncoder,
+                          EncodingContext* encodingContext,
+                          RenderPassResourceUsageTracker usageTracker,
+                          Ref<AttachmentState> attachmentState,
+                          std::vector<TimestampWrite> timestampWritesAtEnd,
+                          uint32_t renderTargetWidth,
+                          uint32_t renderTargetHeight,
+                          bool depthReadOnly,
+                          bool stencilReadOnly);
         RenderPassEncoder(DeviceBase* device,
                           CommandEncoder* commandEncoder,
                           EncodingContext* encodingContext,
@@ -90,4 +100,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_RENDERPASSENCODER_H_
+#endif  // SRC_DAWN_NATIVE_RENDERPASSENCODER_H_

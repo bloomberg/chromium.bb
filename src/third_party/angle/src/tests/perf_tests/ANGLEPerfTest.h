@@ -106,8 +106,23 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
     virtual void saveScreenshot(const std::string &screenshotName) {}
     virtual void computeGPUTime() {}
 
-    double printResults();
     void calibrateStepsToRun(RunLoopPolicy policy);
+
+    void processResults();
+    void processClockResult(const char *metric, double resultSeconds);
+    void processMemoryResult(const char *metric, uint64_t resultKB);
+
+    void skipTest(const std::string &reason)
+    {
+        mSkipTestReason = reason;
+        mSkipTest       = true;
+    }
+
+    void failTest(const std::string &reason)
+    {
+        skipTest(reason);
+        FAIL() << reason;
+    }
 
     std::string mName;
     std::string mBackend;
@@ -115,6 +130,7 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
     Timer mTimer;
     uint64_t mGPUTimeNs;
     bool mSkipTest;
+    std::string mSkipTestReason;
     std::unique_ptr<perf_test::PerfResultReporter> mReporter;
     int mStepsToRun;
     int mTrialNumStepsPerformed;
@@ -128,7 +144,8 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
         std::string name;
         std::vector<GLuint> samples;
     };
-    angle::HashMap<GLuint, CounterInfo> mPerfCounterInfo;
+    std::map<GLuint, CounterInfo> mPerfCounterInfo;
+    std::vector<uint64_t> mProcessMemoryUsageKBSamples;
 };
 
 enum class SurfaceType
@@ -210,7 +227,7 @@ class ANGLERenderTest : public ANGLEPerfTest
     void finishTest() override;
     void computeGPUTime() override;
 
-    bool areExtensionPrerequisitesFulfilled() const;
+    void skipTestIfMissingExtensionPrerequisites();
 
     void initPerfCounters();
 

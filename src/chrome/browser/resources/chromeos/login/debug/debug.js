@@ -244,7 +244,7 @@ cr.define('cr.ui.login.debug', function() {
           id: 'error',
           trigger: (screen) => {
             screen.setError(
-                'Chrome OS was unable to connect to Public Wifi. ' +
+                'ChromeOS was unable to connect to Public Wifi. ' +
                 'Please select another network or try again.');
           }
         },
@@ -536,6 +536,10 @@ cr.define('cr.ui.login.debug', function() {
     },
     {
       id: 'smart-privacy-protection',
+      kind: ScreenKind.NORMAL,
+    },
+    {
+      id: 'theme-selection',
       kind: ScreenKind.NORMAL,
     },
     {
@@ -905,7 +909,7 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'sync-consent',
       kind: ScreenKind.NORMAL,
-      defaultState: 'step-no-split',
+      defaultState: 'step-loaded',
       states: [
         {
           id: 'minor-mode',

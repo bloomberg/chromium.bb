@@ -45,12 +45,7 @@ namespace internal {
 #define BUILTIN_LIST_BASE_TIER0(CPP, TFJ, TFC, TFS, TFH, ASM) \
   /* Deoptimization entries. */                               \
   ASM(DeoptimizationEntry_Eager, DeoptimizationEntry)         \
-  ASM(DeoptimizationEntry_Soft, DeoptimizationEntry)          \
-  ASM(DeoptimizationEntry_Bailout, DeoptimizationEntry)       \
   ASM(DeoptimizationEntry_Lazy, DeoptimizationEntry)          \
-  ASM(DynamicCheckMapsTrampoline, DynamicCheckMaps)           \
-  ASM(DynamicCheckMapsWithFeedbackVectorTrampoline,           \
-      DynamicCheckMapsWithFeedbackVector)                     \
                                                               \
   /* GC write barrier. */                                     \
   TFC(RecordWriteEmitRememberedSetSaveFP, WriteBarrier)       \
@@ -169,7 +164,6 @@ namespace internal {
   ASM(ResumeGeneratorTrampoline, ResumeGenerator)                              \
                                                                                \
   /* String helpers */                                                         \
-  TFC(StringCodePointAt, StringAt)                                             \
   TFC(StringFromCodePointAt, StringAtAsString)                                 \
   TFC(StringEqual, Compare)                                                    \
   TFC(StringGreaterThan, Compare)                                              \
@@ -301,10 +295,6 @@ namespace internal {
   TFH(KeyedHasIC_PolymorphicName, LoadWithVector)                              \
   TFH(KeyedHasIC_SloppyArguments, LoadWithVector)                              \
   TFH(HasIndexedInterceptorIC, LoadWithVector)                                 \
-                                                                               \
-  /* Dynamic check maps */                                                     \
-  TFC(DynamicCheckMaps, DynamicCheckMaps)                                      \
-  TFC(DynamicCheckMapsWithFeedbackVector, DynamicCheckMapsWithFeedbackVector)  \
                                                                                \
   /* Microtask helpers */                                                      \
   TFS(EnqueueMicrotask, kMicrotask)                                            \
@@ -878,9 +868,9 @@ namespace internal {
                                                                                \
   /* ShadowRealm */                                                            \
   CPP(ShadowRealmConstructor)                                                  \
+  TFS(ShadowRealmGetWrappedValue, kCreationContext, kTargetContext, kValue)    \
   CPP(ShadowRealmPrototypeEvaluate)                                            \
   CPP(ShadowRealmPrototypeImportValue)                                         \
-  TFS(ShadowRealmGetWrappedValue, kCreationContext, kValue)                    \
                                                                                \
   /* SharedArrayBuffer */                                                      \
   CPP(SharedArrayBufferPrototypeGetByteLength)                                 \
@@ -892,8 +882,8 @@ namespace internal {
       kIndexOrFieldName)                                                       \
   TFJ(AtomicsStore, kJSArgcReceiverSlots + 3, kReceiver, kArrayOrSharedStruct, \
       kIndexOrFieldName, kValue)                                               \
-  TFJ(AtomicsExchange, kJSArgcReceiverSlots + 3, kReceiver, kArray, kIndex,    \
-      kValue)                                                                  \
+  TFJ(AtomicsExchange, kJSArgcReceiverSlots + 3, kReceiver,                    \
+      kArrayOrSharedStruct, kIndexOrFieldName, kValue)                         \
   TFJ(AtomicsCompareExchange, kJSArgcReceiverSlots + 4, kReceiver, kArray,     \
       kIndex, kOldValue, kNewValue)                                            \
   TFJ(AtomicsAdd, kJSArgcReceiverSlots + 3, kReceiver, kArray, kIndex, kValue) \
@@ -1071,7 +1061,7 @@ namespace internal {
   TFC(GetProperty, GetProperty)                                                \
   TFS(GetPropertyWithReceiver, kObject, kKey, kReceiver, kOnNonExistent)       \
   TFS(SetProperty, kReceiver, kKey, kValue)                                    \
-  TFS(SetPropertyInLiteral, kReceiver, kKey, kValue)                           \
+  TFS(CreateDataProperty, kReceiver, kKey, kValue)                             \
   ASM(MemCopyUint8Uint8, CCall)                                                \
   ASM(MemMove, CCall)                                                          \
                                                                                \

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_WEBGPUABSLFORMAT_H_
-#define DAWNNATIVE_WEBGPUABSLFORMAT_H_
+#ifndef SRC_DAWN_NATIVE_WEBGPU_ABSL_FORMAT_H_
+#define SRC_DAWN_NATIVE_WEBGPU_ABSL_FORMAT_H_
 
 #include "absl/strings/str_format.h"
 #include "dawn/native/dawn_platform.h"
@@ -43,6 +43,12 @@ namespace dawn::native {
         const absl::FormatConversionSpec& spec,
         absl::FormatSink* s);
 
+    struct BindingInfo;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        const BindingInfo& value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
     //
     // Objects
     //
@@ -67,6 +73,62 @@ namespace dawn::native {
         const absl::FormatConversionSpec& spec,
         absl::FormatSink* s);
 
+    class AttachmentState;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        const AttachmentState* value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    //
+    // Enums
+    //
+
+    enum class Aspect : uint8_t;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString>
+    AbslFormatConvert(Aspect value, const absl::FormatConversionSpec& spec, absl::FormatSink* s);
+
+    enum class BindingInfoType;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        BindingInfoType value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    enum class SampleTypeBit : uint8_t;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        SampleTypeBit value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    enum class SingleShaderStage;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        SingleShaderStage value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    enum class VertexFormatBaseType;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        VertexFormatBaseType value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    enum class InterStageComponentType;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        InterStageComponentType value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    enum class InterpolationType;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        InterpolationType value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
+    enum class InterpolationSampling;
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        InterpolationSampling value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s);
+
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_WEBGPUABSLFORMAT_H_
+#endif  // SRC_DAWN_NATIVE_WEBGPU_ABSL_FORMAT_H_

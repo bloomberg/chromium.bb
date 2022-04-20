@@ -32,6 +32,14 @@
 /apache-mac/bin/*
 /apache-mac/lib/*
 /apache-mac/libexec/*
+/apache-mac-arm64/LICENSE
+/apache-mac-arm64/bin/*
+/apache-mac-arm64/lib/*
+/apache-mac-arm64/libexec/*
+/apache-linux/LICENSE
+/apache-linux/bin/*
+/apache-linux/lib/*
+/apache-linux/libexec/*
 /apache-portable-runtime/src
 /apache-win32/bin/*.exe
 /apache-win32/bin/*.dll
@@ -220,7 +228,6 @@
 /scan-build/src
 /scons-2.0.1
 /securemessage/src
-/shaderc/src
 /shaka-player/dist/
 /skia
 /smhasher/src
@@ -233,6 +240,7 @@
 /sqlite/src
 /sqlite4java/lib/
 /subresource-filter-ruleset/data/UnindexedRules
+/swift-format
 /swiftshader/
 /syzygy
 /syzygy/binaries
@@ -244,7 +252,6 @@
 /ub-uiautomator/lib
 /ukey2/src
 /usb_ids
-/usrsctp/usrsctplib
 /v8-i18n
 /valgrind
 /vulkan-deps

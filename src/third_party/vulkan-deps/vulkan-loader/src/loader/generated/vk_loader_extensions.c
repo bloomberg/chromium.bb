@@ -330,7 +330,7 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_dispatch_table(struct loader_dev_d
                                                              VkDevice dev) {
     VkLayerDispatchTable *table = &dev_table->core_dispatch;
     table->magic = DEVICE_DISP_TABLE_MAGIC_NUMBER;
-    for (uint32_t i = 0; i < MAX_NUM_UNKNOWN_EXTS; i++) dev_table->ext_dispatch.dev_ext[i] = (PFN_vkDevExt)vkDevExtError;
+    for (uint32_t i = 0; i < MAX_NUM_UNKNOWN_EXTS; i++) dev_table->ext_dispatch[i] = (PFN_vkDevExt)vkDevExtError;
 
     // ---- Core 1_0 commands
     table->GetDeviceProcAddr = gpa;
@@ -991,6 +991,10 @@ VKAPI_ATTR void VKAPI_CALL loader_init_device_extension_dispatch_table(struct lo
 
     // ---- VK_EXT_pageable_device_local_memory extension commands
     table->SetDeviceMemoryPriorityEXT = (PFN_vkSetDeviceMemoryPriorityEXT)gdpa(dev, "vkSetDeviceMemoryPriorityEXT");
+
+    // ---- VK_VALVE_descriptor_set_host_mapping extension commands
+    table->GetDescriptorSetLayoutHostMappingInfoVALVE = (PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE)gdpa(dev, "vkGetDescriptorSetLayoutHostMappingInfoVALVE");
+    table->GetDescriptorSetHostMappingVALVE = (PFN_vkGetDescriptorSetHostMappingVALVE)gdpa(dev, "vkGetDescriptorSetHostMappingVALVE");
 
     // ---- VK_KHR_acceleration_structure extension commands
     table->CreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR)gdpa(dev, "vkCreateAccelerationStructureKHR");
@@ -1925,6 +1929,10 @@ VKAPI_ATTR void* VKAPI_CALL loader_lookup_device_dispatch_table(const VkLayerDis
     // ---- VK_EXT_pageable_device_local_memory extension commands
     if (!strcmp(name, "SetDeviceMemoryPriorityEXT")) return (void *)table->SetDeviceMemoryPriorityEXT;
 
+    // ---- VK_VALVE_descriptor_set_host_mapping extension commands
+    if (!strcmp(name, "GetDescriptorSetLayoutHostMappingInfoVALVE")) return (void *)table->GetDescriptorSetLayoutHostMappingInfoVALVE;
+    if (!strcmp(name, "GetDescriptorSetHostMappingVALVE")) return (void *)table->GetDescriptorSetHostMappingVALVE;
+
     // ---- VK_KHR_acceleration_structure extension commands
     if (!strcmp(name, "CreateAccelerationStructureKHR")) return (void *)table->CreateAccelerationStructureKHR;
     if (!strcmp(name, "DestroyAccelerationStructureKHR")) return (void *)table->DestroyAccelerationStructureKHR;
@@ -2238,6 +2246,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceVideoCapabilitiesKHR(
     if (NULL == icd_term->dispatch.GetPhysicalDeviceVideoCapabilitiesKHR) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceVideoCapabilitiesKHR");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetPhysicalDeviceVideoCapabilitiesKHR(phys_dev_term->phys_dev, pVideoProfile, pCapabilities);
 }
@@ -2271,6 +2280,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceVideoFormatProperties
     if (NULL == icd_term->dispatch.GetPhysicalDeviceVideoFormatPropertiesKHR) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceVideoFormatPropertiesKHR");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetPhysicalDeviceVideoFormatPropertiesKHR(phys_dev_term->phys_dev, pVideoFormatInfo, pVideoFormatPropertyCount, pVideoFormatProperties);
 }
@@ -2936,6 +2946,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_EnumeratePhysicalDeviceQueueFamilyPerf
     if (NULL == icd_term->dispatch.EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR(phys_dev_term->phys_dev, queueFamilyIndex, pCounterCount, pCounters, pCounterDescriptions);
 }
@@ -2965,6 +2976,7 @@ VKAPI_ATTR void VKAPI_CALL terminator_GetPhysicalDeviceQueueFamilyPerformanceQue
     if (NULL == icd_term->dispatch.GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     icd_term->dispatch.GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR(phys_dev_term->phys_dev, pPerformanceQueryCreateInfo, pNumPasses);
 }
@@ -3231,6 +3243,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceFragmentShadingRatesK
     if (NULL == icd_term->dispatch.GetPhysicalDeviceFragmentShadingRatesKHR) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceFragmentShadingRatesKHR");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetPhysicalDeviceFragmentShadingRatesKHR(phys_dev_term->phys_dev, pFragmentShadingRateCount, pFragmentShadingRates);
 }
@@ -4624,6 +4637,7 @@ VKAPI_ATTR void VKAPI_CALL terminator_GetPhysicalDeviceMultisamplePropertiesEXT(
     if (NULL == icd_term->dispatch.GetPhysicalDeviceMultisamplePropertiesEXT) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceMultisamplePropertiesEXT");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     icd_term->dispatch.GetPhysicalDeviceMultisamplePropertiesEXT(phys_dev_term->phys_dev, samples, pMultisampleProperties);
 }
@@ -5037,6 +5051,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceCalibrateableTimeDoma
     if (NULL == icd_term->dispatch.GetPhysicalDeviceCalibrateableTimeDomainsEXT) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceCalibrateableTimeDomainsEXT");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetPhysicalDeviceCalibrateableTimeDomainsEXT(phys_dev_term->phys_dev, pTimeDomainCount, pTimeDomains);
 }
@@ -5338,6 +5353,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceCooperativeMatrixProp
     if (NULL == icd_term->dispatch.GetPhysicalDeviceCooperativeMatrixPropertiesNV) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceCooperativeMatrixPropertiesNV");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetPhysicalDeviceCooperativeMatrixPropertiesNV(phys_dev_term->phys_dev, pPropertyCount, pProperties);
 }
@@ -5370,6 +5386,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSupportedFramebufferM
     if (NULL == icd_term->dispatch.GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV(phys_dev_term->phys_dev, pCombinationCount, pCombinations);
 }
@@ -5873,6 +5890,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_AcquireWinrtDisplayNV(
     if (NULL == icd_term->dispatch.AcquireWinrtDisplayNV) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support AcquireWinrtDisplayNV");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.AcquireWinrtDisplayNV(phys_dev_term->phys_dev, display);
 }
@@ -5904,6 +5922,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetWinrtDisplayNV(
     if (NULL == icd_term->dispatch.GetWinrtDisplayNV) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetWinrtDisplayNV");
+        abort(); /* Intentionally fail so user can correct issue. */
     }
     return icd_term->dispatch.GetWinrtDisplayNV(phys_dev_term->phys_dev, deviceRelativeId, pDisplay);
 }
@@ -6283,6 +6302,37 @@ VKAPI_ATTR void VKAPI_CALL SetDeviceMemoryPriorityEXT(
         abort(); /* Intentionally fail so user can correct issue. */
     }
     disp->SetDeviceMemoryPriorityEXT(device, memory, priority);
+}
+
+
+// ---- VK_VALVE_descriptor_set_host_mapping extension trampoline/terminators
+
+VKAPI_ATTR void VKAPI_CALL GetDescriptorSetLayoutHostMappingInfoVALVE(
+    VkDevice                                    device,
+    const VkDescriptorSetBindingReferenceVALVE* pBindingReference,
+    VkDescriptorSetLayoutHostMappingInfoVALVE*  pHostMapping) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    if (NULL == disp) {
+        loader_log(NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,
+                   "vkGetDescriptorSetLayoutHostMappingInfoVALVE: Invalid device "
+                   "[VUID-vkGetDescriptorSetLayoutHostMappingInfoVALVE-device-parameter]");
+        abort(); /* Intentionally fail so user can correct issue. */
+    }
+    disp->GetDescriptorSetLayoutHostMappingInfoVALVE(device, pBindingReference, pHostMapping);
+}
+
+VKAPI_ATTR void VKAPI_CALL GetDescriptorSetHostMappingVALVE(
+    VkDevice                                    device,
+    VkDescriptorSet                             descriptorSet,
+    void**                                      ppData) {
+    const VkLayerDispatchTable *disp = loader_get_dispatch(device);
+    if (NULL == disp) {
+        loader_log(NULL, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_VALIDATION_BIT, 0,
+                   "vkGetDescriptorSetHostMappingVALVE: Invalid device "
+                   "[VUID-vkGetDescriptorSetHostMappingVALVE-device-parameter]");
+        abort(); /* Intentionally fail so user can correct issue. */
+    }
+    disp->GetDescriptorSetHostMappingVALVE(device, descriptorSet, ppData);
 }
 
 
@@ -7955,6 +8005,16 @@ bool extension_instance_gpa(struct loader_instance *ptr_instance, const char *na
         return true;
     }
 
+    // ---- VK_VALVE_descriptor_set_host_mapping extension commands
+    if (!strcmp("vkGetDescriptorSetLayoutHostMappingInfoVALVE", name)) {
+        *addr = (void *)GetDescriptorSetLayoutHostMappingInfoVALVE;
+        return true;
+    }
+    if (!strcmp("vkGetDescriptorSetHostMappingVALVE", name)) {
+        *addr = (void *)GetDescriptorSetHostMappingVALVE;
+        return true;
+    }
+
     // ---- VK_KHR_acceleration_structure extension commands
     if (!strcmp("vkCreateAccelerationStructureKHR", name)) {
         *addr = (void *)CreateAccelerationStructureKHR;
@@ -8438,6 +8498,7 @@ const char *const LOADER_INSTANCE_EXTENSIONS[] = {
                                                   VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
                                                   VK_KHR_GET_DISPLAY_PROPERTIES_2_EXTENSION_NAME,
                                                   VK_KHR_SURFACE_PROTECTED_CAPABILITIES_EXTENSION_NAME,
+                                                  VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
                                                   VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
 #ifdef VK_USE_PLATFORM_GGP
                                                   VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME,

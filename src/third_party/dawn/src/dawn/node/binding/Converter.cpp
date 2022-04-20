@@ -149,6 +149,7 @@ namespace wgpu::binding {
                     auto arr = v.ArrayBuffer();
                     out.data = arr.Data();
                     out.size = arr.ByteLength();
+                    out.bytesPerElement = v.ElementSize();
                 },
                 *view);
             return true;
@@ -156,6 +157,7 @@ namespace wgpu::binding {
         if (auto* arr = std::get_if<interop::ArrayBuffer>(&in)) {
             out.data = arr->Data();
             out.size = arr->ByteLength();
+            out.bytesPerElement = 1;
             return true;
         }
         Napi::Error::New(env, "invalid value for BufferSource").ThrowAsJavaScriptException();
@@ -448,7 +450,7 @@ namespace wgpu::binding {
                 out = wgpu::TextureFormat::ASTC12x10Unorm;
                 return true;
             case interop::GPUTextureFormat::kAstc12X10UnormSrgb:
-                out = wgpu::TextureFormat::ASTC12x12UnormSrgb;
+                out = wgpu::TextureFormat::ASTC12x10UnormSrgb;
                 return true;
             case interop::GPUTextureFormat::kAstc12X12Unorm:
                 out = wgpu::TextureFormat::ASTC12x12Unorm;
@@ -462,27 +464,27 @@ namespace wgpu::binding {
     }
 
     bool Converter::Convert(wgpu::TextureUsage& out, const interop::GPUTextureUsageFlags& in) {
-        out = static_cast<wgpu::TextureUsage>(in);
+        out = static_cast<wgpu::TextureUsage>(in.value);
         return true;
     }
 
     bool Converter::Convert(wgpu::ColorWriteMask& out, const interop::GPUColorWriteFlags& in) {
-        out = static_cast<wgpu::ColorWriteMask>(in);
+        out = static_cast<wgpu::ColorWriteMask>(in.value);
         return true;
     }
 
     bool Converter::Convert(wgpu::BufferUsage& out, const interop::GPUBufferUsageFlags& in) {
-        out = static_cast<wgpu::BufferUsage>(in);
+        out = static_cast<wgpu::BufferUsage>(in.value);
         return true;
     }
 
     bool Converter::Convert(wgpu::MapMode& out, const interop::GPUMapModeFlags& in) {
-        out = static_cast<wgpu::MapMode>(in);
+        out = static_cast<wgpu::MapMode>(in.value);
         return true;
     }
 
     bool Converter::Convert(wgpu::ShaderStage& out, const interop::GPUShaderStageFlags& in) {
-        out = static_cast<wgpu::ShaderStage>(in);
+        out = static_cast<wgpu::ShaderStage>(in.value);
         return true;
     }
 
@@ -536,8 +538,22 @@ namespace wgpu::binding {
     bool Converter::Convert(wgpu::ProgrammableStageDescriptor& out,
                             const interop::GPUProgrammableStage& in) {
         out = {};
-        out.entryPoint = in.entryPoint.c_str();
         out.module = *in.module.As<GPUShaderModule>();
+
+        // Replace nulls in the entryPoint name with another character that's disallowed in
+        // identifiers. This is so that using "main\0" doesn't match an entryPoint named "main".
+        // TODO(dawn:1345): Replace with a way to size strings explicitly in webgpu.h
+        char* entryPoint = Allocate<char>(in.entryPoint.size() + 1);
+        entryPoint[in.entryPoint.size()] = '\0';
+        for (size_t i = 0; i < in.entryPoint.size(); i++) {
+            if (in.entryPoint[i] == '\0') {
+                entryPoint[i] = '#';
+            } else {
+                entryPoint[i] = in.entryPoint[i];
+            }
+        }
+        out.entryPoint = entryPoint;
+
         return Convert(out.constants, out.constantCount, in.constants);
     }
 
@@ -954,7 +970,7 @@ namespace wgpu::binding {
         out = {};
         return Convert(out.view, in.view) &&                    //
                Convert(out.resolveTarget, in.resolveTarget) &&  //
-               Convert(out.clearColor, in.clearValue) &&        //
+               Convert(out.clearValue, in.clearValue) &&        //
                Convert(out.loadOp, in.loadOp) &&                //
                Convert(out.storeOp, in.storeOp);
     }
@@ -962,14 +978,14 @@ namespace wgpu::binding {
     bool Converter::Convert(wgpu::RenderPassDepthStencilAttachment& out,
                             const interop::GPURenderPassDepthStencilAttachment& in) {
         out = {};
-        return Convert(out.view, in.view) &&                       //
-               Convert(out.clearDepth, in.depthClearValue) &&      //
-               Convert(out.depthLoadOp, in.depthLoadOp) &&         //
-               Convert(out.depthStoreOp, in.depthStoreOp) &&       //
-               Convert(out.depthReadOnly, in.depthReadOnly) &&     //
-               Convert(out.clearStencil, in.stencilClearValue) &&  //
-               Convert(out.stencilLoadOp, in.stencilLoadOp) &&     //
-               Convert(out.stencilStoreOp, in.stencilStoreOp) &&   //
+        return Convert(out.view, in.view) &&                            //
+               Convert(out.depthClearValue, in.depthClearValue) &&      //
+               Convert(out.depthLoadOp, in.depthLoadOp) &&              //
+               Convert(out.depthStoreOp, in.depthStoreOp) &&            //
+               Convert(out.depthReadOnly, in.depthReadOnly) &&          //
+               Convert(out.stencilClearValue, in.stencilClearValue) &&  //
+               Convert(out.stencilLoadOp, in.stencilLoadOp) &&          //
+               Convert(out.stencilStoreOp, in.stencilStoreOp) &&        //
                Convert(out.stencilReadOnly, in.stencilReadOnly);
     }
 

@@ -69,18 +69,18 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_framer.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_decrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_framer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/platform/api/quic_test.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_frame_builder.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
@@ -6978,42 +6978,6 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
 
   SendRequestAndExpectQuicResponse("hello!");
 }
-
-class QuicURLRequestContext : public URLRequestContext {
- public:
-  QuicURLRequestContext(std::unique_ptr<HttpNetworkSession> session,
-                        MockClientSocketFactory* socket_factory)
-      : storage_(this) {
-    socket_factory_ = socket_factory;
-    storage_.set_host_resolver(std::make_unique<MockHostResolver>(
-        /*default_result=*/MockHostResolverBase::RuleResolver::
-            GetLocalhostResult()));
-    storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
-    storage_.set_transport_security_state(
-        std::make_unique<TransportSecurityState>());
-    storage_.set_proxy_resolution_service(
-        ConfiguredProxyResolutionService::CreateDirect());
-    storage_.set_ssl_config_service(
-        std::make_unique<SSLConfigServiceDefaults>());
-    storage_.set_http_auth_handler_factory(
-        HttpAuthHandlerFactory::CreateDefault());
-    storage_.set_http_server_properties(
-        std::make_unique<HttpServerProperties>());
-    storage_.set_job_factory(std::make_unique<URLRequestJobFactory>());
-    storage_.set_http_network_session(std::move(session));
-    storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
-        storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
-        false));
-  }
-
-  ~QuicURLRequestContext() override { AssertNoURLRequests(); }
-
-  MockClientSocketFactory& socket_factory() { return *socket_factory_; }
-
- private:
-  raw_ptr<MockClientSocketFactory> socket_factory_;
-  URLRequestContextStorage storage_;
-};
 
 TEST_P(QuicNetworkTransactionTest, HostInAllowlist) {
   if (version_.AlpnDeferToRFCv1()) {

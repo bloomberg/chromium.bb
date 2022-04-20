@@ -10,26 +10,36 @@ struct Inputs {
 struct Outputs {
     half4 sk_FragColor [[color(0)]];
 };
-half3 blend_set_color_luminance_Qh3h3hh3(half3 hueSatColor, half alpha, half3 lumColor) {
-    half lum = dot(half3(0.30000001192092896h, 0.5899999737739563h, 0.10999999940395355h), lumColor);
-    half3 result = (lum - dot(half3(0.30000001192092896h, 0.5899999737739563h, 0.10999999940395355h), hueSatColor)) + hueSatColor;
-    half minComp = min(min(result.x, result.y), result.z);
-    half maxComp = max(max(result.x, result.y), result.z);
-    if (minComp < 0.0h && lum != minComp) {
-        result = lum + (result - lum) * (lum / (lum - minComp));
+half blend_color_saturation_Qhh3(half3 color) {
+    return max(max(color.x, color.y), color.z) - min(min(color.x, color.y), color.z);
+}
+half4 blend_hslc_h4h4h4bb(half4 src, half4 dst, bool flip, bool saturate) {
+    half alpha = dst.w * src.w;
+    half3 sda = src.xyz * dst.w;
+    half3 dsa = dst.xyz * src.w;
+    half3 l = flip ? dsa : sda;
+    half3 r = flip ? sda : dsa;
+    if (saturate) {
+        half _2_mn = min(min(l.x, l.y), l.z);
+        half _3_mx = max(max(l.x, l.y), l.z);
+        l = _3_mx > _2_mn ? ((l - _2_mn) * blend_color_saturation_Qhh3(r)) / (_3_mx - _2_mn) : half3(0.0h);
+        r = dsa;
     }
-    if (maxComp > alpha && maxComp != lum) {
-        return lum + ((result - lum) * (alpha - lum)) / (maxComp - lum);
-    } else {
-        return result;
+    half _4_lum = dot(half3(0.30000001192092896h, 0.5899999737739563h, 0.10999999940395355h), r);
+    half3 _5_result = (_4_lum - dot(half3(0.30000001192092896h, 0.5899999737739563h, 0.10999999940395355h), l)) + l;
+    half _6_minComp = min(min(_5_result.x, _5_result.y), _5_result.z);
+    half _7_maxComp = max(max(_5_result.x, _5_result.y), _5_result.z);
+    if (_6_minComp < 0.0h && _4_lum != _6_minComp) {
+        _5_result = _4_lum + (_5_result - _4_lum) * (_4_lum / (_4_lum - _6_minComp));
     }
+    if (_7_maxComp > alpha && _7_maxComp != _4_lum) {
+        _5_result = _4_lum + ((_5_result - _4_lum) * (alpha - _4_lum)) / (_7_maxComp - _4_lum);
+    }
+    return half4((((_5_result + dst.xyz) - dsa) + src.xyz) - sda, (src.w + dst.w) - alpha);
 }
 fragment Outputs fragmentMain(Inputs _in [[stage_in]], constant Uniforms& _uniforms [[buffer(0)]], bool _frontFacing [[front_facing]], float4 _fragCoord [[position]]) {
     Outputs _out;
     (void)_out;
-    half _0_alpha = _uniforms.dst.w * _uniforms.src.w;
-    half3 _1_sda = _uniforms.src.xyz * _uniforms.dst.w;
-    half3 _2_dsa = _uniforms.dst.xyz * _uniforms.src.w;
-    _out.sk_FragColor = half4((((blend_set_color_luminance_Qh3h3hh3(_2_dsa, _0_alpha, _1_sda) + _uniforms.dst.xyz) - _2_dsa) + _uniforms.src.xyz) - _1_sda, (_uniforms.src.w + _uniforms.dst.w) - _0_alpha);
+    _out.sk_FragColor = blend_hslc_h4h4h4bb(_uniforms.src, _uniforms.dst, true, false);
     return _out;
 }

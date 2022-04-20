@@ -23,7 +23,7 @@
 #include "api/audio/audio_frame_processor.h"
 #include "api/audio_codecs/audio_codec_pair_id.h"
 #include "api/call/audio_sink.h"
-#include "api/transport/webrtc_key_value_config.h"
+#include "api/field_trials_view.h"
 #include "media/base/audio_source.h"
 #include "media/base/media_constants.h"
 #include "media/base/stream_params.h"
@@ -126,7 +126,7 @@ bool IsCodec(const AudioCodec& codec, const char* ref_name) {
 bool FindCodec(const std::vector<AudioCodec>& codecs,
                const AudioCodec& codec,
                AudioCodec* found_codec,
-               const webrtc::WebRtcKeyValueConfig* field_trials) {
+               const webrtc::FieldTrialsView* field_trials) {
   for (const AudioCodec& c : codecs) {
     if (c.Matches(codec, field_trials)) {
       if (found_codec != NULL) {
@@ -206,8 +206,7 @@ absl::optional<int> ComputeSendBitrate(int max_send_bitrate_bps,
   }
 }
 
-bool IsEnabled(const webrtc::WebRtcKeyValueConfig& config,
-               absl::string_view trial) {
+bool IsEnabled(const webrtc::FieldTrialsView& config, absl::string_view trial) {
   return absl::StartsWith(config.Lookup(trial), "Enabled");
 }
 
@@ -229,7 +228,7 @@ struct AdaptivePtimeConfig {
         "use_slow_adaptation", &use_slow_adaptation);
   }
 
-  explicit AdaptivePtimeConfig(const webrtc::WebRtcKeyValueConfig& trials) {
+  explicit AdaptivePtimeConfig(const webrtc::FieldTrialsView& trials) {
     Parser()->Parse(trials.Lookup("WebRTC-Audio-AdaptivePtime"));
 #if WEBRTC_ENABLE_PROTOBUF
     webrtc::audio_network_adaptor::config::ControllerManager config;
@@ -299,7 +298,7 @@ WebRtcVoiceEngine::WebRtcVoiceEngine(
     rtc::scoped_refptr<webrtc::AudioMixer> audio_mixer,
     rtc::scoped_refptr<webrtc::AudioProcessing> audio_processing,
     webrtc::AudioFrameProcessor* audio_frame_processor,
-    const webrtc::WebRtcKeyValueConfig& trials)
+    const webrtc::FieldTrialsView& trials)
     : task_queue_factory_(task_queue_factory),
       adm_(adm),
       encoder_factory_(encoder_factory),
@@ -393,10 +392,8 @@ void WebRtcVoiceEngine::Init() {
 #if defined(WEBRTC_IOS)
     // On iOS, VPIO provides built-in NS.
     options.noise_suppression = false;
-    options.typing_detection = false;
 #else
     options.noise_suppression = true;
-    options.typing_detection = true;
 #endif
     options.highpass_filter = true;
     options.stereo_swapping = false;
@@ -451,11 +448,6 @@ bool WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
   }
 #elif defined(WEBRTC_ANDROID)
   use_mobile_software_aec = true;
-#endif
-
-// Override noise suppression options for Android.
-#if defined(WEBRTC_ANDROID)
-  options.typing_detection = false;
 #endif
 
 // Set and adjust gain control options.
@@ -600,10 +592,6 @@ bool WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
     apm_config.noise_suppression.level =
         webrtc::AudioProcessing::Config::NoiseSuppression::Level::kHigh;
     RTC_LOG(LS_INFO) << "NS set to " << enabled;
-  }
-
-  if (options.typing_detection) {
-    RTC_LOG(LS_WARNING) << "Typing detection is requested, but unsupported.";
   }
 
   ap->ApplyConfig(apm_config);
@@ -1786,7 +1774,6 @@ bool WebRtcVoiceMediaChannel::SetSendCodecs(
                         "streams.";
     recv_transport_cc_enabled_ = send_codec_spec_->transport_cc_enabled;
     recv_nack_enabled_ = send_codec_spec_->nack_enabled;
-    enable_non_sender_rtt_ = send_codec_spec_->enable_non_sender_rtt;
     for (auto& kv : recv_streams_) {
       kv.second->SetUseTransportCc(recv_transport_cc_enabled_,
                                    recv_nack_enabled_);
@@ -2339,7 +2326,6 @@ bool WebRtcVoiceMediaChannel::GetStats(VoiceMediaInfo* info,
     sinfo.audio_level = stats.audio_level;
     sinfo.total_input_energy = stats.total_input_energy;
     sinfo.total_input_duration = stats.total_input_duration;
-    sinfo.typing_noise_detected = (send_ ? stats.typing_noise_detected : false);
     sinfo.ana_statistics = stats.ana_statistics;
     sinfo.apm_statistics = stats.apm_statistics;
     sinfo.report_block_datas = std::move(stats.report_block_datas);

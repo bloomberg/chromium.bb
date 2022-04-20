@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "experimental/graphite/src/geom/Rect.h"
+#include "src/gpu/graphite/geom/Rect.h"
 #include "tests/Test.h"
 
-namespace skgpu {
+namespace skgpu::graphite {
 
 #define CHECK(A) REPORTER_ASSERT(reporter, A)
 

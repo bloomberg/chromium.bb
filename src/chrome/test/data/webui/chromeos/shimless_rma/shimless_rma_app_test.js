@@ -9,20 +9,10 @@ import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_se
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {ButtonState, ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
 import {RmadErrorCode, State, StateResult} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {disableAllButtons, enableAllButtons} from 'chrome://shimless-rma/shimless_rma_util.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks, isVisible} from '../../test_util.js';
-
-/**
- * onSelected*Change is not triggered automatically and the functions are
- * protected. It is not possible to suppress visibility inline so this helper
- * function wraps them.
- * @suppress {visibility}
- * @return {!RmadErrorCode}
- */
-function suppressedErrorMessage(component) {
-  return component.errorMessage_;
-}
 
 export function shimlessRMAAppTest() {
   /** @type {?ShimlessRma} */
@@ -57,6 +47,7 @@ export function shimlessRMAAppTest() {
     // Initialize the fake data.
     service.setStates(states);
     service.setGetCurrentOsVersionResult(chromeVersion);
+    service.setCheckForOsUpdatesResult('fake version');
 
     component =
         /** @type {!ShimlessRma} */ (document.createElement('shimless-rma'));
@@ -133,7 +124,7 @@ export function shimlessRMAAppTest() {
     assertFalse(initialPage.hidden);
     assertFalse(initialPage.allButtonsDisabled);
     assertTrue(prevButton.hidden);
-    assertFalse(cancelButton.hidden);
+    assertTrue(cancelButton.hidden);
 
     // This enables the next button on the landing page.
     service.triggerHardwareVerificationStatusObserver(true, '', 0);
@@ -157,7 +148,7 @@ export function shimlessRMAAppTest() {
     assertTrue(selectNetworkPage.hidden);
     assertFalse(initialPage.hidden);
     assertTrue(prevButton.hidden);
-    assertFalse(cancelButton.hidden);
+    assertTrue(cancelButton.hidden);
   });
 
   test('ShimlessRMACancellation', async () => {
@@ -176,7 +167,7 @@ export function shimlessRMAAppTest() {
     await flushTasks();
 
     assertEquals(1, abortRmaCount);
-    assertFalse(initialPage.allButtonsDisabled);
+    assertTrue(initialPage.allButtonsDisabled);
   });
 
   test('NextButtonClickedOnReady', async () => {
@@ -259,25 +250,6 @@ export function shimlessRMAAppTest() {
     assertEquals(
         loadTimeData.getString('skipButtonLabel'),
         nextButton.textContent.trim());
-  });
-
-  test('ErrorSignalShowsErrorCode', async () => {
-    await initializeShimlessRMAApp(
-        [{
-          state: State.kSelectComponents,
-          canCancel: true,
-          canGoBack: true,
-          error: RmadErrorCode.kOk
-        }],
-        fakeChromeVersion[0]);
-
-    service.triggerErrorObserver(RmadErrorCode.kReimagingUsbInvalidImage, 0);
-
-    await flushTasks();
-
-    assertEquals(
-        'Error: kReimagingUsbInvalidImage(23)',
-        suppressedErrorMessage(component));
   });
 
   test('NextButtonSpinner', async () => {
@@ -403,25 +375,79 @@ export function shimlessRMAAppTest() {
     const nextButton = component.shadowRoot.querySelector('#next');
     const backButton = component.shadowRoot.querySelector('#back');
     const cancelButton = component.shadowRoot.querySelector('#cancel');
+    const busyStateOverlay = /** @type {!HTMLElement} */ (
+        component.shadowRoot.querySelector('#busyStateOverlay'));
 
     assertFalse(nextButton.disabled);
     assertFalse(backButton.disabled);
     assertFalse(cancelButton.disabled);
 
-    component.dispatchEvent(new CustomEvent(
-        'disable-all-buttons',
-        {bubbles: true, composed: true, detail: true},
-        ));
+    disableAllButtons(component, /*showBusyStateOverlay=*/ false);
     assertTrue(nextButton.disabled);
     assertTrue(backButton.disabled);
     assertTrue(cancelButton.disabled);
+    assertFalse(isVisible(busyStateOverlay));
 
-    component.dispatchEvent(new CustomEvent(
-        'disable-all-buttons',
-        {bubbles: true, composed: true, detail: false},
-        ));
+    disableAllButtons(component, /*showBusyStateOverlay=*/ true);
+    assertTrue(isVisible(busyStateOverlay));
+
+    enableAllButtons(component);
     assertFalse(nextButton.disabled);
     assertFalse(backButton.disabled);
     assertFalse(cancelButton.disabled);
+    assertFalse(isVisible(busyStateOverlay));
+  });
+
+  test('CancelButtonClickEventIsHandled', async () => {
+    const resolver = new PromiseResolver();
+
+    await initializeShimlessRMAApp(
+        [{
+          state: State.kWelcomeScreen,
+          canCancel: true,
+          canGoBack: true,
+          error: RmadErrorCode.kOk
+        }],
+        fakeChromeVersion[0]);
+
+    let callCounter = 0;
+    service.abortRma = () => {
+      callCounter++;
+      return resolver.promise;
+    };
+
+    component.dispatchEvent(new CustomEvent(
+        'click-cancel-button',
+        {bubbles: true, composed: true},
+        ));
+
+    await flushTasks();
+    assertEquals(1, callCounter);
+  });
+
+  test('TransitionStateListener', async () => {
+    await initializeShimlessRMAApp(fakeStates, fakeChromeVersion[0]);
+
+    // Confirm starting on the landing page.
+    const initialPage =
+        component.shadowRoot.querySelector('onboarding-landing-page');
+    assertTrue(!!initialPage);
+
+    // Attempt to transition OS Update page.
+    component.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: () => Promise.resolve(
+              {state: State.kUpdateOs, error: RmadErrorCode.kOk})
+        },
+        ));
+    await flushTasks();
+
+    // Confirm transition to the OS Update page.
+    const updatePage =
+        component.shadowRoot.querySelector('onboarding-update-page');
+    assertTrue(!!updatePage);
   });
 }

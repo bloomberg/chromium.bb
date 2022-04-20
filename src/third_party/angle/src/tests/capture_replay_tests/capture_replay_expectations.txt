@@ -33,9 +33,6 @@
 
 # ES2
 
-
-6538 : AddMockTextureNoRenderTargetTest.NoProgramOutputWorkaround/* = FLAKY
-
 5822 : ExternalWrapTest.ClampToEdge/* = CRASH
 5822 : ExternalWrapTest.MirroredRepeat/* = CRASH
 5822 : ExternalWrapTest.NoWrap/* = CRASH
@@ -48,7 +45,6 @@
 
 6286 : ImageTest.Source2DTarget2D/* = FAIL
 6286 : ImageTest.Source2DTargetExternal/* = FAIL
-6286 : ImageTest.Source2DTarget2DTargetTextureRespecifyColorspace/* = FLAKY
 6286 : ImageTest.SourceCubeTarget2D/* = FAIL
 5822 : ImageTest.SourceCubeTargetExternal/* = FAIL
 
@@ -65,7 +61,6 @@
 6180 : PbufferTest.Clearing/* = FAIL
 6180 : PbufferTest.TextureSizeReset/* = FAIL
 
-6220 : Texture2DTest.DefineMultipleLevelsWithoutMipmapping/* = TIMEOUT
 
 6221 : VulkanExternalImageTest.ShouldClearOpaqueFdWithSemaphores/* = TIMEOUT
 6221 : VulkanExternalImageTest.ShouldClearOpaqueFdWithSemaphoresMutableNoStorage/* = TIMEOUT
@@ -81,15 +76,10 @@
 6654 : UniformTest.UnusedStructInlineUniform/* = SKIP_FOR_CAPTURE
 6654 : UniformTest.UnusedStructInlineUniformWithSampler/* = SKIP_FOR_CAPTURE
 
+7153 : InstancingTestES3.LargestDivisor/* = COMPILE_FAIL
+
 # Fails because of unsupported combined depth/stencil GetImage.
 4688 ASAN : DepthStencilTest.DepthOnlyEmulatedWithPacked/* = FAIL
-
-# flaky test
-6511 : DrawBuffersTest.UnwrittenOutputVariablesShouldNotCrash/* = FLAKY
-6180 : WebGLCompatibilityTest.DrawElementsBufferOutOfBoundsInIndexBuffer/* = FLAKY
-6180 : ImageTest.MipLevels/* = FLAKY
-6373 : WebGLCompatibilityTest.DrawArraysBufferOutOfBoundsNonInstanced/* = FLAKY
-6180 : WebGLCompatibilityTest.DrawElementsBufferOutOfBoundsInVertexBuffer/* = FLAKY
 
 # Skipped in end2end tests
 6336 : GetImageTest.InconsistentTexture2D/* = NOT_RUN
@@ -111,7 +101,7 @@
 6180 : TransformFeedbackTest.TransformFeedbackQueryPausedDrawThenResume/* = FLAKY
 6513 : TransformFeedbackTest.MultiContext/* = FLAKY
 6180 WIN : TransformFeedbackTest.BufferOutOfMemory/* = FLAKY
-6180 WIN : VertexAttributeTestES3.DrawWithUnalignedData/* = FLAKY
+6180 : VertexAttributeTestES3.DrawWithUnalignedData/* = FLAKY
 
 6180 : UniformBufferTest.BlockArrayContainingArrayOfStructs/* = FAIL
 6180 : UniformBufferTest.ManyBlocks/* = FAIL
@@ -143,7 +133,6 @@
 6510 : FenceSyncTest.Errors/* = FLAKY
 6510 : FenceSyncTest.MultipleFenceDraw/* = FLAKY
 6510 : FenceSyncTest.NullLength/* = FLAKY
-6543 : GLSLTest_ES3.ComplexCrossExpression/* = FLAKY
 
 # Fails after recent colorspace CL.
 6578 : ImageTest.Source2DTarget2D_Colorspace/* = FAIL
@@ -163,7 +152,6 @@
 6578 : ImageTestES3.SourceCubeTargetExternalESSL3_Colorspace/* = FAIL
 6578 : ImageTestES3.SourceRenderbufferTargetTextureExternalESSL3_Colorspace/* = FAIL
 
-6631 : ProgramBinaryES3Test.SaveAndLoadDetachedShaders/* = CRASH
 6631 : MultithreadingTest.MultiContextCreateAndDeleteResources/* = CRASH
 6631 WIN : MultithreadingTestES3.MultithreadFenceDraw/* = CRASH
 6631 WIN : MultithreadingTestES3.MultithreadFenceTexImage/* = CRASH
@@ -201,8 +189,12 @@
 
 6875 : TransformFeedbackTest.SpanMultipleRenderPasses/* = NOT_RUN
 
+7112 : TransformFeedbackTest.BaseInstance/* = NOT_RUN
+
 # GLES 3.2 tests that fail because of missing features
 5366 : GeometryShaderTestES32.MaxGeometryImageUniforms/* = CRASH
 5366 : ProgramPipelineTest32.MaxGeometryImageUniforms/* = CRASH
 
 7088 : VulkanPerformanceCounterTest* = SKIP_FOR_CAPTURE
+
+7111 : ImageTestES3.Source2DTarget2DStorageOrphan/* = FAIL

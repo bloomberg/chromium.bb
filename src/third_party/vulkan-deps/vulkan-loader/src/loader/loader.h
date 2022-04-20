@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2014-2021 The Khronos Group Inc.
- * Copyright (c) 2014-2021 Valve Corporation
- * Copyright (c) 2014-2021 LunarG, Inc.
+ * Copyright (c) 2014-2022 The Khronos Group Inc.
+ * Copyright (c) 2014-2022 Valve Corporation
+ * Copyright (c) 2014-2022 LunarG, Inc.
  * Copyright (C) 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +30,6 @@
 #pragma once
 
 #include "loader_common.h"
-
-static inline struct loader_instance *loader_instance(VkInstance instance) { return (struct loader_instance *)instance; }
 
 static inline VkPhysicalDevice loader_unwrap_physical_device(VkPhysicalDevice physicalDevice) {
     struct loader_physical_device_tramp *phys_dev = (struct loader_physical_device_tramp *)physicalDevice;
@@ -121,13 +119,6 @@ bool loader_implicit_layer_is_enabled(const struct loader_instance *inst, const 
 VkResult loader_get_icd_loader_instance_extensions(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list,
                                                    struct loader_extension_list *inst_exts);
 struct loader_icd_term *loader_get_icd_and_device(const void *device, struct loader_device **found_dev, uint32_t *icd_index);
-void loader_init_dispatch_dev_ext(struct loader_instance *inst, struct loader_device *dev);
-void *loader_dev_ext_gpa(struct loader_instance *inst, const char *funcName);
-void *loader_get_dev_ext_trampoline(uint32_t index);
-bool loader_phys_dev_ext_gpa(struct loader_instance *inst, const char *funcName, bool perform_checking, void **tramp_addr,
-                             void **term_addr);
-void *loader_get_phys_dev_ext_tramp(uint32_t index);
-void *loader_get_phys_dev_ext_termin(uint32_t index);
 struct loader_instance *loader_get_instance(const VkInstance instance);
 void loader_deactivate_layers(const struct loader_instance *instance, struct loader_device *device, struct loader_layer_list *list);
 struct loader_device *loader_create_logical_device(const struct loader_instance *inst, const VkAllocationCallbacks *pAllocator);
@@ -164,10 +155,26 @@ VkResult loader_validate_device_extensions(struct loader_instance *this_instance
                                            const struct loader_layer_list *activated_device_layers,
                                            const struct loader_extension_list *icd_exts, const VkDeviceCreateInfo *pCreateInfo);
 
-VkResult setup_loader_tramp_phys_devs(struct loader_instance *inst);
-VkResult setup_loader_term_phys_devs(struct loader_instance *inst);
+VkResult setup_loader_tramp_phys_devs(struct loader_instance *inst, uint32_t phys_dev_count, VkPhysicalDevice *phys_devs);
+VkResult setup_loader_tramp_phys_dev_groups(struct loader_instance *inst, uint32_t group_count,
+                                            VkPhysicalDeviceGroupProperties *groups);
 
 VkStringErrorFlags vk_string_validate(const int max_length, const char *char_array);
 char *loader_get_next_path(char *path);
-VkResult add_data_files_in_path(const struct loader_instance *inst, char *search_path, bool is_directory_list,
-                                struct loader_data_files *out_files, bool use_first_found_manifest);
+VkResult add_data_files(const struct loader_instance *inst, char *search_path, struct loader_data_files *out_files,
+                        bool use_first_found_manifest);
+
+loader_api_version loader_make_version(uint32_t version);
+loader_api_version loader_combine_version(uint32_t major, uint32_t minor, uint32_t patch);
+
+// Helper macros for determining if a version is valid or not
+bool loader_check_version_meets_required(loader_api_version required, loader_api_version version);
+
+// Convenience macros for common versions
+#ifndef LOADER_VERSION_1_0_0
+#define LOADER_VERSION_1_0_0 loader_combine_version(1, 0, 0)
+#endif
+
+#ifndef LOADER_VERSION_1_1_0
+#define LOADER_VERSION_1_1_0 loader_combine_version(1, 1, 0)
+#endif

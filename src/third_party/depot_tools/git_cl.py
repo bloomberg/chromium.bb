@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -52,6 +52,7 @@ import setup_color
 import split_cl
 import subcommand
 import subprocess2
+import swift_format
 import watchlists
 
 from third_party import six
@@ -1333,8 +1334,17 @@ class Changelist(object):
 
     return args
 
-  def RunHook(self, committing, may_prompt, verbose, parallel, upstream,
-              description, all_files, resultdb=False, realm=None):
+  def RunHook(self,
+              committing,
+              may_prompt,
+              verbose,
+              parallel,
+              upstream,
+              description,
+              all_files,
+              files=None,
+              resultdb=False,
+              realm=None):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     args = self._GetCommonPresubmitArgs(verbose, upstream)
     args.append('--commit' if committing else '--upload')
@@ -1344,6 +1354,9 @@ class Changelist(object):
       args.append('--parallel')
     if all_files:
       args.append('--all_files')
+    if files:
+      args.extend(files.split(';'))
+      args.append('--source_controlled_only')
 
     if resultdb and not realm:
       # TODO (crbug.com/1113463): store realm somewhere and look it up so
@@ -4064,6 +4077,11 @@ def CMDpresubmit(parser, args):
                     help='Run checks even if tree is dirty')
   parser.add_option('--all', action='store_true',
                     help='Run checks against all files, not just modified ones')
+  parser.add_option('--files',
+                    nargs=1,
+                    help='Semicolon-separated list of files to be marked as '
+                    'modified when executing presubmit or post-upload hooks. '
+                    'fnmatch wildcards can also be used.')
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
@@ -4089,16 +4107,16 @@ def CMDpresubmit(parser, args):
   else:
     description = _create_description_from_log([base_branch])
 
-  cl.RunHook(
-      committing=not options.upload,
-      may_prompt=False,
-      verbose=options.verbose,
-      parallel=options.parallel,
-      upstream=base_branch,
-      description=description,
-      all_files=options.all,
-      resultdb=options.resultdb,
-      realm=options.realm)
+  cl.RunHook(committing=not options.upload,
+             may_prompt=False,
+             verbose=options.verbose,
+             parallel=options.parallel,
+             upstream=base_branch,
+             description=description,
+             all_files=options.all,
+             files=options.files,
+             resultdb=options.resultdb,
+             realm=options.realm)
   return 0
 
 
@@ -5126,6 +5144,33 @@ def _RunRustFmt(opts, rust_diff_files, top_dir, upstream_commit):
   return 0
 
 
+def _RunSwiftFormat(opts, swift_diff_files, top_dir, upstream_commit):
+  """Runs swift-format.  Just like _RunClangFormatDiff returns 2 to indicate
+  that presubmit checks have failed (and returns 0 otherwise)."""
+
+  if not swift_diff_files:
+    return 0
+
+  # Locate the swift-format binary.
+  try:
+    swift_format_tool = swift_format.FindSwiftFormatToolInChromiumTree()
+  except swift_format.NotFoundError as e:
+    DieWithError(e)
+
+  cmd = [swift_format_tool]
+  if opts.dry_run:
+    cmd.append('lint')
+  else:
+    cmd += ['format', '-i']
+  cmd += swift_diff_files
+  swift_format_exitcode = subprocess2.call(cmd)
+
+  if opts.presubmit and swift_format_exitcode != 0:
+    return 2
+
+  return 0
+
+
 def MatchingFileType(file_name, extensions):
   """Returns True if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
@@ -5138,6 +5183,7 @@ def CMDformat(parser, args):
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.m', '.mm', '.proto', '.java']
   GN_EXTS = ['.gn', '.gni', '.typemap']
   RUST_EXTS = ['.rs']
+  SWIFT_EXTS = ['.swift']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
   parser.add_option('--upstream', help='Branch to check against')
@@ -5182,6 +5228,19 @@ def CMDformat(parser, args):
       dest='use_rust_fmt',
       action='store_false',
       help='Disables formatting of Rust file types using rustfmt.')
+
+  parser.add_option(
+      '--swift-format',
+      dest='use_swift_format',
+      action='store_true',
+      default=False,
+      help='Enables formatting of Swift file types using swift-format '
+      '(macOS host only).')
+  parser.add_option(
+      '--no-swift-format',
+      dest='use_swift_format',
+      action='store_false',
+      help='Disables formatting of Swift file types using swift-format.')
 
   opts, args = parser.parse_args(args)
 
@@ -5233,6 +5292,7 @@ def CMDformat(parser, args):
     ]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
   rust_diff_files = [x for x in diff_files if MatchingFileType(x, RUST_EXTS)]
+  swift_diff_files = [x for x in diff_files if MatchingFileType(x, SWIFT_EXTS)]
   gn_diff_files = [x for x in diff_files if MatchingFileType(x, GN_EXTS)]
 
   top_dir = settings.GetRoot()
@@ -5244,6 +5304,14 @@ def CMDformat(parser, args):
     rust_fmt_return_value = _RunRustFmt(opts, rust_diff_files, top_dir,
                                         upstream_commit)
     if rust_fmt_return_value == 2:
+      return_value = 2
+
+  if opts.use_swift_format:
+    if sys.platform != 'darwin':
+      DieWithError('swift-format is only supported on macOS.')
+    swift_format_return_value = _RunSwiftFormat(opts, swift_diff_files, top_dir,
+                                                upstream_commit)
+    if swift_format_return_value == 2:
       return_value = 2
 
   # Similar code to above, but using yapf on .py files rather than clang-format
@@ -5469,6 +5537,11 @@ def CMDlol(parser, args):
       'JAnN+lAXsOMJ90GANAi43mq5/VeeacylKVgi8o6F1SC63FxnagHfJUTfUYdCR/W'
       'Ofe+0dHL7PicpytKP750Fh1q2qnLVof4w8OZWNY')).decode('utf-8'))
   return 0
+
+
+def CMDversion(parser, args):
+  import utils
+  print(utils.depot_tools_version())
 
 
 class OptionParser(optparse.OptionParser):

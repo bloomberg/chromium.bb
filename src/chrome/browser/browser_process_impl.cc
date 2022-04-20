@@ -14,6 +14,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
@@ -37,7 +38,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/soda_installer_impl.h"
 #include "chrome/browser/battery/battery_metrics.h"
-#include "chrome/browser/breadcrumbs/breadcrumbs_status.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -56,6 +56,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -92,6 +93,8 @@
 #include "components/breadcrumbs/core/application_breadcrumbs_logger.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_util.h"
+#include "components/breadcrumbs/core/breadcrumbs_status.h"
+#include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
@@ -1205,10 +1208,20 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   base::FilePath user_data_dir;
   bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(result);
-  if (BreadcrumbsStatus::IsEnabled()) {
+  if (breadcrumbs::IsEnabled()) {
     application_breadcrumbs_logger_ =
         std::make_unique<breadcrumbs::ApplicationBreadcrumbsLogger>(
-            user_data_dir);
+            user_data_dir, base::BindRepeating([] {
+              return ChromeMetricsServiceAccessor::
+                  IsMetricsAndCrashReportingEnabled();
+            }));
+
+    // Get stored persistent breadcrumbs from last run to set on crash reports.
+    GetBreadcrumbPersistentStorageManager()->GetStoredEvents(
+        base::BindOnce([](std::vector<std::string> events) {
+          breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
+              .SetPreviousSessionEvents(events);
+        }));
   } else {
     breadcrumbs::DeleteBreadcrumbFiles(user_data_dir);
   }

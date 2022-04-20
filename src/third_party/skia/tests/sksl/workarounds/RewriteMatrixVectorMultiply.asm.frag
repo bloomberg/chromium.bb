@@ -14,13 +14,7 @@ OpDecorate %sk_FragColor Location 0
 OpDecorate %sk_FragColor Index 0
 OpDecorate %sk_Clockwise BuiltIn FrontFacing
 OpDecorate %m44 RelaxedPrecision
-OpDecorate %21 RelaxedPrecision
-OpDecorate %23 RelaxedPrecision
-OpDecorate %24 RelaxedPrecision
-OpDecorate %25 RelaxedPrecision
-OpDecorate %26 RelaxedPrecision
 OpDecorate %v4 RelaxedPrecision
-OpDecorate %32 RelaxedPrecision
 OpDecorate %36 RelaxedPrecision
 OpDecorate %37 RelaxedPrecision
 OpDecorate %38 RelaxedPrecision
@@ -54,6 +48,11 @@ OpDecorate %60 RelaxedPrecision
 %_ptr_Function_mat4v4float = OpTypePointer Function %mat4v4float
 %float_123 = OpConstant %float 123
 %float_0 = OpConstant %float 0
+%22 = OpConstantComposite %v4float %float_123 %float_0 %float_0 %float_0
+%23 = OpConstantComposite %v4float %float_0 %float_123 %float_0 %float_0
+%24 = OpConstantComposite %v4float %float_0 %float_0 %float_123 %float_0
+%25 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_123
+%26 = OpConstantComposite %mat4v4float %22 %23 %24 %25
 %_ptr_Function_v4float = OpTypePointer Function %v4float
 %float_1 = OpConstant %float 1
 %float_2 = OpConstant %float 2
@@ -74,12 +73,7 @@ OpFunctionEnd
 %16 = OpLabel
 %m44 = OpVariable %_ptr_Function_mat4v4float Function
 %v4 = OpVariable %_ptr_Function_v4float Function
-%23 = OpCompositeConstruct %v4float %float_123 %float_0 %float_0 %float_0
-%24 = OpCompositeConstruct %v4float %float_0 %float_123 %float_0 %float_0
-%25 = OpCompositeConstruct %v4float %float_0 %float_0 %float_123 %float_0
-%26 = OpCompositeConstruct %v4float %float_0 %float_0 %float_0 %float_123
-%21 = OpCompositeConstruct %mat4v4float %23 %24 %25 %26
-OpStore %m44 %21
+OpStore %m44 %26
 OpStore %v4 %32
 %35 = OpAccessChain %_ptr_Function_v4float %m44 %int_0
 %36 = OpLoad %v4float %35

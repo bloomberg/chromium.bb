@@ -86,8 +86,8 @@ static void move_all_but_break(std::unique_ptr<Statement>& stmt, StatementArray*
                 move_all_but_break(blockStmt, &blockStmts);
             }
 
-            target->push_back(Block::Make(block.fPosition, std::move(blockStmts),
-                                          block.symbolTable(), block.isScope()));
+            target->push_back(Block::Make(block.fPosition, std::move(blockStmts), block.blockKind(),
+                                          block.symbolTable()));
             break;
         }
 
@@ -154,7 +154,8 @@ std::unique_ptr<Statement> SwitchStatement::BlockForCase(StatementArray* cases,
     }
 
     // Return our newly-synthesized block.
-    return Block::Make(caseToCapture->fPosition, std::move(caseStmts), std::move(symbolTable));
+    return Block::Make(caseToCapture->fPosition, std::move(caseStmts), Block::Kind::kBracedScope,
+                       std::move(symbolTable));
 }
 
 std::unique_ptr<Statement> SwitchStatement::Convert(const Context& context,
@@ -264,8 +265,7 @@ std::unique_ptr<Statement> SwitchStatement::Make(const Context& context,
 
             // Report an error if this was a static switch and BlockForCase failed us.
             if (isStatic) {
-                context.fErrors->error(value->fPosition,
-                                       "static switch contains non-static conditional exit");
+                context.fErrors->error(pos, "static switch contains non-static conditional exit");
                 return nullptr;
             }
         }

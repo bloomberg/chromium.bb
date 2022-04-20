@@ -3954,6 +3954,32 @@
       "features": [
         "disable_skia_reduce_ops_task_splitting"
       ]
+    },
+    {
+      "id": 392,
+      "cr_bugs": [1305679],
+      "description": "OOPR Canvas is unreliable on MacOS 10.12 and older.",
+      "os": {
+        "type" : "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.13"
+        }
+      },
+      "features": [
+        "disable_canvas_oop_rasterization"
+      ]
+    },
+    {
+      "id": 393,
+      "description": "GL Contexts heavy / exhaust resources",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "freedreno",
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
     }
   ]
 }

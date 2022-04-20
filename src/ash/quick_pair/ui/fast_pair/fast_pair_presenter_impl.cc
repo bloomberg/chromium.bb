@@ -118,12 +118,17 @@ void FastPairPresenterImpl::OnDiscoveryMetadataRetrieved(
     RecordFastPairDiscoveredVersion(FastPairVersion::kVersion2);
   }
 
+  // If we are in guest-mode, or are missing the IdentifyManager needed to show
+  // detailed user notification, show the guest notification. We don't have to
+  // verify opt-in status in this case because Guests will be guaranteed to not
+  // have opt-in status.
   signin::IdentityManager* identity_manager =
       QuickPairBrowserDelegate::Get()->GetIdentityManager();
-
-  if (!ShouldShowUserEmail(
-          Shell::Get()->session_controller()->login_status()) ||
-      !identity_manager) {
+  if (!identity_manager ||
+      !ShouldShowUserEmail(
+          Shell::Get()->session_controller()->login_status())) {
+    QP_LOG(VERBOSE) << __func__
+                    << ": in guest mode, showing guest notification";
     notification_controller_->ShowGuestDiscoveryNotification(
         base::ASCIIToUTF16(device_metadata->GetDetails().name()),
         device_metadata->image(),
@@ -136,6 +141,37 @@ void FastPairPresenterImpl::OnDiscoveryMetadataRetrieved(
     return;
   }
 
+  // Check if the user is opted in to saving devices to their account. If the
+  // user is not opted in, we will show the guest notification which does not
+  // mention saving devices to the user account.
+  FastPairRepository::Get()->CheckOptInStatus(
+      base::BindOnce(&FastPairPresenterImpl::OnCheckOptInStatus,
+                     weak_pointer_factory_.GetWeakPtr(), device,
+                     std::move(callback), device_metadata));
+}
+
+void FastPairPresenterImpl::OnCheckOptInStatus(
+    scoped_refptr<Device> device,
+    DiscoveryCallback callback,
+    DeviceMetadata* device_metadata,
+    nearby::fastpair::OptInStatus status) {
+  QP_LOG(INFO) << __func__;
+
+  if (status != nearby::fastpair::OptInStatus::STATUS_OPTED_IN) {
+    notification_controller_->ShowGuestDiscoveryNotification(
+        base::ASCIIToUTF16(device_metadata->GetDetails().name()),
+        device_metadata->image(),
+        base::BindRepeating(&FastPairPresenterImpl::OnDiscoveryClicked,
+                            weak_pointer_factory_.GetWeakPtr(), callback),
+        base::BindRepeating(&FastPairPresenterImpl::OnDiscoveryLearnMoreClicked,
+                            weak_pointer_factory_.GetWeakPtr(), callback),
+        base::BindOnce(&FastPairPresenterImpl::OnDiscoveryDismissed,
+                       weak_pointer_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  signin::IdentityManager* identity_manager =
+      QuickPairBrowserDelegate::Get()->GetIdentityManager();
   const std::string email =
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
           .email;

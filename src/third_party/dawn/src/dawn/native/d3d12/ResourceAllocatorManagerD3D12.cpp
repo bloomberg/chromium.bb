@@ -199,11 +199,13 @@ namespace dawn::native::d3d12 {
         // For very small resources, it is inefficent to suballocate given the min. heap
         // size could be much larger then the resource allocation.
         // Attempt to satisfy the request using sub-allocation (placed resource in a heap).
-        ResourceHeapAllocation subAllocation;
-        DAWN_TRY_ASSIGN(subAllocation, CreatePlacedResource(heapType, resourceDescriptor,
-                                                            optimizedClearValue, initialUsage));
-        if (subAllocation.GetInfo().mMethod != AllocationMethod::kInvalid) {
-            return std::move(subAllocation);
+        if (!mDevice->IsToggleEnabled(Toggle::DisableResourceSuballocation)) {
+            ResourceHeapAllocation subAllocation;
+            DAWN_TRY_ASSIGN(subAllocation, CreatePlacedResource(heapType, resourceDescriptor,
+                                                                optimizedClearValue, initialUsage));
+            if (subAllocation.GetInfo().mMethod != AllocationMethod::kInvalid) {
+                return std::move(subAllocation);
+            }
         }
 
         // If sub-allocation fails, fall-back to direct allocation (committed resource).
@@ -227,6 +229,7 @@ namespace dawn::native::d3d12 {
             }
         }
         mAllocationsToDelete.ClearUpTo(completedSerial);
+        mHeapsToDelete.ClearUpTo(completedSerial);
     }
 
     void ResourceAllocatorManager::DeallocateMemory(ResourceHeapAllocation& allocation) {
@@ -238,9 +241,12 @@ namespace dawn::native::d3d12 {
 
         // Directly allocated ResourceHeapAllocations are created with a heap object that must be
         // manually deleted upon deallocation. See ResourceAllocatorManager::CreateCommittedResource
-        // for more information.
+        // for more information. Acquire this heap as a unique_ptr and add it to the queue of heaps
+        // to delete. It cannot be deleted immediately because it may be in use by in-flight or
+        // pending commands.
         if (allocation.GetInfo().mMethod == AllocationMethod::kDirect) {
-            delete allocation.GetResourceHeap();
+            mHeapsToDelete.Enqueue(std::unique_ptr<ResourceHeapBase>(allocation.GetResourceHeap()),
+                                   mDevice->GetPendingCommandSerial());
         }
 
         // Invalidate the allocation immediately in case one accidentally
@@ -299,7 +305,8 @@ namespace dawn::native::d3d12 {
         // incorrectly allocate a mismatched size.
         if (resourceInfo.SizeInBytes == 0 ||
             resourceInfo.SizeInBytes == std::numeric_limits<uint64_t>::max()) {
-            return DAWN_OUT_OF_MEMORY_ERROR("Resource allocation size was invalid.");
+            return DAWN_OUT_OF_MEMORY_ERROR(absl::StrFormat(
+                "Resource allocation size (%u) was invalid.", resourceInfo.SizeInBytes));
         }
 
         BuddyMemoryAllocator* allocator =

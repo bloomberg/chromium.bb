@@ -170,10 +170,12 @@ typedef struct TplParams {
   TplDepStats *tpl_stats_pool[MAX_LAG_BUFFERS];
 
   /*!
-   * Buffer to store tpl transform stats per frame.
+   * Pointer to the buffer which stores tpl transform stats per frame.
    * txfm_stats_list[i] stores the TplTxfmStats of the ith frame in a gf group.
+   * Memory is allocated dynamically for MAX_LENGTH_TPL_FRAME_STATS frames when
+   * tpl is enabled.
    */
-  TplTxfmStats txfm_stats_list[MAX_LENGTH_TPL_FRAME_STATS];
+  TplTxfmStats *txfm_stats_list;
 
   /*!
    * Buffer to store tpl reconstructed frame.
@@ -223,13 +225,11 @@ typedef struct TplParams {
 
 } TplParams;
 
-#if CONFIG_BITRATE_ACCURACY
-
-#if CONFIG_THREE_PASS
+#if CONFIG_BITRATE_ACCURACY || CONFIG_RATECTRL_LOG
 #define VBR_RC_INFO_MAX_FRAMES 500
-#else  // CONFIG_THREE_PASS
-#define VBR_RC_INFO_MAX_FRAMES MAX_LENGTH_TPL_FRAME_STATS
-#endif  //  CONFIG_THREE_PASS
+#endif  //  CONFIG_BITRATE_ACCURACY || CONFIG_RATECTRL_LOG
+
+#if CONFIG_BITRATE_ACCURACY
 
 /*!
  * \brief This structure stores information needed for bitrate accuracy
@@ -252,12 +252,6 @@ typedef struct {
   int q_index_list_ready;
   int q_index_list[VBR_RC_INFO_MAX_FRAMES];  // q indices for the current
                                              // GOP
-  // Arrays to store frame level bitrate accuracy data.
-  double estimated_bitrate_byframe[VBR_RC_INFO_MAX_FRAMES];
-  double estimated_mv_bitrate_byframe[VBR_RC_INFO_MAX_FRAMES];
-  int actual_bitrate_byframe[VBR_RC_INFO_MAX_FRAMES];
-  int actual_mv_bitrate_byframe[VBR_RC_INFO_MAX_FRAMES];
-  int actual_coeff_bitrate_byframe[VBR_RC_INFO_MAX_FRAMES];
 
   // Array to store qstep_ratio for each frame in a GOP
   double qstep_ratio_list[VBR_RC_INFO_MAX_FRAMES];
@@ -276,40 +270,23 @@ typedef struct {
 static INLINE void vbr_rc_reset_gop_data(VBR_RATECTRL_INFO *vbr_rc_info) {
   vbr_rc_info->q_index_list_ready = 0;
   av1_zero(vbr_rc_info->q_index_list);
-  av1_zero(vbr_rc_info->estimated_bitrate_byframe);
-  av1_zero(vbr_rc_info->estimated_mv_bitrate_byframe);
-  av1_zero(vbr_rc_info->actual_bitrate_byframe);
-  av1_zero(vbr_rc_info->actual_mv_bitrate_byframe);
-  av1_zero(vbr_rc_info->actual_coeff_bitrate_byframe);
 }
 
 void av1_vbr_rc_init(VBR_RATECTRL_INFO *vbr_rc_info, double total_bit_budget,
                      int show_frame_count);
 
+int av1_vbr_rc_frame_coding_idx(const VBR_RATECTRL_INFO *vbr_rc_info,
+                                int gf_frame_index);
+
 void av1_vbr_rc_append_tpl_info(VBR_RATECTRL_INFO *vbr_rc_info,
                                 const struct TPL_INFO *tpl_info);
+
 void av1_vbr_rc_set_gop_bit_budget(VBR_RATECTRL_INFO *vbr_rc_info,
                                    int gop_showframe_count);
 
-static INLINE void vbr_rc_info_log(const VBR_RATECTRL_INFO *vbr_rc_info,
-                                   int gf_frame_index, int gf_group_size,
-                                   FRAME_UPDATE_TYPE *update_type) {
-  // Add +2 here because this is the last frame this method is called at.
-  if (gf_frame_index + 2 >= gf_group_size) {
-    printf(
-        "\ni, \test_bitrate, \test_mv_bitrate, \tact_bitrate, "
-        "\tact_mv_bitrate, \tact_coeff_bitrate, \tq, \tupdate_type\n");
-    for (int i = 0; i < gf_group_size; i++) {
-      printf("%d, \t%f, \t%f, \t%d, \t%d, \t%d, \t%d, \t%d\n", i,
-             vbr_rc_info->estimated_bitrate_byframe[i],
-             vbr_rc_info->estimated_mv_bitrate_byframe[i],
-             vbr_rc_info->actual_bitrate_byframe[i],
-             vbr_rc_info->actual_mv_bitrate_byframe[i],
-             vbr_rc_info->actual_coeff_bitrate_byframe[i],
-             vbr_rc_info->q_index_list[i], update_type[i]);
-    }
-  }
-}
+void av1_vbr_rc_compute_q_indices(int base_q_index, int frame_count,
+                                  const double *qstep_ratio_list,
+                                  aom_bit_depth_t bit_depth, int *q_index_list);
 
 /*!\brief Update q_index_list in vbr_rc_info based on tpl stats
  *
@@ -326,18 +303,21 @@ void av1_vbr_rc_update_q_index_list(VBR_RATECTRL_INFO *vbr_rc_info,
 /*
  *!\brief Compute the number of bits needed to encode a GOP
  *
- * \param[in]    base_q_index      base layer q_index
- * \param[in]    bit_depth         bit depth
+ * \param[in]    base_q_index              base layer q_index
+ * \param[in]    bit_depth                 bit depth
  * \param[in]    update_type_scale_factors array of scale factors for each
- *                                 update_type
- * \param[in]    frame_count       size of update_type_list, qstep_ratio_list
- *                                 stats_list, q_index_list and
- *                                 estimated_bitrate_byframe
- * \param[in]    update_type_list  array of update_type, one per frame
- * \param[in]    qstep_ratio_list  array of qstep_ratio, one per frame
- * \param[in]    stats_list        array of transform stats, one per frame
- * \param[out]   q_index_list      array of q_index, one per frame
- * \param[out]   estimated_bitrate_byframe Array to keep track of frame bitrate
+ *                                         update_type
+ * \param[in]    frame_count               size of update_type_list,
+ *                                         qstep_ratio_list stats_list,
+ *                                         q_index_list and
+ *                                         estimated_bitrate_byframe
+ * \param[in]    update_type_list          array of update_type, one per frame
+ * \param[in]    qstep_ratio_list          array of qstep_ratio, one per frame
+ * \param[in]    stats_list                array of transform stats, one per
+ *                                         frame
+ * \param[out]   q_index_list              array of q_index, one per frame
+ * \param[out]   estimated_bitrate_byframe array to keep track of frame
+ *                                         bitrate
  *
  * \return The estimated GOP bitrate.
  *
@@ -365,7 +345,8 @@ double av1_vbr_rc_info_estimate_gop_bitrate(
  * \param[in]    qstep_ratio_list  array of qstep_ratio, one per frame
  * \param[in]    stats_list        array of transform stats, one per frame
  * \param[out]   q_index_list      array of q_index, one per frame
- * \param[out]   estimated_bitrate_byframe Array to keep track of frame bitrate
+ * \param[out]   estimated_bitrate_byframe Array to keep track of frame
+ * bitrate
  *
  * \return Returns the optimal base q index to use.
  */
@@ -376,17 +357,6 @@ int av1_vbr_rc_info_estimate_base_q(
     const TplTxfmStats *stats_list, int *q_index_list,
     double *estimated_bitrate_byframe);
 
-/*!\brief For a GOP, calculate the bits used by motion vectors.
- *
- * \param[in]       tpl_data          TPL struct
- * \param[in]       gf_group          GOP struct
- * \param[in]       vbr_rc_info       Rate control info struct
- *
- * \return Bits used by the motion vectors for the GOP.
- */
-double av1_tpl_compute_mv_bits(const TplParams *tpl_data,
-                               const GF_GROUP *gf_group,
-                               VBR_RATECTRL_INFO *vbr_rc_info);
 #endif  // CONFIG_BITRATE_ACCURACY
 
 #if CONFIG_RD_COMMAND
@@ -515,8 +485,8 @@ void av1_init_tpl_txfm_stats(TplTxfmStats *tpl_txfm_stats);
  *!\brief Accumulate TplTxfmStats
  *
  * \param[in]  sub_stats          a structure for storing sub transform stats
- * \param[out] accumulated_stats  a structure for storing accumulated transform
- *stats
+ * \param[out] accumulated_stats  a structure for storing accumulated
+ *transform stats
  *
  */
 void av1_accumulate_tpl_txfm_stats(const TplTxfmStats *sub_stats,
@@ -547,13 +517,13 @@ void av1_tpl_txfm_stats_update_abs_coeff_mean(TplTxfmStats *txfm_stats);
  *
  *\ingroup tpl_modelling
  *
- * This function is equivalent to -log2(laplace_prob()), where laplace_prob() is
- * defined in tpl_model_test.cc
+ * This function is equivalent to -log2(laplace_prob()), where laplace_prob()
+ *is defined in tpl_model_test.cc
  *
  * \param[in]    q_step          quantizer step size without any scaling
- * \param[in]    b               mean absolute deviation of Laplace distribution
- * \param[in]    zero_bin_ratio  zero bin's size is zero_bin_ratio * q_step
- * \param[in]    qcoeff          quantized coefficient
+ * \param[in]    b               mean absolute deviation of Laplace
+ *distribution \param[in]    zero_bin_ratio  zero bin's size is zero_bin_ratio
+ ** q_step \param[in]    qcoeff          quantized coefficient
  *
  * \return estimated coefficient entropy
  *
@@ -621,8 +591,8 @@ int av1_tpl_get_q_index(const TplParams *tpl_data, int gf_frame_index,
 double av1_tpl_get_frame_importance(const TplParams *tpl_data,
                                     int gf_frame_index);
 
-/*!\brief Compute the ratio between arf q step and the leaf q step based on TPL
- * stats
+/*!\brief Compute the ratio between arf q step and the leaf q step based on
+ * TPL stats
  *
  * \param[in]       tpl_data          TPL struct
  * \param[in]       gf_frame_index    current frame index in the GOP
@@ -636,16 +606,16 @@ double av1_tpl_get_qstep_ratio(const TplParams *tpl_data, int gf_frame_index);
 /*!\brief Find a q index whose step size is near qstep_ratio * leaf_qstep
  *
  * \param[in]       leaf_qindex       q index of leaf frame
- * \param[in]       qstep_ratio       step ratio between target q index and leaf
- *                                    q index
- * \param[in]       bit_depth         bit depth
+ * \param[in]       qstep_ratio       step ratio between target q index and
+ * leaf q index \param[in]       bit_depth         bit depth
  *
  * \return q_index
  */
 int av1_get_q_index_from_qstep_ratio(int leaf_qindex, double qstep_ratio,
                                      aom_bit_depth_t bit_depth);
 
-/*!\brief Improve the motion vector estimation by taking neighbors into account.
+/*!\brief Improve the motion vector estimation by taking neighbors into
+ * account.
  *
  * Use the upper and left neighbor block as the reference MVs.
  * Compute the minimum difference between current MV and reference MV.
@@ -655,7 +625,8 @@ int av1_get_q_index_from_qstep_ratio(int leaf_qindex, double qstep_ratio,
  * \param[in]       col               Current column
  * \param[in]       step              Step parameter for av1_tpl_ptr_pos
  * \param[in]       tpl_stride        Stride parameter for av1_tpl_ptr_pos
- * \param[in]       right_shift       Right shift parameter for av1_tpl_ptr_pos
+ * \param[in]       right_shift       Right shift parameter for
+ * av1_tpl_ptr_pos
  */
 int_mv av1_compute_mv_difference(const TplDepFrame *tpl_frame, int row, int col,
                                  int step, int tpl_stride, int right_shift);
@@ -669,6 +640,83 @@ int_mv av1_compute_mv_difference(const TplDepFrame *tpl_frame, int row, int col,
  */
 double av1_tpl_compute_frame_mv_entropy(const TplDepFrame *tpl_frame,
                                         uint8_t right_shift);
+
+#if CONFIG_RATECTRL_LOG
+typedef struct {
+  int coding_frame_count;
+  int base_q_index;
+
+  // Encode decision
+  int q_index_list[VBR_RC_INFO_MAX_FRAMES];
+  double qstep_ratio_list[VBR_RC_INFO_MAX_FRAMES];
+  FRAME_UPDATE_TYPE update_type_list[VBR_RC_INFO_MAX_FRAMES];
+
+  // Frame stats
+  TplTxfmStats txfm_stats_list[VBR_RC_INFO_MAX_FRAMES];
+
+  // Estimated encode results
+  double est_coeff_rate_list[VBR_RC_INFO_MAX_FRAMES];
+
+  // Actual encode results
+  double act_rate_list[VBR_RC_INFO_MAX_FRAMES];
+  double act_coeff_rate_list[VBR_RC_INFO_MAX_FRAMES];
+} RATECTRL_LOG;
+
+static INLINE void rc_log_init(RATECTRL_LOG *rc_log) { av1_zero(*rc_log); }
+
+static INLINE void rc_log_frame_stats(RATECTRL_LOG *rc_log, int coding_index,
+                                      const TplTxfmStats *txfm_stats) {
+  rc_log->txfm_stats_list[coding_index] = *txfm_stats;
+}
+
+static INLINE void rc_log_frame_encode_param(RATECTRL_LOG *rc_log,
+                                             int coding_index,
+                                             double qstep_ratio, int q_index,
+                                             FRAME_UPDATE_TYPE update_type) {
+  rc_log->qstep_ratio_list[coding_index] = qstep_ratio;
+  rc_log->q_index_list[coding_index] = q_index;
+  rc_log->update_type_list[coding_index] = update_type;
+  const TplTxfmStats *txfm_stats = &rc_log->txfm_stats_list[coding_index];
+  rc_log->est_coeff_rate_list[coding_index] = 0;
+  if (txfm_stats->ready) {
+    rc_log->est_coeff_rate_list[coding_index] = av1_laplace_estimate_frame_rate(
+        q_index, txfm_stats->txfm_block_count, txfm_stats->abs_coeff_mean,
+        txfm_stats->coeff_num);
+  }
+}
+
+static INLINE void rc_log_frame_entropy(RATECTRL_LOG *rc_log, int coding_index,
+                                        double act_rate,
+                                        double act_coeff_rate) {
+  rc_log->act_rate_list[coding_index] = act_rate;
+  rc_log->act_coeff_rate_list[coding_index] = act_coeff_rate;
+}
+
+static INLINE void rc_log_record_chunk_info(RATECTRL_LOG *rc_log,
+                                            int base_q_index,
+                                            int coding_frame_count) {
+  rc_log->base_q_index = base_q_index;
+  rc_log->coding_frame_count = coding_frame_count;
+}
+
+static INLINE void rc_log_show(const RATECTRL_LOG *rc_log) {
+  printf("= chunk 1\n");
+  printf("coding_frame_count %d base_q_index %d\n", rc_log->coding_frame_count,
+         rc_log->base_q_index);
+  printf("= frame %d\n", rc_log->coding_frame_count);
+  for (int coding_idx = 0; coding_idx < rc_log->coding_frame_count;
+       coding_idx++) {
+    printf(
+        "coding_idx %d update_type %d q %d qstep_ratio %f est_coeff_rate %f "
+        "act_coeff_rate %f act_rate %f\n",
+        coding_idx, rc_log->update_type_list[coding_idx],
+        rc_log->q_index_list[coding_idx], rc_log->qstep_ratio_list[coding_idx],
+        rc_log->est_coeff_rate_list[coding_idx],
+        rc_log->act_coeff_rate_list[coding_idx],
+        rc_log->act_rate_list[coding_idx]);
+  }
+}
+#endif  // CONFIG_RATECTRL_LOG
 
 /*!\endcond */
 #ifdef __cplusplus

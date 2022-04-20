@@ -11,6 +11,7 @@
 #ifndef MODULES_VIDEO_CODING_INCLUDE_VIDEO_CODING_H_
 #define MODULES_VIDEO_CODING_INCLUDE_VIDEO_CODING_H_
 
+#include "api/field_trials_view.h"
 #include "api/video/video_frame.h"
 #include "api/video_codecs/video_decoder.h"
 #include "modules/include/module.h"
@@ -28,7 +29,9 @@ struct CodecSpecificInfo;
 class VideoCodingModule : public Module {
  public:
   // DEPRECATED.
-  static VideoCodingModule* Create(Clock* clock);
+  static VideoCodingModule* Create(
+      Clock* clock,
+      const FieldTrialsView* field_trials = nullptr);
 
   /*
    *   Receiver

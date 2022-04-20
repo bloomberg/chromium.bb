@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
@@ -162,7 +161,7 @@ void ExtensionPrinterHandler::StartGetCapability(
 
 void ExtensionPrinterHandler::StartPrint(
     const std::u16string& job_title,
-    base::Value settings,
+    base::Value::Dict settings,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   auto print_job = std::make_unique<extensions::PrinterProviderPrintJob>();

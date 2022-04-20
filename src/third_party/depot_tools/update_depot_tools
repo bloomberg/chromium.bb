@@ -125,6 +125,7 @@ function update_git_repo {
 
 # Update git checkouts.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
+  echo "Updating depot_tools..." 1>&2
   if [ -e "$base_dir/.git" ]; then
     cd "$base_dir"
     update_git_repo

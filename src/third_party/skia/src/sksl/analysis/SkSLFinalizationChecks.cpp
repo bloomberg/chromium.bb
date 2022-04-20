@@ -5,20 +5,31 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLProgramElement.h"
 #include "include/private/SkSLStatement.h"
+#include "include/sksl/SkSLErrorReporter.h"
 #include "src/core/SkSafeMath.h"
 #include "src/sksl/SkSLAnalysis.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLContext.h"
-#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/analysis/SkSLProgramVisitor.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
+#include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/ir/SkSLVariable.h"
+
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace SkSL {
 namespace {
@@ -70,7 +81,7 @@ public:
             if (!param->type().isStruct() && paramInout == Modifiers::Flag::kOut_Flag) {
                 ProgramUsage::VariableCounts counts = fUsage.get(*param);
                 if (counts.fWrite <= 0) {
-                    fContext.fErrors->error(funcDecl.fPosition,
+                    fContext.fErrors->error(param->fPosition,
                                             "function '" + std::string(funcDecl.name()) +
                                             "' never assigns a value to out parameter '" +
                                             std::string(param->name()) + "'");
@@ -83,13 +94,15 @@ public:
         switch (stmt.kind()) {
             case Statement::Kind::kIf:
                 if (stmt.as<IfStatement>().isStatic()) {
-                    fContext.fErrors->error(stmt.fPosition, "static if has non-static test");
+                    fContext.fErrors->error(stmt.as<IfStatement>().test()->fPosition,
+                            "static if has non-static test");
                 }
                 break;
 
             case Statement::Kind::kSwitch:
                 if (stmt.as<SwitchStatement>().isStatic()) {
-                    fContext.fErrors->error(stmt.fPosition, "static switch has non-static test");
+                    fContext.fErrors->error(stmt.as<SwitchStatement>().value()->fPosition,
+                            "static switch has non-static test");
                 }
                 break;
 

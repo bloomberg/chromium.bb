@@ -29,11 +29,9 @@ OpDecorate %10 DescriptorSet 0
 OpDecorate %valueIsNaN RelaxedPrecision
 OpDecorate %32 RelaxedPrecision
 OpDecorate %33 RelaxedPrecision
-OpDecorate %34 RelaxedPrecision
 OpDecorate %35 RelaxedPrecision
 OpDecorate %valueIsNumber RelaxedPrecision
 OpDecorate %39 RelaxedPrecision
-OpDecorate %40 RelaxedPrecision
 OpDecorate %41 RelaxedPrecision
 OpDecorate %44 RelaxedPrecision
 OpDecorate %45 RelaxedPrecision
@@ -64,8 +62,8 @@ OpDecorate %110 RelaxedPrecision
 %10 = OpVariable %_ptr_Uniform__UniformBuffer Uniform
 %void = OpTypeVoid
 %15 = OpTypeFunction %void
-%v2float = OpTypeVector %float 2
 %float_0 = OpConstant %float 0
+%v2float = OpTypeVector %float 2
 %19 = OpConstantComposite %v2float %float_0 %float_0
 %_ptr_Function_v2float = OpTypePointer Function %v2float
 %23 = OpTypeFunction %v4float %_ptr_Function_v2float
@@ -73,7 +71,9 @@ OpDecorate %110 RelaxedPrecision
 %_ptr_Uniform_v4float = OpTypePointer Uniform %v4float
 %int = OpTypeInt 32 1
 %int_0 = OpConstant %int 0
+%34 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
 %float_1 = OpConstant %float 1
+%40 = OpConstantComposite %v4float %float_1 %float_1 %float_1 %float_1
 %false = OpConstantFalse %bool
 %v2bool = OpTypeVector %bool 2
 %v3float = OpTypeVector %float 3
@@ -98,12 +98,10 @@ OpFunctionEnd
 %28 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %32 = OpLoad %v4float %28
 %33 = OpVectorShuffle %v4float %32 %32 1 1 1 1
-%34 = OpCompositeConstruct %v4float %float_0 %float_0 %float_0 %float_0
 %35 = OpFDiv %v4float %34 %33
 OpStore %valueIsNaN %35
 %38 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %39 = OpLoad %v4float %38
-%40 = OpCompositeConstruct %v4float %float_1 %float_1 %float_1 %float_1
 %41 = OpFDiv %v4float %40 %39
 OpStore %valueIsNumber %41
 %44 = OpLoad %v4float %valueIsNaN

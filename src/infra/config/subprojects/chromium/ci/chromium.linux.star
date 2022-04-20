@@ -124,6 +124,9 @@ ci.builder(
     # failure.
     tree_closing = False,
     notifies = ["Deterministic Linux", "close-on-any-step-failure"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -135,6 +138,9 @@ ci.builder(
     cores = 32,
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 7 * time.hour,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -225,17 +231,6 @@ ci.builder(
         short_name = "64",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "Linux Builder (dbg)(32)",
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|builder",
-        short_name = "32",
-    ),
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -423,42 +418,4 @@ ci.builder(
         short_name = "gcc",
     ),
     goma_backend = None,
-)
-
-ci.builder(
-    name = "linux-bionic-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "bio",
-    ),
-    os = os.LINUX_BIONIC,
-    tree_closing = False,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-    sheriff_rotations = args.ignore_default(None),
-)
-
-ci.builder(
-    name = "linux-trusty-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "tru",
-    ),
-    os = os.LINUX_TRUSTY,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "linux-xenial-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "release",
-        short_name = "xen",
-    ),
-    os = os.LINUX_XENIAL,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )

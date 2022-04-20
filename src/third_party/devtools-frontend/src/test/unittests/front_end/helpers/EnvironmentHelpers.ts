@@ -10,6 +10,7 @@ import * as SDK from '../../../../front_end/core/sdk/sdk.js';
 import type * as Protocol from '../../../../front_end/generated/protocol.js';
 import * as Bindings from '../../../../front_end/models/bindings/bindings.js';
 import * as Workspace from '../../../../front_end/models/workspace/workspace.js';
+import * as IssuesManager from '../../../../front_end/models/issues_manager/issues_manager.js';
 
 import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 
@@ -50,25 +51,7 @@ const REGISTERED_EXPERIMENTS = [
 ];
 
 export async function initializeGlobalVars({reset = true} = {}) {
-  // Expose the locale.
-  i18n.DevToolsLocale.DevToolsLocale.instance({
-    create: true,
-    data: {
-      navigatorLanguage: 'en-US',
-      settingLanguage: 'en-US',
-      lookupClosestDevToolsLocale: () => 'en-US',
-    },
-  });
-
-  // Load the strings from the resource file.
-  const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
-  // proxied call.
-  try {
-    await i18n.i18n.fetchAndRegisterLocaleData(locale);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
-  }
+  await initializeGlobalLocaleVars();
 
   // Create the appropriate settings needed to boot.
   const settings = [
@@ -155,6 +138,30 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(
         Common.Settings.SettingCategory.PERSISTENCE, 'persistenceNetworkOverridesEnabled', true,
         Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.NETWORK, 'network_log.record-log', true, Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'hideNetworkMessages', false, Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'selectedContextFilterEnabled', false,
+        Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'consoleGroupSimilar', false, Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'consoleShowsCorsErrors', false, Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'consoleTimestampsEnabled', false,
+        Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'consoleHistoryAutocomplete', false,
+        Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'preserveConsoleLog', false, Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'consoleEagerEval', false, Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(
+        Common.Settings.SettingCategory.CONSOLE, 'consoleUserActivationEval', false,
+        Common.Settings.SettingType.BOOLEAN),
   ];
 
   Common.Settings.registerSettingsForTest(settings, reset);
@@ -190,6 +197,7 @@ export async function deinitializeGlobalVars() {
   Root.Runtime.experiments.clearForTest();
 
   // Remove instances.
+  await deinitializeGlobalLocaleVars();
   SDK.TargetManager.TargetManager.removeInstance();
   targetManager = null;
   Root.Runtime.Runtime.removeInstance();
@@ -197,12 +205,14 @@ export async function deinitializeGlobalVars() {
   Workspace.Workspace.WorkspaceImpl.removeInstance();
   Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
   Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
+  IssuesManager.IssuesManager.IssuesManager.removeInstance();
   Common.Settings.resetSettings();
 
   // Protect against the dynamic import not having happened.
   if (UI) {
     UI.ZoomManager.ZoomManager.removeInstance();
     UI.ViewManager.ViewManager.removeInstance();
+    UI.ViewManager.resetViewRegistration();
   }
 }
 
@@ -212,6 +222,40 @@ export function describeWithEnvironment(title: string, fn: (this: Mocha.Suite) =
   return describe(`env-${title}`, () => {
     before(async () => await initializeGlobalVars(opts));
     after(async () => await deinitializeGlobalVars());
+    describe(title, fn);
+  });
+}
+
+export async function initializeGlobalLocaleVars() {
+  // Expose the locale.
+  i18n.DevToolsLocale.DevToolsLocale.instance({
+    create: true,
+    data: {
+      navigatorLanguage: 'en-US',
+      settingLanguage: 'en-US',
+      lookupClosestDevToolsLocale: () => 'en-US',
+    },
+  });
+
+  // Load the strings from the resource file.
+  const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
+  // proxied call.
+  try {
+    await i18n.i18n.fetchAndRegisterLocaleData(locale);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
+  }
+}
+
+export function deinitializeGlobalLocaleVars() {
+  i18n.DevToolsLocale.DevToolsLocale.removeInstance();
+}
+
+export function describeWithLocale(title: string, fn: (this: Mocha.Suite) => void) {
+  return describe(`locale-${title}`, () => {
+    before(async () => await initializeGlobalLocaleVars());
+    after(deinitializeGlobalLocaleVars);
     describe(title, fn);
   });
 }

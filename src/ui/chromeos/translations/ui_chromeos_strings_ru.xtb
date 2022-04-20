@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1209796539517632982">Автоматические серверы имен</translation>
 <translation id="1210831758834677569">Лаосский</translation>
+<translation id="1223825810409523901">Расширение Chrome</translation>
 <translation id="1243314992276662751">Загрузить</translation>
 <translation id="1249250836236328755">Жанр</translation>
 <translation id="1254593899333212300">Прямое подключение к Интернету</translation>
@@ -80,6 +81,7 @@
 <translation id="166439687370499867">Изменять настройки общей сети запрещено</translation>
 <translation id="1665611772925418501">Не удалось изменить файл.</translation>
 <translation id="1673103856845176271">Доступ к файлу ограничен по соображениям безопасности.</translation>
+<translation id="16762847117768727">ISO-образ</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">Человек на велосипеде</translation>
 <translation id="1722487484194605434">Архивирование объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
@@ -365,6 +367,7 @@
 <translation id="4215448920900139318">Сохранение файлов (<ph name="FILE_COUNT" />)…</translation>
 <translation id="4218274196133425560">Удалить исключение для <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Презентация Google</translation>
+<translation id="4277536868133419688">Фильтр "<ph name="FILTER_NAME" />" включен.</translation>
 <translation id="4290535918735525311">Linux предоставлен доступ к 1 папке</translation>
 <translation id="4299729908419173967">бразильская</translation>
 <translation id="4302605047395093221">Все пользователи устройства должны будут вводить указанный PIN-код при подключении к этой мобильной сети.</translation>
@@ -383,6 +386,7 @@
 <translation id="4387004326333427325">Сертификат аутентификации отклонен удаленно</translation>
 <translation id="4394214039309501350">Внешняя ссылка</translation>
 <translation id="4401287888955153199">Извлечь всё</translation>
+<translation id="4410695710508688828">Ошибка извлечения. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Создайте ярлык файла</translation>
 <translation id="4425149324548788773">Мой диск</translation>
 <translation id="4439427728133035643">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" /> %, подключение</translation>
@@ -404,6 +408,7 @@
 <translation id="457386861538956877">Ещё...</translation>
 <translation id="4579744207439506346">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
 <translation id="4594543368593301662">Результаты поиска по запросу "<ph name="SEARCH_TERM" />".</translation>
+<translation id="4599600860674643278">Фильтр сброшен.</translation>
 <translation id="4603392156942865207">Копирование файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
 <translation id="4631887759990505102">Исполнитель</translation>
 <translation id="4642769377300286600">Установка мобильного профиля, сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -527,6 +532,7 @@
 <translation id="5469868506864199649">Итальянский</translation>
 <translation id="5473333559083690127">Повторно введите новый PIN-код</translation>
 <translation id="5489067830765222292">Латышский</translation>
+<translation id="5489965683297092283">Фильтр "<ph name="FILTER_NAME" />" отключен.</translation>
 <translation id="5494920125229734069">Выделить все</translation>
 <translation id="5500122897333236901">Исландский</translation>
 <translation id="5508696409934741614">Точки</translation>
@@ -593,6 +599,7 @@
 <translation id="6082256976217156453">Сжатый архив LZMA</translation>
 <translation id="6096979789310008754">Поисковый запрос удален. Показаны все файлы и папки.</translation>
 <translation id="610101264611565198">Перемещение файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
+<translation id="61118516107968648">Текстовый файл формата CSV</translation>
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6133173853026656527">Перемещение файла "<ph name="FILE_NAME" />"…</translation>
 <translation id="613750717151263950">Японский, американская раскладка</translation>
@@ -811,6 +818,7 @@
 <translation id="7925686952655276919">Не используйте синхронизацию данных с мобильных устройств</translation>
 <translation id="7928710562641958568">Извлечь устройство</translation>
 <translation id="7943385054491506837">США (Colemak)</translation>
+<translation id="7948417415021769876">Архив 7z</translation>
 <translation id="7953739707111622108">Невозможно получить доступ к устройству, так как его файловая система не опознана.</translation>
 <translation id="7969525169268594403">Словенский</translation>
 <translation id="7972920761225148017">Французский (Швейцария)</translation>
@@ -842,6 +850,7 @@
 <translation id="8208580316430297579">Обложка</translation>
 <translation id="8223479393428528563">Чтобы работать с этими файлами в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на каждый документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
 <translation id="8249296373107784235">Отмена</translation>
+<translation id="8250920743982581267">Документы</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8261561378965667560">Китайский, структурный ввод</translation>
 <translation id="8269755669432358899">Свернуть панель с информацией о файлах</translation>
@@ -860,6 +869,7 @@
 <translation id="8372369524088641025">Недопустимый ключ WEP</translation>
 <translation id="8372852072747894550">Греческий</translation>
 <translation id="8386903983509584791">Поиск завершен</translation>
+<translation id="8387733224523483503">Файл "<ph name="FILE_NAME" />" извлечен.</translation>
 <translation id="8395901698320285466">Размеры</translation>
 <translation id="8408068190360279472">Сеть <ph name="NETWORK_TYPE" />, подключение</translation>
 <translation id="8425213833346101688">Изменить</translation>
@@ -954,6 +964,7 @@
 <translation id="9174050671906956834">Объекты в корзине удаляются навсегда через 30 дней.</translation>
 <translation id="9183302530794969518">Google Документы</translation>
 <translation id="9189836632794948435">Казахский</translation>
+<translation id="9200427192836333033">Извлечено объектов: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="9213073329713032541">Установка началась.</translation>
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="9219908252191632183">Луна</translation>

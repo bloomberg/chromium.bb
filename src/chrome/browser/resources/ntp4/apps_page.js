@@ -72,7 +72,7 @@ addSingletonGetter(AppContextMenu);
 
 AppContextMenu.prototype = {
   initialize() {
-    const menu = new Menu;
+    const menu = new Menu();
     decorate(menu, Menu);
     menu.classList.add('app-context-menu');
     this.menu = menu;
@@ -195,6 +195,7 @@ AppContextMenu.prototype = {
         !app.appData.mayChangeLaunchType || !hasLaunchType;
 
     this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
+    this.options_.hidden = app.appData.optionsUrl === undefined;
 
     this.uninstall_.disabled = !app.appData.mayDisable;
 
@@ -222,8 +223,6 @@ AppContextMenu.prototype = {
     this.runOnOsLogin_.disabled = !app.appData.mayToggleRunOnOsLoginMode;
     this.runOnOsLogin_.checked =
         app.appData.runOnOsLoginMode !== RUN_ON_OS_LOGIN_MODE.NOT_RUN;
-
-
   },
 
   /** @private */

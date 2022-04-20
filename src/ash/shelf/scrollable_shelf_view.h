@@ -21,6 +21,7 @@
 #include "ash/shelf/shelf_view.h"
 #include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/time/time.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
@@ -248,6 +249,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) override;
   std::unique_ptr<ScopedActiveInkDropCount> CreateScopedActiveInkDropCount(
       const ShelfButton* sender) override;
+  void OnButtonWillBeRemoved() override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

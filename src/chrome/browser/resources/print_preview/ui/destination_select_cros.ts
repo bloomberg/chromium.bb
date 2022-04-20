@@ -18,7 +18,7 @@ import '../strings.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {CloudOrigins, Destination, DestinationOrigin, GooglePromotedDestinationId, PDF_DESTINATION_KEY} from '../data/destination.js';
+import {Destination, DestinationOrigin, GooglePromotedDestinationId, PDF_DESTINATION_KEY} from '../data/destination.js';
 import {ERROR_STRING_KEY_MAP, getPrinterStatusIcon, PrinterStatusReason} from '../data/printer_status_cros.js';
 
 import {PrintPreviewDestinationDropdownCrosElement} from './destination_dropdown_cros.js';
@@ -149,10 +149,6 @@ export class PrintPreviewDestinationSelectCrosElement extends
       return 'print-preview:save-to-drive';
     }
 
-    if (keyParams[0] === GooglePromotedDestinationId.DOCS) {
-      return 'print-preview:save-to-drive';
-    }
-
     if (keyParams[0] === GooglePromotedDestinationId.SAVE_AS_PDF) {
       return 'cr:insert-drive-file';
     }
@@ -236,16 +232,6 @@ export class PrintPreviewDestinationSelectCrosElement extends
     // |destination| can be either undefined, or null here.
     if (!this.destination) {
       return '';
-    }
-
-    // Cloudprint destinations contain their own status text.
-    if (CloudOrigins.some(origin => origin === this.destination.origin)) {
-      if (this.destination.shouldShowInvalidCertificateError) {
-        return this.i18n('noLongerSupportedFragment');
-      }
-      if (this.destination.connectionStatusText) {
-        return this.destination.connectionStatusText;
-      }
     }
 
     // Non-local printers do not show an error status.

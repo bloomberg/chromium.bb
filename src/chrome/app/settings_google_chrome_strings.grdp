@@ -2,7 +2,7 @@
 <!-- Settings-specific Google Chrome strings (included from google_chrome_strings.grd). -->
 <grit-part>
   <!-- Shared across multiple pages -->
-  <if expr="not chromeos">
+  <if expr="not chromeos_ash">
   <message name="IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE" desc="The title of the modal dialog that we show when users click on relaunch and they have open Incognito windows. The dialog serves to warn the users about losing their Incognito windows if they proceed with the relaunch.">
     Relaunch Chrome?
   </message>
@@ -14,7 +14,7 @@
   <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
     Get help with Chrome
   </message>
-  <if expr="not chromeos">
+  <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_UPGRADE_UPDATING" desc="Status label: Updating Chrome">
       Updating Chrome
     </message>
@@ -28,7 +28,7 @@
       Chrome is up to date
     </message>
   </if>
-  <if expr="chromeos">
+  <if expr="chromeos_ash">
     <if expr="reven">
       <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About ChromeOS Flex page.">
         About ChromeOS Flex
@@ -44,17 +44,17 @@
       </message>
     </if>
     <if expr="not reven">
-      <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About Chrome OS page.">
-        About Chrome OS
+      <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About ChromeOS page.">
+        About ChromeOS
       </message>
-      <message name="IDS_OS_SETTINGS_TAG_OS_VERSION" desc="Text for search result item which, when clicked, navigates the user to about Chrome OS settings, which gives information about the current Chrome OS version.">
-        Chrome OS version
+      <message name="IDS_OS_SETTINGS_TAG_OS_VERSION" desc="Text for search result item which, when clicked, navigates the user to about ChromeOS settings, which gives information about the current ChromeOS version.">
+        ChromeOS version
       </message>
-      <message name="IDS_SETTINGS_ABOUT_SEE_OS_SETTINGS_FOR_UPDATE_MESSAGE" desc="Message shown to users on Chrome browser settings which alerts the user that OS updates are shown in Chrome OS settings.">
-        To see if your device is up to date, go to <ph name="LINK_BEGIN">&lt;a href="chrome://os-settings/help"&gt;</ph>Chrome OS Settings<ph name="LINK_END">&lt;/a&gt;</ph>
+      <message name="IDS_SETTINGS_ABOUT_SEE_OS_SETTINGS_FOR_UPDATE_MESSAGE" desc="Message shown to users on Chrome browser settings which alerts the user that OS updates are shown in ChromeOS settings.">
+        To see if your device is up to date, go to <ph name="LINK_BEGIN">&lt;a href="chrome://os-settings/help"&gt;</ph>ChromeOS Settings<ph name="LINK_END">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_SETTINGS_GET_HELP_USING_CHROME_OS" desc="Text of the button which takes the user to the Chrome help page.">
-        Get help with Chrome OS
+        Get help with ChromeOS
       </message>
     </if>
   </if>
@@ -98,7 +98,7 @@
   </message>
 
   <!-- Default Browser Page -->
-  <if expr="not chromeos">
+  <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
       Google Chrome is your default browser
     </message>
@@ -126,7 +126,7 @@
       <!-- No target="_blank" because OS settings opens its own window. -->
       <message name="IDS_SETTINGS_OS_SETTINGS_BANNER" desc="Banner displayed in browser settings page that links to OS settings.">
         If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN">&lt;a href="$1<ex>https://google.com/</ex>"&gt;</ph>
-        Chrome OS settings<ph name="LINK_END">&lt;/a&gt;</ph>
+        ChromeOS settings<ph name="LINK_END">&lt;/a&gt;</ph>
       </message>
     </if>
   </if>
@@ -139,7 +139,7 @@
     To apply your changes, relaunch Chrome
   </message>
 
-  <if expr="not chromeos and not lacros">
+  <if expr="not chromeos_ash and not chromeos_lacros">
     <message name="IDS_SETTINGS_SIGNIN_ALLOWED" desc="The title of the preference to allow to sign-in to Chrome">
     Allow Chrome sign-in
     </message>
@@ -201,13 +201,13 @@
   <message name="IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_FLEDGE_DATA_USAGE" desc="FLEDGE API Bullet 2 of 3 that appear beneath the “Sites you visit that define your interests” subtitle. We break the description into the 3 pieces users most care about: 1) what data, 2) why this data, 3) what can I do about it? * “How we use this data:” is bold and serves as a label to help people skimming the page. With FLEDGE, a site can store information in Chrome about the user’s visit to their site. For example, the site might store “running_shoes_red_size_35” to indicate that the user showed interest in a particular shoe. We’re OK with the simplification in this bullet because 1) we explain it in the next bullet and 2) we want the user to understand that at the top level, both Topics &amp; Fledge are based on the same thing and that is the user’s browsing history. * “Later”:  is important to convey the passage of time. We don’t want to convey how much time (it could be tiny). What’s important is that the user understands this is essentially a two-step process. They browse, and Chrome might estimate their interests as they do so. At a later point when they continue to visit a site, that’s when the estimated interests might come into play.">
     Sites can store information with Chrome about your interests. For example, if you visit a site to buy shoes for a marathon, the site might define your interest as running marathons. Later, if you visit a different site to register for a race, that site can show you an ad for running shoes based on your interests.
   </message>
-  <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION" desc="A paragraph beneath the card title. Note that this paragraph is written so that it describes both the Topics API and the FLEDGE API. Some things are described slightly differently for this reason. * “browsing history”:  “a record of sites you’ve visited using Chrome on this device.” * “affects the ads you see and the interests as estimated below”: browsing history leads to Chrome establishing user interests leads to 1) the ads you see are different, and 2) the list of things on this page changes based on what Chrome establishes. * “To protect your privacy”: Today, most data is kept for long periods of time. This new Topics API doesn’t retain estimated topics for more than 3 weeks. The only reason for this feature is to protect the user’s privacy. * “auto”: isn’t strictly necessary, but it conveys that this feature is an ongoing part of the service. This isn’t describing, for example, a one-time deletion. * “rolling basis each month”: Information associated with Topics and FLEDGE are deleted on a rolling basis at least once per month. It’s simpler to talk about “once per month” rather than 3 weeks for Topics and 4 weeks for FLEDGE. * “Interests can refresh…”: We intend for this line to cover both Topics and FLEDGE. It’s slightly messy, because there is a suggestion that this line is more about Topics than FLEDGE (“interests” is more prominent in the Topics subtitle).">
+  <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION" desc="A paragraph beneath the card title. Note that this paragraph is written so that it describes both the Topics API and the FLEDGE API. Some things are described slightly differently for this reason. Version 1 of 3 of this paragraph.  1) The first line is written with the assumption that the user a) has Privacy Sandbox trials turned on and b) has been randomly selected by Chrome to be in  an active experiment. As a result of both conditions, this user should have data on this page (a list of interests and a list of sites). 2) NOT THE CASE FOR THIS STRING: A different version of  this first line is written for the case that a user has the Privacy Sandbox trials turned on but they haven’t been randomly selected to be in a trial. 3) NOT THE CASE FOR THIS STRING: A different version of  this first line is written for the case that a user doesn’t have the Privacy Sandbox trials turned on. * “browsing history”:  “a record of sites you’ve visited using Chrome on this device.” * “affects the ads you see and the interests as estimated below”: browsing history leads to Chrome establishing user interests leads to 1) the ads you see are different, and 2) the list of things on this page changes based on what Chrome establishes.* “To protect your privacy”: Today, most data is kept for long periods of time. This new Topics API doesn’t retain estimated topics for more than 3 weeks. The only reason for this feature is to protect the user’s privacy. * “auto”: isn’t strictly necessary, but it conveys that this feature is an ongoing part of the service. This isn’t describing, for example, a one-time deletion. * “rolling basis each month”: Information associated with Topics and FLEDGE are deleted on a rolling basis at least once per month. It’s simpler to talk about “once per month” rather than 3 weeks for Topics and 4 weeks for FLEDGE. * “Interests can refresh…”: We intend for this line to cover both Topics and FLEDGE. It’s slightly messy, because there is a suggestion that this line is more about Topics than FLEDGE (“interests” is more prominent in the Topics subtitle).">
     Your browsing history affects the ads you see and the interests as estimated below. To protect your privacy, Chrome auto-deletes your interests on a rolling basis each month. Interests can refresh unless you remove them.
   </message>
-  <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION_TRIALS_OFF" desc="A paragraph beneath the card title. Note that this paragraph is written so that it describes both the Topics API and the FLEDGE API. Some things are described slightly differently for this reason. * “browsing history”:  “a record of sites you’ve visited using Chrome on this device.” * “affects the ads you see and the interests as estimated below”: browsing history leads to Chrome establishing user interests leads to 1) the ads you see are different, and 2) the list of things on this page changes based on what Chrome establishes. * “To protect your privacy”: Today, most data is kept for long periods of time. This new Topics API doesn’t retain estimated topics for more than 3 weeks. The only reason for this feature is to protect the user’s privacy. * “auto”: isn’t strictly necessary, but it conveys that this feature is an ongoing part of the service. This isn’t describing, for example, a one-time deletion. * “rolling basis each month”: Information associated with Topics and FLEDGE are deleted on a rolling basis at least once per month. It’s simpler to talk about “once per month” rather than 3 weeks for Topics and 4 weeks for FLEDGE. * “Interests can refresh…”: We intend for this line to cover both Topics and FLEDGE. It’s slightly messy, because there is a suggestion that this line is more about Topics than FLEDGE (“interests” is more prominent in the Topics subtitle).">
+  <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION_TRIALS_OFF" desc="A paragraph beneath the card title. Note that this paragraph is written so that it describes both the Topics API and the FLEDGE API. Some things are described slightly differently for this reason. Version 2 of 3 of this paragraph.  1) NOT THE CASE FOR THIS STRING: A different version of this first line is written for the case that a user has Privacy Sandbox trials turned on AND that they’ve been randomly selected for a trial. 2) The first line is written with the assumption that the user 1) has Privacy Sandbox trials turned on but 2) has NOT been randomly selected by Chrome to be in  an active experiment. This explains why the user doesn’t have data shown on the page. 3) NOT THE CASE FOR THIS STRING: A different version of  this first line is written for the case that a user doesn’t have the Privacy Sandbox trials turned on. * “browsing history”:  “a record of sites you’ve visited using Chrome on this device.” * “affects the ads you see and the interests as estimated below”: browsing history leads to Chrome establishing user interests leads to 1) the ads you see are different, and 2) the list of things on this page changes based on what Chrome establishes. * “To protect your privacy”: Today, most data is kept for long periods of time. This new Topics API doesn’t retain estimated topics for more than 3 weeks. The only reason for this feature is to protect the user’s privacy. * “auto”: isn’t strictly necessary, but it conveys that this feature is an ongoing part of the service. This isn’t describing, for example, a one-time deletion. * “rolling basis each month”: Information associated with Topics and FLEDGE are deleted on a rolling basis at least once per month. It’s simpler to talk about “once per month” rather than 3 weeks for Topics and 4 weeks for FLEDGE.* “Interests can refresh…”: We intend for this line to cover both Topics and FLEDGE. It’s slightly messy, because there is a suggestion that this line is more about Topics than FLEDGE (“interests” is more prominent in the Topics subtitle).">
     When trials are on and if Chrome has randomly placed you in an active trial, your browsing history affects the ads you see and the interests as estimated below. To protect your privacy, Chrome deletes your interests on a rolling basis each month.
   </message>
-  <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION_LISTS_EMPTY" desc="A paragraph beneath the card title. Note that this paragraph is written so that it describes both the Topics API and the FLEDGE API. Some things are described slightly differently for this reason. * “browsing history”:  “a record of sites you’ve visited using Chrome on this device.” * “affects the ads you see and the interests as estimated below”: browsing history leads to Chrome establishing user interests leads to 1) the ads you see are different, and 2) the list of things on this page changes based on what Chrome establishes. * “To protect your privacy”: Today, most data is kept for long periods of time. This new Topics API doesn’t retain estimated topics for more than 3 weeks. The only reason for this feature is to protect the user’s privacy. * “auto”: isn’t strictly necessary, but it conveys that this feature is an ongoing part of the service. This isn’t describing, for example, a one-time deletion. * “rolling basis each month”: Information associated with Topics and FLEDGE are deleted on a rolling basis at least once per month. It’s simpler to talk about “once per month” rather than 3 weeks for Topics and 4 weeks for FLEDGE. * “Interests can refresh…”: We intend for this line to cover both Topics and FLEDGE. It’s slightly messy, because there is a suggestion that this line is more about Topics than FLEDGE (“interests” is more prominent in the Topics subtitle).">
+  <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION_LISTS_EMPTY" desc="A paragraph beneath the card title. Note that this paragraph is written so that it describes both the Topics API and the FLEDGE API. Some things are described slightly differently for this reason. Version 3 of 3 of this paragraph.  1) NOT THE CASE FOR THIS STRING: A different version of this first line is written for the case that a user has Privacy Sandbox trials turned on AND that they’ve been randomly selected for a trial. 2) NOT THE CASE FOR THIS STRING: A different version of  this first line is written for the case that a user has the Privacy Sandbox trials turned on but they haven’t been randomly selected to be in a trial. 3) The first line is written with the assumption that the user a) doesn’t have Privacy Sandbox trials turned on. b) Because of this, they can’t be randomly selected for a trial. This explains why the user doesn’t have data shown on the page. * “browsing history”:  “a record of sites you’ve visited using Chrome on this device.” * “affects the ads you see and the interests as estimated below”: browsing history leads to Chrome establishing user interests leads to 1) the ads you see are different, and 2) the list of things on this page changes based on what Chrome establishes. * “To protect your privacy”: Today, most data is kept for long periods of time. This new Topics API doesn’t retain estimated topics for more than 3 weeks. The only reason for this feature is to protect the user’s privacy. * “auto”: isn’t strictly necessary, but it conveys that this feature is an ongoing part of the service. This isn’t describing, for example, a one-time deletion. * “rolling basis each month”: Information associated with Topics and FLEDGE are deleted on a rolling basis at least once per month. It’s simpler to talk about “once per month” rather than 3 weeks for Topics and 4 weeks for FLEDGE. * “Interests can refresh…”: We intend for this line to cover both Topics and FLEDGE. It’s slightly messy, because there is a suggestion that this line is more about Topics than FLEDGE (“interests” is more prominent in the Topics subtitle).">
     If Chrome has randomly placed you in an active trial, your browsing history affects the ads you see and the interests as estimated below. To protect your privacy, Chrome deletes your interests on a rolling basis each month. Interests refresh unless you remove them.
   </message>
   <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_TITLE" desc="Title of the browser-based interests section of the 'ad personalization' dialog.">
@@ -217,7 +217,7 @@
     Chrome can estimate your interests based on your browsing history from the last few weeks. This info stays on your device.
   </message>
   <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_2" desc="Second learn more description of the browser-based interests section of the 'ad personalization' dialog.">
-    Later, a site you visit can ask Chrome to see your interests in order to personalize the ads you see. Without identifying who you are, Chrome can share up to 3 interests.
+    Later, a site you visit can ask Chrome to see your interests in order to personalize the ads you see. Chrome can share up to 3 interests.
   </message>
   <message name="IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_3" desc="Third learn more description of the browser-based interests section of the 'ad personalization' dialog.">
     To protect your privacy, we auto-delete your interests that are older than 4 weeks. As you keep browsing, an interest might appear on the list again. And if Chrome gets it wrong or you don't want to see certain ads, you can remove an interest.
@@ -270,7 +270,7 @@
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITHOUT_COUNTS" desc="Warning message displayed in the Sign out of Chrome dialog that indicates profile browsing data will be removed from the device.">
     This will delete your browsing data from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL">$1<ex>foo@example.com</ex></ph>.
   </message>
-<if expr="not chromeos">
+<if expr="not chromeos_ash">
   <message name="IDS_SETTINGS_CUSTOMIZE_YOUR_CHROME_PROFILE" desc="Label of the link that takes you to the page to customize your chrome profile.">
     Customize your Chrome profile
   </message>
@@ -281,7 +281,7 @@
   <message name="IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT" desc="The secondary text displayed to prompt users to enable sync for an account that is alredy present in Chrome.">
     Sync and personalize Chrome across your devices
   </message>
-<if expr="chromeos">
+<if expr="chromeos_ash">
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2" desc="Description of the Account Manager Settings page. Shown just below the title of the page.">
     You can manage your signed-in Google Accounts. Your Google Accounts are used for Chrome browser, Play Store, Gmail, and more. If you want to add an account for someone else, like a family member, add a new person to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> instead. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
@@ -312,7 +312,7 @@
   </if>
 
   <!-- System Page -->
-  <if expr="not chromeos">
+  <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL" desc="Label for the checkbox to allow apps to run in the background, when Chrome is closed.">
       Continue running background apps when Google Chrome is closed
     </message>

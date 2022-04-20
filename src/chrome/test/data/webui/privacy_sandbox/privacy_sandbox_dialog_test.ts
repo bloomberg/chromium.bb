@@ -8,6 +8,7 @@ import {PrivacySandboxDialogAppElement} from 'chrome://privacy-sandbox-dialog/pr
 import {PrivacySandboxDialogAction, PrivacySandboxDialogBrowserProxy} from 'chrome://privacy-sandbox-dialog/privacy_sandbox_dialog_browser_proxy.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
@@ -93,9 +94,11 @@ suite('PrivacySandboxDialogConsent', function() {
     // a separator in the bottom (represented by 'can-scroll' class).
     // The collapse section is closed.
     const collapseElement = page.shadowRoot!.querySelector('iron-collapse');
-    const contentArea = page.shadowRoot!.querySelector('#contentArea');
+    const contentArea: HTMLElement|null =
+        page.shadowRoot!.querySelector('#contentArea');
+    let hasScrollbar = contentArea!.offsetHeight < contentArea!.scrollHeight;
     assertFalse(collapseElement!.opened);
-    assertFalse(contentArea!.classList.contains('can-scroll'));
+    assertEquals(contentArea!.classList.contains('can-scroll'), hasScrollbar);
 
     // After clicking on the collapse section, the content area expands and
     // becomes scrollable with a separator in the bottom. The collapse section
@@ -117,10 +120,18 @@ suite('PrivacySandboxDialogConsent', function() {
     testClickButton('#expandSection cr-expand-button');
     const [closedAction] =
         await browserProxy.whenCalled('dialogActionOccurred');
+    hasScrollbar = contentArea!.offsetHeight < contentArea!.scrollHeight;
     assertEquals(
         closedAction, PrivacySandboxDialogAction.CONSENT_MORE_INFO_CLOSED);
     assertFalse(collapseElement!.opened);
-    assertFalse(contentArea!.classList.contains('can-scroll'));
+    assertEquals(contentArea!.classList.contains('can-scroll'), hasScrollbar);
+  });
+
+  test('escPressed', async function() {
+    browserProxy.reset();
+    pressAndReleaseKeyOn(page, 0, '', 'Escape');
+    // No user action is triggered by pressing Esc.
+    assertEquals(browserProxy.getCallCount('dialogActionOccurred'), 0);
   });
 });
 
@@ -178,5 +189,11 @@ suite('PrivacySandboxDialogNotice', function() {
     testClickButton('#settingsButton');
     const [action] = await browserProxy.whenCalled('dialogActionOccurred');
     assertEquals(action, PrivacySandboxDialogAction.NOTICE_OPEN_SETTINGS);
+  });
+
+  test('escPressed', async function() {
+    pressAndReleaseKeyOn(page, 0, '', 'Escape');
+    const [action] = await browserProxy.whenCalled('dialogActionOccurred');
+    assertEquals(action, PrivacySandboxDialogAction.NOTICE_DISMISS);
   });
 });

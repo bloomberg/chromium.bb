@@ -43,6 +43,8 @@ const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
 const char kGeneratedBackgroundPageFilename[] =
     "_generated_background_page.html";
 
+const char kFaviconSourcePath[] = "_favicon/";
+
 const char kModulesDir[] = "_modules";
 
 const base::FilePath::CharType kExtensionFileExtension[] =
@@ -156,6 +158,8 @@ const char kBeFunkyAppId[] = "fjoomcalbeohjbnlcneddljemclcekeg";
 const char kClipchampAppId[] = "pfepfhbcedkbjdkanpimmmdjfgoddhkg";
 const char kGeForceNowAppId[] = "egmafekfmcnknbdlbfbhafbllplmjlhn";
 const char kZoomAppId[] = "jldpdkiafafcejhceeincjmlkmibemgj";
+const char kSumoAppId[] = "mfknjekfflbfdchhohffdpkokgfbfmdc";
+const char kAdobeSparkAppId[] = "magefboookdoiehjohjmbjmkepngibhm";
 const char kGoogleDocsAppId[] = "aohghmighlieiainnegkcijnfilokake";
 const char kGoogleSheetsAppId[] = "felcaaldnbdncclmgdcncolpebgiejap";
 const char kGoogleSlidesAppId[] = "aapocclcgogkmnckokdopfmhonfmgoek";

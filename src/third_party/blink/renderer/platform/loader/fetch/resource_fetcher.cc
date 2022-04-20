@@ -787,11 +787,10 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
               network::mojom::RequestDestination::kWebBundle);
   } else {
     AttachWebBundleTokenIfNeeded(resource_request);
-    // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-    if ((resource_request.Url().Protocol() == "urn" ||
-         resource_request.Url().Protocol() == "uuid-in-package") &&
+    if (resource_request.Url().Protocol() == "uuid-in-package" &&
         resource_request.GetWebBundleTokenParams()) {
-      // We use the bundle URL for urn resources for security checks.
+      // We use the bundle URL for uuid-in-package: resources for security
+      // checks.
       bundle_url_for_uuid_resources =
           MemoryCache::RemoveFragmentIdentifierIfNeeded(
               resource_request.GetWebBundleTokenParams()->bundle_url);
@@ -885,10 +884,14 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         DetermineRequestDestination(resource_type));
   }
 
-  // Add the "Purpose: prefetch" header to requests for prefetch or issued from
-  // prerendered pages.
-  if (resource_type == ResourceType::kLinkPrefetch ||
-      Context().IsPrerendering()) {
+  if (resource_type == ResourceType::kLinkPrefetch) {
+    // Add the "Purpose: prefetch" header to requests for prefetch.
+    resource_request.SetPurposeHeader("prefetch");
+  } else if (Context().IsPrerendering()) {
+    // Add the "Sec-Purpose: prefetch;prerender" header to requests issued from
+    // prerendered pages. Add "Purpose: prefetch" as well for compatibility
+    // concerns (See https://github.com/WICG/nav-speculation/issues/133).
+    resource_request.SetHttpHeaderField("Sec-Purpose", "prefetch;prerender");
     resource_request.SetPurposeHeader("prefetch");
   }
 

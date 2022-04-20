@@ -62,10 +62,7 @@ namespace internal {
 InProcessHandler::InProcessHandler() = default;
 
 InProcessHandler::~InProcessHandler() {
-  if (upload_thread_started_ && upload_thread_) {
-    upload_thread_->Stop();
-  }
-  prune_thread_->Stop();
+  UpdatePruneAndUploadThreads(false);
 }
 
 bool InProcessHandler::Initialize(
@@ -103,13 +100,24 @@ bool InProcessHandler::Initialize(
   if (!CreateDirectory(base_dir_))
     return false;
 
+  bool is_app_extension = system_data_.IsExtension();
   prune_thread_.reset(new PruneIntermediateDumpsAndCrashReportsThread(
       database_.get(),
       PruneCondition::GetDefault(),
       base_dir_,
       bundle_identifier_and_seperator_,
-      system_data_.IsExtension()));
-  prune_thread_->Start();
+      is_app_extension));
+  if (is_app_extension || system_data_.IsApplicationActive())
+    prune_thread_->Start();
+
+  if (!is_app_extension) {
+    system_data_.SetActiveApplicationCallback([this](bool active) {
+      dispatch_async(
+          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            UpdatePruneAndUploadThreads(active);
+          });
+    });
+  }
 
   base::FilePath cached_writer_path = NewLockedFilePath();
   cached_writer_ = CreateWriterWithPath(cached_writer_path);
@@ -175,37 +183,6 @@ void InProcessHandler::DumpExceptionFromMachException(
       old_state_count);
 }
 
-void InProcessHandler::DumpExceptionFromNSExceptionWithContext(
-    NativeCPUContext* context) {
-  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  // This does not use the cached writer. NSExceptionWithContext comes from
-  // the objective-c preprocessor and uses a best-guess approach to detecting
-  // uncaught exceptions, and may be called multiple times.
-  base::FilePath writer_path = NewLockedFilePath();
-  base::FilePath writer_path_unlocked = writer_path.RemoveFinalExtension();
-  std::unique_ptr<IOSIntermediateDumpWriter> unsafe_writer =
-      CreateWriterWithPath(writer_path);
-  ScopedLockedWriter writer(unsafe_writer.get(),
-                            writer_path.value().c_str(),
-                            writer_path_unlocked.value().c_str());
-  if (!writer.GetWriter()) {
-    CRASHPAD_RAW_LOG("Cannot DumpExceptionFromNSException without writer");
-    return;
-  }
-
-  ScopedReport report(writer.GetWriter(), system_data_, annotations_);
-  InProcessIntermediateDumpHandler::WriteExceptionFromMachException(
-      writer.GetWriter(),
-      MACH_EXCEPTION_CODES,
-      mach_thread_self(),
-      kMachExceptionFromNSException,
-      kEmulatedMachExceptionCodes,
-      std::size(kEmulatedMachExceptionCodes),
-      MACHINE_THREAD_STATE,
-      reinterpret_cast<ConstThreadState>(context),
-      MACHINE_THREAD_STATE_COUNT);
-}
-
 void InProcessHandler::DumpExceptionFromNSExceptionWithFrames(
     const uint64_t* frames,
     const size_t num_frames) {
@@ -226,14 +203,17 @@ void InProcessHandler::DumpExceptionFromNSExceptionWithFrames(
 
 bool InProcessHandler::DumpExceptionFromSimulatedMachException(
     const NativeCPUContext* context,
+    exception_type_t exception,
     base::FilePath* path) {
   base::FilePath locked_path = NewLockedFilePath();
   *path = locked_path.RemoveFinalExtension();
-  return DumpExceptionFromSimulatedMachExceptionAtPath(context, locked_path);
+  return DumpExceptionFromSimulatedMachExceptionAtPath(
+      context, exception, locked_path);
 }
 
 bool InProcessHandler::DumpExceptionFromSimulatedMachExceptionAtPath(
     const NativeCPUContext* context,
+    exception_type_t exception,
     const base::FilePath& path) {
   // This does not use the cached writer. It's expected that simulated
   // exceptions can be called multiple times and there is no expectation that
@@ -255,7 +235,7 @@ bool InProcessHandler::DumpExceptionFromSimulatedMachExceptionAtPath(
       writer.GetWriter(),
       MACH_EXCEPTION_CODES,
       mach_thread_self(),
-      kMachExceptionSimulated,
+      exception,
       kEmulatedMachExceptionCodes,
       std::size(kEmulatedMachExceptionCodes),
       MACHINE_THREAD_STATE,
@@ -264,6 +244,11 @@ bool InProcessHandler::DumpExceptionFromSimulatedMachExceptionAtPath(
   return true;
 }
 
+bool InProcessHandler::MoveIntermediateDumpAtPathToPending(
+    const base::FilePath& path) {
+  base::FilePath new_path_unlocked = NewLockedFilePath().RemoveFinalExtension();
+  return MoveFileOrDirectory(path, new_path_unlocked);
+}
 void InProcessHandler::ProcessIntermediateDumps(
     const std::map<std::string, std::string>& annotations) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
@@ -284,9 +269,29 @@ void InProcessHandler::ProcessIntermediateDump(
 }
 
 void InProcessHandler::StartProcessingPendingReports() {
-  if (!upload_thread_started_ && upload_thread_) {
-    upload_thread_->Start();
-    upload_thread_started_ = true;
+  if (!upload_thread_)
+    return;
+
+  upload_thread_enabled_ = true;
+  UpdatePruneAndUploadThreads(true);
+}
+
+void InProcessHandler::UpdatePruneAndUploadThreads(bool active) {
+  base::AutoLock lock_owner(prune_and_upload_lock_);
+  // TODO(crbug.com/crashpad/400): Consider moving prune and upload thread to
+  // BackgroundTasks and/or NSURLSession. This might allow uploads to continue
+  // in the background.
+  if (active) {
+    if (!prune_thread_->is_running())
+      prune_thread_->Start();
+    if (upload_thread_enabled_ && !upload_thread_->is_running()) {
+      upload_thread_->Start();
+    }
+  } else {
+    if (prune_thread_->is_running())
+      prune_thread_->Stop();
+    if (upload_thread_enabled_ && upload_thread_->is_running())
+      upload_thread_->Stop();
   }
 }
 

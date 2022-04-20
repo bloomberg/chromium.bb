@@ -79,9 +79,10 @@ class StartupBrowserCreator {
   StartupBrowserCreator& operator=(const StartupBrowserCreator&) = delete;
   ~StartupBrowserCreator();
 
-  // Adds a url to be opened during first run. This overrides the standard
+  // Adds urls to be opened during first run. This overrides the standard
   // tabs shown at first run.
-  void AddFirstRunTab(const GURL& url);
+  // Invalid URLs (per `GURL::is_valid()`) are skipped.
+  void AddFirstRunTabs(const std::vector<GURL>& urls);
 
 #if BUILDFLAG(IS_WIN)
   // Configures the instance to include the specified "welcome back" page in a
@@ -145,6 +146,10 @@ class StartupBrowserCreator {
       chrome::startup::IsFirstRun is_first_run,
       StartupProfileInfo profile_info,
       const Profiles& last_opened_profiles);
+
+  // Returns true if we're in the process of restoring the session for the
+  // last opened profiles in `LaunchBrowserForLastProfiles()`.
+  static bool IsLaunchingBrowserForLastProfiles();
 
   // Returns true during browser process startup if the previous browser was
   // restarted. This only returns true before the first StartupBrowserCreator
@@ -265,6 +270,8 @@ class StartupBrowserCreator {
   static bool was_restarted_read_;
 
   static bool in_synchronous_profile_launch_;
+
+  static bool is_launching_browser_for_last_profiles_;
 };
 
 // Returns true if |profile| has exited uncleanly and has not been launched

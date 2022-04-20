@@ -31,7 +31,6 @@ OpDecorate %10 Binding 0
 OpDecorate %10 DescriptorSet 0
 OpDecorate %34 RelaxedPrecision
 OpDecorate %36 RelaxedPrecision
-OpDecorate %38 RelaxedPrecision
 OpDecorate %39 RelaxedPrecision
 OpDecorate %40 RelaxedPrecision
 OpDecorate %42 RelaxedPrecision
@@ -52,8 +51,8 @@ OpDecorate %221 RelaxedPrecision
 %10 = OpVariable %_ptr_Uniform__UniformBuffer Uniform
 %void = OpTypeVoid
 %15 = OpTypeFunction %void
-%v2float = OpTypeVector %float 2
 %float_0 = OpConstant %float 0
+%v2float = OpTypeVector %float 2
 %19 = OpConstantComposite %v2float %float_0 %float_0
 %_ptr_Function_v2float = OpTypePointer Function %v2float
 %23 = OpTypeFunction %v4float %_ptr_Function_v2float
@@ -65,6 +64,7 @@ OpDecorate %221 RelaxedPrecision
 %int_0 = OpConstant %int 0
 %float_100 = OpConstant %float 100
 %float_200 = OpConstant %float 200
+%38 = OpConstantComposite %v4float %float_200 %float_200 %float_200 %float_200
 %uint_100 = OpConstant %uint 100
 %uint_200 = OpConstant %uint 200
 %uint_275 = OpConstant %uint 275
@@ -80,9 +80,15 @@ OpDecorate %221 RelaxedPrecision
 %65 = OpConstantComposite %v4uint %uint_300 %uint_400 %uint_250 %uint_500
 %false = OpConstantFalse %bool
 %v2uint = OpTypeVector %uint 2
+%79 = OpConstantComposite %v2uint %uint_100 %uint_100
+%80 = OpConstantComposite %v2uint %uint_300 %uint_300
 %v2bool = OpTypeVector %bool 2
 %v3uint = OpTypeVector %uint 3
+%93 = OpConstantComposite %v3uint %uint_100 %uint_100 %uint_100
+%94 = OpConstantComposite %v3uint %uint_300 %uint_300 %uint_300
 %v3bool = OpTypeVector %bool 3
+%105 = OpConstantComposite %v4uint %uint_100 %uint_100 %uint_100 %uint_100
+%106 = OpConstantComposite %v4uint %uint_300 %uint_300 %uint_300 %uint_300
 %v4bool = OpTypeVector %bool 4
 %120 = OpConstantComposite %v2uint %uint_100 %uint_200
 %128 = OpConstantComposite %v3uint %uint_100 %uint_200 %uint_275
@@ -114,7 +120,6 @@ OpFunctionEnd
 %30 = OpAccessChain %_ptr_Uniform_v4float %10 %int_0
 %34 = OpLoad %v4float %30
 %36 = OpVectorTimesScalar %v4float %34 %float_100
-%38 = OpCompositeConstruct %v4float %float_200 %float_200 %float_200 %float_200
 %39 = OpFAdd %v4float %36 %38
 %40 = OpCompositeExtract %float %39 0
 %41 = OpConvertFToU %uint %40
@@ -141,8 +146,6 @@ OpBranchConditional %72 %73 %74
 %73 = OpLabel
 %76 = OpLoad %v4uint %uintValues
 %77 = OpVectorShuffle %v2uint %76 %76 0 1
-%79 = OpCompositeConstruct %v2uint %uint_100 %uint_100
-%80 = OpCompositeConstruct %v2uint %uint_300 %uint_300
 %75 = OpExtInst %v2uint %1 UClamp %77 %79 %80
 %81 = OpLoad %v4uint %expectedA
 %82 = OpVectorShuffle %v2uint %81 %81 0 1
@@ -156,8 +159,6 @@ OpBranchConditional %86 %87 %88
 %87 = OpLabel
 %90 = OpLoad %v4uint %uintValues
 %91 = OpVectorShuffle %v3uint %90 %90 0 1 2
-%93 = OpCompositeConstruct %v3uint %uint_100 %uint_100 %uint_100
-%94 = OpCompositeConstruct %v3uint %uint_300 %uint_300 %uint_300
 %89 = OpExtInst %v3uint %1 UClamp %91 %93 %94
 %95 = OpLoad %v4uint %expectedA
 %96 = OpVectorShuffle %v3uint %95 %95 0 1 2
@@ -170,8 +171,6 @@ OpSelectionMerge %102 None
 OpBranchConditional %100 %101 %102
 %101 = OpLabel
 %104 = OpLoad %v4uint %uintValues
-%105 = OpCompositeConstruct %v4uint %uint_100 %uint_100 %uint_100 %uint_100
-%106 = OpCompositeConstruct %v4uint %uint_300 %uint_300 %uint_300 %uint_300
 %103 = OpExtInst %v4uint %1 UClamp %104 %105 %106
 %107 = OpLoad %v4uint %expectedA
 %108 = OpIEqual %v4bool %103 %107

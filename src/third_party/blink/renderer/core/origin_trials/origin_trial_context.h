@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ORIGIN_TRIALS_ORIGIN_TRIAL_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ORIGIN_TRIALS_ORIGIN_TRIAL_CONTEXT_H_
 
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -191,6 +192,13 @@ class CORE_EXPORT OriginTrialContext final
   // If this returns false, the trial cannot be enabled (e.g. due to it is
   // invalid in the browser's present configuration).
   bool CanEnableTrialFromName(const StringView& trial_name);
+
+  // Returns features which are currently restricted for a given trial name,
+  // these features *will not* be enabled by the origin trial infrastructure if
+  // the given trial is enabled. The corresponding runtime features may still be
+  // enabled via command line flags, etc.
+  Vector<OriginTrialFeature> RestrictedFeaturesForTrial(
+      const String& trial_name);
 
   // Enable features by trial name. Returns true or false to indicate whether
   // some features are enabled as the result.

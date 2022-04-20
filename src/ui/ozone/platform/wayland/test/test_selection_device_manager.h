@@ -60,6 +60,8 @@ class TestSelectionDeviceManager : public GlobalObject {
   TestSelectionDevice* device() { return device_; }
   TestSelectionSource* source() { return source_; }
 
+  void set_source(TestSelectionSource* source) { source_ = source; }
+
   // Protocol object requests:
   static void CreateSource(wl_client* client,
                            wl_resource* manager_resource,
@@ -165,14 +167,22 @@ class TestSelectionDevice : public ServerObject {
   TestSelectionOffer* OnDataOffer();
   void OnSelection(TestSelectionOffer* offer);
 
+  void set_manager(TestSelectionDeviceManager* manager) { manager_ = manager; }
+
   // Protocol object requests:
   static void SetSelection(struct wl_client* client,
                            struct wl_resource* resource,
                            struct wl_resource* source,
                            uint32_t serial);
 
+  uint32_t selection_serial() const { return selection_serial_; }
+
  private:
   Delegate* const delegate_;
+
+  uint32_t selection_serial_ = 0;
+
+  TestSelectionDeviceManager* manager_ = nullptr;
 };
 
 }  // namespace wl

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_DIALOG_VIEW_H_
 
+#include "base/time/time.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
@@ -28,7 +29,7 @@ class PrivacySandboxDialogView : public views::View {
  private:
   void ResizeNativeView(int height);
   void ShowNativeView();
-  void OpenPrivacySandboxAdPersonalization();
+  void OpenPrivacySandboxSettings();
 
   raw_ptr<views::WebView> web_view_;
   raw_ptr<Browser> browser_;

@@ -209,9 +209,11 @@ class VideoStreamsInfo {
 };
 
 struct DefaultVideoQualityAnalyzerOptions {
-  // Tells DefaultVideoQualityAnalyzer if heavy metrics like PSNR and SSIM have
-  // to be computed or not.
-  bool heavy_metrics_computation_enabled = true;
+  // Tells DefaultVideoQualityAnalyzer if heavy metrics have to be computed.
+  bool compute_psnr = true;
+  bool compute_ssim = true;
+  // If true, weights the luma plane more than the chroma planes in the PSNR.
+  bool use_weighted_psnr = false;
   // If true DefaultVideoQualityAnalyzer will try to adjust frames before
   // computing PSNR and SSIM for them. In some cases picture may be shifted by
   // a few pixels after the encode/decode step. Those difference is invisible

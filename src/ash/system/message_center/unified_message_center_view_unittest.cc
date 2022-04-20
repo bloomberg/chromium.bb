@@ -23,6 +23,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
@@ -109,8 +110,9 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     data.pinned = pinned;
     MessageCenter::Get()->AddNotification(std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_BASE_FORMAT, id, u"test title",
-        u"test message", gfx::Image(), std::u16string() /* display_source */,
-        GURL(), message_center::NotifierId(), data,
+        u"test message", ui::ImageModel(),
+        std::u16string() /* display_source */, GURL(),
+        message_center::NotifierId(), data,
         new message_center::NotificationDelegate()));
     return id;
   }
@@ -743,13 +745,6 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterVisibility) {
   AddNotification(false /* pinned */);
   RelayoutMessageCenterViewForTest();
   EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
-}
-
-TEST_P(UnifiedMessageCenterViewTest, InitializesWithCorrectFocusOrder) {
-  CreateMessageCenterView();
-  std::vector<views::View*> expected_focus_list = {GetScroller(),
-                                                   GetNotificationBar()};
-  EXPECT_EQ(message_center_view()->GetChildrenFocusList(), expected_focus_list);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

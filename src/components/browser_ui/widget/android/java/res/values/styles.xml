@@ -4,11 +4,9 @@
      found in the LICENSE file. -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- TODO(https://crbug.com/1242702): Rename to ThemeOverlay.Chromium.AlertDialog. -->
     <!-- AlertDialog styles -->
     <!-- This should be kept in sync with |Theme.BrowserUI.AlertDialog.NoActionBar|. -->
-    <style name="Base.Theme.Chromium.AlertDialog"
-        parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+    <style name="ThemeOverlay.BrowserUI.AlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <item name="android:textColorPrimary">@macro/default_text_color</item>
         <item name="android:windowBackground">@drawable/dialog_bg_no_shadow</item>
         <item name="android:windowTitleStyle">@style/TextAppearance.AlertDialogTitleStyle</item>
@@ -26,9 +24,8 @@
         <item name="android:buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
     </style>
-    <style name="Theme.Chromium.AlertDialog" parent="Base.Theme.Chromium.AlertDialog" />
 
-    <style name="Theme.Chromium.AlertDialog.NoActionBar">
+    <style name="ThemeOverlay.BrowserUI.AlertDialog.NoActionBar">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
     </style>
@@ -201,5 +198,18 @@
         <item name="chipColor">@color/menu_chip_background</item>
         <item name="solidColorChip">true</item>
         <item name="verticalInset">@dimen/menu_chip_vertical_inset</item>
+    </style>
+
+    <!-- Popup and long-press context popup menu style -->
+    <style name="PopupMenuStyle" parent="Widget.AppCompat.Light.PopupMenu">
+        <item name="android:popupBackground">@drawable/menu_bg_tinted</item>
+        <item name="android:overlapAnchor" tools:targetApi="21">true</item>
+        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
+    </style>
+
+    <!-- Spinner styles -->
+    <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:popupBackground">@drawable/dialog_bg_tinted</item>
+        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 </resources>

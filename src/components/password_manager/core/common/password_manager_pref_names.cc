@@ -13,10 +13,17 @@ const char kCredentialsEnableAutosignin[] = "credentials_enable_autosignin";
 const char kCredentialsEnableService[] = "credentials_enable_service";
 
 #if BUILDFLAG(IS_ANDROID)
+const char kAutoSignInEnabledGMS[] = "profile.auto_sign_in_enabled_gms";
+const char kOfferToSavePasswordsEnabledGMS[] =
+    "profile.save_passwords_enabed_gms";
+
 const char kCurrentMigrationVersionToGoogleMobileServices[] =
     "current_migration_version_to_google_mobile_services";
 
 const char kTimeOfLastMigrationAttempt[] = "time_of_last_migration_attempt";
+
+const char kRequiresMigrationAfterSyncStatusChange[] =
+    "requires_migration_after_sync_status_change";
 #endif
 
 #if BUILDFLAG(IS_WIN)

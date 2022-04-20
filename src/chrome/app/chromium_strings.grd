@@ -19,6 +19,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
     <output filename="chromium_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="chromium_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="chromium_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="chromium_strings_cy.pak" type="data_package" lang="cy" />
     <output filename="chromium_strings_da.pak" type="data_package" lang="da" />
     <output filename="chromium_strings_de.pak" type="data_package" lang="de" />
     <output filename="chromium_strings_el.pak" type="data_package" lang="el" />
@@ -196,6 +197,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
     <file path="resources/chromium_strings_bs.xtb" lang="bs" />
     <file path="resources/chromium_strings_ca.xtb" lang="ca" />
     <file path="resources/chromium_strings_cs.xtb" lang="cs" />
+    <file path="resources/chromium_strings_cy.xtb" lang="cy" />
     <file path="resources/chromium_strings_da.xtb" lang="da" />
     <file path="resources/chromium_strings_de.xtb" lang="de" />
     <file path="resources/chromium_strings_el.xtb" lang="el" />
@@ -299,15 +301,15 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Welcome to Chromium
         </message>
       </if>
-      <if expr="chromeos">
-        <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
-          Chromium OS
+      <if expr="chromeos_ash">
+        <message name="IDS_PRODUCT_OS_NAME" desc="The ChromeOS application name">
+          ChromiumOS
         </message>
-        <message name="IDS_SHORT_PRODUCT_OS_NAME" desc="The Chrome OS application short name">
-          Chromium OS
+        <message name="IDS_SHORT_PRODUCT_OS_NAME" desc="The ChromeOS application short name">
+          ChromiumOS
         </message>
         <message name="IDS_INSTALLED_PRODUCT_OS_NAME" desc="Installed OS name">
-          Chromium OS
+          ChromiumOS
         </message>
       </if>
       <message name="IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT" desc="Alt text for the Chromium Enterprise logo image." formatter_data="android_java">
@@ -318,12 +320,12 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           New window
         </message>
       </if>
-      <if expr="is_macosx or chromeos">
+      <if expr="is_macosx or chromeos_ash">
         <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
           Task Manager
         </message>
       </if>
-      <if expr="not is_macosx and not chromeos">
+      <if expr="not is_macosx and not chromeos_ash">
         <message name="IDS_TASK_MANAGER_TITLE" desc="The title of the Task Manager window">
           Task Manager - Chromium
         </message>
@@ -331,25 +333,25 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <message name="IDS_SESSION_CRASHED_VIEW_UMA_OPTIN" desc="Text besides the checkbox to let users optin to UMA in the restore from previous crash bubble.">
         Help make Chromium better by sending crash reports and <ph name="UMA_LINK">$1<ex>usage statistics</ex></ph> to Google
       </message>
-      <if expr="not chromeos">
+      <if expr="not chromeos_ash">
         <!-- Browser Window Title Format -->
         <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabs and popup windows">
           <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium
         </message>
       </if>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <!-- Browser Window Title Format -->
         <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabbed browser windows">
           Chromium - <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
         </message>
       </if>
-      <if expr="not chromeos and not is_macosx">
+      <if expr="not chromeos_ash and not is_macosx">
         <!-- Captive Portal Browser Window Title Format -->
         <message name="IDS_CAPTIVE_PORTAL_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in captive portal popup windows">
           <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Network Sign-in - Chromium
         </message>
       </if>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <!-- Captive Portal Browser Window Title Format -->
         <message name="IDS_CAPTIVE_PORTAL_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in captive portal popup windows">
           Chromium - Network Sign-in - <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
@@ -362,7 +364,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         </message>
       </if>
       <!-- Accessible window title format - includes the channel, and the same
-           on all browser platforms rather than different on Chrome OS. -->
+           on all browser platforms rather than different on ChromeOS. -->
       <message name="IDS_ACCESSIBLE_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium
       </message>
@@ -381,12 +383,12 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <message name="IDS_ABOUT_VERSION_COPYRIGHT" desc="Copyright information on the about pages">
         Copyright <ph name="YEAR">{0,date,y}<ex>2016</ex></ph> The Chromium Authors. All rights reserved.
       </message>
-      <if expr="chromeos">
-        <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS.">
-          Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
+      <if expr="chromeos_ash">
+        <message name="IDS_ABOUT_CROS_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for ChromeOS.">
+          ChromiumOS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>.
         </message>
-        <message name="IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for Chrome OS when Crostini is installed.">
-          Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux development environment<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
+        <message name="IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE" desc="Additional text displayed beneath the Chromium open source URLs for ChromeOS when Crostini is installed.">
+          ChromiumOS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS">&lt;a target="_blank" href="$1"&gt;</ph>open source software<ph name="END_LINK_CROS_OSS">&lt;/a&gt;</ph>, as is <ph name="BEGIN_LINK_LINUX_OSS">&lt;a target="_blank" href="$2"&gt;</ph>Linux development environment<ph name="END_LINK_LINUX_OSS">&lt;/a&gt;</ph>.
         </message>
         <message name="IDS_ABOUT_SAFETY_INFORMATION" desc="The safety label in the About box." translateable="false">
           Not used in Chromium. Placeholder to keep resource maps in sync.
@@ -396,8 +398,11 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         Not used in Chromium. Placeholder to keep resource maps in sync.
       </message>
       <if expr="is_macosx">
-        <message name="IDS_MAC_10_10_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using will soon be or is already unsupported.">
-          To get future Chromium updates, you'll need OS X 10.11 or later. This computer is using OS X 10.10.
+        <message name="IDS_MAC_10_11_OBSOLETE" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using will soon be or is already unsupported.">
+          To get future Chromium updates, you'll need macOS 10.13 or later. This computer is using OS X 10.11.
+        </message>
+        <message name="IDS_MAC_10_12_OBSOLETE" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using will soon be or is already unsupported.">
+          To get future Chromium updates, you'll need macOS 10.13 or later. This computer is using macOS 10.12.
         </message>
       </if>
       <if expr="is_win">
@@ -454,9 +459,9 @@ Chromium cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
       </message>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
-          Optional: Help improve Chromium OS features and performance by automatically sending diagnostic and usage data to Google.
+          Optional: Help improve ChromiumOS features and performance by automatically sending diagnostic and usage data to Google.
         </message>
       </if>
       <message name="IDS_PROFILE_TOO_NEW_ERROR" desc="Error displayed on startup when the profile is from a newer version of the product and can not be read">
@@ -475,13 +480,13 @@ Your preferences file is corrupt or invalid.
 Chromium is unable to recover your settings.
       </message>
       <!-- Add account dialog -->
-      <if expr="chromeos">
-        <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_V2" desc="Text body for the Welcome screen in Chromium OS 'Add account' dialog.">
+      <if expr="chromeos_ash">
+        <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_V2" desc="Text body for the Welcome screen in ChromiumOS 'Add account' dialog.">
 If you want to use this account one-time only, you can use Guest mode in Chromium browser. If you want to add an account for someone else, <ph name="LINK_BEGIN">&lt;a target="_blank" id="newPersonLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>add a new person<ph name="LINK_END">&lt;/a&gt;</ph> to your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>.
 
 Permissions you've already given to websites and apps may apply to this account. You can manage your Google Accounts in <ph name="SETTINGS_LINK_BEGIN">&lt;a id="osSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="SETTINGS_LINK_END">&lt;/a&gt;</ph>.
         </message>
-        <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_V2_WITH_GUEST_MODE" desc="Text body for the Welcome screen in Chromium OS 'Add account' dialog.">
+        <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_V2_WITH_GUEST_MODE" desc="Text body for the Welcome screen in ChromiumOS 'Add account' dialog.">
 If you want to use this account one-time only, you can use <ph name="GUEST_LINK_BEGIN">&lt;a id="guestModeLink" href="#"&gt;</ph>Guest mode<ph name="GUEST_LINK_END">&lt;/a&gt;</ph> in Chromium browser. If you want to add an account for someone else, <ph name="LINK_BEGIN">&lt;a target="_blank" id="newPersonLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>add a new person<ph name="LINK_END">&lt;/a&gt;</ph> to your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>.
 
 Permissions you've already given to websites and apps may apply to this account. You can manage your Google Accounts in <ph name="SETTINGS_LINK_BEGIN">&lt;a id="osSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="SETTINGS_LINK_END">&lt;/a&gt;</ph>.
@@ -506,6 +511,15 @@ Permissions you've already given to websites and apps may apply to this account.
       </message>
       <message name="IDS_PASSWORD_MANAGER_TITLE_BRAND" desc="The product name used in the title of the password bubble.">
         Chromium
+      </message>
+      <message name="IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE" desc="The text of the Google Password Manager links displayed on Password Manager bubbles footer when the credentials are stored only locally.">
+        Password Manager
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION" desc="The description of the Google Password Manager's save password message when the user is signed out.">
+        To Password Manager on this device
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION" desc="The description of the Google Password Manager's update password message when the user is signed out.">
+        In Password Manager on this device
       </message>
       <if expr="is_macosx">
         <message name="IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT" desc="Text for the dialog box that prompts the user for their OS account password before revealing plaintext passwords on the password page.">
@@ -611,6 +625,32 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
       </if>
 
+      <!-- Download Bubble Items -->
+      <message name="IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED"
+               desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
+        Chromium blocked this file because it is dangerous
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNKNOWN_SOURCE"
+               desc="Summary of dangerous warning for a file (like an extension) from an unknown source.">
+        Extensions, apps, and themes from unknown sources can harm your device. Chromium recommends only installing them from the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ENCRYPTED"
+               desc="Summary of dangerous warning for an encrypted file.">
+        Chromium blocked this file because it's encrypted. Ask its owner to decrypt it
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_MALWARE"
+               desc="Subpage summary for malware warning for the user.">
+        Chromium blocked this file because it has malware
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_TOO_BIG"
+               desc="Subpage summary of warning for a file blocked for being too large.">
+        Chromium blocked this file because it's too big for a security check. Try again with files up to 50 MB
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT"
+               desc="Subpage summary of warning for Deep Scanning.">
+        Chromium recommends scanning this file because it may be dangerous
+      </message>
+
       <!-- Download Shelf Items -->
       <message name="IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING"
                desc="Message shown when a CRX has been downloaded and is being unpacked.">
@@ -646,7 +686,7 @@ Permissions you've already given to websites and apps may apply to this account.
 
       <!-- Abandon in-progress downloads confirmation dialog -->
       <if expr="not is_macosx">
-        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE" desc="Message on a dialog shown when the user closes the browser while one or more downloads are in progress. This string is shown on Windows, Chrome OS, and Linux, which all use 'Exit' to refer to closing a browser.">
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE" desc="Message on a dialog shown when the user closes the browser while one or more downloads are in progress. This string is shown on Windows, ChromeOS, and Linux, which all use 'Exit' to refer to closing a browser.">
           Exit Chromium anyway?
         </message>
       </if>
@@ -725,7 +765,7 @@ Permissions you've already given to websites and apps may apply to this account.
         &amp;Open in Chromium
       </message>
 
-      <if expr="use_titlecase and not chromeos">
+      <if expr="use_titlecase and not chromeos_ash">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Chromium
         </message>
@@ -733,7 +773,7 @@ Permissions you've already given to websites and apps may apply to this account.
           Relaunch to Update &amp;Chromium
         </message>
       </if>
-      <if expr="not use_titlecase and not chromeos">
+      <if expr="not use_titlecase and not chromeos_ash">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
           About &amp;Chromium
         </message>
@@ -741,12 +781,12 @@ Permissions you've already given to websites and apps may apply to this account.
           Relaunch to update &amp;Chromium
         </message>
       </if>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
           About &amp;Chromium
         </message>
-        <message name="IDS_RELAUNCH_TO_UPDATE" desc="The text label of the relaunch to update Chrome OS menu item">
-          Relaunch to update &amp;Chromium OS
+        <message name="IDS_RELAUNCH_TO_UPDATE" desc="The text label of the relaunch to update ChromeOS menu item">
+          Relaunch to update &amp;ChromiumOS
         </message>
       </if>
 
@@ -773,7 +813,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </message>
 
       <!-- One click sign-in infobar -->
-      <if expr="not chromeos">
+      <if expr="not chromeos_ash">
         <!-- New one-click sign-in dialog contents for SAML support -->
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign-in.">
           You're signed in to Chromium!
@@ -815,7 +855,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- about:browser-switch strings -->
-      <if expr="is_win or is_macosx or is_fuchsia or (is_linux and not chromeos)">
+      <if expr="toolkit_views and not chromeos_lacros and not chromeos_ash">
         <message name="IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION_UNKNOWN_BROWSER" desc="Description shown while waiting for an alternative browser to open, when the browser name is not auto-detected">
           Your system administrator has configured Chromium to open an alternative browser to access <ph name="TARGET_URL_HOSTNAME">$1<ex>example.com</ex></ph>.
         </message>
@@ -830,13 +870,13 @@ Permissions you've already given to websites and apps may apply to this account.
       </message>
 
       <!-- Signin Email Confirmation tab modal dialog -->
-      <if expr="not chromeos">
+      <if expr="not chromeos_ash">
         <message name="IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE" desc="Title of the signin email confirmation tab modal dialog.">
           <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph> was previously using Chromium
         </message>
       </if>
 
-      <if expr="not chromeos and not is_android and not lacros">
+      <if expr="not chromeos_ash and not is_android and not chromeos_lacros">
         <!-- Dice Web Signin Interception Bubble-->
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
           Continue in a new Chromium profile?
@@ -858,7 +898,7 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
       </if>
 
-      <if expr="not chromeos and not is_android">
+      <if expr="not chromeos_ash and not is_android">
         <!-- Profile Customization Bubble-->
         <message name="IDS_PROFILE_CUSTOMIZATION_TEXT" desc="Text of the profile customization bubble">
           Customize your new Chromium profile
@@ -875,7 +915,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Sync/sign-in error messages -->
-      <if expr="not chromeos">
+      <if expr="not chromeos_ash">
         <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view when the user's sign-in credentials are out of date.">
           Chromium could not sync your data because your account sign-in details are out of date.
         </message>
@@ -886,23 +926,23 @@ Permissions you've already given to websites and apps may apply to this account.
           Chromium could not sync your data due to an error signing in.
         </message>
       </if>
-      <if expr="chromeos">
-        <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification for Chromium OS Secondary Accounts.">
-          Chromium OS System
+      <if expr="chromeos_ash">
+        <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification for ChromiumOS Secondary Accounts.">
+          ChromiumOS System
         </message>
         <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when the user's sign-in credentials are out of date.">
-          Chromium OS could not sync your data because your account sign-in details are out of date.
+          ChromiumOS could not sync your data because your account sign-in details are out of date.
         </message>
         <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when sync is not available for their domain.">
-          Chromium OS could not sync your data because Sync is not available for your domain.
+          ChromiumOS could not sync your data because Sync is not available for your domain.
         </message>
         <message name="IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when there's an error signing in.">
-          Chromium OS could not sync your data due to an error signing in.
+          ChromiumOS could not sync your data due to an error signing in.
         </message>
       </if>
 
       <!-- App list -->
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_APP_LIST_EXTENSIONS_UNINSTALL" desc="Title text for the context menu item of a non-platform-app app list item that removes the app.">
           Remove from Chromium...
         </message>
@@ -922,10 +962,10 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
       </if>
 
-      <!-- Chrome OS OOBE Terms of Service screen-->
-      <if expr="chromeos">
+      <!-- ChromeOS OOBE Terms of Service screen-->
+      <if expr="chromeos_ash">
         <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen. MANAGER can be a domain or an email address.">
-          <ph name="MANAGER">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Chromium OS Terms.
+          <ph name="MANAGER">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the ChromiumOS Terms.
         </message>
       </if>
 
@@ -955,7 +995,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Material Design User Manager -->
-      <if expr="not is_android and not chromeos">
+      <if expr="not is_android and not chromeos_ash">
         <!-- User pod remove sync warning text -->
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_SYNC" desc="Main text shown as a warning when attempting to remove an user.">
           This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL">$2<ex>foo@example.com</ex></ph>.
@@ -1061,7 +1101,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Update Recommended dialog -->
-      <if expr="not chromeos">
+      <if expr="not chromeos_ash">
         <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
           Relaunch Chromium
         </message>
@@ -1075,14 +1115,14 @@ Permissions you've already given to websites and apps may apply to this account.
           Relaunch
         </message>
       </if>
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
-          Restart Chromium OS
+          Restart ChromiumOS
         </message>
         <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-          Chromium OS needs to be restarted to apply the update.
+          ChromiumOS needs to be restarted to apply the update.
         </message>
-        <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button in the Update Recommended dialog which updates and restarts Chrome OS.">
+        <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button in the Update Recommended dialog which updates and restarts ChromeOS.">
           Restart
         </message>
       </if>
@@ -1207,17 +1247,17 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- OOBE -->
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen during OOBE">
           Please wait while Chromium installs the latest system updates.
         </message>
         <message name="IDS_EULA_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE EULA screen">
-          Chromium OS terms
+          ChromiumOS terms
         </message>
       </if>
 
       <!-- Welcome page (chrome://welcome) strings -->
-      <if expr="not chromeos and not is_android">
+      <if expr="not chromeos_ash and not is_android">
         <message name="IDS_WELCOME_HEADER" desc="A message which will appear as the header on the Welcome UI if the user has never run Chromium before.">
           Welcome to Chromium
         </message>
@@ -1231,7 +1271,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
       <!-- Relaunch notification bubble and dialog. -->
       <if expr="not is_android">
-        <if expr="not chromeos">
+        <if expr="not chromeos_ash">
           <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a browser relaunch is recommended for an update available for some number of days.">
             {0, plural,
               =0 {A Chromium update is available}
@@ -1274,7 +1314,7 @@ Permissions you've already given to websites and apps may apply to this account.
         </if>
       </if>
       <!-- Chromium launch blocking dialog. -->
-      <if expr="not is_android and not chromeos">
+      <if expr="not is_android and not chromeos_ash">
          <message name="IDS_ENTERPRISE_STARTUP_CLOUD_POLICY_ENROLLMENT_TOOLTIP" desc="The information message of Chromium launch blocking dialog for machine level user cloud policy enrollment.">
           Launching Chromium...
         </message>
@@ -1304,9 +1344,9 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
       </if>
 
-      <if expr="not chromeos and not is_android">
+      <if expr="not chromeos_ash and not is_android">
         <!-- Profile Picker -->
-        <if expr="lacros">
+        <if expr="chromeos_lacros">
           <message name="IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE_LACROS" desc="Profile picker main view subtitle">
             With Chromium profiles you can separate all of your Chromium stuff. This makes it easier to split between work and fun.
           </message>
@@ -1314,10 +1354,10 @@ Permissions you've already given to websites and apps may apply to this account.
             To access your Chromium browser stuff across all your devices, sign in, then turn on sync
           </message>
           <message name="IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_ACCOUNT_SELECTION_LACROS_SUBTITLE" desc="Profile picker, account selection screen subtitle">
-            The following accounts are available for this Chromium profile
+            The following accounts are not signed into any Chromium profiles. If you want to use an account in another profile, remove that profile first.
           </message>
         </if>
-        <if expr="not lacros">
+        <if expr="not chromeos_lacros">
           <message name="IDS_PROFILE_PICKER_MAIN_VIEW_TITLE" desc="Profile picker main view title">
             Welcome to Chromium profiles
           </message>
@@ -1360,9 +1400,9 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Strings for full restore notifications -->
-      <if expr="chromeos">
+      <if expr="chromeos_ash">
         <message name="IDS_RESTORE_NOTIFICATION_DISPLAY_SOURCE" desc="This is the string shown as the display source of the notification for the user to select restore or not on startup.">
-          Chromium OS system
+          ChromiumOS system
         </message>
       </if>
 
@@ -1391,11 +1431,14 @@ Permissions you've already given to websites and apps may apply to this account.
       </message>
 
       <!-- Privacy Sandbox Dialog strings -->
-      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_SUBTITLE" desc="A subtitle on the consent page. Consider this a tagline for the Privacy Sandbox project. * “exploring” conveys that this is a work in progress. * “new features” include settings that the user can turn on/off and also backend features that change the way Chromium works for everyone * “allow sites to deliver”: Privacy Sandbox is proposed by Google as a collaborative effort with the browser industry. We’re building and testing functionality that will live in the Chromium browser. In order to land the full promise of Privacy Sandbox, websites &amp; advertisers need to adopt the new APIs / functionality that we’re developing. So “allow sites…” makes it clear to the user that we’re building something for the ecosystem. Typically a Google product builds something for the user, and that’s true in this case, but it’s bigger than that. * “same browsing experience using less of your info”: Another definition of the promise of Privacy Sandbox. Third-party cookies are going away. In this new world, the user will have essentially the same browsing experience but it’s more private because it doesn’t expose so much of the user’s info.">
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_SUBTITLE" desc="A subtitle on the consent page. Consider this a tagline for the Privacy Sandbox project.* “exploring” conveys that this is a work in progress. * “new features” include settings that the user can turn on/off and also backend features that change the way Chrome works for everyone * “allow sites to deliver”: Privacy Sandbox is proposed by Google as a collaborative effort with the browser industry. We’re building and testing functionality that will live in the Chrome browser. In order to land the full promise of Privacy Sandbox, websites and advertisers need to adopt the new APIs / functionality that we’re developing. So “allow sites…” makes it clear to the user that we’re building something for the ecosystem. Typically a Google product builds something for the user, and that’s true in this case, but it’s bigger than that. * “same browsing experience using less of your info”: Another definition of the promise of Privacy Sandbox. Third-party cookies are going away. In this new world, the user will have essentially the same browsing experience but it’s more private because it doesn’t expose so much of the user’s info.">
         Chromium is exploring new features that allow sites to deliver the same browsing experience using less of your info
       </message>
-      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BODY_DESCRIPTION_2" desc="A paragraph beneath the “Try more transparent ads” subtitle. * “During the experiment”: The experiment happens in addition to today’s current system based on third-party cookies. In other words, even by accepting in this consent moment, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much. * “estimate topics”: Topics of interest include things like “Live comedy” and “Rock music”. Chromium estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). * “recent browsing history”: Later in the UI, we define this as “a record of sites you’ve visited using Chromium on this device.” By “recent”, we mean the last 3 weeks (also defined later in the UI). * “Then”, is important to convey the passage of time. We don’t want to convey how much time (it could be tiny). What’s important is that the user understand this is essentially a two-step process. They browse, and Chromium might estimate their interests as they do so. At a later point when they continue to visit a site, that’s when the estimated interests might come into play. * “without learning who you are”: With third-party cookies, and the excessive sharing that happens in today’s world, it’s often possible for a site to be able to identify you — if not by name, then at least to realize you’re the same user who visited the site X number of days ago. With these trials, this becomes much much harder to do, and so we’re reassuring the user as to the privacy-preserving features of the experiment. (But again, we can’t overpromise, because 3rd-party cookies are still active  and so the user’s privacy isn’t materially better upon clicking yes today. We’re promising a better future and need the user’s help to get there.) * “sites you visit may use this info to show you relevant ads”: 1) Chromium hs estimated your interests. 2) You visit a new site. 3) That site calls the “Topics API” which returns up to 3 topics, for example, “Pop music”, “Rock music” and “Defense industry”. The site can use those 3 topics of interests as signals to help them target ads to the user. I say “signals” because the site may also be using other means to target ads.">
-        During the experiment, Chromium will estimate topics you may be interested in. Then, without learning who you are, sites you visit may use this info to show you relevant ads. Interests are based on your recent browsing history and you can see and manage them.
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BODY_DESCRIPTION_2" desc="A paragraph beneath the “More control over the ads you see” subtitle.* “During the trials”: The trials happens in addition to today’s current system based on third-party cookies. In other words, even by agreeing to or remaining in a trial,, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much. * “see and remove topics of interests”: we want to stress the element of control * “estimate topics”: Topics of interest include things like “Live comedy” and “Rock music”. Chrome estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). * “recent browsing history”: Later in the UI, we define this as “a record of sites you’ve visited using Chrome on this device.” By “recent”, we mean the last 3 weeks (also defined later in the UI).">
+        During the trials, you can see and remove topics of interest sites use to show you ads. Chromium estimates your interests based on your recent browsing history.
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_LEARN_MORE_LABEL" desc="Learn more link * Unfolds content within the page * The text that appears describes 2 ways in which a site can target ads: the “Topics API” and the “FLEDGE API”. You can see what those are at www.privacysanbox.com or they’re described for the user’s benefit in other text. * “ad personalization” can mean different things in different contexts. Here, we’re using it as a simple noun. In other words, it’s not the name of a control but a descriptive term used to describe the personalization of ads in the Chrome browser. This “ad personalization” shouldn’t be confused with the setting in the Google Account called “Ad personalization”.">
+        Learn more about ad personalization in Chromium
       </message>
       <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_LEARN_MORE_SECTION_1_HEADER" desc="TOPICS API A sub title that describes the first of 2 ways a site can get info from Chromium in order to target ads to the user. Topics of interest include things like “Live comedy” and “Rock music”. Chromium estimates these interests based on the sites users visit. * “Your”: we need to convey a sense of ownership, even if the user didn’t explicitly choose the interests we’re talking about. Without the “your”, it could sound like Chromium is simply building a generic library of interests. * “estimated”: It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). * “by Chromium”: This is new behavior for a browser (Chromium) to take an active role in processing user data for the purposes of showing ads. It’s important to convey “Chromium”, the actor in this case.">
         Your interests as estimated by Chromium
@@ -1415,17 +1458,17 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_LEARN_MORE_SECTION_2_BULLET_POINT_2" desc="FLEDGE API Bullet 2 of 3 that appear beneath the “Sites you visit that define your interests” subtitle. We break the description into the 3 pieces users most care about: 1) what data, 2) why this data, 3) what can I do about it? * “How we use this data:” is bold and serves as a label to help people skimming the page.">
         <ph name="BEGIN_BOLD">&lt;b&gt;</ph>How we use this data:<ph name="END_BOLD">&lt;/b&gt;</ph> Sites can store information with Chromium about your interests. For example, if you visit a site to buy shoes for a marathon, the site might define your interest as running marathons. Later, if you visit a different site to register for a race, that site can show you an ad for running shoes based on your interests.
       </message>
-      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BOTTOM_SUMMARY" desc="A conclusion paragraph for the entire page. It sits beneath the “Try more transparent ads” subtitle but it’s no more associated with that topic than “Limit sharing between sites”. * “You can change your mind”: When writing a consent moment, we have a legal obligation to inform the user how they can “revoke their consent” or “opt out”. A friendlier way to say this is “change your mind”. * “in Chromium settings”: The URL is chrome://settings/privacySandbox. We don’t make it a live link because we need the users to stay in this moment until they make a choice. * “During the trials…”: The experiment happens in addition to today’s current system based on third-party cookies. In other words, even by accepting in this consent moment, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much.">
-        You can change your mind at any time in Chromium settings. During trials, your interaction with sites may not be more private than it is without these new features.
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BOTTOM_SUMMARY" desc="A conclusion paragraph for the entire page. It sits beneath the “More control over the ads you see” subtitle but it’s no more associated with that topic than “Limit sharing between sites”. * “You can change your mind”: When writing a consent moment, we have a legal obligation to inform the user how they can “revoke their consent” or “opt out”. A friendlier way to say this is “change your mind”. * “in Chrome settings”: The URL is chrome://settings/privacySandbox. We don’t make it a live link because we need the users to stay in this moment until they make a choice. * “The trials run alongside…”: The trials happen in addition to today’s current system based on third-party cookies. In other words, even by accepting in this consent moment, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much. ">
+        You can change your mind at any time in Chromium settings. The trials run alongside the current way ads get served, so you won’t see changes right away.
       </message>
-      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_BODY_DESCRIPTION_1" desc="This string is a variant of “We’re exploring ways to restrict…” * “Chromium”: we need to establish the actor, and we haven’t yet in this notice version of the text. * “exploring” conveys that this is a work in progress. * “restrict” means to lessen. We don’t want to suggest that we’re “eliminating” cross-site tracking. * “cross-site tracking”: An example: a user visits site A and then site B. Based on how third-party cookies work today, when that user later visits site C, site C can be aware that the user visited sites A an B, and can even have some sense for what they did on those sites. * “stop ad spam and fraud”:  This feature isn’t really related to restricting cross-site tracking but we combined these features in the same sentence / section for structural reasons.">
-        Chromium is exploring ways to restrict cross-site tracking while enabling sites to stop ad spam and fraud.
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_SUBTITLE" desc="A subtitle on the consent page. Consider this a tagline for the Privacy Sandbox project.* “exploring” conveys that this is a work in progress. * “new features” include settings that the user can turn on/off and also backend features that change the way Chrome works for everyone * “allow sites to deliver”: Privacy Sandbox is proposed by Google as a collaborative effort with the browser industry. We’re building and testing functionality that will live in the Chrome browser. In order to land the full promise of Privacy Sandbox, websites and advertisers need to adopt the new APIs / functionality that we’re developing. So “allow sites…” makes it clear to the user that we’re building something for the ecosystem. Typically a Google product builds something for the user, and that’s true in this case, but it’s bigger than that. * “same browsing experience using less of your info”: Another definition of the promise of Privacy Sandbox. Third-party cookies are going away. In this new world, the user will have essentially the same browsing experience but it’s more private because it doesn’t expose so much of the user’s info.">
+        Chromium is exploring new features that allow sites to deliver the same browsing experience using less of your info
       </message>
-      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_BODY_DESCRIPTION_2" desc="This string is a variant of “During the experiment…” We drop “During the experiment…” because for this version of the text, we’re informing the user that we’ve turned experiments on. They’re still experiments, and the user can still leave them, but it’s the default behavior and so we don’t want to emphasize “during experiments” so much, because it’s more default for this user. A paragraph beneath the “Try more transparent ads” subtitle. * “estimate topics”: Topics of interest include things like “Live comedy” and “Rock music”. Chromium estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Instead of “estimate”, avoid words like “guess”, “establish”, “define”, etc. * “recent browsing history”: Later in the UI, we define this as “a record of sites you’ve visited using Chromium on this device.” By “recent”, we mean the last 3 weeks (also defined later in the UI). * “Then”, is important to convey the passage of time. We don’t want to convey how much time (it could be tiny). What’s important is that the user understand this is essentially a two-step process. They browse, and Chromium might estimate their interests as they do so. At a later point when they continue to visit a site, that’s when the estimated interests might come into play. * “without learning who you are”: With third-party cookies, and the excessive sharing that happens in today’s world, it’s often possible for a site to be able to identify you — if not by name, then at least to realize you’re the same user who visited the site X number of days ago. With these trials, this becomes much much harder to do, and so we’re reassuring the user as to the privacy-preserving features of the experiment. (But again, we can’t overpromise, because 3rd-party cookies are still active  and so the user’s privacy isn’t materially better upon clicking yes today. We’re promising a better future and need the user’s help to get there.) * “sites you visit may use this info to show you relevant ads”: 1) Chromium hs estimated your interests. 2) You visit a new site. 3) That site calls the “Topics API” which returns up to 3 topics, for example, “Pop music”, “Rock music” and “Defense industry”. The site can use those 3 topics of interests as signals to help them target ads to the user. I say “signals” because the site may also be using other means to target ads.">
-        Chromium can estimate topics you may be interested in. Then, without learning who you are, sites you visit may use this info to show you relevant ads. Interests are based on your recent browsing history and you can see and manage them.
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_BODY_DESCRIPTION_2" desc="A paragraph beneath the “More control over the ads you see” subtitle.* “During the trials”: The trials happens in addition to today’s current system based on third-party cookies. In other words, even by agreeing to or remaining in a trial,, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much. * “see and remove topics of interests”: we want to stress the element of control * “estimate topics”: Topics of interest include things like “Live comedy” and “Rock music”. Chrome estimates these interests based on the sites users visit. It’s an “estimation”, and we don’t want to suggest that we know with certainty the user’s interests. Avoid words like “guess”, “establish”, “define”, etc. (in place of “estimate”). * “recent browsing history”: Later in the UI, we define this as “a record of sites you’ve visited using Chrome on this device.” By “recent”, we mean the last 3 weeks (also defined later in the UI).">
+        During the trials, you can see and remove topics of interest sites use to show you ads. Chromium estimates your interests based on your recent browsing history.
       </message>
-      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_BOTTOM_SUMMARY" desc="This is a variant of “You can change your mind at…”. In this version that’s notice (not consent), we’re not asking the user to make a choice, and so we don’t remind the user they can “change their mind”. In this case, we’re informing the user of a change. They can get out of the change, by choosing the Settings button. * “in Chromium settings”: The URL is chrome://settings/privacySandbox. We don’t make it a live link because we need the users to stay in this moment until they make a choice. * “During the trials…”: The experiment happens in addition to today’s current system based on third-party cookies. In other words, even by accepting in this consent moment, the user’s core experience doesn’t change much. This is an experiment, and we need the user to understand as much.">
-        You can learn more about these features in Chromium settings. During trials, your interaction with sites may not be more private than it is without these new features.
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_BOTTOM_SUMMARY" desc="A conclusion paragraph for the entire page. It sits beneath the “More control over the ads you see” subtitle but it’s no more associated with that topic than “Limit sharing between sites”. * “in Chrome settings”: The URL is chrome://settings/privacySandbox. We don’t make it a live link because we need the users to stay in this moment until they make a choice.">
+        You can learn more about these features in Chromium settings.
       </message>
     </messages>
   </release>

@@ -19,10 +19,15 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/attributes.h"
+#include "absl/strings/string_view.h"
 #include "api/array_view.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
+#include "api/transport/field_trial_based_config.h"
 #include "rtc_base/ip_address.h"
 #include "rtc_base/mdns_responder_interface.h"
+#include "rtc_base/memory/always_valid_pointer.h"
 #include "rtc_base/network_monitor.h"
 #include "rtc_base/network_monitor_factory.h"
 #include "rtc_base/socket_factory.h"
@@ -51,7 +56,7 @@ const int kDefaultNetworkIgnoreMask = ADAPTER_TYPE_LOOPBACK;
 // Makes a string key for this network. Used in the network manager's maps.
 // Network objects are keyed on interface name, network prefix and the
 // length of that prefix.
-std::string MakeNetworkKey(const std::string& name,
+std::string MakeNetworkKey(absl::string_view name,
                            const IPAddress& prefix,
                            int prefix_length);
 
@@ -148,7 +153,7 @@ class RTC_EXPORT NetworkManager : public DefaultLocalAddressProvider,
   // It makes sure that repeated calls return the same object for a
   // given network, so that quality is tracked appropriately. Does not
   // include ignored networks.
-  virtual void GetNetworks(NetworkList* networks) const = 0;
+  virtual std::vector<const Network*> GetNetworks() const = 0;
 
   // Returns the current permission state of GetNetworks().
   virtual EnumerationPermission enumeration_permission() const;
@@ -160,9 +165,7 @@ class RTC_EXPORT NetworkManager : public DefaultLocalAddressProvider,
   //
   // This method appends the "any address" networks to the list, such that this
   // can optionally be called after GetNetworks.
-  //
-  // TODO(guoweis): remove this body when chromium implements this.
-  virtual void GetAnyAddressNetworks(NetworkList* networks) {}
+  virtual std::vector<const Network*> GetAnyAddressNetworks() = 0;
 
   // Dumps the current list of networks in the network manager.
   virtual void DumpNetworks() {}
@@ -186,11 +189,11 @@ class RTC_EXPORT NetworkManager : public DefaultLocalAddressProvider,
 // Base class for NetworkManager implementations.
 class RTC_EXPORT NetworkManagerBase : public NetworkManager {
  public:
-  NetworkManagerBase();
+  NetworkManagerBase(const webrtc::FieldTrialsView* field_trials = nullptr);
   ~NetworkManagerBase() override;
 
-  void GetNetworks(NetworkList* networks) const override;
-  void GetAnyAddressNetworks(NetworkList* networks) override;
+  std::vector<const Network*> GetNetworks() const override;
+  std::vector<const Network*> GetAnyAddressNetworks() override;
 
   EnumerationPermission enumeration_permission() const override;
 
@@ -203,7 +206,7 @@ class RTC_EXPORT NetworkManagerBase : public NetworkManager {
  protected:
   typedef std::map<std::string, Network*> NetworkMap;
   // Updates `networks_` with the networks listed in `list`. If
-  // `network_map_` already has a Network object for a network listed
+  // `networks_map_` already has a Network object for a network listed
   // in the `list` then it is reused. Accept ownership of the Network
   // objects in the `list`. `changed` will be set to true if there is
   // any change in the network list.
@@ -222,6 +225,10 @@ class RTC_EXPORT NetworkManagerBase : public NetworkManager {
                                    const IPAddress& ipv6);
 
   Network* GetNetworkFromAddress(const rtc::IPAddress& ip) const;
+
+  // To enable subclasses to get the networks list, without interfering with
+  // refactoring of the interface GetNetworks method.
+  const NetworkList& GetNetworksInternal() const { return networks_; }
 
  private:
   friend class NetworkTest;
@@ -254,15 +261,26 @@ class RTC_EXPORT BasicNetworkManager : public NetworkManagerBase,
                                        public NetworkBinderInterface,
                                        public sigslot::has_slots<> {
  public:
+  // This version is used by chromium.
   ABSL_DEPRECATED(
       "Use the version with socket_factory, see bugs.webrtc.org/13145")
-  BasicNetworkManager();
-  explicit BasicNetworkManager(SocketFactory* socket_factory);
-  ABSL_DEPRECATED(
-      "Use the version with socket_factory, see bugs.webrtc.org/13145")
-  explicit BasicNetworkManager(NetworkMonitorFactory* network_monitor_factory);
+  explicit BasicNetworkManager(
+      const webrtc::FieldTrialsView* field_trials = nullptr)
+      : BasicNetworkManager(
+            /* network_monitor_factory= */ nullptr,
+            /* socket_factory= */ nullptr,
+            field_trials) {}
+
+  // This is used by lots of downstream code.
+  BasicNetworkManager(SocketFactory* socket_factory,
+                      const webrtc::FieldTrialsView* field_trials = nullptr)
+      : BasicNetworkManager(/* network_monitor_factory= */ nullptr,
+                            socket_factory,
+                            field_trials) {}
+
   BasicNetworkManager(NetworkMonitorFactory* network_monitor_factory,
-                      SocketFactory* socket_factory);
+                      SocketFactory* socket_factory,
+                      const webrtc::FieldTrialsView* field_trials = nullptr);
   ~BasicNetworkManager() override;
 
   void StartUpdating() override;
@@ -335,6 +353,10 @@ class RTC_EXPORT BasicNetworkManager : public NetworkManagerBase,
   Thread* thread_ = nullptr;
   bool sent_first_update_ = true;
   int start_count_ = 0;
+  // Chromium create BasicNetworkManager() w/o field trials.
+  webrtc::AlwaysValidPointer<const webrtc::FieldTrialsView,
+                             webrtc::FieldTrialBasedConfig>
+      field_trials_;
   std::vector<std::string> network_ignore_list_;
   NetworkMonitorFactory* const network_monitor_factory_;
   SocketFactory* const socket_factory_;
@@ -350,26 +372,34 @@ class RTC_EXPORT BasicNetworkManager : public NetworkManagerBase,
 // Represents a Unix-type network interface, with a name and single address.
 class RTC_EXPORT Network {
  public:
-  Network(const std::string& name,
-          const std::string& description,
+  Network(absl::string_view name,
+          absl::string_view description,
           const IPAddress& prefix,
-          int prefix_length);
+          int prefix_length)
+      : Network(name,
+                description,
+                prefix,
+                prefix_length,
+                rtc::ADAPTER_TYPE_UNKNOWN) {}
 
-  Network(const std::string& name,
-          const std::string& description,
+  Network(absl::string_view name,
+          absl::string_view description,
           const IPAddress& prefix,
           int prefix_length,
           AdapterType type);
+
   Network(const Network&);
   ~Network();
 
   // This signal is fired whenever type() or underlying_type_for_vpn() changes.
-  sigslot::signal1<const Network*> SignalTypeChanged;
+  // Mutable, to support connecting on the const Network passed to cricket::Port
+  // constructor.
+  mutable sigslot::signal1<const Network*> SignalTypeChanged;
 
   // This signal is fired whenever network preference changes.
   sigslot::signal1<const Network*> SignalNetworkPreferenceChanged;
 
-  const DefaultLocalAddressProvider* default_local_address_provider() {
+  const DefaultLocalAddressProvider* default_local_address_provider() const {
     return default_local_address_provider_;
   }
   void set_default_local_address_provider(
@@ -494,7 +524,15 @@ class RTC_EXPORT Network {
     }
   }
 
-  uint16_t GetCost() const;
+  // Note: This function is called "rarely".
+  // Twice per Network in BasicPortAllocator if
+  // PORTALLOCATOR_DISABLE_COSTLY_NETWORKS. Once in Port::Construct() (and when
+  // Port::OnNetworkTypeChanged is called).
+  ABSL_DEPRECATED(
+      "Use the version with field trials, see bugs.webrtc.org/webrtc:10335")
+  uint16_t GetCost(const webrtc::FieldTrialsView* field_trials = nullptr) const;
+  uint16_t GetCost(const webrtc::FieldTrialsView& field_trials) const;
+
   // A unique id assigned by the network manager, which may be signaled
   // to the remote side in the candidate.
   uint16_t id() const { return id_; }
@@ -546,8 +584,6 @@ class RTC_EXPORT Network {
   int preference_;
   bool active_ = true;
   uint16_t id_ = 0;
-  bool use_differentiated_cellular_costs_ = false;
-  bool add_network_cost_to_vpn_ = false;
   NetworkPreference network_preference_ = NetworkPreference::NEUTRAL;
 
   friend class NetworkManager;

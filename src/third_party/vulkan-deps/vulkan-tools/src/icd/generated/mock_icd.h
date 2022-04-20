@@ -84,6 +84,7 @@ static const std::unordered_map<std::string, uint32_t> instance_extension_map = 
     {"VK_EXT_acquire_drm_display", 1},
     {"VK_EXT_directfb_surface", 1},
     {"VK_QNX_screen_surface", 1},
+    {"VK_KHR_portability_enumeration", 1},
     {"VK_GOOGLE_surfaceless_query", 1},
 };
 // Map of device extension name to version
@@ -98,8 +99,8 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_AMD_shader_trinary_minmax", 1},
     {"VK_AMD_shader_explicit_vertex_parameter", 1},
     {"VK_EXT_debug_marker", 4},
-    {"VK_KHR_video_queue", 2},
-    {"VK_KHR_video_decode_queue", 2},
+    {"VK_KHR_video_queue", 3},
+    {"VK_KHR_video_decode_queue", 4},
     {"VK_AMD_gcn_shader", 1},
     {"VK_NV_dedicated_allocation", 1},
     {"VK_EXT_transform_feedback", 1},
@@ -109,9 +110,9 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_AMD_negative_viewport_height", 1},
     {"VK_AMD_gpu_shader_half_float", 2},
     {"VK_AMD_shader_ballot", 1},
-    {"VK_EXT_video_encode_h264", 3},
-    {"VK_EXT_video_encode_h265", 4},
-    {"VK_EXT_video_decode_h264", 3},
+    {"VK_EXT_video_encode_h264", 6},
+    {"VK_EXT_video_encode_h265", 7},
+    {"VK_EXT_video_decode_h264", 5},
     {"VK_AMD_texture_gather_bias_lod", 1},
     {"VK_AMD_shader_info", 1},
     {"VK_KHR_dynamic_rendering", 1},
@@ -166,7 +167,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_EXT_external_memory_dma_buf", 1},
     {"VK_EXT_queue_family_foreign", 1},
     {"VK_KHR_dedicated_allocation", 3},
-    {"VK_ANDROID_external_memory_android_hardware_buffer", 4},
+    {"VK_ANDROID_external_memory_android_hardware_buffer", 5},
     {"VK_EXT_sampler_filter_minmax", 2},
     {"VK_KHR_storage_buffer_storage_class", 1},
     {"VK_AMD_gpu_shader_int16", 2},
@@ -209,7 +210,7 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_AMD_pipeline_compiler_control", 1},
     {"VK_EXT_calibrated_timestamps", 2},
     {"VK_AMD_shader_core_properties", 2},
-    {"VK_EXT_video_decode_h265", 1},
+    {"VK_EXT_video_decode_h265", 3},
     {"VK_KHR_global_priority", 1},
     {"VK_AMD_memory_overallocation_behavior", 1},
     {"VK_EXT_vertex_attribute_divisor", 3},
@@ -282,10 +283,11 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_KHR_present_id", 1},
     {"VK_EXT_private_data", 1},
     {"VK_EXT_pipeline_creation_cache_control", 3},
-    {"VK_KHR_video_encode_queue", 3},
+    {"VK_KHR_video_encode_queue", 5},
     {"VK_NV_device_diagnostics_config", 1},
     {"VK_QCOM_render_pass_store_ops", 2},
     {"VK_KHR_synchronization2", 1},
+    {"VK_EXT_graphics_pipeline_library", 1},
     {"VK_KHR_shader_subgroup_uniform_control_flow", 1},
     {"VK_KHR_zero_initialize_workgroup_memory", 1},
     {"VK_NV_fragment_shading_rate_enums", 1},
@@ -314,13 +316,16 @@ static const std::unordered_map<std::string, uint32_t> device_extension_map = {
     {"VK_NV_external_memory_rdma", 1},
     {"VK_EXT_extended_dynamic_state2", 1},
     {"VK_EXT_color_write_enable", 1},
+    {"VK_EXT_primitives_generated_query", 1},
     {"VK_EXT_global_priority_query", 1},
     {"VK_EXT_image_view_min_lod", 1},
     {"VK_EXT_multi_draw", 1},
+    {"VK_EXT_image_2d_view_of_3d", 1},
     {"VK_EXT_load_store_op_none", 1},
     {"VK_EXT_border_color_swizzle", 1},
     {"VK_EXT_pageable_device_local_memory", 1},
     {"VK_KHR_maintenance4", 2},
+    {"VK_VALVE_descriptor_set_host_mapping", 1},
     {"VK_QCOM_fragment_density_map_offset", 1},
     {"VK_NV_linear_color_attachment", 1},
 };
@@ -2341,6 +2346,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdResolveImage2KHR(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL GetDeviceBufferMemoryRequirementsKHR(
     VkDevice                                    device,
     const VkDeviceBufferMemoryRequirements*     pInfo,
@@ -3307,6 +3313,7 @@ static VKAPI_ATTR void VKAPI_CALL GetPrivateDataEXT(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
     VkCommandBuffer                             commandBuffer,
     VkFragmentShadingRateNV                     shadingRate,
@@ -3478,6 +3485,7 @@ static VKAPI_ATTR void                                    VKAPI_CALL CmdSetColor
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL CmdDrawMultiEXT(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    drawCount,
@@ -3498,10 +3506,22 @@ static VKAPI_ATTR void VKAPI_CALL CmdDrawMultiIndexedEXT(
 
 
 
+
 static VKAPI_ATTR void VKAPI_CALL SetDeviceMemoryPriorityEXT(
     VkDevice                                    device,
     VkDeviceMemory                              memory,
     float                                       priority);
+
+
+static VKAPI_ATTR void VKAPI_CALL GetDescriptorSetLayoutHostMappingInfoVALVE(
+    VkDevice                                    device,
+    const VkDescriptorSetBindingReferenceVALVE* pBindingReference,
+    VkDescriptorSetLayoutHostMappingInfoVALVE*  pHostMapping);
+
+static VKAPI_ATTR void VKAPI_CALL GetDescriptorSetHostMappingVALVE(
+    VkDevice                                    device,
+    VkDescriptorSet                             descriptorSet,
+    void**                                      ppData);
 
 
 
@@ -4287,6 +4307,8 @@ static const std::unordered_map<std::string, void*> name_to_funcptr_map = {
     {"vkCmdDrawMultiEXT", (void*)CmdDrawMultiEXT},
     {"vkCmdDrawMultiIndexedEXT", (void*)CmdDrawMultiIndexedEXT},
     {"vkSetDeviceMemoryPriorityEXT", (void*)SetDeviceMemoryPriorityEXT},
+    {"vkGetDescriptorSetLayoutHostMappingInfoVALVE", (void*)GetDescriptorSetLayoutHostMappingInfoVALVE},
+    {"vkGetDescriptorSetHostMappingVALVE", (void*)GetDescriptorSetHostMappingVALVE},
     {"vkCreateAccelerationStructureKHR", (void*)CreateAccelerationStructureKHR},
     {"vkDestroyAccelerationStructureKHR", (void*)DestroyAccelerationStructureKHR},
     {"vkCmdBuildAccelerationStructuresKHR", (void*)CmdBuildAccelerationStructuresKHR},

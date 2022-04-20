@@ -19,7 +19,6 @@ export const Message = {
   NAVIGATE: 'navigate',
   NOTIFY_CURRENT_FILE: 'notify-current-file',
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',
-  OPEN_FILE: 'open-file',
   OPEN_FILES_WITH_PICKER: 'open-files-with-picker',
   OVERWRITE_FILE: 'overwrite-file',
   RENAME_FILE: 'rename-file',
@@ -149,9 +148,11 @@ export let RequestSaveFileMessage;
  * The `accept` array contains keys of preconfigured file filters to include on
  * the file picker file type dropdown. These are keys such as "AUDIO", "IMAGE",
  * "PDF", etc. that are known on both sides of API boundary.
+ * `isSingleFile` prevents a user selecting more than one file.
  * @typedef {{
  *   startInToken: number,
- *   accept: !Array<string>
+ *   accept: !Array<string>,
+ *   isSingleFile: ?boolean,
  * }}
  */
 export let OpenFilesWithPickerMessage;

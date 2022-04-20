@@ -22,10 +22,11 @@ bool StructTraits<
 
 bool StructTraits<blink::mojom::InterestGroupDataView, blink::InterestGroup>::
     Read(blink::mojom::InterestGroupDataView data, blink::InterestGroup* out) {
+  out->priority = data.priority();
   if (!data.ReadExpiry(&out->expiry) || !data.ReadOwner(&out->owner) ||
       !data.ReadName(&out->name) || !data.ReadBiddingUrl(&out->bidding_url) ||
       !data.ReadBiddingWasmHelperUrl(&out->bidding_wasm_helper_url) ||
-      !data.ReadUpdateUrl(&out->update_url) ||
+      !data.ReadDailyUpdateUrl(&out->daily_update_url) ||
       !data.ReadTrustedBiddingSignalsUrl(&out->trusted_bidding_signals_url) ||
       !data.ReadTrustedBiddingSignalsKeys(&out->trusted_bidding_signals_keys) ||
       !data.ReadUserBiddingSignals(&out->user_bidding_signals) ||

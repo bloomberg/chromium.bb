@@ -31,12 +31,6 @@
 
 #include "vk_loader_platform.h"
 
-enum layer_type_flags {
-    VK_LAYER_TYPE_FLAG_INSTANCE_LAYER = 0x1,  // If not set, indicates Device layer
-    VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER = 0x2,  // If not set, indicates Implicit layer
-    VK_LAYER_TYPE_FLAG_META_LAYER = 0x4,      // If not set, indicates standard layer
-};
-
 typedef enum VkStringErrorFlagBits {
     VK_STRING_ERROR_NONE = 0x00000000,
     VK_STRING_ERROR_LENGTH = 0x00000001,
@@ -45,15 +39,15 @@ typedef enum VkStringErrorFlagBits {
 } VkStringErrorFlagBits;
 typedef VkFlags VkStringErrorFlags;
 
-static const int MaxLoaderStringLength = 256;
-static const char UTF8_ONE_BYTE_CODE = 0xC0;
-static const char UTF8_ONE_BYTE_MASK = 0xE0;
-static const char UTF8_TWO_BYTE_CODE = 0xE0;
-static const char UTF8_TWO_BYTE_MASK = 0xF0;
-static const char UTF8_THREE_BYTE_CODE = 0xF0;
-static const char UTF8_THREE_BYTE_MASK = 0xF8;
-static const char UTF8_DATA_BYTE_CODE = 0x80;
-static const char UTF8_DATA_BYTE_MASK = 0xC0;
+static const int MaxLoaderStringLength = 256;           // 0xFF;
+static const unsigned char UTF8_ONE_BYTE_CODE = 192;    // 0xC0;
+static const unsigned char UTF8_ONE_BYTE_MASK = 224;    // 0xE0;
+static const unsigned char UTF8_TWO_BYTE_CODE = 224;    // 0xE0;
+static const unsigned char UTF8_TWO_BYTE_MASK = 240;    // 0xF0;
+static const unsigned char UTF8_THREE_BYTE_CODE = 240;  // 0xF0;
+static const unsigned char UTF8_THREE_BYTE_MASK = 248;  // 0xF8;
+static const unsigned char UTF8_DATA_BYTE_CODE = 128;   // 0x80;
+static const unsigned char UTF8_DATA_BYTE_MASK = 192;   // 0xC0;
 
 // form of all dynamic lists/arrays
 // only the list element should be changed
@@ -121,6 +115,12 @@ enum loader_layer_library_status {
     LOADER_LAYER_LIB_ERROR_FAILED_TO_LOAD = 21,
 };
 
+enum layer_type_flags {
+    VK_LAYER_TYPE_FLAG_INSTANCE_LAYER = 0x1,  // If not set, indicates Device layer
+    VK_LAYER_TYPE_FLAG_EXPLICIT_LAYER = 0x2,  // If not set, indicates Implicit layer
+    VK_LAYER_TYPE_FLAG_META_LAYER = 0x4,      // If not set, indicates standard layer
+};
+
 struct loader_layer_properties {
     VkLayerProperties info;
     enum layer_type_flags type_flags;
@@ -159,29 +159,11 @@ struct loader_layer_list {
     struct loader_layer_properties *list;
 };
 
-struct loader_dispatch_hash_list {
-    size_t capacity;
-    uint32_t count;
-    uint32_t *index;  // index into the dev_ext dispatch table
-};
-
-// loader_dispatch_hash_entry and loader_dev_ext_dispatch_table.dev_ext have
-// one to one correspondence; one loader_dispatch_hash_entry for one dev_ext
-// dispatch entry.
-// Also have a one to one correspondence with functions in dev_ext_trampoline.c
-struct loader_dispatch_hash_entry {
-    char *func_name;
-    struct loader_dispatch_hash_list list;  // to handle hashing collisions
-};
-
 typedef VkResult(VKAPI_PTR *PFN_vkDevExt)(VkDevice device);
-struct loader_dev_ext_dispatch_table {
-    PFN_vkDevExt dev_ext[MAX_NUM_UNKNOWN_EXTS];
-};
 
 struct loader_dev_dispatch_table {
     VkLayerDispatchTable core_dispatch;
-    struct loader_dev_ext_dispatch_table ext_dispatch;
+    PFN_vkDevExt ext_dispatch[MAX_NUM_UNKNOWN_EXTS];
 };
 
 // per CreateDevice structure
@@ -254,8 +236,7 @@ struct loader_instance {
     uint64_t magic;                               // Should be LOADER_MAGIC_NUMBER
 
     // Vulkan API version the app is intending to use.
-    uint16_t app_api_major_version;
-    uint16_t app_api_minor_version;
+    loader_api_version app_api_version;
 
     // We need to manually track physical devices over time.  If the user
     // re-queries the information, we don't want to delete old data or
@@ -271,8 +252,6 @@ struct loader_instance {
     // device stored internal to the public structures.
     uint32_t phys_dev_group_count_term;
     struct VkPhysicalDeviceGroupProperties **phys_dev_groups_term;
-    uint32_t phys_dev_group_count_tramp;
-    struct VkPhysicalDeviceGroupProperties **phys_dev_groups_tramp;
 
     struct loader_instance *next;
 
@@ -280,8 +259,10 @@ struct loader_instance {
     struct loader_icd_term *icd_terms;
     struct loader_icd_tramp_list icd_tramp_list;
 
-    struct loader_dispatch_hash_entry dev_ext_disp_hash[MAX_NUM_UNKNOWN_EXTS];
-    struct loader_dispatch_hash_entry phys_dev_ext_disp_hash[MAX_NUM_UNKNOWN_EXTS];
+    uint32_t dev_ext_disp_function_count;
+    char *dev_ext_disp_functions[MAX_NUM_UNKNOWN_EXTS];
+    uint32_t phys_dev_ext_disp_function_count;
+    char *phys_dev_ext_disp_functions[MAX_NUM_UNKNOWN_EXTS];
 
     struct loader_msg_callback_map_entry *icd_msg_callback_map;
 
@@ -299,7 +280,7 @@ struct loader_instance {
     VkInstance instance;  // layers/ICD instance returned to trampoline
 
     struct loader_extension_list ext_list;  // icds and loaders extensions
-    union loader_instance_extension_enables enabled_known_extensions;
+    struct loader_instance_extension_enables enabled_known_extensions;
 
     VkLayerDbgFunctionNode *DbgFunctionHead;
     uint32_t num_tmp_report_callbacks;
@@ -310,6 +291,8 @@ struct loader_instance {
     VkDebugUtilsMessengerEXT *tmp_messengers;
 
     VkAllocationCallbacks alloc_callbacks;
+
+    bool portability_enumeration_enabled;
 
     bool wsi_surface_enabled;
 #ifdef VK_USE_PLATFORM_WIN32_KHR
@@ -444,17 +427,14 @@ struct loader_scanned_icd {
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     PFN_vk_icdEnumerateAdapterPhysicalDevices EnumerateAdapterPhysicalDevices;
 #endif
-};
-
-struct loader_phys_dev_per_icd {
-    uint32_t count;
-    VkPhysicalDevice *phys_devs;
-    struct loader_icd_term *this_icd_term;
+    // whether the device is a portability driver
+    bool portability_driver;
 };
 
 enum loader_data_files_type {
-    LOADER_DATA_FILE_MANIFEST_ICD = 0,
-    LOADER_DATA_FILE_MANIFEST_LAYER,
+    LOADER_DATA_FILE_MANIFEST_DRIVER = 0,
+    LOADER_DATA_FILE_MANIFEST_EXPLICIT_LAYER,
+    LOADER_DATA_FILE_MANIFEST_IMPLICIT_LAYER,
     LOADER_DATA_FILE_NUM_TYPES  // Not a real field, used for possible loop terminator
 };
 
@@ -464,7 +444,7 @@ struct loader_data_files {
     char **filename_list;
 };
 
-struct LoaderSortedPhysicalDevice {
+struct loader_phys_dev_per_icd {
     uint32_t device_count;
     VkPhysicalDevice *physical_devices;
     uint32_t icd_index;

@@ -318,6 +318,14 @@ namespace dawn::native::vulkan {
                 return VK_FORMAT_D24_UNORM_S8_UINT;
             case wgpu::TextureFormat::Depth32FloatStencil8:
                 return VK_FORMAT_D32_SFLOAT_S8_UINT;
+            case wgpu::TextureFormat::Stencil8:
+                // Try to use the stencil8 format if possible, otherwise use whatever format we can
+                // use that contains a stencil8 component.
+                if (device->IsToggleEnabled(Toggle::VulkanUseS8)) {
+                    return VK_FORMAT_S8_UINT;
+                } else {
+                    return VulkanImageFormat(device, wgpu::TextureFormat::Depth24PlusStencil8);
+                }
 
             case wgpu::TextureFormat::BC1RGBAUnorm:
                 return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
@@ -429,8 +437,6 @@ namespace dawn::native::vulkan {
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
                 return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
 
-            // TODO(dawn:666): implement stencil8
-            case wgpu::TextureFormat::Stencil8:
             case wgpu::TextureFormat::Undefined:
                 break;
         }
@@ -649,16 +655,32 @@ namespace dawn::native::vulkan {
         VkImageCreateInfo createInfo = {};
         FillVulkanCreateInfoSizesAndType(*this, &createInfo);
 
+        PNextChainBuilder createInfoChain(&createInfo);
+
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        createInfo.pNext = nullptr;
-        createInfo.flags = 0;
         createInfo.format = VulkanImageFormat(device, GetFormat().format);
         createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         createInfo.usage = VulkanImageUsage(GetInternalUsage(), GetFormat()) | extraUsages;
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0;
-        createInfo.pQueueFamilyIndices = nullptr;
         createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        VkImageFormatListCreateInfo imageFormatListInfo = {};
+        std::vector<VkFormat> viewFormats;
+        if (GetViewFormats().any()) {
+            createInfo.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+            if (device->GetDeviceInfo().HasExt(DeviceExt::ImageFormatList)) {
+                createInfoChain.Add(&imageFormatListInfo,
+                                    VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO);
+                viewFormats.push_back(VulkanImageFormat(device, GetFormat().format));
+                for (FormatIndex i : IterateBitSet(GetViewFormats())) {
+                    const Format& viewFormat = device->GetValidInternalFormat(i);
+                    viewFormats.push_back(VulkanImageFormat(device, viewFormat.format));
+                }
+
+                imageFormatListInfo.viewFormatCount = viewFormats.size();
+                imageFormatListInfo.pViewFormats = viewFormats.data();
+            }
+        }
 
         ASSERT(IsSampleCountSupported(device, createInfo));
 
@@ -701,7 +723,8 @@ namespace dawn::native::vulkan {
     // Internally managed, but imported from external handle
     MaybeError Texture::InitializeFromExternal(const ExternalImageDescriptorVk* descriptor,
                                                external_memory::Service* externalMemoryService) {
-        VkFormat format = VulkanImageFormat(ToBackend(GetDevice()), GetFormat().format);
+        Device* device = ToBackend(GetDevice());
+        VkFormat format = VulkanImageFormat(device, GetFormat().format);
         VkImageUsageFlags usage = VulkanImageUsage(GetInternalUsage(), GetFormat());
         DAWN_INVALID_IF(!externalMemoryService->SupportsCreateImage(descriptor, format, usage,
                                                                     &mSupportsDisjointVkImage),
@@ -722,8 +745,9 @@ namespace dawn::native::vulkan {
         VkImageCreateInfo baseCreateInfo = {};
         FillVulkanCreateInfoSizesAndType(*this, &baseCreateInfo);
 
+        PNextChainBuilder createInfoChain(&baseCreateInfo);
+
         baseCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        baseCreateInfo.pNext = nullptr;
         baseCreateInfo.format = format;
         baseCreateInfo.usage = usage;
         baseCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -734,6 +758,23 @@ namespace dawn::native::vulkan {
         // that are used in vkCmdClearColorImage() must have been created with this flag, which is
         // also required for the implementation of robust resource initialization.
         baseCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+        VkImageFormatListCreateInfo imageFormatListInfo = {};
+        std::vector<VkFormat> viewFormats;
+        if (GetViewFormats().any()) {
+            baseCreateInfo.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+            if (device->GetDeviceInfo().HasExt(DeviceExt::ImageFormatList)) {
+                createInfoChain.Add(&imageFormatListInfo,
+                                    VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO);
+                for (FormatIndex i : IterateBitSet(GetViewFormats())) {
+                    const Format& viewFormat = device->GetValidInternalFormat(i);
+                    viewFormats.push_back(VulkanImageFormat(device, viewFormat.format));
+                }
+
+                imageFormatListInfo.viewFormatCount = viewFormats.size();
+                imageFormatListInfo.pViewFormats = viewFormats.data();
+            }
+        }
 
         DAWN_TRY_ASSIGN(mHandle, externalMemoryService->CreateImage(descriptor, baseCreateInfo));
 
@@ -848,8 +889,7 @@ namespace dawn::native::vulkan {
     }
 
     void Texture::SetLabelHelper(const char* prefix) {
-        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_IMAGE,
-                     reinterpret_cast<uint64_t&>(mHandle), prefix, GetLabel());
+        SetDebugName(ToBackend(GetDevice()), mHandle, prefix, GetLabel());
     }
 
     void Texture::SetLabelImpl() {
@@ -982,6 +1022,12 @@ namespace dawn::native::vulkan {
     // single plane in a new SubresourceStorage<TextureUsage>. The barriers will be produced
     // for DEPTH | STENCIL since the SubresourceRange uses Aspect::CombinedDepthStencil.
     bool Texture::ShouldCombineDepthStencilBarriers() const {
+        // If the Stencil8 format is being emulated then memory barriers also need to include
+        // the depth aspect. (See: crbug.com/dawn/1331)
+        if (GetFormat().format == wgpu::TextureFormat::Stencil8 &&
+            !GetDevice()->IsToggleEnabled(Toggle::VulkanUseS8)) {
+            return true;
+        }
         return GetFormat().aspects == (Aspect::Depth | Aspect::Stencil);
     }
 
@@ -1326,7 +1372,20 @@ namespace dawn::native::vulkan {
         createInfo.flags = 0;
         createInfo.image = ToBackend(GetTexture())->GetHandle();
         createInfo.viewType = VulkanImageViewType(descriptor->dimension);
-        createInfo.format = VulkanImageFormat(device, descriptor->format);
+
+        const Format& textureFormat = GetTexture()->GetFormat();
+        if (textureFormat.HasStencil() &&
+            (textureFormat.HasDepth() || !device->IsToggleEnabled(Toggle::VulkanUseS8))) {
+            // Unlike multi-planar formats, depth-stencil formats have multiple aspects but are not
+            // created with VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT.
+            // https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageViewCreateInfo.html#VUID-VkImageViewCreateInfo-image-01762
+            // Without, VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT, the view format must match the texture
+            // format.
+            createInfo.format = VulkanImageFormat(device, textureFormat.format);
+        } else {
+            createInfo.format = VulkanImageFormat(device, descriptor->format);
+        }
+
         createInfo.components = VkComponentMapping{VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
                                                    VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
 
@@ -1363,8 +1422,7 @@ namespace dawn::native::vulkan {
     }
 
     void TextureView::SetLabelImpl() {
-        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_IMAGE_VIEW,
-                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_InternalTextureView", GetLabel());
+        SetDebugName(ToBackend(GetDevice()), mHandle, "Dawn_TextureView", GetLabel());
     }
 
 }  // namespace dawn::native::vulkan

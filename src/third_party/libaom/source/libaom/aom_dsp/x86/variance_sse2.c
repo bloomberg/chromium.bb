@@ -240,6 +240,29 @@ void aom_get8x8var_sse2(const uint8_t *src_ptr, int src_stride,
   variance_final_128_pel_sse2(vsse, vsum, sse, sum);
 }
 
+void aom_get_sse_sum_8x8_quad_sse2(const uint8_t *src_ptr, int src_stride,
+                                   const uint8_t *ref_ptr, int ref_stride,
+                                   unsigned int *sse, int *sum) {
+  // Loop over 4 8x8 blocks. Process one 8x32 block.
+  for (int k = 0; k < 4; k++) {
+    const uint8_t *src = src_ptr;
+    const uint8_t *ref = ref_ptr;
+    __m128i vsum = _mm_setzero_si128();
+    __m128i vsse = _mm_setzero_si128();
+    for (int i = 0; i < 8; i++) {
+      const __m128i s = load8_8to16_sse2(src + (k * 8));
+      const __m128i r = load8_8to16_sse2(ref + (k * 8));
+      const __m128i diff = _mm_sub_epi16(s, r);
+      vsse = _mm_add_epi32(vsse, _mm_madd_epi16(diff, diff));
+      vsum = _mm_add_epi16(vsum, diff);
+
+      src += src_stride;
+      ref += ref_stride;
+    }
+    variance_final_128_pel_sse2(vsse, vsum, &sse[k], &sum[k]);
+  }
+}
+
 #define AOM_VAR_NO_LOOP_SSE2(bw, bh, bits, max_pixels)                        \
   unsigned int aom_variance##bw##x##bh##_sse2(                                \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \

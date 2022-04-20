@@ -16,6 +16,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_usvstring_usvstringsequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ad_properties.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ad_request_config.h"
@@ -28,9 +29,11 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/ad_auction/ads.h"
 #include "third_party/blink/renderer/modules/ad_auction/validate_blink_interest_group.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_coordinates.h"
@@ -214,7 +217,7 @@ bool CopyDailyUpdateUrlFromIdlToMojo(const ExecutionContext& context,
   }
   // TODO(https://crbug.com/1271540): Validate against interest group owner
   // origin.
-  output.update_url = daily_update_url;
+  output.daily_update_url = daily_update_url;
   return true;
 }
 
@@ -657,6 +660,41 @@ bool CopyPerBuyerTimeoutsFromIdlToMojo(const ScriptState& script_state,
   return true;
 }
 
+bool CopyPerBuyerGroupLimitsFromIdlToMojo(
+    const ScriptState& script_state,
+    ExceptionState& exception_state,
+    const AuctionAdConfig& input,
+    mojom::blink::AuctionAdConfig& output) {
+  if (!input.hasPerBuyerGroupLimits())
+    return true;
+  for (const auto& per_buyer_group_limit : input.perBuyerGroupLimits()) {
+    if (per_buyer_group_limit.second <= 0) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerGroupLimits value",
+          String::Number(per_buyer_group_limit.second),
+          "must be greater than 0."));
+      return false;
+    }
+    if (per_buyer_group_limit.first == "*") {
+      output.auction_ad_config_non_shared_params->all_buyers_group_limit =
+          per_buyer_group_limit.second;
+      continue;
+    }
+    scoped_refptr<const SecurityOrigin> buyer =
+        ParseOrigin(per_buyer_group_limit.first);
+    if (!buyer) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerGroupLimits buyer", per_buyer_group_limit.first,
+          "must be \"*\" (wildcard) or a valid https origin."));
+      return false;
+    }
+    output.auction_ad_config_non_shared_params->per_buyer_group_limits.insert(
+        buyer, per_buyer_group_limit.second);
+  }
+
+  return true;
+}
+
 // Attempts to convert the AuctionAdConfig `config`, passed in via Javascript,
 // to a `mojom::blink::AuctionAdConfig`. Throws a Javascript exception and
 // return null on failure.
@@ -683,7 +721,9 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
       !CopyPerBuyerSignalsFromIdlToMojo(script_state, exception_state, config,
                                         *mojo_config) ||
       !CopyPerBuyerTimeoutsFromIdlToMojo(script_state, exception_state, config,
-                                         *mojo_config)) {
+                                         *mojo_config) ||
+      !CopyPerBuyerGroupLimitsFromIdlToMojo(script_state, exception_state,
+                                            config, *mojo_config)) {
     return mojom::blink::AuctionAdConfigPtr();
   }
 
@@ -708,8 +748,8 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
                                  exception_state, *idl_component_auction);
       if (!mojo_component_auction)
         return mojom::blink::AuctionAdConfigPtr();
-      mojo_config->component_auctions.emplace_back(
-          std::move(mojo_component_auction));
+      mojo_config->auction_ad_config_non_shared_params->component_auctions
+          .emplace_back(std::move(mojo_component_auction));
     }
   }
 
@@ -764,6 +804,18 @@ void AddWarningMessageToConsole(ScriptState* script_state,
           /*discard_duplicates=*/true);
 }
 
+void RecordCommonFledgeUseCounters(Document* document) {
+  if (!document)
+    return;
+  UseCounter::Count(document, mojom::blink::WebFeature::kFledge);
+  // Only record the ads APIs counter if enabled in that manner.
+  if (RuntimeEnabledFeatures::PrivacySandboxAdsAPIsEnabled(
+          document->GetExecutionContext())) {
+    UseCounter::Count(document,
+                      mojom::blink::WebFeature::kPrivacySandboxAdsAPIs);
+  }
+}
+
 }  // namespace
 
 NavigatorAuction::NavigatorAuction(Navigator& navigator)
@@ -799,6 +851,7 @@ void NavigatorAuction::joinAdInterestGroup(ScriptState* script_state,
   if (!CopyOwnerFromIdlToMojo(*context, exception_state, *group, *mojo_group))
     return;
   mojo_group->name = group->name();
+  mojo_group->priority = (group->hasPriority()) ? group->priority() : 0.0;
   if (!CopyBiddingLogicUrlFromIdlToMojo(*context, exception_state, *group,
                                         *mojo_group)) {
     return;
@@ -849,6 +902,7 @@ void NavigatorAuction::joinAdInterestGroup(ScriptState* script_state,
                                            const AuctionAdInterestGroup* group,
                                            double duration_seconds,
                                            ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
@@ -883,11 +937,34 @@ void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
   ad_auction_service_->LeaveInterestGroup(owner, group->name());
 }
 
+void NavigatorAuction::leaveAdInterestGroupForDocument(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  LocalDOMWindow* window = GetSupplementable()->DomWindow();
+
+  if (!window) {
+    exception_state.ThrowSecurityError(
+        "May not leaveAdInterestGroup from a Document that is not fully "
+        "active");
+    return;
+  }
+  if (!window->GetFrame()->IsInFencedFrameTree()) {
+    exception_state.ThrowTypeError(
+        "owner and name are required outside of a fenced frame.");
+    return;
+  }
+  // The renderer does not have enough information to verify that this document
+  // is the result of a FLEDGE auction. The browser will silently ignore
+  // this request if this document is not the result of a FLEDGE auction.
+  ad_auction_service_->LeaveInterestGroupForDocument();
+}
+
 /* static */
 void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
                                             Navigator& navigator,
                                             const AuctionAdInterestGroup* group,
                                             ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
@@ -903,8 +980,18 @@ void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
                                "leaveAdInterestGroup");
   }
 
-  return From(ExecutionContext::From(script_state), navigator)
+  return From(context, navigator)
       .leaveAdInterestGroup(script_state, group, exception_state);
+}
+
+/* static */
+void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
+                                            Navigator& navigator,
+                                            ExceptionState& exception_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  // According to the spec, implicit leave bypasses permission policy.
+  return From(context, navigator)
+      .leaveAdInterestGroupForDocument(script_state, exception_state);
 }
 
 void NavigatorAuction::updateAdInterestGroups() {
@@ -915,6 +1002,7 @@ void NavigatorAuction::updateAdInterestGroups() {
 void NavigatorAuction::updateAdInterestGroups(ScriptState* script_state,
                                               Navigator& navigator,
                                               ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
@@ -956,6 +1044,7 @@ ScriptPromise NavigatorAuction::runAdAuction(ScriptState* script_state,
                                              Navigator& navigator,
                                              const AuctionAdConfig* config,
                                              ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kRunAdAuction)) {
@@ -980,6 +1069,7 @@ Vector<String> NavigatorAuction::adAuctionComponents(
     Navigator& navigator,
     uint16_t num_ad_components,
     ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const auto& ad_auction_components =
       navigator.DomWindow()->document()->Loader()->AdAuctionComponents();
   Vector<String> out;
@@ -1068,8 +1158,8 @@ ScriptPromise NavigatorAuction::createAdRequest(
   ScriptPromise promise = resolver->Promise();
   ad_auction_service_->CreateAdRequest(
       std::move(mojo_config),
-      WTF::Bind(&NavigatorAuction::AdsRequested, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      resolver->WrapCallbackInScriptScope(
+          WTF::Bind(&NavigatorAuction::AdsRequested, WrapPersistent(this))));
   return promise;
 }
 
@@ -1085,12 +1175,9 @@ ScriptPromise NavigatorAuction::createAdRequest(
 
 void NavigatorAuction::AdsRequested(ScriptPromiseResolver* resolver,
                                     const WTF::String&) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
-    return;
-
   // TODO(https://crbug.com/1249186): Add full impl of methods.
-  resolver->Reject(MakeGarbageCollected<DOMException>(
+  resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+      resolver->GetScriptState()->GetIsolate(),
       DOMExceptionCode::kNotSupportedError,
       "createAdRequest API not yet implemented"));
 }
@@ -1125,8 +1212,8 @@ ScriptPromise NavigatorAuction::finalizeAd(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   ad_auction_service_->FinalizeAd(
       ads->GetGuid(), std::move(mojo_config),
-      WTF::Bind(&NavigatorAuction::FinalizeAdComplete, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      resolver->WrapCallbackInScriptScope(WTF::Bind(
+          &NavigatorAuction::FinalizeAdComplete, WrapPersistent(this))));
   return promise;
 }
 
@@ -1143,14 +1230,12 @@ ScriptPromise NavigatorAuction::finalizeAd(ScriptState* script_state,
 void NavigatorAuction::FinalizeAdComplete(
     ScriptPromiseResolver* resolver,
     const absl::optional<KURL>& creative_url) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
-    return;
   if (creative_url) {
     resolver->Resolve(creative_url);
   } else {
     // TODO(https://crbug.com/1249186): Add full impl of methods.
-    resolver->Reject(MakeGarbageCollected<DOMException>(
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        resolver->GetScriptState()->GetIsolate(),
         DOMExceptionCode::kNotSupportedError,
         "finalizeAd API not yet implemented"));
   }

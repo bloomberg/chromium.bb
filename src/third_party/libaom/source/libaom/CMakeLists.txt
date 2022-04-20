@@ -304,29 +304,40 @@ if(NOT MSVC AND NOT APPLE)
   endif()
 endif()
 
-if(CONFIG_AV1_RC_RTC)
+if(CONFIG_AV1_RC_RTC AND CONFIG_AV1_ENCODER AND NOT BUILD_SHARED_LIBS)
   list(APPEND AOM_AV1_RC_SOURCES "${AOM_ROOT}/av1/ratectrl_rtc.h"
               "${AOM_ROOT}/av1/ratectrl_rtc.cc")
-
-  if(CONFIG_AV1_ENCODER)
-    add_library(aom_av1_rc ${AOM_AV1_RC_SOURCES})
-    add_dependencies(aom_av1_rc aom_av1_encoder)
+  add_library(aom_av1_rc ${AOM_AV1_RC_SOURCES})
+  target_link_libraries(aom_av1_rc ${AOM_LIB_LINK_TYPE} aom)
+  if(NOT MSVC AND NOT APPLE)
     target_link_libraries(aom_av1_rc ${AOM_LIB_LINK_TYPE} m)
   endif()
 endif()
 
-list(APPEND AOM_AV1_RC_QMODE_SOURCES "${AOM_ROOT}/av1/ratectrl_qmode.h"
-            "${AOM_ROOT}/av1/ratectrl_qmode.cc")
-add_library(av1_rc_qmode ${AOM_AV1_RC_QMODE_SOURCES})
-target_link_libraries(av1_rc_qmode ${AOM_LIB_LINK_TYPE} m)
-set_target_properties(av1_rc_qmode PROPERTIES LINKER_LANGUAGE CXX)
+if(CONFIG_AV1_ENCODER AND NOT CONFIG_REALTIME_ONLY AND NOT BUILD_SHARED_LIBS)
+  list(APPEND AOM_AV1_RC_QMODE_SOURCES
+              "${AOM_ROOT}/av1/ratectrl_qmode_interface.h"
+              "${AOM_ROOT}/av1/ratectrl_qmode_interface.cc"
+              "${AOM_ROOT}/av1/reference_manager.h"
+              "${AOM_ROOT}/av1/reference_manager.cc"
+              "${AOM_ROOT}/av1/ratectrl_qmode.h"
+              "${AOM_ROOT}/av1/ratectrl_qmode.cc")
+  add_library(av1_rc_qmode ${AOM_AV1_RC_QMODE_SOURCES})
+  target_link_libraries(av1_rc_qmode ${AOM_LIB_LINK_TYPE} aom)
+  if(NOT MSVC AND NOT APPLE)
+    target_link_libraries(av1_rc_qmode ${AOM_LIB_LINK_TYPE} m)
+  endif()
+  set_target_properties(av1_rc_qmode PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 
 # List of object and static library targets.
 set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_mem aom_scale aom)
-if(CONFIG_AV1_ENCODER AND CONFIG_AV1_RC_RTC)
+if(CONFIG_AV1_RC_RTC AND CONFIG_AV1_ENCODER AND NOT BUILD_SHARED_LIBS)
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_av1_rc)
 endif()
-set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} av1_rc_qmode)
+if(CONFIG_AV1_ENCODER AND NOT CONFIG_REALTIME_ONLY AND NOT BUILD_SHARED_LIBS)
+  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} av1_rc_qmode)
+endif()
 if(BUILD_SHARED_LIBS)
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_static)
 endif()
@@ -627,6 +638,7 @@ if(CONFIG_AV1_ENCODER)
                               PRIVATE ${VMAF_LDFLAGS} ${VMAF_LIBRARIES} -static)
       endif()
       target_include_directories(aom PRIVATE ${VMAF_INCLUDE_DIRS})
+      target_include_directories(aom_dsp_encoder PRIVATE ${VMAF_INCLUDE_DIRS})
       if(VMAF_CFLAGS)
         append_compiler_flag("${VMAF_CFLAGS}")
       endif()
@@ -837,7 +849,13 @@ if(ENABLE_DOCS)
     set(MINIMUM_DOXYGEN_VERSION 1008010)
 
     if(DOXYGEN_VERSION)
+      # Strip SHA1 from version string if present.
+      string(REGEX
+             REPLACE "^([0-9]+\\.[0-9]+\\.[0-9]+).*" "\\1" DOXYGEN_VERSION
+                     ${DOXYGEN_VERSION})
+      # Replace dots with semicolons to create a list.
       string(REGEX REPLACE "\\." ";" DOXYGEN_VERSION_LIST ${DOXYGEN_VERSION})
+      # Parse version components from the list.
       list(GET DOXYGEN_VERSION_LIST 0 DOXYGEN_MAJOR)
       list(GET DOXYGEN_VERSION_LIST 1 DOXYGEN_MINOR)
       list(GET DOXYGEN_VERSION_LIST 2 DOXYGEN_PATCH)

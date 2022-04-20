@@ -83,7 +83,8 @@ class CONTENT_EXPORT AttributionReport {
 
     AggregatableAttributionData(
         std::vector<AggregatableHistogramContribution> contributions,
-        absl::optional<Id> id);
+        absl::optional<Id> id,
+        base::Time initial_report_time);
     AggregatableAttributionData(const AggregatableAttributionData&);
     AggregatableAttributionData& operator=(const AggregatableAttributionData&);
     AggregatableAttributionData(AggregatableAttributionData&&);
@@ -104,11 +105,18 @@ class CONTENT_EXPORT AttributionReport {
     // not been assembled yet.
     absl::optional<AggregatableReport> assembled_report;
 
+    // The initial report time scheduled by the browser.
+    base::Time initial_report_time;
+
     // When adding new members, the corresponding `operator==()` definition in
     // `attribution_test_utils.h` should also be updated.
   };
 
   using Id = absl::variant<EventLevelData::Id, AggregatableAttributionData::Id>;
+
+  static ReportType GetReportType(Id report_id) {
+    return static_cast<ReportType>(report_id.index());
+  }
 
   AttributionReport(
       AttributionInfo attribution_info,
@@ -148,6 +156,10 @@ class CONTENT_EXPORT AttributionReport {
 
   absl::variant<EventLevelData, AggregatableAttributionData>& data() {
     return data_;
+  }
+
+  ReportType GetReportType() const {
+    return static_cast<ReportType>(data_.index());
   }
 
   void set_report_time(base::Time report_time);

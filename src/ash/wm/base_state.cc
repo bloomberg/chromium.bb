@@ -144,8 +144,6 @@ void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
   // then snap |window| to the side that corresponds to |desired_snap_state|.
   if (window_state->CanSnap() &&
       window_state->GetStateType() != desired_snap_state) {
-    window_state->RecordAndResetWindowSnapActionSource();
-
     const bool is_desired_primary_snapped =
         desired_snap_state == WindowStateType::kPrimarySnapped;
     if (shell->overview_controller()->InOverviewSession()) {
@@ -186,15 +184,18 @@ void BaseState::UpdateMinimizedState(WindowState* window_state,
     // correctly restore it after exiting the minimized mode.
     if (!IsMinimizedWindowStateType(previous_state_type)) {
       // We must not save PIP to |kPreMinimizedShowStateKey|.
-      if (previous_state_type != WindowStateType::kPip)
+      if (previous_state_type != WindowStateType::kPip) {
         window->SetProperty(aura::client::kPreMinimizedShowStateKey,
                             ToWindowShowState(previous_state_type));
-      // We must not save MINIMIZED to |kPreMinimizedShowStateKey|.
-      else if (window->GetProperty(kPrePipWindowStateTypeKey) !=
-               WindowStateType::kMinimized)
+
+      } else {
+        // We must not save MINIMIZED to |kPreMinimizedShowStateKey|. We can
+        // get the applicable window state to restore back to before entering
+        // Pip from WindowState::GetRestoreWindowState().
         window->SetProperty(
             aura::client::kPreMinimizedShowStateKey,
-            ToWindowShowState(window->GetProperty(kPrePipWindowStateTypeKey)));
+            ToWindowShowState(window_state->GetRestoreWindowState()));
+      }
     }
     // Count minimizing a PIP window as dismissing it. Android apps in PIP mode
     // don't exit when they are dismissed, they just go back to being a regular

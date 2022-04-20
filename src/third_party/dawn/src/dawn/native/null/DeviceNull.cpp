@@ -68,7 +68,8 @@ namespace dawn::native::null {
 
     class Backend : public BackendConnection {
       public:
-        Backend(InstanceBase* instance) : BackendConnection(instance, wgpu::BackendType::Null) {
+        explicit Backend(InstanceBase* instance)
+            : BackendConnection(instance, wgpu::BackendType::Null) {
         }
 
         std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override {
@@ -103,7 +104,7 @@ namespace dawn::native::null {
     ResultOrError<Ref<Device>> Device::Create(Adapter* adapter,
                                               const DeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
-        DAWN_TRY(device->Initialize());
+        DAWN_TRY(device->Initialize(descriptor));
         return device;
     }
 
@@ -111,8 +112,8 @@ namespace dawn::native::null {
         Destroy();
     }
 
-    MaybeError Device::Initialize() {
-        return DeviceBase::Initialize(new Queue(this));
+    MaybeError Device::Initialize(const DeviceDescriptor* descriptor) {
+        return DeviceBase::Initialize(AcquireRef(new Queue(this, &descriptor->defaultQueue)));
     }
 
     ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
@@ -354,7 +355,8 @@ namespace dawn::native::null {
 
     // Queue
 
-    Queue::Queue(Device* device) : QueueBase(device) {
+    Queue::Queue(Device* device, const QueueDescriptor* descriptor)
+        : QueueBase(device, descriptor) {
     }
 
     Queue::~Queue() {
@@ -421,13 +423,11 @@ namespace dawn::native::null {
         return {};
     }
 
-    ResultOrError<TextureViewBase*> SwapChain::GetCurrentTextureViewImpl() {
+    ResultOrError<Ref<TextureViewBase>> SwapChain::GetCurrentTextureViewImpl() {
         TextureDescriptor textureDesc = GetSwapChainBaseTextureDescriptor(this);
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
         mTexture = AcquireRef(
             new Texture(GetDevice(), &textureDesc, TextureBase::TextureState::OwnedInternal));
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        return mTexture->APICreateView();
+        return mTexture->CreateView();
     }
 
     void SwapChain::DetachFromSurfaceImpl() {

@@ -1,4 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "enforce_iwyu_on_package", "generated_cc_atom")
+
+licenses(["notice"])
+
+enforce_iwyu_on_package()
 
 generated_cc_atom(
     name = "SkVMDebugTracePlayer_hdr",
@@ -6,6 +10,8 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkVMDebugTrace_hdr",
+        "//include/core:SkRefCnt_hdr",
+        "//include/core:SkTypes_hdr",
         "//src/utils:SkBitSet_hdr",
     ],
 )
@@ -35,6 +41,10 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkVMDebugTrace_hdr",
+        "//include/core:SkData_hdr",
+        "//include/core:SkRefCnt_hdr",
+        "//include/core:SkStream_hdr",
+        "//include/core:SkTypes_hdr",
         "//src/core:SkStreamPriv_hdr",
         "//src/utils:SkJSONWriter_hdr",
         "//src/utils:SkJSON_hdr",

@@ -7,6 +7,7 @@
 
 #include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkData.h"
 #include "include/core/SkPixelRef.h"
 #include "include/core/SkSurface.h"
@@ -20,18 +21,21 @@
 #include "src/shaders/SkBitmapProcShader.h"
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrBicubicEffect.h"
-#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrBicubicEffect.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
+#endif
 
 #ifdef SK_GRAPHITE_ENABLED
-namespace skgpu {
-enum class Mipmapped : bool;
-class Recorder;
-class TextureProxyView;
-}
-#endif
+#include "include/gpu/graphite/GraphiteTypes.h"
+#include "include/gpu/graphite/Recorder.h"
+#include "src/gpu/graphite/Buffer.h"
+#include "src/gpu/graphite/Caps.h"
+#include "src/gpu/graphite/CommandBuffer.h"
+#include "src/gpu/graphite/RecorderPriv.h"
+#include "src/gpu/graphite/TextureUtils.h"
+#include "src/gpu/graphite/UploadTask.h"
 #endif
 
 // fixes https://bug.skia.org/5096
@@ -132,13 +136,20 @@ public:
     SkMipmap* onPeekMips() const override { return fBitmap.fMips.get(); }
 
     sk_sp<SkImage> onMakeWithMipmaps(sk_sp<SkMipmap> mips) const override {
-        auto img = new SkImage_Raster(fBitmap);
+        // It's dangerous to have two SkBitmaps that share a SkPixelRef but have different SkMipmaps
+        // since various caches key on SkPixelRef's generation ID. Also, SkPixelRefs that back
+        // SkSurfaces are marked "temporarily immutable" and making an image that uses the same
+        // SkPixelRef can interact badly with SkSurface/SkImage copy-on-write. So we just always
+        // make a copy with a new ID.
+        static auto constexpr kCopyMode = SkCopyPixelsMode::kAlways_SkCopyPixelsMode;
+        sk_sp<SkImage> img = SkMakeImageFromRasterBitmap(fBitmap, kCopyMode);
+        auto imgRaster = static_cast<SkImage_Raster*>(img.get());
         if (mips) {
-            img->fBitmap.fMips = std::move(mips);
+            imgRaster->fBitmap.fMips = std::move(mips);
         } else {
-            img->fBitmap.fMips.reset(SkMipmap::Build(fBitmap.pixmap(), nullptr));
+            imgRaster->fBitmap.fMips.reset(SkMipmap::Build(fBitmap.pixmap(), nullptr));
         }
-        return sk_sp<SkImage>(img);
+        return img;
     }
 
 private:
@@ -155,9 +166,8 @@ private:
                                                                const SkRect*) const override;
 #endif
 #ifdef SK_GRAPHITE_ENABLED
-    std::tuple<skgpu::TextureProxyView, SkColorType> onAsView(skgpu::Recorder*,
-                                                              skgpu::Mipmapped,
-                                                              SkBudgeted) const override;
+    std::tuple<skgpu::graphite::TextureProxyView, SkColorType> onAsView(
+            skgpu::graphite::Recorder*, skgpu::graphite::Mipmapped, SkBudgeted) const override;
 #endif
 
     SkBitmap fBitmap;
@@ -475,10 +485,11 @@ std::unique_ptr<GrFragmentProcessor> SkImage_Raster::onAsFragmentProcessor(
 #endif
 
 #ifdef SK_GRAPHITE_ENABLED
-std::tuple<skgpu::TextureProxyView, SkColorType> SkImage_Raster::onAsView(
-        skgpu::Recorder*,
-        skgpu::Mipmapped,
-        SkBudgeted) const {
-        return {}; // TODO
-    }
+std::tuple<skgpu::graphite::TextureProxyView, SkColorType> SkImage_Raster::onAsView(
+        skgpu::graphite::Recorder* recorder,
+        skgpu::graphite::Mipmapped mipmapped,
+        SkBudgeted budgeted) const {
+    return MakeBitmapProxyView(recorder, fBitmap, mipmapped, budgeted);
+}
+
 #endif

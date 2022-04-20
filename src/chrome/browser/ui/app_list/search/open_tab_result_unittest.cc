@@ -48,29 +48,14 @@ TEST_F(OpenTabResultTest, Basic) {
   std::unique_ptr<OpenTabResult> result =
       MakeResult("query", "queryabc", "http://www.website.com");
   EXPECT_EQ(result->title(), u"queryabc");
-  EXPECT_EQ(StringFromTextVector(result->details_text_vector()),
-            base::StrCat({
-                l10n_util::GetStringUTF16(IDS_APP_LIST_OPEN_TAB_HINT),
-                u" - http://www.website.com/",
-            }));
-  EXPECT_EQ(result->accessible_name(),
-            base::StrCat({u"queryabc, ",
-                          l10n_util::GetStringUTF16(IDS_APP_LIST_OPEN_TAB_HINT),
-                          u", http://www.website.com/"}));
-}
-
-TEST_F(OpenTabResultTest, DriveId) {
   EXPECT_EQ(
-      MakeResult("a", "b",
-                 "http://docs.google.com/document/d/abcdef/edit?query#fragment")
-          ->DriveId(),
-      "abcdef");
-  EXPECT_FALSE(
-      MakeResult("a", "b",
-                 "http://other.website/document/d/abcdef/edit?query#fragment")
-          ->DriveId());
-  EXPECT_FALSE(
-      MakeResult("a", "b", "http://docs.google.com/d/abcdef/edit")->DriveId());
+      StringFromTextVector(result->details_text_vector()),
+      base::StrCat({u"http://www.website.com/ - ",
+                    l10n_util::GetStringUTF16(IDS_APP_LIST_OPEN_TAB_HINT)}));
+  EXPECT_EQ(
+      result->accessible_name(),
+      base::StrCat({u"queryabc, http://www.website.com/, ",
+                    l10n_util::GetStringUTF16(IDS_APP_LIST_OPEN_TAB_HINT)}));
 }
 
 }  // namespace app_list

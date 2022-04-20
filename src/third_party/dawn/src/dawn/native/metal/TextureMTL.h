@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_METAL_TEXTUREMTL_H_
-#define DAWNNATIVE_METAL_TEXTUREMTL_H_
+#ifndef SRC_DAWN_NATIVE_METAL_TEXTUREMTL_H_
+#define SRC_DAWN_NATIVE_METAL_TEXTUREMTL_H_
 
 #include "dawn/native/Texture.h"
 
+#include "dawn/common/CoreFoundationRef.h"
 #include "dawn/common/NSRef.h"
 #include "dawn/native/DawnNative.h"
 
@@ -31,8 +32,7 @@ namespace dawn::native::metal {
     MTLPixelFormat MetalPixelFormat(wgpu::TextureFormat format);
     MaybeError ValidateIOSurfaceCanBeWrapped(const DeviceBase* device,
                                              const TextureDescriptor* descriptor,
-                                             IOSurfaceRef ioSurface,
-                                             uint32_t plane);
+                                             IOSurfaceRef ioSurface);
 
     class Texture final : public TextureBase {
       public:
@@ -41,13 +41,13 @@ namespace dawn::native::metal {
         static ResultOrError<Ref<Texture>> CreateFromIOSurface(
             Device* device,
             const ExternalImageDescriptor* descriptor,
-            IOSurfaceRef ioSurface,
-            uint32_t plane);
+            IOSurfaceRef ioSurface);
         static Ref<Texture> CreateWrapping(Device* device,
                                            const TextureDescriptor* descriptor,
                                            NSPRef<id<MTLTexture>> wrapped);
 
-        id<MTLTexture> GetMTLTexture();
+        id<MTLTexture> GetMTLTexture() const;
+        IOSurfaceRef GetIOSurface();
         NSPRef<id<MTLTexture>> CreateFormatView(wgpu::TextureFormat format);
 
         void EnsureSubresourceContentInitialized(CommandRecordingContext* commandContext,
@@ -62,8 +62,7 @@ namespace dawn::native::metal {
         MaybeError InitializeAsInternalTexture(const TextureDescriptor* descriptor);
         MaybeError InitializeFromIOSurface(const ExternalImageDescriptor* descriptor,
                                            const TextureDescriptor* textureDescriptor,
-                                           IOSurfaceRef ioSurface,
-                                           uint32_t plane);
+                                           IOSurfaceRef ioSurface);
         void InitializeAsWrapping(const TextureDescriptor* descriptor,
                                   NSPRef<id<MTLTexture>> wrapped);
 
@@ -74,7 +73,9 @@ namespace dawn::native::metal {
                                 TextureBase::ClearValue clearValue);
 
         NSPRef<id<MTLTexture>> mMtlTexture;
+
         MTLTextureUsage mMtlUsage;
+        CFRef<IOSurfaceRef> mIOSurface = nullptr;
     };
 
     class TextureView final : public TextureViewBase {
@@ -82,15 +83,23 @@ namespace dawn::native::metal {
         static ResultOrError<Ref<TextureView>> Create(TextureBase* texture,
                                                       const TextureViewDescriptor* descriptor);
 
-        id<MTLTexture> GetMTLTexture();
+        id<MTLTexture> GetMTLTexture() const;
+
+        struct AttachmentInfo {
+            NSPRef<id<MTLTexture>> texture;
+            uint32_t baseMipLevel;
+            uint32_t baseArrayLayer;
+        };
+        AttachmentInfo GetAttachmentInfo() const;
 
       private:
         using TextureViewBase::TextureViewBase;
         MaybeError Initialize(const TextureViewDescriptor* descriptor);
 
+        // TODO(crbug.com/dawn/1355): Clear this reference on texture destroy.
         NSPRef<id<MTLTexture>> mMtlTextureView;
     };
 
 }  // namespace dawn::native::metal
 
-#endif  // DAWNNATIVE_METAL_TEXTUREMTL_H_
+#endif  // SRC_DAWN_NATIVE_METAL_TEXTUREMTL_H_

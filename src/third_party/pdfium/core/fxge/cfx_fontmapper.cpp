@@ -8,20 +8,20 @@
 
 #include <algorithm>
 #include <memory>
-#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/systemfontinfo_iface.h"
-#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/cxx17_backports.h"
 
@@ -206,50 +206,137 @@ struct FX_FontStyle {
   uint32_t style;
 };
 
-const FX_FontStyle kFontStyles[] = {
-    {"Bold", 4, FXFONT_FORCE_BOLD},
-    {"Italic", 6, FXFONT_ITALIC},
-    {"BoldItalic", 10, FXFONT_FORCE_BOLD | FXFONT_ITALIC},
-    {"Reg", 3, FXFONT_NORMAL},
+constexpr FX_FontStyle kFontStyles[] = {
     {"Regular", 7, FXFONT_NORMAL},
+    {"Reg", 3, FXFONT_NORMAL},
+    {"BoldItalic", 10, FXFONT_FORCE_BOLD | FXFONT_ITALIC},
+    {"Italic", 6, FXFONT_ITALIC},
+    {"Bold", 4, FXFONT_FORCE_BOLD},
 };
 
-// <exists, index, length>
-std::tuple<bool, uint32_t, size_t> GetStyleType(const ByteString& bsStyle,
-                                                bool bReverse) {
-  if (bsStyle.IsEmpty())
-    return std::make_tuple(false, FXFONT_NORMAL, 0);
+const FX_FontStyle* GetStyleType(ByteStringView font_name,
+                                 bool reverse_search) {
+  if (font_name.IsEmpty())
+    return nullptr;
 
-  for (int i = pdfium::size(kFontStyles) - 1; i >= 0; --i) {
-    const FX_FontStyle* pStyle = kFontStyles + i;
-    if (!pStyle || pStyle->len > bsStyle.GetLength())
+  for (const FX_FontStyle& style : kFontStyles) {
+    if (style.len > font_name.GetLength())
       continue;
 
-    if (bReverse) {
-      if (bsStyle.Last(pStyle->len) == pStyle->name)
-        return std::make_tuple(true, pStyle->style, pStyle->len);
-    } else {
-      if (bsStyle.First(pStyle->len) == pStyle->name)
-        return std::make_tuple(true, pStyle->style, pStyle->len);
-    }
+    ByteStringView style_view =
+        reverse_search ? font_name.Last(style.len) : font_name.First(style.len);
+    if (style_view == style.name)
+      return &style;
   }
-  return std::make_tuple(false, FXFONT_NORMAL, 0);
+  return nullptr;
 }
 
-bool CheckSupportThirdPartFont(const ByteString& name, int* PitchFamily) {
+bool ParseStyles(const ByteString& style_str,
+                 bool* is_style_available,
+                 int* weight,
+                 uint32_t* style) {
+  if (style_str.IsEmpty())
+    return false;
+
+  size_t i = 0;
+  bool is_first_item = true;
+  while (i < style_str.GetLength()) {
+    ByteString buf = ParseStyle(style_str, i);
+    const FX_FontStyle* style_result =
+        GetStyleType(buf.AsStringView(), /*reverse_search=*/false);
+    if ((i && !*is_style_available) || (!i && !style_result))
+      return true;
+
+    uint32_t parsed_style;
+    if (style_result) {
+      *is_style_available = true;
+      parsed_style = style_result->style;
+    } else {
+      parsed_style = FXFONT_NORMAL;
+    }
+
+    if (FontStyleIsForceBold(parsed_style)) {
+      // If we're already bold, then we're double bold, use special weight.
+      if (FontStyleIsForceBold(*style)) {
+        *weight = FXFONT_FW_BOLD_BOLD;
+      } else {
+        *weight = FXFONT_FW_BOLD;
+        *style |= FXFONT_FORCE_BOLD;
+      }
+
+      is_first_item = false;
+    }
+    if (FontStyleIsItalic(parsed_style) && FontStyleIsForceBold(parsed_style)) {
+      *style |= FXFONT_ITALIC;
+    } else if (FontStyleIsItalic(parsed_style)) {
+      if (!is_first_item)
+        return true;
+
+      *style |= FXFONT_ITALIC;
+      break;
+    }
+    i += buf.GetLength() + 1;
+  }
+  return false;
+}
+
+bool CheckSupportThirdPartFont(const ByteString& name, int* pitch_family) {
   if (name != "MyriadPro")
     return false;
-  *PitchFamily &= ~FXFONT_FF_ROMAN;
+  *pitch_family &= ~FXFONT_FF_ROMAN;
   return true;
 }
 
-void UpdatePitchFamily(uint32_t flags, int* PitchFamily) {
+uint32_t GetStyleFromBaseFont(int base_font) {
+  int pos = base_font % 4;
+  uint32_t style = FXFONT_NORMAL;
+  if (pos == 1 || pos == 2)
+    style |= FXFONT_FORCE_BOLD;
+  if (pos / 2)
+    style |= FXFONT_ITALIC;
+  return style;
+}
+
+int GetPitchFamilyFromBaseFont(int base_font) {
+  if (base_font < 4)
+    return FXFONT_FF_FIXEDPITCH;
+  if (base_font >= 8)
+    return FXFONT_FF_ROMAN;
+  return 0;
+}
+
+int GetPitchFamilyFromFlags(uint32_t flags) {
+  int pitch_family = 0;
   if (FontStyleIsSerif(flags))
-    *PitchFamily |= FXFONT_FF_ROMAN;
+    pitch_family |= FXFONT_FF_ROMAN;
   if (FontStyleIsScript(flags))
-    *PitchFamily |= FXFONT_FF_SCRIPT;
+    pitch_family |= FXFONT_FF_SCRIPT;
   if (FontStyleIsFixedPitch(flags))
-    *PitchFamily |= FXFONT_FF_FIXEDPITCH;
+    pitch_family |= FXFONT_FF_FIXEDPITCH;
+  return pitch_family;
+}
+
+int AdjustBaseFontForStyle(int base_font, uint32_t style) {
+  if (!style || (base_font % 4))
+    return base_font;
+
+  if (FontStyleIsForceBold(style) && FontStyleIsItalic(style))
+    base_font += 2;
+  else if (FontStyleIsForceBold(style))
+    base_font += 1;
+  else if (FontStyleIsItalic(style))
+    base_font += 3;
+  return base_font;
+}
+
+FX_Charset GetCharset(FX_CodePage code_page, int base_font, uint32_t flags) {
+  if (code_page != FX_CodePage::kDefANSI)
+    return FX_GetCharsetFromCodePage(code_page);
+  if (FontStyleIsSymbolic(flags) &&
+      base_font == CFX_FontMapper::kNumStandardFonts) {
+    return FX_Charset::kSymbol;
+  }
+  return FX_Charset::kANSI;
 }
 
 bool IsStrUpper(const ByteString& str) {
@@ -270,6 +357,40 @@ void RemoveSubsettedFontPrefix(ByteString* subst_name) {
   }
 }
 
+ByteString GetSubstName(const ByteString& name, bool is_truetype) {
+  ByteString subst_name = name;
+  if (is_truetype && name.Front() == '@')
+    subst_name.Delete(0);
+  else
+    subst_name.Remove(' ');
+  RemoveSubsettedFontPrefix(&subst_name);
+  CFX_FontMapper::GetStandardFontName(&subst_name);
+  return subst_name;
+}
+
+bool IsNarrowFontName(const ByteString& name) {
+  static const char kNarrowFonts[][10] = {"Narrow", "Condensed"};
+  for (const char* font : kNarrowFonts) {
+    absl::optional<size_t> pos = name.Find(font);
+    if (pos.has_value() && pos.value() != 0)
+      return true;
+  }
+  return false;
+}
+
+class ScopedFontDeleter {
+ public:
+  FX_STACK_ALLOCATED();
+
+  ScopedFontDeleter(SystemFontInfoIface* font_info, void* font)
+      : font_info_(font_info), font_(font) {}
+  ~ScopedFontDeleter() { font_info_->DeleteFont(font_); }
+
+ private:
+  UnownedPtr<SystemFontInfoIface> const font_info_;
+  void* const font_;
+};
+
 }  // namespace
 
 CFX_FontMapper::CFX_FontMapper(CFX_FontMgr* mgr) : m_pFontMgr(mgr) {}
@@ -281,6 +402,7 @@ void CFX_FontMapper::SetSystemFontInfo(
   if (!pFontInfo)
     return;
 
+  m_bListLoaded = false;
   m_pFontInfo = std::move(pFontInfo);
 }
 
@@ -288,10 +410,11 @@ std::unique_ptr<SystemFontInfoIface> CFX_FontMapper::TakeSystemFontInfo() {
   return std::move(m_pFontInfo);
 }
 
-uint32_t CFX_FontMapper::GetChecksumFromTT(void* hFont) {
+uint32_t CFX_FontMapper::GetChecksumFromTT(void* font_handle) {
   uint32_t buffer[256];
   m_pFontInfo->GetFontData(
-      hFont, kTableTTCF, pdfium::as_writable_bytes(pdfium::make_span(buffer)));
+      font_handle, kTableTTCF,
+      pdfium::as_writable_bytes(pdfium::make_span(buffer)));
 
   uint32_t checksum = 0;
   for (auto x : buffer)
@@ -300,13 +423,13 @@ uint32_t CFX_FontMapper::GetChecksumFromTT(void* hFont) {
   return checksum;
 }
 
-ByteString CFX_FontMapper::GetPSNameFromTT(void* hFont) {
-  size_t size = m_pFontInfo->GetFontData(hFont, kTableNAME, {});
+ByteString CFX_FontMapper::GetPSNameFromTT(void* font_handle) {
+  size_t size = m_pFontInfo->GetFontData(font_handle, kTableNAME, {});
   if (!size)
     return ByteString();
 
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> buffer(size);
-  size_t bytes_read = m_pFontInfo->GetFontData(hFont, kTableNAME, buffer);
+  size_t bytes_read = m_pFontInfo->GetFontData(font_handle, kTableNAME, buffer);
   return bytes_read == size ? GetNameFromTT(buffer, 6) : ByteString();
 }
 
@@ -319,22 +442,23 @@ void CFX_FontMapper::AddInstalledFont(const ByteString& name,
   if (name == m_LastFamily)
     return;
 
-  bool bLocalized = std::any_of(name.begin(), name.end(), [](const char& c) {
+  bool is_localized = std::any_of(name.begin(), name.end(), [](const char& c) {
     return static_cast<uint8_t>(c) > 0x80;
   });
 
-  if (bLocalized) {
-    void* hFont = m_pFontInfo->GetFont(name);
-    if (!hFont) {
-      hFont = m_pFontInfo->MapFont(0, false, FX_Charset::kDefault, 0, name);
-      if (!hFont)
+  if (is_localized) {
+    void* font_handle = m_pFontInfo->GetFont(name);
+    if (!font_handle) {
+      font_handle =
+          m_pFontInfo->MapFont(0, false, FX_Charset::kDefault, 0, name);
+      if (!font_handle)
         return;
     }
 
-    ByteString new_name = GetPSNameFromTT(hFont);
+    ScopedFontDeleter scoped_font(m_pFontInfo.get(), font_handle);
+    ByteString new_name = GetPSNameFromTT(font_handle);
     if (!new_name.IsEmpty())
       m_LocalizedTTFonts.push_back(std::make_pair(new_name, name));
-    m_pFontInfo->DeleteFont(hFont);
   }
   m_InstalledTTFonts.push_back(name);
   m_LastFamily = name;
@@ -362,32 +486,33 @@ ByteString CFX_FontMapper::MatchInstalledFonts(const ByteString& norm_name) {
   return ByteString();
 }
 
-RetainPtr<CFX_Face> CFX_FontMapper::UseInternalSubst(CFX_SubstFont* pSubstFont,
-                                                     int iBaseFont,
-                                                     int italic_angle,
-                                                     int weight,
-                                                     int pitch_family) {
-  if (iBaseFont < kNumStandardFonts) {
-    if (!m_StandardFaces[iBaseFont]) {
-      m_StandardFaces[iBaseFont] = m_pFontMgr->NewFixedFace(
-          nullptr, m_pFontMgr->GetStandardFont(iBaseFont), 0);
+RetainPtr<CFX_Face> CFX_FontMapper::UseInternalSubst(
+    int base_font,
+    int weight,
+    int italic_angle,
+    int pitch_family,
+    CFX_SubstFont* subst_font) {
+  if (base_font < kNumStandardFonts) {
+    if (!m_StandardFaces[base_font]) {
+      m_StandardFaces[base_font] = m_pFontMgr->NewFixedFace(
+          nullptr, m_pFontMgr->GetStandardFont(base_font), 0);
     }
-    return m_StandardFaces[iBaseFont];
+    return m_StandardFaces[base_font];
   }
 
-  pSubstFont->m_bFlagMM = true;
-  pSubstFont->m_ItalicAngle = italic_angle;
+  subst_font->m_bFlagMM = true;
+  subst_font->m_ItalicAngle = italic_angle;
   if (weight)
-    pSubstFont->m_Weight = weight;
+    subst_font->m_Weight = weight;
   if (FontFamilyIsRoman(pitch_family)) {
-    pSubstFont->UseChromeSerif();
+    subst_font->UseChromeSerif();
     if (!m_GenericSerifFace) {
       m_GenericSerifFace = m_pFontMgr->NewFixedFace(
           nullptr, m_pFontMgr->GetGenericSerifFont(), 0);
     }
     return m_GenericSerifFace;
   }
-  pSubstFont->m_Family = "Chrome Sans";
+  subst_font->m_Family = "Chrome Sans";
   if (!m_GenericSansFace) {
     m_GenericSansFace =
         m_pFontMgr->NewFixedFace(nullptr, m_pFontMgr->GetGenericSansFont(), 0);
@@ -395,13 +520,55 @@ RetainPtr<CFX_Face> CFX_FontMapper::UseInternalSubst(CFX_SubstFont* pSubstFont,
   return m_GenericSansFace;
 }
 
+RetainPtr<CFX_Face> CFX_FontMapper::UseExternalSubst(
+    void* font_handle,
+    ByteString face_name,
+    int weight,
+    bool is_italic,
+    int italic_angle,
+    FX_Charset charset,
+    CFX_SubstFont* subst_font) {
+  DCHECK(font_handle);
+
+  ScopedFontDeleter scoped_font(m_pFontInfo.get(), font_handle);
+  m_pFontInfo->GetFaceName(font_handle, &face_name);
+  if (charset == FX_Charset::kDefault)
+    m_pFontInfo->GetFontCharset(font_handle, &charset);
+  size_t ttc_size = m_pFontInfo->GetFontData(font_handle, kTableTTCF, {});
+  size_t font_size = m_pFontInfo->GetFontData(font_handle, 0, {});
+  if (font_size == 0 && ttc_size == 0)
+    return nullptr;
+
+  RetainPtr<CFX_Face> face =
+      ttc_size
+          ? GetCachedTTCFace(font_handle, ttc_size, font_size)
+          : GetCachedFace(font_handle, face_name, weight, is_italic, font_size);
+  if (!face)
+    return nullptr;
+
+  subst_font->m_Family = face_name;
+  subst_font->m_Charset = charset;
+  int face_weight =
+      FXFT_Is_Face_Bold(face->GetRec()) ? FXFONT_FW_BOLD : FXFONT_FW_NORMAL;
+  if (weight != face_weight)
+    subst_font->m_Weight = weight;
+  if (is_italic && !FXFT_Is_Face_Italic(face->GetRec())) {
+    if (italic_angle == 0)
+      italic_angle = -12;
+    else if (abs(italic_angle) < 5)
+      italic_angle = 0;
+    subst_font->m_ItalicAngle = italic_angle;
+  }
+  return face;
+}
+
 RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
-                                                  bool bTrueType,
+                                                  bool is_truetype,
                                                   uint32_t flags,
                                                   int weight,
                                                   int italic_angle,
                                                   FX_CodePage code_page,
-                                                  CFX_SubstFont* pSubstFont) {
+                                                  CFX_SubstFont* subst_font) {
   if (weight == 0)
     weight = FXFONT_FW_NORMAL;
 
@@ -409,162 +576,104 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
     weight = FXFONT_FW_NORMAL;
     italic_angle = 0;
   }
-  ByteString SubstName = name;
-  SubstName.Remove(' ');
-  if (bTrueType && name.GetLength() > 0 && name[0] == '@')
-    SubstName = name.Last(name.GetLength() - 1);
-  RemoveSubsettedFontPrefix(&SubstName);
-  GetStandardFontName(&SubstName);
-  if (SubstName == "Symbol" && !bTrueType) {
-    pSubstFont->m_Family = "Chrome Symbol";
-    pSubstFont->m_Charset = FX_Charset::kSymbol;
-    return UseInternalSubst(pSubstFont, 12, italic_angle, weight, 0);
+  const ByteString subst_name = GetSubstName(name, is_truetype);
+  if (subst_name == "Symbol" && !is_truetype) {
+    subst_font->m_Family = "Chrome Symbol";
+    subst_font->m_Charset = FX_Charset::kSymbol;
+    return UseInternalSubst(kSymbol, weight, italic_angle, 0, subst_font);
   }
-  if (SubstName == "ZapfDingbats") {
-    pSubstFont->m_Family = "Chrome Dingbats";
-    pSubstFont->m_Charset = FX_Charset::kSymbol;
-    return UseInternalSubst(pSubstFont, 13, italic_angle, weight, 0);
+  if (subst_name == "ZapfDingbats") {
+    subst_font->m_Family = "Chrome Dingbats";
+    subst_font->m_Charset = FX_Charset::kSymbol;
+    return UseInternalSubst(kDingbats, weight, italic_angle, 0, subst_font);
   }
-  int iBaseFont = 0;
+  int base_font = 0;
   ByteString family;
   ByteString style;
-  bool bHasComma = false;
-  bool bHasHyphen = false;
+  bool has_comma = false;
+  bool has_hyphen = false;
   {
-    absl::optional<size_t> pos = SubstName.Find(",");
+    absl::optional<size_t> pos = subst_name.Find(",");
     if (pos.has_value()) {
-      family = SubstName.First(pos.value());
+      family = subst_name.First(pos.value());
       GetStandardFontName(&family);
-      style = SubstName.Last(SubstName.GetLength() - (pos.value() + 1));
-      bHasComma = true;
+      style = subst_name.Last(subst_name.GetLength() - (pos.value() + 1));
+      has_comma = true;
     } else {
-      family = SubstName;
+      family = subst_name;
     }
   }
-  for (; iBaseFont < 12; iBaseFont++) {
-    if (family == kBase14FontNames[iBaseFont])
+  for (; base_font < kSymbol; base_font++) {
+    if (family == kBase14FontNames[base_font])
       break;
   }
-  int PitchFamily = 0;
-  uint32_t nStyle = FXFONT_NORMAL;
-  bool bStyleAvail = false;
-  if (iBaseFont < 12) {
-    if ((iBaseFont % 4) == 1 || (iBaseFont % 4) == 2)
-      nStyle |= FXFONT_FORCE_BOLD;
-    if ((iBaseFont % 4) / 2)
-      nStyle |= FXFONT_ITALIC;
-    if (iBaseFont < 4)
-      PitchFamily |= FXFONT_FF_FIXEDPITCH;
-    if (iBaseFont >= 8)
-      PitchFamily |= FXFONT_FF_ROMAN;
+  int pitch_family;
+  uint32_t nStyle;
+  bool is_style_available = false;
+  if (base_font < kSymbol) {
+    nStyle = GetStyleFromBaseFont(base_font);
+    pitch_family = GetPitchFamilyFromBaseFont(base_font);
   } else {
-    iBaseFont = kNumStandardFonts;
-    if (!bHasComma) {
+    base_font = kNumStandardFonts;
+    nStyle = FXFONT_NORMAL;
+    if (!has_comma) {
       absl::optional<size_t> pos = family.ReverseFind('-');
       if (pos.has_value()) {
         style = family.Last(family.GetLength() - (pos.value() + 1));
         family = family.First(pos.value());
-        bHasHyphen = true;
+        has_hyphen = true;
       }
     }
-    if (!bHasHyphen) {
+    if (!has_hyphen) {
       size_t nLen = family.GetLength();
-      bool hasStyleType;
-      uint32_t styleType;
-      size_t len;
-      std::tie(hasStyleType, styleType, len) = GetStyleType(family, true);
-      if (hasStyleType) {
-        family = family.First(nLen - len);
-        nStyle |= styleType;
+      const FX_FontStyle* style_result =
+          GetStyleType(family.AsStringView(), /*reverse_search=*/true);
+      if (style_result) {
+        family = family.First(nLen - style_result->len);
+        nStyle |= style_result->style;
       }
     }
-    UpdatePitchFamily(flags, &PitchFamily);
+    pitch_family = GetPitchFamilyFromFlags(flags);
   }
 
   const int old_weight = weight;
   if (FontStyleIsForceBold(nStyle))
     weight = FXFONT_FW_BOLD;
 
-  if (!style.IsEmpty()) {
-    size_t i = 0;
-    bool bFirstItem = true;
-    while (i < style.GetLength()) {
-      ByteString buf = ParseStyle(style, i);
-      bool hasStyleType;
-      uint32_t styleType;
-      size_t len;
-      std::tie(hasStyleType, styleType, len) = GetStyleType(buf, false);
-      if ((i && !bStyleAvail) || (!i && !hasStyleType)) {
-        family = SubstName;
-        iBaseFont = kNumStandardFonts;
-        break;
-      }
-      if (hasStyleType)
-        bStyleAvail = true;
-
-      if (FontStyleIsForceBold(styleType)) {
-        // If we're already bold, then we're double bold, use special weight.
-        if (FontStyleIsForceBold(nStyle)) {
-          weight = FXFONT_FW_BOLD_BOLD;
-        } else {
-          weight = FXFONT_FW_BOLD;
-          nStyle |= FXFONT_FORCE_BOLD;
-        }
-
-        bFirstItem = false;
-      }
-      if (FontStyleIsItalic(styleType) && FontStyleIsForceBold(styleType)) {
-        nStyle |= FXFONT_ITALIC;
-      } else if (FontStyleIsItalic(styleType)) {
-        if (bFirstItem) {
-          nStyle |= FXFONT_ITALIC;
-        } else {
-          family = SubstName;
-          iBaseFont = kNumStandardFonts;
-        }
-        break;
-      }
-      i += buf.GetLength() + 1;
-    }
+  if (ParseStyles(style, &is_style_available, &weight, &nStyle)) {
+    family = subst_name;
+    base_font = kNumStandardFonts;
   }
 
   if (!m_pFontInfo) {
-    return UseInternalSubst(pSubstFont, iBaseFont, italic_angle, old_weight,
-                            PitchFamily);
+    return UseInternalSubst(base_font, old_weight, italic_angle, pitch_family,
+                            subst_font);
   }
 
-  FX_Charset Charset = FX_Charset::kANSI;
-  if (code_page != FX_CodePage::kDefANSI)
-    Charset = FX_GetCharsetFromCodePage(code_page);
-  else if (iBaseFont == kNumStandardFonts && FontStyleIsSymbolic(flags))
-    Charset = FX_Charset::kSymbol;
-  const bool bCJK = FX_CharSetIsCJK(Charset);
-  bool bItalic = FontStyleIsItalic(nStyle);
+  const FX_Charset Charset = GetCharset(code_page, base_font, flags);
+  const bool is_cjk = FX_CharSetIsCJK(Charset);
+  bool is_italic = FontStyleIsItalic(nStyle);
 
   GetFontFamily(nStyle, &family);
   ByteString match = MatchInstalledFonts(TT_NormalizeName(family));
-  if (match.IsEmpty() && family != SubstName &&
-      (!bHasComma && (!bHasHyphen || (bHasHyphen && !bStyleAvail)))) {
-    match = MatchInstalledFonts(TT_NormalizeName(SubstName));
+  if (match.IsEmpty() && family != subst_name &&
+      (!has_comma && (!has_hyphen || (has_hyphen && !is_style_available)))) {
+    match = MatchInstalledFonts(TT_NormalizeName(subst_name));
   }
-  if (match.IsEmpty() && iBaseFont >= kNumStandardFonts) {
-    if (!bCJK) {
-      if (!CheckSupportThirdPartFont(family, &PitchFamily)) {
-        bItalic = italic_angle != 0;
+  if (match.IsEmpty() && base_font >= kNumStandardFonts) {
+    if (!is_cjk) {
+      if (!CheckSupportThirdPartFont(family, &pitch_family)) {
+        is_italic = italic_angle != 0;
         weight = old_weight;
       }
-      absl::optional<size_t> pos = SubstName.Find("Narrow");
-      if (pos.has_value() && pos.value() != 0)
-        family = kNarrowFamily;
-      pos = SubstName.Find("Condensed");
-      if (pos.has_value() && pos.value() != 0)
+      if (IsNarrowFontName(subst_name))
         family = kNarrowFamily;
     } else {
-      pSubstFont->m_bSubstCJK = true;
+      subst_font->m_bSubstCJK = true;
       if (nStyle)
-        pSubstFont->m_WeightCJK = nStyle ? weight : FXFONT_FW_NORMAL;
+        subst_font->m_WeightCJK = nStyle ? weight : FXFONT_FW_NORMAL;
       if (FontStyleIsItalic(nStyle))
-        pSubstFont->m_bItalicCJK = true;
+        subst_font->m_bItalicCJK = true;
     }
   } else {
     italic_angle = 0;
@@ -572,110 +681,77 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
       weight = FXFONT_FW_NORMAL;
   }
 
-  if (!match.IsEmpty() || iBaseFont < kNumStandardFonts) {
+  if (!match.IsEmpty() || base_font < kNumStandardFonts) {
     if (!match.IsEmpty())
       family = match;
-    if (iBaseFont < kNumStandardFonts) {
-      if (nStyle && !(iBaseFont % 4)) {
-        if (FontStyleIsForceBold(nStyle) && FontStyleIsItalic(nStyle))
-          iBaseFont += 2;
-        else if (FontStyleIsForceBold(nStyle))
-          iBaseFont += 1;
-        else if (FontStyleIsItalic(nStyle))
-          iBaseFont += 3;
-      }
-      family = kBase14FontNames[iBaseFont];
+    if (base_font < kNumStandardFonts) {
+      base_font = AdjustBaseFontForStyle(base_font, nStyle);
+      family = kBase14FontNames[base_font];
     }
   } else if (FontStyleIsItalic(flags)) {
-    bItalic = true;
+    is_italic = true;
   }
-  void* hFont =
-      m_pFontInfo->MapFont(weight, bItalic, Charset, PitchFamily, family);
-  if (!hFont) {
-    if (bCJK) {
-      bItalic = italic_angle != 0;
-      weight = old_weight;
+  void* font_handle =
+      m_pFontInfo->MapFont(weight, is_italic, Charset, pitch_family, family);
+  if (font_handle) {
+    return UseExternalSubst(font_handle, subst_name, weight, is_italic,
+                            italic_angle, Charset, subst_font);
+  }
+
+  if (is_cjk) {
+    is_italic = italic_angle != 0;
+    weight = old_weight;
+  }
+  if (!match.IsEmpty()) {
+    font_handle = m_pFontInfo->GetFont(match);
+    if (!font_handle) {
+      return UseInternalSubst(base_font, old_weight, italic_angle, pitch_family,
+                              subst_font);
     }
-    if (!match.IsEmpty()) {
-      hFont = m_pFontInfo->GetFont(match);
-      if (!hFont) {
-        return UseInternalSubst(pSubstFont, iBaseFont, italic_angle, old_weight,
-                                PitchFamily);
-      }
-    } else {
-      if (Charset == FX_Charset::kSymbol) {
+    return UseExternalSubst(font_handle, subst_name, weight, is_italic,
+                            italic_angle, Charset, subst_font);
+  }
+
+  if (Charset == FX_Charset::kSymbol) {
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
-        if (SubstName == "Symbol") {
-          pSubstFont->m_Family = "Chrome Symbol";
-          pSubstFont->m_Charset = FX_Charset::kSymbol;
-          return UseInternalSubst(pSubstFont, 12, italic_angle, old_weight,
-                                  PitchFamily);
-        }
-#endif
-        return FindSubstFont(family, bTrueType, flags & ~FXFONT_SYMBOLIC,
-                             weight, italic_angle, FX_CodePage::kDefANSI,
-                             pSubstFont);
-      }
-      if (Charset == FX_Charset::kANSI) {
-        return UseInternalSubst(pSubstFont, iBaseFont, italic_angle, old_weight,
-                                PitchFamily);
-      }
-
-      auto it =
-          std::find_if(m_FaceArray.begin(), m_FaceArray.end(),
-                       [Charset](const FaceData& face) {
-                         return face.charset == static_cast<uint32_t>(Charset);
-                       });
-      if (it == m_FaceArray.end()) {
-        return UseInternalSubst(pSubstFont, iBaseFont, italic_angle, old_weight,
-                                PitchFamily);
-      }
-      hFont = m_pFontInfo->GetFont(it->name);
+    if (subst_name == "Symbol") {
+      subst_font->m_Family = "Chrome Symbol";
+      subst_font->m_Charset = FX_Charset::kSymbol;
+      return UseInternalSubst(kSymbol, old_weight, italic_angle, pitch_family,
+                              subst_font);
     }
+#endif
+    return FindSubstFont(family, is_truetype, flags & ~FXFONT_SYMBOLIC, weight,
+                         italic_angle, FX_CodePage::kDefANSI, subst_font);
   }
-  if (!hFont)
-    return nullptr;
 
-  m_pFontInfo->GetFaceName(hFont, &SubstName);
-  if (Charset == FX_Charset::kDefault)
-    m_pFontInfo->GetFontCharset(hFont, &Charset);
-  size_t ttc_size = m_pFontInfo->GetFontData(hFont, kTableTTCF, {});
-  size_t font_size = m_pFontInfo->GetFontData(hFont, 0, {});
-  if (font_size == 0 && ttc_size == 0) {
-    m_pFontInfo->DeleteFont(hFont);
+  if (Charset == FX_Charset::kANSI) {
+    return UseInternalSubst(base_font, old_weight, italic_angle, pitch_family,
+                            subst_font);
+  }
+
+  auto it = std::find_if(
+      m_FaceArray.begin(), m_FaceArray.end(), [Charset](const FaceData& face) {
+        return face.charset == static_cast<uint32_t>(Charset);
+      });
+  if (it == m_FaceArray.end()) {
+    return UseInternalSubst(base_font, old_weight, italic_angle, pitch_family,
+                            subst_font);
+  }
+  font_handle = m_pFontInfo->GetFont(it->name);
+  if (!font_handle)
     return nullptr;
-  }
-  RetainPtr<CFX_Face> face;
-  if (ttc_size)
-    face = GetCachedTTCFace(hFont, ttc_size, font_size);
-  else
-    face = GetCachedFace(hFont, SubstName, weight, bItalic, font_size);
-  if (!face) {
-    m_pFontInfo->DeleteFont(hFont);
-    return nullptr;
-  }
-  pSubstFont->m_Family = SubstName;
-  pSubstFont->m_Charset = Charset;
-  bool bNeedUpdateWeight = false;
-  if (FXFT_Is_Face_Bold(face->GetRec()))
-    bNeedUpdateWeight = weight != FXFONT_FW_BOLD;
-  else
-    bNeedUpdateWeight = weight != FXFONT_FW_NORMAL;
-  if (bNeedUpdateWeight)
-    pSubstFont->m_Weight = weight;
-  if (bItalic && !FXFT_Is_Face_Italic(face->GetRec())) {
-    if (italic_angle == 0)
-      italic_angle = -12;
-    else if (abs(italic_angle) < 5)
-      italic_angle = 0;
-    pSubstFont->m_ItalicAngle = italic_angle;
-  }
-  m_pFontInfo->DeleteFont(hFont);
-  return face;
+  return UseExternalSubst(font_handle, subst_name, weight, is_italic,
+                          italic_angle, Charset, subst_font);
 }
 
 size_t CFX_FontMapper::GetFaceSize() const {
   return m_FaceArray.size();
+}
+
+ByteString CFX_FontMapper::GetFaceName(size_t index) const {
+  CHECK_LT(index, m_FaceArray.size());
+  return m_FaceArray[index].name;
 }
 
 bool CFX_FontMapper::HasInstalledFont(ByteStringView name) const {
@@ -718,36 +794,37 @@ absl::optional<ByteString> CFX_FontMapper::LocalizedFontNameStartingWith(
 std::unique_ptr<uint8_t, FxFreeDeleter> CFX_FontMapper::RawBytesForIndex(
     size_t index,
     size_t* returned_length) {
-  if (!m_pFontInfo)
+  CHECK_LT(index, m_FaceArray.size());
+
+  void* font_handle = m_pFontInfo->MapFont(0, false, FX_Charset::kDefault, 0,
+                                           GetFaceName(index));
+  if (!font_handle)
     return nullptr;
 
-  void* hFont = m_pFontInfo->MapFont(0, false, FX_Charset::kDefault, 0,
-                                     GetFaceName(index));
-  if (!hFont)
-    return nullptr;
-
-  size_t required_size = m_pFontInfo->GetFontData(hFont, 0, {});
+  ScopedFontDeleter scoped_font(m_pFontInfo.get(), font_handle);
+  size_t required_size = m_pFontInfo->GetFontData(font_handle, 0, {});
   if (required_size == 0)
     return nullptr;
 
   std::unique_ptr<uint8_t, FxFreeDeleter> pBuffer(
       FX_Alloc(uint8_t, required_size + 1));
   *returned_length =
-      m_pFontInfo->GetFontData(hFont, 0, {pBuffer.get(), required_size});
+      m_pFontInfo->GetFontData(font_handle, 0, {pBuffer.get(), required_size});
   return pBuffer;
 }
 #endif  // PDF_ENABLE_XFA
 
-RetainPtr<CFX_Face> CFX_FontMapper::GetCachedTTCFace(void* hFont,
+RetainPtr<CFX_Face> CFX_FontMapper::GetCachedTTCFace(void* font_handle,
                                                      size_t ttc_size,
                                                      size_t data_size) {
-  uint32_t checksum = GetChecksumFromTT(hFont);
+  uint32_t checksum = GetChecksumFromTT(font_handle);
   RetainPtr<CFX_FontMgr::FontDesc> pFontDesc =
       m_pFontMgr->GetCachedTTCFontDesc(ttc_size, checksum);
   if (!pFontDesc) {
     std::unique_ptr<uint8_t, FxFreeDeleter> pFontData(
         FX_Alloc(uint8_t, ttc_size));
-    m_pFontInfo->GetFontData(hFont, kTableTTCF, {pFontData.get(), ttc_size});
+    m_pFontInfo->GetFontData(font_handle, kTableTTCF,
+                             {pFontData.get(), ttc_size});
     pFontDesc = m_pFontMgr->AddCachedTTCFontDesc(
         ttc_size, checksum, std::move(pFontData), ttc_size);
   }
@@ -768,18 +845,18 @@ RetainPtr<CFX_Face> CFX_FontMapper::GetCachedTTCFace(void* hFont,
   return pFace;
 }
 
-RetainPtr<CFX_Face> CFX_FontMapper::GetCachedFace(void* hFont,
-                                                  ByteString SubstName,
+RetainPtr<CFX_Face> CFX_FontMapper::GetCachedFace(void* font_handle,
+                                                  ByteString subst_name,
                                                   int weight,
-                                                  bool bItalic,
+                                                  bool is_italic,
                                                   size_t data_size) {
   RetainPtr<CFX_FontMgr::FontDesc> pFontDesc =
-      m_pFontMgr->GetCachedFontDesc(SubstName, weight, bItalic);
+      m_pFontMgr->GetCachedFontDesc(subst_name, weight, is_italic);
   if (!pFontDesc) {
     std::unique_ptr<uint8_t, FxFreeDeleter> pFontData(
         FX_Alloc(uint8_t, data_size));
-    m_pFontInfo->GetFontData(hFont, 0, {pFontData.get(), data_size});
-    pFontDesc = m_pFontMgr->AddCachedFontDesc(SubstName, weight, bItalic,
+    m_pFontInfo->GetFontData(font_handle, 0, {pFontData.get(), data_size});
+    pFontDesc = m_pFontMgr->AddCachedFontDesc(subst_name, weight, is_italic,
                                               std::move(pFontData), data_size);
   }
   RetainPtr<CFX_Face> pFace(pFontDesc->GetFace(0));

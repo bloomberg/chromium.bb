@@ -119,10 +119,10 @@ skvm::Color SkColor4Shader::onProgram(skvm::Builder* p,
 
 #if SK_SUPPORT_GPU
 
-#include "src/gpu/GrColorInfo.h"
-#include "src/gpu/GrColorSpaceXform.h"
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/SkGr.h"
+#include "src/gpu/ganesh/GrColorInfo.h"
+#include "src/gpu/ganesh/GrColorSpaceXform.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/SkGr.h"
 
 std::unique_ptr<GrFragmentProcessor> SkColorShader::asFragmentProcessor(
         const GrFPArgs& args) const {
@@ -143,14 +143,14 @@ std::unique_ptr<GrFragmentProcessor> SkColor4Shader::asFragmentProcessor(
 #ifdef SK_ENABLE_SKSL
 void SkColorShader::addToKey(const SkKeyContext& keyContext,
                              SkPaintParamsKeyBuilder* builder,
-                             SkPipelineData* pipelineData) const {
-    SolidColorShaderBlock::AddToKey(keyContext, builder, pipelineData,
+                             SkPipelineDataGatherer* gatherer) const {
+    SolidColorShaderBlock::AddToKey(keyContext, builder, gatherer,
                                     SkColor4f::FromColor(fColor).premul());
 }
 
 void SkColor4Shader::addToKey(const SkKeyContext& keyContext,
                               SkPaintParamsKeyBuilder* builder,
-                              SkPipelineData* pipelineData) const {
-    SolidColorShaderBlock::AddToKey(keyContext, builder, pipelineData, fColor.premul());
+                              SkPipelineDataGatherer* gatherer) const {
+    SolidColorShaderBlock::AddToKey(keyContext, builder, gatherer, fColor.premul());
 }
 #endif

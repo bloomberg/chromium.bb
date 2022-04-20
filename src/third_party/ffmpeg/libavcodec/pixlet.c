@@ -27,6 +27,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "internal.h"
 #include "thread.h"
@@ -405,7 +406,7 @@ static void filterfn(int16_t *dest, int16_t *tmp, unsigned size, int64_t scale)
                 (int64_t) low [i - 1] * -INT64_C(325392907)  +
                 (int64_t) high[i + 0] *  INT64_C(1518500249) +
                 (int64_t) high[i - 1] *  INT64_C(1518500249);
-        dest[i * 2] = av_clip_int16(((value >> 32) * scale) >> 32);
+        dest[i * 2] = av_clip_int16(((value >> 32) * (uint64_t)scale) >> 32);
     }
 
     for (i = 0; i < hsize; i++) {
@@ -416,7 +417,7 @@ static void filterfn(int16_t *dest, int16_t *tmp, unsigned size, int64_t scale)
                 (int64_t) high[i + 1] *  INT64_C(303700064)  +
                 (int64_t) high[i + 0] * -INT64_C(3644400640) +
                 (int64_t) high[i - 1] *  INT64_C(303700064);
-        dest[i * 2 + 1] = av_clip_int16(((value >> 32) * scale) >> 32);
+        dest[i * 2 + 1] = av_clip_int16(((value >> 32) * (uint64_t)scale) >> 32);
     }
 }
 
@@ -606,7 +607,6 @@ static int pixlet_decode_frame(AVCodecContext *avctx, void *data,
     PixletContext *ctx = avctx->priv_data;
     int i, w, h, width, height, ret, version;
     AVFrame *p = data;
-    ThreadFrame frame = { .f = data };
     uint32_t pktsize, depth;
 
     bytestream2_init(&ctx->gb, avpkt->data, avpkt->size);
@@ -673,36 +673,36 @@ static int pixlet_decode_frame(AVCodecContext *avctx, void *data,
     p->key_frame = 1;
     p->color_range = AVCOL_RANGE_JPEG;
 
-    ret = ff_thread_get_buffer(avctx, &frame, 0);
+    ret = ff_thread_get_buffer(avctx, p, 0);
     if (ret < 0)
         return ret;
 
     for (i = 0; i < 3; i++) {
-        ret = decode_plane(avctx, i, avpkt, frame.f);
+        ret = decode_plane(avctx, i, avpkt, p);
         if (ret < 0)
             return ret;
         if (avctx->flags & AV_CODEC_FLAG_GRAY)
             break;
     }
 
-    postprocess_luma(avctx, frame.f, ctx->w, ctx->h, ctx->depth);
-    postprocess_chroma(frame.f, ctx->w >> 1, ctx->h >> 1, ctx->depth);
+    postprocess_luma(avctx, p, ctx->w, ctx->h, ctx->depth);
+    postprocess_chroma(p, ctx->w >> 1, ctx->h >> 1, ctx->depth);
 
     *got_frame = 1;
 
     return pktsize;
 }
 
-const AVCodec ff_pixlet_decoder = {
-    .name             = "pixlet",
-    .long_name        = NULL_IF_CONFIG_SMALL("Apple Pixlet"),
-    .type             = AVMEDIA_TYPE_VIDEO,
-    .id               = AV_CODEC_ID_PIXLET,
+const FFCodec ff_pixlet_decoder = {
+    .p.name           = "pixlet",
+    .p.long_name      = NULL_IF_CONFIG_SMALL("Apple Pixlet"),
+    .p.type           = AVMEDIA_TYPE_VIDEO,
+    .p.id             = AV_CODEC_ID_PIXLET,
     .init             = pixlet_init,
     .close            = pixlet_close,
     .decode           = pixlet_decode_frame,
     .priv_data_size   = sizeof(PixletContext),
-    .capabilities     = AV_CODEC_CAP_DR1 |
+    .p.capabilities   = AV_CODEC_CAP_DR1 |
                         AV_CODEC_CAP_FRAME_THREADS,
     .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE |
                         FF_CODEC_CAP_INIT_CLEANUP,

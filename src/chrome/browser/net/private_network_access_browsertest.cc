@@ -674,10 +674,10 @@ IN_PROC_BROWSER_TEST_F(
       IsEmpty());
 }
 
-// This test verifies that private network requests that are blocked result in
-// a WebFeature being use-counted.
+// This test verifies that private network requests that are blocked are not
+// use-counted.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
-                       RecordsAddressSpaceFeatureForBlockedRequests) {
+                       DoesNotRecordAddressSpaceFeatureForBlockedRequests) {
   WebFeatureHistogramTester feature_histogram_tester;
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
 
@@ -745,10 +745,10 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
       IsEmpty());
 }
 
-// This test verifies that resources fetched from cache are not subject to
-// Private Network Access checks, and should not be counted towards metrics.
+// This test verifies that resources fetched from cache are subject to Private
+// Network Access checks. When the fetch is blocked, it is not use-counted.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
-                       CachedResourcesAllowed) {
+                       DoesNotRecordAddressSpaceFeatureForCachedBlocked) {
   auto server = NewServer();
 
   EXPECT_TRUE(
@@ -769,13 +769,46 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
 
   WebFeatureHistogramTester feature_histogram_tester;
 
-  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
-    fetch("/cachetime").then(response => response.ok)
+  EXPECT_EQ(false, content::EvalJs(web_contents(), R"(
+    fetch("/cachetime").then(response => true).catch(error => false)
   )"));
 
   EXPECT_THAT(
       feature_histogram_tester.GetNonZeroCounts(AllAddressSpaceFeatures()),
       IsEmpty());
+}
+
+// This test verifies that resources fetched from cache are subject to Private
+// Network Access checks. When the fetch is allowed, it is use-counted.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+                       RecordsAddressSpaceFeatureForCachedResource) {
+  auto server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), LocalSecureURL(*server)));
+
+  // Load the resource a first time, to prime the HTTP cache.
+  //
+  // This caching hinges on the fact that `PublicNonSecureURL(*server)` is
+  // same-origin with `LocalNonSecureURL(*server)` (the public one just uses
+  // the `Content-Security-Policy: treat-as-public-address` header). Therefore
+  // both documents share the same cache key.
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    fetch("/cachetime").then(response => response.ok)
+  )"));
+
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), PublicSecureURL(*server)));
+
+  WebFeatureHistogramTester feature_histogram_tester;
+
+  EXPECT_EQ(true, content::EvalJs(web_contents(), R"(
+    fetch("/cachetime").then(response => response.ok)
+  )"));
+
+  feature_histogram_tester.ExpectCounts(AddFeatureCounts(
+      AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+      {
+          {WebFeature::kAddressSpacePublicSecureContextEmbeddedLocal, 1},
+      }));
 }
 
 // This test verifies that a UseCounter is recorded when a document makes a
@@ -1118,6 +1151,101 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
       {
           {WebFeature::kPrivateNetworkAccessWithinWorker, 1},
       }));
+}
+
+// Test the experimental use counter for accesses to the 0.0.0.0 IP address
+// (and the corresponding `[::]` IPv6 address).
+//
+// In the Internet Protocol Version 4, the address 0.0.0.0 is a non-routable
+// meta-address used to designate an invalid, unknown or non-applicable target.
+// The real life behavior for 0.0.0.0 is different between operating systems.
+// On Windows, it is unreachable, while on MacOS and Linux, 0.0.0.0 means
+// all IP addresses on the local machine.
+//
+// In this case, 0.0.0.0 can be used to access localhost on MacOS and Linux
+// and bypass Private Network Access checks, so that we would like to forbid
+// fetches to 0.0.0.0. See more: https://crbug.com/1300021
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_FetchNullIpAddressForNavigation \
+  DISABLED_FetchNullIpAddressForNavigation
+#else
+#define MAYBE_FetchNullIpAddressForNavigation FetchNullIpAddressForNavigation
+#endif
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+                       MAYBE_FetchNullIpAddressForNavigation) {
+  WebFeatureHistogramTester feature_histogram_tester;
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(
+      web_contents(), server->GetURL("0.0.0.0", kNoFaviconPath)));
+
+  feature_histogram_tester.ExpectCounts(
+      AddFeatureCounts(AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+                       {
+                           {WebFeature::kPrivateNetworkAccessNullIpAddress, 1},
+                       }));
+}
+
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_FetchNullIpAddressFromDocument \
+  DISABLED_FetchNullIpAddressFromDocument
+#else
+#define MAYBE_FetchNullIpAddressFromDocument FetchNullIpAddressFromDocument
+#endif
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+                       MAYBE_FetchNullIpAddressFromDocument) {
+  WebFeatureHistogramTester feature_histogram_tester;
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(
+      content::NavigateToURL(web_contents(), server->GetURL(kNoFaviconPath)));
+
+  auto subresource_url =
+      server->GetURL("0.0.0.0", "/set-header?Access-Control-Allow-Origin: *");
+  constexpr char kSubresourceScript[] = R"(
+    new Promise(resolve => {
+      fetch($1).then(e => resolve(true));
+    }))";
+  EXPECT_EQ(true, content::EvalJs(
+                      web_contents(),
+                      content::JsReplace(kSubresourceScript, subresource_url)));
+
+  feature_histogram_tester.ExpectCounts(
+      AddFeatureCounts(AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+                       {
+                           {WebFeature::kPrivateNetworkAccessNullIpAddress, 1},
+                       }));
+}
+
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_FetchNullIpAddressFromWorker DISABLED_FetchNullIpAddressFromWorker
+#else
+#define MAYBE_FetchNullIpAddressFromWorker FetchNullIpAddressFromWorker
+#endif
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
+                       MAYBE_FetchNullIpAddressFromWorker) {
+  WebFeatureHistogramTester feature_histogram_tester;
+  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
+
+  EXPECT_TRUE(content::NavigateToURL(
+      web_contents(), server->GetURL("/workers/fetch_from_worker.html")));
+
+  constexpr char kWorkerScript[] = R"(
+    new Promise(resolve => {
+      fetch_from_worker($1);
+      resolve(true);
+    }))";
+  auto worker_url =
+      server->GetURL("0.0.0.0", "/set-header?Access-Control-Allow-Origin: *");
+  EXPECT_EQ(true,
+            content::EvalJs(web_contents(),
+                            content::JsReplace(kWorkerScript, worker_url)));
+
+  feature_histogram_tester.ExpectCounts(
+      AddFeatureCounts(AllZeroFeatureCounts(AllAddressSpaceFeatures()),
+                       {
+                           {WebFeature::kPrivateNetworkAccessNullIpAddress, 1},
+                       }));
 }
 
 // ====================

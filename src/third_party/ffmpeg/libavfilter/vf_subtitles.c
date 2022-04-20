@@ -30,6 +30,7 @@
 #include <ass/ass.h>
 
 #include "config.h"
+#include "config_components.h"
 #if CONFIG_SUBTITLES_FILTER
 # include "libavcodec/avcodec.h"
 # include "libavformat/avformat.h"
@@ -146,9 +147,13 @@ static int config_input(AVFilterLink *inlink)
     ff_draw_init(&ass->draw, inlink->format, ass->alpha ? FF_DRAW_PROCESS_ALPHA : 0);
 
     ass_set_frame_size  (ass->renderer, inlink->w, inlink->h);
-    if (ass->original_w && ass->original_h)
+    if (ass->original_w && ass->original_h) {
         ass_set_pixel_aspect(ass->renderer, (double)inlink->w / inlink->h /
                              ((double)ass->original_w / ass->original_h));
+        ass_set_storage_size(ass->renderer, ass->original_w, ass->original_h);
+    } else
+        ass_set_storage_size(ass->renderer, inlink->w, inlink->h);
+
     if (ass->shaping != -1)
         ass_set_shaper(ass->renderer, ass->shaping);
 
@@ -270,6 +275,13 @@ static const AVOption subtitles_options[] = {
 };
 
 static const char * const font_mimetypes[] = {
+    "font/ttf",
+    "font/otf",
+    "font/sfnt",
+    "font/woff",
+    "font/woff2",
+    "application/font-sfnt",
+    "application/font-woff",
     "application/x-truetype-font",
     "application/vnd.ms-opentype",
     "application/x-font-ttf",

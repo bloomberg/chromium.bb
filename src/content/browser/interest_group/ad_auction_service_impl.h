@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/containers/unique_ptr_adapters.h"
+#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/common/content_export.h"
@@ -45,6 +46,7 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
   void JoinInterestGroup(const blink::InterestGroup& group) override;
   void LeaveInterestGroup(const url::Origin& owner,
                           const std::string& name) override;
+  void LeaveInterestGroupForDocument() override;
   void UpdateAdInterestGroups() override;
   void RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
                     RunAdAuctionCallback callback) override;
@@ -83,6 +85,12 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
                                      interest_group_api_operation,
                                  const url::Origin& origin) const;
 
+  // Handles passed in report URLs. For each url of `report_urls`, call
+  // FetchReport() to send a request to the url, and add UMA histgrams.
+  void HandleReports(network::mojom::URLLoaderFactory* factory,
+                     const std::vector<GURL>& report_urls,
+                     const std::string& name);
+
   // Deletes `auction`.
   void OnAuctionComplete(
       RunAdAuctionCallback callback,
@@ -93,6 +101,7 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
       std::vector<GURL> report_urls,
       std::vector<GURL> debug_loss_report_urls,
       std::vector<GURL> debug_win_report_urls,
+      ReportingMetadata ad_beacon_map,
       std::vector<std::string> errors);
 
   InterestGroupManagerImpl& GetInterestGroupManager() const;

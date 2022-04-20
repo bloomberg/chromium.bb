@@ -91,6 +91,7 @@
 #include "api/data_channel_interface.h"
 #include "api/dtls_transport_interface.h"
 #include "api/fec_controller.h"
+#include "api/field_trials_view.h"
 #include "api/ice_transport_interface.h"
 #include "api/jsep.h"
 #include "api/media_stream_interface.h"
@@ -117,7 +118,6 @@
 #include "api/transport/enums.h"
 #include "api/transport/network_control.h"
 #include "api/transport/sctp_transport_factory_interface.h"
-#include "api/transport/webrtc_key_value_config.h"
 #include "api/turn_customizer.h"
 #include "api/video/video_bitrate_allocator_factory.h"
 #include "call/rtp_transport_controller_send_factory_interface.h"
@@ -428,8 +428,8 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     //////////////////////////////////////////////////////////////////////////
 
     // If set to true, don't gather IPv6 ICE candidates.
-    // TODO(deadbeef): Remove this? IPv6 support has long stopped being
-    // experimental
+    // TODO(https://crbug.com/1315576): Remove the ability to set it in Chromium
+    // and delete this flag.
     bool disable_ipv6 = false;
 
     // If set to true, don't gather IPv6 ICE candidates on Wi-Fi.
@@ -457,11 +457,14 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // Use new combined audio/video bandwidth estimation?
     absl::optional<bool> combined_audio_video_bwe;
 
+#if defined(WEBRTC_FUCHSIA)
+    // TODO(bugs.webrtc.org/11066): Remove entirely once Fuchsia does not use.
     // TODO(bugs.webrtc.org/9891) - Move to crypto_options
     // Can be used to disable DTLS-SRTP. This should never be done, but can be
     // useful for testing purposes, for example in setting up a loopback call
     // with a single PeerConnection.
     absl::optional<bool> enable_dtls_srtp;
+#endif
 
     /////////////////////////////////////////////////
     // The below fields are not part of the standard.
@@ -1435,7 +1438,7 @@ struct RTC_EXPORT PeerConnectionFactoryDependencies final {
   std::unique_ptr<rtc::NetworkMonitorFactory> network_monitor_factory;
   std::unique_ptr<NetEqFactory> neteq_factory;
   std::unique_ptr<SctpTransportFactoryInterface> sctp_factory;
-  std::unique_ptr<WebRtcKeyValueConfig> trials;
+  std::unique_ptr<FieldTrialsView> trials;
   std::unique_ptr<RtpTransportControllerSendFactoryInterface>
       transport_controller_send_factory;
   std::unique_ptr<Metronome> metronome;

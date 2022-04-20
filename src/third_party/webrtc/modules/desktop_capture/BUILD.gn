@@ -6,6 +6,7 @@
 # in the file PATENTS.  All contributing project authors may
 # be found in the AUTHORS file in the root of the source tree.
 
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//tools/generate_stubs/rules.gni")
@@ -38,6 +39,7 @@ rtc_library("primitives") {
   deps = [
     "../../api:scoped_refptr",
     "../../rtc_base:checks",
+    "../../rtc_base:refcount",
     "../../rtc_base/system:rtc_export",
     "//third_party/libyuv",
   ]
@@ -58,6 +60,8 @@ if (rtc_include_tests) {
       "../../api:function_view",
       "../../api:scoped_refptr",
       "../../rtc_base:checks",
+      "../../rtc_base:logging",
+      "../../rtc_base:timeutils",
     ]
     if (rtc_desktop_capture_supported) {
       deps += [
@@ -118,6 +122,9 @@ if (rtc_include_tests) {
       ":desktop_capture_mock",
       ":primitives",
       "../../rtc_base:checks",
+      "../../rtc_base:logging",
+      "../../rtc_base:macromagic",
+      "../../rtc_base:timeutils",
 
       # TODO(bugs.webrtc.org/9987): Remove this dep on rtc_base:rtc_base once
       # rtc_base:threading is fully defined.
@@ -176,6 +183,7 @@ if (rtc_include_tests) {
       ":primitives",
       "../../api:scoped_refptr",
       "../../rtc_base:checks",
+      "../../rtc_base:logging",
       "../../rtc_base:rtc_base_approved",
       "../../system_wrappers",
     ]
@@ -266,6 +274,13 @@ if (is_linux || is_chromeos) {
       if (!rtc_link_pipewire) {
         defines += [ "WEBRTC_DLOPEN_PIPEWIRE" ]
       }
+
+      # Chromecast build config overrides `WEBRTC_USE_PIPEWIRE` even when
+      # `rtc_use_pipewire` is not set, which causes pipewire_config to not be
+      # included in targets. More details in: webrtc:13898
+      if (is_linux && !is_chromecast) {
+        defines += [ "WEBRTC_USE_GIO" ]
+      }
     }
   }
 }
@@ -302,9 +317,12 @@ if (is_mac) {
       ":desktop_capture_generic",
       ":primitives",
       "../../api:scoped_refptr",
+      "../../api:sequence_checker",
       "../../rtc_base",
       "../../rtc_base:checks",
+      "../../rtc_base:logging",
       "../../rtc_base:rtc_base_approved",
+      "../../rtc_base:timeutils",
       "../../rtc_base/system:rtc_export",
       "../../sdk:helpers_objc",
     ]
@@ -369,7 +387,9 @@ rtc_library("desktop_capture_generic") {
     "window_finder.cc",
     "window_finder.h",
   ]
-
+  if (is_linux && !is_chromecast && rtc_use_pipewire) {
+    sources += [ "desktop_capture_metadata.h" ]
+  }
   if (is_mac) {
     sources += [
       "mac/desktop_configuration.h",
@@ -395,7 +415,6 @@ rtc_library("desktop_capture_generic") {
       ]
     }
   }
-
   if (rtc_use_x11_extensions || rtc_use_pipewire) {
     sources += [
       "mouse_cursor_monitor_linux.cc",
@@ -466,6 +485,11 @@ rtc_library("desktop_capture_generic") {
     "../../api:sequence_checker",
     "../../rtc_base",  # TODO(kjellander): Cleanup in bugs.webrtc.org/3806.
     "../../rtc_base:checks",
+    "../../rtc_base:logging",
+    "../../rtc_base:macromagic",
+    "../../rtc_base:refcount",
+    "../../rtc_base:stringutils",
+    "../../rtc_base:timeutils",
     "../../rtc_base/synchronization:mutex",
     "../../rtc_base/system:arch",
     "../../rtc_base/system:no_unique_address",
@@ -570,10 +594,16 @@ rtc_library("desktop_capture_generic") {
       "linux/wayland/mouse_cursor_monitor_pipewire.h",
       "linux/wayland/scoped_glib.cc",
       "linux/wayland/scoped_glib.h",
+      "linux/wayland/screen_capture_portal_interface.h",
       "linux/wayland/screencast_portal.cc",
       "linux/wayland/screencast_portal.h",
+      "linux/wayland/screencast_stream_utils.cc",
+      "linux/wayland/screencast_stream_utils.h",
       "linux/wayland/shared_screencast_stream.cc",
       "linux/wayland/shared_screencast_stream.h",
+      "linux/wayland/xdg_desktop_portal_utils.cc",
+      "linux/wayland/xdg_desktop_portal_utils.h",
+      "linux/wayland/xdg_session_details.h",
     ]
 
     configs += [

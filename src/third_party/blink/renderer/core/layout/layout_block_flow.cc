@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
@@ -2981,6 +2982,10 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
 
   if (ChildrenInline()) {
     if (child_is_block_level) {
+      if (GetDisplayLockContext() && IsShapingDeferred()) {
+        GetDisplayLockContext()->SetRequestedState(
+            EContentVisibility::kVisible);
+      }
       // Wrap the inline content in anonymous blocks, to allow for the new block
       // child to be inserted.
       MakeChildrenNonInline(before_child);
@@ -3012,8 +3017,6 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
     if (new_child->IsInline() && !new_child->IsLayoutNGOutsideListMarker()) {
       // No suitable existing anonymous box - create a new one.
       auto* new_block = To<LayoutBlockFlow>(CreateAnonymousBlock());
-      if (new_block->IsLayoutNGObject() && IsLayoutFlowThread())
-        new_block->SetIsAnonymousNGMulticolInlineWrapper();
       LayoutBox::AddChild(new_block, before_child);
       // Reparent adjacent floating or out-of-flow siblings to the new box.
       new_block->ReparentPrecedingFloatingOrOutOfFlowSiblings();
@@ -3278,20 +3281,14 @@ bool LayoutBlockFlow::MergeSiblingContiguousAnonymousBlock(
   // special code here (but there should be no need for it).
   DCHECK_EQ(sibling_that_may_be_deleted->ChildrenInline(), ChildrenInline());
 
-  // All children are removed from the flow thread automatically eventually (via
-  // WillBeRemovedFromTree()), but that's a bit too late in this case. We're
-  // about to merge and remove anonymous blocks, and there may be column
-  // spanners inside an inline in these anonymous blocks. If these move around
-  // without telling the flow thread right away, and we *then* remove the
-  // now-needless anonymous block, the flow thread will get confused and
-  // crash. So just remove it from the flow thread before moving stuff around.
-  if (UNLIKELY(sibling_that_may_be_deleted->IsInsideFlowThread()))
-    sibling_that_may_be_deleted->RemoveFromLayoutFlowThread();
-
-  // Take all the children out of the |next| block and put them in
-  // the |prev| block.
+  // Take all the children out of the |next| block and put them in the |prev|
+  // block. If there are paint layers involved, or if we're part of a flow
+  // thread, we need to notify the layout tree about the movement.
+  bool full_remove_insert = sibling_that_may_be_deleted->HasLayer() ||
+                            HasLayer() ||
+                            sibling_that_may_be_deleted->IsInsideFlowThread();
   sibling_that_may_be_deleted->MoveAllChildrenIncludingFloatsTo(
-      this, sibling_that_may_be_deleted->HasLayer() || HasLayer());
+      this, full_remove_insert);
   // Delete the now-empty block's lines and nuke it.
   sibling_that_may_be_deleted->DeleteLineBoxTree();
   sibling_that_may_be_deleted->Destroy();
@@ -4501,20 +4498,6 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   DCHECK_EQ(flow_thread->Parent(), this);
 
   flow_thread->Populate();
-
-  if (auto* child = DynamicTo<LayoutNGBlockFlow>(flow_thread->FirstChild())) {
-    // Attempt to identify the anonymous inline wrapper that may have been
-    // created, if all multicol children are inline. The child insertion
-    // machinery (invoked above, when adding |flow_thread|) may already have
-    // inserted an anonymous block for other reasons (when the flow thread
-    // temporarily becomes a sibling of the actual DOM children), in which case
-    // we haven't tagged this anonymous wrapper properly. Do it now. This is
-    // important for OOF descendants, as this anonymous wrapper may act as their
-    // containing block, but that will only happen if it is tagged correctly;
-    // see LayoutObject::FindNonAnonymousContainingBlock().
-    if (child->IsAnonymousBlock() && !child->NextSibling())
-      child->SetIsAnonymousNGMulticolInlineWrapper();
-  }
 
   LayoutBlockFlowRareData& rare_data = EnsureRareData();
   DCHECK(!rare_data.multi_column_flow_thread_);

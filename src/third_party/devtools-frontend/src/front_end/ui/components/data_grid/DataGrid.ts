@@ -88,11 +88,9 @@ export class DataGrid extends HTMLElement {
     void this.#alignScrollHandlers();
   });
 
-  // These have to be bound as they are put onto the global document, not onto
+  // Thie have to be bound as they are put onto the global document, not onto
   // this element, so LitHtml does not bind them for us.
-  #boundOnResizePointerUp = this.#onResizePointerUp.bind(this);
   #boundOnResizePointerMove = this.#onResizePointerMove.bind(this);
-  #boundOnResizePointerDown = this.#onResizePointerDown.bind(this);
 
   /**
    * Following guidance from
@@ -327,14 +325,15 @@ export class DataGrid extends HTMLElement {
       const emptyCellClasses = LitHtml.Directives.classMap({
         firstVisibleColumn: colIndex === 0,
       });
-      return LitHtml.html`<td tabindex="-1" class=${emptyCellClasses} data-filler-row-column-index=${colIndex}></td>`;
+      return LitHtml.html`<td aria-hidden="true" class=${emptyCellClasses} data-filler-row-column-index=${
+          colIndex}></td>`;
     });
     const emptyRowClasses = LitHtml.Directives.classMap({
       'filler-row': true,
       'padding-row': true,
       'empty-table': numberOfVisibleRows === 0,
     });
-    return LitHtml.html`<tr tabindex="-1" class=${emptyRowClasses}>${emptyCells}</tr>`;
+    return LitHtml.html`<tr aria-hidden="true" class=${emptyRowClasses}>${emptyCells}</tr>`;
   }
 
   #cleanUpAfterResizeColumnComplete(): void {
@@ -487,8 +486,8 @@ export class DataGrid extends HTMLElement {
     }
 
     return LitHtml.html`<span class="cell-resize-handle"
-     @pointerdown=${this.#boundOnResizePointerDown}
-     @pointerup=${this.#boundOnResizePointerUp}
+     @pointerdown=${this.#onResizePointerDown}
+     @pointerup=${this.#onResizePointerUp}
      data-column-index=${columnIndex}
     ></span>`;
   }
@@ -757,7 +756,7 @@ export class DataGrid extends HTMLElement {
           <tbody>
             <tr class="filler-row-top padding-row" style=${LitHtml.Directives.styleMap({
               height: `${topVisibleRow * ROW_HEIGHT_PIXELS}px`,
-            })}></tr>
+            })} aria-hidden="true"></tr>
             ${LitHtml.Directives.repeat(renderableRows, row => this.#rowIndexMap.get(row), (row): LitHtml.TemplateResult => {
               const rowIndex = this.#rowIndexMap.get(row);
               if (rowIndex === undefined) {
@@ -809,7 +808,7 @@ export class DataGrid extends HTMLElement {
             ${this.#renderEmptyFillerRow(renderableRows.length)}
             <tr class="filler-row-bottom padding-row" style=${LitHtml.Directives.styleMap({
               height: `${Math.max(0, nonHiddenRows.length - bottomVisibleRow) * ROW_HEIGHT_PIXELS}px`,
-            })}></tr>
+            })} aria-hidden="true"></tr>
           </tbody>
         </table>
       </div>

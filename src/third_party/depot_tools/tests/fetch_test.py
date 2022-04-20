@@ -7,7 +7,7 @@
 
 import contextlib
 import logging
-import optparse
+import argparse
 import os
 import subprocess
 import sys
@@ -31,38 +31,8 @@ import fetch
 class SystemExitMock(Exception):
   pass
 
-
-class UsageMock(Exception):
-  pass
-
-
 class TestUtilityFunctions(unittest.TestCase):
   """This test case is against utility functions"""
-
-  @mock.patch('sys.stdout', StringIO())
-  @mock.patch('os.listdir', return_value=['foo.py', 'bar'])
-  @mock.patch('sys.exit', side_effect=SystemExitMock)
-  def test_usage_with_message(self, exit_mock, listdir):
-    with self.assertRaises(SystemExitMock):
-      fetch.usage('foo')
-    exit_mock.assert_called_once_with(1)
-    listdir.assert_called_once()
-
-    stdout = sys.stdout.getvalue()
-    self.assertTrue(stdout.startswith('Error: foo'))
-
-    self._usage_static_message(stdout)
-
-  @mock.patch('sys.stdout', StringIO())
-  @mock.patch('os.listdir', return_value=['foo.py', 'bar'])
-  @mock.patch('sys.exit', side_effect=SystemExitMock)
-  def test_usage_with_no_message(self, exit_mock, listdir):
-    with self.assertRaises(SystemExitMock):
-      fetch.usage()
-    exit_mock.assert_called_once_with(0)
-    listdir.assert_called_once()
-
-    self._usage_static_message(sys.stdout.getvalue())
 
   def _usage_static_message(self, stdout):
     valid_fetch_config_text = 'Valid fetch configs:'
@@ -76,51 +46,27 @@ class TestUtilityFunctions(unittest.TestCase):
     self.assertIn('foo', split[1])
     self.assertNotIn('bar', split[1])
 
-  @mock.patch('fetch.usage', side_effect=UsageMock)
-  def test_handle_args_invalid_usage(self, usage):
-    with self.assertRaises(UsageMock):
-      fetch.handle_args(['filename', '-h'])
-    usage.assert_called_with()
-
-    with self.assertRaises(UsageMock):
-      fetch.handle_args(['filename'])
-    usage.assert_called_with('Must specify a config.')
-
-    with self.assertRaises(UsageMock):
-      fetch.handle_args(['filename', '--foo'])
-    usage.assert_called_with('Invalid option --foo.')
-
-    bad_arguments = [
-        '--not-valid-param', '-not-valid-param=1', '--not-valid-param=1=2'
-    ]
-
-    for bad_argument in bad_arguments:
-      with self.assertRaises(UsageMock):
-        fetch.handle_args(['filename', 'foo', bad_argument])
-      usage.assert_called_with('Got bad arguments [\'%s\']' % (bad_argument))
-
-  @mock.patch('optparse.Values', return_value=None)
-  def test_handle_args_valid_usage(self, values):
+  def test_handle_args_valid_usage(self):
     response = fetch.handle_args(['filename', 'foo'])
-    values.assert_called_with({
-        'dry_run': False,
-        'nohooks': False,
-        'no_history': False,
-        'force': False
-    })
-    self.assertEqual((None, 'foo', []), response)
+    self.assertEqual(argparse.Namespace(
+      dry_run=False,
+      nohooks=False,
+      no_history=False,
+      force=False,
+      config='foo',
+      props=[]), response)
 
     response = fetch.handle_args([
         'filename', '-n', '--dry-run', '--nohooks', '--no-history', '--force',
         'foo', '--some-param=1', '--bar=2'
     ])
-    values.assert_called_with({
-        'dry_run': True,
-        'nohooks': True,
-        'no_history': True,
-        'force': True
-    })
-    self.assertEqual((None, 'foo', ['--some-param=1', '--bar=2']), response)
+    self.assertEqual(argparse.Namespace(
+      dry_run=True,
+      nohooks=True,
+      no_history=True,
+      force=True,
+      config='foo',
+      props=['--some-param=1', '--bar=2']), response)
 
   @mock.patch('os.path.exists', return_value=False)
   @mock.patch('sys.stdout', StringIO())
@@ -166,7 +112,7 @@ class TestCheckout(unittest.TestCase):
     mock.patch('sys.stdout', StringIO()).start()
     self.addCleanup(mock.patch.stopall)
 
-    self.opts = optparse.Values({'dry_run': False})
+    self.opts = argparse.Namespace(dry_run=False)
     self.checkout = fetch.Checkout(self.opts, {}, '')
 
   @contextlib.contextmanager
@@ -246,7 +192,7 @@ class TestGClientCheckout(unittest.TestCase):
   def setUp(self):
     self.run = mock.patch('fetch.Checkout.run').start()
 
-    self.opts = optparse.Values({'dry_run': False})
+    self.opts = argparse.Namespace(dry_run=False)
     self.checkout = fetch.GclientCheckout(self.opts, {}, '/root')
 
     self.addCleanup(mock.patch.stopall)
@@ -276,11 +222,8 @@ class TestGclientGitCheckout(unittest.TestCase):
     self.run_gclient = mock.patch('fetch.GclientCheckout.run_gclient').start()
     self.run_git = mock.patch('fetch.GitCheckout.run_git').start()
 
-    self.opts = optparse.Values({
-        'dry_run': False,
-        'nohooks': True,
-        'no_history': False
-    })
+    self.opts = argparse.Namespace(
+      dry_run=False, nohooks=True, no_history=False)
     specs = {
         'solutions': [{
             'foo': 'bar',

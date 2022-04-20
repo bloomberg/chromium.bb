@@ -31,14 +31,14 @@ enum PageState {
 
 interface AccessCodeCastElement {
   $: {
-    backButton: CrButtonElement;
-    castButton: CrButtonElement;
-    codeInputView: HTMLDivElement;
-    codeInput: PasscodeInputElement;
-    dialog: CrDialogElement;
-    errorMessage: ErrorMessageElement;
-    qrInputView: HTMLDivElement;
-  }
+    backButton: CrButtonElement,
+    castButton: CrButtonElement,
+    codeInputView: HTMLDivElement,
+    codeInput: PasscodeInputElement,
+    dialog: CrDialogElement,
+    errorMessage: ErrorMessageElement,
+    qrInputView: HTMLDivElement,
+  };
 }
 
 const AccessCodeCastElementBase =
@@ -90,10 +90,6 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
       this.qrScannerEnabled = available;
     });
 
-    window.onblur = () => {
-      this.close();
-    };
-
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         this.handleEnterPressed();
@@ -143,8 +139,9 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
     this.set('canCast', false);
     this.$.errorMessage.setNoError();
 
-    const method = this.state === PageState.CODE_INPUT ? 
-      CastDiscoveryMethod.INPUT_ACCESS_CODE : CastDiscoveryMethod.QR_CODE;
+    const method = this.state === PageState.CODE_INPUT ?
+        CastDiscoveryMethod.INPUT_ACCESS_CODE :
+        CastDiscoveryMethod.QR_CODE;
 
     const addResult = await this.addSink(method).catch(() => {
       return AddSinkResultCode.UNKNOWN_ERROR;
@@ -153,6 +150,7 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
     if (addResult !== AddSinkResultCode.OK) {
       this.$.errorMessage.setAddSinkError(addResult);
       this.set('canCast', true);
+      this.$.codeInput.focusInput();
       return;
     }
 
@@ -163,6 +161,7 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
     if (castResult !== RouteRequestResultCode.OK) {
       this.$.errorMessage.setCastError(castResult);
       this.set('canCast', true);
+      this.$.codeInput.focusInput();
       return;
     }
 
@@ -176,6 +175,16 @@ class AccessCodeCastElement extends AccessCodeCastElementBase {
   private castStateChange() {
     this.submitDisabled = !this.canCast ||
         this.accessCode.length !== AccessCodeCastElement.ACCESS_CODE_LENGTH;
+    if (this.$.errorMessage.getMessageCode() !== 0 &&
+        this.accessCode.length <=
+            AccessCodeCastElement.ACCESS_CODE_LENGTH - 1) {
+      // Hide error message once user starts editing the access code entered
+      // previously. Checking for access code's length
+      // <= (AccessCodeCastElement.ACCESS_CODE_LENGTH - 1 ) because it's
+      // possible to for the user to deletes more than one characters at a
+      // time.
+      this.$.errorMessage.setNoError();
+    }
   }
 
   private setState(state: PageState) {

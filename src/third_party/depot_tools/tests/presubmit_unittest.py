@@ -628,7 +628,7 @@ class PresubmitUnittest(PresubmitTestsBase):
          '    pass\n'
          '  with input_api.CreateTemporaryFile():\n'
          '    pass\n'
-         '  return [output_api.PresubmitResult(None, f)\n'
+         '  return [output_api.PresubmitResult(\'\', f)\n'
          '          for f in input_api._named_temporary_files]\n'),
         fake_presubmit)
     self.assertEqual(['baz', 'quux'], [r._items for r in result])
@@ -1007,7 +1007,7 @@ def CheckChangeOnCommit(input_api, output_api):
   def testParseChange_Files(self):
     presubmit._parse_files.return_value=[('M', 'random_file.txt')]
     scm.determine_scm.return_value = None
-    options = mock.Mock(all_files=False)
+    options = mock.Mock(all_files=False, source_controlled_only = False)
 
     change = presubmit._parse_change(None, options)
     self.assertEqual(presubmit.Change.return_value, change)
@@ -1049,7 +1049,7 @@ def CheckChangeOnCommit(input_api, output_api):
   def testParseChange_FilesAndGit(self):
     scm.determine_scm.return_value = 'git'
     presubmit._parse_files.return_value = [('M', 'random_file.txt')]
-    options = mock.Mock(all_files=False)
+    options = mock.Mock(all_files=False, source_controlled_only = False)
 
     change = presubmit._parse_change(None, options)
     self.assertEqual(presubmit.GitChange.return_value, change)

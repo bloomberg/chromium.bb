@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
+#include "api/field_trials_view.h"
 #include "api/sequence_checker.h"
 #include "api/video/encoded_frame.h"
 #include "modules/video_coding/include/video_coding_defines.h"
@@ -47,7 +48,8 @@ class FrameBuffer {
  public:
   FrameBuffer(Clock* clock,
               VCMTiming* timing,
-              VCMReceiveStatisticsCallback* stats_callback);
+              VCMReceiveStatisticsCallback* stats_callback,
+              const FieldTrialsView& field_trials);
 
   FrameBuffer() = delete;
   FrameBuffer(const FrameBuffer&) = delete;

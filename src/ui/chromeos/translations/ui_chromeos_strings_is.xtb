@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Afritar <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">Fjarlægja undantekningu fyrir <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Google kynning</translation>
+<translation id="4277536868133419688">Kveikt er á síunni <ph name="FILTER_NAME" />.</translation>
 <translation id="4290535918735525311">Einni möppu deilt með Linux</translation>
 <translation id="4299729908419173967">Brasilískt</translation>
 <translation id="4302605047395093221">Allir sem nota þetta tæki þurfa að slá inn PIN-númerið til að tengjast þessu farsímakerfi</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">Sannvottunarvottorði hafnað fjartengt</translation>
 <translation id="4394214039309501350">Ytri tengill</translation>
 <translation id="4401287888955153199">Draga allt út</translation>
+<translation id="4410695710508688828">Útdráttaraðgerð mistókst. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Búðu til flýtileið fyrir skrárnar þínar</translation>
 <translation id="4425149324548788773">Drifið mitt</translation>
 <translation id="4439427728133035643">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, tengjast</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">Meira...</translation>
 <translation id="4579744207439506346">Bætti <ph name="ENTRY_NAME" /> við val.</translation>
 <translation id="4594543368593301662">Sýnir niðurstöður fyrir <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Sían var endurstillt.</translation>
 <translation id="4603392156942865207">Afritar <ph name="FILE_NAME" /> í <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Flytjandi</translation>
 <translation id="4642769377300286600">Setur upp snjallprófíl, netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -528,6 +531,7 @@
 <translation id="5469868506864199649">Ítalskt</translation>
 <translation id="5473333559083690127">Sláðu nýtt PIN-númer inn aftur</translation>
 <translation id="5489067830765222292">Lettneska</translation>
+<translation id="5489965683297092283">Slökkt er á síunni <ph name="FILTER_NAME" />.</translation>
 <translation id="5494920125229734069">Velja allt</translation>
 <translation id="5500122897333236901">Íslenskt</translation>
 <translation id="5508696409934741614">Punktar</translation>
@@ -594,6 +598,7 @@
 <translation id="6082256976217156453">LZMA-þjöppuð geymsla</translation>
 <translation id="6096979789310008754">Leitartexti hreinsaður, sýnir allar skrár og möppur.</translation>
 <translation id="610101264611565198">Færir <ph name="FILE_NAME" /> í <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">CSV-texti</translation>
 <translation id="6129953537138746214">Bil</translation>
 <translation id="6133173853026656527">Færir <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">Japanska með bandarísku lyklaborði</translation>
@@ -844,6 +849,7 @@
 <translation id="8208580316430297579">Listaverk</translation>
 <translation id="8223479393428528563">Til að vista þessar skrár fyrir notkun án nettengingar skaltu tengjast netinu aftur, hægrismella á skrárnar og velja kostinn <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Hætta</translation>
+<translation id="8250920743982581267">Skjöl</translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8261561378965667560">Kínverska Array</translation>
 <translation id="8269755669432358899">Draga saman svæði með ábendingum fyrir skrár</translation>

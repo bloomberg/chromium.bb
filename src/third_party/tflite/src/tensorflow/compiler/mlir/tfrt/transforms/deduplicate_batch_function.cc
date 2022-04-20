@@ -39,16 +39,16 @@ namespace tfrt_compiler {
 namespace {
 
 using ::mlir::ArrayRef;
-using ::mlir::FuncOp;
 using ::mlir::ModuleOp;
 using ::mlir::Operation;
 using ::mlir::SymbolTable;
 using ::mlir::SymbolTableCollection;
 using ::mlir::SymbolUserMap;
+using ::mlir::func::FuncOp;
 
 // This only includes some preliminary checks as this is a short term solution.
 bool AreEquivalent(FuncOp& lhs, FuncOp& rhs) {
-  if (lhs.getType() != rhs.getType()) return false;
+  if (lhs.getFunctionType() != rhs.getFunctionType()) return false;
 
   for (auto arg_pair : llvm::zip(lhs.getArguments(), rhs.getArguments())) {
     auto& lhs_arg = std::get<0>(arg_pair);
@@ -90,6 +90,11 @@ bool AreEquivalent(FuncOp& lhs, FuncOp& rhs) {
 class DeduplicateFunctionsInovkedByBatchFunction
     : public mlir::PassWrapper<DeduplicateFunctionsInovkedByBatchFunction,
                                mlir::OperationPass<mlir::ModuleOp>> {
+ public:
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(
+      DeduplicateFunctionsInovkedByBatchFunction)
+
+ private:
   llvm::StringRef getArgument() const final {
     return "tfrt-deduplicate-functions-invoked-by-batch-function";
   }

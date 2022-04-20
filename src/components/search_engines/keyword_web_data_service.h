@@ -14,7 +14,6 @@
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/template_url_id.h"
 #include "components/webdata/common/web_data_service_base.h"
-#include "components/webdata/common/web_database.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -91,6 +90,9 @@ class KeywordWebDataService : public WebDataServiceBase {
 
   // Sets the version of the builtin keywords.
   void SetBuiltinKeywordVersion(int version);
+
+  // Sets the version of the starter pack keywords.
+  void SetStarterPackKeywordVersion(int version);
 
   // WebDataServiceBase:
   void ShutdownOnUISequence() override;

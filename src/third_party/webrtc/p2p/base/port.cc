@@ -19,6 +19,7 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "p2p/base/connection.h"
 #include "p2p/base/port_allocator.h"
 #include "rtc_base/checks.h"
@@ -107,9 +108,10 @@ std::string Port::ComputeFoundation(const std::string& type,
 Port::Port(rtc::Thread* thread,
            const std::string& type,
            rtc::PacketSocketFactory* factory,
-           rtc::Network* network,
+           const rtc::Network* network,
            const std::string& username_fragment,
-           const std::string& password)
+           const std::string& password,
+           const webrtc::FieldTrialsView* field_trials)
     : thread_(thread),
       factory_(factory),
       type_(type),
@@ -126,7 +128,8 @@ Port::Port(rtc::Thread* thread,
       ice_role_(ICEROLE_UNKNOWN),
       tiebreaker_(0),
       shared_socket_(true),
-      weak_factory_(this) {
+      weak_factory_(this),
+      field_trials_(field_trials) {
   RTC_DCHECK(factory_ != NULL);
   Construct();
 }
@@ -134,11 +137,12 @@ Port::Port(rtc::Thread* thread,
 Port::Port(rtc::Thread* thread,
            const std::string& type,
            rtc::PacketSocketFactory* factory,
-           rtc::Network* network,
+           const rtc::Network* network,
            uint16_t min_port,
            uint16_t max_port,
            const std::string& username_fragment,
-           const std::string& password)
+           const std::string& password,
+           const webrtc::FieldTrialsView* field_trials)
     : thread_(thread),
       factory_(factory),
       type_(type),
@@ -155,7 +159,8 @@ Port::Port(rtc::Thread* thread,
       ice_role_(ICEROLE_UNKNOWN),
       tiebreaker_(0),
       shared_socket_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      field_trials_(field_trials) {
   RTC_DCHECK(factory_ != NULL);
   Construct();
 }
@@ -170,7 +175,7 @@ void Port::Construct() {
     password_ = rtc::CreateRandomString(ICE_PWD_LENGTH);
   }
   network_->SignalTypeChanged.connect(this, &Port::OnNetworkTypeChanged);
-  network_cost_ = network_->GetCost();
+  network_cost_ = network_->GetCost(*field_trials_);
 
   thread_->PostDelayed(RTC_FROM_HERE, timeout_delay_, this,
                        MSG_DESTROY_IF_DEAD);
@@ -202,7 +207,7 @@ Port::~Port() {
 const std::string& Port::Type() const {
   return type_;
 }
-rtc::Network* Port::Network() const {
+const rtc::Network* Port::Network() const {
   return network_;
 }
 
@@ -301,7 +306,7 @@ bool Port::MaybeObfuscateAddress(Candidate* c,
   auto copy = *c;
   auto weak_ptr = weak_factory_.GetWeakPtr();
   auto callback = [weak_ptr, copy, is_final](const rtc::IPAddress& addr,
-                                             const std::string& name) mutable {
+                                             absl::string_view name) mutable {
     RTC_DCHECK(copy.address().ipaddr() == addr);
     rtc::SocketAddress hostname_address(name, copy.address().port());
     // In Port and Connection, we need the IP address information to
@@ -352,7 +357,6 @@ void Port::AddOrReplaceConnection(Connection* conn) {
     ret.first->second = conn;
   }
   conn->SignalDestroyed.connect(this, &Port::OnConnectionDestroyed);
-  SignalConnectionCreated(this, conn);
 }
 
 void Port::OnReadPacket(const char* data,
@@ -734,21 +738,21 @@ bool Port::CanHandleIncomingPacketsFrom(const rtc::SocketAddress&) const {
   return false;
 }
 
-void Port::SendBindingErrorResponse(StunMessage* request,
+void Port::SendBindingErrorResponse(StunMessage* message,
                                     const rtc::SocketAddress& addr,
                                     int error_code,
                                     const std::string& reason) {
-  RTC_DCHECK(request->type() == STUN_BINDING_REQUEST ||
-             request->type() == GOOG_PING_REQUEST);
+  RTC_DCHECK(message->type() == STUN_BINDING_REQUEST ||
+             message->type() == GOOG_PING_REQUEST);
 
   // Fill in the response message.
   StunMessage response;
-  if (request->type() == STUN_BINDING_REQUEST) {
+  if (message->type() == STUN_BINDING_REQUEST) {
     response.SetType(STUN_BINDING_ERROR_RESPONSE);
   } else {
     response.SetType(GOOG_PING_ERROR_RESPONSE);
   }
-  response.SetTransactionID(request->transaction_id());
+  response.SetTransactionID(message->transaction_id());
 
   // When doing GICE, we need to write out the error code incorrectly to
   // maintain backwards compatiblility.
@@ -761,15 +765,15 @@ void Port::SendBindingErrorResponse(StunMessage* request,
   // because we don't have enough information to determine the shared secret.
   if (error_code != STUN_ERROR_BAD_REQUEST &&
       error_code != STUN_ERROR_UNAUTHORIZED &&
-      request->type() != GOOG_PING_REQUEST) {
-    if (request->type() == STUN_BINDING_REQUEST) {
+      message->type() != GOOG_PING_REQUEST) {
+    if (message->type() == STUN_BINDING_REQUEST) {
       response.AddMessageIntegrity(password_);
     } else {
       response.AddMessageIntegrity32(password_);
     }
   }
 
-  if (request->type() == STUN_BINDING_REQUEST) {
+  if (message->type() == STUN_BINDING_REQUEST) {
     response.AddFingerprint();
   }
 
@@ -787,15 +791,15 @@ void Port::SendBindingErrorResponse(StunMessage* request,
 }
 
 void Port::SendUnknownAttributesErrorResponse(
-    StunMessage* request,
+    StunMessage* message,
     const rtc::SocketAddress& addr,
     const std::vector<uint16_t>& unknown_types) {
-  RTC_DCHECK(request->type() == STUN_BINDING_REQUEST);
+  RTC_DCHECK(message->type() == STUN_BINDING_REQUEST);
 
   // Fill in the response message.
   StunMessage response;
   response.SetType(STUN_BINDING_ERROR_RESPONSE);
-  response.SetTransactionID(request->transaction_id());
+  response.SetTransactionID(message->transaction_id());
 
   auto error_attr = StunAttribute::CreateErrorCode();
   error_attr->SetCode(STUN_ERROR_UNKNOWN_ATTRIBUTE);
@@ -879,7 +883,7 @@ std::string Port::ToString() const {
 
 // TODO(honghaiz): Make the network cost configurable from user setting.
 void Port::UpdateNetworkCost() {
-  uint16_t new_cost = network_->GetCost();
+  uint16_t new_cost = network_->GetCost(*field_trials_);
   if (network_cost_ == new_cost) {
     return;
   }

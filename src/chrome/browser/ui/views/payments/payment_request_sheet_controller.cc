@@ -180,7 +180,7 @@ class BorderedScrollView : public views::ScrollView {
 
   BorderedScrollView() {
     SetBackground(
-        views::CreateThemedSolidBackground(this, ui::kColorDialogBackground));
+        views::CreateThemedSolidBackground(ui::kColorDialogBackground));
   }
 
   bool GetTopBorder() const { return GetVisibleRect().y() > 0; }
@@ -199,7 +199,7 @@ class BorderedScrollView : public views::ScrollView {
     SetBorder(views::CreateBorderPainter(
         std::make_unique<BorderedScrollViewBorderPainter>(
             GetColorProvider()->GetColor(ui::kColorSeparator), this),
-        gfx::Insets(1, 0)));
+        gfx::Insets::VH(1, 0)));
   }
 };
 
@@ -246,7 +246,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
                   sheet_view->SetID(static_cast<int>(sheet_id));
 
                 sheet_view->SetBackground(views::CreateThemedSolidBackground(
-                    sheet_view, ui::kColorDialogBackground));
+                    ui::kColorDialogBackground));
 
                 // Paint the sheets to layers, otherwise the MD buttons (which
                 // do paint to a layer) won't do proper clipping.
@@ -304,7 +304,6 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
                                             ->SetFillsBoundsOpaquely(true);
                                         content_view->SetBackground(
                                             views::CreateThemedSolidBackground(
-                                                content_view,
                                                 ui::kColorDialogBackground));
                                       })))))
           .Build();
@@ -441,8 +440,7 @@ PaymentRequestSheetController::CreateHeaderContentView(
 
 std::unique_ptr<views::Background>
 PaymentRequestSheetController::GetHeaderBackground(views::View* header_view) {
-  return views::CreateThemedSolidBackground(header_view,
-                                            ui::kColorDialogBackground);
+  return views::CreateThemedSolidBackground(ui::kColorDialogBackground);
 }
 
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
@@ -452,7 +450,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
 
   auto container =
       views::Builder<views::TableLayoutView>()
-          .SetBorder(views::CreateEmptyBorder(gfx::Insets(16)))
+          .SetBorder(views::CreateEmptyBorder(16))
           .AddColumn(views::LayoutAlignment::kStart,
                      views::LayoutAlignment::kCenter,
                      views::TableLayout::kFixedSize,

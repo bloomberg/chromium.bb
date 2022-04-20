@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <cstdint>
 #include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -112,22 +113,23 @@ INSTANTIATE_TEST_SUITE_P(MSA, AV1SubtractBlockTest,
 typedef void (*HBDSubtractFunc)(int rows, int cols, int16_t *diff_ptr,
                                 ptrdiff_t diff_stride, const uint8_t *src_ptr,
                                 ptrdiff_t src_stride, const uint8_t *pred_ptr,
-                                ptrdiff_t pred_stride, int bd);
+                                ptrdiff_t pred_stride);
 
 using std::get;
 using std::make_tuple;
 using std::tuple;
 
-// <width, height, bit_dpeth, subtract>
-typedef tuple<int, int, int, HBDSubtractFunc> Params;
+// <BLOCK_SIZE, bit_depth, optimized subtract func, reference subtract func>
+typedef tuple<BLOCK_SIZE, int, HBDSubtractFunc, HBDSubtractFunc> Params;
 
 class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
  public:
   virtual void SetUp() {
-    block_width_ = GET_PARAM(0);
-    block_height_ = GET_PARAM(1);
-    bit_depth_ = static_cast<aom_bit_depth_t>(GET_PARAM(2));
-    func_ = GET_PARAM(3);
+    block_width_ = block_size_wide[GET_PARAM(0)];
+    block_height_ = block_size_high[GET_PARAM(0)];
+    bit_depth_ = static_cast<aom_bit_depth_t>(GET_PARAM(1));
+    func_ = GET_PARAM(2);
+    ref_func_ = GET_PARAM(3);
 
     rnd_.Reset(ACMRandom::DeterministicSeed());
 
@@ -160,6 +162,7 @@ class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
   int block_width_;
   aom_bit_depth_t bit_depth_;
   HBDSubtractFunc func_;
+  HBDSubtractFunc ref_func_;
   uint8_t *src_;
   uint8_t *pred_;
   int16_t *diff_;
@@ -180,7 +183,7 @@ void AV1HBDSubtractBlockTest::CheckResult() {
     }
 
     func_(block_height_, block_width_, diff_, block_width_, src_, block_width_,
-          pred_, block_width_, bit_depth_);
+          pred_, block_width_);
 
     for (int r = 0; r < block_height_; ++r) {
       for (int c = 0; c < block_width_; ++c) {
@@ -202,57 +205,78 @@ void AV1HBDSubtractBlockTest::RunForSpeed() {
   const int mask = (1 << bit_depth_) - 1;
   int i, j;
 
+  if (ref_func_ == func_) GTEST_SKIP();
+
   for (j = 0; j < max_block_size; ++j) {
     CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask;
     CONVERT_TO_SHORTPTR(pred_)[j] = rnd_.Rand16() & mask;
   }
 
+  aom_usec_timer ref_timer;
+  aom_usec_timer_start(&ref_timer);
+  for (i = 0; i < test_num; ++i) {
+    ref_func_(block_height_, block_width_, diff_, block_width_, src_,
+              block_width_, pred_, block_width_);
+  }
+  aom_usec_timer_mark(&ref_timer);
+  const int64_t ref_elapsed_time = aom_usec_timer_elapsed(&ref_timer);
+
+  for (j = 0; j < max_block_size; ++j) {
+    CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask;
+    CONVERT_TO_SHORTPTR(pred_)[j] = rnd_.Rand16() & mask;
+  }
+
+  aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
   for (i = 0; i < test_num; ++i) {
     func_(block_height_, block_width_, diff_, block_width_, src_, block_width_,
-          pred_, block_width_, bit_depth_);
+          pred_, block_width_);
   }
+  aom_usec_timer_mark(&timer);
+  const int64_t elapsed_time = aom_usec_timer_elapsed(&timer);
+
+  printf(
+      "[%dx%d]: "
+      "ref_time=%6" PRId64 " \t simd_time=%6" PRId64
+      " \t "
+      "gain=%f \n",
+      block_width_, block_height_, ref_elapsed_time, elapsed_time,
+      static_cast<double>(ref_elapsed_time) /
+          static_cast<double>(elapsed_time));
 }
 
 TEST_P(AV1HBDSubtractBlockTest, DISABLED_Speed) { RunForSpeed(); }
 
-#if HAVE_SSE2
-const Params kAV1HBDSubtractBlock_sse2[] = {
-  make_tuple(4, 4, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(4, 4, 12, &aom_highbd_subtract_block_c),
-  make_tuple(4, 8, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(4, 8, 12, &aom_highbd_subtract_block_c),
-  make_tuple(8, 4, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(8, 4, 12, &aom_highbd_subtract_block_c),
-  make_tuple(8, 8, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(8, 8, 12, &aom_highbd_subtract_block_c),
-  make_tuple(8, 16, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(8, 16, 12, &aom_highbd_subtract_block_c),
-  make_tuple(16, 8, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(16, 8, 12, &aom_highbd_subtract_block_c),
-  make_tuple(16, 16, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(16, 16, 12, &aom_highbd_subtract_block_c),
-  make_tuple(16, 32, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(16, 32, 12, &aom_highbd_subtract_block_c),
-  make_tuple(32, 16, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(32, 16, 12, &aom_highbd_subtract_block_c),
-  make_tuple(32, 32, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(32, 32, 12, &aom_highbd_subtract_block_c),
-  make_tuple(32, 64, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(32, 64, 12, &aom_highbd_subtract_block_c),
-  make_tuple(64, 32, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(64, 32, 12, &aom_highbd_subtract_block_c),
-  make_tuple(64, 64, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(64, 64, 12, &aom_highbd_subtract_block_c),
-  make_tuple(64, 128, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(64, 128, 12, &aom_highbd_subtract_block_c),
-  make_tuple(128, 64, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(128, 64, 12, &aom_highbd_subtract_block_c),
-  make_tuple(128, 128, 12, &aom_highbd_subtract_block_sse2),
-  make_tuple(128, 128, 12, &aom_highbd_subtract_block_c)
-};
+const BLOCK_SIZE kValidBlockSize[] = { BLOCK_4X4,    BLOCK_4X8,    BLOCK_8X4,
+                                       BLOCK_8X8,    BLOCK_8X16,   BLOCK_16X8,
+                                       BLOCK_16X16,  BLOCK_16X32,  BLOCK_32X16,
+                                       BLOCK_32X32,  BLOCK_32X64,  BLOCK_64X32,
+                                       BLOCK_64X64,  BLOCK_64X128, BLOCK_128X64,
+                                       BLOCK_128X128 };
 
-INSTANTIATE_TEST_SUITE_P(SSE2, AV1HBDSubtractBlockTest,
-                         ::testing::ValuesIn(kAV1HBDSubtractBlock_sse2));
+INSTANTIATE_TEST_SUITE_P(
+    C, AV1HBDSubtractBlockTest,
+    ::testing::Combine(::testing::ValuesIn(kValidBlockSize),
+                       ::testing::Values(12),
+                       ::testing::Values(&aom_highbd_subtract_block_c),
+                       ::testing::Values(&aom_highbd_subtract_block_c)));
+
+#if HAVE_SSE2
+INSTANTIATE_TEST_SUITE_P(
+    SSE2, AV1HBDSubtractBlockTest,
+    ::testing::Combine(::testing::ValuesIn(kValidBlockSize),
+                       ::testing::Values(12),
+                       ::testing::Values(&aom_highbd_subtract_block_sse2),
+                       ::testing::Values(&aom_highbd_subtract_block_c)));
 #endif  // HAVE_SSE2
+
+#if HAVE_NEON
+INSTANTIATE_TEST_SUITE_P(
+    NEON, AV1HBDSubtractBlockTest,
+    ::testing::Combine(::testing::ValuesIn(kValidBlockSize),
+                       ::testing::Values(12),
+                       ::testing::Values(&aom_highbd_subtract_block_neon),
+                       ::testing::Values(&aom_highbd_subtract_block_c)));
+#endif
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace

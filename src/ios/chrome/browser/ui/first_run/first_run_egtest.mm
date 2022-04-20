@@ -35,6 +35,7 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service_constants.h"
 #include "ios/third_party/earl_grey2/src/CommonLib/Matcher/GREYLayoutConstraint.h"  // nogncheck
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -61,14 +62,14 @@ void SetupVariationForConfig(AppLaunchConfiguration& config,
                              std::string stringsSet) {
   config.additional_args.push_back(
       "--enable-features=" + std::string(kEnableFREUIModuleIOS.name) + "<" +
-      std::string(kFRESecondUITrialName));
+      std::string(kFREThirdUITrialName));
 
   config.additional_args.push_back(
-      "--force-fieldtrials=" + std::string(kFRESecondUITrialName) + "/" +
+      "--force-fieldtrials=" + std::string(kFREThirdUITrialName) + "/" +
       std::string(kIdentitySwitcherInTopAndOldStringsSetGroup));
 
   config.additional_args.push_back(
-      "--force-fieldtrial-params=" + std::string(kFRESecondUITrialName) + "." +
+      "--force-fieldtrial-params=" + std::string(kFREThirdUITrialName) + "." +
       std::string(kIdentitySwitcherInTopAndOldStringsSetGroup) + ":" +
       std::string(kFREUIIdentitySwitcherPositionParam) + "/" + position + "/" +
       std::string(kFREUIStringsSetParam) + "/" + stringsSet);
@@ -915,11 +916,11 @@ GREYLayoutConstraint* BelowConstraint() {
   // automatic sign out.
   config.additional_args.push_back(std::string("-") +
                                    test_switches::kSignInAtStartup);
+  config.additional_args.push_back(
+      std::string("-") + ios::kAddFakeIdentitiesArg + "=" +
+      [FakeChromeIdentity encodeIdentitiesToBase64:@[ fakeIdentity ]]);
 
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
-
-  // Add account for the identity switcher to be shown.
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   [self verifyWelcomeScreenIsDisplayed];
   [self scrollToElementAndAssertVisibility:GetAcceptButton()];

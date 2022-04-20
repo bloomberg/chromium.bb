@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../../osp/build/config/services.gni")
-
 source_set("impl") {
   sources = [
     "dns_sd_publisher_client.cc",
@@ -39,34 +37,4 @@ source_set("impl") {
     "../../util",
     "quic",
   ]
-}
-
-if (use_chromium_quic) {
-  source_set("chromium_quic_integration") {
-    sources = [
-      "protocol_connection_client_factory.cc",
-      "protocol_connection_server_factory.cc",
-      "quic/quic_connection_factory_impl.cc",
-      "quic/quic_connection_factory_impl.h",
-      "quic/quic_connection_impl.cc",
-      "quic/quic_connection_impl.h",
-    ]
-
-    public_configs = [ "../../third_party/chromium_quic:chromium_quic_config" ]
-
-    deps = [
-      "../../platform",
-      "../../third_party/abseil",
-      "../../third_party/chromium_quic",
-      "../../third_party/chromium_quic:core",
-      "../../third_party/chromium_quic:platform",
-      "../../third_party/chromium_quic:quartc",
-      "../../third_party/chromium_quic/build/base",
-      "../../third_party/chromium_quic/src/net",
-      "../../util",
-      "../msgs",
-      "../public",
-      "quic",
-    ]
-  }
 }

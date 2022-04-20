@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -162,55 +161,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaTextInputsForSection(
         ConvertUTF8ToJavaString(env, input.client_memory_key()));
   }
   return jinput_list;
-}
-
-// Creates the java equivalent to |sections|.
-base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
-    JNIEnv* env,
-    const std::vector<UserFormSectionProto>& sections) {
-  auto jsection_list =
-      Java_AssistantCollectUserDataModel_createAdditionalSectionsList(env);
-  for (const auto& section : sections) {
-    switch (section.section_case()) {
-      case UserFormSectionProto::kStaticTextSection:
-        Java_AssistantCollectUserDataModel_appendStaticTextSection(
-            env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
-            ConvertUTF8ToJavaString(env, section.static_text_section().text()));
-        break;
-      case UserFormSectionProto::kTextInputSection: {
-        Java_AssistantCollectUserDataModel_appendTextInputSection(
-            env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
-            CreateJavaTextInputsForSection(env, section.text_input_section()));
-        break;
-      }
-      case UserFormSectionProto::kPopupListSection: {
-        std::vector<std::string> items;
-        std::copy(section.popup_list_section().item_names().begin(),
-                  section.popup_list_section().item_names().end(),
-                  std::back_inserter(items));
-        std::vector<int> initial_selections;
-        std::copy(section.popup_list_section().initial_selection().begin(),
-                  section.popup_list_section().initial_selection().end(),
-                  std::back_inserter(initial_selections));
-        Java_AssistantCollectUserDataModel_appendPopupListSection(
-            env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
-            ConvertUTF8ToJavaString(
-                env, section.popup_list_section().additional_value_key()),
-            base::android::ToJavaArrayOfStrings(env, items),
-            base::android::ToJavaIntArray(env, initial_selections),
-            section.popup_list_section().allow_multiselect(),
-            section.popup_list_section().selection_mandatory(),
-            ConvertUTF8ToJavaString(
-                env,
-                section.popup_list_section().no_selection_error_message()));
-        break;
-      }
-      case UserFormSectionProto::SECTION_NOT_SET:
-        NOTREACHED();
-        break;
-    }
-  }
-  return jsection_list;
 }
 
 absl::optional<int> GetPreviousFormCounterResult(
@@ -649,9 +599,7 @@ void UiControllerAndroid::DestroySelf() {
   // among other things.
   //
   // TODO(mcarlen): refactor lifecycle and deps of ui_controller.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ClientAndroid::DestroyUI, client_->GetWeakPtr()));
+  client_->DestroyUISoon();
 }
 
 void UiControllerAndroid::SetVisible(
@@ -695,7 +643,7 @@ void UiControllerAndroid::RestoreUi() {
   OnUserActionsChanged(ui_delegate_->GetUserActions());
   OnCollectUserDataOptionsChanged(ui_delegate_->GetCollectUserDataOptions());
   OnUserDataChanged(*execution_delegate_->GetUserData(),
-                    UserData::FieldChange::ALL);
+                    UserDataFieldChange::ALL);
   OnPersistentGenericUserInterfaceChanged(
       ui_delegate_->GetPersistentGenericUiProto());
   OnGenericUserInterfaceChanged(ui_delegate_->GetGenericUiProto());
@@ -1375,9 +1323,8 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
 }
 
-void UiControllerAndroid::OnUserDataChanged(
-    const UserData& user_data,
-    UserData::FieldChange field_change) {
+void UiControllerAndroid::OnUserDataChanged(const UserData& user_data,
+                                            UserDataFieldChange field_change) {
   DCHECK(execution_delegate_ != nullptr);
   DCHECK(ui_delegate_ != nullptr);
   const CollectUserDataOptions* collect_user_data_options =
@@ -1392,14 +1339,14 @@ void UiControllerAndroid::OnUserDataChanged(
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetCollectUserDataModel();
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::TERMS_AND_CONDITIONS) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::TERMS_AND_CONDITIONS) {
     Java_AssistantCollectUserDataModel_setTermsStatus(
         env, jmodel, user_data.terms_and_conditions_);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::AVAILABLE_PROFILES) {
     // Contacts.
     auto jcontactlist =
         Java_AssistantCollectUserDataModel_createContactList(env);
@@ -1481,9 +1428,9 @@ void UiControllerAndroid::OnUserDataChanged(
         env, jmodel, jshippinglist);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::AVAILABLE_PROFILES ||
-      field_change == UserData::FieldChange::CONTACT_PROFILE) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::AVAILABLE_PROFILES ||
+      field_change == UserDataFieldChange::CONTACT_PROFILE) {
     const autofill::AutofillProfile* selected_contact_profile =
         user_data.selected_address(
             collect_user_data_options->contact_details_name);
@@ -1496,7 +1443,7 @@ void UiControllerAndroid::OnUserDataChanged(
     const auto& selected_contact_errors = user_data::GetContactValidationErrors(
         selected_contact_profile, *collect_user_data_options);
 
-    // In the UserData::FieldChange::CONTACT_PROFILE case the selection is
+    // In the UserDataFieldChange::CONTACT_PROFILE case the selection is
     // already known in Java, but it has no errors. The PDM off case does not
     // set updated contacts.
     Java_AssistantCollectUserDataModel_setSelectedContactDetails(
@@ -1505,9 +1452,9 @@ void UiControllerAndroid::OnUserDataChanged(
         collect_user_data_options->can_edit_contacts);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::AVAILABLE_PROFILES ||
-      field_change == UserData::FieldChange::PHONE_NUMBER) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::AVAILABLE_PROFILES ||
+      field_change == UserDataFieldChange::PHONE_NUMBER) {
     const autofill::AutofillProfile* selected_phone_number =
         user_data.selected_phone_number();
     auto jselected_phone_number =
@@ -1520,7 +1467,7 @@ void UiControllerAndroid::OnUserDataChanged(
         user_data::GetPhoneNumberValidationErrors(selected_phone_number,
                                                   *collect_user_data_options);
 
-    // In the UserData::FieldChange::PHONE_NUMBER case the selection is already
+    // In the UserDataFieldChange::PHONE_NUMBER case the selection is already
     // known in Java, but it has no errors. The PDM off case does not set
     // updated phone numbers.
     Java_AssistantCollectUserDataModel_setSelectedPhoneNumber(
@@ -1529,9 +1476,9 @@ void UiControllerAndroid::OnUserDataChanged(
         /* canEdit = */ false);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::AVAILABLE_PROFILES ||
-      field_change == UserData::FieldChange::SHIPPING_ADDRESS) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::AVAILABLE_PROFILES ||
+      field_change == UserDataFieldChange::SHIPPING_ADDRESS) {
     const autofill::AutofillProfile* selected_shipping_address =
         user_data.selected_address(
             collect_user_data_options->shipping_address_name);
@@ -1565,7 +1512,7 @@ void UiControllerAndroid::OnUserDataChanged(
       }
     }
 
-    // In the UserData::FieldChange::SHIPPING_ADDRESS case the selection is
+    // In the UserDataFieldChange::SHIPPING_ADDRESS case the selection is
     // already known in Java, but it has no errors. The PDM off case does not
     // set updated shipping addresses.
     Java_AssistantCollectUserDataModel_setSelectedShippingAddress(
@@ -1579,8 +1526,8 @@ void UiControllerAndroid::OnUserDataChanged(
         jselected_shipping_address_edit_token);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillPaymentInstrumentList(
             env);
@@ -1618,9 +1565,9 @@ void UiControllerAndroid::OnUserDataChanged(
         env, jmodel, jlist);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS ||
-      field_change == UserData::FieldChange::CARD) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::AVAILABLE_PAYMENT_INSTRUMENTS ||
+      field_change == UserDataFieldChange::CARD) {
     const autofill::CreditCard* selected_card = user_data.selected_card();
     const autofill::AutofillProfile* selected_billing_address =
         user_data.selected_address(
@@ -1661,9 +1608,9 @@ void UiControllerAndroid::OnUserDataChanged(
       }
     }
 
-    // Note: Ignore UserData::FieldChange::BILLING_ADDRESS, they are sent in
+    // Note: Ignore UserDataFieldChange::BILLING_ADDRESS, they are sent in
     // tandem.
-    // In the UserData::FieldChange::CARD case the selection is already known
+    // In the UserDataFieldChange::CARD case the selection is already known
     // in Java, but it has no errors. The PDM off case does not set updated
     // payment instruments.
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
@@ -1673,8 +1620,8 @@ void UiControllerAndroid::OnUserDataChanged(
         jselected_payment_instrument_edit_token);
   }
 
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::LOGIN_CHOICE) {
+  if (field_change == UserDataFieldChange::ALL ||
+      field_change == UserDataFieldChange::LOGIN_CHOICE) {
     ScopedJavaLocalRef<jobject> jselected_login_choice =
         user_data.selected_login_choice() == nullptr
             ? nullptr
@@ -2044,6 +1991,7 @@ void UiControllerAndroid::OnStart(const TriggerContext& trigger_context) {}
 void UiControllerAndroid::OnStop() {}
 void UiControllerAndroid::OnResetState() {}
 void UiControllerAndroid::OnUiShownChanged(bool shown) {}
+void UiControllerAndroid::OnShutdown(Metrics::DropOutReason reason) {}
 
 base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetGenericUiModel() {
@@ -2055,6 +2003,72 @@ base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetPersistentGenericUiModel() {
   return Java_AssistantModel_getPersistentGenericUiModel(AttachCurrentThread(),
                                                          GetModel());
+}
+
+// Creates the java equivalent to |sections|.
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::CreateJavaAdditionalSections(
+    JNIEnv* env,
+    const std::vector<UserFormSectionProto>& sections) {
+  auto jsection_list =
+      Java_AssistantCollectUserDataModel_createAdditionalSectionsList(env);
+  for (const auto& section : sections) {
+    switch (section.section_case()) {
+      case UserFormSectionProto::kStaticTextSection: {
+        std::string text;
+        switch (section.static_text_section().value_case()) {
+          case StaticTextSectionProto::kClientMemoryKey: {
+            user_data::GetClientMemoryStringValue(
+                section.static_text_section().client_memory_key(),
+                execution_delegate_->GetUserData(),
+                execution_delegate_->GetUserModel(), &text);
+            break;
+          }
+
+          case StaticTextSectionProto::kText:
+          case StaticTextSectionProto::VALUE_NOT_SET: {
+            text = section.static_text_section().text();
+          }
+        }
+        Java_AssistantCollectUserDataModel_appendStaticTextSection(
+            env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
+            ConvertUTF8ToJavaString(env, text));
+        break;
+      }
+      case UserFormSectionProto::kTextInputSection: {
+        Java_AssistantCollectUserDataModel_appendTextInputSection(
+            env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
+            CreateJavaTextInputsForSection(env, section.text_input_section()));
+        break;
+      }
+      case UserFormSectionProto::kPopupListSection: {
+        std::vector<std::string> items;
+        std::copy(section.popup_list_section().item_names().begin(),
+                  section.popup_list_section().item_names().end(),
+                  std::back_inserter(items));
+        std::vector<int> initial_selections;
+        std::copy(section.popup_list_section().initial_selection().begin(),
+                  section.popup_list_section().initial_selection().end(),
+                  std::back_inserter(initial_selections));
+        Java_AssistantCollectUserDataModel_appendPopupListSection(
+            env, jsection_list, ConvertUTF8ToJavaString(env, section.title()),
+            ConvertUTF8ToJavaString(
+                env, section.popup_list_section().additional_value_key()),
+            base::android::ToJavaArrayOfStrings(env, items),
+            base::android::ToJavaIntArray(env, initial_selections),
+            section.popup_list_section().allow_multiselect(),
+            section.popup_list_section().selection_mandatory(),
+            ConvertUTF8ToJavaString(
+                env,
+                section.popup_list_section().no_selection_error_message()));
+        break;
+      }
+      case UserFormSectionProto::SECTION_NOT_SET:
+        NOTREACHED();
+        break;
+    }
+  }
+  return jsection_list;
 }
 
 }  // namespace autofill_assistant

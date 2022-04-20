@@ -22,7 +22,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -93,7 +92,7 @@ void DebugDumpDataTask(const std::u16string& doc_name,
 
 void DebugDumpSettings(const std::u16string& doc_name,
                        const PrintSettings& settings) {
-  base::Value job_settings = PrintSettingsToJobSettingsDebug(settings);
+  base::Value job_settings(PrintSettingsToJobSettingsDebug(settings));
   std::string settings_str;
   base::JSONWriter::WriteWithOptions(
       job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);

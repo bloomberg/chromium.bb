@@ -37,7 +37,6 @@ if (is_win) {
 
 config("vulkan_internal_config") {
   defines = [
-    "VULKAN_NON_CMAKE_BUILD",
     "VK_ENABLE_BETA_EXTENSIONS",
   ]
   if (is_clang || !is_win) {
@@ -84,7 +83,10 @@ config("vulkan_loader_config") {
   }
   if (is_linux || is_chromeos) {
     # assume secure_getenv() is available
-    defines += [ "HAVE_SECURE_GETENV" ]
+    defines += [
+      "HAVE_SECURE_GETENV",
+      "LOADER_ENABLE_LINUX_SORT",
+    ]
   }
 }
 
@@ -122,11 +124,11 @@ if (!is_android) {
       "loader/loader.h",
       "loader/log.c",
       "loader/log.h",
-      "loader/murmurhash.c",
-      "loader/murmurhash.h",
       "loader/phys_dev_ext.c",
       "loader/terminator.c",
       "loader/trampoline.c",
+      "loader/unknown_function_handling.h",
+      "loader/unknown_function_handling.c",
       "loader/vk_loader_layer.h",
 
       # TODO(jmadill): Use assembler where available.
@@ -191,10 +193,8 @@ if (!is_android) {
       frameworks = [ "CoreFoundation.framework" ]
     }
     public_deps = [ "$vulkan_headers_dir:vulkan_headers" ]
-    if (build_with_chromium) {
-      configs -= [ "//build/config/compiler:chromium_code" ]
-      configs += [ "//build/config/compiler:no_chromium_code" ]
-    }
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
     configs += [ ":vulkan_internal_config" ]
     public_configs = [ ":vulkan_loader_config" ]
     configs -= vulkan_undefine_configs

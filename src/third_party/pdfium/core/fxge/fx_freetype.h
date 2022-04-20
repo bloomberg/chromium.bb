@@ -37,8 +37,6 @@ using ScopedFXFTLibraryRec =
 
 #define FXFT_Select_Charmap(face, encoding) \
   FT_Select_Charmap(face, static_cast<FT_Encoding>(encoding))
-#define FXFT_Get_Name_Index(face, name) \
-  FT_Get_Name_Index(face, const_cast<char*>(name))
 #define FXFT_Get_Glyph_Outline(face) &((face)->glyph->outline)
 #define FXFT_Render_Glyph(face, mode) \
   FT_Render_Glyph((face)->glyph, static_cast<enum FT_Render_Mode_>(mode))
@@ -59,14 +57,11 @@ using ScopedFXFTLibraryRec =
 #define FXFT_Get_Face_Style_Name(face) (face)->style_name
 #define FXFT_Is_Face_Italic(face) (((face)->style_flags) & FT_STYLE_FLAG_ITALIC)
 #define FXFT_Is_Face_Bold(face) (((face)->style_flags) & FT_STYLE_FLAG_BOLD)
-#define FXFT_Get_Face_Charmaps(face) (face)->charmaps
 #define FXFT_Get_Glyph_HoriBearingX(face) (face)->glyph->metrics.horiBearingX
 #define FXFT_Get_Glyph_HoriBearingY(face) (face)->glyph->metrics.horiBearingY
 #define FXFT_Get_Glyph_Width(face) (face)->glyph->metrics.width
 #define FXFT_Get_Glyph_Height(face) (face)->glyph->metrics.height
-#define FXFT_Get_Face_CharmapCount(face) (face)->num_charmaps
 #define FXFT_Get_Charmap_Encoding(charmap) (charmap)->encoding
-#define FXFT_Get_Face_Charmap(face) (face)->charmap
 #define FXFT_Get_Charmap_PlatformID(charmap) (charmap)->platform_id
 #define FXFT_Get_Charmap_EncodingID(charmap) (charmap)->encoding_id
 #define FXFT_Get_Face_UnitsPerEM(face) (face)->units_per_EM

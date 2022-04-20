@@ -17,7 +17,13 @@ FakePasswordStoreBackend::FakePasswordStoreBackend() = default;
 
 FakePasswordStoreBackend::FakePasswordStoreBackend(
     IsAccountStore is_account_store)
-    : is_account_store_(is_account_store) {}
+    : FakePasswordStoreBackend(is_account_store, UpdateAlwaysSucceeds(false)) {}
+
+FakePasswordStoreBackend::FakePasswordStoreBackend(
+    IsAccountStore is_account_store,
+    UpdateAlwaysSucceeds update_always_succeeds)
+    : is_account_store_(is_account_store),
+      update_always_succeeds_(update_always_succeeds) {}
 
 FakePasswordStoreBackend::~FakePasswordStoreBackend() = default;
 
@@ -55,6 +61,12 @@ void FakePasswordStoreBackend::GetAutofillableLoginsAsync(
       base::BindOnce(&FakePasswordStoreBackend::GetAutofillableLoginsInternal,
                      base::Unretained(this)),
       std::move(callback));
+}
+
+void FakePasswordStoreBackend::GetAllLoginsForAccountAsync(
+    absl::optional<std::string> account,
+    LoginsOrErrorReply callback) {
+  GetAllLoginsAsync(std::move(callback));
 }
 
 void FakePasswordStoreBackend::FillMatchingLoginsAsync(
@@ -255,6 +267,9 @@ PasswordStoreChangeList FakePasswordStoreBackend::UpdateLoginInternal(
                                  : PasswordForm::Store::kProfileStore;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
+  }
+  if (changes.empty() && update_always_succeeds_) {
+    changes = AddLoginInternal(form);
   }
   return changes;
 }

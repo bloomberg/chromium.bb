@@ -1,95 +1,6 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
-generated_cc_atom(
-    name = "GrContext_Base_hdr",
-    hdrs = ["GrContext_Base.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkRefCnt_hdr",
-        "//include/gpu:GrBackendSurface_hdr",
-        "//include/gpu:GrContextOptions_hdr",
-        "//include/gpu:GrTypes_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrD3DTypesMinimal_hdr",
-    hdrs = ["GrD3DTypesMinimal.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkRefCnt_hdr",
-        "//include/gpu:GrTypes_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrDawnTypesPriv_hdr",
-    hdrs = ["GrDawnTypesPriv.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//include/gpu/dawn:GrDawnTypes_hdr"],
-)
-
-generated_cc_atom(
-    name = "GrGLTypesPriv_hdr",
-    hdrs = ["GrGLTypesPriv.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkRefCnt_hdr",
-        "//include/gpu/gl:GrGLTypes_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrImageContext_hdr",
-    hdrs = ["GrImageContext.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":GrContext_Base_hdr",
-        ":SingleOwner_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrMockTypesPriv_hdr",
-    hdrs = ["GrMockTypesPriv.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//include/gpu/mock:GrMockTypes_hdr"],
-)
-
-generated_cc_atom(
-    name = "GrMtlTypesPriv_hdr",
-    hdrs = ["GrMtlTypesPriv.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/gpu:GrTypes_hdr",
-        "//include/gpu/mtl:GrMtlTypes_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrTypesPriv_hdr",
-    hdrs = ["GrTypesPriv.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkImageInfoPriv_hdr",
-        ":SkMacros_hdr",
-        "//include/core:SkImageInfo_hdr",
-        "//include/core:SkImage_hdr",
-        "//include/core:SkPath_hdr",
-        "//include/core:SkRefCnt_hdr",
-        "//include/gpu:GrTypes_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrVkTypesPriv_hdr",
-    hdrs = ["GrVkTypesPriv.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkRefCnt_hdr",
-        "//include/gpu/vk:GrVkTypes_hdr",
-    ],
-)
+licenses(["notice"])
 
 generated_cc_atom(
     name = "SkBitmaskEnum_hdr",
@@ -134,6 +45,7 @@ generated_cc_atom(
     hdrs = ["SkEncodedInfo.h"],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkData_hdr",
         "//include/core:SkImageInfo_hdr",
         "//include/third_party/skcms:skcms_hdr",
@@ -312,6 +224,7 @@ generated_cc_atom(
     deps = [
         ":SkSLString_hdr",
         ":SkTArray_hdr",
+        "//include/sksl:SkSLPosition_hdr",
         "//src/sksl:SkSLLexer_hdr",
         "//src/sksl:SkSLModifiersPool_hdr",
         "//src/sksl:SkSLPool_hdr",
@@ -329,7 +242,10 @@ generated_cc_atom(
     name = "SkSLModifiers_hdr",
     hdrs = ["SkSLModifiers.h"],
     visibility = ["//:__subpackages__"],
-    deps = [":SkSLLayout_hdr"],
+    deps = [
+        ":SkSLLayout_hdr",
+        "//include/sksl:SkSLPosition_hdr",
+    ],
 )
 
 generated_cc_atom(
@@ -366,7 +282,10 @@ generated_cc_atom(
     name = "SkSLString_hdr",
     hdrs = ["SkSLString.h"],
     visibility = ["//:__subpackages__"],
-    deps = [":SkSLDefines_hdr"],
+    deps = [
+        ":SkSLDefines_hdr",
+        "//include/core:SkTypes_hdr",
+    ],
 )
 
 generated_cc_atom(

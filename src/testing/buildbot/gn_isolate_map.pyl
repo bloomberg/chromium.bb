@@ -74,11 +74,6 @@
 #
 # The optional "skip_usage_check" field indicates that we should skip the check
 # that the target is used in at least one buildbot json file.
-#
-# The optional "python3" field is a boolean that is used by tests to
-# say whether we should run the test under Python2 or Python3. It does
-# not apply to 'generated_script' tests, where the generated wrapper
-# should control this instead.
 
 {
   "All_syzygy": {
@@ -979,9 +974,17 @@
     "label": "//chrome/test:interactive_ui_tests",
     "type": "windowed_test_launcher",
   },
+  "ios/chrome/app:chrome": {
+    "label": "//ios/chrome/app:chrome",
+    "type": "additional_compile_target",
+  },
   "ios_chrome_bookmarks_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests",
     "type": "generated_script",
+  },
+  "ios_chrome_clusterfuzz_asan_build": {
+    "label": "//ios/chrome/test/wpt:ios_chrome_clusterfuzz_asan_build",
+    "type": "additional_compile_target",
   },
   "ios_chrome_integration_egtests": {
     "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
@@ -1244,7 +1247,6 @@
     "type": "additional_compile_target",
   },
   "mini_installer_tests": {
-    "python3": False,
     "args": [
       "../../chrome/test/mini_installer/run_mini_installer_tests.py",
       "--output-dir=${ISOLATED_OUTDIR}",
@@ -1663,10 +1665,6 @@
     "label": "//storage:storage_unittests",
     "type": "console_test_launcher",
   },
-  "swiftshader_unittests": {
-    "label": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
-    "type": "console_test_launcher",
-  },
   "symupload": {
     "label": "//third_party/breakpad:symupload",
     "type": "additional_compile_target",
@@ -1685,9 +1683,7 @@
   },
   "system_webview_shell_layout_test_apk": {
     "args": [
-      "--replace-system-package",
-      "org.chromium.webview_shell,apks/SystemWebViewShell.apk",
-      "--use-apk-under-test-flags-file",
+      "--replace-system-package=apks/SystemWebViewShell.apk",
     ],
     "label": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
     "type": "console_test_launcher",
@@ -2094,8 +2090,7 @@
   },
   "weblayer_skew_tests_with_chrome": {
     "args":  [
-      "--replace-system-package",
-      "org.chromium.weblayer.shell,apks/WebLayerShellSystemWebView.apk"
+      "--replace-system-package=apks/WebLayerShellSystemWebView.apk"
     ],
     "label": "//weblayer/browser/android/javatests:weblayer_skew_tests_with_chrome",
     "type": "console_test_launcher",

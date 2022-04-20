@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">Келесі</translation>
 <translation id="1209796539517632982">Автоматты атау серверлері</translation>
 <translation id="1210831758834677569">Лаос</translation>
+<translation id="1223825810409523901">Chrome кеңейтімі</translation>
 <translation id="1243314992276662751">Жүктеп салу</translation>
 <translation id="1249250836236328755">Жанр</translation>
 <translation id="1254593899333212300">Тікелей интернет қосылысы</translation>
@@ -80,6 +81,7 @@
 <translation id="166439687370499867">Ортақ желі конфигурацияларын өзгертуге рұқсат жоқ</translation>
 <translation id="1665611772925418501">Файлды өзгерту мүмкін болмады.</translation>
 <translation id="1673103856845176271">Қауіпсіздік себептеріне байланысты файлға кіру мүмкін емес.</translation>
+<translation id="16762847117768727">ISO кескіні</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">Велосипедші</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> элемент қысылуда…</translation>
@@ -365,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> файлдың сақтық көшірмесі жасалуда</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> ерекше жағдайын өшіру</translation>
 <translation id="4261901459838235729">Google көрсетілімі</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> сүзгісі қосулы.</translation>
 <translation id="4290535918735525311">1 қалта Linux жүйесімен бөлісілді</translation>
 <translation id="4299729908419173967">Бразилиялық</translation>
 <translation id="4302605047395093221">Осы құрылғыны пайдаланатын кез келген адам бұл мобильдік желіге қосылу үшін PIN кодын енгізуі тиіс.</translation>
@@ -383,6 +386,7 @@
 <translation id="4387004326333427325">Аутентификация сертификаты қашықтағы негізде қабылданбады</translation>
 <translation id="4394214039309501350">Сыртқы сілтеме</translation>
 <translation id="4401287888955153199">Барлығын шығарып алу</translation>
+<translation id="4410695710508688828">Шығару мүмкін болмады. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Файлдардың таңбашасын жасау</translation>
 <translation id="4425149324548788773">Менің Drive дискім</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />%, қосылу</translation>
@@ -404,6 +408,7 @@
 <translation id="457386861538956877">Тағы…</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> таңдалғандар тізіміне қосылды.</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> бойынша нәтижелер көрсетілуде.</translation>
+<translation id="4599600860674643278">Сүзгі бастапқы күйге қайтарылды.</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> қалтасына көшірілуде.</translation>
 <translation id="4631887759990505102">Орындаушы</translation>
 <translation id="4642769377300286600">Мобильдік профиль, <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_PROVIDER_NAME" /> провайдерінің <ph name="NETWORK_NAME" /> желісі орнатылуда</translation>
@@ -526,6 +531,7 @@
 <translation id="5469868506864199649">италиян</translation>
 <translation id="5473333559083690127">Жаңа PIN кодын қайта енгізіңіз</translation>
 <translation id="5489067830765222292">Латыш</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> сүзгісі өшірулі.</translation>
 <translation id="5494920125229734069">Барлығын таңдау</translation>
 <translation id="5500122897333236901">исланд</translation>
 <translation id="5508696409934741614">Нүктелер</translation>
@@ -592,6 +598,7 @@
 <translation id="6082256976217156453">LZMA сығылған мұрағат файлы</translation>
 <translation id="6096979789310008754">Ізделген мәтін өшірілді. Барлық файл мен қалта көрсетілуде.</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> файлы <ph name="FOLDER_NAME" /> қалтасына тасымалдануда</translation>
+<translation id="61118516107968648">CSV мәтіні</translation>
 <translation id="6129953537138746214">Бос орын</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> тасымалдануда…</translation>
 <translation id="613750717151263950">Жапон (АҚШ), халықаралық пернетақтасымен</translation>
@@ -810,6 +817,7 @@
 <translation id="7925686952655276919">Синхрондау үшін ұялы деректерді пайдаланбау</translation>
 <translation id="7928710562641958568">Құрылғыны шығару</translation>
 <translation id="7943385054491506837">АҚШ Колемак</translation>
+<translation id="7948417415021769876">7z мұрағаты</translation>
 <translation id="7953739707111622108">Бұл құрылғыны ашу мүмкін емес, себебі оның файл жүйесі анықталмаған.</translation>
 <translation id="7969525169268594403">словен</translation>
 <translation id="7972920761225148017">Француз (Швейцария)</translation>
@@ -841,6 +849,7 @@
 <translation id="8208580316430297579">Өнер туындысы</translation>
 <translation id="8223479393428528563">Бұл файлдарды желіден тыс сақтау үшін желіге қайта қосылып, файлдарды тінтуірдің оң жағымен басыңыз және <ph name="OFFLINE_CHECKBOX_NAME" /> опциясын таңдаңыз.</translation>
 <translation id="8249296373107784235">Доғару</translation>
+<translation id="8250920743982581267">Құжаттар</translation>
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8261561378965667560">Қытай (құрылымдық енгізу)</translation>
 <translation id="8269755669432358899">Файлдар туралы пікір панельдерін жию</translation>
@@ -859,6 +868,7 @@
 <translation id="8372369524088641025">WEP кілті дұрыс емес</translation>
 <translation id="8372852072747894550">Грек</translation>
 <translation id="8386903983509584791">Іздеу аяқталды</translation>
+<translation id="8387733224523483503"><ph name="FILE_NAME" /> файлы шығарылды.</translation>
 <translation id="8395901698320285466">Өлшемдер</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> желісі, жалғануда</translation>
 <translation id="8425213833346101688">Өзгерту</translation>
@@ -953,6 +963,7 @@
 <translation id="9174050671906956834">Себеттегі элементтер 30 күннен кейін мүлдем жойылады.</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Қазақ</translation>
+<translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> элемент шығарылды.</translation>
 <translation id="9213073329713032541">Орнату басталды.</translation>
 <translation id="9219103736887031265">Кескіндер</translation>
 <translation id="9219908252191632183">Ай ландшафты</translation>

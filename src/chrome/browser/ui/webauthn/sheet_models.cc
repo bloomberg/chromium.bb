@@ -24,6 +24,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1073,7 +1074,7 @@ AuthenticatorSelectAccountSheetModel::~AuthenticatorSelectAccountSheetModel() =
 
 void AuthenticatorSelectAccountSheetModel::SetCurrentSelection(int selected) {
   DCHECK_LE(0, selected);
-  DCHECK_LT(static_cast<size_t>(selected), dialog_model()->users().size());
+  DCHECK_LT(static_cast<size_t>(selected), dialog_model()->creds().size());
   selected_ = selected;
 }
 
@@ -1207,7 +1208,9 @@ const gfx::VectorIcon& AuthenticatorQRSheetModel::GetStepIllustration(
 }
 
 std::u16string AuthenticatorQRSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
+  return base::FeatureList::IsEnabled(device::kWebAuthPasskeysUIExperiment)
+             ? u"Add a new phone"
+             : l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
 }
 
 std::u16string AuthenticatorQRSheetModel::GetStepDescription() const {

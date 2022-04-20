@@ -43,6 +43,7 @@ constexpr char kSwitchRandomizedResponseRateNavigation[] =
     "randomized_response_rate_navigation";
 constexpr char kSwitchRandomizedResponseRateEvent[] =
     "randomized_response_rate_event";
+constexpr char kSwitchRemoveAssembledReport[] = "remove_assembled_report";
 
 constexpr const char* kAllowedSwitches[] = {
     kSwitchHelp,
@@ -72,6 +73,7 @@ attribution_reporting_simulator
   [--input_mode=<input_mode>]
   [--remove_report_ids]
   [--report_time_format=<format>]
+  [--remove_assembled_report]
 
 attribution_reporting_simulator is a command-line tool that simulates the
 Attribution Reporting API for for sources and triggers specified in an input
@@ -160,122 +162,22 @@ Switches:
                               `iso8601`: Report times are ISO 8601 strings,
                               e.g. "2022-01-28T22:19:33.000Z".
 
+  --remove_assembled_report - Optional. If present, removes the `shared_info`,
+                              `aggregation_service_payloads` and
+                              `source_registration_time` fields from
+                              aggregatable report bodies, as they are randomly
+                              generated. Use this switch to make the tool's
+                              output more deterministic.
+
   --version                 - Outputs the tool version and exits.
 
-Input JSON format:
-
-{
-  // List of zero or more sources to register.
-  "sources": [
-    {
-      // Required time at which to register the source in seconds since the
-      // UNIX epoch.
-      "source_time": 123,
-
-      // Required origin on which to register the source.
-      "source_origin": "https://source.example",
-
-      // Required source type, either "navigation" or "event", corresponding to
-      // whether the source is registered on click or on view, respectively.
-      "source_type": "navigation",
-
-      "registration_config": {
-        // Required uint64 formatted as a base-10 string.
-        "source_event_id": "123456789",
-
-        // Required site on which the source will be attributed.
-        "destination": "https://destination.example",
-
-        // Required origin to which the report will be sent if the source is
-        // attributed.
-        "reporting_origin": "https://reporting.example",
-
-        // Optional int64 in milliseconds formatted as a base-10 string.
-        // Defaults to 30 days.
-        "expiry": "864000000",
-
-        // Optional int64 formatted as a base-10 string.
-        // Defaults to 0.
-        "priority": "-456",
-
-        // Optional dictionary of filters and corresponding values. Defaults
-        // to empty.
-        "filter_data": {
-          "a": ["b", "c"],
-          "d": []
-        },
-
-        // Optional uint64 formatted as a base-10 string. Defaults to null.
-        "debug_key": "987",
-      }
-    },
-    ...
-  ],
-
-  // List of zero or more triggers to register.
-  "triggers": [
-    {
-      // Required time at which to register the trigger in seconds since the
-      // UNIX epoch.
-      "trigger_time": 123,
-
-      // Required site on which the trigger is being registered.
-      "destination": "https://destination.example",
-
-      // Required origin to which the report will be sent.
-      "reporting_origin": "https://reporting.example",
-
-      "registration_config": {
-        // Optional uint64 formatted as a base-10 string. Defaults to null.
-        "debug_key": "987",
-
-        // Optional dictionary of filters and corresponding values. Defaults
-        // to empty.
-        "filters": {
-          "a": ["b", "c"],
-          "d": []
-        },
-
-        "event_triggers": [
-          {
-            // Optional uint64 formatted as a base-10 string.
-            // Defaults to 0.
-            "trigger_data": "3",
-
-            // Optional int64 formatted as a base-10 string.
-            // Defaults to 0.
-            "priority": "-456",
-
-            // Optional int64 formatted as a base-10 string.
-            // Defaults to null.
-            "dedup_key": "789",
-
-            // Optional dictionary of filters and corresponding values. Defaults
-            // to empty.
-            "filters": {
-              "a": ["b", "c"],
-              "d": []
-            },
-
-            // Optional dictionary of negated filters and corresponding values.
-            // Defaults to empty.
-            "not_filters": {
-              "x": ["y"],
-              "z": []
-            }
-          }
-        ]
-      }
-    },
-    ...
-  ]
-}
+See //content/test/data/attribution_reporting/simulator/README.md for input JSON format.
 
 Output JSON format:
 
 {
   // List of zero or more reports.
-  "reports": [
+  "event_level_reports": [
     {
       // Time at which the report would have been sent in seconds since the
       // UNIX epoch.
@@ -529,6 +431,8 @@ int main(int argc, char* argv[]) {
       .delay_mode = delay_mode,
       .remove_report_ids = command_line.HasSwitch(kSwitchRemoveReportIds),
       .report_time_format = report_time_format,
+      .remove_assembled_report =
+          command_line.HasSwitch(kSwitchRemoveAssembledReport),
   });
 
   // Required for setting up the test environment.

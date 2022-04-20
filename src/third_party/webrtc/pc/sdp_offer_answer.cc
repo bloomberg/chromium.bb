@@ -17,7 +17,6 @@
 #include <memory>
 #include <queue>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "absl/algorithm/container.h"
@@ -86,6 +85,9 @@ using cricket::STUN_PORT_TYPE;
 namespace webrtc {
 
 namespace {
+
+constexpr const char* kDefaultScreencastMinBitrateKillSwitch =
+    "WebRTC-DefaultScreencastMinBitrateKillSwitch";
 
 typedef webrtc::PeerConnectionInterface::RTCOfferAnswerOptions
     RTCOfferAnswerOptions;
@@ -1196,6 +1198,12 @@ void SdpOfferAnswerHandler::Initialize(
   RTC_DCHECK_RUN_ON(signaling_thread());
   video_options_.screencast_min_bitrate_kbps =
       configuration.screencast_min_bitrate;
+  // Use 100 kbps as the default minimum screencast bitrate unless this path is
+  // kill-switched.
+  if (!video_options_.screencast_min_bitrate_kbps.has_value() &&
+      !context_->trials().IsEnabled(kDefaultScreencastMinBitrateKillSwitch)) {
+    video_options_.screencast_min_bitrate_kbps = 100;
+  }
   audio_options_.combined_audio_video_bwe =
       configuration.combined_audio_video_bwe;
 

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/synchronization/lock.h"
 #include "client/ios_handler/prune_intermediate_dumps_and_crash_reports_thread.h"
 #include "handler/crash_report_upload_thread.h"
 #include "snapshot/ios/process_snapshot_ios_intermediate_dump.h"
@@ -88,14 +89,6 @@ class InProcessHandler {
                                       ConstThreadState old_state,
                                       mach_msg_type_number_t old_state_count);
 
-  //! \brief Generate an intermediate dump from a NSException caught with its
-  //!     associated CPU context. Because the method for intercepting
-  //!     exceptions is imperfect, uses a new writer for the intermediate dump,
-  //!     as it is possible for further exceptions to happen.
-  //!
-  //! \param[in] context
-  void DumpExceptionFromNSExceptionWithContext(NativeCPUContext* context);
-
   //! \brief Generate an intermediate dump from an uncaught NSException.
   //!
   //! When the ObjcExceptionPreprocessor does not detect an NSException as it is
@@ -117,9 +110,11 @@ class InProcessHandler {
   //!
   //! \param[in] context A pointer to a NativeCPUContext object for this
   //!     simulated exception.
+  //! \param[in] exception
   //! \param[out] path The path of the intermediate dump generated.
   //! \return `true` if the pending intermediate dump could be written.
   bool DumpExceptionFromSimulatedMachException(const NativeCPUContext* context,
+                                               exception_type_t exception,
                                                base::FilePath* path);
 
   //! \brief Generate a simulated intermediate dump similar to a Mach exception
@@ -127,11 +122,20 @@ class InProcessHandler {
   //!
   //! \param[in] context A pointer to a NativeCPUContext object for this
   //!     simulated exception.
+  //! \param[in] exception
   //! \param[in] path Path to where the intermediate dump should be written.
   //! \return `true` if the pending intermediate dump could be written.
   bool DumpExceptionFromSimulatedMachExceptionAtPath(
       const NativeCPUContext* context,
+      exception_type_t exception,
       const base::FilePath& path);
+
+  //! \brief Moves an intermediate dump to the pending directory. This is meant
+  //!     to be used by the UncaughtExceptionHandler, when NSException caught
+  //!     by the preprocessor matches the UncaughtExceptionHandler.
+  //!
+  //! \param[in] path Path to the specific intermediate dump.
+  bool MoveIntermediateDumpAtPathToPending(const base::FilePath& path);
 
   //! \brief Requests that the handler convert all intermediate dumps into
   //!     minidumps and trigger an upload if possible.
@@ -202,6 +206,9 @@ class InProcessHandler {
     IOSIntermediateDumpWriter* writer_;
   };
 
+  //! \brief Manage the prune and upload thread when the active state changes.
+  void UpdatePruneAndUploadThreads(bool active);
+
   //! \brief Writes a minidump to the Crashpad database from the
   //!     \a process_snapshot, and triggers the upload_thread_ if started.
   void SaveSnapshot(ProcessSnapshotIOSIntermediateDump& process_snapshot);
@@ -230,7 +237,9 @@ class InProcessHandler {
   // in DumpExceptionFromMachException after aquiring the cached_writer_.
   void (*mach_exception_callback_for_testing_)() = nullptr;
 
-  bool upload_thread_started_ = false;
+  // Used to synchronize access to UpdatePruneAndUploadThreads().
+  base::Lock prune_and_upload_lock_;
+  std::atomic_bool upload_thread_enabled_ = false;
   std::map<std::string, std::string> annotations_;
   base::FilePath base_dir_;
   std::string cached_writer_path_;

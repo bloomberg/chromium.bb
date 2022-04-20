@@ -34,6 +34,7 @@ HEADERS = adler32.h                                                     \
           frame.h                                                       \
           hash.h                                                        \
           hdr_dynamic_metadata.h                                        \
+          hdr_dynamic_vivid_metadata.h                                  \
           hmac.h                                                        \
           hwcontext.h                                                   \
           hwcontext_cuda.h                                              \
@@ -52,6 +53,7 @@ HEADERS = adler32.h                                                     \
           intreadwrite.h                                                \
           lfg.h                                                         \
           log.h                                                         \
+          lzo.h                                                         \
           macros.h                                                      \
           mathematics.h                                                 \
           mastering_display_metadata.h                                  \
@@ -86,8 +88,6 @@ HEADERS = adler32.h                                                     \
           tea.h                                                         \
           tx.h                                                          \
           film_grain_params.h                                           \
-
-HEADERS-$(CONFIG_LZO)                   += lzo.h
 
 ARCH_HEADERS = bswap.h                                                  \
                intmath.h                                                \
@@ -130,6 +130,7 @@ OBJS = adler32.o                                                        \
        frame.o                                                          \
        hash.o                                                           \
        hdr_dynamic_metadata.o                                           \
+       hdr_dynamic_vivid_metadata.o                                     \
        hmac.o                                                           \
        hwcontext.o                                                      \
        imgutils.o                                                       \
@@ -139,6 +140,7 @@ OBJS = adler32.o                                                        \
        lls.o                                                            \
        log.o                                                            \
        log2_tab.o                                                       \
+       lzo.o                                                            \
        mathematics.o                                                    \
        mastering_display_metadata.o                                     \
        md5.o                                                            \
@@ -180,7 +182,6 @@ OBJS-$(CONFIG_CUDA)                     += hwcontext_cuda.o
 OBJS-$(CONFIG_D3D11VA)                  += hwcontext_d3d11va.o
 OBJS-$(CONFIG_DXVA2)                    += hwcontext_dxva2.o
 OBJS-$(CONFIG_LIBDRM)                   += hwcontext_drm.o
-OBJS-$(CONFIG_LZO)                      += lzo.o
 OBJS-$(CONFIG_MACOS_KPERF)              += macos_kperf.o
 OBJS-$(CONFIG_MEDIACODEC)               += hwcontext_mediacodec.o
 OBJS-$(CONFIG_OPENCL)                   += hwcontext_opencl.o
@@ -220,6 +221,7 @@ TESTPROGS = adler32                                                     \
             bprint                                                      \
             cast5                                                       \
             camellia                                                    \
+            channel_layout                                              \
             color_utils                                                 \
             cpu                                                         \
             crc                                                         \

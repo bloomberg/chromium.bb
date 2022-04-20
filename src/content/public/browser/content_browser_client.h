@@ -13,15 +13,14 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string_piece.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/quarantine_connection.h"
@@ -34,8 +33,7 @@
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
-#include "content/public/browser/web_ui_browser_interface_broker_registry.h"
-#include "content/public/common/alternative_error_page_override_info.mojom.h"
+#include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
@@ -52,7 +50,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
-#include "services/network/public/mojom/network_param.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-forward.h"
@@ -61,13 +58,11 @@
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "url/gurl.h"
-#include "url/origin.h"
-#include "url/url_constants.h"
 
 #if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)) || BUILDFLAG(IS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
@@ -94,6 +89,7 @@ namespace base {
 class CommandLine;
 class DictionaryValue;
 class FilePath;
+class Location;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -2008,6 +2004,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool user_gesture,
       blink::NavigationDownloadPolicy* download_policy);
 
+  // Returns the browsing topics associated with the browser context of
+  // |main_frame|.
+  virtual std::vector<blink::mojom::EpochTopicPtr> GetBrowsingTopicsForJsApi(
+      const url::Origin& context_origin,
+      RenderFrameHost* main_frame);
+
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(
       content::BrowserContext* browser_context,
@@ -2018,11 +2020,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void BlockBluetoothScanning(content::BrowserContext* browser_context,
                                       const url::Origin& requesting_origin,
                                       const url::Origin& embedding_origin);
-
-  // Returns true if the extra ICU data file is available and should be used to
-  // initialize ICU. |split_name| can be set on Android to the split where the
-  // asset is located.
-  virtual bool ShouldLoadExtraIcuDataFile(std::string* split_name);
 
   // Returns true if the site is allowed to use persistent media device IDs.
   virtual bool ArePersistentMediaDeviceIDsAllowed(
@@ -2204,16 +2201,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called on every WebContents creation.
   virtual void OnWebContentsCreated(WebContents* web_contents);
 
-  // Background attributions are attributions coming from other applications
-  // that are not processed immediately, typically because the browser has not
-  // yet been started. This method is called before processing any new
-  // attributions or conversions coming from a renderer, to notify the embedder
-  // that it should flush any attributions that have not been processed yet. The
-  // provided |callback| should be run when all background attributions have
-  // been flushed, or immediately if background attributions are not supported
-  // by the embedder.
-  virtual void FlushBackgroundAttributions(base::OnceClosure callback);
-
   // Allows overriding the policy of whether to assign documents to origin-keyed
   // agent clusters by default. That is, it controls the behaviour when the
   // Origin-Agent-Cluster header is absent.
@@ -2228,8 +2215,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Whether a navigation in |browser_context| should preconnect early.
   virtual bool ShouldPreconnectNavigation(BrowserContext* browser_context);
 
-  // Returns true if First-Party Sets is enabled.
+  // Returns true if First-Party Sets is enabled. The value of this method
+  // should not change in a single browser session.
   virtual bool IsFirstPartySetsEnabled();
+
+  // Returns a base::Value::Dict containing the value of the First-Party Sets
+  // Overrides enterprise policy.
+  // If the policy was not present or it was invalid, this returns an empty
+  // base::Value::Dict.
+  virtual base::Value::Dict GetFirstPartySetsOverrides();
 
   // Gets information required for an alternative error page from web app's
   // manifest for |url|, including theme color, background color and app short

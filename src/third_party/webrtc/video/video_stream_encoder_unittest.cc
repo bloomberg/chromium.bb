@@ -31,6 +31,7 @@
 #include "api/video/video_adaptation_reason.h"
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video_codecs/sdp_video_format.h"
+#include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/vp8_temporal_layers.h"
 #include "api/video_codecs/vp8_temporal_layers_factory.h"
@@ -64,6 +65,7 @@
 #include "test/mappable_native_buffer.h"
 #include "test/scoped_key_value_config.h"
 #include "test/time_controller/simulated_time_controller.h"
+#include "test/video_encoder_nullable_proxy_factory.h"
 #include "test/video_encoder_proxy_factory.h"
 #include "video/frame_cadence_adapter.h"
 #include "video/send_statistics_proxy.h"
@@ -375,9 +377,10 @@ class VideoStreamEncoderUnderTest : public VideoStreamEncoder {
       const VideoStreamEncoderSettings& settings,
       VideoStreamEncoder::BitrateAllocationCallbackType
           allocation_callback_type,
-      const WebRtcKeyValueConfig& field_trials)
+      const FieldTrialsView& field_trials,
+      int num_cores)
       : VideoStreamEncoder(time_controller->GetClock(),
-                           1 /* number_of_cores */,
+                           num_cores,
                            stats_proxy,
                            settings,
                            std::unique_ptr<OveruseFrameDetector>(
@@ -612,7 +615,7 @@ class MockableSendStatisticsProxy : public SendStatisticsProxy {
   MockableSendStatisticsProxy(Clock* clock,
                               const VideoSendStream::Config& config,
                               VideoEncoderConfig::ContentType content_type,
-                              const WebRtcKeyValueConfig& field_trials)
+                              const FieldTrialsView& field_trials)
       : SendStatisticsProxy(clock, config, content_type, field_trials) {}
 
   VideoSendStream::Stats GetStats() override {
@@ -681,7 +684,7 @@ class SimpleVideoStreamEncoderFactory {
   std::unique_ptr<AdaptedVideoStreamEncoder> CreateWithEncoderQueue(
       std::unique_ptr<FrameCadenceAdapterInterface> zero_hertz_adapter,
       std::unique_ptr<TaskQueueBase, TaskQueueDeleter> encoder_queue,
-      const WebRtcKeyValueConfig* field_trials = nullptr) {
+      const FieldTrialsView* field_trials = nullptr) {
     auto result = std::make_unique<AdaptedVideoStreamEncoder>(
         time_controller_.GetClock(),
         /*number_of_cores=*/1,
@@ -785,6 +788,10 @@ class MockEncoderSelector
               OnAvailableBitrate,
               (const DataRate& rate),
               (override));
+  MOCK_METHOD(absl::optional<SdpVideoFormat>,
+              OnResolutionChange,
+              (const RenderResolution& resolution),
+              (override));
   MOCK_METHOD(absl::optional<SdpVideoFormat>, OnEncoderBroken, (), (override));
 };
 
@@ -846,7 +853,8 @@ class VideoStreamEncoderTest : public ::testing::Test {
       VideoStreamEncoder::BitrateAllocationCallbackType
           allocation_callback_type =
               VideoStreamEncoder::BitrateAllocationCallbackType::
-                  kVideoBitrateAllocationWhenScreenSharing) {
+                  kVideoBitrateAllocationWhenScreenSharing,
+      int num_cores = 1) {
     if (video_stream_encoder_)
       video_stream_encoder_->Stop();
 
@@ -859,7 +867,7 @@ class VideoStreamEncoderTest : public ::testing::Test {
     video_stream_encoder_ = std::make_unique<VideoStreamEncoderUnderTest>(
         &time_controller_, std::move(cadence_adapter), std::move(encoder_queue),
         stats_proxy_.get(), video_send_config_.encoder_settings,
-        allocation_callback_type, field_trials_);
+        allocation_callback_type, field_trials_, num_cores);
     video_stream_encoder_->SetSink(&sink_, /*rotation_applied=*/false);
     video_stream_encoder_->SetSource(
         &video_source_, webrtc::DegradationPreference::MAINTAIN_FRAMERATE);
@@ -877,7 +885,8 @@ class VideoStreamEncoderTest : public ::testing::Test {
                     VideoStreamEncoder::BitrateAllocationCallbackType
                         allocation_callback_type =
                             VideoStreamEncoder::BitrateAllocationCallbackType::
-                                kVideoBitrateAllocationWhenScreenSharing) {
+                                kVideoBitrateAllocationWhenScreenSharing,
+                    int num_cores = 1) {
     video_send_config_.rtp.payload_name = payload_name;
 
     VideoEncoderConfig video_encoder_config;
@@ -900,7 +909,8 @@ class VideoStreamEncoderTest : public ::testing::Test {
           rtc::make_ref_counted<VideoEncoderConfig::Vp9EncoderSpecificSettings>(
               vp9_settings);
     }
-    ConfigureEncoder(std::move(video_encoder_config), allocation_callback_type);
+    ConfigureEncoder(std::move(video_encoder_config), allocation_callback_type,
+                     num_cores);
   }
 
   VideoFrame CreateFrame(int64_t ntp_time_ms,
@@ -1194,6 +1204,11 @@ class VideoStreamEncoderTest : public ::testing::Test {
       is_qp_trusted_ = trusted;
     }
 
+    VideoCodecComplexity LastEncoderComplexity() {
+      MutexLock lock(&local_mutex_);
+      return last_encoder_complexity_;
+    }
+
    private:
     int32_t Encode(const VideoFrame& input_image,
                    const std::vector<VideoFrameType>* frame_types) override {
@@ -1251,6 +1266,9 @@ class VideoStreamEncoderTest : public ::testing::Test {
         frame_buffer_controller_ =
             factory.Create(*config, settings, &fec_controller_override_);
       }
+
+      last_encoder_complexity_ = config->GetVideoEncoderComplexity();
+
       if (force_init_encode_failed_) {
         initialized_ = EncoderState::kInitializationFailed;
         return -1;
@@ -1332,6 +1350,8 @@ class VideoStreamEncoderTest : public ::testing::Test {
     absl::InlinedVector<VideoFrameBuffer::Type, kMaxPreferredPixelFormats>
         preferred_pixel_formats_ RTC_GUARDED_BY(local_mutex_);
     absl::optional<bool> is_qp_trusted_ RTC_GUARDED_BY(local_mutex_);
+    VideoCodecComplexity last_encoder_complexity_ RTC_GUARDED_BY(local_mutex_){
+        VideoCodecComplexity::kComplexityNormal};
   };
 
   class TestSink : public VideoStreamEncoder::EncoderSink {
@@ -7547,6 +7567,43 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorBitrateSwitch) {
   video_stream_encoder_->Stop();
 }
 
+TEST_F(VideoStreamEncoderTest, EncoderSelectorResolutionSwitch) {
+  NiceMock<MockEncoderSelector> encoder_selector;
+  StrictMock<MockEncoderSwitchRequestCallback> switch_callback;
+  video_send_config_.encoder_settings.encoder_switch_request_callback =
+      &switch_callback;
+  auto encoder_factory = std::make_unique<test::VideoEncoderProxyFactory>(
+      &fake_encoder_, &encoder_selector);
+  video_send_config_.encoder_settings.encoder_factory = encoder_factory.get();
+
+  // Reset encoder for new configuration to take effect.
+  ConfigureEncoder(video_encoder_config_.Copy());
+
+  EXPECT_CALL(encoder_selector, OnResolutionChange(RenderResolution(640, 480)))
+      .WillOnce(Return(absl::nullopt));
+  EXPECT_CALL(encoder_selector, OnResolutionChange(RenderResolution(320, 240)))
+      .WillOnce(Return(SdpVideoFormat("AV1")));
+  EXPECT_CALL(switch_callback,
+              RequestEncoderSwitch(Field(&SdpVideoFormat::name, "AV1"),
+                                   /*allow_default_fallback=*/false));
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      /*target_bitrate=*/DataRate::KilobitsPerSec(800),
+      /*stable_target_bitrate=*/DataRate::KilobitsPerSec(1000),
+      /*link_allocation=*/DataRate::KilobitsPerSec(1000),
+      /*fraction_lost=*/0,
+      /*round_trip_time_ms=*/0,
+      /*cwnd_reduce_ratio=*/0);
+
+  video_source_.IncomingCapturedFrame(CreateFrame(1, 640, 480));
+  video_source_.IncomingCapturedFrame(CreateFrame(2, 640, 480));
+  video_source_.IncomingCapturedFrame(CreateFrame(3, 320, 240));
+
+  AdvanceTime(TimeDelta::Zero());
+
+  video_stream_encoder_->Stop();
+}
+
 TEST_F(VideoStreamEncoderTest, EncoderSelectorBrokenEncoderSwitch) {
   constexpr int kSufficientBitrateToNotDrop = 1000;
   constexpr int kDontCare = 100;
@@ -7673,6 +7730,57 @@ TEST_F(VideoStreamEncoderTest,
       .WillOnce([&encode_attempted]() { encode_attempted.Set(); });
 
   video_source_.IncomingCapturedFrame(CreateFrame(1, nullptr));
+  encode_attempted.Wait(3000);
+
+  AdvanceTime(TimeDelta::Zero());
+
+  video_stream_encoder_->Stop();
+
+  // The encoders produced by the VideoEncoderProxyFactory have a pointer back
+  // to it's factory, so in order for the encoder instance in the
+  // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
+  // reset the `video_stream_encoder_` here.
+  video_stream_encoder_.reset();
+}
+
+TEST_F(VideoStreamEncoderTest, NullEncoderReturnSwitch) {
+  // As a variant of EncoderSelectorBrokenEncoderSwitch, when a null
+  // VideoEncoder is passed in encoder_factory, it checks whether
+  // Codec Switch occurs without a crash.
+  constexpr int kSufficientBitrateToNotDrop = 1000;
+  constexpr int kDontCare = 100;
+
+  NiceMock<MockEncoderSelector> encoder_selector;
+  StrictMock<MockEncoderSwitchRequestCallback> switch_callback;
+  video_send_config_.encoder_settings.encoder_switch_request_callback =
+      &switch_callback;
+  auto encoder_factory =
+      std::make_unique<test::VideoEncoderNullableProxyFactory>(
+          /*encoder=*/nullptr, &encoder_selector);
+  video_send_config_.encoder_settings.encoder_factory = encoder_factory.get();
+
+  // Reset encoder for new configuration to take effect.
+  ConfigureEncoder(video_encoder_config_.Copy());
+  // The VideoStreamEncoder needs some bitrate before it can start encoding,
+  // setting some bitrate so that subsequent calls to WaitForEncodedFrame does
+  // not fail.
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      /*target_bitrate=*/DataRate::KilobitsPerSec(kSufficientBitrateToNotDrop),
+      /*stable_target_bitrate=*/
+      DataRate::KilobitsPerSec(kSufficientBitrateToNotDrop),
+      /*link_allocation=*/DataRate::KilobitsPerSec(kSufficientBitrateToNotDrop),
+      /*fraction_lost=*/0,
+      /*round_trip_time_ms=*/0,
+      /*cwnd_reduce_ratio=*/0);
+  ON_CALL(encoder_selector, OnEncoderBroken)
+      .WillByDefault(Return(SdpVideoFormat("AV2")));
+  rtc::Event encode_attempted;
+  EXPECT_CALL(switch_callback,
+              RequestEncoderSwitch(Field(&SdpVideoFormat::name, "AV2"),
+                                   /*allow_default_fallback=*/_))
+      .WillOnce([&encode_attempted]() { encode_attempted.Set(); });
+
+  video_source_.IncomingCapturedFrame(CreateFrame(1, kDontCare, kDontCare));
   encode_attempted.Wait(3000);
 
   AdvanceTime(TimeDelta::Zero());
@@ -8290,6 +8398,64 @@ TEST_F(VideoStreamEncoderTest, EncoderDoesnotProvideLimitsWhenQPIsNotTrusted) {
   video_stream_encoder_->Stop();
 }
 
+TEST_F(VideoStreamEncoderTest, NormalComplexityWithMoreThanTwoCores) {
+  ResetEncoder("VP9", /*num_stream=*/1, /*num_temporal_layers=*/1,
+               /*num_spatial_layers=*/1,
+               /*screenshare=*/false, /*allocation_callback_type=*/
+               VideoStreamEncoder::BitrateAllocationCallbackType::
+                   kVideoBitrateAllocationWhenScreenSharing,
+               /*num_cores=*/3);
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      kTargetBitrate, kTargetBitrate, kTargetBitrate, 0, 0, 0);
+  video_source_.IncomingCapturedFrame(
+      CreateFrame(1, /*width=*/320, /*height=*/180));
+  WaitForEncodedFrame(1);
+  EXPECT_EQ(fake_encoder_.LastEncoderComplexity(),
+            VideoCodecComplexity::kComplexityNormal);
+  video_stream_encoder_->Stop();
+}
+
+TEST_F(VideoStreamEncoderTest,
+       NormalComplexityWhenLowTierOptimizationsAreDisabled) {
+  webrtc::test::ScopedKeyValueConfig field_trials(
+      field_trials_, "WebRTC-VP9-LowTierOptimizations/Disabled/");
+
+  ResetEncoder("VP9", /*num_stream=*/1, /*num_temporal_layers=*/1,
+               /*num_spatial_layers=*/1,
+               /*screenshare=*/false, /*allocation_callback_type=*/
+               VideoStreamEncoder::BitrateAllocationCallbackType::
+                   kVideoBitrateAllocationWhenScreenSharing,
+               /*num_cores=*/2);
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      kTargetBitrate, kTargetBitrate, kTargetBitrate, 0, 0, 0);
+  video_source_.IncomingCapturedFrame(
+      CreateFrame(1, /*width=*/320, /*height=*/180));
+  WaitForEncodedFrame(1);
+  EXPECT_EQ(fake_encoder_.LastEncoderComplexity(),
+            VideoCodecComplexity::kComplexityNormal);
+  video_stream_encoder_->Stop();
+}
+
+TEST_F(VideoStreamEncoderTest, LowComplexityWithTwoCores) {
+  ResetEncoder("VP9", /*num_stream=*/1, /*num_temporal_layers=*/1,
+               /*num_spatial_layers=*/1,
+               /*screenshare=*/false, /*allocation_callback_type=*/
+               VideoStreamEncoder::BitrateAllocationCallbackType::
+                   kVideoBitrateAllocationWhenScreenSharing,
+               /*num_cores=*/2);
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      kTargetBitrate, kTargetBitrate, kTargetBitrate, 0, 0, 0);
+  video_source_.IncomingCapturedFrame(
+      CreateFrame(1, /*width=*/320, /*height=*/180));
+  WaitForEncodedFrame(1);
+  EXPECT_EQ(fake_encoder_.LastEncoderComplexity(),
+            VideoCodecComplexity::kComplexityLow);
+  video_stream_encoder_->Stop();
+}
+
 #if !defined(WEBRTC_IOS)
 // TODO(bugs.webrtc.org/12401): Disabled because WebRTC-Video-QualityScaling is
 // disabled by default on iOS.
@@ -8436,7 +8602,7 @@ TEST_F(VideoStreamEncoderTest,
   video_stream_encoder_->Stop();
 }
 
-#endif
+#endif  // !defined(WEBRTC_IOS)
 
 // Test parameters: (VideoCodecType codec, bool allow_i420_conversion)
 class VideoStreamEncoderWithRealEncoderTest
@@ -8714,7 +8880,7 @@ constexpr std::pair<VideoCodecType, bool> kVP8DisallowConversion =
 constexpr std::pair<VideoCodecType, bool> kVP9DisallowConversion =
     std::make_pair(kVideoCodecVP9, /*allow_i420_conversion=*/false);
 constexpr std::pair<VideoCodecType, bool> kAV1AllowConversion =
-    std::make_pair(kVideoCodecAV1, /*allow_i420_conversion=*/true);
+    std::make_pair(kVideoCodecAV1, /*allow_i420_conversion=*/false);
 constexpr std::pair<VideoCodecType, bool> kMultiplexDisallowConversion =
     std::make_pair(kVideoCodecMultiplex, /*allow_i420_conversion=*/false);
 #if defined(WEBRTC_USE_H264)

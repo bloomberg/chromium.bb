@@ -20,6 +20,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browsing_topics/browsing_topics_document_host.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
@@ -32,6 +33,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/midi_host.h"
 #include "content/browser/media/session/media_session_service_impl.h"
+#include "content/browser/ml/ml_service_factory.h"
 #include "content/browser/net/reporting_service_proxy.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/prerender/prerender_internals.mojom.h"
@@ -191,7 +193,12 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "content/browser/lock_screen/lock_screen_service_impl.h"
 #include "third_party/blink/public/mojom/lock_screen/lock_screen.mojom.h"
-#endif  // BUILDFLAG(IS_CHROMEOS)
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+#include "content/browser/renderer_host/media/media_resource_provider_fuchsia.h"
+#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
+#endif
 
 namespace blink {
 class StorageKey;
@@ -267,7 +274,7 @@ void BindColorChooserFactoryForFrame(
 
 void BindAttributionInternalsHandler(
     RenderFrameHost* host,
-    mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver) {
+    mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver) {
   WebUI* web_ui = host->GetWebUI();
 
   // Performs a safe downcast to the concrete AttributionInternalsUI subclass.
@@ -845,11 +852,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
                             base::Unretained(host)));
   }
 
-  if (IsFedCmEnabled()) {
-    map->Add<blink::mojom::FederatedAuthRequest>(base::BindRepeating(
-        &RenderFrameHostImpl::BindFederatedAuthRequestReceiver,
-        base::Unretained(host)));
-  }
+  map->Add<blink::mojom::FederatedAuthRequest>(base::BindRepeating(
+      &RenderFrameHostImpl::BindFederatedAuthRequestReceiver,
+      base::Unretained(host)));
 
   map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(host)));
@@ -890,10 +895,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePaymentManager, base::Unretained(host)));
 
+  map->Add<handwriting::mojom::HandwritingRecognitionService>(
+      base::BindRepeating(&CreateHandwritingRecognitionService));
+
   if (base::FeatureList::IsEnabled(
-          blink::features::kHandwritingRecognitionWebPlatformApiFinch)) {
-    map->Add<handwriting::mojom::HandwritingRecognitionService>(
-        base::BindRepeating(&CreateHandwritingRecognitionService));
+          features::kEnableMachineLearningModelLoaderWebPlatformApi)) {
+    map->Add<ml::model_loader::mojom::MLService>(
+        base::BindRepeating(&CreateMLService));
   }
 
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
@@ -1082,6 +1090,10 @@ void PopulateBinderMapWithContext(
       &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
   map->Add<blink::mojom::CredentialManager>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::CredentialManager>));
+  if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+    map->Add<blink::mojom::BrowsingTopicsDocumentService>(
+        base::BindRepeating(&BrowsingTopicsDocumentHost::CreateMojoService));
+  }
 #if !BUILDFLAG(IS_ANDROID)
   if (SiteIsolationPolicy::IsApplicationIsolationLevelEnabled()) {
     map->Add<blink::mojom::DirectSocketsService>(
@@ -1093,6 +1105,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(
           &EmptyBinderForFrame<
               media::mojom::SpeechRecognitionClientBrowserInterface>));
+  map->Add<media::mojom::MediaFoundationRendererNotifier>(base::BindRepeating(
+      &EmptyBinderForFrame<media::mojom::MediaFoundationRendererNotifier>));
   map->Add<media::mojom::MediaPlayerObserverClient>(base::BindRepeating(
       &EmptyBinderForFrame<media::mojom::MediaPlayerObserverClient>));
 #endif
@@ -1130,7 +1144,7 @@ void PopulateBinderMapWithContext(
   map->Add<device::mojom::VRService>(
       base::BindRepeating(&EmptyBinderForFrame<device::mojom::VRService>));
 #endif
-  map->Add<mojom::AttributionInternalsHandler>(
+  map->Add<attribution_internals::mojom::Handler>(
       base::BindRepeating(&BindAttributionInternalsHandler));
   map->Add<mojom::PrerenderInternalsHandler>(
       base::BindRepeating(&BindPrerenderInternalsHandler));
@@ -1160,6 +1174,11 @@ void PopulateBinderMapWithContext(
     map->Add<blink::mojom::LockScreenService>(
         base::BindRepeating(&LockScreenServiceImpl::Create));
   }
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+  map->Add<media::mojom::FuchsiaMediaResourceProvider>(
+      base::BindRepeating(&MediaResourceProviderFuchsia::Bind));
 #endif
 }
 

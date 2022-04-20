@@ -59,11 +59,11 @@ TargetRateConstraints ConvertConstraints(const BitrateConstraints& contraints,
                             contraints.start_bitrate_bps, clock);
 }
 
-bool IsEnabled(const WebRtcKeyValueConfig& trials, absl::string_view key) {
+bool IsEnabled(const FieldTrialsView& trials, absl::string_view key) {
   return absl::StartsWith(trials.Lookup(key), "Enabled");
 }
 
-bool IsDisabled(const WebRtcKeyValueConfig& trials, absl::string_view key) {
+bool IsDisabled(const FieldTrialsView& trials, absl::string_view key) {
   return absl::StartsWith(trials.Lookup(key), "Disabled");
 }
 
@@ -74,10 +74,10 @@ bool IsRelayed(const rtc::NetworkRoute& route) {
 }  // namespace
 
 RtpTransportControllerSend::PacerSettings::PacerSettings(
-    const WebRtcKeyValueConfig& trials)
+    const FieldTrialsView& trials)
     : tq_disabled("Disabled"),
-      holdback_window("holdback_window", PacingController::kMinSleepTime),
-      holdback_packets("holdback_packets", -1) {
+      holdback_window("holdback_window", TimeDelta::Millis(5)),
+      holdback_packets("holdback_packets", 3) {
   ParseFieldTrial({&tq_disabled, &holdback_window, &holdback_packets},
                   trials.Lookup("WebRTC-TaskQueuePacer"));
 }
@@ -90,7 +90,7 @@ RtpTransportControllerSend::RtpTransportControllerSend(
     const BitrateConstraints& bitrate_config,
     std::unique_ptr<ProcessThread> process_thread,
     TaskQueueFactory* task_queue_factory,
-    const WebRtcKeyValueConfig& trials)
+    const FieldTrialsView& trials)
     : clock_(clock),
       event_log_(event_log),
       bitrate_configurator_(bitrate_config),
@@ -101,14 +101,12 @@ RtpTransportControllerSend::RtpTransportControllerSend(
                                 ? nullptr
                                 : new PacedSender(clock,
                                                   &packet_router_,
-                                                  event_log,
                                                   trials,
                                                   process_thread_.get())),
       task_queue_pacer_(
           pacer_settings_.use_task_queue_pacer()
               ? new TaskQueuePacedSender(clock,
                                          &packet_router_,
-                                         event_log,
                                          trials,
                                          task_queue_factory,
                                          pacer_settings_.holdback_window.Get(),

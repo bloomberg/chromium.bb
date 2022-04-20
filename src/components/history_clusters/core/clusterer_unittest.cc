@@ -6,6 +6,7 @@
 
 #include "base/test/task_environment.h"
 #include "components/history_clusters/core/clustering_test_utils.h"
+#include "components/history_clusters/core/config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +17,12 @@ using ::testing::ElementsAre;
 
 class ClustererTest : public ::testing::Test {
  public:
-  void SetUp() override { clusterer_ = std::make_unique<Clusterer>(); }
+  void SetUp() override {
+    config_.hosts_to_skip_clustering_for = {"www.shouldskip.com"};
+    SetConfigForTesting(config_);
+
+    clusterer_ = std::make_unique<Clusterer>();
+  }
 
   void TearDown() override { clusterer_.reset(); }
 
@@ -26,6 +32,7 @@ class ClustererTest : public ::testing::Test {
   }
 
  private:
+  Config config_;
   std::unique_ptr<Clusterer> clusterer_;
   base::test::TaskEnvironment task_environment_;
 };
@@ -156,6 +163,14 @@ TEST_F(ClustererTest, MultipleClusters) {
       testing::CreateDefaultAnnotatedVisit(3, GURL("https://whatever.com/"));
   visits.push_back(testing::CreateClusterVisit(visit3));
 
+  history::AnnotatedVisit should_skip = testing::CreateDefaultAnnotatedVisit(
+      11, GURL("https://www.shouldskip.com/whatever"));
+  history::ClusterVisit should_skip_cluster_visit =
+      testing::CreateClusterVisit(should_skip);
+  should_skip_cluster_visit.normalized_url =
+      GURL("https://www.shouldskip.com/whatever");
+  visits.push_back(should_skip_cluster_visit);
+
   std::vector<history::Cluster> result_clusters =
       CreateInitialClustersFromVisits(visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
@@ -227,7 +242,7 @@ TEST_F(ClustererTest, SplitClusterOnSearchVisit) {
   visit4.visit_row.visit_time =
       base::Time::Now() + base::Hours(2) + base::Minutes(1);
   history::ClusterVisit cluster_visit4 = testing::CreateClusterVisit(visit4);
-  cluster_visit4.search_terms = u"whatever";
+  cluster_visit4.annotated_visit.content_annotations.search_terms = u"whatever";
   visits.push_back(cluster_visit4);
 
   // Visit5 was referred by visit 4.
@@ -245,7 +260,7 @@ TEST_F(ClustererTest, SplitClusterOnSearchVisit) {
   visit6.visit_row.visit_time =
       base::Time::Now() + base::Hours(2) + base::Minutes(2);
   history::ClusterVisit cluster_visit6 = testing::CreateClusterVisit(visit6);
-  cluster_visit6.search_terms = u"whatever";
+  cluster_visit6.annotated_visit.content_annotations.search_terms = u"whatever";
   visits.push_back(cluster_visit6);
 
   // Visit7 was referred by visit 6, is a search visit but has different search
@@ -256,7 +271,8 @@ TEST_F(ClustererTest, SplitClusterOnSearchVisit) {
   visit7.visit_row.visit_time =
       base::Time::Now() + base::Hours(2) + base::Minutes(3);
   history::ClusterVisit cluster_visit7 = testing::CreateClusterVisit(visit7);
-  cluster_visit7.search_terms = u"different";
+  cluster_visit7.annotated_visit.content_annotations.search_terms =
+      u"different";
   visits.push_back(cluster_visit7);
 
   std::vector<history::Cluster> result_clusters =

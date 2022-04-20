@@ -146,6 +146,8 @@ VkDynamicState ConvertToDynamicState(CBStatusFlagBits flag) {
             return VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT;
         case CBSTATUS_VERTEX_INPUT_SET:
             return VK_DYNAMIC_STATE_VERTEX_INPUT_EXT;
+        case CBSTATUS_COLOR_WRITE_ENABLE_SET:
+            return VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT;
         default:
             // CBSTATUS_INDEX_BUFFER_BOUND is not in VkDynamicState
             return VK_DYNAMIC_STATE_MAX_ENUM;
@@ -223,6 +225,8 @@ CBStatusFlagBits ConvertToCBStatusFlagBits(VkDynamicState state) {
             return CBSTATUS_PRIMITIVE_RESTART_ENABLE_SET;
         case VK_DYNAMIC_STATE_VERTEX_INPUT_EXT:
             return CBSTATUS_VERTEX_INPUT_SET;
+        case VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT:
+            return CBSTATUS_COLOR_WRITE_ENABLE_SET;
         default:
             return CBSTATUS_NONE;
     }
@@ -300,6 +304,7 @@ void CMD_BUFFER_STATE::Reset() {
     usedDynamicViewportCount = false;
     usedDynamicScissorCount = false;
     primitiveTopology = VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+    dynamicColorWriteEnableAttachmentCount = 0;
 
     activeRenderPassBeginInfo = safe_VkRenderPassBeginInfo();
     activeRenderPass = nullptr;
@@ -537,6 +542,7 @@ void CMD_BUFFER_STATE::BeginQuery(const QueryObject &query_obj) {
         SetQueryState(QueryObject(query_obj, perfQueryPass), QUERYSTATE_RUNNING, localQueryToStateMap);
         return false;
     });
+    updatedQueries.insert(query_obj);
 }
 
 void CMD_BUFFER_STATE::EndQuery(const QueryObject &query_obj) {
@@ -545,6 +551,7 @@ void CMD_BUFFER_STATE::EndQuery(const QueryObject &query_obj) {
                                           VkQueryPool &firstPerfQueryPool, uint32_t perfQueryPass, QueryMap *localQueryToStateMap) {
         return SetQueryState(QueryObject(query_obj, perfQueryPass), QUERYSTATE_ENDED, localQueryToStateMap);
     });
+    updatedQueries.insert(query_obj);
 }
 
 static bool SetQueryStateMulti(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, uint32_t perfPass, QueryState value,
@@ -560,6 +567,7 @@ void CMD_BUFFER_STATE::EndQueries(VkQueryPool queryPool, uint32_t firstQuery, ui
     for (uint32_t slot = firstQuery; slot < (firstQuery + queryCount); slot++) {
         QueryObject query = {queryPool, slot};
         activeQueries.erase(query);
+        updatedQueries.insert(query);
     }
     queryUpdates.emplace_back([queryPool, firstQuery, queryCount](const ValidationStateTracker *device_data, bool do_validate,
                                                                   VkQueryPool &firstPerfQueryPool, uint32_t perfQueryPass,
@@ -572,6 +580,7 @@ void CMD_BUFFER_STATE::ResetQueryPool(VkQueryPool queryPool, uint32_t firstQuery
     for (uint32_t slot = firstQuery; slot < (firstQuery + queryCount); slot++) {
         QueryObject query = {queryPool, slot};
         resetQueries.insert(query);
+        updatedQueries.insert(query);
     }
 
     queryUpdates.emplace_back([queryPool, firstQuery, queryCount](const ValidationStateTracker *device_data, bool do_validate,
@@ -646,9 +655,16 @@ void CMD_BUFFER_STATE::BeginRenderPass(CMD_TYPE cmd_type, const VkRenderPassBegi
     activeSubpass = 0;
     activeSubpassContents = contents;
 
-    // Connect this RP to cmdBuffer
-    if (!dev_data->disabled[command_buffer_state] && activeRenderPass) {
-        AddChild(activeRenderPass);
+    if (activeRenderPass) {
+        // Connect this RP to cmdBuffer
+        if (!dev_data->disabled[command_buffer_state]) {
+            AddChild(activeRenderPass);
+        }
+
+        // Spec states that after BeginRenderPass all resources should be rebound
+        if (activeRenderPass->has_multiview_enabled) {
+            UnbindResources();
+        }
     }
 
     auto chained_device_group_struct = LvlFindInChain<VkDeviceGroupRenderPassBeginInfo>(pRenderPassBegin->pNext);
@@ -684,12 +700,21 @@ void CMD_BUFFER_STATE::NextSubpass(CMD_TYPE cmd_type, VkSubpassContents contents
     activeSubpassContents = contents;
 
     // Update cb_state->active_subpasses
-    if (activeRenderPass && activeFramebuffer) {
-        active_subpasses = nullptr;
-        active_subpasses = std::make_shared<std::vector<SUBPASS_INFO>>(activeFramebuffer->createInfo.attachmentCount);
+    if (activeRenderPass) {
+        if (activeFramebuffer) {
+            active_subpasses = nullptr;
+            active_subpasses = std::make_shared<std::vector<SUBPASS_INFO>>(activeFramebuffer->createInfo.attachmentCount);
 
-        const auto &subpass = activeRenderPass->createInfo.pSubpasses[activeSubpass];
-        UpdateSubpassAttachments(subpass, *active_subpasses);
+            if (activeSubpass < activeRenderPass->createInfo.subpassCount) {
+                const auto &subpass = activeRenderPass->createInfo.pSubpasses[activeSubpass];
+                UpdateSubpassAttachments(subpass, *active_subpasses);
+            }
+        }
+
+        // Spec states that after NextSubpass all resources should be rebound
+        if (activeRenderPass->has_multiview_enabled) {
+            UnbindResources();
+        }
     }
 }
 
@@ -837,6 +862,7 @@ void CMD_BUFFER_STATE::Begin(const VkCommandBufferBeginInfo *pBeginInfo) {
         initial_device_mask = (1 << dev_data->physical_device_count) - 1;
     }
     performance_lock_acquired = dev_data->performance_lock_acquired;
+    updatedQueries.clear();
 }
 
 void CMD_BUFFER_STATE::End(VkResult result) {
@@ -880,6 +906,9 @@ void CMD_BUFFER_STATE::ExecuteCommands(uint32_t commandBuffersCount, const VkCom
         AddChild(sub_cb_state);
         for (auto &function : sub_cb_state->queryUpdates) {
             queryUpdates.push_back(function);
+        }
+        for (auto &function : sub_cb_state->eventUpdates) {
+            eventUpdates.push_back(function);
         }
         for (auto &function : sub_cb_state->queue_submit_functions) {
             queue_submit_functions.push_back(function);
@@ -949,6 +978,9 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
     if (VK_NULL_HANDLE != state.pipeline_layout) {
         for (const auto &set_binding_pair : pipe->active_slots) {
             uint32_t set_index = set_binding_pair.first;
+            if (set_index >= state.per_set.size()) {
+                continue;
+            }
             // Pull the set node
             auto &descriptor_set = state.per_set[set_index].bound_descriptor_set;
 
@@ -1012,7 +1044,7 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
             }
         }
     }
-    if (pipe && !pipe->vertex_binding_descriptions_.empty()) {
+    if (pipe && pipe->vertex_input_state && !pipe->vertex_input_state->binding_descriptions.empty()) {
         vertex_buffer_used = true;
     }
 }
@@ -1183,6 +1215,11 @@ void CMD_BUFFER_STATE::RecordStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bit
     static_status &= ~state_bits;
 }
 
+void CMD_BUFFER_STATE::RecordColorWriteEnableStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bits, uint32_t attachment_count) {
+    RecordStateCmd(cmd_type, state_bits);
+    dynamicColorWriteEnableAttachmentCount = std::max(dynamicColorWriteEnableAttachmentCount, attachment_count);
+}
+
 void CMD_BUFFER_STATE::RecordTransferCmd(CMD_TYPE cmd_type, std::shared_ptr<BINDABLE> &&buf1, std::shared_ptr<BINDABLE> &&buf2) {
     RecordCmd(cmd_type);
     if (buf1) {
@@ -1320,7 +1357,7 @@ void CMD_BUFFER_STATE::Submit(uint32_t perf_submit_pass) {
     }
 }
 
-void CMD_BUFFER_STATE::Retire(uint32_t perf_submit_pass) {
+void CMD_BUFFER_STATE::Retire(uint32_t perf_submit_pass, const std::function<bool(const QueryObject &)>& is_query_updated_after) {
     // First perform decrement on general case bound objects
     for (auto event : writeEventsBeforeWait) {
         auto event_state = dev_data->Get<EVENT_STATE>(event);
@@ -1335,9 +1372,29 @@ void CMD_BUFFER_STATE::Retire(uint32_t perf_submit_pass) {
     }
 
     for (const auto &query_state_pair : local_query_to_state_map) {
-        if (query_state_pair.second == QUERYSTATE_ENDED) {
+        if (query_state_pair.second == QUERYSTATE_ENDED && !is_query_updated_after(query_state_pair.first)) {
             auto query_pool_state = dev_data->Get<QUERY_POOL_STATE>(query_state_pair.first.pool);
             query_pool_state->SetQueryState(query_state_pair.first.query, query_state_pair.first.perf_pass, QUERYSTATE_AVAILABLE);
         }
     }
+}
+
+void CMD_BUFFER_STATE::UnbindResources() {
+    // Pipeline and descriptor sets
+    lastBound[BindPoint_Graphics].Reset();
+
+    // Vertex and index buffers
+    index_buffer_binding.reset();
+    status &= ~CBSTATUS_INDEX_BUFFER_BOUND;
+    vertex_buffer_used = false;
+    current_vertex_buffer_binding_info.vertex_buffer_bindings.clear();
+
+    // Push constants
+    push_constant_data.clear();
+    push_constant_data_ranges.reset();
+    push_constant_data_update.clear();
+    push_constant_pipeline_layout_set = VK_NULL_HANDLE;
+
+    // Dynamic state
+    dynamic_status = CBSTATUS_NONE;
 }

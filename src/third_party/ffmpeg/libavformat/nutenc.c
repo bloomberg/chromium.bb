@@ -34,6 +34,7 @@
 #include "internal.h"
 #include "avio_internal.h"
 #include "riff.h"
+#include "version.h"
 
 static int find_expected_header(AVCodecParameters *p, int size, int key_frame,
                                 uint8_t out[64])
@@ -461,7 +462,7 @@ static int write_streamheader(AVFormatContext *avctx, AVIOContext *bc,
     case AVMEDIA_TYPE_AUDIO:
         put_v(bc, par->sample_rate);
         put_v(bc, 1);
-        put_v(bc, par->channels);
+        put_v(bc, par->ch_layout.nb_channels);
         break;
     case AVMEDIA_TYPE_VIDEO:
         put_v(bc, par->width);
@@ -894,6 +895,7 @@ static int write_sm_data(AVFormatContext *s, AVIOContext *bc, AVPacket *pkt, int
                 break;
             case AV_PKT_DATA_PARAM_CHANGE:
                 flags = bytestream_get_le32(&data);
+#if FF_API_OLD_CHANNEL_LAYOUT
                 if (flags & AV_SIDE_DATA_PARAM_CHANGE_CHANNEL_COUNT) {
                     put_str(dyn_bc, "Channels");
                     put_s(dyn_bc, bytestream_get_le32(&data));
@@ -907,6 +909,7 @@ static int write_sm_data(AVFormatContext *s, AVIOContext *bc, AVPacket *pkt, int
                     avio_write(dyn_bc, data, 8); data+=8;
                     sm_data_count++;
                 }
+#endif
                 if (flags & AV_SIDE_DATA_PARAM_CHANGE_SAMPLE_RATE) {
                     put_str(dyn_bc, "SampleRate");
                     put_s(dyn_bc, bytestream_get_le32(&data));

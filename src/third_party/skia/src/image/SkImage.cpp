@@ -21,6 +21,7 @@
 #include "src/core/SkMipmap.h"
 #include "src/core/SkMipmapBuilder.h"
 #include "src/core/SkNextID.h"
+#include "src/core/SkSamplingPriv.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkReadPixelsRec.h"
@@ -31,14 +32,14 @@
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContextThreadSafeProxy.h"
 #include "include/gpu/GrDirectContext.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/GrImageContextPriv.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrBicubicEffect.h"
-#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrFragmentProcessor.h"
+#include "src/gpu/ganesh/GrImageContextPriv.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/SkGr.h"
+#include "src/gpu/ganesh/effects/GrBicubicEffect.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
 #include "src/image/SkImage_Gpu.h"
 #endif
 
@@ -456,13 +457,14 @@ GrBackendTexture SkImage_Base::onGetBackendTexture(bool flushPendingGrContextIO,
 #endif // SK_SUPPORT_GPU
 
 #ifdef SK_GRAPHITE_ENABLED
-std::tuple<skgpu::TextureProxyView, SkColorType> SkImage_Base::asView(
-        skgpu::Recorder* recorder, skgpu::Mipmapped mipmapped, SkBudgeted budgeted) const {
+std::tuple<skgpu::graphite::TextureProxyView, SkColorType> SkImage_Base::asView(
+        skgpu::graphite::Recorder* recorder, skgpu::graphite::Mipmapped mipmapped,
+        SkBudgeted budgeted) const {
     if (!recorder) {
         return {};
     }
     if (this->dimensions().area() <= 1) {
-        mipmapped = skgpu::Mipmapped::kNo;
+        mipmapped = skgpu::graphite::Mipmapped::kNo;
     }
     return this->onAsView(recorder, mipmapped, budgeted);
 }
@@ -738,10 +740,6 @@ sk_sp<SkImage> SkMipmapBuilder::attachTo(const SkImage* src) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "src/core/SkReadBuffer.h"
-#include "src/core/SkSamplingPriv.h"
-#include "src/core/SkWriteBuffer.h"
-
 SkSamplingOptions SkSamplingPriv::FromFQ(SkLegacyFQ fq, SkMediumAs behavior) {
     switch (fq) {
         case kHigh_SkLegacyFQ:
@@ -756,27 +754,4 @@ SkSamplingOptions SkSamplingPriv::FromFQ(SkLegacyFQ fq, SkMediumAs behavior) {
             break;
     }
     return SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
-}
-
-SkSamplingOptions SkSamplingPriv::Read(SkReadBuffer& buffer) {
-    if (buffer.readBool()) {
-        SkScalar B = buffer.readScalar(),
-                 C = buffer.readScalar();
-        return SkSamplingOptions({B,C});
-    } else {
-        auto filter = buffer.read32LE<SkFilterMode>(SkFilterMode::kLinear);
-        auto mipmap = buffer.read32LE<SkMipmapMode>(SkMipmapMode::kLinear);
-        return SkSamplingOptions(filter, mipmap);
-    }
-}
-
-void SkSamplingPriv::Write(SkWriteBuffer& buffer, const SkSamplingOptions& sampling) {
-    buffer.writeBool(sampling.useCubic);
-    if (sampling.useCubic) {
-        buffer.writeScalar(sampling.cubic.B);
-        buffer.writeScalar(sampling.cubic.C);
-    } else {
-        buffer.writeUInt((unsigned)sampling.filter);
-        buffer.writeUInt((unsigned)sampling.mipmap);
-    }
 }

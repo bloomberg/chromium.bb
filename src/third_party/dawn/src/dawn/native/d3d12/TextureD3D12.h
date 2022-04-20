@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_D3D12_TEXTURED3D12_H_
-#define DAWNNATIVE_D3D12_TEXTURED3D12_H_
+#ifndef SRC_DAWN_NATIVE_D3D12_TEXTURED3D12_H_
+#define SRC_DAWN_NATIVE_D3D12_TEXTURED3D12_H_
 
 #include "dawn/native/Texture.h"
 
@@ -55,7 +55,8 @@ namespace dawn::native::d3d12 {
         ID3D12Resource* GetD3D12Resource() const;
         DXGI_FORMAT GetD3D12CopyableSubresourceFormat(Aspect aspect) const;
 
-        D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor(uint32_t mipLevel,
+        D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor(const Format& format,
+                                                       uint32_t mipLevel,
                                                        uint32_t baseSlice,
                                                        uint32_t sliceCount) const;
         D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor(uint32_t mipLevel,
@@ -159,4 +160,4 @@ namespace dawn::native::d3d12 {
     };
 }  // namespace dawn::native::d3d12
 
-#endif  // DAWNNATIVE_D3D12_TEXTURED3D12_H_
+#endif  // SRC_DAWN_NATIVE_D3D12_TEXTURED3D12_H_

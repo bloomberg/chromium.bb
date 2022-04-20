@@ -44,7 +44,9 @@ bool RRSendQueue::OutgoingStream::HasDataToSend(TimeMs now) {
   while (!items_.empty()) {
     RRSendQueue::OutgoingStream::Item& item = items_.front();
     if (item.message_id.has_value()) {
-      // Already partially sent messages can always continue to be sent.
+      // Already partially sent messages can always continue to be sent. This
+      // ensures e.g. that paused streams with partially sent messages get to
+      // send the partial message in full before resetting.
       return true;
     }
 
@@ -134,18 +136,12 @@ void RRSendQueue::OutgoingStream::Add(DcSctpMessage message,
   RTC_DCHECK(IsConsistent());
 }
 
-absl::optional<SendQueue::DataToSend> RRSendQueue::OutgoingStream::Produce(
-    TimeMs now,
-    size_t max_size) {
+SendQueue::DataToSend RRSendQueue::OutgoingStream::Produce(TimeMs now,
+                                                           size_t max_size) {
   RTC_DCHECK(!items_.empty());
 
   Item* item = &items_.front();
   DcSctpMessage& message = item->message;
-
-  if (item->remaining_size > max_size && max_size < kMinimumFragmentedPayload) {
-    RTC_DCHECK(IsConsistent());
-    return absl::nullopt;
-  }
 
   // Allocate Message ID and SSN when the first fragment is sent.
   if (!item->message_id.has_value()) {
@@ -232,12 +228,19 @@ bool RRSendQueue::OutgoingStream::Discard(IsUnordered unordered,
 void RRSendQueue::OutgoingStream::Pause() {
   is_paused_ = true;
 
+  // https://datatracker.ietf.org/doc/html/rfc8831#section-6.7
+  // "Closing of a data channel MUST be signaled by resetting the corresponding
+  // outgoing streams [RFC6525].  This means that if one side decides to close
+  // the data channel, it resets the corresponding outgoing stream."
+  // ... "[RFC6525] also guarantees that all the messages are delivered (or
+  // abandoned) before the stream is reset."
+
   // A stream is paused when it's about to be reset. In this implementation,
-  // it will throw away all non-partially send messages. This is subject to
-  // change. It will however not discard any partially sent messages - only
-  // whole messages. Partially delivered messages (at the time of receiving a
-  // Stream Reset command) will always deliver all the fragments before
-  // actually resetting the stream.
+  // it will throw away all non-partially send messages - they will be abandoned
+  // as noted above. This is subject to change. It will however not discard any
+  // partially sent messages - only whole messages. Partially delivered messages
+  // (at the time of receiving a Stream Reset command) will always deliver all
+  // the fragments before actually resetting the stream.
   for (auto it = items_.begin(); it != items_.end();) {
     if (it->remaining_offset == 0) {
       buffered_amount_.Decrease(it->remaining_size);
@@ -345,22 +348,20 @@ absl::optional<SendQueue::DataToSend> RRSendQueue::Produce(TimeMs now,
     RTC_DCHECK(stream_it != streams_.end());
   }
 
-  absl::optional<DataToSend> data = stream_it->second.Produce(now, max_size);
-  if (data.has_value()) {
-    RTC_DLOG(LS_VERBOSE) << log_prefix_ << "Producing DATA, type="
-                         << (data->data.is_unordered ? "unordered" : "ordered")
-                         << "::"
-                         << (*data->data.is_beginning && *data->data.is_end
-                                 ? "complete"
-                                 : *data->data.is_beginning
-                                       ? "first"
-                                       : *data->data.is_end ? "last" : "middle")
-                         << ", stream_id=" << *stream_it->first
-                         << ", ppid=" << *data->data.ppid
-                         << ", length=" << data->data.payload.size();
+  DataToSend data = stream_it->second.Produce(now, max_size);
+  RTC_DLOG(LS_VERBOSE) << log_prefix_ << "Producing DATA, type="
+                       << (data.data.is_unordered ? "unordered" : "ordered")
+                       << "::"
+                       << (*data.data.is_beginning && *data.data.is_end
+                               ? "complete"
+                               : *data.data.is_beginning
+                                     ? "first"
+                                     : *data.data.is_end ? "last" : "middle")
+                       << ", stream_id=" << *stream_it->first
+                       << ", ppid=" << *data.data.ppid
+                       << ", length=" << data.data.payload.size();
 
-    previous_message_has_ended_ = *data->data.is_end;
-  }
+  previous_message_has_ended_ = *data.data.is_end;
 
   RTC_DCHECK(IsConsistent());
   return data;

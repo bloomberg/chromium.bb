@@ -45,7 +45,7 @@ SimulatedCapturer::SimulatedCapturer(Environment* environment,
     return;  // Capturer is halted (unable to start).
   }
 
-  const AVCodec* codec;
+  AVCodec* codec;
   const int stream_result = av_find_best_stream(format_context_.get(),
                                                 media_type_, -1, -1, &codec, 0);
   if (stream_result < 0) {

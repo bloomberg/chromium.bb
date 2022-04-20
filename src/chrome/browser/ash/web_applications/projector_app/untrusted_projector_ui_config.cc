@@ -26,6 +26,8 @@ void ChromeUntrustedProjectorUIDelegate::PopulateLoadTimeData(
                      ash::features::IsProjectorExcludeTranscriptEnabled());
   source->AddBoolean("isTutorialVideoViewEnabled",
                      ash::features::IsProjectorTutorialVideoViewEnabled());
+  source->AddBoolean("isCustomThumbnailEnabled",
+                     ash::features::IsProjectorCustomThumbnailEnabled());
   source->AddString("appLocale", g_browser_process->GetApplicationLocale());
 }
 
@@ -38,8 +40,7 @@ UntrustedProjectorUIConfig::~UntrustedProjectorUIConfig() = default;
 bool UntrustedProjectorUIConfig::IsWebUIEnabled(
     content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  return ash::features::IsProjectorEnabled() &&
-         IsProjectorAllowedForProfile(profile);
+  return IsProjectorAppEnabled(profile);
 }
 
 std::unique_ptr<content::WebUIController>

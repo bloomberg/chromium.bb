@@ -24,7 +24,9 @@
 
 namespace {
 
+#if !CONFIG_REALTIME_ONLY
 const int kVideoNameParam = 1;
+#endif
 
 struct ExternalFrameBuffer {
   uint8_t *data;

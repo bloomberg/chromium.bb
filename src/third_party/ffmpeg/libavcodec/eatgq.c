@@ -35,6 +35,7 @@
 #include "aandcttab.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "eaidct.h"
 #include "get_bits.h"
 #include "idctdsp.h"
@@ -247,14 +248,14 @@ static int tgq_decode_frame(AVCodecContext *avctx,
     return avpkt->size;
 }
 
-const AVCodec ff_eatgq_decoder = {
-    .name           = "eatgq",
-    .long_name      = NULL_IF_CONFIG_SMALL("Electronic Arts TGQ video"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_TGQ,
+const FFCodec ff_eatgq_decoder = {
+    .p.name         = "eatgq",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Electronic Arts TGQ video"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_TGQ,
     .priv_data_size = sizeof(TgqContext),
     .init           = tgq_decode_init,
     .decode         = tgq_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

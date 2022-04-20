@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_ERROR_H_
-#define DAWNNATIVE_ERROR_H_
+#ifndef SRC_DAWN_NATIVE_ERROR_H_
+#define SRC_DAWN_NATIVE_ERROR_H_
 
 #include "absl/strings/str_format.h"
 #include "dawn/common/Result.h"
@@ -130,6 +130,8 @@ namespace dawn::native {
     // DAWN_TRY_ASSIGN is the same as DAWN_TRY for ResultOrError and assigns the success value, if
     // any, to VAR.
 #define DAWN_TRY_ASSIGN(VAR, EXPR) DAWN_TRY_ASSIGN_WITH_CLEANUP(VAR, EXPR, {})
+#define DAWN_TRY_ASSIGN_CONTEXT(VAR, EXPR, ...) \
+    DAWN_TRY_ASSIGN_WITH_CLEANUP(VAR, EXPR, { error->AppendContext(absl::StrFormat(__VA_ARGS__)); })
 
     // Argument helpers are used to determine which macro implementations should be called when
     // overloading with different number of variables.
@@ -189,4 +191,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_ERROR_H_
+#endif  // SRC_DAWN_NATIVE_ERROR_H_

@@ -69,12 +69,15 @@ using ::testing::InSequence;
 using ::testing::IsEmpty;
 using ::testing::IsNull;
 using ::testing::Le;
+using ::testing::Optional;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 
 using Checkpoint = ::testing::MockFunction<void(int step)>;
+
+constexpr size_t kMaxPendingEvents = 5;
 
 constexpr AttributionStorageDelegate::OfflineReportDelayConfig
     kDefaultOfflineReportDelay{
@@ -272,8 +275,9 @@ class AttributionManagerImplTest : public testing::Test {
     report_sender_ = report_sender.get();
 
     attribution_manager_ = AttributionManagerImpl::CreateForTesting(
-        dir_.GetPath(), mock_storage_policy_, std::move(storage_delegate),
-        std::move(cookie_checker), std::move(report_sender),
+        dir_.GetPath(), kMaxPendingEvents, mock_storage_policy_,
+        std::move(storage_delegate), std::move(cookie_checker),
+        std::move(report_sender),
         static_cast<StoragePartitionImpl*>(
             browser_context_->GetDefaultStoragePartition()));
   }
@@ -618,6 +622,16 @@ TEST_F(AttributionManagerImplTest,
 TEST_F(AttributionManagerImplTest, QueuedReportAlwaysFails_StopsSending) {
   base::HistogramTester histograms;
 
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  EXPECT_CALL(observer,
+              OnReportSent(_, /*is_debug_report=*/false,
+                           Field(&SendResult::status,
+                                 SendResult::Status::kTransientFailure)));
+
   attribution_manager_->HandleSource(
       SourceBuilder().SetExpiry(kImpressionExpiry).Build());
   attribution_manager_->HandleTrigger(DefaultTrigger());
@@ -745,43 +759,48 @@ TEST_F(AttributionManagerImplTest, TriggerHandled_ObserversNotified) {
   {
     InSequence seq;
 
-    EXPECT_CALL(observer, OnTriggerHandled(CreateReportEventLevelStatusIs(
-                              AttributionTrigger::EventLevelResult::kSuccess)))
+    EXPECT_CALL(observer,
+                OnTriggerHandled(
+                    _, CreateReportEventLevelStatusIs(
+                           AttributionTrigger::EventLevelResult::kSuccess)))
         .Times(3);
 
     EXPECT_CALL(checkpoint, Call(1));
 
-    EXPECT_CALL(observer, OnTriggerHandled(AllOf(
-                              DroppedReportsAre(ElementsAre(
-                                  EventLevelDataIs(TriggerPriorityIs(1)))),
-                              CreateReportEventLevelStatusIs(
-                                  AttributionTrigger::EventLevelResult::
-                                      kSuccessDroppedLowerPriority))));
+    EXPECT_CALL(
+        observer,
+        OnTriggerHandled(_, AllOf(ReplacedEventLevelReportIs(Optional(
+                                      EventLevelDataIs(TriggerPriorityIs(1)))),
+                                  CreateReportEventLevelStatusIs(
+                                      AttributionTrigger::EventLevelResult::
+                                          kSuccessDroppedLowerPriority))));
 
     EXPECT_CALL(checkpoint, Call(2));
 
     EXPECT_CALL(
         observer,
         OnTriggerHandled(
-            AllOf(DroppedReportsAre(
-                      ElementsAre(EventLevelDataIs(TriggerPriorityIs(-5)))),
+            _,
+            AllOf(ReplacedEventLevelReportIs(absl::nullopt),
                   CreateReportEventLevelStatusIs(
                       AttributionTrigger::EventLevelResult::kPriorityTooLow))));
 
     EXPECT_CALL(checkpoint, Call(3));
 
-    EXPECT_CALL(observer, OnTriggerHandled(AllOf(
-                              DroppedReportsAre(ElementsAre(
-                                  EventLevelDataIs(TriggerPriorityIs(2)))),
-                              CreateReportEventLevelStatusIs(
-                                  AttributionTrigger::EventLevelResult::
-                                      kSuccessDroppedLowerPriority))));
-    EXPECT_CALL(observer, OnTriggerHandled(AllOf(
-                              DroppedReportsAre(ElementsAre(
-                                  EventLevelDataIs(TriggerPriorityIs(3)))),
-                              CreateReportEventLevelStatusIs(
-                                  AttributionTrigger::EventLevelResult::
-                                      kSuccessDroppedLowerPriority))));
+    EXPECT_CALL(
+        observer,
+        OnTriggerHandled(_, AllOf(ReplacedEventLevelReportIs(Optional(
+                                      EventLevelDataIs(TriggerPriorityIs(2)))),
+                                  CreateReportEventLevelStatusIs(
+                                      AttributionTrigger::EventLevelResult::
+                                          kSuccessDroppedLowerPriority))));
+    EXPECT_CALL(
+        observer,
+        OnTriggerHandled(_, AllOf(ReplacedEventLevelReportIs(Optional(
+                                      EventLevelDataIs(TriggerPriorityIs(3)))),
+                                  CreateReportEventLevelStatusIs(
+                                      AttributionTrigger::EventLevelResult::
+                                          kSuccessDroppedLowerPriority))));
   }
 
   attribution_manager_->HandleSource(
@@ -1027,8 +1046,11 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_RecordsMetric) {
   attribution_manager_->HandleTrigger(DefaultTrigger());
   EXPECT_THAT(StoredReports(), IsEmpty());
   histograms.ExpectUniqueSample(
-      "Conversions.CreateReportStatus",
+      "Conversions.CreateReportStatus2",
       AttributionTrigger::EventLevelResult::kNoMatchingImpressions, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.CreateReportStatus2",
+      AttributionTrigger::AggregatableResult::kNotRegistered, 1);
 }
 
 TEST_F(AttributionManagerImplTest, OnReportSent_NotifiesObservers) {
@@ -1105,7 +1127,7 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
       &observer);
   observation.Observe(attribution_manager_.get());
 
-  SourceBuilder builder;
+  SourceBuilder builder = TestAggregatableSourceProvider().GetBuilder();
   builder.SetExpiry(kImpressionExpiry).SetSourceEventId(7);
   StorableSource source = builder.Build();
 
@@ -1122,17 +1144,32 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
     // Each stored report should notify sources changed one time.
     for (size_t i = 1; i <= 3; i++) {
       EXPECT_CALL(observer, OnSourcesChanged);
-      EXPECT_CALL(observer, OnReportsChanged);
+      EXPECT_CALL(observer,
+                  OnReportsChanged(AttributionReport::ReportType::kEventLevel));
+      EXPECT_CALL(observer,
+                  OnReportsChanged(
+                      AttributionReport::ReportType::kAggregatableAttribution));
     }
     EXPECT_CALL(observer, OnSourceDeactivated).Times(0);
 
     EXPECT_CALL(checkpoint, Call(2));
 
-    EXPECT_CALL(observer, OnReportsChanged).Times(3);
+    EXPECT_CALL(observer,
+                OnReportsChanged(AttributionReport::ReportType::kEventLevel))
+        .Times(3);
+    EXPECT_CALL(observer,
+                OnReportsChanged(
+                    AttributionReport::ReportType::kAggregatableAttribution))
+        .Times(3);
     EXPECT_CALL(checkpoint, Call(3));
 
     EXPECT_CALL(observer, OnSourcesChanged);
-    EXPECT_CALL(observer, OnReportsChanged);
+    EXPECT_CALL(observer,
+                OnReportsChanged(AttributionReport::ReportType::kEventLevel));
+    EXPECT_CALL(observer,
+                OnReportsChanged(
+                    AttributionReport::ReportType::kAggregatableAttribution))
+        .Times(0);
   }
 
   attribution_manager_->HandleSource(source);
@@ -1141,24 +1178,32 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_NotifiesObservers) {
 
   // Store the maximum number of reports for the source.
   for (size_t i = 1; i <= 3; i++) {
-    attribution_manager_->HandleTrigger(DefaultTrigger());
-    EXPECT_THAT(StoredReports(), SizeIs(i));
+    attribution_manager_->HandleTrigger(
+        DefaultAggregatableTriggerBuilder().Build());
+    // i event-level reports and i aggregatable reports.
+    EXPECT_THAT(StoredReports(), SizeIs(i * 2));
   }
 
   checkpoint.Call(2);
 
   // Simulate the reports being sent and removed from storage.
   task_environment_.FastForwardBy(kFirstReportingWindow);
-  EXPECT_THAT(report_sender_->calls(), SizeIs(3));
-  report_sender_->RunCallbacksAndReset({SendResult::Status::kSent,
-                                        SendResult::Status::kSent,
-                                        SendResult::Status::kSent});
+  EXPECT_THAT(aggregation_service_->calls(), SizeIs(3));
+  for (size_t i = 0; i < 3; i++) {
+    aggregation_service_->RunCallback(i, CreateExampleAggregatableReport(),
+                                      AggregationService::AssemblyStatus::kOk);
+  }
+  EXPECT_THAT(report_sender_->calls(), SizeIs(6));
+  report_sender_->RunCallbacksAndReset(
+      {SendResult::Status::kSent, SendResult::Status::kSent,
+       SendResult::Status::kSent, SendResult::Status::kSent,
+       SendResult::Status::kSent, SendResult::Status::kSent});
   EXPECT_THAT(StoredReports(), IsEmpty());
   checkpoint.Call(3);
 
-  // The next report should cause the source to be deactivated; the report
-  // itself shouldn't be stored as we've already reached the maximum number of
-  // conversions per source.
+  // The next event-level report should cause the source to reach the
+  // event-level attribution limit; the report itself shouldn't be stored as
+  // we've already reached the maximum number of event-level reports per source.
   attribution_manager_->HandleTrigger(DefaultTrigger());
   EXPECT_THAT(StoredReports(), IsEmpty());
 }
@@ -1184,6 +1229,17 @@ TEST_F(AttributionManagerImplTest,
        EmbedderDisallowsImpressions_SourceNotStored) {
   base::HistogramTester histograms;
 
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  const auto source = SourceBuilder().SetExpiry(kImpressionExpiry).Build();
+
+  EXPECT_CALL(observer,
+              OnSourceHandled(
+                  source, StorableSource::Result::kProhibitedByBrowserPolicy));
+
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
       browser_client,
@@ -1194,8 +1250,7 @@ TEST_F(AttributionManagerImplTest,
       .WillOnce(Return(false));
   ScopedContentBrowserClientSetting setting(&browser_client);
 
-  attribution_manager_->HandleSource(
-      SourceBuilder().SetExpiry(kImpressionExpiry).Build());
+  attribution_manager_->HandleSource(source);
   EXPECT_THAT(StoredSources(), IsEmpty());
 
   histograms.ExpectUniqueSample("Conversions.RegisterImpressionAllowed", false,
@@ -1205,6 +1260,23 @@ TEST_F(AttributionManagerImplTest,
 TEST_F(AttributionManagerImplTest,
        EmbedderDisallowsConversions_ReportNotStored) {
   base::HistogramTester histograms;
+
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  const auto trigger = DefaultTrigger();
+
+  EXPECT_CALL(observer,
+              OnTriggerHandled(
+                  trigger, AllOf(_,
+                                 CreateReportEventLevelStatusIs(
+                                     AttributionTrigger::EventLevelResult::
+                                         kProhibitedByBrowserPolicy),
+                                 CreateReportAggregatableStatusIs(
+                                     AttributionTrigger::AggregatableResult::
+                                         kProhibitedByBrowserPolicy))));
 
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
@@ -1227,7 +1299,7 @@ TEST_F(AttributionManagerImplTest,
       SourceBuilder().SetExpiry(kImpressionExpiry).Build());
   EXPECT_THAT(StoredSources(), SizeIs(1));
 
-  attribution_manager_->HandleTrigger(DefaultTrigger());
+  attribution_manager_->HandleTrigger(trigger);
   EXPECT_THAT(StoredReports(), IsEmpty());
 
   histograms.ExpectUniqueSample("Conversions.RegisterConversionAllowed", false,
@@ -1757,16 +1829,27 @@ TEST_F(AttributionManagerImplTest,
 
   attribution_manager_->HandleSource(SourceBuilder().Build());
 
-  attribution_manager_->AddAggregatableAttributionForTesting(
-      ReportBuilder(
-          AttributionInfoBuilder(
-              SourceBuilder().SetSourceId(StoredSource::Id(1)).BuildStored())
-              .SetTime(base::Time::Now())
-              .Build())
+  const auto aggregatable_attribution =
+      ReportBuilder(AttributionInfoBuilder(SourceBuilder()
+                                               .SetSourceId(StoredSource::Id(1))
+                                               .SetDefaultFilterData()
+                                               .BuildStored())
+                        .SetTime(base::Time::Now())
+                        .Build())
           .SetReportTime(base::Time::Now() + base::Hours(1))
           .SetAggregatableHistogramContributions(
               {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
-          .BuildAggregatableAttribution());
+          .BuildAggregatableAttribution();
+  attribution_manager_->AddAggregatableAttributionForTesting(
+      aggregatable_attribution);
+
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  EXPECT_CALL(observer, OnReportSent(aggregatable_attribution,
+                                     /*is_debug_report=*/false, _));
 
   // Make sure the report is not sent earlier than its report time.
   task_environment_.FastForwardBy(base::Hours(1) - base::Microseconds(1));
@@ -1870,6 +1953,34 @@ TEST_F(AttributionManagerImplTest, GetFailedReportDelay) {
     EXPECT_EQ(test_case.expected,
               GetFailedReportDelay(test_case.failed_send_attempts))
         << "failed_send_attempts=" << test_case.failed_send_attempts;
+  }
+}
+
+TEST_F(AttributionManagerImplTest, TooManyEventsInQueue) {
+  base::HistogramTester histograms;
+
+  // Prevent sources from being removed from the queue.
+  cookie_checker_->DeferCallbacks();
+
+  for (size_t i = 0; i <= kMaxPendingEvents; i++) {
+    attribution_manager_->HandleSource(
+        SourceBuilder().SetDebugKey(i).SetExpiry(kImpressionExpiry).Build());
+  }
+
+  histograms.ExpectBucketCount("Conversions.EnqueueEventAllowed", true,
+                               kMaxPendingEvents);
+  histograms.ExpectBucketCount("Conversions.EnqueueEventAllowed", false, 1);
+
+  // Unblock the cookie checks. Only the first `kMaxPendingEvents` sources
+  // should be stored.
+  for (size_t i = 0; i <= kMaxPendingEvents; i++) {
+    cookie_checker_->RunNextDeferredCallback(/*is_debug_cookie_set=*/true);
+  }
+
+  std::vector<StoredSource> sources = StoredSources();
+  ASSERT_THAT(sources, SizeIs(kMaxPendingEvents));
+  for (size_t i = 0; i < kMaxPendingEvents; i++) {
+    EXPECT_THAT(sources[i], SourceDebugKeyIs(i));
   }
 }
 

@@ -1,53 +1,84 @@
 ### Compilation failed:
 
-error: 28: type mismatch: '=' cannot operate on 'int', 'float'
-error: 29: type mismatch: '=' cannot operate on 'uint', 'float'
-error: 30: type mismatch: '=' cannot operate on 'int', 'uint'
-error: 31: type mismatch: '=' cannot operate on 'int', 'float'
-error: 32: type mismatch: '=' cannot operate on 'float', 'int'
-error: 32: function 'f_eq_i_disallowed' can exit without returning a value
-error: 33: type mismatch: '=' cannot operate on 'float', 'uint'
-error: 33: function 'f_eq_u_disallowed' can exit without returning a value
-error: 34: type mismatch: '=' cannot operate on 'uint', 'int'
-error: 35: type mismatch: '=' cannot operate on 'uint', 'float'
-error: 36: type mismatch: '+' cannot operate on 'int', 'float'
-error: 37: type mismatch: '-' cannot operate on 'int', 'float'
-error: 38: type mismatch: '*' cannot operate on 'int', 'float'
-error: 39: type mismatch: '/' cannot operate on 'int', 'float'
-error: 40: type mismatch: '+' cannot operate on 'float', 'int'
-error: 41: type mismatch: '-' cannot operate on 'float', 'int'
-error: 42: type mismatch: '*' cannot operate on 'float', 'int'
-error: 43: type mismatch: '/' cannot operate on 'float', 'int'
-error: 44: type mismatch: '+' cannot operate on 'uint', 'float'
-error: 45: type mismatch: '-' cannot operate on 'uint', 'float'
-error: 46: type mismatch: '*' cannot operate on 'uint', 'float'
-error: 47: type mismatch: '/' cannot operate on 'uint', 'float'
-error: 48: type mismatch: '+' cannot operate on 'float', 'uint'
-error: 49: type mismatch: '-' cannot operate on 'float', 'uint'
-error: 50: type mismatch: '*' cannot operate on 'float', 'uint'
-error: 51: type mismatch: '/' cannot operate on 'float', 'uint'
-error: 52: type mismatch: '+' cannot operate on 'int', 'float'
-error: 53: type mismatch: '-' cannot operate on 'int', 'float'
-error: 54: type mismatch: '*' cannot operate on 'int', 'float'
-error: 55: type mismatch: '/' cannot operate on 'int', 'float'
-error: 56: type mismatch: '+' cannot operate on 'float', 'int'
-error: 57: type mismatch: '-' cannot operate on 'float', 'int'
-error: 58: type mismatch: '*' cannot operate on 'float', 'int'
-error: 59: type mismatch: '/' cannot operate on 'float', 'int'
-error: 60: type mismatch: '+' cannot operate on 'uint', 'float'
-error: 61: type mismatch: '-' cannot operate on 'uint', 'float'
-error: 62: type mismatch: '*' cannot operate on 'uint', 'float'
-error: 63: type mismatch: '/' cannot operate on 'uint', 'float'
-error: 64: type mismatch: '+' cannot operate on 'float', 'uint'
-error: 65: type mismatch: '-' cannot operate on 'float', 'uint'
-error: 66: type mismatch: '*' cannot operate on 'float', 'uint'
-error: 67: type mismatch: '/' cannot operate on 'float', 'uint'
-error: 68: type mismatch: '+' cannot operate on 'int', 'uint'
-error: 69: type mismatch: '-' cannot operate on 'int', 'uint'
-error: 70: type mismatch: '*' cannot operate on 'int', 'uint'
-error: 71: type mismatch: '/' cannot operate on 'int', 'uint'
-error: 72: type mismatch: '+' cannot operate on 'uint', 'int'
-error: 73: type mismatch: '-' cannot operate on 'uint', 'int'
-error: 74: type mismatch: '*' cannot operate on 'uint', 'int'
-error: 75: type mismatch: '/' cannot operate on 'uint', 'int'
-50 errors
+error: 16: type mismatch: '=' cannot operate on 'int', 'float'
+void   i_eq_float_literal_disallowed()     { i = 1.0; }
+                                             ^^^^^^^
+error: 17: type mismatch: '=' cannot operate on 'int', 'float'
+void   i_eq_f_disallowed()                 { i = f; }
+                                             ^^^^^
+error: 18: type mismatch: '=' cannot operate on 'float', 'int'
+void   f_eq_i_disallowed()                 { f = i; }
+                                             ^^^^^
+error: 19: type mismatch: '+' cannot operate on 'int', 'float'
+void   i_plus_float_literal_disallowed()   { i + 1.0; }
+                                             ^^^^^^^
+error: 20: type mismatch: '-' cannot operate on 'int', 'float'
+void   i_minus_float_literal_disallowed()  { i - 1.0; }
+                                             ^^^^^^^
+error: 21: type mismatch: '*' cannot operate on 'int', 'float'
+void   i_mul_float_literal_disallowed()    { i * 1.0; }
+                                             ^^^^^^^
+error: 22: type mismatch: '/' cannot operate on 'int', 'float'
+void   i_div_float_literal_disallowed()    { i / 1.0; }
+                                             ^^^^^^^
+error: 23: type mismatch: '+' cannot operate on 'float', 'int'
+void   float_literal_plus_i_disallowed()   { 1.0 + i; }
+                                             ^^^^^^^
+error: 24: type mismatch: '-' cannot operate on 'float', 'int'
+void   float_literal_minus_i_disallowed()  { 1.0 - i; }
+                                             ^^^^^^^
+error: 25: type mismatch: '*' cannot operate on 'float', 'int'
+void   float_literal_mul_i_disallowed()    { 1.0 * i; }
+                                             ^^^^^^^
+error: 26: type mismatch: '/' cannot operate on 'float', 'int'
+void   float_literal_div_i_disallowed()    { 1.0 / i; }
+                                             ^^^^^^^
+error: 27: type mismatch: '+' cannot operate on 'int', 'float'
+void   i_plus_f_disallowed()               { i + f; }
+                                             ^^^^^
+error: 28: type mismatch: '-' cannot operate on 'int', 'float'
+void   i_minus_f_disallowed()              { i - f; }
+                                             ^^^^^
+error: 29: type mismatch: '*' cannot operate on 'int', 'float'
+void   i_mul_f_disallowed()                { i * f; }
+                                             ^^^^^
+error: 30: type mismatch: '/' cannot operate on 'int', 'float'
+void   i_div_f_disallowed()                { i / f; }
+                                             ^^^^^
+error: 31: type mismatch: '+' cannot operate on 'float', 'int'
+void   f_plus_i_disallowed()               { f + i; }
+                                             ^^^^^
+error: 32: type mismatch: '-' cannot operate on 'float', 'int'
+void   f_minus_i_disallowed()              { f - i; }
+                                             ^^^^^
+error: 33: type mismatch: '*' cannot operate on 'float', 'int'
+void   f_mul_i_disallowed()                { f * i; }
+                                             ^^^^^
+error: 34: type mismatch: '/' cannot operate on 'float', 'int'
+void   f_div_i_disallowed()                { f / i; }
+                                             ^^^^^
+error: 35: unknown identifier 'u'
+void   f_plus_u_disallowed()               { f + u; }
+                                                 ^
+error: 36: unknown identifier 'u'
+void   f_minus_u_disallowed()              { f - u; }
+                                                 ^
+error: 37: unknown identifier 'u'
+void   f_mul_u_disallowed()                { f * u; }
+                                                 ^
+error: 38: unknown identifier 'u'
+void   f_div_u_disallowed()                { f / u; }
+                                                 ^
+error: 39: unknown identifier 'u'
+void   i_plus_u_disallowed()               { i + u; }
+                                                 ^
+error: 40: unknown identifier 'u'
+void   i_minus_u_disallowed()              { i - u; }
+                                                 ^
+error: 41: unknown identifier 'u'
+void   i_mul_u_disallowed()                { i * u; }
+                                                 ^
+error: 42: unknown identifier 'u'
+void   i_div_u_disallowed()                { i / u; }
+                                                 ^
+27 errors

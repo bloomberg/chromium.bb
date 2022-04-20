@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWN_NODE_BINDING_ASYNC_RUNNER_H_
-#define DAWN_NODE_BINDING_ASYNC_RUNNER_H_
+#ifndef SRC_DAWN_NODE_BINDING_ASYNCRUNNER_H_
+#define SRC_DAWN_NODE_BINDING_ASYNCRUNNER_H_
 
 #include <stdint.h>
 #include <memory>
 
 #include "dawn/webgpu_cpp.h"
-#include "napi.h"
+
+#include "src/dawn/node/interop/Napi.h"
 
 namespace wgpu::binding {
 
@@ -58,7 +59,7 @@ namespace wgpu::binding {
         // Calls AsyncRunner::Begin()
         inline AsyncTask(std::shared_ptr<AsyncRunner> runner) : runner_(std::move(runner)) {
             runner_->Begin();
-        };
+        }
 
         // Destructor.
         // Calls AsyncRunner::End()
@@ -74,4 +75,4 @@ namespace wgpu::binding {
 
 }  // namespace wgpu::binding
 
-#endif  // DAWN_NODE_BINDING_ASYNC_RUNNER_H_
+#endif  // SRC_DAWN_NODE_BINDING_ASYNCRUNNER_H_

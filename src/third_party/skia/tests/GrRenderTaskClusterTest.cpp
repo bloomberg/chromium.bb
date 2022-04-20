@@ -5,9 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "src/gpu/GrRenderTaskCluster.h"
-#include "src/gpu/mock/GrMockRenderTask.h"
-#include "src/gpu/mock/GrMockSurfaceProxy.h"
+#include "src/gpu/ganesh/GrRenderTaskCluster.h"
+#include "src/gpu/ganesh/mock/GrMockRenderTask.h"
+#include "src/gpu/ganesh/mock/GrMockSurfaceProxy.h"
 #include "tests/Test.h"
 
 typedef void (*CreateGraphPF)(SkTArray<sk_sp<GrMockRenderTask>>* graph,
@@ -17,7 +17,7 @@ static void make_proxies(int count, SkTArray<sk_sp<GrSurfaceProxy>>* proxies) {
     proxies->reset(count);
     for (int i = 0; i < count; i++) {
         auto name = SkStringPrintf("%c", 'A' + i);
-        proxies->at(i) = sk_make_sp<GrMockSurfaceProxy>(std::move(name));
+        proxies->at(i) = sk_make_sp<GrMockSurfaceProxy>(std::move(name), /*label=*/"");
     }
 }
 

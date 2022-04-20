@@ -7,6 +7,7 @@
 #include "base/memory/raw_ptr.h"
 #include "cc/paint/paint_shader.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/grit/generated_resources.h"
@@ -90,10 +91,9 @@ class TabStripContainerOverflowIndicator : public views::View {
   // views::View overrides:
   void OnPaint(gfx::Canvas* canvas) override {
     // TODO(tbergquist): Handle themes with titlebar background images.
-    // TODO(tbergquist): Handle dark themes where GG800 doesn't contrast well.
     SkColor frame_color = tab_strip_->controller()->GetFrameColor(
         BrowserFrameActiveState::kUseCurrent);
-    SkColor shadow_color = gfx::kGoogleGrey800;
+    SkColor shadow_color = GetColorProvider()->GetColor(ui::kColorShadowBase);
 
     // Mirror how the indicator is painted for the right vs left sides.
     SkPoint points[2];
@@ -114,8 +114,8 @@ class TabStripContainerOverflowIndicator : public views::View {
     color_positions[1] = static_cast<float>(kOpaqueWidth) / kTotalWidth;
 
     // Paint a shadow-like gradient on the inside.
-    colors[2] = SkColorSetA(shadow_color, 0x4D);
-    colors[3] = SkColorSetA(shadow_color, 0x4D);
+    colors[2] = shadow_color;
+    colors[3] = shadow_color;
     colors[4] = SkColorSetA(shadow_color, SK_AlphaTRANSPARENT);
     color_positions[2] = static_cast<float>(kOpaqueWidth) / kTotalWidth;
     color_positions[3] =
@@ -204,7 +204,8 @@ TabStripScrollContainer::TabStripScrollContainer(
   // The space in dips between the scroll buttons and the NTB.
   constexpr int kScrollButtonsTrailingMargin = 8;
   trailing_scroll_button_->SetProperty(
-      views::kMarginsKey, gfx::Insets(0, 0, 0, kScrollButtonsTrailingMargin));
+      views::kMarginsKey,
+      gfx::Insets::TLBR(0, 0, 0, kScrollButtonsTrailingMargin));
 
   // The default layout orientation (kHorizontal) and cross axis alignment
   // (kStretch) work for our use case.
@@ -241,15 +242,16 @@ void TabStripScrollContainer::ScrollTowardsTrailingTab() {
 }
 
 void TabStripScrollContainer::FrameColorsChanged() {
-  const SkColor background_color = tab_strip_->GetTabBackgroundColor(
-      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
   SkColor foreground_color =
-      tab_strip_->GetTabForegroundColor(TabActive::kInactive, background_color);
+      tab_strip_->GetTabForegroundColor(TabActive::kInactive);
+  /* Use placeholder color for disabled state because these buttons should
+     never be disabled (they are hidden when the tab strip is not full) */
   views::SetImageFromVectorIconWithColor(
-      leading_scroll_button_, kScrollingTabstripLeadingIcon, foreground_color);
-  views::SetImageFromVectorIconWithColor(trailing_scroll_button_,
-                                         kScrollingTabstripTrailingIcon,
-                                         foreground_color);
+      leading_scroll_button_, kScrollingTabstripLeadingIcon, foreground_color,
+      gfx::kPlaceholderColor);
+  views::SetImageFromVectorIconWithColor(
+      trailing_scroll_button_, kScrollingTabstripTrailingIcon, foreground_color,
+      gfx::kPlaceholderColor);
   left_overflow_indicator_->SchedulePaint();
   right_overflow_indicator_->SchedulePaint();
 }

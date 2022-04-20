@@ -35,6 +35,7 @@
 #include "error_resilience.h"
 #include "mpegutils.h"
 #include "mpegvideo.h"
+#include "mpegvideodec.h"
 #include "golomb.h"
 #include "internal.h"
 #include "mathops.h"
@@ -42,6 +43,7 @@
 #include "qpeldsp.h"
 #include "rectangle.h"
 #include "thread.h"
+#include "threadframe.h"
 
 #include "rv34vlc.h"
 #include "rv34data.h"
@@ -1571,13 +1573,13 @@ static int finish_frame(AVCodecContext *avctx, AVFrame *pict)
         if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->current_picture_ptr, pict);
-        ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_QSCALE_TYPE_MPEG1);
+        ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_MPV_QSCALE_TYPE_MPEG1);
         got_picture = 1;
     } else if (s->last_picture_ptr) {
         if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->last_picture_ptr, pict);
-        ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_QSCALE_TYPE_MPEG1);
+        ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_MPV_QSCALE_TYPE_MPEG1);
         got_picture = 1;
     }
 

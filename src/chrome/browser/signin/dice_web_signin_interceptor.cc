@@ -21,6 +21,7 @@
 #include "chrome/browser/new_tab_page/chrome_colors/generated_colors_info.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -96,51 +97,6 @@ bool HasNoBrowser(content::WebContents* web_contents) {
   return chrome::FindBrowserWithWebContents(web_contents) == nullptr;
 }
 
-// Returns true if enterprise separation is required.
-// Returns false is enterprise separation is not required.
-// Returns no value if info is required to determine if enterprise separation is
-// required.
-// If `managed_account_profile_level_signin_restriction` is `absl::nullopt` then
-// the user cloud policy value of ManagedAccountsSigninRestriction has not yet
-// been fetched. If it is an empty string, then the value has been fetched but
-// no policy was set.
-absl::optional<bool> EnterpriseSeparationMaybeRequired(
-    Profile* profile,
-    const std::string& email,
-    signin::IdentityManager* identity_manager,
-    bool is_new_account_interception,
-    absl::optional<std::string>
-        managed_account_profile_level_signin_restriction) {
-  // No enterprise separation required for consumer accounts.
-  if (policy::BrowserPolicyConnector::IsNonEnterpriseUser(email))
-    return false;
-
-  auto intercepted_account_info =
-      identity_manager->FindExtendedAccountInfoByEmailAddress(email);
-  // If the account info is not found, we need to wait for the info to be
-  // available.
-  if (!intercepted_account_info.IsValid())
-    return absl::nullopt;
-  // If the intercepted account is not managed, no interception required.
-  if (!intercepted_account_info.IsManaged())
-    return false;
-  // If `profile` requires enterprise profile separation, return true.
-  if (signin_util::ProfileSeparationEnforcedByPolicy(
-          profile, managed_account_profile_level_signin_restriction.value_or(
-                       std::string()))) {
-    return true;
-  }
-  // If we still do not know if profile separation is required, the account
-  // level policies for the intercepted account must be fetched if possible.
-  if (is_new_account_interception &&
-      !managed_account_profile_level_signin_restriction.has_value() &&
-      g_browser_process->system_network_context_manager()) {
-    return absl::nullopt;
-  }
-
-  return false;
-}
-
 }  // namespace
 
 ScopedDiceWebSigninInterceptionBubbleHandle::
@@ -150,8 +106,37 @@ bool SigninInterceptionHeuristicOutcomeIsSuccess(
     SigninInterceptionHeuristicOutcome outcome) {
   return outcome == SigninInterceptionHeuristicOutcome::kInterceptEnterprise ||
          outcome == SigninInterceptionHeuristicOutcome::kInterceptMultiUser ||
-         outcome == SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch;
+         outcome ==
+             SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch ||
+         outcome ==
+             SigninInterceptionHeuristicOutcome::kInterceptEnterpriseForced ||
+         outcome == SigninInterceptionHeuristicOutcome::
+                        kInterceptEnterpriseForcedProfileSwitch;
 }
+
+DiceWebSigninInterceptor::Delegate::BubbleParameters::BubbleParameters(
+    SigninInterceptionType interception_type,
+    AccountInfo intercepted_account,
+    AccountInfo primary_account,
+    SkColor profile_highlight_color,
+    bool show_guest_option,
+    bool show_link_data_option)
+    : interception_type(interception_type),
+      intercepted_account(intercepted_account),
+      primary_account(primary_account),
+      profile_highlight_color(profile_highlight_color),
+      show_guest_option(show_guest_option),
+      show_link_data_option(show_link_data_option) {}
+
+DiceWebSigninInterceptor::Delegate::BubbleParameters::BubbleParameters(
+    const BubbleParameters& copy) = default;
+
+DiceWebSigninInterceptor::Delegate::BubbleParameters&
+DiceWebSigninInterceptor::Delegate::BubbleParameters::operator=(
+    const BubbleParameters&) = default;
+
+DiceWebSigninInterceptor::Delegate::BubbleParameters::~BubbleParameters() =
+    default;
 
 DiceWebSigninInterceptor::DiceWebSigninInterceptor(
     Profile* profile,
@@ -183,8 +168,8 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
     bool is_sync_signin,
     const std::string& email,
     const ProfileAttributesEntry** entry) const {
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kSigninInterceptionEnabled))
-    return SigninInterceptionHeuristicOutcome::kAbortInterceptionDisabled;
+  bool signin_interception_enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kSigninInterceptionEnabled);
 
   if (is_sync_signin) {
     // Do not intercept signins from the Sync startup flow.
@@ -193,18 +178,25 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
     // interception is missed.
     return SigninInterceptionHeuristicOutcome::kAbortSyncSignin;
   }
-  // Wait for more account info is enterprise separation is required or if more
-  // info is needed.
-  if (EnterpriseSeparationMaybeRequired(
-          profile_, email, identity_manager_, is_new_account,
-          /*managed_account_profile_level_signin_restriction=*/absl::nullopt)
-          .value_or(true)) {
-    return absl::nullopt;
-  }
 
-  if (!is_new_account) {
+  auto enforce_enterprise_separation = EnterpriseSeparationMaybeRequired(
+      email, is_new_account,
+      /*managed_account_profile_level_signin_restriction=*/absl::nullopt);
+
+  // If we do not have all the information to enforce or not enterprise profile
+  // separation, return `absl::nullopt` so that we can try and get more info on
+  // the intercepted account.
+  if (!enforce_enterprise_separation)
+    return absl::nullopt;
+
+  if (!enforce_enterprise_separation.value()) {
+    // If interception is disabled abort, unless we need to enforce enterprise
+    // profile separation.
+    if (!signin_interception_enabled)
+      return SigninInterceptionHeuristicOutcome::kAbortInterceptionDisabled;
     // Do not intercept reauth.
-    return SigninInterceptionHeuristicOutcome::kAbortAccountNotNew;
+    if (!is_new_account)
+      return SigninInterceptionHeuristicOutcome::kAbortAccountNotNew;
   }
 
   const ProfileAttributesEntry* switch_to_entry = ShouldShowProfileSwitchBubble(
@@ -213,8 +205,18 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
   if (switch_to_entry) {
     if (entry)
       *entry = switch_to_entry;
+    if (enforce_enterprise_separation.value()) {
+      return SigninInterceptionHeuristicOutcome::
+          kInterceptEnterpriseForcedProfileSwitch;
+    }
+    DCHECK(is_new_account) << "Reauths were already handled above";
     return SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch;
   }
+
+  if (enforce_enterprise_separation.value())
+    return SigninInterceptionHeuristicOutcome::kInterceptEnterpriseForced;
+
+  DCHECK(signin_interception_enabled && !enforce_enterprise_separation.value());
 
   // From this point the remaining possible interceptions involve creating a new
   // profile.
@@ -301,26 +303,10 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
   new_account_interception_ = is_new_account;
   web_contents_ = web_contents->GetWeakPtr();
 
-  if (heuristic_outcome) {
+  if (heuristic_outcome &&
+      !SigninInterceptionHeuristicOutcomeIsSuccess(*heuristic_outcome)) {
     RecordSigninInterceptionHeuristicOutcome(*heuristic_outcome);
-    if (*heuristic_outcome ==
-        SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch) {
-      DCHECK(entry);
-      Delegate::BubbleParameters bubble_parameters{
-          SigninInterceptionType::kProfileSwitch, account_info,
-          GetPrimaryAccountInfo(identity_manager_),
-          entry->GetProfileThemeColors().profile_highlight_color,
-          /*show_guest_option=*/false};
-      ShowSigninInterceptionBubble(
-          bubble_parameters,
-          base::BindOnce(&DiceWebSigninInterceptor::OnProfileSwitchChoice,
-                         base::Unretained(this), account_info.email,
-                         entry->GetPath()));
-    } else {
-      // Interception is aborted.
-      DCHECK(!SigninInterceptionHeuristicOutcomeIsSuccess(*heuristic_outcome));
-      Reset();
-    }
+    Reset();
     return;
   }
 
@@ -426,6 +412,25 @@ bool DiceWebSigninInterceptor::ShouldEnforceEnterpriseProfileSeparation(
   return false;
 }
 
+bool DiceWebSigninInterceptor::ShouldShowEnterpriseDialog(
+    const AccountInfo& intercepted_account_info) const {
+  DCHECK(intercepted_account_info.IsValid());
+  // Check if the intercepted account is managed.
+  if (!intercepted_account_info.IsManaged())
+    return false;
+
+  CoreAccountInfo primary_core_account_info =
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
+
+  if (primary_core_account_info.account_id ==
+          intercepted_account_info.account_id &&
+      !chrome::enterprise_util::UserAcceptedAccountManagement(profile_)) {
+    return true;
+  }
+
+  return false;
+}
+
 bool DiceWebSigninInterceptor::ShouldShowEnterpriseBubble(
     const AccountInfo& intercepted_account_info) const {
   DCHECK(intercepted_account_info.IsValid());
@@ -495,34 +500,62 @@ void DiceWebSigninInterceptor::OnInterceptionReadyToBeProcessed(
   bool force_profile_separation =
       ShouldEnforceEnterpriseProfileSeparation(info);
 
-  if (switch_to_entry) {
-    // Propose account switching if we skipped in GetHeuristicOutcome because we
-    // returned a nullptr to get more information about forced enterprise
-    // profile separation.
-    interception_type = force_profile_separation
-                            ? SigninInterceptionType::kProfileSwitchForced
-                            : SigninInterceptionType::kProfileSwitch;
+  // This is normally checked in GetHeuristicOutcome() but that's not possible
+  // for enterprise accounts where we need to wait for policies, that is why we
+  // double check here.
+  if (!force_profile_separation && HasUserDeclinedProfileCreation(info.email)) {
     RecordSigninInterceptionHeuristicOutcome(
-        force_profile_separation
-            ? SigninInterceptionHeuristicOutcome::
-                  kInterceptEnterpriseForcedProfileSwitch
-            : SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch);
-  } else if (force_profile_separation) {
-    // In case of a reauth of an account that already had sync enabled,
-    // the user already accepted to use a managed profile. Simply update that
-    // fact.
-    if (!new_account_interception_ &&
-        identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync) ==
-            info.account_id) {
+        SigninInterceptionHeuristicOutcome::
+            kAbortUserDeclinedProfileForAccount);
+    Reset();
+    return;
+  }
+
+  bool show_link_data_option = false;
+
+  if (force_profile_separation) {
+    if (switch_to_entry) {
+      interception_type = SigninInterceptionType::kProfileSwitchForced;
+      RecordSigninInterceptionHeuristicOutcome(
+          SigninInterceptionHeuristicOutcome::
+              kInterceptEnterpriseForcedProfileSwitch);
+    } else if (!new_account_interception_ &&
+               identity_manager_->GetPrimaryAccountId(
+                   signin::ConsentLevel::kSync) == info.account_id) {
+      // In case of a reauth of an account that already had sync enabled,
+      // the user already accepted to use a managed profile. Simply update that
+      // fact.
       chrome::enterprise_util::SetUserAcceptedAccountManagement(profile_, true);
       RecordSigninInterceptionHeuristicOutcome(
           SigninInterceptionHeuristicOutcome::kAbortAccountNotNew);
       Reset();
       return;
+    } else {
+      interception_type = SigninInterceptionType::kEnterpriseForced;
+      show_link_data_option = signin_util::
+          ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile(
+              profile_,
+              intercepted_account_level_policy_value_.value_or(std::string()));
+      RecordSigninInterceptionHeuristicOutcome(
+          SigninInterceptionHeuristicOutcome::kInterceptEnterpriseForced);
     }
-    interception_type = SigninInterceptionType::kEnterpriseForced;
+  } else if (ShouldShowEnterpriseDialog(info)) {
+    interception_type = SigninInterceptionType::kEnterpriseAcceptManagement;
     RecordSigninInterceptionHeuristicOutcome(
-        SigninInterceptionHeuristicOutcome::kInterceptEnterpriseForced);
+        SigninInterceptionHeuristicOutcome::kInterceptEnterprise);
+  } else if (!profile_->GetPrefs()->GetBoolean(
+                 prefs::kSigninInterceptionEnabled)) {
+    RecordSigninInterceptionHeuristicOutcome(
+        SigninInterceptionHeuristicOutcome::kAbortInterceptionDisabled);
+    Reset();
+    return;
+  } else if (switch_to_entry) {
+    // Propose account switching if we skipped in GetHeuristicOutcome because we
+    // returned a nullptr to get more information about forced enterprise
+    // profile separation.
+    interception_type = SigninInterceptionType::kProfileSwitch;
+    RecordSigninInterceptionHeuristicOutcome(
+        SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch);
   } else if (ShouldShowEnterpriseBubble(info)) {
     interception_type = SigninInterceptionType::kEnterprise;
     RecordSigninInterceptionHeuristicOutcome(
@@ -541,10 +574,10 @@ void DiceWebSigninInterceptor::OnInterceptionReadyToBeProcessed(
     return;
   }
 
-  Delegate::BubbleParameters bubble_parameters{
+  Delegate::BubbleParameters bubble_parameters(
       *interception_type, info, GetPrimaryAccountInfo(identity_manager_),
       GetAutogeneratedThemeColors(profile_color).frame_color,
-      /*show_guest_option=*/false};
+      /*show_guest_option=*/false, show_link_data_option);
 
   base::OnceCallback<void(SigninInterceptionResult)> callback;
   switch (*interception_type) {
@@ -555,6 +588,7 @@ void DiceWebSigninInterceptor::OnInterceptionReadyToBeProcessed(
           base::Unretained(this), info.email, switch_to_entry->GetPath());
       break;
     case SigninInterceptionType::kEnterpriseForced:
+    case SigninInterceptionType::kEnterpriseAcceptManagement:
       callback = base::BindOnce(
           &DiceWebSigninInterceptor::OnEnterpriseProfileCreationResult,
           base::Unretained(this), info, profile_color);
@@ -585,7 +619,7 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
   // Fetch the ManagedAccountsSigninRestriction policy value for the intercepted
   // account with a timeout.
   if (!EnterpriseSeparationMaybeRequired(
-           profile_, info.email, identity_manager_, new_account_interception_,
+           info.email, new_account_interception_,
            intercepted_account_level_policy_value_)
            .has_value()) {
     FetchAccountLevelSigninRestrictionForInterceptedAccount(
@@ -706,6 +740,13 @@ void DiceWebSigninInterceptor::OnEnterpriseProfileCreationResult(
     const AccountInfo& account_info,
     SkColor profile_color,
     SigninInterceptionResult create) {
+  signin_util::RecordEnterpriseProfileCreationUserChoice(
+      /*enforced_by_policy=*/signin_util::ProfileSeparationEnforcedByPolicy(
+          profile_,
+          intercepted_account_level_policy_value_.value_or(std::string())),
+      /*created=*/create == SigninInterceptionResult::kAccepted);
+
+  // Make sure existing account is a non-signed in profile.
   if (create == SigninInterceptionResult::kAccepted) {
     intercepted_account_management_accepted_ = true;
     // In case of a reauth if there was no consent for management, do not create
@@ -720,6 +761,13 @@ void DiceWebSigninInterceptor::OnEnterpriseProfileCreationResult(
       OnProfileCreationChoice(account_info, profile_color,
                               SigninInterceptionResult::kAccepted);
     }
+  } else if (create == SigninInterceptionResult::kAcceptedWithExistingProfile) {
+    intercepted_account_management_accepted_ = true;
+    DCHECK_EQ(GetPrimaryAccountInfo(identity_manager_).account_id,
+              account_info.account_id);
+    chrome::enterprise_util::SetUserAcceptedAccountManagement(
+        profile_, intercepted_account_management_accepted_);
+    Reset();
   } else {
     DCHECK_EQ(SigninInterceptionResult::kDeclined, create)
         << "The user can only accept or decline";
@@ -731,11 +779,6 @@ void DiceWebSigninInterceptor::OnEnterpriseProfileCreationResult(
         signin_metrics::SourceForRefreshTokenOperation::
             kTurnOnSyncHelper_Abort);
   }
-  signin_util::RecordEnterpriseProfileCreationUserChoice(
-      /*enforced_by_policy=*/signin_util::ProfileSeparationEnforcedByPolicy(
-          profile_,
-          intercepted_account_level_policy_value_.value_or(std::string())),
-      /*created=*/create == SigninInterceptionResult::kAccepted);
 }
 
 void DiceWebSigninInterceptor::OnNewBrowserCreated(bool is_new_profile) {
@@ -828,4 +871,41 @@ void DiceWebSigninInterceptor::
   }
   intercepted_account_level_policy_value_ = signin_restriction;
   OnInterceptionReadyToBeProcessed(account_info);
+}
+
+absl::optional<bool>
+DiceWebSigninInterceptor::EnterpriseSeparationMaybeRequired(
+    const std::string& email,
+    bool is_new_account_interception,
+    absl::optional<std::string>
+        managed_account_profile_level_signin_restriction) const {
+  // No enterprise separation required for consumer accounts.
+  if (policy::BrowserPolicyConnector::IsNonEnterpriseUser(email))
+    return false;
+
+  auto intercepted_account_info =
+      identity_manager_->FindExtendedAccountInfoByEmailAddress(email);
+  // If the account info is not found, we need to wait for the info to be
+  // available.
+  if (!intercepted_account_info.IsValid())
+    return absl::nullopt;
+  // If the intercepted account is not managed, no interception required.
+  if (!intercepted_account_info.IsManaged())
+    return false;
+  // If `profile` requires enterprise profile separation, return true.
+  if (signin_util::ProfileSeparationEnforcedByPolicy(
+          profile_, managed_account_profile_level_signin_restriction.value_or(
+                        std::string()))) {
+    return true;
+  }
+  // If we still do not know if profile separation is required, the account
+  // level policies for the intercepted account must be fetched if possible.
+  if (is_new_account_interception &&
+      !managed_account_profile_level_signin_restriction.has_value() &&
+      (g_browser_process->system_network_context_manager() ||
+       intercepted_account_level_policy_value_fetch_result_for_testing_)) {
+    return absl::nullopt;
+  }
+
+  return false;
 }

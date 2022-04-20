@@ -88,7 +88,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, 68},
     {ContentSettingsType::WINDOW_PLACEMENT, 69},
     {ContentSettingsType::INSECURE_PRIVATE_NETWORK, 70},
-    {ContentSettingsType::FONT_ACCESS, 71},
+    {ContentSettingsType::LOCAL_FONTS, 71},
     {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, 72},
     {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, 73},
     {ContentSettingsType::DISPLAY_CAPTURE, 74},
@@ -104,6 +104,16 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::REQUEST_DESKTOP_SITE, 84},
     {ContentSettingsType::FEDERATED_IDENTITY_API, 85},
 };
+
+void FilterRulesForType(ContentSettingsForOneType& settings,
+                        const GURL& primary_url) {
+  base::EraseIf(settings,
+                [&primary_url](const ContentSettingPatternSource& source) {
+                  return !source.primary_pattern.Matches(primary_url);
+                });
+  // We should have at least on rule remaining (the default rule).
+  DCHECK_GE(settings.size(), 1u);
+}
 
 }  // namespace
 
@@ -187,12 +197,32 @@ bool RendererContentSettingRules::IsRendererContentSetting(
     ContentSettingsType content_type) {
   return content_type == ContentSettingsType::IMAGES ||
          content_type == ContentSettingsType::JAVASCRIPT ||
-         content_type == ContentSettingsType::CLIENT_HINTS ||
          content_type == ContentSettingsType::POPUPS ||
          content_type == ContentSettingsType::MIXEDSCRIPT ||
          content_type == ContentSettingsType::AUTO_DARK_WEB_CONTENT;
 }
 
-RendererContentSettingRules::RendererContentSettingRules() {}
+void RendererContentSettingRules::FilterRulesByOutermostMainFrameURL(
+    const GURL& outermost_main_frame_url) {
+  FilterRulesForType(image_rules, outermost_main_frame_url);
+  FilterRulesForType(script_rules, outermost_main_frame_url);
+  FilterRulesForType(popup_redirect_rules, outermost_main_frame_url);
+  FilterRulesForType(mixed_content_rules, outermost_main_frame_url);
+  FilterRulesForType(auto_dark_content_rules, outermost_main_frame_url);
+}
 
-RendererContentSettingRules::~RendererContentSettingRules() {}
+RendererContentSettingRules::RendererContentSettingRules() = default;
+
+RendererContentSettingRules::~RendererContentSettingRules() = default;
+
+RendererContentSettingRules::RendererContentSettingRules(
+    const RendererContentSettingRules&) = default;
+
+RendererContentSettingRules::RendererContentSettingRules(
+    RendererContentSettingRules&& rules) = default;
+
+RendererContentSettingRules& RendererContentSettingRules::operator=(
+    const RendererContentSettingRules& rules) = default;
+
+RendererContentSettingRules& RendererContentSettingRules::operator=(
+    RendererContentSettingRules&& rules) = default;

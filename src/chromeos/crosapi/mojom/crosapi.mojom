@@ -38,6 +38,7 @@ import "chromeos/crosapi/mojom/local_printer.mojom";
 import "chromeos/crosapi/mojom/login.mojom";
 import "chromeos/crosapi/mojom/login_screen_storage.mojom";
 import "chromeos/crosapi/mojom/login_state.mojom";
+import "chromeos/crosapi/mojom/policy_namespace.mojom";
 import "chromeos/crosapi/mojom/policy_service.mojom";
 import "chromeos/crosapi/mojom/message_center.mojom";
 import "chromeos/crosapi/mojom/metrics_reporting.mojom";
@@ -100,8 +101,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 70
-// Next method id: 73
+// Next version: 71
+// Next method id: 74
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -230,6 +231,12 @@ interface Crosapi {
   // Added in M93.
   [MinVersion=29] BindDriveIntegrationService@34(
       pending_receiver<DriveIntegrationService> receiver);
+
+  // Binds the extension publisher service, which allows Lacros to connect its
+  // extensions to the app service.
+  // Added in M93.
+  [MinVersion=70]
+  BindExtensionPublisher@73(pending_receiver<AppPublisher> receiver);
 
   // Binds the FileManager interface for showing files, folders, etc.
   // Added in M88.
@@ -696,8 +703,8 @@ enum OpenUrlFrom {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 38
-// Next id: 38
+// Next version: 42
+// Next id: 42
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -861,6 +868,11 @@ struct BrowserInitParams {
   [MinVersion=26]
   string? metrics_service_client_id@26;
 
+  // UKM client id of ash chrome.
+  // Lacros needs to use the same client id as ash chrome.
+  [MinVersion=38]
+  uint64 ukm_client_id@38;
+
   // When this flag is |true|, Lacros is the only browser.
   [MinVersion=27]
   bool standalone_browser_is_only_browser@27;
@@ -868,6 +880,10 @@ struct BrowserInitParams {
   // When this flag is set, lacros will publish chrome apps to the app service.
   [MinVersion=28]
   bool publish_chrome_apps@28;
+
+// When this flag is set, lacros will publish hosted apps to the app service.
+  [MinVersion=39]
+  bool publish_hosted_apps@39;
 
   [Stable, Extensible]
   enum InitialKeepAlive {
@@ -943,6 +959,17 @@ struct BrowserInitParams {
   // The form factor of the device.
   [MinVersion=37]
   DeviceType device_type@37;
+
+  // Whether on-device speech recognition is supported on the platform.
+  // Forwarded from ash flag OnDeviceSpeechRecognition.
+  [MinVersion=40]
+  bool is_ondevice_speech_supported@40;
+
+  // Policy blob of the extension policy for the device account. The values of
+  // the map are serialized PolicyFetchResponse proto messages from
+  // components/policy/proto/device_management_backend.proto.
+  [MinVersion=41]
+  map<crosapi.mojom.PolicyNamespace, array<uint8>>? device_account_component_policy@41;
 };
 
 // Parameters to specify OpenUrl behavior.
@@ -977,8 +1004,8 @@ struct OpenUrlParams {
 // has accidentally become a kitchen sink for different features. This was not
 // intentional.
 //
-// Next MinVersion: 64.
-// Next ID: 15
+// Next MinVersion: 66.
+// Next ID: 17
 //
 [Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91",
  RenamedFrom="crosapi.mojom.LacrosChromeService"]
@@ -1085,6 +1112,18 @@ interface BrowserService {
   // Introduced in M97.
   [MinVersion=14]
   UpdateKeepAlive@12(bool enabled);
+
+  // Opens lacros with a full restore (all previously open windows from the
+  // previous lacros session). This must be called before a browser has been
+  // created as this will update the state of the last opened profiles.
+  [MinVersion=64]
+  OpenForFullRestore@15();
+
+  // Notifies Lacros to update the component policy data. The values of the map
+  // are serialized PolicyFetchResponse proto messages from
+  // components/policy/proto/device_management_backend.proto.
+  [MinVersion=65]
+  UpdateComponentPolicy@16(map<crosapi.mojom.PolicyNamespace, array<uint8>> policy);
 };
 
 // TODO(crbug.com/1180712): move to its own file. Currently due to circular

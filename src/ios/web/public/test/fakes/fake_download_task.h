@@ -9,44 +9,45 @@
 
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-#import "ios/web/public/download/download_task.h"
+#include "base/sequence_checker.h"
+#include "ios/web/public/download/download_task.h"
 #include "url/gurl.h"
 
 namespace web {
 
 // Fake implementation for DownloadTask interface. Can be used for testing.
-class FakeDownloadTask : public DownloadTask {
+class FakeDownloadTask final : public DownloadTask {
  public:
   FakeDownloadTask(const GURL& original_url, const std::string& mime_type);
 
   FakeDownloadTask(const FakeDownloadTask&) = delete;
   FakeDownloadTask& operator=(const FakeDownloadTask&) = delete;
 
-  ~FakeDownloadTask() override;
+  ~FakeDownloadTask() final;
 
-  // DownloadTask overrides:
-  WebState* GetWebState() override;
-  DownloadTask::State GetState() const override;
-  void Start(const base::FilePath& path, Destination destination_hint) override;
-  void Cancel() override;
-  NSData* GetResponseData() const override;
-  const base::FilePath& GetResponsePath() const override;
-  NSString* GetIndentifier() const override;
-  const GURL& GetOriginalUrl() const override;
-  NSString* GetHttpMethod() const override;
-  bool IsDone() const override;
-  int GetErrorCode() const override;
-  int GetHttpCode() const override;
-  int64_t GetTotalBytes() const override;
-  int64_t GetReceivedBytes() const override;
-  int GetPercentComplete() const override;
-  std::string GetContentDisposition() const override;
-  std::string GetOriginalMimeType() const override;
-  std::string GetMimeType() const override;
-  std::u16string GetSuggestedFilename() const override;
-  bool HasPerformedBackgroundDownload() const override;
-  void AddObserver(DownloadTaskObserver* observer) override;
-  void RemoveObserver(DownloadTaskObserver* observer) override;
+  // DownloadTask finals:
+  WebState* GetWebState() final;
+  DownloadTask::State GetState() const final;
+  void Start(const base::FilePath& path, Destination destination_hint) final;
+  void Cancel() final;
+  NSData* GetResponseData() const final;
+  const base::FilePath& GetResponsePath() const final;
+  NSString* GetIndentifier() const final;
+  const GURL& GetOriginalUrl() const final;
+  NSString* GetHttpMethod() const final;
+  bool IsDone() const final;
+  int GetErrorCode() const final;
+  int GetHttpCode() const final;
+  int64_t GetTotalBytes() const final;
+  int64_t GetReceivedBytes() const final;
+  int GetPercentComplete() const final;
+  std::string GetContentDisposition() const final;
+  std::string GetOriginalMimeType() const final;
+  std::string GetMimeType() const final;
+  std::u16string GetSuggestedFilename() const final;
+  bool HasPerformedBackgroundDownload() const final;
+  void AddObserver(DownloadTaskObserver* observer) final;
+  void RemoveObserver(DownloadTaskObserver* observer) final;
 
   // Setters for task properties. Setters invoke OnDownloadUpdated callback.
   void SetWebState(WebState* web_state);
@@ -66,6 +67,8 @@ class FakeDownloadTask : public DownloadTask {
  private:
   // Called when download task was updated.
   void OnDownloadUpdated();
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::ObserverList<DownloadTaskObserver, true>::Unchecked observers_;
   WebState* web_state_ = nullptr;

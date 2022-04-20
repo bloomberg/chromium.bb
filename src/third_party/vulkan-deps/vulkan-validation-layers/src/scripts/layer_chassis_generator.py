@@ -305,6 +305,7 @@ typedef enum ValidationCheckDisables {
 typedef enum ValidationCheckEnables {
     VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ARM,
     VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_AMD,
+    VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_IMG,
     VALIDATION_CHECK_ENABLE_VENDOR_SPECIFIC_ALL,
 } ValidationCheckEnables;
 
@@ -337,6 +338,7 @@ typedef enum EnableFlags {
     best_practices,
     vendor_specific_arm,
     vendor_specific_amd,
+    vendor_specific_img,
     debug_printf,
     sync_validation,
     // Insert new enables above this line
@@ -375,7 +377,9 @@ class ValidationObject {
         std::vector<ValidationObject*> object_dispatch;
         LayerObjectTypeId container_type;
 
-        vl_concurrent_unordered_map<VkDeferredOperationKHR, std::function<void()>, 0> deferred_operation_cleanup;
+        vl_concurrent_unordered_map<VkDeferredOperationKHR, std::vector<std::function<void()>>, 0> deferred_operation_post_completion;
+        vl_concurrent_unordered_map<VkDeferredOperationKHR, std::vector<std::function<void(const std::vector<VkPipeline>&)>>, 0> deferred_operation_post_check;
+        vl_concurrent_unordered_map<VkDeferredOperationKHR, std::vector<VkPipeline>, 0> deferred_operation_pipelines;
 
         std::string layer_name = "CHASSIS";
 

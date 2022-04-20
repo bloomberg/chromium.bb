@@ -5,31 +5,35 @@
 #include "content/browser/attribution_reporting/attribution_internals_handler_impl.h"
 
 #include <iterator>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -39,27 +43,51 @@ namespace content {
 namespace {
 
 using Attributability =
-    ::content::mojom::WebUIAttributionSource::Attributability;
+    ::attribution_internals::mojom::WebUISource::Attributability;
+using Empty = ::attribution_internals::mojom::Empty;
+using ReportStatus = ::attribution_internals::mojom::ReportStatus;
+using ReportStatusPtr = ::attribution_internals::mojom::ReportStatusPtr;
 
-mojom::WebUIAttributionSourcePtr WebUIAttributionSource(
+attribution_internals::mojom::DebugKeyPtr WebUIDebugKey(
+    absl::optional<uint64_t> debug_key) {
+  return debug_key ? attribution_internals::mojom::DebugKey::New(*debug_key)
+                   : nullptr;
+}
+
+base::flat_map<std::string, attribution_internals::mojom::AggregatableKeyPtr>
+Convert(const AttributionAggregatableSource& aggregatable_source) {
+  const proto::AttributionAggregatableSource& proto =
+      aggregatable_source.proto();
+
+  base::flat_map<std::string, attribution_internals::mojom::AggregatableKeyPtr>
+      map;
+  for (const auto& [key_id, key] : proto.keys()) {
+    // TODO(linnan): Replacing with 128-bit value string.
+    map.emplace(key_id, attribution_internals::mojom::AggregatableKey::New(
+                            key.high_bits(), key.low_bits()));
+  }
+  return map;
+}
+
+attribution_internals::mojom::WebUISourcePtr WebUISource(
     const CommonSourceInfo& source,
     Attributability attributability,
     const std::vector<uint64_t>& dedup_keys) {
-  return mojom::WebUIAttributionSource::New(
+  return attribution_internals::mojom::WebUISource::New(
       source.source_event_id(), source.impression_origin(),
       source.ConversionDestination().Serialize(), source.reporting_origin(),
       source.impression_time().ToJsTime(), source.expiry_time().ToJsTime(),
       source.source_type(), source.priority(),
-      source.debug_key() ? mojom::AttributionDebugKey::New(*source.debug_key())
-                         : nullptr,
-      dedup_keys, source.filter_data().filter_values(), attributability);
+      WebUIDebugKey(source.debug_key()), dedup_keys,
+      source.filter_data().filter_values(),
+      Convert(source.aggregatable_source()), attributability);
 }
 
 void ForwardSourcesToWebUI(
-    mojom::AttributionInternalsHandler::GetActiveSourcesCallback
+    attribution_internals::mojom::Handler::GetActiveSourcesCallback
         web_ui_callback,
     std::vector<StoredSource> active_sources) {
-  std::vector<mojom::WebUIAttributionSourcePtr> web_ui_sources;
+  std::vector<attribution_internals::mojom::WebUISourcePtr> web_ui_sources;
   web_ui_sources.reserve(active_sources.size());
 
   for (const StoredSource& source : active_sources) {
@@ -80,71 +108,75 @@ void ForwardSourcesToWebUI(
       }
     }
 
-    web_ui_sources.push_back(WebUIAttributionSource(
-        source.common_info(), attributability, source.dedup_keys()));
+    web_ui_sources.push_back(WebUISource(source.common_info(), attributability,
+                                         source.dedup_keys()));
   }
 
   std::move(web_ui_callback).Run(std::move(web_ui_sources));
 }
 
-mojom::WebUIAttributionReportPtr WebUIAttributionReport(
+attribution_internals::mojom::WebUIReportPtr WebUIReport(
     const AttributionReport& report,
     bool is_debug_report,
-    int http_response_code,
-    mojom::WebUIAttributionReport::Status status) {
+    ReportStatusPtr status) {
   struct Visitor {
     StoredSource::AttributionLogic attribution_logic;
 
-    mojom::WebUIAttributionReportDataPtr operator()(
+    attribution_internals::mojom::WebUIReportDataPtr operator()(
         const AttributionReport::EventLevelData& event_level_data) {
-      return mojom::WebUIAttributionReportData::NewEventLevelData(
-          mojom::WebUIAttributionReportEventLevelData::New(
-              event_level_data.id, event_level_data.priority,
+      return attribution_internals::mojom::WebUIReportData::NewEventLevelData(
+          attribution_internals::mojom::WebUIReportEventLevelData::New(
+              event_level_data.priority,
               attribution_logic ==
                   StoredSource::AttributionLogic::kTruthfully));
     }
 
-    mojom::WebUIAttributionReportDataPtr operator()(
+    attribution_internals::mojom::WebUIReportDataPtr operator()(
         const AttributionReport::AggregatableAttributionData&
             aggregatable_data) {
-      std::vector<mojom::AttributionReportHistogramContributionPtr>
+      std::vector<
+          attribution_internals::mojom::AggregatableHistogramContributionPtr>
           contributions;
       base::ranges::transform(
           aggregatable_data.contributions, std::back_inserter(contributions),
           [](const auto& contribution) {
-            return mojom::AttributionReportHistogramContribution::New(
-                absl::Uint128High64(contribution.key()),
-                absl::Uint128Low64(contribution.key()), contribution.value());
+            return attribution_internals::mojom::
+                AggregatableHistogramContribution::New(
+                    attribution_internals::mojom::AggregatableKey::New(
+                        absl::Uint128High64(contribution.key()),
+                        absl::Uint128Low64(contribution.key())),
+                    contribution.value());
           });
-      return mojom::WebUIAttributionReportData::NewAggregatableAttributionData(
-          mojom::WebUIAttributionReportAggregatableAttributionData::New(
-              aggregatable_data.id, std::move(contributions)));
+      return attribution_internals::mojom::WebUIReportData::
+          NewAggregatableAttributionData(
+              attribution_internals::mojom::
+                  WebUIReportAggregatableAttributionData::New(
+                      std::move(contributions)));
     }
   };
 
   const AttributionInfo& attribution_info = report.attribution_info();
 
-  mojom::WebUIAttributionReportDataPtr data = absl::visit(
+  attribution_internals::mojom::WebUIReportDataPtr data = absl::visit(
       Visitor{.attribution_logic = attribution_info.source.attribution_logic()},
       report.data());
-  return mojom::WebUIAttributionReport::New(
-      attribution_info.source.common_info().ConversionDestination().Serialize(),
-      report.ReportURL(is_debug_report),
+  return attribution_internals::mojom::WebUIReport::New(
+      report.ReportId(), report.ReportURL(is_debug_report),
       /*trigger_time=*/attribution_info.time.ToJsTime(),
       /*report_time=*/report.report_time().ToJsTime(),
       SerializeAttributionJson(report.ReportBody(), /*pretty_print=*/true),
-      status, http_response_code, std::move(data));
+      std::move(status), std::move(data));
 }
 
 void ForwardReportsToWebUI(
-    mojom::AttributionInternalsHandler::GetReportsCallback web_ui_callback,
+    attribution_internals::mojom::Handler::GetReportsCallback web_ui_callback,
     std::vector<AttributionReport> pending_reports) {
-  std::vector<mojom::WebUIAttributionReportPtr> web_ui_reports;
+  std::vector<attribution_internals::mojom::WebUIReportPtr> web_ui_reports;
   web_ui_reports.reserve(pending_reports.size());
   for (const AttributionReport& report : pending_reports) {
-    web_ui_reports.push_back(WebUIAttributionReport(
-        report, /*is_debug_report=*/false, /*http_response_code=*/0,
-        mojom::WebUIAttributionReport::Status::kPending));
+    web_ui_reports.push_back(
+        WebUIReport(report, /*is_debug_report=*/false,
+                    ReportStatus::NewPending(Empty::New())));
   }
 
   std::move(web_ui_callback).Run(std::move(web_ui_reports));
@@ -154,7 +186,7 @@ void ForwardReportsToWebUI(
 
 AttributionInternalsHandlerImpl::AttributionInternalsHandlerImpl(
     WebUI* web_ui,
-    mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver)
+    mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver)
     : web_ui_(web_ui),
       manager_provider_(AttributionManagerProvider::Default()),
       receiver_(this, std::move(receiver)) {}
@@ -162,7 +194,7 @@ AttributionInternalsHandlerImpl::AttributionInternalsHandlerImpl(
 AttributionInternalsHandlerImpl::~AttributionInternalsHandlerImpl() = default;
 
 void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
-    mojom::AttributionInternalsHandler::IsAttributionReportingEnabledCallback
+    attribution_internals::mojom::Handler::IsAttributionReportingEnabledCallback
         callback) {
   content::WebContents* contents = web_ui_->GetWebContents();
   bool attribution_reporting_enabled =
@@ -178,7 +210,7 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
 }
 
 void AttributionInternalsHandlerImpl::GetActiveSources(
-    mojom::AttributionInternalsHandler::GetActiveSourcesCallback callback) {
+    attribution_internals::mojom::Handler::GetActiveSourcesCallback callback) {
   if (AttributionManager* manager =
           manager_provider_->GetManager(web_ui_->GetWebContents())) {
     manager->GetActiveSourcesForWebUI(
@@ -190,7 +222,7 @@ void AttributionInternalsHandlerImpl::GetActiveSources(
 
 void AttributionInternalsHandlerImpl::GetReports(
     AttributionReport::ReportType report_type,
-    mojom::AttributionInternalsHandler::GetReportsCallback callback) {
+    attribution_internals::mojom::Handler::GetReportsCallback callback) {
   if (AttributionManager* manager =
           manager_provider_->GetManager(web_ui_->GetWebContents())) {
     manager->GetPendingReportsForInternalUse(
@@ -201,25 +233,9 @@ void AttributionInternalsHandlerImpl::GetReports(
   }
 }
 
-void AttributionInternalsHandlerImpl::SendEventLevelReports(
-    const std::vector<AttributionReport::EventLevelData::Id>& ids,
-    mojom::AttributionInternalsHandler::SendEventLevelReportsCallback
-        callback) {
-  SendReports(std::vector<AttributionReport::Id>(ids.begin(), ids.end()),
-              std::move(callback));
-}
-
-void AttributionInternalsHandlerImpl::SendAggregatableAttributionReports(
-    const std::vector<AttributionReport::AggregatableAttributionData::Id>& ids,
-    mojom::AttributionInternalsHandler::
-        SendAggregatableAttributionReportsCallback callback) {
-  SendReports(std::vector<AttributionReport::Id>(ids.begin(), ids.end()),
-              std::move(callback));
-}
-
 void AttributionInternalsHandlerImpl::SendReports(
-    const std::vector<AttributionReport::Id> ids,
-    base::OnceClosure callback) {
+    const std::vector<AttributionReport::Id>& ids,
+    attribution_internals::mojom::Handler::SendReportsCallback callback) {
   if (AttributionManager* manager =
           manager_provider_->GetManager(web_ui_->GetWebContents())) {
     manager->SendReportsForWebUI(ids, std::move(callback));
@@ -229,7 +245,7 @@ void AttributionInternalsHandlerImpl::SendReports(
 }
 
 void AttributionInternalsHandlerImpl::ClearStorage(
-    mojom::AttributionInternalsHandler::ClearStorageCallback callback) {
+    attribution_internals::mojom::Handler::ClearStorageCallback callback) {
   if (AttributionManager* manager =
           manager_provider_->GetManager(web_ui_->GetWebContents())) {
     manager->ClearData(base::Time::Min(), base::Time::Max(),
@@ -240,8 +256,8 @@ void AttributionInternalsHandlerImpl::ClearStorage(
 }
 
 void AttributionInternalsHandlerImpl::AddObserver(
-    mojo::PendingRemote<mojom::AttributionInternalsObserver> observer,
-    mojom::AttributionInternalsHandler::AddObserverCallback callback) {
+    mojo::PendingRemote<attribution_internals::mojom::Observer> observer,
+    attribution_internals::mojom::Handler::AddObserverCallback callback) {
   if (AttributionManager* manager =
           manager_provider_->GetManager(web_ui_->GetWebContents())) {
     observers_.Add(std::move(observer));
@@ -275,9 +291,9 @@ void AttributionInternalsHandlerImpl::OnSourceDeactivated(
       break;
   }
 
-  auto source = WebUIAttributionSource(deactivated_source.source.common_info(),
-                                       attributability,
-                                       deactivated_source.source.dedup_keys());
+  auto source =
+      WebUISource(deactivated_source.source.common_info(), attributability,
+                  deactivated_source.source.dedup_keys());
 
   for (auto& observer : observers_) {
     observer->OnSourceRejectedOrDeactivated(source.Clone());
@@ -303,10 +319,13 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
     case StorableSource::Result::kExcessiveReportingOrigins:
       attributability = Attributability::kExcessiveReportingOrigins;
       break;
+    case StorableSource::Result::kProhibitedByBrowserPolicy:
+      attributability = Attributability::kProhibitedByBrowserPolicy;
+      break;
   }
 
-  auto web_ui_source = WebUIAttributionSource(
-      source.common_info(), attributability, /*dedup_keys=*/{});
+  auto web_ui_source =
+      WebUISource(source.common_info(), attributability, /*dedup_keys=*/{});
 
   for (auto& observer : observers_) {
     observer->OnSourceRejectedOrDeactivated(web_ui_source.Clone());
@@ -317,26 +336,25 @@ void AttributionInternalsHandlerImpl::OnReportSent(
     const AttributionReport& report,
     bool is_debug_report,
     const SendResult& info) {
-  mojom::WebUIAttributionReport::Status status;
+  ReportStatusPtr status;
   switch (info.status) {
     case SendResult::Status::kSent:
-      status = mojom::WebUIAttributionReport::Status::kSent;
+      status = ReportStatus::NewSent(info.http_response_code);
       break;
     case SendResult::Status::kDropped:
-      status =
-          mojom::WebUIAttributionReport::Status::kProhibitedByBrowserPolicy;
+      status = ReportStatus::NewProhibitedByBrowserPolicy(Empty::New());
       break;
     case SendResult::Status::kFailure:
     case SendResult::Status::kTransientFailure:
-      status = mojom::WebUIAttributionReport::Status::kNetworkError;
+      status = ReportStatus::NewNetworkError(
+          net::ErrorToShortString(info.network_error));
       break;
     case SendResult::Status::kFailedToAssemble:
-      status = mojom::WebUIAttributionReport::Status::kFailedToAssemble;
+      status = ReportStatus::NewFailedToAssemble(Empty::New());
       break;
   }
 
-  auto web_report = WebUIAttributionReport(report, is_debug_report,
-                                           info.http_response_code, status);
+  auto web_report = WebUIReport(report, is_debug_report, std::move(status));
 
   for (auto& observer : observers_) {
     observer->OnReportSent(web_report.Clone());
@@ -345,95 +363,110 @@ void AttributionInternalsHandlerImpl::OnReportSent(
 
 namespace {
 
-absl::optional<mojom::WebUIAttributionReport::Status> GetDroppedReportStatus(
-    AttributionTrigger::EventLevelResult status) {
+using AggregatableStatus = ::content::AttributionTrigger::AggregatableResult;
+using EventLevelStatus = ::content::AttributionTrigger::EventLevelResult;
+using WebUITriggerStatus = ::attribution_internals::mojom::WebUITrigger::Status;
+
+WebUITriggerStatus GetWebUITriggerStatus(EventLevelStatus status) {
   switch (status) {
-    case AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority:
-    case AttributionTrigger::EventLevelResult::kPriorityTooLow:
-      return mojom::WebUIAttributionReport::Status::kDroppedDueToLowPriority;
-    case AttributionTrigger::EventLevelResult::kDroppedForNoise:
-      return mojom::WebUIAttributionReport::Status::kDroppedForNoise;
-    case AttributionTrigger::EventLevelResult::kExcessiveAttributions:
-      return mojom::WebUIAttributionReport::Status::
-          kDroppedDueToExcessiveAttributions;
-    case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
-      return mojom::WebUIAttributionReport::Status::
-          kDroppedDueToExcessiveReportingOrigins;
-    case AttributionTrigger::EventLevelResult::kDeduplicated:
-      return mojom::WebUIAttributionReport::Status::kDeduplicated;
-    case AttributionTrigger::EventLevelResult::
-        kNoCapacityForConversionDestination:
-      return mojom::WebUIAttributionReport::Status::
-          kNoReportCapacityForDestinationSite;
-    case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
-      return mojom::WebUIAttributionReport::Status::kNoMatchingSourceFilterData;
-    case AttributionTrigger::EventLevelResult::kInternalError:
-      return mojom::WebUIAttributionReport::Status::kInternalError;
-    case AttributionTrigger::EventLevelResult::kSuccess:
-    case AttributionTrigger::EventLevelResult::kNoMatchingImpressions:
-      // TODO(apaseltiner): Surface `kNoMatchingImpressions` in internals UI.
-      return absl::nullopt;
+    case EventLevelStatus::kSuccess:
+    case EventLevelStatus::kSuccessDroppedLowerPriority:
+      return WebUITriggerStatus::kSuccess;
+    case EventLevelStatus::kInternalError:
+      return WebUITriggerStatus::kInternalError;
+    case EventLevelStatus::kNoCapacityForConversionDestination:
+      return WebUITriggerStatus::kNoReportCapacityForDestinationSite;
+    case EventLevelStatus::kNoMatchingImpressions:
+      return WebUITriggerStatus::kNoMatchingSources;
+    case EventLevelStatus::kDeduplicated:
+      return WebUITriggerStatus::kDeduplicated;
+    case EventLevelStatus::kExcessiveAttributions:
+      return WebUITriggerStatus::kExcessiveAttributions;
+    case EventLevelStatus::kPriorityTooLow:
+      return WebUITriggerStatus::kLowPriority;
+    case EventLevelStatus::kDroppedForNoise:
+      return WebUITriggerStatus::kNoised;
+    case EventLevelStatus::kExcessiveReportingOrigins:
+      return WebUITriggerStatus::kExcessiveReportingOrigins;
+    case EventLevelStatus::kNoMatchingSourceFilterData:
+      return WebUITriggerStatus::kNoMatchingSourceFilterData;
+    case EventLevelStatus::kProhibitedByBrowserPolicy:
+      return WebUITriggerStatus::kProhibitedByBrowserPolicy;
   }
 }
 
-absl::optional<mojom::WebUIAttributionReport::Status> GetDroppedReportStatus(
-    AttributionTrigger::AggregatableResult status) {
+WebUITriggerStatus GetWebUITriggerStatus(AggregatableStatus status) {
   switch (status) {
-    case AttributionTrigger::AggregatableResult::kExcessiveAttributions:
-      return mojom::WebUIAttributionReport::Status::
-          kDroppedDueToExcessiveAttributions;
-    case AttributionTrigger::AggregatableResult::kExcessiveReportingOrigins:
-      return mojom::WebUIAttributionReport::Status::
-          kDroppedDueToExcessiveReportingOrigins;
-    case AttributionTrigger::AggregatableResult::
-        kNoCapacityForConversionDestination:
-      return mojom::WebUIAttributionReport::Status::
-          kNoReportCapacityForDestinationSite;
-    case AttributionTrigger::AggregatableResult::kNoMatchingSourceFilterData:
-      return mojom::WebUIAttributionReport::Status::kNoMatchingSourceFilterData;
-    case AttributionTrigger::AggregatableResult::kInsufficientBudget:
-      return mojom::WebUIAttributionReport::Status::
-          kInsufficientAggregatableBudget;
-    case AttributionTrigger::AggregatableResult::kInternalError:
-      return mojom::WebUIAttributionReport::Status::kInternalError;
-    case AttributionTrigger::AggregatableResult::kSuccess:
-    case AttributionTrigger::AggregatableResult::kNoHistograms:
-    case AttributionTrigger::AggregatableResult::kNoMatchingImpressions:
-      // TODO(apaseltiner): Surface `kNoMatchingImpressions` in internals UI.
-      // TODO(linnan): Surface `kNoHistograms` in internals UI.
-      return absl::nullopt;
+    case AggregatableStatus::kSuccess:
+      return WebUITriggerStatus::kSuccess;
+    case AggregatableStatus::kInternalError:
+      return WebUITriggerStatus::kInternalError;
+    case AggregatableStatus::kNoCapacityForConversionDestination:
+      return WebUITriggerStatus::kNoReportCapacityForDestinationSite;
+    case AggregatableStatus::kNoMatchingImpressions:
+      return WebUITriggerStatus::kNoMatchingSources;
+    case AggregatableStatus::kExcessiveAttributions:
+      return WebUITriggerStatus::kExcessiveAttributions;
+    case AggregatableStatus::kExcessiveReportingOrigins:
+      return WebUITriggerStatus::kExcessiveReportingOrigins;
+    case AggregatableStatus::kNoHistograms:
+      return WebUITriggerStatus::kNoHistograms;
+    case AggregatableStatus::kInsufficientBudget:
+      return WebUITriggerStatus::kInsufficientBudget;
+    case AggregatableStatus::kNoMatchingSourceFilterData:
+      return WebUITriggerStatus::kNoMatchingSourceFilterData;
+    case AggregatableStatus::kNotRegistered:
+      return WebUITriggerStatus::kNotRegistered;
+    case AggregatableStatus::kProhibitedByBrowserPolicy:
+      return WebUITriggerStatus::kProhibitedByBrowserPolicy;
   }
 }
 
 }  // namespace
 
 void AttributionInternalsHandlerImpl::OnTriggerHandled(
+    const AttributionTrigger& trigger,
     const CreateReportResult& result) {
-  for (const AttributionReport& dropped_report : result.dropped_reports()) {
-    struct Visitor {
-      const CreateReportResult& result;
+  auto web_ui_trigger = attribution_internals::mojom::WebUITrigger::New();
+  web_ui_trigger->trigger_time = result.trigger_time().ToJsTime();
+  web_ui_trigger->destination_origin = trigger.destination_origin();
+  web_ui_trigger->reporting_origin = trigger.reporting_origin();
+  web_ui_trigger->filters = trigger.filters().filter_values();
+  web_ui_trigger->debug_key = WebUIDebugKey(trigger.debug_key());
+  web_ui_trigger->event_level_status =
+      GetWebUITriggerStatus(result.event_level_status());
+  web_ui_trigger->aggregatable_status =
+      GetWebUITriggerStatus(result.aggregatable_status());
 
-      absl::optional<mojom::WebUIAttributionReport::Status> operator()(
-          const AttributionReport::EventLevelData&) {
-        return GetDroppedReportStatus(result.event_level_status());
-      }
+  for (const auto& event_trigger : trigger.event_triggers()) {
+    web_ui_trigger->event_triggers.emplace_back(
+        base::in_place,
+        /*data=*/event_trigger.data,
+        /*priority=*/event_trigger.priority,
+        /*deduplication_key=*/event_trigger.dedup_key
+            ? attribution_internals::mojom::DedupKey::New(
+                  *event_trigger.dedup_key)
+            : nullptr,
+        /*filters=*/event_trigger.filters.filter_values(),
+        /*not_filters=*/event_trigger.not_filters.filter_values());
+  }
 
-      absl::optional<mojom::WebUIAttributionReport::Status> operator()(
-          const AttributionReport::AggregatableAttributionData&) {
-        return GetDroppedReportStatus(result.aggregatable_status());
-      }
-    };
+  for (auto& observer : observers_) {
+    observer->OnTriggerHandled(web_ui_trigger.Clone());
+  }
 
-    absl::optional<mojom::WebUIAttributionReport::Status> status =
-        absl::visit(Visitor{.result = result}, dropped_report.data());
-    DCHECK(status.has_value());
+  if (const absl::optional<AttributionReport>& report =
+          result.replaced_event_level_report()) {
+    DCHECK_EQ(
+        result.event_level_status(),
+        AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority);
 
-    auto report =
-        WebUIAttributionReport(dropped_report, /*is_debug_report=*/false,
-                               /*http_response_code=*/0, *status);
+    auto web_ui_report = WebUIReport(
+        *report, /*is_debug_report=*/false,
+        ReportStatus::NewReplacedByHigherPriorityReport(Empty::New()));
 
     for (auto& observer : observers_) {
-      observer->OnReportDropped(report.Clone());
+      observer->OnReportDropped(web_ui_report.Clone());
     }
   }
 }

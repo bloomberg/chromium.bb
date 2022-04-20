@@ -27,7 +27,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
@@ -164,15 +164,10 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
   if (all_passwords_helper_.available_credentials().has_value() &&
       IsSecureSite() && origin.GetURL().SchemeIsCryptographic() &&
       all_passwords_helper_.available_credentials().value() > 0) {
-    std::u16string button_title =
-        is_password_field
-            ? l10n_util::GetStringUTF16(
-                  IDS_PASSWORD_MANAGER_ACCESSORY_USE_OTHER_PASSWORD)
-            : l10n_util::GetStringUTF16(
-                  IDS_PASSWORD_MANAGER_ACCESSORY_USE_OTHER_USERNAME);
-
-    footer_commands_to_add.push_back(FooterCommand(
-        button_title, autofill::AccessoryAction::USE_OTHER_PASSWORD));
+    footer_commands_to_add.push_back(
+        FooterCommand(l10n_util::GetStringUTF16(
+                          IDS_PASSWORD_MANAGER_ACCESSORY_SELECT_PASSWORD),
+                      autofill::AccessoryAction::USE_OTHER_PASSWORD));
   }
 
   if (is_password_field &&

@@ -31,7 +31,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -46,7 +45,6 @@
 #include "chrome/browser/background_sync/background_sync_controller_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
-#include "chrome/browser/breadcrumbs/breadcrumbs_status.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -128,6 +126,7 @@
 #include "components/background_sync/background_sync_controller_impl.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/breadcrumbs_status.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -167,6 +166,7 @@
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_request_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -205,8 +205,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#else
-#include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -601,9 +599,10 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 #else
   {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-    user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
+    user_cloud_policy_manager_ = policy::UserCloudPolicyManager::Create(
         GetPath(), GetPolicySchemaRegistryService()->registry(),
-        force_immediate_policy_load, io_task_runner_);
+        force_immediate_policy_load, io_task_runner_,
+        base::BindRepeating(&content::GetNetworkConnectionTracker));
     user_cloud_policy_manager = user_cloud_policy_manager_.get();
     policy_provider = user_cloud_policy_manager;
   }
@@ -829,7 +828,7 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   AnnouncementNotificationServiceFactory::GetForProfile(this)
       ->MaybeShowNotification();
 
-  if (BreadcrumbsStatus::IsEnabled()) {
+  if (breadcrumbs::IsEnabled()) {
     breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(
             this, /*create=*/true);
@@ -841,13 +840,6 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
             g_browser_process->GetBreadcrumbPersistentStorageManager();
     DCHECK(persistent_storage_manager);
     breadcrumb_service->StartPersisting(persistent_storage_manager);
-
-    // Get stored persistent breadcrumbs from last run to set on crash reports.
-    persistent_storage_manager->GetStoredEvents(
-        base::BindOnce([](std::vector<std::string> events) {
-          breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
-              .SetPreviousSessionEvents(events);
-        }));
   }
 }
 

@@ -17,7 +17,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -138,6 +137,10 @@ ash::AppListSearchResultType ZeroStateFileProvider::ResultType() const {
 
 bool ZeroStateFileProvider::ShouldBlockZeroState() const {
   return true;
+}
+
+void ZeroStateFileProvider::Start(const std::u16string& query) {
+  ClearResultsSilently();
 }
 
 void ZeroStateFileProvider::StartZeroState() {

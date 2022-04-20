@@ -98,9 +98,6 @@ void UnifiedMessageCenterBubble::ShowBubble() {
   bubble_widget_->AddObserver(this);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
 
-  tray_->tray_event_filter()->AddBubble(this);
-  tray_->bubble()->unified_view()->AddObserver(this);
-
   ui::Layer* widget_layer = bubble_widget_->GetLayer();
   if (!features::IsNotificationsRefreshEnabled()) {
     float radius = kBubbleCornerRadius;
@@ -112,6 +109,9 @@ void UnifiedMessageCenterBubble::ShowBubble() {
   bubble_view_->InitializeAndShowBubble();
   message_center_view_->Init();
   UpdateBubbleState();
+
+  tray_->tray_event_filter()->AddBubble(this);
+  tray_->bubble()->unified_view()->AddObserver(this);
 }
 
 UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
@@ -192,12 +192,6 @@ bool UnifiedMessageCenterBubble::FocusOut(bool reverse) {
 
 void UnifiedMessageCenterBubble::ActivateQuickSettingsBubble() {
   tray_->ActivateBubble();
-}
-
-void UnifiedMessageCenterBubble::FocusFirstNotification() {
-  // Move focus to first notification from notification bar if it is visible.
-  if (message_center_view_->IsNotificationBarVisible())
-    message_center_view_->GetFocusManager()->AdvanceFocus(false /*reverse*/);
 }
 
 bool UnifiedMessageCenterBubble::IsMessageCenterVisible() {
@@ -287,6 +281,13 @@ void UnifiedMessageCenterBubble::UpdateBubbleState() {
 }
 
 int UnifiedMessageCenterBubble::CalculateAvailableHeight() {
+  // TODO(crbug/1311738): Temporary fix to prevent crashes in case the quick
+  // settings bubble is destroyed before the message center bubble. In the long
+  // term we should remove this code altogether and calculate the max height for
+  // the message center bubble separately.
+  if (!tray_->bubble())
+    return 0;
+
   return tray_->bubble()->CalculateMaxHeight() -
          tray_->bubble()->GetCurrentTrayHeight() -
          GetBubbleInsetHotseatCompensation() -

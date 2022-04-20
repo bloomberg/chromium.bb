@@ -302,6 +302,12 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			// TODO: re-enable - currently fails with "Failed to make lazy image"
 			skip(ALL, "gm", ALL, "image_subset")
 
+			// TODO: re-enable - currently fails readback from surface
+			skip(ALL, "gm", ALL, "blurrect_compare")
+			skip(ALL, "gm", ALL, "lattice_alpha")
+			skip(ALL, "gm", ALL, "localmatriximageshader")
+			skip(ALL, "gm", ALL, "savelayer_f16")
+
 			if b.extraConfig("ASAN") {
 				// skbug.com/12507 (Neon UB during JPEG compression on M1 ASAN Graphite bot)
 				skip(ALL, "gm", ALL, "yuv420_odd_dim") // Oddly enough yuv420_odd_dim_repeat doesn't crash
@@ -459,6 +465,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip("mtltestprecompile", "gm", ALL, "circular_arcs_hairline")
 			skip("mtltestprecompile", "gm", ALL, "dashcircle")
 			skip("mtltestprecompile", "gm", ALL, "dftext")
+			skip("mtltestprecompile", "gm", ALL, "encode-platform")
 			skip("mtltestprecompile", "gm", ALL, "fontmgr_bounds")
 			skip("mtltestprecompile", "gm", ALL, "fontmgr_bounds_1_-0.25")
 			skip("mtltestprecompile", "gm", ALL, "glyph_pos_h_b")
@@ -579,6 +586,12 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 	// Eventually I'd like these to pass, but for now just skip 'em.
 	if b.extraConfig("SK_FORCE_RASTER_PIPELINE_BLITTER") {
+		removeFromArgs("tests")
+	}
+
+	// Workaround for skbug.com/13040. Eventually, the CommandBuffer bots are going to be
+	// replaced with ANGLE bots, so this is fine as a temporary fix
+	if b.extraConfig("CommandBuffer") {
 		removeFromArgs("tests")
 	}
 
@@ -938,6 +951,10 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip(ALL, "tests", ALL, "SkSLStructsInFunctions_GPU") // skia:11929
 	}
 
+	if b.matchGpu("Adreno[3456]") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 3/4/5/6xx GLSL
+		skip(ALL, "tests", ALL, "SkSLOutParamsAreDistinctFromGlobal_GPU") // skia:13115
+    }
+
 	if b.matchGpu("Adreno6") && !b.extraConfig("Vulkan") { // disable broken tests on Adreno 6xx GLSL
 		skip(ALL, "tests", ALL, "SkSLIntrinsicIsInf_GPU") // skia:12377
 	}
@@ -969,6 +986,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 	if b.matchGpu("Intel") && b.matchOs("Win") && !b.extraConfig("Vulkan") {
 		skip(ALL, "tests", ALL, "SkSLReturnsValueOnEveryPathES3_GPU") // skia:12465
+		skip(ALL, "tests", ALL, "SkSLReturnsValueOnEveryPathES3_GPU") // skia:12465
+		skip(ALL, "tests", ALL, "SkSLOutParamsAreDistinctFromGlobal_GPU") // skia:13115
 	}
 
 	if b.extraConfig("Vulkan") && b.isLinux() && b.matchGpu("Intel") {
@@ -991,7 +1010,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip(ALL, "tests", ALL, "SkSLLoopInt_GPU")
 	}
 
-	if b.gpu("QuadroP400") || b.gpu("GTX660") || b.gpu("GTX960") || b.gpu("Tegra3") {
+	if b.gpu("QuadroP400") || b.gpu("GTX660") || b.gpu("GTX960") || b.gpu("Tegra3") || b.gpu("RTX3060") {
 		if !b.extraConfig("Vulkan") {
 			// Various Nvidia GPUs crash or generate errors when assembling weird matrices
 			skip(ALL, "tests", ALL, "SkSLMatrixConstructorsES2_GPU") // skia:12443
@@ -1013,12 +1032,18 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip(ALL, "tests", ALL, "SkSLPreserveSideEffects_GPU") // skia:13035
 	}
 
+	if b.gpu("QuadroP400") && b.matchOs("Win10") && b.matchModel("Golo") {
+	    // Times out with driver 30.0.15.1179
+		skip("vkmsaa4", "gm", ALL, "shadow_utils")
+    }
+
 	if b.gpu("PowerVRGE8320") || b.gpu("Tegra3") || b.gpu("Adreno308") {
 		skip(ALL, "tests", ALL, "SkSLVectorScalarMath_GPU") // skia:11919
 	}
 
 	if b.gpu("PowerVRGE8320") {
 		skip(ALL, "tests", ALL, "SkSLOutParamsAreDistinct_GPU")
+		skip(ALL, "tests", ALL, "SkSLOutParamsAreDistinctFromGlobal_GPU") // skia:13115
 	}
 
 	if !b.extraConfig("Vulkan") && (b.gpu("RadeonR9M470X") || b.gpu("RadeonHD7770")) {
@@ -1151,6 +1176,11 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	if b.arch("arm") && b.extraConfig("ASAN") {
 		// TODO: can we run with env allocator_may_return_null=1 instead?
 		match = append(match, "~BadImage")
+	}
+
+	if b.arch("arm64") && b.extraConfig("ASAN") {
+		// skbug.com/13155 the use of longjmp may cause ASAN stack check issues.
+		skip(ALL, "test", ALL, "SkPDF_JpegIdentification");
 	}
 
 	if b.matchOs("Mac") && b.gpu("IntelHD6000") {

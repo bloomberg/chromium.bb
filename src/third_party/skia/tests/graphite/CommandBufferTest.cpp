@@ -7,38 +7,38 @@
 
 #include "tests/Test.h"
 
-#include "experimental/graphite/include/Context.h"
-#include "experimental/graphite/include/Recorder.h"
-#include "experimental/graphite/include/mtl/MtlTypes.h"
-#include "experimental/graphite/src/Buffer.h"
-#include "experimental/graphite/src/Caps.h"
-#include "experimental/graphite/src/CommandBuffer.h"
-#include "experimental/graphite/src/ContextPriv.h"
-#include "experimental/graphite/src/DrawBufferManager.h"
-#include "experimental/graphite/src/DrawWriter.h"
-#include "experimental/graphite/src/GlobalCache.h"
-#include "experimental/graphite/src/Gpu.h"
-#include "experimental/graphite/src/GraphicsPipeline.h"
-#include "experimental/graphite/src/RecorderPriv.h"
-#include "experimental/graphite/src/Renderer.h"
-#include "experimental/graphite/src/ResourceProvider.h"
-#include "experimental/graphite/src/Sampler.h"
-#include "experimental/graphite/src/Texture.h"
-#include "experimental/graphite/src/TextureProxy.h"
-#include "experimental/graphite/src/UniformManager.h"
-#include "experimental/graphite/src/geom/Shape.h"
-#include "experimental/graphite/src/geom/Transform_graphite.h"
+#include "include/gpu/graphite/Context.h"
+#include "include/gpu/graphite/Recorder.h"
+#include "include/gpu/graphite/mtl/MtlTypes.h"
 #include "src/core/SkKeyContext.h"
 #include "src/core/SkKeyHelpers.h"
 #include "src/core/SkShaderCodeDictionary.h"
-#include "src/core/SkUniformData.h"
+#include "src/gpu/graphite/Buffer.h"
+#include "src/gpu/graphite/Caps.h"
+#include "src/gpu/graphite/CommandBuffer.h"
+#include "src/gpu/graphite/ContextPriv.h"
+#include "src/gpu/graphite/DrawBufferManager.h"
+#include "src/gpu/graphite/DrawGeometry.h"
+#include "src/gpu/graphite/DrawWriter.h"
+#include "src/gpu/graphite/GlobalCache.h"
+#include "src/gpu/graphite/Gpu.h"
+#include "src/gpu/graphite/GraphicsPipeline.h"
+#include "src/gpu/graphite/RecorderPriv.h"
+#include "src/gpu/graphite/Renderer.h"
+#include "src/gpu/graphite/ResourceProvider.h"
+#include "src/gpu/graphite/Sampler.h"
+#include "src/gpu/graphite/Texture.h"
+#include "src/gpu/graphite/TextureProxy.h"
+#include "src/gpu/graphite/UniformManager.h"
+#include "src/gpu/graphite/geom/Shape.h"
+#include "src/gpu/graphite/geom/Transform_graphite.h"
 
 #if GRAPHITE_TEST_UTILS
 // set to 1 if you want to do GPU capture of the commandBuffer
 #define CAPTURE_COMMANDBUFFER 0
 #endif
 
-using namespace skgpu;
+using namespace skgpu::graphite;
 
 namespace {
 
@@ -63,38 +63,38 @@ public:
         return &kSingleton;
     }
 
-    const char* name() const override { return "uniform-rect"; }
-
     const char* vertexSkSL() const override {
         return "float2 tmpPosition = float2(float(sk_VertexID >> 1), float(sk_VertexID & 1));\n"
                "float4 devPosition = float4(tmpPosition * scale + translate, 0.0, 1.0);\n";
     }
 
-    void writeVertices(DrawWriter* writer,
-                       const SkIRect&,
-                       const Transform&,
-                       const Shape&) const override {
+    void writeVertices(DrawWriter* writer, const DrawGeometry&) const override {
         // The shape is upload via uniforms, so this just needs to record 4 data-less vertices
         writer->draw({}, 4);
     }
 
-    sk_sp<SkUniformData> writeUniforms(Layout layout,
-                                       const SkIRect&,
-                                       const Transform&,
-                                       const Shape& shape) const override {
-        SkASSERT(shape.isRect());
+    void writeUniforms(const DrawGeometry& geom, SkPipelineDataGatherer* gatherer) const override {
+        SkASSERT(geom.shape().isRect());
+
+#ifdef SK_DEBUG
+        static constexpr int kNumRectUniforms = 2;
+        static constexpr SkUniform kRectUniforms[kNumRectUniforms] = {
+                { "scale",      SkSLType::kFloat2 },
+                { "translate",  SkSLType::kFloat2 },
+        };
+
+        UniformExpectationsValidator uev(gatherer, SkMakeSpan(kRectUniforms, kNumRectUniforms));
+#endif
+
         // TODO: A << API for uniforms would be nice, particularly if it could take pre-computed
         // offsets for each uniform.
-        auto uniforms = SkUniformData::Make(this->uniforms(), sizeof(float) * 4);
-        float2 scale = shape.rect().size();
-        float2 translate = shape.rect().topLeft();
-        memcpy(uniforms->data(), &scale, sizeof(float2));
-        memcpy(uniforms->data() + sizeof(float2), &translate, sizeof(float2));
-        return uniforms;
+        gatherer->write(geom.shape().rect().size());
+        gatherer->write(geom.shape().rect().topLeft());
     }
 
 private:
-    UniformRectDraw() : RenderStep(Flags::kPerformsShading,
+    UniformRectDraw() : RenderStep("UniformRectDraw", "test-only",
+                                   Flags::kPerformsShading,
                                    /*uniforms=*/{{"scale",     SkSLType::kFloat2},
                                                  {"translate", SkSLType::kFloat2}},
                                    PrimitiveType::kTriangleStrip,
@@ -118,16 +118,12 @@ public:
         return &kSingleton;
     }
 
-    const char* name() const override { return "triangle-rect"; }
-
     const char* vertexSkSL() const override {
         return "float4 devPosition = float4(position * scale + translate, 0.0, 1.0);\n";
     }
 
-    void writeVertices(DrawWriter* writer,
-                       const SkIRect&,
-                       const Transform&,
-                       const Shape& shape) const override {
+    void writeVertices(DrawWriter* writer, const DrawGeometry& geom) const override {
+        const Shape& shape = geom.shape();
         DrawBufferManager* bufferMgr = writer->bufferManager();
         auto [vertexWriter, vertices] = bufferMgr->getVertexWriter(4 * this->vertexStride());
         vertexWriter << 0.5f * (shape.rect().left() + 1.f)  << 0.5f * (shape.rect().top() + 1.f)
@@ -143,19 +139,24 @@ public:
         writer->drawIndexed(vertices, indices, 6);
     }
 
-    sk_sp<SkUniformData> writeUniforms(Layout layout,
-                                       const SkIRect&,
-                                       const Transform&,
-                                       const Shape&) const override {
-        auto uniforms = SkUniformData::Make(this->uniforms(), sizeof(float) * 4);
-        float data[4] = {2.f, 2.f, -1.f, -1.f};
-        memcpy(uniforms->data(), data, 4 * sizeof(float));
-        return uniforms;
+    void writeUniforms(const DrawGeometry&, SkPipelineDataGatherer* gatherer) const override {
+#ifdef SK_DEBUG
+        static constexpr int kNumRectUniforms = 2;
+        static constexpr SkUniform kRectUniforms[kNumRectUniforms] = {
+                { "scale",      SkSLType::kFloat2 },
+                { "translate",  SkSLType::kFloat2 },
+        };
+        UniformExpectationsValidator uev(gatherer, SkMakeSpan(kRectUniforms, kNumRectUniforms));
+#endif
+
+        gatherer->write(SkPoint::Make(2.0f, 2.0f));
+        gatherer->write(SkPoint::Make(-1.0f, -1.0f));
     }
 
 private:
     TriangleRectDraw()
-            : RenderStep(Flags::kPerformsShading,
+            : RenderStep("TriangleRectDraw", "test-only",
+                         Flags::kPerformsShading,
                          /*uniforms=*/{{"scale",     SkSLType::kFloat2},
                                        {"translate", SkSLType::kFloat2}},
                          PrimitiveType::kTriangles,
@@ -175,18 +176,13 @@ public:
         return &kSingleton;
     }
 
-    const char* name() const override { return "instance-rect"; }
-
     const char* vertexSkSL() const override {
         return "float2 tmpPosition = float2(float(sk_VertexID >> 1), float(sk_VertexID & 1));\n"
                "float4 devPosition = float4(tmpPosition * dims + position, 0.0, 1.0);\n";
     }
 
-    void writeVertices(DrawWriter* writer,
-                       const SkIRect&,
-                       const Transform&,
-                       const Shape& shape) const override {
-        SkASSERT(shape.isRect());
+    void writeVertices(DrawWriter* writer, const DrawGeometry& geom) const override {
+        SkASSERT(geom.shape().isRect());
 
         DrawBufferManager* bufferMgr = writer->bufferManager();
 
@@ -197,19 +193,15 @@ public:
                     << 2 << 1 << 3;
 
         DrawWriter::Instances instances{*writer, {}, indices, 6};
-        instances.append(1) << shape.rect().topLeft() << shape.rect().size();
+        instances.append(1) << geom.shape().rect().topLeft() << geom.shape().rect().size();
     }
 
-    sk_sp<SkUniformData> writeUniforms(Layout,
-                                       const SkIRect&,
-                                       const Transform&,
-                                       const Shape&) const override {
-        return nullptr;
-    }
+    void writeUniforms(const DrawGeometry&, SkPipelineDataGatherer*) const override { }
 
 private:
     InstanceRectDraw()
-            : RenderStep(Flags::kPerformsShading,
+            : RenderStep("InstanceRectDraw", "test-only",
+                         Flags::kPerformsShading,
                          /*uniforms=*/{},
                          PrimitiveType::kTriangles,
                          kTestDepthStencilSettings,
@@ -242,7 +234,7 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
 
     SkISize textureSize = { kTextureWidth, kTextureHeight };
 #ifdef SK_METAL
-    skgpu::mtl::TextureInfo mtlTextureInfo = {
+    skgpu::graphite::MtlTextureInfo mtlTextureInfo = {
         1,
         1,
         70,     // MTLPixelFormatRGBA8Unorm
@@ -307,6 +299,8 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
         SkColor4f fColor;
     };
 
+    SkPipelineDataGatherer gatherer(Layout::kMetal);
+
     auto draw = [&](const RenderStep* step, std::vector<RectAndColor> draws) {
         GraphicsPipelineDesc pipelineDesc;
         pipelineDesc.setProgram(step, uniqueID);
@@ -322,20 +316,26 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
         // No set scissor, so use entire render target dimensions
         static const SkIRect kBounds = SkIRect::MakeWH(kTextureWidth, kTextureHeight);
 
+        PaintersDepth depth = DrawOrder::kClearDepth;
         for (auto d : draws) {
+            depth = depth.next();
+
             drawWriter.newDynamicState();
             Shape shape(d.fRect);
+            DrawOrder order(depth);
+            DrawGeometry geom{kIdentity, shape, {shape.bounds(), kBounds}, order, nullptr};
 
-            auto renderStepUniforms =
-                    step->writeUniforms(Layout::kMetal, kBounds, kIdentity, shape);
-            if (renderStepUniforms) {
-                auto [writer, bindInfo] =
-                        bufferMgr.getUniformWriter(renderStepUniforms->dataSize());
-                writer.write(renderStepUniforms->data(), renderStepUniforms->dataSize());
+            SkDEBUGCODE(gatherer.checkReset());
+            step->writeUniforms(geom, &gatherer);
+            if (gatherer.hasUniforms()) {
+                SkUniformDataBlock renderStepUniforms = gatherer.peekUniformData();
+                auto [writer, bindInfo] = bufferMgr.getUniformWriter(renderStepUniforms.size());
+                writer.write(renderStepUniforms.data(), renderStepUniforms.size());
                 commandBuffer->bindUniformBuffer(UniformSlot::kRenderStep,
                                                  sk_ref_sp(bindInfo.fBuffer),
                                                  bindInfo.fOffset);
             }
+            gatherer.reset();
 
             // TODO: Rely on uniform writer and GetUniforms(kSolidColor).
             auto [writer, bindInfo] = bufferMgr.getUniformWriter(sizeof(SkColor4f));
@@ -344,7 +344,7 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
                                              sk_ref_sp(bindInfo.fBuffer),
                                              bindInfo.fOffset);
 
-            step->writeVertices(&drawWriter, kBounds, kIdentity, shape);
+            step->writeVertices(&drawWriter, geom);
         }
     };
 
@@ -386,7 +386,7 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(CommandBufferTest, reporter, context) {
     bool result = gpu->submit(commandBuffer);
     REPORTER_ASSERT(reporter, result);
 
-    gpu->checkForFinishedWork(skgpu::SyncToCpu::kYes);
+    gpu->checkForFinishedWork(SyncToCpu::kYes);
     uint32_t* pixels = (uint32_t*)(copyBuffer->map());
     REPORTER_ASSERT(reporter, pixels[0] == 0xffff0000);
     REPORTER_ASSERT(reporter, pixels[51 + 38*kTextureWidth] == 0xff00ffff);

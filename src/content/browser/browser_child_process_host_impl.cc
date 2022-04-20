@@ -163,7 +163,7 @@ void BrowserChildProcessHostImpl::AddObserver(
 // static
 void BrowserChildProcessHostImpl::RemoveObserver(
     BrowserChildProcessObserver* observer) {
-  // TODO(phajdan.jr): Check thread after fixing http://crbug.com/167126.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_browser_child_process_observers.Get().RemoveObserver(observer);
 }
 
@@ -705,7 +705,8 @@ void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
 bool BrowserChildProcessHostImpl::IsProcessLaunched() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  return child_process_.get() && child_process_->GetProcess().IsValid();
+  return child_process_.get() && !child_process_->IsStarting() &&
+         child_process_->GetProcess().IsValid();
 }
 
 // static

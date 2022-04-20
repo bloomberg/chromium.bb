@@ -25,15 +25,14 @@ const base::Feature kDetectFormSubmissionOnFormClear = {
 #endif
 };
 
+// Force enables password change capabilities for every domain, regardless of
+// the server response. The flag is meant for end-to-end testing purposes only.
+const base::Feature kForceEnablePasswordDomainCapabilities = {
+    "ForceEnablePasswordDomainCapabilities", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables favicons in Password Manager.
 const base::Feature kEnableFaviconForPasswords{
     "EnableFaviconForPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables UI that allows the user to create a strong password even if the field
-// wasn't parsed as a new password field.
-// TODO(crbug/1181254): Remove once it's launched.
-const base::Feature kEnableManualPasswordGeneration = {
-    "EnableManualPasswordGeneration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the overwriting of prefilled username fields if the server predicted
 // the field to contain a placeholder value.
@@ -54,6 +53,12 @@ const base::Feature kEnablePasswordsAccountStorage = {
 const base::Feature KEnablePasswordGenerationForClearTextFields = {
     "EnablePasswordGenerationForClearTextFields",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// By default, Password Manager is disabled in fenced frames for now.
+// TODO(crbug.com/1294378): Remove once launched.
+const base::Feature kEnablePasswordManagerWithinFencedFrame{
+    "EnablePasswordManagerWithinFencedFrame",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables filling password on a website when there is saved password on
 // affiliated website.
@@ -100,19 +105,17 @@ const base::Feature kSendPasswords{"SendPasswords",
 const base::Feature kLeakDetectionUnauthenticated = {
     "LeakDetectionUnauthenticated", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables password change flow from leaked password dialog.
+// Enables automatic password change flow from leaked password dialog.
 const base::Feature kPasswordChange = {"PasswordChange",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables offering automated password change only for compromised credentials
-// that are recently used. Only has an effect if PasswordChangeInSettings is
-// also enabled.
-const base::Feature kPasswordChangeOnlyRecentCredentials = {
-    "PasswordChangeOnlyRecentCredentials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables password change flow from bulk leak check in settings.
 const base::Feature kPasswordChangeInSettings = {
     "PasswordChangeInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables .well-known based password change flow from leaked password dialog.
+const base::Feature kPasswordChangeWellKnown = {
+    "PasswordChangeWellKnown", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables fetching credentials capabilities from server for the
 // |PasswordChangeInSettings| and |PasswordChange| features.
@@ -140,12 +143,6 @@ const base::Feature kPasswordScriptsFetching = {
 // never save passwords on a certain website.
 const base::Feature kRecoverFromNeverSaveAndroid = {
     "RecoverFromNeverSaveAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables reparsing server predictions once the password form manager notices a
-// dynamic form change.
-const base::Feature kReparseServerPredictionsFollowingFormChange = {
-    "ReparseServerPredictionsFollowingFormChange",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables considering secondary server field predictions during form parsing.
 const base::Feature kSecondaryServerFieldPredictions = {
@@ -177,11 +174,6 @@ const base::Feature kTouchToFillPasswordSubmission = {
     "TouchToFillPasswordSubmission", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Treat heuritistics to find new password fields as reliable. This enables
-// password generation on more forms, but could lead to false positives.
-const base::Feature kTreatNewPasswordHeuristicsAsReliable = {
-    "TreatNewPasswordHeuristicsAsReliable", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if BUILDFLAG(IS_ANDROID)
 // Enables the intent fetching for the credential manager in Google Mobile
 // Services. It does not enable launching the credential manager.
@@ -193,23 +185,6 @@ const base::Feature kUnifiedCredentialManagerDryRun = {
 const base::Feature kUnifiedPasswordManagerAndroid{
     "UnifiedPasswordManagerAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables migration of passwords from built in storage to Google Mobile
-// Services.
-const base::Feature kUnifiedPasswordManagerMigration{
-    "UnifiedPasswordManagerMigration", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Sends shadow traffic to Google Mobile Services for password storage. This
-// allows to check stability without switching away from the local storage as
-// source of truth.
-const base::Feature kUnifiedPasswordManagerShadowAndroid{
-    "UnifiedPasswordManagerShadowAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Similar to kUnifiedPasswordManagerShadowAndroid but send modify operations
-// instead of read operations.Relevant only for non-sync'ing users.
-const base::Feature kUnifiedPasswordManagerShadowWriteOperationsAndroid{
-    "UnifiedPasswordManagerShadowWriteOperationsAndroid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, the built-in sync functionality in PasswordSyncBridge becomes
 // unused, meaning that SyncService/SyncEngine will no longer download or
 // upload changes to/from the Sync server. Instead, an external Android-specific
@@ -217,6 +192,9 @@ const base::Feature kUnifiedPasswordManagerShadowWriteOperationsAndroid{
 const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly{
     "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPasswordEditDialogWithDetails{
+    "PasswordEditDialogWithDetails", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 const base::Feature kUnifiedPasswordManagerDesktop = {
@@ -239,17 +217,11 @@ const base::Feature kUsernameFirstFlowFallbackCrowdsourcing = {
     "UsernameFirstFlowFallbackCrowdsourcing",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Returns true if the client is part of the live_experiment group for
-// |kPasswordDomainCapabilitiesFetching|, otherwise, the client is assumed to be
-// in the regular launch group.
-extern const base::FeatureParam<bool> kPasswordChangeLiveExperimentParam = {
-    &kPasswordDomainCapabilitiesFetching, "live_experiment", false};
-
 #if BUILDFLAG(IS_ANDROID)
 // Current migration version to Google Mobile Services. If version saved in pref
 // is lower than 'kMigrationVersion' passwords will be re-uploaded.
 extern const base::FeatureParam<int> kMigrationVersion = {
-    &kUnifiedPasswordManagerMigration, "migration_version", 1};
+    &kUnifiedPasswordManagerAndroid, "migration_version", 1};
 #endif
 
 // Field trial identifier for password generation requirements.
@@ -294,9 +266,56 @@ bool IsPasswordScriptsFetchingEnabled() {
 
 #if BUILDFLAG(IS_ANDROID)
 bool UsesUnifiedPasswordManagerUi() {
-  return base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid) &&
-         kUpmExperimentVariationParam.Get() !=
-             UpmExperimentVariation::kShadowSyncingUsers;
+  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
+    return false;
+  UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case UpmExperimentVariation::kEnableForSyncingUsers:
+    case UpmExperimentVariation::kEnableForAllUsers:
+      return true;
+    case UpmExperimentVariation::kShadowSyncingUsers:
+    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+      return false;
+  }
+  NOTREACHED() << "Define explicitly whether UI is required!";
+  return false;
+}
+#endif  // IS_ANDROID
+
+#if BUILDFLAG(IS_ANDROID)
+bool RequiresMigrationForUnifiedPasswordManager() {
+  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
+    return false;
+  UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case UpmExperimentVariation::kEnableForSyncingUsers:
+    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+    case UpmExperimentVariation::kEnableForAllUsers:
+      return true;
+    case UpmExperimentVariation::kShadowSyncingUsers:
+      return false;
+  }
+  NOTREACHED() << "Define explicitly whether migration is required!";
+  return false;
+}
+#endif  // IS_ANDROID
+
+#if BUILDFLAG(IS_ANDROID)
+bool ManagesLocalPasswordsInUnifiedPasswordManager() {
+  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
+    return false;
+  UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
+  switch (variation) {
+    case UpmExperimentVariation::kEnableForSyncingUsers:
+    case UpmExperimentVariation::kShadowSyncingUsers:
+    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+      return false;
+    case UpmExperimentVariation::kEnableForAllUsers:
+      return true;
+  }
+  NOTREACHED()
+      << "Define explicitly whether local password management is supported!";
+  return false;
 }
 #endif  // IS_ANDROID
 

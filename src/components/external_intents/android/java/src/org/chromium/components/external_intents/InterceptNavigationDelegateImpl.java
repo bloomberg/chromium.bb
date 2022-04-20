@@ -9,7 +9,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResultType;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -19,6 +21,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ConsoleMessageLevel;
 import org.chromium.url.GURL;
+import org.chromium.url.Origin;
 
 /**
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
@@ -75,14 +78,19 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
         InterceptNavigationDelegateImplJni.get().associateWithWebContents(this, mWebContents);
     }
 
-    public boolean shouldIgnoreNewTab(GURL url, boolean incognito) {
+    public boolean shouldIgnoreNewTab(
+            GURL url, boolean incognito, boolean isRendererInitiated, Origin initiatorOrigin) {
         if (mAuthenticatorHelper != null
                 && mAuthenticatorHelper.handleAuthenticatorUrl(url.getSpec())) {
             return true;
         }
 
-        ExternalNavigationParams params =
-                new ExternalNavigationParams.Builder(url, incognito).setOpenInNewTab(true).build();
+        ExternalNavigationParams params = new ExternalNavigationParams.Builder(url, incognito)
+                                                  .setOpenInNewTab(true)
+                                                  .setIsRendererInitiated(isRendererInitiated)
+                                                  .setInitiatorOrigin(initiatorOrigin)
+                                                  .setIsMainFrame(true)
+                                                  .build();
         mLastOverrideUrlLoadingResultType =
                 mExternalNavHandler.shouldOverrideUrlLoading(params).getResultType();
         return mLastOverrideUrlLoadingResultType
@@ -138,6 +146,11 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
 
         mClient.onDecisionReachedForNavigation(navigationHandle, result);
 
+        boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(params.getUrl());
+        String protocolType = isExternalProtocol ? "ExternalProtocol" : "InternalProtocol";
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.TabNavigationInterceptResult.For" + protocolType, result.getResultType(),
+                OverrideUrlLoadingResultType.NUM_ENTRIES);
         switch (mLastOverrideUrlLoadingResultType) {
             case OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT:
                 assert mExternalNavHandler.canExternalAppHandleUrl(url);

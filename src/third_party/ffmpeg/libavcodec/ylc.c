@@ -30,9 +30,9 @@
 #include "libavutil/mem.h"
 #include "avcodec.h"
 #include "bswapdsp.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "huffyuvdsp.h"
-#include "internal.h"
 #include "thread.h"
 #include "unary.h"
 
@@ -285,7 +285,6 @@ static int decode_frame(AVCodecContext *avctx,
     int TL[4] = { 128, 128, 128, 128 };
     int L[4]  = { 128, 128, 128, 128 };
     YLCContext *s = avctx->priv_data;
-    ThreadFrame frame = { .f = data };
     const uint8_t *buf = avpkt->data;
     int ret, x, y, toffset, boffset;
     AVFrame * const p = data;
@@ -307,7 +306,7 @@ static int decode_frame(AVCodecContext *avctx,
     if (toffset >= boffset || boffset >= avpkt->size)
         return AVERROR_INVALIDDATA;
 
-    if ((ret = ff_thread_get_buffer(avctx, &frame, 0)) < 0)
+    if ((ret = ff_thread_get_buffer(avctx, p, 0)) < 0)
         return ret;
 
     av_fast_malloc(&s->buffer, &s->buffer_size,
@@ -452,15 +451,15 @@ static av_cold int decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_ylc_decoder = {
-    .name           = "ylc",
-    .long_name      = NULL_IF_CONFIG_SMALL("YUY2 Lossless Codec"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_YLC,
+const FFCodec ff_ylc_decoder = {
+    .p.name         = "ylc",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("YUY2 Lossless Codec"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_YLC,
     .priv_data_size = sizeof(YLCContext),
     .init           = decode_init,
     .close          = decode_end,
     .decode         = decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
+    .p.capabilities = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

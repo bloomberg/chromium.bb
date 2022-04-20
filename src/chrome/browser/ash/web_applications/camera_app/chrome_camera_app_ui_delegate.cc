@@ -213,6 +213,7 @@ void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
   launch_params.app_id = *app_id;
   launch_params.target_url = GURL(ash::kChromeUICameraAppMainURL);
   launch_params.dir = my_files_folder_path;
+  web_app::WebAppTabHelper::CreateForWebContents(web_contents);
   web_app::WebAppTabHelper::FromWebContents(web_contents)
       ->EnsureLaunchQueue()
       .Enqueue(std::move(launch_params));
@@ -224,10 +225,6 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("device_type",
                     DeviceTypeToString(chromeos::GetDeviceType()));
-  // Add chrome flags.
-  source->AddBoolean("cameraAppDocumentManualCrop",
-                     base::FeatureList::IsEnabled(
-                         chromeos::features::kCameraAppDocumentManualCrop));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {

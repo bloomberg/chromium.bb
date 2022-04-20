@@ -20,14 +20,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.download.DownloadNotificationService.DownloadStatus;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
-import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.NotificationWrapperBuilder;
 
@@ -368,8 +366,7 @@ public class DownloadForegroundServiceManager {
      * @return Whether startForeground() is allowed to be called.
      */
     private boolean canStartForeground() {
-        if (!BuildInfo.isAtLeastS()) return true;
-        if (!ForegroundServiceUtils.canStartForegroundServiceExcludingMedia()) return true;
+        if (VERSION.SDK_INT < VERSION_CODES.S) return true;
         // If foreground service is started, startForeground() must be called.
         return ApplicationStatus.hasVisibleActivities()
                 || (mIsServiceBound && !mStartForegroundCalled);

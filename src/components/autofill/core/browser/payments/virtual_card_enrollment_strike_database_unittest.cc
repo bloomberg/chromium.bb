@@ -55,6 +55,7 @@ TEST_F(VirtualCardEnrollmentStrikeDatabaseTest, AddAndRemoveStrikes) {
   int max_strikes = strike_database_->GetMaxStrikesLimit();
   std::string test_guid = "00000000-0000-0000-0000-000000000001";
 
+  EXPECT_EQ(strike_database_->GetStrikes(test_guid), 0);
   strike_database_->AddStrike(test_guid);
   EXPECT_EQ(strike_database_->GetStrikes(test_guid), 1);
   EXPECT_FALSE(strike_database_->IsMaxStrikesLimitReached(test_guid));
@@ -67,6 +68,28 @@ TEST_F(VirtualCardEnrollmentStrikeDatabaseTest, AddAndRemoveStrikes) {
   strike_database_->RemoveStrike(test_guid);
   EXPECT_EQ(strike_database_->GetStrikes(test_guid), max_strikes - 1);
   EXPECT_FALSE(strike_database_->IsMaxStrikesLimitReached(test_guid));
+}
+
+// Test to ensure that IsLastOffer works correctly.
+TEST_F(VirtualCardEnrollmentStrikeDatabaseTest, IsLastOffer) {
+  int max_strikes = strike_database_->GetMaxStrikesLimit();
+  std::string instrument_id = "123";
+  ASSERT_EQ(strike_database_->GetStrikes(instrument_id), 0);
+
+  // Adds one strike and check IsLastOffer.
+  strike_database_->AddStrike(instrument_id);
+  EXPECT_EQ(strike_database_->GetStrikes(instrument_id), 1);
+  EXPECT_FALSE(strike_database_->IsLastOffer(instrument_id));
+
+  // Removes existing strikes.
+  strike_database_->RemoveStrike(instrument_id);
+  ASSERT_EQ(strike_database_->GetStrikes(instrument_id), 0);
+
+  // Adds |max_strikes - 1| strikes to the strike database and check
+  // IsLastOffer.
+  strike_database_->AddStrikes(max_strikes - 1, instrument_id);
+  EXPECT_EQ(strike_database_->GetStrikes(instrument_id), max_strikes - 1);
+  EXPECT_TRUE(strike_database_->IsLastOffer(instrument_id));
 }
 
 }  // namespace

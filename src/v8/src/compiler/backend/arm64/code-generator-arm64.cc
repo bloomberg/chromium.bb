@@ -963,6 +963,14 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         offset = Operand(i.InputRegister(1));
       }
       Register value = i.InputRegister(2);
+
+      if (FLAG_debug_code) {
+        // Checking that |value| is not a cleared weakref: our write barrier
+        // does not support that for now.
+        __ cmp(value, Operand(kClearedWeakHeapObjectLower32));
+        __ Check(ne, AbortReason::kOperandIsCleared);
+      }
+
       auto ool = zone()->New<OutOfLineRecordWrite>(
           this, object, offset, value, mode, DetermineStubCallMode(),
           &unwinding_info_writer_);
@@ -3195,7 +3203,7 @@ void CodeGenerator::AssembleConstructFrame() {
   __ PushCPURegList(saves_fp);
 
   // Save registers.
-  __ PushCPURegList<TurboAssembler::kSignLR>(saves);
+  __ PushCPURegList(saves);
 
   if (returns != 0) {
     __ Claim(returns);
@@ -3213,7 +3221,7 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
   // Restore registers.
   CPURegList saves =
       CPURegList(kXRegSizeInBits, call_descriptor->CalleeSavedRegisters());
-  __ PopCPURegList<TurboAssembler::kAuthLR>(saves);
+  __ PopCPURegList(saves);
 
   // Restore fp registers.
   CPURegList saves_fp =
@@ -3298,24 +3306,18 @@ void CodeGenerator::FinishCode() { __ ForceConstantPoolEmissionWithoutJump(); }
 void CodeGenerator::PrepareForDeoptimizationExits(
     ZoneDeque<DeoptimizationExit*>* exits) {
   __ ForceConstantPoolEmissionWithoutJump();
-  // We are conservative here, assuming all deopts are eager with resume deopts.
-  DCHECK_GE(Deoptimizer::kEagerWithResumeDeoptExitSize,
-            Deoptimizer::kLazyDeoptExitSize);
-  DCHECK_GE(Deoptimizer::kLazyDeoptExitSize,
-            Deoptimizer::kNonLazyDeoptExitSize);
-  __ CheckVeneerPool(false, false,
-                     static_cast<int>(exits->size()) *
-                         Deoptimizer::kEagerWithResumeDeoptExitSize);
+  // We are conservative here, reserving sufficient space for the largest deopt
+  // kind.
+  DCHECK_GE(Deoptimizer::kLazyDeoptExitSize, Deoptimizer::kEagerDeoptExitSize);
+  __ CheckVeneerPool(
+      false, false,
+      static_cast<int>(exits->size()) * Deoptimizer::kLazyDeoptExitSize);
 
   // Check which deopt kinds exist in this Code object, to avoid emitting jumps
   // to unused entries.
   bool saw_deopt_kind[kDeoptimizeKindCount] = {false};
-  bool saw_deopt_with_resume_reason[kDeoptimizeReasonCount] = {false};
   for (auto exit : *exits) {
     saw_deopt_kind[static_cast<int>(exit->kind())] = true;
-    if (exit->kind() == DeoptimizeKind::kEagerWithResume) {
-      saw_deopt_with_resume_reason[static_cast<int>(exit->reason())] = true;
-    }
   }
 
   // Emit the jumps to deoptimization entries.
@@ -3325,21 +3327,9 @@ void CodeGenerator::PrepareForDeoptimizationExits(
   for (int i = 0; i < kDeoptimizeKindCount; i++) {
     if (!saw_deopt_kind[i]) continue;
     DeoptimizeKind kind = static_cast<DeoptimizeKind>(i);
-    if (kind == DeoptimizeKind::kEagerWithResume) {
-      for (int j = 0; j < kDeoptimizeReasonCount; j++) {
-        if (!saw_deopt_with_resume_reason[j]) continue;
-        DeoptimizeReason reason = static_cast<DeoptimizeReason>(j);
-        __ bind(&jump_deoptimization_or_resume_entry_labels_[j]);
-        __ LoadEntryFromBuiltin(Deoptimizer::GetDeoptWithResumeBuiltin(reason),
-                                scratch);
-        __ Jump(scratch);
-      }
-    } else {
-      __ bind(&jump_deoptimization_entry_labels_[i]);
-      __ LoadEntryFromBuiltin(Deoptimizer::GetDeoptimizationEntry(kind),
-                              scratch);
-      __ Jump(scratch);
-    }
+    __ bind(&jump_deoptimization_entry_labels_[i]);
+    __ LoadEntryFromBuiltin(Deoptimizer::GetDeoptimizationEntry(kind), scratch);
+    __ Jump(scratch);
   }
 }
 

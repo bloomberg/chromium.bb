@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
+#include "url/gurl.h"
 
 class Browser;
 class BrowserThemePack;
@@ -203,6 +204,7 @@ class AppBrowserController
 
   // BrowserThemeProviderDelegate:
   CustomThemeSupplier* GetThemeSupplier() const override;
+  bool ShouldUseSystemTheme() const override;
   bool ShouldUseCustomFrame() const override;
 
   // ui::ColorProviderManager::InitializerSupplier

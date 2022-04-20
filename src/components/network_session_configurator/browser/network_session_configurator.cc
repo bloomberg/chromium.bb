@@ -31,9 +31,9 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quiche/overrides/quiche_platform_impl/quic_flags_impl.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_tag.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_tag.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_protocol.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
@@ -330,13 +330,6 @@ bool ShouldQuicRetryOnAlternateNetworkBeforeHandshake(
       "true");
 }
 
-bool ShouldQuicGoawayOnPathDegrading(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "go_away_on_path_degrading"),
-      "true");
-}
-
 int GetQuicMaxTimeOnNonDefaultNetworkSeconds(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -620,8 +613,6 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
         ShouldQuicAllowPortMigration(quic_trial_params);
     quic_params->retry_on_alternate_network_before_handshake =
         ShouldQuicRetryOnAlternateNetworkBeforeHandshake(quic_trial_params);
-    quic_params->go_away_on_path_degrading =
-        ShouldQuicGoawayOnPathDegrading(quic_trial_params);
     int initial_rtt_for_handshake_milliseconds =
         GetQuicInitialRttForHandshakeMilliseconds(quic_trial_params);
     if (initial_rtt_for_handshake_milliseconds > 0) {

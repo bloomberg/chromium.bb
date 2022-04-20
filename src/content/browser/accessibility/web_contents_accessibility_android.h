@@ -371,6 +371,9 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
 
+  bool should_allow_image_descriptions() const {
+    return allow_image_descriptions_;
+  }
   bool ShouldRespectDisplayedPasswordText();
   bool ShouldExposePasswordText();
   void HandlePageLoaded(int32_t unique_id);
@@ -415,9 +418,11 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
 
   bool frame_info_initialized_;
 
-  float page_scale_ = 1.f;
+  // Whether or not this instance should allow the image descriptions feature
+  // to be enabled, set from the Java-side code.
+  bool allow_image_descriptions_;
 
-  bool use_zoom_for_dsf_enabled_;
+  float page_scale_ = 1.f;
 
   // Current max number of events to fire, mockable for unit tests
   int max_content_changed_events_to_fire_ = kMaxContentChangedEventsToFire;

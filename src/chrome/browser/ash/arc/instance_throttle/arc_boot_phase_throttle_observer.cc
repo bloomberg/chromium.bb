@@ -32,7 +32,7 @@ void RemoveMojoObservers(ArcBootPhaseThrottleObserver* observer) {
 }  // namespace
 
 ArcBootPhaseThrottleObserver::ArcBootPhaseThrottleObserver()
-    : ThrottleObserver("ArcIsBooting") {}
+    : ThrottleObserver(kArcBootPhaseThrottleObserverName) {}
 
 ArcBootPhaseThrottleObserver::~ArcBootPhaseThrottleObserver() = default;
 
@@ -134,7 +134,7 @@ void ArcBootPhaseThrottleObserver::ThrottleArc() {
 }
 
 void ArcBootPhaseThrottleObserver::MaybeSetActive() {
-  if (!arc_is_booting_) {
+  if (!arc_is_booting_ || !*arc_is_booting_) {
     // Skip other checks if ARC is not currently booting.
     SetActive(false);
     return;

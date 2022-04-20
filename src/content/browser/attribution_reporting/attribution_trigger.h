@@ -40,7 +40,8 @@ class CONTENT_EXPORT AttributionTrigger {
     kDroppedForNoise = 8,
     kExcessiveReportingOrigins = 9,
     kNoMatchingSourceFilterData = 10,
-    kMaxValue = kNoMatchingSourceFilterData,
+    kProhibitedByBrowserPolicy = 11,
+    kMaxValue = kProhibitedByBrowserPolicy,
   };
 
   // Represents the potential aggregatable outcomes from attempting to register
@@ -58,7 +59,9 @@ class CONTENT_EXPORT AttributionTrigger {
     kNoHistograms = 6,
     kInsufficientBudget = 7,
     kNoMatchingSourceFilterData = 8,
-    kMaxValue = kNoMatchingSourceFilterData,
+    kNotRegistered = 9,
+    kProhibitedByBrowserPolicy = 10,
+    kMaxValue = kProhibitedByBrowserPolicy,
   };
 
   struct CONTENT_EXPORT EventTriggerData {

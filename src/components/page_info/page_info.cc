@@ -42,6 +42,8 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "components/resources/android/theme_resources.h"
 #endif
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "build/chromeos_buildflags.h"
 #include "components/page_info/core/features.h"
 #include "components/safe_browsing/buildflags.h"
@@ -112,7 +114,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::HID_GUARD,
     ContentSettingsType::SERIAL_GUARD,
     ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
-    ContentSettingsType::FONT_ACCESS,
+    ContentSettingsType::LOCAL_FONTS,
 #endif
     ContentSettingsType::BLUETOOTH_GUARD,
     ContentSettingsType::BLUETOOTH_SCANNING,
@@ -1051,7 +1053,8 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
 void PageInfo::PresentSiteData(base::OnceClosure done) {
   auto* settings = GetPageSpecificContentSettings();
   if (!settings) {
-    PresentSiteDataInternal(std::move(done));
+    SCOPED_CRASH_KEY_STRING256("page_info", "site_scheme", site_url_.scheme());
+    base::debug::DumpWithoutCrashing();
   } else {
     settings->allowed_local_shared_objects().UpdateIgnoredEmptyStorageKeys(
         base::BindOnce(&PageInfo::PresentSiteDataInternal,
@@ -1103,6 +1106,12 @@ void PageInfo::PresentAdPersonalizationData() {
   info.has_joined_user_to_interest_group =
       settings->HasJoinedUserToInterestGroup();
   info.accessed_topics = settings->GetAccessedTopics();
+  std::sort(info.accessed_topics.begin(), info.accessed_topics.end(),
+            [](const privacy_sandbox::CanonicalTopic& a,
+               const privacy_sandbox::CanonicalTopic& b) {
+              return a.GetLocalizedRepresentation() <
+                     b.GetLocalizedRepresentation();
+            });
   ui_->SetAdPersonalizationInfo(info);
 }
 

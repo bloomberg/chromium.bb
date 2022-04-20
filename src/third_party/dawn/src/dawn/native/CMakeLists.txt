@@ -19,6 +19,7 @@ DawnJSONGenerator(
 )
 
 add_library(dawn_native ${DAWN_DUMMY_FILE})
+common_compile_options(dawn_native)
 
 target_compile_definitions(dawn_native PRIVATE "DAWN_NATIVE_IMPLEMENTATION")
 if(BUILD_SHARED_LIBS)
@@ -441,6 +442,10 @@ if (DAWN_ENABLE_OPENGL)
     target_link_libraries(dawn_native PRIVATE dawn_khronos_platform)
 endif()
 
+if (DAWN_ENABLE_SWIFTSHADER)
+    target_compile_definitions(dawn_native PRIVATE "DAWN_ENABLE_SWIFTSHADER")
+endif()
+
 if (DAWN_ENABLE_VULKAN)
     target_sources(dawn_native PRIVATE
         "${DAWN_INCLUDE_DIR}/dawn/native/VulkanBackend.h"
@@ -454,6 +459,8 @@ if (DAWN_ENABLE_VULKAN)
         "vulkan/BindGroupVk.h"
         "vulkan/BufferVk.cpp"
         "vulkan/BufferVk.h"
+        "vulkan/CacheKeyVk.cpp"
+        "vulkan/CacheKeyVk.h"
         "vulkan/CommandBufferVk.cpp"
         "vulkan/CommandBufferVk.h"
         "vulkan/CommandRecordingContext.h"
@@ -508,7 +515,8 @@ if (DAWN_ENABLE_VULKAN)
         "vulkan/external_semaphore/SemaphoreService.h"
     )
 
-    target_link_libraries(dawn_native PUBLIC dawn_vulkan_headers)
+    target_link_libraries(dawn_native PUBLIC Vulkan-Headers)
+    target_include_directories(dawn_native PRIVATE ${DAWN_VULKAN_TOOLS_DIR})
 
     if (UNIX AND NOT APPLE)
         target_sources(dawn_native PRIVATE
@@ -548,6 +556,7 @@ DawnJSONGenerator(
 )
 
 add_library(webgpu_dawn ${DAWN_DUMMY_FILE})
+common_compile_options(webgpu_dawn)
 target_link_libraries(webgpu_dawn PRIVATE dawn_native)
 target_compile_definitions(webgpu_dawn PRIVATE "WGPU_IMPLEMENTATION")
 if(BUILD_SHARED_LIBS)

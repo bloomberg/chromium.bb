@@ -24,7 +24,6 @@
 #include "chrome/browser/ash/policy/scheduled_task_handler/scheduled_task_util.h"
 #include "chrome/browser/ash/policy/scheduled_task_handler/scoped_wake_lock.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -99,8 +98,7 @@ void DeviceScheduledRebootHandler::OnRebootTimerExpired() {
 
   // If the device is on the sign-in screen, skip reboot only if the grace
   // period is applied.
-  if (!skip_reboot_ &&
-      session_manager::SessionManager::Get()->IsScreenLocked()) {
+  if (!skip_reboot_ && !user_manager::UserManager::Get()->IsUserLoggedIn()) {
     RebootDevice(kRebootDescriptionOnTimerExpired);
     return;
   }
@@ -110,6 +108,8 @@ void DeviceScheduledRebootHandler::OnRebootTimerExpired() {
   // not skip reboot due to grace period applied.
   if (!skip_reboot_ && base::FeatureList::IsEnabled(
                            ash::features::kDeviceForceScheduledReboot)) {
+    // Schedule post reboot notification for the user in session.
+    notifications_scheduler_->SchedulePostRebootNotification();
     RebootDevice(kRebootDescriptionOnTimerExpired);
     return;
   }
@@ -173,7 +173,7 @@ void DeviceScheduledRebootHandler::StartRebootTimer() {
   if (base::FeatureList::IsEnabled(
           ash::features::kDeviceForceScheduledReboot)) {
     if (!skip_reboot_) {
-      notifications_scheduler_->ScheduleNotifications(
+      notifications_scheduler_->SchedulePendingRebootNotifications(
           base::BindOnce(&DeviceScheduledRebootHandler::OnRebootButtonClicked,
                          base::Unretained(this)),
           scheduled_task_executor_->GetScheduledTaskTime());

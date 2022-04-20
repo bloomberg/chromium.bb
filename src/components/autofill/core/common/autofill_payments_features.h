@@ -21,7 +21,7 @@ extern const base::Feature kAutofillAlwaysReturnCloudTokenizedCard;
 extern const base::Feature kAutofillAutoTriggerManualFallbackForCards;
 extern const base::Feature kAutofillCreditCardAuthentication;
 extern const base::Feature kAutofillCreditCardUploadFeedback;
-extern const base::Feature kAutofillEnableGoogleIssuedCard;
+extern const base::Feature kAutofillEnableManualFallbackForVirtualCards;
 extern const base::Feature kAutofillEnableMerchantBoundVirtualCards;
 extern const base::Feature kAutofillEnableOfferNotificationForPromoCodes;
 extern const base::Feature kAutofillEnableOffersInClankKeyboardAccessory;
@@ -31,9 +31,12 @@ extern const base::Feature kAutofillEnableToolbarStatusChip;
 extern const base::Feature kAutofillEnableUnmaskCardRequestSetInstrumentId;
 extern const base::Feature kAutofillEnableUpdateVirtualCardEnrollment;
 extern const base::Feature kAutofillEnableVirtualCard;
+extern const base::Feature kAutofillEnableVirtualCardFidoEnrollment;
 extern const base::Feature
     kAutofillEnableVirtualCardManagementInDesktopSettingsPage;
+extern const base::Feature kAutofillEnableVirtualCardMetadata;
 extern const base::Feature kAutofillEnableVirtualCardsRiskBasedAuthentication;
+extern const base::Feature kAutofillEnforceDelaysInStrikeDatabase;
 extern const base::Feature kAutofillFillMerchantPromoCodeFields;
 extern const base::FeatureParam<int>
     kAutofillImageFetcherDiskCacheExpirationInMinutes;

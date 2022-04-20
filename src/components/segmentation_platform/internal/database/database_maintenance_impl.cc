@@ -24,6 +24,7 @@
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
+#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/proto/types.pb.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
@@ -39,10 +40,10 @@ using CleanupItem = DatabaseMaintenanceImpl::CleanupItem;
 
 namespace {
 std::set<SignalIdentifier> CollectAllSignalIdentifiers(
-    const SegmentInfoDatabase::SegmentInfoList& segment_infos) {
+    const DefaultModelManager::SegmentInfoList& segment_infos) {
   std::set<SignalIdentifier> signal_ids;
-  for (const auto& pair : segment_infos) {
-    const proto::SegmentInfo& segment_info = pair.second;
+  for (const auto& info : segment_infos) {
+    const proto::SegmentInfo& segment_info = info->segment_info;
     const auto& metadata = segment_info.model_metadata();
     auto features =
         metadata_utils::GetAllUmaFeatures(metadata, /*include_outputs=*/true);
@@ -93,28 +94,30 @@ DatabaseMaintenanceImpl::DatabaseMaintenanceImpl(
     base::Clock* clock,
     SegmentInfoDatabase* segment_info_database,
     SignalDatabase* signal_database,
-    SignalStorageConfig* signal_storage_config)
+    SignalStorageConfig* signal_storage_config,
+    DefaultModelManager* default_model_manager)
     : segment_ids_(segment_ids),
       clock_(clock),
       segment_info_database_(segment_info_database),
       signal_database_(signal_database),
-      signal_storage_config_(signal_storage_config) {}
+      signal_storage_config_(signal_storage_config),
+      default_model_manager_(default_model_manager) {}
 
 DatabaseMaintenanceImpl::~DatabaseMaintenanceImpl() = default;
 
 void DatabaseMaintenanceImpl::ExecuteMaintenanceTasks() {
   std::vector<OptimizationTarget> segment_ids(segment_ids_.begin(),
                                               segment_ids_.end());
-  segment_info_database_->GetSegmentInfoForSegments(
-      segment_ids,
+  default_model_manager_->GetAllSegmentInfoFromBothModels(
+      segment_ids, segment_info_database_,
       base::BindOnce(&DatabaseMaintenanceImpl::OnSegmentInfoCallback,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DatabaseMaintenanceImpl::OnSegmentInfoCallback(
-    std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segment_infos) {
+    DefaultModelManager::SegmentInfoList segment_infos) {
   std::set<SignalIdentifier> signal_ids =
-      CollectAllSignalIdentifiers(*segment_infos);
+      CollectAllSignalIdentifiers(segment_infos);
   stats::RecordMaintenanceSignalIdentifierCount(signal_ids.size());
 
   auto all_tasks = GetAllTasks(signal_ids);

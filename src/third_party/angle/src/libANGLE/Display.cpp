@@ -1692,6 +1692,12 @@ Error Display::destroyContext(Thread *thread, gl::Context *context)
         // Keep |currentContext| alive, while releasing |context|.
         gl::ScopedContextRef scopedContextRef(currentContext);
 
+        // keep |currentDrawSurface| and |currentReadSurface| alive as well
+        // while releasing |context|.
+        ScopedSurfaceRef drawSurfaceRef(currentDrawSurface);
+        ScopedSurfaceRef readSurfaceRef(
+            currentReadSurface == currentDrawSurface ? nullptr : currentReadSurface);
+
         // Make the context current, so we can release resources belong to the context, and then
         // when context is released from the current, it will be destroyed.
         // TODO(http://www.anglebug.com/6322): Don't require a Context to be current in order to
@@ -2368,6 +2374,13 @@ void Display::returnScratchBufferImpl(angle::ScratchBuffer scratchBuffer,
 Error Display::handleGPUSwitch()
 {
     ANGLE_TRY(mImplementation->handleGPUSwitch());
+    initVendorString();
+    return NoError();
+}
+
+Error Display::forceGPUSwitch(EGLint gpuIDHigh, EGLint gpuIDLow)
+{
+    ANGLE_TRY(mImplementation->forceGPUSwitch(gpuIDHigh, gpuIDLow));
     initVendorString();
     return NoError();
 }

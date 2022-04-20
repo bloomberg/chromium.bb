@@ -45,11 +45,11 @@ void print_error_message(LSTATUS status, const char* function_name, std::string 
     LPVOID lpMsgBuf;
     DWORD dw = GetLastError();
 
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, dw,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, dw,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
 
     std::cerr << function_name << " failed with " << win_api_error_str(status) << ": "
-              << std::string(static_cast<LPTSTR>(lpMsgBuf));
+              << std::string(reinterpret_cast<LPTSTR>(lpMsgBuf));
     if (optional_message != "") {
         std::cerr << " | " << optional_message;
     }
@@ -57,20 +57,18 @@ void print_error_message(LSTATUS status, const char* function_name, std::string 
     LocalFree(lpMsgBuf);
 }
 
-bool set_env_var(std::string const& name, std::string const& value) {
-    bool ret = SetEnvironmentVariableA(name.c_str(), value.c_str());
-    if (ret == false) {
+void set_env_var(std::string const& name, std::string const& value) {
+    BOOL ret = SetEnvironmentVariableA(name.c_str(), value.c_str());
+    if (ret == 0) {
         print_error_message(ERROR_SETENV_FAILED, "SetEnvironmentVariableA");
-        return true;
     }
-    return false;
 }
-bool remove_env_var(std::string const& name) { return SetEnvironmentVariableA(name.c_str(), nullptr); }
+void remove_env_var(std::string const& name) { SetEnvironmentVariableA(name.c_str(), nullptr); }
 #define ENV_VAR_BUFFER_SIZE 4096
 std::string get_env_var(std::string const& name, bool report_failure) {
     std::string value;
     value.resize(ENV_VAR_BUFFER_SIZE);
-    DWORD ret = GetEnvironmentVariable(name.c_str(), (LPSTR)value.c_str(), ENV_VAR_BUFFER_SIZE);
+    DWORD ret = GetEnvironmentVariable(name.c_str(), &value[0], ENV_VAR_BUFFER_SIZE);
     if (0 == ret) {
         if (report_failure) print_error_message(ERROR_ENVVAR_NOT_FOUND, "GetEnvironmentVariable");
         return std::string();
@@ -84,8 +82,8 @@ std::string get_env_var(std::string const& name, bool report_failure) {
 }
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 
-bool set_env_var(std::string const& name, std::string const& value) { return setenv(name.c_str(), value.c_str(), 1); }
-bool remove_env_var(std::string const& name) { return unsetenv(name.c_str()); }
+void set_env_var(std::string const& name, std::string const& value) { setenv(name.c_str(), value.c_str(), 1); }
+void remove_env_var(std::string const& name) { unsetenv(name.c_str()); }
 std::string get_env_var(std::string const& name, bool report_failure) {
     char* ret = getenv(name.c_str());
     if (ret == nullptr) {
@@ -130,13 +128,16 @@ void print_vector_of_strings(std::string& out, const char* object_name, std::vec
     }
 }
 
+std::string to_text(bool b) { return b ? std::string("true") : std::string("false"); }
+
 std::string ManifestICD::get_manifest_str() const {
     std::string out;
     out += "{\n";
     out += "    " + file_format_version.get_version_str() + "\n";
     out += "    \"ICD\": {\n";
     out += "        \"library_path\": \"" + fs::fixup_backslashes_in_path(lib_path) + "\",\n";
-    out += "        \"api_version\": \"" + version_to_string(api_version) + "\"\n";
+    out += "        \"api_version\": \"" + version_to_string(api_version) + "\",\n";
+    out += "        \"is_portability_driver\": " + to_text(is_portability_driver) + "\n";
     out += "    }\n";
     out += "}\n";
     return out;
@@ -351,7 +352,7 @@ int create_folder(path const& path) {
 #endif
 }
 
-int delete_folder(path const& folder) {
+int delete_folder_contents(path const& folder) {
 #if defined(WIN32)
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(folder.c_str()) && GetLastError() == ERROR_FILE_NOT_FOUND) {
         // nothing to delete
@@ -373,7 +374,6 @@ int delete_folder(path const& folder) {
             }
         } while (::FindNextFile(hFind, &fd));
         ::FindClose(hFind);
-        _rmdir(folder.c_str());
     }
     return 0;
 #else
@@ -401,13 +401,23 @@ int delete_folder(path const& folder) {
         ret = ret2;
     }
     closedir(dir);
-
-    if (!ret) ret = rmdir(folder.c_str());
     return ret;
 #endif
 }
 
-FolderManager::FolderManager(path root_path, std::string name, DebugMode debug) : debug(debug), folder(root_path / name) {
+int delete_folder(path const& folder) {
+    int ret = delete_folder_contents(folder);
+    if (ret != 0) return ret;
+#if defined(WIN32)
+    _rmdir(folder.c_str());
+    return 0;
+#else
+    return rmdir(folder.c_str());
+#endif
+}
+
+FolderManager::FolderManager(path root_path, std::string name) : folder(root_path / name) {
+    delete_folder_contents(folder);
     create_folder(folder);
 }
 FolderManager::~FolderManager() {
@@ -417,17 +427,9 @@ FolderManager::~FolderManager() {
     // removing those. Since this is in an OOM situation, it is a low priority to fix. It does have the effect that Windows will
     // be unable to delete the binaries that were leaked.
     for (auto& file : list_of_files_to_delete) {
-        if (debug >= DebugMode::log) std::cout << "Removing manifest " << file << " at " << (folder / file).str() << "\n";
-        if (debug != DebugMode::no_delete) {
-            remove(file);
-        }
+        remove(file);
     }
-    if (debug != DebugMode::no_delete) {
-        delete_folder(folder);
-    }
-    if (debug >= DebugMode::log) {
-        std::cout << "Deleting folder " << folder.str() << "\n";
-    }
+    delete_folder(folder);
 }
 path FolderManager::write_manifest(std::string const& name, std::string const& contents) {
     path out_path = folder / name;
@@ -435,7 +437,6 @@ path FolderManager::write_manifest(std::string const& name, std::string const& c
     if (found != files.end()) {
         std::cout << "Overwriting manifest " << name << ". Was this intended?\n";
     } else {
-        if (debug >= DebugMode::log) std::cout << "Creating manifest " << name << " at " << out_path.str() << "\n";
         files.emplace_back(name);
     }
     auto file = std::ofstream(out_path.str(), std::ios_base::trunc | std::ios_base::out);
@@ -451,17 +452,15 @@ void FolderManager::remove(std::string const& name) {
     path out_path = folder / name;
     auto found = std::find(files.begin(), files.end(), name);
     if (found != files.end()) {
-        if (debug >= DebugMode::log) std::cout << "Removing file " << name << " at " << out_path.str() << "\n";
-        if (debug != DebugMode::no_delete) {
-            int rc = std::remove(out_path.c_str());
-            if (rc != 0 && debug >= DebugMode::log) {
-                std::cerr << "Failed to remove file " << name << " at " << out_path.str() << "\n";
-            }
-
-            files.erase(found);
+        int rc = std::remove(out_path.c_str());
+        if (rc != 0) {
+            std::cerr << "Failed to remove file " << name << " at " << out_path.str() << "\n";
         }
+
+        files.erase(found);
+
     } else {
-        if (debug >= DebugMode::log) std::cout << "Couldn't remove file " << name << " at " << out_path.str() << ".\n";
+        std::cout << "Couldn't remove file " << name << " at " << out_path.str() << ".\n";
     }
 }
 
@@ -470,11 +469,10 @@ path FolderManager::copy_file(path const& file, std::string const& new_name) {
     auto new_filepath = folder / new_name;
     auto found = std::find(files.begin(), files.end(), new_name);
     if (found != files.end()) {
-        if (debug >= DebugMode::log) std::cout << "File location already contains" << new_name << ". Is this a bug?\n";
+        std::cout << "File location already contains" << new_name << ". Is this a bug?\n";
     } else if (file.str() == new_filepath.str()) {
-        if (debug >= DebugMode::log) std::cout << "Trying to copy " << new_name << " into itself. Is this a bug?\n";
+        std::cout << "Trying to copy " << new_name << " into itself. Is this a bug?\n";
     } else {
-        if (debug >= DebugMode::log) std::cout << "Copying file" << file.str() << " to " << new_filepath.str() << "\n";
         files.emplace_back(new_name);
     }
     std::ifstream src(file.str(), std::ios::binary);
@@ -632,6 +630,7 @@ VkInstanceCreateInfo* InstanceCreateInfo::get() noexcept {
         application_info.apiVersion = api_version;
         instance_info.pApplicationInfo = &application_info;
     }
+    instance_info.flags = flags;
     instance_info.enabledLayerCount = static_cast<uint32_t>(enabled_layers.size());
     instance_info.ppEnabledLayerNames = enabled_layers.data();
     instance_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());

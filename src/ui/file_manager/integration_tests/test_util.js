@@ -1016,6 +1016,17 @@ export const ENTRIES = {
     typeText: 'Zip archive'
   }),
 
+  zipSJISArchive: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'sjis.zip',
+    targetPath: 'sjis.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Apr 6, 2022, 1:00 AM',
+    nameText: 'sjis.zip',
+    sizeText: '479 bytes',
+    typeText: 'Zip archive'
+  }),
+
   debPackage: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'package.deb',
@@ -1437,6 +1448,16 @@ export const ENTRIES = {
     nameText: 'Windows Files',
     sizeText: '--',
     typeText: 'Folder'
+  }),
+
+  invalidLastModifiedDate: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'invalidLastModifiedDate.txt',
+    mimeType: 'text/plain',
+    nameText: 'invalidLastModifiedDate.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text'
   }),
 };
 

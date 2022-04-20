@@ -7,7 +7,7 @@
 'use strict';
 
 font_access_test(async t => {
-  const fonts = await navigator.fonts.query();
+  const fonts = await self.queryLocalFonts();
 
   // Fonts we know about. Not all expected fonts are included.
   const testData = getTestData();
@@ -29,4 +29,4 @@ font_access_test(async t => {
         parsedData.tables.size, 0, "Should not have tables of size zero.");
     assert_font_has_tables(font.postscriptName, parsedData.tables, BASE_TABLES);
   }
-}, 'FontMetadata.blob(): blob has expected format and parsable table data.');
+}, 'FontData.blob(): blob has expected format and parsable table data.');

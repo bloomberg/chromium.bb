@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -43,10 +44,13 @@ size_t GetDefaultAllocationSize() {
   [[maybe_unused]] const size_t kDefaultLowEndDeviceAllocationSize =
       kOneMegabyteInBytes;
 
-#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_32_BITS)
-  // On Windows 32 bit, use a smaller chunk, as address space fragmentation may
-  // make a 4MiB allocation impossible to fulfill in the browser process.
-  // See crbug.com/983348 for details.
+#if defined(ARCH_CPU_32_BITS) && !BUILDFLAG(IS_ANDROID)
+  // On 32 bit architectures, use a smaller chunk, as address space
+  // fragmentation may make a 4MiB allocation impossible to fulfill in the
+  // browser process.  See crbug.com/983348 for details.
+  //
+  // Not on Android, since on this platform total number of file descriptors is
+  // also a concern.
   return kDefaultLowEndDeviceAllocationSize;
 #elif BUILDFLAG(IS_FUCHSIA)
   // Low end Fuchsia devices may be very constrained, so use smaller allocations

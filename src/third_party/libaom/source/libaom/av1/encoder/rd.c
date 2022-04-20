@@ -20,6 +20,7 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem.h"
+#include "aom_ports/aom_once.h"
 
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
@@ -211,6 +212,16 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, ModeCosts *mode_costs,
   }
   av1_cost_tokens_from_cdf(mode_costs->intrabc_cost, fc->intrabc_cdf, NULL);
 
+  for (i = 0; i < SPATIAL_PREDICTION_PROBS; ++i) {
+    av1_cost_tokens_from_cdf(mode_costs->spatial_pred_cost[i],
+                             fc->seg.spatial_pred_seg_cdf[i], NULL);
+  }
+
+  for (i = 0; i < SEG_TEMPORAL_PRED_CTXS; ++i) {
+    av1_cost_tokens_from_cdf(mode_costs->tmp_pred_cost[i], fc->seg.pred_cdf[i],
+                             NULL);
+  }
+
   if (!frame_is_intra_only(cm)) {
     for (i = 0; i < COMP_INTER_CONTEXTS; ++i) {
       av1_cost_tokens_from_cdf(mode_costs->comp_inter_cost[i],
@@ -341,11 +352,13 @@ static void init_me_luts_bd(int *bit16lut, int range,
   }
 }
 
-void av1_init_me_luts(void) {
+static void init_me_luts(void) {
   init_me_luts_bd(sad_per_bit_lut_8, QINDEX_RANGE, AOM_BITS_8);
   init_me_luts_bd(sad_per_bit_lut_10, QINDEX_RANGE, AOM_BITS_10);
   init_me_luts_bd(sad_per_bit_lut_12, QINDEX_RANGE, AOM_BITS_12);
 }
+
+void av1_init_me_luts(void) { aom_once(init_me_luts); }
 
 static const int rd_boost_factor[16] = { 64, 32, 32, 32, 24, 16, 12, 12,
                                          8,  8,  4,  4,  2,  2,  1,  0 };
@@ -736,8 +749,12 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
     av1_fill_mode_rates(cm, &x->mode_costs, cm->fc);
 
   // Frame level dv cost update
-  if (!use_nonrd_pick_mode && av1_allow_intrabc(cm) &&
-      !is_stat_generation_stage(cpi)) {
+  if (av1_need_dv_costs(cpi)) {
+    if (cpi->td.mb.dv_costs == NULL) {
+      CHECK_MEM_ERROR(
+          cm, cpi->td.mb.dv_costs,
+          (IntraBCMVCosts *)aom_malloc(sizeof(*cpi->td.mb.dv_costs)));
+    }
     av1_fill_dv_costs(&cm->fc->ndvc, x->dv_costs);
   }
 }

@@ -98,7 +98,7 @@ typedef struct UDPContext {
 
     /* Circular Buffer variables for use in UDP receive code */
     int circular_buffer_size;
-    AVFifoBuffer *fifo;
+    AVFifo *fifo;
     int circular_buffer_error;
     int64_t bitrate; /* number of bits to send per second */
     int64_t burst_bits;
@@ -134,7 +134,7 @@ static const AVOption options[] = {
     { "reuse",          "explicitly allow reusing UDP sockets",            OFFSET(reuse_socket),   AV_OPT_TYPE_BOOL,   { .i64 = -1 },    -1, 1,       D|E },
     { "reuse_socket",   "explicitly allow reusing UDP sockets",            OFFSET(reuse_socket),   AV_OPT_TYPE_BOOL,   { .i64 = -1 },    -1, 1,       .flags = D|E },
     { "broadcast", "explicitly allow or disallow broadcast destination",   OFFSET(is_broadcast),   AV_OPT_TYPE_BOOL,   { .i64 = 0  },     0, 1,       E },
-    { "ttl",            "Time to live (multicast only)",                   OFFSET(ttl),            AV_OPT_TYPE_INT,    { .i64 = 16 },     0, INT_MAX, E },
+    { "ttl",            "Time to live (multicast only)",                   OFFSET(ttl),            AV_OPT_TYPE_INT,    { .i64 = 16 },     0, 255,     E },
     { "connect",        "set if connect() should be called on socket",     OFFSET(is_connected),   AV_OPT_TYPE_BOOL,   { .i64 =  0 },     0, 1,       .flags = D|E },
     { "fifo_size",      "set the UDP receiving circular buffer size, expressed as a number of packets with size of 188 bytes", OFFSET(circular_buffer_size), AV_OPT_TYPE_INT, {.i64 = 7*4096}, 0, INT_MAX, D },
     { "overrun_nonfatal", "survive in case of UDP receiving circular buffer overrun", OFFSET(overrun_nonfatal), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1,    D },
@@ -162,22 +162,40 @@ static int udp_set_multicast_ttl(int sockfd, int mcastTTL,
                                  struct sockaddr *addr,
                                  void *logctx)
 {
+    int protocol, cmd;
+
+    /* There is some confusion in the world whether IP_MULTICAST_TTL
+     * takes a byte or an int as an argument.
+     * BSD seems to indicate byte so we are going with that and use
+     * int and fall back to byte to be safe */
+    switch (addr->sa_family) {
 #ifdef IP_MULTICAST_TTL
-    if (addr->sa_family == AF_INET) {
-        if (setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &mcastTTL, sizeof(mcastTTL)) < 0) {
-            ff_log_net_error(logctx, AV_LOG_ERROR, "setsockopt(IP_MULTICAST_TTL)");
+        case AF_INET:
+            protocol = IPPROTO_IP;
+            cmd      = IP_MULTICAST_TTL;
+            break;
+#endif
+#ifdef IPV6_MULTICAST_HOPS
+        case AF_INET6:
+            protocol = IPPROTO_IPV6;
+            cmd      = IPV6_MULTICAST_HOPS;
+            break;
+#endif
+        default:
+            return 0;
+    }
+
+    if (setsockopt(sockfd, protocol, cmd, &mcastTTL, sizeof(mcastTTL)) < 0) {
+        /* BSD compatibility */
+        unsigned char ttl = (unsigned char) mcastTTL;
+
+        ff_log_net_error(logctx, AV_LOG_DEBUG, "setsockopt(IPV4/IPV6 MULTICAST TTL)");
+        if (setsockopt(sockfd, protocol, cmd, &ttl, sizeof(ttl)) < 0) {
+            ff_log_net_error(logctx, AV_LOG_ERROR, "setsockopt(IPV4/IPV6 MULTICAST TTL)");
             return ff_neterrno();
         }
     }
-#endif
-#if defined(IPPROTO_IPV6) && defined(IPV6_MULTICAST_HOPS)
-    if (addr->sa_family == AF_INET6) {
-        if (setsockopt(sockfd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &mcastTTL, sizeof(mcastTTL)) < 0) {
-            ff_log_net_error(logctx, AV_LOG_ERROR, "setsockopt(IPV6_MULTICAST_HOPS)");
-            return ff_neterrno();
-        }
-    }
-#endif
+
     return 0;
 }
 
@@ -500,7 +518,7 @@ static void *circular_buffer_task_rx( void *_URLContext)
             continue;
         AV_WL32(s->tmp, len);
 
-        if(av_fifo_space(s->fifo) < len + 4) {
+        if (av_fifo_can_write(s->fifo) < len + 4) {
             /* No Space left */
             if (s->overrun_nonfatal) {
                 av_log(h, AV_LOG_WARNING, "Circular buffer overrun. "
@@ -514,7 +532,7 @@ static void *circular_buffer_task_rx( void *_URLContext)
                 goto end;
             }
         }
-        av_fifo_generic_write(s->fifo, s->tmp, len+4, NULL);
+        av_fifo_write(s->fifo, s->tmp, len + 4);
         pthread_cond_signal(&s->cond);
     }
 
@@ -548,22 +566,22 @@ static void *circular_buffer_task_tx( void *_URLContext)
         uint8_t tmp[4];
         int64_t timestamp;
 
-        len = av_fifo_size(s->fifo);
+        len = av_fifo_can_read(s->fifo);
 
         while (len<4) {
             if (s->close_req)
                 goto end;
             pthread_cond_wait(&s->cond, &s->mutex);
-            len = av_fifo_size(s->fifo);
+            len = av_fifo_can_read(s->fifo);
         }
 
-        av_fifo_generic_read(s->fifo, tmp, 4, NULL);
+        av_fifo_read(s->fifo, tmp, 4);
         len = AV_RL32(tmp);
 
         av_assert0(len >= 0);
         av_assert0(len <= sizeof(s->tmp));
 
-        av_fifo_generic_read(s->fifo, s->tmp, len, NULL);
+        av_fifo_read(s->fifo, s->tmp, len);
 
         pthread_mutex_unlock(&s->mutex);
 
@@ -674,6 +692,11 @@ static int udp_open(URLContext *h, const char *uri, int flags)
         }
         if (av_find_info_tag(buf, sizeof(buf), "ttl", p)) {
             s->ttl = strtol(buf, NULL, 10);
+            if (s->ttl < 0 || s->ttl > 255) {
+                av_log(h, AV_LOG_ERROR, "ttl(%d) should be in range [0,255]\n", s->ttl);
+                ret = AVERROR(EINVAL);
+                goto fail;
+            }
         }
         if (av_find_info_tag(buf, sizeof(buf), "udplite_coverage", p)) {
             s->udplite_coverage = strtol(buf, NULL, 10);
@@ -906,7 +929,7 @@ static int udp_open(URLContext *h, const char *uri, int flags)
 
     if ((!is_output && s->circular_buffer_size) || (is_output && s->bitrate && s->circular_buffer_size)) {
         /* start the task going */
-        s->fifo = av_fifo_alloc(s->circular_buffer_size);
+        s->fifo = av_fifo_alloc2(s->circular_buffer_size, 1, 0);
         if (!s->fifo) {
             ret = AVERROR(ENOMEM);
             goto fail;
@@ -943,7 +966,7 @@ static int udp_open(URLContext *h, const char *uri, int flags)
  fail:
     if (udp_fd >= 0)
         closesocket(udp_fd);
-    av_fifo_freep(&s->fifo);
+    av_fifo_freep2(&s->fifo);
     ff_ip_reset_filters(&s->filters);
     return ret;
 }
@@ -970,19 +993,19 @@ static int udp_read(URLContext *h, uint8_t *buf, int size)
     if (s->fifo) {
         pthread_mutex_lock(&s->mutex);
         do {
-            avail = av_fifo_size(s->fifo);
+            avail = av_fifo_can_read(s->fifo);
             if (avail) { // >=size) {
                 uint8_t tmp[4];
 
-                av_fifo_generic_read(s->fifo, tmp, 4, NULL);
+                av_fifo_read(s->fifo, tmp, 4);
                 avail = AV_RL32(tmp);
                 if(avail > size){
                     av_log(h, AV_LOG_WARNING, "Part of datagram lost due to insufficient buffer size\n");
                     avail = size;
                 }
 
-                av_fifo_generic_read(s->fifo, buf, avail, NULL);
-                av_fifo_drain(s->fifo, AV_RL32(tmp) - avail);
+                av_fifo_read(s->fifo, buf, avail);
+                av_fifo_drain2(s->fifo, AV_RL32(tmp) - avail);
                 pthread_mutex_unlock(&s->mutex);
                 return avail;
             } else if(s->circular_buffer_error){
@@ -1043,14 +1066,14 @@ static int udp_write(URLContext *h, const uint8_t *buf, int size)
             return err;
         }
 
-        if(av_fifo_space(s->fifo) < size + 4) {
+        if (av_fifo_can_write(s->fifo) < size + 4) {
             /* What about a partial packet tx ? */
             pthread_mutex_unlock(&s->mutex);
             return AVERROR(ENOMEM);
         }
         AV_WL32(tmp, size);
-        av_fifo_generic_write(s->fifo, tmp, 4, NULL); /* size of packet */
-        av_fifo_generic_write(s->fifo, (uint8_t *)buf, size, NULL); /* the data */
+        av_fifo_write(s->fifo, tmp, 4); /* size of packet */
+        av_fifo_write(s->fifo, buf, size); /* the data */
         pthread_cond_signal(&s->cond);
         pthread_mutex_unlock(&s->mutex);
         return size;
@@ -1112,7 +1135,7 @@ static int udp_close(URLContext *h)
     }
 #endif
     closesocket(s->udp_fd);
-    av_fifo_freep(&s->fifo);
+    av_fifo_freep2(&s->fifo);
     ff_ip_reset_filters(&s->filters);
     return 0;
 }

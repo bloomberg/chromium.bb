@@ -367,6 +367,7 @@
 <translation id="4215448920900139318"><ph name="FILE_COUNT" />をバックアップしています</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> の例外を削除します</translation>
 <translation id="4261901459838235729">Google プレゼンテーション</translation>
+<translation id="4277536868133419688"><ph name="FILTER_NAME" /> フィルタがオンになりました。</translation>
 <translation id="4290535918735525311">1 個のフォルダを Linux と共有しました</translation>
 <translation id="4299729908419173967">ポルトガル語（ブラジル）</translation>
 <translation id="4302605047395093221">このデバイスでこのモバイル ネットワークに接続するには、PIN を入力する必要があります。</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
 <translation id="4394214039309501350">外部リンク</translation>
 <translation id="4401287888955153199">すべて解凍</translation>
+<translation id="4410695710508688828">抽出操作が失敗しました。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">ファイルのショートカットを作成</translation>
 <translation id="4425149324548788773">マイドライブ</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、接続</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">その他...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> を選択範囲に追加しました。</translation>
 <translation id="4594543368593301662">「<ph name="SEARCH_TERM" />」の検索結果を表示しています。</translation>
+<translation id="4599600860674643278">フィルタがリセットされました。</translation>
 <translation id="4603392156942865207"><ph name="FILE_NAME" /> を <ph name="FOLDER_NAME" /> にコピーしています</translation>
 <translation id="4631887759990505102">アーティスト</translation>
 <translation id="4642769377300286600">モバイル プロファイルのインストール中 - <ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -529,6 +532,7 @@
 <translation id="5469868506864199649">イタリア語</translation>
 <translation id="5473333559083690127">新しい PIN を再入力</translation>
 <translation id="5489067830765222292">ラトビア語</translation>
+<translation id="5489965683297092283"><ph name="FILTER_NAME" /> フィルタがオフになりました。</translation>
 <translation id="5494920125229734069">すべて選択する</translation>
 <translation id="5500122897333236901">アイスランド語</translation>
 <translation id="5508696409934741614">ドット</translation>
@@ -595,6 +599,7 @@
 <translation id="6082256976217156453">LZMA で圧縮されたアーカイブ</translation>
 <translation id="6096979789310008754">検索語句を削除しました。すべてのファイルとフォルダを表示しています。</translation>
 <translation id="610101264611565198"><ph name="FILE_NAME" /> を <ph name="FOLDER_NAME" /> に移動しています</translation>
+<translation id="61118516107968648">CSV テキスト</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> を移動しています...</translation>
 <translation id="613750717151263950">日本語（US）キーボード</translation>
@@ -845,6 +850,7 @@
 <translation id="8208580316430297579">アート</translation>
 <translation id="8223479393428528563">これらのファイルを保存してオフラインで使用できるようにするには、オンラインに戻ってファイルを右クリックし、[<ph name="OFFLINE_CHECKBOX_NAME" />] オプションを選択します。</translation>
 <translation id="8249296373107784235">中止</translation>
+<translation id="8250920743982581267">ドキュメント</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8261561378965667560">中国語（行列）</translation>
 <translation id="8269755669432358899">ファイルのフィードバック パネルを折りたたみます</translation>

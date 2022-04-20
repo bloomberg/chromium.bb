@@ -247,7 +247,7 @@ class Call final : public webrtc::Call,
 
   Stats GetStats() const override;
 
-  const WebRtcKeyValueConfig& trials() const override;
+  const FieldTrialsView& trials() const override;
 
   TaskQueueBase* network_thread() const override;
   TaskQueueBase* worker_thread() const override;
@@ -379,7 +379,7 @@ class Call final : public webrtc::Call,
   const std::unique_ptr<BitrateAllocator> bitrate_allocator_;
   const Call::Config config_ RTC_GUARDED_BY(worker_thread_);
   // Maps to config_.trials, can be used from any thread via `trials()`.
-  const WebRtcKeyValueConfig& trials_;
+  const FieldTrialsView& trials_;
 
   NetworkState audio_network_state_ RTC_GUARDED_BY(worker_thread_);
   NetworkState video_network_state_ RTC_GUARDED_BY(worker_thread_);
@@ -915,7 +915,7 @@ webrtc::AudioSendStream* Call::CreateAudioSendStream(
   AudioSendStream* send_stream = new AudioSendStream(
       clock_, config, config_.audio_state, task_queue_factory_,
       transport_send_.get(), bitrate_allocator_.get(), event_log_,
-      call_stats_->AsRtcpRttStats(), suspended_rtp_state);
+      call_stats_->AsRtcpRttStats(), suspended_rtp_state, trials());
   RTC_DCHECK(audio_send_ssrcs_.find(config.rtp.ssrc) ==
              audio_send_ssrcs_.end());
   audio_send_ssrcs_[config.rtp.ssrc] = send_stream;
@@ -1154,7 +1154,7 @@ webrtc::VideoReceiveStream* Call::CreateVideoReceiveStream(
   VideoReceiveStream2* receive_stream = new VideoReceiveStream2(
       task_queue_factory_, this, num_cpu_cores_,
       transport_send_->packet_router(), std::move(configuration),
-      call_stats_.get(), clock_, new VCMTiming(clock_),
+      call_stats_.get(), clock_, std::make_unique<VCMTiming>(clock_, trials()),
       &nack_periodic_processor_, decode_sync_.get());
   // TODO(bugs.webrtc.org/11993): Set this up asynchronously on the network
   // thread.
@@ -1295,7 +1295,7 @@ Call::Stats Call::GetStats() const {
   return stats;
 }
 
-const WebRtcKeyValueConfig& Call::trials() const {
+const FieldTrialsView& Call::trials() const {
   return trials_;
 }
 

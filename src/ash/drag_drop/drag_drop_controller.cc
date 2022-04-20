@@ -20,6 +20,7 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
@@ -153,11 +154,14 @@ DragOperation DragDropController::StartDragAndDrop(
   current_drag_event_source_ = source;
   capture_delegate_ = nullptr;
 
+  bool touch_captured = false;
+
   // When an extended drag is started, a capture window will be created to
   // handle moving gestures between different wl surfaces to support dragging
   // chrome tabs into and out of browsers.
   if (source == ui::mojom::DragEventSource::kTouch &&
       toplevel_window_drag_delegate_) {
+    touch_captured = true;
     toplevel_window_drag_delegate_->TakeCapture(
         root_window, source_window,
         base::BindRepeating(&DragDropController::CancelIfInProgress,
@@ -200,9 +204,9 @@ DragOperation DragDropController::StartDragAndDrop(
         root_window, drag_source_window_, start_location_);
     static_cast<DragImageView*>(drag_image_widget_->GetContentsView())
         ->SetTouchDragOperationHintOff();
-    // Avoid taking capture twice if the toplevel drag delegate is being used.
-    if (!toplevel_window_drag_delegate_ &&
-        source == ui::mojom::DragEventSource::kTouch) {
+    // Avoid taking capture twice.
+    if (!touch_captured && source == ui::mojom::DragEventSource::kTouch) {
+      touch_captured = true;
       tab_drag_drop_delegate_->TakeCapture(
           root_window, source_window,
           base::BindRepeating(&DragDropController::CancelIfInProgress,
@@ -210,6 +214,19 @@ DragOperation DragDropController::StartDragAndDrop(
           ui::TransferTouchesBehavior::kDontCancel);
       capture_delegate_ = tab_drag_drop_delegate_.get();
     }
+  }
+  // If touch is not captured by either extended drag nor tab drag, start
+  // a normal drag-and-drop using DragDropCaptureDelegate.
+  if (!touch_captured && source == ui::mojom::DragEventSource::kTouch) {
+    touch_captured = true;
+    // For other type of touch drag, use normal DDCaptureDelegate;
+    touch_drag_drop_delegate_ = std::make_unique<DragDropCaptureDelegate>();
+    touch_drag_drop_delegate_->TakeCapture(
+        root_window, source_window,
+        base::BindRepeating(&DragDropController::CancelIfInProgress,
+                            base::Unretained(this)),
+        ui::TransferTouchesBehavior::kDontCancel);
+    capture_delegate_ = touch_drag_drop_delegate_.get();
   }
 
   if (test_loop_closure_) {
@@ -590,6 +607,9 @@ void DragDropController::Drop(aura::Window* target,
 
   const bool is_tab_drag_drop = (tab_drag_drop_delegate_.get() != nullptr);
 
+  DCHECK_EQ(drag_window_, target);
+  aura::WindowTracker window_tracker({drag_window_, drag_window_->parent()});
+
   DropIfAllowed(
       drag_data_.get(), current_drag_info_,
       base::BindOnce(&DragDropController::PerformDrop,
@@ -597,6 +617,16 @@ void DragDropController::Drop(aura::Window* target,
                      e, std::move(drag_data_), std::move(delegate_drop_cb),
                      std::move(tab_drag_drop_delegate_),
                      std::move(drag_cancel)));
+
+  // During the drop, the event target (or its ancestors) might have
+  // been destroyed, eg by the client reaction. Adapt the DropTargetEvent
+  // accordingly.
+  //
+  // TODO(https://crbug.com/1160925): Avoid nested RunLoop in exo
+  // DataDevice::OnPerformDrop() - remove the block below when it is fixed.
+  if (!window_tracker.Contains(drag_window_) ||
+      !window_tracker.Contains(drag_window_->parent()))
+    ui::Event::DispatcherApi(&e).set_target(nullptr);
 
   for (aura::client::DragDropClientObserver& observer : observers_)
     observer.OnDragCompleted(e);
@@ -729,6 +759,7 @@ void DragDropController::Cleanup() {
   drag_data_.reset();
   allowed_operations_ = 0;
   tab_drag_drop_delegate_.reset();
+  touch_drag_drop_delegate_.reset();
   capture_delegate_ = nullptr;
 }
 

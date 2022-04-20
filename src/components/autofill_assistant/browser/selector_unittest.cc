@@ -38,6 +38,33 @@ TEST(SelectorTest, FromProto) {
   EXPECT_EQ(Selector({"#test"}), Selector(proto));
 }
 
+TEST(SelectorTest, EmptyCheckCssSelector) {
+  EXPECT_TRUE(Selector().empty());
+  EXPECT_FALSE(Selector({"#test"}).empty());
+}
+
+TEST(SelectorTest, EmptyCheckSelectorWithSemanticInformation) {
+  SelectorProto semantic_only_proto;
+  semantic_only_proto.mutable_semantic_information();
+  EXPECT_FALSE(Selector(semantic_only_proto).empty());
+
+  Selector semantic_and_css({"#test"});
+  semantic_and_css.proto.mutable_semantic_information();
+  EXPECT_FALSE(semantic_and_css.empty());
+}
+
+TEST(SelectorTest, EmptyCheckCssAndSemanticComparison) {
+  SelectorProto semantic_only_proto;
+  semantic_only_proto.mutable_semantic_information()
+      ->set_check_matches_css_element(true);
+  EXPECT_TRUE(Selector(semantic_only_proto).empty());
+
+  Selector semantic_and_css({"#test"});
+  semantic_and_css.proto.mutable_semantic_information()
+      ->set_check_matches_css_element(true);
+  EXPECT_FALSE(semantic_and_css.empty());
+}
+
 TEST(SelectorTest, Comparison) {
   // Note that comparison tests cover < indirectly through ==, since a == b is
   // defined as !(a < b) && !(b < a). This makes sense, as what matters is that

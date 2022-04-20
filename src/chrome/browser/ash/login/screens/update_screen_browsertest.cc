@@ -103,7 +103,7 @@ chromeos::OobeUI* GetOobeUI() {
 // UpdateScreenTest.
 class UpdateScreenTest : public OobeBaseTest {
  public:
-  UpdateScreenTest() {}
+  UpdateScreenTest() = default;
 
   UpdateScreenTest(const UpdateScreenTest&) = delete;
   UpdateScreenTest& operator=(const UpdateScreenTest&) = delete;
@@ -130,6 +130,10 @@ class UpdateScreenTest : public OobeBaseTest {
     version_updater_ = update_screen_->GetVersionUpdaterForTesting();
     version_updater_->set_tick_clock_for_testing(&tick_clock_);
     update_screen_->set_tick_clock_for_testing(&tick_clock_);
+
+    LoginDisplayHost::default_host()
+        ->GetWizardContextForTesting()
+        ->is_branded_build = true;
   }
 
  protected:
@@ -177,7 +181,7 @@ class UpdateScreenTest : public OobeBaseTest {
 
 class BetterUpdateScreenTest : public UpdateScreenTest {
  public:
-  BetterUpdateScreenTest() {}
+  BetterUpdateScreenTest() = default;
   ~BetterUpdateScreenTest() override = default;
 
   void SetTickClockAndDefaultDelaysForTesting(
@@ -484,8 +488,7 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestTemporaryPortalNetwork) {
   // If the network is a captive portal network, error message is shown with a
   // delay.
   EXPECT_TRUE(update_screen_->GetErrorMessageTimerForTesting()->IsRunning());
-  EXPECT_EQ(OobeScreen::SCREEN_UNKNOWN.AsId(),
-            error_screen_->GetParentScreen());
+  EXPECT_EQ(ash::OOBE_SCREEN_UNKNOWN.AsId(), error_screen_->GetParentScreen());
 
   // If network goes back online, the error message timer should be canceled.
   network_portal_detector_.SimulateDefaultNetworkState(
@@ -625,8 +628,7 @@ IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestAPReselection) {
       "fake_path", base::DoNothing(), base::DoNothing(),
       false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
 
-  ASSERT_EQ(OobeScreen::SCREEN_UNKNOWN.AsId(),
-            error_screen_->GetParentScreen());
+  ASSERT_EQ(ash::OOBE_SCREEN_UNKNOWN.AsId(), error_screen_->GetParentScreen());
   EXPECT_TRUE(update_screen_->GetShowTimerForTesting()->IsRunning());
   update_screen_->GetShowTimerForTesting()->FireNow();
 

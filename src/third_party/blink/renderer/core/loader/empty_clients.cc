@@ -104,6 +104,8 @@ void EmptyLocalFrameClient::BeginNavigation(
     NavigationPolicy,
     WebFrameLoadType,
     bool,
+    // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+    bool,
     mojom::blink::TriggeringEventInfo,
     HTMLFormElement*,
     network::mojom::CSPDisposition,
@@ -147,7 +149,8 @@ RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {
 
 RemoteFrame* EmptyLocalFrameClient::CreateFencedFrame(
     HTMLFencedFrameElement*,
-    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>) {
+    mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>,
+    mojom::blink::FencedFrameMode) {
   return nullptr;
 }
 

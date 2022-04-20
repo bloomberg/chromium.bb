@@ -60,8 +60,9 @@ public:
     inline static constexpr int kMaxAbbrevLength = 3;
 
     struct Field {
-        Field(Modifiers modifiers, std::string_view name, const Type* type)
-        : fModifiers(modifiers)
+        Field(Position pos, Modifiers modifiers, std::string_view name, const Type* type)
+        : fPosition(pos)
+        , fModifiers(modifiers)
         , fName(name)
         , fType(std::move(type)) {}
 
@@ -69,6 +70,7 @@ public:
             return fType->displayName() + " " + std::string(fName) + ";";
         }
 
+        Position fPosition;
         Modifiers fModifiers;
         std::string_view fName;
         const Type* fType;
@@ -528,7 +530,8 @@ public:
      * Verifies that the expression is a valid constant array size for this type. Returns the array
      * size, or zero if the expression isn't a valid literal value.
      */
-    SKSL_INT convertArraySize(const Context& context, std::unique_ptr<Expression> size) const;
+    SKSL_INT convertArraySize(const Context& context, Position arrayPos,
+            std::unique_ptr<Expression> size) const;
 
 protected:
     Type(std::string_view name, const char* abbrev, TypeKind kind,

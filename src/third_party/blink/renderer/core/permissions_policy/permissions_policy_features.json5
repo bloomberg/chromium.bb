@@ -63,6 +63,11 @@
       depends_on: ["SensorExtraClasses"],
     },
     {
+      name: "AttributionReporting",
+      permissions_policy_name: "attribution-reporting",
+      depends_on: ["AttributionReporting"],
+    },
+    {
       name: "Autoplay",
       permissions_policy_name: "autoplay",
     },
@@ -110,6 +115,11 @@
     {
       name: "ClientHintRTT",
       permissions_policy_name: "ch-rtt",
+    },
+    {
+      name: "ClientHintSaveData",
+      permissions_policy_name: "ch-save-data",
+      feature_default: "EnableForAll",
     },
     {
       name: "ClientHintUA",
@@ -187,11 +197,6 @@
     {
       name: "ClipboardWrite",
       permissions_policy_name: "clipboard-write",
-    },
-    {
-      name: "AttributionReporting",
-      permissions_policy_name: "attribution-reporting",
-      depends_on: ["ConversionMeasurement"],
     },
     {
       name: "CrossOriginIsolated",

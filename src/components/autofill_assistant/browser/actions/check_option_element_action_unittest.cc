@@ -61,9 +61,9 @@ TEST_F(CheckOptionElementActionTest, UnknownSelectElementFails) {
 }
 
 TEST_F(CheckOptionElementActionTest, UnknownOptionElementFails) {
-  ElementFinder::Result select;
+  ElementFinderResult select;
   mock_action_delegate_.GetElementStore()->AddElement(kSelectId,
-                                                      select.dom_object);
+                                                      select.dom_object());
 
   EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
                                               CLIENT_ID_RESOLUTION_FAILED))));
@@ -71,14 +71,14 @@ TEST_F(CheckOptionElementActionTest, UnknownOptionElementFails) {
 }
 
 TEST_F(CheckOptionElementActionTest, SucceedsForMatchingOption) {
-  ElementFinder::Result select;
-  select.dom_object.object_data.object_id = "select";
+  ElementFinderResult select;
+  select.SetObjectId("select");
   mock_action_delegate_.GetElementStore()->AddElement(kSelectId,
-                                                      select.dom_object);
-  ElementFinder::Result option;
-  option.dom_object.object_data.object_id = "option";
+                                                      select.dom_object());
+  ElementFinderResult option;
+  option.SetObjectId("option");
   mock_action_delegate_.GetElementStore()->AddElement(kOptionId,
-                                                      option.dom_object);
+                                                      option.dom_object());
 
   EXPECT_CALL(mock_web_controller_,
               CheckSelectedOptionElement(EqualsElement(option),
@@ -96,14 +96,14 @@ TEST_F(CheckOptionElementActionTest, SucceedsForMatchingOption) {
 }
 
 TEST_F(CheckOptionElementActionTest, DoesNotFailForMismatch) {
-  ElementFinder::Result select;
-  select.dom_object.object_data.object_id = "select";
+  ElementFinderResult select;
+  select.SetObjectId("select");
   mock_action_delegate_.GetElementStore()->AddElement(kSelectId,
-                                                      select.dom_object);
-  ElementFinder::Result option;
-  option.dom_object.object_data.object_id = "option";
+                                                      select.dom_object());
+  ElementFinderResult option;
+  option.SetObjectId("option");
   mock_action_delegate_.GetElementStore()->AddElement(kOptionId,
-                                                      option.dom_object);
+                                                      option.dom_object());
 
   EXPECT_CALL(mock_web_controller_,
               CheckSelectedOptionElement(EqualsElement(option),
@@ -123,14 +123,14 @@ TEST_F(CheckOptionElementActionTest, DoesNotFailForMismatch) {
 }
 
 TEST_F(CheckOptionElementActionTest, FailsForMismatchIfSpecified) {
-  ElementFinder::Result select;
-  select.dom_object.object_data.object_id = "select";
+  ElementFinderResult select;
+  select.SetObjectId("select");
   mock_action_delegate_.GetElementStore()->AddElement(kSelectId,
-                                                      select.dom_object);
-  ElementFinder::Result option;
-  option.dom_object.object_data.object_id = "option";
+                                                      select.dom_object());
+  ElementFinderResult option;
+  option.SetObjectId("option");
   mock_action_delegate_.GetElementStore()->AddElement(kOptionId,
-                                                      option.dom_object);
+                                                      option.dom_object());
 
   EXPECT_CALL(mock_web_controller_,
               CheckSelectedOptionElement(EqualsElement(option),

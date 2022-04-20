@@ -263,7 +263,7 @@ static int disable_gm_search_based_on_stats(const AV1_COMP *const cpi) {
     // valid_gm_model_found is initialized to INT32_MAX in the beginning of
     // every GF group.
     // Therefore, GM param estimation is always done for all frames until
-    // atleast 1 frame each of ARF_UPDATE, INTNL_ARF_UPDATE and LF_UPDATE are
+    // at least 1 frame each of ARF_UPDATE, INTNL_ARF_UPDATE and LF_UPDATE are
     // encoded in a GF group For subsequent frames, GM param estimation is
     // disabled, if no valid models have been found in all the three update
     // types.
@@ -417,7 +417,7 @@ static AOM_INLINE void setup_global_motion_info_params(AV1_COMP *cpi) {
         sizeof(gm_info->reference_frames[1][0]), compare_distance);
 
   gm_info->num_src_corners = -1;
-  // If atleast one valid reference frame exists in past/future directions,
+  // If at least one valid reference frame exists in past/future directions,
   // compute interest points of source frame using FAST features.
   if (gm_info->num_ref_frames[0] > 0 || gm_info->num_ref_frames[1] > 0) {
     gm_info->num_src_corners = av1_fast_corner_detect(

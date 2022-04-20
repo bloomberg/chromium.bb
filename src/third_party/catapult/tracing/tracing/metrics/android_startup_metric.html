@@ -81,8 +81,7 @@ tr.exportTo('tr.metrics.sh', function() {
     // message loop start.
     let messageLoopStartEvents = [];
     let applicationStartEvents = [];
-    let navigationEvents = [];
-    let requestsFollowingNavigation = [];
+    let navigationPairs = [];
 
     function organizeBrowserEventByTitle(event, process) {
       if (event.title === MESSAGE_LOOP_EVENT_NAME) {
@@ -90,15 +89,15 @@ tr.exportTo('tr.metrics.sh', function() {
       } else if (event.title === APPLICATION_START_EVENT_NAME) {
         applicationStartEvents.push(event);
       } else if (event.title === NAVIGATION_EVENT_NAME) {
-        navigationEvents.push(event);
         const networkEvents =
             tr.e.chrome.EventFinderUtils.getNetworkEventsInRange(process,
                 event.range);
-        const requestEvent = findRequestEventAfterNavigation(networkEvents,
-            event.range);
-        if (requestEvent !== null) {
-          requestsFollowingNavigation.push(requestEvent);
-        }
+        const requestEvent = findRequestEventAfterNavigation(
+            networkEvents, event.range);
+        navigationPairs.push({
+          'nav': event,
+          'req': requestEvent,
+           });
       }
     }
 
@@ -132,14 +131,13 @@ tr.exportTo('tr.metrics.sh', function() {
     let totalBrowserStarts = messageLoopStartEvents.length;
     let totalFcpEvents = firstContentfulPaintEvents.length;
     if (totalBrowserStarts !== totalFcpEvents ||
-        totalBrowserStarts !== navigationEvents.length ||
+        totalBrowserStarts !== navigationPairs.length ||
         totalBrowserStarts !== applicationStartEvents.length ||
         totalBrowserStarts === 0) {
       messageLoopStartEvents.length = 0;
-      navigationEvents.length = 0;
+      navigationPairs.length = 0;
       firstContentfulPaintEvents.length = 0;
       applicationStartEvents.length = 0;
-      requestsFollowingNavigation.length = 0;
       // Sometimes either the browser process or the renderer process does not
       // have the proper name attached. This often happens when both chrome
       // trace and systrace are merged. Other multi-process trickery, like
@@ -165,9 +163,52 @@ tr.exportTo('tr.metrics.sh', function() {
     }
     messageLoopStartEvents.sort(orderEvents);
     applicationStartEvents.sort(orderEvents);
-    navigationEvents.sort(orderEvents);
-    requestsFollowingNavigation.sort(orderEvents)
     firstContentfulPaintEvents.sort(orderEvents);
+    function orderPairs(pair1, pair2) {
+      return pair1['nav'].start - pair2['nav'].start;
+    }
+    navigationPairs.sort(orderPairs);
+
+    // Remove spurious navigation events. Only one 'Navigation StartToCommit'
+    // event should remain for each browser session. When multiple events are
+    // encountered for a browsing session, remove all except the first one. The
+    // first navigation event looked more realistic for the story
+    // maps_pwa:with_http_cache (http://crbug.com/1307774).
+    let filteredNavigationPairs = [];
+    let filteredRequestsFollowingNavigation = [];
+    let navigation_index = 0;
+    let messageloop_index = 0;
+    do {
+      // Set |browserStart| as the upper limit for the set of navigations to
+      // select from.
+      let browserStart = Number.POSITIVE_INFINITY;
+      if (messageloop_index < messageLoopStartEvents.length) {
+        browserStart = messageLoopStartEvents[messageloop_index].start;
+      }
+
+      // From navigation events preceding |browserStart| take the first one,
+      // skip others.
+      let navigationFound = false;
+      for (; navigation_index < navigationPairs.length; navigation_index++) {
+        // Each request event has to be at the same index as its corresponding
+        // navigation event. Take either both of them or none.
+        const navPair = navigationPairs[navigation_index];
+        const navEvent = navPair['nav'];
+        const requestEvent = navPair['req'];
+        if (navEvent.start >= browserStart) {
+          break;
+        }
+        if (!navigationFound) {
+          if (messageloop_index === 0) {
+            throw new Error('Found a navigation event before browser start');
+          }
+          filteredNavigationPairs.push(navPair);
+          navigationFound = true;
+        }
+      }
+      // Run the last iteration with |browserStart| as positive infinity.
+    } while (messageloop_index++ <= messageLoopStartEvents.length);
+    navigationPairs = filteredNavigationPairs;
 
     // Verify the number of FCP events to avoid pairing them to browser starts
     // incorrectly. Absence of navigation events does not cause FCP events to be
@@ -175,13 +216,6 @@ tr.exportTo('tr.metrics.sh', function() {
     if (totalFcpEvents < totalBrowserStarts) {
       throw new Error('Found fewer FCP events (' + totalFcpEvents +
           ') than browser starts (' + totalBrowserStarts + ')');
-    }
-
-    const totalRequests = requestsFollowingNavigation.length;
-    if (navigationEvents.length !== totalRequests) {
-      throw new Error('Number of requests following a navigation (' + totalRequests +
-          ') differs from number of navigation events (' + navigationEvents.length +
-            ')');
     }
 
     // Group the relevant events with the corresponding browser starts and emit
@@ -218,8 +252,9 @@ tr.exportTo('tr.metrics.sh', function() {
       }
 
       // Skip all events that appear before the next browser start.
-      const navEvent = navIndex < navigationEvents.length ?
-        navigationEvents[navIndex] : null;
+      const navPair = navIndex < navigationPairs.length ?
+        navigationPairs[navIndex] : null;
+      const navEvent = navPair ? navPair['nav'] : null;
       if (navEvent && navEvent.start < loopStartEvent.start) {
         navIndex++;
         continue;
@@ -228,13 +263,6 @@ tr.exportTo('tr.metrics.sh', function() {
       if (fcpEvent.start < loopStartEvent.start) {
         fcpIndex++;
         continue;
-      }
-
-      // Pick the request event and sanity check its start time.
-      const requestEvent = requestsFollowingNavigation[navIndex];
-      if (requestEvent && navEvent && requestEvent.start < navEvent.start) {
-        throw new Error('Request event starts (', requestEvent.start,
-          ') before the corresponding navigation event (', navEvent.start, ')');
       }
 
       // The pair of matching events is found.
@@ -256,6 +284,10 @@ tr.exportTo('tr.metrics.sh', function() {
         navigationCommitHistogram.addSample(
             navEvent.end - loopStartEvent.start,
             {events: new tr.v.d.RelatedEventSet([loopStartEvent, navEvent])});
+        const requestEvent = navPair['req'];
+        if (!requestEvent) {
+          throw new Error('No network request after navigation');
+        }
         requestStartHistogram.addSample(
             requestEvent.start - loopStartEvent.start,
             {events: new tr.v.d.RelatedEventSet([navEvent, requestEvent])});

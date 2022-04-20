@@ -378,22 +378,31 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
   // potential country code changes.
   const base::flat_map<std::string, std::string> kCountryCodeToNameMap = {
       {"US", "United States"},
+      {"AT", "Austria"},
+      {"AU", "Australia"},
       {"BE", "Belgium"},
+      {"BR", "Brazil"},
       {"CA", "Canada"},
+      {"DE", "Germany"},
       {"DK", "Denmark"},
+      {"ES", "Spain"},
       {"FI", "Finland"},
       {"FR", "France"},
-      {"DE", "Germany"},
+      {"GB", "United Kingdom"},
       {"IE", "Ireland"},
+      {"IN", "India"},
       {"IT", "Italy"},
       {"JP", "Japan"},
       {"LU", "Luxembourg"},
+      {"MX", "Mexico"},
+      {"N/A", "Please select a country"},
       {"NL", "Netherlands"},
       {"NO", "Norway"},
-      {"ES", "Spain"},
+      {"NZ", "New Zealand"},
+      {"PL", "Poland"},
+      {"PT", "Portugal"},
       {"SE", "Sweden"},
-      {"GB", "United Kingdom"},
-      {"N/A", "Please select a country"}};
+      {"ZA", "South Africa"}};
 
   system::ScopedFakeStatisticsProvider statistics_provider_;
 
@@ -592,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
       policy::EnrollmentConfig::MODE_ATTESTATION);
   enrollment_helper_.ExpectAttestationEnrollmentError(
       policy::EnrollmentStatus::ForLockError(
-          chromeos::InstallAttributes::LOCK_ALREADY_LOCKED));
+          InstallAttributes::LOCK_ALREADY_LOCKED));
   SimulateNetworkConnected();
 
   TriggerDemoModeOnWelcomeScreen();

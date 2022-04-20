@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "vk_platform_hdr",
     hdrs = ["vk_platform.h"],

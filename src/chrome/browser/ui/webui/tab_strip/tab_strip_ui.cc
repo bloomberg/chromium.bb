@@ -31,7 +31,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/resources/grit/webui_resources.h"
 
 // These data types must be in all lowercase.
 const char kWebUITabIdDataType[] = "application/vnd.chromium.tab";
@@ -57,14 +56,8 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
 
   // Add a load time string for the frame color to allow the tab strip to paint
   // a background color that matches the frame before any content loads.
-  const auto* browser_window =
-      BrowserWindow::FindBrowserWindowWithWebContents(web_ui->GetWebContents());
-  const auto* theme_provider =
-      browser_window ? browser_window->GetThemeProvider() : nullptr;
-  const SkColor frame_color =
-      theme_provider
-          ? theme_provider->GetColor(ThemeProperties::COLOR_FRAME_ACTIVE)
-          : SK_ColorWHITE;
+  const auto& color_provider = web_ui->GetWebContents()->GetColorProvider();
+  const SkColor frame_color = color_provider.GetColor(ui::kColorFrameActive);
   html_source->AddString("frameColor",
                          color_utils::SkColorToRgbaString(frame_color));
 

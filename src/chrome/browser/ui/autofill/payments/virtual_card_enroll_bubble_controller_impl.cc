@@ -54,6 +54,10 @@ void VirtualCardEnrollBubbleControllerImpl::ShowBubble(
 
   is_user_gesture_ = false;
   Show();
+
+  LogVirtualCardEnrollBubbleCardArtAvailable(
+      virtual_card_enrollment_fields_.card_art_image,
+      virtual_card_enrollment_fields_.virtual_card_enrollment_source);
 }
 
 void VirtualCardEnrollBubbleControllerImpl::ReshowBubble() {
@@ -90,7 +94,9 @@ std::u16string VirtualCardEnrollBubbleControllerImpl::GetDeclineButtonText()
       virtual_card_enrollment_fields_.virtual_card_enrollment_source ==
               VirtualCardEnrollmentSource::kSettingsPage
           ? IDS_CANCEL
-          : IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_DECLINE_BUTTON_LABEL);
+          : virtual_card_enrollment_fields_.last_show
+                ? IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_DECLINE_BUTTON_LABEL_NO_THANKS
+                : IDS_AUTOFILL_VIRTUAL_CARD_ENROLLMENT_DECLINE_BUTTON_LABEL_SKIP);
 }
 
 std::u16string VirtualCardEnrollBubbleControllerImpl::GetLearnMoreLinkText()
@@ -180,7 +186,8 @@ void VirtualCardEnrollBubbleControllerImpl::OnBubbleClosed(
   }
 
   LogVirtualCardEnrollmentBubbleResultMetric(
-      result, GetVirtualCardEnrollmentBubbleSource(), is_user_gesture_);
+      result, GetVirtualCardEnrollmentBubbleSource(), is_user_gesture_,
+      virtual_card_enrollment_fields_.previously_declined);
 }
 
 bool VirtualCardEnrollBubbleControllerImpl::IsIconVisible() const {

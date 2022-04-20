@@ -3,6 +3,8 @@ load("//bazel/common_config_settings:defs.bzl", "bool_flag")
 load("//bazel:cc_binary_with_flags.bzl", "cc_binary_with_flags")
 load("//bazel:karma_test.bzl", "karma_test")
 
+licenses(["notice"])
+
 package(default_visibility = ["//:__subpackages__"])
 
 BASE_LINKOPTS = [
@@ -138,9 +140,6 @@ CK_DEFINES = [
 }) + select({
     ":enable_runtime_effect_true": ["CK_INCLUDE_RUNTIME_EFFECT=1"],
     ":enable_runtime_effect_false": [],
-}) + select({
-    ":enable_sksl_tracing_true": ["CK_INCLUDE_SKSL_TRACE=1"],
-    ":enable_sksl_tracing_false": [],
 })
 
 CK_RELEASE_OPTS = [
@@ -351,6 +350,9 @@ cc_binary_with_flags(
         "use_icu": [
             "True",
         ],
+        "enable_sksl_tracing": [
+            "True",
+        ],
         "shaper_backend": [
             "harfbuzz_shaper",
         ],
@@ -419,11 +421,6 @@ bool_flag(
 bool_flag(
     default = True,
     flag_name = "enable_runtime_effect",
-)
-
-bool_flag(
-    default = True,
-    flag_name = "enable_sksl_tracing",
 )
 
 bool_flag(

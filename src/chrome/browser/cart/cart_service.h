@@ -19,6 +19,7 @@
 #include "chrome/browser/cart/fetch_discount_worker.h"
 #include "chrome/browser/commerce/coupons/coupon_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/commerce/core/discount_consent_handler.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,7 +34,8 @@ class FetchDiscountWorker;
 // TODO(crbug.com/1253633) Make this BrowserContext-based and get rid of Profile
 // usage so that we can modularize this.
 class CartService : public history::HistoryServiceObserver,
-                    public KeyedService {
+                    public KeyedService,
+                    public commerce::DiscountConsentHandler {
  public:
   // The maximum number of times that cart welcome surface shows.
   static constexpr int kWelcomSurfaceShowLimit = 3;
@@ -43,11 +45,6 @@ class CartService : public history::HistoryServiceObserver,
   ~CartService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-  // Appends utm_source to the end of |base_url|. It will append only for
-  // partner merchants and the RBD fast path flag is on, will append
-  // "chrome_cart_no_rbd" when is_discount_enabled is false, and
-  // "chrome_cart_rbd" when is_discount_enabled is true.
-  static GURL AppendUTM(const GURL& base_url, bool is_discount_enabled);
   // Gets called when cart module is temporarily hidden.
   void Hide();
   // Gets called when restoring the temporarily hidden cart module.
@@ -90,18 +87,12 @@ class CartService : public history::HistoryServiceObserver,
   // Returns whether to show the welcome surface in module. It is related to how
   // many times the welcome surface has shown.
   bool ShouldShowWelcomeSurface();
-  // Gets called when user has acknowledged the discount consent in cart module.
-  // shouldEnable indicates whether user has chosen to opt-in or opt-out the
-  // feature.
-  void AcknowledgeDiscountConsent(bool should_enable);
-  // Gets called when user has dismissed the discount consent in cart module.
-  void DismissedDiscountConsent();
-  // Gets called when user has click the 'Continue' button in the discount
-  // consent.
-  void InterestedInDiscountConsent();
   // Decides whether to show the consent card in module for rule-based discount,
   // and returns it in the callback.
   void ShouldShowDiscountConsent(base::OnceCallback<void(bool)> callback);
+  // Decides whether to show the discount toggle in the customize_modules
+  // setting page.
+  bool ShouldShowDiscountToggle();
   // Returns whether the rule-based discount feature in cart module is enabled,
   // and user has chosen to opt-in the feature.
   bool IsCartDiscountEnabled();
@@ -130,6 +121,26 @@ class CartService : public history::HistoryServiceObserver,
   void UpdateFreeListingCoupons(const CouponService::CouponsMap& map);
   // KeyedService:
   void Shutdown() override;
+
+  // commerce::DiscountConsentHandler:
+  // Gets called when user has acknowledged the discount consent in cart module.
+  // `shouldEnable` indicates whether user has chosen to opt-in or opt-out the
+  // feature.
+  void AcknowledgeDiscountConsent(bool should_enable) override;
+  // Gets called when user has dismissed the discount consent in cart module.
+  void DismissedDiscountConsent() override;
+  // Gets called when user has click the 'Continue' button in the discount
+  // consent.
+  void InterestedInDiscountConsent() override;
+  // Appends UTM tags to the end of |base_url|. It will always append
+  // "utm_source=chrome" and "utm_medium=app". It will also append
+  // "utm_campaign" which can be one of the below three values:
+  // * "utm_campaign=chrome-cart" for non-partner merchant carts.
+  // * "utm_campaign=chrome-cart-discount-on" for partner merchant carts with
+  //   discount enabled.
+  // * "utm_campaign=chrome-cart-discount-off" for partner merchant carts with
+  //   discount disabled.
+  const GURL AppendUTM(const GURL& base_url);
 
  private:
   friend class CartServiceFactory;

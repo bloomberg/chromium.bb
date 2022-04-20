@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/task/single_thread_task_runner.h"
@@ -151,7 +152,7 @@ void PerFrameContentTranslateDriver::TranslatePage(
   stats_.Clear();
   translate_seq_no_ = IncrementSeqNo(translate_seq_no_);
 
-  web_contents()->ForEachFrame(base::BindRepeating(
+  web_contents()->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
       &PerFrameContentTranslateDriver::TranslateFrame, base::Unretained(this),
       translate_script, source_lang, target_lang, translate_seq_no_));
 }
@@ -188,7 +189,7 @@ void PerFrameContentTranslateDriver::RevertTranslation(int page_seq_no) {
   stats_.Clear();
   translate_seq_no_ = IncrementSeqNo(translate_seq_no_);
 
-  web_contents()->ForEachFrame(base::BindRepeating(
+  web_contents()->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
       &PerFrameContentTranslateDriver::RevertFrame, base::Unretained(this)));
 }
 

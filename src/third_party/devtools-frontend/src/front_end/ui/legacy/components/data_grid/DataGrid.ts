@@ -222,6 +222,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     this.dataTableBody = this.dataTable.createChild('tbody');
     this.topFillerRow = (this.dataTableBody.createChild('tr', 'data-grid-filler-row revealed') as HTMLElement);
     this.bottomFillerRow = (this.dataTableBody.createChild('tr', 'data-grid-filler-row revealed') as HTMLElement);
+    UI.ARIAUtils.setHidden(this.bottomFillerRow, true);
 
     this.setVerticalPadding(0, 0, true);
     this.refreshHeader();
@@ -265,20 +266,25 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return lastSelectableNode;
   }
 
-  setElementContent(element: Element, value: any): void {
+  setElementContent(element: Element, value: string): void {
     const columnId = this.columnIdFromNode(element);
     if (!columnId) {
       return;
     }
     const column = this.columns[columnId];
+    const parentElement = element.parentElement;
+    let gridNode;
+    if (parentElement) {
+      gridNode = this.elementToDataGridNode.get(parentElement);
+    }
     if (column.dataType === DataType.Boolean) {
-      DataGridImpl.setElementBoolean(element, (Boolean(value) as boolean));
+      DataGridImpl.setElementBoolean(element, Boolean(value), gridNode);
     } else if (value !== null) {
-      DataGridImpl.setElementText(element, (value as string), Boolean(column.longText));
+      DataGridImpl.setElementText(element, value, Boolean(column.longText), gridNode);
     }
   }
 
-  static setElementText(element: Element, newText: string, longText: boolean): void {
+  static setElementText(element: Element, newText: string, longText: boolean, gridNode?: DataGridNode<string>): void {
     if (longText && newText.length > 1000) {
       element.textContent = Platform.StringUtilities.trimEndWithMaxLength(newText, 1000);
       UI.Tooltip.Tooltip.install(element as HTMLElement, newText);
@@ -288,11 +294,48 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
       UI.Tooltip.Tooltip.install(element as HTMLElement, '');
       elementToLongTextMap.delete(element);
     }
+    if (gridNode) {
+      DataGridImpl.updateNodeAccessibleText(gridNode);
+    }
   }
 
-  static setElementBoolean(element: Element, value: boolean): void {
+  static setElementBoolean(element: Element, value: boolean, gridNode?: DataGridNode<string>): void {
     element.textContent = value ? '\u2713' : '';
     UI.Tooltip.Tooltip.install(element as HTMLElement, '');
+    if (gridNode) {
+      DataGridImpl.updateNodeAccessibleText(gridNode);
+    }
+  }
+
+  static updateNodeAccessibleText(gridNode: DataGridNode<string>): void {
+    let accessibleText = '';
+    let colElement: Element|null = gridNode.elementInternal?.children[0] || null;
+    if (!colElement) {
+      return;
+    }
+
+    while (colElement && !colElement.classList.contains('corner')) {
+      let columnClass = null;
+      for (const cssClass of colElement.classList) {
+        if (cssClass.includes('-column')) {
+          columnClass = cssClass.substring(0, cssClass.indexOf('-column'));
+          break;
+        }
+      }
+      if (columnClass && gridNode.dataGrid) {
+        const colName = gridNode.dataGrid.columns[columnClass];
+        if (colName) {
+          accessibleText += `${colName.title}: ${colElement.textContent}, `;
+        }
+      }
+      colElement = colElement.nextElementSibling;
+    }
+
+    if (accessibleText.length > 0) {
+      // Trim off comma and space at the end.
+      accessibleText = accessibleText.substring(0, accessibleText.length - 2);
+    }
+    gridNode.nodeAccessibleText = accessibleText;
   }
 
   setStriped(isStriped: boolean): void {
@@ -445,11 +488,16 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTyp
       nodeToColumnIdMap.set(bottomFillerRowChild, columnId);
     }
 
-    this.headerRow.createChild('th', 'corner');
+    const headerCorner = this.headerRow.createChild('th', 'corner');
+    UI.ARIAUtils.setHidden(headerCorner, true);
+
     const topFillerRowCornerCell = (this.topFillerRow.createChild('th', 'corner') as HTMLTableCellElement);
     topFillerRowCornerCell.classList.add('top-filler-td');
     topFillerRowCornerCell.scope = 'col';
+    UI.ARIAUtils.setHidden(topFillerRowCornerCell, true);
+
     this.bottomFillerRow.createChild('td', 'corner').classList.add('bottom-filler-td');
+
     this.headerTableColumnGroup.createChild('col', 'corner');
     this.dataTableColumnGroup.createChild('col', 'corner');
   }
@@ -1690,7 +1738,10 @@ export class DataGridNode<T> {
       accessibleTextArray.push(`${column.title}: ${this.cellAccessibleTextMap.get(column.id) || cell.textContent}`);
     }
     this.nodeAccessibleText = accessibleTextArray.join(', ');
-    element.appendChild(this.createTDWithClass('corner'));
+
+    const cornerCell = this.createTDWithClass('corner');
+    UI.ARIAUtils.setHidden(cornerCell, true);
+    element.appendChild(cornerCell);
   }
 
   get data(): DataGridData {

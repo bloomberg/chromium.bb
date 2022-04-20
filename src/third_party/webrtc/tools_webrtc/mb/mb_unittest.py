@@ -19,16 +19,20 @@ import sys
 import tempfile
 import unittest
 
-import mb
+_SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+_SRC_DIR = os.path.dirname(os.path.dirname(_SCRIPT_DIR))
+sys.path.insert(0, _SRC_DIR)
+
+from tools_webrtc.mb import mb
 
 
-class FakeMBW(mb.MetaBuildWrapper):
+class FakeMBW(mb.WebRTCMetaBuildWrapper):
   def __init__(self, win32=False):
-    super(FakeMBW, self).__init__()
+    super().__init__()
 
     # Override vars for test portability.
     if win32:
-      self.src_dir = 'c:\\fake_src'
+      self.chromium_src_dir = 'c:\\fake_src'
       self.default_config = 'c:\\fake_src\\tools_webrtc\\mb\\mb_config.pyl'
       self.default_isolate_map = ('c:\\fake_src\\testing\\buildbot\\'
                                   'gn_isolate_map.pyl')
@@ -37,7 +41,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.sep = '\\'
       self.cwd = 'c:\\fake_src\\out\\Default'
     else:
-      self.src_dir = '/fake_src'
+      self.chromium_src_dir = '/fake_src'
       self.default_config = '/fake_src/tools_webrtc/mb/mb_config.pyl'
       self.default_isolate_map = '/fake_src/testing/buildbot/gn_isolate_map.pyl'
       self.executable = '/usr/bin/vpython3'
@@ -61,6 +65,14 @@ class FakeMBW(mb.MetaBuildWrapper):
     abs_path = self._AbsPath(path)
     return self.files.get(abs_path) is not None or abs_path in self.dirs
 
+  def ListDir(self, path):
+    dir_contents = []
+    for f in list(self.files.keys()) + list(self.dirs):
+      head, _ = os.path.split(f)
+      if head == path:
+        dir_contents.append(f)
+    return dir_contents
+
   def MaybeMakeDirectory(self, path):
     abpath = self._AbsPath(path)
     self.dirs.add(abpath)
@@ -69,7 +81,10 @@ class FakeMBW(mb.MetaBuildWrapper):
     return self.sep.join(comps)
 
   def ReadFile(self, path):
-    return self.files[self._AbsPath(path)]
+    try:
+      return self.files[self._AbsPath(path)]
+    except KeyError as e:
+      raise IOError('%s not found' % path) from e
 
   def WriteFile(self, path, contents, force_verbose=False):
     if self.args.dryrun or self.args.verbose or force_verbose:
@@ -77,7 +92,10 @@ class FakeMBW(mb.MetaBuildWrapper):
     abpath = self._AbsPath(path)
     self.files[abpath] = contents
 
-  def Call(self, cmd, env=None, buffer_output=True):
+  def Call(self, cmd, env=None, buffer_output=True, stdin=None):
+    del env
+    del buffer_output
+    del stdin
     self.calls.append(cmd)
     if self.cmds:
       return self.cmds.pop(0)
@@ -97,17 +115,20 @@ class FakeMBW(mb.MetaBuildWrapper):
     self.dirs.add(tmp_dir)
     return tmp_dir
 
-  def TempFile(self):
+  def TempFile(self, mode='w'):
+    del mode
     return FakeFile(self.files)
 
   def RemoveFile(self, path):
     abpath = self._AbsPath(path)
     self.files[abpath] = None
 
-  def RemoveDirectory(self, path):
-    abpath = self._AbsPath(path)
-    self.rmdirs.append(abpath)
-    files_to_delete = [f for f in self.files if f.startswith(abpath)]
+  def RemoveDirectory(self, abs_path):
+    # Normalize the passed-in path to handle different working directories
+    # used during unit testing.
+    abs_path = self._AbsPath(abs_path)
+    self.rmdirs.append(abs_path)
+    files_to_delete = [f for f in self.files if f.startswith(abs_path)]
     for f in files_to_delete:
       self.files[f] = None
 
@@ -120,7 +141,8 @@ class FakeMBW(mb.MetaBuildWrapper):
     return re.sub('/+', '/', path)
 
 
-class FakeFile(object):
+class FakeFile:
+  # pylint: disable=invalid-name
   def __init__(self, files):
     self.name = '/tmp/file'
     self.buf = ''
@@ -140,19 +162,30 @@ TEST_CONFIG = """\
     'fake_group': {
       'fake_builder': 'rel_bot',
       'fake_debug_builder': 'debug_goma',
-      'fake_args_bot': '//build/args/bots/fake_group/fake_args_bot.gn',
+      'fake_args_bot': 'fake_args_bot',
       'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
       'fake_android_bot': 'android_bot',
+      'fake_args_file': 'args_file_goma',
+      'fake_ios_error': 'ios_error',
     },
   },
   'configs': {
+    'args_file_goma': ['fake_args_bot', 'goma'],
+    'fake_args_bot': ['fake_args_bot'],
     'rel_bot': ['rel', 'goma', 'fake_feature1'],
     'debug_goma': ['debug', 'goma'],
-    'phase_1': ['phase_1'],
-    'phase_2': ['phase_2'],
+    'phase_1': ['rel', 'phase_1'],
+    'phase_2': ['rel', 'phase_2'],
     'android_bot': ['android'],
+    'ios_error': ['error'],
   },
   'mixins': {
+    'error': {
+      'gn_args': 'error',
+    },
+    'fake_args_bot': {
+      'args_file': '//build/args/bots/fake_group/fake_args_bot.gn',
+    },
     'fake_feature1': {
       'gn_args': 'enable_doom_melon=true',
     },
@@ -166,39 +199,55 @@ TEST_CONFIG = """\
       'gn_args': 'phase=2',
     },
     'rel': {
-      'gn_args': 'is_debug=false',
+      'gn_args': 'is_debug=false dcheck_always_on=false',
     },
     'debug': {
       'gn_args': 'is_debug=true',
     },
     'android': {
-      'gn_args': 'target_os="android"',
+      'gn_args': 'target_os="android" dcheck_always_on=false',
     }
   },
 }
 """
 
 
-class UnitTest(unittest.TestCase):
-  def fake_mbw(self, files=None, win32=False):
-    mbw = FakeMBW(win32=win32)
-    mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
-    mbw.files.setdefault(
-        mbw.ToAbsPath('//testing/buildbot/gn_isolate_map.pyl'), '''{
-        "foo_unittests": {
-          "label": "//foo:foo_unittests",
-          "type": "console_test_launcher",
-          "args": [],
-        },
-      }''')
-    mbw.files.setdefault(
-        mbw.ToAbsPath('//build/args/bots/fake_group/fake_args_bot.gn'),
-        'is_debug = false\n')
-    if files:
-      for path, contents in list(files.items()):
-        mbw.files[path] = contents
-    return mbw
+def CreateFakeMBW(files=None, win32=False):
+  mbw = FakeMBW(win32=win32)
+  mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
+  mbw.files.setdefault(
+      mbw.ToAbsPath('//testing/buildbot/gn_isolate_map.pyl'), '''{
+      "foo_unittests": {
+        "label": "//foo:foo_unittests",
+        "type": "console_test_launcher",
+        "args": [],
+      },
+    }''')
+  mbw.files.setdefault(
+      mbw.ToAbsPath('//build/args/bots/fake_group/fake_args_bot.gn'),
+      'is_debug = false\ndcheck_always_on=false\n')
+  mbw.files.setdefault(mbw.ToAbsPath('//tools/mb/rts_banned_suites.json'), '{}')
+  if files:
+    for path, contents in list(files.items()):
+      mbw.files[path] = contents
+      if path.endswith('.runtime_deps'):
 
+        def FakeCall(cmd, env=None, buffer_output=True, stdin=None):
+          # pylint: disable=cell-var-from-loop
+          del cmd
+          del env
+          del buffer_output
+          del stdin
+          mbw.files[path] = contents
+          return 0, '', ''
+
+        # pylint: disable=invalid-name
+        mbw.Call = FakeCall
+  return mbw
+
+
+class UnitTest(unittest.TestCase):
+  # pylint: disable=invalid-name
   def check(self,
             args,
             mbw=None,
@@ -208,7 +257,7 @@ class UnitTest(unittest.TestCase):
             ret=None,
             env=None):
     if not mbw:
-      mbw = self.fake_mbw(files)
+      mbw = CreateFakeMBW(files)
 
     try:
       prev_env = os.environ.copy()
@@ -241,7 +290,7 @@ class UnitTest(unittest.TestCase):
              }'''
     }
 
-    mbw = self.fake_mbw(files)
+    mbw = CreateFakeMBW(files)
     mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
 
     self.check([
@@ -259,7 +308,7 @@ class UnitTest(unittest.TestCase):
         })
 
   def test_gen(self):
-    mbw = self.fake_mbw()
+    mbw = CreateFakeMBW()
     self.check(['gen', '-c', 'debug_goma', '//out/Default', '-g', '/goma'],
                mbw=mbw,
                ret=0)
@@ -273,7 +322,7 @@ class UnitTest(unittest.TestCase):
     self.assertIn('/fake_src/buildtools/linux64/gn gen //out/Default --check',
                   mbw.out)
 
-    mbw = self.fake_mbw(win32=True)
+    mbw = CreateFakeMBW(win32=True)
     self.check(['gen', '-c', 'debug_goma', '-g', 'c:\\goma', '//out/Debug'],
                mbw=mbw,
                ret=0)
@@ -285,7 +334,7 @@ class UnitTest(unittest.TestCase):
         'c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
         '--check\n', mbw.out)
 
-    mbw = self.fake_mbw()
+    mbw = CreateFakeMBW()
     self.check(
         ['gen', '-m', 'fake_group', '-b', 'fake_args_bot', '//out/Debug'],
         mbw=mbw,
@@ -295,7 +344,7 @@ class UnitTest(unittest.TestCase):
         'import("//build/args/bots/fake_group/fake_args_bot.gn")\n\n')
 
   def test_gen_fails(self):
-    mbw = self.fake_mbw()
+    mbw = CreateFakeMBW()
     mbw.Call = lambda cmd, env=None, buffer_output=True: (1, '', '')
     self.check(['gen', '-c', 'debug_goma', '//out/Default'], mbw=mbw, ret=1)
 
@@ -312,7 +361,7 @@ class UnitTest(unittest.TestCase):
         '/fake_src/out/Default/base_unittests.runtime_deps':
         ("base_unittests\n"),
     }
-    mbw = self.fake_mbw(files)
+    mbw = CreateFakeMBW(files)
     self.check([
         'gen', '-c', 'debug_goma', '--swarming-targets-file',
         '/tmp/swarming_targets', '//out/Default'
@@ -330,7 +379,7 @@ class UnitTest(unittest.TestCase):
         '/fake_src/testing/buildbot/gn_isolate_map.pyl':
         ("{'base_unittests': {"
          "  'label': '//base:base_unittests',"
-         "  'type': 'additional_compile_target',"
+         "  'type': 'console_test_launcher',"
          "}}\n"),
         '/fake_src/out/Default/base_unittests.runtime_deps':
         ("base_unittests\n"),
@@ -461,7 +510,7 @@ class UnitTest(unittest.TestCase):
          "  'type': 'script',"
          "  'script': '//base/base_unittests_script.py',"
          "}}\n"),
-        '/fake_src/out/Default/base_unittests.runtime_deps':
+        '/fake_src/out/Default/base_unittests_script.runtime_deps':
         ("base_unittests\n"
          "base_unittests_script.py\n"),
     }
@@ -522,13 +571,7 @@ class UnitTest(unittest.TestCase):
     self.assertEqual(command, [
         'vpython3',
         '../../tools_webrtc/flags_compatibility.py',
-        'vpython3',
-        '../../testing/test_env.py',
         './base_unittests',
-        '--asan=0',
-        '--lsan=0',
-        '--msan=0',
-        '--tsan=0',
     ])
 
   def test_gen_non_parallel_console_test_launcher(self):
@@ -644,7 +687,7 @@ class UnitTest(unittest.TestCase):
         ("unittests.exe\n"
          "some_dependency\n"),
     }
-    mbw = self.fake_mbw(files=files, win32=True)
+    mbw = CreateFakeMBW(files=files, win32=True)
     self.check([
         'gen', '-c', 'debug_goma', '--swarming-targets-file',
         'c:\\fake_src\\out\\Default\\tmp\\swarming_targets',
@@ -803,7 +846,7 @@ class UnitTest(unittest.TestCase):
         ret=0)
 
     # test running isolate on an existing build_dir
-    files['/fake_src/out/Default/args.gn'] = 'is_debug = True\n'
+    files['/fake_src/out/Default/args.gn'] = 'is_debug = true\n'
     self.check(['isolate', '//out/Default', 'base_unittests'],
                files=files,
                ret=0)
@@ -827,6 +870,7 @@ class UnitTest(unittest.TestCase):
                ret=0)
 
   def test_run_swarmed(self):
+    # pylint: disable=attribute-defined-outside-init
     files = {
         '/fake_src/testing/buildbot/gn_isolate_map.pyl':
         ("{'base_unittests': {"
@@ -844,7 +888,7 @@ class UnitTest(unittest.TestCase):
     task_json = json.dumps({'tasks': [{'task_id': '00000'}]})
     collect_json = json.dumps({'00000': {'results': {}}})
 
-    mbw = self.fake_mbw(files=files)
+    mbw = CreateFakeMBW(files=files)
     mbw.files[mbw.PathJoin(mbw.TempDir(), 'task.json')] = task_json
     mbw.files[mbw.PathJoin(mbw.TempDir(), 'collect_output.json')] = collect_json
     original_impl = mbw.ToSrcRelPath
@@ -860,7 +904,7 @@ class UnitTest(unittest.TestCase):
         ['run', '-s', '-c', 'debug_goma', '//out/Default', 'base_unittests'],
         mbw=mbw,
         ret=0)
-    mbw = self.fake_mbw(files=files)
+    mbw = CreateFakeMBW(files=files)
     mbw.files[mbw.PathJoin(mbw.TempDir(), 'task.json')] = task_json
     mbw.files[mbw.PathJoin(mbw.TempDir(), 'collect_output.json')] = collect_json
     mbw.ToSrcRelPath = to_src_rel_path_stub
@@ -885,6 +929,7 @@ class UnitTest(unittest.TestCase):
                ret=0,
                out=('\n'
                     'Writing """\\\n'
+                    'dcheck_always_on = false\n'
                     'enable_doom_melon = true\n'
                     'goma_dir = "/foo"\n'
                     'is_debug = false\n'
@@ -939,7 +984,7 @@ class UnitTest(unittest.TestCase):
     self.assertIn('phase = 2', mbw.out)
 
   def test_validate(self):
-    mbw = self.fake_mbw()
+    mbw = CreateFakeMBW()
     self.check(['validate'], mbw=mbw, ret=0)
 
 

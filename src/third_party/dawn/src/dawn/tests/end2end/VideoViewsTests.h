@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TESTS_VIDEOVIEWSTESTS_H_
-#define TESTS_VIDEOVIEWSTESTS_H_
+#ifndef SRC_DAWN_TESTS_END2END_VIDEOVIEWSTESTS_H_
+#define SRC_DAWN_TESTS_END2END_VIDEOVIEWSTESTS_H_
 
 #include "dawn/tests/DawnTest.h"
 
@@ -28,7 +28,8 @@ class VideoViewsTestBackend {
     virtual ~VideoViewsTestBackend();
 
     virtual void OnSetUp(WGPUDevice device) = 0;
-    virtual void OnTearDown() = 0;
+    virtual void OnTearDown() {
+    }
 
     class PlatformTexture {
       public:
@@ -74,6 +75,11 @@ class VideoViewsTests : public DawnTest {
                                                           RGBA8{90, 240, 0, 0xFF}};  // UV
 
     static std::vector<uint8_t> GetTestTextureData(wgpu::TextureFormat format, bool isCheckerboard);
+    static uint32_t NumPlanes(wgpu::TextureFormat format);
+    static std::vector<uint8_t> GetTestTextureDataWithPlaneIndex(size_t planeIndex,
+                                                                 size_t bytesPerRow,
+                                                                 size_t height,
+                                                                 bool isCheckerboard);
 
   protected:
     void SetUp() override;
@@ -86,4 +92,4 @@ class VideoViewsTests : public DawnTest {
     bool mIsMultiPlanarFormatsSupported = false;
 };
 
-#endif  // TESTS_VIDEOVIEWSTESTS_H_
+#endif  // SRC_DAWN_TESTS_END2END_VIDEOVIEWSTESTS_H_

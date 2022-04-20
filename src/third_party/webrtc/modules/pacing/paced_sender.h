@@ -19,10 +19,10 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/field_trials_view.h"
 #include "api/function_view.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/network_types.h"
-#include "api/transport/webrtc_key_value_config.h"
 #include "modules/include/module.h"
 #include "modules/pacing/bitrate_prober.h"
 #include "modules/pacing/interval_budget.h"
@@ -37,7 +37,6 @@
 
 namespace webrtc {
 class Clock;
-class RtcEventLog;
 
 class PacedSender : public RtpPacketPacer, public RtpPacketSender {
  public:
@@ -57,8 +56,7 @@ class PacedSender : public RtpPacketPacer, public RtpPacketSender {
   // optional once all callers have been updated.
   PacedSender(Clock* clock,
               PacketRouter* packet_router,
-              RtcEventLog* event_log,
-              const WebRtcKeyValueConfig& field_trials,
+              const FieldTrialsView& field_trials,
               ProcessThread* process_thread = nullptr);
 
   ~PacedSender() override;

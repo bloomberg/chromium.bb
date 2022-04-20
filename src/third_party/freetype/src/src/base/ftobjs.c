@@ -334,7 +334,7 @@
     /* if SVG table exists, allocate the space in `slot->other` */
     if ( slot->face->face_flags & FT_FACE_FLAG_SVG )
     {
-      FT_SVG_Document  document;
+      FT_SVG_Document  document = NULL;
 
 
       if ( FT_NEW( document ) )
@@ -2527,6 +2527,16 @@
 #endif
 
 
+    /* only use lower 31 bits together with sign bit */
+    if ( face_index > 0 )
+      face_index &= 0x7FFFFFFFL;
+    else
+    {
+      face_index  = -face_index;
+      face_index &= 0x7FFFFFFFL;
+      face_index  = -face_index;
+    }
+
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_TRACE3(( "FT_Open_Face: " ));
     if ( face_index < 0 )
@@ -3398,6 +3408,9 @@
 
     if ( !face )
       return FT_THROW( Invalid_Face_Handle );
+
+    if ( !face->size )
+      return FT_THROW( Invalid_Size_Handle );
 
     if ( !req || req->width < 0 || req->height < 0 ||
          req->type >= FT_SIZE_REQUEST_TYPE_MAX )

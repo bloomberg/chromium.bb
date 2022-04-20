@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_METAL_SWAPCHAINMTL_H_
-#define DAWNNATIVE_METAL_SWAPCHAINMTL_H_
+#ifndef SRC_DAWN_NATIVE_METAL_SWAPCHAINMTL_H_
+#define SRC_DAWN_NATIVE_METAL_SWAPCHAINMTL_H_
 
 #include "dawn/native/SwapChain.h"
 
@@ -58,10 +58,10 @@ namespace dawn::native::metal {
         Ref<Texture> mTexture;
 
         MaybeError PresentImpl() override;
-        ResultOrError<TextureViewBase*> GetCurrentTextureViewImpl() override;
+        ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() override;
         void DetachFromSurfaceImpl() override;
     };
 
 }  // namespace dawn::native::metal
 
-#endif  // DAWNNATIVE_METAL_SWAPCHAINMTL_H_
+#endif  // SRC_DAWN_NATIVE_METAL_SWAPCHAINMTL_H_

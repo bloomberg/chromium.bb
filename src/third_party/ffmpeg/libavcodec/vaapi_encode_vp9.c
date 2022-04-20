@@ -26,7 +26,7 @@
 #include "libavutil/pixfmt.h"
 
 #include "avcodec.h"
-#include "internal.h"
+#include "codec_internal.h"
 #include "vaapi_encode.h"
 
 #define VP9_MAX_QUANT 255
@@ -271,7 +271,7 @@ static const AVOption vaapi_encode_vp9_options[] = {
     { NULL },
 };
 
-static const AVCodecDefault vaapi_encode_vp9_defaults[] = {
+static const FFCodecDefault vaapi_encode_vp9_defaults[] = {
     { "b",              "0"   },
     { "bf",             "0"   },
     { "g",              "250" },
@@ -287,24 +287,24 @@ static const AVClass vaapi_encode_vp9_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_vp9_vaapi_encoder = {
-    .name           = "vp9_vaapi",
-    .long_name      = NULL_IF_CONFIG_SMALL("VP9 (VAAPI)"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_VP9,
+const FFCodec ff_vp9_vaapi_encoder = {
+    .p.name         = "vp9_vaapi",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("VP9 (VAAPI)"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_VP9,
     .priv_data_size = sizeof(VAAPIEncodeVP9Context),
     .init           = &vaapi_encode_vp9_init,
     .receive_packet = &ff_vaapi_encode_receive_packet,
     .close          = &ff_vaapi_encode_close,
-    .priv_class     = &vaapi_encode_vp9_class,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
+    .p.priv_class   = &vaapi_encode_vp9_class,
+    .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
                       AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .defaults       = vaapi_encode_vp9_defaults,
-    .pix_fmts = (const enum AVPixelFormat[]) {
+    .p.pix_fmts = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_VAAPI,
         AV_PIX_FMT_NONE,
     },
     .hw_configs     = ff_vaapi_encode_hw_configs,
-    .wrapper_name   = "vaapi",
+    .p.wrapper_name = "vaapi",
 };

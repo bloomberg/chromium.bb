@@ -64,6 +64,8 @@ struct spirv_inst_iter {
 
     bool operator!=(spirv_inst_iter const &other) const { return it != other.it; }
 
+    bool operator!=(std::vector<uint32_t>::const_iterator other) const { return it != other; }
+
     spirv_inst_iter operator++(int) {  // x++
         spirv_inst_iter ii = *this;
         it += len();
@@ -276,10 +278,19 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     SHADER_MODULE_STATE(const SpirvContainer &spirv)
         : SHADER_MODULE_STATE(spirv.data(), spirv.size() * sizeof(typename SpirvContainer::value_type)) {}
 
-    SHADER_MODULE_STATE(VkShaderModuleCreateInfo const *pCreateInfo, VkShaderModule shaderModule, spv_target_env env,
+    SHADER_MODULE_STATE(const VkShaderModuleCreateInfo &create_info, spv_target_env env, uint32_t unique_shader_id)
+        : BASE_NODE(static_cast<VkShaderModule>(VK_NULL_HANDLE), kVulkanObjectTypeShaderModule),
+          words(create_info.pCode, create_info.pCode + create_info.codeSize / sizeof(uint32_t)),
+          static_data_(*this),
+          has_valid_spirv(true),
+          gpu_validation_shader_id(unique_shader_id) {
+        PreprocessShaderBinary(env);
+    }
+
+    SHADER_MODULE_STATE(const VkShaderModuleCreateInfo &create_info, VkShaderModule shaderModule, spv_target_env env,
                         uint32_t unique_shader_id)
         : BASE_NODE(shaderModule, kVulkanObjectTypeShaderModule),
-          words(pCreateInfo->pCode, pCreateInfo->pCode + pCreateInfo->codeSize / sizeof(uint32_t)),
+          words(create_info.pCode, create_info.pCode + create_info.codeSize / sizeof(uint32_t)),
           static_data_(*this),
           has_valid_spirv(true),
           gpu_validation_shader_id(unique_shader_id) {
@@ -336,7 +347,12 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     std::string DescribeInstruction(const spirv_inst_iter &insn) const;
 
     layer_data::unordered_set<uint32_t> MarkAccessibleIds(spirv_inst_iter entrypoint) const;
+    layer_data::unordered_set<uint32_t> MarkVariableIds() const;
     layer_data::optional<VkPrimitiveTopology> GetTopology(const spirv_inst_iter &entrypoint) const;
+    // TODO (https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/2450)
+    // Since we currently don't support multiple entry points, this is a helper to return the topology
+    // for the "first" (and for our purposes _only_) entrypoint.
+    layer_data::optional<VkPrimitiveTopology> GetTopology() const;
 
     const EntryPoint *FindEntrypointStruct(char const *name, VkShaderStageFlagBits stageBits) const;
     spirv_inst_iter FindEntrypoint(char const *name, VkShaderStageFlagBits stageBits) const;
@@ -372,7 +388,7 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
     void IsSpecificDescriptorType(const spirv_inst_iter &id_it, bool is_storage_buffer, bool is_check_writable,
                                   interface_var &out_interface_var, shader_module_used_operators &used_operators) const;
     std::vector<std::pair<DescriptorSlot, interface_var>> CollectInterfaceByDescriptorSlot(
-        layer_data::unordered_set<uint32_t> const &accessible_ids) const;
+        layer_data::unordered_set<uint32_t> const &ids) const;
     layer_data::unordered_set<uint32_t> CollectWritableOutputLocationinFS(const spirv_inst_iter &entrypoint) const;
     bool CollectInterfaceBlockMembers(std::map<location_t, interface_var> *out, bool is_array_of_verts, uint32_t id,
                                       uint32_t type_id, bool is_patch, uint32_t first_location) const;
@@ -383,8 +399,6 @@ struct SHADER_MODULE_STATE : public BASE_NODE {
         layer_data::unordered_set<uint32_t> const &accessible_ids) const;
 
     uint32_t GetNumComponentsInBaseType(const spirv_inst_iter &iter) const;
-    std::array<uint32_t, 3> GetWorkgroupSize(VkPipelineShaderStageCreateInfo const *pStage,
-                                             const std::unordered_map<uint32_t, std::vector<uint32_t>>& id_value_map) const;
     uint32_t GetTypeBitsSize(const spirv_inst_iter &iter) const;
     uint32_t GetTypeBytesSize(const spirv_inst_iter &iter) const;
     uint32_t GetBaseType(const spirv_inst_iter &iter) const;

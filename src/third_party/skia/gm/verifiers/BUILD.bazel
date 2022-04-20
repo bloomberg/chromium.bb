@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "gmverifier_hdr",
     hdrs = ["gmverifier.h"],
@@ -20,6 +22,7 @@ generated_cc_atom(
         "//gm:gm_hdr",
         "//include/core:SkBitmap_hdr",
         "//include/core:SkCanvas_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkSurface_hdr",
         "//include/effects:SkImageFilters_hdr",
         "//include/encode:SkPngEncoder_hdr",

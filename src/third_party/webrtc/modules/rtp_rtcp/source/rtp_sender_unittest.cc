@@ -100,7 +100,7 @@ class MockRtpPacketPacer : public RtpPacketSender {
               (override));
 };
 
-class FieldTrialConfig : public WebRtcKeyValueConfig {
+class FieldTrialConfig : public FieldTrialsView {
  public:
   FieldTrialConfig() : max_padding_factor_(1200) {}
   ~FieldTrialConfig() override {}
@@ -170,7 +170,7 @@ class RtpSenderTest : public ::testing::Test {
                        /*require_marker_before_media_padding=*/!config.audio,
                        clock_);
     rtp_sender_ = std::make_unique<RTPSender>(config, packet_history_.get(),
-                                              config.paced_sender, nullptr);
+                                              config.paced_sender);
     sequencer_->set_media_sequence_number(kSeqNum);
     rtp_sender_->SetTimestampOffset(0);
   }

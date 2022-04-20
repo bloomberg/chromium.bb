@@ -24,6 +24,7 @@
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "url/gurl.h"
 
@@ -50,14 +51,18 @@ MockAttributionReportingContentBrowserClient::
 MockAttributionReportingContentBrowserClient::
     ~MockAttributionReportingContentBrowserClient() = default;
 
-MockAttributionHost::MockAttributionHost(WebContents* web_contents)
-    : AttributionHost(web_contents) {
-  SetReceiverImplForTesting(this);
+// static
+MockAttributionHost* MockAttributionHost::Override(WebContents* web_contents) {
+  auto host = base::WrapUnique(new MockAttributionHost(web_contents));
+  auto* raw = host.get();
+  web_contents->SetUserData(AttributionHost::UserDataKey(), std::move(host));
+  return raw;
 }
 
-MockAttributionHost::~MockAttributionHost() {
-  SetReceiverImplForTesting(nullptr);
-}
+MockAttributionHost::MockAttributionHost(WebContents* web_contents)
+    : AttributionHost(web_contents) {}
+
+MockAttributionHost::~MockAttributionHost() = default;
 
 MockDataHost::MockDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host) {
@@ -379,9 +384,10 @@ void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
 }
 
 void MockAttributionManager::NotifyTriggerHandled(
+    const AttributionTrigger& trigger,
     const CreateReportResult& result) {
   for (auto& observer : observers_)
-    observer.OnTriggerHandled(result);
+    observer.OnTriggerHandled(trigger, result);
 }
 
 void MockAttributionManager::SetDataHostManager(
@@ -698,7 +704,7 @@ AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
   return AttributionReport(
       attribution_info_, report_time_, external_report_id_,
       AttributionReport::AggregatableAttributionData(
-          contributions_, aggregatable_attribution_report_id_));
+          contributions_, aggregatable_attribution_report_id_, report_time_));
 }
 
 AggregatableKeyProtoBuilder::AggregatableKeyProtoBuilder() = default;
@@ -854,7 +860,11 @@ bool operator==(const AttributionReport::EventLevelData& a,
 // aggregation service from all the other data.
 bool operator==(const AttributionReport::AggregatableAttributionData& a,
                 const AttributionReport::AggregatableAttributionData& b) {
-  return a.contributions == b.contributions;
+  const auto tie =
+      [](const AttributionReport::AggregatableAttributionData& data) {
+        return std::make_tuple(data.contributions, data.initial_report_time);
+      };
+  return tie(a) == tie(b);
 }
 
 // Does not compare source or report IDs, as they are set by the underlying
@@ -870,7 +880,8 @@ bool operator==(const AttributionReport& a, const AttributionReport& b) {
 
 bool operator==(const SendResult& a, const SendResult& b) {
   const auto tie = [](const SendResult& info) {
-    return std::make_tuple(info.status, info.http_response_code);
+    return std::make_tuple(info.status, info.network_error,
+                           info.http_response_code);
   };
   return tie(a) == tie(b);
 }
@@ -947,6 +958,9 @@ std::ostream& operator<<(std::ostream& out,
     case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
       out << "noMatchingSourceFilterData";
       break;
+    case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
+      out << "prohibitedByBrowserPolicy";
+      break;
   }
   return out;
 }
@@ -981,6 +995,12 @@ std::ostream& operator<<(std::ostream& out,
       break;
     case AttributionTrigger::AggregatableResult::kNoMatchingSourceFilterData:
       out << "noMatchingSourceFilterData";
+      break;
+    case AttributionTrigger::AggregatableResult::kNotRegistered:
+      out << "notRegistered";
+      break;
+    case AttributionTrigger::AggregatableResult::kProhibitedByBrowserPolicy:
+      out << "prohibitedByBrowserPolicy";
       break;
   }
   return out;
@@ -1174,7 +1194,7 @@ std::ostream& operator<<(
   }
 
   return out << "],id=" << (data.id ? base::NumberToString(**data.id) : "null")
-             << "}";
+             << ",initial_report_time=" << data.initial_report_time << "}";
 }
 
 namespace {
@@ -1232,6 +1252,7 @@ std::ostream& operator<<(std::ostream& out, SendResult::Status status) {
 
 std::ostream& operator<<(std::ostream& out, const SendResult& info) {
   return out << "{status=" << info.status
+             << ",network_error=" << net::ErrorToShortString(info.network_error)
              << ",http_response_code=" << info.http_response_code << "}";
 }
 
@@ -1253,6 +1274,8 @@ std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
       return out << "insufficientUniqueDestinationCapacity";
     case StorableSource::Result::kExcessiveReportingOrigins:
       return out << "excessiveReportingOrigins";
+    case StorableSource::Result::kProhibitedByBrowserPolicy:
+      return out << "prohibitedByBrowserPolicy";
   }
 }
 

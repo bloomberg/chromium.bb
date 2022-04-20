@@ -50,9 +50,6 @@ class MultisampledSamplingTest : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
-        // TODO(crbug.com/dawn/1030): Compute pipeline compilation crashes.
-        DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsIntel());
-
         {
             utils::ComboRenderPipelineDescriptor desc;
 
@@ -64,9 +61,9 @@ class MultisampledSamplingTest : public DawnTest {
 
             desc.cFragment.module = utils::CreateShaderModule(device, R"(
                 struct FragmentOut {
-                    @location(0) color : f32;
-                    @builtin(frag_depth) depth : f32;
-                };
+                    @location(0) color : f32,
+                    @builtin(frag_depth) depth : f32,
+                }
 
                 @stage(fragment) fn main() -> FragmentOut {
                     var output : FragmentOut;
@@ -100,9 +97,9 @@ class MultisampledSamplingTest : public DawnTest {
                 @group(0) @binding(1) var texture1 : texture_depth_multisampled_2d;
 
                 struct Results {
-                    colorSamples : array<f32, 4>;
-                    depthSamples : array<f32, 4>;
-                };
+                    colorSamples : array<f32, 4>,
+                    depthSamples : array<f32, 4>,
+                }
                 @group(0) @binding(2) var<storage, read_write> results : Results;
 
                 @stage(compute) @workgroup_size(1) fn main() {

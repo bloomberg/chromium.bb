@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(crbug.com/1253323): Casts to Branded Types will be removed from this file when migration to branded types is complete.
+
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -126,12 +128,12 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
     for (const project of this.projects()) {
       const weight = project.uiSourceCodes().length;
       const findMatchingFilesInProjectProgress = findMatchingFilesProgress.createSubProgress(weight);
-      const filesMathingFileQuery = this.projectFilesMatchingFileQuery(project, searchConfig);
+      const filesMatchingFileQuery = this.projectFilesMatchingFileQuery(project, searchConfig);
       const promise =
           project
-              .findFilesMatchingSearchRequest(searchConfig, filesMathingFileQuery, findMatchingFilesInProjectProgress)
+              .findFilesMatchingSearchRequest(searchConfig, filesMatchingFileQuery, findMatchingFilesInProjectProgress)
               .then(this.processMatchingFilesForProject.bind(
-                  this, this.searchId, project, searchConfig, filesMathingFileQuery));
+                  this, this.searchId, project, searchConfig, filesMatchingFileQuery));
       promises.push(promise);
     }
 
@@ -141,7 +143,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
   private projectFilesMatchingFileQuery(
       project: Workspace.Workspace.Project, searchConfig: Workspace.Workspace.ProjectSearchConfig,
-      dirtyOnly?: boolean): string[] {
+      dirtyOnly?: boolean): Platform.DevToolsPath.UrlString[] {
     const result = [];
     const uiSourceCodes = project.uiSourceCodes();
     for (let i = 0; i < uiSourceCodes.length; ++i) {
@@ -156,7 +158,9 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
       if (dirtyOnly && !uiSourceCode.isDirty()) {
         continue;
       }
-      if (searchConfig.filePathMatchesFileQuery(uiSourceCode.fullDisplayName())) {
+      if (searchConfig.filePathMatchesFileQuery(
+              uiSourceCode.fullDisplayName() as Platform.DevToolsPath.UrlString |
+              Platform.DevToolsPath.EncodedPathString)) {
         result.push(uiSourceCode.url());
       }
     }
@@ -166,7 +170,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
   private processMatchingFilesForProject(
       searchId: number, project: Workspace.Workspace.Project, searchConfig: Workspace.Workspace.ProjectSearchConfig,
-      filesMathingFileQuery: string[], files: string[]): void {
+      filesMatchingFileQuery: string[], files: string[]): void {
     if (searchId !== this.searchId && this.searchFinishedCallback) {
       this.searchFinishedCallback(false);
       return;
@@ -174,13 +178,13 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
     files.sort(Platform.StringUtilities.naturalOrderComparator);
     files = Platform.ArrayUtilities.intersectOrdered(
-        files, filesMathingFileQuery, Platform.StringUtilities.naturalOrderComparator);
+        files, filesMatchingFileQuery, Platform.StringUtilities.naturalOrderComparator);
     const dirtyFiles = this.projectFilesMatchingFileQuery(project, searchConfig, true);
     files = Platform.ArrayUtilities.mergeOrdered(files, dirtyFiles, Platform.StringUtilities.naturalOrderComparator);
 
     const uiSourceCodes = [];
     for (const file of files) {
-      const uiSourceCode = project.uiSourceCodeForURL(file);
+      const uiSourceCode = project.uiSourceCodeForURL(file as Platform.DevToolsPath.UrlString);
       if (!uiSourceCode) {
         continue;
       }

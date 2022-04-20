@@ -19,6 +19,11 @@ if (is_win) {
     build_native_rust_unit_tests = false
     sources = [ "crate/src/lib.rs" ]
     edition = "2018"
+    cargo_pkg_version = "0.1.5"
+    cargo_pkg_authors = "Andrew Gallant <jamslam@gmail.com>"
+    cargo_pkg_name = "winapi-util"
+    cargo_pkg_description =
+        "A dumping ground for high level safe wrappers over winapi."
     deps = [ "//third_party/rust/winapi/v0_3:lib" ]
   }
 }

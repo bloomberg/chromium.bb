@@ -6,9 +6,10 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
-#include "ash/webui/diagnostics_ui/backend/networking_log.h"
-#include "ash/webui/diagnostics_ui/backend/routine_log.h"
-#include "ash/webui/diagnostics_ui/backend/telemetry_log.h"
+#include "ash/system/diagnostics/diagnostics_log_controller.h"
+#include "ash/system/diagnostics/networking_log.h"
+#include "ash/system/diagnostics/routine_log.h"
+#include "ash/system/diagnostics/telemetry_log.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
@@ -91,11 +92,24 @@ void SessionLogHandler::RegisterMessages() {
 void SessionLogHandler::FileSelected(const base::FilePath& path,
                                      int index,
                                      void* params) {
-  task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&SessionLogHandler::CreateSessionLog,
-                     base::Unretained(this), path),
-      base::BindOnce(&SessionLogHandler::OnSessionLogCreated, weak_ptr_, path));
+  // TODO(b/226574520): Remove SessionLogHandler::CreateSessionLog and
+  // condition as part of flag clean up.
+  if (ash::features::IsLogControllerForDiagnosticsAppEnabled()) {
+    task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(
+            &DiagnosticsLogController::GenerateSessionLogOnBlockingPool,
+            base::Unretained(DiagnosticsLogController::Get()), path),
+        base::BindOnce(&SessionLogHandler::OnSessionLogCreated, weak_ptr_,
+                       path));
+  } else {
+    task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&SessionLogHandler::CreateSessionLog,
+                       base::Unretained(this), path),
+        base::BindOnce(&SessionLogHandler::OnSessionLogCreated, weak_ptr_,
+                       path));
+  }
   select_file_dialog_.reset();
 }
 
@@ -192,6 +206,9 @@ void SessionLogHandler::HandleSaveSessionLogRequest(
       web_contents ? web_contents->GetTopLevelNativeWindow()
                    : gfx::kNullNativeWindow;
 
+  // Early return if the select file dialog is already active.
+  if (select_file_dialog_)
+    return;
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, select_file_policy_creator_.Run(web_contents));
   select_file_dialog_->SelectFile(

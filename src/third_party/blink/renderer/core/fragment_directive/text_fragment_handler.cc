@@ -101,12 +101,12 @@ void TextFragmentHandler::RemoveFragments() {
 
   if (GetTextFragmentAnchor()) {
     GetFrame()->View()->DismissFragmentAnchor();
-  } else if (GetFrame()->IsMainFrame()) {
+  } else if (GetFrame()->IsOutermostMainFrame()) {
     // DismissFragmentAnchor normally runs the URL update steps to remove the
-    // selectors from the URL. However, even if the main frame doesn't have a
-    // text fragment anchor, the selectors still need to be removed from the
-    // URL. This is because dismissing the text fragment anchors is a page-wide
-    // operation, and the URL might have selectors for a subframe.
+    // selectors from the URL. However, even if the outermost main frame doesn't
+    // have a text fragment anchor, the selectors still need to be removed from
+    // the URL. This is because dismissing the text fragment anchors is a
+    // page-wide operation, and the URL might have selectors for a subframe.
     FragmentDirectiveUtils::RemoveSelectorsFromUrl(GetFrame());
   }
 }
@@ -205,7 +205,7 @@ void TextFragmentHandler::StartGeneratingForCurrentSelection() {
   error_ = shared_highlighting::LinkGenerationError::kNone;
   selector_ready_status_.reset();
 
-  // It is possible we have unsurved callback, but if we are starting a new
+  // It is possible we have unserved callback, but if we are starting a new
   // generation, then we have a new selection, in which case it is safe to
   // assume that the client is not waiting for the callback return.
   response_callback_.Reset();
@@ -269,8 +269,8 @@ bool TextFragmentHandler::ShouldPreemptivelyGenerateFor(LocalFrame* frame) {
   if (frame->GetTextFragmentHandler())
     return true;
 
-  // Always preemptively generate for main frame.
-  if (frame->IsMainFrame())
+  // Always preemptively generate for outermost main frame.
+  if (frame->IsOutermostMainFrame())
     return true;
 
   // Only generate for iframe urls if they are supported

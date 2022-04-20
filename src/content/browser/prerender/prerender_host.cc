@@ -10,6 +10,7 @@
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "base/trace_event/typed_macros.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -48,12 +49,15 @@ bool AreHttpRequestHeadersCompatible(
   potential_activation_headers.AddHeadersFromString(
       potential_activation_headers_str);
 
-  // `prerender_headers` contains the "Purpose: prefetch" to notify servers of
-  // prerender requests, while `potential_activation_headers` doesn't contain
-  // it. Remove "Purpose" matching from consideration so that activation works
-  // with the header.
+  // `prerender_headers` contains the "Purpose: prefetch" and "Sec-Purpose:
+  // prefetch;prerender" to notify servers of prerender requests, while
+  // `potential_activation_headers` doesn't contain it. Remove "Purpose" and
+  // "Sec-Purpose" matching from consideration so that activation works with the
+  // header.
   prerender_headers.RemoveHeader("Purpose");
   potential_activation_headers.RemoveHeader("Purpose");
+  prerender_headers.RemoveHeader("Sec-Purpose");
+  potential_activation_headers.RemoveHeader("Sec-Purpose");
 
   return prerender_headers.ToString() ==
          potential_activation_headers.ToString();
@@ -191,7 +195,21 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     blink::mojom::FrameReplicationState prior_replication_state =
         frame_tree_->root()->current_replication_state();
 
-    // NOTE: TakePrerenderedPage() clears the current_frame_host value of
+    // Update FrameReplicationState::has_received_user_gesture_before_nav of the
+    // prerendered page.
+    //
+    // On regular navigation, it is updated via a renderer => browser IPC
+    // (RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged),
+    // which is sent from blink::DocumentLoader::CommitNavigation. However,
+    // this doesn't happen on prerender page activation, so the value is not
+    // correctly updated without this treatment.
+    //
+    // The updated value will be sent to the renderer on
+    // blink::mojom::Page::ActivatePrerenderedPage.
+    prior_replication_state.has_received_user_gesture_before_nav =
+        navigation_request.frame_tree_node()
+            ->has_received_user_gesture_before_nav();
+
     // frame_tree_->root(). Do not add any code between here and
     // frame_tree_.reset() that calls into observer functions to minimize the
     // duration of current_frame_host being null.
@@ -476,6 +494,7 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   // source ID.
   RecordFinalStatus(FinalStatus::kActivated, attributes_.initiator_ukm_id,
                     navigation_request.GetNextPageUkmSourceId());
+  devtools_instrumentation::DidActivatePrerender(navigation_request);
   return page;
 }
 

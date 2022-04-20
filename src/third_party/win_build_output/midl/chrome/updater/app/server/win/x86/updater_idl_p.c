@@ -50,7 +50,7 @@
 #include "updater_idl.h"
 
 #define TYPE_FORMAT_STRING_SIZE   145                               
-#define PROC_FORMAT_STRING_SIZE   697                               
+#define PROC_FORMAT_STRING_SIZE   763                               
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   1            
@@ -76,6 +76,58 @@ typedef struct _updater_idl_MIDL_EXPR_FORMAT_STRING
 
 static const RPC_SYNTAX_IDENTIFIER  _RpcTransferSyntax = 
 {{0x8A885D04,0x1CEB,0x11C9,{0x9F,0xE8,0x08,0x00,0x2B,0x10,0x48,0x60}},{2,0}};
+
+#if defined(_CONTROL_FLOW_GUARD_XFG)
+#define XFG_TRAMPOLINES(ObjectType)\
+static unsigned long ObjectType ## _UserSize_XFG(unsigned long * pFlags, unsigned long Offset, void * pObject)\
+{\
+return  ObjectType ## _UserSize(pFlags, Offset, pObject);\
+}\
+static unsigned char * ObjectType ## _UserMarshal_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserMarshal(pFlags, pBuffer, pObject);\
+}\
+static unsigned char * ObjectType ## _UserUnmarshal_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserUnmarshal(pFlags, pBuffer, pObject);\
+}\
+static void ObjectType ## _UserFree_XFG(unsigned long * pFlags, void * pObject)\
+{\
+ObjectType ## _UserFree(pFlags, pObject);\
+}
+#define XFG_TRAMPOLINES64(ObjectType)\
+static unsigned long ObjectType ## _UserSize64_XFG(unsigned long * pFlags, unsigned long Offset, void * pObject)\
+{\
+return  ObjectType ## _UserSize64(pFlags, Offset, pObject);\
+}\
+static unsigned char * ObjectType ## _UserMarshal64_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserMarshal64(pFlags, pBuffer, pObject);\
+}\
+static unsigned char * ObjectType ## _UserUnmarshal64_XFG(unsigned long * pFlags, unsigned char * pBuffer, void * pObject)\
+{\
+return ObjectType ## _UserUnmarshal64(pFlags, pBuffer, pObject);\
+}\
+static void ObjectType ## _UserFree64_XFG(unsigned long * pFlags, void * pObject)\
+{\
+ObjectType ## _UserFree64(pFlags, pObject);\
+}
+#define XFG_BIND_TRAMPOLINES(HandleType, ObjectType)\
+static void* ObjectType ## _bind_XFG(HandleType pObject)\
+{\
+return ObjectType ## _bind((ObjectType) pObject);\
+}\
+static void ObjectType ## _unbind_XFG(HandleType pObject, handle_t ServerHandle)\
+{\
+ObjectType ## _unbind((ObjectType) pObject, ServerHandle);\
+}
+#define XFG_TRAMPOLINE_FPTR(Function) Function ## _XFG
+#else
+#define XFG_TRAMPOLINES(ObjectType)
+#define XFG_TRAMPOLINES64(ObjectType)
+#define XFG_BIND_TRAMPOLINES(HandleType, ObjectType)
+#define XFG_TRAMPOLINE_FPTR(Function) Function
+#endif
 
 
 extern const updater_idl_MIDL_TYPE_FORMAT_STRING updater_idl__MIDL_TypeFormatString;
@@ -768,6 +820,66 @@ static const updater_idl_MIDL_PROC_FORMAT_STRING updater_idl__MIDL_ProcFormatStr
 /* 694 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
+	/* Procedure RunInstaller */
+
+/* 696 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 698 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 702 */	NdrFcShort( 0x9 ),	/* 9 */
+/* 704 */	NdrFcShort( 0x20 ),	/* x86 Stack size/offset = 32 */
+/* 706 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 708 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 710 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
+			0x7,		/* 7 */
+/* 712 */	0x8,		/* 8 */
+			0x1,		/* Ext Flags:  new corr desc, */
+/* 714 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 716 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 718 */	NdrFcShort( 0x0 ),	/* 0 */
+
+	/* Parameter app_id */
+
+/* 720 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 722 */	NdrFcShort( 0x4 ),	/* x86 Stack size/offset = 4 */
+/* 724 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter installer_path */
+
+/* 726 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 728 */	NdrFcShort( 0x8 ),	/* x86 Stack size/offset = 8 */
+/* 730 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter install_args */
+
+/* 732 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 734 */	NdrFcShort( 0xc ),	/* x86 Stack size/offset = 12 */
+/* 736 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter install_data */
+
+/* 738 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 740 */	NdrFcShort( 0x10 ),	/* x86 Stack size/offset = 16 */
+/* 742 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter install_settings */
+
+/* 744 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
+/* 746 */	NdrFcShort( 0x14 ),	/* x86 Stack size/offset = 20 */
+/* 748 */	NdrFcShort( 0x58 ),	/* Type Offset=88 */
+
+	/* Parameter observer */
+
+/* 750 */	NdrFcShort( 0xb ),	/* Flags:  must size, must free, in, */
+/* 752 */	NdrFcShort( 0x18 ),	/* x86 Stack size/offset = 24 */
+/* 754 */	NdrFcShort( 0x7e ),	/* Type Offset=126 */
+
+	/* Return value */
+
+/* 756 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 758 */	NdrFcShort( 0x1c ),	/* x86 Stack size/offset = 28 */
+/* 760 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
 			0x0
         }
     };
@@ -896,15 +1008,19 @@ static const updater_idl_MIDL_TYPE_FORMAT_STRING updater_idl__MIDL_TypeFormatStr
         }
     };
 
+XFG_TRAMPOLINES(BSTR)
+
 static const USER_MARSHAL_ROUTINE_QUADRUPLE UserMarshalRoutines[ WIRE_MARSHAL_TABLE_SIZE ] = 
         {
             
             {
-            BSTR_UserSize
-            ,BSTR_UserMarshal
-            ,BSTR_UserUnmarshal
-            ,BSTR_UserFree
+            XFG_TRAMPOLINE_FPTR(BSTR_UserSize)
+            ,XFG_TRAMPOLINE_FPTR(BSTR_UserMarshal)
+            ,XFG_TRAMPOLINE_FPTR(BSTR_UserUnmarshal)
+            ,XFG_TRAMPOLINE_FPTR(BSTR_UserFree)
+            
             }
+            
 
         };
 
@@ -1195,7 +1311,8 @@ static const unsigned short IUpdater_FormatStringOffsetTable[] =
     504,
     570,
     606,
-    660
+    660,
+    696
     };
 
 static const MIDL_STUBLESS_PROXY_INFO IUpdater_ProxyInfo =
@@ -1219,7 +1336,7 @@ static const MIDL_SERVER_INFO IUpdater_ServerInfo =
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(9) _IUpdaterProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(10) _IUpdaterProxyVtbl = 
 {
     &IUpdater_ProxyInfo,
     &IID_IUpdater,
@@ -1231,14 +1348,15 @@ CINTERFACE_PROXY_VTABLE(9) _IUpdaterProxyVtbl =
     (void *) (INT_PTR) -1 /* IUpdater::RegisterApp */ ,
     (void *) (INT_PTR) -1 /* IUpdater::RunPeriodicTasks */ ,
     (void *) (INT_PTR) -1 /* IUpdater::Update */ ,
-    (void *) (INT_PTR) -1 /* IUpdater::UpdateAll */
+    (void *) (INT_PTR) -1 /* IUpdater::UpdateAll */ ,
+    (void *) (INT_PTR) -1 /* IUpdater::RunInstaller */
 };
 
 const CInterfaceStubVtbl _IUpdaterStubVtbl =
 {
     &IID_IUpdater,
     &IUpdater_ServerInfo,
-    9,
+    10,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
@@ -1257,7 +1375,7 @@ static const MIDL_STUB_DESC Object_StubDesc =
     1, /* -error bounds_check flag */
     0x50002, /* Ndr library version */
     0,
-    0x801026e, /* MIDL Version 8.1.622 */
+    0x8010272, /* MIDL Version 8.1.626 */
     0,
     UserMarshalRoutines,
     0,  /* notify & notify_flag routine table */

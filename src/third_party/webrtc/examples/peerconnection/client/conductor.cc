@@ -190,8 +190,13 @@ bool Conductor::CreatePeerConnection() {
   server.uri = GetPeerConnectionString();
   config.servers.push_back(server);
 
-  peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-      config, nullptr, nullptr, this);
+  webrtc::PeerConnectionDependencies pc_dependencies(this);
+  auto error_or_peer_connection =
+      peer_connection_factory_->CreatePeerConnectionOrError(
+          config, std::move(pc_dependencies));
+  if (error_or_peer_connection.ok()) {
+    peer_connection_ = std::move(error_or_peer_connection.value());
+  }
   return peer_connection_ != nullptr;
 }
 
@@ -241,9 +246,7 @@ void Conductor::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
     return;
   }
 
-  Json::StyledWriter writer;
   Json::Value jmessage;
-
   jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
   jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
   std::string sdp;
@@ -252,7 +255,9 @@ void Conductor::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
     return;
   }
   jmessage[kCandidateSdpName] = sdp;
-  SendMessage(writer.write(jmessage));
+
+  Json::StreamWriterBuilder factory;
+  SendMessage(Json::writeString(factory, jmessage));
 }
 
 //
@@ -313,9 +318,12 @@ void Conductor::OnMessageFromPeer(int peer_id, const std::string& message) {
     return;
   }
 
-  Json::Reader reader;
+  Json::CharReaderBuilder factory;
+  std::unique_ptr<Json::CharReader> reader =
+      absl::WrapUnique(factory.newCharReader());
   Json::Value jmessage;
-  if (!reader.parse(message, jmessage)) {
+  if (!reader->parse(message.data(), message.data() + message.length(),
+                     &jmessage, nullptr)) {
     RTC_LOG(LS_WARNING) << "Received unknown message. " << message;
     return;
   }
@@ -571,12 +579,13 @@ void Conductor::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
     return;
   }
 
-  Json::StyledWriter writer;
   Json::Value jmessage;
   jmessage[kSessionDescriptionTypeName] =
       webrtc::SdpTypeToString(desc->GetType());
   jmessage[kSessionDescriptionSdpName] = sdp;
-  SendMessage(writer.write(jmessage));
+
+  Json::StreamWriterBuilder factory;
+  SendMessage(Json::writeString(factory, jmessage));
 }
 
 void Conductor::OnFailure(webrtc::RTCError error) {

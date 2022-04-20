@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 cc_library(
     name = "srcs",
     visibility = ["//:__subpackages__"],

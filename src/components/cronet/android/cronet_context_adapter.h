@@ -18,6 +18,7 @@
 #include "base/threading/thread.h"
 #include "components/cronet/cronet_context.h"
 #include "components/prefs/json_pref_store.h"
+#include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -62,7 +63,9 @@ class CronetContextAdapter : public CronetContext::Callback {
 
   bool IsOnNetworkThread() const;
 
-  net::URLRequestContext* GetURLRequestContext();
+  net::URLRequestContext* GetURLRequestContext(
+      net::NetworkChangeNotifier::NetworkHandle network =
+          net::NetworkChangeNotifier::kInvalidNetworkHandle);
 
   // TODO(xunjieli): Keep only one version of StartNetLog().
 
@@ -103,6 +106,8 @@ class CronetContextAdapter : public CronetContext::Callback {
       jboolean use_local_host_requests,
       jboolean use_smaller_responses,
       jboolean disable_offline_check);
+
+  bool URLRequestContextExistsForTesting(jlong network);
 
   // Request that RTT and/or throughput observations should or should not be
   // provided by the network quality estimator.

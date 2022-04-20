@@ -43,18 +43,23 @@
 #include "src/core/SkPictureData.h"
 #include "src/core/SkRecordDraw.h"
 #include "src/core/SkRecorder.h"
+#include "src/core/SkTLazy.h"
 #include "src/core/SkTaskGroup.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrGpu.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/utils/SkJSONWriter.h"
 #include "src/utils/SkMultiPictureDocumentPriv.h"
 #include "src/utils/SkOSPath.h"
+#include "src/utils/SkTestCanvas.h"
 #include "tools/DDLPromiseImageHelper.h"
 #include "tools/DDLTileHelper.h"
 #include "tools/Resources.h"
 #include "tools/RuntimeBlendUtils.h"
+#include "tools/UrlDataManager.h"
 #include "tools/debugger/DebugCanvas.h"
 #include "tools/gpu/BackendSurfaceFactory.h"
 #include "tools/gpu/MemoryCache.h"
+
 #if defined(SK_BUILD_FOR_WIN)
     #include "include/docs/SkXPSDocument.h"
     #include "src/utils/win/SkAutoCoInitialize.h"
@@ -76,12 +81,12 @@
 #endif
 
 #ifdef SK_GRAPHITE_ENABLED
-#include "experimental/graphite/include/Context.h"
-#include "experimental/graphite/include/Recorder.h"
-#include "experimental/graphite/include/Recording.h"
-#include "experimental/graphite/include/SkStuff.h"
+#include "include/gpu/graphite/Context.h"
+#include "include/gpu/graphite/Recorder.h"
+#include "include/gpu/graphite/Recording.h"
+#include "include/gpu/graphite/SkStuff.h"
 // TODO: Remove this src include once we figure out public readPixels call for Graphite.
-#include "experimental/graphite/src/Surface_Graphite.h"
+#include "src/gpu/graphite/Surface_Graphite.h"
 #include "tools/graphite/ContextFactory.h"
 #include "tools/graphite/GraphiteTestContext.h"
 #endif
@@ -1488,7 +1493,8 @@ bool GPUSink::readBack(SkSurface* surface, SkBitmap* dst) const {
 
 Result GPUSink::onDraw(const Src& src, SkBitmap* dst, SkWStream*, SkString* log,
                        const GrContextOptions& baseOptions,
-                       std::function<void(GrDirectContext*)> initContext) const {
+                       std::function<void(GrDirectContext*)> initContext,
+                       std::function<SkCanvas*(SkCanvas*)> wrapCanvas) const {
     GrContextOptions grOptions = baseOptions;
 
     // We don't expect the src to mess with the persistent cache or the executor.
@@ -1517,7 +1523,12 @@ Result GPUSink::onDraw(const Src& src, SkBitmap* dst, SkWStream*, SkString* log,
         factory.abandonContexts();
     }
 
-    Result result = src.draw(direct, surface->getCanvas());
+    auto canvas = surface->getCanvas();
+    if (wrapCanvas != nullptr) {
+        canvas = wrapCanvas(canvas);
+    }
+
+    Result result = src.draw(direct, canvas);
     if (!result.isOk()) {
         return result;
     }
@@ -1543,7 +1554,24 @@ Result GPUSink::onDraw(const Src& src, SkBitmap* dst, SkWStream*, SkString* log,
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+GPUSlugSink::GPUSlugSink(const SkCommandLineConfigGpu* config, const GrContextOptions& options)
+        : GPUSink(config, options) {}
 
+Result GPUSlugSink::draw(const Src& src, SkBitmap* dst, SkWStream* write, SkString* log) const {
+    GrContextOptions grOptions = this->baseContextOptions();
+    // Force padded atlas entries for slug drawing.
+    grOptions.fSupportBilerpFromGlyphAtlas |= true;
+
+    SkTLazy<SkTestCanvas<SkSlugTestKey>> testCanvas;
+
+    return onDraw(src, dst, write, log, grOptions, nullptr,
+        [&](SkCanvas* canvas){
+            testCanvas.init(canvas);
+            return testCanvas.get();
+        });
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 GPUThreadTestingSink::GPUThreadTestingSink(const SkCommandLineConfigGpu* config,
                                            const GrContextOptions& grCtxOptions)
         : INHERITED(config, grCtxOptions)
@@ -2071,17 +2099,17 @@ namespace {
 // For the sprint Graphite only handles:
 //    solid colors with src or srcOver
 //    repeated or clamped linear gradients with src or srcOver
-void precompile(skgpu::Context* context) {
-    using ShaderType = skgpu::ShaderCombo::ShaderType;
+void precompile(skgpu::graphite::Context* context) {
+    using ShaderType = skgpu::graphite::ShaderCombo::ShaderType;
 
-    skgpu::PaintCombo c1 { { skgpu::ShaderCombo({ ShaderType::kSolidColor },
-                                                { SkTileMode::kRepeat }) },
-                           { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
+    skgpu::graphite::PaintCombo c1 { { skgpu::graphite::ShaderCombo({ ShaderType::kSolidColor },
+                                                                    { SkTileMode::kRepeat }) },
+                                     { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
     context->preCompile(c1);
 
-    skgpu::PaintCombo c2 { { skgpu::ShaderCombo({ ShaderType::kLinearGradient },
-                                                { SkTileMode::kRepeat, SkTileMode::kClamp }) },
-                           { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
+    skgpu::graphite::PaintCombo c2 { { skgpu::graphite::ShaderCombo({ ShaderType::kLinearGradient },
+                                                     { SkTileMode::kRepeat, SkTileMode::kClamp }) },
+                                     { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
     context->preCompile(c2);
 }
 
@@ -2110,7 +2138,7 @@ Result GraphiteSink::draw(const Src& src,
         precompile(context);
     }
 
-    std::unique_ptr<skgpu::Recorder> recorder = context->makeRecorder();
+    std::unique_ptr<skgpu::graphite::Recorder> recorder = context->makeRecorder();
     if (!recorder) {
         return Result::Fatal("Could not create a recorder.");
     }
@@ -2132,19 +2160,24 @@ Result GraphiteSink::draw(const Src& src,
         // that instead.
         SkPixmap pm;
         if (!dst->peekPixels(&pm) ||
-            !static_cast<skgpu::Surface*>(surface.get())->onReadPixels(context,
-                                                                       recorder.get(),
-                                                                       pm,
-                                                                       0,
-                                                                       0)) {
+            !static_cast<skgpu::graphite::Surface*>(surface.get())->onReadPixels(context,
+                                                                                 recorder.get(),
+                                                                                 pm,
+                                                                                 0,
+                                                                                 0)) {
             return Result::Fatal("Could not readback from surface.");
         }
     }
 
-    std::unique_ptr<skgpu::Recording> recording = recorder->snap();
+    std::unique_ptr<skgpu::graphite::Recording> recording = recorder->snap();
+    if (!recording) {
+        return Result::Fatal("Could not create a recording.");
+    }
 
-    context->insertRecording(std::move(recording));
-    context->submit(skgpu::SyncToCpu::kYes);
+    skgpu::graphite::InsertRecordingInfo info;
+    info.fRecording = recording.get();
+    context->insertRecording(info);
+    context->submit(skgpu::graphite::SyncToCpu::kYes);
 
     return Result::Ok();
 }

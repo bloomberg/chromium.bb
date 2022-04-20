@@ -302,3 +302,17 @@ bool PrefetchProxySupportNonPrivatePrefetches() {
              features::kIsolatePrerenders, "support_non_private_prefetches",
              true);
 }
+
+absl::optional<std::string> PrefetchProxyBypassProxyForHost() {
+  absl::optional<std::string> value;
+  auto val_str = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      "bypass-prefetch-proxy-for-host");
+  if (val_str.size())
+    value = std::move(val_str);
+  return value;
+}
+
+bool PrefetchProxyHTMLOnly() {
+  return base::GetFieldTrialParamByFeatureAsBool(features::kIsolatePrerenders,
+                                                 "html_only", false);
+}

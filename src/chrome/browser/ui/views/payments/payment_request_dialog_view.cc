@@ -95,6 +95,9 @@ void PaymentRequestDialogView::OnDialogClosed() {
   RemoveChildViewT(view_stack_.get());
   controller_map_.clear();
   request_->OnUserCancelled();
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnDialogClosed();
 }
 
 bool PaymentRequestDialogView::ShouldShowCloseButton() const {
@@ -547,8 +550,8 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   throbber_overlay_->SetVisible(false);
   // The throbber overlay has to have a solid white background to hide whatever
   // would be under it.
-  throbber_overlay_->SetBackground(views::CreateThemedSolidBackground(
-      throbber_overlay_, ui::kColorDialogBackground));
+  throbber_overlay_->SetBackground(
+      views::CreateThemedSolidBackground(ui::kColorDialogBackground));
 
   views::BoxLayout* layout =
       throbber_overlay_->SetLayoutManager(std::make_unique<views::BoxLayout>(

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -218,7 +219,7 @@ void CastMirroringServiceHost::Start(
           .WithDisplayName("Mirroring Service")
           .Pass());
   mojo::PendingRemote<mojom::ResourceProvider> provider;
-  resource_provider_receiver.Bind(provider.InitWithNewPipeAndPassReceiver());
+  resource_provider_receiver_.Bind(provider.InitWithNewPipeAndPassReceiver());
   mirroring_service_->Start(
       std::move(session_params), GetCaptureResolutionConstraint(),
       std::move(observer), std::move(provider), std::move(outbound_channel),

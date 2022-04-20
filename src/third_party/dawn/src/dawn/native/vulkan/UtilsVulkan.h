@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_VULKAN_UTILSVULKAN_H_
-#define DAWNNATIVE_VULKAN_UTILSVULKAN_H_
+#ifndef SRC_DAWN_NATIVE_VULKAN_UTILSVULKAN_H_
+#define SRC_DAWN_NATIVE_VULKAN_UTILSVULKAN_H_
 
 #include "dawn/common/vulkan_platform.h"
 #include "dawn/native/Commands.h"
@@ -59,7 +59,9 @@ namespace dawn::native::vulkan {
         template <typename VK_STRUCT_TYPE>
         explicit PNextChainBuilder(VK_STRUCT_TYPE* head)
             : mCurrent(reinterpret_cast<VkBaseOutStructure*>(head)) {
-            ASSERT(head->pNext == nullptr);
+            while (mCurrent->pNext != nullptr) {
+                mCurrent = mCurrent->pNext;
+            }
         }
 
         // Add one item to the chain. |vk_struct| must be a Vulkan structure
@@ -101,11 +103,41 @@ namespace dawn::native::vulkan {
                                                    const TextureCopy& textureCopy,
                                                    const Extent3D& copySize);
 
+    // Gets the associated VkObjectType for any non-dispatchable handle
+    template <class HandleType>
+    VkObjectType GetVkObjectType(HandleType handle);
+
+    void SetDebugNameInternal(Device* device,
+                              VkObjectType objectType,
+                              uint64_t objectHandle,
+                              const char* prefix,
+                              std::string label);
+
+    // The majority of Vulkan handles are "non-dispatchable". Dawn wraps these by overriding
+    // VK_DEFINE_NON_DISPATCHABLE_HANDLE to add some capabilities like making null comparisons
+    // easier. In those cases we can make setting the debug name a bit easier by getting the
+    // object type automatically and handling the indirection to the native handle.
+    template <typename Tag, typename HandleType>
+    void SetDebugName(Device* device,
+                      detail::VkHandle<Tag, HandleType> objectHandle,
+                      const char* prefix,
+                      std::string label = "") {
+        SetDebugNameInternal(device, GetVkObjectType(objectHandle),
+                             reinterpret_cast<uint64_t>(objectHandle.GetHandle()), prefix, label);
+    }
+
+    // Handles like VkQueue and VKDevice require a special path because they are dispatchable, so
+    // they require an explicit VkObjectType and cast to a uint64_t directly rather than by getting
+    // the non-dispatchable wrapper's underlying handle.
+    template <typename HandleType>
     void SetDebugName(Device* device,
                       VkObjectType objectType,
-                      uint64_t objectHandle,
+                      HandleType objectHandle,
                       const char* prefix,
-                      std::string label = "");
+                      std::string label = "") {
+        SetDebugNameInternal(device, objectType, reinterpret_cast<uint64_t>(objectHandle), prefix,
+                             label);
+    }
 
     // Returns nullptr or &specializationInfo
     // specializationInfo, specializationDataEntries, specializationMapEntries needs to
@@ -118,4 +150,4 @@ namespace dawn::native::vulkan {
 
 }  // namespace dawn::native::vulkan
 
-#endif  // DAWNNATIVE_VULKAN_UTILSVULKAN_H_
+#endif  // SRC_DAWN_NATIVE_VULKAN_UTILSVULKAN_H_

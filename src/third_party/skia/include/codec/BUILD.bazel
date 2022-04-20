@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "SkAndroidCodec_hdr",
     hdrs = ["SkAndroidCodec.h"],

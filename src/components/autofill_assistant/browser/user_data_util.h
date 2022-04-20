@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 
@@ -126,7 +127,7 @@ ClientStatus GetFormattedClientValue(
 // credentials, fails with |PASSWORD_ORIGIN_MISMATCH|.
 void GetPasswordManagerValue(
     const PasswordManagerValue& password_manager_value,
-    const ElementFinder::Result& target_element,
+    const ElementFinderResult& target_element,
     const UserData* user_data,
     WebsiteLoginManager* website_login_manager,
     base::OnceCallback<void(const ClientStatus&, const std::string&)> callback);
@@ -136,13 +137,14 @@ void GetPasswordManagerValue(
 // fails with |PRECONDITION_FAILED|.
 ClientStatus GetClientMemoryStringValue(const std::string& client_memory_key,
                                         const UserData* user_data,
+                                        const UserModel* user_model,
                                         std::string* out_value);
 
 // Take a |text_value| and resolve its content to a string. Reports the result
 // through the |callback|.
 void ResolveTextValue(
     const TextValue& text_value,
-    const ElementFinder::Result& target_element,
+    const ElementFinderResult& target_element,
     const ActionDelegate* action_delegate,
     base::OnceCallback<void(const ClientStatus&, const std::string&)> callback);
 

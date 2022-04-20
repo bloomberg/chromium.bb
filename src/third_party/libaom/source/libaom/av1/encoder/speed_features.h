@@ -220,6 +220,9 @@ enum {
   // Uses the default number of winner modes, which is 3 for intra mode, and 1
   // for inter mode.
   MULTI_WINNER_MODE_DEFAULT = 2,
+
+  // Maximum number of winner modes allowed.
+  MULTI_WINNER_MODE_LEVELS,
 } UENUM1BYTE(MULTI_WINNER_MODE_TYPE);
 
 enum {
@@ -1313,6 +1316,7 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // 0 - don't check merge
   // 1 - always check merge
   // 2 - check merge and prune checking final split
+  // 3 - check merge and prune checking final split based on bsize and qindex
   int nonrd_check_partition_merge_mode;
 
   // For nonrd_use_partition: check of leaf partition extra split
@@ -1367,9 +1371,11 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // If set forces interpolation filter to EIGHTTAP_REGULAR
   int skip_interp_filter_search;
 
-  // For nonrd mode: use hybrid (rd for bsize < 16x16, otherwise nonrd)
-  // intra mode search for intra only frames. If set to 0 then nonrd pick
-  // intra is used for all blocks.
+  // For nonrd mode: use hybrid intra mode search for intra only frames based on
+  // block properties.
+  // 0 : use nonrd pick intra for all blocks
+  // 1 : use rd for bsize < 16x16, nonrd otherwise
+  // 2 : use rd for bsize < 16x16 and src var >= 101, nonrd otherwise
   int hybrid_intra_pickmode;
 
   // Compute variance/sse on source difference, prior to encoding superblock.
@@ -1441,6 +1447,9 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // by a negative number.
   int var_part_split_threshold_shift;
 
+  // Qindex based variance partition threshold index.
+  int var_part_based_on_qidx;
+
   // Enable GF refresh based on Q value.
   int gf_refresh_based_on_qp;
 
@@ -1463,6 +1472,18 @@ typedef struct REAL_TIME_SPEED_FEATURES {
 
   // Early terminate inter mode search based on sse in non-rd path.
   INTER_SEARCH_EARLY_TERM_IDX sse_early_term_inter_search;
+
+  // SAD based adaptive altref selection
+  int sad_based_adp_altref_lag;
+
+  // Enable/disable partition direct merging.
+  int partition_direct_merging;
+
+  // SAD based compound mode pruning
+  int sad_based_comp_prune;
+
+  // Level of aggressiveness for obtaining tx size based on qstep
+  int tx_size_level_based_on_qstep;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

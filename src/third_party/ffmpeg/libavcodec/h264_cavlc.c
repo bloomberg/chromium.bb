@@ -26,8 +26,8 @@
  */
 
 #define CABAC(h) 0
+// #define UNCHECKED_BITSTREAM_READER 1  // Chromium: Required for security.
 
-#include "internal.h"
 #include "h264dec.h"
 #include "h264_mvpred.h"
 #include "h264data.h"

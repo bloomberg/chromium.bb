@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMMON_BITSETITERATOR_H_
-#define COMMON_BITSETITERATOR_H_
+#ifndef SRC_DAWN_COMMON_BITSETITERATOR_H_
+#define SRC_DAWN_COMMON_BITSETITERATOR_H_
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Math.h"
@@ -34,13 +34,13 @@ T roundUp(const T value, const T alignment) {
 template <size_t N, typename T>
 class BitSetIterator final {
   public:
-    BitSetIterator(const std::bitset<N>& bitset);
+    explicit BitSetIterator(const std::bitset<N>& bitset);
     BitSetIterator(const BitSetIterator& other);
     BitSetIterator& operator=(const BitSetIterator& other);
 
     class Iterator final {
       public:
-        Iterator(const std::bitset<N>& bits);
+        explicit Iterator(const std::bitset<N>& bits);
         Iterator& operator++();
 
         bool operator==(const Iterator& other) const;
@@ -136,4 +136,4 @@ BitSetIterator<N, uint32_t> IterateBitSet(const std::bitset<N>& bitset) {
     return BitSetIterator<N, uint32_t>(bitset);
 }
 
-#endif  // COMMON_BITSETITERATOR_H_
+#endif  // SRC_DAWN_COMMON_BITSETITERATOR_H_

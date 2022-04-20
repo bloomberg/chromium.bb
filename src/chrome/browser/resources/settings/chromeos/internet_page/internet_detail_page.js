@@ -48,9 +48,9 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
-import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.m.js';
-import {routes} from '../os_route.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.js';
+import {routes} from '../os_route.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
@@ -297,11 +297,11 @@ Polymer({
     },
 
     /** @private {boolean} */
-    isTrafficCountersHandlerEnabled_: {
+    isTrafficCountersEnabled_: {
       type: Boolean,
       value() {
-        return loadTimeData.valueExists('trafficCountersHandlerEnabled') &&
-            loadTimeData.getBoolean('trafficCountersHandlerEnabled');
+        return loadTimeData.valueExists('trafficCountersEnabled') &&
+            loadTimeData.getBoolean('trafficCountersEnabled');
       }
     },
 
@@ -2319,7 +2319,7 @@ Polymer({
    * @private
    */
   showDataUsage_(managedProperties) {
-    if (!this.isTrafficCountersHandlerEnabled_) {
+    if (!this.isTrafficCountersEnabled_) {
       return false;
     }
     return managedProperties && this.guid !== '' &&

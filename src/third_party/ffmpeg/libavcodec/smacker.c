@@ -41,8 +41,16 @@
 #define SMKTREE_DECODE_MAX_RECURSION FFMIN(32, 3 * SMKTREE_BITS)
 #define SMKTREE_DECODE_BIG_MAX_RECURSION 500
 
+/* The maximum possible unchecked overread happens in decode_header_trees:
+ * Decoding the MMAP tree can overread by 6 * SMKTREE_BITS + 1, followed by
+ * three get_bits1, followed by at most 2 + 3 * 16 read bits when reading
+ * the TYPE tree before the next check. 64 is because of 64 bit reads. */
+#if (6 * SMKTREE_BITS + 1 + 3 + (2 + 3 * 16) + 64) <= 8 * AV_INPUT_BUFFER_PADDING_SIZE
+// #define UNCHECKED_BITSTREAM_READER 1  // Chromium: Required for security.
+#endif
 #define BITSTREAM_READER_LE
 #include "bytestream.h"
+#include "codec_internal.h"
 #include "get_bits.h"
 #include "internal.h"
 #include "mathops.h"
@@ -565,11 +573,13 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
 static av_cold int smka_decode_init(AVCodecContext *avctx)
 {
-    if (avctx->channels < 1 || avctx->channels > 2) {
+    int channels = avctx->ch_layout.nb_channels;
+    if (channels < 1 || channels > 2) {
         av_log(avctx, AV_LOG_ERROR, "invalid number of channels\n");
         return AVERROR_INVALIDDATA;
     }
-    avctx->channel_layout = (avctx->channels==2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
+    av_channel_layout_uninit(&avctx->ch_layout);
+    av_channel_layout_default(&avctx->ch_layout, channels);
     avctx->sample_fmt = avctx->bits_per_coded_sample == 8 ? AV_SAMPLE_FMT_U8 : AV_SAMPLE_FMT_S16;
 
     return 0;
@@ -616,7 +626,7 @@ static int smka_decode_frame(AVCodecContext *avctx, void *data,
     }
     stereo = get_bits1(&gb);
     bits = get_bits1(&gb);
-    if (stereo ^ (avctx->channels != 1)) {
+    if (stereo ^ (avctx->ch_layout.nb_channels != 1)) {
         av_log(avctx, AV_LOG_ERROR, "channels mismatch\n");
         return AVERROR_INVALIDDATA;
     }
@@ -626,8 +636,8 @@ static int smka_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     /* get output buffer */
-    frame->nb_samples = unp_size / (avctx->channels * (bits + 1));
-    if (unp_size % (avctx->channels * (bits + 1))) {
+    frame->nb_samples = unp_size / (avctx->ch_layout.nb_channels * (bits + 1));
+    if (unp_size % (avctx->ch_layout.nb_channels * (bits + 1))) {
         av_log(avctx, AV_LOG_ERROR,
                "The buffer does not contain an integer number of samples\n");
         return AVERROR_INVALIDDATA;
@@ -713,26 +723,26 @@ error:
     return ret;
 }
 
-const AVCodec ff_smacker_decoder = {
-    .name           = "smackvid",
-    .long_name      = NULL_IF_CONFIG_SMALL("Smacker video"),
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = AV_CODEC_ID_SMACKVIDEO,
+const FFCodec ff_smacker_decoder = {
+    .p.name         = "smackvid",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Smacker video"),
+    .p.type         = AVMEDIA_TYPE_VIDEO,
+    .p.id           = AV_CODEC_ID_SMACKVIDEO,
     .priv_data_size = sizeof(SmackVContext),
     .init           = decode_init,
     .close          = decode_end,
     .decode         = decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP | FF_CODEC_CAP_INIT_THREADSAFE,
 };
 
-const AVCodec ff_smackaud_decoder = {
-    .name           = "smackaud",
-    .long_name      = NULL_IF_CONFIG_SMALL("Smacker audio"),
-    .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = AV_CODEC_ID_SMACKAUDIO,
+const FFCodec ff_smackaud_decoder = {
+    .p.name         = "smackaud",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Smacker audio"),
+    .p.type         = AVMEDIA_TYPE_AUDIO,
+    .p.id           = AV_CODEC_ID_SMACKAUDIO,
     .init           = smka_decode_init,
     .decode         = smka_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .p.capabilities = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

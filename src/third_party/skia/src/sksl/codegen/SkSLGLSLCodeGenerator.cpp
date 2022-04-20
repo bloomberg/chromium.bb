@@ -7,38 +7,63 @@
 
 #include "src/sksl/codegen/SkSLGLSLCodeGenerator.h"
 
-#include <memory>
-
+#include "include/core/SkSpan.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLLayout.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLProgramKind.h"
+#include "include/private/SkSLStatement.h"
+#include "include/private/SkSLString.h"
+#include "include/private/SkTArray.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "include/sksl/SkSLPosition.h"
+#include "src/sksl/SkSLBuiltinTypes.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLGLSL.h"
+#include "src/sksl/SkSLOutputStream.h"
+#include "src/sksl/SkSLProgramSettings.h"
+#include "src/sksl/SkSLUtil.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLBlock.h"
+#include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorArrayCast.h"
 #include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLExtension.h"
 #include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLForStatement.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
+#include "src/sksl/ir/SkSLFunctionDeclaration.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLFunctionPrototype.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLModifiersDeclaration.h"
-#include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
+#include "src/sksl/ir/SkSLProgram.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 #include "src/sksl/ir/SkSLSetting.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
 #include "src/sksl/ir/SkSLSwitchCase.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
+#include "src/sksl/ir/SkSLTernaryExpression.h"
+#include "src/sksl/ir/SkSLType.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
+#include "src/sksl/spirv.h"
 
-#ifndef SKSL_STANDALONE
-#include "include/private/SkOnce.h"
-#endif
+#include <memory>
+#include <type_traits>
+#include <vector>
 
 namespace SkSL {
 
@@ -472,7 +497,7 @@ void GLSLCodeGenerator::writeFunctionCall(const FunctionCall& c) {
                 arguments.size() == 2 &&
                 arguments[1]->kind() == Expression::Kind::kPrefix) {
                 const PrefixExpression& p = (PrefixExpression&) *arguments[1];
-                if (p.getOperator().kind() == Token::Kind::TK_MINUS) {
+                if (p.getOperator().kind() == Operator::Kind::MINUS) {
                     this->write("atan(");
                     this->writeExpression(*arguments[0], Precedence::kSequence);
                     this->write(", -1.0 * ");
@@ -487,7 +512,7 @@ void GLSLCodeGenerator::writeFunctionCall(const FunctionCall& c) {
                 arguments.size() == 2 &&
                 arguments[1]->is<PrefixExpression>()) {
                 const PrefixExpression& p = arguments[1]->as<PrefixExpression>();
-                if (p.getOperator().kind() == Token::Kind::TK_MINUS) {
+                if (p.getOperator().kind() == Operator::Kind::MINUS) {
                     this->write("ldexp(");
                     this->writeExpression(*arguments[0], Precedence::kSequence);
                     this->write(", ");
@@ -500,7 +525,11 @@ void GLSLCodeGenerator::writeFunctionCall(const FunctionCall& c) {
         case k_dFdy_IntrinsicKind:
             // Flipping Y also negates the Y derivatives.
             closingParen = "))";
-            this->write("(" SKSL_RTFLIP_NAME ".y * dFdy");
+            this->write("(");
+            if (!fProgram.fConfig->fSettings.fForceNoRTFlip) {
+                this->write(SKSL_RTFLIP_NAME ".y * ");
+            }
+            this->write("dFdy");
             nameWritten = true;
             [[fallthrough]];
         case k_dFdx_IntrinsicKind:
@@ -682,7 +711,7 @@ void GLSLCodeGenerator::writeFunctionCall(const FunctionCall& c) {
         this->writeExpression(*arg, Precedence::kSequence);
     }
     if (fProgram.fConfig->fSettings.fSharpenTextures && isTextureFunctionWithBias) {
-        this->write(", -0.5");
+        this->write(String::printf(", %g", kSharpenTexturesBias));
     }
     this->write(closingParen);
 }
@@ -754,10 +783,15 @@ void GLSLCodeGenerator::writeFragCoord() {
     }
 
     if (!fSetupFragPosition) {
-        fFunctionHeader += usesPrecisionModifiers() ? "highp " : "";
+        fFunctionHeader += this->usesPrecisionModifiers() ? "highp " : "";
         fFunctionHeader += "    vec4 sk_FragCoord = vec4("
-                "gl_FragCoord.x, "
-                SKSL_RTFLIP_NAME ".x + " SKSL_RTFLIP_NAME ".y * gl_FragCoord.y, "
+                "gl_FragCoord.x, ";
+        if (fProgram.fConfig->fSettings.fForceNoRTFlip) {
+            fFunctionHeader += "gl_FragCoord.y, ";
+        } else {
+            fFunctionHeader += SKSL_RTFLIP_NAME ".x + " SKSL_RTFLIP_NAME ".y * gl_FragCoord.y, ";
+        }
+        fFunctionHeader +=
                 "gl_FragCoord.z, "
                 "gl_FragCoord.w);\n";
         fSetupFragPosition = true;
@@ -782,11 +816,12 @@ void GLSLCodeGenerator::writeVariableReference(const VariableReference& ref) {
             break;
         case SK_CLOCKWISE_BUILTIN:
             if (!fSetupClockwise) {
-                fFunctionHeader +=
-                        "    bool sk_Clockwise = gl_FrontFacing;\n"
-                        "    if (" SKSL_RTFLIP_NAME ".y < 0.0) {\n"
-                        "        sk_Clockwise = !sk_Clockwise;\n"
-                        "    }\n";
+                fFunctionHeader += "    bool sk_Clockwise = gl_FrontFacing;\n";
+                if (!fProgram.fConfig->fSettings.fForceNoRTFlip) {
+                    fFunctionHeader += "    if (" SKSL_RTFLIP_NAME ".y < 0.0) {\n"
+                                       "        sk_Clockwise = !sk_Clockwise;\n"
+                                       "    }\n";
+                }
                 fSetupClockwise = true;
             }
             this->write("sk_Clockwise");
@@ -852,7 +887,7 @@ void GLSLCodeGenerator::writeMatrixComparisonWorkaround(const BinaryExpression& 
     const Expression& right = *b.right();
     Operator op = b.getOperator();
 
-    SkASSERT(op.kind() == Token::Kind::TK_EQEQ || op.kind() == Token::Kind::TK_NEQ);
+    SkASSERT(op.kind() == Operator::Kind::EQEQ || op.kind() == Operator::Kind::NEQ);
     SkASSERT(left.type().isMatrix());
     SkASSERT(right.type().isMatrix());
 
@@ -878,14 +913,14 @@ void GLSLCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
     const Expression& right = *b.right();
     Operator op = b.getOperator();
     if (this->caps().unfoldShortCircuitAsTernary() &&
-            (op.kind() == Token::Kind::TK_LOGICALAND || op.kind() == Token::Kind::TK_LOGICALOR)) {
+            (op.kind() == Operator::Kind::LOGICALAND || op.kind() == Operator::Kind::LOGICALOR)) {
         this->writeShortCircuitWorkaroundExpression(b, parentPrecedence);
         return;
     }
 
     if (this->caps().rewriteMatrixComparisons() &&
             left.type().isMatrix() && right.type().isMatrix() &&
-            (op.kind() == Token::Kind::TK_EQEQ || op.kind() == Token::Kind::TK_NEQ)) {
+            (op.kind() == Operator::Kind::EQEQ || op.kind() == Operator::Kind::NEQ)) {
         this->writeMatrixComparisonWorkaround(b);
         return;
     }
@@ -925,14 +960,14 @@ void GLSLCodeGenerator::writeShortCircuitWorkaroundExpression(const BinaryExpres
     // a || b  =>   a ? true : b
     this->writeExpression(*b.left(), Precedence::kTernary);
     this->write(" ? ");
-    if (b.getOperator().kind() == Token::Kind::TK_LOGICALAND) {
+    if (b.getOperator().kind() == Operator::Kind::LOGICALAND) {
         this->writeExpression(*b.right(), Precedence::kTernary);
     } else {
         Literal boolTrue(Position(), /*value=*/1, fContext.fTypes.fBool.get());
         this->writeLiteral(boolTrue);
     }
     this->write(" : ");
-    if (b.getOperator().kind() == Token::Kind::TK_LOGICALAND) {
+    if (b.getOperator().kind() == Operator::Kind::LOGICALAND) {
         Literal boolFalse(Position(), /*value=*/0, fContext.fTypes.fBool.get());
         this->writeLiteral(boolFalse);
     } else {
@@ -1308,7 +1343,7 @@ void GLSLCodeGenerator::writeForStatement(const ForStatement& f) {
     if (f.test()) {
         if (this->caps().addAndTrueToLoopCondition()) {
             std::unique_ptr<Expression> and_true(new BinaryExpression(
-                    Position(), f.test()->clone(), Token::Kind::TK_LOGICALAND,
+                    Position(), f.test()->clone(), Operator::Kind::LOGICALAND,
                     Literal::MakeBool(fContext, Position(), /*value=*/true),
                     fContext.fTypes.fBool.get()));
             this->writeExpression(*and_true, Precedence::kTopLevel);

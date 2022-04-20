@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTILS_GLFWUTILS_H_
-#define UTILS_GLFWUTILS_H_
+#ifndef SRC_DAWN_UTILS_GLFWUTILS_H_
+#define SRC_DAWN_UTILS_GLFWUTILS_H_
 
 #include "dawn/webgpu_cpp.h"
 
@@ -30,13 +30,13 @@ namespace utils {
     // Does the necessary setup on the GLFWwindow to allow creating a wgpu::Surface with it and
     // calls `instance.CreateSurface` with the correct descriptor for this window.
     // Returns a null wgpu::Surface on failure.
-    wgpu::Surface CreateSurfaceForWindow(wgpu::Instance instance, GLFWwindow* window);
+    wgpu::Surface CreateSurfaceForWindow(const wgpu::Instance& instance, GLFWwindow* window);
 
     // Use for testing only. Does everything that CreateSurfaceForWindow does except the call to
-    // CreateSurface so the descriptor can be modified for testing.
-    std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptorForTesting(
-        GLFWwindow* window);
+    // CreateSurface. Useful to be able to modify the descriptor for testing, or when trying to
+    // avoid using the global proc table.
+    std::unique_ptr<wgpu::ChainedStruct> SetupWindowAndGetSurfaceDescriptor(GLFWwindow* window);
 
 }  // namespace utils
 
-#endif  // UTILS_GLFWUTILS_H_
+#endif  // SRC_DAWN_UTILS_GLFWUTILS_H_

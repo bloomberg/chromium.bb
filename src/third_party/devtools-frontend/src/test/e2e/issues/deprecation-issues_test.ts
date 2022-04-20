@@ -11,7 +11,7 @@ describe('Deprecation Issues', async () => {
     await goToResource('empty.html');
   });
 
-  it('should display correct information', async () => {
+  it('untranslated issues work', async () => {
     await navigateToIssuesTab();
     const {frontend} = getBrowserAndPages();
     frontend.evaluate(() => {
@@ -25,6 +25,42 @@ describe('Deprecation Issues', async () => {
               columnNumber: 1,
             },
             message: 'Test',
+            deprecationType: 'Test',
+            type: 'Untranslated',
+          },
+        },
+      };
+      // @ts-ignore
+      window.addIssueForTest(issue);
+    });
+
+    await expandIssue();
+    const issueElement = await getIssueByTitle('Deprecated Feature Used');
+    assertNotNullOrUndefined(issueElement);
+    const section = await getResourcesElement('1 source', issueElement, '.affected-resource-label');
+    await ensureResourceSectionIsExpanded(section);
+    const expectedTableRows = [
+      ['empty.html:2'],
+    ];
+    await waitForTableFromResourceSectionContents(section.content, expectedTableRows);
+  });
+
+  it('translated issues work', async () => {
+    await navigateToIssuesTab();
+    const {frontend} = getBrowserAndPages();
+    frontend.evaluate(() => {
+      const issue = {
+        code: 'DeprecationIssue',
+        details: {
+          deprecationIssueDetails: {
+            sourceCodeLocation: {
+              url: 'empty.html',
+              lineNumber: 1,
+              columnNumber: 1,
+            },
+            message: '',
+            deprecationType: '',
+            type: 'DeprecationExample',
           },
         },
       };

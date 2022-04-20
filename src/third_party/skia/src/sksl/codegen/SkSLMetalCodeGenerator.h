@@ -8,19 +8,32 @@
 #ifndef SKSL_METALCODEGENERATOR
 #define SKSL_METALCODEGENERATOR
 
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkTArray.h"
 #include "include/private/SkTHash.h"
-#include "src/sksl/SkSLOperators.h"
+#include "include/sksl/SkSLOperator.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/codegen/SkSLCodeGenerator.h"
+#include "src/sksl/ir/SkSLType.h"
+
+#include <stdint.h>
+#include <initializer_list>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace SkSL {
 
+class AnyConstructor;
 class BinaryExpression;
 class Block;
 class ConstructorArrayCast;
 class ConstructorCompound;
 class ConstructorMatrixResize;
+class Context;
 class DoStatement;
+class Expression;
 class ExpressionStatement;
 class Extension;
 class FieldAccess;
@@ -30,20 +43,28 @@ class FunctionDeclaration;
 class FunctionDefinition;
 class FunctionPrototype;
 class IfStatement;
-struct IndexExpression;
 class InterfaceBlock;
-enum IntrinsicKind : int8_t;
 class Literal;
+class OutputStream;
+class Position;
 class PostfixExpression;
 class PrefixExpression;
+class ProgramElement;
 class ReturnStatement;
 class Setting;
+class Statement;
 class StructDefinition;
 class SwitchStatement;
-struct Swizzle;
 class TernaryExpression;
 class VarDeclaration;
+class Variable;
 class VariableReference;
+enum IntrinsicKind : int8_t;
+struct IndexExpression;
+struct Layout;
+struct Modifiers;
+struct Program;
+struct Swizzle;
 
 /**
  * Converts a Program into Metal code.
@@ -114,8 +135,6 @@ protected:
     void writeExtension(const Extension& ext);
 
     void writeInterfaceBlock(const InterfaceBlock& intf);
-
-    void writeFunctionStart(const FunctionDeclaration& f);
 
     void writeFunctionRequirementParams(const FunctionDeclaration& f,
                                         const char*& separator);
@@ -277,8 +296,6 @@ protected:
     // true if we have run into usages of dFdx / dFdy
     bool fFoundDerivatives = false;
     SkTHashMap<const FunctionDeclaration*, Requirements> fRequirements;
-    bool fSetupFragPositionGlobal = false;
-    bool fSetupFragPositionLocal = false;
     SkTHashSet<std::string> fHelpers;
     int fUniformBuffer = -1;
     std::string fRTFlipName;

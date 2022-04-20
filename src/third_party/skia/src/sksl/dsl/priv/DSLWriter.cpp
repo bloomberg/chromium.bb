@@ -7,15 +7,33 @@
 
 #include "src/sksl/dsl/priv/DSLWriter.h"
 
+#include "include/core/SkTypes.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLProgramElement.h"
+#include "include/private/SkSLStatement.h"
 #include "include/sksl/DSLCore.h"
+#include "include/sksl/DSLExpression.h"
+#include "include/sksl/DSLModifiers.h"
 #include "include/sksl/DSLStatement.h"
 #include "include/sksl/DSLSymbols.h"
+#include "include/sksl/DSLType.h"
 #include "include/sksl/DSLVar.h"
+#include "include/sksl/SkSLPosition.h"
+#include "src/sksl/SkSLMangler.h"
+#include "src/sksl/SkSLModifiersPool.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/ir/SkSLBlock.h"
+#include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLNop.h"
+#include "src/sksl/ir/SkSLType.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/ir/SkSLVariable.h"
+
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace SkSL {
 
@@ -50,8 +68,9 @@ const SkSL::Variable* DSLWriter::Var(DSLVarBase& var) {
             }
         }
         std::unique_ptr<SkSL::Variable> skslvar = SkSL::Variable::Convert(ThreadContext::Context(),
-                var.fPosition, var.fModifiers.fModifiers, &var.fType.skslType(), var.fName,
-                /*isArray=*/false, /*arraySize=*/nullptr, var.storage());
+                var.fPosition, var.fModifiers.fPosition, var.fModifiers.fModifiers,
+                &var.fType.skslType(), var.fName, /*isArray=*/false, /*arraySize=*/nullptr,
+                var.storage());
         SkSL::Variable* varPtr = skslvar.get();
         if (var.storage() != SkSL::VariableStorage::kParameter) {
             var.fDeclaration = VarDeclaration::Convert(ThreadContext::Context(), std::move(skslvar),
@@ -71,8 +90,8 @@ std::unique_ptr<SkSL::Variable> DSLWriter::CreateParameterVar(DSLParameter& var)
     // ahead regardless so we don't have to worry about null pointers potentially sneaking in and
     // breaking things. DSLFunction is responsible for reporting errors for invalid parameters.
     return SkSL::Variable::Convert(ThreadContext::Context(), var.fPosition,
-            var.fModifiers.fModifiers, &var.fType.skslType(), var.fName, /*isArray=*/false,
-            /*arraySize=*/nullptr, var.storage());
+            var.fModifiers.fPosition, var.fModifiers.fModifiers, &var.fType.skslType(), var.fName,
+            /*isArray=*/false, /*arraySize=*/nullptr, var.storage());
 }
 
 std::unique_ptr<SkSL::Statement> DSLWriter::Declaration(DSLVarBase& var) {
@@ -101,11 +120,13 @@ void DSLWriter::AddVarDeclaration(DSLStatement& existing, DSLVar& additional) {
         SkASSERT(!block.isScope());
         block.children().push_back(Declare(additional).release());
     } else if (existing.fStatement->is<VarDeclaration>()) {
+        Position pos = existing.fStatement->fPosition;
         StatementArray stmts;
         stmts.reserve_back(2);
         stmts.push_back(std::move(existing.fStatement));
         stmts.push_back(Declare(additional).release());
-        existing.fStatement = SkSL::Block::MakeUnscoped(Position(), std::move(stmts));
+        existing.fStatement = SkSL::Block::Make(pos, std::move(stmts),
+                                                Block::Kind::kCompoundStatement);
     } else if (existing.fStatement->isEmpty()) {
         // If the variable declaration generated an error, we can end up with a Nop statement here.
         existing.fStatement = Declare(additional).release();

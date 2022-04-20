@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_D3D12_BUFFERD3D12_H_
-#define DAWNNATIVE_D3D12_BUFFERD3D12_H_
+#ifndef SRC_DAWN_NATIVE_D3D12_BUFFERD3D12_H_
+#define SRC_DAWN_NATIVE_D3D12_BUFFERD3D12_H_
 
 #include "dawn/native/Buffer.h"
 
@@ -62,7 +62,7 @@ namespace dawn::native::d3d12 {
         void UnmapImpl() override;
         void DestroyImpl() override;
         bool IsCPUWritableAtCreation() const override;
-        virtual MaybeError MapAtCreationImpl() override;
+        MaybeError MapAtCreationImpl() override;
         void* GetMappedPointerImpl() override;
 
         MaybeError MapInternal(bool isWrite, size_t start, size_t end, const char* contextInfo);
@@ -88,4 +88,4 @@ namespace dawn::native::d3d12 {
 
 }  // namespace dawn::native::d3d12
 
-#endif  // DAWNNATIVE_D3D12_BUFFERD3D12_H_
+#endif  // SRC_DAWN_NATIVE_D3D12_BUFFERD3D12_H_

@@ -1238,24 +1238,6 @@ MediaAppUIBrowserTest.SaveAsErrorHandling = async () => {
   assertEquals(tokenMap.get(currentFiles[0].token), currentFiles[0].handle);
 };
 
-// Tests the IPC behind the openFile function on receivedFileList.
-MediaAppUIBrowserTest.OpenFileIPC = async () => {
-  const pickedFileHandle = new FakeFileSystemFileHandle('picked_file.jpg');
-  window.showOpenFilePicker = () => Promise.resolve([pickedFileHandle]);
-  await launchWithFiles(
-      [await createTestImageFile(10, 10, 'original_file.jpg')]);
-
-  await sendTestMessage({openFile: true});
-
-  const lastToken = [...tokenMap.keys()].slice(-1)[0];
-  assertEquals(getEntryIndex(), 1);
-  assertEquals(currentFiles.length, 2);
-  assertEquals(currentFiles[1].handle, pickedFileHandle);
-  assertEquals(currentFiles[1].handle.name, 'picked_file.jpg');
-  assertEquals(currentFiles[1].token, lastToken);
-  assertEquals(tokenMap.get(currentFiles[1].token), currentFiles[1].handle);
-};
-
 // Tests the IPC behind the AbstractFileList.openFilesWithFilePicker function to
 // relaunch the app with a new selection of files from a file picker.
 MediaAppUIBrowserTest.OpenFilesWithFilePickerIPC = async () => {
@@ -1273,10 +1255,14 @@ MediaAppUIBrowserTest.OpenFilesWithFilePickerIPC = async () => {
       [await createTestImageFile(10, 10, 'original_file.jpg')]);
 
   const simpleArgs = {acceptTypeKeys: ['VIDEO', 'IMAGE']};
-  let testResponse =
-      await sendTestMessage({simple: 'openFilesWithFilePicker', simpleArgs});
-  assertEquals(
-      testResponse.testQueryResult, 'openFilesWithFilePicker resolved');
+  async function openFilesWithFilePickerWithSimpleArgs() {
+    const response =
+        await sendTestMessage({simple: 'openFilesWithFilePicker', simpleArgs});
+    assertEquals(response.testQueryResult, 'openFilesWithFilePicker resolved');
+    return response;
+  }
+
+  let testResponse = await openFilesWithFilePickerWithSimpleArgs();
 
   // Spot-check the file picker options. It has lots of file extensions in it.
   const {multiple, startIn, excludeAcceptAllOption, types} = lastPickerOptions;
@@ -1298,11 +1284,29 @@ MediaAppUIBrowserTest.OpenFilesWithFilePickerIPC = async () => {
   // Test to handle invalid tokens (b/209342852). These should leave the
   // `startIn` option unspecified.
   simpleArgs.explicitToken = -1;
-  testResponse =
-      await sendTestMessage({simple: 'openFilesWithFilePicker', simpleArgs});
-  assertEquals(
-      testResponse.testQueryResult, 'openFilesWithFilePicker resolved');
+  testResponse = await openFilesWithFilePickerWithSimpleArgs();
   assertEquals(lastPickerOptions.startIn, undefined);
+
+  // Ensure the `singleFile` argument is handled when set.
+  simpleArgs.singleFile = true;
+  await openFilesWithFilePickerWithSimpleArgs();
+  assertEquals(lastPickerOptions.multiple, false);
+
+  simpleArgs.singleFile = false;
+  await openFilesWithFilePickerWithSimpleArgs();
+  assertEquals(lastPickerOptions.multiple, true);
+
+  // Spot-check the ALL_EX_TEXT filter key, which groups all extensions.
+  simpleArgs.acceptTypeKeys = ['ALL_EX_TEXT'];
+  await openFilesWithFilePickerWithSimpleArgs();
+  const extensions = lastPickerOptions.types[0].accept['*/*'];
+  assertEquals(lastPickerOptions.types.length, 1);
+  assertEquals(lastPickerOptions.types[0].description, 'All');
+  assertEquals(extensions.includes('.pdf'), true);
+  assertEquals(extensions.includes('.jpeg'), true);
+  assertEquals(extensions.includes('.avi'), true);
+  assertEquals(extensions.includes('.mp3'), true);
+  assertEquals(extensions.includes('.zip'), false);
 };
 
 MediaAppUIBrowserTest.RelatedFiles = async () => {

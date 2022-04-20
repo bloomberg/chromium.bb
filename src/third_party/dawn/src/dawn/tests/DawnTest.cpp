@@ -95,7 +95,7 @@ namespace {
             auto byteView = reinterpret_cast<const uint8_t*>(buffer + index);
             for (unsigned int b = 0; b < kBytes; ++b) {
                 char buf[4];
-                sprintf(buf, "%02X ", byteView[b]);
+                snprintf(buf, 4, "%02X ", byteView[b]);
                 result << buf;
             }
         }
@@ -1166,8 +1166,8 @@ std::ostringstream& DawnTestBase::ExpectSampledFloatDataImpl(wgpu::TextureView t
     shaderSource << "@group(0) @binding(0) var tex : " << wgslTextureType << ";\n";
     shaderSource << R"(
         struct Result {
-            values : array<f32>;
-        };
+            values : array<f32>
+        }
         @group(0) @binding(1) var<storage, read_write> result : Result;
     )";
     shaderSource << "let componentCount : u32 = " << componentCount << "u;\n";
@@ -1352,9 +1352,9 @@ std::ostringstream& DawnTestBase::ExpectAttachmentDepthStencilTestData(
             @group(0) @binding(0) var texture0 : texture_2d<f32>;
 
             struct FragmentOut {
-                @location(0) result : u32;
-                @builtin(frag_depth) fragDepth : f32;
-            };
+                @location(0) result : u32,
+                @builtin(frag_depth) fragDepth : f32,
+            }
 
             @stage(fragment)
             fn main(@builtin(position) FragCoord : vec4<f32>) -> FragmentOut {
@@ -1375,11 +1375,6 @@ std::ostringstream& DawnTestBase::ExpectAttachmentDepthStencilTestData(
     if (depthDataTexture) {
         // Pass the depth test only if the depth is equal.
         depthStencil->depthCompare = wgpu::CompareFunction::Equal;
-
-        // TODO(jiawei.shao@intel.com): The Intel Mesa Vulkan driver can't set gl_FragDepth unless
-        // depthWriteEnabled == true. This either needs to be fixed in the driver or restricted by
-        // the WebGPU API.
-        depthStencil->depthWriteEnabled = true;
     }
 
     if (expectedStencil != nullptr) {

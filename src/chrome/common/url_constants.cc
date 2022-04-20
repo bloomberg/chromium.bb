@@ -103,19 +103,6 @@ const char kChromeUIUntrustedNewTabPageUrl[] =
 
 const char kChromiumProjectURL[] = "https://www.chromium.org/";
 
-const char kCloudPrintCertificateErrorLearnMoreURL[] =
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    "https://support.google.com/chromebook?p=cloudprint_error_troubleshoot";
-#elif BUILDFLAG(IS_MAC)
-    "https://support.google.com/cloudprint?p=cloudprint_error_offline_mac";
-#elif BUILDFLAG(IS_WIN)
-    "https://support.google.com/"
-    "cloudprint?p=cloudprint_error_offline_windows";
-#else
-        "https://support.google.com/"
-        "cloudprint?p=cloudprint_error_offline_linux";
-#endif
-
 const char kContentSettingsExceptionsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
 
@@ -284,7 +271,7 @@ const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
 const char kSyncGoogleDashboardURL[] =
-    "https://www.google.com/settings/chrome/sync/";
+    "https://www.google.com/settings/chrome/sync";
 
 const char kSyncLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_sign_in";
@@ -462,7 +449,7 @@ extern const char kFingerprintLearnMoreURL[] =
 const char kChromeEnterpriseSignInLearnMoreURL[] =
     "https://support.google.com/chromebook/answer/1331549";
 
-const char kMac10_10_ObsoleteURL[] =
+const char kMacOsObsoleteURL[] =
     "https://support.google.com/chrome/?p=unsupported_mac";
 #endif
 

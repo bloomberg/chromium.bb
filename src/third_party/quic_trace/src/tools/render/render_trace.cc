@@ -16,6 +16,7 @@
 #include <string>
 
 #include "absl/flags/parse.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/util/json_util.h"
 #include "tools/render/trace_program.h"
 
@@ -25,7 +26,7 @@ enum InputFormat {
 };
 
 namespace {
-InputFormat GuessInputFileFormat(const std::string& filename) {
+InputFormat GuessInputFileFormat(absl::string_view filename) {
   if (filename.find(".json") != std::string::npos) {
     return INPUT_JSON;
   } else {

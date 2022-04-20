@@ -135,12 +135,6 @@ const char kDisableWebGL2[] = "disable-webgl2";
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
-// Disable 3D inside of flapper.
-const char kDisableFlash3d[]                = "disable-flash-3d";
-
-// Disable Stage3D inside of flapper.
-const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
-
 // Disable user gesture requirement for presentation.
 const char kDisableGestureRequirementForPresentation[] =
     "disable-gesture-requirement-for-presentation";
@@ -275,11 +269,6 @@ const char kDisableSpeechAPI[]              = "disable-speech-api";
 
 // Disables the speech synthesis part of Web Speech API.
 const char kDisableSpeechSynthesisAPI[]     = "disable-speech-synthesis-api";
-
-// Used to communicate managed policy for the TargetBlankImpliesNoOpenerDisable
-// behavioral change.
-extern const char kDisableTargetBlankImpliesNoOpener[] =
-    "target-blank-implies-no-opener-disable";
 
 // Disables adding the test certs in the network process.
 const char kDisableTestCerts[]              = "disable-test-root-certs";
@@ -442,9 +431,6 @@ const char kEnableTracingFraction[] = "enable-tracing-fraction";
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =
     "enable-usermedia-screen-capturing";
-
-// Enable the mode that uses zooming to implment device scale factor behavior.
-const char kEnableUseZoomForDSF[]            = "enable-use-zoom-for-dsf";
 
 // Enables the use of the @viewport CSS rule, which allows
 // pages to control aspects of their own layout. This also turns on touch-screen
@@ -807,6 +793,11 @@ const char kTrustableWebBundleFileUrl[] = "trustable-web-bundles-file-url";
 const char kUseFakeCodecForPeerConnection[] =
     "use-fake-codec-for-peer-connection";
 
+// Bypass the FedCM account selection dialog. If a value is provided for
+// this switch, that account ID is selected, otherwise the first account
+// is chosen.
+const char kUseFakeUIForFedCM[] = "use-fake-ui-for-fedcm";
+
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
@@ -846,6 +837,12 @@ const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 
 // Flag used by WebUI test runners to wait for debugger to be attached.
 const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";
+
+// Allows trusted remote desktop clients to make WebAuthn requests on behalf of
+// other origins. This switch only controls availability of the
+// `remoteDesktopClientOverride` extension but doesn't by itself enable any
+// origin to use it.
+const char kWebAuthRemoteDesktopSupport[] = "webauthn-remote-desktop-support";
 
 // Set the antialiasing method used for webgl. (none, explicit, implicit)
 const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";

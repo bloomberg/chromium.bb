@@ -52,6 +52,7 @@ if (!build_with_chromium) {
     deps = [
       "../../../api:callfactory_api",
       "../../../api:fec_controller_api",
+      "../../../api:field_trials_view",
       "../../../api:libjingle_peerconnection_api",
       "../../../api:packet_socket_factory",
       "../../../api:peer_connection_quality_test_fixture_api",
@@ -59,7 +60,6 @@ if (!build_with_chromium) {
       "../../../api/rtc_event_log",
       "../../../api/task_queue",
       "../../../api/transport:network_control",
-      "../../../api/transport:webrtc_key_value_config",
       "../../../api/video_codecs:video_codecs_api",
       "../../../modules/audio_processing:api",
       "../../../p2p:rtc_p2p",
@@ -226,10 +226,15 @@ if (!build_with_chromium) {
         ":peer_configurer",
         ":peer_connection_quality_test_params",
         "../../../api:frame_generator_api",
+        "../../../api:function_view",
+        "../../../api:libjingle_peerconnection_api",
         "../../../api:peer_connection_quality_test_fixture_api",
         "../../../api:scoped_refptr",
+        "../../../api:sequence_checker",
         "../../../modules/audio_processing:api",
         "../../../pc:peerconnection_wrapper",
+        "../../../rtc_base:logging",
+        "../../../rtc_base:refcount",
       ]
       absl_deps = [
         "//third_party/abseil-cpp/absl/memory",
@@ -293,7 +298,6 @@ if (!build_with_chromium) {
         "../../../api:media_stream_interface",
         "../../../api:peer_connection_quality_test_fixture_api",
         "../../../api/video:video_frame",
-        "../../../pc:peerconnection",
         "../../../pc:session_description",
         "../../../pc:video_track_source",
       ]
@@ -322,6 +326,7 @@ if (!build_with_chromium) {
         "../../../api/video_codecs:video_codecs_api",
         "../../../modules/audio_processing:api",
         "../../../rtc_base",
+        "../../../rtc_base:macromagic",
         "../../../rtc_base:threading",
       ]
       absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
@@ -392,13 +397,13 @@ if (!build_with_chromium) {
         "../../../api/units:time_delta",
         "../../../api/units:timestamp",
         "../../../pc:pc_test_utils",
-        "../../../pc:peerconnection",
         "../../../pc:sdp_utils",
         "../../../rtc_base",
         "../../../rtc_base:gunit_helpers",
         "../../../rtc_base:macromagic",
         "../../../rtc_base:rtc_base_approved",
         "../../../rtc_base:safe_conversions",
+        "../../../rtc_base:stringutils",
         "../../../rtc_base:task_queue_for_test",
         "../../../rtc_base:threading",
         "../../../rtc_base/synchronization:mutex",
@@ -485,6 +490,9 @@ if (!build_with_chromium) {
         "../../../test:test_support",
       ]
       data = peer_connection_e2e_smoke_test_resources
+      if (is_mac || is_ios) {
+        deps += [ "../../../modules/video_coding:objc_codec_factory_helper" ]
+      }
       if (is_ios) {
         deps += [ ":peer_connection_e2e_smoke_test_resources_bundle_data" ]
       }
@@ -503,6 +511,7 @@ if (!build_with_chromium) {
         "../../../api:rtc_stats_api",
         "../../../api:stats_observer_interface",
         "../../../rtc_base:logging",
+        "../../../rtc_base:macromagic",
         "../../../rtc_base:rtc_base_approved",
         "../../../rtc_base/synchronization:mutex",
       ]
@@ -665,6 +674,8 @@ if (!build_with_chromium) {
       "../../../rtc_base:rtc_base_approved",
       "../../../rtc_base:rtc_event",
       "../../../rtc_base:rtc_numerics",
+      "../../../rtc_base:stringutils",
+      "../../../rtc_base:timeutils",
       "../../../rtc_base/synchronization:mutex",
       "../../../rtc_tools:video_quality_analysis",
       "../../../system_wrappers",
@@ -821,8 +832,6 @@ if (!build_with_chromium) {
       "../../../api:rtp_parameters",
       "../../../media:rtc_media_base",
       "../../../p2p:rtc_p2p",
-      "../../../pc:peerconnection",
-      "../../../pc:rtc_pc_base",
       "../../../pc:sdp_utils",
       "../../../pc:session_description",
       "../../../pc:simulcast_description",

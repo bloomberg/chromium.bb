@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_PERSISTENTCACHE_H_
-#define DAWNNATIVE_PERSISTENTCACHE_H_
+#ifndef SRC_DAWN_NATIVE_PERSISTENTCACHE_H_
+#define SRC_DAWN_NATIVE_PERSISTENTCACHE_H_
 
 #include "dawn/native/Error.h"
 
@@ -43,7 +43,7 @@ namespace dawn::native {
     // protected by mMutex.
     class PersistentCache {
       public:
-        PersistentCache(DeviceBase* device);
+        explicit PersistentCache(DeviceBase* device);
 
         // Combines load/store operations into a single call.
         // If the load was successful, a non-empty blob is returned to the caller.
@@ -89,4 +89,4 @@ namespace dawn::native {
     };
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_PERSISTENTCACHE_H_
+#endif  // SRC_DAWN_NATIVE_PERSISTENTCACHE_H_

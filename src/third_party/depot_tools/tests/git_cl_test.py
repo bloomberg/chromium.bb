@@ -3375,6 +3375,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='upstream',
         description='fetch description',
         all_files=None,
+        files=None,
         resultdb=None,
         realm=None)
 
@@ -3389,6 +3390,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='upstream',
         description='get description',
         all_files=None,
+        files=None,
         resultdb=None,
         realm=None)
 
@@ -3402,6 +3404,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='custom_branch',
         description='fetch description',
         all_files=None,
+        files=None,
         resultdb=None,
         realm=None)
 
@@ -3417,6 +3420,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         upstream='upstream',
         description='fetch description',
         all_files=True,
+        files=None,
         resultdb=True,
         realm='chromium:public')
 

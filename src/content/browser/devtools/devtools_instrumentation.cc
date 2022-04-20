@@ -177,6 +177,22 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorTooManyRequests: {
       return FederatedAuthRequestIssueReasonEnum::TooManyRequests;
     }
+    case FederatedAuthRequestResult::kErrorFetchingManifestListHttpNotFound: {
+      return FederatedAuthRequestIssueReasonEnum::ManifestListHttpNotFound;
+    }
+    case FederatedAuthRequestResult::kErrorFetchingManifestListNoResponse: {
+      return FederatedAuthRequestIssueReasonEnum::ManifestListNoResponse;
+    }
+    case FederatedAuthRequestResult::
+        kErrorFetchingManifestListInvalidResponse: {
+      return FederatedAuthRequestIssueReasonEnum::ManifestListInvalidResponse;
+    }
+    case FederatedAuthRequestResult::kErrorManifestNotInManifestList: {
+      return FederatedAuthRequestIssueReasonEnum::ManifestNotInManifestList;
+    }
+    case FederatedAuthRequestResult::kErrorManifestListTooBig: {
+      return FederatedAuthRequestIssueReasonEnum::ManifestListTooBig;
+    }
     case FederatedAuthRequestResult::kErrorFetchingManifestHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::ManifestHttpNotFound;
     }
@@ -200,12 +216,6 @@ std::string FederatedAuthRequestResultToProtocol(
         kErrorClientMetadataMissingPrivacyPolicyUrl: {
       return FederatedAuthRequestIssueReasonEnum::
           ClientMetadataMissingPrivacyPolicyUrl;
-    }
-    case FederatedAuthRequestResult::kErrorFetchingSignin: {
-      return FederatedAuthRequestIssueReasonEnum::ErrorFetchingSignin;
-    }
-    case FederatedAuthRequestResult::kErrorInvalidSigninResponse: {
-      return FederatedAuthRequestIssueReasonEnum::InvalidSigninResponse;
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::AccountsHttpNotFound;
@@ -305,6 +315,12 @@ void BackForwardCacheNotUsed(
   FrameTreeNode* ftn = nav_request->frame_tree_node();
   DispatchToAgents(ftn, &protocol::PageHandler::BackForwardCacheNotUsed,
                    nav_request, result, tree_result);
+}
+
+void DidActivatePrerender(const NavigationRequest& nav_request) {
+  FrameTreeNode* ftn = nav_request.frame_tree_node();
+  DispatchToAgents(ftn, &protocol::PageHandler::DidActivatePrerender,
+                   nav_request);
 }
 
 namespace {
@@ -1189,57 +1205,6 @@ void ReportCookieIssue(
           .Build();
 
   ReportBrowserInitiatedIssue(render_frame_host_impl, issue.get());
-}
-
-namespace {
-
-protocol::Audits::AttributionReportingIssueType
-BuildAttributionReportingIssueType(AttributionReportingIssueType issue_type) {
-  switch (issue_type) {
-    case AttributionReportingIssueType::kAttributionTriggerDataTooLarge:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          AttributionTriggerDataTooLarge;
-    case AttributionReportingIssueType::
-        kAttributionEventSourceTriggerDataTooLarge:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          AttributionEventSourceTriggerDataTooLarge;
-  }
-}
-
-}  // namespace
-
-void ReportAttributionReportingIssue(
-    RenderFrameHost* render_frame_host,
-    AttributionReportingIssueType issue_type,
-    const absl::optional<std::string>& request_id,
-    const absl::optional<std::string>& invalid_parameter) {
-  auto ar_details =
-      protocol::Audits::AttributionReportingIssueDetails::Create()
-          .SetViolationType(BuildAttributionReportingIssueType(issue_type))
-          .Build();
-
-  if (request_id) {
-    ar_details->SetRequest(protocol::Audits::AffectedRequest::Create()
-                               .SetRequestId(*request_id)
-                               .Build());
-  }
-
-  if (invalid_parameter) {
-    ar_details->SetInvalidParameter(*invalid_parameter);
-  }
-
-  auto details = protocol::Audits::InspectorIssueDetails::Create()
-                     .SetAttributionReportingIssueDetails(std::move(ar_details))
-                     .Build();
-
-  auto issue = protocol::Audits::InspectorIssue::Create()
-                   .SetCode(protocol::Audits::InspectorIssueCodeEnum::
-                                AttributionReportingIssue)
-                   .SetDetails(std::move(details))
-                   .Build();
-
-  ReportBrowserInitiatedIssue(
-      static_cast<RenderFrameHostImpl*>(render_frame_host), issue.get());
 }
 
 namespace {

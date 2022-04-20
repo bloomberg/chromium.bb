@@ -23,6 +23,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
@@ -317,7 +318,7 @@ class DisplayPrefsTestGuest : public DisplayPrefsTest {
 TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
   UpdateDisplay("200x100,300x200");
 
-  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayIdList list = display_manager()->GetConnectedDisplayIdList();
   display::DisplayIdList dummy_list = display::test::CreateDisplayIdList2(
       list[0], display::GetNextSynthesizedDisplayId(list[1]));
   ASSERT_NE(list[0], dummy_list[1]);
@@ -396,7 +397,8 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   window_tree_host_manager->SetPrimaryDisplayId(dummy_id);
   EXPECT_NE(dummy_id, display::Screen::GetScreen()->GetPrimaryDisplay().id());
 
-  window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(
+      id1, gfx::Insets::TLBR(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(id1, display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
 
@@ -793,8 +795,8 @@ TEST_F(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
   display_manager()->UpdateZoomFactor(id1, 1.f / scale);
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   int64_t new_primary = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  window_tree_host_manager->SetOverscanInsets(new_primary,
-                                              gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(
+      new_primary, gfx::Insets::TLBR(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(new_primary,
                                         display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
@@ -866,8 +868,8 @@ TEST_P(DisplayPrefsPublicAccountTest, StoreDisplayPrefsForPublicAccount) {
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   const int64_t new_primary =
       display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  window_tree_host_manager->SetOverscanInsets(new_primary,
-                                              gfx::Insets(10, 11, 12, 13));
+  window_tree_host_manager->SetOverscanInsets(
+      new_primary, gfx::Insets::TLBR(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(new_primary,
                                         display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
@@ -1152,7 +1154,7 @@ TEST_F(DisplayPrefsTest, SaveUnifiedMode) {
   display_manager()->SetUnifiedDesktopEnabled(true);
 
   UpdateDisplay("300x200,200x100");
-  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayIdList list = display_manager()->GetConnectedDisplayIdList();
   EXPECT_EQ(gfx::Size(700, 200),
             display::Screen::GetScreen()->GetPrimaryDisplay().size());
 
@@ -1276,7 +1278,7 @@ TEST_F(DisplayPrefsTest, SaveThreeDisplays) {
   LoggedInAsUser();
   UpdateDisplay("300x200,300x200,400x300");
 
-  display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayIdList list = display_manager()->GetConnectedDisplayIdList();
   ASSERT_EQ(3u, list.size());
 
   display::DisplayLayoutBuilder builder(list[0]);
@@ -1308,7 +1310,7 @@ TEST_F(DisplayPrefsTest, RestoreThreeDisplays) {
 
   UpdateDisplay("300x200,300x200,400x300");
   display::DisplayIdList new_list =
-      display_manager()->GetCurrentDisplayIdList();
+      display_manager()->GetConnectedDisplayIdList();
   ASSERT_EQ(3u, list.size());
   ASSERT_EQ(list[0], new_list[0]);
   ASSERT_EQ(list[1], new_list[1]);
@@ -1676,7 +1678,7 @@ TEST_F(DisplayPrefsTest, SaveTabletModeWithSingleDisplay) {
 TEST_F(DisplayPrefsTest, SaveTabletModeWithMixedExternalDisplays) {
   UpdateDisplay("480x320/r@1.25,640x480/l@1.3,320x240@1.2");
 
-  display::DisplayIdList ids = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayIdList ids = display_manager()->GetConnectedDisplayIdList();
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 

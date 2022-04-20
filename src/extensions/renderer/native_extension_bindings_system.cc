@@ -606,12 +606,12 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
 
 void NativeExtensionBindingsSystem::DispatchEventInContext(
     const std::string& event_name,
-    const base::ListValue* event_args,
+    const base::Value::List& event_args,
     const mojom::EventFilteringInfoPtr& filtering_info,
     ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
-  api_system_.FireEventInContext(event_name, context->v8_context(), *event_args,
+  api_system_.FireEventInContext(event_name, context->v8_context(), event_args,
                                  filtering_info.Clone());
 }
 
@@ -626,7 +626,7 @@ bool NativeExtensionBindingsSystem::HasEventListenerInContext(
 void NativeExtensionBindingsSystem::HandleResponse(
     int request_id,
     bool success,
-    const base::ListValue& response,
+    const base::Value::List& response,
     const std::string& error) {
   // Some API calls result in failure, but don't set an error. Use a generic and
   // unhelpful error string.

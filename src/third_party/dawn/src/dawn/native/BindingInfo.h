@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_BINDINGINFO_H_
-#define DAWNNATIVE_BINDINGINFO_H_
+#ifndef SRC_DAWN_NATIVE_BINDINGINFO_H_
+#define SRC_DAWN_NATIVE_BINDINGINFO_H_
 
 #include "dawn/common/Constants.h"
 #include "dawn/common/ityp_array.h"
@@ -50,11 +50,6 @@ namespace dawn::native {
 
     enum class BindingInfoType { Buffer, Sampler, Texture, StorageTexture, ExternalTexture };
 
-    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
-        BindingInfoType value,
-        const absl::FormatConversionSpec& spec,
-        absl::FormatSink* s);
-
     struct BindingInfo {
         BindingNumber binding;
         wgpu::ShaderStage visibility;
@@ -67,11 +62,6 @@ namespace dawn::native {
         TextureBindingLayout texture;
         StorageTextureBindingLayout storageTexture;
     };
-
-    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
-        const BindingInfo& value,
-        const absl::FormatConversionSpec& spec,
-        absl::FormatSink* s);
 
     struct BindingSlot {
         BindGroupIndex group;
@@ -105,4 +95,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_BINDINGINFO_H_
+#endif  // SRC_DAWN_NATIVE_BINDINGINFO_H_

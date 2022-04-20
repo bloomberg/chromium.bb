@@ -47,14 +47,19 @@ extern const base::Feature kIOSLocationBarUseNativeContextMenu;
 // Feature flag that swaps the omnibox textfield implementation.
 extern const base::Feature kIOSNewOmniboxImplementation;
 
-// Feature flag that fixes omnibox behavior when using iOS native dictation
-extern const base::Feature kIOSOmniboxAllowEditsDuringDictation;
-
 // Feature flag that toggles the SwiftUI omnibox popup implementation.
 extern const base::Feature kIOSOmniboxUpdatedPopupUI;
 
-// Enables the Search History Link in Clear Browsing Data for iOS.
-extern const base::Feature kSearchHistoryLinkIOS;
+// Parameter name for the parameter controlling which UI variation to use for
+// the SwiftUI omnibox popup.
+extern const char kIOSOmniboxUpdatedPopupUIVariationName[];
+
+// Variation 1 for the parameter controlling which UI variation to use for
+// the SwiftUI omnibox popup.
+extern const char kIOSOmniboxUpdatedPopupUIVariation1[];
+// Variation 2 for the parameter controlling which UI variation to use for
+// the SwiftUI omnibox popup.
+extern const char kIOSOmniboxUpdatedPopupUIVariation2[];
 
 // Feature flag to enable removing any entry points to the history UI from
 // Incognito mode.
@@ -62,10 +67,6 @@ extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 
 // Feature flag to enable using Lens to search for images.
 extern const base::Feature kUseLensToSearchForImage;
-
-// Feature flag to enable promotional view for Passwords In Other Apps in
-// Settings.
-extern const base::Feature kCredentialProviderExtensionPromo;
 
 // Feature flag to enable duplicate NTP cleanup.
 extern const base::Feature kRemoveExcessNTPs;

@@ -35,6 +35,12 @@ class WebStateList;
 // The mediator detected that the keyboard input view should be reset.
 - (void)resetFormInputView;
 
+// The mediator notify that password suggestions have been shown.
+- (void)notifyPasswordSuggestionsShown;
+
+// The mediator notify that a password suggestion has been selected.
+- (void)notifyPasswordSuggestionSelected;
+
 @end
 
 // This class contains all the logic to get and provide keyboard input accessory

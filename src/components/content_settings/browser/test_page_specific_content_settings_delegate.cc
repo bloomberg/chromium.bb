@@ -18,10 +18,6 @@ TestPageSpecificContentSettingsDelegate::
 
 void TestPageSpecificContentSettingsDelegate::UpdateLocationBar() {}
 
-void TestPageSpecificContentSettingsDelegate::SetContentSettingRules(
-    content::RenderProcessHost* process,
-    const RendererContentSettingRules& rules) {}
-
 PrefService* TestPageSpecificContentSettingsDelegate::GetPrefs() {
   return prefs_;
 }
@@ -30,6 +26,10 @@ HostContentSettingsMap*
 TestPageSpecificContentSettingsDelegate::GetSettingsMap() {
   return settings_map_.get();
 }
+
+void TestPageSpecificContentSettingsDelegate::
+    SetDefaultRendererContentSettingRules(content::RenderFrameHost* rfh,
+                                          RendererContentSettingRules* rules) {}
 
 ContentSetting TestPageSpecificContentSettingsDelegate::GetEmbargoSetting(
     const GURL& request_origin,
@@ -65,25 +65,17 @@ void TestPageSpecificContentSettingsDelegate::OnContentAllowed(
 void TestPageSpecificContentSettingsDelegate::OnContentBlocked(
     ContentSettingsType type) {}
 
-void TestPageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
-    const url::Origin& origin) {}
+void TestPageSpecificContentSettingsDelegate::OnStorageAccessAllowed(
+    content_settings::mojom::ContentSettingsManager::StorageType storage_type,
+    const url::Origin& origin,
+    content::Page& page) {}
 
 void TestPageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
-    const net::CookieList& accessed_cookies) {}
-
-void TestPageSpecificContentSettingsDelegate::OnDomStorageAccessAllowed(
-    const url::Origin& origin) {}
-
-void TestPageSpecificContentSettingsDelegate::OnFileSystemAccessAllowed(
-    const url::Origin& origin) {}
-
-void TestPageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
-    const url::Origin& origin) {}
+    const net::CookieList& accessed_cookies,
+    content::Page& page) {}
 
 void TestPageSpecificContentSettingsDelegate::OnServiceWorkerAccessAllowed(
-    const url::Origin& origin) {}
-
-void TestPageSpecificContentSettingsDelegate::OnWebDatabaseAccessAllowed(
-    const url::Origin& origin) {}
+    const url::Origin& origin,
+    content::Page& page) {}
 
 }  // namespace content_settings

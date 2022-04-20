@@ -12,11 +12,10 @@
 #ifndef AOM_AOM_DSP_VMAF_H_
 #define AOM_AOM_DSP_VMAF_H_
 
+#include <libvmaf/libvmaf.h>
 #include <stdbool.h>
-#include "aom_scale/yv12config.h"
 
-typedef struct VmafContext VmafContext;
-typedef struct VmafModel VmafModel;
+#include "aom_scale/yv12config.h"
 
 void aom_init_vmaf_context(VmafContext **vmaf_context, VmafModel *vmaf_model,
                            bool cal_vmaf_neg);

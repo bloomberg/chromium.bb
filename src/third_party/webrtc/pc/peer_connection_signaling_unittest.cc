@@ -147,15 +147,15 @@ class PeerConnectionSignalingBaseTest : public ::testing::Test {
     auto observer = std::make_unique<MockPeerConnectionObserver>();
     RTCConfiguration modified_config = config;
     modified_config.sdp_semantics = sdp_semantics_;
-    auto pc = pc_factory_->CreatePeerConnection(modified_config, nullptr,
-                                                nullptr, observer.get());
-    if (!pc) {
+    auto result = pc_factory_->CreatePeerConnectionOrError(
+        modified_config, PeerConnectionDependencies(observer.get()));
+    if (!result.ok()) {
       return nullptr;
     }
 
-    observer->SetPeerConnectionInterface(pc.get());
+    observer->SetPeerConnectionInterface(result.value());
     return std::make_unique<PeerConnectionWrapperForSignalingTest>(
-        pc_factory_, pc, std::move(observer));
+        pc_factory_, result.MoveValue(), std::move(observer));
   }
 
   // Accepts the same arguments as CreatePeerConnection and adds default audio
@@ -468,7 +468,7 @@ TEST_P(PeerConnectionSignalingStateTest, SetRemoteAnswer) {
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionSignalingTest,
                          PeerConnectionSignalingStateTest,
-                         Combine(Values(SdpSemantics::kPlanB,
+                         Combine(Values(SdpSemantics::kPlanB_DEPRECATED,
                                         SdpSemantics::kUnifiedPlan),
                                  Values(SignalingState::kStable,
                                         SignalingState::kHaveLocalOffer,
@@ -610,8 +610,7 @@ TEST_P(PeerConnectionSignalingTest,
 
 TEST_P(PeerConnectionSignalingTest, ImplicitCreateOfferAndShutdown) {
   auto caller = CreatePeerConnection();
-  rtc::scoped_refptr<FakeSetLocalDescriptionObserver> observer(
-      new FakeSetLocalDescriptionObserver());
+  auto observer = rtc::make_ref_counted<FakeSetLocalDescriptionObserver>();
   caller->pc()->SetLocalDescription(observer);
   caller.reset(nullptr);
   // The new observer gets invoked because it is called immediately.
@@ -632,8 +631,7 @@ TEST_P(PeerConnectionSignalingTest,
 
 TEST_P(PeerConnectionSignalingTest, CloseBeforeImplicitCreateOfferAndShutdown) {
   auto caller = CreatePeerConnection();
-  rtc::scoped_refptr<FakeSetLocalDescriptionObserver> observer(
-      new FakeSetLocalDescriptionObserver());
+  auto observer = rtc::make_ref_counted<FakeSetLocalDescriptionObserver>();
   caller->pc()->Close();
   caller->pc()->SetLocalDescription(observer);
   caller.reset(nullptr);
@@ -655,8 +653,7 @@ TEST_P(PeerConnectionSignalingTest,
 
 TEST_P(PeerConnectionSignalingTest, CloseAfterImplicitCreateOfferAndShutdown) {
   auto caller = CreatePeerConnection();
-  rtc::scoped_refptr<FakeSetLocalDescriptionObserver> observer(
-      new FakeSetLocalDescriptionObserver());
+  auto observer = rtc::make_ref_counted<FakeSetLocalDescriptionObserver>();
   caller->pc()->SetLocalDescription(observer);
   caller->pc()->Close();
   caller.reset(nullptr);
@@ -670,8 +667,7 @@ TEST_P(PeerConnectionSignalingTest,
   auto caller = CreatePeerConnection();
   auto offer = caller->CreateOffer(RTCOfferAnswerOptions());
 
-  rtc::scoped_refptr<FakeSetLocalDescriptionObserver> observer(
-      new FakeSetLocalDescriptionObserver());
+  auto observer = rtc::make_ref_counted<FakeSetLocalDescriptionObserver>();
   caller->pc()->SetLocalDescription(std::move(offer), observer);
   // The new observer is invoked immediately.
   EXPECT_TRUE(observer->called());
@@ -1104,7 +1100,7 @@ TEST_P(PeerConnectionSignalingTest, MidAttributeMaxLength) {
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionSignalingTest,
                          PeerConnectionSignalingTest,
-                         Values(SdpSemantics::kPlanB,
+                         Values(SdpSemantics::kPlanB_DEPRECATED,
                                 SdpSemantics::kUnifiedPlan));
 
 class PeerConnectionSignalingUnifiedPlanTest
@@ -1339,7 +1335,7 @@ TEST_F(PeerConnectionSignalingUnifiedPlanTest, RtxReofferApt) {
   EXPECT_TRUE(
       callee->SetLocalDescription(CloneSessionDescription(answer.get())));
 
-  callee->pc()->GetTransceivers()[0]->Stop();
+  callee->pc()->GetTransceivers()[0]->StopStandard();
   auto reoffer = callee->CreateOffer(RTCOfferAnswerOptions());
   auto codecs = reoffer->description()
                     ->contents()[0]

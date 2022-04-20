@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_COMPUTEPASSENCODER_H_
-#define DAWNNATIVE_COMPUTEPASSENCODER_H_
+#ifndef SRC_DAWN_NATIVE_COMPUTEPASSENCODER_H_
+#define SRC_DAWN_NATIVE_COMPUTEPASSENCODER_H_
 
 #include "dawn/native/CommandBufferStateTracker.h"
 #include "dawn/native/Error.h"
@@ -27,15 +27,14 @@ namespace dawn::native {
 
     class ComputePassEncoder final : public ProgrammableEncoder {
       public:
-        ComputePassEncoder(DeviceBase* device,
-                           const ComputePassDescriptor* descriptor,
-                           CommandEncoder* commandEncoder,
-                           EncodingContext* encodingContext,
-                           std::vector<TimestampWrite> timestampWritesAtEnd);
-
-        static ComputePassEncoder* MakeError(DeviceBase* device,
-                                             CommandEncoder* commandEncoder,
-                                             EncodingContext* encodingContext);
+        static Ref<ComputePassEncoder> Create(DeviceBase* device,
+                                              const ComputePassDescriptor* descriptor,
+                                              CommandEncoder* commandEncoder,
+                                              EncodingContext* encodingContext,
+                                              std::vector<TimestampWrite> timestampWritesAtEnd);
+        static Ref<ComputePassEncoder> MakeError(DeviceBase* device,
+                                                 CommandEncoder* commandEncoder,
+                                                 EncodingContext* encodingContext);
 
         ObjectType GetType() const override;
 
@@ -61,6 +60,11 @@ namespace dawn::native {
         }
 
       protected:
+        ComputePassEncoder(DeviceBase* device,
+                           const ComputePassDescriptor* descriptor,
+                           CommandEncoder* commandEncoder,
+                           EncodingContext* encodingContext,
+                           std::vector<TimestampWrite> timestampWritesAtEnd);
         ComputePassEncoder(DeviceBase* device,
                            CommandEncoder* commandEncoder,
                            EncodingContext* encodingContext,
@@ -91,4 +95,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_COMPUTEPASSENCODER_H_
+#endif  // SRC_DAWN_NATIVE_COMPUTEPASSENCODER_H_

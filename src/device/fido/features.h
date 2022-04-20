@@ -24,13 +24,13 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
 #endif  // BUILDFLAG(IS_WIN)
 
-// Enable synced Android devices to be a 2nd-factor security key.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthCableSecondFactor;
-
 // Enable using a phone as a generic security key.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthPhoneSupport;
+
+// Enable some experimental UI changes
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthPasskeysUI;
 
 // Support the caBLE extension in assertion requests from any origin.
 COMPONENT_EXPORT(DEVICE_FIDO)
@@ -40,11 +40,11 @@ extern const base::Feature kWebAuthCableExtensionAnywhere;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthCableDisco;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 // Enable a ChromeOS platform authenticator
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthCrosPlatformAuthenticator;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kU2fPermissionPrompt;
@@ -53,6 +53,10 @@ extern const base::Feature kU2fPermissionPrompt;
 // `WebAuthenticationAllowGoogleCorpRemoteRequestProxying` enterprise policy.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthnGoogleCorpRemoteDesktopClientPrivilege;
+
+// Enable some experimental UI changes
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthPasskeysUIExperiment;
 
 }  // namespace device
 

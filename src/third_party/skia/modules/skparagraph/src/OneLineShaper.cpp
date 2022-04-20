@@ -223,7 +223,6 @@ void OneLineShaper::finish(const Block& block, SkScalar height, SkScalar& advanc
             auto index = i - glyphs.start;
             if (i < glyphs.end) {
                 piece->fGlyphs[index] = run->fGlyphs[i];
-                piece->fBounds[index] = run->fBounds[i];
             }
             piece->fClusterIndexes[index] = run->fClusterIndexes[i];
             piece->fPositions[index] = run->fPositions[i] - zero;
@@ -477,7 +476,7 @@ void OneLineShaper::iterateThroughFontStyles(TextRange textRange,
 
 void OneLineShaper::matchResolvedFonts(const TextStyle& textStyle,
                                        const TypefaceVisitor& visitor) {
-    std::vector<sk_sp<SkTypeface>> typefaces = fParagraph->fFontCollection->findTypefaces(textStyle.getFontFamilies(), textStyle.getFontStyle());
+    std::vector<sk_sp<SkTypeface>> typefaces = fParagraph->fFontCollection->findTypefaces(textStyle.getFontFamilies(), textStyle.getFontStyle(), textStyle.getFontArguments());
 
     for (const auto& typeface : typefaces) {
         if (visitor(typeface) == Resolved::Everything) {
@@ -591,7 +590,8 @@ bool OneLineShaper::iterateThroughShapingRegions(const ShapeVisitor& shape) {
         // Get the placeholder font
         std::vector<sk_sp<SkTypeface>> typefaces = fParagraph->fFontCollection->findTypefaces(
             placeholder.fTextStyle.getFontFamilies(),
-            placeholder.fTextStyle.getFontStyle());
+            placeholder.fTextStyle.getFontStyle(),
+            placeholder.fTextStyle.getFontArguments());
         sk_sp<SkTypeface> typeface = typefaces.size() ? typefaces.front() : nullptr;
         SkFont font(typeface, placeholder.fTextStyle.getFontSize());
 
@@ -650,7 +650,7 @@ bool OneLineShaper::shape() {
             fCurrentText = block.fRange;
             fUnresolvedBlocks.emplace_back(RunBlock(block.fRange));
 
-            matchResolvedFonts(block.fStyle, [&](sk_sp<SkTypeface> typeface) {
+            this->matchResolvedFonts(block.fStyle, [&](sk_sp<SkTypeface> typeface) {
 
                 // Create one more font to try
                 SkFont font(std::move(typeface), block.fStyle.getFontSize());

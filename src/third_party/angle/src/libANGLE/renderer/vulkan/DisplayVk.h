@@ -41,6 +41,12 @@ class ShareGroupVk : public ShareGroupImpl
     {
         mResourceUseLists.emplace_back(std::move(resourceUseList));
     }
+    void copyResourceUseList(vk::ResourceUseList &resourceUseList)
+    {
+        vk::ResourceUseList copyResourceUseList;
+        copyResourceUseList.copy(resourceUseList);
+        mResourceUseLists.emplace_back(std::move(copyResourceUseList));
+    }
 
     vk::BufferPool *getDefaultBufferPool(RendererVk *renderer,
                                          VkDeviceSize size,
@@ -67,7 +73,6 @@ class ShareGroupVk : public ShareGroupImpl
 
     // The pool dedicated for small allocations that uses faster buddy algorithm
     std::unique_ptr<vk::BufferPool> mSmallBufferPool;
-    static constexpr VkDeviceSize kMaxSizeToUseSmallBufferPool = 256;
 
     // The system time when last pruneEmptyBuffer gets called.
     double mLastPruneTime;

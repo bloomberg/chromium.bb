@@ -7,25 +7,25 @@
 
 #include "tests/Test.h"
 
-#include "experimental/graphite/include/Recorder.h"
-#include "experimental/graphite/src/ContextPriv.h"
-#include "experimental/graphite/src/ContextUtils.h"
-#include "experimental/graphite/src/GlobalCache.h"
-#include "experimental/graphite/src/PaintParams.h"
-#include "experimental/graphite/src/RecorderPriv.h"
-#include "experimental/graphite/src/ResourceProvider.h"
 #include "include/core/SkPaint.h"
 #include "include/effects/SkGradientShader.h"
+#include "include/gpu/graphite/Recorder.h"
 #include "include/private/SkUniquePaintParamsID.h"
 #include "src/core/SkKeyContext.h"
 #include "src/core/SkKeyHelpers.h"
 #include "src/core/SkPipelineData.h"
 #include "src/core/SkShaderCodeDictionary.h"
-#include "src/core/SkUniformData.h"
+#include "src/gpu/graphite/ContextPriv.h"
+#include "src/gpu/graphite/ContextUtils.h"
+#include "src/gpu/graphite/GlobalCache.h"
+#include "src/gpu/graphite/PaintParams.h"
+#include "src/gpu/graphite/RecorderPriv.h"
+#include "src/gpu/graphite/ResourceProvider.h"
 
 namespace {
+using namespace skgpu::graphite;
 
-std::tuple<SkPaint, int> create_paint(skgpu::ShaderCombo::ShaderType shaderType,
+std::tuple<SkPaint, int> create_paint(ShaderCombo::ShaderType shaderType,
                                       SkTileMode tm,
                                       SkBlendMode bm) {
     SkPoint pts[2] = {{-100, -100},
@@ -34,51 +34,48 @@ std::tuple<SkPaint, int> create_paint(skgpu::ShaderCombo::ShaderType shaderType,
     SkScalar offsets[2] = {0.0f, 1.0f};
 
     sk_sp<SkShader> s;
-    int numUniforms = 0;
+    int numTextures = 0;
     switch (shaderType) {
-        case skgpu::ShaderCombo::ShaderType::kNone:
+        case ShaderCombo::ShaderType::kNone:
             SkDEBUGFAIL("kNone cannot be represented as an SkPaint");
             break;
-        case skgpu::ShaderCombo::ShaderType::kSolidColor:
-            numUniforms += 1;
+        case ShaderCombo::ShaderType::kSolidColor:
             break;
-        case skgpu::ShaderCombo::ShaderType::kLinearGradient:
+        case ShaderCombo::ShaderType::kLinearGradient:
             s = SkGradientShader::MakeLinear(pts, colors, offsets, 2, tm);
-            numUniforms += 7;
             break;
-        case skgpu::ShaderCombo::ShaderType::kRadialGradient:
+        case ShaderCombo::ShaderType::kRadialGradient:
             s = SkGradientShader::MakeRadial({0, 0}, 100, colors, offsets, 2, tm);
-            numUniforms += 7;
             break;
-        case skgpu::ShaderCombo::ShaderType::kSweepGradient:
+        case ShaderCombo::ShaderType::kSweepGradient:
             s = SkGradientShader::MakeSweep(0, 0, colors, offsets, 2, tm,
                                             0, 359, 0, nullptr);
-            numUniforms += 7;
             break;
-        case skgpu::ShaderCombo::ShaderType::kConicalGradient:
+        case ShaderCombo::ShaderType::kConicalGradient:
             s = SkGradientShader::MakeTwoPointConical({100, 100}, 100,
                                                       {-100, -100}, 100,
                                                       colors, offsets, 2, tm);
-            numUniforms += 7;
             break;
     }
     SkPaint p;
     p.setColor(SK_ColorRED);
     p.setShader(std::move(s));
     p.setBlendMode(bm);
-    return { p, numUniforms };
+    return { p, numTextures };
 }
 
 } // anonymous namespace
 
 DEF_GRAPHITE_TEST_FOR_CONTEXTS(UniformTest, reporter, context) {
-    using namespace skgpu;
+    using namespace skgpu::graphite;
 
     auto recorder = context->makeRecorder();
     SkKeyContext keyContext(recorder.get());
     auto dict = keyContext.dict();
+    auto tCache = recorder->priv().textureDataCache();
 
     SkPaintParamsKeyBuilder builder(dict, SkBackend::kGraphite);
+    SkPipelineDataGatherer gatherer(Layout::kMetal);
 
     // Intentionally does not include ShaderType::kNone, which represents no fragment shading stage
     // and is thus not relevant to uniform extraction/caching.
@@ -96,26 +93,25 @@ DEF_GRAPHITE_TEST_FOR_CONTEXTS(UniformTest, reporter, context) {
             }
 
             for (auto bm : { SkBlendMode::kSrc, SkBlendMode::kSrcOver }) {
-                auto [ p, expectedNumUniforms ] = create_paint(s, tm, bm);
+                auto [ p, expectedNumTextures ] = create_paint(s, tm, bm);
 
-                auto [ uniqueID1, pipelineData] = ExtractPaintData(recorder.get(), &builder,
-                                                                   PaintParams(p));
+                auto [ uniqueID1, uIndex, tIndex] = ExtractPaintData(recorder.get(), &gatherer,
+                                                                     &builder, PaintParams(p));
 
                 SkUniquePaintParamsID uniqueID2 = CreateKey(keyContext, &builder, s, tm, bm);
                 // ExtractPaintData and CreateKey agree
                 REPORTER_ASSERT(reporter, uniqueID1 == uniqueID2);
 
-                // ExtractPaintData made the pipeline data we expected
+                // TODO: This isn't particularly useful until we add image shaders to the
+                // pre-compilation set.
                 {
-                    int actualNumUniforms = pipelineData->numUniforms();
-                    REPORTER_ASSERT(reporter, expectedNumUniforms == actualNumUniforms);
-                    for (const auto& u: *pipelineData) {
-                        for (int i = 0; i < u->count(); ++i) {
-                            REPORTER_ASSERT(reporter,
-                                            u->offset(i) >= 0 && u->offset(i) < u->dataSize());
-                        }
-                    }
+                    const SkTextureDataBlock* textureData = tCache->lookup(tIndex);
+                    int actualNumTextures = textureData ? textureData->numTextures() : 0;
 
+                    REPORTER_ASSERT(reporter, expectedNumTextures == actualNumTextures);
+                }
+
+                {
                     // TODO: check the blendInfo here too
                 }
             }

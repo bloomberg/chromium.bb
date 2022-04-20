@@ -17,7 +17,7 @@ a set of your changes. The changes are patched to tip of tree (TOT). They should
 be very similar to remote tryjobs in most regards.
 
 For Google developers, please also take a look at the [Remote Trybot
-documentation](/chromium-os/build/using-remote-trybots).
+documentation](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/remote_trybots.md).
 
 NOTE: The first time you run the trybot it will sync down a fresh checkout of
 the source, build a new chroot and board, which will make the initial run take
@@ -27,16 +27,16 @@ longer than subsequent runs. An incremental run with an existing board takes
 **Pre-instructions (These are important!)**
 
 1.  Make sure you’ve read through the [ChromiumOS Developer
-            Guide](http://www.chromium.org/chromium-os/developer-guide) and can
-            kick off a build properly.
+            Guide](https://chromium.googlesource.com/chromiumos/docs/+/main/developer_guide.md)
+            and can kick off a build properly.
 2.  [Modify your sudo
-            config](/chromium-os/tips-and-tricks-for-chromium-os-developers#TOC-Making-sudo-a-little-more-permissive).
+            config](https://chromium.googlesource.com/chromiumos/docs/+/main/tips-and-tricks.md#How-to-make-sudo-a-little-more-permissive)
             If you are at Google, you need to follow [these
-            instructions](https://sites.google.com/a/google.com/chromeos/resources/ubuntu-workstation-notes)
+            instructions](http://go/cros-glinux-sudo#configuring-etcsudoers)
             first (Under 'Tweaking with /etc/sudoers' section).
-3.  Run sudo aptitude install kvm pbzip2 zip.
-4.  Run sudo aptitude safe-upgrade.
-5.  Run gclient from outside the chroot to update depot_tools.
+3.  Run `sudo apt install qemu-kvm pbzip2 zip`.
+4.  Run `sudo apt upgrade`.
+5.  Run `gclient` from outside the chroot to update depot_tools.
 6.  If you haven’t rebooted your computer in a while, reboot it now
             after updating.
 
@@ -46,17 +46,17 @@ It’s good to first verify things are working properly with your system setup.
 
 To do so, run the following from within your repo source checkout:
 
-1.  Run repo sync to get latest version of trybot.
-2.  Run cros tryjob --local amd64-generic-pre-cq to do a test run with
+1.  Run `repo sync` to get latest version of trybot.
+2.  Run `cros tryjob --local amd64-generic-full-tryjob` to do a test run with
             the current TOT. Everything should pass.
 
 ## **Instructions For Using the Trybot**
 
 Run the following from within your repo source checkout:
 
-1.  Run repo sync to get latest version of cros trybot.
-2.  Run cros tryjob --list to see a list of configs to run with. Add
-            additional arguments to filter, such as cros tryjob --list release
+1.  Run `repo sync` to get latest version of cros trybot.
+2.  Run `cros tryjob --list` to see a list of configs to run with. Add
+            additional arguments to filter, such as `cros tryjob --list release`
 
 ### To patch in a gerrit CL
 
@@ -73,12 +73,18 @@ number.
 An example:
 
 ```none
-cros tryjob --local -g 12345 -g *4168 samus-paladin-tryjob
+cros tryjob --local -g I5bed88effd9c4c26885f8c75da1ec2499c4b74c8 -g 12345 -g *4168 amd64-generic-full-tryjob
 ```
 
-This patches in three CL's: 1) an external CL using Gerrit change-ID 2) an
-external CL using Gerrit change number 3) internal CL using change-iD. In case a
-CL has several patches associated with it, the latest patch is used.
+This example patches in three CLs:
+
+1. an external CL using Gerrit change-ID (unabbreviated commit hash)
+2. an external CL using Gerrit CL number
+3. internal CL using Gerrit CL number. In case a CL has several patchsets
+associated with it, the latest patchset is used.
+
+To patch in multiple CLs, you can pass all CL numbers in a quoted,
+space-delimited string, or specify the `-g` argument multiple times.
 
 ### To patch in a local change
 
@@ -101,35 +107,22 @@ changes.
 NOTE: Use the --nosync option to prevent the trybot from updating its source
 checkout. See the Tips section below for more info.
 
+NOTE: Per the output of `cros tryjob --help`, the `-p` option is known to be
+buggy and `-g` is preferred for specifying patches. Note that `-g` requires the
+specified change to be uploaded to Gerrit.
+
 ## **Sample Trybot Run**
 
-```none
-rcui@ryanc$ cros tryjob --local -g 'I5bed88ef 4168' -p 'chromiumos/chromite chromiumos/platform/crosutils' x86-alex-pre-cq
-```
+```shell
+$ cros tryjob --local -g 'I5bed88effd9c4c26885f8c75da1ec2499c4b74c8 4168' -p 'chromiumos/chromite chromiumos/platform/crosutils' amd64-generic-asan-tryjob
 
-```none
-```
+WARNING: Using default directory /usr/local/google/home/ldap/trybot as buildroot
 
-```none
-WARNING: Using default directory /usr/local/google/home/rcui/trybot as buildroot
-```
-
-```none
-```
-
-```none
 Do you want to continue (yes/NO)? yes
-```
 
-```none
-```
-
-```none
 INFO: Saving output to cbuildbot.log file
-```
 
-```none
-[sudo] password for rcui: 
+[sudo] password:
 ```
 
 NOTE: The output of the trybot is automatically saved to a cbuildbot.log file in

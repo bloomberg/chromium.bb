@@ -18,7 +18,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -248,6 +247,10 @@ ash::AppListSearchResultType ZeroStateDriveProvider::ResultType() const {
 
 bool ZeroStateDriveProvider::ShouldBlockZeroState() const {
   return true;
+}
+
+void ZeroStateDriveProvider::Start(const std::u16string& query) {
+  ClearResultsSilently();
 }
 
 void ZeroStateDriveProvider::StartZeroState() {

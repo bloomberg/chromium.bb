@@ -8,7 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
-bool FollowProvider::GetFollowStatus(FollowSiteInfo* followSiteInfo) {
+bool FollowProvider::GetFollowStatus(FollowWebPageURLs* follow_web_page_urls) {
   return false;
 }
 
@@ -16,6 +16,13 @@ NSArray<FollowedWebChannel*>* FollowProvider::GetFollowedWebChannels() {
   return nil;
 }
 
-void FollowProvider::UpdateFollowStatus(FollowSiteInfo* site, bool state) {}
+void FollowProvider::UpdateFollowStatus(FollowWebPageURLs* follow_web_page_urls,
+                                        bool follow_status) {}
 
 void FollowProvider::SetFollowEventDelegate(Browser* browser) {}
+
+void FollowProvider::AddFollowManagementUIUpdater(
+    id<FollowManagementUIUpdater> follow_management_ui_updater) {}
+
+void FollowProvider::RemoveFollowManagementUIUpdater(
+    id<FollowManagementUIUpdater> follow_management_ui_updater) {}

@@ -70,7 +70,6 @@ public class ChromeCachedFlags {
             {
                 add(ChromeFeatureList.ANONYMOUS_UPDATE_CHECKS);
                 add(ChromeFeatureList.APP_MENU_MOBILE_SITE_OPTION);
-                add(ChromeFeatureList.APP_TO_WEB_ATTRIBUTION);
                 add(ChromeFeatureList.BOOKMARK_BOTTOM_SHEET);
                 add(ChromeFeatureList.CCT_INCOGNITO);
                 add(ChromeFeatureList.CCT_INCOGNITO_AVAILABLE_TO_THIRD_PARTY);
@@ -175,6 +174,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.ZOOMING_MIN_SDK);
                         add(TabUiFeatureUtilities.SKIP_SLOW_ZOOMING);
                         add(TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE);
+                        add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
                         add(ThemeUtils.ENABLE_FULL_DYNAMIC_COLORS);

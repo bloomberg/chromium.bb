@@ -24,6 +24,7 @@
 #include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/display_strings_util.h"
+#include "components/autofill_assistant/browser/empty_website_login_manager_impl.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/public/ui_state.h"
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
@@ -111,10 +112,6 @@ ClientAndroid::~ClientAndroid() {
 
   Java_AutofillAssistantClient_clearNativePtr(AttachCurrentThread(),
                                               java_object_);
-}
-
-base::WeakPtr<ClientAndroid> ClientAndroid::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
@@ -466,6 +463,12 @@ void ClientAndroid::AttachUI(
   }
 }
 
+void ClientAndroid::DestroyUISoon() {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ClientAndroid::DestroyUI,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ClientAndroid::DestroyUI() {
   ui_controller_android_.reset();
 }
@@ -532,9 +535,14 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() const {
 
 WebsiteLoginManager* ClientAndroid::GetWebsiteLoginManager() const {
   if (!website_login_manager_) {
-    website_login_manager_ = std::make_unique<WebsiteLoginManagerImpl>(
-        dependencies_->GetPasswordManagerClient(GetWebContents()),
-        GetWebContents());
+    auto* password_manager_client =
+        dependencies_->GetPasswordManagerClient(GetWebContents());
+    if (password_manager_client) {
+      website_login_manager_ = std::make_unique<WebsiteLoginManagerImpl>(
+          password_manager_client, GetWebContents());
+    } else {
+      website_login_manager_ = std::make_unique<EmptyWebsiteLoginManagerImpl>();
+    }
   }
   return website_login_manager_.get();
 }

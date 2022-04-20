@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
@@ -80,14 +79,6 @@ const base::FilePath::CharType kModelInfoFileName[] =
 const base::FilePath::CharType kModelFileName[] =
     FILE_PATH_LITERAL("model.tflite");
 
-base::FilePath GetDirectoryForModelInfo(const base::FilePath& dir,
-                                        const proto::ModelInfo& model_info) {
-  return dir.AppendASCII(base::StringPrintf(
-      "%s_%s",
-      proto::OptimizationTarget_Name(model_info.optimization_target()).c_str(),
-      base::NumberToString(model_info.version()).c_str()));
-}
-
 void RecordPredictionModelDownloadStatus(PredictionModelDownloadStatus status) {
   base::UmaHistogramEnumeration(
       "OptimizationGuide.PredictionModelDownloadManager."
@@ -96,6 +87,9 @@ void RecordPredictionModelDownloadStatus(PredictionModelDownloadStatus status) {
 }
 
 }  // namespace
+
+const char kPredictionModelOptimizationTargetCustomDataKey[] =
+    "PredictionModelOptimizationTargetCustomDataKey";
 
 PredictionModelDownloadManager::PredictionModelDownloadManager(
     download::BackgroundDownloadService* download_service,
@@ -116,6 +110,8 @@ void PredictionModelDownloadManager::StartDownload(
   download_params.client =
       download::DownloadClient::OPTIMIZATION_GUIDE_PREDICTION_MODELS;
   download_params.guid = base::GenerateGUID();
+  download_params.custom_data[kPredictionModelOptimizationTargetCustomDataKey] =
+      proto::OptimizationTarget_Name(optimization_target);
   download_params.callback =
       base::BindRepeating(&PredictionModelDownloadManager::OnDownloadStarted,
                           ui_weak_ptr_factory_.GetWeakPtr(),
@@ -206,10 +202,13 @@ void PredictionModelDownloadManager::OnDownloadStarted(
             optimization_guide::GetStringNameForOptimizationTarget(
                 optimization_target),
         base::TimeTicks::Now() - download_requested_time);
+    for (PredictionModelDownloadObserver& observer : observers_)
+      observer.OnModelDownloadStarted(optimization_target);
   }
 }
 
 void PredictionModelDownloadManager::OnDownloadSucceeded(
+    absl::optional<proto::OptimizationTarget> optimization_target,
     const std::string& guid,
     const base::FilePath& file_path) {
   pending_download_guids_.erase(guid);
@@ -223,15 +222,19 @@ void PredictionModelDownloadManager::OnDownloadSucceeded(
       base::BindOnce(&PredictionModelDownloadManager::ProcessDownload,
                      base::Unretained(this), file_path),
       base::BindOnce(&PredictionModelDownloadManager::StartUnzipping,
-                     ui_weak_ptr_factory_.GetWeakPtr()));
+                     ui_weak_ptr_factory_.GetWeakPtr(), optimization_target));
 }
 
-void PredictionModelDownloadManager::OnDownloadFailed(const std::string& guid) {
+void PredictionModelDownloadManager::OnDownloadFailed(
+    absl::optional<proto::OptimizationTarget> optimization_target,
+    const std::string& guid) {
   pending_download_guids_.erase(guid);
 
   base::UmaHistogramBoolean(
       "OptimizationGuide.PredictionModelDownloadManager.DownloadSucceeded",
       false);
+  if (optimization_target)
+    NotifyModelDownloadFailed(*optimization_target);
 }
 
 absl::optional<std::pair<base::FilePath, base::FilePath>>
@@ -290,12 +293,17 @@ PredictionModelDownloadManager::ProcessDownload(
 }
 
 void PredictionModelDownloadManager::StartUnzipping(
+    absl::optional<proto::OptimizationTarget> optimization_target,
     const absl::optional<std::pair<base::FilePath, base::FilePath>>&
         unzip_paths) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!unzip_paths)
+  if (!unzip_paths) {
+    if (optimization_target) {
+      NotifyModelDownloadFailed(*optimization_target);
+    }
     return;
+  }
 
 #if BUILDFLAG(IS_IOS)
   auto unzipper = unzip::LaunchInProcessUnzipper();
@@ -305,11 +313,12 @@ void PredictionModelDownloadManager::StartUnzipping(
   unzip::Unzip(
       std::move(unzipper), unzip_paths->first, unzip_paths->second,
       base::BindOnce(&PredictionModelDownloadManager::OnDownloadUnzipped,
-                     ui_weak_ptr_factory_.GetWeakPtr(), unzip_paths->first,
-                     unzip_paths->second));
+                     ui_weak_ptr_factory_.GetWeakPtr(), optimization_target,
+                     unzip_paths->first, unzip_paths->second));
 }
 
 void PredictionModelDownloadManager::OnDownloadUnzipped(
+    absl::optional<proto::OptimizationTarget> optimization_target,
     const base::FilePath& original_file_path,
     const base::FilePath& unzipped_dir_path,
     bool success) {
@@ -321,6 +330,9 @@ void PredictionModelDownloadManager::OnDownloadUnzipped(
       base::BindOnce(base::GetDeleteFileCallback(), original_file_path));
 
   if (!success) {
+    if (optimization_target) {
+      NotifyModelDownloadFailed(*optimization_target);
+    }
     RecordPredictionModelDownloadStatus(
         PredictionModelDownloadStatus::kFailedCrxUnzip);
     return;
@@ -331,7 +343,7 @@ void PredictionModelDownloadManager::OnDownloadUnzipped(
       base::BindOnce(&PredictionModelDownloadManager::ProcessUnzippedContents,
                      models_dir_path_, unzipped_dir_path),
       base::BindOnce(&PredictionModelDownloadManager::NotifyModelReady,
-                     ui_weak_ptr_factory_.GetWeakPtr()));
+                     ui_weak_ptr_factory_.GetWeakPtr(), optimization_target));
 }
 
 // static
@@ -373,8 +385,8 @@ PredictionModelDownloadManager::ProcessUnzippedContents(
 
   // Move each packaged file away from temp directory into a new directory.
 
-  base::FilePath store_dir =
-      GetDirectoryForModelInfo(model_dir_path, model_info);
+  base::FilePath store_dir = model_dir_path.AppendASCII(
+      base::GUID::GenerateRandomV4().AsLowercaseString());
   if (!base::CreateDirectory(store_dir)) {
     RecordPredictionModelDownloadStatus(
         PredictionModelDownloadStatus::kCouldNotCreateDirectory);
@@ -454,14 +466,26 @@ PredictionModelDownloadManager::ProcessUnzippedContents(
 }
 
 void PredictionModelDownloadManager::NotifyModelReady(
+    absl::optional<proto::OptimizationTarget> optimization_target,
     const absl::optional<proto::PredictionModel>& model) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!model)
+  if (!model) {
+    if (optimization_target) {
+      NotifyModelDownloadFailed(*optimization_target);
+    }
     return;
+  }
 
   for (PredictionModelDownloadObserver& observer : observers_)
     observer.OnModelReady(*model);
+}
+
+void PredictionModelDownloadManager::NotifyModelDownloadFailed(
+    proto::OptimizationTarget optimization_target) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (PredictionModelDownloadObserver& observer : observers_)
+    observer.OnModelDownloadFailed(optimization_target);
 }
 
 }  // namespace optimization_guide

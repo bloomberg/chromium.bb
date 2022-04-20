@@ -60,6 +60,7 @@
 extern bool gSkForceRasterPipelineBlitter;
 extern bool gUseSkVMBlitter;
 extern bool gSkVMAllowJIT;
+extern bool gSkBlobAsSlugTesting;
 
 static DEFINE_string(src, "tests gm skp mskp lottie rive svg image colorImage",
                      "Source types to test.");
@@ -95,6 +96,7 @@ static DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp 
 static DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
 static DEFINE_bool(skvm, false, "sets gUseSkVMBlitter");
 static DEFINE_bool(jit,  true,  "sets gSkVMAllowJIT");
+static DEFINE_bool(blobAsSlugTesting, false, "sets gSkBlobAsSlugTesting");
 
 static DEFINE_string(bisect, "",
         "Pair of: SKP file to bisect, followed by an l/r bisect trail string (e.g., 'lrll'). The "
@@ -965,6 +967,8 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
                 return new GPUDDLSink(gpuConfig, grCtxOptions);
             } else if (gpuConfig->getOOPRish()) {
                 return new GPUOOPRSink(gpuConfig, grCtxOptions);
+            } else if (gpuConfig->getSlug()) {
+                return new GPUSlugSink(gpuConfig, grCtxOptions);
             } else {
                 return new GPUSink(gpuConfig, grCtxOptions);
             }
@@ -1509,6 +1513,7 @@ int main(int argc, char** argv) {
     gSkForceRasterPipelineBlitter = FLAGS_forceRasterPipeline;
     gUseSkVMBlitter               = FLAGS_skvm;
     gSkVMAllowJIT                 = FLAGS_jit;
+    gSkBlobAsSlugTesting          = FLAGS_blobAsSlugTesting;
 
     // The bots like having a verbose.log to upload, so always touch the file even if --verbose.
     if (!FLAGS_writePath.isEmpty()) {

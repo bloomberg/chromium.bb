@@ -39,32 +39,29 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as Formatter from '../../models/formatter/formatter.js';
+import type * as Formatter from '../../models/formatter/formatter.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
-import type * as Diff from '../../third_party/diff/diff.js';
+import {formatCSSChangesFromDiff} from '../../panels/utils/utils.js';
 import * as DiffView from '../../ui/components/diff_view/diff_view.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-import {FontEditorSectionManager} from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
 import type {ComputedStyleChangedEvent} from './ComputedStyleModel.js';
 import {ComputedStyleModel} from './ComputedStyleModel.js';
-import {linkifyDeferredNodeReference} from './DOMLinkifier.js';
 import {ElementsPanel} from './ElementsPanel.js';
 import {ElementsSidebarPane} from './ElementsSidebarPane.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 import {StyleEditorWidget} from './StyleEditorWidget.js';
 import {StylePropertyHighlighter} from './StylePropertyHighlighter.js';
-import stylesSectionTreeStyles from './stylesSectionTree.css.js';
 import stylesSidebarPaneStyles from './stylesSidebarPane.css.js';
 
-import type {Context} from './StylePropertyTreeElement.js';
-import {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
+import type {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
+import {StylePropertiesSection, BlankStylePropertiesSection, KeyframePropertiesSection} from './StylePropertiesSection.js';
 import * as LayersWidget from './LayersWidget.js';
 
 const UIStrings = {
@@ -98,51 +95,10 @@ const UIStrings = {
   */
   inheritedFroms: 'Inherited from ',
   /**
-  *@description Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel
+  *@description Text of an inherited psuedo element in Styles Sidebar Pane of the Elements panel
+  *@example {highlight} PH1
   */
-  insertStyleRuleBelow: 'Insert Style Rule Below',
-  /**
-  *@description Text in Styles Sidebar Pane of the Elements panel
-  */
-  constructedStylesheet: 'constructed stylesheet',
-  /**
-  *@description Text in Styles Sidebar Pane of the Elements panel
-  */
-  userAgentStylesheet: 'user agent stylesheet',
-  /**
-  *@description Text in Styles Sidebar Pane of the Elements panel
-  */
-  injectedStylesheet: 'injected stylesheet',
-  /**
-  *@description Text in Styles Sidebar Pane of the Elements panel
-  */
-  viaInspector: 'via inspector',
-  /**
-  *@description Text in Styles Sidebar Pane of the Elements panel
-  */
-  styleAttribute: '`style` attribute',
-  /**
-  *@description Text in Styles Sidebar Pane of the Elements panel
-  *@example {html} PH1
-  */
-  sattributesStyle: '{PH1}[Attributes Style]',
-  /**
-  *@description Show all button text content in Styles Sidebar Pane of the Elements panel
-  *@example {3} PH1
-  */
-  showAllPropertiesSMore: 'Show All Properties ({PH1} more)',
-  /**
-  *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
-  */
-  copySelector: 'Copy `selector`',
-  /**
-  *@description A context menu item in Styles panel to copy CSS rule
-  */
-  copyRule: 'Copy rule',
-  /**
-  *@description A context menu item in Styles panel to copy all CSS declarations
-  */
-  copyAllDeclarations: 'Copy all declarations',
+  inheritedFromSPseudoOf: 'Inherited from ::{PH1} pseudo of ',
   /**
   *@description Title of  in styles sidebar pane of the elements panel
   *@example {Ctrl} PH1
@@ -177,17 +133,13 @@ const UIStrings = {
   */
   cssPropertyValue: '`CSS` property value: {PH1}',
   /**
-  *@description Text that is announced by the screen reader when the user focuses on an input field for editing the name of a CSS selector in the Styles panel
+  *@description Tooltip text that appears when hovering over the rendering button in the Styles Sidebar Pane of the Elements panel
   */
-  cssSelector: '`CSS` selector',
+  toggleRenderingEmulations: 'Toggle common rendering emulations',
   /**
-  *@description Tooltip text that appears when hovering over the css changes button in the Styles Sidebar Pane of the Elements panel
+  *@description Rendering emulation option for toggling the automatic dark mode
   */
-  copyAllCSSChanges: 'Copy all the CSS changes',
-  /**
-  *@description Tooltip text that appears after clicking on the copy CSS changes button
-  */
-  copiedToClipboard: 'Copied to clipboard',
+  automaticDarkMode: 'Automatic dark mode',
   /**
   *@description Text displayed on layer separators in the styles sidebar pane.
   */
@@ -221,11 +173,6 @@ const HIGHLIGHTABLE_PROPERTIES = [
 
 let stylesSidebarPaneInstance: StylesSidebarPane;
 
-// TODO(crbug.com/1172300) This workaround is needed to keep the linter happy.
-// Otherwise it complains about: Unknown word CssSyntaxError
-const STYLE_TAG = '<' +
-    'style>';
-
 export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventTypes, typeof ElementsSidebarPane>(
     ElementsSidebarPane) {
   private currentToolbarPane: UI.Widget.Widget|null;
@@ -253,7 +200,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
   private readonly resizeThrottler: Common.Throttler.Throttler;
   private readonly imagePreviewPopover: ImagePreviewPopover;
   activeCSSAngle: InlineEditor.CSSAngle.CSSAngle|null;
-  #urlToChangeTracker: Map<string, ChangeTracker> = new Map();
+  #urlToChangeTracker: Map<Platform.DevToolsPath.UrlString, ChangeTracker> = new Map();
 
   static instance(): StylesSidebarPane {
     if (!stylesSidebarPaneInstance) {
@@ -625,9 +572,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     await this.innerRebuildUpdate(matchedStyles);
     if (!this.initialUpdateCompleted) {
       this.initialUpdateCompleted = true;
-      if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES)) {
-        this.appendToolbarItem(this.createCopyAllChangesButton());
-      }
+      this.appendToolbarItem(this.createRenderingShortcuts());
       this.dispatchEventToListeners(Events.InitialUpdateCompleted);
     }
 
@@ -921,10 +866,26 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     }
     pseudoTypes = pseudoTypes.concat([...keys].sort());
     for (const pseudoType of pseudoTypes) {
-      blocks.push(SectionBlock.createPseudoTypeBlock(pseudoType));
-      lastLayers = null;
+      lastParentNode = null;
+      const pseudoStyles = matchedStyles.pseudoStyles(pseudoType);
+      for (let i = 0; i < pseudoStyles.length; ++i) {
+        const style = pseudoStyles[i];
+        const parentNode = matchedStyles.isInherited(style) ? matchedStyles.nodeForStyle(style) : null;
 
-      for (const style of matchedStyles.pseudoStyles(pseudoType)) {
+        // Start a new SectionBlock if this is the first rule for this pseudo type, or if this
+        // rule is inherited from a different parent than the previous rule.
+        if (i === 0 || parentNode !== lastParentNode) {
+          lastLayers = null;
+          if (parentNode) {
+            const block = await SectionBlock.createInheritedPseudoTypeBlock(pseudoType, parentNode);
+            blocks.push(block);
+          } else {
+            const block = SectionBlock.createPseudoTypeBlock(pseudoType);
+            blocks.push(block);
+          }
+        }
+        lastParentNode = parentNode;
+
         addLayerSeparator(style);
         const lastBlock = blocks[blocks.length - 1];
         this.idleCallbackManager.schedule(() => {
@@ -1064,7 +1025,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     return sections;
   }
 
-  async trackURLForChanges(url: string): Promise<void> {
+  async trackURLForChanges(url: Platform.DevToolsPath.UrlString): Promise<void> {
     const currentTracker = this.#urlToChangeTracker.get(url);
     if (currentTracker) {
       WorkspaceDiff.WorkspaceDiff.workspaceDiff().unsubscribeFromDiffChange(
@@ -1132,7 +1093,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     changeTracker.formattedCurrentMapping = formattedCurrentMapping;
   }
 
-  private async getFormattedChanges(): Promise<string> {
+  async getFormattedChanges(): Promise<string> {
     let allChanges = '';
     for (const [url, {uiSourceCode}] of this.#urlToChangeTracker) {
       const diffResponse =
@@ -1244,33 +1205,52 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     }
   }
 
-  private createCopyAllChangesButton(): UI.Toolbar.ToolbarButton {
-    const copyAllIcon = new IconButton.Icon.Icon();
-    copyAllIcon.data = {
-      iconName: 'ic_changes',
+  private createRenderingShortcuts(): UI.Toolbar.ToolbarButton {
+    const prefersColorSchemeSetting =
+        Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersColorScheme');
+    const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulateAutoDarkMode');
+    const decorateStatus = (condition: boolean, title: string): string => `${condition ? '✓ ' : ''}${title}`;
+
+    const icon = new IconButton.Icon.Icon();
+    icon.data = {
+      iconName: 'ic_rendering',
       color: 'var(--color-text-secondary)',
       width: '18px',
       height: '18px',
     };
-    const copyAllChangesButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.copyAllCSSChanges), copyAllIcon);
-    // TODO(1296947): implement a dedicated component to share between all copy buttons
-    copyAllChangesButton.element.setAttribute('data-content', i18nString(UIStrings.copiedToClipboard));
-    let timeout: number|undefined;
-    copyAllChangesButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, async () => {
-      const allChanges = await this.getFormattedChanges();
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane);
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = undefined;
-      }
-      copyAllChangesButton.element.classList.add('copied-to-clipboard');
-      timeout = window.setTimeout(() => {
-        copyAllChangesButton.element.classList.remove('copied-to-clipboard');
-        timeout = undefined;
-      }, 2000);
-    });
-    return copyAllChangesButton;
+    const button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleRenderingEmulations), icon);
+    button.setToggleWithDot(true);
+
+    button.element.addEventListener('click', event => {
+      const menu = new UI.ContextMenu.ContextMenu(event);
+      const preferredColorScheme = prefersColorSchemeSetting.get();
+      const isLightColorScheme = preferredColorScheme === 'light';
+      const isDarkColorScheme = preferredColorScheme === 'dark';
+      const isAutoDarkEnabled = autoDarkModeSetting.get();
+      const lightColorSchemeOption = decorateStatus(isLightColorScheme, 'prefers-color-scheme: light');
+      const darkColorSchemeOption = decorateStatus(isDarkColorScheme, 'prefers-color-scheme: dark');
+      const autoDarkModeOption = decorateStatus(isAutoDarkEnabled, i18nString(UIStrings.automaticDarkMode));
+
+      menu.defaultSection().appendItem(lightColorSchemeOption, () => {
+        autoDarkModeSetting.set(false);
+        prefersColorSchemeSetting.set(isLightColorScheme ? '' : 'light');
+        button.setToggled(Boolean(prefersColorSchemeSetting.get()));
+      });
+      menu.defaultSection().appendItem(darkColorSchemeOption, () => {
+        autoDarkModeSetting.set(false);
+        prefersColorSchemeSetting.set(isDarkColorScheme ? '' : 'dark');
+        button.setToggled(Boolean(prefersColorSchemeSetting.get()));
+      });
+      menu.defaultSection().appendItem(autoDarkModeOption, () => {
+        autoDarkModeSetting.set(!isAutoDarkEnabled);
+        button.setToggled(Boolean(prefersColorSchemeSetting.get()));
+      });
+
+      void menu.show();
+      event.stopPropagation();
+    }, {capture: true});
+
+    return button;
   }
 }
 
@@ -1295,102 +1275,6 @@ type ChangeTracker = {
   formattedCurrentMapping?: Formatter.ScriptFormatter.FormatterSourceMapping,
 };
 
-export async function formatCSSChangesFromDiff(diff: Diff.Diff.DiffArray): Promise<string> {
-  const {originalLines, currentLines, rows} = DiffView.DiffView.buildDiffRows(diff);
-
-  const {propertyToSelector: originalPropertyToSelector, ruleToSelector: originalRuleToSelector} =
-      await buildPropertyRuleMaps(originalLines.join('\n'));
-  const {propertyToSelector: currentPropertyToSelector, ruleToSelector: currentRuleToSelector} =
-      await buildPropertyRuleMaps(currentLines.join('\n'));
-  let changes = '';
-  let recordedOriginalSelector, recordedCurrentSelector;
-  for (const {currentLineNumber, originalLineNumber, type} of rows) {
-    // diff line arrays starts at 0, but line numbers start at 1.
-    const currentLineIndex = currentLineNumber - 1;
-    const originalLineIndex = originalLineNumber - 1;
-    switch (type) {
-      case DiffView.DiffView.RowType.Deletion: {
-        const originalLine = originalLines[originalLineIndex].trim();
-        if (originalRuleToSelector.has(originalLineIndex)) {
-          changes += `/* ${originalLine} { */\n`;
-          recordedOriginalSelector = originalLine;
-          continue;
-        }
-
-        const originalSelector = originalPropertyToSelector.get(originalLineIndex);
-        if (!originalSelector) {
-          continue;
-        }
-        if (originalSelector !== recordedOriginalSelector && originalSelector !== recordedCurrentSelector) {
-          if (recordedOriginalSelector || recordedCurrentSelector) {
-            changes += '}\n\n';
-          }
-          changes += `${originalSelector} {\n`;
-        }
-        recordedOriginalSelector = originalSelector;
-        changes += `  /* ${originalLine} */\n`;
-        break;
-      }
-      case DiffView.DiffView.RowType.Addition: {
-        const currentLine = currentLines[currentLineIndex].trim();
-        if (currentRuleToSelector.has(currentLineIndex)) {
-          changes += `${currentLine} {\n`;
-          recordedCurrentSelector = currentLine;
-          continue;
-        }
-
-        const currentSelector = currentPropertyToSelector.get(currentLineIndex);
-        if (!currentSelector) {
-          continue;
-        }
-        if (currentSelector !== recordedOriginalSelector && currentSelector !== recordedCurrentSelector) {
-          if (recordedOriginalSelector || recordedCurrentSelector) {
-            changes += '}\n\n';
-          }
-          changes += `${currentSelector} {\n`;
-        }
-        recordedCurrentSelector = currentSelector;
-        changes += `  ${currentLine}\n`;
-        break;
-      }
-      default:
-        break;
-    }
-  }
-  if (changes.length > 0) {
-    changes += '}';
-  }
-  return changes;
-}
-
-async function buildPropertyRuleMaps(content: string):
-    Promise<{propertyToSelector: Map<number, string>, ruleToSelector: Map<number, string>}> {
-  const rules = await new Promise<Formatter.FormatterWorkerPool.CSSRule[]>(res => {
-    const rules: Formatter.FormatterWorkerPool.CSSRule[] = [];
-    Formatter.FormatterWorkerPool.formatterWorkerPool().parseCSS(content, (isLastChunk, currentRules) => {
-      rules.push(...currentRules);
-      if (isLastChunk) {
-        res(rules);
-      }
-    });
-  });
-  const propertyToSelector = new Map<number, string>();
-  const ruleToSelector = new Map<number, string>();
-  for (const rule of rules) {
-    if ('styleRange' in rule) {
-      const selector = rule.selectorText.split('\n').pop()?.trim();
-      if (!selector) {
-        continue;
-      }
-      ruleToSelector.set(rule.styleRange.startLine, selector);
-      for (const property of rule.properties) {
-        propertyToSelector.set(property.range.startLine, selector);
-      }
-    }
-  }
-  return {propertyToSelector, ruleToSelector};
-}
-
 const MAX_LINK_LENGTH = 23;
 
 export class SectionBlock {
@@ -1405,6 +1289,20 @@ export class SectionBlock {
     const separatorElement = document.createElement('div');
     separatorElement.className = 'sidebar-separator';
     separatorElement.textContent = i18nString(UIStrings.pseudoSElement, {PH1: pseudoType});
+    return new SectionBlock(separatorElement);
+  }
+
+  static async createInheritedPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, node: SDK.DOMModel.DOMNode):
+      Promise<SectionBlock> {
+    const separatorElement = document.createElement('div');
+    separatorElement.className = 'sidebar-separator';
+
+    UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, {PH1: pseudoType}));
+    const link = await Common.Linkifier.Linkifier.linkify(node, {
+      preventKeyboardFocus: true,
+      tooltip: undefined,
+    });
+    separatorElement.appendChild(link);
     return new SectionBlock(separatorElement);
   }
 
@@ -1499,1488 +1397,6 @@ export class IdleCallbackManager {
 
   awaitDone(): Promise<void[]> {
     return Promise.all(this.promises);
-  }
-}
-
-export class StylePropertiesSection {
-  protected parentPane: StylesSidebarPane;
-  styleInternal: SDK.CSSStyleDeclaration.CSSStyleDeclaration;
-  readonly matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles;
-  editable: boolean;
-  private hoverTimer: number|null;
-  private willCauseCancelEditing: boolean;
-  private forceShowAll: boolean;
-  private readonly originalPropertiesCount: number;
-  element: HTMLDivElement;
-  private readonly innerElement: HTMLElement;
-  private readonly titleElement: HTMLElement;
-  propertiesTreeOutline: UI.TreeOutline.TreeOutlineInShadow;
-  private showAllButton: HTMLButtonElement;
-  protected selectorElement: HTMLSpanElement;
-  private readonly newStyleRuleToolbar: UI.Toolbar.Toolbar|undefined;
-  private readonly fontEditorToolbar: UI.Toolbar.Toolbar|undefined;
-  private readonly fontEditorSectionManager: FontEditorSectionManager|undefined;
-  private readonly fontEditorButton: UI.Toolbar.ToolbarButton|undefined;
-  private selectedSinceMouseDown: boolean;
-  private readonly elementToSelectorIndex: WeakMap<Element, number>;
-  navigable: boolean|null|undefined;
-  protected readonly selectorRefElement: HTMLElement;
-  private readonly selectorContainer: HTMLDivElement;
-  private readonly fontPopoverIcon: FontEditorSectionManager|null;
-  private hoverableSelectorsMode: boolean;
-  private isHiddenInternal: boolean;
-
-  private queryListElement: HTMLElement;
-
-  // Used to identify buttons that trigger a flexbox or grid editor.
-  nextEditorTriggerButtonIdx = 1;
-  private sectionIdx = 0;
-
-  constructor(
-      parentPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles,
-      style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number) {
-    this.parentPane = parentPane;
-    this.sectionIdx = sectionIdx;
-    this.styleInternal = style;
-    this.matchedStyles = matchedStyles;
-    this.editable = Boolean(style.styleSheetId && style.range);
-    this.hoverTimer = null;
-    this.willCauseCancelEditing = false;
-    this.forceShowAll = false;
-    this.originalPropertiesCount = style.leadingProperties().length;
-
-    const rule = style.parentRule;
-    this.element = document.createElement('div');
-    this.element.classList.add('styles-section');
-    this.element.classList.add('matched-styles');
-    this.element.classList.add('monospace');
-    UI.ARIAUtils.setAccessibleName(this.element, `${this.headerText()}, css selector`);
-    this.element.tabIndex = -1;
-    UI.ARIAUtils.markAsListitem(this.element);
-    this.element.addEventListener('keydown', this.onKeyDown.bind(this), false);
-    parentPane.sectionByElement.set(this.element, this);
-    this.innerElement = this.element.createChild('div');
-
-    this.titleElement = this.innerElement.createChild('div', 'styles-section-title ' + (rule ? 'styles-selector' : ''));
-
-    this.propertiesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    this.propertiesTreeOutline.setFocusable(false);
-    this.propertiesTreeOutline.registerCSSFiles([stylesSectionTreeStyles]);
-    this.propertiesTreeOutline.element.classList.add('style-properties', 'matched-styles', 'monospace');
-    // @ts-ignore TODO: fix ad hoc section property in a separate CL to be safe
-    this.propertiesTreeOutline.section = this;
-    this.innerElement.appendChild(this.propertiesTreeOutline.element);
-
-    this.showAllButton = UI.UIUtils.createTextButton('', this.showAllItems.bind(this), 'styles-show-all');
-    this.innerElement.appendChild(this.showAllButton);
-
-    const selectorContainer = document.createElement('div');
-    this.selectorElement = document.createElement('span');
-    UI.ARIAUtils.setAccessibleName(this.selectorElement, i18nString(UIStrings.cssSelector));
-    this.selectorElement.classList.add('selector');
-    this.selectorElement.textContent = this.headerText();
-    selectorContainer.appendChild(this.selectorElement);
-    this.selectorElement.addEventListener('mouseenter', this.onMouseEnterSelector.bind(this), false);
-    this.selectorElement.addEventListener('mousemove', event => event.consume(), false);
-    this.selectorElement.addEventListener('mouseleave', this.onMouseOutSelector.bind(this), false);
-
-    const openBrace = selectorContainer.createChild('span', 'sidebar-pane-open-brace');
-    openBrace.textContent = ' {';
-    selectorContainer.addEventListener('mousedown', this.handleEmptySpaceMouseDown.bind(this), false);
-    selectorContainer.addEventListener('click', this.handleSelectorContainerClick.bind(this), false);
-
-    const closeBrace = this.innerElement.createChild('div', 'sidebar-pane-closing-brace');
-    closeBrace.textContent = '}';
-
-    if (this.styleInternal.parentRule) {
-      const newRuleButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.insertStyleRuleBelow), 'largeicon-add');
-      newRuleButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.onNewRuleClick, this);
-      newRuleButton.element.tabIndex = -1;
-      if (!this.newStyleRuleToolbar) {
-        this.newStyleRuleToolbar =
-            new UI.Toolbar.Toolbar('sidebar-pane-section-toolbar new-rule-toolbar', this.innerElement);
-      }
-      this.newStyleRuleToolbar.appendToolbarItem(newRuleButton);
-      UI.ARIAUtils.markAsHidden(this.newStyleRuleToolbar.element);
-    }
-
-    if (Root.Runtime.experiments.isEnabled('fontEditor') && this.editable) {
-      this.fontEditorToolbar = new UI.Toolbar.Toolbar('sidebar-pane-section-toolbar', this.innerElement);
-      this.fontEditorSectionManager = new FontEditorSectionManager(this.parentPane.swatchPopoverHelper(), this);
-      this.fontEditorButton = new UI.Toolbar.ToolbarButton('Font Editor', 'largeicon-font-editor');
-      this.fontEditorButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
-        this.onFontEditorButtonClicked();
-      }, this);
-      this.fontEditorButton.element.addEventListener('keydown', event => {
-        if (isEnterOrSpaceKey(event)) {
-          event.consume(true);
-          this.onFontEditorButtonClicked();
-        }
-      }, false);
-      this.fontEditorToolbar.appendToolbarItem(this.fontEditorButton);
-
-      if (this.styleInternal.type === SDK.CSSStyleDeclaration.Type.Inline) {
-        if (this.newStyleRuleToolbar) {
-          this.newStyleRuleToolbar.element.classList.add('shifted-toolbar');
-        }
-      } else {
-        this.fontEditorToolbar.element.classList.add('font-toolbar-hidden');
-      }
-    }
-
-    this.selectorElement.addEventListener('click', this.handleSelectorClick.bind(this), false);
-    this.element.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), false);
-    this.element.addEventListener('mousedown', this.handleEmptySpaceMouseDown.bind(this), false);
-    this.element.addEventListener('click', this.handleEmptySpaceClick.bind(this), false);
-    this.element.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-    this.element.addEventListener('mouseleave', this.onMouseLeave.bind(this), false);
-    this.selectedSinceMouseDown = false;
-
-    this.elementToSelectorIndex = new WeakMap();
-
-    if (rule) {
-      // Prevent editing the user agent and user rules.
-      if (rule.isUserAgent() || rule.isInjected()) {
-        this.editable = false;
-      } else {
-        // Check this is a real CSSRule, not a bogus object coming from BlankStylePropertiesSection.
-        if (rule.styleSheetId) {
-          const header = rule.cssModel().styleSheetHeaderForId(rule.styleSheetId);
-          this.navigable = header && !header.isAnonymousInlineStyleSheet();
-        }
-      }
-    }
-
-    this.queryListElement = this.titleElement.createChild('div', 'query-list query-matches');
-    this.selectorRefElement = this.titleElement.createChild('div', 'styles-section-subtitle');
-    this.updateQueryList();
-    this.updateRuleOrigin();
-    this.titleElement.appendChild(selectorContainer);
-    this.selectorContainer = selectorContainer;
-
-    if (this.navigable) {
-      this.element.classList.add('navigable');
-    }
-
-    if (!this.editable) {
-      this.element.classList.add('read-only');
-      this.propertiesTreeOutline.element.classList.add('read-only');
-    }
-    this.fontPopoverIcon = null;
-    this.hoverableSelectorsMode = false;
-    this.isHiddenInternal = false;
-    this.markSelectorMatches();
-    this.onpopulate();
-  }
-
-  setSectionIdx(sectionIdx: number): void {
-    this.sectionIdx = sectionIdx;
-    this.onpopulate();
-  }
-
-  getSectionIdx(): number {
-    return this.sectionIdx;
-  }
-
-  registerFontProperty(treeElement: StylePropertyTreeElement): void {
-    if (this.fontEditorSectionManager) {
-      this.fontEditorSectionManager.registerFontProperty(treeElement);
-    }
-    if (this.fontEditorToolbar) {
-      this.fontEditorToolbar.element.classList.remove('font-toolbar-hidden');
-      if (this.newStyleRuleToolbar) {
-        this.newStyleRuleToolbar.element.classList.add('shifted-toolbar');
-      }
-    }
-  }
-
-  resetToolbars(): void {
-    if (this.parentPane.swatchPopoverHelper().isShowing() ||
-        this.styleInternal.type === SDK.CSSStyleDeclaration.Type.Inline) {
-      return;
-    }
-    if (this.fontEditorToolbar) {
-      this.fontEditorToolbar.element.classList.add('font-toolbar-hidden');
-    }
-    if (this.newStyleRuleToolbar) {
-      this.newStyleRuleToolbar.element.classList.remove('shifted-toolbar');
-    }
-  }
-
-  static createRuleOriginNode(
-      matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, linkifier: Components.Linkifier.Linkifier,
-      rule: SDK.CSSRule.CSSRule|null): Node {
-    if (!rule) {
-      return document.createTextNode('');
-    }
-
-    const ruleLocation = this.getRuleLocationFromCSSRule(rule);
-
-    const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
-
-    function linkifyRuleLocation(): Node|null {
-      if (!rule) {
-        return null;
-      }
-      if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
-        return StylePropertiesSection.linkifyRuleLocation(
-            matchedStyles.cssModel(), linkifier, rule.styleSheetId, ruleLocation);
-      }
-      return null;
-    }
-
-    function linkifyNode(label: string): Node|null {
-      if (header?.ownerNode) {
-        const link = linkifyDeferredNodeReference(header.ownerNode, {
-          preventKeyboardFocus: false,
-          tooltip: undefined,
-        });
-        link.textContent = label;
-        return link;
-      }
-      return null;
-    }
-
-    if (header?.isMutable && !header.isViaInspector()) {
-      const location = header.isConstructedByNew() ? null : linkifyRuleLocation();
-      if (location) {
-        return location;
-      }
-      const label = header.isConstructedByNew() ? i18nString(UIStrings.constructedStylesheet) : STYLE_TAG;
-      const node = linkifyNode(label);
-      if (node) {
-        return node;
-      }
-      return document.createTextNode(label);
-    }
-
-    const location = linkifyRuleLocation();
-    if (location) {
-      return location;
-    }
-
-    if (rule.isUserAgent()) {
-      return document.createTextNode(i18nString(UIStrings.userAgentStylesheet));
-    }
-    if (rule.isInjected()) {
-      return document.createTextNode(i18nString(UIStrings.injectedStylesheet));
-    }
-    if (rule.isViaInspector()) {
-      return document.createTextNode(i18nString(UIStrings.viaInspector));
-    }
-
-    const node = linkifyNode(STYLE_TAG);
-    if (node) {
-      return node;
-    }
-
-    return document.createTextNode('');
-  }
-
-  private static getRuleLocationFromCSSRule(rule: SDK.CSSRule.CSSRule): TextUtils.TextRange.TextRange|null|undefined {
-    let ruleLocation;
-    if (rule instanceof SDK.CSSRule.CSSStyleRule) {
-      ruleLocation = rule.style.range;
-    } else if (rule instanceof SDK.CSSRule.CSSKeyframeRule) {
-      ruleLocation = rule.key().range;
-    }
-    return ruleLocation;
-  }
-
-  static tryNavigateToRuleLocation(
-      matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, rule: SDK.CSSRule.CSSRule|null): void {
-    if (!rule) {
-      return;
-    }
-
-    const ruleLocation = this.getRuleLocationFromCSSRule(rule);
-    const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
-
-    if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
-      const matchingSelectorLocation =
-          this.getCSSSelectorLocation(matchedStyles.cssModel(), rule.styleSheetId, ruleLocation);
-      this.revealSelectorSource(matchingSelectorLocation, true);
-    }
-  }
-
-  protected static linkifyRuleLocation(
-      cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier,
-      styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange): Node {
-    const matchingSelectorLocation = this.getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation);
-    return linkifier.linkifyCSSLocation(matchingSelectorLocation);
-  }
-
-  private static getCSSSelectorLocation(
-      cssModel: SDK.CSSModel.CSSModel, styleSheetId: Protocol.CSS.StyleSheetId,
-      ruleLocation: TextUtils.TextRange.TextRange): SDK.CSSModel.CSSLocation {
-    const styleSheetHeader =
-        (cssModel.styleSheetHeaderForId(styleSheetId) as SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
-    const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
-    const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
-    return new SDK.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
-  }
-
-  private getFocused(): HTMLElement|null {
-    return (this.propertiesTreeOutline.shadowRoot.activeElement as HTMLElement) || null;
-  }
-
-  private focusNext(element: HTMLElement): void {
-    // Clear remembered focused item (if any).
-    const focused = this.getFocused();
-    if (focused) {
-      focused.tabIndex = -1;
-    }
-
-    // Focus the next item and remember it (if in our subtree).
-    element.focus();
-    if (this.propertiesTreeOutline.shadowRoot.contains(element)) {
-      element.tabIndex = 0;
-    }
-  }
-
-  private ruleNavigation(keyboardEvent: KeyboardEvent): void {
-    if (keyboardEvent.altKey || keyboardEvent.ctrlKey || keyboardEvent.metaKey || keyboardEvent.shiftKey) {
-      return;
-    }
-
-    const focused = this.getFocused();
-
-    let focusNext: HTMLElement|null = null;
-    const focusable =
-        Array.from((this.propertiesTreeOutline.shadowRoot.querySelectorAll('[tabindex]') as NodeListOf<HTMLElement>));
-
-    if (focusable.length === 0) {
-      return;
-    }
-
-    const focusedIndex = focused ? focusable.indexOf(focused) : -1;
-
-    if (keyboardEvent.key === 'ArrowLeft') {
-      focusNext = focusable[focusedIndex - 1] || this.element;
-    } else if (keyboardEvent.key === 'ArrowRight') {
-      focusNext = focusable[focusedIndex + 1] || this.element;
-    } else if (keyboardEvent.key === 'ArrowUp' || keyboardEvent.key === 'ArrowDown') {
-      this.focusNext(this.element);
-      return;
-    }
-
-    if (focusNext) {
-      this.focusNext(focusNext);
-      keyboardEvent.consume(true);
-    }
-  }
-
-  private onKeyDown(event: Event): void {
-    const keyboardEvent = (event as KeyboardEvent);
-    if (UI.UIUtils.isEditing() || !this.editable || keyboardEvent.altKey || keyboardEvent.ctrlKey ||
-        keyboardEvent.metaKey) {
-      return;
-    }
-    switch (keyboardEvent.key) {
-      case 'Enter':
-      case ' ':
-        this.startEditingAtFirstPosition();
-        keyboardEvent.consume(true);
-        break;
-      case 'ArrowLeft':
-      case 'ArrowRight':
-      case 'ArrowUp':
-      case 'ArrowDown':
-        this.ruleNavigation(keyboardEvent);
-        break;
-      default:
-        // Filter out non-printable key strokes.
-        if (keyboardEvent.key.length === 1) {
-          this.addNewBlankProperty(0).startEditing();
-        }
-        break;
-    }
-  }
-
-  private setSectionHovered(isHovered: boolean): void {
-    this.element.classList.toggle('styles-panel-hovered', isHovered);
-    this.propertiesTreeOutline.element.classList.toggle('styles-panel-hovered', isHovered);
-    if (this.hoverableSelectorsMode !== isHovered) {
-      this.hoverableSelectorsMode = isHovered;
-      this.markSelectorMatches();
-    }
-  }
-
-  private onMouseLeave(_event: Event): void {
-    this.setSectionHovered(false);
-    this.parentPane.setActiveProperty(null);
-  }
-
-  private onMouseMove(event: MouseEvent): void {
-    const hasCtrlOrMeta = UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event);
-    this.setSectionHovered(hasCtrlOrMeta);
-
-    const treeElement = this.propertiesTreeOutline.treeElementFromEvent(event);
-    if (treeElement instanceof StylePropertyTreeElement) {
-      this.parentPane.setActiveProperty((treeElement as StylePropertyTreeElement));
-    } else {
-      this.parentPane.setActiveProperty(null);
-    }
-    const selection = this.element.getComponentSelection();
-    if (!this.selectedSinceMouseDown && selection && selection.toString()) {
-      this.selectedSinceMouseDown = true;
-    }
-  }
-
-  private onFontEditorButtonClicked(): void {
-    if (this.fontEditorSectionManager && this.fontEditorButton) {
-      void this.fontEditorSectionManager.showPopover(this.fontEditorButton.element, this.parentPane);
-    }
-  }
-
-  style(): SDK.CSSStyleDeclaration.CSSStyleDeclaration {
-    return this.styleInternal;
-  }
-
-  headerText(): string {
-    const node = this.matchedStyles.nodeForStyle(this.styleInternal);
-    if (this.styleInternal.type === SDK.CSSStyleDeclaration.Type.Inline) {
-      return this.matchedStyles.isInherited(this.styleInternal) ? i18nString(UIStrings.styleAttribute) :
-                                                                  'element.style';
-    }
-    if (node && this.styleInternal.type === SDK.CSSStyleDeclaration.Type.Attributes) {
-      return i18nString(UIStrings.sattributesStyle, {PH1: node.nodeNameInCorrectCase()});
-    }
-    if (this.styleInternal.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
-      return this.styleInternal.parentRule.selectorText();
-    }
-    return '';
-  }
-
-  private onMouseOutSelector(): void {
-    if (this.hoverTimer) {
-      clearTimeout(this.hoverTimer);
-    }
-    SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-  }
-
-  private onMouseEnterSelector(): void {
-    if (this.hoverTimer) {
-      clearTimeout(this.hoverTimer);
-    }
-    this.hoverTimer = window.setTimeout(this.highlight.bind(this), 300);
-  }
-
-  highlight(mode: string|undefined = 'all'): void {
-    SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-    const node = this.parentPane.node();
-    if (!node) {
-      return;
-    }
-    const selectorList =
-        this.styleInternal.parentRule && this.styleInternal.parentRule instanceof SDK.CSSRule.CSSStyleRule ?
-        this.styleInternal.parentRule.selectorText() :
-        undefined;
-    node.domModel().overlayModel().highlightInOverlay({node, selectorList}, mode);
-  }
-
-  firstSibling(): StylePropertiesSection|null {
-    const parent = this.element.parentElement;
-    if (!parent) {
-      return null;
-    }
-
-    let childElement: (ChildNode|null) = parent.firstChild;
-    while (childElement) {
-      const childSection = this.parentPane.sectionByElement.get(childElement);
-      if (childSection) {
-        return childSection;
-      }
-      childElement = childElement.nextSibling;
-    }
-
-    return null;
-  }
-
-  findCurrentOrNextVisible(willIterateForward: boolean, originalSection?: StylePropertiesSection):
-      StylePropertiesSection|null {
-    if (!this.isHidden()) {
-      return this;
-    }
-    if (this === originalSection) {
-      return null;
-    }
-    if (!originalSection) {
-      originalSection = this;
-    }
-    let visibleSibling: (StylePropertiesSection|null)|null = null;
-    const nextSibling = willIterateForward ? this.nextSibling() : this.previousSibling();
-    if (nextSibling) {
-      visibleSibling = nextSibling.findCurrentOrNextVisible(willIterateForward, originalSection);
-    } else {
-      const loopSibling = willIterateForward ? this.firstSibling() : this.lastSibling();
-      if (loopSibling) {
-        visibleSibling = loopSibling.findCurrentOrNextVisible(willIterateForward, originalSection);
-      }
-    }
-
-    return visibleSibling;
-  }
-
-  lastSibling(): StylePropertiesSection|null {
-    const parent = this.element.parentElement;
-    if (!parent) {
-      return null;
-    }
-
-    let childElement: (ChildNode|null) = parent.lastChild;
-    while (childElement) {
-      const childSection = this.parentPane.sectionByElement.get(childElement);
-      if (childSection) {
-        return childSection;
-      }
-      childElement = childElement.previousSibling;
-    }
-
-    return null;
-  }
-
-  nextSibling(): StylePropertiesSection|undefined {
-    let curElement: (ChildNode|null)|HTMLDivElement = this.element;
-    do {
-      curElement = curElement.nextSibling;
-    } while (curElement && !this.parentPane.sectionByElement.has(curElement));
-
-    if (curElement) {
-      return this.parentPane.sectionByElement.get(curElement);
-    }
-    return;
-  }
-
-  previousSibling(): StylePropertiesSection|undefined {
-    let curElement: (ChildNode|null)|HTMLDivElement = this.element;
-    do {
-      curElement = curElement.previousSibling;
-    } while (curElement && !this.parentPane.sectionByElement.has(curElement));
-
-    if (curElement) {
-      return this.parentPane.sectionByElement.get(curElement);
-    }
-    return;
-  }
-
-  private onNewRuleClick(event: Common.EventTarget.EventTargetEvent<Event>): void {
-    event.data.consume();
-    const rule = this.styleInternal.parentRule;
-    if (!rule || !rule.style.range || rule.styleSheetId === undefined) {
-      return;
-    }
-    const range =
-        TextUtils.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
-    this.parentPane.addBlankSection(this, rule.styleSheetId, range);
-  }
-
-  styleSheetEdited(edit: SDK.CSSModel.Edit): void {
-    const rule = this.styleInternal.parentRule;
-    if (rule) {
-      rule.rebase(edit);
-    } else {
-      this.styleInternal.rebase(edit);
-    }
-
-    this.updateQueryList();
-    this.updateRuleOrigin();
-  }
-
-  protected createAtRuleLists(rule: SDK.CSSRule.CSSStyleRule): void {
-    this.createMediaList(rule.media);
-    this.createContainerQueryList(rule.containerQueries);
-    this.createSupportsList(rule.supports);
-  }
-
-  protected createMediaList(mediaRules: SDK.CSSMedia.CSSMedia[]): void {
-    for (let i = mediaRules.length - 1; i >= 0; --i) {
-      const media = mediaRules[i];
-      // Don't display trivial non-print media types.
-      const isMedia = !media.text || !media.text.includes('(') && media.text !== 'print';
-      if (isMedia) {
-        continue;
-      }
-
-      let queryPrefix = '';
-      let queryText = '';
-      let onQueryTextClick;
-      switch (media.source) {
-        case SDK.CSSMedia.Source.LINKED_SHEET:
-        case SDK.CSSMedia.Source.INLINE_SHEET: {
-          queryText = `media="${media.text}"`;
-          break;
-        }
-        case SDK.CSSMedia.Source.MEDIA_RULE: {
-          queryPrefix = '@media';
-          queryText = media.text;
-          if (media.styleSheetId) {
-            onQueryTextClick = this.handleQueryRuleClick.bind(this, media);
-          }
-          break;
-        }
-        case SDK.CSSMedia.Source.IMPORT_RULE: {
-          queryText = `@import ${media.text}`;
-          break;
-        }
-      }
-
-      const mediaQueryElement = new ElementsComponents.CSSQuery.CSSQuery();
-      mediaQueryElement.data = {
-        queryPrefix,
-        queryText,
-        onQueryTextClick,
-      };
-      this.queryListElement.append(mediaQueryElement);
-    }
-  }
-
-  protected createContainerQueryList(containerQueries: SDK.CSSContainerQuery.CSSContainerQuery[]): void {
-    for (let i = containerQueries.length - 1; i >= 0; --i) {
-      const containerQuery = containerQueries[i];
-      if (!containerQuery.text) {
-        continue;
-      }
-
-      let onQueryTextClick;
-      if (containerQuery.styleSheetId) {
-        onQueryTextClick = this.handleQueryRuleClick.bind(this, containerQuery);
-      }
-
-      const containerQueryElement = new ElementsComponents.CSSQuery.CSSQuery();
-      containerQueryElement.data = {
-        queryPrefix: '@container',
-        queryName: containerQuery.name,
-        queryText: containerQuery.text,
-        onQueryTextClick,
-      };
-      this.queryListElement.append(containerQueryElement);
-
-      void this.addContainerForContainerQuery(containerQuery);
-    }
-  }
-
-  protected createSupportsList(supportsList: SDK.CSSSupports.CSSSupports[]): void {
-    for (let i = supportsList.length - 1; i >= 0; --i) {
-      const supports = supportsList[i];
-      if (!supports.text) {
-        continue;
-      }
-
-      let onQueryTextClick;
-      if (supports.styleSheetId) {
-        onQueryTextClick = this.handleQueryRuleClick.bind(this, supports);
-      }
-
-      const supportsElement = new ElementsComponents.CSSQuery.CSSQuery();
-      supportsElement.data = {
-        queryPrefix: '@supports',
-        queryText: supports.text,
-        onQueryTextClick,
-      };
-      this.queryListElement.append(supportsElement);
-    }
-  }
-
-  private async addContainerForContainerQuery(containerQuery: SDK.CSSContainerQuery.CSSContainerQuery): Promise<void> {
-    const container = await containerQuery.getContainerForNode(this.matchedStyles.node().id);
-    if (!container) {
-      return;
-    }
-
-    const containerElement = new ElementsComponents.QueryContainer.QueryContainer();
-    containerElement.data = {
-      container: ElementsComponents.Helper.legacyNodeToElementsComponentsNode(container.containerNode),
-      queryName: containerQuery.name,
-      onContainerLinkClick: (event): void => {
-        event.preventDefault();
-        void ElementsPanel.instance().revealAndSelectNode(container.containerNode, true, true);
-        void container.containerNode.scrollIntoView();
-      },
-    };
-
-    containerElement.addEventListener('queriedsizerequested', async () => {
-      const details = await container.getContainerSizeDetails();
-      if (details) {
-        containerElement.updateContainerQueriedSizeDetails(details);
-      }
-    });
-
-    this.queryListElement.prepend(containerElement);
-  }
-
-  private updateQueryList(): void {
-    this.queryListElement.removeChildren();
-    if (this.styleInternal.parentRule && this.styleInternal.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
-      this.createAtRuleLists(this.styleInternal.parentRule);
-    }
-  }
-
-  isPropertyInherited(propertyName: string): boolean {
-    if (this.matchedStyles.isInherited(this.styleInternal)) {
-      // While rendering inherited stylesheet, reverse meaning of this property.
-      // Render truly inherited properties with black, i.e. return them as non-inherited.
-      return !SDK.CSSMetadata.cssMetadata().isPropertyInherited(propertyName);
-    }
-    return false;
-  }
-
-  nextEditableSibling(): StylePropertiesSection|null {
-    let curSection: (StylePropertiesSection|undefined)|(StylePropertiesSection | null)|this = this;
-    do {
-      curSection = curSection.nextSibling();
-    } while (curSection && !curSection.editable);
-
-    if (!curSection) {
-      curSection = this.firstSibling();
-      while (curSection && !curSection.editable) {
-        curSection = curSection.nextSibling();
-      }
-    }
-
-    return (curSection && curSection.editable) ? curSection : null;
-  }
-
-  previousEditableSibling(): StylePropertiesSection|null {
-    let curSection: (StylePropertiesSection|undefined)|(StylePropertiesSection | null)|this = this;
-    do {
-      curSection = curSection.previousSibling();
-    } while (curSection && !curSection.editable);
-
-    if (!curSection) {
-      curSection = this.lastSibling();
-      while (curSection && !curSection.editable) {
-        curSection = curSection.previousSibling();
-      }
-    }
-
-    return (curSection && curSection.editable) ? curSection : null;
-  }
-
-  refreshUpdate(editedTreeElement: StylePropertyTreeElement): void {
-    this.parentPane.refreshUpdate(this, editedTreeElement);
-  }
-
-  updateVarFunctions(editedTreeElement: StylePropertyTreeElement): void {
-    let child = this.propertiesTreeOutline.firstChild();
-    while (child) {
-      if (child !== editedTreeElement && child instanceof StylePropertyTreeElement) {
-        child.updateTitleIfComputedValueChanged();
-      }
-      child = child.traverseNextTreeElement(false /* skipUnrevealed */, null /* stayWithin */, true /* dontPopulate */);
-    }
-  }
-
-  update(full: boolean): void {
-    this.selectorElement.textContent = this.headerText();
-    this.markSelectorMatches();
-    if (full) {
-      this.onpopulate();
-    } else {
-      let child = this.propertiesTreeOutline.firstChild();
-      while (child && child instanceof StylePropertyTreeElement) {
-        child.setOverloaded(this.isPropertyOverloaded(child.property));
-        child =
-            child.traverseNextTreeElement(false /* skipUnrevealed */, null /* stayWithin */, true /* dontPopulate */);
-      }
-    }
-  }
-
-  showAllItems(event?: Event): void {
-    if (event) {
-      event.consume();
-    }
-    if (this.forceShowAll) {
-      return;
-    }
-    this.forceShowAll = true;
-    this.onpopulate();
-  }
-
-  onpopulate(): void {
-    this.parentPane.setActiveProperty(null);
-    this.nextEditorTriggerButtonIdx = 1;
-    this.propertiesTreeOutline.removeChildren();
-    const style = this.styleInternal;
-    let count = 0;
-    const properties = style.leadingProperties();
-    const maxProperties = StylePropertiesSection.MaxProperties + properties.length - this.originalPropertiesCount;
-
-    for (const property of properties) {
-      if (!this.forceShowAll && count >= maxProperties) {
-        break;
-      }
-      count++;
-      const isShorthand = Boolean(style.longhandProperties(property.name).length);
-      const inherited = this.isPropertyInherited(property.name);
-      const overloaded = this.isPropertyOverloaded(property);
-      if (style.parentRule && style.parentRule.isUserAgent() && inherited) {
-        continue;
-      }
-      const item = new StylePropertyTreeElement(
-          this.parentPane, this.matchedStyles, property, isShorthand, inherited, overloaded, false);
-      this.propertiesTreeOutline.appendChild(item);
-    }
-
-    if (count < properties.length) {
-      this.showAllButton.classList.remove('hidden');
-      this.showAllButton.textContent = i18nString(UIStrings.showAllPropertiesSMore, {PH1: properties.length - count});
-    } else {
-      this.showAllButton.classList.add('hidden');
-    }
-  }
-
-  isPropertyOverloaded(property: SDK.CSSProperty.CSSProperty): boolean {
-    return this.matchedStyles.propertyState(property) === SDK.CSSMatchedStyles.PropertyState.Overloaded;
-  }
-
-  updateFilter(): boolean {
-    let hasMatchingChild = false;
-    this.showAllItems();
-    for (const child of this.propertiesTreeOutline.rootElement().children()) {
-      if (child instanceof StylePropertyTreeElement) {
-        const childHasMatches = child.updateFilter();
-        hasMatchingChild = hasMatchingChild || childHasMatches;
-      }
-    }
-
-    const regex = this.parentPane.filterRegex();
-    const hideRule = !hasMatchingChild && regex !== null && !regex.test(this.element.deepTextContent());
-    this.isHiddenInternal = hideRule;
-    this.element.classList.toggle('hidden', hideRule);
-    if (!hideRule && this.styleInternal.parentRule) {
-      this.markSelectorHighlights();
-    }
-    return !hideRule;
-  }
-
-  isHidden(): boolean {
-    return this.isHiddenInternal;
-  }
-
-  markSelectorMatches(): void {
-    const rule = this.styleInternal.parentRule;
-    if (!rule || !(rule instanceof SDK.CSSRule.CSSStyleRule)) {
-      return;
-    }
-
-    this.queryListElement.classList.toggle('query-matches', this.matchedStyles.mediaMatches(this.styleInternal));
-
-    const selectorTexts = rule.selectors.map(selector => selector.text);
-    const matchingSelectorIndexes = this.matchedStyles.getMatchingSelectors(rule);
-    const matchingSelectors = (new Array(selectorTexts.length).fill(false) as boolean[]);
-    for (const matchingIndex of matchingSelectorIndexes) {
-      matchingSelectors[matchingIndex] = true;
-    }
-
-    if (this.parentPane.isEditingStyle) {
-      return;
-    }
-
-    const fragment = this.hoverableSelectorsMode ? this.renderHoverableSelectors(selectorTexts, matchingSelectors) :
-                                                   this.renderSimplifiedSelectors(selectorTexts, matchingSelectors);
-    this.selectorElement.removeChildren();
-    this.selectorElement.appendChild(fragment);
-    this.markSelectorHighlights();
-  }
-
-  private renderHoverableSelectors(selectors: string[], matchingSelectors: boolean[]): DocumentFragment {
-    const fragment = document.createDocumentFragment();
-    for (let i = 0; i < selectors.length; ++i) {
-      if (i) {
-        UI.UIUtils.createTextChild(fragment, ', ');
-      }
-      fragment.appendChild(this.createSelectorElement(selectors[i], matchingSelectors[i], i));
-    }
-    return fragment;
-  }
-
-  private createSelectorElement(text: string, isMatching: boolean, navigationIndex?: number): Element {
-    const element = document.createElement('span');
-    element.classList.add('simple-selector');
-    element.classList.toggle('selector-matches', isMatching);
-    if (typeof navigationIndex === 'number') {
-      this.elementToSelectorIndex.set(element, navigationIndex);
-    }
-    element.textContent = text;
-    return element;
-  }
-
-  private renderSimplifiedSelectors(selectors: string[], matchingSelectors: boolean[]): DocumentFragment {
-    const fragment = document.createDocumentFragment();
-    let currentMatching = false;
-    let text = '';
-    for (let i = 0; i < selectors.length; ++i) {
-      if (currentMatching !== matchingSelectors[i] && text) {
-        fragment.appendChild(this.createSelectorElement(text, currentMatching));
-        text = '';
-      }
-      currentMatching = matchingSelectors[i];
-      text += selectors[i] + (i === selectors.length - 1 ? '' : ', ');
-    }
-    if (text) {
-      fragment.appendChild(this.createSelectorElement(text, currentMatching));
-    }
-    return fragment;
-  }
-
-  markSelectorHighlights(): void {
-    const selectors = this.selectorElement.getElementsByClassName('simple-selector');
-    const regex = this.parentPane.filterRegex();
-    for (let i = 0; i < selectors.length; ++i) {
-      const selectorMatchesFilter = regex !== null && regex.test(selectors[i].textContent || '');
-      selectors[i].classList.toggle('filter-match', selectorMatchesFilter);
-    }
-  }
-
-  private checkWillCancelEditing(): boolean {
-    const willCauseCancelEditing = this.willCauseCancelEditing;
-    this.willCauseCancelEditing = false;
-    return willCauseCancelEditing;
-  }
-
-  private handleSelectorContainerClick(event: Event): void {
-    if (this.checkWillCancelEditing() || !this.editable) {
-      return;
-    }
-    if (event.target === this.selectorContainer) {
-      this.addNewBlankProperty(0).startEditing();
-      event.consume(true);
-    }
-  }
-
-  addNewBlankProperty(index: number|undefined = this.propertiesTreeOutline.rootElement().childCount()):
-      StylePropertyTreeElement {
-    const property = this.styleInternal.newBlankProperty(index);
-    const item = new StylePropertyTreeElement(this.parentPane, this.matchedStyles, property, false, false, false, true);
-    this.propertiesTreeOutline.insertChild(item, property.index);
-    return item;
-  }
-
-  private handleEmptySpaceMouseDown(): void {
-    this.willCauseCancelEditing = this.parentPane.isEditingStyle;
-    this.selectedSinceMouseDown = false;
-  }
-
-  private handleEmptySpaceClick(event: Event): void {
-    if (!this.editable || this.element.hasSelection() || this.checkWillCancelEditing() || this.selectedSinceMouseDown) {
-      return;
-    }
-
-    const target = (event.target as Element);
-
-    if (target.classList.contains('header') || this.element.classList.contains('read-only') ||
-        target.enclosingNodeOrSelfWithClass('query')) {
-      event.consume();
-      return;
-    }
-    const deepTarget = UI.UIUtils.deepElementFromEvent(event);
-    const treeElement = deepTarget && UI.TreeOutline.TreeElement.getTreeElementBylistItemNode(deepTarget);
-    if (treeElement && treeElement instanceof StylePropertyTreeElement) {
-      this.addNewBlankProperty(treeElement.property.index + 1).startEditing();
-    } else {
-      this.addNewBlankProperty().startEditing();
-    }
-    event.consume(true);
-  }
-
-  private handleQueryRuleClick(query: SDK.CSSQuery.CSSQuery, event: Event): void {
-    const element = event.currentTarget as Element;
-    if (UI.UIUtils.isBeingEdited(element)) {
-      return;
-    }
-
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event as MouseEvent) && this.navigable) {
-      const location = query.rawLocation();
-      if (!location) {
-        event.consume(true);
-        return;
-      }
-      const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(location);
-      if (uiLocation) {
-        void Common.Revealer.reveal(uiLocation);
-      }
-      event.consume(true);
-      return;
-    }
-
-    if (!this.editable) {
-      return;
-    }
-
-    const config = new UI.InplaceEditor.Config(
-        this.editingMediaCommitted.bind(this, query), this.editingMediaCancelled.bind(this, element), undefined,
-        this.editingMediaBlurHandler.bind(this));
-    UI.InplaceEditor.InplaceEditor.startEditing(element, config);
-
-    const selection = element.getComponentSelection();
-    if (selection) {
-      selection.selectAllChildren(element);
-    }
-    this.parentPane.setEditingStyle(true);
-    const parentMediaElement = element.enclosingNodeOrSelfWithClass('query');
-    parentMediaElement.classList.add('editing-query');
-
-    event.consume(true);
-  }
-
-  private editingMediaFinished(element: Element): void {
-    this.parentPane.setEditingStyle(false);
-    const parentMediaElement = element.enclosingNodeOrSelfWithClass('query');
-    parentMediaElement.classList.remove('editing-query');
-  }
-
-  private editingMediaCancelled(element: Element): void {
-    this.editingMediaFinished(element);
-    // Mark the selectors in group if necessary.
-    // This is overridden by BlankStylePropertiesSection.
-    this.markSelectorMatches();
-    const selection = element.getComponentSelection();
-    if (selection) {
-      selection.collapse(element, 0);
-    }
-  }
-
-  private editingMediaBlurHandler(): boolean {
-    return true;
-  }
-
-  private async editingMediaCommitted(
-      query: SDK.CSSQuery.CSSQuery, element: Element, newContent: string, _oldContent: string,
-      _context: Context|undefined, _moveDirection: string): Promise<void> {
-    this.parentPane.setEditingStyle(false);
-    this.editingMediaFinished(element);
-
-    if (newContent) {
-      newContent = newContent.trim();
-    }
-
-    // This gets deleted in finishOperation(), which is called both on success and failure.
-    this.parentPane.setUserOperation(true);
-    const cssModel = this.parentPane.cssModel();
-    if (cssModel && query.styleSheetId) {
-      const range = query.range as TextUtils.TextRange.TextRange;
-      let success = false;
-      if (query instanceof SDK.CSSContainerQuery.CSSContainerQuery) {
-        success = await cssModel.setContainerQueryText(query.styleSheetId, range, newContent);
-      } else if (query instanceof SDK.CSSSupports.CSSSupports) {
-        success = await cssModel.setSupportsText(query.styleSheetId, range, newContent);
-      } else {
-        success = await cssModel.setMediaText(query.styleSheetId, range, newContent);
-      }
-
-      if (success) {
-        this.matchedStyles.resetActiveProperties();
-        this.parentPane.refreshUpdate(this);
-      }
-      this.parentPane.setUserOperation(false);
-      this.editingMediaTextCommittedForTest();
-    }
-  }
-
-  private editingMediaTextCommittedForTest(): void {
-  }
-
-  private handleSelectorClick(event: Event): void {
-    const target = (event.target as Element | null);
-    if (!target) {
-      return;
-    }
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey((event as MouseEvent)) && this.navigable &&
-        target.classList.contains('simple-selector')) {
-      const selectorIndex = this.elementToSelectorIndex.get(target);
-      if (selectorIndex) {
-        this.navigateToSelectorSource(selectorIndex, true);
-      }
-      event.consume(true);
-      return;
-    }
-    if (this.element.hasSelection()) {
-      return;
-    }
-    this.startEditingAtFirstPosition();
-    event.consume(true);
-  }
-
-  private handleContextMenuEvent(event: Event): void {
-    const target = (event.target as Element | null);
-    if (!target) {
-      return;
-    }
-
-    const contextMenu = new UI.ContextMenu.ContextMenu(event);
-    contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copySelector), () => {
-      const selectorText = this.headerText();
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(selectorText);
-      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.SelectorViaContextMenu);
-    });
-
-    contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyRule), () => {
-      const ruleText = StylesSidebarPane.formatLeadingProperties(this).ruleText;
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(ruleText);
-      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.RuleViaContextMenu);
-    });
-
-    contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllDeclarations), () => {
-      const allDeclarationText = StylesSidebarPane.formatLeadingProperties(this).allDeclarationText;
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
-      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllDeclarationsViaContextMenu);
-    });
-
-    void contextMenu.show();
-  }
-
-  private navigateToSelectorSource(index: number, focus: boolean): void {
-    const cssModel = this.parentPane.cssModel();
-    if (!cssModel) {
-      return;
-    }
-    const rule = (this.styleInternal.parentRule as SDK.CSSRule.CSSStyleRule | null);
-    if (!rule || rule.styleSheetId === undefined) {
-      return;
-    }
-    const header = cssModel.styleSheetHeaderForId(rule.styleSheetId);
-    if (!header) {
-      return;
-    }
-    const rawLocation =
-        new SDK.CSSModel.CSSLocation(header, rule.lineNumberInSource(index), rule.columnNumberInSource(index));
-    StylePropertiesSection.revealSelectorSource(rawLocation, focus);
-  }
-
-  private static revealSelectorSource(rawLocation: SDK.CSSModel.CSSLocation, focus: boolean): void {
-    const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
-    if (uiLocation) {
-      void Common.Revealer.reveal(uiLocation, !focus);
-    }
-  }
-
-  private startEditingAtFirstPosition(): void {
-    if (!this.editable) {
-      return;
-    }
-
-    if (!this.styleInternal.parentRule) {
-      this.moveEditorFromSelector('forward');
-      return;
-    }
-
-    this.startEditingSelector();
-  }
-
-  startEditingSelector(): void {
-    const element = this.selectorElement;
-    if (UI.UIUtils.isBeingEdited(element)) {
-      return;
-    }
-
-    element.scrollIntoViewIfNeeded(false);
-    // Reset selector marks in group, and normalize whitespace.
-    const textContent = element.textContent;
-    if (textContent !== null) {
-      element.textContent = textContent.replace(/\s+/g, ' ').trim();
-    }
-
-    const config =
-        new UI.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this));
-    UI.InplaceEditor.InplaceEditor.startEditing(this.selectorElement, config);
-
-    const selection = element.getComponentSelection();
-    if (selection) {
-      selection.selectAllChildren(element);
-    }
-    this.parentPane.setEditingStyle(true);
-    if (element.classList.contains('simple-selector')) {
-      this.navigateToSelectorSource(0, false);
-    }
-  }
-
-  moveEditorFromSelector(moveDirection: string): void {
-    this.markSelectorMatches();
-
-    if (!moveDirection) {
-      return;
-    }
-
-    if (moveDirection === 'forward') {
-      const firstChild = (this.propertiesTreeOutline.firstChild() as StylePropertyTreeElement);
-      let currentChild: (StylePropertyTreeElement|null)|StylePropertyTreeElement = firstChild;
-      while (currentChild && currentChild.inherited()) {
-        const sibling: UI.TreeOutline.TreeElement|null = currentChild.nextSibling;
-        currentChild = sibling instanceof StylePropertyTreeElement ? sibling : null;
-      }
-      if (!currentChild) {
-        this.addNewBlankProperty().startEditing();
-      } else {
-        currentChild.startEditing(currentChild.nameElement);
-      }
-    } else {
-      const previousSection = this.previousEditableSibling();
-      if (!previousSection) {
-        return;
-      }
-
-      previousSection.addNewBlankProperty().startEditing();
-    }
-  }
-
-  editingSelectorCommitted(
-      element: Element, newContent: string, oldContent: string, context: Context|undefined,
-      moveDirection: string): void {
-    this.editingSelectorEnded();
-    if (newContent) {
-      newContent = newContent.trim();
-    }
-    if (newContent === oldContent) {
-      // Revert to a trimmed version of the selector if need be.
-      this.selectorElement.textContent = newContent;
-      this.moveEditorFromSelector(moveDirection);
-      return;
-    }
-    const rule = this.styleInternal.parentRule;
-    if (!rule) {
-      return;
-    }
-
-    function headerTextCommitted(this: StylePropertiesSection): void {
-      this.parentPane.setUserOperation(false);
-      this.moveEditorFromSelector(moveDirection);
-      this.editingSelectorCommittedForTest();
-    }
-
-    // This gets deleted in finishOperationAndMoveEditor(), which is called both on success and failure.
-    this.parentPane.setUserOperation(true);
-    void this.setHeaderText(rule, newContent).then(headerTextCommitted.bind(this));
-  }
-
-  setHeaderText(rule: SDK.CSSRule.CSSRule, newContent: string): Promise<void> {
-    function onSelectorsUpdated(
-        this: StylePropertiesSection, rule: SDK.CSSRule.CSSStyleRule, success: boolean): Promise<void> {
-      if (!success) {
-        return Promise.resolve();
-      }
-      return this.matchedStyles.recomputeMatchingSelectors(rule).then(updateSourceRanges.bind(this, rule));
-    }
-
-    function updateSourceRanges(this: StylePropertiesSection, rule: SDK.CSSRule.CSSStyleRule): void {
-      const doesAffectSelectedNode = this.matchedStyles.getMatchingSelectors(rule).length > 0;
-      this.propertiesTreeOutline.element.classList.toggle('no-affect', !doesAffectSelectedNode);
-      this.matchedStyles.resetActiveProperties();
-      this.parentPane.refreshUpdate(this);
-    }
-
-    if (!(rule instanceof SDK.CSSRule.CSSStyleRule)) {
-      return Promise.resolve();
-    }
-    const oldSelectorRange = rule.selectorRange();
-    if (!oldSelectorRange) {
-      return Promise.resolve();
-    }
-    return rule.setSelectorText(newContent).then(onSelectorsUpdated.bind(this, rule, Boolean(oldSelectorRange)));
-  }
-
-  protected editingSelectorCommittedForTest(): void {
-  }
-
-  protected updateRuleOrigin(): void {
-    this.selectorRefElement.removeChildren();
-    this.selectorRefElement.appendChild(StylePropertiesSection.createRuleOriginNode(
-        this.matchedStyles, this.parentPane.linkifier, this.styleInternal.parentRule));
-  }
-
-  protected editingSelectorEnded(): void {
-    this.parentPane.setEditingStyle(false);
-  }
-
-  editingSelectorCancelled(): void {
-    this.editingSelectorEnded();
-
-    // Mark the selectors in group if necessary.
-    // This is overridden by BlankStylePropertiesSection.
-    this.markSelectorMatches();
-  }
-
-  /**
-   * A property at or near an index and suitable for subsequent editing.
-   * Either the last property, if index out-of-upper-bound,
-   * or property at index, if such a property exists,
-   * or otherwise, null.
-   */
-  closestPropertyForEditing(propertyIndex: number): UI.TreeOutline.TreeElement|null {
-    const rootElement = this.propertiesTreeOutline.rootElement();
-    if (propertyIndex >= rootElement.childCount()) {
-      return rootElement.lastChild();
-    }
-    return rootElement.childAt(propertyIndex);
-  }
-
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static MaxProperties = 50;
-}
-
-export class BlankStylePropertiesSection extends StylePropertiesSection {
-  private normal: boolean;
-  private readonly ruleLocation: TextUtils.TextRange.TextRange;
-  private readonly styleSheetId: Protocol.CSS.StyleSheetId;
-
-  constructor(
-      stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, defaultSelectorText: string,
-      styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange,
-      insertAfterStyle: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number) {
-    const cssModel = (stylesPane.cssModel() as SDK.CSSModel.CSSModel);
-    const rule = SDK.CSSRule.CSSStyleRule.createDummyRule(cssModel, defaultSelectorText);
-    super(stylesPane, matchedStyles, rule.style, sectionIdx);
-    this.normal = false;
-    this.ruleLocation = ruleLocation;
-    this.styleSheetId = styleSheetId;
-    this.selectorRefElement.removeChildren();
-    this.selectorRefElement.appendChild(StylePropertiesSection.linkifyRuleLocation(
-        cssModel, this.parentPane.linkifier, styleSheetId, this.actualRuleLocation()));
-    if (insertAfterStyle && insertAfterStyle.parentRule &&
-        insertAfterStyle.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
-      this.createAtRuleLists(insertAfterStyle.parentRule);
-    }
-    this.element.classList.add('blank-section');
-  }
-
-  private actualRuleLocation(): TextUtils.TextRange.TextRange {
-    const prefix = this.rulePrefix();
-    const lines = prefix.split('\n');
-    const lastLine = lines[lines.length - 1];
-    const editRange = new TextUtils.TextRange.TextRange(0, 0, lines.length - 1, lastLine ? lastLine.length : 0);
-    return this.ruleLocation.rebaseAfterTextEdit(TextUtils.TextRange.TextRange.createFromLocation(0, 0), editRange);
-  }
-
-  private rulePrefix(): string {
-    return this.ruleLocation.startLine === 0 && this.ruleLocation.startColumn === 0 ? '' : '\n\n';
-  }
-
-  get isBlank(): boolean {
-    return !this.normal;
-  }
-
-  editingSelectorCommitted(
-      element: Element, newContent: string, oldContent: string, context: Context|undefined,
-      moveDirection: string): void {
-    if (!this.isBlank) {
-      super.editingSelectorCommitted(element, newContent, oldContent, context, moveDirection);
-      return;
-    }
-
-    function onRuleAdded(this: BlankStylePropertiesSection, newRule: SDK.CSSRule.CSSStyleRule|null): Promise<void> {
-      if (!newRule) {
-        this.editingSelectorCancelled();
-        this.editingSelectorCommittedForTest();
-        return Promise.resolve();
-      }
-      return this.matchedStyles.addNewRule(newRule, this.matchedStyles.node())
-          .then(onAddedToCascade.bind(this, newRule));
-    }
-
-    function onAddedToCascade(this: BlankStylePropertiesSection, newRule: SDK.CSSRule.CSSStyleRule): void {
-      const doesSelectorAffectSelectedNode = this.matchedStyles.getMatchingSelectors(newRule).length > 0;
-      this.makeNormal(newRule);
-
-      if (!doesSelectorAffectSelectedNode) {
-        this.propertiesTreeOutline.element.classList.add('no-affect');
-      }
-
-      this.updateRuleOrigin();
-
-      this.parentPane.setUserOperation(false);
-      this.editingSelectorEnded();
-      if (this.element.parentElement)  // Might have been detached already.
-      {
-        this.moveEditorFromSelector(moveDirection);
-      }
-      this.markSelectorMatches();
-
-      this.editingSelectorCommittedForTest();
-    }
-
-    if (newContent) {
-      newContent = newContent.trim();
-    }
-    this.parentPane.setUserOperation(true);
-
-    const cssModel = this.parentPane.cssModel();
-    const ruleText = this.rulePrefix() + newContent + ' {}';
-    if (cssModel) {
-      void cssModel.addRule(this.styleSheetId, ruleText, this.ruleLocation).then(onRuleAdded.bind(this));
-    }
-  }
-
-  editingSelectorCancelled(): void {
-    this.parentPane.setUserOperation(false);
-    if (!this.isBlank) {
-      super.editingSelectorCancelled();
-      return;
-    }
-
-    this.editingSelectorEnded();
-    this.parentPane.removeSection(this);
-  }
-
-  private makeNormal(newRule: SDK.CSSRule.CSSRule): void {
-    this.element.classList.remove('blank-section');
-    this.styleInternal = newRule.style;
-    // FIXME: replace this instance by a normal StylePropertiesSection.
-    this.normal = true;
-  }
-}
-
-export class KeyframePropertiesSection extends StylePropertiesSection {
-  constructor(
-      stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles,
-      style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number) {
-    super(stylesPane, matchedStyles, style, sectionIdx);
-    this.selectorElement.className = 'keyframe-key';
-  }
-
-  headerText(): string {
-    if (this.styleInternal.parentRule instanceof SDK.CSSRule.CSSKeyframeRule) {
-      return this.styleInternal.parentRule.key().text;
-    }
-    return '';
-  }
-
-  setHeaderText(rule: SDK.CSSRule.CSSRule, newContent: string): Promise<void> {
-    function updateSourceRanges(this: KeyframePropertiesSection, success: boolean): void {
-      if (!success) {
-        return;
-      }
-      this.parentPane.refreshUpdate(this);
-    }
-
-    if (!(rule instanceof SDK.CSSRule.CSSKeyframeRule)) {
-      return Promise.resolve();
-    }
-    const oldRange = rule.key().range;
-    if (!oldRange) {
-      return Promise.resolve();
-    }
-    return rule.setKeyText(newContent).then(updateSourceRanges.bind(this));
-  }
-
-  isPropertyInherited(_propertyName: string): boolean {
-    return false;
-  }
-
-  isPropertyOverloaded(_property: SDK.CSSProperty.CSSProperty): boolean {
-    return false;
-  }
-
-  markSelectorHighlights(): void {
-  }
-
-  markSelectorMatches(): void {
-    if (this.styleInternal.parentRule instanceof SDK.CSSRule.CSSKeyframeRule) {
-      this.selectorElement.textContent = this.styleInternal.parentRule.key().text;
-    }
-  }
-
-  highlight(): void {
   }
 }
 
@@ -3452,14 +1868,14 @@ export class StylesSidebarPropertyRenderer {
 
   private processURL(text: string): Node {
     // Strip "url(" and ")" along with whitespace.
-    let url = text.substring(4, text.length - 1).trim();
+    let url = text.substring(4, text.length - 1).trim() as Platform.DevToolsPath.UrlString;
     const isQuoted = /^'.*'$/s.test(url) || /^".*"$/s.test(url);
     if (isQuoted) {
-      url = url.substring(1, url.length - 1);
+      url = Common.ParsedURL.ParsedURL.substring(url, 1, url.length - 1);
     }
     const container = document.createDocumentFragment();
     UI.UIUtils.createTextChild(container, 'url(');
-    let hrefUrl: (string|null)|null = null;
+    let hrefUrl: Platform.DevToolsPath.UrlString|null = null;
     if (this.rule && this.rule.resourceURL()) {
       hrefUrl = Common.ParsedURL.ParsedURL.completeURL(this.rule.resourceURL(), url);
     } else if (this.node) {

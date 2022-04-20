@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.Over
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -560,6 +561,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         boolean isGridTabSwitcherEnabled =
                 TabUiFeatureUtilities.isGridTabSwitcherEnabled(mActivity);
+        boolean isTabletGtsPolishEnabled =
+                TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(mActivity);
         boolean isTabToGtsAnimationEnabled = TabUiFeatureUtilities.isTabToGtsAnimationEnabled();
         boolean isTabGroupsAndroidContinuationEnabled =
                 TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mActivity);
@@ -576,9 +579,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 });
         mToolbar = createTopToolbarCoordinator(controlContainer, toolbarLayout, buttonDataProviders,
                 browsingModeThemeColorProvider, mCompositorViewHolder.getInvalidator(),
-                identityDiscController, isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
-                mIsStartSurfaceEnabled, isTabGroupsAndroidContinuationEnabled,
-                initializeWithIncognitoColors, profileSupplier, startSurfaceLogoClickedCallback);
+                identityDiscController, isGridTabSwitcherEnabled, isTabletGtsPolishEnabled,
+                isTabToGtsAnimationEnabled, mIsStartSurfaceEnabled,
+                isTabGroupsAndroidContinuationEnabled, initializeWithIncognitoColors,
+                profileSupplier, startSurfaceLogoClickedCallback);
         mActionModeController =
                 new ActionModeController(mActivity, mActionBarDelegate, toolbarActionModeCallback);
 
@@ -622,7 +626,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     exploreIconProvider,
                     new UserEducationHelper(mActivity, mHandler),
                     merchantTrustSignalsCoordinatorSupplier,
-                    omniboxPedalDelegate, mControlsVisibilityDelegate);
+                    omniboxPedalDelegate, mControlsVisibilityDelegate,
+                    ChromePureJavaExceptionReporter::postReportJavaException);
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
@@ -666,7 +671,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
-                maybeTriggerCacheRefreshForZeroSuggest(tab, url);
+                // Part of scroll jank investigation http://crbug.com/1311003. Will remove
+                // TraceEvent after the investigation is complete.
+                try (TraceEvent te = TraceEvent.scoped("ToolbarManager::onPageLoadFinished")) {
+                    maybeTriggerCacheRefreshForZeroSuggest(tab, url);
+                }
             }
 
             /**
@@ -1004,9 +1013,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             List<ButtonDataProvider> buttonDataProviders,
             ThemeColorProvider browsingModeThemeColorProvider, Invalidator invalidator,
             IdentityDiscController identityDiscController, boolean isGridTabSwitcherEnabled,
-            boolean isTabToGtsAnimationEnabled, boolean isStartSurfaceEnabled,
-            boolean isTabGroupsAndroidContinuationEnabled, boolean initializeWithIncognitoColors,
-            ObservableSupplier<Profile> profileSupplier,
+            boolean isTabletGtsPolishEnabled, boolean isTabToGtsAnimationEnabled,
+            boolean isStartSurfaceEnabled, boolean isTabGroupsAndroidContinuationEnabled,
+            boolean initializeWithIncognitoColors, ObservableSupplier<Profile> profileSupplier,
             Callback<LoadUrlParams> logoClickedCallback) {
         ViewStub tabSwitcherToolbarStub;
         if (TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(mActivity)) {
@@ -1036,8 +1045,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 }, () -> identityDiscController.getForStartSurface(mStartSurfaceState),
                 mCompositorViewHolder::getResourceManager,
                 mIsProgressBarVisibleSupplier, IncognitoUtils::isIncognitoModeEnabled,
-                isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled, isStartSurfaceEnabled,
-                isTabGroupsAndroidContinuationEnabled, HistoryManagerUtils::showHistoryManager,
+                isGridTabSwitcherEnabled, isTabletGtsPolishEnabled, isTabToGtsAnimationEnabled,
+                isStartSurfaceEnabled, isTabGroupsAndroidContinuationEnabled,
+                HistoryManagerUtils::showHistoryManager,
                 PartnerBrowserCustomizations.getInstance()::isHomepageProviderAvailableAndEnabled,
                 DownloadUtils::downloadOfflinePage, initializeWithIncognitoColors, profileSupplier,
                 logoClickedCallback);

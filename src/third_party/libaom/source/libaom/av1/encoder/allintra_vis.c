@@ -242,7 +242,6 @@ static BLOCK_SIZE pick_block_size(AV1_COMP *cpi,
   const int use_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
 
   double vote = 0.0;
-  int sb_count = 0;
   for (int mi_row = 0; mi_row < cpi->frame_info.mi_rows; mi_row += mb_step) {
     for (int mi_col = 0; mi_col < cpi->frame_info.mi_cols; mi_col += mb_step) {
       const uint8_t *mb_buffer =
@@ -273,7 +272,7 @@ static BLOCK_SIZE pick_block_size(AV1_COMP *cpi,
       for (int i = 0; i < 4; ++i) {
         max_split_mean = AOMMAX(max_split_mean, split_mean[i]);
         max_split_var = AOMMAX(max_split_var, split_var[i]);
-        geo_split_var += log(split_var[i]);
+        geo_split_var += log(0.1 + split_var[i]);
       }
       geo_split_var = exp(geo_split_var / 4);
       const double param_1 = 1.5;
@@ -293,7 +292,6 @@ static BLOCK_SIZE pick_block_size(AV1_COMP *cpi,
       } else {
         vote += 1.0;
       }
-      ++sb_count;
     }
   }
 

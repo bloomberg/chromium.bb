@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -90,6 +92,7 @@
 #include "chrome/browser/ui/views/autofill/autofill_bubble_handler_impl.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_web_view.h"
@@ -181,6 +184,7 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/user_notes/user_notes_features.h"
 #include "components/version_info/channel.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -252,7 +256,8 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/ui/views/frame/browser_view_commands_mac.h"
+#include "components/remote_cocoa/app_shim/application_bridge.h"
+#include "components/remote_cocoa/browser/application_host.h"
 #endif
 
 #if defined(USE_AURA)
@@ -687,6 +692,110 @@ class BrowserView::SidePanelButtonHighlighter : public views::ViewObserver {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// BrowserView::SidePanelVisibilityController:
+//
+// Coordinating class that manages side panel visibility such that there is a
+// single RHS side panel open at a given time. It enforces the following policy:
+//   - Only one RHS panel is visible at a time.
+//   - When the contextual panel is shown, the state of the global panels is
+//     captured and global panels are hidden.
+//   - When the contextual panel is hidden, the state of the global panels is
+//     restored.
+//
+// TODO(tluk): This is intended to manage the visibility of the read later
+// (global), google lens (global) and side search (contextual) panels for the
+// interim period before side panel v2 rolls out.
+class BrowserView::SidePanelVisibilityController : public views::ViewObserver {
+ public:
+  // Structures that hold the global panel views and their captured visibility
+  // state.
+  struct PanelStateEntry {
+    const raw_ptr<views::View> panel_view;
+    absl::optional<bool> captured_visibility_state;
+  };
+  using Panels = std::vector<PanelStateEntry>;
+
+  SidePanelVisibilityController(views::View* side_search_panel,
+                                views::View* lens_panel,
+                                views::View* rhs_panel)
+      : side_search_panel_(side_search_panel) {
+    if (lens_panel)
+      global_panels_.push_back({lens_panel, absl::nullopt});
+    if (rhs_panel)
+      global_panels_.push_back({rhs_panel, absl::nullopt});
+
+    // Observing the side search panel is only necessary when enabling the
+    // improved clobbering functionality.
+    if (side_search_panel_ &&
+        base::FeatureList::IsEnabled(features::kSidePanelImprovedClobbering)) {
+      side_search_panel_observation_.Observe(side_search_panel_);
+    }
+  }
+  ~SidePanelVisibilityController() override = default;
+
+  // views::ViewObserver:
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               View* starting_from) override {
+    DCHECK_EQ(side_search_panel_, observed_view);
+    if (side_search_panel_->GetVisible()) {
+      CaptureGlobalPanelVisibilityStateAndHide();
+    } else {
+      RestoreGlobalPanelVisibilityState();
+    }
+  }
+
+  // Called when the contextual panel is shown. Captures the current visibility
+  // state of the global panel before hiding the panel. The captured state of
+  // the global panels remains valid while the contextual panel is open.
+  void CaptureGlobalPanelVisibilityStateAndHide() {
+    for (PanelStateEntry& entry : global_panels_) {
+      auto panel_view = entry.panel_view;
+      entry.captured_visibility_state = panel_view->GetVisible();
+      panel_view->SetVisible(false);
+    }
+  }
+
+  // Called when the contextual panel is hidden. Restores the visibility state
+  // of the global panels.
+  void RestoreGlobalPanelVisibilityState() {
+    for (PanelStateEntry& entry : global_panels_) {
+      if (entry.captured_visibility_state.has_value()) {
+        entry.panel_view->SetVisible(entry.captured_visibility_state.value());
+
+        // After restoring global panel state reset the stored visibility bits.
+        // These will not remain valid while the contextual panel is closed.
+        entry.captured_visibility_state.reset();
+      }
+    }
+  }
+
+  // Returns true if one of its managed panels is currently visible in the
+  // browser window.
+  bool IsManagedSidePanelVisible() const {
+    if (side_search_panel_ && side_search_panel_->GetVisible())
+      return true;
+    return base::ranges::any_of(global_panels_,
+                                [](const PanelStateEntry& entry) {
+                                  return entry.panel_view->GetVisible();
+                                });
+  }
+
+ private:
+  // We observe the side search panel when improved clobbering is enabled to
+  // implement the correct view visibility transitions.
+  const raw_ptr<views::View> side_search_panel_;
+
+  // The set of global panels that this maintains visibility for.
+  Panels global_panels_;
+
+  // Keep track of the side search panel's visibility so that we can hide /
+  // restore global panels as the side search panel is shown / hidden
+  // respectively.
+  base::ScopedObservation<views::View, views::ViewObserver>
+      side_search_panel_observation_{this};
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
 
 BrowserView::BrowserView(std::unique_ptr<Browser> browser)
@@ -783,7 +892,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container_ = AddChildView(std::move(contents_container));
   set_contents_view(contents_container_);
 
-  if (base::FeatureList::IsEnabled(features::kSidePanel)) {
     right_aligned_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     right_aligned_side_panel_separator_ =
         AddChildView(std::make_unique<ContentsSeparator>());
@@ -792,6 +900,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(
           this, global_side_panel_registry_.get());
     }
+
+  if (user_notes::IsUserNotesEnabled()) {
+    user_note_ui_coordinator_ =
+        std::make_unique<UserNoteUICoordinator>(browser_.get());
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -872,10 +984,11 @@ BrowserView::~BrowserView() {
   if (tabstrip_)
     tabstrip_->parent()->RemoveChildViewT(tabstrip_.get());
 
-  // This highlighter refers to side-panel objects (children of this) and to
-  // children inside ToolbarView and of this, remove this observer before those
-  // children are removed.
+  // This highlighter and visibility controller refer to side-panel objects
+  // (children of this) and to children inside ToolbarView and of this, remove
+  // this observer before those children are removed.
   side_panel_button_highlighter_.reset();
+  side_panel_visibility_controller_.reset();
 
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
@@ -961,7 +1074,7 @@ gfx::Rect BrowserView::GetFindBarBoundingBox() const {
       return bounding_box;
   }
 
-  contents_bounds.Inset(0, 0, gfx::scrollbar_size(), 0);
+  contents_bounds.Inset(gfx::Insets::TLBR(0, 0, 0, gfx::scrollbar_size()));
   return contents_container_->GetMirroredRect(contents_bounds);
 }
 
@@ -1748,6 +1861,8 @@ void BrowserView::SetFocusToLocationBar(bool is_user_initiated) {
   if (!IsActive())
     return;
 #endif
+  if (!IsLocationBarVisible())
+    return;
 
   LocationBarView* location_bar = GetLocationBarView();
   location_bar->FocusLocation(is_user_initiated);
@@ -2084,8 +2199,7 @@ void BrowserView::MaybeShowReadingListInSidePanelIPH() {
   if (!feature_promo_controller_)
     return;
 
-  if (!base::FeatureList::IsEnabled(features::kSidePanel) ||
-      !(browser_->window()->IsActive() ||
+  if (!(browser_->window()->IsActive() ||
         BrowserFeaturePromoController::
             active_window_check_blocked_for_testing()))
     return;
@@ -2152,6 +2266,11 @@ bool BrowserView::IsToolbarVisible() const {
 
 bool BrowserView::IsToolbarShowing() const {
   return IsToolbarVisible();
+}
+
+bool BrowserView::IsLocationBarVisible() const {
+  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) &&
+         GetLocationBarView()->GetVisible();
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
@@ -2356,6 +2475,13 @@ bool BrowserView::IsDownloadShelfVisible() const {
 }
 
 DownloadShelf* BrowserView::GetDownloadShelf() {
+  // Don't show download shelf if download bubble is enabled, except that the
+  // shelf is already showing (this can happen if prefs were changed at
+  // runtime).
+  if (download::IsDownloadBubbleEnabled(browser_->profile()) &&
+      !download_shelf_) {
+    return nullptr;
+  }
   if (!download_shelf_) {
     if (base::FeatureList::IsEnabled(features::kWebUIDownloadShelf)) {
       download_shelf_ = AddChildView(
@@ -2367,6 +2493,12 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
     GetBrowserViewLayout()->set_download_shelf(download_shelf_->GetView());
   }
   return download_shelf_;
+}
+
+DownloadBubbleUIController* BrowserView::GetDownloadBubbleUIController() {
+  return (toolbar() && toolbar()->download_button())
+             ? toolbar()->download_button()->bubble_controller()
+             : nullptr;
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
@@ -2484,6 +2616,22 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
       event, GetFocusManager());
 }
 
+#if BUILDFLAG(IS_MAC)
+namespace {
+remote_cocoa::mojom::CutCopyPasteCommand CommandFromBrowserCommand(
+    int command_id) {
+  if (command_id == IDC_CUT)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kCut;
+  else if (command_id == IDC_COPY)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kCopy;
+  else if (command_id == IDC_PASTE)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+  NOTREACHED();
+  return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+}
+}  // namespace
+#endif
+
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
 // enabled in the page menu regardless of whether the command will do
 // anything. When someone selects the menu item, we just act as if they hit
@@ -2493,7 +2641,16 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // manager to do that.
 void BrowserView::CutCopyPaste(int command_id) {
 #if BUILDFLAG(IS_MAC)
-  ForwardCutCopyPasteToNSApp(command_id);
+  auto command = CommandFromBrowserCommand(command_id);
+  auto* application_host =
+      GetWidget() ? remote_cocoa::ApplicationHost::GetForNativeView(
+                        GetWidget()->GetNativeView())
+                  : nullptr;
+  if (application_host) {
+    application_host->GetApplication()->ForwardCutCopyPaste(command);
+  } else {
+    remote_cocoa::ApplicationBridge::ForwardCutCopyPasteToNSApp(command);
+  }
 #else
   // If a WebContents is focused, call its member method.
   //
@@ -2626,11 +2783,6 @@ bool BrowserView::CanActivate() const {
     return true;
   }
 
-#if defined(USE_AURA) && BUILDFLAG(IS_CHROMEOS_ASH)
-  // On Aura window manager controls all windows so settings focus via PostTask
-  // will make only worse because posted task will keep trying to steal focus.
-  queue->ActivateModalDialog();
-#else
   // If another browser is app modal, flash and activate the modal browser. This
   // has to be done in a post task, otherwise if the user clicked on a window
   // that doesn't have the modal dialog the windows keep trying to get the focus
@@ -2638,7 +2790,6 @@ bool BrowserView::CanActivate() const {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserView::ActivateAppModalDialog,
                                 weak_ptr_factory_.GetWeakPtr()));
-#endif
   return false;
 }
 
@@ -3160,33 +3311,54 @@ void BrowserView::CloseTabSearchBubble() {
 
 bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_lens,
                                                  bool exclude_side_search) {
-  // Hide Chrome side panel (Reading List/Bookmarks) if enabled and showing.
-  if (toolbar()->side_panel_button() &&
-      right_aligned_side_panel()->GetVisible()) {
-    toolbar()->side_panel_button()->HideSidePanel();
-    return true;
+  // Check if any side panels are open before closing side panels.
+  if (!side_panel_visibility_controller_ ||
+      !side_panel_visibility_controller_->IsManagedSidePanelVisible()) {
+    return false;
   }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Hide the Lens side panel if it's showing instead.
-  if (!exclude_lens && lens_side_panel_controller_ &&
-      lens_side_panel_controller_->IsShowing()) {
-    lens_side_panel_controller_->Close();
-    return true;
-  }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Ensure all side panels are closed. Close contextual panels first.
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
   // Hide side search panel if it's right aligned.
-  if (!exclude_side_search &&
-      base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
-      side_search_side_panel_->GetVisible()) {
+  if (!exclude_side_search && side_search_controller_ &&
+      base::FeatureList::IsEnabled(features::kSideSearchDSESupport)) {
     side_search_controller_->CloseSidePanel();
-    return true;
   }
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
-  return false;
+  toolbar()->side_panel_button()->HideSidePanel();
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (!exclude_lens && lens_side_panel_controller_)
+    lens_side_panel_controller_->Close();
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+  return true;
+}
+
+void BrowserView::MaybeClobberAllSideSearchSidePanels() {
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  if (!base::FeatureList::IsEnabled(features::kSideSearchDSESupport) ||
+      !base::FeatureList::IsEnabled(
+          features::kClobberAllSideSearchSidePanels)) {
+    return;
+  }
+
+  if (side_search_controller_) {
+    side_search_controller_->ClobberAllInCurrentBrowser();
+  }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+}
+
+void BrowserView::RightAlignedSidePanelWasClosed() {
+  // For the improved side panel clobbering experience we must close all side
+  // panels for the window when the user explicitly closes a participating side
+  // panel.
+  if (base::FeatureList::IsEnabled(features::kSidePanelImprovedClobbering)) {
+    CloseOpenRightAlignedSidePanel();
+    MaybeClobberAllSideSearchSidePanels();
+  }
 }
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
@@ -3436,6 +3608,11 @@ void BrowserView::AddedToWidget() {
     side_panel_button_highlighter_ =
         std::make_unique<SidePanelButtonHighlighter>(
             toolbar_->side_panel_button(), panels);
+
+    side_panel_visibility_controller_ =
+        std::make_unique<SidePanelVisibilityController>(
+            side_search_side_panel_, lens_side_panel_,
+            right_aligned_side_panel_);
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -3826,9 +4003,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         // occluding the active window receiving key events on Mac and Linux,
         // and also prevents an inactive fullscreen window and its exit bubble
         // from being occluded by the active window on Windows and Chrome OS.
-        // Initial content fullscreen requests require user activation (so the
-        // window should already be active), but swapping the screen used for
-        // fullscreen does not require user activation on the fullscreen window.
+        // Content fullscreen requests require user activation (so the window
+        // should already be active), but it is safer to ensure activation here.
         Activate();
       }
 

@@ -2648,15 +2648,8 @@ void TurboAssembler::CallForDeoptimization(Builtin target, int, Label* exit,
       MemOperand(kRootRegister, IsolateData::BuiltinEntrySlotOffset(target)));
   Call(ip);
   DCHECK_EQ(SizeOfCodeGeneratedSince(exit),
-            (kind == DeoptimizeKind::kLazy)
-                ? Deoptimizer::kLazyDeoptExitSize
-                : Deoptimizer::kNonLazyDeoptExitSize);
-
-  if (kind == DeoptimizeKind::kEagerWithResume) {
-    b(ret);
-    DCHECK_EQ(SizeOfCodeGeneratedSince(exit),
-              Deoptimizer::kEagerWithResumeBeforeArgsSize);
-  }
+            (kind == DeoptimizeKind::kLazy) ? Deoptimizer::kLazyDeoptExitSize
+                                            : Deoptimizer::kEagerDeoptExitSize);
 
   // The above code must not emit constants either.
   DCHECK(!has_pending_constants());

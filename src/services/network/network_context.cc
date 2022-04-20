@@ -24,11 +24,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -88,6 +88,7 @@
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
+#include "services/network/is_browser_initiated.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
@@ -255,33 +256,33 @@ base::RepeatingCallback<bool(const std::string& host_name)> MakeDomainFilter(
                              std::move(filter_domains));
 }
 
-// Predicate function to determine if the given |url| matches the |filter_type|,
-// |filter_domains| and |filter_origins| from a |mojom::ClearDataFilter|.
-bool MatchesUrlFilter(mojom::ClearDataFilter_Type filter_type,
-                      std::set<std::string> filter_domains,
-                      std::set<url::Origin> filter_origins,
-                      const GURL& url) {
+// Predicate function to determine if the given |origin| matches the
+// |filter_type|, |filter_domains| and |filter_origins| from a
+// |mojom::ClearDataFilter|.
+bool MatchesOriginFilter(mojom::ClearDataFilter_Type filter_type,
+                         std::set<std::string> filter_domains,
+                         std::set<url::Origin> filter_origins,
+                         const url::Origin& origin) {
   std::string url_registrable_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   bool found_domain =
       (filter_domains.find(url_registrable_domain != ""
                                ? url_registrable_domain
-                               : url.host()) != filter_domains.end());
+                               : origin.host()) != filter_domains.end());
 
-  bool found_origin =
-      (filter_origins.find(url::Origin::Create(url)) != filter_origins.end());
+  bool found_origin = (filter_origins.find(origin) != filter_origins.end());
 
   return (filter_type == mojom::ClearDataFilter_Type::DELETE_MATCHES) ==
          (found_domain || found_origin);
 }
 
-// Builds a generic GURL-matching predicate function based on |filter|. If
+// Builds a generic Origin-matching predicate function based on |filter|. If
 // |filter| is null, creates an always-true predicate.
-base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter(
+base::RepeatingCallback<bool(const url::Origin&)> BuildOriginFilter(
     mojom::ClearDataFilterPtr filter) {
   if (!filter) {
-    return base::BindRepeating([](const GURL&) { return true; });
+    return base::BindRepeating([](const url::Origin&) { return true; });
   }
 
   std::set<std::string> filter_domains;
@@ -290,7 +291,7 @@ base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter(
   std::set<url::Origin> filter_origins;
   filter_origins.insert(filter->origins.begin(), filter->origins.end());
 
-  return base::BindRepeating(&MatchesUrlFilter, filter->type,
+  return base::BindRepeating(&MatchesOriginFilter, filter->type,
                              std::move(filter_domains),
                              std::move(filter_origins));
 }
@@ -428,7 +429,8 @@ bool GetFullDataFilePath(
   // Path to a data file should always be a plain filename.
   DCHECK_EQ(relative_file_path->BaseName(), *relative_file_path);
 
-  full_path = file_paths->data_path.Append(relative_file_path->value());
+  full_path =
+      file_paths->data_directory.path().Append(relative_file_path->value());
   return true;
 }
 
@@ -439,12 +441,27 @@ constexpr uint32_t NetworkContext::kMaxOutstandingRequestsPerProcess;
 NetworkContext::PendingCertVerify::PendingCertVerify() = default;
 NetworkContext::PendingCertVerify::~PendingCertVerify() = default;
 
-// net::NetworkDelegate that wraps
 NetworkContext::NetworkContext(
     NetworkService* network_service,
     mojo::PendingReceiver<mojom::NetworkContext> receiver,
     mojom::NetworkContextParamsPtr params,
     OnConnectionCloseCallback on_connection_close_callback)
+    : NetworkContext(base::PassKey<NetworkContext>(),
+                     network_service,
+                     std::move(receiver),
+                     std::move(params),
+                     std::move(on_connection_close_callback),
+                     OnURLRequestContextBuilderConfiguredCallback()) {}
+
+// net::NetworkDelegate that wraps
+NetworkContext::NetworkContext(
+    base::PassKey<NetworkContext> pass_key,
+    NetworkService* network_service,
+    mojo::PendingReceiver<mojom::NetworkContext> receiver,
+    mojom::NetworkContextParamsPtr params,
+    OnConnectionCloseCallback on_connection_close_callback,
+    OnURLRequestContextBuilderConfiguredCallback
+        on_url_request_context_builder_configured)
     : network_service_(network_service),
       url_request_context_(nullptr),
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -468,6 +485,16 @@ NetworkContext::NetworkContext(
            "the network service.";
   }
 #endif  // BUILDFLAG(IS_WIN) && DCHECK_IS_ON()
+
+#if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+  if (params_->file_paths) {
+    EnsureMounted(&params_->file_paths->data_directory);
+  }
+  if (params_->http_cache_directory) {
+    EnsureMounted(&*params_->http_cache_directory);
+  }
+#endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+
   mojo::PendingRemote<mojom::URLLoaderFactory>
       url_loader_factory_for_cert_net_fetcher;
   mojo::PendingReceiver<mojom::URLLoaderFactory>
@@ -478,9 +505,10 @@ NetworkContext::NetworkContext(
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store =
       MakeSessionCleanupCookieStore();
 
-  url_request_context_owner_ =
-      MakeURLRequestContext(std::move(url_loader_factory_for_cert_net_fetcher),
-                            session_cleanup_cookie_store);
+  url_request_context_owner_ = MakeURLRequestContext(
+      std::move(url_loader_factory_for_cert_net_fetcher),
+      session_cleanup_cookie_store,
+      std::move(on_url_request_context_builder_configured));
   url_request_context_ = url_request_context_owner_.url_request_context.get();
   cookie_manager_ = std::make_unique<CookieManager>(
       url_request_context_, network_service_->first_party_sets(),
@@ -634,6 +662,33 @@ NetworkContext::~NetworkContext() {
     }
   }
 #endif
+
+#if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+  if (!dismount_closures_.empty()) {
+    // Dismount all mounted directories after a generous delay, so that
+    // pending asynchronous IO tasks have a chance to complete before the
+    // directory is unmounted.
+    constexpr base::TimeDelta kDismountDelay = base::Minutes(5);
+
+    for (auto& dismount_closure : dismount_closures_) {
+      std::ignore = base::ThreadPool::PostDelayedTask(
+          FROM_HERE, std::move(dismount_closure), kDismountDelay);
+    }
+  }
+#endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+}
+
+// static
+std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting(
+    NetworkService* network_service,
+    mojo::PendingReceiver<mojom::NetworkContext> receiver,
+    mojom::NetworkContextParamsPtr params,
+    OnURLRequestContextBuilderConfiguredCallback
+        on_url_request_context_builder_configured) {
+  return std::make_unique<NetworkContext>(
+      base::PassKey<NetworkContext>(), network_service, std::move(receiver),
+      std::move(params), OnConnectionCloseCallback(),
+      std::move(on_url_request_context_builder_configured));
 }
 
 // static
@@ -683,9 +738,11 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryParamsPtr params) {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client =
       base::MakeRefCounted<ResourceSchedulerClient>(
-          params->process_id, ++current_resource_scheduler_client_id_,
+          current_resource_scheduler_client_id_,
+          IsBrowserInitiated(params->process_id == mojom::kBrowserProcessId),
           resource_scheduler_.get(),
           url_request_context_->network_quality_estimator());
+  current_resource_scheduler_client_id_.Increment();
   CreateURLLoaderFactory(std::move(receiver), std::move(params),
                          std::move(resource_scheduler_client));
 }
@@ -970,7 +1027,7 @@ void NetworkContext::ClearReportingCacheReports(
     if (filter) {
       reporting_service->RemoveBrowsingData(
           net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS,
-          BuildUrlFilter(std::move(filter)));
+          BuildOriginFilter(std::move(filter)));
     } else {
       reporting_service->RemoveAllBrowsingData(
           net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS);
@@ -991,7 +1048,7 @@ void NetworkContext::ClearReportingCacheClients(
     if (filter) {
       reporting_service->RemoveBrowsingData(
           net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS,
-          BuildUrlFilter(std::move(filter)));
+          BuildOriginFilter(std::move(filter)));
     } else {
       reporting_service->RemoveAllBrowsingData(
           net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS);
@@ -1010,7 +1067,7 @@ void NetworkContext::ClearNetworkErrorLogging(
       url_request_context_->network_error_logging_service();
   if (logging_service) {
     if (filter) {
-      logging_service->RemoveBrowsingData(BuildUrlFilter(std::move(filter)));
+      logging_service->RemoveBrowsingData(BuildOriginFilter(std::move(filter)));
     } else {
       logging_service->RemoveAllBrowsingData();
     }
@@ -1199,7 +1256,7 @@ void NetworkContext::ClearDomainReliability(
     }
 
     domain_reliability_monitor_->ClearBrowsingData(
-        dr_mode, BuildUrlFilter(std::move(filter)));
+        dr_mode, BuildOriginFilter(std::move(filter)));
   }
   std::move(callback).Run();
 }
@@ -1806,9 +1863,11 @@ void NetworkContext::GetHSTSState(const std::string& domain,
     if (transport_security_state) {
       net::TransportSecurityState::STSState static_sts_state;
       net::TransportSecurityState::PKPState static_pkp_state;
-      bool found_static = transport_security_state->GetStaticDomainState(
-          domain, &static_sts_state, &static_pkp_state);
-      if (found_static) {
+      bool found_sts_static = transport_security_state->GetStaticSTSState(
+          domain, &static_sts_state);
+      bool found_pkp_static = transport_security_state->GetStaticPKPState(
+          domain, &static_pkp_state);
+      if (found_sts_static || found_pkp_static) {
         result.SetIntKey("static_upgrade_mode",
                          static_cast<int>(static_sts_state.upgrade_mode));
         result.SetBoolKey("static_sts_include_subdomains",
@@ -1861,8 +1920,8 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.SetStringKey("dynamic_pkp_domain", dynamic_pkp_state.domain);
       }
 
-      result.SetBoolKey("result",
-                        found_static || found_sts_dynamic || found_pkp_dynamic);
+      result.SetBoolKey("result", found_sts_static || found_pkp_static ||
+                                      found_sts_dynamic || found_pkp_dynamic);
     } else {
       result.SetStringKey("error", "no TransportSecurityState active");
     }
@@ -2184,7 +2243,9 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
 URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     mojo::PendingRemote<mojom::URLLoaderFactory>
         url_loader_factory_for_cert_net_fetcher,
-    scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store) {
+    scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
+    OnURLRequestContextBuilderConfiguredCallback
+        on_url_request_context_builder_configured) {
   URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -2366,11 +2427,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   } else {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
     cache_params.max_size = params_->http_cache_max_size;
-    if (!params_->http_cache_path) {
+    if (!params_->http_cache_directory) {
       cache_params.type =
           net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
     } else {
-      cache_params.path = *params_->http_cache_path;
+      cache_params.path = params_->http_cache_directory->path();
       cache_params.type = network_session_configurator::ChooseCacheType();
     }
     cache_params.reset_cache = params_->reset_http_cache_backend;
@@ -2519,11 +2580,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_first_party_sets_enabled(
       network_service_->first_party_sets()->is_enabled());
 
-  auto result =
-      URLRequestContextOwner(std::move(pref_service), builder.Build());
-
-  require_network_isolation_key_ = params_->require_network_isolation_key;
-
   // If `require_network_isolation_key_` is true, but the features that can
   // trigger another URLRequest are not set to respect NetworkIsolationKeys,
   // the URLRequests that they create might not have a NIK, so only set the
@@ -2543,8 +2599,20 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       base::FeatureList::IsEnabled(
           domain_reliability::features::
               kPartitionDomainReliabilityByNetworkIsolationKey)) {
-    result.url_request_context->set_require_network_isolation_key(true);
+    builder.set_require_network_isolation_key(true);
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  builder.set_check_cleartext_permitted(params_->check_clear_text_permitted);
+#endif  // BUILDFLAG(IS_ANDROID)
+
+  if (on_url_request_context_builder_configured) {
+    std::move(on_url_request_context_builder_configured).Run(&builder);
+  }
+  auto result =
+      URLRequestContextOwner(std::move(pref_service), builder.Build());
+
+  require_network_isolation_key_ = params_->require_network_isolation_key;
 
   // Subscribe the CertVerifier to configuration changes that are exposed via
   // the mojom::SSLConfig, but which are not part of the
@@ -2596,11 +2664,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         network_service_->pinsets(), network_service_->host_pins(),
         network_service_->pins_list_update_time());
   }
-
-#if BUILDFLAG(IS_ANDROID)
-  result.url_request_context->set_check_cleartext_permitted(
-      params_->check_clear_text_permitted);
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->enable_expect_ct_reporting) {
@@ -2797,6 +2860,14 @@ void NetworkContext::TrustAnchorUsed() {
   client_->OnTrustAnchorUsed();
 }
 #endif
+
+#if BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+void NetworkContext::EnsureMounted(network::TransferableDirectory* directory) {
+  if (directory->NeedsMount()) {
+    dismount_closures_.push_back(directory->Mount());
+  }
+}
+#endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
 
 void NetworkContext::InitializeCorsParams() {
   for (const auto& pattern : params_->cors_origin_access_list) {

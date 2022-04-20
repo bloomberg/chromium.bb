@@ -25,7 +25,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -514,10 +513,8 @@ ThemeService::BrowserThemeProvider::GetColorProviderColor(int id) const {
         native_theme = ui::NativeTheme::GetInstanceForNativeUi();
 #if BUILDFLAG(IS_LINUX)
         if (const auto* linux_ui = views::LinuxUI::instance()) {
-          // TODO(crbug.com/1304441): Naively passing nullptr might be
-          // problematic. If this is not an issue, remove this parameter from
-          // GetNativeTheme().
-          native_theme = linux_ui->GetNativeTheme(nullptr);
+          native_theme =
+              linux_ui->GetNativeTheme(delegate_->ShouldUseSystemTheme());
         }
 #endif
       }
@@ -631,6 +628,14 @@ void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 CustomThemeSupplier* ThemeService::GetThemeSupplier() const {
   return theme_supplier_.get();
+}
+
+bool ThemeService::ShouldUseSystemTheme() const {
+#if BUILDFLAG(IS_LINUX)
+  return profile_->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
+#else
+  return false;
+#endif
 }
 
 bool ThemeService::ShouldUseCustomFrame() const {

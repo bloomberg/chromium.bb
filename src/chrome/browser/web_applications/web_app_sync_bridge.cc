@@ -19,6 +19,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -49,10 +50,10 @@ namespace web_app {
 
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   // The Sync System doesn't allow empty entity_data name.
-  DCHECK(!app.name().empty());
+  DCHECK(!app.untranslated_name().empty());
 
   auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->name = app.name();
+  entity_data->name = app.untranslated_name();
   // TODO(crbug.com/1103570): Remove this fallback later.
   if (entity_data->name.empty())
     entity_data->name = app.start_url().spec();
@@ -63,7 +64,7 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
 
 void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
                         WebApp* app) {
-  app->AddSource(Source::kSync);
+  app->AddSource(WebAppManagement::kSync);
 
   // app_id is a hash of start_url. Parse start_url first:
   const GURL start_url(sync_data.start_url());
@@ -132,13 +133,15 @@ WebAppSyncBridge::~WebAppSyncBridge() = default;
 
 void WebAppSyncBridge::SetSubsystems(
     AbstractWebAppDatabaseFactory* database_factory,
-    SyncInstallDelegate* install_delegate) {
+    SyncInstallDelegate* install_delegate,
+    WebAppCommandManager* command_manager) {
   DCHECK(database_factory);
   database_ = std::make_unique<WebAppDatabase>(
       database_factory,
       base::BindRepeating(&WebAppSyncBridge::ReportErrorToChangeProcessor,
                           base::Unretained(this)));
   install_delegate_ = install_delegate;
+  command_manager_ = command_manager;
 }
 
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
@@ -427,12 +430,12 @@ void WebAppSyncBridge::CheckRegistryUpdateData(
 #if DCHECK_IS_ON()
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {
     DCHECK(!registrar_->GetAppById(web_app->app_id()));
-    DCHECK(!web_app->name().empty());
+    DCHECK(!web_app->untranslated_name().empty());
   }
 
   for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_update) {
     DCHECK(registrar_->GetAppById(web_app->app_id()));
-    DCHECK(!web_app->name().empty());
+    DCHECK(!web_app->untranslated_name().empty());
   }
 
   for (const AppId& app_id : update_data.apps_to_delete)
@@ -595,7 +598,7 @@ void WebAppSyncBridge::ApplySyncDataChange(
     }
     // Do copy on write:
     auto app_copy = std::make_unique<WebApp>(*existing_web_app);
-    app_copy->RemoveSource(Source::kSync);
+    app_copy->RemoveSource(WebAppManagement::kSync);
 
     if (app_copy->HasAnySources())
       update_local_data->apps_to_update.push_back(std::move(app_copy));
@@ -630,7 +633,7 @@ void WebAppSyncBridge::ApplySyncDataChange(
     // the fallback sync data name:
     web_app->SetName(specifics.name());
     // Or use syncer::EntityData::name as a last resort.
-    if (web_app->name().empty())
+    if (web_app->untranslated_name().empty())
       web_app->SetName(change.data().name);
 
     ApplySyncDataToApp(specifics, web_app.get());
@@ -669,6 +672,8 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   if (!apps_to_delete.empty()) {
     apps_in_sync_uninstall_.insert(apps_to_delete.begin(),
                                    apps_to_delete.end());
+    command_manager_->NotifyBeforeSyncUninstalls(apps_to_delete);
+
     install_delegate_->UninstallWithoutRegistryUpdateFromSync(
         apps_to_delete,
         base::BindRepeating(&WebAppSyncBridge::WebAppUninstalled,

@@ -157,14 +157,22 @@ VK_LAYER_EXPORT VkLayerDeviceCreateInfo *get_chain_info(const VkDeviceCreateInfo
 
 static inline bool IsPowerOfTwo(unsigned x) { return x && !(x & (x - 1)); }
 
-static inline uint32_t MostSignificantBit(uint32_t mask) {
-    uint32_t highest_view_bit = 0;
-    for (uint32_t k = 0; k < 32; ++k) {
+// Returns the 0-based index of the MSB, like the x86 bit scan reverse (bsr) instruction
+// Note: an input mask of 0 yields -1
+static inline int MostSignificantBit(uint32_t mask) {
+#if defined __GNUC__
+    return mask ? __builtin_clz(mask) ^ 31 : -1;
+#elif defined _MSC_VER
+    unsigned long bit_pos;
+    return _BitScanReverse(&bit_pos, mask) ? int(bit_pos) : -1;
+#else
+    for (int k = 31; k >= 0; --k) {
         if (((mask >> k) & 1) != 0) {
-            highest_view_bit = k;
+            return k;
         }
     }
-    return highest_view_bit;
+    return -1;
+#endif
 }
 
 static inline uint32_t SampleCountSize(VkSampleCountFlagBits sample_count) {
@@ -195,6 +203,20 @@ static inline uint32_t SampleCountSize(VkSampleCountFlagBits sample_count) {
             size = 0;
     }
     return size;
+}
+
+static inline bool IsImageLayoutReadOnly(VkImageLayout layout) {
+    constexpr std::array<VkImageLayout, 7> read_only_layouts = {
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL,
+    };
+    return std::any_of(read_only_layouts.begin(), read_only_layouts.end(),
+                       [layout](const VkImageLayout read_only_layout) { return layout == read_only_layout; });
 }
 
 static inline bool IsIdentitySwizzle(VkComponentMapping components) {
@@ -390,16 +412,18 @@ class LockedSharedPtr : public std::shared_ptr<T> {
 template <typename Key, typename T, int BUCKETSLOG2 = 2, typename Hash = layer_data::hash<Key>>
 class vl_concurrent_unordered_map {
   public:
-    void insert_or_assign(const Key &key, const T &value) {
+    template <typename... Args>
+    void insert_or_assign(const Key &key, Args &&...args) {
         uint32_t h = ConcurrentMapHashObject(key);
         WriteLockGuard lock(locks[h].lock);
-        maps[h][key] = value;
+        maps[h][key] = {std::forward<Args>(args)...};
     }
 
-    bool insert(const Key &key, const T &value) {
+    template <typename... Args>
+    bool insert(const Key &key, Args &&...args) {
         uint32_t h = ConcurrentMapHashObject(key);
         WriteLockGuard lock(locks[h].lock);
-        auto ret = maps[h].emplace(key, value);
+        auto ret = maps[h].emplace(key, std::forward<Args>(args)...);
         return ret.second;
     }
 

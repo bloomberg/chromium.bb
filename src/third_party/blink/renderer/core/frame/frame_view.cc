@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 
@@ -83,11 +84,14 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
 
   LayoutEmbeddedContent* owner_layout_object =
       owner_element->GetLayoutEmbeddedContent();
+  bool display_locked_in_parent_frame = DisplayLockedInParentFrame();
   if (!owner_layout_object || owner_layout_object->ContentSize().IsEmpty() ||
-      (flags & IntersectionObservation::kAncestorFrameIsDetachedFromLayout)) {
+      (flags & IntersectionObservation::kAncestorFrameIsDetachedFromLayout) ||
+      display_locked_in_parent_frame) {
     // The frame, or an ancestor frame, is detached from layout, not visible, or
-    // zero size; leave viewport_intersection empty, and signal the frame as
-    // occluded if necessary.
+    // zero size, or it's display locked in parent frame; leave
+    // viewport_intersection empty, and signal the frame as occluded if
+    // necessary.
     occlusion_state = mojom::blink::FrameOcclusionState::kPossiblyOccluded;
   } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean &&
              !owner_document.View()->NeedsLayout()) {
@@ -228,24 +232,29 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     GetFrame().Client()->OnMainFrameIntersectionChanged(projected_rect);
   }
 
-  // We don't throttle zero-area or display:none iframes unless they are
-  // cross-origin and ThrottleCrossOriginIframes is enabled, because in practice
-  // they are sometimes used to drive UI logic.
-  bool hidden_for_throttling = viewport_intersection.IsEmpty();
+  // We don't throttle display:none iframes unless they are cross-origin and
+  // ThrottleCrossOriginIframes is enabled, because in practice they are
+  // sometimes used to drive UI logic. Zero-area iframes are only throttled if
+  // they are also display:none.
+  bool zero_viewport_intersection = viewport_intersection.IsEmpty();
   bool is_display_none = !owner_layout_object;
   bool has_zero_area = FrameRect().IsEmpty();
   bool has_flag = RuntimeEnabledFeatures::
       ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
-  if (!has_flag && (is_display_none || has_zero_area))
-    hidden_for_throttling = false;
+
+  bool should_throttle =
+      has_flag
+          ? (is_display_none || (zero_viewport_intersection && !has_zero_area))
+          : (!is_display_none && zero_viewport_intersection && !has_zero_area);
+
   bool subtree_throttled = false;
   Frame* parent_frame = GetFrame().Tree().Parent();
   if (parent_frame && parent_frame->View()) {
     subtree_throttled =
         parent_frame->View()->CanThrottleRenderingForPropagation();
   }
-  UpdateRenderThrottlingStatus(hidden_for_throttling, subtree_throttled,
-                               DisplayLockedInParentFrame());
+  UpdateRenderThrottlingStatus(should_throttle, subtree_throttled,
+                               display_locked_in_parent_frame);
 }
 
 void FrameView::UpdateFrameVisibility(bool intersects_viewport) {

@@ -485,7 +485,7 @@ namespace skvm {
     }
 
     using Val = int;
-    // We reserve an impossibe Val ID as a sentinel
+    // We reserve an impossible Val ID as a sentinel
     // NA meaning none, n/a, null, nil, etc.
     static const Val NA = -1;
 
@@ -1007,6 +1007,17 @@ namespace skvm {
             T imm = 0;
             return this->allImm(id, &imm) && imm == want;
         }
+
+        // `canonicalizeIdOrder` and has two rules:
+        // - Immediate values go last; that is, `x + 1` is preferred over `1 + x`.
+        // - If both/neither of x and y are immediate, lower IDs go before higher IDs.
+        // Canonicalizing the IDs helps with opcode deduplication. Putting immediates in a
+        // consistent position makes it easier to detect no-op arithmetic like `x + 0`.
+        template <typename F32_or_I32>
+        void canonicalizeIdOrder(F32_or_I32& x, F32_or_I32& y);
+
+        // If the passed in ID is a bit-not, return the value being bit-notted. Otherwise, NA.
+        Val holdsBitNot(Val id);
 
         SkTHashMap<Instruction, Val, InstructionHash> fIndex;
         std::vector<Instruction>                      fProgram;

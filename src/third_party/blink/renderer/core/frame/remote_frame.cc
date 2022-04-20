@@ -546,11 +546,10 @@ void RemoteFrame::SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
   security_context_.SetInsecureNavigationsSet(set);
 }
 
-void RemoteFrame::FrameRectsChanged(const gfx::Rect& local_frame_rect,
+void RemoteFrame::FrameRectsChanged(const gfx::Size& local_frame_size,
                                     const gfx::Rect& screen_space_rect) {
   pending_visual_properties_.screen_space_rect = screen_space_rect;
-  pending_visual_properties_.local_frame_size =
-      gfx::Size(local_frame_rect.width(), local_frame_rect.height());
+  pending_visual_properties_.local_frame_size = local_frame_size;
   SynchronizeVisualProperties();
 }
 
@@ -578,6 +577,9 @@ void RemoteFrame::WillEnterFullscreen(
                                     : FullscreenRequestType::kUnprefixed) |
       (request_options->is_xr_overlay ? FullscreenRequestType::kForXrOverlay
                                       : FullscreenRequestType::kNull) |
+      (request_options->prefers_status_bar
+           ? FullscreenRequestType::kForXrArWithCamera
+           : FullscreenRequestType::kNull) |
       FullscreenRequestType::kForCrossProcessDescendant;
 
   Fullscreen::RequestFullscreen(*owner_element, FullscreenOptions::Create(),
@@ -695,8 +697,12 @@ void RemoteFrame::SetEmbeddingToken(
 }
 
 void RemoteFrame::SetPageFocus(bool is_focused) {
-  To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View())
-      ->SetPageFocus(is_focused);
+  WebViewImpl* web_view =
+      To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View());
+  if (is_focused) {
+    web_view->SetIsActive(true);
+  }
+  web_view->SetPageFocus(is_focused);
 }
 
 void RemoteFrame::ScrollRectToVisible(

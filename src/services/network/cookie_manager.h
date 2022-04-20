@@ -29,7 +29,7 @@ class URLRequestContext;
 class GURL;
 
 namespace network {
-class FirstPartySets;
+class FirstPartySetsManager;
 class SessionCleanupCookieStore;
 
 // Wrap a cookie store in an implementation of the mojo cookie interface.
@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   // `url_request_context->cookie_store()`.
   CookieManager(
       net::URLRequestContext* url_request_context,
-      FirstPartySets* const first_party_sets,
+      FirstPartySetsManager* const first_party_sets_manager,
       scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
       mojom::CookieManagerParamsPtr params);
 
@@ -126,6 +126,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   //
   // 2.  Choose the partitioned cookie with the most recent last_access_time.
   //
+  // This function is a no-op when PartitionedCookies are disabled or
+  // PartitionedCookiesBypassOriginTrial is enabled.
   // TODO(crbug.com/1296161): Delete this when the partitioned cookies Origin
   // Trial ends.
   void ConvertPartitionedCookiesToUnpartitioned(const GURL& url) override;

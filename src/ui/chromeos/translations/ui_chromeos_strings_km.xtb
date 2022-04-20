@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">កំពុង​បម្រុងទុក <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">លុបការលើកលែង​សម្រាប់ <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">បទបង្ហាញ Google</translation>
+<translation id="4277536868133419688">តម្រង<ph name="FILTER_NAME" />ត្រូវបានបើក។</translation>
 <translation id="4290535918735525311">ថត 1 ដែលបាន​ចែករំលែក​ជាមួយ Linux</translation>
 <translation id="4299729908419173967">ភាសាប្រេស៊ីល</translation>
 <translation id="4302605047395093221">អ្នកដែលប្រើឧបករណ៍នេះនឹងត្រូវបញ្ចូលកូដ PIN ដើម្បីភ្ជាប់ជាមួយបណ្ដាញ​ទូរសព្ទ​ចល័តនេះ</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">វិញ្ញាបនប័ត្រសម្គាល់អត្តសញ្ញាណបានបដិសេធពីចម្ងាយ</translation>
 <translation id="4394214039309501350">តំណ​ខាង​ក្រៅ</translation>
 <translation id="4401287888955153199">ដកទាំងអស់</translation>
+<translation id="4410695710508688828">ការស្រង់​ប្រតិបត្តិការ​មិនបានសម្រេចទេ។ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">បង្កើត​ផ្លូវកាត់​សម្រាប់​ឯកសារ​របស់អ្នក</translation>
 <translation id="4425149324548788773">ដ្រាយរបស់ខ្ញុំ</translation>
 <translation id="4439427728133035643">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ភ្ជាប់</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">ច្រើនទៀត...</translation>
 <translation id="4579744207439506346">បានបញ្ចូល <ph name="ENTRY_NAME" /> ទៅការជ្រើសរើស។</translation>
 <translation id="4594543368593301662">កំពុងបង្ហាញ​លទ្ធផលអំពី <ph name="SEARCH_TERM" /> ។</translation>
+<translation id="4599600860674643278">តម្រងត្រូវបានកំណត់ឡើងវិញ។</translation>
 <translation id="4603392156942865207">កំពុងចម្លង <ph name="FILE_NAME" /> ទៅ <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">សិល្បករ</translation>
 <translation id="4642769377300286600">កំពុងដំឡើង​កម្រងព័ត៌មាន​ឧបករណ៍ចល័ត បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -528,6 +531,7 @@
 <translation id="5469868506864199649">ភាសាអ៊ីតាលី</translation>
 <translation id="5473333559083690127">បញ្ចូលកូដ PIN ថ្មីឡើងវិញ</translation>
 <translation id="5489067830765222292">ភាសា​ឡាតវី</translation>
+<translation id="5489965683297092283">តម្រង<ph name="FILTER_NAME" />ត្រូវបានបិទ។</translation>
 <translation id="5494920125229734069">ជ្រើសរើសទាំងអស់</translation>
 <translation id="5500122897333236901">ភាសាអាយឡែន</translation>
 <translation id="5508696409934741614">ចំណុច</translation>
@@ -594,6 +598,7 @@
 <translation id="6082256976217156453">បណ្ណសារដែលបង្ហាប់ដោយ LZMA</translation>
 <translation id="6096979789310008754">បានសម្អាតអត្ថបទស្វែងរក ដែលបង្ហាញឯកសារ និងថតទាំងអស់។</translation>
 <translation id="610101264611565198">កំពុងផ្លាស់ទី <ph name="FILE_NAME" /> ទៅ <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">អត្ថបទ CSV</translation>
 <translation id="6129953537138746214">ដកឃ្លា</translation>
 <translation id="6133173853026656527">កំពុងផ្លាស់ទី <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">ភាសាជប៉ុន​ដែលប្រើ​ក្ដារចុចអាមេរិក</translation>
@@ -844,6 +849,7 @@
 <translation id="8208580316430297579">រូប​ផូស្ទ័រ</translation>
 <translation id="8223479393428528563">ដើម្បីរក្សាទុកឯកសារទាំងនេះសម្រាប់ការប្រើនៅក្រៅបណ្តាញ ភ្ជាប់ទៅអ៊ីនធឺណិត ហើយចុចកណ្តុរខាងស្តាំលើឯកសារ ហើយជ្រើសរើសជម្រើស <ph name="OFFLINE_CHECKBOX_NAME" />។</translation>
 <translation id="8249296373107784235">បោះបង់</translation>
+<translation id="8250920743982581267">ឯកសារ</translation>
 <translation id="8261506727792406068">លុប</translation>
 <translation id="8261561378965667560">ភាសាចិន​អារ៉េ</translation>
 <translation id="8269755669432358899">បង្រួមផ្ទាំង​មតិកែលម្អ​ឯកសារ</translation>

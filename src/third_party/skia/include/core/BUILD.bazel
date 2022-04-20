@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "SkAnnotation_hdr",
     hdrs = ["SkAnnotation.h"],
@@ -141,7 +143,6 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkAlphaType_hdr",
-        ":SkImageInfo_hdr",
         ":SkScalar_hdr",
         ":SkTypes_hdr",
     ],
@@ -355,7 +356,6 @@ generated_cc_atom(
     hdrs = ["SkImageEncoder.h"],
     visibility = ["//:__subpackages__"],
     deps = [
-        ":SkBitmap_hdr",
         ":SkData_hdr",
         ":SkEncodedImageFormat_hdr",
         ":SkPixmap_hdr",
@@ -397,6 +397,7 @@ generated_cc_atom(
         ":SkColorType_hdr",
         ":SkMath_hdr",
         ":SkRect_hdr",
+        ":SkRefCnt_hdr",
         ":SkSize_hdr",
         "//include/private:SkTFitsIn_hdr",
         "//include/private:SkTo_hdr",
@@ -414,8 +415,8 @@ generated_cc_atom(
         ":SkScalar_hdr",
         ":SkShader_hdr",
         ":SkTileMode_hdr",
-        "//experimental/graphite/include:GraphiteTypes_hdr",
         "//include/gpu:GrTypes_hdr",
+        "//include/gpu/graphite:GraphiteTypes_hdr",
     ],
 )
 
@@ -934,10 +935,10 @@ generated_cc_atom(
 generated_cc_atom(
     name = "SkCustomMesh_hdr",
     hdrs = ["SkCustomMesh.h"],
+    enforce_iwyu = True,
     visibility = ["//:__subpackages__"],
     deps = [
-        ":SkColorSpace_hdr",
-        ":SkImageInfo_hdr",
+        ":SkAlphaType_hdr",
         ":SkRect_hdr",
         ":SkRefCnt_hdr",
         ":SkSpan_hdr",

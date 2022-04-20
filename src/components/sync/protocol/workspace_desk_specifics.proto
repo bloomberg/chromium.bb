@@ -34,6 +34,9 @@ message WorkspaceDeskSpecifics {
 
   optional Desk desk = 4;
 
+  // The type of a desk.
+  optional DeskType desk_type = 6;
+
   // Represent a snapshot of the information on a desk.
   message Desk {
     // The apps in this template.
@@ -73,9 +76,15 @@ message WorkspaceDeskSpecifics {
     // Name of the app which is used by the browser to determine whether to
     // launch an app as an app or a tab. Does not contain a human readable name
     // but contains the app ID and a prefix.
-    //
-    // TODO(crbug/1306604): Deprecate and remove `app_name`.
     optional string app_name = 10;
+
+    // Human readable title of the app.
+    optional string title = 11;
+
+    // This is used to determine the size of a snapped window is in clamshell
+    // mode. Empty/unset for non-snapped windows. This should be a value between
+    // 0 and 100.
+    optional int32 snap_percentage = 12;
   }
 
   message AppOneOf {
@@ -87,7 +96,7 @@ message WorkspaceDeskSpecifics {
     }
   }
 
-  // A Chrome Browser app window.
+  // A Chrome or Lacros Browser app window.
   message BrowserAppWindow {
     message BrowserAppTab {
       // The last committed URL of the main frame of the tab.
@@ -110,16 +119,16 @@ message WorkspaceDeskSpecifics {
   message ChromeApp {
     // The Chrome App's App ID.
     optional string app_id = 1;
-    // App window title.
-    optional string title = 2;
+
+    reserved 2;
   }
 
   // A PWA window.
   message ProgressiveWebApp {
     // The PWA's App ID.
     optional string app_id = 1;
-    // App window title.
-    optional string title = 2;
+
+    reserved 2;
   }
 
   // An Arc App window.
@@ -131,7 +140,9 @@ message WorkspaceDeskSpecifics {
     // to ArcExtraInfo in a WindowInfo struct.
     optional WindowSize minimum_size = 2;
     optional WindowSize maximum_size = 3;
-    optional string title = 4;
+
+    reserved 4;
+
     optional WindowBound bounds_in_root = 5;
 
     // maps to gfx::Size.  Width of the window, including the frame,
@@ -208,5 +219,13 @@ message WorkspaceDeskSpecifics {
     SWITCH_TO_TAB = 10;
     // creates a new document picture-in-picture window showing a child WebView.
     NEW_PICTURE_IN_PICTURE = 11;
+  }
+
+  // Enumerates the type of desk, namely to differentiate desks between desks
+  // saved for desk templates and desks saved for save and recall.
+  enum DeskType {
+    UNKNOWN_TYPE = 0;
+    TEMPLATE = 1;
+    SAVE_AND_RECALL = 2;
   }
 }

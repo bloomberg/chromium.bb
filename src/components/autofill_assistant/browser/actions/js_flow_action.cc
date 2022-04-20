@@ -5,12 +5,24 @@
 #include "components/autofill_assistant/browser/actions/js_flow_action.h"
 #include "base/base64.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/field_trial.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/js_flow_executor_impl.h"
 #include "components/autofill_assistant/browser/js_flow_util.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 
 namespace autofill_assistant {
+
+namespace {
+
+// When starting a JS flow action, a synthetic field trial is recorded. This is
+// used to allow tracking stability metrics as we start using this new action.
+// Note there is no control group - this is purely for stability tracking.
+const char kJsFlowActionSyntheticFieldTrialName[] =
+    "AutofillAssistantJsFlowAction";
+const char kJsFlowActionEnabledGroup[] = "Enabled";
+
+}  // namespace
 
 JsFlowAction::JsFlowAction(ActionDelegate* delegate, const ActionProto& proto)
     : Action(delegate, proto),
@@ -76,15 +88,18 @@ void JsFlowAction::OnNativeActionFinished(
   VLOG(2) << "Native action finished with status "
           << processed_action->status();
 
-  // TODO(arbesser): send a representation of the processed action back to JS.
-  current_native_action_ = nullptr;
+  current_native_action_.reset();
+
   std::move(finished_callback)
       .Run(ClientStatus(processed_action->status(),
                         processed_action->status_details()),
-           nullptr);
+           js_flow_util::NativeActionResultToResultValue(*processed_action));
 }
 
 void JsFlowAction::InternalProcessAction(ProcessActionCallback callback) {
+  base::FieldTrialList::CreateFieldTrial(kJsFlowActionSyntheticFieldTrialName,
+                                         kJsFlowActionEnabledGroup);
+
   js_flow_executor_->Start(
       proto_.js_flow().js_flow(),
       base::BindOnce(&JsFlowAction::OnFlowFinished,

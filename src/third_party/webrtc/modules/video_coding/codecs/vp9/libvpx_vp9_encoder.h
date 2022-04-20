@@ -14,12 +14,11 @@
 
 #ifdef RTC_ENABLE_VP9
 
-#include <map>
 #include <memory>
 #include <vector>
 
 #include "api/fec_controller_override.h"
-#include "api/transport/webrtc_key_value_config.h"
+#include "api/field_trials_view.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/vp9_profile.h"
 #include "common_video/include/video_frame_buffer_pool.h"
@@ -28,6 +27,7 @@
 #include "modules/video_coding/codecs/vp9/vp9_frame_buffer_pool.h"
 #include "modules/video_coding/svc/scalable_video_controller.h"
 #include "modules/video_coding/utility/framerate_controller_deprecated.h"
+#include "rtc_base/containers/flat_map.h"
 #include "rtc_base/experiments/encoder_info_settings.h"
 #include "vpx/vp8cx.h"
 
@@ -37,7 +37,7 @@ class LibvpxVp9Encoder : public VP9Encoder {
  public:
   LibvpxVp9Encoder(const cricket::VideoCodec& codec,
                    std::unique_ptr<LibvpxInterface> interface,
-                   const WebRtcKeyValueConfig& trials);
+                   const FieldTrialsView& trials);
 
   ~LibvpxVp9Encoder() override;
 
@@ -172,7 +172,7 @@ class LibvpxVp9Encoder : public VP9Encoder {
     size_t spatial_layer_id = 0;
     size_t temporal_layer_id = 0;
   };
-  std::map<size_t, RefFrameBuffer> ref_buf_;
+  flat_map<size_t, RefFrameBuffer> ref_buf_;
   std::vector<ScalableVideoController::LayerFrameConfig> layer_frames_;
 
   // Variable frame-rate related fields and methods.
@@ -190,7 +190,7 @@ class LibvpxVp9Encoder : public VP9Encoder {
     int frames_before_steady_state;
   } variable_framerate_experiment_;
   static VariableFramerateExperiment ParseVariableFramerateConfig(
-      const WebRtcKeyValueConfig& trials);
+      const FieldTrialsView& trials);
   FramerateControllerDeprecated variable_framerate_controller_;
 
   const struct QualityScalerExperiment {
@@ -199,7 +199,7 @@ class LibvpxVp9Encoder : public VP9Encoder {
     bool enabled;
   } quality_scaler_experiment_;
   static QualityScalerExperiment ParseQualityScalerConfig(
-      const WebRtcKeyValueConfig& trials);
+      const FieldTrialsView& trials);
   const bool external_ref_ctrl_;
 
   // Flags that can affect speed vs quality tradeoff, and are configureable per
@@ -220,11 +220,12 @@ class LibvpxVp9Encoder : public VP9Encoder {
       //  1 = disable deblock for top-most TL
       //  2 = disable deblock for all TLs
       int deblock_mode = 0;
+      bool allow_denoising = true;
     };
     // Map from min pixel count to settings for that resolution and above.
     // E.g. if you want some settings A if below wvga (640x360) and some other
     // setting B at wvga and above, you'd use map {{0, A}, {230400, B}}.
-    std::map<int, ParameterSet> settings_by_resolution;
+    flat_map<int, ParameterSet> settings_by_resolution;
   };
   // Performance flags, ordered by `min_pixel_count`.
   const PerformanceFlags performance_flags_;
@@ -234,7 +235,7 @@ class LibvpxVp9Encoder : public VP9Encoder {
       performance_flags_by_spatial_index_;
   void UpdatePerformanceFlags();
   static PerformanceFlags ParsePerformanceFlagsFromTrials(
-      const WebRtcKeyValueConfig& trials);
+      const FieldTrialsView& trials);
   static PerformanceFlags GetDefaultPerformanceFlags();
 
   int num_steady_state_frames_;

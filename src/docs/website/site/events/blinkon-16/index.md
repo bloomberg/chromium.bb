@@ -3,72 +3,72 @@ breadcrumbs:
 - - /events
   - Chromium project related events
 page_name: blinkon-16
-title: blinkon-16
+title: BlinkOn 16
 ---
 
 **Welcome to BlinkOn 16!**
 
+
+## **Registration**
+
+[Register now](https://hopin.com/events/blinkon-16/registration) and
+join us for BlinkOn 16 in 1H 2022!
+
+Registration will remain open until the start of this event. However,
+we encourage you to register ASAP so that you can stay up to date with
+all the latest information.
+
+
 ## **Logistics**
 
-*   Dates: \[TBD\]
-*   Location: \[TBD\]
-*   [download the hopin mobile
-            app](https://hopin.zendesk.com/hc/en-us/sections/360012637371--Mobile-App)
-            on your device
 
-**Before & During the event**
 
-[Hopin
-Resources](https://docs.google.com/document/d/1SNTmngdbfc1OuxCOaw231guH53p8ks4-YnjecB6CtGk/edit#)
+* When: May 18-19, 2022 from 2pm-6pm GMT / 7am-11am PDT
+* Where: Virtually on [Hopin](https://app.hopin.com/events/blinkon-16/reception)
+* What: Combination of live and recorded sessions, including keynotes, lightning talks, breakout talks, and social events
 
-*   Please check your [Networking Connectivity
-            Settings](https://hopin.zendesk.com/hc/en-us/articles/360056528911-Network-Connectivity-Settings)
-            & [Browser Compatibility
-            ](https://hopin.zendesk.com/hc/en-us/articles/360056078872-Browser-Compatibility-for-online-events-on-Hopin).
-*   [How to access an event as an
-            attendee](https://assets-global.website-files.com/5fb2950be125da5aa25af58e/60b95a6bcaf8722b6b83752c_How%20to%20Access%20an%20Event%20as%20an%20Attendee%20(1).pdf)
-*   [Being a speaker at a Hopin
-            Event](https://assets-global.website-files.com/5fb2950be125da5aa25af58e/60b95bbb779c0790ddf0ae27_Best%20Practices%20for%20Speakers.pdf)
-*   [How to use the Backstage as a
-            speaker](https://hopin.zendesk.com/hc/en-us/articles/360056078472-How-to-use-the-Backstage-as-a-speaker)
-*   [Screensharing on
-            backstage](https://hopin.zendesk.com/hc/en-us/articles/360056078412-How-to-present-slides-on-the-Hopin-Backstage)
-*   [Sharing your
-            PowerPoint](https://hopin.zendesk.com/hc/en-us/articles/360056527631-Sharing-your-Powerpoint)
-*   [Speaker
-            instructions](https://hopin.zendesk.com/hc/en-us/articles/360056078432-Speaker-Instructions)
-*   [Tips for Speaking in and Moderating
-            Sessions](https://hopin.zendesk.com/hc/en-us/articles/4402442259220-Tips-for-Speaking-in-and-Moderating-Sessions)
+## Call for Content (Lightning & Breakout Talks)
 
-## Registration
+* Lightning Talks - If you'd like to host a 3-minute lightning talk, **[sign up here](https://docs.google.com/spreadsheets/d/1krAIrq6crZ7M07Uy4FLY-MAiontOecPMjeWrvCWr2m0/edit?usp=sharing) by Wednesday, April 20th**
+* Breakout Talks - If you'd like to host a 25-minute breakout talk (presentation, discussion, etc.), **[sign up here](https://docs.google.com/forms/d/e/1FAIpQLSdkWcf95qOqIBtw97BCyYi3_515ZGb-fPeTCiP72GnnNkCrEw/viewform?resourcekey=0-PT5CAkaLNOmeD8Iz4y5paw) by Wednesday, May 4th**
 
-## Lightning Talks
-
-## Breakout Talks
-
-## Schedule
 
 ## **Code of Conduct**
 
-All attendees, speakers, sponsors, and volunteers at BlinkOn 16 are required to
-agree with the following Code of Conduct. Organizers will enforce this code
-throughout BlinkOn 16 to help ensure a safe environment for all attendees.
+All attendees, speakers, sponsors, and volunteers at BlinkOn 16 are
+required to agree with the following Code of Conduct. Organizers will
+enforce this code throughout BlinkOn 16 to help ensure a safe
+environment for everyone.
 
-As developers and community organizers, we all pledge to respect everyone who
-attends BlinkOn 16. We do not tolerate harassment of conference participants in
-any form. Sexual language and imagery is not appropriate for any conference
-venue, including talks, workshops, parties, Twitter, and other online media.
-Communication must be constructive and never resort to personal attacks,
-harassment, insults, or other unprofessional conduct. We promise to extend
-courtesy and respect to all attendees regardless of gender, gender identity,
-sexual orientation, disability, age, race, ethnicity, religion, or level of
-experience. We expect all attendees to do the same. If any member of the
-community violates this code of conduct, they may be sanctioned or expelled from
-BlinkOn 16 and future BlinkOn events. If you are subject to or witness
-unacceptable behavior, or have any other concerns, please email us at
-[blinkon@chromium.org](mailto:blinkon@chromium.org) asap.
+As developers and community organizers, we all pledge to respect
+everyone who attends BlinkOn 16.
 
-## **Organizer Information**
+We do not tolerate harassment of conference participants in any
+form. Sexual language and imagery is not appropriate for any
+conference venue, including talks, workshops, parties, Twitter, and
+other online media. Communication must be constructive and never
+resort to personal attacks, harassment, insults, or other
+unprofessional conduct.
 
-*   Planning committee:
-            [blinkon@chromium.org](mailto:blinkon@chromium.org)
+We promise to extend courtesy and respect to all attendees regardless
+of gender, gender identity, sexual orientation, disability, age, race,
+ethnicity, religion, or level of experience. We expect all attendees
+to do the same.
+
+If any member of the community violates this code of conduct, they may
+be sanctioned or expelled from BlinkOn 16 and future BlinkOn events.
+
+If you are subject to or witness unacceptable behavior, or have any
+other concerns, please email us at
+[blinkon@chromium.org](mailto:blinkon@chromium.org) ASAP.
+
+
+## **Organizer Contact Information**
+
+
+
+* _Planning committee:_ (e) [blinkon@chromium.org](mailto:blinkon@chromium.org)
+* _Ashley Haman:_ (Slack) [ashleyhaman@chromium.org](https://app.slack.com/client/T039UTRBS/D017Q43JXGT/user_profile/U017NGH61KP) (e) [ashleyhaman@google.com](mailto:ashleyhaman@google.com)
+* _Shauna Mendelow:_ (Slack) [smendelow@chromium.org](mailto:smendelow@chromium.org) (e) [smendelow@google.com](mailto:smendelow@google.com)
+* _Johnny Stenback:_ (Slack) [jstenback@chromium.org](mailto:jstenback@chromium.org) (e) [jstenback@google.com](mailto:jstenback@google.com)
+* _Lutz Vahl:_ (Slack) [vahl@chromium.org](mailto:vahl@chromium.org) (e) [vahl@google.com](mailto:vahl@google.com)

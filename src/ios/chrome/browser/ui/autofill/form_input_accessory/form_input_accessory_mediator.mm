@@ -531,20 +531,12 @@ const base::Feature kFormInputKeyboardReloadInputViews{
     if (provider.type == SuggestionProviderTypeAutofill) {
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeMadeForIOS);
     }
-    if (base::FeatureList::IsEnabled(kAutofillPasswordRichIPH)) {
-      [self highlightFirstSuggestion:suggestions.firstObject];
+    if (provider.type == SuggestionProviderTypePassword) {
+      [self.handler notifyPasswordSuggestionsShown];
+      if (base::FeatureList::IsEnabled(kAutofillPasswordRichIPH)) {
+        [self.consumer animateSuggestionLabel];
+      }
     }
-  }
-}
-
-// Highlights first suggestion.
-- (void)highlightFirstSuggestion:(FormSuggestion*)suggestion {
-  if (!suggestion)
-    return;
-  // Show only if it's a password suggestion. (cf. FormSuggestion's header file)
-  const BOOL isCreditCardOrProfile = suggestion.identifier > 0;
-  if (!isCreditCardOrProfile) {
-    [self.consumer animateSuggestionLabel];
   }
 }
 
@@ -560,10 +552,15 @@ const base::Feature kFormInputKeyboardReloadInputViews{
                           ReauthenticationEvent::kAttempt);
   __weak __typeof(self) weakSelf = self;
   auto suggestionHandler = ^() {
-    if (weakSelf.currentProvider.type == SuggestionProviderTypePassword) {
-      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+    __typeof(self) strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
     }
-    [weakSelf.currentProvider didSelectSuggestion:formSuggestion];
+    if (strongSelf.currentProvider.type == SuggestionProviderTypePassword) {
+      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+      [self.handler notifyPasswordSuggestionSelected];
+    }
+    [strongSelf.currentProvider didSelectSuggestion:formSuggestion];
   };
 
   if (!formSuggestion.requiresReauth) {

@@ -15,6 +15,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -151,7 +152,7 @@ class BatchElementChecker {
       std::vector<std::pair</* element_condition_index */ size_t,
                             /* result_index */ size_t>>* results,
       const ClientStatus& element_status,
-      std::unique_ptr<ElementFinder::Result> element_result);
+      std::unique_ptr<ElementFinderResult> element_result);
 
   void OnElementPreconditionChecked(
       std::vector<ElementConditionCheckCallback>* callbacks,

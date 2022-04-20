@@ -14,12 +14,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/leveldb_proto/public/proto_database.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "components/segmentation_platform/internal/database/storage_service.h"
+#include "components/segmentation_platform/internal/execution/model_execution_manager.h"
 #include "components/segmentation_platform/internal/platform_options.h"
+#include "components/segmentation_platform/internal/scheduler/execution_service.h"
 #include "components/segmentation_platform/internal/service_proxy_impl.h"
+#include "components/segmentation_platform/internal/signals/signal_handler.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Clock;
@@ -39,46 +41,11 @@ class PrefService;
 
 namespace segmentation_platform {
 
-namespace proto {
-class SegmentInfo;
-class SignalData;
-class SignalStorageConfigs;
-}  // namespace proto
-
 struct Config;
-class DatabaseMaintenanceImpl;
-class FeatureListQueryProcessor;
-class HistogramSignalHandler;
-class HistoryServiceObserver;
-class ModelExecutionManager;
-class ModelExecutionSchedulerImpl;
 class ModelProviderFactory;
-class SegmentationResultPrefs;
-class SegmentInfoDatabase;
 class SegmentSelectorImpl;
-class SignalDatabaseImpl;
-class SignalFilterProcessor;
-class SignalStorageConfig;
 class SegmentScoreProvider;
-class TrainingDataCollector;
 class UkmDataManager;
-class UserActionSignalHandler;
-
-// Qualifiers used to indicate service status. One or more qualifiers can
-// be used at a time.
-enum class ServiceStatus {
-  // Server not yet initialized.
-  kUninitialized = 0,
-
-  // Segmentation information DB is initialized.
-  kSegmentationInfoDbInitialized = 1,
-
-  // Signal database is initialized.
-  kSignalDbInitialized = 1 << 1,
-
-  // Signal storage config is initialized.
-  kSignalStorageConfigInitialized = 1 << 2,
-};
 
 // The internal implementation of the SegmentationPlatformService.
 class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
@@ -96,13 +63,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
 
   // For testing only.
   SegmentationPlatformServiceImpl(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SegmentInfo>>
-          segment_db,
-      std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SignalData>>
-          signal_db,
-      std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SignalStorageConfigs>>
-          signal_storage_config_db,
-      UkmDataManager* ukm_data_manager,
+      std::unique_ptr<StorageService> storage_service,
       std::unique_ptr<ModelProviderFactory> model_provider,
       PrefService* pref_service,
       history::HistoryService* history_service,
@@ -128,23 +89,16 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
 
  private:
   friend class SegmentationPlatformServiceImplTest;
+  friend class TestServicesForPlatform;
 
-  void OnSegmentInfoDatabaseInitialized(bool success);
-  void OnSignalDatabaseInitialized(bool success);
-  void OnSignalStorageConfigInitialized(bool success);
-  bool IsInitializationFinished() const;
-  void MaybeRunPostInitializationRoutines();
+  void OnDatabaseInitialized(bool success);
+
   // Must only be invoked with a valid SegmentInfo.
   void OnSegmentationModelUpdated(proto::SegmentInfo segment_info);
-
-  // Executes all database maintenance tasks. This should be invoked after a
-  // short amount of time has passed since initialization happened.
-  void OnExecuteDatabaseMaintenanceTasks();
 
   // Called when service status changes.
   void OnServiceStatusChanged();
 
-  // Moved to ModelExecutionManagerImpl on initialization of service.
   std::unique_ptr<ModelProviderFactory> model_provider_factory_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -156,26 +110,11 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   base::flat_set<optimization_guide::proto::OptimizationTarget>
       all_segment_ids_;
 
-  // Databases.
-  std::unique_ptr<SegmentInfoDatabase> segment_info_database_;
-  std::unique_ptr<SignalDatabaseImpl> signal_database_;
-  std::unique_ptr<SignalStorageConfig> signal_storage_config_;
-  std::unique_ptr<SegmentationResultPrefs> segmentation_result_prefs_;
-
-  // The data manager is owned by the database client and is guaranteed to be
-  // kept alive until all profiles (keyed services) are destroyed. Refer to the
-  // description of UkmDataManager to know the lifetime of the objects usable
-  // from the manager.
-  raw_ptr<UkmDataManager> ukm_data_manager_;
+  std::unique_ptr<StorageService> storage_service_;
+  bool storage_initialized_ = false;
 
   // Signal processing.
-  std::unique_ptr<UserActionSignalHandler> user_action_signal_handler_;
-  std::unique_ptr<HistogramSignalHandler> histogram_signal_handler_;
-  std::unique_ptr<SignalFilterProcessor> signal_filter_processor_;
-  std::unique_ptr<HistoryServiceObserver> history_service_observer_;
-
-  // Training/inference input data generation.
-  std::unique_ptr<FeatureListQueryProcessor> feature_list_query_processor_;
+  SignalHandler signal_handler_;
 
   // Segment selection.
   // TODO(shaktisahu): Determine safe destruction ordering between
@@ -186,22 +125,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // Segment results.
   std::unique_ptr<SegmentScoreProvider> segment_score_provider_;
 
-  // Traing data collection logic.
-  std::unique_ptr<TrainingDataCollector> training_data_collector_;
-
-  // Model execution scheduling logic.
-  std::unique_ptr<ModelExecutionSchedulerImpl> model_execution_scheduler_;
-
-  // Model execution.
-  std::unique_ptr<ModelExecutionManager> model_execution_manager_;
-
-  // Database maintenance.
-  std::unique_ptr<DatabaseMaintenanceImpl> database_maintenance_;
-
-  // Database initialization statuses.
-  absl::optional<bool> segment_info_database_initialized_;
-  absl::optional<bool> signal_database_initialized_;
-  absl::optional<bool> signal_storage_config_initialized_;
+  ExecutionService execution_service_;
 
   std::unique_ptr<ServiceProxyImpl> proxy_;
 

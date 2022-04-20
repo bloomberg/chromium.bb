@@ -19,6 +19,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
+#include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -373,14 +374,15 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
     }
   }
 
-  // Ensure that overview mode is active if and only if there is a window
-  // snapped to one side but no window snapped to the other side.
+  // Ensure that overview mode is active if there is a window snapped to one of
+  // the sides. Ensure overview mode is not active if there are two snapped
+  // windows.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController::State state = split_view_controller->state();
   if (state == SplitViewController::State::kLeftSnapped ||
       state == SplitViewController::State::kRightSnapped) {
     overview_controller->StartOverview(OverviewStartAction::kSplitView);
-  } else {
+  } else if (state == SplitViewController::State::kBothSnapped) {
     overview_controller->EndOverview(OverviewEndAction::kSplitView);
   }
 }
@@ -426,7 +428,7 @@ SplitViewController::SnapPosition GetSnapPositionForLocation(
   SplitViewController::SnapPosition snap_position = SplitViewController::NONE;
   if (horizontal) {
     gfx::Rect area(work_area);
-    area.Inset(horizontal_edge_inset, 0);
+    area.Inset(gfx::Insets::VH(0, horizontal_edge_inset));
     if (location_in_screen.x() <= area.x()) {
       snap_position = right_side_up ? SplitViewController::LEFT
                                     : SplitViewController::RIGHT;
@@ -436,7 +438,7 @@ SplitViewController::SnapPosition GetSnapPositionForLocation(
     }
   } else {
     gfx::Rect area(work_area);
-    area.Inset(0, vertical_edge_inset);
+    area.Inset(gfx::Insets::VH(vertical_edge_inset, 0));
     if (location_in_screen.y() <= area.y()) {
       snap_position = right_side_up ? SplitViewController::LEFT
                                     : SplitViewController::RIGHT;
@@ -457,7 +459,7 @@ SplitViewController::SnapPosition GetSnapPositionForLocation(
   // from edge.
   bool drag_end_near_edge = false;
   gfx::Rect area(work_area);
-  area.Inset(snap_distance_from_edge, snap_distance_from_edge);
+  area.Inset(snap_distance_from_edge);
   if (horizontal ? location_in_screen.x() < area.x() ||
                        location_in_screen.x() > area.right()
                  : location_in_screen.y() < area.y() ||

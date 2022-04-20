@@ -248,7 +248,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2022-08-07">
+    enum="WebSchedulerTrackedFeature" expires_after="2022-10-09">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -283,7 +283,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisabledForRenderFrameHostReason2"
     enum="BackForwardCacheDisabledForRenderFrameHostReason2"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>carlscab@chromium.org</owner>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -801,7 +801,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrame.ThirdPartyCookieBlockingEnabled"
-    enum="ThirdPartyCookieBlockState" expires_after="2022-07-23">
+    enum="ThirdPartyCookieBlockState" expires_after="2022-09-25">
   <owner>dullweber@chromium.org</owner>
   <owner>feuunk@chromium.org</owner>
   <summary>
@@ -822,9 +822,9 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomain2" enum="Boolean"
-    expires_after="2022-04-12">
+    expires_after="2022-10-12">
   <owner>cthomp@chromium.org</owner>
-  <owner>security-enamel@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
   <summary>
     Whether the main-frame navigation was to a URL with an RTL domain name. This
     is only recorded for finished navigations and not attempts. Warning: this
@@ -833,9 +833,9 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomainDifferentPage2" enum="Boolean"
-    expires_after="2022-04-12">
+    expires_after="2022-10-12">
   <owner>cthomp@chromium.org</owner>
-  <owner>security-enamel@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
   <summary>
     Whether the main-frame navigation was to a URL with an RTL domain name,
     recorded for each main-frame avigation that replaces a document object. This
@@ -938,7 +938,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OriginAgentCluster.Result"
-    enum="OriginAgentClusterEndResult" expires_after="2022-08-14">
+    enum="OriginAgentClusterEndResult" expires_after="2023-03-09">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -946,7 +946,11 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     For every successful cross-document commit, this logs whether or how
     OriginAgentCluster was involved. It tracks whether it was requested, as well
     as whether the isolation was granted, which can be affected by other
-    documents in the same browsing context group.
+    documents in the same browsing context group. If OriginAgentCluster-by-
+    default is not enabled, the first four enum values track this state. If
+    OriginAgentCluster-by-default is enabled, then the second (disjoint) set of
+    six enum values tracks this state, plus the two additional cases where
+    OriginAgentCluster was explicitly not requested, and was or wasn't granted.
   </summary>
 </histogram>
 
@@ -975,6 +979,45 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.Preconnect.PreresolveJobQueueingTime" units="ms"
+    expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the amount of time that a requested preresolve job spends queueing
+    before being executed (e.g., due to a max # of preconnects being in flight).
+    Recorded for each presolve job.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.PreresolveJobQueueLength" units="count"
+    expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the length of the queue of preresolve jobs at the beginning of
+    PreconnectManager processing this queue to execute jobs. Recorded each time
+    that PreconnectManager processes the queue of pending jobs.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.ProxyLookupCallbackQueueingTime"
+    units="ms" expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the amount of time that the task corresponding to the completion
+    callback for a proxy lookup performed as part of navigation preconnect spent
+    being queued before executing. Recorded for each proxy lookup.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.Preconnect.ProxyLookupLatency" units="ms"
     expires_after="2022-09-08">
   <owner>alexilin@chromium.org</owner>
@@ -985,6 +1028,19 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     performed as part of navigation preconnect. Recorded for each proxy lookup.
     Note: Does not capture any delay spent queuing *before* initiating the proxy
     lookup (e.g., due to a max # of preconnects being in flight).
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.ResolveHostCallbackQueueingTime"
+    units="ms" expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the amount of time that the task corresponding to the completion
+    callback for a host resolution performed as part of navigation preconnect
+    spent being queued before executing. Recorded for each host resolution.
   </summary>
 </histogram>
 
@@ -999,6 +1055,30 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     resolution. Note: Does not capture any delay spent queuing *before*
     initiating the host resolution (e.g., due to a max # of preconnects being in
     flight).
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Prefetch.PrefetchJobQueueingTime" units="ms"
+    expires_after="2022-09-08">
+  <owner>blundell@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Measures the amount of time that a requested prefetch job spends queueing
+    before being executed (e.g., due to a max # of prefetches being in flight).
+    Recorded for each prefetch job.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Prefetch.PrefetchJobQueueLength" units="count"
+    expires_after="2022-09-08">
+  <owner>blundell@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Measures the length of the queue of prefetch jobs at the beginning of
+    PrefetchManager processing this queue to execute jobs. Recorded each time
+    that PrefetchManager processes the queue of pending jobs.
   </summary>
 </histogram>
 
@@ -1105,7 +1185,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2022-08-07">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2022-10-09">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1201,6 +1281,22 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.UrlParamFilter.ClassificationListValidationResult"
+    enum="ClassificationListValidationResult" expires_after="2022-09-18">
+  <owner>kaklilu@chromium.org</owner>
+  <owner>src/chrome/browser/url_param_filter/OWNERS</owner>
+  <summary>
+    The result of reading the proto file of classifications provided to the
+    URLParamClassificationComponentInstaller.
+
+    This histogram is measured on a classification-list basis, and will provide
+    metrics regarding the number of valid and invalid classification lists.
+
+    This metric is recorded every time the Component Updater attempts to install
+    a new version of the UrlParamClassificaton Component.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.UrlParamFilter.FilteredParamCountExperimental"
     units="count" expires_after="2023-01-02">
   <owner>mreichhoff@chromium.org</owner>
@@ -1242,7 +1338,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.{Stage}.{FrameType}" units="ms"
-    expires_after="2022-05-06">
+    expires_after="2022-11-06">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1498,8 +1594,55 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
 </histogram>
 
+<histogram
+    name="Prerender.Experimental.Search.FirstCorrectPrerenderHintReceivedToRealSearchNavigationStartedDuration"
+    units="ms" expires_after="2022-09-01">
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    PrerenderManager records the duration period from the time to start
+    prerendering with the search hints to the time to navigate the search hints.
+    This duration is recorded when it finds the search hints predicts correctly,
+    e.g. users do search and results in activating the prerendered page, or
+    users do saerch the prerender hints but the prerendered page has been
+    destroyed due to expiration.
+
+    |====== HitFinishedSearchResultLifeTime=======|
+
+    @ Timestamp X ------------------------------- @ Timestamp Y
+
+    or
+
+    |====== HitFinishedSearchResultLifeTime=============|
+
+    @ Timestamp X ------------------------------------- @ Timestamp Z
+
+    Where:
+
+    * Timestamp X: Chrome receives the first prerender hints for a search term
+    A.
+
+    * Timestamp Y: User selects the search term A.
+
+    * Timestamp Z: Timestamp X + Fixed period T.
+
+    HitFinishedSearchResultLifeTime = min(Timestamp Y, Timestamp Z) - Timestamp
+    X = min(Timestamp Y - Timestamp X, T).
+
+    It aims to:
+
+    1. Track the prerenders which were canceled due to expiration(Fixed period
+    T).
+
+    2. Gain the understanding of the duration between the moment when browser
+    receives the first prerender hint and the moment when the hint is selected.
+    This data will be used to determine the threshold of deciding whether to
+    reuse a prefetched response or to resend a prefetch request.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>

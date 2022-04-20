@@ -27,6 +27,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/time.h"
+#include "codec_internal.h"
 #include "internal.h"
 
 typedef struct MFContext {
@@ -288,7 +289,7 @@ static IMFSample *mf_a_avframe_to_sample(AVCodecContext *avctx, const AVFrame *f
     size_t bps;
     IMFSample *sample;
 
-    bps = av_get_bytes_per_sample(avctx->sample_fmt) * avctx->channels;
+    bps = av_get_bytes_per_sample(avctx->sample_fmt) * avctx->ch_layout.nb_channels;
     len = frame->nb_samples * bps;
 
     sample = ff_create_memory_sample(frame->data[0], len, c->in_info.cbAlignment);
@@ -536,7 +537,7 @@ static int64_t mf_enca_output_score(AVCodecContext *avctx, IMFMediaType *type)
         score |= 1LL << 32;
 
     hr = IMFAttributes_GetUINT32(type, &MF_MT_AUDIO_NUM_CHANNELS, &t);
-    if (!FAILED(hr) && t == avctx->channels)
+    if (!FAILED(hr) && t == avctx->ch_layout.nb_channels)
         score |= 2LL << 32;
 
     hr = IMFAttributes_GetGUID(type, &MF_MT_SUBTYPE, &tg);
@@ -591,7 +592,7 @@ static int64_t mf_enca_input_score(AVCodecContext *avctx, IMFMediaType *type)
         score |= 2;
 
     hr = IMFAttributes_GetUINT32(type, &MF_MT_AUDIO_NUM_CHANNELS, &t);
-    if (!FAILED(hr) && t == avctx->channels)
+    if (!FAILED(hr) && t == avctx->ch_layout.nb_channels)
         score |= 4;
 
     return score;
@@ -615,7 +616,7 @@ static int mf_enca_input_adjust(AVCodecContext *avctx, IMFMediaType *type)
     }
 
     hr = IMFAttributes_GetUINT32(type, &MF_MT_AUDIO_NUM_CHANNELS, &t);
-    if (FAILED(hr) || t != avctx->channels) {
+    if (FAILED(hr) || t != avctx->ch_layout.nb_channels) {
         av_log(avctx, AV_LOG_ERROR, "unsupported input channel number set\n");
         return AVERROR(EINVAL);
     }
@@ -1150,25 +1151,25 @@ static int mf_close(AVCodecContext *avctx)
         .option     = OPTS,                                                    \
         .version    = LIBAVUTIL_VERSION_INT,                                   \
     };                                                                         \
-    const AVCodec ff_ ## NAME ## _mf_encoder = {                               \
-        .priv_class     = &ff_ ## NAME ## _mf_encoder_class,                   \
-        .name           = #NAME "_mf",                                         \
-        .long_name      = NULL_IF_CONFIG_SMALL(#ID " via MediaFoundation"),    \
-        .type           = AVMEDIA_TYPE_ ## MEDIATYPE,                          \
-        .id             = AV_CODEC_ID_ ## ID,                                  \
+    const FFCodec ff_ ## NAME ## _mf_encoder = {                               \
+        .p.priv_class   = &ff_ ## NAME ## _mf_encoder_class,                   \
+        .p.name         = #NAME "_mf",                                         \
+        .p.long_name    = NULL_IF_CONFIG_SMALL(#ID " via MediaFoundation"),    \
+        .p.type         = AVMEDIA_TYPE_ ## MEDIATYPE,                          \
+        .p.id           = AV_CODEC_ID_ ## ID,                                  \
         .priv_data_size = sizeof(MFContext),                                   \
         .init           = mf_init,                                             \
         .close          = mf_close,                                            \
         .receive_packet = mf_receive_packet,                                   \
         EXTRA                                                                  \
-        .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HYBRID |           \
+        .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HYBRID |           \
                           AV_CODEC_CAP_DR1,                                    \
         .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE |                       \
                           FF_CODEC_CAP_INIT_CLEANUP,                           \
     };
 
 #define AFMTS \
-        .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,    \
+        .p.sample_fmts  = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,    \
                                                          AV_SAMPLE_FMT_NONE },
 
 MF_ENCODER(AUDIO, aac,         AAC, NULL, AFMTS);
@@ -1203,7 +1204,7 @@ static const AVOption venc_opts[] = {
 };
 
 #define VFMTS \
-        .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_NV12,       \
+        .p.pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_NV12,       \
                                                         AV_PIX_FMT_YUV420P,    \
                                                         AV_PIX_FMT_NONE },
 

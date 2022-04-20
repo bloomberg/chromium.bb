@@ -241,7 +241,7 @@ static AOM_INLINE int all_blks_inside(int x16_idx, int y16_idx, int pixels_wide,
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
-// TODO(any) : Perform average of four 8x8 blocks simlar to lowbd
+// TODO(yunqingwang): Perform average of four 8x8 blocks similar to lowbd
 static AOM_INLINE void fill_variance_8x8avg_highbd(
     const uint8_t *s, int sp, const uint8_t *d, int dp, int x16_idx,
     int y16_idx, VP16x16 *vst, int pixels_wide, int pixels_high,
@@ -484,19 +484,23 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
   if (cm->width >= 1280 && cm->height >= 720)
     thresholds[3] = thresholds[3] << 1;
   if (cm->width * cm->height <= 352 * 288) {
-    if (current_qindex >= QINDEX_HIGH_THR) {
+    const int qindex_thr[3][2] = { { 200, 220 }, { 200, 210 }, { 170, 220 } };
+    assert(cpi->sf.rt_sf.var_part_based_on_qidx < 3);
+    int qindex_low_thr = qindex_thr[cpi->sf.rt_sf.var_part_based_on_qidx][0];
+    int qindex_high_thr = qindex_thr[cpi->sf.rt_sf.var_part_based_on_qidx][1];
+    if (current_qindex >= qindex_high_thr) {
       threshold_base = (5 * threshold_base) >> 1;
       thresholds[1] = threshold_base >> 3;
       thresholds[2] = threshold_base << 2;
       thresholds[3] = threshold_base << 5;
-    } else if (current_qindex < QINDEX_LOW_THR) {
+    } else if (current_qindex < qindex_low_thr) {
       thresholds[1] = threshold_base >> 3;
       thresholds[2] = threshold_base >> 1;
       thresholds[3] = threshold_base << 3;
     } else {
-      int64_t qi_diff_low = current_qindex - QINDEX_LOW_THR;
-      int64_t qi_diff_high = QINDEX_HIGH_THR - current_qindex;
-      int64_t threshold_diff = QINDEX_HIGH_THR - QINDEX_LOW_THR;
+      int64_t qi_diff_low = current_qindex - qindex_low_thr;
+      int64_t qi_diff_high = qindex_high_thr - current_qindex;
+      int64_t threshold_diff = qindex_high_thr - qindex_low_thr;
       int64_t threshold_base_high = (5 * threshold_base) >> 1;
 
       threshold_diff = threshold_diff > 0 ? threshold_diff : 1;
@@ -1279,10 +1283,15 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
           force_split[5 + m2 + i] = 1;
           force_split[m + 1] = 1;
           force_split[0] = 1;
-        } else if (!is_key_frame && cm->height <= 360 &&
-                   (maxvar_16x16[m][i] - minvar_16x16[m][i]) >
-                       (thresholds[2] >> 1) &&
-                   maxvar_16x16[m][i] > thresholds[2]) {
+        } else if (!is_key_frame && (cm->width * cm->height <= 640 * 360) &&
+                   (((maxvar_16x16[m][i] - minvar_16x16[m][i]) >
+                         (thresholds[2] >> 1) &&
+                     maxvar_16x16[m][i] > thresholds[2]) ||
+                    (cpi->sf.rt_sf.force_large_partition_blocks &&
+                     x->content_state_sb.source_sad > kLowSad &&
+                     cpi->rc.frame_source_sad < 20000 &&
+                     maxvar_16x16[m][i] > (thresholds[2] >> 4) &&
+                     maxvar_16x16[m][i] > (minvar_16x16[m][i] << 2)))) {
           force_split[5 + m2 + i] = 1;
           force_split[m + 1] = 1;
           force_split[0] = 1;

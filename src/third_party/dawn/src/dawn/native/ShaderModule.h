@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_SHADERMODULE_H_
-#define DAWNNATIVE_SHADERMODULE_H_
+#ifndef SRC_DAWN_NATIVE_SHADERMODULE_H_
+#define SRC_DAWN_NATIVE_SHADERMODULE_H_
 
 #include "dawn/common/Constants.h"
 #include "dawn/common/ityp_array.h"
@@ -165,6 +165,12 @@ namespace dawn::native {
     // pointers to EntryPointMetadata are safe to store as long as you also keep a Ref to the
     // ShaderModuleBase.
     struct EntryPointMetadata {
+        // It is valid for a shader to contain entry points that go over limits. To keep this
+        // structure with packed arrays and bitsets, we still validate against limits when
+        // doing reflection, but store the errors in this vector, for later use if the application
+        // tries to use the entry point.
+        std::vector<std::string> infringedLimitErrors;
+
         // bindings[G][B] is the reflection data for the binding defined with
         // @group(G) @binding(B) in WGSL / SPIRV.
         BindingInfoArray bindings;
@@ -278,7 +284,7 @@ namespace dawn::native {
 
       protected:
         // Constructor used only for mocking and testing.
-        ShaderModuleBase(DeviceBase* device);
+        explicit ShaderModuleBase(DeviceBase* device);
         void DestroyImpl() override;
 
         MaybeError InitializeBase(ShaderModuleParseResult* parseResult);
@@ -305,4 +311,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_SHADERMODULE_H_
+#endif  // SRC_DAWN_NATIVE_SHADERMODULE_H_

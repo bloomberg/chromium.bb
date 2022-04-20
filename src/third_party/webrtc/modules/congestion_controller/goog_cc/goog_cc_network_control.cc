@@ -60,11 +60,11 @@ int64_t GetBpsOrDefault(const absl::optional<DataRate>& rate,
   }
 }
 
-bool IsEnabled(const WebRtcKeyValueConfig* config, absl::string_view key) {
+bool IsEnabled(const FieldTrialsView* config, absl::string_view key) {
   return absl::StartsWith(config->Lookup(key), "Enabled");
 }
 
-bool IsNotDisabled(const WebRtcKeyValueConfig* config, absl::string_view key) {
+bool IsNotDisabled(const FieldTrialsView* config, absl::string_view key) {
   return !absl::StartsWith(config->Lookup(key), "Disabled");
 }
 }  // namespace
@@ -92,6 +92,8 @@ GoogCcNetworkController::GoogCcNetworkController(NetworkControllerConfig config,
       pace_at_max_of_bwe_and_lower_link_capacity_(
           IsEnabled(key_value_config_,
                     "WebRTC-Bwe-PaceAtMaxOfBweAndLowerLinkCapacity")),
+      pace_at_loss_based_bwe_when_loss_(
+          IsEnabled(key_value_config_, "WebRTC-Bwe-PaceAtLossBaseBweWhenLoss")),
       probe_controller_(
           new ProbeController(key_value_config_, config.event_log)),
       congestion_window_pushback_controller_(
@@ -495,7 +497,6 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
   auto acknowledged_bitrate = acknowledged_bitrate_estimator_->bitrate();
   bandwidth_estimation_->SetAcknowledgedRate(acknowledged_bitrate,
                                              report.feedback_time);
-  bandwidth_estimation_->IncomingPacketFeedbackVector(report);
   for (const auto& feedback : report.SortedByReceiveTime()) {
     if (feedback.sent_packet.pacing_info.probe_cluster_id !=
         PacedPacketInfo::kNotAProbe) {
@@ -553,11 +554,13 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
     }
     // Since SetSendBitrate now resets the delay-based estimate, we have to
     // call UpdateDelayBasedEstimate after SetSendBitrate.
-    bandwidth_estimation_->UpdateDelayBasedEstimate(report.feedback_time,
-                                                    result.target_bitrate);
+    bandwidth_estimation_->UpdateDelayBasedEstimate(
+        report.feedback_time, result.target_bitrate,
+        result.delay_detector_state);
     // Update the estimate in the ProbeController, in case we want to probe.
     MaybeTriggerOnNetworkChanged(&update, report.feedback_time);
   }
+  bandwidth_estimation_->UpdateLossBasedEstimatorFromFeedbackVector(report);
   recovered_from_overuse = result.recovered_from_overuse;
   backoff_in_alr = result.backoff_in_alr;
 
@@ -699,7 +702,10 @@ PacerConfig GoogCcNetworkController::GetPacingRates(Timestamp at_time) const {
   // Pacing rate is based on target rate before congestion window pushback,
   // because we don't want to build queues in the pacer when pushback occurs.
   DataRate pacing_rate = DataRate::Zero();
-  if (pace_at_max_of_bwe_and_lower_link_capacity_ && estimate_) {
+  if ((pace_at_max_of_bwe_and_lower_link_capacity_ ||
+       (pace_at_loss_based_bwe_when_loss_ &&
+        last_loss_based_target_rate_ >= delay_based_bwe_->last_estimate())) &&
+      estimate_) {
     pacing_rate =
         std::max({min_total_allocated_bitrate_, estimate_->link_capacity_lower,
                   last_loss_based_target_rate_}) *

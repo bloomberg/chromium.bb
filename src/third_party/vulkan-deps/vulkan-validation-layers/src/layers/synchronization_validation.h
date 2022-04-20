@@ -1172,8 +1172,7 @@ class SyncValidator : public ValidationStateTracker, public SyncStageAccess {
     void RecordCmdEndRenderPass(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd);
     bool SupressedBoundDescriptorWAW(const HazardResult &hazard) const;
 
-    void PostCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo *pCreateInfo,
-                                    const VkAllocationCallbacks *pAllocator, VkDevice *pDevice, VkResult result) override;
+    void CreateDevice(const VkDeviceCreateInfo *pCreateInfo) override;
 
     bool ValidateBeginRenderPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo *pRenderPassBegin,
                                  const VkSubpassBeginInfo *pSubpassBeginInfo, CMD_TYPE cmd) const;
@@ -1269,9 +1268,9 @@ class SyncValidator : public ValidationStateTracker, public SyncStageAccess {
     void PostCallRecordCmdEndRenderPass2(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo) override;
     void PostCallRecordCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo) override;
 
-    template <typename BufferImageCopyRegionType>
+    template <typename RegionType>
     bool ValidateCmdCopyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage,
-                                      VkImageLayout dstImageLayout, uint32_t regionCount, const BufferImageCopyRegionType *pRegions,
+                                      VkImageLayout dstImageLayout, uint32_t regionCount, const RegionType *pRegions,
                                       CMD_TYPE cmd_type) const;
     bool PreCallValidateCmdCopyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage,
                                              VkImageLayout dstImageLayout, uint32_t regionCount,
@@ -1281,9 +1280,9 @@ class SyncValidator : public ValidationStateTracker, public SyncStageAccess {
     bool PreCallValidateCmdCopyBufferToImage2(VkCommandBuffer commandBuffer,
                                               const VkCopyBufferToImageInfo2 *pCopyBufferToImageInfo) const override;
 
-    template <typename BufferImageCopyRegionType>
+    template <typename RegionType>
     void RecordCmdCopyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage,
-                                    VkImageLayout dstImageLayout, uint32_t regionCount, const BufferImageCopyRegionType *pRegions,
+                                    VkImageLayout dstImageLayout, uint32_t regionCount, const RegionType *pRegions,
                                     CMD_TYPE cmd_type);
     void PreCallRecordCmdCopyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage,
                                            VkImageLayout dstImageLayout, uint32_t regionCount, const VkBufferImageCopy *pRegions) override;
@@ -1292,9 +1291,9 @@ class SyncValidator : public ValidationStateTracker, public SyncStageAccess {
     void PreCallRecordCmdCopyBufferToImage2(VkCommandBuffer commandBuffer,
                                             const VkCopyBufferToImageInfo2 *pCopyBufferToImageInfo) override;
 
-    template <typename BufferImageCopyRegionType>
+    template <typename RegionType>
     bool ValidateCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout,
-                                      VkBuffer dstBuffer, uint32_t regionCount, const BufferImageCopyRegionType *pRegions,
+                                      VkBuffer dstBuffer, uint32_t regionCount, const RegionType *pRegions,
                                       CMD_TYPE cmd_type) const;
     bool PreCallValidateCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout,
                                              VkBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy *pRegions) const override;
@@ -1303,10 +1302,9 @@ class SyncValidator : public ValidationStateTracker, public SyncStageAccess {
     bool PreCallValidateCmdCopyImageToBuffer2(VkCommandBuffer commandBuffer,
                                               const VkCopyImageToBufferInfo2 *pCopyImageToBufferInfo) const override;
 
-    template <typename BufferImageCopyRegionType>
+    template <typename RegionType>
     void RecordCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout,
-                                    VkBuffer dstBuffer, uint32_t regionCount, const BufferImageCopyRegionType *pRegions,
-                                    CMD_TYPE cmd_type);
+                                    VkBuffer dstBuffer, uint32_t regionCount, const RegionType *pRegions, CMD_TYPE cmd_type);
     void PreCallRecordCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout,
                                            VkBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy *pRegions) override;
     void PreCallRecordCmdCopyImageToBuffer2KHR(VkCommandBuffer commandBuffer,

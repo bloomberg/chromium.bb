@@ -48,6 +48,8 @@ class BreakUpIslands : public TF::PerFunctionAggregateAnalysisConsumerPass<
   }
 
  public:
+  MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(BreakUpIslands)
+
   StringRef getArgument() const final { return "tf-executor-break-up-islands"; }
 
   StringRef getDescription() const final {
@@ -123,7 +125,7 @@ void BreakUpIslands::runOnFunction(
       }
     }
     state.addOperands(operands);
-    Operation* new_op = builder.createOperation(state);
+    Operation* new_op = builder.create(state);
     item.replaceAllUsesWith(new_op);
     new_op->setAttrs(item.getAttrDictionary());
     item.erase();

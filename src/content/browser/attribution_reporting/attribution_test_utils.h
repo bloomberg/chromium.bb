@@ -95,14 +95,9 @@ class MockAttributionReportingContentBrowserClient
 
 class MockAttributionHost : public AttributionHost {
  public:
-  explicit MockAttributionHost(WebContents* contents);
+  static MockAttributionHost* Override(WebContents* web_contents);
 
   ~MockAttributionHost() override;
-
-  MOCK_METHOD(void,
-              RegisterConversion,
-              (blink::mojom::ConversionPtr conversion),
-              (override));
 
   MOCK_METHOD(
       void,
@@ -116,6 +111,9 @@ class MockAttributionHost : public AttributionHost {
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
        const blink::AttributionSrcToken& attribution_src_token),
       (override));
+
+ private:
+  explicit MockAttributionHost(WebContents* web_contents);
 };
 
 class MockDataHost : public blink::mojom::AttributionDataHost {
@@ -353,7 +351,8 @@ class MockAttributionManager : public AttributionManager {
   void NotifyReportSent(const AttributionReport& report,
                         bool is_debug_report,
                         const SendResult& info);
-  void NotifyTriggerHandled(const CreateReportResult& result);
+  void NotifyTriggerHandled(const AttributionTrigger& trigger,
+                            const CreateReportResult& result);
 
   void SetDataHostManager(std::unique_ptr<AttributionDataHostManager> manager);
 
@@ -399,7 +398,8 @@ class MockAttributionObserver : public AttributionObserver {
 
   MOCK_METHOD(void,
               OnTriggerHandled,
-              (const CreateReportResult& result),
+              (const AttributionTrigger& trigger,
+               const CreateReportResult& result),
               (override));
 };
 
@@ -915,6 +915,10 @@ MATCHER_P(AggregatableHistogramContributionsAre, matcher, "") {
   return ExplainMatchResult(matcher, arg.contributions, result_listener);
 }
 
+MATCHER_P(InitialReportTimeIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.initial_report_time, result_listener);
+}
+
 // `CreateReportResult` matchers
 
 MATCHER_P(CreateReportEventLevelStatusIs, matcher, "") {
@@ -926,8 +930,9 @@ MATCHER_P(CreateReportAggregatableStatusIs, matcher, "") {
                             result_listener);
 }
 
-MATCHER_P(DroppedReportsAre, matcher, "") {
-  return ExplainMatchResult(matcher, arg.dropped_reports(), result_listener);
+MATCHER_P(ReplacedEventLevelReportIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.replaced_event_level_report(),
+                            result_listener);
 }
 
 MATCHER_P(DeactivatedSourceIs, matcher, "") {

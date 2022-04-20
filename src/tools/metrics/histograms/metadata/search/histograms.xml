@@ -44,8 +44,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.All.Searches"
-    enum="BooleanBottomSearchKind" expires_after="2022-08-07">
-<!-- TODO(donnd): change expires_after to never once established and
+    enum="BooleanBottomSearchKind" expires_after="2022-10-09">
+<!-- TODO(donnd): change expires_after to "never" once established and
        approved. -->
 
   <owner>donnd@chromium.org</owner>
@@ -83,6 +83,40 @@ chromium-metrics-reviews@google.com.
   <summary>
     The type of card shown in the Bar when the panel has been opened. Recorded
     when the panel is closed. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Counted.Event"
+    enum="ContextualSearchCountedEvent" expires_after="2022-10-09">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <summary>
+    Records that a Search was done and whether the search was unintelligent or
+    intelligent, and whether it was likely counted by Rasta. Recorded for all
+    users when the panel is closed after being opened. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Counted.Searches" enum="Boolean"
+    expires_after="2022-10-09">
+<!-- TODO(donnd): change expires_after to "never" once established and
+         approved. -->
+
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <summary>
+    Records that a Contextual Search was initiated by the user, and whether that
+    search should be counted as a real user-viewed search or not.
+
+    The true bucket is designed to match what Rasta counts in its queries(event)
+    metric as a real user search.
+
+    The false bucket includes all the other cases where the Contextual Search
+    was started but not counted by Rasta because the user has not been able to
+    view the Search Result Page. Usually this is because the user did not expand
+    the panel beyond the peeking state, but occasionally because it did not
+    render. Recorded when the panel is closed for all users. Implemented for
+    Android.
   </summary>
 </histogram>
 
@@ -232,7 +266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.ResolveRequested"
-    enum="ContextualSearchGestureIsTap" expires_after="2022-08-07">
+    enum="ContextualSearchGestureIsTap" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -243,7 +277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.SelectionExpanded"
-    enum="ContextualSearchGestureIsTap" expires_after="2022-08-07">
+    enum="ContextualSearchGestureIsTap" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -664,9 +698,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchPanelOpenDuration" units="ms"
-    expires_after="M72">
+    expires_after="M103">
   <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
   <summary>
     The time from opening the panel beyond peek until the panel is closed.
     Implemented for Android.
@@ -807,7 +841,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchPromoSeenByGesture"
-    enum="ContextualSearchSeenByGesture" expires_after="M81">
+    enum="ContextualSearchSeenByGesture" expires_after="M103">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -848,7 +882,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchQuickActions.Category"
-    enum="ContextualSearchQuickActionCategory" expires_after="2022-08-07">
+    enum="ContextualSearchQuickActionCategory" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1206,7 +1240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.DefaultSearchProviderType"
-    enum="OmniboxSearchEngineType" expires_after="2022-08-07">
+    enum="OmniboxSearchEngineType" expires_after="2022-10-09">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -1348,14 +1382,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.FetcherNetErrorCode" enum="NetErrorCodes"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>Records the net error code get from TileFetcher.</summary>
 </histogram>
 
 <histogram name="Search.QueryTiles.Group.PruneReason"
-    enum="QueryTilesGroupPruneReason" expires_after="2022-08-07">
+    enum="QueryTilesGroupPruneReason" expires_after="2022-10-09">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
@@ -1364,7 +1398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.GroupStatus" enum="QueryTilesGroupStatus"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
@@ -1374,7 +1408,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Search.QueryTiles.ImagePreloadingEvent"
     enum="QueryTilesImageLoadingEvent" expires_after="2022-04-01">
-  <owner>xingliu@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
     Records the image preloading events when the query tile images are fetched
@@ -1396,7 +1430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.RequestStatus"
-    enum="QueryTilesRequestStatus" expires_after="2022-04-01">
+    enum="QueryTilesRequestStatus" expires_after="2022-10-01">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>
@@ -1420,7 +1454,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Search.QueryTiles.ShowQueryTilesSegmentationResultComparison"
     enum="ShowQueryTilesSegmentationResultComparison"
-    expires_after="2022-08-09">
+    expires_after="2022-10-09">
   <owner>haileywang@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -1530,7 +1564,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.AllUserPermissions"
-    enum="ContextualSearchPermissions" expires_after="2022-08-07">
+    enum="ContextualSearchPermissions" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>
@@ -1544,7 +1578,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselLastVisibleItemPosition"
-    units="position" expires_after="2022-08-07">
+    units="position" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
@@ -1558,7 +1592,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselScrollAndClick"
-    enum="ScrollAndClickStatus" expires_after="2022-08-07">
+    enum="ScrollAndClickStatus" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
@@ -1570,7 +1604,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselScrolled" enum="Boolean"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
@@ -1597,7 +1631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.NumberOfSuggestionsClicked2"
-    units="selected" expires_after="2022-08-07">
+    units="selected" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>
@@ -1608,7 +1642,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.QualifiedUsers" enum="Boolean"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>
@@ -1623,7 +1657,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.SelectedCarouselIndex" units="position"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>
@@ -1634,7 +1668,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.SelectedSuggestionIndex"
-    units="position" expires_after="2022-08-07">
+    units="position" expires_after="2022-10-09">
   <owner>donnd@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>
   <summary>

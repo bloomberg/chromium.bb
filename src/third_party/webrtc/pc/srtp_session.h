@@ -16,9 +16,9 @@
 
 #include <vector>
 
+#include "api/field_trials_view.h"
 #include "api/scoped_refptr.h"
 #include "api/sequence_checker.h"
-#include "api/webrtc_key_value_config.h"
 #include "rtc_base/synchronization/mutex.h"
 
 // Forward declaration to avoid pulling in libsrtp headers here
@@ -36,7 +36,7 @@ void ProhibitLibsrtpInitialization();
 class SrtpSession {
  public:
   SrtpSession();
-  explicit SrtpSession(const webrtc::WebRtcKeyValueConfig& field_trials);
+  explicit SrtpSession(const webrtc::FieldTrialsView& field_trials);
   ~SrtpSession();
 
   SrtpSession(const SrtpSession&) = delete;
@@ -120,14 +120,6 @@ class SrtpSession {
   // for debugging.
   void DumpPacket(const void* buf, int len, bool outbound);
 
-  // These methods are responsible for initializing libsrtp (if the usage count
-  // is incremented from 0 to 1) or deinitializing it (when decremented from 1
-  // to 0).
-  //
-  // Returns true if successful (will always be successful if already inited).
-  static bool IncrementLibsrtpUsageCountAndMaybeInit();
-  static void DecrementLibsrtpUsageCountAndMaybeDeinit();
-
   void HandleEvent(const srtp_event_data_t* ev);
   static void HandleEventThunk(srtp_event_data_t* ev);
 
@@ -142,7 +134,6 @@ class SrtpSession {
   int rtcp_auth_tag_len_ = 0;
 
   bool inited_ = false;
-  static webrtc::GlobalMutex lock_;
   int last_send_seq_num_ = -1;
   bool external_auth_active_ = false;
   bool external_auth_enabled_ = false;

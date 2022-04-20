@@ -18,28 +18,28 @@
 #include "src/core/SkMipmap.h"
 #include "src/core/SkScopeExit.h"
 #include "src/core/SkTraceEvent.h"
-#include "src/gpu/GrAHardwareBufferImageGenerator.h"
-#include "src/gpu/GrAHardwareBufferUtils.h"
-#include "src/gpu/GrBackendTextureImageGenerator.h"
-#include "src/gpu/GrBackendUtils.h"
-#include "src/gpu/GrCaps.h"
-#include "src/gpu/GrColorSpaceXform.h"
-#include "src/gpu/GrContextThreadSafeProxyPriv.h"
-#include "src/gpu/GrDirectContextPriv.h"
-#include "src/gpu/GrDrawingManager.h"
-#include "src/gpu/GrGpu.h"
-#include "src/gpu/GrImageContextPriv.h"
-#include "src/gpu/GrImageInfo.h"
-#include "src/gpu/GrProxyProvider.h"
-#include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSemaphore.h"
-#include "src/gpu/GrTexture.h"
-#include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/GrTextureProxyPriv.h"
-#include "src/gpu/GrYUVATextureProxies.h"
-#include "src/gpu/SurfaceFillContext.h"
-#include "src/gpu/effects/GrTextureEffect.h"
-#include "src/gpu/gl/GrGLTexture.h"
+#include "src/gpu/ganesh/GrAHardwareBufferImageGenerator.h"
+#include "src/gpu/ganesh/GrAHardwareBufferUtils_impl.h"
+#include "src/gpu/ganesh/GrBackendTextureImageGenerator.h"
+#include "src/gpu/ganesh/GrBackendUtils.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrColorSpaceXform.h"
+#include "src/gpu/ganesh/GrContextThreadSafeProxyPriv.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
+#include "src/gpu/ganesh/GrDrawingManager.h"
+#include "src/gpu/ganesh/GrGpu.h"
+#include "src/gpu/ganesh/GrImageContextPriv.h"
+#include "src/gpu/ganesh/GrImageInfo.h"
+#include "src/gpu/ganesh/GrProxyProvider.h"
+#include "src/gpu/ganesh/GrRecordingContextPriv.h"
+#include "src/gpu/ganesh/GrSemaphore.h"
+#include "src/gpu/ganesh/GrTexture.h"
+#include "src/gpu/ganesh/GrTextureProxy.h"
+#include "src/gpu/ganesh/GrTextureProxyPriv.h"
+#include "src/gpu/ganesh/GrYUVATextureProxies.h"
+#include "src/gpu/ganesh/SurfaceFillContext.h"
+#include "src/gpu/ganesh/effects/GrTextureEffect.h"
+#include "src/gpu/ganesh/gl/GrGLTexture.h"
 
 #include <cstddef>
 #include <cstring>
@@ -389,7 +389,7 @@ static sk_sp<SkImage> new_wrapped_texture_common(GrRecordingContext* rContext,
                                                  SkAlphaType at,
                                                  sk_sp<SkColorSpace> colorSpace,
                                                  GrWrapOwnership ownership,
-                                                 sk_sp<GrRefCntedCallback> releaseHelper) {
+                                                 sk_sp<skgpu::RefCntedCallback> releaseHelper) {
     if (!backendTex.isValid() || backendTex.width() <= 0 || backendTex.height() <= 0) {
         return nullptr;
     }
@@ -418,7 +418,7 @@ sk_sp<SkImage> SkImage::MakeFromCompressedTexture(GrRecordingContext* rContext,
                                                   sk_sp<SkColorSpace> cs,
                                                   TextureReleaseProc releaseP,
                                                   ReleaseContext releaseC) {
-    auto releaseHelper = GrRefCntedCallback::Make(releaseP, releaseC);
+    auto releaseHelper = skgpu::RefCntedCallback::Make(releaseP, releaseC);
 
     if (!rContext) {
         return nullptr;
@@ -451,7 +451,7 @@ sk_sp<SkImage> SkImage::MakeFromTexture(GrRecordingContext* rContext,
                                         const GrBackendTexture& tex, GrSurfaceOrigin origin,
                                         SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs,
                                         TextureReleaseProc releaseP, ReleaseContext releaseC) {
-    auto releaseHelper = GrRefCntedCallback::Make(releaseP, releaseC);
+    auto releaseHelper = skgpu::RefCntedCallback::Make(releaseP, releaseC);
 
     if (!rContext) {
         return nullptr;
@@ -470,6 +470,22 @@ sk_sp<SkImage> SkImage::MakeFromTexture(GrRecordingContext* rContext,
 
     return new_wrapped_texture_common(rContext, tex, grColorType, origin, at, std::move(cs),
                                       kBorrow_GrWrapOwnership, std::move(releaseHelper));
+}
+
+sk_sp<SkImage> SkImage::MakeFromAdoptedTexture(GrRecordingContext* context,
+                                               const GrBackendTexture& backendTexture,
+                                               GrSurfaceOrigin textureOrigin,
+                                               SkColorType colorType) {
+    return SkImage::MakeFromAdoptedTexture(context, backendTexture, textureOrigin,
+                                           colorType, kPremul_SkAlphaType, nullptr);
+}
+sk_sp<SkImage> SkImage::MakeFromAdoptedTexture(GrRecordingContext* context,
+                                               const GrBackendTexture& backendTexture,
+                                               GrSurfaceOrigin textureOrigin,
+                                               SkColorType colorType,
+                                               SkAlphaType alphaType) {
+    return SkImage::MakeFromAdoptedTexture(context, backendTexture, textureOrigin,
+                                           colorType, alphaType, nullptr);
 }
 
 sk_sp<SkImage> SkImage::MakeFromAdoptedTexture(GrRecordingContext* rContext,
@@ -583,7 +599,7 @@ sk_sp<SkImage> SkImage::MakePromiseTexture(sk_sp<GrContextThreadSafeProxy> threa
     // Our contract is that we will always call the release proc even on failure.
     // We use the helper to convey the context, so we need to ensure make doesn't fail.
     textureReleaseProc = textureReleaseProc ? textureReleaseProc : [](void*) {};
-    auto releaseHelper = GrRefCntedCallback::Make(textureReleaseProc, textureContext);
+    auto releaseHelper = skgpu::RefCntedCallback::Make(textureReleaseProc, textureContext);
     SkImageInfo info = SkImageInfo::Make(dimensions, colorType, alphaType, colorSpace);
     if (!SkImageInfoIsValid(info)) {
         return nullptr;
@@ -727,7 +743,7 @@ sk_sp<SkImage> SkImage::MakeFromAHardwareBufferWithData(GrDirectContext* dContex
     }
     SkASSERT(deleteImageProc);
 
-    auto releaseHelper = GrRefCntedCallback::Make(deleteImageProc, deleteImageCtx);
+    auto releaseHelper = skgpu::RefCntedCallback::Make(deleteImageProc, deleteImageCtx);
 
     SkColorType colorType =
             GrAHardwareBufferUtils::GetSkColorTypeFromBufferFormat(bufferDesc.format);

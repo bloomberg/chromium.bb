@@ -144,6 +144,7 @@ std::tuple<GURL, bool /*is_file_handling*/> WebAppLaunchProcess::GetLaunchUrl(
 
   if (!params_.override_url.is_empty()) {
     launch_url = params_.override_url;
+    is_file_handling = !params_.launch_files.empty();
   } else if (share_target) {
     // Handle share_target launch.
     launch_url = share_target->action;
@@ -151,17 +152,6 @@ std::tuple<GURL, bool /*is_file_handling*/> WebAppLaunchProcess::GetLaunchUrl(
              params_.url_handler_launch_url->is_valid()) {
     // Handle url_handlers launch.
     launch_url = params_.url_handler_launch_url.value();
-  } else if (absl::optional<GURL> file_handler_url =
-                 provider_.os_integration_manager().GetMatchingFileHandlerURL(
-                     params_.app_id, params_.launch_files)) {
-    // Handle file_handlers launch. When launched from Files app, the user has
-    // already selected a file_handler so use that if available.
-    if (params_.intent && params_.intent->activity_name) {
-      launch_url = GURL(params_.intent->activity_name.value());
-    } else {
-      launch_url = file_handler_url.value();
-    }
-    is_file_handling = true;
   } else if (absl::optional<GURL> protocol_handler_translated_url =
                  GetProtocolHandlingTranslatedUrl(
                      provider_.os_integration_manager(), params_)) {
@@ -197,7 +187,7 @@ WindowOpenDisposition WebAppLaunchProcess::GetNavigationDisposition(
 
   // If launch handler is routing to an existing client, we want to use the
   // existing WebContents rather than opening a new tab.
-  if (GetLaunchRouteTo() == LaunchHandler::RouteTo::kExistingClient) {
+  if (RouteToExistingClient()) {
     return WindowOpenDisposition::CURRENT_TAB;
   }
 
@@ -217,12 +207,26 @@ LaunchHandler::RouteTo WebAppLaunchProcess::GetLaunchRouteTo() const {
   return launch_handler.route_to;
 }
 
-LaunchHandler::NavigateExistingClient
-WebAppLaunchProcess::GetLaunchNavigateExistingClient() const {
-  DCHECK(web_app_);
-  return web_app_->launch_handler()
-      .value_or(LaunchHandler())
-      .navigate_existing_client;
+bool WebAppLaunchProcess::RouteToExistingClient() const {
+  switch (GetLaunchRouteTo()) {
+    case LaunchHandler::RouteTo::kAuto:
+    case LaunchHandler::RouteTo::kNewClient:
+      return false;
+    case LaunchHandler::RouteTo::kExistingClientNavigate:
+    case LaunchHandler::RouteTo::kExistingClientRetain:
+      return true;
+  }
+}
+
+bool WebAppLaunchProcess::NeverNavigateExistingClients() const {
+  switch (GetLaunchRouteTo()) {
+    case LaunchHandler::RouteTo::kAuto:
+    case LaunchHandler::RouteTo::kNewClient:
+    case LaunchHandler::RouteTo::kExistingClientNavigate:
+      return false;
+    case LaunchHandler::RouteTo::kExistingClientRetain:
+      return true;
+  }
 }
 
 content::WebContents* WebAppLaunchProcess::MaybeLaunchSystemWebApp(
@@ -313,8 +317,7 @@ WebAppLaunchProcess::NavigateResult WebAppLaunchProcess::MaybeNavigateBrowser(
 
   content::WebContents* existing_tab = tab_strip->GetActiveWebContents();
   DCHECK(existing_tab);
-  if (GetLaunchNavigateExistingClient() ==
-      LaunchHandler::NavigateExistingClient::kNever) {
+  if (NeverNavigateExistingClients()) {
     if (base::ValuesEquivalent(WebAppTabHelper::FromWebContents(existing_tab)
                                    ->EnsureLaunchQueue()
                                    .GetPendingLaunchAppId(),

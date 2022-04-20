@@ -518,7 +518,7 @@
 
     if ( *cur == '<' )                              /* <...> */
     {
-      if ( cur + 1 < limit && *(cur + 1) == '<' )   /* << */
+      if ( cur + 1 < limit && *( cur + 1 ) == '<' ) /* << */
       {
         cur++;
         cur++;
@@ -1115,7 +1115,7 @@
         {
           FT_Memory   memory = parser->memory;
           FT_UInt     len    = (FT_UInt)( limit - cur );
-          FT_String*  string;
+          FT_String*  string = NULL;
 
 
           if ( cur >= limit )

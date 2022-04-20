@@ -48,6 +48,12 @@ Debugging on Linux is generally done with GDB, so we will assume that's what you
 are using here. Not surprisingly, you will almost always want to compile Blink
 in debug mode to get all the symbols and tools you will need.
 
+You will also want to use the `gdbinit` script to help gdb find source code,
+pretty-print common types, and other such niceties that will avoid you staring
+at assembly code. See
+[`docs/gdbinit.md`](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gdbinit.md)
+for more details.
+
 **Important: Previous revisions of this document suggested running with the
 `--single-process `when debugging. That flag is no longer supported; it may
 work, it may fail outright, and it may appear to work yet manifest subtle

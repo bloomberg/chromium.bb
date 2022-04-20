@@ -89,7 +89,7 @@ class TestPrinterQuery : public PrinterQuery {
   // Updates the current settings with `new_settings` dictionary values. Also
   // fills in the settings with values from `offsets_` and `printer_type_` that
   // would normally be filled in by the `PrintingContext`.
-  void SetSettings(base::Value new_settings,
+  void SetSettings(base::Value::Dict new_settings,
                    base::OnceClosure callback) override;
 
 #if BUILDFLAG(IS_WIN)
@@ -140,7 +140,7 @@ TestPrinterQuery::TestPrinterQuery(content::GlobalRenderFrameHostId rfh_id)
 
 TestPrinterQuery::~TestPrinterQuery() = default;
 
-void TestPrinterQuery::SetSettings(base::Value new_settings,
+void TestPrinterQuery::SetSettings(base::Value::Dict new_settings,
                                    base::OnceClosure callback) {
   DCHECK(offsets_);
 #if BUILDFLAG(IS_WIN)
@@ -162,13 +162,14 @@ void TestPrinterQuery::SetSettings(base::Value new_settings,
                 settings->requested_media().size_microns.height() /
                     device_microns_per_device_unit);
   gfx::Rect paper_rect(0, 0, paper_size.width(), paper_size.height());
-  paper_rect.Inset(offsets_->x(), offsets_->y());
+  paper_rect.Inset(gfx::Insets::VH(offsets_->y(), offsets_->x()));
   settings->SetPrinterPrintableArea(paper_size, paper_rect, true);
 #if BUILDFLAG(IS_WIN)
   settings->set_printer_language_type(*printer_language_type_);
 #endif
 
-  GetSettingsDone(std::move(callback), std::move(settings), result);
+  GetSettingsDone(std::move(callback), /*maybe_is_modifiable=*/absl::nullopt,
+                  std::move(settings), result);
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -321,7 +322,7 @@ TEST_F(PrintViewManagerTest, PostScriptHasCorrectOffsets) {
 
   print_view_manager->PrintPreviewNow(web_contents->GetMainFrame(), false);
 
-  base::Value print_ticket = GetPrintTicket(mojom::PrinterType::kLocal);
+  base::Value::Dict print_ticket = GetPrintTicket(mojom::PrinterType::kLocal);
   const char kTestData[] = "abc";
   auto print_data = base::MakeRefCounted<base::RefCountedStaticMemory>(
       kTestData, sizeof(kTestData));

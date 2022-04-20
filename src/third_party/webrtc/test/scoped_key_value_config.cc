@@ -10,15 +10,17 @@
 
 #include "test/scoped_key_value_config.h"
 
-#include "api/webrtc_key_value_config.h"
+#include "api/field_trials_view.h"
 #include "rtc_base/checks.h"
+#include "system_wrappers/include/field_trial.h"
 #include "test/field_trial.h"
 
 namespace {
 
 // This part is copied from system_wrappers/field_trial.cc.
-void InsertIntoMap(std::map<std::string, std::string>& key_value_map,
-                   const std::string& s) {
+void InsertIntoMap(
+    std::map<std::string, std::string, std::less<>>& key_value_map,
+    absl::string_view s) {
   std::string::size_type field_start = 0;
   while (field_start < s.size()) {
     std::string::size_type separator_pos = s.find('/', field_start);
@@ -26,7 +28,7 @@ void InsertIntoMap(std::map<std::string, std::string>& key_value_map,
         << "Missing separator '/' after field trial key.";
     RTC_CHECK_GT(separator_pos, field_start)
         << "Field trial key cannot be empty.";
-    std::string key = s.substr(field_start, separator_pos - field_start);
+    std::string key(s.substr(field_start, separator_pos - field_start));
     field_start = separator_pos + 1;
 
     RTC_CHECK_LT(field_start, s.size())
@@ -36,7 +38,7 @@ void InsertIntoMap(std::map<std::string, std::string>& key_value_map,
         << "Missing terminating '/' in field trial string.";
     RTC_CHECK_GT(separator_pos, field_start)
         << "Field trial value cannot be empty.";
-    std::string value = s.substr(field_start, separator_pos - field_start);
+    std::string value(s.substr(field_start, separator_pos - field_start));
     field_start = separator_pos + 1;
 
     key_value_map[key] = value;
@@ -55,15 +57,15 @@ namespace test {
 ScopedKeyValueConfig::ScopedKeyValueConfig()
     : ScopedKeyValueConfig(nullptr, "") {}
 
-ScopedKeyValueConfig::ScopedKeyValueConfig(const std::string& s)
+ScopedKeyValueConfig::ScopedKeyValueConfig(absl::string_view s)
     : ScopedKeyValueConfig(nullptr, s) {}
 
 ScopedKeyValueConfig::ScopedKeyValueConfig(ScopedKeyValueConfig& parent,
-                                           const std::string& s)
+                                           absl::string_view s)
     : ScopedKeyValueConfig(&parent, s) {}
 
 ScopedKeyValueConfig::ScopedKeyValueConfig(ScopedKeyValueConfig* parent,
-                                           const std::string& s)
+                                           absl::string_view s)
     : parent_(parent), leaf_(nullptr) {
   InsertIntoMap(key_value_map_, s);
 
@@ -104,7 +106,7 @@ std::string ScopedKeyValueConfig::Lookup(absl::string_view key) const {
 }
 
 std::string ScopedKeyValueConfig::LookupRecurse(absl::string_view key) const {
-  auto it = key_value_map_.find(std::string(key));
+  auto it = key_value_map_.find(key);
   if (it != key_value_map_.end())
     return it->second;
 
@@ -112,7 +114,9 @@ std::string ScopedKeyValueConfig::LookupRecurse(absl::string_view key) const {
     return parent_->LookupRecurse(key);
   }
 
-  return "";
+  // When at the root, check the global string so that test programs using
+  // a mix between ScopedKeyValueConfig and the global string continue to work
+  return webrtc::field_trial::FindFullName(std::string(key));
 }
 
 }  // namespace test

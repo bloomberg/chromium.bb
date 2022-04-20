@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -51,7 +52,7 @@ void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
 
 CookieManager::CookieManager(
     net::URLRequestContext* url_request_context,
-    FirstPartySets* const first_party_sets,
+    FirstPartySetsManager* const first_party_sets_manager,
     scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
     mojom::CookieManagerParamsPtr params)
     : cookie_store_(url_request_context->cookie_store()),
@@ -66,8 +67,9 @@ CookieManager::CookieManager(
                            base::DoNothing());
   }
   cookie_store_->SetCookieAccessDelegate(
-      std::make_unique<CookieAccessDelegateImpl>(
-          cookie_access_delegate_type, first_party_sets, &cookie_settings_));
+      std::make_unique<CookieAccessDelegateImpl>(cookie_access_delegate_type,
+                                                 first_party_sets_manager,
+                                                 &cookie_settings_));
 }
 
 CookieManager::~CookieManager() {
@@ -465,6 +467,11 @@ CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {
 }
 
 void CookieManager::ConvertPartitionedCookiesToUnpartitioned(const GURL& url) {
+  if (!base::FeatureList::IsEnabled(net::features::kPartitionedCookies) ||
+      base::FeatureList::IsEnabled(
+          net::features::kPartitionedCookiesBypassOriginTrial)) {
+    return;
+  }
   cookie_store_->ConvertPartitionedCookiesToUnpartitioned(url);
 }
 

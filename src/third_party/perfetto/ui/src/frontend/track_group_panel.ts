@@ -106,10 +106,10 @@ export class TrackGroupPanel extends Panel<Attrs> {
       }
     }
 
-    let child = '';
+    let child = null;
     if (this.summaryTrackState.labels &&
         this.summaryTrackState.labels.length > 0) {
-      child = this.summaryTrackState.labels.join(', ');
+      child = m('span', this.summaryTrackState.labels.join(', '));
     }
 
     return m(
@@ -169,6 +169,13 @@ export class TrackGroupPanel extends Panel<Attrs> {
     }
     if (this.summaryTrack !== undefined) {
       this.summaryTrack.onFullRedraw();
+    }
+  }
+
+  onremove() {
+    if (this.summaryTrack !== undefined) {
+      this.summaryTrack.onDestroy();
+      this.summaryTrack = undefined;
     }
   }
 

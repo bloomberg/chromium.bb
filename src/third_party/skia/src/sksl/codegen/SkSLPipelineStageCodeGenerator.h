@@ -8,9 +8,11 @@
 #ifndef SKSL_PIPELINESTAGECODEGENERATOR
 #define SKSL_PIPELINESTAGECODEGENERATOR
 
-#include "include/private/SkSLString.h"
+#include "include/core/SkTypes.h" // IWYU pragma: keep
 
-#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU
+#if defined(SKSL_STANDALONE) || SK_SUPPORT_GPU || SK_GRAPHITE_ENABLED
+
+#include <string>
 
 namespace SkSL {
 

@@ -100,6 +100,8 @@ enum class MessageIdentifier {
   TAILORED_SECURITY_DISABLED = 25,
   AR_CORE_UPGRADE = 26,
   INSTANT_APPS = 27,
+  ABOUT_THIS_SITE = 28,
+  TRANSLATE = 29,
 
   // Insert new values before this line.
   COUNT
@@ -112,6 +114,15 @@ enum class MessageIdentifier {
 enum class PrimaryActionClickBehavior {
   DO_NOT_DISMISS = 0,
   DISMISS_IMMEDIATELY = 1
+};
+
+// The max size of the message secondary menu.
+//
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.messages
+enum class SecondaryMenuMaxSize {
+  SMALL = 0,   // default: 180dp -> @dimen/message_secondary_menu_max_size_small
+  MEDIUM = 1,  // 250dp -> @dimen/message_secondary_menu_max_size_medium
+  LARGE = 2,   // 300dp -> @dimen/message_secondary_menu_max_size_large
 };
 
 }  // namespace messages

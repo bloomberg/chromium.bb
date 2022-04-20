@@ -11,9 +11,10 @@ import("../../../webrtc.gni")
 rtc_library("data_tracker") {
   deps = [
     "../../../api:array_view",
-    "../../../rtc_base",
     "../../../rtc_base:checks",
+    "../../../rtc_base:logging",
     "../../../rtc_base:rtc_base_approved",
+    "../../../rtc_base:stringutils",
     "../common:sequence_numbers",
     "../packet:chunk",
     "../packet:data",
@@ -48,8 +49,8 @@ rtc_library("traditional_reassembly_streams") {
   deps = [
     ":reassembly_streams",
     "../../../api:array_view",
-    "../../../rtc_base",
     "../../../rtc_base:checks",
+    "../../../rtc_base:logging",
     "../../../rtc_base:rtc_base_approved",
     "../common:sequence_numbers",
     "../packet:chunk",
@@ -72,8 +73,8 @@ rtc_library("reassembly_queue") {
     ":reassembly_streams",
     ":traditional_reassembly_streams",
     "../../../api:array_view",
-    "../../../rtc_base",
     "../../../rtc_base:checks",
+    "../../../rtc_base:logging",
     "../../../rtc_base:rtc_base_approved",
     "../common:internal_types",
     "../common:sequence_numbers",

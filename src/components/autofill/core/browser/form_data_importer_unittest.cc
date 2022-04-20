@@ -146,15 +146,10 @@ FormData ConstructFormDateFromTypeValuePairs(
   form.url = GURL(url);
 
   FormFieldData field;
-  for (auto type_value_pair : type_value_pairs) {
-    ServerFieldType type = type_value_pair.first;
-    std::string value = type_value_pair.second;
-    std::pair<std::string, std::string> name_and_label =
-        GetLabelAndNameForType(type);
-
+  for (const auto& [type, value] : type_value_pairs) {
+    const auto& [name, label] = GetLabelAndNameForType(type);
     test::CreateTestFormField(
-        name_and_label.first.c_str(), name_and_label.second.c_str(),
-        value.c_str(),
+        name.c_str(), label.c_str(), value.c_str(),
         type == ADDRESS_HOME_STREET_ADDRESS ? "textarea" : "text", &field);
     form.fields.push_back(field);
   }
@@ -186,15 +181,15 @@ std::unique_ptr<FormStructure> ConstructFormStructureFromTypeValuePairs(
 AutofillProfile ConstructProfileFromTypeValuePairs(
     std::vector<std::pair<ServerFieldType, std::string>> type_value_pairs) {
   AutofillProfile profile;
-  for (const auto& type_value_pair : type_value_pairs) {
-    if (type_value_pair.first == ADDRESS_HOME_DEPENDENT_LOCALITY &&
+  for (const auto& [type, value] : type_value_pairs) {
+    if (type == ADDRESS_HOME_DEPENDENT_LOCALITY &&
         !base::FeatureList::IsEnabled(
             features::kAutofillEnableDependentLocalityParsing)) {
       continue;
     }
 
     profile.SetRawInfoWithVerificationStatus(
-        type_value_pair.first, base::UTF8ToUTF16(type_value_pair.second),
+        type, base::UTF8ToUTF16(value),
         structured_address::VerificationStatus::kObserved);
   }
   if (!profile.FinalizeAfterImport())
@@ -1033,35 +1028,6 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_DontAllowPrompt) {
                         /*skip_waiting_on_pdm=*/false,
                         /*allow_save_prompts=*/false);
   VerifyExpectationForImportedAddressProfiles({ConstructDefaultProfile()});
-}
-
-// Tests that even if the autocomplete prevents filling, it does not prevent
-// import. For now, this is limited to the field with the signature 2281611779.
-TEST_P(FormDataImporterTest, ImportAddressProfilesDespiteAutocomplete) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillIgnoreAutocompleteForImport);
-
-  FormData form = ConstructDefaultFormData();
-  // Set the autocomplete attribute of the Address field to 'none' and set the
-  // label to match the form that field that is covered by the special case that
-  // is triggered by the field signature.
-  ASSERT_EQ(form.fields[4].label, u"Address:");
-  form.fields[4].autocomplete_attribute = "none";
-  form.fields[4].name = u"checkout[shipping_address][address1]";
-
-  std::unique_ptr<FormStructure> form_structure =
-      ConstructFormStructureFromFormData(form);
-  // Verify that the field signature matches the one for which the special case
-  // is defined.
-  ASSERT_EQ(form_structure->field(4)->GetFieldSignature(),
-            FieldSignature(2281611779));
-  // Verify that there is actually no storage type assigned due to the
-  // autocomplete='none' attribute.
-  ASSERT_EQ(form_structure->field(4)->Type().GetStorableType(), UNKNOWN_TYPE);
-
-  // Check that the import works as expected.
-  ImportAddressProfileAndVerifyImportOfDefaultProfile(*form_structure);
 }
 
 TEST_P(FormDataImporterTest, ImportAddressProfileFromUnifiedSection) {

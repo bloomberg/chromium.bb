@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -189,6 +190,11 @@ struct CORE_EXPORT FrameLoadRequest {
   }
   const LocalFrameToken* GetInitiatorFrameToken() const;
 
+  bool IsUnfencedTopNavigation() const { return is_unfenced_top_navigation_; }
+  void SetIsUnfencedTopNavigation(bool is_unfenced_top_navigation) {
+    is_unfenced_top_navigation_ = is_unfenced_top_navigation;
+  }
+
  private:
   LocalDOMWindow* origin_window_;
   ResourceRequest resource_request_;
@@ -214,6 +220,12 @@ struct CORE_EXPORT FrameLoadRequest {
   mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
       initiator_policy_container_keep_alive_handle_;
   std::unique_ptr<SourceLocation> source_location_;
+
+  // This is only used for navigations originating in MPArch fenced frames
+  // targeting the outermost frame, which is not visible to the renderer
+  // process as a remote frame.
+  // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+  bool is_unfenced_top_navigation_ = false;
 };
 
 }  // namespace blink

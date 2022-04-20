@@ -12,10 +12,6 @@ title: Chromium OS SDK Creation
 
 ## Introduction
 
-**Note: This is an internal tools document and has nothing to do with building a
-Chromium OS image that one can boot and test on. If you were linked here from an
-article claiming otherwise, the author is mistaken.**
-
 The Chromium OS project has an SDK that provides a standalone environment for
 building the target system. When you boil it down, it's simply a Gentoo/Linux
 chroot with a lot of build scripts to simplify and automate the overall build
@@ -31,135 +27,109 @@ full Chromium OS checkout already.
 
 ## Prebuilt Flow
 
-When you run \`cros_sdk\` (found in
-[chromite/bin/](https://chromium.googlesource.com/chromiumos/chromite/+/master/scripts/cros_sdk.py))
+When you run `cros_sdk` (found in
+[chromite/bin/](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/scripts/cros_sdk.py))
 for the first time, it automatically downloads the last known good sdk version
 and unpacks it into the chroot/ directory (in the root of the Chromium OS source
 checkout).
 
-That version information is stored in:
+That version information is stored in
+[src/third_party/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/chromeos/binhost/host/sdk_version.conf):
 
-```none
-[src/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/chromeos/binhost/host)
-SDK_LATEST_VERSION="2013.11.16.104134"
+```
+SDK_LATEST_VERSION="2022.03.17.105954"
 ```
 
 This is used to look up the tarball in the
-[chromiumos-sdk](https://commondatastorage.googleapis.com/chromiumos-sdk/)
-Google Storage bucket. So with the information above, we know to fetch the file:
+[chromiumos-sdk](https://storage.googleapis.com/chromiumos-sdk/) Google Storage
+bucket. So with the information above, we know to fetch the file:
 
-```none
-<https://commondatastorage.googleapis.com/chromiumos-sdk/cros-sdk-2013.11.16.104134.tar.xz>
-```
+<https://storage.googleapis.com/chromiumos-sdk/cros-sdk-2022.03.17.105954.tar.xz>
 
 ## Bootstrap Flow
 
-You might be wondering about the chicken & egg problem. How do you create a
-prebuilt sdk tarball without using a prebuilt sdk tarball? We do this everyday
-and is in fact a design feature: if the sdk itself were to be broken by a
-commit, how would we recover easily? To avoid that, we have a chromiumos-sdk bot
-config that does a full bootstrap and runs in the normal [Chromium OS
-waterfall](http://build.chromium.org/p/chromiumos/builders/chromiumos%20sdk).
+The question might arise: How is the prebuilt SDK tarball created in the first
+place? The chromiumos-sdk builder (a.k.a. the “SDK builder”) builds each
+new version of the SDK tarball for developers and other builders to use. The SDK
+builder runs in a continuous loop to include any recent commits and takes ~24
+hours for a successful run.
 
-But we still need some bootstrap starting point. For that, we turn to
-[Gentoo](http://www.gentoo.org/main/en/where.xml). Their release process
-includes publishing what is called a stage3 tarball. It's a full (albeit basic)
-Gentoo chroot that is used for installing Gentoo. We use it for creating the
-Chromium OS SDK from scratch. Then we tar up the result and publish it in the
-public Google Storage bucket for people.
+For a bootstrap starting point, to avoid the case where the SDK itself may have
+been broken by a commit, the builder uses a pinned known "good" version from
+which to build the next SDK version. This version is manually moved forward as
+needed.
 
-If the overall SDK generation fails, then we don't refresh the SDK, and the
+If the overall SDK generation fails, then the SDK is not refreshed and the
 released files stay stable for developers.
 
 ### Overview
 
 The overall process looks like:
 
-*   download last known good Gentoo stage3
-*   upgrade/install/remove development packages that we will need
-            (things like git)
-*   build all the cross-compilers we care about
-*   build the board "amd64-host" (an old name for the sdk) from scratch
-*   install all the cross-compilers into the new board root
-*   generate standalone copies of the cross-compilers for use by the
-            Simple Chrome workflow (among other things)
-*   verify the freshly built sdk works by building a selection of boards
-*   upload all the binary packages, cross-compilers, and the sdk itself
+*   Download bootstrap version of the SDK and setup chroot environment
+*   Build the SDK (amd64-host) board
+*   Build and install the cross-compiler toolchains
+*   Generate standalone copies of the cross-compilers
+*   Package the freshly built SDK creating and uploading a tarball of it
+*   Verify the SDK by building/testing other boards with it
+*   Upload binpkgs
+*   Uprev the SDK to point to this latest version
 
-### Gentoo Stage3
+### SDK bootstrap version
 
-We grab a copy of the Gentoo stage3 tarball and post it to the chromiumos-sdk
-Google Storage bucket.
+We download a copy of the SDK tarball to bootstrap with and setup the chroot
+environment. This is just using the standard `cros_sdk` command with its
+`--bootstrap` option.
 
-The version of the last known good stage3 is stored in:
+As with the latest SDK version, the bootstrap version of the SDK to use is
+stored in
+[sdk_version.conf](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/chromeos/binhost/host/sdk_version.conf):
 
-```none
-[src/third_party/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/chromeos/binhost/host/sdk_version.conf)
-BOOTSTRAP_LATEST_VERSION="2013.01.30"
+```
+BOOTSTRAP_FROZEN_VERSION="2020.11.09.170314"
 ```
 
 This is used to look up the tarball in the chromiumos-sdk Google Storage bucket.
-So with the information above, we know to fetch the file:
+So with the information above, `cros_sdk` knows to fetch the file:
 
-```none
-<https://commondatastorage.googleapis.com/chromiumos-sdk/stage3-amd64-2013.01.30.tar.xz>
+<https://storage.googleapis.com/chromiumos-sdk/cros-sdk-2020.11.09.170314.tar.xz>
+
+`cros_sdk` continues its normal process of running
+[`update_chroot`](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/HEAD/update_chroot)
+and setting up the chroot SDK environment.
+
+### Build the SDK (amd64-host) board
+
+The first step of the creation of the new SDK is for the SDK builder to
+[build the special amd64-host board](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/cbuildbot/stages/build_stages.py#554).
+To leverage existing build scripts and infrastructure we treat building the SDK
+as similar to a traditional board called "amd64-host."
+
+This step is performed by the
+[src/scripts/build_sdk_board](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/HEAD/build_sdk_board)
+script and is accomplished by just running:
+
+```
+./build_sdk_board --board amd64-host
 ```
 
-We simply unpack it and then chroot into it using our build scripts.
-
-### Update Base Packages
-
-Now we run the
-[make_chroot.sh](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/master/sdk_lib/make_chroot.sh)
-script (found in src/scripts/sdk_lib/) to handle installing/removing/upgrading
-key packages. It is very careful in making sure to install, remove, and upgrade
-packages in the right order to avoid conflicts and circular dependencies. We can
-also add various intermediate hacks as the versions of packages we upgrade in
-our overlays drift further away from the ones found in the stage3, although it's
-preferable to just update the base stage3 version when possible. See the section
-at the end of this page for more information.
-
-It then runs the normal
-[update_chroot](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/master/update_chroot)
-script which installs all of the packages that normally exist in the SDK (the
-[virtual/target-sdk](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/virtual/target-sdk)
-meta package).
-
-### Build Cross-compilers
-
-The cbuildbot process will then run
-[cros_setup_toolchains](https://chromium.googlesource.com/chromiumos/chromite/+/master/scripts/cros_setup_toolchains.py)
-to generate all toolchains marked for inclusion in the SDK (see the
-toolchain.conf file for more details).
-
-### Build amd64-host
-
-Now that we have a chroot that pretty much looks and acts like a Chromium OS
-SDK, we can go ahead and build the Chromium OS SDK from scratch. We do this to
-verify the latest native toolchain is sane, and so that we can produce a
-pristine SDK without random garbage accumulating over time (like all the
-temp/generated files found in the current chroot).
-
-This step is accomplished by just running:
-
-```none
-./setup_board --board=amd64-host --skip_chroot_upgrade --nousepkg --reuse_pkgs_from_local_boards
-```
-
-If you're used to the normal Chromium OS flow, be aware that this step is really
-like running setup_board and build_packages in one go. Arguably it shouldn't be
-doing this, but it doesn't matter enough today to get around to cleaning it up.
+If you're used to the normal Chromium OS flow, be aware that this step is like
+running setup_board and build_packages in one go.
 
 This means it'll take quite a long time for this to finish (as it has to build a
 few hundred packages from source). Everything will be written to
 `/board/amd64-host`.
 
-### Package The SDK
+### Build and install the cross-compiler toolchains
 
-Now that the SDK is compiled and has everything we want, we create the SDK
-tarball. We don't upload it just yet though as it hasn't been tested.
+To
+[build and install the toolchains](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/cbuildbot/stages/sdk_stages.py#75),
+the cbuildbot process will then run
+[`cros_setup_toolchains`](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/scripts/cros_setup_toolchains.py)
+which generates all toolchains marked for inclusion in the SDK (see the
+toolchain.conf file for more details).
 
-### Generate Standalone Cross-compilers
+### Generate and upload standalone cross-compilers
 
 Since our cross-compilers are pretty cool & useful, we want to be able to use
 them all by themselves. In other words, without the overhead of the full
@@ -169,52 +139,64 @@ generates wrapper scripts so that the local copies of libraries can be found,
 and then takes care of munging all the paths to make them standalone.
 
 The
-[cros_setup_toolchains](https://chromium.googlesource.com/chromiumos/chromite/+/master/scripts/cros_setup_toolchains.py)
-script has all the logic.
+[cros_setup_toolchains](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/scripts/cros_setup_toolchains.py)
+script has all the logic to create the packages which are then uploaded to a
+Google Storage bucket.
+
+### Package The SDK
+
+Now that the SDK is compiled and has everything we want, we
+[create then upload the SDK tarball](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/cbuildbot/stages/sdk_stages.py#127)
+to a Google Storage bucket.
 
 ### Test The SDK
 
 We want to be sure that the SDK we just built is actually sane. This helps us
-from releasing a toolchain update (like gcc) that is horribly broken (like can't
-properly compile or link things). To test this, we simply use the SDK tarball
-built earlier to create a new chroot. This also verifies the normal developer
-workflow of creating a new chroot from this SDK.
+from releasing a toolchain update (like gcc) that is horribly broken (e.g. can't
+properly compile or link things).
+[To test this](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/cbuildbot/stages/sdk_stages.py#309),
+we simply use the SDK tarball built earlier to create a new chroot. This also
+verifies the normal developer workflow of creating a new chroot from this SDK.
 
 Inside of the new chroot, we do a normal build flow for a couple of boards. At
-the moment, that means one for each major architecture (i.e. amd64-generic-full,
-arm-generic-full, and x86-generic-full). We only run setup_board+build_packages
-though; no unittests or anything else (as current history as shown it to not be
-necessary).
+the moment, that means one for each major architecture (i.e. amd64-generic,
+arm-generic). We only run setup_board+build_packages though; no unittests or
+anything else (as current history as shown it to not be necessary).
 
-### Publish The SDK
+### Upload the binary packages
 
-Once all the tests pass, we go ahead and upload the results:
+Once all the tests pass, we go ahead and
+[upload the binary packages](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/cbuildbot/stages/artifact_stages.py#645)
+for the SDK itself.
 
-*   the SDK tarball
-*   the standalone cross-compiler tarballs
-*   binary packages for the chroot itself
+### Uprev the SDK
 
-## Upgrading The Stage3
+Now that the new SDK version has been tested and the tarball and binary packages
+uploaded, the SDK is ready to be
+[upreved](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/cbuildbot/stages/sdk_stages.py#379)
+to point to this latest version. This simply updates the `SDK_LATEST_VERSION` in
+the
+[sdk_version.conf](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/HEAD/chromeos/binhost/host/sdk_version.conf)
+file mentioned earlier.
 
-The stage3 needs to be refreshed from time to time. It's a largely mechanical
-process. It boils down to:
+The new SDK is now available for developers and builders to use.
 
-*   select a new stage3 from [upstream
-            Gentoo](http://www.gentoo.org/main/en/where.xml) (look at the amd64
-            stage3s)
-*   make sure it's compressed with xz and not bzip2
-*   upload it to the [chromiumos-sdk
-            bucket](https://cloud.google.com/console#/storage/chromiumos-sdk/)
-*   update the bootstrap version in the
-            [src/chromiumos-overlay/chromeos/binhost/host/sdk_version.conf](https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/chromeos/binhost/host/sdk_version.conf)
-            file
-*   run some chromiumos-sdk remote trybot configs
-*   review the InitSDK stage log and look for packages that get
-            downgraded ("\[ebuild UD \]" lines)
-*   [post package upgrades for all the relevant
-            packages](/chromium-os/gentoo-package-upgrade-process)
-*   update the
-            [make_chroot.sh](https://chromium.googlesource.com/chromiumos/platform/crosutils/+/master/sdk_lib/make_chroot.sh)
-            script as needed (clean out old hacks, add new ones, etc...)
-*   repeat process until the InitSDK stage works
-*   once the whole bot config passes, your works is done
+## Running the SDK builder as a developer
+
+Suppose as a developer you have changes (e.g. in
+[chromite/lib](https://chromium.googlesource.com/chromiumos/chromite/+/HEAD/lib/))
+that you wish to test with the SDK builder. To run the entire chromiumos-sdk
+builder process described above, run as a tryjob:
+
+```
+cros tryjob -g <cl 1> [-g …] chromiumos-sdk-tryjob
+```
+
+where `<cl 1> .. <cl n>` are CLs to be run against.
+
+It's likely that just building the SDK board locally would be sufficent for most
+cases. To do that, from `~/chromiumos/src/scripts` run:
+
+```
+./build_sdk_board
+```

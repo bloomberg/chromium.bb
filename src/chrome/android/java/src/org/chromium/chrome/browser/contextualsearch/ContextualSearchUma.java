@@ -336,6 +336,17 @@ public class ContextualSearchUma {
         int NUM_ENTRIES = 3;
     }
 
+    // Enums for the Counted.Event histogram designed to match the Rasta queries(event) metric.
+    @IntDef({CountedEvent.UNINTELLIGENT_COUNTED, CountedEvent.INTELLIGENT_COUNTED,
+            CountedEvent.INTELLIGENT_NOT_COUNTED, CountedEvent.NUM_ENTRIES})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface CountedEvent {
+        int UNINTELLIGENT_COUNTED = 0;
+        int INTELLIGENT_COUNTED = 1;
+        int INTELLIGENT_NOT_COUNTED = 2;
+        int NUM_ENTRIES = 3;
+    }
+
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
      */
@@ -597,8 +608,8 @@ public class ContextualSearchUma {
      */
     public static void logPromoTapsRemaining(int promoTapsRemaining) {
         if (promoTapsRemaining >= 0) {
-            RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsRemaining",
-                    promoTapsRemaining);
+            RecordHistogram.recordCount1MHistogram(
+                    "Search.ContextualSearchPromoTapsRemaining", promoTapsRemaining);
         }
     }
 
@@ -610,8 +621,8 @@ public class ContextualSearchUma {
      *        for users that have never opened the panel.
      */
     public static void logPromoTapsForNeverOpened(int promoTaps) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsForNeverOpened",
-                promoTaps);
+        RecordHistogram.recordCount1MHistogram(
+                "Search.ContextualSearchPromoTapsForNeverOpened", promoTaps);
     }
 
     /**
@@ -621,8 +632,8 @@ public class ContextualSearchUma {
      *        before the first open of the panel, for all users that have ever opened the panel.
      */
     public static void logPromoTapsBeforeFirstOpen(int promoTaps) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsBeforeFirstOpen",
-                promoTaps);
+        RecordHistogram.recordCount1MHistogram(
+                "Search.ContextualSearchPromoTapsBeforeFirstOpen", promoTaps);
     }
 
     /**
@@ -632,7 +643,7 @@ public class ContextualSearchUma {
      *        current user.
      */
     public static void logPromoOpenCount(int count) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoOpenCount", count);
+        RecordHistogram.recordCount1MHistogram("Search.ContextualSearchPromoOpenCount", count);
     }
 
     /**
@@ -641,7 +652,7 @@ public class ContextualSearchUma {
      * @param count The total historic count of times the revised promo card ever been shown.
      */
     public static void logRevisedPromoOpenCount(int count) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoOpenCount2", count);
+        RecordHistogram.recordCount1MHistogram("Search.ContextualSearchPromoOpenCount2", count);
     }
 
     /**
@@ -650,8 +661,8 @@ public class ContextualSearchUma {
      * @param tapsSinceOpen The number of taps to log.
      */
     public static void logTapsSinceOpenForUndecided(int tapsSinceOpen) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchTapsSinceOpenUndecided",
-                tapsSinceOpen);
+        RecordHistogram.recordCount1MHistogram(
+                "Search.ContextualSearchTapsSinceOpenUndecided", tapsSinceOpen);
     }
 
     /**
@@ -660,8 +671,8 @@ public class ContextualSearchUma {
      * @param tapsSinceOpen The number of taps to log.
      */
     public static void logTapsSinceOpenForDecided(int tapsSinceOpen) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchTapsSinceOpenDecided",
-                tapsSinceOpen);
+        RecordHistogram.recordCount1MHistogram(
+                "Search.ContextualSearchTapsSinceOpenDecided", tapsSinceOpen);
     }
 
     /**
@@ -862,6 +873,42 @@ public class ContextualSearchUma {
     public static void logAllSearches(boolean wasRelatedSearches) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearch.All.Searches", wasRelatedSearches);
+    }
+
+    /**
+     * Logs histograms designed to match the Rasta queries(event) metric.
+     * One histogram summarizes all triggering of this feature and whether they were counted or not.
+     * Another histogram breaks down the cases where the panel was opened by what kind of search it
+     * was and whether it was counted by Rasta.
+     * The intent is to filter out very brief opens of the panel in which the SRP did not load in
+     * time for the user to see it or for Rasta to count it. In particular the Contextual Search
+     * dynamic JavaScript that converts a prefetch into a real search needs to have loaded and
+     * executed to count prefetch conversions as Searches in Rasta.
+     * @param wasPanelSeen Whether the panel was opened beyond the peeking state.
+     * @param wasDocumentPainted Whether the document was actually starting to render in the Content
+     *         View so the user could actually see it.
+     * @param wasPrefetch Whether the Search was a prefetch generated by an intelligent search.
+     */
+    public static void logCountedSearches(
+            boolean wasPanelSeen, boolean wasDocumentPainted, boolean wasPrefetch) {
+        // Get the enum for the category for those seen, and record the category of the search.
+        // Default to the simplest Counted enum, which is useful for both histograms.
+        @CountedEvent
+        int searchEnum = CountedEvent.UNINTELLIGENT_COUNTED;
+        if (wasPanelSeen) {
+            // Prefetch indicates an intelligent search and might not have been counted through
+            // dynamic JavaScript conversion.
+            if (wasPrefetch) {
+                searchEnum = wasDocumentPainted ? CountedEvent.INTELLIGENT_COUNTED
+                                                : CountedEvent.INTELLIGENT_NOT_COUNTED;
+            }
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Search.ContextualSearch.Counted.Event", searchEnum, CountedEvent.NUM_ENTRIES);
+        }
+        boolean wasSeenAndCounted =
+                wasPanelSeen && searchEnum != CountedEvent.INTELLIGENT_NOT_COUNTED;
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearch.Counted.Searches", wasSeenAndCounted);
     }
 
     /**
@@ -1390,7 +1437,7 @@ public class ContextualSearchUma {
      * @param previousWeekCtr The CTR expressed as a percentage.
      */
     public static void logPreviousWeekCtr(int previousWeekImpressions, int previousWeekCtr) {
-        RecordHistogram.recordCountHistogram(
+        RecordHistogram.recordCount1MHistogram(
                 "Search.ContextualSearchPreviousWeekImpressions", previousWeekImpressions);
         RecordHistogram.recordPercentageHistogram(
                 "Search.ContextualSearchPreviousWeekCtr", previousWeekCtr);
@@ -1402,7 +1449,7 @@ public class ContextualSearchUma {
      * @param previous28DayCtr The CTR expressed as a percentage.
      */
     public static void logPrevious28DayCtr(int previous28DayImpressions, int previous28DayCtr) {
-        RecordHistogram.recordCountHistogram(
+        RecordHistogram.recordCount1MHistogram(
                 "Search.ContextualSearchPrevious28DayImpressions", previous28DayImpressions);
         RecordHistogram.recordPercentageHistogram(
                 "Search.ContextualSearchPrevious28DayCtr", previous28DayCtr);

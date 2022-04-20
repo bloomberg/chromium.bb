@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
@@ -1183,19 +1184,18 @@ TEST(V8ScriptValueSerializerForModulesTest, ClosedAudioDataThrows) {
 TEST(V8ScriptValueSerializerForModulesTest, TransferMediaStreamTrack) {
   V8TestingScope scope;
 
-  MediaStreamSource* source = MakeGarbageCollected<MediaStreamSource>(
-      "test_id", MediaStreamSource::StreamType::kTypeVideo, "test_name",
-      false /* remote */);
   std::unique_ptr<MockMediaStreamVideoSource> mock_source(
       base::WrapUnique(new MockMediaStreamVideoSource()));
   MediaStreamDevice device;
   base::UnguessableToken token = base::UnguessableToken::Create();
   device.set_session_id(token);
   mock_source->SetDevice(device);
-  source->SetPlatformSource(std::move(mock_source));
+  MediaStreamSource* source = MakeGarbageCollected<MediaStreamSource>(
+      "test_id", MediaStreamSource::StreamType::kTypeVideo, "test_name",
+      false /* remote */, std::move(mock_source));
   MediaStreamComponent* component =
       MakeGarbageCollected<MediaStreamComponent>(source);
-  MediaStreamTrack* blink_track = MakeGarbageCollected<MediaStreamTrack>(
+  MediaStreamTrack* blink_track = MakeGarbageCollected<MediaStreamTrackImpl>(
       scope.GetExecutionContext(), component);
 
   // Transfer the MediaStreamTrack and check if the label is correct.
@@ -1224,7 +1224,7 @@ TEST(V8ScriptValueSerializerForModulesTest,
       false /* remote */);
   MediaStreamComponent* component =
       MakeGarbageCollected<MediaStreamComponent>(source);
-  MediaStreamTrack* blink_track = MakeGarbageCollected<MediaStreamTrack>(
+  MediaStreamTrack* blink_track = MakeGarbageCollected<MediaStreamTrackImpl>(
       scope.GetExecutionContext(), component);
 
   // Transfer a MediaStreamTrack with no session id should throw an error.

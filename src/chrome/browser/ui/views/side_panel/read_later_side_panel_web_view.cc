@@ -10,10 +10,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/views/view_class_properties.h"
 
 ReadLaterSidePanelWebView::ReadLaterSidePanelWebView(
     Browser* browser,
@@ -24,13 +26,15 @@ ReadLaterSidePanelWebView::ReadLaterSidePanelWebView(
               &ReadLaterSidePanelWebView::UpdateActiveURLToActiveTab,
               base::Unretained(this)),
           close_cb,
-          std::make_unique<BubbleContentsWrapperT<ReadLaterUI>>(
+          std::make_unique<BubbleContentsWrapperT<ReadingListUI>>(
               GURL(chrome::kChromeUIReadLaterURL),
               browser->profile(),
               IDS_READ_LATER_TITLE,
               /*webui_resizes_host=*/false,
               /*esc_closes_ui=*/false)),
       browser_(browser) {
+  SetProperty(views::kElementIdentifierKey,
+              kReadLaterSidePanelWebViewElementId);
   if (base::FeatureList::IsEnabled(features::kSidePanelDragAndDrop)) {
     extensions::BookmarkManagerPrivateDragEventRouter::CreateForWebContents(
         contents_wrapper()->web_contents());
@@ -63,7 +67,7 @@ void ReadLaterSidePanelWebView::UpdateActiveURL(
   if (!controller || !contents)
     return;
 
-  controller->GetAs<ReadLaterUI>()->SetActiveTabURL(
+  controller->GetAs<ReadingListUI>()->SetActiveTabURL(
       chrome::GetURLToBookmark(contents));
 }
 

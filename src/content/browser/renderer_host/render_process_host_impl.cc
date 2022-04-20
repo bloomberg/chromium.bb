@@ -39,6 +39,7 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -82,7 +83,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/buckets/bucket_context.h"
+#include "content/browser/buckets/bucket_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -1671,6 +1672,10 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   // "Browser.RenderProcessHostImpl"
   TRACE_EVENT_END("shutdown", perfetto::Track::FromPointer(this),
                   ChromeTrackEvent::kRenderProcessHost, *this);
+
+  base::UmaHistogramPercentage(
+      "BrowserRenderProcessHost.RoutingIDSpaceUsed",
+      100. * GetNextRoutingID() / std::numeric_limits<int32_t>::max());
 }
 
 bool RenderProcessHostImpl::Init() {
@@ -1939,8 +1944,8 @@ void RenderProcessHostImpl::BindBucketManagerHost(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_impl_->GetBucketContext()->BindBucketManagerHost(
-      origin, std::move(receiver));
+  storage_partition_impl_->GetBucketManager()->BindReceiver(
+      origin, std::move(receiver), mojo::GetBadMessageCallback());
 }
 
 void RenderProcessHostImpl::ForceCrash() {
@@ -2083,7 +2088,7 @@ void RenderProcessHostImpl::CreateNotificationService(
     document_url = rfh->GetLastCommittedURL();
 
   storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
-      origin, document_url, std::move(receiver));
+      this, origin, document_url, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateWebSocketConnector(
@@ -2196,17 +2201,6 @@ void RenderProcessHostImpl::DumpProfilingData(base::OnceClosure callback) {
 }
 #endif
 
-void RenderProcessHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
-  // TODO(https://crbug.com/1116471): Add support for writing typed events into
-  // untyped event contexts and merge the two overloaded methods (the one taking
-  // perfetto::TracedValue` and the one taking `perfetto::TracedProto<...>`).
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("id", GetID());
-  // Can be null in the unittests.
-  if (ChildProcessSecurityPolicyImpl::GetInstance())
-    dict.Add("process_lock", GetProcessLock().ToString());
-}
-
 void RenderProcessHostImpl::EnableBlinkRuntimeFeatures(
     const std::vector<std::string>& features) {
   // To enable runtime features, the render process must be locked to the site
@@ -2228,24 +2222,26 @@ void RenderProcessHostImpl::EnableBlinkRuntimeFeatures(
 }
 
 void RenderProcessHostImpl::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto) {
-  int id = GetID();
-  proto->set_id(id);
+    perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
+    const {
+  proto->set_id(GetID());
   proto->set_process_lock(GetProcessLock().ToString());
-  if (browser_context_) {
-    browser_context_->WriteIntoTrace(
-        proto.WriteNestedMessage<perfetto::protos::pbzero::RenderProcessHost::
-                                     FieldMetadata_BrowserContext>());
-  }
+  proto.Set(TraceProto::kBrowserContext, browser_context_);
 
   // Pid() can be called only on valid process, so we should check for this
-  // before accessing it.
+  // before accessing it. In addition, Pid() should only be read once the
+  // process has finished starting.
   // TODO(ssid): Consider moving this to ChildProcessLauncher proto field.
-  if (child_process_launcher_) {
+  if (child_process_launcher_ && !child_process_launcher_->IsStarting()) {
     const base::Process& process = child_process_launcher_->GetProcess();
     if (process.IsValid())
       proto->set_child_process_id(process.Pid());
   }
+
+  perfetto::TracedDictionary dict = std::move(proto).AddDebugAnnotations();
+  // Can be null in the unittests.
+  if (ChildProcessSecurityPolicyImpl::GetInstance())
+    dict.Add("process_lock", GetProcessLock().ToString());
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
@@ -2506,7 +2502,7 @@ void RenderProcessHostImpl::CreateOneShotSyncService(
         receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetBackgroundSyncContext()->CreateOneShotSyncService(
-      origin, std::move(receiver));
+      origin, this, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreatePeriodicSyncService(
@@ -2515,7 +2511,7 @@ void RenderProcessHostImpl::CreatePeriodicSyncService(
         receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetBackgroundSyncContext()
-      ->CreatePeriodicSyncService(origin, std::move(receiver));
+      ->CreatePeriodicSyncService(origin, this, std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindPushMessaging(
@@ -2739,7 +2735,7 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
   return renderer_interface_.get();
 }
 
-ProcessLock RenderProcessHostImpl::GetProcessLock() {
+ProcessLock RenderProcessHostImpl::GetProcessLock() const {
   return ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(GetID());
 }
 
@@ -3285,7 +3281,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableTouchDragDrop,
     switches::kEnableUnsafeFastJSCalls,
     switches::kEnableUnsafeWebGPU,
-    switches::kEnableUseZoomForDSF,
     switches::kEnableViewport,
     switches::kEnableVtune,
     switches::kEnableWebGLDeveloperExtensions,
@@ -3487,7 +3482,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   CopyFeatureSwitch(browser_cmd, renderer_cmd, switches::kDisableBlinkFeatures);
 
 #if BUILDFLAG(IS_WIN)
-  if (base::FeatureList::IsEnabled(media::kMediaFoundationD3D11VideoCapture)) {
+  if (media::IsMediaFoundationD3D11VideoCaptureEnabled()) {
     renderer_cmd->AppendSwitch(switches::kVideoCaptureUseGpuMemoryBuffer);
   }
 #endif
@@ -3698,7 +3693,7 @@ bool RenderProcessHostImpl::InSameStoragePartition(
   return storage_partition_impl_ == partition;
 }
 
-int RenderProcessHostImpl::GetID() {
+int RenderProcessHostImpl::GetID() const {
   return id_;
 }
 
@@ -4924,10 +4919,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
   // Update the priority of the process running the controller service worker
   // when client's background state changed. We can make the service worker
   // process backgrounded if all of its clients are backgrounded.
-  if (background_state_changed &&
-      base::FeatureList::IsEnabled(
-          features::
-              kChangeServiceWorkerPriorityForClientForegroundStateChange)) {
+  if (background_state_changed) {
     UpdateControllerServiceWorkerProcessPriority();
   }
 }

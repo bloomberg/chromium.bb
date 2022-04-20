@@ -4405,7 +4405,7 @@ TEST_F(MediaSessionDescriptionFactoryTest, TestSetAudioCodecs) {
   std::vector<AudioCodec> recv_codecs = MAKE_VECTOR(kAudioCodecs2);
 
   // The merged list of codecs should contain any send codecs that are also
-  // nominally in the recieve codecs list. Payload types should be picked from
+  // nominally in the receive codecs list. Payload types should be picked from
   // the send codecs and a number-of-channels of 0 and 1 should be equivalent
   // (set to 1). This equals what happens when the send codecs are used in an
   // offer and the receive codecs are used in the following answer.
@@ -4455,7 +4455,7 @@ namespace {
 template <class Codec>
 bool CodecsMatch(const std::vector<Codec>& codecs1,
                  const std::vector<Codec>& codecs2,
-                 const webrtc::WebRtcKeyValueConfig* field_trials) {
+                 const webrtc::FieldTrialsView* field_trials) {
   if (codecs1.size() != codecs2.size()) {
     return false;
   }

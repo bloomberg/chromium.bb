@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_QUERYSET_H_
-#define DAWNNATIVE_QUERYSET_H_
+#ifndef SRC_DAWN_NATIVE_QUERYSET_H_
+#define SRC_DAWN_NATIVE_QUERYSET_H_
 
 #include "dawn/native/Error.h"
 #include "dawn/native/Forward.h"
@@ -48,7 +48,7 @@ namespace dawn::native {
         QuerySetBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         // Constructor used only for mocking and testing.
-        QuerySetBase(DeviceBase* device);
+        explicit QuerySetBase(DeviceBase* device);
         void DestroyImpl() override;
 
         ~QuerySetBase() override;
@@ -69,4 +69,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_QUERYSET_H_
+#endif  // SRC_DAWN_NATIVE_QUERYSET_H_

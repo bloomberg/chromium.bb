@@ -137,6 +137,69 @@ class LoginUnlockManagedGuestSessionFunction
   ResponseAction Run() override;
 };
 
+class LoginLockCurrentSessionFunction
+    : public ExtensionFunctionWithOptionalErrorResult {
+ public:
+  LoginLockCurrentSessionFunction();
+
+  LoginLockCurrentSessionFunction(const LoginLockCurrentSessionFunction&) =
+      delete;
+
+  LoginLockCurrentSessionFunction& operator=(
+      const LoginLockCurrentSessionFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("login.lockCurrentSession",
+                             LOGIN_LOCKCURRENTSESSION)
+
+ protected:
+  ~LoginLockCurrentSessionFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class LoginUnlockCurrentSessionFunction
+    : public ExtensionFunctionWithOptionalErrorResult {
+ public:
+  LoginUnlockCurrentSessionFunction();
+
+  LoginUnlockCurrentSessionFunction(const LoginUnlockCurrentSessionFunction&) =
+      delete;
+
+  LoginUnlockCurrentSessionFunction& operator=(
+      const LoginUnlockCurrentSessionFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("login.unlockCurrentSession",
+                             LOGIN_UNLOCKCURRENTSESSION)
+
+ protected:
+  ~LoginUnlockCurrentSessionFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class LoginLaunchSamlUserSessionFunction
+    : public ExtensionFunctionWithOptionalErrorResult {
+ public:
+  LoginLaunchSamlUserSessionFunction();
+
+  LoginLaunchSamlUserSessionFunction(
+      const LoginLaunchSamlUserSessionFunction&) = delete;
+
+  LoginLaunchSamlUserSessionFunction& operator=(
+      const LoginLaunchSamlUserSessionFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("login.launchSamlUserSession",
+                             LOGIN_LAUNCHSAMLUSERSESSION)
+
+ protected:
+  ~LoginLaunchSamlUserSessionFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class LoginLaunchSharedManagedGuestSessionFunction
     : public ExtensionFunctionWithOptionalErrorResult {
  public:
@@ -235,6 +298,46 @@ class LoginSetDataForNextLoginAttemptFunction
 
  protected:
   ~LoginSetDataForNextLoginAttemptFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class LoginRequestExternalLogoutFunction : public ExtensionFunction {
+ public:
+  LoginRequestExternalLogoutFunction();
+
+  LoginRequestExternalLogoutFunction(
+      const LoginRequestExternalLogoutFunction&) = delete;
+
+  LoginRequestExternalLogoutFunction& operator=(
+      const LoginRequestExternalLogoutFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("login.requestExternalLogout",
+                             LOGIN_REQUESTEXTERNALLOGOUT)
+
+ protected:
+  ~LoginRequestExternalLogoutFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class LoginNotifyExternalLogoutDoneFunction : public ExtensionFunction {
+ public:
+  LoginNotifyExternalLogoutDoneFunction();
+
+  LoginNotifyExternalLogoutDoneFunction(
+      const LoginNotifyExternalLogoutDoneFunction&) = delete;
+
+  LoginNotifyExternalLogoutDoneFunction& operator=(
+      const LoginNotifyExternalLogoutDoneFunction&) = delete;
+
+  DECLARE_EXTENSION_FUNCTION("login.notifyExternalLogoutDone",
+                             LOGIN_NOTIFYEXTERNALLOGOUTDONE)
+
+ protected:
+  ~LoginNotifyExternalLogoutDoneFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;

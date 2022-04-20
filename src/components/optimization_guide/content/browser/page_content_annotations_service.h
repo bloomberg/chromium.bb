@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "components/continuous_search/browser/search_result_extractor_client.h"
 #include "components/continuous_search/browser/search_result_extractor_client_status.h"
 #include "components/continuous_search/common/public/mojom/continuous_search.mojom.h"
@@ -107,10 +108,10 @@ class PageContentAnnotationsService : public KeyedService,
                      const std::vector<std::string>& inputs,
                      AnnotationType annotation_type);
 
-  // Calls |BatchAnnotate| with pre-processing the urls into its domain string,
-  // all specific to PageTopics.
+  // Calls |BatchAnnotate| with pre-processing the hosts into tokens, all
+  // specific to PageTopics.
   void BatchAnnotatePageTopics(BatchAnnotationCallback callback,
-                               const std::vector<GURL>& inputs);
+                               const std::vector<std::string>& inputs);
 
   // Requests that the given model for |type| be loaded in the background and
   // then runs |callback| with true when the model is ready to execute. If the
@@ -135,7 +136,7 @@ class PageContentAnnotationsService : public KeyedService,
 
  private:
   friend class PageContentAnnotationsServiceTest;
-  static std::string StringInputForPageTopicsDomain(const GURL& url);
+  static std::string StringInputForPageTopicsHost(const std::string& host);
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   // Callback invoked when |visit| has been annotated.

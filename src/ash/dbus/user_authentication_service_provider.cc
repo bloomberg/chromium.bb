@@ -4,10 +4,13 @@
 
 #include "ash/dbus/user_authentication_service_provider.h"
 
+#include <string>
+
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
-#include "ash/public/cpp/webauthn_request_registrar.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "chromeos/components/webauthn/webauthn_request_registrar.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -24,7 +27,7 @@ void UserAuthenticationServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
       chromeos::kUserAuthenticationServiceInterface,
-      chromeos::kUserAuthenticationServiceShowAuthDialogMethod,
+      chromeos::kUserAuthenticationServiceShowAuthDialogV2Method,
       base::BindRepeating(&UserAuthenticationServiceProvider::ShowAuthDialog,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&UserAuthenticationServiceProvider::OnExported,
@@ -74,15 +77,16 @@ void UserAuthenticationServiceProvider::ShowAuthDialog(
     OnAuthFlowComplete(method_call, std::move(response_sender), false);
     return;
   }
-  uint64_t request_id = 0;
-  if (!reader.PopUint64(&request_id)) {
+  std::string request_id;
+  if (!reader.PopString(&request_id)) {
     LOG(ERROR) << "Unable to parse request id";
     OnAuthFlowComplete(method_call, std::move(response_sender), false);
     return;
   }
 
   aura::Window* source_window =
-      WebAuthnRequestRegistrar::Get()->GetWindowForRequestId(request_id);
+      chromeos::webauthn::WebAuthnRequestRegistrar::Get()
+          ->GetWindowForRequestId(request_id);
   if (!source_window) {
     LOG(ERROR) << "Cannot find window with the given request id";
     OnAuthFlowComplete(method_call, std::move(response_sender), false);

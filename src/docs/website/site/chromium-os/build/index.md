@@ -24,6 +24,7 @@ page](http://goto.google.com/cros-build).
             Deploy](https://chromium.googlesource.com/chromiumos/docs/+/master/cros_deploy.md)
 *   [Bypassing tests on a per-project
             basis](/chromium-os/build/bypassing-tests-on-a-per-project-basis)
+*   [Adding a Package to the SDK](/chromium-os/build/add-sdk-package)
 
 #### For Sheriffs
 
@@ -71,12 +72,8 @@ page](http://goto.google.com/cros-build).
             up](/developers/testing/chromium-build-infrastructure/getting-the-buildbot-source/configuring-your-buildbot)
             (Chrome Infra guide)
 *   [Commit Queue overview](/system/errors/NodeNotFound)
-*   [CBuildbot](http://www.chromium.org/chromium-os/build/cbuildbot-overview)
-    *   [Commit Queue](/system/errors/NodeNotFound)
-    *   [Local
-                Trybot](http://www.chromium.org/chromium-os/build/local-trybot-documentation)
-    *   [Remote
-                trybot](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/remote_trybots.md)
+*   [Local Trybot](http://www.chromium.org/chromium-os/build/local-trybot-documentation)
+*   [Remote trybot](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/remote_trybots.md)
 
 #### Build labels
 

@@ -31,7 +31,8 @@
 #include "internal.h"
 #include "mpegutils.h"
 #include "mpegvideo.h"
-#include "thread.h"
+#include "mpegvideodec.h"
+#include "threadframe.h"
 
 void ff_mpv_decode_init(MpegEncContext *s, AVCodecContext *avctx)
 {
@@ -62,10 +63,12 @@ int ff_mpeg_update_thread_context(AVCodecContext *dst,
     // FIXME can parameters change on I-frames?
     // in that case dst may need a reinit
     if (!s->context_initialized) {
+        void *private_ctx = s->private_ctx;
         int err;
         memcpy(s, s1, sizeof(*s));
 
         s->avctx                 = dst;
+        s->private_ctx           = private_ctx;
         s->bitstream_buffer      = NULL;
         s->bitstream_buffer_size = s->allocated_bitstream_buffer_size = 0;
 
@@ -76,6 +79,7 @@ int ff_mpeg_update_thread_context(AVCodecContext *dst,
             if ((err = ff_mpv_common_init(s)) < 0) {
                 memset(s, 0, sizeof(*s));
                 s->avctx = dst;
+                s->private_ctx = private_ctx;
                 return err;
             }
         }
@@ -346,8 +350,6 @@ int ff_mpv_frame_start(MpegEncContext *s, AVCodecContext *avctx)
     s->current_picture_ptr->field_picture      =  s->picture_structure != PICT_FRAME;
 
     s->current_picture_ptr->f->pict_type = s->pict_type;
-    // if (s->avctx->flags && AV_CODEC_FLAG_QSCALE)
-    //     s->current_picture_ptr->quality = s->new_picture_ptr->quality;
     s->current_picture_ptr->f->key_frame = s->pict_type == AV_PICTURE_TYPE_I;
 
     if ((ret = ff_mpeg_ref_picture(s->avctx, &s->current_picture,
@@ -511,7 +513,7 @@ void ff_print_debug_info(MpegEncContext *s, Picture *p, AVFrame *pict)
 int ff_mpv_export_qp_table(MpegEncContext *s, AVFrame *f, Picture *p, int qp_type)
 {
     AVVideoEncParams *par;
-    int mult = (qp_type == FF_QSCALE_TYPE_MPEG1) ? 2 : 1;
+    int mult = (qp_type == FF_MPV_QSCALE_TYPE_MPEG1) ? 2 : 1;
     unsigned int nb_mb = p->alloc_mb_height * p->alloc_mb_width;
 
     if (!(s->avctx->export_side_data & AV_CODEC_EXPORT_DATA_VIDEO_ENC_PARAMS))

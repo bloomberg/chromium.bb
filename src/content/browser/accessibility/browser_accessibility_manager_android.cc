@@ -10,7 +10,6 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/common/render_accessibility.mojom.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "ui/accessibility/ax_role_properties.h"
 
 namespace content {
@@ -52,8 +51,12 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     : BrowserAccessibilityManager(delegate),
       web_contents_accessibility_(std::move(web_contents_accessibility)),
       prune_tree_for_screen_reader_(true) {
-  // The Java layer handles the root scroll offset.
+  // The Java layer handles the root scroll offset and image descriptions.
   use_root_scroll_offsets_when_computing_bounds_ = false;
+  if (web_contents_accessibility_) {
+    allow_image_descriptions_ =
+        web_contents_accessibility_.get()->should_allow_image_descriptions();
+  }
 
   Initialize(initial_tree);
 }
@@ -247,7 +250,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       break;
     }
     case ui::AXEventGenerator::Event::EXPANDED: {
-      if (android_node->IsCombobox() &&
+      if (ui::IsComboBox(android_node->GetRole()) &&
           GetFocus()->IsDescendantOf(android_node)) {
         wcax->AnnounceLiveRegionText(android_node->GetComboboxExpandedText());
       }

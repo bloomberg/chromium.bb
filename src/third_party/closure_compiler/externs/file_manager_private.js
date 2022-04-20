@@ -22,6 +22,7 @@ chrome.fileManagerPrivate.VolumeType = {
   TESTING: 'testing',
   SMB: 'smb',
   SYSTEM_INTERNAL: 'system_internal',
+  GUEST_OS: 'guest_os',
 };
 
 /** @enum {string} */
@@ -277,6 +278,7 @@ chrome.fileManagerPrivate.RecentFileType = {
   AUDIO: 'audio',
   IMAGE: 'image',
   VIDEO: 'video',
+  DOCUMENT: 'document',
 };
 
 /** @enum {string} */
@@ -1398,6 +1400,11 @@ chrome.fileManagerPrivate.startIOTask = function(type, entries, params) {};
  * @param {number} taskId
  */
 chrome.fileManagerPrivate.cancelIOTask = function (taskId) { };
+
+/**
+ * Tells DriveFS to update its cached pin states of hosted files (once).
+ */
+chrome.fileManagerPrivate.pollDriveHostedFilePinStates = function() {};
 
 /**
  * Returns color via `callback` for Files app foreground window frame.

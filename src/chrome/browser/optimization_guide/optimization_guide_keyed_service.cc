@@ -226,7 +226,8 @@ void OptimizationGuideKeyedService::Initialize() {
                   profile_path.Append(
                       optimization_guide::kOptimizationGuideHintStore),
                   base::ThreadPool::CreateSequencedTaskRunner(
-                      {base::MayBlock(), base::TaskPriority::BEST_EFFORT}))
+                      {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+                  profile->GetPrefs())
             : nullptr;
     hint_store = hint_store_ ? hint_store_->AsWeakPtr() : nullptr;
 
@@ -237,7 +238,8 @@ void OptimizationGuideKeyedService::Initialize() {
                 optimization_guide::
                     kOptimizationGuidePredictionModelAndFeaturesStore),
             base::ThreadPool::CreateSequencedTaskRunner(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+            profile->GetPrefs());
     prediction_model_and_features_store =
         prediction_model_and_features_store_->AsWeakPtr();
   }
@@ -345,6 +347,17 @@ OptimizationGuideKeyedService::CanApplyOptimization(
   return optimization_guide::ChromeHintsManager::
       GetOptimizationGuideDecisionFromOptimizationTypeDecision(
           optimization_type_decision);
+}
+
+// WARNING: This API is not quite ready for general use. Use
+// CanApplyOptimizationAsync or CanApplyOptimization using NavigationHandle
+// instead.
+void OptimizationGuideKeyedService::CanApplyOptimization(
+    const GURL& url,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationGuideDecisionCallback callback) {
+  hints_manager_->CanApplyOptimization(url, optimization_type,
+                                       std::move(callback));
 }
 
 void OptimizationGuideKeyedService::CanApplyOptimizationAsync(

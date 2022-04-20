@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_PIPELINELAYOUT_H_
-#define DAWNNATIVE_PIPELINELAYOUT_H_
+#ifndef SRC_DAWN_NATIVE_PIPELINELAYOUT_H_
+#define SRC_DAWN_NATIVE_PIPELINELAYOUT_H_
 
 #include "dawn/common/Constants.h"
 #include "dawn/common/ityp_array.h"
@@ -84,7 +84,7 @@ namespace dawn::native {
 
       protected:
         // Constructor used only for mocking and testing.
-        PipelineLayoutBase(DeviceBase* device);
+        explicit PipelineLayoutBase(DeviceBase* device);
         PipelineLayoutBase(DeviceBase* device, ObjectBase::ErrorTag tag);
         void DestroyImpl() override;
 
@@ -94,4 +94,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_PIPELINELAYOUT_H_
+#endif  // SRC_DAWN_NATIVE_PIPELINELAYOUT_H_

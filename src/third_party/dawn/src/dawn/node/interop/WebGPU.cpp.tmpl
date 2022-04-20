@@ -56,9 +56,11 @@ namespace {
 void Initialize(Napi::Env env) {
   auto* wrapper = Wrappers::Init(env);
   auto global = env.Global();
-{{ range $ := .Declarations}}
+{{- range $ := .Declarations}}
 {{-   if IsInterfaceOrNamespace $}}
+{{-     if not (HasAnnotation $ "LegacyNoInterfaceObject")}}
   global.Set(Napi::String::New(env, "{{$.Name}}"), wrapper->{{$.Name}}_ctor.Value());
+{{-     end}}
 {{-   end}}
 {{- end}}
 }
@@ -149,9 +151,11 @@ Wrappers* Wrappers::instance = nullptr;
         InstanceMethod("{{$m.Name}}", &W{{$.Name}}::{{$m.Name}}),
 {{-  end}}
 {{-  range $a := AttributesOf $}}
+{{-   if not (HasAnnotation $a "SameObject")}}
         InstanceAccessor("{{$a.Name}}", &W{{$.Name}}::get{{Title $a.Name}},
 {{-    if $a.Readonly}} nullptr{{else}} &W{{$.Name}}::set{{Title $a.Name}}{{end -}}
         ),
+{{-   end}}
 {{-  end}}
 {{-  range $c := ConstantsOf $}}
         StaticValue("{{$c.Name}}", ToJS(env, {{$.Name}}::{{$c.Name}}), napi_default_jsproperty),
@@ -168,7 +172,7 @@ Wrappers* Wrappers::instance = nullptr;
       if (res) {
           return ToJS(info.Env(), impl->has(info.Env(), std::get<0>(args)));
       }
-      Napi::Error::New(info.Env(), res.error).ThrowAsJavaScriptException();
+      Napi::TypeError::New(info.Env(), res.error).ThrowAsJavaScriptException();
       return {};
     }
     Napi::Value keys(const Napi::CallbackInfo& info) {
@@ -213,12 +217,13 @@ Wrappers* Wrappers::instance = nullptr;
         error = {{if $overloaded}}"\noverload {{$overload_idx}} failed to match:\n" + {{end}}res.error;
       }
 {{-    end}}
-      Napi::Error::New(info.Env(), "no overload matched for {{$m.Name}}:\n" + error).ThrowAsJavaScriptException();
+      Napi::TypeError::New(info.Env(), "no overload matched for {{$m.Name}}:\n" + error).ThrowAsJavaScriptException();
       return {};
     }
 {{-  end}}
 
 {{-  range $a := AttributesOf $}}
+{{-   if not (HasAnnotation $a "SameObject")}}
     Napi::Value get{{Title $a.Name}}(const Napi::CallbackInfo& info) {
       return ToJS(info.Env(), impl->get{{Title $a.Name}}(info.Env()));
     }
@@ -230,10 +235,11 @@ Wrappers* Wrappers::instance = nullptr;
         impl->set{{Title $a.Name}}(info.Env(), std::move(v));
       } else {
         res = res.Append("invalid value to {{$a.Name}}");
-        Napi::Error::New(info.Env(), res.error).ThrowAsJavaScriptException();
+        Napi::TypeError::New(info.Env(), res.error).ThrowAsJavaScriptException();
       }
     }
-{{-   end }}
+{{-    end}}
+{{-   end}}
 {{-  end}}
   };
 {{end}}
@@ -331,6 +337,16 @@ Interface<{{$.Name}}> {{$.Name}}::Bind(Napi::Env env, std::unique_ptr<{{$.Name}}
   auto object = wrappers->{{$.Name}}_ctor.New({});
   auto* wrapper = Wrappers::W{{$.Name}}::Unwrap(object);
   wrapper->impl = std::move(impl);
+
+{{- /*Add the [SameObject] members as read-only property on the JS object.*/ -}}
+{{- range $a := AttributesOf $}}
+{{-   if HasAnnotation $a "SameObject"}}
+  object.DefineProperty(Napi::PropertyDescriptor::Value(
+    "{{$a.Name}}", ToJS(env, wrapper->impl->get{{Title $a.Name}}(env))
+  ));
+{{-   end}}
+{{- end}}
+
   return Interface<{{$.Name}}>(object);
 }
 

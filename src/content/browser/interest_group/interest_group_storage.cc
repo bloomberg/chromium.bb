@@ -62,11 +62,12 @@ const base::FilePath::CharType kDatabasePath[] =
 // Version 4 adds joining origin and url.
 // Version 5 adds k-anonymity tables and fields.
 // Version 6 adds WebAssembly helper url.
-const int kCurrentVersionNumber = 6;
+// Version 7 changes an index, adds interest group priority.
+const int kCurrentVersionNumber = 7;
 
 // Earliest version of the code which can use a |kCurrentVersionNumber|
 // database without failing.
-const int kCompatibleVersionNumber = 6;
+const int kCompatibleVersionNumber = 7;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -179,7 +180,7 @@ absl::optional<std::vector<std::string>> DeserializeStringVector(
 
 // Initializes the tables, returning true on success.
 // The tables cannot exist when calling this function.
-bool CreateV6Schema(sql::Database& db) {
+bool CreateV7Schema(sql::Database& db) {
   DCHECK(!db.DoesTableExist("interest_groups"));
   static const char kInterestGroupTableSql[] =
       // clang-format off
@@ -190,6 +191,7 @@ bool CreateV6Schema(sql::Database& db) {
         "owner TEXT NOT NULL,"
         "joining_origin TEXT NOT NULL,"
         "name TEXT NOT NULL,"
+        "priority DOUBLE NOT NULL,"
         "joining_url TEXT NOT NULL,"
         "bidding_url TEXT NOT NULL,"
         "bidding_wasm_helper_url TEXT NOT NULL,"
@@ -220,7 +222,7 @@ bool CreateV6Schema(sql::Database& db) {
   static const char kInterestGroupOwnerIndexSql[] =
       // clang-format off
       "CREATE INDEX interest_group_owner"
-      " ON interest_groups(owner, expiration DESC)";
+      " ON interest_groups(owner,expiration DESC,next_update_after ASC,name)";
   // clang-format on
   if (!db.Execute(kInterestGroupOwnerIndexSql))
     return false;
@@ -333,6 +335,32 @@ bool CreateV6Schema(sql::Database& db) {
   return true;
 }
 
+bool UpgradeV6SchemaToV7(sql::Database& db, sql::MetaTable& meta_table) {
+  // Index on group expiration by owner.
+  DCHECK(db.DoesIndexExist("interest_group_owner"));
+  static const char kRemoveInterstGroupOwnerIndexSql[] =
+      // clang-format off
+      "DROP INDEX interest_group_owner";
+  // clang-format on
+  if (!db.Execute(kRemoveInterstGroupOwnerIndexSql))
+    return false;
+  DCHECK(!db.DoesIndexExist("interest_group_owner"));
+  static const char kInterestGroupOwnerIndexSql[] =
+      // clang-format off
+      "CREATE INDEX interest_group_owner"
+      " ON interest_groups(owner,expiration DESC,next_update_after ASC,name)";
+  // clang-format on
+  if (!db.Execute(kInterestGroupOwnerIndexSql))
+    return false;
+
+  // Update interest_group table.
+  static const char kInterestGroupsAddPrioritySql[] =
+      "ALTER TABLE interest_groups ADD COLUMN priority DOUBLE DEFAULT 0";
+  if (!db.Execute(kInterestGroupsAddPrioritySql))
+    return false;
+  return true;
+}
+
 bool DoCreateOrMarkKAnonReferenced(sql::Database& db,
                                    KAnonType type,
                                    const GURL& key,
@@ -411,11 +439,12 @@ bool DoCreateOrMarkInterestGroupNameReferenced(sql::Database& db,
                                        KAnonKeyFor(owner, name), now);
 }
 
-bool DoCreateOrMarkInterestGroupUpdateURLReferenced(sql::Database& db,
-                                                    const GURL& update_url,
-                                                    const base::Time& now) {
-  return DoCreateOrMarkKAnonReferenced(db, KAnonType::kUpdateURL, update_url,
-                                       now);
+bool DoCreateOrMarkInterestGroupUpdateURLReferenced(
+    sql::Database& db,
+    const GURL& daily_update_url,
+    const base::Time& now) {
+  return DoCreateOrMarkKAnonReferenced(db, KAnonType::kUpdateURL,
+                                       daily_update_url, now);
 }
 
 bool DoCreateOrMarkAdReferenced(sql::Database& db,
@@ -450,9 +479,9 @@ bool DoCreateOrMarkInterestGroupAndAdsReferenced(
     return false;
   }
 
-  if (data.update_url) {
+  if (data.daily_update_url) {
     if (!DoCreateOrMarkInterestGroupUpdateURLReferenced(
-            db, data.update_url.value(), now)) {
+            db, data.daily_update_url.value(), now)) {
       return false;
     }
   }
@@ -464,6 +493,7 @@ bool DoJoinInterestGroup(sql::Database& db,
                          const GURL& joining_url,
                          base::Time last_updated,
                          base::Time next_update_after) {
+  DCHECK(data.IsValid());
   sql::Transaction transaction(&db);
   if (!transaction.Begin())
     return false;
@@ -480,6 +510,7 @@ bool DoJoinInterestGroup(sql::Database& db,
             "owner,"
             "joining_origin,"
             "name,"
+            "priority,"
             "joining_url,"
             "bidding_url,"
             "bidding_wasm_helper_url,"
@@ -489,7 +520,7 @@ bool DoJoinInterestGroup(sql::Database& db,
             "user_bidding_signals,"  // opaque data
             "ads,"
             "ad_components) "
-          "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+          "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
 
   // clang-format on
   if (!join_group.is_valid())
@@ -502,19 +533,20 @@ bool DoJoinInterestGroup(sql::Database& db,
   join_group.BindString(3, Serialize(data.owner));
   join_group.BindString(4, Serialize(joining_origin));
   join_group.BindString(5, data.name);
-  join_group.BindString(6, Serialize(joining_url));
-  join_group.BindString(7, Serialize(data.bidding_url));
-  join_group.BindString(8, Serialize(data.bidding_wasm_helper_url));
-  join_group.BindString(9, Serialize(data.update_url));
-  join_group.BindString(10, Serialize(data.trusted_bidding_signals_url));
-  join_group.BindString(11, Serialize(data.trusted_bidding_signals_keys));
+  join_group.BindDouble(6, data.priority.value_or(0));
+  join_group.BindString(7, Serialize(joining_url));
+  join_group.BindString(8, Serialize(data.bidding_url));
+  join_group.BindString(9, Serialize(data.bidding_wasm_helper_url));
+  join_group.BindString(10, Serialize(data.daily_update_url));
+  join_group.BindString(11, Serialize(data.trusted_bidding_signals_url));
+  join_group.BindString(12, Serialize(data.trusted_bidding_signals_keys));
   if (data.user_bidding_signals) {
-    join_group.BindString(12, data.user_bidding_signals.value());
+    join_group.BindString(13, data.user_bidding_signals.value());
   } else {
-    join_group.BindNull(12);
+    join_group.BindNull(13);
   }
-  join_group.BindString(13, Serialize(data.ads));
-  join_group.BindString(14, Serialize(data.ad_components));
+  join_group.BindString(14, Serialize(data.ads));
+  join_group.BindString(15, Serialize(data.ad_components));
 
   if (!join_group.Run())
     return false;
@@ -547,12 +579,15 @@ bool DoLoadInterestGroup(sql::Database& db,
                          const url::Origin& owner,
                          const std::string& name,
                          blink::InterestGroup& group,
-                         url::Origin* joining_origin) {
+                         url::Origin* joining_origin,
+                         base::Time* last_updated) {
   // clang-format off
   sql::Statement load(
       db.GetCachedStatement(SQL_FROM_HERE,
         "SELECT expiration,"
           "joining_origin,"
+          "last_updated,"
+          "priority,"
           "bidding_url,"
           "bidding_wasm_helper_url,"
           "update_url,"
@@ -580,16 +615,19 @@ bool DoLoadInterestGroup(sql::Database& db,
   group.name = name;
   if (joining_origin)
     *joining_origin = DeserializeOrigin(load.ColumnString(1));
-  group.bidding_url = DeserializeURL(load.ColumnString(2));
-  group.bidding_wasm_helper_url = DeserializeURL(load.ColumnString(3));
-  group.update_url = DeserializeURL(load.ColumnString(4));
-  group.trusted_bidding_signals_url = DeserializeURL(load.ColumnString(5));
+  if (last_updated)
+    *last_updated = load.ColumnTime(2);
+  group.priority = load.ColumnDouble(3);
+  group.bidding_url = DeserializeURL(load.ColumnString(4));
+  group.bidding_wasm_helper_url = DeserializeURL(load.ColumnString(5));
+  group.daily_update_url = DeserializeURL(load.ColumnString(6));
+  group.trusted_bidding_signals_url = DeserializeURL(load.ColumnString(7));
   group.trusted_bidding_signals_keys =
-      DeserializeStringVector(load.ColumnString(6));
-  if (load.GetColumnType(7) != sql::ColumnType::kNull)
-    group.user_bidding_signals = load.ColumnString(7);
-  group.ads = DeserializeInterestGroupAdVector(load.ColumnString(8));
-  group.ad_components = DeserializeInterestGroupAdVector(load.ColumnString(9));
+      DeserializeStringVector(load.ColumnString(8));
+  if (load.GetColumnType(9) != sql::ColumnType::kNull)
+    group.user_bidding_signals = load.ColumnString(9);
+  group.ads = DeserializeInterestGroupAdVector(load.ColumnString(10));
+  group.ad_components = DeserializeInterestGroupAdVector(load.ColumnString(11));
 
   return true;
 }
@@ -603,6 +641,7 @@ bool DoStoreInterestGroupUpdate(sql::Database& db,
           "UPDATE interest_groups "
           "SET last_updated=?,"
             "next_update_after=?,"
+            "priority=?,"
             "bidding_url=?,"
             "bidding_wasm_helper_url=?,"
             "update_url=?,"
@@ -620,15 +659,16 @@ bool DoStoreInterestGroupUpdate(sql::Database& db,
   store_group.BindTime(0, now);
   store_group.BindTime(
       1, now + InterestGroupStorage::kUpdateSucceededBackoffPeriod);
-  store_group.BindString(2, Serialize(group.bidding_url));
-  store_group.BindString(3, Serialize(group.bidding_wasm_helper_url));
-  store_group.BindString(4, Serialize(group.update_url));
-  store_group.BindString(5, Serialize(group.trusted_bidding_signals_url));
-  store_group.BindString(6, Serialize(group.trusted_bidding_signals_keys));
-  store_group.BindString(7, Serialize(group.ads));
-  store_group.BindString(8, Serialize(group.ad_components));
-  store_group.BindString(9, Serialize(group.owner));
-  store_group.BindString(10, group.name);
+  store_group.BindDouble(2, group.priority.value_or(0));
+  store_group.BindString(3, Serialize(group.bidding_url));
+  store_group.BindString(4, Serialize(group.bidding_wasm_helper_url));
+  store_group.BindString(5, Serialize(group.daily_update_url));
+  store_group.BindString(6, Serialize(group.trusted_bidding_signals_url));
+  store_group.BindString(7, Serialize(group.trusted_bidding_signals_keys));
+  store_group.BindString(8, Serialize(group.ads));
+  store_group.BindString(9, Serialize(group.ad_components));
+  store_group.BindString(10, Serialize(group.owner));
+  store_group.BindString(11, group.name);
 
   return store_group.Run();
 }
@@ -651,14 +691,16 @@ bool DoUpdateInterestGroup(sql::Database& db,
 
   blink::InterestGroup stored_group;
   if (!DoLoadInterestGroup(db, update.owner, update.name, stored_group,
-                           nullptr)) {
+                           /*joining_origin=*/nullptr,
+                           /*last_updated=*/nullptr)) {
     return false;
   }
 
   // (Optimization) Don't do anything for expired interest groups.
   if (stored_group.expiry < now)
     return false;
-
+  if (update.priority)
+    stored_group.priority = update.priority;
   if (update.bidding_url)
     stored_group.bidding_url = update.bidding_url;
   if (update.bidding_wasm_helper_url)
@@ -981,10 +1023,10 @@ bool DoGetInterestGroupNameKAnonymity(
 
 bool DoGetInterestGroupUpdateURLKAnonymity(
     sql::Database& db,
-    const GURL& update_url,
+    const GURL& daily_update_url,
     absl::optional<StorageInterestGroup::KAnonymityData>& output) {
-  return DoGetInterestGroupKAnonymity(db, KAnonType::kUpdateURL, update_url,
-                                      output);
+  return DoGetInterestGroupKAnonymity(db, KAnonType::kUpdateURL,
+                                      daily_update_url, output);
 }
 
 bool DoGetAdsKAnonymity(
@@ -1119,7 +1161,8 @@ absl::optional<StorageInterestGroup> DoGetStoredInterestGroup(
     base::Time now) {
   StorageInterestGroup db_interest_group;
   if (!DoLoadInterestGroup(db, owner, name, db_interest_group.interest_group,
-                           &db_interest_group.joining_origin)) {
+                           &db_interest_group.joining_origin,
+                           &db_interest_group.last_updated)) {
     return absl::nullopt;
   }
 
@@ -1128,10 +1171,10 @@ absl::optional<StorageInterestGroup> DoGetStoredInterestGroup(
                                         db_interest_group.name_kanon)) {
     return absl::nullopt;
   }
-  if (db_interest_group.interest_group.update_url &&
+  if (db_interest_group.interest_group.daily_update_url &&
       !DoGetInterestGroupUpdateURLKAnonymity(
-          db, db_interest_group.interest_group.update_url.value(),
-          db_interest_group.update_url_kanon)) {
+          db, db_interest_group.interest_group.daily_update_url.value(),
+          db_interest_group.daily_update_url_kanon)) {
     return absl::nullopt;
   }
   if (db_interest_group.interest_group.ads) {
@@ -1570,7 +1613,7 @@ bool InterestGroupStorage::InitializeSchema() {
     return false;
 
   if (new_db)
-    return CreateV6Schema(*db_);
+    return CreateV7Schema(*db_);
 
   const int db_version = meta_table.GetVersionNumber();
 
@@ -1582,11 +1625,15 @@ bool InterestGroupStorage::InitializeSchema() {
     return true;
   }
 
-  // Older version - should be migrated.
+  // Older versions - should be migrated.
   // db_version < kCurrentVersionNumber
   // db_version > kDeprecatedVersionNumber
-  // TODO(behamilton): handle migration.
-  NOTREACHED();  // There are currently no DB versions that can be migrated.
+  if (db_version == 6) {
+    meta_table.SetVersionNumber(7);
+    return UpgradeV6SchemaToV7(*db_, meta_table);
+  }
+
+  NOTREACHED();  // Only V6 should have passed RazeIfIncompatible.
   return false;
 }
 
@@ -1800,6 +1847,8 @@ void InterestGroupStorage::PerformDBMaintenance() {
 std::vector<StorageInterestGroup>
 InterestGroupStorage::GetAllInterestGroupsUnfilteredForTesting() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!EnsureDBInitialized())
+    return {};
   const base::Time distant_past = base::Time::Min();
   std::vector<StorageInterestGroup> result;
   absl::optional<std::vector<url::Origin>> maybe_owners =
@@ -1809,7 +1858,7 @@ InterestGroupStorage::GetAllInterestGroupsUnfilteredForTesting() {
   for (const auto& owner : *maybe_owners) {
     absl::optional<std::vector<StorageInterestGroup>> maybe_owner_results =
         DoGetInterestGroupsForOwner(*db_, owner, distant_past);
-    DCHECK(maybe_owner_results);
+    DCHECK(maybe_owner_results) << owner;
     std::move(maybe_owner_results->begin(), maybe_owner_results->end(),
               std::back_inserter(result));
   }

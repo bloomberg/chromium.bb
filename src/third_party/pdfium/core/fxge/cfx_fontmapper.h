@@ -63,15 +63,16 @@ class CFX_FontMapper {
   void LoadInstalledFonts();
 
   RetainPtr<CFX_Face> FindSubstFont(const ByteString& face_name,
-                                    bool bTrueType,
+                                    bool is_truetype,
                                     uint32_t flags,
                                     int weight,
                                     int italic_angle,
                                     FX_CodePage code_page,
-                                    CFX_SubstFont* pSubstFont);
+                                    CFX_SubstFont* subst_font);
 
   size_t GetFaceSize() const;
-  ByteString GetFaceName(size_t index) const { return m_FaceArray[index].name; }
+  // `index` must be less than GetFaceSize().
+  ByteString GetFaceName(size_t index) const;
   bool HasInstalledFont(ByteStringView name) const;
   bool HasLocalizedFont(ByteStringView name) const;
 
@@ -83,27 +84,35 @@ class CFX_FontMapper {
 #endif  // BUILDFLAG(IS_WIN)
 
 #ifdef PDF_ENABLE_XFA
+  // `index` must be less than GetFaceSize().
   std::unique_ptr<uint8_t, FxFreeDeleter> RawBytesForIndex(
       size_t index,
       size_t* returned_length);
 #endif  // PDF_ENABLE_XFA
 
  private:
-  uint32_t GetChecksumFromTT(void* hFont);
-  ByteString GetPSNameFromTT(void* hFont);
+  uint32_t GetChecksumFromTT(void* font_handle);
+  ByteString GetPSNameFromTT(void* font_handle);
   ByteString MatchInstalledFonts(const ByteString& norm_name);
-  RetainPtr<CFX_Face> UseInternalSubst(CFX_SubstFont* pSubstFont,
-                                       int iBaseFont,
-                                       int italic_angle,
+  RetainPtr<CFX_Face> UseInternalSubst(int base_font,
                                        int weight,
-                                       int pitch_family);
-  RetainPtr<CFX_Face> GetCachedTTCFace(void* hFont,
+                                       int italic_angle,
+                                       int pitch_family,
+                                       CFX_SubstFont* subst_font);
+  RetainPtr<CFX_Face> UseExternalSubst(void* font_handle,
+                                       ByteString face_name,
+                                       int weight,
+                                       bool is_italic,
+                                       int italic_angle,
+                                       FX_Charset charset,
+                                       CFX_SubstFont* subst_font);
+  RetainPtr<CFX_Face> GetCachedTTCFace(void* font_handle,
                                        size_t ttc_size,
                                        size_t data_size);
-  RetainPtr<CFX_Face> GetCachedFace(void* hFont,
-                                    ByteString SubstName,
+  RetainPtr<CFX_Face> GetCachedFace(void* font_handle,
+                                    ByteString subst_name,
                                     int weight,
-                                    bool bItalic,
+                                    bool is_italic,
                                     size_t data_size);
 
   struct FaceData {

@@ -130,12 +130,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderViewHostImpl& operator=(const RenderViewHostImpl&) = delete;
 
   // RenderViewHost implementation.
-  RenderWidgetHostImpl* GetWidget() override;
-  RenderProcessHost* GetProcess() override;
-  int GetRoutingID() override;
+  RenderWidgetHostImpl* GetWidget() const override;
+  RenderProcessHost* GetProcess() const override;
+  int GetRoutingID() const override;
   void EnablePreferredSizeMode() override;
-  bool IsRenderViewLive() override;
-  void WriteIntoTrace(perfetto::TracedValue context) override;
+  bool IsRenderViewLiveForTesting() const override;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
 
   void SendWebPreferencesToRenderer();
   void SendRendererPreferencesToRenderer(
@@ -175,6 +175,9 @@ class CONTENT_EXPORT RenderViewHostImpl
     return is_waiting_for_page_close_completion_;
   }
 
+  // Returns true if the RenderView is active and has not crashed.
+  bool IsRenderViewLive() const;
+
   // Called when the RenderView in the renderer process has been created, at
   // which point IsRenderViewLive() becomes true, and the mojo connections to
   // the renderer process for this view now exist.
@@ -201,7 +204,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Returns the `AgentSchedulingGroupHost` this view is associated with (via
   // the widget).
-  AgentSchedulingGroupHost& GetAgentSchedulingGroup();
+  AgentSchedulingGroupHost& GetAgentSchedulingGroup() const;
 
   // Tells the renderer process to request a page-scale animation based on the
   // specified point/rect.
@@ -266,7 +269,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
-  void ActivatePrerenderedPage(base::TimeTicks activation_start,
+  void ActivatePrerenderedPage(blink::mojom::PrerenderPageActivationParamsPtr
+                                   prerender_page_activation_params,
                                base::OnceClosure callback);
 
   void SetFrameTreeVisibility(blink::mojom::PageVisibilityState visibility);
@@ -318,10 +322,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // class to FrameTree/FrameTreeNode.
   FrameTree* frame_tree() const { return frame_tree_; }
   void SetFrameTree(FrameTree& frame_tree);
-
-  // Write a representation of this object into a trace.
-  void WriteIntoTrace(
-      perfetto::TracedProto<perfetto::protos::pbzero::RenderViewHost> proto);
 
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless

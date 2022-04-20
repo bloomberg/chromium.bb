@@ -139,13 +139,13 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
     views::Builder<views::WidgetDelegateView>(this)
         .SetBackground(
-            CreateThemedSolidBackground(this, ui::kColorWindowBackground))
+            views::CreateThemedSolidBackground(ui::kColorWindowBackground))
         .AddChildren(
             views::Builder<views::FlexLayoutView>()
                 .CopyAddressTo(&toolbar_view_)
                 .SetOrientation(views::LayoutOrientation::kHorizontal)
                 // Top/Left/Right padding = 2, Bottom padding = 5
-                .SetProperty(views::kMarginsKey, gfx::Insets(2, 2, 5, 2))
+                .SetProperty(views::kMarginsKey, gfx::Insets::TLBR(2, 2, 5, 2))
                 .AddChildren(
                     views::Builder<views::MdTextButton>()
                         .CopyAddressTo(&back_button_)
@@ -198,13 +198,13 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                 views::MaximumFlexSizeRule::kUnbounded))
                         // Left padding  = 2, Right padding = 2
                         .SetProperty(views::kMarginsKey,
-                                     gfx::Insets(0, 2, 0, 2))),
+                                     gfx::Insets::TLBR(0, 2, 0, 2))),
             views::Builder<views::View>()
                 .CopyAddressTo(&contents_view_)
                 .SetUseDefaultFillLayout(true)
-                .SetProperty(views::kMarginsKey, gfx::Insets(0, 2, 0, 2)),
-            views::Builder<views::View>().SetProperty(views::kMarginsKey,
-                                                      gfx::Insets(0, 0, 5, 0)))
+                .SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 2, 0, 2)),
+            views::Builder<views::View>().SetProperty(
+                views::kMarginsKey, gfx::Insets::TLBR(0, 0, 5, 0)))
         .BuildChildren();
     box_layout->SetFlexForView(contents_view_, 1);
   }

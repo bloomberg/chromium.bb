@@ -1,11 +1,11 @@
-# https://github.com/bazelbuild/bazel-skylib
-load("@bazel_skylib//lib:selects.bzl", "selects")
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "generated_cc_atom", "selects")
+
+licenses(["notice"])
 
 selects.config_setting_group(
-    name = "vulkan_unix",
+    name = "dawn_unix",
     match_all = [
-        "//bazel/common_config_settings:vulkan_backend",
+        "//bazel/common_config_settings:dawn_backend",
         "@platforms//os:linux",
     ],
 )
@@ -18,8 +18,28 @@ selects.config_setting_group(
     ],
 )
 
+selects.config_setting_group(
+    name = "vulkan_unix",
+    match_all = [
+        "//bazel/common_config_settings:vulkan_backend",
+        "@platforms//os:linux",
+    ],
+)
+
 cc_library(
     name = "sk_app",
+    linkopts = select({
+        "@platforms//os:linux": [
+            "-lX11",
+            "-lxcb",  # dep of X11
+            "-lXau",  # dep of xcb
+            "-lXdmcp",  # dep of xcb
+        ],
+        "//conditions:default": [],
+    }) + selects.with_or({
+        (":dawn_unix", ":vulkan_unix"): ["-lX11-xcb"],
+        "//conditions:default": [],
+    }),
     visibility = ["//:__subpackages__"],
     deps = [
         ":Application_hdr",
@@ -36,6 +56,9 @@ cc_library(
         ],
         # TODO(kjlubick) add Windows/Mac support
     }) + select({
+        "//bazel/common_config_settings:dawn_backend": [
+            ":DawnWindowContext_src",
+        ],
         "//bazel/common_config_settings:gl_backend": [
             ":GLWindowContext_src",
         ],
@@ -44,6 +67,7 @@ cc_library(
             "//tools/gpu/vk:VkTestUtils_src",
         ],
     }) + select({
+        ":dawn_unix": ["//tools/sk_app/unix:DawnVulkanWindowContext_unix_src"],
         ":gl_unix": ["//tools/sk_app/unix:GLWindowContext_unix_src"],
         ":vulkan_unix": ["//tools/sk_app/unix:VulkanWindowContext_unix_src"],
     }),
@@ -119,6 +143,7 @@ generated_cc_atom(
     hdrs = ["DisplayParams.h"],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkImageInfo_hdr",
         "//include/core:SkSurfaceProps_hdr",
         "//include/gpu:GrContextOptions_hdr",
@@ -148,10 +173,10 @@ generated_cc_atom(
         "//include/gpu:GrBackendSurface_hdr",
         "//include/gpu:GrDirectContext_hdr",
         "//src/core:SkMathPriv_hdr",
-        "//src/gpu:GrCaps_hdr",
-        "//src/gpu:GrDirectContextPriv_hdr",
-        "//src/gpu/gl:GrGLDefines_hdr",
-        "//src/gpu/gl:GrGLUtil_hdr",
+        "//src/gpu/ganesh:GrCaps_hdr",
+        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
+        "//src/gpu/ganesh/gl:GrGLDefines_impl_hdr",
+        "//src/gpu/ganesh/gl:GrGLUtil_hdr",
         "//src/image:SkImage_Base_hdr",
     ],
 )
@@ -176,7 +201,7 @@ generated_cc_atom(
         "//include/core:SkRefCnt_hdr",
         "//include/core:SkSurface_hdr",
         "//include/ports:SkCFObject_hdr",
-        "//include/private:GrMtlTypesPriv_hdr",
+        "//include/private/gpu/ganesh:GrMtlTypesPriv_hdr",
     ],
 )
 
@@ -196,7 +221,7 @@ generated_cc_atom(
         "//include/core:SkTypes_hdr",
         "//include/gpu/vk:GrVkBackendContext_hdr",
         "//include/gpu/vk:GrVkVulkan_hdr",
-        "//src/gpu/vk:GrVkInterface_hdr",
+        "//src/gpu/ganesh/vk:GrVkInterface_hdr",
         "//tools/gpu/vk:VkTestUtils_hdr",
     ],
 )
@@ -214,8 +239,8 @@ generated_cc_atom(
         "//include/gpu/vk:GrVkExtensions_hdr",
         "//include/gpu/vk:GrVkTypes_hdr",
         "//src/core:SkAutoMalloc_hdr",
-        "//src/gpu/vk:GrVkImage_hdr",
-        "//src/gpu/vk:GrVkUtil_hdr",
+        "//src/gpu/ganesh/vk:GrVkImage_hdr",
+        "//src/gpu/ganesh/vk:GrVkUtil_hdr",
     ],
 )
 
@@ -237,9 +262,9 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":WindowContext_hdr",
-        "//experimental/graphite/include:Context_hdr",
-        "//experimental/graphite/include:Recorder_hdr",
         "//include/gpu:GrDirectContext_hdr",
+        "//include/gpu/graphite:Context_hdr",
+        "//include/gpu/graphite:Recorder_hdr",
     ],
 )
 

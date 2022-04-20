@@ -41,6 +41,11 @@ public class TabUiFeatureUtilities {
             new StringCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                     TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE_PARAM, "");
 
+    public static final String THUMBNAIL_ASPECT_RATIO_PARAM = "thumbnail_aspect_ratio";
+    public static final DoubleCachedFieldTrialParameter THUMBNAIL_ASPECT_RATIO =
+            new DoubleCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, THUMBNAIL_ASPECT_RATIO_PARAM, 0.85);
+
     private static final String SEARCH_CHIP_PARAM = "enable_search_term_chip";
     public static final BooleanCachedFieldTrialParameter ENABLE_SEARCH_CHIP =
             new BooleanCachedFieldTrialParameter(
@@ -132,14 +137,22 @@ public class TabUiFeatureUtilities {
      * @param context The activity context.
      */
     public static boolean isGridTabSwitcherEnabled(Context context) {
-        // Only enable grid tab switcher for tablet if flag is enabled.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
+            return isTabletGridTabSwitcherEnabled(context);
         }
 
         // Having Tab Groups or Start implies Grid Tab Switcher.
         return isTabManagementModuleSupported() || isTabGroupsAndroidEnabled(context)
                 || ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(context);
+    }
+
+    /**
+     * @return Whether the tablet Grid Tab Switcher UI is enabled and available for use.
+     * @param context The activity context.
+     */
+    public static boolean isTabletGridTabSwitcherEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
     }
 
     /**
@@ -183,6 +196,13 @@ public class TabUiFeatureUtilities {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
                 && isTabManagementModuleSupported()
                 && !ConditionalTabStripUtils.getOptOutIndicator();
+    }
+
+    /**
+     * @return Whether the thumbnail_aspect_ratio field trail is set.
+     */
+    public static boolean isTabThumbnailAspectRatioNotOne() {
+        return Double.compare(1.0, THUMBNAIL_ASPECT_RATIO.getValue()) != 0;
     }
 
     public static boolean isTabGridLayoutAndroidNewTabTileEnabled() {

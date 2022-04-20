@@ -10,6 +10,18 @@
       "use_goma": true
     }
   },
+  "Linux ChromiumOS Full (reclient shadow)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "ChromeOS",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "target_os": "chromeos",
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
   "chromeos-amd64-generic-asan-rel": {
     "args_file": "//build/args/chromeos/amd64-generic.gni",
     "gn_args": {
@@ -18,6 +30,17 @@
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
       "use_goma": true
+    }
+  },
+  "chromeos-amd64-generic-asan-rel (reclient shadow)": {
+    "args_file": "//build/args/chromeos/amd64-generic.gni",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_asan": true,
+      "is_chromeos_device": true,
+      "ozone_platform_headless": true,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "chromeos-amd64-generic-cfi-thin-lto-rel": {
@@ -42,14 +65,26 @@
       "use_goma": true
     }
   },
+  "chromeos-amd64-generic-dbg (reclient shadow)": {
+    "args_file": "//build/args/chromeos/amd64-generic.gni",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_chromeos_device": true,
+      "is_debug": true,
+      "ozone_platform_headless": true,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
   "chromeos-amd64-generic-lacros-dbg": {
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
+      "is_component_build": false,
       "is_debug": true,
       "ozone_platform_headless": true,
       "target_os": "chromeos",
@@ -74,6 +109,17 @@
       "is_debug": true,
       "ozone_platform_headless": true,
       "use_goma": true
+    }
+  },
+  "chromeos-arm-generic-dbg (reclient shadow)": {
+    "args_file": "//build/args/chromeos/arm-generic.gni",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_chromeos_device": true,
+      "is_debug": true,
+      "ozone_platform_headless": true,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "chromeos-arm-generic-rel": {
@@ -103,12 +149,22 @@
       "use_goma": true
     }
   },
+  "chromeos-kevin-rel (reclient shadow)": {
+    "args_file": "//build/args/chromeos/kevin.gni",
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_chromeos_device": true,
+      "ozone_platform_headless": true,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
   "lacros-amd64-generic-binary-size-rel": {
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -121,8 +177,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -135,8 +191,8 @@
     "args_file": "//build/args/chromeos/arm-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_i386-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_i386-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,

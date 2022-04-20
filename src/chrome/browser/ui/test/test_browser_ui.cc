@@ -86,7 +86,7 @@ bool TestBrowserUi::VerifyPixelUi(views::View* view,
   // Move the mouse away from the dialog to prvent any interference with the
   // screenshots.
   InstallUIControlsAura();
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   EXPECT_TRUE(
       ui_controls::SendMouseMoveNotifyWhenDone(0, 0, run_loop.QuitClosure()));
   run_loop.Run();
@@ -115,9 +115,13 @@ void TestBrowserUi::ShowAndVerifyUi() {
   PreShow();
   ShowUi(NameFromTestCase());
   ASSERT_TRUE(VerifyUi());
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherInteractive))
+  if (IsInteractiveUi())
     WaitForUserDismissal();
   else
     DismissUi();
+}
+
+bool TestBrowserUi::IsInteractiveUi() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTestLauncherInteractive);
 }

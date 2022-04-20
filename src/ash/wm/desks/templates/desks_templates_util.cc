@@ -29,7 +29,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 bool AreDesksTemplatesEnabled() {
   PrefService* pref_service = GetPrimaryUserPrefService();
 
-  DCHECK(pref_service);
+  if (!pref_service)
+    return false;
 
   const PrefService::Preference* desk_templates_pref =
       pref_service->FindPreference(prefs::kDeskTemplatesEnabled);
@@ -44,6 +45,14 @@ bool AreDesksTemplatesEnabled() {
   // Allow the feature to be enabled by user when there is not explicit
   // policy.
   return features::AreDesksTemplatesEnabled();
+}
+
+bool IsDeskSaveAndRecallEnabled() {
+  return features::IsSavedDesksEnabled();
+}
+
+bool IsSavedDesksEnabled() {
+  return AreDesksTemplatesEnabled() || IsDeskSaveAndRecallEnabled();
 }
 
 }  // namespace desks_templates_util

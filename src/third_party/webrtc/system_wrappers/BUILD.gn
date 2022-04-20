@@ -36,6 +36,9 @@ rtc_library("system_wrappers") {
     "../api/units:timestamp",
     "../modules:module_api_public",
     "../rtc_base:checks",
+    "../rtc_base:logging",
+    "../rtc_base:safe_conversions",
+    "../rtc_base:timeutils",
     "../rtc_base/synchronization:mutex",
     "../rtc_base/system:arch",
     "../rtc_base/system:rtc_export",
@@ -102,7 +105,9 @@ rtc_library("metrics") {
     defines = [ "WEBRTC_EXCLUDE_METRICS_DEFAULT" ]
   }
   deps = [
+    "../rtc_base:atomicops",
     "../rtc_base:checks",
+    "../rtc_base:macromagic",
     "../rtc_base:rtc_base_approved",
     "../rtc_base/synchronization:mutex",
   ]

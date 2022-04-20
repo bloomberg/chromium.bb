@@ -733,6 +733,17 @@ void Pointer::OnDragCompleted(const ui::DropTargetEvent& event) {
       return;
   }
 
+  // DragDropController::PerformDrop() can result in the DropTargetEvent::target
+  // being destroyed. Verify whether this is the case, and adapt the event.
+  //
+  // TODO(https://crbug.com/1160925): Avoid nested RunLoop in exo
+  // DataDevice::OnPerformDrop() - remove the block below when it is fixed.
+  auto* event_target = static_cast<aura::Window*>(event.target());
+  if (!event_target) {
+    LOG(WARNING) << "EventTarget has been destroyed during the drop operation.";
+    return;
+  }
+
   auto* target_window = ash::window_util::GetEventHandlerForEvent(event);
   auto* surface = Surface::AsSurface(target_window);
   if (surface)
@@ -977,7 +988,7 @@ bool Pointer::ShouldMoveToCenter() {
     return false;
 
   gfx::Rect rect = capture_window_->GetRootWindow()->bounds();
-  rect.Inset(rect.width() / 6, rect.height() / 6);
+  rect.Inset(gfx::Insets::VH(rect.height() / 6, rect.width() / 6));
   return !rect.Contains(location_.x(), location_.y());
 }
 

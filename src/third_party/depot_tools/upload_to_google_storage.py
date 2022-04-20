@@ -233,18 +233,22 @@ def create_archives(dirs):
 
 
 def validate_archive_dirs(dirs):
-  # We don't allow .. in paths in our archives.
-  if any(map(lambda x: '..' in x, dirs)):
-    return False
-  # We only allow dirs.
-  if any(map(lambda x: not os.path.isdir(x), dirs)):
-    return False
-  # We don't allow sym links in our archives.
-  if any(map(os.path.islink, dirs)):
-    return False
-  # We required that the subdirectories we are archiving are all just below
-  # cwd.
-  return not any(map(lambda x: x not in next(os.walk('.'))[1], dirs))
+  for d in dirs:
+    # We don't allow .. in paths in our archives.
+    if d == '..':
+      return False
+    # We only allow dirs.
+    if not os.path.isdir(d):
+      return False
+    # We don't allow sym links in our archives.
+    if os.path.islink(d):
+      return False
+    # We required that the subdirectories we are archiving are all just below
+    # cwd.
+    if d not in next(os.walk('.'))[1]:
+      return False
+
+  return True
 
 
 def main():

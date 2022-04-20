@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_TEXTURE_H_
-#define DAWNNATIVE_TEXTURE_H_
+#ifndef SRC_DAWN_NATIVE_TEXTURE_H_
+#define SRC_DAWN_NATIVE_TEXTURE_H_
 
 #include "dawn/common/ityp_array.h"
 #include "dawn/common/ityp_bitset.h"
 #include "dawn/native/Error.h"
+#include "dawn/native/Format.h"
 #include "dawn/native/Forward.h"
 #include "dawn/native/ObjectBase.h"
 #include "dawn/native/Subresource.h"
@@ -33,7 +34,7 @@ namespace dawn::native {
     MaybeError ValidateTextureViewDescriptor(const DeviceBase* device,
                                              const TextureBase* texture,
                                              const TextureViewDescriptor* descriptor);
-    TextureViewDescriptor GetTextureViewDescriptorWithDefaults(
+    ResultOrError<TextureViewDescriptor> GetTextureViewDescriptorWithDefaults(
         const TextureBase* texture,
         const TextureViewDescriptor* descriptor);
 
@@ -55,6 +56,7 @@ namespace dawn::native {
 
         wgpu::TextureDimension GetDimension() const;
         const Format& GetFormat() const;
+        const FormatSet& GetViewFormats() const;
         const Extent3D& GetSize() const;
         uint32_t GetWidth() const;
         uint32_t GetHeight() const;
@@ -91,6 +93,9 @@ namespace dawn::native {
                                             const Origin3D& origin,
                                             const Extent3D& extent) const;
 
+        ResultOrError<Ref<TextureViewBase>> CreateView(
+            const TextureViewDescriptor* descriptor = nullptr);
+
         // Dawn API
         TextureViewBase* APICreateView(const TextureViewDescriptor* descriptor = nullptr);
         void APIDestroy();
@@ -106,6 +111,7 @@ namespace dawn::native {
         MaybeError ValidateDestroy() const;
         wgpu::TextureDimension mDimension;
         const Format& mFormat;
+        FormatSet mViewFormats;
         Extent3D mSize;
         uint32_t mMipLevelCount;
         uint32_t mSampleCount;
@@ -139,7 +145,7 @@ namespace dawn::native {
 
       protected:
         // Constructor used only for mocking and testing.
-        TextureViewBase(TextureBase* texture);
+        explicit TextureViewBase(TextureBase* texture);
         void DestroyImpl() override;
 
       private:
@@ -154,4 +160,4 @@ namespace dawn::native {
 
 }  // namespace dawn::native
 
-#endif  // DAWNNATIVE_TEXTURE_H_
+#endif  // SRC_DAWN_NATIVE_TEXTURE_H_

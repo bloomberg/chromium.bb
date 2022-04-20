@@ -16,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.DoNotClassMerge;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
@@ -37,7 +38,11 @@ import java.nio.ByteBuffer;
 
 /**
  * Data which is core to the app and must be retrieved as quickly as possible on startup.
+ *
+ * This class should not be merged because it is being used as a key in a Map
+ * in PersistedTabDataConfiguration.java.
  */
+@DoNotClassMerge
 public class CriticalPersistedTabData extends PersistedTabData {
     private static final String TAG = "CriticalPTD";
     private static final Class<CriticalPersistedTabData> USER_DATA_KEY =
@@ -314,6 +319,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 return TabLaunchType.FROM_RESTORE;
             case LaunchTypeAtCreation.FROM_LONGPRESS_FOREGROUND:
                 return TabLaunchType.FROM_LONGPRESS_FOREGROUND;
+            case LaunchTypeAtCreation.FROM_LONGPRESS_INCOGNITO:
+                return TabLaunchType.FROM_LONGPRESS_INCOGNITO;
             case LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND:
                 return TabLaunchType.FROM_LONGPRESS_BACKGROUND;
             case LaunchTypeAtCreation.FROM_REPARENTING:
@@ -336,6 +343,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 return TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP;
             case LaunchTypeAtCreation.FROM_APP_WIDGET:
                 return TabLaunchType.FROM_APP_WIDGET;
+            case LaunchTypeAtCreation.FROM_RECENT_TABS:
+                return TabLaunchType.FROM_RECENT_TABS;
             case LaunchTypeAtCreation.SIZE:
                 return TabLaunchType.SIZE;
             case LaunchTypeAtCreation.UNKNOWN:
@@ -364,6 +373,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 return LaunchTypeAtCreation.FROM_RESTORE;
             case TabLaunchType.FROM_LONGPRESS_FOREGROUND:
                 return LaunchTypeAtCreation.FROM_LONGPRESS_FOREGROUND;
+            case LaunchTypeAtCreation.FROM_LONGPRESS_INCOGNITO:
+                return TabLaunchType.FROM_LONGPRESS_INCOGNITO;
             case TabLaunchType.FROM_LONGPRESS_BACKGROUND:
                 return LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND;
             case TabLaunchType.FROM_REPARENTING:
@@ -386,6 +397,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 return LaunchTypeAtCreation.FROM_LONGPRESS_BACKGROUND_IN_GROUP;
             case TabLaunchType.FROM_APP_WIDGET:
                 return LaunchTypeAtCreation.FROM_APP_WIDGET;
+            case LaunchTypeAtCreation.FROM_RECENT_TABS:
+                return TabLaunchType.FROM_RECENT_TABS;
             case TabLaunchType.SIZE:
                 return LaunchTypeAtCreation.SIZE;
             default:

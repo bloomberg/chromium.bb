@@ -1757,7 +1757,7 @@ static INLINE int skip_nearest_near_mv_using_refmv_weight(
       AOMMIN(MAX_REF_MV_SEARCH, mbmi_ext->ref_mv_count[ref_frame_type]);
 
   if (ref_mv_count == 0) return 0;
-  // If ref mv list has atleast one nearest candidate do not prune NEARESTMV
+  // If ref mv list has at least one nearest candidate do not prune NEARESTMV
   if (this_mode == NEARESTMV && ref_mv_weight[0] >= REF_CAT_LEVEL) return 0;
 
   // Count number of ref mvs populated from nearest candidates
@@ -5722,8 +5722,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
   // Indicates the appropriate number of simple translation winner modes for
   // exhaustive motion mode evaluation
   const int max_winner_motion_mode_cand =
-      num_winner_motion_modes[cpi->sf.winner_mode_sf
-                                  .motion_mode_for_winner_cand];
+      num_winner_motion_modes[sf->winner_mode_sf.motion_mode_for_winner_cand];
   assert(max_winner_motion_mode_cand <= MAX_WINNER_MOTION_MODES);
   motion_mode_candidate motion_mode_cand;
   motion_mode_best_st_candidate best_motion_mode_cands;
@@ -5742,14 +5741,14 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
 
   // Ref frames that are selected by square partition blocks.
   int picked_ref_frames_mask = 0;
-  if (cpi->sf.inter_sf.prune_ref_frame_for_rect_partitions &&
+  if (sf->inter_sf.prune_ref_frame_for_rect_partitions &&
       mbmi->partition != PARTITION_NONE) {
     // prune_ref_frame_for_rect_partitions = 1 implies prune only extended
     // partition blocks. prune_ref_frame_for_rect_partitions >=2
     // implies prune for vert, horiz and extended partition blocks.
     if ((mbmi->partition != PARTITION_VERT &&
          mbmi->partition != PARTITION_HORZ) ||
-        cpi->sf.inter_sf.prune_ref_frame_for_rect_partitions >= 2) {
+        sf->inter_sf.prune_ref_frame_for_rect_partitions >= 2) {
       picked_ref_frames_mask =
           fetch_picked_ref_frames_mask(x, bsize, cm->seq_params->mib_size);
     }
@@ -5778,8 +5777,8 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
   // If do_tx_search is 0, only estimated RD should be computed.
   // If do_tx_search is 1, all modes have TX search performed.
   const int do_tx_search =
-      !((cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
-        (cpi->sf.inter_sf.inter_mode_rd_model_estimation == 2 &&
+      !((sf->inter_sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
+        (sf->inter_sf.inter_mode_rd_model_estimation == 2 &&
          num_pels_log2_lookup[bsize] > 8));
   InterModesInfo *inter_modes_info = x->inter_modes_info;
   inter_modes_info->num = 0;
@@ -5804,7 +5803,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
   // Obtain the relevant tpl stats for pruning inter modes
   PruneInfoFromTpl inter_cost_info_from_tpl;
 #if !CONFIG_REALTIME_ONLY
-  if (cpi->sf.inter_sf.prune_inter_modes_based_on_tpl) {
+  if (sf->inter_sf.prune_inter_modes_based_on_tpl) {
     // x->tpl_keep_ref_frame[id] = 1 => no pruning in
     // prune_ref_by_selective_ref_frame()
     // x->tpl_keep_ref_frame[id] = 0  => ref frame can be pruned in
@@ -5833,13 +5832,14 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
                                  &intra_cost);
 #endif  // !CONFIG_REALTIME_ONLY
 
-  // Initialize best mode stats for winner mode processing
-  zero_winner_mode_stats(bsize, MAX_WINNER_MODE_COUNT_INTER,
-                         x->winner_mode_stats);
+  // Initialize best mode stats for winner mode processing.
+  const int max_winner_mode_count =
+      winner_mode_count_allowed[sf->winner_mode_sf.multi_winner_mode_type];
+  zero_winner_mode_stats(bsize, max_winner_mode_count, x->winner_mode_stats);
   x->winner_mode_count = 0;
   store_winner_mode_stats(&cpi->common, x, mbmi, NULL, NULL, NULL, THR_INVALID,
                           NULL, bsize, best_rd_so_far,
-                          cpi->sf.winner_mode_sf.multi_winner_mode_type, 0);
+                          sf->winner_mode_sf.multi_winner_mode_type, 0);
 
   int mode_thresh_mul_fact = (1 << MODE_THRESH_QBITS);
   if (sf->inter_sf.prune_inter_modes_if_skippable) {
@@ -5985,7 +5985,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
       if (do_tx_search) search_state.best_skip_rd[0] = skip_rd[0];
       search_state.best_skip_rd[1] = skip_rd[1];
     }
-    if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
+    if (sf->winner_mode_sf.motion_mode_for_winner_cand) {
       // Add this mode to motion mode candidate list for motion mode search
       // if using motion_mode_for_winner_cand speed feature
       handle_winner_cand(mbmi, &best_motion_mode_cands,
@@ -6001,7 +6001,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, evaluate_motion_mode_for_winner_candidates_time);
 #endif
-  if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
+  if (sf->winner_mode_sf.motion_mode_for_winner_cand) {
     // For the single ref winner candidates, evaluate other motion modes (non
     // simple translation).
     evaluate_motion_mode_for_winner_candidates(
@@ -6047,7 +6047,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
   start_timing(cpi, refine_winner_mode_tx_time);
 #endif
   int winner_mode_count =
-      cpi->sf.winner_mode_sf.multi_winner_mode_type ? x->winner_mode_count : 1;
+      sf->winner_mode_sf.multi_winner_mode_type ? x->winner_mode_count : 1;
   // In effect only when fast tx search speed features are enabled.
   refine_winner_mode_tx(
       cpi, x, rd_cost, bsize, ctx, &search_state.best_mode_index,
@@ -6129,7 +6129,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
           search_state.best_mbmode.interp_filters.as_filters.x_filter) ||
          !is_inter_block(&search_state.best_mbmode));
 
-  if (!cpi->rc.is_src_frame_alt_ref && cpi->sf.inter_sf.adaptive_rd_thresh) {
+  if (!cpi->rc.is_src_frame_alt_ref && sf->inter_sf.adaptive_rd_thresh) {
     av1_update_rd_thresh_fact(
         cm, x->thresh_freq_fact, sf->inter_sf.adaptive_rd_thresh, bsize,
         search_state.best_mode_index, mode_start, mode_end, THR_DC, MAX_MODES);

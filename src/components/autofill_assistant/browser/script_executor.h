@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
@@ -27,6 +28,7 @@
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_executor_ui_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/service/service_request_sender.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/wait_for_dom_observer.h"
@@ -163,7 +165,7 @@ class ScriptExecutor : public ActionDelegate,
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
       const override;
   void WriteUserData(
-      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
+      base::OnceCallback<void(UserData*, UserDataFieldChange*)>) override;
   void GetFullCard(const autofill::CreditCard* credit_card,
                    GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
@@ -179,7 +181,7 @@ class ScriptExecutor : public ActionDelegate,
                               const autofill::FormData& form_data,
                               const autofill::FormFieldData& field_data)>
           callback) override;
-  void StoreScrolledToElement(const ElementFinder::Result& element) override;
+  void StoreScrolledToElement(const ElementFinderResult& element) override;
   void SetTouchableElementArea(
       const ElementAreaProto& touchable_element_area) override;
   void ExpectNavigation() override;
@@ -188,14 +190,14 @@ class ScriptExecutor : public ActionDelegate,
   void WaitForDocumentReadyState(
       base::TimeDelta max_wait_time,
       DocumentReadyState min_ready_state,
-      const ElementFinder::Result& optional_frame_element,
+      const ElementFinderResult& optional_frame_element,
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
                               base::TimeDelta)> callback) override;
   void WaitUntilDocumentIsInReadyState(
       base::TimeDelta max_wait_time,
       DocumentReadyState min_ready_state,
-      const ElementFinder::Result& optional_frame_element,
+      const ElementFinderResult& optional_frame_element,
       base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback)
       override;
 
@@ -269,8 +271,11 @@ class ScriptExecutor : public ActionDelegate,
 
   void OnGetActions(base::TimeTicks start_time,
                     int http_status,
-                    const std::string& response);
-  bool ProcessNextActionResponse(const std::string& response);
+                    const std::string& response,
+                    const ServiceRequestSender::ResponseInfo& response_info);
+  bool ProcessNextActionResponse(
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
   void ReportPayloadsToListener();
   void ReportScriptsUpdateToListener(
       std::vector<std::unique_ptr<Script>> scripts);
@@ -328,7 +333,8 @@ class ScriptExecutor : public ActionDelegate,
   void OnRequestUserData(
       base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback,
       int http_status,
-      const std::string& response);
+      const std::string& response,
+      const ServiceRequestSender::ResponseInfo& response_info);
 
   // Maybe shows the message specified in a callout, depending on the current
   // state and client settings.
@@ -388,6 +394,7 @@ class ScriptExecutor : public ActionDelegate,
 
   base::TimeTicks batch_start_time_;
   RoundtripTimingStats roundtrip_timing_stats_;
+  RoundtripNetworkStats roundtrip_network_stats_;
 
   bool connection_warning_already_shown_ = false;
   bool website_warning_already_shown_ = false;

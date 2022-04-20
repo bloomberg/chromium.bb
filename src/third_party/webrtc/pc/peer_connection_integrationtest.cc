@@ -132,7 +132,7 @@ class PeerConnectionIntegrationTestPlanB
     : public PeerConnectionIntegrationBaseTest {
  protected:
   PeerConnectionIntegrationTestPlanB()
-      : PeerConnectionIntegrationBaseTest(SdpSemantics::kPlanB) {}
+      : PeerConnectionIntegrationBaseTest(SdpSemantics::kPlanB_DEPRECATED) {}
 };
 
 class PeerConnectionIntegrationTestUnifiedPlan
@@ -269,6 +269,7 @@ TEST_P(PeerConnectionIntegrationTest, EndToEndCallWithDtls) {
                                     webrtc::kEnumCounterKeyProtocolSdes));
 }
 
+#if defined(WEBRTC_FUCHSIA)
 // Uses SDES instead of DTLS for key agreement.
 TEST_P(PeerConnectionIntegrationTest, EndToEndCallWithSdes) {
   PeerConnectionInterface::RTCConfiguration sdes_config;
@@ -292,6 +293,7 @@ TEST_P(PeerConnectionIntegrationTest, EndToEndCallWithSdes) {
       0, webrtc::metrics::NumEvents("WebRTC.PeerConnection.KeyProtocol",
                                     webrtc::kEnumCounterKeyProtocolDtls));
 }
+#endif
 
 // Basic end-to-end test specifying the `enable_encrypted_rtp_header_extensions`
 // option to offer encrypted versions of all header extensions alongside the
@@ -533,7 +535,7 @@ TEST_P(PeerConnectionIntegrationTest, AudioToVideoUpgrade) {
   // send/receive video on the callee side.
   caller()->AddAudioVideoTracks();
   callee()->AddAudioTrack();
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.offer_to_receive_video = 0;
     callee()->SetOfferAnswerOptions(options);
@@ -563,7 +565,7 @@ TEST_P(PeerConnectionIntegrationTest, AudioToVideoUpgrade) {
   // Now negotiate with video and ensure negotiation succeeds, with video
   // frames and additional audio frames being received.
   callee()->AddVideoTrack();
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.offer_to_receive_video = 1;
     callee()->SetOfferAnswerOptions(options);
@@ -780,7 +782,7 @@ TEST_P(PeerConnectionIntegrationTest, AnswererRejectsAudioSection) {
   ASSERT_TRUE(CreatePeerConnectionWrappers());
   ConnectFakeSignaling();
   caller()->AddAudioVideoTracks();
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     // Only add video track for callee, and set offer_to_receive_audio to 0, so
     // it will reject the audio m= section completely.
     PeerConnectionInterface::RTCOfferAnswerOptions options;
@@ -824,7 +826,7 @@ TEST_P(PeerConnectionIntegrationTest, AnswererRejectsVideoSection) {
   ASSERT_TRUE(CreatePeerConnectionWrappers());
   ConnectFakeSignaling();
   caller()->AddAudioVideoTracks();
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     // Only add audio track for callee, and set offer_to_receive_video to 0, so
     // it will reject the video m= section completely.
     PeerConnectionInterface::RTCOfferAnswerOptions options;
@@ -871,7 +873,7 @@ TEST_P(PeerConnectionIntegrationTest, AnswererRejectsAudioAndVideoSections) {
   ASSERT_TRUE(CreatePeerConnectionWrappers());
   ConnectFakeSignaling();
   caller()->AddAudioVideoTracks();
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     // Don't give the callee any tracks, and set offer_to_receive_X to 0, so it
     // will reject both audio and video m= sections.
     PeerConnectionInterface::RTCOfferAnswerOptions options;
@@ -919,7 +921,7 @@ TEST_P(PeerConnectionIntegrationTest, VideoRejectedInSubsequentOffer) {
     ASSERT_TRUE(ExpectNewFrames(media_expectations));
   }
   // Renegotiate, rejecting the video m= section.
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     caller()->SetGeneratedSdpMunger(
         [](cricket::SessionDescription* description) {
           for (cricket::ContentInfo& content : description->contents()) {
@@ -2192,7 +2194,7 @@ constexpr uint32_t kFlagsIPv4Stun =
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionIntegrationTest,
     PeerConnectionIntegrationIceStatesTest,
-    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+    Combine(Values(SdpSemantics::kPlanB_DEPRECATED, SdpSemantics::kUnifiedPlan),
             Values(std::make_pair("IPv4 no STUN", kFlagsIPv4NoStun),
                    std::make_pair("IPv6 no STUN", kFlagsIPv6NoStun),
                    std::make_pair("IPv4 with STUN", kFlagsIPv4Stun))));
@@ -2200,7 +2202,7 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionIntegrationTest,
     PeerConnectionIntegrationIceStatesTestWithFakeClock,
-    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+    Combine(Values(SdpSemantics::kPlanB_DEPRECATED, SdpSemantics::kUnifiedPlan),
             Values(std::make_pair("IPv4 no STUN", kFlagsIPv4NoStun),
                    std::make_pair("IPv6 no STUN", kFlagsIPv6NoStun),
                    std::make_pair("IPv4 with STUN", kFlagsIPv4Stun))));
@@ -2364,7 +2366,7 @@ TEST_P(PeerConnectionIntegrationTest,
 
   // Negotiate again, disabling the video "m=" section (the callee will set the
   // port to 0 due to offer_to_receive_video = 0).
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.offer_to_receive_video = 0;
     callee()->SetOfferAnswerOptions(options);
@@ -2385,7 +2387,7 @@ TEST_P(PeerConnectionIntegrationTest,
 
   // Enable video and do negotiation again, making sure video is received
   // end-to-end, also adding media stream to callee.
-  if (sdp_semantics_ == SdpSemantics::kPlanB) {
+  if (sdp_semantics_ == SdpSemantics::kPlanB_DEPRECATED) {
     PeerConnectionInterface::RTCOfferAnswerOptions options;
     options.offer_to_receive_video = 1;
     callee()->SetOfferAnswerOptions(options);
@@ -3521,7 +3523,7 @@ TEST_F(PeerConnectionIntegrationTestUnifiedPlan,
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionIntegrationTest,
     PeerConnectionIntegrationTest,
-    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+    Combine(Values(SdpSemantics::kPlanB_DEPRECATED, SdpSemantics::kUnifiedPlan),
             Values("WebRTC-FrameBuffer3/arm:FrameBuffer2/",
                    "WebRTC-FrameBuffer3/arm:FrameBuffer3/",
                    "WebRTC-FrameBuffer3/arm:SyncDecoding/")));
@@ -3529,7 +3531,7 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionIntegrationTest,
     PeerConnectionIntegrationTestWithFakeClock,
-    Combine(Values(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
+    Combine(Values(SdpSemantics::kPlanB_DEPRECATED, SdpSemantics::kUnifiedPlan),
             Values("WebRTC-FrameBuffer3/arm:FrameBuffer2/",
                    "WebRTC-FrameBuffer3/arm:FrameBuffer3/",
                    "WebRTC-FrameBuffer3/arm:SyncDecoding/")));
@@ -3545,7 +3547,7 @@ class PeerConnectionIntegrationInteropTest
   // because we specify not to use the test semantics when creating
   // PeerConnectionIntegrationWrappers.
   PeerConnectionIntegrationInteropTest()
-      : PeerConnectionIntegrationBaseTest(SdpSemantics::kPlanB),
+      : PeerConnectionIntegrationBaseTest(SdpSemantics::kPlanB_DEPRECATED),
         caller_semantics_(std::get<0>(GetParam())),
         callee_semantics_(std::get<1>(GetParam())) {}
 
@@ -3667,14 +3669,16 @@ TEST_P(PeerConnectionIntegrationTest, NewTracksDoNotCauseNewCandidates) {
 INSTANTIATE_TEST_SUITE_P(
     PeerConnectionIntegrationTest,
     PeerConnectionIntegrationInteropTest,
-    Values(std::make_tuple(SdpSemantics::kPlanB, SdpSemantics::kUnifiedPlan),
-           std::make_tuple(SdpSemantics::kUnifiedPlan, SdpSemantics::kPlanB)));
+    Values(std::make_tuple(SdpSemantics::kPlanB_DEPRECATED,
+                           SdpSemantics::kUnifiedPlan),
+           std::make_tuple(SdpSemantics::kUnifiedPlan,
+                           SdpSemantics::kPlanB_DEPRECATED)));
 
 // Test that if the Unified Plan side offers two video tracks then the Plan B
 // side will only see the first one and ignore the second.
 TEST_F(PeerConnectionIntegrationTestPlanB, TwoVideoUnifiedPlanToNoMediaPlanB) {
   ASSERT_TRUE(CreatePeerConnectionWrappersWithSdpSemantics(
-      SdpSemantics::kUnifiedPlan, SdpSemantics::kPlanB));
+      SdpSemantics::kUnifiedPlan, SdpSemantics::kPlanB_DEPRECATED));
   ConnectFakeSignaling();
   auto first_sender = caller()->AddVideoTrack();
   caller()->AddVideoTrack();

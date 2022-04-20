@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
 #include "chrome/browser/ash/login/ui/oobe_dialog_size_utils.h"
@@ -25,6 +26,7 @@
 #include "chrome/grit/assistant_optin_resources.h"
 #include "chrome/grit/assistant_optin_resources_map.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/oobe_conditional_resources.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -72,24 +74,24 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAssistantOptInHost);
 
-  auto assistant_handler =
-      std::make_unique<AssistantOptInFlowScreenHandler>(&js_calls_container_);
+  auto assistant_handler = std::make_unique<AssistantOptInFlowScreenHandler>();
   assistant_handler_ptr_ = assistant_handler.get();
   web_ui->AddMessageHandler(std::move(assistant_handler));
   assistant_handler_ptr_->set_on_initialized(base::BindOnce(
       &AssistantOptInUI::Initialize, weak_factory_.GetWeakPtr()));
   assistant_handler_ptr_->SetupAssistantConnection();
 
-  base::DictionaryValue localized_strings;
+  base::Value::Dict localized_strings;
   assistant_handler_ptr_->GetLocalizedStrings(&localized_strings);
 
-  OobeUI::AddOobeComponents(source, localized_strings);
+  OobeUI::AddOobeComponents(source);
 
   source->AddLocalizedStrings(localized_strings);
   source->UseStringsJs();
   source->AddResourcePaths(
       base::make_span(kAssistantOptinResources, kAssistantOptinResourcesSize));
-  source->SetDefaultResource(IDR_ASSISTANT_OPTIN_ASSISTANT_OPTIN_HTML);
+  source->AddResourcePath("assistant_optin.js", IDR_ASSISTANT_OPTIN_JS);
+  source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   source->AddResourcePath("voice_match_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
   source->OverrideContentSecurityPolicy(
@@ -112,9 +114,7 @@ void AssistantOptInUI::OnDialogClosed() {
   }
 }
 
-void AssistantOptInUI::Initialize() {
-  js_calls_container_.ExecuteDeferredJSCalls(web_ui());
-}
+void AssistantOptInUI::Initialize() {}
 
 // AssistantOptInDialog
 

@@ -26,7 +26,6 @@ CPPLINT_EXCEPTIONS = [
     'examples/objc',
     'media/base/stream_params.h',
     'media/base/video_common.h',
-    'media/sctp/usrsctp_transport.cc',
     'modules/audio_coding',
     'modules/audio_device',
     'modules/audio_processing',
@@ -820,9 +819,10 @@ def RunPythonTests(input_api, output_api):
     return input_api.os_path.join(input_api.PresubmitLocalPath(), *args)
 
   excluded_files = [
-      # This test should be run manually after webrtc_dashboard_upload target
+      # These tests should be run manually after webrtc_dashboard_upload target
       # has been built.
-      'catapult_uploader_test.py'
+      'catapult_uploader_test.py',
+      'process_perf_results_test.py',
   ]
 
   test_directories = [
@@ -936,8 +936,6 @@ def CommonChecks(input_api, output_api):
               r'^testing[\\\/].*\.py$',
               r'^third_party[\\\/].*\.py$',
               r'^tools[\\\/].*\.py$',
-              # TODO(bugs.webrtc.org/13605): should arguably be checked.
-              r'^tools_webrtc[\\\/]mb[\\\/].*\.py$',
               r'^xcodebuild.*[\\\/].*\.py$',
           ),
           pylintrc='pylintrc',

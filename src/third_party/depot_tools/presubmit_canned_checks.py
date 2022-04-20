@@ -595,26 +595,38 @@ def CheckLicense(input_api, output_api, license_re=None, project_name=None,
   """Verifies the license header.
   """
 
-  project_name = project_name or 'Chromium'
+  # Early-out if the license_re is guaranteed to match everything.
+  if license_re and license_re == '.*':
+    return []
 
-  # Accept any year number from 2006 to the current year, or the special
-  # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
-  # tolerated on old files.
-  current_year = int(input_api.time.strftime('%Y'))
-  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
-  years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
+  key_line = None
+  if not license_re:
+    project_name = project_name or 'Chromium'
 
-  # The (c) is deprecated, but tolerate it until it's removed from all files.
-  license_re = license_re or (
-      r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
-        r'All rights reserved\.\r?\n'
-      r'.*? Use of this source code is governed by a BSD-style license that '
-        r'can be\r?\n'
-      r'.*? found in the LICENSE file\.(?: \*/)?\r?\n'
-  ) % {
-      'year': years_re,
-      'project': project_name,
-  }
+    # Accept any year number from 2006 to the current year, or the special
+    # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
+    # tolerated on old files.
+    current_year = int(input_api.time.strftime('%Y'))
+    allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
+    years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
+
+    # A file that lacks this line necessarily lacks a compatible license.
+    # Checking for this line lets us avoid the cost of a complex regex across a
+    # possibly large file. This has been seen to save 50+ seconds on a single
+    # file.
+    key_line = ('Use of this source code is governed by a BSD-style license '
+               'that can be')
+    # The (c) is deprecated, but tolerate it until it's removed from all files.
+    license_re = (
+        r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
+          r'All rights reserved\.\r?\n'
+        r'.*? %(key_line)s\r?\n'
+        r'.*? found in the LICENSE file\.(?: \*/)?\r?\n'
+    ) % {
+        'year': years_re,
+        'project': project_name,
+        'key_line' : key_line,
+    }
 
   license_re = input_api.re.compile(license_re, input_api.re.MULTILINE)
   bad_files = []
@@ -622,7 +634,10 @@ def CheckLicense(input_api, output_api, license_re=None, project_name=None,
     contents = input_api.ReadFile(f, 'r')
     if accept_empty_files and not contents:
       continue
-    if not license_re.search(contents):
+    # Search for key_line first to avoid fruitless and expensive regex searches.
+    if (key_line and not key_line in contents):
+      bad_files.append(f.LocalPath())
+    elif not license_re.search(contents):
       bad_files.append(f.LocalPath())
   if bad_files:
     return [output_api.PresubmitPromptWarning(
@@ -1101,14 +1116,32 @@ def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
     return []
 
   name = 'Validate metadata in OWNERS and DIR_METADATA files'
-  kwargs = {}
 
   if dirmd_bin is None:
     dirmd_bin = 'dirmd.bat' if input_api.is_windows else 'dirmd'
-  cmd = [dirmd_bin, 'validate'] + sorted(affected_files)
 
-  return [input_api.Command(
-      name, cmd, kwargs, output_api.PresubmitError)]
+  # When running git cl presubmit --all this presubmit may be asked to check
+  # ~7,500 files, leading to a command line that is about 500,000 characters.
+  # This goes past the Windows 8191 character cmd.exe limit and causes cryptic
+  # failures. To avoid these we break the command up into smaller pieces. The
+  # non-Windows limit is chosen so that the code that splits up commands will
+  # get some exercise on other platforms.
+  # Depending on how long the command is on Windows the error may be:
+  #     The command line is too long.
+  # Or it may be:
+  #     OSError: Execution failed with error: [WinError 206] The filename or
+  #     extension is too long.
+  # I suspect that the latter error comes from CreateProcess hitting its 32768
+  # character limit.
+  files_per_command = 50 if input_api.is_windows else 1000
+  affected_files = sorted(affected_files)
+  results = []
+  for i in range(0, len(affected_files), files_per_command):
+    kwargs = {}
+    cmd = [dirmd_bin, 'validate'] + affected_files[i : i + files_per_command]
+    results.extend([input_api.Command(
+        name, cmd, kwargs, output_api.PresubmitError)])
+  return results
 
 
 def CheckNoNewMetadataInOwners(input_api, output_api):

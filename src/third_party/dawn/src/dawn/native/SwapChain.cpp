@@ -28,7 +28,8 @@ namespace dawn::native {
 
         class ErrorSwapChain final : public SwapChainBase {
           public:
-            ErrorSwapChain(DeviceBase* device) : SwapChainBase(device, ObjectBase::kError) {
+            explicit ErrorSwapChain(DeviceBase* device)
+                : SwapChainBase(device, ObjectBase::kError) {
             }
 
           private:
@@ -74,11 +75,17 @@ namespace dawn::native {
 
             DAWN_TRY(ValidatePresentMode(descriptor->presentMode));
 
-            // TODO(crbug.com/dawn/160): Lift this restriction once
-            // wgpu::Instance::GetPreferredSurfaceFormat is implemented.
-            DAWN_INVALID_IF(descriptor->format != wgpu::TextureFormat::BGRA8Unorm,
+// TODO(crbug.com/dawn/160): Lift this restriction once wgpu::Instance::GetPreferredSurfaceFormat is
+// implemented.
+// TODO(dawn:286):
+#if defined(DAWN_PLATFORM_ANDROID)
+            constexpr wgpu::TextureFormat kRequireSwapChainFormat = wgpu::TextureFormat::RGBA8Unorm;
+#else
+            constexpr wgpu::TextureFormat kRequireSwapChainFormat = wgpu::TextureFormat::BGRA8Unorm;
+#endif  // !defined(DAWN_PLATFORM_ANDROID)
+            DAWN_INVALID_IF(descriptor->format != kRequireSwapChainFormat,
                             "Format (%s) is not %s, which is (currently) the only accepted format.",
-                            descriptor->format, wgpu::TextureFormat::BGRA8Unorm);
+                            descriptor->format, kRequireSwapChainFormat);
 
             DAWN_INVALID_IF(descriptor->usage != wgpu::TextureUsage::RenderAttachment,
                             "Usage (%s) is not %s, which is (currently) the only accepted usage.",
@@ -310,34 +317,38 @@ namespace dawn::native {
     }
 
     TextureViewBase* NewSwapChainBase::APIGetCurrentTextureView() {
-        if (GetDevice()->ConsumedError(ValidateGetCurrentTextureView())) {
+        Ref<TextureViewBase> result;
+        if (GetDevice()->ConsumedError(GetCurrentTextureView(), &result,
+                                       "calling %s.GetCurrentTextureView()", this)) {
             return TextureViewBase::MakeError(GetDevice());
         }
+        return result.Detach();
+    }
+
+    ResultOrError<Ref<TextureViewBase>> NewSwapChainBase::GetCurrentTextureView() {
+        DAWN_TRY(ValidateGetCurrentTextureView());
 
         if (mCurrentTextureView != nullptr) {
-            // Calling GetCurrentTextureView always returns a new reference so add it even when
-            // reusing the existing texture view.
-            mCurrentTextureView->Reference();
-            return mCurrentTextureView.Get();
+            // Calling GetCurrentTextureView always returns a new reference.
+            return mCurrentTextureView;
         }
 
-        TextureViewBase* view = nullptr;
-        if (GetDevice()->ConsumedError(GetCurrentTextureViewImpl(), &view)) {
-            return TextureViewBase::MakeError(GetDevice());
-        }
+        DAWN_TRY_ASSIGN(mCurrentTextureView, GetCurrentTextureViewImpl());
 
         // Check that the return texture view matches exactly what was given for this descriptor.
-        ASSERT(view->GetTexture()->GetFormat().format == mFormat);
-        ASSERT(IsSubset(mUsage, view->GetTexture()->GetUsage()));
-        ASSERT(view->GetLevelCount() == 1);
-        ASSERT(view->GetLayerCount() == 1);
-        ASSERT(view->GetDimension() == wgpu::TextureViewDimension::e2D);
-        ASSERT(view->GetTexture()->GetMipLevelVirtualSize(view->GetBaseMipLevel()).width == mWidth);
-        ASSERT(view->GetTexture()->GetMipLevelVirtualSize(view->GetBaseMipLevel()).height ==
-               mHeight);
+        ASSERT(mCurrentTextureView->GetTexture()->GetFormat().format == mFormat);
+        ASSERT(IsSubset(mUsage, mCurrentTextureView->GetTexture()->GetUsage()));
+        ASSERT(mCurrentTextureView->GetLevelCount() == 1);
+        ASSERT(mCurrentTextureView->GetLayerCount() == 1);
+        ASSERT(mCurrentTextureView->GetDimension() == wgpu::TextureViewDimension::e2D);
+        ASSERT(mCurrentTextureView->GetTexture()
+                   ->GetMipLevelVirtualSize(mCurrentTextureView->GetBaseMipLevel())
+                   .width == mWidth);
+        ASSERT(mCurrentTextureView->GetTexture()
+                   ->GetMipLevelVirtualSize(mCurrentTextureView->GetBaseMipLevel())
+                   .height == mHeight);
 
-        mCurrentTextureView = view;
-        return view;
+        return mCurrentTextureView;
     }
 
     void NewSwapChainBase::APIPresent() {

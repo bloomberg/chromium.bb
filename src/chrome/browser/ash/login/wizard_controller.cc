@@ -55,6 +55,7 @@
 #include "chrome/browser/ash/login/hwid_checker.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/login_wizard.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/login/screens/active_directory_login_screen.h"
 #include "chrome/browser/ash/login/screens/active_directory_password_change_screen.h"
@@ -93,9 +94,11 @@
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
+#include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
+#include "chrome/browser/ash/login/screens/theme_selection_screen.h"
 #include "chrome/browser/ash/login/screens/tpm_error_screen.h"
 #include "chrome/browser/ash/login/screens/update_required_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
@@ -167,11 +170,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/saml_confirm_password_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/smart_privacy_protection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
@@ -246,6 +251,7 @@ const StaticOobeScreenId kResumablePostLoginScreens[] = {
     chromeos::MarketingOptInScreenView::kScreenId,
     chromeos::MultiDeviceSetupScreenView::kScreenId,
     chromeos::ConsolidatedConsentScreenView::kScreenId,
+    chromeos::ThemeSelectionScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
@@ -451,7 +457,7 @@ void WizardController::Init(OobeScreenId first_screen) {
       !user_manager::UserManager::Get()->GetUsers().empty();
   // Do not show the HID Detection screen if device is owned.
   if (!device_is_owned && HIDDetectionScreen::CanShowScreen() &&
-      first_screen == OobeScreen::SCREEN_UNKNOWN) {
+      first_screen == ash::OOBE_SCREEN_UNKNOWN) {
     // Temp logs for crbug/1274589
     VLOG(1) << "CheckIsScreenRequired";
     // TODO(https://crbug.com/1275960): Move logic into
@@ -474,7 +480,7 @@ void WizardController::OnDestroyingOobeUI() {
 void WizardController::AdvanceToScreenAfterHIDDetection(
     OobeScreenId first_screen) {
   OobeScreenId actual_first_screen = first_screen;
-  if (actual_first_screen == OobeScreen::SCREEN_UNKNOWN) {
+  if (actual_first_screen == ash::OOBE_SCREEN_UNKNOWN) {
     if (!is_out_of_box_) {
       DeviceSettingsService::Get()->GetOwnershipStatusAsync(
           base::BindOnce(&WizardController::OnOwnershipStatusCheckDone,
@@ -495,7 +501,7 @@ void WizardController::AdvanceToScreenAfterHIDDetection(
   AdvanceToScreen(actual_first_screen);
 
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
-      first_screen == OobeScreen::SCREEN_UNKNOWN) {
+      first_screen == ash::OOBE_SCREEN_UNKNOWN) {
     ShowWrongHWIDScreen();
   }
 
@@ -529,13 +535,14 @@ void WizardController::SetSharedURLLoaderFactoryForTesting(
   testing_factory = std::move(factory);
 }
 
-std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
+std::vector<std::pair<OobeScreenId, std::unique_ptr<BaseScreen>>>
+WizardController::CreateScreens() {
   OobeUI* oobe_ui = GetOobeUI();
 
-  std::vector<std::unique_ptr<BaseScreen>> result;
+  std::vector<std::pair<OobeScreenId, std::unique_ptr<BaseScreen>>> result;
 
   auto append = [&](std::unique_ptr<BaseScreen> screen) {
-    result.emplace_back(std::move(screen));
+    result.emplace_back(screen->screen_id(), std::move(screen));
   };
 
   if (oobe_ui->display_type() == OobeUI::kOobeDisplay) {
@@ -549,10 +556,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
         base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                             weak_factory_.GetWeakPtr())));
 
-    append(std::make_unique<EulaScreen>(
-        oobe_ui->GetView<EulaScreenHandler>(),
-        base::BindRepeating(&WizardController::OnEulaScreenExit,
-                            weak_factory_.GetWeakPtr())));
     if (ash::features::IsOobeQuickStartEnabled()) {
       append(std::make_unique<QuickStartScreen>(
           oobe_ui->GetView<QuickStartScreenHandler>(),
@@ -564,6 +567,10 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::make_unique<NetworkScreen>(
       oobe_ui->GetView<NetworkScreenHandler>(),
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<EulaScreen>(
+      oobe_ui->GetView<EulaScreenHandler>(),
+      base::BindRepeating(&WizardController::OnEulaScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
       oobe_ui->GetView<UpdateScreenHandler>(), oobe_ui->GetErrorScreen(),
@@ -582,7 +589,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableAdbSideloadingScreen>(
-      oobe_ui->GetView<EnableAdbSideloadingScreenHandler>(),
+      oobe_ui->GetView<EnableAdbSideloadingScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnEnableAdbSideloadingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnableDebuggingScreen>(
@@ -685,6 +692,11 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       &WizardController::OnGaiaScreenExit, weak_factory_.GetWeakPtr()));
   gaia_screen->SetView(oobe_ui->GetView<GaiaScreenHandler>());
   append(std::move(gaia_screen));
+
+  append(std::make_unique<SamlConfirmPasswordScreen>(
+      oobe_ui->GetView<SamlConfirmPasswordHandler>()->AsWeakPtr(),
+      base::BindRepeating(&WizardController::OnSamlConfirmPasswordScreenExit,
+                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<OfflineLoginScreen>(
       oobe_ui->GetView<OfflineLoginScreenHandler>(),
       base::BindRepeating(&WizardController::OnOfflineLoginScreenExit,
@@ -701,7 +713,8 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::move(gaia_password_change_screen));
 
   append(std::make_unique<ActiveDirectoryPasswordChangeScreen>(
-      oobe_ui->GetView<ActiveDirectoryPasswordChangeScreenHandler>(),
+      oobe_ui->GetView<ActiveDirectoryPasswordChangeScreenHandler>()
+          ->AsWeakPtr(),
       base::BindRepeating(
           &WizardController::OnActiveDirectoryPasswordChangeScreenExit,
           weak_factory_.GetWeakPtr())));
@@ -717,7 +730,7 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
 
   append(std::make_unique<ActiveDirectoryLoginScreen>(
-      oobe_ui->GetView<ActiveDirectoryLoginScreenHandler>(),
+      oobe_ui->GetView<ActiveDirectoryLoginScreenHandler>()->AsWeakPtr(),
       oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnActiveDirectoryLoginScreenExit,
                           weak_factory_.GetWeakPtr())));
@@ -771,6 +784,10 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnSmartPrivacyProtectionScreenExit,
                           weak_factory_.GetWeakPtr())));
 
+  append(std::make_unique<ThemeSelectionScreen>(
+      oobe_ui->GetView<ThemeSelectionScreenHandler>()->AsWeakPtr(),
+      base::BindRepeating(&WizardController::OnThemeSelectionScreenExit,
+                          weak_factory_.GetWeakPtr())));
   return result;
 }
 
@@ -903,6 +920,10 @@ void WizardController::ShowFingerprintSetupScreen() {
   SetCurrentScreen(GetScreen(FingerprintSetupScreenView::kScreenId));
 }
 
+void WizardController::ShowThemeSelectionScreen() {
+  SetCurrentScreen(GetScreen(ThemeSelectionScreenView::kScreenId));
+}
+
 void WizardController::ShowMarketingOptInScreen() {
   SetCurrentScreen(GetScreen(MarketingOptInScreenView::kScreenId));
 }
@@ -1032,6 +1053,11 @@ void WizardController::OnUserCreationScreenExit(
     case UserCreationScreen::Result::ENTERPRISE_ENROLL:
       ShowEnrollmentScreenIfEligible();
       break;
+    case UserCreationScreen::Result::KIOSK_ENTERPRISE_ENROLL:
+      wizard_context_->enrollment_preference_ =
+          WizardContext::EnrollmentPreference::kKiosk;
+      ShowEnrollmentScreenIfEligible();
+      break;
     case UserCreationScreen::Result::CANCEL:
       LoginDisplayHost::default_host()->HideOobeDialog();
       break;
@@ -1069,6 +1095,21 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
       LoginDisplayHost::default_host()->HideOobeDialog(
           /*saml_video_timeout=*/true);
       break;
+  }
+}
+
+void WizardController::OnSamlConfirmPasswordScreenExit(
+    SamlConfirmPasswordScreen::Result result) {
+  OnScreenExit(SamlConfirmPasswordView::kScreenId,
+               SamlConfirmPasswordScreen::GetResultString(result));
+  switch (result) {
+    case SamlConfirmPasswordScreen::Result::kCancel:
+      LoginDisplayHost::default_host()->StartSignInScreen();
+      return;
+    case SamlConfirmPasswordScreen::Result::kTooManyAttempts:
+      ShowSignInFatalErrorScreen(
+          SignInFatalErrorScreen::Error::SCRAPED_PASSWORD_VERIFICATION_FAILURE,
+          nullptr);
   }
 }
 
@@ -1117,6 +1158,10 @@ void WizardController::OnConsolidatedConsentScreenExit(
     ConsolidatedConsentScreen::Result result) {
   OnScreenExit(ConsolidatedConsentScreenView::kScreenId,
                ConsolidatedConsentScreen::GetResultString(result));
+  if (wizard_context_->is_cloud_ready_update_flow) {
+    AdvanceToScreen(HWDataCollectionView::kScreenId);
+    return;
+  }
   switch (result) {
     case ConsolidatedConsentScreen::Result::ACCEPTED:
     case ConsolidatedConsentScreen::Result::NOT_APPLICABLE:
@@ -1192,6 +1237,10 @@ void WizardController::OnHWDataCollectionScreenExit(
     HWDataCollectionScreen::Result result) {
   OnScreenExit(HWDataCollectionView::kScreenId,
                HWDataCollectionScreen::GetResultString(result));
+  if (wizard_context_->is_cloud_ready_update_flow) {
+    OnOobeFlowFinished();
+    return;
+  }
   ShowFingerprintSetupScreen();
 }
 
@@ -1222,6 +1271,13 @@ void WizardController::OnGuestTosScreenExit(GuestTosScreen::Result result) {
       if (LoginDisplayHost::default_host()->HasUserPods())
         LoginDisplayHost::default_host()->HideOobeDialog();
   }
+}
+
+void WizardController::OnThemeSelectionScreenExit(
+    ThemeSelectionScreen::Result result) {
+  OnScreenExit(ThemeSelectionScreenView::kScreenId,
+               ThemeSelectionScreen::GetResultString(result));
+  ShowMarketingOptInScreen();
 }
 
 void WizardController::SkipToLoginForTesting() {
@@ -1280,7 +1336,7 @@ void WizardController::OnHidDetectionScreenExit(
     return;
   }
 
-  AdvanceToScreenAfterHIDDetection(OobeScreen::SCREEN_UNKNOWN);
+  AdvanceToScreenAfterHIDDetection(ash::OOBE_SCREEN_UNKNOWN);
 }
 
 void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
@@ -1391,6 +1447,10 @@ void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
       usage_statistics_reporting_enabled,
       base::BindOnce(&WizardController::OnChangedMetricsReportingState,
                      weak_factory_.GetWeakPtr()));
+  if (wizard_context_->is_cloud_ready_update_flow) {
+    AdvanceToScreen(HWDataCollectionView::kScreenId);
+    return;
+  }
   PerformPostEulaActions();
 
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
@@ -1606,7 +1666,7 @@ void WizardController::OnTermsOfServiceScreenExit(
     case TermsOfServiceScreen::Result::ACCEPTED:
     case TermsOfServiceScreen::Result::NOT_APPLICABLE:
       if (wizard_context_->screen_after_managed_tos ==
-          OobeScreen::SCREEN_UNKNOWN) {
+          ash::OOBE_SCREEN_UNKNOWN) {
         OnOobeFlowFinished();
         return;
       }
@@ -1729,8 +1789,7 @@ void WizardController::OnGestureNavigationScreenExit(
     GestureNavigationScreen::Result result) {
   OnScreenExit(GestureNavigationScreenView::kScreenId,
                GestureNavigationScreen::GetResultString(result));
-
-  ShowMarketingOptInScreen();
+  ShowThemeSelectionScreen();
 }
 
 void WizardController::OnMarketingOptInScreenExit(
@@ -1794,6 +1853,10 @@ void WizardController::OnPackagedLicenseScreenExit(
 }
 
 void WizardController::OnOobeFlowFinished() {
+  if (GetLoginDisplayHost()
+          ->GetWizardContext()
+          ->defer_oobe_flow_finished_for_tests)
+    return;
   SetCurrentScreen(nullptr);
 
   user_manager::KnownUser known_user(GetLocalState());
@@ -1971,8 +2034,9 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     if (is_out_of_box_ && IsResumableOobeScreen(current_screen_->screen_id())) {
       StartupUtils::SaveOobePendingScreen(current_screen_->screen_id().name);
     } else if (IsResumablePostLoginScreen(current_screen_->screen_id()) &&
+               !wizard_context_->is_cloud_ready_update_flow &&
                wizard_context_->screen_after_managed_tos !=
-                   OobeScreen::SCREEN_UNKNOWN) {
+                   ash::OOBE_SCREEN_UNKNOWN) {
       // If screen_after_managed_tos == SCREEN_UNKNOWN means that the onboarding
       // has already been finished by the user and we don't need to save the
       // state here.
@@ -2018,7 +2082,7 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (screen_needed)
     ShowHIDDetectionScreen();
   else
-    AdvanceToScreenAfterHIDDetection(OobeScreen::SCREEN_UNKNOWN);
+    AdvanceToScreenAfterHIDDetection(ash::OOBE_SCREEN_UNKNOWN);
 }
 
 void WizardController::UpdateOobeConfiguration() {
@@ -2151,7 +2215,9 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
              screen_id == OsTrialScreenView::kScreenId ||
              screen_id == ParentalHandoffScreenView::kScreenId ||
              screen_id == HWDataCollectionView::kScreenId ||
-             screen_id == SmartPrivacyProtectionView::kScreenId) {
+             screen_id == SmartPrivacyProtectionView::kScreenId ||
+             screen_id == ThemeSelectionScreenView::kScreenId ||
+             screen_id == SamlConfirmPasswordView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
     NOTREACHED();
@@ -2272,7 +2338,8 @@ void WizardController::SkipPostLoginScreensForTesting() {
 
   const OobeScreenId current_screen_id =
       default_controller()->current_screen()->screen_id();
-  if (current_screen_id == TermsOfServiceScreenView::kScreenId ||
+  if (current_screen_id == LocaleSwitchView::kScreenId ||
+      current_screen_id == TermsOfServiceScreenView::kScreenId ||
       current_screen_id == FamilyLinkNoticeView::kScreenId ||
       current_screen_id == EduCoexistenceLoginScreen::kScreenId ||
       current_screen_id == SyncConsentScreenView::kScreenId ||

@@ -8,6 +8,7 @@
 
 #import "base/check.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
@@ -47,6 +48,9 @@
 // top.
 // TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
 @property(nonatomic, assign, getter=isScrolledIntoFeed) BOOL scrolledIntoFeed;
+
+// Whether or not the fake omnibox is pineed to the top of the NTP.
+@property(nonatomic, assign) BOOL fakeOmniboxPinnedToTop;
 
 // The collection view layout for the uppermost content suggestions collection
 // view.
@@ -189,6 +193,12 @@
   }
 
   [self.bubblePresenter presentDiscoverFeedHeaderTipBubble];
+
+  // Scrolls NTP into feed initially if |shouldScrollIntoFeed|.
+  if (self.shouldScrollIntoFeed) {
+    [self setContentOffset:[self offsetWhenScrolledIntoFeed]];
+    self.shouldScrollIntoFeed = NO;
+  }
 
   self.viewDidAppear = YES;
 }
@@ -452,6 +462,9 @@
   if (self.feedHeaderViewController) {
     [self removeFromViewHierarchy:self.feedHeaderViewController];
   }
+  if (self.headerController) {
+    [self removeFromViewHierarchy:self.headerController];
+  }
   self.contentSuggestionsHeightConstraint.active = NO;
 }
 
@@ -619,30 +632,16 @@
   }
 }
 
-// Pins sticky elements to the top of the NTP. This includes the fake omnibox
-// and if Web Channels is enabled, the feed header.
-// TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
-- (void)pinStickyElements {
-  [self setIsScrolledIntoFeed:YES];
-
+// Pins the fake omnibox to the top of the NTP.
+- (void)pinFakeOmniboxToTop {
+  self.fakeOmniboxPinnedToTop = YES;
   [self stickFakeOmniboxToTop];
-
-  if (IsWebChannelsEnabled() && self.feedHeaderViewController) {
-    [self stickFeedHeaderToTop];
-  }
 }
 
-// Resets the sticky elements to their original position. This includes the fake
-// omnibox and if Web Channels is enabled, the feed header.
-// TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
-- (void)resetStickyElements {
-  [self setIsScrolledIntoFeed:NO];
-
+// Resets the fake omnibox to its original position.
+- (void)resetFakeOmniboxConstraints {
+  self.fakeOmniboxPinnedToTop = NO;
   [self resetFakeOmnibox];
-
-  if (IsWebChannelsEnabled()) {
-    [self setInitialFeedHeaderConstraints];
-  }
 }
 
 // Lets this view own the fake omnibox and sticks it to the top of the NTP.
@@ -734,22 +733,25 @@
 // omnibox.
 - (void)stickFeedHeaderToTop {
   DCHECK(self.feedHeaderViewController);
-
+  DCHECK(IsWebChannelsEnabled());
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
-
   self.feedHeaderConstraints = @[
     [self.feedHeaderViewController.view.topAnchor
-        constraintEqualToAnchor:self.headerController.view.bottomAnchor],
+        constraintEqualToAnchor:self.headerController.view.bottomAnchor
+                       constant:-(content_suggestions::headerBottomPadding() +
+                                  [self.feedHeaderViewController
+                                          customSearchEngineViewHeight])],
     [self.collectionView.topAnchor
         constraintEqualToAnchor:[self contentSuggestionsViewController]
                                     .view.bottomAnchor],
   ];
-
+  [self.feedHeaderViewController toggleBackgroundBlur:YES animated:YES];
   [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
 }
 
 // Sets initial feed header constraints, between content suggestions and feed.
 - (void)setInitialFeedHeaderConstraints {
+  DCHECK(self.feedHeaderViewController);
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
   self.feedHeaderConstraints = @[
     [self.feedHeaderViewController.view.topAnchor
@@ -759,6 +761,7 @@
         constraintEqualToAnchor:self.feedHeaderViewController.view
                                     .bottomAnchor],
   ];
+  [self.feedHeaderViewController toggleBackgroundBlur:NO animated:YES];
   [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
 }
 
@@ -816,12 +819,28 @@
 // TODO(crbug.com/1277504): Modify this comment when Web Channels is released.
 - (void)handleStickyElementsForScrollPosition:(CGFloat)scrollPosition
                                         force:(BOOL)force {
-  if ((!self.isScrolledIntoFeed || force) &&
-      scrollPosition > [self offsetToStickOmniboxAndHeader]) {
-    [self pinStickyElements];
-  } else if ((self.isScrolledIntoFeed || force) &&
-             scrollPosition <= [self offsetToStickOmniboxAndHeader]) {
-    [self resetStickyElements];
+  if (scrollPosition > [self offsetToStickOmnibox] &&
+      !self.fakeOmniboxPinnedToTop) {
+    [self pinFakeOmniboxToTop];
+  } else if (scrollPosition <= [self offsetToStickOmnibox] &&
+             self.fakeOmniboxPinnedToTop) {
+    [self resetFakeOmniboxConstraints];
+  }
+
+  if (IsWebChannelsEnabled()) {
+    if ((!self.isScrolledIntoFeed || force) &&
+        scrollPosition > [self offsetWhenScrolledIntoFeed]) {
+      [self setIsScrolledIntoFeed:YES];
+      if (self.feedHeaderViewController) {
+        [self stickFeedHeaderToTop];
+      }
+    } else if ((self.isScrolledIntoFeed || force) &&
+               scrollPosition <= [self offsetWhenScrolledIntoFeed]) {
+      [self setIsScrolledIntoFeed:NO];
+      if (IsWebChannelsEnabled()) {
+        [self setInitialFeedHeaderConstraints];
+      }
+    }
   }
 
   // Content suggestions header will sometimes glitch when swiping quickly from
@@ -886,9 +905,6 @@
 // to focus the omnibox.
 - (void)setMinimumHeight {
   CGFloat minimumNTPHeight = [self minimumNTPHeight] - [self heightAboveFeed];
-  if (IsContentSuggestionsHeaderMigrationEnabled()) {
-    minimumNTPHeight += [self.headerController headerHeight];
-  }
   self.collectionView.contentSize =
       CGSizeMake(self.view.frame.size.width, minimumNTPHeight);
 }
@@ -949,15 +965,27 @@
 // Height of the feed header, returns 0 if it is not visible.
 - (CGFloat)feedHeaderHeight {
   return self.feedHeaderViewController
-             ? self.feedHeaderViewController.view.frame.size.height
+             ? [self.feedHeaderViewController feedHeaderHeight] +
+                   [self.feedHeaderViewController customSearchEngineViewHeight]
              : 0;
 }
 
-// The y-position content offset for when the feed header and fake omnibox
+// The y-position content offset for when the user has completely scrolled into
+// the Feed.
+- (CGFloat)offsetWhenScrolledIntoFeed {
+  return -(self.headerController.view.frame.size.height -
+           [self stickyOmniboxHeight] -
+           [self.feedHeaderViewController customSearchEngineViewHeight] -
+           content_suggestions::headerBottomPadding());
+}
+
+// The y-position content offset for when the fake omnibox
 // should stick to the top of the NTP.
-- (CGFloat)offsetToStickOmniboxAndHeader {
-  CGFloat offset = -(self.headerController.view.frame.size.height -
-                     [self stickyOmniboxHeight]);
+- (CGFloat)offsetToStickOmnibox {
+  CGFloat offset =
+      -(self.headerController.view.frame.size.height -
+        [self stickyOmniboxHeight] -
+        [self.feedHeaderViewController customSearchEngineViewHeight]);
   if (IsSplitToolbarMode(self) &&
       IsContentSuggestionsHeaderMigrationEnabled()) {
     return offset - [self contentSuggestionsContentHeight];
@@ -1103,7 +1131,11 @@
 // position.
 - (void)setContentOffset:(CGFloat)offset {
   self.collectionView.contentOffset = CGPointMake(0, offset);
-  self.scrolledIntoFeed = offset > -[self offsetToStickOmniboxAndHeader];
+  self.scrolledIntoFeed = offset > -[self offsetWhenScrolledIntoFeed];
+  if (self.feedHeaderViewController) {
+    [self.feedHeaderViewController toggleBackgroundBlur:self.scrolledIntoFeed
+                                               animated:NO];
+  }
 }
 
 @end

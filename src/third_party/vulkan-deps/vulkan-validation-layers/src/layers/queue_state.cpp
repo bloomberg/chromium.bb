@@ -70,6 +70,21 @@ uint64_t QUEUE_STATE::Submit(CB_SUBMISSION &&submission) {
     return retire_early ? next_seq : 0;
 }
 
+bool QUEUE_STATE::HasWait(VkSemaphore semaphore, VkFence fence) const {
+    auto guard = ReadLock();
+    for (const auto &submission : submissions_) {
+        if (fence != VK_NULL_HANDLE && submission.fence && submission.fence->Handle().Cast<VkFence>() == fence) {
+            return true;
+        }
+        for (const auto &wait_semaphore : submission.wait_semaphores) {
+            if (wait_semaphore.semaphore->Handle().Cast<VkSemaphore>() == semaphore) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 static void MergeResults(SEMAPHORE_STATE::RetireResult &results, const SEMAPHORE_STATE::RetireResult &sem_result) {
     for (auto &entry : sem_result) {
         auto &last_seq = results[entry.first];
@@ -119,13 +134,28 @@ void QUEUE_STATE::Retire(uint64_t until_seq) {
             other_queue_seqs.erase(self_update);
         }
 
+        auto is_query_updated_after = [this](const QueryObject &query_object) {
+            for (const auto &submission : submissions_) {
+                for (uint32_t j = 0; j < submission.cbs.size(); ++j) {
+                    const auto &next_cb_node = submission.cbs[j];
+                    if (!next_cb_node) {
+                        continue;
+                    }
+                    if (next_cb_node->updatedQueries.find(query_object) != next_cb_node->updatedQueries.end()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
         for (auto &cb_node : submission->cbs) {
             auto cb_guard = cb_node->WriteLock();
             for (auto *secondary_cmd_buffer : cb_node->linkedCommandBuffers) {
                 auto secondary_guard = secondary_cmd_buffer->WriteLock();
-                secondary_cmd_buffer->Retire(submission->perf_submit_pass);
+                secondary_cmd_buffer->Retire(submission->perf_submit_pass, is_query_updated_after);
             }
-            cb_node->Retire(submission->perf_submit_pass);
+            cb_node->Retire(submission->perf_submit_pass, is_query_updated_after);
             cb_node->EndUse();
         }
 

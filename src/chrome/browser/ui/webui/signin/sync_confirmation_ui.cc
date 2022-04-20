@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -30,13 +31,13 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/webui_generated_resources.h"
-#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 
@@ -87,7 +88,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     InitializeForSyncDisabled(source);
   }
 
-  base::DictionaryValue strings;
+  base::Value::Dict strings;
   webui::SetLoadTimeDataDefaults(
       g_browser_process->GetApplicationLocale(), &strings);
   source->AddLocalizedStrings(strings);

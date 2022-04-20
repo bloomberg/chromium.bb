@@ -31,7 +31,7 @@ namespace {
 constexpr int kIconViewSize = 20;
 constexpr int kIconSize = 14;
 constexpr int kHeaderTextFontSize = 12;
-constexpr gfx::Insets kAppNamePadding = gfx::Insets(0, 8, 0, 0);
+constexpr auto kAppNamePadding = gfx::Insets::TLBR(0, 8, 0, 0);
 constexpr gfx::Size kAppNamePreferredSize = gfx::Size(200, 10);
 constexpr gfx::Size kCloseButtonSize = gfx::Size(20, 20);
 constexpr int kCloseButtonIconSize = 18;
@@ -103,7 +103,7 @@ MediaControlsHeaderView::~MediaControlsHeaderView() {
   close_button_->RemoveObserver(this);
 }
 
-void MediaControlsHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
+void MediaControlsHeaderView::SetAppIcon(const ui::ImageModel& img) {
   app_icon_view_->SetImage(img);
 }
 
@@ -144,8 +144,11 @@ views::ImageButton* MediaControlsHeaderView::close_button_for_testing() const {
 
 void MediaControlsHeaderView::UpdateCloseButtonVisibility() {
   if (force_close_x_visible_ || close_button_->HasFocus()) {
-    SetImageFromVectorIcon(close_button_, vector_icons::kCloseRoundedIcon,
-                           kCloseButtonIconSize, gfx::kGoogleGrey700);
+    SkColor color = gfx::kGoogleGrey700;
+    SkColor disabled_color = SkColorSetA(color, gfx::kDisabledControlAlpha);
+    SetImageFromVectorIconWithColor(
+        close_button_, vector_icons::kCloseRoundedIcon, kCloseButtonIconSize,
+        color, disabled_color);
   } else {
     close_button_->SetImage(views::Button::ButtonState::STATE_NORMAL, nullptr);
   }

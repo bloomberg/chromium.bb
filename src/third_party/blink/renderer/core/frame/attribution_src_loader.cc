@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -149,6 +150,8 @@ class AttributionSrcLoader::ResourceClient
 
   // Remote used for registering responses with the browser-process.
   mojo::Remote<mojom::blink::AttributionDataHost> data_host_;
+
+  SelfKeepAlive<ResourceClient> keep_alive_{this};
 };
 
 AttributionSrcLoader::AttributionSrcLoader(LocalFrame* frame)
@@ -160,7 +163,6 @@ AttributionSrcLoader::~AttributionSrcLoader() = default;
 
 void AttributionSrcLoader::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_);
-  visitor->Trace(resource_clients_);
 }
 
 void AttributionSrcLoader::Register(const KURL& src_url,
@@ -204,7 +206,12 @@ AttributionSrcLoader::CreateAndSendRequest(
     RegisterResult& out_register_result) {
   // Detached frames cannot/should not register new attributionsrcs.
   if (!local_frame_->IsAttached()) {
-    out_register_result = RegisterResult::kSuccess;
+    out_register_result = RegisterResult::kFailedToRegister;
+    return nullptr;
+  }
+
+  if (num_resource_clients_ >= kMaxConcurrentRequests) {
+    out_register_result = RegisterResult::kFailedToRegister;
     return nullptr;
   }
 
@@ -258,7 +265,7 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
 
   auto* client = MakeGarbageCollected<ResourceClient>(
       this, src_type, associated_with_navigation);
-  resource_clients_.insert(client);
+  ++num_resource_clients_;
   RawResource::Fetch(params, local_frame_->DomWindow()->Fetcher(), client);
 
   RecordAttributionSrcRequestStatus(AttributionSrcRequestStatus::kRequested);
@@ -282,7 +289,7 @@ AttributionSrcLoader::CanRegisterAttribution(
   LocalDOMWindow* window = local_frame_->DomWindow();
   DCHECK(window);
 
-  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled(window))
+  if (!RuntimeEnabledFeatures::AttributionReportingEnabled(window))
     return RegisterResult::kNotAllowed;
 
   const bool feature_policy_enabled = window->IsFeatureEnabled(
@@ -316,6 +323,13 @@ AttributionSrcLoader::CanRegisterAttribution(
             : AttributionReportingIssueType::kAttributionUntrustworthyOrigin,
         reporting_origin->ToString(), element, request_id);
     return RegisterResult::kUntrustworthyOrigin;
+  }
+
+  UseCounter::Count(window, mojom::blink::WebFeature::kConversionAPIAll);
+
+  // Only record the ads APIs counter if enabled in that manner.
+  if (RuntimeEnabledFeatures::PrivacySandboxAdsAPIsEnabled(window)) {
+    UseCounter::Count(window, mojom::blink::WebFeature::kPrivacySandboxAdsAPIs);
   }
 
   return RegisterResult::kSuccess;
@@ -392,14 +406,16 @@ bool AttributionSrcLoader::ResourceClient::RedirectReceived(
 void AttributionSrcLoader::ResourceClient::NotifyFinished(Resource* resource) {
   ClearResource();
 
-  DCHECK(loader_->resource_clients_.Contains(this));
-  loader_->resource_clients_.erase(this);
+  DCHECK_GT(loader_->num_resource_clients_, 0u);
+  --loader_->num_resource_clients_;
 
   if (resource->ErrorOccurred()) {
     RecordAttributionSrcRequestStatus(AttributionSrcRequestStatus::kFailed);
   } else {
     RecordAttributionSrcRequestStatus(AttributionSrcRequestStatus::kReceived);
   }
+
+  keep_alive_.Clear();
 }
 
 void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(

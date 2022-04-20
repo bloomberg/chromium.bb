@@ -340,7 +340,7 @@ void FileSelectHelper::PerformContentAnalysisIfNeeded(
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   enterprise_connectors::ContentAnalysisDelegate::Data data;
   if (enterprise_connectors::ContentAnalysisDelegate::IsEnabled(
-          profile_, render_frame_host_->GetLastCommittedURL(), &data,
+          profile_, web_contents_->GetLastCommittedURL(), &data,
           enterprise_connectors::AnalysisConnector::FILE_ATTACHED)) {
     data.paths.reserve(list.size());
     for (const auto& file : list) {
@@ -648,12 +648,7 @@ void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
 
   GURL requestor_url = params->requestor;
   sb_service->download_protection_service()->CheckPPAPIDownloadRequest(
-      requestor_url,
-      render_frame_host_ ? render_frame_host_->GetLastCommittedURL() : GURL(),
-      render_frame_host_
-          ? render_frame_host_->GetOutermostMainFrame()->GetGlobalId()
-          : content::GlobalRenderFrameHostId(),
-      WebContents::FromRenderFrameHost(render_frame_host_), default_file_path,
+      requestor_url, render_frame_host_, default_file_path,
       alternate_extensions, profile_,
       base::BindOnce(
           &InterpretSafeBrowsingVerdict,
@@ -678,6 +673,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     const base::FilePath& default_file_path,
     FileChooserParamsPtr params) {
   DCHECK(params);
+  DCHECK(!select_file_dialog_);
   if (AbortIfWebContentsDestroyed())
     return;
 
@@ -749,6 +745,7 @@ void FileSelectHelper::RunFileChooserEnd() {
     listener_->FileSelectionCanceled();
   render_frame_host_ = nullptr;
   web_contents_ = nullptr;
+  select_file_dialog_.reset();
   Release();
 }
 

@@ -13,12 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
+#include "base/time/time.h"
 #include "components/history_clusters/core/cluster_finalizer.h"
 #include "components/history_clusters/core/cluster_processor.h"
 #include "components/history_clusters/core/clusterer.h"
 #include "components/history_clusters/core/clustering_backend.h"
-
-class TemplateURLService;
 
 namespace optimization_guide {
 class BatchEntityMetadataTask;
@@ -36,7 +36,6 @@ namespace history_clusters {
 class OnDeviceClusteringBackend : public ClusteringBackend {
  public:
   OnDeviceClusteringBackend(
-      TemplateURLService* template_url_service,
       optimization_guide::EntityMetadataProvider* entity_metadata_provider,
       site_engagement::SiteEngagementScoreProvider* engagement_score_provider);
   ~OnDeviceClusteringBackend() override;
@@ -85,9 +84,6 @@ class OnDeviceClusteringBackend : public ClusteringBackend {
       bool engagement_score_provider_is_valid,
       std::vector<history::ClusterVisit> visits);
 
-  // The object used to normalize SRP URLs. Not owned. Must outlive |this|.
-  const TemplateURLService* template_url_service_;
-
   // The object to fetch entity metadata from. Not owned. Must outlive |this|.
   optimization_guide::EntityMetadataProvider* entity_metadata_provider_;
 
@@ -102,8 +98,12 @@ class OnDeviceClusteringBackend : public ClusteringBackend {
   // The task runners to run clustering passes on.
   // |user_visible_priority_background_task_runner_| should be used iff
   // clustering is blocking content on a page that user is actively looking at.
+  const base::TaskTraits user_visible_task_traits_;
+  const base::TaskTraits continue_on_shutdown_user_visible_task_traits_;
   scoped_refptr<base::SequencedTaskRunner>
       user_visible_priority_background_task_runner_;
+  const base::TaskTraits best_effort_task_traits_;
+  const base::TaskTraits continue_on_shutdown_best_effort_task_traits_;
   scoped_refptr<base::SequencedTaskRunner>
       best_effort_priority_background_task_runner_;
 

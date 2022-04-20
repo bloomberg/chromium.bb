@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -20,6 +21,8 @@
 #include "components/optimization_guide/core/store_update_data.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -89,11 +92,13 @@ class OptimizationGuideStore {
   OptimizationGuideStore(
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       const base::FilePath& database_dir,
-      scoped_refptr<base::SequencedTaskRunner> store_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> store_task_runner,
+      PrefService* pref_service);
   // For tests only.
   explicit OptimizationGuideStore(
       std::unique_ptr<StoreEntryProtoDatabase> database,
-      scoped_refptr<base::SequencedTaskRunner> store_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> store_task_runner,
+      PrefService* pref_service);
 
   OptimizationGuideStore(const OptimizationGuideStore&) = delete;
   OptimizationGuideStore& operator=(const OptimizationGuideStore&) = delete;
@@ -404,6 +409,13 @@ class OptimizationGuideStore {
       PredictionModelLoadedCallback callback,
       bool success);
 
+  // Clean up file paths that were slated for deletion in previous sessions.
+  void CleanUpFilePaths();
+
+  // Callback invoked when |deleted_file_path| completed its attempt to be
+  // deleted. Will clean up the path if |success| is true.
+  void OnFilePathDeleted(const std::string& deleted_file_path, bool success);
+
   // Proto database used by the store.
   std::unique_ptr<StoreEntryProtoDatabase> database_;
 
@@ -436,6 +448,9 @@ class OptimizationGuideStore {
 
   // The background task runner used to perform operations on the store.
   scoped_refptr<base::SequencedTaskRunner> store_task_runner_;
+
+  // Pref service. Not owned. Guaranteed to outlive |this|.
+  raw_ptr<PrefService> pref_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

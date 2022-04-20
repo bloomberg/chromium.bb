@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config_components.h"
+
 #include <fcntl.h>
 #include "network.h"
 #include "tls.h"
 #include "url.h"
-#include "libavcodec/internal.h"
-#include "libavutil/avutil.h"
 #include "libavutil/avassert.h"
 #include "libavutil/mem.h"
 #include "libavutil/time.h"

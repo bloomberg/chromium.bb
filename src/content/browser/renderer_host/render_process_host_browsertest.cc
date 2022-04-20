@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/raw_ptr.h"
@@ -1642,7 +1643,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, AllowUnusedProcessToExit) {
   EXPECT_FALSE(original_rfh->IsRenderFrameLive());
 
   // There shouldn't be live RenderViewHosts or proxies either.
-  EXPECT_FALSE(original_rfh->GetRenderViewHost()->IsRenderViewLive());
+  EXPECT_FALSE(original_rfh->render_view_host()->IsRenderViewLive());
   EXPECT_FALSE(
       root->current_frame_host()
           ->browsing_context_state()
@@ -1706,7 +1707,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                             .root();
   RenderFrameHostImpl* child_rfh0 = root->child_at(0)->current_frame_host();
   RenderFrameHostImpl* child_rfh1 = root->child_at(1)->current_frame_host();
-  RenderViewHost* rvh_b = child_rfh0->GetRenderViewHost();
+  RenderViewHostImpl* rvh_b = child_rfh0->render_view_host();
   int process_b_id = child_rfh0->GetProcess()->GetID();
   EXPECT_EQ(child_rfh0->GetProcess(), child_rfh1->GetProcess());
   EXPECT_TRUE(child_rfh0->GetProcess()->IsInitializedAndNotDead());

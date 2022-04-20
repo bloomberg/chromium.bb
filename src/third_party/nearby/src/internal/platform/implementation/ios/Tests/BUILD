@@ -22,11 +22,11 @@ objc_library(
     testonly = 1,
     srcs = [
         "Platform/GNCCryptoTest.mm",
-        "Platform/GNCInputFileTest.mm",
         "Platform/GNCMultiThreadExecutorTest.mm",
         "Platform/GNCScheduledExecutorTest.mm",
         "Platform/GNCSingleThreadExecutorTest.mm",
     ],
+    features = ["-layering_check"],
     deps = [
         "//internal/platform/implementation/ios:Connections",
     ],
@@ -47,6 +47,7 @@ objc_library(
     srcs = [
         "Shared/GNCUtilsTest.mm",
     ],
+    features = ["-layering_check"],
     deps = [
         "//internal/platform/implementation/ios/Source/Platform",
         "//internal/platform/implementation/ios/Source/Shared",

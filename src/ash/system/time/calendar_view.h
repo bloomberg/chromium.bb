@@ -75,10 +75,10 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   CalendarView& operator=(const CalendarView& other) = delete;
   ~CalendarView() override;
 
-  void Init();
-
   // CalendarModel::Observer:
-  void OnEventsFetched(const google_apis::calendar::EventList* events) override;
+  void OnEventsFetched(const CalendarModel::FetchingStatus status,
+                       const base::Time start_time,
+                       const google_apis::calendar::EventList* events) override;
 
   // CalendarViewController::Observer:
   void OnMonthChanged(const base::Time::Exploded current_month) override;

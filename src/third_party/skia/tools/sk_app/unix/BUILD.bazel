@@ -1,5 +1,7 @@
 load("//bazel:macros.bzl", "generated_cc_atom")
 
+licenses(["notice"])
+
 generated_cc_atom(
     name = "DawnVulkanWindowContext_unix_src",
     srcs = ["DawnVulkanWindowContext_unix.cpp"],
@@ -43,8 +45,8 @@ generated_cc_atom(
     deps = [
         ":WindowContextFactory_unix_hdr",
         "//include/gpu/vk:GrVkVulkan_hdr",
-        "//src/gpu/vk:GrVkInterface_hdr",
-        "//src/gpu/vk:GrVkUtil_hdr",
+        "//src/gpu/ganesh/vk:GrVkInterface_hdr",
+        "//src/gpu/ganesh/vk:GrVkUtil_hdr",
         "//tools/gpu/vk:VkTestUtils_hdr",
         "//tools/sk_app:VulkanWindowContext_hdr",
     ],

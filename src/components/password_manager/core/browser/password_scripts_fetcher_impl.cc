@@ -161,6 +161,10 @@ void PasswordScriptsFetcherImpl::FetchScriptAvailability(
 
 bool PasswordScriptsFetcherImpl::IsScriptAvailable(
     const url::Origin& origin) const {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kForceEnablePasswordDomainCapabilities)) {
+    return true;
+  }
   const auto& it = password_change_domains_.find(origin);
   if (it == password_change_domains_.end()) {
     return false;
@@ -284,6 +288,14 @@ void PasswordScriptsFetcherImpl::RunResponseCallback(
   DCHECK(!url_loader_);     // Fetching is not running.
   DCHECK(!IsCacheStale());  // Cache is ready.
   std::move(callback).Run(IsScriptAvailable(origin));
+}
+
+base::Value::Dict PasswordScriptsFetcherImpl::GetDebugInformationForInternals()
+    const {
+  base::Value::Dict result;
+  result.Set("engine", "gstatic lookup");
+  result.Set("script_list_url", scripts_list_url_);
+  return result;
 }
 
 }  // namespace password_manager

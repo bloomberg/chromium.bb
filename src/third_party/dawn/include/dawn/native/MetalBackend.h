@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DAWNNATIVE_METALBACKEND_H_
-#define DAWNNATIVE_METALBACKEND_H_
+#ifndef INCLUDE_DAWN_NATIVE_METALBACKEND_H_
+#define INCLUDE_DAWN_NATIVE_METALBACKEND_H_
 
 #include <dawn/dawn_wsi.h>
 #include <dawn/native/DawnNative.h>
@@ -30,7 +30,7 @@ typedef __IOSurface* IOSurfaceRef;
 
 #ifdef __OBJC__
 #    import <Metal/Metal.h>
-#endif  //__OBJC__
+#endif  // __OBJC__
 
 namespace dawn::native::metal {
 
@@ -43,6 +43,8 @@ namespace dawn::native::metal {
         ExternalImageDescriptorIOSurface();
 
         IOSurfaceRef ioSurface;
+
+        // This has been deprecated.
         uint32_t plane;
     };
 
@@ -68,4 +70,4 @@ namespace dawn::native::metal {
 
 #pragma clang diagnostic pop
 
-#endif  // DAWNNATIVE_METALBACKEND_H_
+#endif  // INCLUDE_DAWN_NATIVE_METALBACKEND_H_

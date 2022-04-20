@@ -36,7 +36,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -85,12 +84,12 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/components/onc/certificate_scope.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
@@ -209,8 +208,8 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
   if (!gaia::IsGoogleInternalAccountEmail(account_id.GetUserEmail()))
     return;
 
-  chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
-                                           base::DoNothing());
+  UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
+                                 base::DoNothing());
 }
 
 bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
@@ -371,6 +370,15 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   multi_profile_user_controller_ =
       std::make_unique<MultiProfileUserController>(this, GetLocalState());
 
+  // |this| is sometimes initialized before owner is ready in CrosSettings for
+  // the consoldiated consent screen flow. Listen for changes to owner setting
+  // to ensure that owner changes are reflected in |this|.
+  // TODO(crbug.com/1307359): Investigate using RetrieveTrustedDevicePolicies
+  // instead of UpdateOwnerId.
+  owner_subscription_ = cros_settings_->AddSettingsObserver(
+      kDeviceOwner, base::BindRepeating(&ChromeUserManagerImpl::UpdateOwnerId,
+                                        weak_factory_.GetWeakPtr()));
+
   policy::DeviceLocalAccountPolicyService* device_local_account_policy_service =
       g_browser_process->platform_part()
           ->browser_policy_connector_ash()
@@ -402,6 +410,16 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   // Record the stored session length for enrolled device.
   if (IsEnterpriseManaged())
     enterprise_user_session_metrics::RecordStoredSessionLength();
+}
+
+void ChromeUserManagerImpl::UpdateOwnerId() {
+  std::string owner_email;
+  cros_settings_->GetString(kDeviceOwner, &owner_email);
+
+  user_manager::KnownUser known_user(GetLocalState());
+  const AccountId owner_account_id = known_user.GetAccountId(
+      owner_email, std::string() /* id */, AccountType::UNKNOWN);
+  SetOwnerId(owner_account_id);
 }
 
 ChromeUserManagerImpl::~ChromeUserManagerImpl() {

@@ -1,53 +1,57 @@
 {
   "rejected_triggers": [
     {
-      "reason": "noMatchingSources",
+      "event_level_reason": "noMatchingSources",
       "trigger": {
-        "trigger_time": 1643235572,
+        "timestamp": 1643235572,
         "reporting_origin": "https://r.test",
-        "destination": "https://d.test",
-        "registration_config": {
-          "event_triggers": [
-            {
-              "trigger_data": "1"
-            }
-          ]
-	}
+        "destination_origin": "https://d.test",
+        "Attribution-Reporting-Register-Event-Trigger": [
+          {
+            "trigger_data": "1"
+          }
+        ]
       }
     },
     {
-      "reason": "deduplicated",
+      "event_level_reason": "deduplicated",
       "trigger": {
-        "trigger_time": 1643235575,
+        "timestamp": 1643235575,
         "reporting_origin": "https://r.test",
-        "destination": "https://d.test",
-        "registration_config": {
-          "event_triggers": [
-            {
-              "trigger_data": "3",
-              "deduplication_key": "22"
-            }
-          ]
-        }
+        "destination_origin": "https://d.test",
+        "Attribution-Reporting-Register-Event-Trigger": [
+          {
+            "trigger_data": "3",
+            "deduplication_key": "22"
+          }
+        ]
       }
     },
     {
-      "reason": "priorityTooLow",
+      "aggregatable_reason": "noHistograms",
+      "event_level_reason": "priorityTooLow",
       "trigger": {
-        "trigger_time": 1643235578,
+        "timestamp": 1643235578,
         "reporting_origin": "https://r.test",
-        "destination": "https://d.test",
-        "registration_config": {
-          "event_triggers": [
-            {
-              "trigger_data": "6"
-            }
-          ]
+        "destination_origin": "https://d.test",
+        "Attribution-Reporting-Register-Event-Trigger": [
+          {
+            "trigger_data": "6"
+          }
+        ],
+        "Attribution-Reporting-Register-Aggregatable-Trigger-Data": [
+          {
+            "source_keys": ["a"],
+            "key_piece": "0x400"
+          }
+        ],
+        "Attribution-Reporting-Register-Aggregatable-Values": {
+          "b": 123
         }
       }
     }
   ],
-  "reports": [
+  "event_level_reports": [
     {
      "report": {
          "attribution_destination": "https://d.test",

@@ -367,6 +367,7 @@
 <translation id="4215448920900139318">Sikkerhedskopierer <ph name="FILE_COUNT" /></translation>
 <translation id="4218274196133425560">Fjern undtagelsen for <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Google-præsentation</translation>
+<translation id="4277536868133419688">Filteret <ph name="FILTER_NAME" /> er aktiveret.</translation>
 <translation id="4290535918735525311">1 mappe er delt med Linux</translation>
 <translation id="4299729908419173967">Brasiliansk</translation>
 <translation id="4302605047395093221">Alle, der bruger denne enhed, skal angive pinkoden for at oprette forbindelse til mobilnetværket.</translation>
@@ -385,6 +386,7 @@
 <translation id="4387004326333427325">Godkendelsescertifikatet blev afvist eksternt</translation>
 <translation id="4394214039309501350">Eksternt link</translation>
 <translation id="4401287888955153199">Pak alt ud</translation>
+<translation id="4410695710508688828">Udpakningshandling mislykkedes. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4418686080762064601">Opret en genvej til dine filer</translation>
 <translation id="4425149324548788773">Mit drev</translation>
 <translation id="4439427728133035643">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signalstyrke <ph name="SIGNAL_STRENGTH" /> %, opret forbindelse</translation>
@@ -406,6 +408,7 @@
 <translation id="457386861538956877">Flere...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> blev føjet til det valgte.</translation>
 <translation id="4594543368593301662">Viser resultater for <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">Filteret er nulstillet.</translation>
 <translation id="4603392156942865207">Kopierer <ph name="FILE_NAME" /> til <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Kunstner</translation>
 <translation id="4642769377300286600">Mobilprofil installeres. Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -529,6 +532,7 @@
 <translation id="5469868506864199649">Italiensk</translation>
 <translation id="5473333559083690127">Angiv ny pinkode igen</translation>
 <translation id="5489067830765222292">Lettisk</translation>
+<translation id="5489965683297092283">Filteret <ph name="FILTER_NAME" /> er deaktiveret.</translation>
 <translation id="5494920125229734069">Vælg alle</translation>
 <translation id="5500122897333236901">Islandsk</translation>
 <translation id="5508696409934741614">Prikker</translation>
@@ -595,6 +599,7 @@
 <translation id="6082256976217156453">LZMA-komprimeret arkiv</translation>
 <translation id="6096979789310008754">Søgeteksten blev ryddet. Viser alle filer og mapper.</translation>
 <translation id="610101264611565198">Flytter <ph name="FILE_NAME" /> til <ph name="FOLDER_NAME" /></translation>
+<translation id="61118516107968648">CSV-tekst</translation>
 <translation id="6129953537138746214">Mellemrum</translation>
 <translation id="6133173853026656527">Flytter <ph name="FILE_NAME" />...</translation>
 <translation id="613750717151263950">Japansk med amerikansk tastatur</translation>
@@ -845,6 +850,7 @@
 <translation id="8208580316430297579">Kunst</translation>
 <translation id="8223479393428528563">Hvis du vil gemme disse filer til offlinebrug, skal du gå online igen, højreklikke på filerne og vælge indstillingen <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Annuller</translation>
+<translation id="8250920743982581267">Dokumenter</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8261561378965667560">Kinesisk array</translation>
 <translation id="8269755669432358899">Skjul paneler med feedback til filer</translation>

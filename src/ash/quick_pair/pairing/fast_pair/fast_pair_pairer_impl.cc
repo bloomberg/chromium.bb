@@ -192,6 +192,11 @@ FastPairPairerImpl::FastPairPairerImpl(
 }
 
 FastPairPairerImpl::~FastPairPairerImpl() {
+  std::string device_address = device_->classic_address().value();
+  device::BluetoothDevice* bt_device = adapter_->GetDevice(device_address);
+  if (bt_device) {
+    bt_device->CancelPairing();
+  }
   adapter_->RemovePairingDelegate(this);
 }
 
@@ -362,13 +367,12 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
 }
 
 void FastPairPairerImpl::AttemptSendAccountKey() {
-  QP_LOG(INFO) << __func__;
   // We only send the account key if we're doing an initial or retroactive
   // pairing. For other FastPair protocols, we can consider the paring
   // procedure complete at this point.
   if (device_->protocol != Protocol::kFastPairInitial &&
       device_->protocol != Protocol::kFastPairRetroactive) {
-    QP_LOG(INFO) << __func__ << ": Igorning due to incorrect protocol: "
+    QP_LOG(INFO) << __func__ << ": Ignoring due to incorrect protocol: "
                  << device_->protocol;
     std::move(pairing_procedure_complete_).Run(device_);
     return;
@@ -385,6 +389,21 @@ void FastPairPairerImpl::AttemptSendAccountKey() {
   if (!ShouldBeEnabledForLoginStatus(
           Shell::Get()->session_controller()->login_status())) {
     QP_LOG(VERBOSE) << __func__ << ": No logged in user to save account key to";
+    std::move(pairing_procedure_complete_).Run(device_);
+    return;
+  }
+
+  FastPairRepository::Get()->CheckOptInStatus(base::BindOnce(
+      &FastPairPairerImpl::OnCheckOptInStatus, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FastPairPairerImpl::OnCheckOptInStatus(
+    nearby::fastpair::OptInStatus status) {
+  QP_LOG(INFO) << __func__;
+
+  if (status != nearby::fastpair::OptInStatus::STATUS_OPTED_IN) {
+    QP_LOG(INFO) << __func__
+                 << ": User is not opted in to save devices to their account";
     std::move(pairing_procedure_complete_).Run(device_);
     return;
   }

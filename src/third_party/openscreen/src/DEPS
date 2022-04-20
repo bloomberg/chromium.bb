@@ -22,8 +22,6 @@ vars = {
   # in Chromium it will correctly be True.
   'build_with_chromium': False,
 
-  'checkout_chromium_quic_boringssl': False,
-
   # Needed to download additional clang binaries for processing coverage data
   # (from binaries with GN arg `use_coverage=true`).
   #
@@ -32,8 +30,8 @@ vars = {
   'checkout_clang_coverage_tools': True,
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:39a87c0b36310bdf06b692c098f199a0d97fc810',
-  'clang_format_revision':    '99803d74e35962f63a775f29477882afd4d57d94',
+  'gn_version': 'git_revision:ab9104586734cb45aa77c70ca5042edbcc9f6aa5',
+  'clang_format_revision':    'e435ad79c17b1888b34df88d6a30a094936e3836',
 }
 
 deps = {
@@ -41,10 +39,10 @@ deps = {
   # of the commits to the buildtools directory in the Chromium repository. This
   # should be regularly updated with the tip of the MIRRORED master branch,
   # found here:
-  # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/main.
+  # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/main
   'buildtools': {
     'url': Var('chromium_git') + '/chromium/src/buildtools' +
-      '@' + 'fba2905150c974240f14aa5334c3e5c93f873032',
+      '@' + 'c2e4795660817c2776dbabd778b92ed58c074032',
     'condition': 'not build_with_chromium',
   },
   'buildtools/clang_format/script': {
@@ -90,21 +88,21 @@ deps = {
   'third_party/zlib/src': {
     'url': Var('github') +
       '/madler/zlib.git' +
-      '@' + 'cacf7f1d4e3d44d871b605da3b647f07d718623f', # version 1.2.11
+      '@' + '21767c654d31d2dccdde4330529775c6c5fd5389', # version 1.2.12
     'condition': 'not build_with_chromium',
   },
 
   'third_party/jsoncpp/src': {
     'url': Var('chromium_git') +
       '/external/github.com/open-source-parsers/jsoncpp.git' +
-      '@' + '9059f5cad030ba11d37818847443a53918c327b1', # version 1.9.4
+      '@' + '5defb4ed1a4293b8e2bf641e16b156fb9de498cc', # version 1.9.5
     'condition': 'not build_with_chromium',
   },
 
   'third_party/googletest/src': {
     'url': Var('chromium_git') +
       '/external/github.com/google/googletest.git' +
-      '@' + '36d8eb532022d3b543bf55aa8ffa01b6e9f03490',
+      '@' + 'af29db7ec28d6df1c7f0f745186884091e602e07',
     'condition': 'not build_with_chromium',
   },
 
@@ -118,22 +116,16 @@ deps = {
     'condition': 'not build_with_chromium',
   },
 
-  'third_party/chromium_quic/src': {
-    'url': Var('chromium_git') + '/openscreen/quic.git' +
-      '@' + '79eec3fc28f5c4e1d06c6146825e31def6e3b793',
-    'condition': 'not build_with_chromium',
-  },
-
   # To roll forward, use quiche_revision from chromium/src/DEPS.
   'third_party/quiche/src': {
     'url': Var('quiche_git') + '/quiche.git' +
-      '@' + '51f584db29001036c20db3f72f09b00b875ae625',
+      '@' + 'b454d36994bc5f1b6794a7973858f8aa7ead654b',
     'condition': 'not build_with_chromium',
   },
 
   'third_party/tinycbor/src':
     Var('chromium_git') + '/external/github.com/intel/tinycbor.git' +
-    '@' + 'fc42a049853b802e45f49588f8148fc29d7b4d9c',
+    '@' +  'd393c16f3eb30d0c47e6f9d92db62272f0ec4dc7',  # Version 0.6.0
 
   # Abseil recommends living at head.  Chromium takes an Abseil snapshot
   # irregularly, every 1-2 months. It's OK for us to come out slightly ahead
@@ -141,7 +133,7 @@ deps = {
   'third_party/abseil/src': {
     'url': Var('chromium_git') +
       '/external/github.com/abseil/abseil-cpp.git' + '@' +
-      'e19260fd7dbef881492fd73891e0be5bd4a09b95',
+      '215105818dfde3174fe799600bb0f3cae233d0bf',  # Tag 20211102.0
     'condition': 'not build_with_chromium',
   },
 
@@ -154,13 +146,13 @@ deps = {
 
   'third_party/modp_b64': {
     'url': Var('chromium_git') + '/chromium/src/third_party/modp_b64'
-    '@' + 'ca6144fbeb44934d474cc8030a64de21947e2550',
+    '@' + '9c5ac792b14461c78c804d6fb0bc60667bfdb09c',
     'condition': 'not build_with_chromium',
   },
 
   'third_party/valijson/src': {
     'url': Var('github') + '/tristanpenman/valijson.git' +
-      '@' + 'cf648930313655b19dc07ebae2f9c3fc37966a33', # Tip-of-tree
+      '@' + '2dfc7499a31b84edef71189f4247919268ebc74e', # Version 0.6
     'condition': 'not build_with_chromium'
   }
 }
@@ -203,17 +195,24 @@ hooks = [
     'condition': 'host_os == "linux" and not build_with_chromium',
   },
   {
-    'name': 'clang_format_mac',
+    'name': 'clang_format_mac_x64',
     'pattern': '.',
     'action': [ 'download_from_google_storage.py', '--no_resume', '--no_auth',
                 '--bucket', 'chromium-clang-format',
-                '-s', 'buildtools/mac/clang-format.sha1' ],
-    'condition': 'host_os == "mac" and not build_with_chromium',
+                '-s', 'buildtools/mac/clang-format.x64.sha1' ],
+    'condition': 'host_os == "mac" and host_cpu == "x64" and not build_with_chromium',
+  },
+  {
+    'name': 'clang_format_mac_arm64',
+    'pattern': '.',
+    'action': [ 'download_from_google_storage.py', '--no_resume', '--no_auth',
+                '--bucket', 'chromium-clang-format',
+                '-s', 'buildtools/mac/clang-format.arm64.sha1' ],
+    'condition': 'host_os == "mac" and host_cpu == "arm64" and not build_with_chromium',
   },
 ]
 
 recursedeps = [
-  'third_party/chromium_quic/src',
   'cast',
 ]
 
@@ -262,8 +261,4 @@ include_rules = [
   "-third_party/googletest",
   "+gtest",
   "+gmock",
-]
-
-skip_child_includes = [
-  'third_party/chromium_quic',
 ]

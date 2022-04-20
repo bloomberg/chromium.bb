@@ -231,8 +231,17 @@ If `VK_LAYER_PATH` is defined, then the loader will look at the paths defined by
 that variable for explicit layer manifest files instead of using the information
 provided by the explicit layer registry keys.
 
-For security reasons, `VK_LAYER_PATH` is ignored if running with elevated
-privileges.
+If `VK_ADD_LAYER_PATH` is defined, then the loader will look at the provided
+paths for explicit layer manifest files in addition to using the information
+provided by the explicit layer registry keys.
+The paths provided by `VK_ADD_LAYER_PATH` are added before the standard list
+of search folders and will therefore be searched first.
+
+If `VK_LAYER_PATH` is present, then `VK_ADD_LAYER_PATH` will not be used by the
+loader and any values will be ignored.
+
+For security reasons, both `VK_LAYER_PATH` and `VK_ADD_LAYER_PATH` are ignored
+if running with elevated privileges.
 See [Exception for Elevated Privileges](#exception-for-elevated-privileges)
 for more info.
 
@@ -317,10 +326,16 @@ manifest files:
 
 If `VK_LAYER_PATH` is defined, then the loader will look at the paths defined by
 that variable for explicit layer manifest files instead of using the information
-provided by the explicit layer paths.
+provided by the standard explicit layer paths mentioned above.
 
-For security reasons, `VK_LAYER_PATH` is ignored if running with elevated
-privileges.
+If `VK_ADD_LAYER_PATH` is defined, then the loader will look at the provided
+paths for explicit layer manifest files in addition to using the information
+provided by the standard explicit layer paths mentioned above.
+The paths provided by `VK_ADD_LAYER_PATH` are added before the standard list
+of search folders and will therefore be searched first.
+
+For security reasons, both `VK_LAYER_PATH` and `VK_ADD_LAYER_PATH` are ignored
+if running with elevated privileges.
 See [Exception for Elevated Privileges](#exception-for-elevated-privileges)
 for more info.
 
@@ -333,9 +348,10 @@ See
 in the [LoaderApplicationInterface.md document](LoaderApplicationInterface.md)
 for more information on this.
 
-It is also important to note that while `VK_LAYER_PATH` will point the loader
-to finding the manifest files, it does not guarantee the library files mentioned
-by the manifest will immediately be found.
+It is also important to note that while both `VK_LAYER_PATH` and
+`VK_ADD_LAYER_PATH` will point the loader paths to search for finding the
+manifest files, it does not guarantee the library files mentioned by the
+manifest will immediately be found.
 Often, the layer manifest file will point to the library file using a relative
 or absolute path.
 When a relative or absolute path is used, the loader can typically find the
@@ -397,11 +413,12 @@ following:
 
 ### Exception for Elevated Privileges
 
-There is an exception to when `VK_LAYER_PATH` is available for use.
-For security reasons, `VK_LAYER_PATH` is ignored if running the Vulkan
-application with elevated privileges.
-Because of this, `VK_LAYER_PATH` can only be used for applications that do not
-use elevated privileges.
+There is an exception to when either `VK_LAYER_PATH` or `VK_ADD_LAYER_PATH` are
+available for use.
+For security reasons, both `VK_LAYER_PATH` and `VK_ADD_LAYER_PATH` are ignored
+if running the Vulkan application with elevated privileges.
+Because of this, both `VK_LAYER_PATH` and `VK_ADD_LAYER_PATH` can only be used
+for applications that do not use elevated privileges.
 
 For more information see
 [Elevated Privilege Caveats](LoaderInterfaceArchitecture.md#elevated-privilege-caveats)
@@ -1089,7 +1106,7 @@ This mechanism consists of an extra parameter that will be passed to the layer
 intercept function when it is called.
 This parameter will be a pointer to a struct, defined as follows:
 
-```
+```cpp
 typedef struct Vk...Chain
 {
     struct {
@@ -1119,7 +1136,7 @@ must be that function's chain struct (passed as a const pointer).
 For example, a function that wishes to intercept
 `vkEnumerateInstanceExtensionProperties` would have the prototype:
 
-```
+```cpp
 VkResult
    InterceptFunctionName(
       const VkEnumerateInstanceExtensionPropertiesChain* pChain,
@@ -1140,7 +1157,7 @@ For example, a simple implementation for
 `vkEnumerateInstanceExtensionProperties` that does nothing but call down the
 chain would look like:
 
-```
+```cpp
 VkResult
    InterceptFunctionName(
       const VkEnumerateInstanceExtensionPropertiesChain* pChain,
@@ -1157,7 +1174,7 @@ When using a C++ compiler, each chain type also defines a function named
 `CallDown` which can be used to automatically handle the first argument.
 Implementing the above function using this method would look like:
 
-```
+```cpp
 VkResult
    InterceptFunctionName(
       const VkEnumerateInstanceExtensionPropertiesChain* pChain,
@@ -1209,14 +1226,14 @@ Layers which wrap dispatchable objects must ensure that the first field in the
 wrapping structure is a pointer to a dispatch table as defined in `vk_layer.h`.
 Specifically, an instance wrapped dispatchable object could be as follows:
 
-```
+```cpp
 struct my_wrapped_instance_obj_ {
     VkLayerInstanceDispatchTable *disp;
     // whatever data layer wants to add to this object
 };
 ```
 A device wrapped dispatchable object could be as follows:
-```
+```cpp
 struct my_wrapped_instance_obj_ {
     VkLayerDispatchTable *disp;
     // whatever data layer wants to add to this object
@@ -1401,7 +1418,7 @@ The only requirement is that the extension suffix of the file is ".json".
 
 Here is an example layer JSON Manifest file with a single layer:
 
-```
+```json
 {
    "file_format_version" : "1.0.0",
    "layer": {
@@ -1444,7 +1461,7 @@ Here is an example layer JSON Manifest file with a single layer:
 
 Here's a snippet with the changes required to support multiple layers per
 manifest file:
-```
+```json
 {
    "file_format_version" : "1.0.1",
    "layers": [
@@ -1463,7 +1480,7 @@ manifest file:
 ```
 
 Here's an example of a meta-layer manifest file:
-```
+```json
 {
    "file_format_version" : "1.1.1",
    "layer": {
@@ -2409,8 +2426,9 @@ Android Vulkan documentation</a>.
   <tr>
     <td><small><b>LLP_LOADER_13</b></small></td>
     <td>A loader <b>must</b> not load from user-defined paths (including the
-        use of the <i>VK_LAYER_PATH</i> environment variable) when running
-        elevated (Administrator/Super-user) applications.<br/>
+        use of either <i>VK_LAYER_PATH</i> or <i>VK_ADD_LAYER_PATH</i>
+        environment variables) when running elevated (Administrator/Super-user)
+        applications.<br/>
         <b>This is for security reasons.</b>
     </td>
     <td>The behavior is undefined and may result in computer security lapses,

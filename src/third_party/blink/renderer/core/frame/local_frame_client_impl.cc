@@ -450,9 +450,11 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
 
       web_frame_->FrameWidgetImpl()->DidNavigate();
 
-      // UKM metrics are only collected for the main frame. Ensure after
-      // a navigation on the main frame we setup the appropriate structures.
+      // UKM metrics are only collected for the outermost main frame. Ensure
+      // after a navigation on the main frame we setup the appropriate
+      // structures.
       if (web_frame_->GetFrame()->IsMainFrame() &&
+          !web_frame_->IsInFencedFrameTree() &&
           web_frame_->ViewImpl()->does_composite()) {
         WebFrameWidgetImpl* frame_widget = web_frame_->FrameWidgetImpl();
 
@@ -498,6 +500,7 @@ void LocalFrameClientImpl::BeginNavigation(
     NavigationPolicy policy,
     WebFrameLoadType frame_load_type,
     bool is_client_redirect,
+    bool is_unfenced_top_navigation,
     mojom::blink::TriggeringEventInfo triggering_event_info,
     HTMLFormElement* form,
     network::mojom::CSPDisposition
@@ -524,6 +527,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->navigation_type = type;
   navigation_info->navigation_policy = static_cast<WebNavigationPolicy>(policy);
   navigation_info->has_transient_user_activation = request.HasUserGesture();
+  navigation_info->is_unfenced_top_navigation = is_unfenced_top_navigation;
   navigation_info->frame_load_type = frame_load_type;
   navigation_info->is_client_redirect = is_client_redirect;
   navigation_info->triggering_event_info = triggering_event_info;
@@ -870,8 +874,9 @@ RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
 RemoteFrame* LocalFrameClientImpl::CreateFencedFrame(
     HTMLFencedFrameElement* fenced_frame,
     mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>
-        receiver) {
-  return web_frame_->CreateFencedFrame(fenced_frame, std::move(receiver));
+        receiver,
+    mojom::blink::FencedFrameMode mode) {
+  return web_frame_->CreateFencedFrame(fenced_frame, std::move(receiver), mode);
 }
 
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(

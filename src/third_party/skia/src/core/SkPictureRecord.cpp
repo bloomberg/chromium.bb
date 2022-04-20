@@ -580,9 +580,9 @@ void SkPictureRecord::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScala
 }
 
 #if SK_SUPPORT_GPU
-void SkPictureRecord::doDrawSlug(const GrSlug* slug) {
-    // Just the id for the slug.
-    size_t size = kUInt32Size;
+void SkPictureRecord::onDrawSlug(const GrSlug* slug) {
+    // op + slug id
+    size_t size = 2 * kUInt32Size;
     size_t initialOffset = this->addDraw(DRAW_SLUG, &size);
 
     this->addSlug(slug);
@@ -921,14 +921,7 @@ void SkPictureRecord::addRegion(const SkRegion& region) {
 }
 
 void SkPictureRecord::addSampling(const SkSamplingOptions& sampling) {
-    fWriter.writeBool(sampling.useCubic);
-    if (sampling.useCubic) {
-        fWriter.writeScalar(sampling.cubic.B);
-        fWriter.writeScalar(sampling.cubic.C);
-    } else {
-        fWriter.writeInt(static_cast<uint32_t>(sampling.filter));
-        fWriter.writeInt(static_cast<uint32_t>(sampling.mipmap));
-    }
+    fWriter.writeSampling(sampling);
 }
 
 void SkPictureRecord::addText(const void* text, size_t byteLength) {

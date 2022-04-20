@@ -524,7 +524,7 @@ class TFL_ConvOp<string mnemonic, string opSummary, int index,
   let arguments = (
     ins TFL_TensorOf<[F32, QI8, QUI8, QI16]>:$input,
     TFL_TensorOf<[F32, QI8, QUI8]>:$filter,
-    TFL_TensorOfOrNone<[F32, I32, I64]>:$bias,
+    TFL_1DTensorOfOrNone<[F32, I32, I64]>:$bias,
     I32Attr:$dilation_h_factor,
     I32Attr:$dilation_w_factor,
     TFL_AFAttr:$fused_activation_function,
@@ -3821,10 +3821,10 @@ def TFL_CastOp : TFL_Op<"cast", [
   }];
 
   let arguments = (ins
-    TFL_TensorOf<[F32, I1, I16, I32, UI32, I64, TFL_Quint8, UI8, I8, Complex<F<32>>]>:$input
+    TFL_TensorOf<[F32, I1, I16, UI16, I32, UI32, I64, TFL_Quint8, UI8, I8, Complex<F<32>>]>:$input
   );
 
-  let results = (outs TFL_TensorOf<[F32, I1, I16, I32, UI32, I64, TFL_Quint8, UI8, I8, Complex<F<32>>]>:$output);
+  let results = (outs TFL_TensorOf<[F32, I1, I16, UI16, I32, UI32, I64, TFL_Quint8, UI8, I8, Complex<F<32>>]>:$output);
 
   // TFLite's cast op does not utilize CastOptions, instead derives types
   // from the TfLiteTensors.
@@ -4951,7 +4951,7 @@ def TFL_IfOp : Op<TFL_Dialect, "if", [
 }
 
 def TFL_WhileOp : Op<TFL_Dialect, "while", [
-    DeclareOpInterfaceMethods<LoopLikeOpInterface>,
+    DeclareOpInterfaceMethods<LoopLikeOpInterface, ["isDefinedOutsideOfLoop"]>,
     SingleBlockImplicitTerminator<"YieldOp">,
     DeclareOpInterfaceMethods<TFL_RuntimeVerification>]> {
   let summary = [{While loop}];
@@ -5154,7 +5154,7 @@ def TFL_VarHandleOp : TFL_Op<"var_handle", []> {
   let hasOptions = 1;
 }
 
-def TFL_AssignVariableOp : TFL_Op<"assign_variable", [QuantizableResult]> {
+def TFL_AssignVariableOp : TFL_Op<"assign_variable", []> {
   let summary = "Assigns a new value to a variable.";
 
   let description = [{
@@ -5170,7 +5170,7 @@ this value or a subsequent newer value of the variable.
   let results = (outs);
 }
 
-def TFL_ReadVariableOp : TFL_Op<"read_variable", [QuantizableResult]> {
+def TFL_ReadVariableOp : TFL_Op<"read_variable", []> {
   let summary = "Reads variable value.";
 
   let description = [{

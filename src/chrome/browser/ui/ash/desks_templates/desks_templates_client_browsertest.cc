@@ -13,6 +13,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/desk_template.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -78,6 +79,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -243,7 +245,7 @@ void ClickButton(const views::Button* button) {
   aura::Window* root_window =
       button->GetWidget()->GetNativeWindow()->GetRootWindow();
   ui::test::EventGenerator event_generator(root_window);
-  event_generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  event_generator.MoveMouseToInHost(button->GetBoundsInScreen().CenterPoint());
   event_generator.ClickLeftButton();
 }
 
@@ -377,8 +379,6 @@ class DesksTemplatesClientTest : public extensions::PlatformAppBrowserTest {
   // extension. Avoid further uses of this method and create or launch templates
   // by mocking clicks on the system UI.
   void SetTemplate(std::unique_ptr<ash::DeskTemplate> launch_template) {
-    if (launch_template->launch_id() == 0)
-      launch_template->set_launch_id(1);
     DesksTemplatesClient::Get()->launch_template_for_test_ =
         std::move(launch_template);
   }
@@ -754,7 +754,6 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchTemplateWithChromeApp) {
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
   ASSERT_TRUE(desk_template);
-  desk_template->set_launch_id(1);
 
   // Close the chrome app window. We'll need to verify if it reopens later.
   views::Widget* app_widget =
@@ -774,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchTemplateWithChromeApp) {
   MockDesksTemplatesAppLaunchHandler* mock_app_launch_handler_ptr =
       mock_app_launch_handler.get();
   ScopedDesksTemplatesAppLaunchHandlerSetter scoped_launch_handler(
-      std::move(mock_app_launch_handler), desk_template->launch_id());
+      std::move(mock_app_launch_handler), /*launch_id=*/1);
 
   EXPECT_CALL(*mock_app_launch_handler_ptr,
               LaunchSystemWebAppOrChromeApp(_, extension_id, _));
@@ -870,89 +869,6 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
       FindLaunchedBrowserByURLs({GURL(kAboutBlankUrl), GURL(kNewTabPageUrl)});
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-}
-
-// Tests that the windows and tabs count histogram is recorded properly.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       DeskTemplateWindowAndTabCountHistogram) {
-  ASSERT_TRUE(DesksTemplatesClient::Get());
-
-  base::HistogramTester histogram_tester;
-
-  Profile* profile = browser()->profile();
-
-  // Create the settings app, which is a system web app.
-  CreateSettingsSystemWebApp(profile);
-
-  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
-  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2), GURL(kExampleUrl3)});
-
-  std::unique_ptr<ash::DeskTemplate> desk_template =
-      CaptureActiveDeskAndSaveTemplate();
-  ASSERT_TRUE(desk_template);
-
-  const app_restore::RestoreData* restore_data =
-      desk_template->desk_restore_data();
-  const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
-  EXPECT_EQ(app_id_to_launch_list.size(), 2u);
-
-  constexpr char kWindowCountHistogramName[] = "Ash.DeskTemplate.WindowCount";
-  constexpr char kTabCountHistogramName[] = "Ash.DeskTemplate.TabCount";
-  constexpr char kWindowAndTabCountHistogramName[] =
-      "Ash.DeskTemplate.WindowAndTabCount";
-  // NOTE: there is an existing browser with 1 tab created by BrowserMain().
-  histogram_tester.ExpectBucketCount(kWindowCountHistogramName, 4, 1);
-  histogram_tester.ExpectBucketCount(kTabCountHistogramName, 6, 1);
-  histogram_tester.ExpectBucketCount(kWindowAndTabCountHistogramName, 7, 1);
-}
-
-// Tests that the launch from template histogram is recorded properly.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       DeskTemplateLaunchFromTemplateHistogram) {
-  ASSERT_TRUE(DesksTemplatesClient::Get());
-
-  base::HistogramTester histogram_tester;
-
-  // Create a new browser.
-  CreateBrowser({});
-
-  // Save the template.
-  std::unique_ptr<ash::DeskTemplate> desk_template =
-      CaptureActiveDeskAndSaveTemplate();
-  ASSERT_TRUE(desk_template);
-
-  const int launches = 5;
-  for (int i = 0; i < launches; i++) {
-    auto launch_template = desk_template->Clone();
-    launch_template->set_launch_id(i + 1);
-    SetAndLaunchTemplate(std::move(launch_template));
-  }
-
-  constexpr char kLaunchFromTemplateHistogramName[] =
-      "Ash.DeskTemplate.LaunchFromTemplate";
-  histogram_tester.ExpectTotalCount(kLaunchFromTemplateHistogramName, launches);
-}
-
-// Tests that the template count histogram is recorded properly.
-IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       DeskTemplateUserTemplateCountHistogram) {
-  ASSERT_TRUE(DesksTemplatesClient::Get());
-
-  base::HistogramTester histogram_tester;
-
-  // Verify that all template saves and deletes are captured by the histogram.
-  CaptureActiveDeskAndSaveTemplate();
-  CaptureActiveDeskAndSaveTemplate();
-  std::unique_ptr<ash::DeskTemplate> desk_template =
-      CaptureActiveDeskAndSaveTemplate();
-  DeleteDeskTemplate(desk_template->uuid());
-  CaptureActiveDeskAndSaveTemplate();
-
-  constexpr char kUserTemplateCountHistogramName[] =
-      "Ash.DeskTemplate.UserTemplateCount";
-  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 1, 1);
-  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 2, 2);
-  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 3, 2);
 }
 
 // Tests that browser windows created from a template have the correct bounds
@@ -1262,6 +1178,112 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   EXPECT_EQ(data->urls.value(), urls);
 }
 
+// Tests that snapped window's snap ratio/percentage is maintained when
+// launching a desk template.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUILaunchSnappedWindow) {
+  const int shelf_height = ash::ShelfConfig::Get()->shelf_size();
+  display::test::DisplayManagerTestApi display_manager_test_api(
+      ash::Shell::Get()->display_manager());
+  display_manager_test_api.UpdateDisplay(
+      "2000x" + base::NumberToString(1000 + shelf_height));
+
+  aura::Window* window = browser()->window()->GetNativeWindow();
+
+  // Snap the window to the left.
+  const ash::WMEvent left_snap_event(ash::WM_EVENT_SNAP_PRIMARY);
+  ash::WindowState::Get(window)->OnWMEvent(&left_snap_event);
+  ASSERT_EQ(gfx::Rect(1000, 1000), window->GetBoundsInScreen());
+
+  // Drag the window so it is now 60% of the work area.
+  ui::test::EventGenerator event_generator(window->GetRootWindow());
+  event_generator.set_current_screen_location(gfx::Point(1000, 500));
+  event_generator.DragMouseBy(200, 0);
+  ASSERT_EQ(gfx::Rect(1200, 1000), window->GetBoundsInScreen());
+
+  // Enter overview and save our snapped window as a template.
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskAsTemplateButton();
+
+  // Launch our template and then exit overview.
+  ClickFirstTemplateItem();
+  ash::ToggleOverview();
+  ash::WaitForOverviewExitAnimation();
+
+  // Our snapped window should have the similar bounds as it did when it was
+  // saved. We may lose some precision when saving a float as a percentage.
+  ASSERT_EQ(2u, BrowserList::GetInstance()->size());
+  aura::Window* new_browser_window =
+      BrowserList::GetInstance()->get(1)->window()->GetNativeWindow();
+  gfx::Rect new_bounds = new_browser_window->GetBoundsInScreen();
+  EXPECT_EQ(0, new_bounds.x());
+  EXPECT_EQ(0, new_bounds.y());
+  EXPECT_NEAR(1200, new_bounds.width(), 5);
+  EXPECT_EQ(1000, new_bounds.height());
+
+  // Launches the first template on the template grid.
+  auto launch_first_template = []() {
+    // Remove a desk first, otherwise we will run into an accessibility error
+    // with `DeskPreviewView` upon entering overview.
+    auto* desks_controller = ash::DesksController::Get();
+    RemoveDesk(desks_controller->desks()[1].get());
+
+    // Enter overview and launch the same template.
+    ash::ToggleOverview();
+    ash::WaitForOverviewEnterAnimation();
+    ClickZeroStateTemplatesButton();
+    ClickFirstTemplateItem();
+    ash::ToggleOverview();
+    ash::WaitForOverviewExitAnimation();
+  };
+
+  // Tests the bounds of the window if we launch it while the display is upside
+  // down.
+  display_manager_test_api.UpdateDisplay(
+      "2000x" + base::NumberToString(1000 + shelf_height) + "/u");
+  launch_first_template();
+
+  // The window is physically on the left, but the coordinates system is as if
+  // it were on the right.
+  new_browser_window =
+      BrowserList::GetInstance()->get(2)->window()->GetNativeWindow();
+  new_bounds = new_browser_window->GetBoundsInScreen();
+  EXPECT_EQ(800, new_bounds.x());
+  EXPECT_EQ(0, new_bounds.y());
+  EXPECT_NEAR(1200, new_bounds.width(), 5);
+  EXPECT_EQ(1000, new_bounds.height());
+
+  // Change to portrait mode, work area is 1000x2000.
+  display_manager_test_api.UpdateDisplay(
+      "1000x" + base::NumberToString(2000 + shelf_height));
+  launch_first_template();
+
+  // The window is at the top of the screen since we are in portrait
+  // orientation, and its height is 60% of the work area height.
+  new_browser_window =
+      BrowserList::GetInstance()->get(3)->window()->GetNativeWindow();
+  new_bounds = new_browser_window->GetBoundsInScreen();
+  EXPECT_EQ(0, new_bounds.x());
+  EXPECT_EQ(0, new_bounds.y());
+  EXPECT_EQ(1000, new_bounds.width());
+  EXPECT_NEAR(1200, new_bounds.height(), 5);
+
+  // Launch the window in upside down portrait mode. The height is 60% of the
+  // work area height and the window is physically on the top, but the
+  // coordinate system is as if it were on the bottom.
+  display_manager_test_api.UpdateDisplay(
+      "1000x" + base::NumberToString(2000 + shelf_height) + "/u");
+  launch_first_template();
+
+  new_browser_window =
+      BrowserList::GetInstance()->get(4)->window()->GetNativeWindow();
+  new_bounds = new_browser_window->GetBoundsInScreen();
+  EXPECT_EQ(0, new_bounds.x());
+  EXPECT_EQ(800, new_bounds.y());
+  EXPECT_EQ(1000, new_bounds.width());
+  EXPECT_NEAR(1200, new_bounds.height(), 5);
+}
+
 // Tests that incognito browser windows will NOT be captured in the desk
 // template.
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
@@ -1384,6 +1406,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 
   aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
   aura::Window* help_window = FindBrowserWindow(kHelpWindowId);
+  aura::Window* browser_window = browser()->window()->GetNativeWindow();
+  aura::Window* parent = settings_window->parent();
   ASSERT_TRUE(settings_window);
   ASSERT_TRUE(help_window);
   EXPECT_EQ(3u, BrowserList::GetInstance()->size());
@@ -1392,10 +1416,13 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   const gfx::Rect settings_bounds(100, 100, 600, 400);
   settings_window->SetBounds(settings_bounds);
   ash::WindowState::Get(help_window)->Maximize();
-  // Focus the browser so that the settings window is stacked at the bottom.
-  browser()->window()->GetNativeWindow()->Focus();
-  ASSERT_THAT(settings_window->parent()->children(),
-              ElementsAre(settings_window, help_window, _));
+
+  // Focus the settings window and then the help window. The MRU order should be
+  // [`browser_window`, `settings_window`, `help_window`].
+  settings_window->Focus();
+  help_window->Focus();
+  ASSERT_THAT(parent->children(),
+              ElementsAre(browser_window, settings_window, help_window));
 
   // Enter overview and save the current desk as a template.
   ash::ToggleOverview();
@@ -1404,15 +1431,19 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ClickSaveDeskAsTemplateButton();
 
   // Exit overview and move the settings window to a new place and stack it on
-  // top so that we can later verify that it has been placed and stacked
-  // correctly.
+  // top so that we can later verify that it has been placed.
   ash::ToggleOverview();
   ash::WaitForOverviewExitAnimation();
   settings_window->SetBounds(gfx::Rect(150, 150, 650, 500));
-  settings_window->Focus();
 
   // Restore the help window so we can later verify that it remaximizes.
   ash::WindowState::Get(help_window)->Restore();
+
+  // Focus the settings window so it is now on top. We will verify that it gets
+  // restacked later.
+  settings_window->Focus();
+  ASSERT_THAT(parent->children(),
+              ElementsAre(browser_window, help_window, settings_window));
 
   // Enter overview, head over to the desks templates grid and launch the
   // template.
@@ -1425,6 +1456,19 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   // Wait for the tabs to load.
   content::RunAllTasksUntilIdle();
 
+  EXPECT_EQ(4u, BrowserList::GetInstance()->size());
+  aura::Window* new_browser_window =
+      BrowserList::GetInstance()->get(3)->window()->GetNativeWindow();
+
+  // Tests that the stacking is correct while in overview. The parent has other
+  // children for overview mode windows, but the first three elements should
+  // be [`new_browser_window`, `settings_window`, `help_window`].
+  parent = settings_window->parent();
+  ASSERT_GE(parent->children().size(), 3u);
+  EXPECT_EQ(new_browser_window, parent->children()[0]);
+  EXPECT_EQ(settings_window, parent->children()[1]);
+  EXPECT_EQ(help_window, parent->children()[2]);
+
   // Exit overview.
   ash::ToggleOverview();
   ash::WaitForOverviewExitAnimation();
@@ -1432,18 +1476,20 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ash::DesksController* desks_controller = ash::DesksController::Get();
   ASSERT_EQ(1, desks_controller->GetActiveDeskIndex());
 
-  // We launch a new browser window, but not a new settings or help app. Verify
+  // Verify
   // that the settings window has been moved to the right place and stacked at
   // the bottom. Verify that the help window is maximized.
-  EXPECT_EQ(4u, BrowserList::GetInstance()->size());
+  EXPECT_TRUE(desks_controller->BelongsToActiveDesk(new_browser_window));
   EXPECT_TRUE(desks_controller->BelongsToActiveDesk(settings_window));
   EXPECT_TRUE(desks_controller->BelongsToActiveDesk(help_window));
   EXPECT_EQ(settings_bounds, settings_window->bounds());
   EXPECT_TRUE(ash::WindowState::Get(help_window)->IsMaximized());
 
-  // TODO(crbug.com/1281393): Verify that the element order is correct.
+  // Tests that the stacking is correct after exiting overview.
+  EXPECT_THAT(parent->children(),
+              ElementsAre(new_browser_window, settings_window, help_window));
 
-  // Tests that there is no clipping on the either window.
+  // Tests that there is no clipping on either window.
   EXPECT_EQ(gfx::Rect(), settings_window->layer()->clip_rect());
   EXPECT_EQ(gfx::Rect(), help_window->layer()->clip_rect());
 }
@@ -1838,8 +1884,16 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 
 // Tests that browser session restore isn't triggered when we launch a template
 // that contains a browser window.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_SystemUIPreventBrowserSessionRestoreTest \
+  DISABLED_SystemUIPreventBrowserSessionRestoreTest
+#else
+#define MAYBE_SystemUIPreventBrowserSessionRestoreTest \
+  SystemUIPreventBrowserSessionRestoreTest
+#endif
+
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
-                       SystemUIPreventBrowserSessionRestoreTest) {
+                       MAYBE_SystemUIPreventBrowserSessionRestoreTest) {
   // Do not exit from test or delete the Profile* when last browser is closed.
   ScopedKeepAlive keep_alive(KeepAliveOrigin::BROWSER,
                              KeepAliveRestartOption::DISABLED);

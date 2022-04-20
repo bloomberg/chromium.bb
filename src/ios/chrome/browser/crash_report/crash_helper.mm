@@ -24,8 +24,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/reporter_running_ios.h"
@@ -201,7 +201,13 @@ void SetEnabled(bool enabled) {
   // here, because if Crashpad fails to init, do not unintentionally enable
   // breakpad.
   if (common::CanUseCrashpad()) {
-    crash_reporter::SetUploadConsent(enabled);
+    // Posts SetUploadConsent on blocking pool thread because it needs access to
+    // IO and cannot work from UI thread.
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(^{
+          crash_reporter::SetUploadConsent(enabled);
+        }));
     return;
   }
 

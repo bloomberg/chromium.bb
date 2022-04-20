@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/webrtc/peer_connection_remote_audio_source.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
@@ -354,7 +355,6 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
       String::Format("%s([state=%s])", __func__, StateToString(state_)));
 
   media::AudioSinkParameters sink_params(session_id_, output_device_id_.Utf8());
-  sink_params.processing_id = source->GetAudioProcessingId();
   sink_ = Platform::Current()->NewAudioRendererSink(
       WebAudioDeviceSourceType::kWebRtc, source_internal_frame_->web_frame(),
       sink_params);
@@ -577,7 +577,6 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
 #endif
 
   media::AudioSinkParameters sink_params(session_id_, device_id);
-  sink_params.processing_id = source_->GetAudioProcessingId();
   scoped_refptr<media::AudioRendererSink> new_sink =
       Platform::Current()->NewAudioRendererSink(
           WebAudioDeviceSourceType::kWebRtc, web_frame, sink_params);

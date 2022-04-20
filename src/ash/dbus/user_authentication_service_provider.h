@@ -37,7 +37,8 @@ class UserAuthenticationServiceProvider
                   const std::string& method_name,
                   bool success);
 
-  // Called on UI thread in response to D-Bus requests.
+  // Called on UI thread in response to D-Bus requests. This expects the
+  // request_id field to be a string.
   void ShowAuthDialog(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
 

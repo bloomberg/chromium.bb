@@ -15,24 +15,22 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_within_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/permissions/permission_manager.h"
-#include "components/permissions/permission_result.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -49,12 +47,17 @@ namespace {
 const char kFullscreenBubbleReshowsHistogramName[] =
     "ExclusiveAccess.BubbleReshowsPerSession.Fullscreen";
 
+int64_t GetDisplayId(WebContents* web_contents) {
+  DCHECK(web_contents);
+  auto* screen = display::Screen::GetScreen();
+  auto display = screen->GetDisplayNearestView(web_contents->GetNativeView());
+  return display.id();
+}
+
 bool IsAnotherScreen(WebContents* web_contents, const int64_t display_id) {
   if (display_id == display::kInvalidDisplayId)
     return false;
-  auto* screen = display::Screen::GetScreen();
-  auto display = screen->GetDisplayNearestView(web_contents->GetNativeView());
-  return display_id != display.id();
+  return display_id != GetDisplayId(web_contents);
 }
 
 }  // namespace
@@ -135,10 +138,8 @@ bool FullscreenController::CanEnterFullscreenModeForTab(
   auto* web_contents = WebContents::FromRenderFrameHost(requesting_frame);
   DCHECK(web_contents);
 
-  if ((web_contents !=
-           exclusive_access_manager()->context()->GetActiveWebContents() ||
-       IsWindowFullscreenForTabOrPending()) &&
-      !IsAnotherScreen(web_contents, display_id))
+  if (web_contents !=
+      exclusive_access_manager()->context()->GetActiveWebContents())
     return false;
 
   return true;
@@ -163,33 +164,55 @@ void FullscreenController::EnterFullscreenModeForTab(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWindowPlacementFullscreenCompanionWindow)) {
+    if (!popunder_preventer_)
+      popunder_preventer_ = std::make_unique<PopunderPreventer>(web_contents);
+    else
+      popunder_preventer_->WillActivateWebContents(web_contents);
+  }
+
+  // Keep the current state. |SetTabWithExclusiveAccess| may change the return
+  // value of |IsWindowFullscreenForTabOrPending|.
+  const bool requesting_another_screen =
+      IsAnotherScreen(web_contents, display_id);
+  const bool was_window_fullscreen_for_tab_or_pending =
+      !requesting_another_screen && IsWindowFullscreenForTabOrPending();
+
   SetTabWithExclusiveAccess(web_contents);
   requesting_origin_ =
       requesting_frame->GetLastCommittedURL().DeprecatedGetOriginAsURL();
 
-  ExclusiveAccessContext* exclusive_access_context =
-      exclusive_access_manager()->context();
-  // This is needed on Mac as entering into Tab Fullscreen might change the top
-  // UI style.
-  exclusive_access_context->UpdateUIForTabFullscreen();
+  if (was_window_fullscreen_for_tab_or_pending) {
+    // While an element is in fullscreen, requesting fullscreen for a different
+    // element in the tab is handled in the renderer process if both elements
+    // are in the same process. But the request will come to the browser when
+    // the element is in a different process, such as OOPIF, because the
+    // renderer doesn't know if an element in other renderer process is in
+    // fullscreen.
+    DCHECK(tab_fullscreen_);
+  } else {
+    ExclusiveAccessContext* exclusive_access_context =
+        exclusive_access_manager()->context();
+    // This is needed on Mac as entering into Tab Fullscreen might change the
+    // top UI style.
+    exclusive_access_context->UpdateUIForTabFullscreen();
 
-  if (!exclusive_access_context->IsFullscreen() ||
-      IsAnotherScreen(web_contents, display_id)) {
-    // Normal -> Tab Fullscreen.
-    state_prior_to_tab_fullscreen_ = STATE_NORMAL;
-    EnterFullscreenModeInternal(TAB, requesting_frame, display_id);
-    return;
+    state_prior_to_tab_fullscreen_ =
+        IsFullscreenForBrowser() ? STATE_BROWSER_FULLSCREEN : STATE_NORMAL;
+
+    if (!exclusive_access_context->IsFullscreen() ||
+        requesting_another_screen) {
+      EnterFullscreenModeInternal(TAB, requesting_frame, display_id);
+      return;
+    }
+
+    // We need to update the fullscreen exit bubble, e.g., going from browser
+    // fullscreen to tab fullscreen will need to show different content.
+    tab_fullscreen_ = true;
+    exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
+        ExclusiveAccessBubbleHideCallback());
   }
-
-  // Browser Fullscreen -> Tab Fullscreen.
-  if (exclusive_access_context->IsFullscreen())
-    state_prior_to_tab_fullscreen_ = STATE_BROWSER_FULLSCREEN;
-
-  // We need to update the fullscreen exit bubble, e.g., going from browser
-  // fullscreen to tab fullscreen will need to show different content.
-  tab_fullscreen_ = true;
-  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
-      ExclusiveAccessBubbleHideCallback());
 
   // This is only a change between Browser and Tab fullscreen. We generate
   // a fullscreen notification now because there is no window change.
@@ -197,6 +220,8 @@ void FullscreenController::EnterFullscreenModeForTab(
 }
 
 void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
+  popunder_preventer_.reset();
+
   if (MaybeToggleFullscreenWithinTab(web_contents, false)) {
     // During tab capture of fullscreen-within-tab views, the browser window
     // fullscreen state is unchanged, so return now.
@@ -225,16 +250,36 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
   // All exiting tab fullscreen to non-fullscreen mode cases are handled in
   // BrowserNonClientFrameView::OnFullscreenStateChanged(); but exiting tab
   // fullscreen to browser fullscreen should be handled here.
-  bool should_update_ui =
+  const bool was_browser_fullscreen =
       state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN;
 
   NotifyTabExclusiveAccessLost();
-  if (should_update_ui)
+  if (was_browser_fullscreen)
     exclusive_access_context->UpdateUIForTabFullscreen();
 
   // This is only a change between Browser and Tab fullscreen. We generate
   // a fullscreen notification now because there is no window change.
   PostFullscreenChangeNotification();
+
+  // For Tab Fullscreen -> Browser Fullscreen, enter browser fullscreen on the
+  // display that originated the browser fullscreen prior to the tab fullscreen.
+  // crbug.com/1313606.
+  if (was_browser_fullscreen &&
+      display_id_prior_to_tab_fullscreen_ != display::kInvalidDisplayId &&
+      display_id_prior_to_tab_fullscreen_ != GetDisplayId(web_contents)) {
+    EnterFullscreenModeInternal(BROWSER, nullptr,
+                                display_id_prior_to_tab_fullscreen_);
+  }
+}
+
+void FullscreenController::FullscreenTabOpeningPopup(
+    content::WebContents* opener,
+    content::WebContents* popup) {
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kWindowPlacementFullscreenCompanionWindow));
+  DCHECK_EQ(exclusive_access_tab(), opener);
+  DCHECK(popunder_preventer_);
+  popunder_preventer_->AddPotentialPopunder(popup);
 }
 
 void FullscreenController::OnTabDeactivated(
@@ -394,6 +439,7 @@ void FullscreenController::EnterFullscreenModeInternal(
 #endif
 
   toggled_into_fullscreen_ = true;
+  bool entering_tab_fullscreen = option == TAB && !tab_fullscreen_;
   GURL url;
   if (option == TAB) {
     url = GetRequestingOrigin();
@@ -403,16 +449,21 @@ void FullscreenController::EnterFullscreenModeInternal(
       url = extension_caused_fullscreen_;
   }
 
-  if (display_id != display::kInvalidDisplayId) {
+  if (option == TAB && display_id != display::kInvalidDisplayId) {
     // Check, but do not prompt, for permission to request a specific screen.
     // Sites generally need permission to get the display id in the first place.
-    auto* manager = PermissionManagerFactory::GetForProfile(
-        exclusive_access_manager()->context()->GetProfile());
-    if (!manager || !requesting_frame ||
-        manager->GetPermissionStatusForCurrentDocument(
-                   ContentSettingsType::WINDOW_PLACEMENT, requesting_frame)
-                .content_setting != ContentSetting::CONTENT_SETTING_ALLOW) {
+    if (!requesting_frame ||
+        requesting_frame->GetBrowserContext()
+                ->GetPermissionController()
+                ->GetPermissionStatusForCurrentDocument(
+                    content::PermissionType::WINDOW_PLACEMENT,
+                    requesting_frame) !=
+            blink::mojom::PermissionStatus::GRANTED) {
       display_id = display::kInvalidDisplayId;
+    }
+    if (entering_tab_fullscreen) {
+      display_id_prior_to_tab_fullscreen_ =
+          GetDisplayId(WebContents::FromRenderFrameHost(requesting_frame));
     }
   }
 
