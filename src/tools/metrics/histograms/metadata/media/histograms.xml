@@ -2209,6 +2209,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Media.EME.MediaFoundationCdm.Widevine.HardwareSecure.FirstInitialize"
+    enum="Hresult" expires_after="2022-08-21">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    HRESULT of the first (and only the first) MediaFoundationCdm initialization
+    in a MeidaFoundationService process when using Widevine in hardware secure
+    mode. Reported on both successes and failures.
+  </summary>
+</histogram>
+
+<histogram
     name="Media.EME.MediaFoundationCdm.Widevine.HardwareSecure.Initialize"
     enum="Hresult" expires_after="2022-08-21">
   <owner>xhwang@chromium.org</owner>
@@ -2677,6 +2689,17 @@ chromium-metrics-reviews@google.com.
     media::VideoDecodeAccelerator) are alive at the time a
     GpuArcVideoDecodeAccelerator goes through initialization and successfully
     creates its underlying media::VideoDecodeAccelerator.
+  </summary>
+</histogram>
+
+<histogram name="Media.GpuMemoryBufferVideoFramePool.OddOffset.Mappable"
+    enum="Boolean" expires_after="2022-09-17">
+  <owner>magchen@chromium.org</owner>
+  <owner>ccameron@chromium.org</owner>
+  <summary>
+    Record whether the input VideoFrame in GpuMemoryBufferVideoFramePool with an
+    odd offset is mappable. It's already a hardware frame if not mappable.
+    Emitted on VideoFrame arrival.
   </summary>
 </histogram>
 

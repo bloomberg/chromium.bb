@@ -93,9 +93,9 @@
 <translation id="1887850431809612466">ഹാർഡ്‌വെയർ അവലോകനം</translation>
 <translation id="1905710495812624430">അനുവദനീയമായ പരമാവധി ശ്രമങ്ങൾ നടത്തിക്കഴിഞ്ഞു.</translation>
 <translation id="1908234395526491708">പരാജയപ്പെട്ട UDP അഭ്യർത്ഥനകൾ</translation>
-<translation id="1930797645656624981">Chrome OS ഇൻപുട്ട് രീതി സേവനം</translation>
 <translation id="1947737735496445907">പ്രിന്റ് ചെയ്‌തു</translation>
 <translation id="1951012854035635156">Assistant</translation>
+<translation id="1977994649430373166">Google പ്രൊഫൈൽ ഫോട്ടോ</translation>
 <translation id="1979103255016296513">പാസ്‌വേഡ് മാറ്റേണ്ട സമയം കഴിഞ്ഞു</translation>
 <translation id="1999615961760456652">ക്യാപ്‌റ്റീവ് പോർട്ടൽ</translation>
 <translation id="2006864819935886708">കണക്റ്റിവിറ്റി</translation>
@@ -122,6 +122,7 @@
 <translation id="222447520299472966">കുറഞ്ഞത് ഒരു ആർട്ട് ഗാലറി ആൽബമെങ്കിലും തിരഞ്ഞെടുക്കേണ്ടതുണ്ട്</translation>
 <translation id="2230005943220647148">സെൽഷ്യസ്</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2236746079896696523">കീബോർഡ് ബാക്ക്‌ലൈറ്റ് ടോഗിൾ ചെയ്യൽ</translation>
 <translation id="2240366984605217732">ലേഔട്ട് സ്വിച്ച്</translation>
 <translation id="225692081236532131">സജീവമാക്കല്‍ സ്റ്റാറ്റസ്</translation>
 <translation id="2287186687001756809">ചിത്രമൊന്നും ലഭ്യമല്ല. ഫോട്ടോകൾ ചേർക്കാൻ <ph name="LINK" /> -ലേക്ക് പോകുക</translation>
@@ -150,7 +151,6 @@
 <translation id="2536159006530886390">ഇന്റർനെറ്റിലേക്ക് കണക്റ്റ് ചെയ്യാനാകുന്നില്ല.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> പരീക്ഷണം റൺ ചെയ്യുന്നു...</translation>
 <translation id="2584559707064218956">സജ്ജീകരിക്കാൻ ക്രമീകരണത്തിലേക്ക് പോകുക</translation>
-<translation id="2585245331261708204">Chrome OS-ൽ പുതിയത്</translation>
 <translation id="2619761439309613843">പ്രതിദിന റീഫ്രഷ് ചെയ്യൽ</translation>
 <translation id="2620436844016719705">സിസ്റ്റം</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> ആൽബം തിരഞ്ഞെടുത്തു</translation>
@@ -248,6 +248,7 @@
 <translation id="3954678691475912818">ഉപകരണ തരം അജ്ഞാതമാണ്.</translation>
 <translation id="3966286471246132217">കൂടുതൽ കൃത്യമായ ഫലങ്ങൾക്ക്, ടെസ്റ്റ് പൂർത്തിയാകുന്നത് വരെ എല്ലാ ആപ്പുകളും അടയ്ക്കുക.</translation>
 <translation id="3967822245660637423">ഡൗൺലോഡ് പൂർത്തിയായി</translation>
+<translation id="3969602104473960991">ChromeOS പാസ്‌വേഡ് അപ്ഡേറ്റ് ചെയ്തു</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> ദിവസം മുമ്പുള്ള പ്രിന്റ് ജോലികൾ നീക്കം ചെയ്യും</translation>
 <translation id="3993704782688964914">നിങ്ങളുടെ <ph name="DEVICE_NAME" /> ഇപ്പോൾ അപ് ടു ഡേറ്റ് ആണ്</translation>
@@ -323,7 +324,6 @@
 <translation id="4731797938093519117">രക്ഷാകർതൃ ആക്‌സസ്</translation>
 <translation id="473775607612524610">അപ്ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="4744944742468440486">നിങ്ങളുടെ തിരഞ്ഞെടുപ്പുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ</translation>
-<translation id="475869545581454722">Chrome OS പാസ്‌വേഡ് അപ്‌ഡേറ്റ് ചെയ്തു</translation>
 <translation id="4773299976671772492">അവസാനിപ്പിച്ചു</translation>
 <translation id="4782311465517282004">നിങ്ങൾ വലത്-ക്ലിക്ക് ചെയ്യുമ്പോഴോ ടെക്സ്റ്റിൽ സ്‌പർശിച്ച് പിടിക്കുമ്പോഴോ നിർവചനങ്ങളോ വിവർത്തനങ്ങളോ യൂണിറ്റ് കൺവേർഷനുകളോ നേടുക</translation>
 <translation id="4791000909649665275"><ph name="NUMBER" /> ഫോട്ടോ</translation>
@@ -462,6 +462,7 @@
 <translation id="6113701710518389813">മുകളിലേയ്‌ക്കുള്ള അമ്പടയാളം</translation>
 <translation id="6117895505466548728"><ph name="TITLE" /> എന്നതും മറ്റ് <ph name="NUMBER" /> ആൽബങ്ങളും</translation>
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
+<translation id="6122277663991249694">ChromeOS ഇൻപുട്ട് രീതി ലഭ്യമാക്കുന്ന സേവനം</translation>
 <translation id="6137767437444130246">ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="6146993107019042706">പൂർത്തിയാക്കാൻ നിങ്ങളുടെ പുതിയ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -628,6 +629,7 @@
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">സ്വയം നിറം ക്രമീകരിക്കൽ മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="8041089156583427627">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
+<translation id="8045012663542226664">മൈക്രോഫോൺ മ്യൂട്ട് ചെയ്യൽ</translation>
 <translation id="8075838845814659848">ശേഷിക്കുന്ന ചാർജ്</translation>
 <translation id="8082366717211101304">Android ആപ്പുകളിൽ നിന്ന് DNS പരിഹരിക്കാനാകില്ല</translation>
 <translation id="808894953321890993">പാസ്‌വേഡ് മാറ്റുക</translation>
@@ -659,6 +661,7 @@
 <translation id="8398927464629426868">ഉപകരണം നിലവിൽ ചാർജ് ചെയ്യുന്നതോ ഡിസ്‌ചാർജ് ചെയ്യുന്നതോ ആയ റേറ്റ്</translation>
 <translation id="8422748173858722634">IMEI</translation>
 <translation id="8428073762635678092">ആന്തരിക കീബോർഡ്</translation>
+<translation id="8431300646573772016">ChromeOS-ൽ പുതിയത്</translation>
 <translation id="843568408673868420">ഇന്റർനെറ്റ് കണക്റ്റിവിറ്റി</translation>
 <translation id="844521431886043384">DNS സജ്ജീകരിച്ചിട്ടില്ല</translation>
 <translation id="8461329675984532579">ഹോം പ്രൊവൈഡറിന്റെ പേര്</translation>
@@ -738,6 +741,7 @@
 <translation id="917720651393141712">ടെസ്‌റ്റ്</translation>
 <translation id="9204237731135241582">Android ആപ്പുകളിൽ നിന്ന് ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="9211490828691860325">എല്ലാ ഡെസ്കുകളും</translation>
+<translation id="932327136139879170">ഹോം</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">സജീവമാക്കിയില്ല</translation>
 <translation id="960719561871045870">ഓപ്പറേറ്റർ കോഡ്</translation>

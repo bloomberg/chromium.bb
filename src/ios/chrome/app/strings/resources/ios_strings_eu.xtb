@@ -277,7 +277,6 @@ Behar izanez gero, joan bilatzailearen argibideetara bilaketa-historia ezabatzea
 <translation id="3290875554372353449">Aukeratu kontu bat</translation>
 <translation id="3311748811247479259">Desaktibatuta</translation>
 <translation id="3324193307694657476">Helbidea (2)</translation>
-<translation id="3324298231050545260">Egutegiko fitxategi bat dago</translation>
 <translation id="3328801116991980348">Webgunearen informazioa</translation>
 <translation id="3329904751041170572">Ezin izan da konektatu zerbitzarira.</translation>
 <translation id="3335947283844343239">Ireki aurretik itxitako fitxa</translation>
@@ -360,6 +359,7 @@ Jarraitu beheko urratsei:</translation>
 <translation id="4049507953662678203">Ziurtatu sarera konektatuta zaudela eta saiatu berriro.</translation>
 <translation id="4063300985191096908">Joan jariora</translation>
 <translation id="408404951701638773">Orain, errazagoa da bilaketa-barra erabiltzea</translation>
+<translation id="4108998448622696017">Gertaera arriskutsuak hautematen ditu eta haien berri ematen dizu gertatu ahala.</translation>
 <translation id="411254640334432676">Ezin izan da deskargatu.</translation>
 <translation id="4112644173421521737">Bilatu</translation>
 <translation id="4113030288477039509">Administratzaileak kudeatuta</translation>
@@ -610,6 +610,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6232736989810857397">Horrela, egutegiko gertaerak sortu ahal izango dituzu Google Lens-ekin.</translation>
 <translation id="6254066287920239840">Ireki estekak aplikazioan eta ez arakatzailean.</translation>
 <translation id="6255097610484507482">Editatu kreditu-txartela</translation>
+<translation id="6277426346321820595">Babesik gabe</translation>
 <translation id="6284652193729350524">Eskaini <ph name="LANGUAGE" /> itzultzea</translation>
 <translation id="6289501276895392862">Utzi diozu <ph name="CHANNEL_NAME" /> kanalari jarraitzeari</translation>
 <translation id="6293101329759844770">Arakatze segurua aktibatzeko, ireki <ph name="BEGIN_LINK" />Google-ren zerbitzuak<ph name="END_LINK" /> eta sakatu Arakatze segurua.</translation>
@@ -808,6 +809,7 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="7884694604461143138">Bilatu historian (<ph name="COUNT" /> aurkitu dira)</translation>
 <translation id="7887198238286927132">Zure pribatutasuna babesteko, Chrome-k ez du automatikoki beteko eremu hau.</translation>
 <translation id="7911190106180361398">Erakundeak ez dizu eman baimenik guztia sinkronizatzeko.</translation>
+<translation id="7920949005883349320">Pribatutasuna eta segurtasuna</translation>
 <translation id="7930998711684428189">Abisatu egiten dizu pasahitzak arriskuan badaude datuen isilpekotasuna urratu delako.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Esportatu pasahitzak…</translation>
