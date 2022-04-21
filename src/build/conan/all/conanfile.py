@@ -15,7 +15,7 @@ class BLPWTK2Conan(ConanFile):
     url = "bbgithub:uiinf/chromium.bb"
     settings = "os", "arch"
 
-    build_requires = ("p7zip/19.00@devkit/stable",)
+    tool_requires = ("p7zip/19.00@devkit/stable",)
 
     def configure(self):
         if self.settings.os != "Windows":
@@ -23,9 +23,8 @@ class BLPWTK2Conan(ConanFile):
 
     def source(self):
         tools.download(
-            f"{self.conan_data['sources'][self.version]['url']}/{self.version}.7z",
+            f"{self.conan_data['sources']['url'][0]}{self.version}.7z",
             "archive.7z",
-            sha256=self.conan_data["sources"][self.version]["sha256"],
         )
 
     def build(self):

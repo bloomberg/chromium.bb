@@ -1,7 +1,6 @@
 sources:
-  base_url:
-    url: [
-      "https://buildcache.sotr.dev.bloomberg.com/devkits/blpwtk2/",
-      "https://s3.dev.obdc.bcs.bloomberg.com/devkits/blpwtk2/",
-      "https://s3.dev.rrdc.bcs.bloomberg.com/devkits/blpwtk2/",
-    ]
+  url: [
+    "https://buildcache.sotr.dev.bloomberg.com/devkits/blpwtk2/",
+    "https://s3.dev.obdc.bcs.bloomberg.com/devkits/blpwtk2/",
+    "https://s3.dev.rrdc.bcs.bloomberg.com/devkits/blpwtk2/",
+  ]
