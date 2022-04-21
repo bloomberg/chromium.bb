@@ -807,8 +807,7 @@ void FieldTrialList::CreateFeaturesFromCommandLine(
 // static
 void FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
     CommandLine* command_line,
-    LaunchOptions* launch_options,
-    base::ProcessHandle child_process) {
+    LaunchOptions* launch_options) {
   DCHECK(command_line);
   DCHECK(launch_options);
 
@@ -825,7 +824,7 @@ void FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
 #if !defined(OS_NACL)
   global_->field_trial_allocator_->UpdateTrackingHistograms();
   std::string switch_value = SerializeSharedMemoryRegionMetadata(
-      global_->readonly_allocator_region_, launch_options, child_process);
+      global_->readonly_allocator_region_, launch_options);
   command_line->AppendSwitchASCII(switches::kFieldTrialHandle, switch_value);
 #endif  // !defined(OS_NACL)
 
@@ -1135,8 +1134,7 @@ void FieldTrialList::RestoreInstanceForTesting(FieldTrialList* instance) {
 // static
 std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
     const ReadOnlySharedMemoryRegion& shm,
-    LaunchOptions* launch_options,
-    base::ProcessHandle child_process) {
+    LaunchOptions* launch_options) {
   DCHECK(launch_options);
 
   std::stringstream ss;
@@ -1146,16 +1144,6 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
   // Tell the child process the name of the inherited HANDLE.
   uintptr_t uintptr_handle =
       reinterpret_cast<uintptr_t>(shm.GetPlatformHandle());
-
-  if (child_process) {
-    HANDLE child_handle = 0;
-    BOOL rc = ::DuplicateHandle(GetCurrentProcess(), shm.GetPlatformHandle(),
-            child_process, &child_handle, 0, FALSE,
-            DUPLICATE_SAME_ACCESS);
-    PCHECK(rc != 0);
-    uintptr_handle = reinterpret_cast<uintptr_t>(child_handle);
-  }
-
   ss << uintptr_handle << ",";
 #elif defined(OS_MAC)
   launch_options->mach_ports_for_rendezvous.emplace(
