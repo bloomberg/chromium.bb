@@ -15,9 +15,13 @@
 #include "v8config.h"  // NOLINT(build/include_directory)
 
 #if defined(__has_attribute)
-#define CPPGC_SUPPORTS_NO_DESTROY __has_attribute(no_destroy)
-#else
-#define CPPGC_SUPPORTS_NO_DESTROY 0
+#if __has_attribute(no_destroy)
+#define CPPGC_NO_DESTROY [[clang::no_destroy]]
+#endif
+#endif
+
+#ifndef CPPGC_NO_DESTROY
+#define CPPGC_NO_DESTROY
 #endif
 
 namespace cppgc {
@@ -171,13 +175,8 @@ template <typename T>
 struct GCInfoTrait final {
   V8_INLINE static GCInfoIndex Index() {
     static_assert(sizeof(T), "T must be fully defined");
-#if CPPGC_SUPPORTS_NO_DESTROY
-    [[clang::no_destroy]] static AtomicGCInfoIndex
+    CPPGC_NO_DESTROY static AtomicGCInfoIndex
         registered_index;  // Uses zero initialization.
-#else
-    static AtomicGCInfoIndex
-        registered_index;  // Uses zero initialization.
-#endif
     const GCInfoIndex index = registered_index.load_acquire();
     return index ? index
                  : EnsureGCInfoIndexTrait::EnsureIndex<T>(registered_index);
