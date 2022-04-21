@@ -21,7 +21,7 @@ HeapObjectName GetHiddenName(const void*) {
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback,
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback,
     FinalizationCallback finalization_callback, NameCallback name_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index,
@@ -30,7 +30,7 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback,
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback,
     FinalizationCallback finalization_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index,
@@ -39,7 +39,7 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback,
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback,
     NameCallback name_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index, {nullptr, trace_callback, name_callback, true});
@@ -47,14 +47,14 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback) {
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index, {nullptr, trace_callback, GetHiddenName, true});
 }
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback,
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback,
     FinalizationCallback finalization_callback, NameCallback name_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index,
@@ -63,7 +63,7 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback,
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback,
     FinalizationCallback finalization_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index,
@@ -72,7 +72,7 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback,
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback,
     NameCallback name_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index, {nullptr, trace_callback, name_callback, false});
@@ -80,9 +80,47 @@ GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
 
 // static
 GCInfoIndex EnsureGCInfoIndexTrait::EnsureGCInfoIndexNonPolymorphic(
-    std::atomic<GCInfoIndex>& registered_index, TraceCallback trace_callback) {
+    AtomicGCInfoIndex& registered_index, TraceCallback trace_callback) {
   return GlobalGCInfoTable::GetMutable().RegisterNewGCInfo(
       registered_index, {nullptr, trace_callback, GetHiddenName, false});
+}
+
+AtomicGCInfoIndex::AtomicGCInfoIndex()
+: detail_(new std::atomic<GCInfoIndex>()) {
+}
+
+AtomicGCInfoIndex::~AtomicGCInfoIndex() {
+  delete detail_;
+}
+
+GCInfoIndex
+AtomicGCInfoIndex::load_acquire() const noexcept {
+  return detail_->load(std::memory_order_acquire);
+}
+
+GCInfoIndex
+AtomicGCInfoIndex::load_acquire() const volatile noexcept {
+  return detail_->load(std::memory_order_acquire);
+}
+
+GCInfoIndex
+AtomicGCInfoIndex::load_relaxed() const noexcept {
+  return detail_->load(std::memory_order_relaxed);
+}
+
+GCInfoIndex
+AtomicGCInfoIndex::load_relaxed() const volatile noexcept {
+  return detail_->load(std::memory_order_relaxed);
+}
+
+void
+AtomicGCInfoIndex::store_release(GCInfoIndex desired) noexcept {
+  detail_->store(desired, std::memory_order_release);
+}
+
+void
+AtomicGCInfoIndex::store_release(GCInfoIndex desired) volatile noexcept {
+  detail_->store(desired, std::memory_order_release);
 }
 
 }  // namespace internal
