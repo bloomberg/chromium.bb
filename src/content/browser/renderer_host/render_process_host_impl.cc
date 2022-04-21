@@ -3252,7 +3252,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
 void RenderProcessHostImpl::AppendRendererCommandLine(
     base::CommandLine* command_line) {
-  AdjustCommandLineForRenderer(command_line, 0);
+  AdjustCommandLineForRenderer(command_line);
 
   // Disable databases in incognito mode.
   if (GetBrowserContext()->IsOffTheRecord() &&
@@ -3262,7 +3262,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 }
 
 void RenderProcessHostImpl::AdjustCommandLineForRenderer(
-    base::CommandLine* command_line, base::ProcessHandle child_process) {
+    base::CommandLine* command_line) {
   // Pass the process type first, so it shows first in process listings.
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kRendererProcess);
@@ -3284,8 +3284,7 @@ void RenderProcessHostImpl::AdjustCommandLineForRenderer(
   // Now send any options from our own command line we want to propagate.
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
-  PropagateBrowserCommandLineToRenderer(
-          browser_command_line, command_line, child_process);
+  PropagateBrowserCommandLineToRenderer(browser_command_line, command_line);
 
   // Pass on the browser locale.
   const std::string locale =
@@ -3317,8 +3316,7 @@ void RenderProcessHostImpl::AdjustCommandLineForRenderer(
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     const base::CommandLine& browser_cmd,
-    base::CommandLine* renderer_cmd,
-    base::ProcessHandle child_process) {
+    base::CommandLine* renderer_cmd) {
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
