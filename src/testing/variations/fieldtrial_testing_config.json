@@ -360,6 +360,21 @@
             ]
         }
     ],
+    "ArcEnableTTSCaching": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ArcEnableTTSCaching"
+                    ]
+                }
+            ]
+        }
+    ],
     "ArcGuestZram": [
         {
             "platforms": [
@@ -7405,6 +7420,21 @@
                     },
                     "enable_features": [
                         "TrustTokens"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UIViewWindowObserving": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UIViewWindowObserving"
                     ]
                 }
             ]

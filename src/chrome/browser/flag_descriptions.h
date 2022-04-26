@@ -1017,6 +1017,9 @@ extern const char kOmniboxSiteSearchStarterPackDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
+extern const char kOmniboxRetainSuggestionsWithHeadersName[];
+extern const char kOmniboxRetainSuggestionsWithHeadersDescription[];
+
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
@@ -1334,9 +1337,6 @@ extern const char kSplitCacheByNetworkIsolationKeyDescription[];
 
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
-
-extern const char kStoreHoursAndroidName[];
-extern const char kStoreHoursAndroidDescription[];
 
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];

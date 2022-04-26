@@ -948,7 +948,8 @@ const char kWinrtGeolocationImplementationDescription[] =
 const char kEnableFencedFramesName[] = "Enable the <fencedframe> element.";
 const char kEnableFencedFramesDescription[] =
     "Fenced frames are an experimental web platform feature that allows "
-    "embedding an isolated top-level page. See "
+    "embedding an isolated top-level page. This requires "
+    "#privacy-sandbox-ads-apis to also be enabled. See "
     "https://github.com/shivanigithub/fenced-frame";
 
 const char kEnableFirmwareUpdaterAppName[] = "Enable firmware updater app";
@@ -1817,6 +1818,13 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
+const char kOmniboxRetainSuggestionsWithHeadersName[] =
+    "Retain complete set of suggestions with headers";
+const char kOmniboxRetainSuggestionsWithHeadersDescription[] =
+    "Given a list of suggestions, all suggestions for which a header metadata "
+    "is available will be retained as a whole and not be counted towards the "
+    "limit.";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox switch to tab suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
@@ -2106,8 +2114,8 @@ const char kPrivacyGuide2Description[] =
 
 const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
 const char kPrivacySandboxAdsAPIsOverrideDescription[] =
-    "Enables Privacy Sandbox APIs: Attribtuion Reporting, Fledge, Topics and "
-    "their associated features.";
+    "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
+    "Fenced Frames and their associated features.";
 
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
@@ -2374,10 +2382,6 @@ const char kStoragePressureEventName[] = "Enable storage pressure Event";
 const char kStoragePressureEventDescription[] =
     "If enabled, Chrome will dispatch a DOM event, informing applications "
     "about storage pressure (low disk space)";
-
-const char kStoreHoursAndroidName[] = "Store Hours";
-const char kStoreHoursAndroidDescription[] =
-    "When enabled, shows store hours for stores in tab grid view.";
 
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";

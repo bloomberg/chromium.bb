@@ -63,7 +63,7 @@ entries = {
   'src/third_party/libsrtp': 'https://chromium.googlesource.com/chromium/deps/libsrtp.git@5b7c744eb8310250ccc534f3f86a2015b3887a0a',
   'src/third_party/libvpx/source/libvpx': 'https://chromium.googlesource.com/webm/libvpx.git@bf672f23a5336cb54dbcb2e4417142139f44cc3e',
   'src/third_party/libwebm/source': 'https://chromium.googlesource.com/webm/libwebm.git@e4fbea0c9751ae8aa86629b197a28d8276a2b0da',
-  'src/third_party/libyuv': 'https://chromium.googlesource.com/libyuv/libyuv.git@15e6d46448107278ed07be8204fb13874b575068',
+  'src/third_party/libyuv': 'https://chromium.googlesource.com/libyuv/libyuv.git@18f91105162a6ebe7a46ee1c81e9ab67ca97a02b',
   'src/third_party/lighttpd': 'https://chromium.googlesource.com/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
   'src/third_party/nasm': 'https://chromium.googlesource.com/chromium/deps/nasm.git@9215e8e1d0fe474ffd3e16c1a07a0f97089e6224',
   'src/third_party/nearby/src': 'https://chromium.googlesource.com/external/github.com/google/nearby-connections.git@0c8838ad9b9ba5e03ea9dadd0cba5f4ea9c949fd',

@@ -2688,11 +2688,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "enable-store-hours",
-    "owners": [ "meiliang@chromium.org" ],
-    "expiry_milestone": 97
-  },
-  {
     "name": "enable-suggested-files",
     "owners": [ "wrong", "tby" ],
     "expiry_milestone": 100
@@ -4462,6 +4457,11 @@
     "expiry_milestone": 107
   },
   {
+    "name": "omnibox-retain-suggestions-with-headers",
+    "owners": [ "ender@google.com", "mahmadi@google.com", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 112
+  },
+  {
     "name": "omnibox-rich-autocompletion",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 115
@@ -5742,6 +5742,11 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
+  },
+  {
+    "name": "uiview-window-observing",
+    "owners": [ "lpromero", "bling-flags@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "unified-password-manager-desktop",
