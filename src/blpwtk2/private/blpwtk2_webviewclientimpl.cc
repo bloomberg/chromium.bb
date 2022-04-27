@@ -187,9 +187,17 @@ void WebViewClientImpl::setParent(NativeView parent)
     if (d_nativeView && !Statics::isNativeViewManipulationAsync) {
         NativeView parentView = parent ? parent : d_originalParentView;
         int status = 0;
+        bool stackBack = (parent != NULL) && (::GetWindow(parent, GW_CHILD) != NULL);
         if (!::SetParent(d_nativeView, parentView)) {
             status = ::GetLastError();
             LOG(ERROR) << "WebViewClientImpl::setParent failed: hwnd =(" << d_nativeView << "), parent = (" << (void*)parentView << "), status = " << status;
+        }
+        else if (stackBack) {
+            // Make sure this hwnd is at the bottom.
+            // 'x-bloomberg-jswidget' might already embed a window that is a sibling of this hwnd.
+            // Therefore this hwnd should be set at the bottom.
+            ::SetWindowPos(d_nativeView, HWND_BOTTOM, 0, 0, 0, 0,
+                SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER);
         }
         setParentStatusUpdate(status, static_cast<unsigned int>(reinterpret_cast<intptr_t>(parentView)));
     }
