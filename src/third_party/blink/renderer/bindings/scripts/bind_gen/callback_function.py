@@ -409,6 +409,11 @@ def make_invoke_and_report_function(cg_context, function_name, api_func_name):
                  ] + [arg_name for arg_type, arg_name in arg_type_and_names]
 
     body.extend([
+        T("// Silently fail if the callback were initialized with an invalid function"),
+        T("if (!CallbackRelevantScriptState()) {"),
+        T("  return;"),
+        T("}"),
+        EmptyNode(),
         T("v8::TryCatch try_catch(${isolate});"),
         T("try_catch.SetVerbose(true);"),
         EmptyNode(),
