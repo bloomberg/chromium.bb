@@ -465,11 +465,7 @@ void WebViewImpl::setLogicalFocus(bool focused)
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
     if (focused) {
-        blpwtk2::NativeView hwnd = d_widget->getNativeWidgetView();
-        HWND focusedHwnd = ::GetFocus();
-        if (hwnd == focusedHwnd) {
-            d_webContents->Focus();
-        }
+        d_webContents->Focus();
     }
     else {
         d_webContents->GetRenderWidgetHostView()->Blur();

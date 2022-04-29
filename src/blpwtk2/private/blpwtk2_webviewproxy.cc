@@ -228,7 +228,6 @@ void WebViewProxy::takeKeyboardFocus()
         return;
     }
     d_client->takeKeyboardFocus();
-    setLogicalFocus(true);
 }
 
 void WebViewProxy::setLogicalFocus(bool focused)
