@@ -7,6 +7,9 @@
 #include "libcef/browser/alloy/alloy_browser_host_impl.h"
 
 #include "base/logging.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 
 CefBrowserPlatformDelegate::CefBrowserPlatformDelegate() = default;
 
@@ -61,7 +64,12 @@ bool CefBrowserPlatformDelegate::
 }
 
 void CefBrowserPlatformDelegate::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {}
+    content::RenderViewHost* render_view_host) {
+  // Indicate that the view has an external parent (namely us). This setting is
+  // required for proper focus handling on Windows and Linux.
+  if (HasExternalParent() && render_view_host->GetWidget()->GetView())
+    render_view_host->GetWidget()->GetView()->SetHasExternalParent(true);
+}
 
 void CefBrowserPlatformDelegate::RenderViewReady() {}
 
@@ -113,7 +121,6 @@ CefWindowHandle CefBrowserPlatformDelegate::GetHostWindowHandle() const {
   return kNullWindowHandle;
 }
 
-#if defined(TOOLKIT_VIEWS)
 views::Widget* CefBrowserPlatformDelegate::GetWindowWidget() const {
   NOTREACHED();
   return nullptr;
@@ -123,7 +130,6 @@ CefRefPtr<CefBrowserView> CefBrowserPlatformDelegate::GetBrowserView() const {
   NOTREACHED();
   return nullptr;
 }
-#endif  // defined(TOOLKIT_VIEWS)
 
 void CefBrowserPlatformDelegate::PopupWebContentsCreated(
     const CefBrowserSettings& settings,
@@ -172,9 +178,7 @@ void CefBrowserPlatformDelegate::SendTouchEvent(const CefTouchEvent& event) {
   NOTIMPLEMENTED();
 }
 
-void CefBrowserPlatformDelegate::SetFocus(bool setFocus) {
-  NOTIMPLEMENTED();
-}
+void CefBrowserPlatformDelegate::SetFocus(bool setFocus) {}
 
 void CefBrowserPlatformDelegate::SendCaptureLostEvent() {
   NOTIMPLEMENTED();
@@ -219,12 +223,6 @@ CefEventHandle CefBrowserPlatformDelegate::GetEventHandle(
   return kNullEventHandle;
 }
 
-std::unique_ptr<CefFileDialogRunner>
-CefBrowserPlatformDelegate::CreateFileDialogRunner() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 std::unique_ptr<CefJavaScriptDialogRunner>
 CefBrowserPlatformDelegate::CreateJavaScriptDialogRunner() {
   NOTIMPLEMENTED();
@@ -242,6 +240,12 @@ bool CefBrowserPlatformDelegate::IsWindowless() const {
 
 bool CefBrowserPlatformDelegate::IsViewsHosted() const {
   return false;
+}
+
+bool CefBrowserPlatformDelegate::HasExternalParent() const {
+  // In the majority of cases a Views-hosted browser will not have an external
+  // parent, and visa-versa.
+  return !IsViewsHosted();
 }
 
 void CefBrowserPlatformDelegate::WasHidden(bool hidden) {

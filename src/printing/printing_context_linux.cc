@@ -54,20 +54,23 @@ PrintingContextLinux::~PrintingContextLinux() {
 }
 
 // static
-void PrintingContextLinux::SetCreatePrintDialogFunction(
-    PrintDialogGtkInterface* (*create_dialog_func)(
-        PrintingContextLinux* context)) {
+PrintingContextLinux::CreatePrintDialogFunctionPtr
+PrintingContextLinux::SetCreatePrintDialogFunction(
+    CreatePrintDialogFunctionPtr create_dialog_func) {
   DCHECK(create_dialog_func);
-  DCHECK(!create_dialog_func_);
+  auto old_func = create_dialog_func_;
   create_dialog_func_ = create_dialog_func;
+  return old_func;
 }
 
 // static
-void PrintingContextLinux::SetPdfPaperSizeFunction(
-    gfx::Size (*get_pdf_paper_size)(PrintingContextLinux* context)) {
+PrintingContextLinux::PdfPaperSizeFunctionPtr
+PrintingContextLinux::SetPdfPaperSizeFunction(
+    PdfPaperSizeFunctionPtr get_pdf_paper_size) {
   DCHECK(get_pdf_paper_size);
-  DCHECK(!get_pdf_paper_size_);
+  auto old_func = get_pdf_paper_size_;
   get_pdf_paper_size_ = get_pdf_paper_size;
+  return old_func;
 }
 
 void PrintingContextLinux::AskUserForSettings(int max_pages,

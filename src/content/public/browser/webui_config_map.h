@@ -53,6 +53,10 @@ class CONTENT_EXPORT WebUIConfigMap {
   WebUIConfig* GetConfig(BrowserContext* browser_context,
                          const url::Origin& origin);
 
+  WebUIControllerFactory* controller_factory() const {
+    return webui_controller_factory_.get();
+  }
+
  private:
   void AddWebUIConfigImpl(std::unique_ptr<WebUIConfig> config);
 

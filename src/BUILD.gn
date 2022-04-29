@@ -118,6 +118,10 @@ group("gn_all") {
     ]
   }
 
+  if (enable_cef) {
+    deps += [ "//cef" ]
+  }
+
   if (enable_js_type_check) {
     deps += [ ":webui_closure_compile" ]
   }
@@ -252,9 +256,6 @@ group("gn_all") {
       foreach(_target_suffix, telemetry_android_browser_target_suffixes) {
         deps += [ "//chrome/test:telemetry_perf_unittests${_target_suffix}" ]
       }
-    }
-    if (enable_cef) {
-      deps += [ "//cef" ]
     }
   } else {
     deps += [

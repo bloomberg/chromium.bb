@@ -30,6 +30,8 @@ class ChromeSelectFilePolicy : public ui::SelectFilePolicy {
   // Returns true if local state allows showing file pickers.
   static bool FileSelectDialogsAllowed();
 
+  content::WebContents* source_contents() const { return source_contents_; }
+
  private:
   raw_ptr<content::WebContents> source_contents_;
 };

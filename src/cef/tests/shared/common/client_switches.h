@@ -29,6 +29,7 @@ extern const char kBackgroundColor[];
 extern const char kEnableGPU[];
 extern const char kFilterURL[];
 extern const char kUseViews[];
+extern const char kUseNative[];
 extern const char kHideFrame[];
 extern const char kHideControls[];
 extern const char kHideOverlays[];
@@ -42,6 +43,8 @@ extern const char kEnableChromeRuntime[];
 extern const char kShowChromeToolbar[];
 extern const char kInitialShowState[];
 extern const char kHideChromeStatusBubble[];
+extern const char kUseDefaultPopup[];
+extern const char kUseClientDialogs[];
 
 }  // namespace switches
 }  // namespace client

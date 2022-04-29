@@ -95,6 +95,11 @@ void CefBrowserPlatformDelegateChromeViews::CloseHostWindow() {
     widget->Close();
 }
 
+CefWindowHandle CefBrowserPlatformDelegateChromeViews::GetHostWindowHandle()
+    const {
+  return view_util::GetWindowHandle(GetWindowWidget());
+}
+
 views::Widget* CefBrowserPlatformDelegateChromeViews::GetWindowWidget() const {
   if (browser_view_->root_view())
     return browser_view_->root_view()->GetWidget();
@@ -112,7 +117,11 @@ void CefBrowserPlatformDelegateChromeViews::PopupWebContentsCreated(
     content::WebContents* new_web_contents,
     CefBrowserPlatformDelegate* new_platform_delegate,
     bool is_devtools) {
-  DCHECK(new_platform_delegate->IsViewsHosted());
+  // Default popup handling may not be Views-hosted.
+  if (!new_platform_delegate->IsViewsHosted()) {
+    return;
+  }
+
   auto* new_platform_delegate_impl =
       static_cast<CefBrowserPlatformDelegateChromeViews*>(
           new_platform_delegate);
@@ -134,6 +143,11 @@ void CefBrowserPlatformDelegateChromeViews::PopupWebContentsCreated(
 void CefBrowserPlatformDelegateChromeViews::PopupBrowserCreated(
     CefBrowserHostBase* new_browser,
     bool is_devtools) {
+  // Default popup handling may not be Views-hosted.
+  if (!new_browser->HasView()) {
+    return;
+  }
+
   CefRefPtr<CefBrowserView> new_browser_view =
       CefBrowserView::GetForBrowser(new_browser);
   DCHECK(new_browser_view);

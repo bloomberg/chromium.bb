@@ -35,6 +35,7 @@ const char kBackgroundColor[] = "background-color";
 const char kEnableGPU[] = "enable-gpu";
 const char kFilterURL[] = "filter-url";
 const char kUseViews[] = "use-views";
+const char kUseNative[] = "use-native";
 const char kHideFrame[] = "hide-frame";
 const char kHideControls[] = "hide-controls";
 const char kHideOverlays[] = "hide-overlays";
@@ -48,6 +49,8 @@ const char kEnableChromeRuntime[] = "enable-chrome-runtime";
 const char kShowChromeToolbar[] = "show-chrome-toolbar";
 const char kInitialShowState[] = "initial-show-state";
 const char kHideChromeStatusBubble[] = "hide-chrome-status-bubble";
+const char kUseDefaultPopup[] = "use-default-popup";
+const char kUseClientDialogs[] = "use-client-dialogs";
 
 }  // namespace switches
 }  // namespace client

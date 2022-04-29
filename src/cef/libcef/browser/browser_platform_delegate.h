@@ -57,15 +57,12 @@ class Size;
 class Vector2d;
 }  // namespace gfx
 
-#if defined(TOOLKIT_VIEWS)
 namespace views {
 class Widget;
 }
-#endif
 
 struct CefBrowserCreateParams;
 class CefBrowserHostBase;
-class CefFileDialogRunner;
 class CefJavaScriptDialogRunner;
 class CefMenuRunner;
 
@@ -173,7 +170,6 @@ class CefBrowserPlatformDelegate {
   // the client, which may be NULL. May be called on multiple threads.
   virtual CefWindowHandle GetHostWindowHandle() const;
 
-#if defined(TOOLKIT_VIEWS)
   // Returns the Widget owner for the browser window. Only used with windowed
   // rendering.
   virtual views::Widget* GetWindowWidget() const;
@@ -181,7 +177,6 @@ class CefBrowserPlatformDelegate {
   // Returns the BrowserView associated with this browser. Only used with views-
   // based browsers.
   virtual CefRefPtr<CefBrowserView> GetBrowserView() const;
-#endif
 
   // Called after the WebContents have been created for a new popup browser
   // parented to this browser but before the AlloyBrowserHostImpl is created for
@@ -270,9 +265,6 @@ class CefBrowserPlatformDelegate {
   virtual CefEventHandle GetEventHandle(
       const content::NativeWebKeyboardEvent& event) const;
 
-  // Create the platform-specific file dialog runner.
-  virtual std::unique_ptr<CefFileDialogRunner> CreateFileDialogRunner();
-
   // Create the platform-specific JavaScript dialog runner.
   virtual std::unique_ptr<CefJavaScriptDialogRunner>
   CreateJavaScriptDialogRunner();
@@ -287,6 +279,10 @@ class CefBrowserPlatformDelegate {
   // Returns true if this delegate implements views-hosted browser handling. May
   // be called on multiple threads.
   virtual bool IsViewsHosted() const;
+
+  // Returns true if this delegate implements a browser with external
+  // (client-provided) parent window. May be called on multiple threads.
+  virtual bool HasExternalParent() const;
 
   // Notify the browser that it was hidden. Only used with windowless rendering.
   virtual void WasHidden(bool hidden);

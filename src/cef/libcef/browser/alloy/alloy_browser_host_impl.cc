@@ -18,7 +18,6 @@
 #include "libcef/browser/context.h"
 #include "libcef/browser/devtools/devtools_manager.h"
 #include "libcef/browser/media_capture_devices_dispatcher.h"
-#include "libcef/browser/native/cursor_util.h"
 #include "libcef/browser/osr/osr_util.h"
 #include "libcef/browser/request_context_impl.h"
 #include "libcef/browser/thread_util.h"
@@ -33,9 +32,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -47,12 +46,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/base/net_errors.h"
-#include "third_party/blink/public/mojom/widget/platform_widget.mojom-test-utils.h"
 #include "ui/events/base_event_utils.h"
 
 using content::KeyboardEventProcessingResult;
@@ -85,48 +83,6 @@ void ShowDevToolsWithHelper(ShowDevToolsHelper* helper) {
                                  helper->inspect_element_at_);
   delete helper;
 }
-
-class CefWidgetHostInterceptor
-    : public blink::mojom::WidgetHostInterceptorForTesting,
-      public content::RenderWidgetHostObserver {
- public:
-  CefWidgetHostInterceptor(AlloyBrowserHostImpl* browser,
-                           content::RenderViewHost* render_view_host)
-      : browser_(browser),
-        render_widget_host_(
-            content::RenderWidgetHostImpl::From(render_view_host->GetWidget())),
-        impl_(render_widget_host_->widget_host_receiver_for_testing()
-                  .SwapImplForTesting(this)) {
-    render_widget_host_->AddObserver(this);
-  }
-
-  CefWidgetHostInterceptor(const CefWidgetHostInterceptor&) = delete;
-  CefWidgetHostInterceptor& operator=(const CefWidgetHostInterceptor&) = delete;
-
-  blink::mojom::WidgetHost* GetForwardingInterface() override { return impl_; }
-
-  // WidgetHostInterceptorForTesting method:
-  void SetCursor(const ui::Cursor& cursor) override {
-    if (cursor_util::OnCursorChange(browser_, cursor)) {
-      // Don't change the cursor.
-      return;
-    }
-
-    GetForwardingInterface()->SetCursor(cursor);
-  }
-
-  // RenderWidgetHostObserver method:
-  void RenderWidgetHostDestroyed(
-      content::RenderWidgetHost* widget_host) override {
-    widget_host->RemoveObserver(this);
-    delete this;
-  }
-
- private:
-  AlloyBrowserHostImpl* const browser_;
-  content::RenderWidgetHostImpl* const render_widget_host_;
-  blink::mojom::WidgetHost* const impl_;
-};
 
 static constexpr base::TimeDelta kRecentlyAudibleTimeout = base::Seconds(2);
 
@@ -243,7 +199,15 @@ CefRefPtr<AlloyBrowserHostImpl> AlloyBrowserHostImpl::CreateInternal(
   // Notify that the browser has been created. These must be delivered in the
   // expected order.
 
-  // 1. Notify the browser's LifeSpanHandler. This must always be the first
+  if (opener && opener->platform_delegate_) {
+    // 1. Notify the opener browser's platform delegate. With Views this will
+    // result in a call to CefBrowserViewDelegate::OnPopupBrowserViewCreated().
+    // Do this first for consistency with the Chrome runtime.
+    opener->platform_delegate_->PopupBrowserCreated(browser.get(),
+                                                    is_devtools_popup);
+  }
+
+  // 2. Notify the browser's LifeSpanHandler. This must always be the first
   // notification for the browser. Block navigation to avoid issues with focus
   // changes being sent to an unbound interface.
   {
@@ -251,16 +215,9 @@ CefRefPtr<AlloyBrowserHostImpl> AlloyBrowserHostImpl::CreateInternal(
     browser->OnAfterCreated();
   }
 
-  // 2. Notify the platform delegate. With Views this will result in a call to
+  // 3. Notify the platform delegate. With Views this will result in a call to
   // CefBrowserViewDelegate::OnBrowserCreated().
   browser->platform_delegate_->NotifyBrowserCreated();
-
-  if (opener && opener->platform_delegate_) {
-    // 3. Notify the opener browser's platform delegate. With Views this will
-    // result in a call to CefBrowserViewDelegate::OnPopupBrowserViewCreated().
-    opener->platform_delegate_->PopupBrowserCreated(browser.get(),
-                                                    is_devtools_popup);
-  }
 
   return browser;
 }
@@ -355,20 +312,6 @@ bool AlloyBrowserHostImpl::TryCloseBrowser() {
   return true;
 }
 
-void AlloyBrowserHostImpl::SetFocus(bool focus) {
-  // Always execute asynchronously to work around issue #3040.
-  CEF_POST_TASK(CEF_UIT, base::BindOnce(&AlloyBrowserHostImpl::SetFocusInternal,
-                                        this, focus));
-}
-
-void AlloyBrowserHostImpl::SetFocusInternal(bool focus) {
-  CEF_REQUIRE_UIT();
-  if (focus)
-    OnSetFocus(FOCUS_SOURCE_SYSTEM);
-  else if (platform_delegate_)
-    platform_delegate_->SetFocus(false);
-}
-
 CefWindowHandle AlloyBrowserHostImpl::GetWindowHandle() {
   if (is_views_hosted_ && CEF_CURRENTLY_ON_UIT()) {
     // Always return the most up-to-date window handle for a views-hosted
@@ -404,27 +347,6 @@ void AlloyBrowserHostImpl::SetZoomLevel(double zoomLevel) {
     CEF_POST_TASK(CEF_UIT, base::BindOnce(&AlloyBrowserHostImpl::SetZoomLevel,
                                           this, zoomLevel));
   }
-}
-
-void AlloyBrowserHostImpl::RunFileDialog(
-    FileDialogMode mode,
-    const CefString& title,
-    const CefString& default_file_path,
-    const std::vector<CefString>& accept_filters,
-    int selected_accept_filter,
-    CefRefPtr<CefRunFileDialogCallback> callback) {
-  if (!CEF_CURRENTLY_ON_UIT()) {
-    CEF_POST_TASK(CEF_UIT,
-                  base::BindOnce(&AlloyBrowserHostImpl::RunFileDialog, this,
-                                 mode, title, default_file_path, accept_filters,
-                                 selected_accept_filter, callback));
-    return;
-  }
-
-  EnsureFileDialogManager();
-  file_dialog_manager_->RunFileDialog(mode, title, default_file_path,
-                                      accept_filters, selected_accept_filter,
-                                      callback);
 }
 
 void AlloyBrowserHostImpl::Print() {
@@ -664,20 +586,6 @@ void AlloyBrowserHostImpl::SendCaptureLostEvent() {
     platform_delegate_->SendCaptureLostEvent();
 }
 
-void AlloyBrowserHostImpl::NotifyMoveOrResizeStarted() {
-#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC))
-  if (!CEF_CURRENTLY_ON_UIT()) {
-    CEF_POST_TASK(
-        CEF_UIT,
-        base::BindOnce(&AlloyBrowserHostImpl::NotifyMoveOrResizeStarted, this));
-    return;
-  }
-
-  if (platform_delegate_)
-    platform_delegate_->NotifyMoveOrResizeStarted();
-#endif
-}
-
 int AlloyBrowserHostImpl::GetWindowlessFrameRate() {
   // Verify that this method is being called on the UI thread.
   if (!CEF_CURRENTLY_ON_UIT()) {
@@ -738,8 +646,6 @@ void AlloyBrowserHostImpl::DestroyBrowser() {
   OnBeforeClose();
 
   // Destroy any platform constructs first.
-  if (file_dialog_manager_.get())
-    file_dialog_manager_->Destroy();
   if (javascript_dialog_manager_.get())
     javascript_dialog_manager_->Destroy();
   if (menu_manager_.get())
@@ -820,13 +726,6 @@ void AlloyBrowserHostImpl::OnSetFocus(cef_focus_source_t source) {
 
   if (platform_delegate_)
     platform_delegate_->SetFocus(true);
-}
-
-void AlloyBrowserHostImpl::RunFileChooser(
-    const CefFileDialogRunner::FileChooserParams& params,
-    CefFileDialogRunner::RunFileChooserCallback callback) {
-  EnsureFileDialogManager();
-  file_dialog_manager_->RunFileChooser(params, std::move(callback));
 }
 
 void AlloyBrowserHostImpl::EnterFullscreenModeForTab(
@@ -1350,8 +1249,9 @@ void AlloyBrowserHostImpl::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     scoped_refptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
-  EnsureFileDialogManager();
-  file_dialog_manager_->RunFileChooser(listener, params);
+  // This will eventually call into CefFileDialogManager.
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
 bool AlloyBrowserHostImpl::HandleContextMenu(
@@ -1489,19 +1389,6 @@ bool AlloyBrowserHostImpl::IsPrerender2Supported(
 
 // content::WebContentsObserver methods.
 // -----------------------------------------------------------------------------
-
-void AlloyBrowserHostImpl::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetParent() == nullptr) {
-    auto render_view_host = render_frame_host->GetRenderViewHost();
-    new CefWidgetHostInterceptor(this, render_view_host);
-    platform_delegate_->RenderViewCreated(render_view_host);
-  }
-}
-
-void AlloyBrowserHostImpl::RenderViewReady() {
-  platform_delegate_->RenderViewReady();
-}
 
 void AlloyBrowserHostImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -1659,12 +1546,4 @@ void AlloyBrowserHostImpl::UpdateDragCursor(
     ui::mojom::DragOperation operation) {
   if (platform_delegate_)
     platform_delegate_->UpdateDragCursor(operation);
-}
-
-void AlloyBrowserHostImpl::EnsureFileDialogManager() {
-  CEF_REQUIRE_UIT();
-  if (!file_dialog_manager_.get() && platform_delegate_) {
-    file_dialog_manager_.reset(new CefFileDialogManager(
-        this, platform_delegate_->CreateFileDialogRunner()));
-  }
 }

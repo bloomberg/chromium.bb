@@ -289,6 +289,8 @@ BrowserFrame::GetCustomTheme() const {
 }
 
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
+  if (!browser_view_)
+    return;
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
   chrome::SaveWindowVisibleOnAllWorkspaces(browser_view_->browser(),
                                            IsVisibleOnAllWorkspaces());

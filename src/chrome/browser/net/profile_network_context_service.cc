@@ -747,7 +747,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     const base::FilePath& base_cache_path =
         prefs->GetFilePath(prefs::kDiskCacheDir);
     DCHECK(!base_cache_path.empty());
-    network_context_params->http_cache_path =
+    network_context_params->http_cache_directory =
         base_cache_path.Append(chrome::kCacheDirname);
     network_context_params->http_cache_max_size =
         prefs->GetInteger(prefs::kDiskCacheSize);

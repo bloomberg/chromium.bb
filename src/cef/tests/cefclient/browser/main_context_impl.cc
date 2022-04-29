@@ -108,6 +108,13 @@ MainContextImpl::MainContextImpl(CefRefPtr<CefCommandLine> command_line,
     use_views_ = false;
   }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+  if (use_chrome_runtime_ && !use_views_ &&
+      !command_line->HasSwitch(switches::kUseNative)) {
+    LOG(WARNING) << "Chrome runtime defaults to the Views framework.";
+    use_views_ = true;
+  }
+#else   // !(defined(OS_WIN) || defined(OS_LINUX))
   if (use_chrome_runtime_ && !use_views_) {
     // TODO(chrome): Add support for this runtime configuration (e.g. a fully
     // styled Chrome window with cefclient menu customizations). In the mean
@@ -115,6 +122,7 @@ MainContextImpl::MainContextImpl(CefRefPtr<CefCommandLine> command_line,
     LOG(WARNING) << "Chrome runtime requires the Views framework.";
     use_views_ = true;
   }
+#endif  // !(defined(OS_WIN) || defined(OS_LINUX))
 
   if (use_views_ && command_line->HasSwitch(switches::kHideFrame) &&
       !command_line_->HasSwitch(switches::kUrl)) {
@@ -171,6 +179,11 @@ bool MainContextImpl::UseWindowlessRendering() {
 
 bool MainContextImpl::TouchEventsEnabled() {
   return command_line_->GetSwitchValue("touch-events") == "enabled";
+}
+
+bool MainContextImpl::UseDefaultPopup() {
+  return !use_windowless_rendering_ &&
+         command_line_->HasSwitch(switches::kUseDefaultPopup);
 }
 
 void MainContextImpl::PopulateSettings(CefSettings* settings) {

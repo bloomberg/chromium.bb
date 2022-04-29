@@ -61,11 +61,10 @@ NSButton* MakeButton(NSRect* rect, NSString* title, NSView* parent) {
   return button;
 }
 
-NSRect GetScreenRectForWindow(NSWindow* window) {
-  NSScreen* screen = [window screen];
-  if (screen == nil)
-    screen = [NSScreen mainScreen];
-  return [screen visibleFrame];
+// Transform input Y coodinate into MacOS coordinate.
+CGFloat TransformY(int y) {
+  NSRect primary_screen_rect = [[[NSScreen screens] firstObject] frame];
+  return NSMaxY(primary_screen_rect) - y;
 }
 
 }  // namespace
@@ -121,45 +120,33 @@ class RootWindowMacImpl
   // After initialization all members are only accessed on the main thread.
   // Members set during initialization.
   RootWindowMac& root_window_;
-  bool with_controls_;
-  bool with_osr_;
-  bool with_extension_;
-  bool is_popup_;
+  bool with_controls_ = false;
+  bool with_osr_ = false;
+  bool with_extension_ = false;
+  bool is_popup_ = false;
   CefRect start_rect_;
   std::unique_ptr<BrowserWindow> browser_window_;
-  bool initialized_;
+  bool initialized_ = false;
 
   // Main window.
-  NSWindow* window_;
-  RootWindowDelegate* window_delegate_;
+  NSWindow* window_ = nil;
+  RootWindowDelegate* window_delegate_ = nil;
 
   // Buttons.
-  NSButton* back_button_;
-  NSButton* forward_button_;
-  NSButton* reload_button_;
-  NSButton* stop_button_;
+  NSButton* back_button_ = nil;
+  NSButton* forward_button_ = nil;
+  NSButton* reload_button_ = nil;
+  NSButton* stop_button_ = nil;
 
   // URL text field.
-  NSTextField* url_textfield_;
+  NSTextField* url_textfield_ = nil;
 
-  bool window_destroyed_;
-  bool browser_destroyed_;
+  bool window_destroyed_ = false;
+  bool browser_destroyed_ = false;
 };
 
 RootWindowMacImpl::RootWindowMacImpl(RootWindowMac& root_window)
-    : root_window_(root_window),
-      with_controls_(false),
-      with_osr_(false),
-      is_popup_(false),
-      initialized_(false),
-      window_(nil),
-      back_button_(nil),
-      forward_button_(nil),
-      reload_button_(nil),
-      stop_button_(nil),
-      url_textfield_(nil),
-      window_destroyed_(false),
-      browser_destroyed_(false) {}
+    : root_window_(root_window) {}
 
 RootWindowMacImpl::~RootWindowMacImpl() {
   REQUIRE_MAIN_THREAD();
@@ -280,8 +267,6 @@ void RootWindowMacImpl::SetBounds(int x, int y, size_t width, size_t height) {
   if (!window_)
     return;
 
-  NSRect screen_rect = GetScreenRectForWindow(window_);
-
   // Desired content rectangle.
   NSRect content_rect;
   content_rect.size.width = static_cast<int>(width);
@@ -291,7 +276,7 @@ void RootWindowMacImpl::SetBounds(int x, int y, size_t width, size_t height) {
   // Convert to a frame rectangle.
   NSRect frame_rect = [window_ frameRectForContentRect:content_rect];
   frame_rect.origin.x = x;
-  frame_rect.origin.y = screen_rect.size.height - y;
+  frame_rect.origin.y = TransformY(y) - frame_rect.size.height;
 
   [window_ setFrame:frame_rect display:YES];
 }
@@ -371,8 +356,8 @@ void RootWindowMacImpl::CreateRootWindow(const CefBrowserSettings& settings,
 
   // TODO(port): If no x,y position is specified the window will always appear
   // in the upper-left corner. Maybe there's a better default place to put it?
-  int x = start_rect_.x;
-  int y = start_rect_.y;
+  const int x = start_rect_.x;
+  const int y = start_rect_.y;
   int width, height;
   if (start_rect_.IsEmpty()) {
     // TODO(port): Also, maybe there's a better way to choose the default size.
@@ -382,19 +367,20 @@ void RootWindowMacImpl::CreateRootWindow(const CefBrowserSettings& settings,
     width = start_rect_.width;
     height = start_rect_.height;
   }
+  const int height_with_controls =
+      with_controls_ ? height + URLBAR_HEIGHT : height;
 
-  // Create the main window.
-  NSRect screen_rect = [[NSScreen mainScreen] visibleFrame];
-  NSRect window_rect =
-      NSMakeRect(x, screen_rect.size.height - y, width, height);
+  // The window Y coordinate is fixed in the setFrameTopLeftPoint call below
+  const NSRect content_rect = NSMakeRect(x, y, width, height_with_controls);
 
   // The CEF framework library is loaded at runtime so we need to use this
   // mechanism for retrieving the class.
   Class window_class = NSClassFromString(@"UnderlayOpenGLHostingWindow");
   CHECK(window_class);
 
+  // Create the main window.
   window_ = [[window_class alloc]
-      initWithContentRect:window_rect
+      initWithContentRect:content_rect
                 styleMask:(NSTitledWindowMask | NSClosableWindowMask |
                            NSMiniaturizableWindowMask | NSResizableWindowMask |
                            NSUnifiedTitleAndToolbarWindowMask)
@@ -441,8 +427,7 @@ void RootWindowMacImpl::CreateRootWindow(const CefBrowserSettings& settings,
   if (with_controls_) {
     // Create the buttons.
     NSRect button_rect = contentBounds;
-    button_rect.origin.y = window_rect.size.height - URLBAR_HEIGHT +
-                           (URLBAR_HEIGHT - BUTTON_HEIGHT) / 2;
+    button_rect.origin.y = height + (URLBAR_HEIGHT - BUTTON_HEIGHT) / 2;
     button_rect.size.height = BUTTON_HEIGHT;
     button_rect.origin.x += BUTTON_MARGIN;
     button_rect.size.width = BUTTON_WIDTH;
@@ -484,6 +469,9 @@ void RootWindowMacImpl::CreateRootWindow(const CefBrowserSettings& settings,
     [[url_textfield_ cell] setScrollable:YES];
   }
 
+  // Fix the window Y coordinate
+  [window_ setFrameTopLeftPoint:NSMakePoint(x, TransformY(y))];
+
   if (!is_popup_) {
     // Create the browser window.
     browser_window_->CreateBrowser(
@@ -501,9 +489,6 @@ void RootWindowMacImpl::CreateRootWindow(const CefBrowserSettings& settings,
   if (!initially_hidden) {
     // Show the window.
     Show(RootWindow::ShowNormal);
-
-    // Size the window.
-    SetBounds(x, y, width, height);
   }
 }
 
@@ -742,13 +727,6 @@ void RootWindowMac::OnSetDraggableRegions(
 
 void RootWindowMac::OnNativeWindowClosed() {
   impl_->OnNativeWindowClosed();
-}
-
-// static
-scoped_refptr<RootWindow> RootWindow::GetForNSWindow(NSWindow* window) {
-  RootWindowDelegate* delegate =
-      static_cast<RootWindowDelegate*>([window delegate]);
-  return [delegate root_window];
 }
 
 }  // namespace client

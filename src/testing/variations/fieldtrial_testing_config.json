@@ -360,6 +360,21 @@
             ]
         }
     ],
+    "ArcEnableTTSCaching": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ArcEnableTTSCaching"
+                    ]
+                }
+            ]
+        }
+    ],
     "ArcGuestZram": [
         {
             "platforms": [
@@ -1366,6 +1381,7 @@
                         "allowed_websites": "https://www.youtube.com|/embed,https://www.google.com|/maps/embed,https://platform.twitter.com|/embed,https://www.redditmedia.com|embed=true,https://www.instagram.com|/embed"
                     },
                     "enable_features": [
+                        "AutomaticLazyFrameLoadingToEmbedUrls",
                         "AutomaticLazyFrameLoadingToEmbeds"
                     ]
                 }
@@ -7409,6 +7425,21 @@
             ]
         }
     ],
+    "UIViewWindowObserving": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UIViewWindowObserving"
+                    ]
+                }
+            ]
+        }
+    ],
     "UMA-NonUniformity-Trial-1-Percent": [
         {
             "platforms": [
@@ -8440,6 +8471,21 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRtcAllowWgcDesktopCapturer": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AllowWgcDesktopCapturer"
+                    ]
                 }
             ]
         }

@@ -51,7 +51,7 @@ class CefWindowView
   CefWindowView& operator=(const CefWindowView&) = delete;
 
   // Create the Widget.
-  void CreateWidget();
+  void CreateWidget(gfx::AcceleratedWidget parent_widget);
 
   // Returns the CefWindow associated with this view. See comments on
   // CefViewView::GetCefView.
@@ -79,6 +79,7 @@ class CefWindowView
       const views::ViewHierarchyChangedDetails& details) override;
 
   // views::WidgetObserver methods:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
 

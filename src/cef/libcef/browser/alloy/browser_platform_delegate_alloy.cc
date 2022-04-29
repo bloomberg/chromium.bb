@@ -25,7 +25,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
 #include "extensions/browser/process_manager.h"
 #include "pdf/pdf_features.h"
 #include "printing/mojom/print.mojom.h"
@@ -112,10 +111,15 @@ void CefBrowserPlatformDelegateAlloy::WebContentsCreated(
     content::WebContents* web_contents,
     bool owned) {
   CefBrowserPlatformDelegate::WebContentsCreated(web_contents, owned);
-  find_in_page::FindTabHelper::CreateForWebContents(web_contents);
 
-  if (owned) {
-    SetOwnedWebContents(web_contents);
+  if (primary_) {
+    find_in_page::FindTabHelper::CreateForWebContents(web_contents);
+
+    if (owned) {
+      SetOwnedWebContents(web_contents);
+    }
+  } else {
+    DCHECK(!owned);
   }
 }
 
@@ -155,14 +159,6 @@ bool CefBrowserPlatformDelegateAlloy::
         is_main_frame_navigation);
   }
   return true;
-}
-
-void CefBrowserPlatformDelegateAlloy::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  // Indicate that the view has an external parent (namely us). This changes the
-  // default view behavior in some cases (e.g. focus handling on Linux).
-  if (!IsViewsHosted() && render_view_host->GetWidget()->GetView())
-    render_view_host->GetWidget()->GetView()->SetHasExternalParent(true);
 }
 
 void CefBrowserPlatformDelegateAlloy::RenderViewReady() {

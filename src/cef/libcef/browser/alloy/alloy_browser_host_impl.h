@@ -16,7 +16,6 @@
 #include "include/cef_frame.h"
 #include "libcef/browser/browser_host_base.h"
 #include "libcef/browser/browser_info.h"
-#include "libcef/browser/file_dialog_manager.h"
 #include "libcef/browser/frame_host_impl.h"
 #include "libcef/browser/javascript_dialog_manager.h"
 #include "libcef/browser/menu_manager.h"
@@ -79,17 +78,10 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   // CefBrowserHost methods.
   void CloseBrowser(bool force_close) override;
   bool TryCloseBrowser() override;
-  void SetFocus(bool focus) override;
   CefWindowHandle GetWindowHandle() override;
   CefWindowHandle GetOpenerWindowHandle() override;
   double GetZoomLevel() override;
   void SetZoomLevel(double zoomLevel) override;
-  void RunFileDialog(FileDialogMode mode,
-                     const CefString& title,
-                     const CefString& default_file_path,
-                     const std::vector<CefString>& accept_filters,
-                     int selected_accept_filter,
-                     CefRefPtr<CefRunFileDialogCallback> callback) override;
   void Print() override;
   void PrintToPDF(const CefString& path,
                   const CefPdfPrintSettings& settings,
@@ -113,7 +105,6 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   void SendExternalBeginFrame() override;
   void SendTouchEvent(const CefTouchEvent& event) override;
   void SendCaptureLostEvent() override;
-  void NotifyMoveOrResizeStarted() override;
   int GetWindowlessFrameRate() override;
   void SetWindowlessFrameRate(int frame_rate) override;
   void ImeSetComposition(const CefString& text,
@@ -179,12 +170,6 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   extensions::ExtensionHost* GetExtensionHost() const;
 
   void OnSetFocus(cef_focus_source_t source) override;
-
-  // Run the file chooser dialog specified by |params|. Only a single dialog may
-  // be pending at any given time. |callback| will be executed asynchronously
-  // after the dialog is dismissed or if another dialog is already pending.
-  void RunFileChooser(const CefFileDialogRunner::FileChooserParams& params,
-                      CefFileDialogRunner::RunFileChooserCallback callback);
 
   bool HandleContextMenu(content::WebContents* web_contents,
                          const content::ContextMenuParams& params);
@@ -293,8 +278,6 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
 
   // content::WebContentsObserver methods.
   using content::WebContentsObserver::BeforeUnloadFired;
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderViewReady() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnAudioStateChanged(bool audible) override;
@@ -333,13 +316,8 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   // Give the platform delegate an opportunity to create the host window.
   bool CreateHostWindow();
 
-  // Create the CefFileDialogManager if it doesn't already exist.
-  void EnsureFileDialogManager();
-
   void StartAudioCapturer();
   void OnRecentlyAudibleTimerFired();
-
-  void SetFocusInternal(bool focus);
 
   CefWindowHandle opener_;
   const bool is_windowless_;
@@ -354,9 +332,6 @@ class AlloyBrowserHostImpl : public CefBrowserHostBase,
   // True if the OS window hosting the browser has been destroyed. Only accessed
   // on the UI thread.
   bool window_destroyed_ = false;
-
-  // Used for creating and managing file dialogs.
-  std::unique_ptr<CefFileDialogManager> file_dialog_manager_;
 
   // Used for creating and managing JavaScript dialogs.
   std::unique_ptr<CefJavaScriptDialogManager> javascript_dialog_manager_;

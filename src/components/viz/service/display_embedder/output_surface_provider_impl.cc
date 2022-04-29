@@ -40,6 +40,7 @@
 #include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/init/gl_factory.h"

@@ -100,6 +100,10 @@ void SelectFileDialogImpl::SelectFileImpl(
     mojo_window->CreateSelectFileDialog(std::move(receiver));
   } else {
     NSWindow* ns_window = gfx_window.GetNativeNSWindow();
+    if (!ns_window && owning_widget_) {
+      NSView* view = ((__bridge NSView*)owning_widget_);
+      ns_window = [view window];
+    }
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<remote_cocoa::SelectFileDialogBridge>(ns_window),
         std::move(receiver));

@@ -7,6 +7,7 @@
 <translation id="1185134272377778587">За Chromium</translation>
 <translation id="1257458525759135959">За да ги зачувате сликите, допрете на „Поставки“ за да овозможите Chromium да додава фотографии</translation>
 <translation id="1289216811211435351">Префрлете на Chromium</translation>
+<translation id="1311799238113893680">Користете ја лозинката што сте ја зачувале во Chromium за да се најавите побрзо</translation>
 <translation id="1361748954329991663">Chromium е застарен. Ако нема достапно ажурирање во <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, можно е уредот веќе да не поддржува нови верзии на Chromium.</translation>
 <translation id="1431818719585918472">Дозволете Chromium да ги заклучи вашите картички „Инкогнито“.</translation>
 <translation id="1472013873724362412">Сметката не работи на Chromium. Контактирајте го администраторот на доменот или употребете обична сметка на Google за да се најавите.</translation>
@@ -27,6 +28,7 @@
 <translation id="2195025571279539885">Дали сакате Chromium следниот пат да ви понуди да преведува страници од <ph name="LANGUAGE_NAME" /> од овој сајт?</translation>
 <translation id="2218146227246548550">Вашата организација бара да се најавите за да користите Chromium. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="2236584955986023187">Ова значи дека Chromium ќе го бара сајтот за компјутер секој пат.</translation>
+<translation id="2313870531055795960">Ги проверува URL-адресите во список со небезбедни сајтови меморирани во Chromium. Ако некој сајт се обиде да ви ја украде лозинката или кога ќе преземете штетна датотека, Chromium може да испрати и URL-адреси, вклучувајќи и делови од содржините на страницата, во „Безбедно прелистување“.</translation>
 <translation id="2426113998523353159">Вашата организација бара да се најавите за да користите Chromium.</translation>
 <translation id="2450140762465183767">Сега може да го користите Chromium секогаш кога ќе допрете линкови во пораките, документите и другите апликации.</translation>
 <translation id="2478931088402984578">Изберете <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>

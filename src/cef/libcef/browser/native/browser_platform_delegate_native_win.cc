@@ -10,7 +10,6 @@
 
 #include "libcef/browser/alloy/alloy_browser_host_impl.h"
 #include "libcef/browser/context.h"
-#include "libcef/browser/native/file_dialog_runner_win.h"
 #include "libcef/browser/native/javascript_dialog_runner_win.h"
 #include "libcef/browser/native/menu_runner_win.h"
 #include "libcef/browser/native/window_delegate_view.h"
@@ -156,9 +155,18 @@ CefBrowserPlatformDelegateNativeWin::CefBrowserPlatformDelegateNativeWin(
     SkColor background_color)
     : CefBrowserPlatformDelegateNativeAura(window_info, background_color) {}
 
+void CefBrowserPlatformDelegateNativeWin::set_widget(
+    views::Widget* widget,
+    CefWindowHandle widget_handle) {
+  DCHECK(!window_widget_);
+  window_widget_ = widget;
+  DCHECK(!window_info_.window);
+  window_info_.window = widget_handle;
+}
+
 void CefBrowserPlatformDelegateNativeWin::BrowserDestroyed(
     CefBrowserHostBase* browser) {
-  CefBrowserPlatformDelegateNative::BrowserDestroyed(browser);
+  CefBrowserPlatformDelegateNativeAura::BrowserDestroyed(browser);
 
   if (host_window_created_) {
     // Release the reference added in CreateHostWindow().
@@ -168,6 +176,11 @@ void CefBrowserPlatformDelegateNativeWin::BrowserDestroyed(
 
 bool CefBrowserPlatformDelegateNativeWin::CreateHostWindow() {
   RegisterWindowClass();
+
+  if (window_info_.style == 0) {
+    // Client didn't intialize the CefWindowInfo. Provide reasonable defaults.
+    window_info_.SetAsPopup(nullptr, CefString());
+  }
 
   has_frame_ = !(window_info_.style & WS_CHILD);
 
@@ -315,7 +328,7 @@ void CefBrowserPlatformDelegateNativeWin::SetFocus(bool setFocus) {
 
 void CefBrowserPlatformDelegateNativeWin::NotifyMoveOrResizeStarted() {
   // Call the parent method to dismiss any existing popups.
-  CefBrowserPlatformDelegateNative::NotifyMoveOrResizeStarted();
+  CefBrowserPlatformDelegateNativeAura::NotifyMoveOrResizeStarted();
 
   if (!window_widget_)
     return;
@@ -431,11 +444,6 @@ CefEventHandle CefBrowserPlatformDelegateNativeWin::GetEventHandle(
     return NULL;
   return ChromeToWindowsType(
       const_cast<CHROME_MSG*>(&event.os_event->native_event()));
-}
-
-std::unique_ptr<CefFileDialogRunner>
-CefBrowserPlatformDelegateNativeWin::CreateFileDialogRunner() {
-  return base::WrapUnique(new CefFileDialogRunnerWin);
 }
 
 std::unique_ptr<CefJavaScriptDialogRunner>

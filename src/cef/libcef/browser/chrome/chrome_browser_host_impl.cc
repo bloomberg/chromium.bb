@@ -22,11 +22,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
-
-#if defined(TOOLKIT_VIEWS)
 #include "libcef/browser/chrome/views/chrome_browser_frame.h"
 #include "libcef/browser/chrome/views/chrome_browser_view.h"
-#endif
 
 // static
 CefRefPtr<ChromeBrowserHostImpl> ChromeBrowserHostImpl::Create(
@@ -111,9 +108,7 @@ void ChromeBrowserHostImpl::AddNewContents(
 
   CefBrowserCreateParams params;
   params.request_context = request_context();
-#if defined(TOOLKIT_VIEWS)
   params.browser_view = GetBrowserView();
-#endif
 
   // Create the new Browser representation.
   auto browser = CreateBrowser(params);
@@ -143,6 +138,9 @@ void ChromeBrowserHostImpl::OnSetFocus(cef_focus_source_t source) {
   if (contents_delegate_->OnSetFocus(source))
     return;
 
+  if (platform_delegate_)
+    platform_delegate_->SetFocus(true);
+
   if (browser_) {
     const int tab_index = GetCurrentTabIndex();
     if (tab_index != TabStripModel::kNoTab) {
@@ -163,15 +161,14 @@ bool ChromeBrowserHostImpl::TryCloseBrowser() {
   return true;
 }
 
-void ChromeBrowserHostImpl::SetFocus(bool focus) {
-  if (focus) {
-    OnSetFocus(FOCUS_SOURCE_SYSTEM);
-  }
-}
-
 CefWindowHandle ChromeBrowserHostImpl::GetWindowHandle() {
-  NOTIMPLEMENTED();
-  return kNullWindowHandle;
+  if (CEF_CURRENTLY_ON_UIT()) {
+    // Always return the most up-to-date window handle for a views-hosted
+    // browser since it may change if the view is re-parented.
+    if (platform_delegate_)
+      return platform_delegate_->GetHostWindowHandle();
+  }
+  return host_window_handle_;
 }
 
 CefWindowHandle ChromeBrowserHostImpl::GetOpenerWindowHandle() {
@@ -186,17 +183,6 @@ double ChromeBrowserHostImpl::GetZoomLevel() {
 
 void ChromeBrowserHostImpl::SetZoomLevel(double zoomLevel) {
   NOTIMPLEMENTED();
-}
-
-void ChromeBrowserHostImpl::RunFileDialog(
-    FileDialogMode mode,
-    const CefString& title,
-    const CefString& default_file_path,
-    const std::vector<CefString>& accept_filters,
-    int selected_accept_filter,
-    CefRefPtr<CefRunFileDialogCallback> callback) {
-  NOTIMPLEMENTED();
-  callback->OnFileDialogDismissed(0, {});
 }
 
 void ChromeBrowserHostImpl::Print() {
@@ -279,10 +265,6 @@ void ChromeBrowserHostImpl::SendTouchEvent(const CefTouchEvent& event) {
 }
 
 void ChromeBrowserHostImpl::SendCaptureLostEvent() {
-  NOTIMPLEMENTED();
-}
-
-void ChromeBrowserHostImpl::NotifyMoveOrResizeStarted() {
   NOTIMPLEMENTED();
 }
 
@@ -436,7 +418,6 @@ Browser* ChromeBrowserHostImpl::CreateBrowser(
   // Pass |params| to cef::BrowserDelegate::Create from the Browser constructor.
   chrome_params.cef_params = base::MakeRefCounted<DelegateCreateParams>(params);
 
-#if defined(TOOLKIT_VIEWS)
   // Configure Browser creation to use the existing Views-based
   // Widget/BrowserFrame (ChromeBrowserFrame) and BrowserView/BrowserWindow
   // (ChromeBrowserView). See views/chrome_browser_frame.h for related
@@ -459,7 +440,6 @@ Browser* ChromeBrowserHostImpl::CreateBrowser(
         static_cast<ChromeBrowserFrame*>(chrome_browser_view->GetWidget());
     chrome_browser_view->set_frame(chrome_widget);
   }
-#endif  // defined(TOOLKIT_VIEWS)
 
   // Create the Browser. This will indirectly create the ChomeBrowserDelegate.
   // The same params will be used to create a new Browser if the tab is dragged
@@ -469,7 +449,6 @@ Browser* ChromeBrowserHostImpl::CreateBrowser(
 
   bool show_browser = true;
 
-#if defined(TOOLKIT_VIEWS)
   if (chrome_browser_view) {
     // Initialize the BrowserFrame and BrowserView and create the controls that
     // require access to the Browser.
@@ -479,7 +458,6 @@ Browser* ChromeBrowserHostImpl::CreateBrowser(
     // Don't show the browser by default.
     show_browser = false;
   }
-#endif
 
   if (show_browser) {
     browser->window()->Show();
@@ -513,7 +491,20 @@ void ChromeBrowserHostImpl::Attach(content::WebContents* web_contents,
   // Notify that the browser has been created. These must be delivered in the
   // expected order.
 
-  // 1. Notify the browser's LifeSpanHandler. This must always be the first
+  if (opener && opener->platform_delegate_) {
+    // 1. Notify the opener browser's platform delegate. With Views this will
+    // result in a call to CefBrowserViewDelegate::OnPopupBrowserViewCreated().
+    // We want to call this method first because the implementation will often
+    // create the Widget for the new popup browser. Without that Widget
+    // CefBrowserHost::GetWindowHandle() will return kNullWindowHandle in
+    // OnAfterCreated(), which breaks client expectations (e.g. clients expect
+    // everything about the browser to be valid at that time).
+    opener->platform_delegate_->PopupBrowserCreated(
+        this,
+        /*is_devtools_popup=*/false);
+  }
+
+  // 2. Notify the browser's LifeSpanHandler. This must always be the first
   // notification for the browser.
   {
     // The WebContents won't be added to the Browser's TabStripModel until later
@@ -522,17 +513,9 @@ void ChromeBrowserHostImpl::Attach(content::WebContents* web_contents,
     OnAfterCreated();
   }
 
-  // 2. Notify the platform delegate. With Views this will result in a call to
+  // 3. Notify the platform delegate. With Views this will result in a call to
   // CefBrowserViewDelegate::OnBrowserCreated().
   platform_delegate_->NotifyBrowserCreated();
-
-  if (opener && opener->platform_delegate_) {
-    // 3. Notify the opener browser's platform delegate. With Views this will
-    // result in a call to CefBrowserViewDelegate::OnPopupBrowserViewCreated().
-    opener->platform_delegate_->PopupBrowserCreated(
-        this,
-        /*is_devtools_popup=*/false);
-  }
 }
 
 void ChromeBrowserHostImpl::SetBrowser(Browser* browser) {
@@ -540,17 +523,17 @@ void ChromeBrowserHostImpl::SetBrowser(Browser* browser) {
   browser_ = browser;
   static_cast<CefBrowserPlatformDelegateChrome*>(platform_delegate_.get())
       ->set_chrome_browser(browser);
+  if (browser_)
+    host_window_handle_ = platform_delegate_->GetHostWindowHandle();
 }
 
 void ChromeBrowserHostImpl::WindowDestroyed() {
   CEF_REQUIRE_UIT();
-#if defined(TOOLKIT_VIEWS)
   if (browser_ && is_views_hosted_) {
     auto chrome_browser_view =
         static_cast<ChromeBrowserView*>(browser_->window());
     chrome_browser_view->Destroyed();
   }
-#endif
 
   platform_delegate_->CloseHostWindow();
 }

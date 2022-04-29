@@ -20,6 +20,7 @@
 #include "base/threading/hang_watcher.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/platform_util.h"
@@ -254,6 +255,13 @@ void FileSelectHelper::OnListFile(
 void FileSelectHelper::LaunchConfirmationDialog(
     const base::FilePath& path,
     std::vector<ui::SelectedFileInfo> selected_files) {
+  if (cef::IsAlloyRuntimeEnabled() || run_from_cef_) {
+    // Don't show the upload confirmation dialog with the Alloy runtime, or
+    // when triggered via CEF (initially or recursively).
+    ConvertToFileChooserFileInfoList(selected_files);
+    return;
+  }
+
   ShowFolderUploadConfirmationDialog(
       path,
       base::BindOnce(&FileSelectHelper::ConvertToFileChooserFileInfoList, this),
@@ -450,7 +458,8 @@ void FileSelectHelper::DontAbortOnMissingWebContentsForTesting() {
 
 std::unique_ptr<ui::SelectFileDialog::FileTypeInfo>
 FileSelectHelper::GetFileTypesFromAcceptType(
-    const std::vector<std::u16string>& accept_types) {
+    const std::vector<std::u16string>& accept_types,
+    bool run_from_cef) {
   std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> base_file_type(
       new ui::SelectFileDialog::FileTypeInfo());
   if (accept_types.empty())
@@ -464,17 +473,24 @@ FileSelectHelper::GetFileTypesFromAcceptType(
   std::vector<base::FilePath::StringType>* extensions =
       &file_type->extensions.back();
 
+  // Create individual filters for each accept type.
+  std::vector<std::vector<base::FilePath::StringType>> all_extensions;
+  std::vector<std::u16string> all_overrides;
+
   // Find the corresponding extensions.
   int valid_type_count = 0;
   int description_id = 0;
   for (const auto& accept_type : accept_types) {
+    std::vector<base::FilePath::StringType> current_extensions;
+    description_id = 0;
+
     size_t old_extension_size = extensions->size();
     if (accept_type[0] == '.') {
       // If the type starts with a period it is assumed to be a file extension
       // so we just have to add it to the list.
       base::FilePath::StringType ext =
           base::FilePath::FromUTF16Unsafe(accept_type).value();
-      extensions->push_back(ext.substr(1));
+      current_extensions.push_back(ext.substr(1));
     } else {
       if (!base::IsStringASCII(accept_type))
         continue;
@@ -485,10 +501,18 @@ FileSelectHelper::GetFileTypesFromAcceptType(
         description_id = IDS_AUDIO_FILES;
       else if (ascii_type == "video/*")
         description_id = IDS_VIDEO_FILES;
-
-      net::GetExtensionsForMimeType(ascii_type, extensions);
+      net::GetExtensionsForMimeType(ascii_type, &current_extensions);
     }
 
+    if (!current_extensions.empty()) {
+      all_extensions.push_back(current_extensions);
+      all_overrides.push_back(description_id != 0 ?
+                              l10n_util::GetStringUTF16(description_id) :
+                              std::u16string());
+
+      extensions->insert(extensions->end(), current_extensions.begin(),
+                         current_extensions.end());
+    }
     if (extensions->size() > old_extension_size)
       valid_type_count++;
   }
@@ -513,6 +537,15 @@ FileSelectHelper::GetFileTypesFromAcceptType(
         l10n_util::GetStringUTF16(description_id));
   }
 
+  if (run_from_cef && all_extensions.size() > 1) {
+    // Insert filters for the specific accept types at the beginning.
+    file_type->extensions.insert(file_type->extensions.begin(),
+        all_extensions.begin(), all_extensions.end());
+    file_type->extension_description_overrides.insert(
+        file_type->extension_description_overrides.begin(),
+        all_overrides.begin(), all_overrides.end());
+  }
+
   return file_type;
 }
 
@@ -520,7 +553,8 @@ FileSelectHelper::GetFileTypesFromAcceptType(
 void FileSelectHelper::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     scoped_refptr<content::FileSelectListener> listener,
-    const FileChooserParams& params) {
+    const FileChooserParams& params,
+    bool run_from_cef) {
   Profile* profile = Profile::FromBrowserContext(
       render_frame_host->GetProcess()->GetBrowserContext());
 
@@ -539,6 +573,7 @@ void FileSelectHelper::RunFileChooser(
   // message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
+  file_select_helper->run_from_cef_ = run_from_cef;
   file_select_helper->RunFileChooser(render_frame_host, std::move(listener),
                                      params.Clone());
 }
@@ -592,7 +627,8 @@ void FileSelectHelper::RunFileChooser(
 }
 
 void FileSelectHelper::GetFileTypesInThreadPool(FileChooserParamsPtr params) {
-  select_file_types_ = GetFileTypesFromAcceptType(params->accept_types);
+  select_file_types_ = GetFileTypesFromAcceptType(params->accept_types,
+                                                  run_from_cef_);
   select_file_types_->allowed_paths =
       params->need_local_path ? ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH
                               : ui::SelectFileDialog::FileTypeInfo::ANY_PATH;

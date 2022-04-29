@@ -5064,6 +5064,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDynamicMaxAutocomplete,
                                     kOmniboxDynamicMaxAutocompleteVariations,
                                     "OmniboxBundledExperimentV1")},
+
+    {"omnibox-retain-suggestions-with-headers",
+     flag_descriptions::kOmniboxRetainSuggestionsWithHeadersName,
+     flag_descriptions::kOmniboxRetainSuggestionsWithHeadersDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kRetainSuggestionsWithHeaders)},
+
     {"optimization-guide-debug-logs",
      flag_descriptions::kOptimizationGuideDebugLogsName,
      flag_descriptions::kOptimizationGuideDebugLogsDescription, kOsAll,
@@ -5593,10 +5599,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCriticalPersistedTabDataName,
      flag_descriptions::kCriticalPersistedTabDataDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCriticalPersistedTabData)},
-
-    {"enable-store-hours", flag_descriptions::kStoreHoursAndroidName,
-     flag_descriptions::kStoreHoursAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kStoreHoursAndroid)},
 
     {"suppress-toolbar-captures",
      flag_descriptions::kSuppressToolbarCapturesName,
@@ -7231,7 +7233,7 @@ const FeatureEntry kFeatureEntries[] = {
                                  "InterestGroupStorage,Fledge,"
                                  "BiddingAndScoringDebugReportingAPI,"
                                  "AllowURNsInIframes,BrowsingTopics,"
-                                 "ConversionMeasurement,"
+                                 "ConversionMeasurement,FencedFrames,"
                                  "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,

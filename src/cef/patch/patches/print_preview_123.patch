@@ -1,5 +1,5 @@
 diff --git chrome/browser/download/download_prefs.cc chrome/browser/download/download_prefs.cc
-index 04679ec67bf2e..864f08b030ccb 100644
+index f5ef1239dbece..98210504ccf53 100644
 --- chrome/browser/download/download_prefs.cc
 +++ chrome/browser/download/download_prefs.cc
 @@ -24,6 +24,7 @@
@@ -21,7 +21,7 @@ index 04679ec67bf2e..864f08b030ccb 100644
  using content::BrowserContext;
  using content::BrowserThread;
  using content::DownloadManager;
-@@ -342,6 +347,11 @@ DownloadPrefs* DownloadPrefs::FromDownloadManager(
+@@ -344,6 +349,11 @@ DownloadPrefs* DownloadPrefs::FromDownloadManager(
  // static
  DownloadPrefs* DownloadPrefs::FromBrowserContext(
      content::BrowserContext* context) {
@@ -46,13 +46,13 @@ index d656ccabc3899..a4b7ce6a7dcd8 100644
  #include "chrome/browser/printing/print_view_manager.h"
  #include "chrome/browser/task_manager/web_contents_tags.h"
 diff --git chrome/browser/printing/print_view_manager_base.cc chrome/browser/printing/print_view_manager_base.cc
-index 1f37c11047d47..eea8a9944ec3e 100644
+index fb69efbfa8e35..060aad00efe18 100644
 --- chrome/browser/printing/print_view_manager_base.cc
 +++ chrome/browser/printing/print_view_manager_base.cc
-@@ -222,12 +222,12 @@ void UpdatePrintSettingsOnIO(
+@@ -223,12 +223,12 @@ void UpdatePrintSettingsOnIO(
      mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
      scoped_refptr<PrintQueriesQueue> queue,
-     base::Value job_settings,
+     base::Value::Dict job_settings,
 -    base::WeakPtr<PrintViewManagerBase> manager) {
 +    base::WeakPtr<PrintViewManagerBase> manager,
 +    const content::GlobalRenderFrameHostId& global_id) {
@@ -65,15 +65,15 @@ index 1f37c11047d47..eea8a9944ec3e 100644
    }
    auto* printer_query_ptr = printer_query.get();
    printer_query_ptr->SetSettings(
-@@ -646,6 +646,7 @@ void PrintViewManagerBase::UpdatePrintSettings(
-       job_settings.SetIntKey(kSettingRasterizePdfDpi, value);
+@@ -694,6 +694,7 @@ void PrintViewManagerBase::UpdatePrintSettings(
+       job_settings.Set(kSettingRasterizePdfDpi, value);
    }
  
 +  content::RenderFrameHost* render_frame_host = GetCurrentTargetFrame();
    auto callback_wrapper =
        base::BindOnce(&PrintViewManagerBase::UpdatePrintSettingsReply,
                       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-@@ -653,7 +654,8 @@ void PrintViewManagerBase::UpdatePrintSettings(
+@@ -701,7 +702,8 @@ void PrintViewManagerBase::UpdatePrintSettings(
        FROM_HERE,
        base::BindOnce(&UpdatePrintSettingsOnIO, cookie,
                       std::move(callback_wrapper), queue_,
@@ -84,10 +84,10 @@ index 1f37c11047d47..eea8a9944ec3e 100644
  #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
  
 diff --git chrome/browser/printing/print_view_manager_base.h chrome/browser/printing/print_view_manager_base.h
-index 2661776307f77..b9edc98619c29 100644
+index 48895e0f8a846..699d9f0029c04 100644
 --- chrome/browser/printing/print_view_manager_base.h
 +++ chrome/browser/printing/print_view_manager_base.h
-@@ -146,9 +146,6 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
+@@ -184,9 +184,6 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
    // Manages the low-level talk to the printer.
    scoped_refptr<PrintJob> print_job_;
  
@@ -98,10 +98,10 @@ index 2661776307f77..b9edc98619c29 100644
    void RenderFrameHostStateChanged(
        content::RenderFrameHost* render_frame_host,
 diff --git chrome/browser/resources/print_preview/ui/destination_dialog.html chrome/browser/resources/print_preview/ui/destination_dialog.html
-index 920f646f06484..76c0b5e5ee04b 100644
+index 5ea55a097c156..1ad6e23647be9 100644
 --- chrome/browser/resources/print_preview/ui/destination_dialog.html
 +++ chrome/browser/resources/print_preview/ui/destination_dialog.html
-@@ -25,10 +25,7 @@
+@@ -15,10 +15,7 @@
      </print-preview-destination-list>
    </div>
    <div slot="button-container">
@@ -135,161 +135,8 @@ index f6098966f5b34..da78289b66155 100644
  #endif
  }
  
-diff --git chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc
-index 86e16795ce43d..9053975ad42f6 100644
---- chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc
-+++ chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc
-@@ -21,6 +21,7 @@
- #include "base/values.h"
- #include "build/build_config.h"
- #include "build/chromeos_buildflags.h"
-+#include "cef/libcef/features/runtime.h"
- #include "chrome/browser/app_mode/app_mode_utils.h"
- #include "chrome/browser/browser_process.h"
- #include "chrome/browser/download/download_prefs.h"
-@@ -62,6 +63,10 @@
- #include "chromeos/lacros/lacros_service.h"
- #endif
- 
-+#if BUILDFLAG(ENABLE_CEF)
-+#include "cef/libcef/browser/alloy/alloy_dialog_util.h"
-+#endif
-+
- namespace printing {
- 
- namespace {
-@@ -414,16 +419,18 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
-     service->GetRemote<crosapi::mojom::DriveIntegrationService>()
-         ->GetMountPointPath(
-             base::BindOnce(&PdfPrinterHandler::OnSaveLocationReady,
--                           weak_ptr_factory_.GetWeakPtr(),
-+                           weak_ptr_factory_.GetWeakPtr(), initiator,
-                            std::move(default_filename), prompt_user));
-     return;
-   }
- #endif
- 
--  OnSaveLocationReady(default_filename, prompt_user, GetSaveLocation());
-+  OnSaveLocationReady(initiator, default_filename, prompt_user,
-+                      GetSaveLocation());
- }
- 
- void PdfPrinterHandler::OnSaveLocationReady(
-+    content::WebContents* initiator,
-     const base::FilePath& default_filename,
-     bool prompt_user,
-     const base::FilePath& path) {
-@@ -441,10 +448,27 @@ void PdfPrinterHandler::OnSaveLocationReady(
-   // If the directory is empty there is no reason to create it or use the
-   // default location.
-   if (path.empty()) {
-+#if BUILDFLAG(ENABLE_CEF)
-+    if (cef::IsAlloyRuntimeEnabled()) {
-+      ShowCefSaveAsDialog(initiator, default_filename, path);
-+      return;
-+    }
-+#endif
-     OnDirectorySelected(default_filename, path);
-     return;
-   }
- 
-+  auto callback = base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
-+                                 weak_ptr_factory_.GetWeakPtr(),
-+                                 default_filename);
-+#if BUILDFLAG(ENABLE_CEF)
-+  if (cef::IsAlloyRuntimeEnabled()) {
-+    callback = base::BindOnce(&PdfPrinterHandler::ShowCefSaveAsDialog,
-+                              weak_ptr_factory_.GetWeakPtr(), initiator,
-+                              default_filename);
-+  }
-+#endif
-+
-   // Get default download directory. This will be used as a fallback if the
-   // save directory does not exist.
-   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile_);
-@@ -452,8 +476,7 @@ void PdfPrinterHandler::OnSaveLocationReady(
-   base::ThreadPool::PostTaskAndReplyWithResult(
-       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-       base::BindOnce(&SelectSaveDirectory, path, default_path),
--      base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
--                     weak_ptr_factory_.GetWeakPtr(), default_filename));
-+      std::move(callback));
- }
- 
- void PdfPrinterHandler::PostPrintToPdfTask() {
-@@ -499,6 +522,36 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
-       platform_util::GetTopLevel(preview_web_contents_->GetNativeView()), NULL);
- }
- 
-+#if BUILDFLAG(ENABLE_CEF)
-+
-+void PdfPrinterHandler::ShowCefSaveAsDialog(content::WebContents* initiator,
-+                                            const base::FilePath& filename,
-+                                            const base::FilePath& directory) {
-+  base::FilePath path = directory.Append(filename);
-+
-+  blink::mojom::FileChooserParams params;
-+  params.mode = blink::mojom::FileChooserParams::Mode::kSave;
-+  params.default_file_name = path;
-+  params.accept_types.push_back(
-+      alloy::FilePathTypeToString16(path.Extension()));
-+
-+  alloy::RunFileChooser(initiator, params,
-+      base::BindOnce(&PdfPrinterHandler::SaveAsDialogDismissed,
-+                     weak_ptr_factory_.GetWeakPtr()));
-+}
-+
-+void PdfPrinterHandler::SaveAsDialogDismissed(
-+    int selected_accept_filter,
-+    const std::vector<base::FilePath>& file_paths) {
-+  if (file_paths.size() == 1) {
-+    FileSelected(file_paths[0], 0, nullptr);
-+  } else {
-+    FileSelectionCanceled(nullptr);
-+  }
-+}
-+
-+#endif  // BUILDFLAG(ENABLE_CEF)
-+
- base::FilePath PdfPrinterHandler::GetSaveLocation() const {
- #if BUILDFLAG(IS_CHROMEOS_ASH)
-   drive::DriveIntegrationService* drive_service =
-diff --git chrome/browser/ui/webui/print_preview/pdf_printer_handler.h chrome/browser/ui/webui/print_preview/pdf_printer_handler.h
-index 46c8b1d08b075..1ee95cd7c3240 100644
---- chrome/browser/ui/webui/print_preview/pdf_printer_handler.h
-+++ chrome/browser/ui/webui/print_preview/pdf_printer_handler.h
-@@ -12,6 +12,7 @@
- #include "base/memory/ref_counted.h"
- #include "base/memory/weak_ptr.h"
- #include "build/chromeos_buildflags.h"
-+#include "cef/libcef/features/features.h"
- #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
- #include "ui/shell_dialogs/select_file_dialog.h"
- 
-@@ -95,10 +96,20 @@ class PdfPrinterHandler : public PrinterHandler,
-   void OnDirectorySelected(const base::FilePath& filename,
-                            const base::FilePath& directory);
- 
--  void OnSaveLocationReady(const base::FilePath& default_filename,
-+  void OnSaveLocationReady(content::WebContents* initiator,
-+                           const base::FilePath& default_filename,
-                            bool prompt_user,
-                            const base::FilePath& path);
- 
-+#if BUILDFLAG(ENABLE_CEF)
-+  void ShowCefSaveAsDialog(content::WebContents* initiator,
-+                           const base::FilePath& filename,
-+                           const base::FilePath& directory);
-+
-+  void SaveAsDialogDismissed(int selected_accept_filter,
-+                             const std::vector<base::FilePath>& file_paths);
-+#endif
-+
-   // Return save location as the Drive mount or fetch from Download Preferences.
-   base::FilePath GetSaveLocation() const;
- 
 diff --git chrome/browser/ui/webui/print_preview/print_preview_ui.cc chrome/browser/ui/webui/print_preview/print_preview_ui.cc
-index eba14d78d87ff..7901f000a44b5 100644
+index 70a13e9c0c5e4..1eb0e9c8faa62 100644
 --- chrome/browser/ui/webui/print_preview/print_preview_ui.cc
 +++ chrome/browser/ui/webui/print_preview/print_preview_ui.cc
 @@ -22,6 +22,7 @@
@@ -314,8 +161,8 @@ index eba14d78d87ff..7901f000a44b5 100644
  constexpr char kInvalidArgsForDidStartPreview[] =
      "Invalid arguments for DidStartPreview";
  constexpr char kInvalidPageNumberForDidPreviewPage[] =
-@@ -339,7 +347,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
-                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
+@@ -326,7 +334,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
+   source->AddLocalizedStrings(kLocalizedStrings);
  
  #if !BUILDFLAG(IS_CHROMEOS)
 -  const std::u16string shortcut_text(kBasicPrintShortcut);

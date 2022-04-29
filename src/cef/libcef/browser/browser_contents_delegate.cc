@@ -7,8 +7,10 @@
 #include "libcef/browser/browser_host_base.h"
 #include "libcef/browser/browser_platform_delegate.h"
 #include "libcef/browser/browser_util.h"
+#include "libcef/browser/native/cursor_util.h"
 #include "libcef/common/frame_util.h"
 
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -19,11 +21,59 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/widget/platform_widget.mojom-test-utils.h"
 
 using content::KeyboardEventProcessingResult;
+
+namespace {
+
+class CefWidgetHostInterceptor
+    : public blink::mojom::WidgetHostInterceptorForTesting,
+      public content::RenderWidgetHostObserver {
+ public:
+  CefWidgetHostInterceptor(CefRefPtr<CefBrowser> browser,
+                           content::RenderWidgetHost* render_widget_host)
+      : browser_(browser),
+        render_widget_host_(render_widget_host),
+        impl_(static_cast<content::RenderWidgetHostImpl*>(render_widget_host)
+                  ->widget_host_receiver_for_testing()
+                  .SwapImplForTesting(this)) {
+    render_widget_host_->AddObserver(this);
+  }
+
+  CefWidgetHostInterceptor(const CefWidgetHostInterceptor&) = delete;
+  CefWidgetHostInterceptor& operator=(const CefWidgetHostInterceptor&) = delete;
+
+  blink::mojom::WidgetHost* GetForwardingInterface() override { return impl_; }
+
+  // WidgetHostInterceptorForTesting method:
+  void SetCursor(const ui::Cursor& cursor) override {
+    if (cursor_util::OnCursorChange(browser_, cursor)) {
+      // Don't change the cursor.
+      return;
+    }
+
+    GetForwardingInterface()->SetCursor(cursor);
+  }
+
+  // RenderWidgetHostObserver method:
+  void RenderWidgetHostDestroyed(
+      content::RenderWidgetHost* widget_host) override {
+    widget_host->RemoveObserver(this);
+    delete this;
+  }
+
+ private:
+  CefRefPtr<CefBrowser> const browser_;
+  content::RenderWidgetHost* const render_widget_host_;
+  blink::mojom::WidgetHost* const impl_;
+};
+
+}  // namespace
 
 CefBrowserContentsDelegate::CefBrowserContentsDelegate(
     scoped_refptr<CefBrowserInfo> browser_info)
@@ -52,6 +102,10 @@ void CefBrowserContentsDelegate::ObserveWebContents(
     // browser.
     browser_info_->MaybeCreateFrame(new_contents->GetMainFrame(),
                                     false /* is_guest_view */);
+
+    // Make sure RenderWidgetCreated is called at least one time. This Observer
+    // is registered too late to catch the initial creation.
+    RenderWidgetCreated(new_contents->GetRenderViewHost()->GetWidget());
   } else {
     registrar_.reset();
   }
@@ -265,6 +319,8 @@ void CefBrowserContentsDelegate::RenderFrameCreated(
     }
     render_view_host->GetWidget()->GetView()->SetBackgroundColor(
         base_background_color);
+
+    platform_delegate()->RenderViewCreated(render_view_host);
   }
 }
 
@@ -294,7 +350,14 @@ void CefBrowserContentsDelegate::RenderFrameDeleted(
   }
 }
 
+void CefBrowserContentsDelegate::RenderWidgetCreated(
+    content::RenderWidgetHost* render_widget_host) {
+  new CefWidgetHostInterceptor(browser(), render_widget_host);
+}
+
 void CefBrowserContentsDelegate::RenderViewReady() {
+  platform_delegate()->RenderViewReady();
+
   if (auto c = client()) {
     if (auto handler = c->GetRequestHandler()) {
       handler->OnRenderViewReady(browser());

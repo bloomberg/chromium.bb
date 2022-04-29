@@ -3256,6 +3256,9 @@ void WebContentsImpl::RenderWidgetCreated(
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RenderWidgetCreated",
                         "render_widget_host", render_widget_host);
   created_widgets_.insert(render_widget_host);
+
+  observers_.NotifyObservers(
+      &WebContentsObserver::RenderWidgetCreated, render_widget_host);
 }
 
 void WebContentsImpl::RenderWidgetDeleted(

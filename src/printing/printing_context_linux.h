@@ -25,12 +25,17 @@ class COMPONENT_EXPORT(PRINTING) PrintingContextLinux : public PrintingContext {
   ~PrintingContextLinux() override;
 
   // Sets the function that creates the print dialog.
-  static void SetCreatePrintDialogFunction(PrintDialogGtkInterface* (
-      *create_dialog_func)(PrintingContextLinux* context));
+  // Returns the old function, if any.
+  using CreatePrintDialogFunctionPtr =
+      PrintDialogGtkInterface* (*)(PrintingContextLinux* context);
+  static CreatePrintDialogFunctionPtr SetCreatePrintDialogFunction(
+      CreatePrintDialogFunctionPtr);
 
   // Sets the function that returns pdf paper size through the native API.
-  static void SetPdfPaperSizeFunction(
-      gfx::Size (*get_pdf_paper_size)(PrintingContextLinux* context));
+  // Returns the old function, if any.
+  using PdfPaperSizeFunctionPtr = gfx::Size (*)(PrintingContextLinux* context);
+  static PdfPaperSizeFunctionPtr SetPdfPaperSizeFunction(
+      PdfPaperSizeFunctionPtr);
 
   // Initializes with predefined settings.
   void InitWithSettings(std::unique_ptr<PrintSettings> settings);

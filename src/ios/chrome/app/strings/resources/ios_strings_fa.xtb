@@ -359,6 +359,7 @@
 <translation id="4049507953662678203">مطمئن شوید اتصال شبکه دارید و دوباره امتحان کنید.</translation>
 <translation id="4063300985191096908">رفتن به جارزن</translation>
 <translation id="408404951701638773">اکنون دسترسی به نوار جستجو آسان‌تر است</translation>
+<translation id="4108998448622696017">رویدادهای خطرناکی را که اتفاق می‌افتد شناسایی می‌کند و درباره آن‌ها به شما هشدار می‌دهد.</translation>
 <translation id="411254640334432676">بارگیری نشد.</translation>
 <translation id="4112644173421521737">جستجو</translation>
 <translation id="4113030288477039509">مدیریت شده توسط سرپرست‌تان</translation>
@@ -609,6 +610,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6232736989810857397">‏با این کار می‌توانید به‌راحتی رویدادهای تقویم را بااستفاده از «لنز Google» ایجاد کنید.</translation>
 <translation id="6254066287920239840">پیوندها به‌جای مرورگر در برنامه باز شوند.</translation>
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
+<translation id="6277426346321820595">بدون محافظت</translation>
 <translation id="6284652193729350524">پیشنهاد ترجمه <ph name="LANGUAGE" /></translation>
 <translation id="6289501276895392862">دنبال کردن <ph name="CHANNEL_NAME" /> لغو شد</translation>
 <translation id="6293101329759844770">‏برای روشن کردن «مرور ایمن»، <ph name="BEGIN_LINK" />سرویس‌های Google<ph name="END_LINK" /> را باز کنید و روی «مرور ایمن» ضربه بزنید.</translation>
@@ -786,6 +788,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7671141431838911305">نصب</translation>
+<translation id="7687508192620387263">فایل تقویم دردسترس است</translation>
 <translation id="7701040980221191251">هیچ‌کدام</translation>
 <translation id="7720410380936703141">امتحان مجدد</translation>
 <translation id="7726702057919861819">منو ← سابقه ← پاک کردن داده‌های مرور</translation>
@@ -807,6 +810,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7884694604461143138">سابقه جستجو (<ph name="COUNT" /> مورد پیدا شد)</translation>
 <translation id="7887198238286927132">‏برای محافظت از حریم‌خصوصی‌تان، Chrome از ویژگی تکمیل خودکار برای این فیلد استفاده نخواهد کرد.</translation>
 <translation id="7911190106180361398">سازمانتان به شما اجازه نمی‌دهد همه چیز را همگام‌سازی کنید.</translation>
+<translation id="7920949005883349320">حریم‌خصوصی و امنیت</translation>
 <translation id="7930998711684428189">اگر گذرواژه‌ها به‌دلیل نقض داده لو رفته باشد، به شما هشدار می‌دهد.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">صادر کردن گذرواژه‌ها…</translation>
@@ -889,6 +893,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8588404856427128947">خاموش</translation>
 <translation id="8590913940444621808">هرگز سؤال نشود</translation>
 <translation id="8591976964826315682">مسدود کردن کوکی‌های شخص ثالث در «حالت ناشناس»</translation>
+<translation id="8592752150819985187">تکمیل خودکار گذرواژه‌ها</translation>
 <translation id="8605219856220328675">بستن برگه</translation>
 <translation id="8620640915598389714">ویرایش</translation>
 <translation id="8626393685701737946">می‌توانید در «تنظیمات &gt; تنظیمات محتوا»، نمای سایت پیش‌فرض را به میز کار تغییر دهید</translation>
@@ -907,6 +912,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8741995161408053644">‏ممکن است حساب Google شما اشکال سابقه مرور دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="8750037785291841318">برگه‌ها را اینجا خواهید دید</translation>
 <translation id="8756969031206844760">گذرواژه به‌روزرسانی شود؟</translation>
+<translation id="8764015330924122850">لغو دنبال کردن <ph name="DOMAIN_NAME" /></translation>
 <translation id="8775144690796719618">نشانی وب نامعتبر</translation>
 <translation id="8787968206789828143">جستجو در وب</translation>
 <translation id="8803639129939845298">ایمن</translation>
@@ -964,4 +970,5 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="988141524645182168">دستگاه‌های دیگر</translation>
 <translation id="989988560359834682">ویرایش آدرس</translation>
 <translation id="994757059139821576">مقالات پیشنهادی</translation>
+<translation id="997742718232442409">وب‌سایت سعی دارد فایل تقویم بارگیری کنید.</translation>
 </translationbundle>

@@ -480,6 +480,7 @@ def GetConfigArgsSandbox(platform, args, is_debug, cpu):
       # PartitionAlloc is selected as the default allocator in some cases.
       # We can't use it because it requires use_allocator_shim=true.
       'use_allocator': "none",
+      'use_partition_alloc': False,
 
       # Avoid /LTCG linker warnings and generate smaller lib files.
       'is_official_build': False,
@@ -524,14 +525,13 @@ def LinuxSysrootExists(cpu):
   sysroot_root = os.path.join(src_dir, 'build', 'linux')
   # CPU-specific sysroot directory names.
   # Should match the values in build/config/sysroot.gni.
-  if cpu == 'x86':
-    sysroot_name = 'debian_sid_i386-sysroot'
-  elif cpu == 'x64':
-    sysroot_name = 'debian_sid_amd64-sysroot'
+  release = 'bullseye'
+  if cpu == 'x64':
+    sysroot_name = 'debian_%s_amd64-sysroot' % release
   elif cpu == 'arm':
-    sysroot_name = 'debian_sid_arm-sysroot'
+    sysroot_name = 'debian_%s_arm-sysroot' % release
   elif cpu == 'arm64':
-    sysroot_name = 'debian_sid_arm64-sysroot'
+    sysroot_name = 'debian_%s_arm64-sysroot' % release
   else:
     raise Exception('Unrecognized sysroot CPU: %s' % cpu)
 
@@ -560,7 +560,7 @@ def GetAllPlatformConfigs(build_args):
     use_sysroot = GetArgValue(args, 'use_sysroot')
     if use_sysroot:
       # Only generate configurations for sysroots that have been installed.
-      for cpu in ('x86', 'x64', 'arm', 'arm64'):
+      for cpu in ('x64', 'arm', 'arm64'):
         if LinuxSysrootExists(cpu):
           supported_cpus.append(cpu)
         else:

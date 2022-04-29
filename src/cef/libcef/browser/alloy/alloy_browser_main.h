@@ -24,14 +24,12 @@ class WMState;
 }
 #endif
 
-#if defined(TOOLKIT_VIEWS)
 namespace views {
 class ViewsDelegate;
 #if BUILDFLAG(IS_MAC)
 class LayoutProvider;
 #endif
 }  // namespace views
-#endif  // defined(TOOLKIT_VIEWS)
 
 class CefDevToolsDelegate;
 
@@ -44,7 +42,6 @@ class AlloyBrowserMainParts : public content::BrowserMainParts {
 
   ~AlloyBrowserMainParts() override;
 
-  int PreEarlyInitialization() override;
   void ToolkitInitialized() override;
   void PreCreateMainMessageLoop() override;
   void PostCreateMainMessageLoop() override;
@@ -92,12 +89,10 @@ class AlloyBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<wm::WMState> wm_state_;
 #endif
 
-#if defined(TOOLKIT_VIEWS)
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
 #if BUILDFLAG(IS_MAC)
   std::unique_ptr<views::LayoutProvider> layout_provider_;
 #endif
-#endif  // defined(TOOLKIT_VIEWS)
 };
 
 #endif  // CEF_LIBCEF_BROWSER_ALLOY_ALLOY_BROWSER_MAIN_H_

@@ -62,17 +62,10 @@ class ChromeBrowserHostImpl : public CefBrowserHostBase {
   // CefBrowserHost methods:
   void CloseBrowser(bool force_close) override;
   bool TryCloseBrowser() override;
-  void SetFocus(bool focus) override;
   CefWindowHandle GetWindowHandle() override;
   CefWindowHandle GetOpenerWindowHandle() override;
   double GetZoomLevel() override;
   void SetZoomLevel(double zoomLevel) override;
-  void RunFileDialog(FileDialogMode mode,
-                     const CefString& title,
-                     const CefString& default_file_path,
-                     const std::vector<CefString>& accept_filters,
-                     int selected_accept_filter,
-                     CefRefPtr<CefRunFileDialogCallback> callback) override;
   void Print() override;
   void PrintToPDF(const CefString& path,
                   const CefPdfPrintSettings& settings,
@@ -96,7 +89,6 @@ class ChromeBrowserHostImpl : public CefBrowserHostBase {
   void SendExternalBeginFrame() override;
   void SendTouchEvent(const CefTouchEvent& event) override;
   void SendCaptureLostEvent() override;
-  void NotifyMoveOrResizeStarted() override;
   int GetWindowlessFrameRate() override;
   void SetWindowlessFrameRate(int frame_rate) override;
   void ImeSetComposition(const CefString& text,
@@ -167,6 +159,7 @@ class ChromeBrowserHostImpl : public CefBrowserHostBase {
   int GetCurrentTabIndex() const;
 
   Browser* browser_ = nullptr;
+  CefWindowHandle host_window_handle_ = kNullWindowHandle;
 };
 
 #endif  // CEF_LIBCEF_BROWSER_CHROME_CHROME_BROWSER_HOST_IMPL_H_

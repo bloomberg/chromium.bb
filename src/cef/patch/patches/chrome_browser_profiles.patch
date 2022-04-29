@@ -1,8 +1,8 @@
 diff --git chrome/browser/profiles/off_the_record_profile_impl.cc chrome/browser/profiles/off_the_record_profile_impl.cc
-index fa75e0580e3c5..f7a13da171372 100644
+index 64f159f52fb2f..8ae9d9d126ceb 100644
 --- chrome/browser/profiles/off_the_record_profile_impl.cc
 +++ chrome/browser/profiles/off_the_record_profile_impl.cc
-@@ -637,7 +637,9 @@ std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
+@@ -636,7 +636,9 @@ std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
  #endif
    if (!profile)
      profile = std::make_unique<OffTheRecordProfileImpl>(parent, otr_profile_id);
@@ -14,7 +14,7 @@ index fa75e0580e3c5..f7a13da171372 100644
  }
  
 diff --git chrome/browser/profiles/profile.cc chrome/browser/profiles/profile.cc
-index f89b024a0d565..298cd2a82c850 100644
+index c34520bfd62fe..1358d28347098 100644
 --- chrome/browser/profiles/profile.cc
 +++ chrome/browser/profiles/profile.cc
 @@ -83,6 +83,7 @@ base::LazyInstance<std::set<content::BrowserContext*>>::Leaky
@@ -25,7 +25,7 @@ index f89b024a0d565..298cd2a82c850 100644
  const char kDevToolsOTRProfileIDPrefix[] = "Devtools::BrowserContext";
  const char kMediaRouterOTRProfileIDPrefix[] = "MediaRouter::Presentation";
  const char kTestOTRProfileIDPrefix[] = "Test::OTR";
-@@ -97,6 +98,8 @@ bool Profile::OTRProfileID::AllowsBrowserWindows() const {
+@@ -99,6 +100,8 @@ bool Profile::OTRProfileID::AllowsBrowserWindows() const {
    // DevTools::BrowserContext and MediaRouter::Presentation are an
    // exception to this ban.
    return *this == PrimaryID() ||
@@ -34,7 +34,7 @@ index f89b024a0d565..298cd2a82c850 100644
           base::StartsWith(profile_id_, kDevToolsOTRProfileIDPrefix,
                            base::CompareCase::SENSITIVE) ||
           base::StartsWith(profile_id_, kMediaRouterOTRProfileIDPrefix,
-@@ -118,6 +121,16 @@ Profile::OTRProfileID Profile::OTRProfileID::CreateUnique(
+@@ -120,6 +123,16 @@ Profile::OTRProfileID Profile::OTRProfileID::CreateUnique(
        base::GUID::GenerateRandomV4().AsLowercaseString().c_str()));
  }
  
@@ -85,10 +85,10 @@ index ca2561e412621..febd52df6c971 100644
    virtual bool IsSignedIn() = 0;
  
 diff --git chrome/browser/profiles/profile_impl.cc chrome/browser/profiles/profile_impl.cc
-index fca66c2bf16ec..a44efeea30d44 100644
+index bf169b652ef30..b2bb98ceada7f 100644
 --- chrome/browser/profiles/profile_impl.cc
 +++ chrome/browser/profiles/profile_impl.cc
-@@ -1001,7 +1001,9 @@ Profile* ProfileImpl::GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
+@@ -993,7 +993,9 @@ Profile* ProfileImpl::GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
  
    otr_profiles_[otr_profile_id] = std::move(otr_profile);
  
@@ -100,10 +100,10 @@ index fca66c2bf16ec..a44efeea30d44 100644
    return raw_otr_profile;
  }
 diff --git chrome/browser/profiles/profile_manager.cc chrome/browser/profiles/profile_manager.cc
-index 8072c84fc1e92..c62c8c0d3978c 100644
+index 45389cca9b0ab..ab1573eaaf7a7 100644
 --- chrome/browser/profiles/profile_manager.cc
 +++ chrome/browser/profiles/profile_manager.cc
-@@ -510,7 +510,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
+@@ -512,7 +512,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
                            base::Unretained(this)));
  #endif
  
@@ -113,7 +113,7 @@ index 8072c84fc1e92..c62c8c0d3978c 100644
  
    zombie_metrics_timer_.Start(FROM_HERE, base::Minutes(30), this,
 diff --git chrome/browser/profiles/profile_manager.h chrome/browser/profiles/profile_manager.h
-index cc3c0dfb5be1b..89a35c2f914c4 100644
+index 8ba4e0ba9f3c0..d7b888f7120c4 100644
 --- chrome/browser/profiles/profile_manager.h
 +++ chrome/browser/profiles/profile_manager.h
 @@ -151,7 +151,7 @@ class ProfileManager : public Profile::Delegate {
@@ -135,7 +135,7 @@ index cc3c0dfb5be1b..89a35c2f914c4 100644
    // Returns the directory where the first created profile is stored,
    // relative to the user data directory currently in use.
 diff --git chrome/browser/profiles/renderer_updater.cc chrome/browser/profiles/renderer_updater.cc
-index 290b0e3e352ea..6fa4420236c13 100644
+index 6ccdfa7f3cc46..f8668efcc77f6 100644
 --- chrome/browser/profiles/renderer_updater.cc
 +++ chrome/browser/profiles/renderer_updater.cc
 @@ -8,6 +8,7 @@
@@ -146,7 +146,7 @@ index 290b0e3e352ea..6fa4420236c13 100644
  #include "chrome/browser/content_settings/content_settings_manager_delegate.h"
  #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
  #include "chrome/browser/profiles/profile.h"
-@@ -85,8 +86,10 @@ RendererUpdater::RendererUpdater(Profile* profile)
+@@ -35,8 +36,10 @@ RendererUpdater::RendererUpdater(Profile* profile)
      : profile_(profile),
        is_off_the_record_(profile_->IsOffTheRecord()),
        original_profile_(profile->GetOriginalProfile()) {
