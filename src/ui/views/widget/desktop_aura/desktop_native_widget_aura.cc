@@ -430,17 +430,15 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
                                       : focus_manager->GetStoredFocusView();
 
       aura::Window* window_for_activation = nullptr;
+      // blpwtk2: If a delegate is installed, ask it for the window that
+      // should be activated.
+      if (GetWidget()->widget_delegate()) {
+        window_for_activation =
+            GetWidget()->widget_delegate()->GetDefaultActivationWindow();
+      }
 
       if (!view_for_activation || !view_for_activation->GetWidget()) {
         view_for_activation = GetWidget()->GetRootView();
-
-        // blpwtk2: If a delegate is installed, ask it for the window that
-        // should be activated.
-        if (GetWidget()->widget_delegate()) {
-          window_for_activation =
-              GetWidget()->widget_delegate()->GetDefaultActivationWindow();
-        }
-
         // blpwtk2: Try to activate the window provided by the delegate
         // (if any).  Otherwise, fallback to the upstream behavior and activate
         // the window associated with the webview.
