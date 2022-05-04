@@ -2125,6 +2125,12 @@ class PrintFencedFrameBrowserTest
   }
   ~PrintFencedFrameBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
+    PrintBrowserTest::SetUpOnMainThread();
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+  }
+
   PrintFencedFrameBrowserTest(const PrintFencedFrameBrowserTest&) = delete;
   PrintFencedFrameBrowserTest& operator=(const PrintFencedFrameBrowserTest&) =
       delete;
@@ -2163,12 +2169,11 @@ class PrintFencedFrameBrowserTest
 
   void RunPrintTest(const std::string& print_command) {
     // Navigate to an initial page.
-    const GURL url(embedded_test_server()->GetURL("/empty.html"));
+    const GURL url(https_server_.GetURL("/empty.html"));
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     // Load a fenced frame.
-    GURL fenced_frame_url =
-        embedded_test_server()->GetURL("/fenced_frames/title1.html");
+    GURL fenced_frame_url = https_server_.GetURL("/fenced_frames/title1.html");
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::RenderFrameHost* fenced_frame_host =
@@ -2207,6 +2212,7 @@ class PrintFencedFrameBrowserTest
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 IN_PROC_BROWSER_TEST_P(PrintFencedFrameBrowserTest, ScriptedPrint) {
@@ -3278,7 +3284,7 @@ class ContentAnalysisPrintBrowserTest
 };
 
 // TODO(crbug.com/1256506): Re-enable test on Windows
-#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintNow) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
@@ -3352,7 +3358,7 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest,
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // TODO(crbug.com/1256506): Re-enable test on Windows
-#if !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC)
 INSTANTIATE_TEST_SUITE_P(All, ContentAnalysisPrintBrowserTest, testing::Bool());
 #endif  // !BUILDFLAG(IS_WIN)
 

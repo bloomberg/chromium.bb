@@ -1507,35 +1507,16 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
 };
 
 // The following are consent v2 variations in the Chrome Cart module.
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpStringChange[] = {
-    {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "1"}};
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpInline[] = {
-    {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "2"}};
 const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpDialog[] = {
     {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"}};
-const flags_ui::FeatureEntry::FeatureParam
-    kDiscountConsentOnCartAndCheckoutPage[] = {
-        {commerce::kContextualConsentShowOnCartAndCheckoutPageParam, "true"}};
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentOnSRP[] = {
-    {commerce::kContextualConsentShowOnSRPParam, "true"}};
-const flags_ui::FeatureEntry::FeatureParam
-    kDiscountConsentOnNTPDialogAndCartCheckout[] = {
-        {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"},
-        {commerce::kContextualConsentShowOnCartAndCheckoutPageParam, "true"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpNativeDialog[] = {
+    {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "4"}};
+
 const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
-    {"Changing string", kDiscountConsentNtpStringChange,
-     std::size(kDiscountConsentNtpStringChange), nullptr},
-    {"Inline Consent", kDiscountConsentNtpInline,
-     std::size(kDiscountConsentNtpInline), nullptr},
-    {"Dialog Consent", kDiscountConsentNtpDialog,
+    {"WebUi Dialog Consent", kDiscountConsentNtpDialog,
      std::size(kDiscountConsentNtpDialog), nullptr},
-    {"Cart and Checkout Consent", kDiscountConsentOnCartAndCheckoutPage,
-     std::size(kDiscountConsentOnCartAndCheckoutPage), nullptr},
-    {"SRP Consent", kDiscountConsentOnSRP, std::size(kDiscountConsentOnSRP),
-     nullptr},
-    {"Cart, Checkout, and Dialog Consent",
-     kDiscountConsentOnNTPDialogAndCartCheckout,
-     std::size(kDiscountConsentOnNTPDialogAndCartCheckout), nullptr},
+    {"Native Dialog Consent", kDiscountConsentNtpNativeDialog,
+     std::size(kDiscountConsentNtpNativeDialog), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
@@ -7751,6 +7732,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryName,
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription, kOsAll,
      FEATURE_VALUE_TYPE(::syncer::kSyncTrustedVaultPassphraseRecovery)},
+
+    {"sync-standalone-invalidations", flag_descriptions::kSyncInvalidationsName,
+     flag_descriptions::kSyncInvalidationsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidations)},
+
+    {"sync-standalone-invalidations-wallet-and-offer",
+     flag_descriptions::kSyncInvalidationsWalletAndOfferName,
+     flag_descriptions::kSyncInvalidationsWalletAndOfferDescription, kOsAll,
+     FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidationsForWalletAndOffer)},
 
     {"debug-history-intervention-no-user-activation",
      flag_descriptions::kDebugHistoryInterventionNoUserActivationName,

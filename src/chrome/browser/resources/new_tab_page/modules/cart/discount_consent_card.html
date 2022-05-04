@@ -34,11 +34,10 @@
 
   #faviconContainer li {
     display: inline;
-    margin-inline-end: -6px;
+    margin: 2px;
   }
 
   .favicon-image {
-    border: 2px solid var(--ntp-background-override-color);
     border-radius: 50%;
     height: 24px;
     margin-inline-end: auto;
@@ -107,7 +106,7 @@
       <template id="consentStepRepeat" is="dom-repeat" items="[[steps_]]"
           as="step">
         <div class="step-container" id="[[step.id]]">
-          <div class="content-container truncate">
+          <div class="content-container truncate" tabindex="0">
             <span class="content">
               [[step.content]]
             </span>

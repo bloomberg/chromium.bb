@@ -112,7 +112,6 @@
 <translation id="1108938384783527433">Պատմության համաժամացում</translation>
 <translation id="1110155001042129815">Սպասել</translation>
 <translation id="1110965959145884739">Ընտրեք, թե որ լեզուները տեղադրել այս սարքում։ Սկավառակի վրա տարածքը խնայելու համար լեզվի փաթեթները հասանելի են բոլոր օգտատերերին։ <ph name="BEGIN_LINK_LEARN_MORE" />Իմանալ ավելին<ph name="END_LINK_LEARN_MORE" /></translation>
-<translation id="1111781754511998498">Projector</translation>
 <translation id="1112420131909513020">Ֆոնային ներդիրում օգտագործվում է Bluetooth-ը</translation>
 <translation id="1113892970288677790">Ընտրեք առաջարկվող պատկերներ</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
@@ -519,10 +518,10 @@
 <translation id="1509163368529404530">&amp;Վերականգնել խումբը</translation>
 <translation id="1509281256533087115">Մուտք գործեք ցանկացած <ph name="DEVICE_NAME_AND_VENDOR" /> սարք USB-ի միջոցով</translation>
 <translation id="1510238584712386396">Գործարկիչ</translation>
-<translation id="1510785804673676069">Եթե դուք օգտվում եք միջնորդ սերվերից, ստուգեք նրա կարգավորումները
+<translation id="1510785804673676069">Եթե դուք օգտվում եք պրոքսի սերվերից, ստուգեք նրա կարգավորումները
     կամ խնդրեք ցանցի ադմինիստրատորին
-    կարգավորել այն: Եթե միջնորդ սերվեր չեք օգտագործում, կարգաբերեք ձեր
-    <ph name="LINK_START" />միջնորդ սերվերի կարգավորումները<ph name="LINK_END" />:</translation>
+    կարգավորել այն: Եթե պրոքսի սերվեր չեք օգտագործում, կարգաբերեք ձեր
+    <ph name="LINK_START" />պրոքսի սերվերի կարգավորումները<ph name="LINK_END" />:</translation>
 <translation id="1511997356770098059">Անվտանգության այս բանալիում մուտքի տվյալներ չեն կարող պահվել</translation>
 <translation id="1512210426710821809">Այս գործողությունը հետարկելու միակ ձևը <ph name="IDS_SHORT_PRODUCT_OS_NAME" />-ը նորից տեղադրելն է</translation>
 <translation id="1512642802859169995">«<ph name="FILE_NAME" />» ֆայլը գաղտնագրված է։ Խնդրեք սեփականատիրոջը վերծանել այն։</translation>
@@ -1059,7 +1058,7 @@
 <translation id="2005967212456643969">Անհատականացնել թույլտվությունները յուրաքանչյուր ընդլայնման համար</translation>
 <translation id="2006638907958895361">Բացել հղումը <ph name="APP" /> հավելվածում</translation>
 <translation id="2007404777272201486">Report an Issue...</translation>
-<translation id="2009590708342941694">«Զմայլիկներ» գործիք</translation>
+<translation id="2009590708342941694">«Էմոջիներ» գործիք</translation>
 <translation id="2010501376126504057">Համատեղելի սարքեր</translation>
 <translation id="2015232545623037616">Համակարգիչը և Chromecast-ը միևնույն Wi-Fi ցանցում են գտնվում</translation>
 <translation id="2016473077102413275">Գործառույթները, որոնց համար պահանջվում են պատկերներ, չեն աշխատի</translation>
@@ -1842,7 +1841,7 @@
 <translation id="2727712005121231835">Actual Size</translation>
 <translation id="2729314457178420145">Ջնջել նաև այցելությունների պատմությունը (<ph name="URL" />)։ Նկատի ունեցեք, որ արդյունքում հնարավոր է դուրս գրվեք ձեր հաշվից Google.com կայքում։ <ph name="LEARN_MORE" /></translation>
 <translation id="2730029791981212295">Լինուքսի հավելվածների ու ֆայլերի պահուստավորում</translation>
-<translation id="2730901670247399077">Զմայլիկների առաջարկներ</translation>
+<translation id="2730901670247399077">Էմոջիների առաջարկներ</translation>
 <translation id="273093730430620027">Այս էջն օգտագործում է ձեր տեսախցիկը:</translation>
 <translation id="2731392572903530958">Նո&amp;րից բացել փակված պատուհանը</translation>
 <translation id="2731700343119398978">Սպասեք…</translation>
@@ -1952,7 +1951,7 @@
 <translation id="2820957248982571256">Որոնում…</translation>
 <translation id="2822634587701817431">Սեղմել/ընդարձակել</translation>
 <translation id="2822910719211888134">Չհաջողվեց պահուստավորել Լինուքսը</translation>
-<translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ձեր ադմինիստրատորի միջնորդ սերվերի կարգավորումները</translation>
+<translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ձեր ադմինիստրատորի պրոքսի սերվերի կարգավորումները</translation>
 <translation id="2825758591930162672">Սուբյեկտի հանրային բանալին</translation>
 <translation id="2828375943530438449">Վերադառնալ «Մուտք» էջից</translation>
 <translation id="2828650939514476812">Միացեք Wi-Fi ցանցի</translation>
@@ -2452,7 +2451,7 @@
 <translation id="3345886924813989455">Աջակցվող դիտարկիչ չի գտնվել</translation>
 <translation id="3347086966102161372">Պատճենել պատկերի հասցեն</translation>
 <translation id="3348038390189153836">Հայտնաբերվել է արտաքին կրիչ</translation>
-<translation id="3348131053948466246">Առաջարկվում են զմայլիկներ։ Դիտելու համար սեղմեք վեր կամ վար սլաքով ստեղնը, իսկ ընտրելու համար՝ Enter։</translation>
+<translation id="3348131053948466246">Առաջարկվում են էմոջիներ։ Դիտելու համար սեղմեք վեր կամ վար սլաքով ստեղնը, իսկ ընտրելու համար՝ Enter։</translation>
 <translation id="3349933790966648062">Օգտագործված հիշողության ծավալ</translation>
 <translation id="3354972872297836698">Չհաջողվեց զուգակցվել «<ph name="DEVICE_NAME" />» սարքին։ Ընտրեք սարքը և նորից փորձեք։</translation>
 <translation id="3355936511340229503">Կապակցման սխալ</translation>
@@ -2938,7 +2937,7 @@
 <translation id="3813358687923336574">Էջերի թարգմանության և արագ պատասխանների համար օգտագործվող լեզուն</translation>
 <translation id="3814529970604306954">Ուսումնական հաշիվ</translation>
 <translation id="3816118180265633665">Chrome-ի գույներ</translation>
-<translation id="3817524650114746564">Ձեր համակարգչում բացեք միջնորդ սերվերի կարգավորումները</translation>
+<translation id="3817524650114746564">Ձեր համակարգչում բացեք պրոքսի սերվերի կարգավորումները</translation>
 <translation id="3819257035322786455">Պահուստավորում</translation>
 <translation id="3819261658055281761">Համակարգին չհաջողվեց պահել այս սարքի երկարաժամկետ API-ի մուտքի թոքենը:</translation>
 <translation id="3819800052061700452">&amp;Լիաէկրան</translation>
@@ -2970,7 +2969,7 @@
 <translation id="3841964634449506551">Գաղտնաբառը սխալ է</translation>
 <translation id="3842552989725514455">Serif տառատեսակ</translation>
 <translation id="3843464315703645664">Թույլատրված է ներքին օգտագործման համար</translation>
-<translation id="3844888638014364087">Զմայլիկը զետեղվեց</translation>
+<translation id="3844888638014364087">Էմոջին զետեղվեց</translation>
 <translation id="3846116211488856547">Ստացեք գործիքներ, որոնցով կարող եք մշակել կայքեր, Android հավելվածներ և այլն: Linux-ի տեղադրման դեպքում կներբեռնվեն <ph name="DOWNLOAD_SIZE" /> ծավալով տվյալներ:</translation>
 <translation id="3847319713229060696">Օգնեք բարելավել համացանցից օգտվողների անվտանգությունը</translation>
 <translation id="3848547754896969219">Բացել &amp;ինկոգնիտո պատուհանում</translation>
@@ -4319,7 +4318,7 @@
 <translation id="5210365745912300556">Փակել ներդիրը</translation>
 <translation id="5213114823401215820">Վերականգնել փակված խումբը</translation>
 <translation id="5213481667492808996">Տվյալների փոխանցման «<ph name="NAME" />» ծառայությունը պատրաստ է օգտագործման</translation>
-<translation id="5213891612754844763">Ցուցադրել միջնորդ սերվերի կարգավորումները</translation>
+<translation id="5213891612754844763">Ցուցադրել պրոքսի սերվերի կարգավորումները</translation>
 <translation id="5215502535566372932">Ընտրեք երկիրը</translation>
 <translation id="521582610500777512">Լուսանկարը ջնջվել է</translation>
 <translation id="522155068793322853">Չհաջողվեց բացել <ph name="APP_NAME" /> հավելվածը</translation>
@@ -4622,7 +4621,7 @@
 <translation id="5511379779384092781">Շատ փոքր</translation>
 <translation id="5511823366942919280">Իսկապե՞ս ուզում եք օգտագործել այս սարքը որպես Shark:</translation>
 <translation id="5512739112435045339">Տարածք ազատեք ձեր սարքում։ Այնուհետև նորից փորձեք ներբեռնել։</translation>
-<translation id="5514315914873062345">Ներդիր</translation>
+<translation id="5514315914873062345">Tab</translation>
 <translation id="5517304475148761050">Այս հավելվածը պահանջում է Play Խանութ մտնելու թույլտվություն</translation>
 <translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="5518219166343146486">Հարցնել, երբ կայքն ուզում է տեսնել սեղմատախտակին պատճենված տեքստն ու պատկերները</translation>
@@ -4793,13 +4792,13 @@
 <translation id="5689516760719285838">Տեղորոշում</translation>
 <translation id="5689531695336322499"><ph name="SUPERVISED_USER_NAME" />-ն արդեն Օգնականի միջոցով կարգավորել է Voice Match-ը այլ սարքում։ Այս նախկին ձայնագրություններն օգտագործվել են՝ ձեր ձայնի նմուշն այս սարքում ստեղծելու համար։</translation>
 <translation id="56907980372820799">Հղման տվյալներ</translation>
-<translation id="5691581861107245578">Ստացեք զմայլիկների առաջարկներ՝ ձեր մուտքագրած տեքստի հիման վրա</translation>
+<translation id="5691581861107245578">Ստացեք էմոջիների առաջարկներ՝ ձեր մուտքագրած տեքստի հիման վրա</translation>
 <translation id="5691772641933328258">Չհաջողվեց ճանաչել մատնահետքը</translation>
 <translation id="5692183275898619210">Տպումն ավարտվեց</translation>
 <translation id="5695184138696833495">Android-ի համար հավելվածների ADB գործիք Լինուքսում</translation>
 <translation id="5696143504434933566">Հաղորդել չարաշահման մասին («<ph name="EXTENSION_NAME" />»)</translation>
 <translation id="5696679855467848181">Ընթացիկ օգտագործվող PPD ֆայլը՝ <ph name="PPD_NAME" /></translation>
-<translation id="5697832193891326782">Զմայլիկների ընտրիչ</translation>
+<translation id="5697832193891326782">Էմոջիների ընտրիչ</translation>
 <translation id="570043786759263127">Google Play հավելվածներ և ծառայություններ</translation>
 <translation id="5700836101007545240">Ձեր ադմինիստրատորն անջատել է կապ ավելացնելու գործառույթը</translation>
 <translation id="5701080607174488915">Քաղաքականությունը չհաջողվեց բեռնել սերվերից։</translation>
@@ -5370,6 +5369,7 @@
 <translation id="6271780480930459892">Վերջին տարբերակը տեղադրելու համար դիմեք ձեր ադմինիստրատորին։</translation>
 <translation id="6272643420381259437">Փլագինը ներբեռնելիս սխալ առաջացավ (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Որակյալ</translation>
+<translation id="6274202259872570803">Սքրինքաստ</translation>
 <translation id="6276210637549544171"><ph name="PROXY_SERVER" /> պրոքսիի օգտագործման համար անհրաժեշտ է մուտքագրել օգտանուն և գաղտնաբառ։</translation>
 <translation id="6277105963844135994">Ցանցի ժամասպառում</translation>
 <translation id="6277518330158259200">Ստեղ&amp;ծել սքրինշոթ</translation>
@@ -5429,7 +5429,7 @@
 <translation id="6325191661371220117">Անջատել ինքնագործարկումը</translation>
 <translation id="6326175484149238433">Հեռացնել Chrome-ից</translation>
 <translation id="6326855256003666642">Keepalive կապակցումների քանակը</translation>
-<translation id="6327785803543103246">Միջնորդ սերվերի ինքնահայտնաբերում</translation>
+<translation id="6327785803543103246">Պրոքսի սերվերի ինքնահայտնաբերում</translation>
 <translation id="6331191339300272798">Ավտոմատ մուգ թեմա</translation>
 <translation id="6331818708794917058">Կայքերը կարող են MIDI սարքերին միանալու թույլտվություն խնդրել</translation>
 <translation id="6333064448949140209">Վրիպազերծման համար ֆայլը կուղարկվի Google-ին</translation>
@@ -7225,7 +7225,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Այս ծառայությունը կարող եք անջատել Կարգավորումներում:<ph name="END_PARAGRAPH5" /></translation>
 <translation id="8096740438774030488">Անջատել էկրանը մարտկոցից սնուցման ընթացքում</translation>
 <translation id="80974698889265265">PIN կոդերը չեն համընկնում</translation>
-<translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ընդլայնումներից մեկի միջնորդ սերվերի կարգավորումները</translation>
+<translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ընդլայնումներից մեկի պրոքսի սերվերի կարգավորումները</translation>
 <translation id="8097959162767603171">Ձեր ադմինիստրատորը նախ պետք է ընդունի օգտագործման պայմանները Ադմինիստրատորի վահանակի Chrome սարքերի ցանկում։</translation>
 <translation id="8098156986344908134">Իսկապե՞ս ուզում եք տեղադրել <ph name="DEVICE_OS" />-ը և ջնջել բոլոր տվյալները կոշտ սկավառակից</translation>
 <translation id="8098616321286360457">Պահանջվում է ինտերնետ կապ</translation>

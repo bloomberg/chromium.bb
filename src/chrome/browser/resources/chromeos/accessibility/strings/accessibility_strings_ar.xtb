@@ -685,6 +685,8 @@
 <translation id="5623842676595125836">السجل</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">رمز رسومي</translation>
+<translation id="5648939288050772726">‏لقد تعلمتَ أساسيات استخدام ChromeVox بنجاح. تذكّر أنّه يمكنك فتح قائمة أوامر ChromeVox في أي وقت من خلال الضغط على مفتاح البحث + مفتاح النقطة. لمعرفة المزيد من المعلومات حول ChromeVox ونظام التشغيل Chrome، يُرجى الاطّلاع على المقالات التالية.
+    إذا انتهيت من البرنامج التعليمي، استخدِم ChromeVox للانتقال إلى الزر "إغلاق" وانقر عليه.</translation>
 <translation id="5653397561111110475">‏استخدام ميزات إمكانية الوصول في شاشة لمس Chromebook</translation>
 <translation id="5655682562155942719">أوامر الانتقال السريع</translation>
 <translation id="56637627897541303">منطقة النص</translation>
@@ -794,7 +796,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{علامة نقطتين واحدة}zero{# colons}two{علامتا نقطتين (#)}few{# علامات نقطتين}many{# علامة نقطتين}other{# من علامات النقطتين}}</translation>
 <translation id="6444046323172968959">مربع حوار للتنبيه</translation>
 <translation id="6452403590345320472">الفهرس</translation>
-<translation id="6457542714329819968">النوع</translation>
+<translation id="6457542714329819968">كتابة</translation>
 <translation id="6468049171101508116">الزر التالي</translation>
 <translation id="646954774886932461">فهرس</translation>
 <translation id="6475604559827479857">لون لتمييز الكلمة:</translation>

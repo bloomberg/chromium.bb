@@ -463,6 +463,14 @@
           '--flag-specific=enable-editing-ng',
         ],
       },
+      'linux_layout_tests_layout_ng_disabled': {
+        'args': [
+          '--flag-specific=disable-layout-ng',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # TODO (crbug.com/1254971) Re-enable once fixed
       'mac-osxbeta-rel': {
         'experiment_percentage': 0,
@@ -3027,8 +3035,12 @@
   },
   'test_buildbucket_api_gpu_use_cases': {
     'remove_from': [
-      # crbug.com/1080749
-      'Optional Linux Release (NVIDIA)',
+      'Optional Linux Release (NVIDIA)',  # crbug.com/1080749
+    ],
+  },
+  'test_buildbucket_api_gpu_use_cases GTX 1660': {
+    'remove_from': [
+      'linux_optional_gpu_tests_rel',  # crbug.com/1080749
     ],
   },
   'trace_test': {

@@ -344,11 +344,13 @@ namespace {
   self.viewPresented = NO;
   [self updateVisible];
 
-  // Unfocus omnibox, to prevent it from lingering when it should be dismissed
-  // (for example, when navigating away or when changing feed visibility).
-  id<OmniboxCommands> omniboxCommandHandler =
-      HandlerForProtocol(self.browser->GetCommandDispatcher(), OmniboxCommands);
-  [omniboxCommandHandler cancelOmniboxEdit];
+  if (!IsContentSuggestionsHeaderMigrationEnabled()) {
+    // Unfocus omnibox, to prevent it from lingering when it should be dismissed
+    // (for example, when navigating away or when changing feed visibility).
+    id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), OmniboxCommands);
+    [omniboxCommandHandler cancelOmniboxEdit];
+  }
 
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
@@ -358,6 +360,8 @@ namespace {
   self.feedManagementCoordinator = nil;
   [self.contentSuggestionsCoordinator stop];
   self.contentSuggestionsCoordinator = nil;
+  self.headerSynchronizer = nil;
+  self.headerController = nil;
   self.incognitoViewController = nil;
   self.ntpViewController = nil;
   self.feedHeaderViewController = nil;
@@ -379,6 +383,16 @@ namespace {
   [self.containedViewController willMoveToParentViewController:nil];
   [self.containedViewController.view removeFromSuperview];
   [self.containedViewController removeFromParentViewController];
+
+  if (IsContentSuggestionsHeaderMigrationEnabled()) {
+    // Unfocus omnibox, to prevent it from lingering when it should be dismissed
+    // (for example, when navigating away or when changing feed visibility).
+    // Do this after the MVC classes are deallocated so no reset animations are
+    // fired in response to this cancel.
+    id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), OmniboxCommands);
+    [omniboxCommandHandler cancelOmniboxEdit];
+  }
 
   [self.feedExpandedPref setObserver:nil];
   self.feedExpandedPref = nil;
@@ -706,6 +720,7 @@ namespace {
 }
 
 - (BOOL)isGoogleDefaultSearchEngine {
+  DCHECK(self.templateURLService);
   const TemplateURL* defaultURL =
       self.templateURLService->GetDefaultSearchProvider();
   BOOL isGoogleDefaultSearchProvider =
@@ -869,7 +884,8 @@ namespace {
 #pragma mark - NewTabPageContentDelegate
 
 - (void)reloadContentSuggestions {
-  if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+  if (IsContentSuggestionsHeaderMigrationEnabled() &&
+      IsContentSuggestionsUIViewControllerMigrationEnabled()) {
     // No need to reload ContentSuggestions since the mediator receives all
     // model state changes and immediately updates the consumer with the new
     // state.
@@ -1054,8 +1070,7 @@ namespace {
 - (void)defaultSearchEngineDidChange {
   [self updateFeedHeaderLabelText:self.feedHeaderViewController];
   if (IsWebChannelsEnabled()) {
-    self.feedHeaderViewController.isGoogleDefaultSearchEngine =
-        [self isGoogleDefaultSearchEngine];
+    [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
     [self.feedHeaderViewController.view setNeedsLayout];
     [self.feedHeaderViewController.view layoutIfNeeded];
   }
@@ -1157,9 +1172,9 @@ namespace {
                                         self.prefService->GetInteger(
                                             prefs::kNTPFollowingFeedSortType)
          followingSegmentDotVisible:self.discoverFeedService
-                                        ->GetFollowingFeedHasUnseenContent()
-        isGoogleDefaultSearchEngine:[self isGoogleDefaultSearchEngine]];
+                                        ->GetFollowingFeedHasUnseenContent()];
     _feedHeaderViewController.feedControlDelegate = self;
+    _feedHeaderViewController.ntpDelegate = self;
     [_feedHeaderViewController.menuButton
                addTarget:self
                   action:@selector(openFeedMenu)

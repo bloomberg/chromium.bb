@@ -114,7 +114,6 @@
 <translation id="1108938384783527433">Előzmények szinkronizálása</translation>
 <translation id="1110155001042129815">Várakozás</translation>
 <translation id="1110965959145884739">Válassza ki, hogy mely nyelveket szeretné telepíteni erre az eszközre. A nyelvi fájlok a helytakarékosság érdekében megosztottak a különböző felhasználók között. <ph name="BEGIN_LINK_LEARN_MORE" />További információ<ph name="END_LINK_LEARN_MORE" /></translation>
-<translation id="1111781754511998498">Projektor</translation>
 <translation id="1112420131909513020">A háttérben futó lap Bluetooth-t használ</translation>
 <translation id="1113892970288677790">Válogatott műalkotások és képek kiválasztása</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
@@ -1149,6 +1148,24 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2090165459409185032">Fiókadatainak helyreállításához lépjen a következő oldalra: google.com/accounts/recovery</translation>
 <translation id="2090507354966565596">Automatikus csatlakozás bejelentkezéskor</translation>
 <translation id="2090876986345970080">Rendszerbiztonsági beállítás</translation>
+<translation id="2092356157625807382"><ph name="BEGIN_H3" />Hibakeresési funkciók<ph name="END_H3" />
+      <ph name="BR" />
+      ChromeOS-eszközén engedélyezheti a hibakeresési funkciókat, melyekkel egyéni kódot telepíthet és tesztelhet az eszközén. Ezzel az alábbiakra nyílik lehetősége:<ph name="BR" />
+      <ph name="BEGIN_LIST" />
+        <ph name="LIST_ITEM" />Rootfs ellenőrzés eltávolítása, hogy módosítani tudja az operációs rendszer fájljait.
+        <ph name="LIST_ITEM" />SSH-alapú hozzáférés engedélyezése az eszközhöz a standard tesztelési kulcsok használatával, így használhat olyan eszközöket az eszközhöz való hozzáféréshez, mint a <ph name="BEGIN_CODE" />'cros flash'<ph name="END_CODE" />.
+        <ph name="LIST_ITEM" />USB-eszközről történő rendszerindítás engedélyezése, így telepítheti a kívánt operációs rendszer lemezképét USB-meghajtóról.
+        <ph name="LIST_ITEM" />A fejlesztői és a rendszer root bejelentkezési jelszavának beállítása egyedi értékre, hogy manuálisan be tudjon jelentkezni az eszközre SSH használatával.
+      <ph name="END_LIST" />
+      <ph name="BR" />
+      Miután aktiválja őket, a hibakeresési funkciók nagy része még akkor is engedélyezve marad, ha powerwash műveletet hajt végre, vagy ha visszaállíthatatlanul törli az adatokat a vállalati felügyelt eszközről. Az összes hibakeresési funkció teljes letiltásához hajtsa végre a ChromeOS helyreállítási folyamatát (https://support.google.com/chromebook/answer/1080595).
+      <ph name="BR" />
+      <ph name="BR" />
+      További információ a hibakeresési funkciókról:<ph name="BR" />
+      https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+      <ph name="BR" />
+      <ph name="BR" />
+      <ph name="BEGIN_BOLD" />Megjegyzés:<ph name="END_BOLD" /> A rendszer újraindul a folyamat során.</translation>
 <translation id="2095774564753225041">Támogatott fájltípusok</translation>
 <translation id="2096715839409389970">Harmadik féltől származó cookie-k törlése</translation>
 <translation id="2098805196501063469">A hátralévő jelszavak ellenőrzése</translation>
@@ -1370,6 +1387,24 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2300383962156589922">A(z) <ph name="APP_NAME" /> személyre szabása és beállításai</translation>
 <translation id="2301382460326681002">A bővítmény gyökérkönyvtára érvénytelen.</translation>
 <translation id="2301402091755573488">Megosztott lap</translation>
+<translation id="2302342861452486996"><ph name="BEGIN_H3" />Hibakeresési funkciók<ph name="END_H3" />
+      <ph name="BR" />
+      ChromeOS Flex-eszközén engedélyezheti a hibakeresési funkciókat, melyekkel egyéni kódot telepíthet és tesztelhet az eszközén. Ezzel az alábbiakra nyílik lehetősége:<ph name="BR" />
+      <ph name="BEGIN_LIST" />
+        <ph name="LIST_ITEM" />Rootfs ellenőrzés eltávolítása, hogy módosítani tudja az operációs rendszer fájljait.
+        <ph name="LIST_ITEM" />SSH-alapú hozzáférés engedélyezése az eszközhöz a standard tesztelési kulcsok használatával, így használhat olyan eszközöket az eszközhöz való hozzáféréshez, mint a <ph name="BEGIN_CODE" />'cros flash'<ph name="END_CODE" />.
+        <ph name="LIST_ITEM" />USB-eszközről történő rendszerindítás engedélyezése, így telepítheti a kívánt operációs rendszer lemezképét USB-meghajtóról.
+        <ph name="LIST_ITEM" />A fejlesztői és a rendszer root bejelentkezési jelszavának beállítása egyedi értékre, hogy manuálisan be tudjon jelentkezni az eszközre SSH használatával.
+      <ph name="END_LIST" />
+      <ph name="BR" />
+      Miután aktiválja őket, a hibakeresési funkciók nagy része még akkor is engedélyezve marad, ha powerwash műveletet hajt végre, vagy ha visszaállíthatatlanul törli az adatokat a vállalati felügyelt eszközről. Az összes hibakeresési funkció teljes letiltásához hajtsa végre a ChromeOS helyreállítási folyamatát (https://support.google.com/chromebook/answer/1080595).
+      <ph name="BR" />
+      <ph name="BR" />
+      További információ a hibakeresési funkciókról:<ph name="BR" />
+      https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+      <ph name="BR" />
+      <ph name="BR" />
+      <ph name="BEGIN_BOLD" />Megjegyzés:<ph name="END_BOLD" /> A rendszer újraindul a folyamat során.</translation>
 <translation id="23030561267973084">A(z) „<ph name="EXTENSION_NAME" />” további engedélyeket kért.</translation>
 <translation id="23055578400314116">Válassza ki a felhasználónevét</translation>
 <translation id="2307462900900812319">Hálózat beállítása</translation>
@@ -1732,7 +1767,9 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2642111877055905627">Focilabda</translation>
 <translation id="2643698698624765890">Bővítményeit az Ablak menü Bővítmények elemére kattintva kezelheti.</translation>
 <translation id="2645047101481282803">Az eszközét a következő kezeli: <ph name="PROFILE_NAME" />.</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2649045351178520408">Base64 kódolású ASCII, tanúsítványlánc</translation>
+<translation id="2652129567809778422">Jelszó kiválasztása</translation>
 <translation id="2653033005692233957">Sikertelen keresés</translation>
 <translation id="2653266418988778031">Ha töröl egy tanúsítványkibocsátói (CA) tanúsítványt, a böngészője többé nem fog megbízni az adott tanúsítványkibocsátó által kibocsátott tanúsítványokban.</translation>
 <translation id="2653275834716714682">Szöveg cseréje</translation>
@@ -1941,6 +1978,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2839032553903800133">Értesítések letiltva</translation>
 <translation id="2841013758207633010">Idő</translation>
 <translation id="2841837950101800123">Szolgáltató</translation>
+<translation id="2843560154284403323">A Linux beállításának befejezéséhez frissítse a ChromeOS rendszert, majd próbálkozzon újra.</translation>
 <translation id="2844169650293029770">C típusú USB-vel kompatibilis eszköz (bal első port)</translation>
 <translation id="2844809857160214557">Nyomtatási feladatok megtekintése és kezelése</translation>
 <translation id="2845382757467349449">A könyvjelzők eszköztára mindig látható</translation>
@@ -1958,6 +1996,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2854896010770911740">Harmadik felektől származó cookie-k eltávolítása</translation>
 <translation id="2856776373509145513">Új tároló létrehozása</translation>
 <translation id="2858138569776157458">Népszerűek</translation>
+<translation id="2859383038987078242">A ChromeOS diagnosztikai tesztjeinek futtatása.</translation>
 <translation id="2861301611394761800">A rendszerfrissítés befejeződött. Kérjük, indítsa újra a rendszert.</translation>
 <translation id="2861941300086904918">Natív kliens biztonságkezelő</translation>
 <translation id="2862815659905780618">Linux fejlesztői környezet eltávolítása</translation>
@@ -2318,6 +2357,8 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3238192140106069382">Csatlakozás és ellenőrzés</translation>
 <translation id="3239373508713281971">Időkorlát eltávolítva a következő alkalmazásnál: <ph name="APP_NAME" /></translation>
 <translation id="3241680850019875542">Válassza ki a bővítmény gyökérkönyvtárát. A bővítmény frissítéséhez meg kell adni az ismét használandó privátkulcs-fájlt is.</translation>
+<translation id="3242289508736283383">A „kiosk_only” manifestattribútummal rendelkező alkalmazást kioszk módban kell telepíteni a ChromeOS rendszeren</translation>
+<translation id="3242665648857227438">Ez a profil a ChromeOS-proxybeállításokat használja.</translation>
 <translation id="3244294424315804309">Némítás megtartása</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – Hálózati hiba</translation>
 <translation id="3248902735035392926">A biztonság fontos. Szánjon egy pillanatot <ph name="BEGIN_LINK" />bővítményeinek ellenőrzésére<ph name="END_LINK" />.</translation>
@@ -2395,6 +2436,8 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3315442055907669208">Belépés olvasási módba</translation>
 <translation id="3317459757438853210">Kétoldalas</translation>
 <translation id="3317678681329786349">Kamera és mikrofon letiltva</translation>
+<translation id="3320620783302968370">Ha a probléma nem oldódik meg, indítsa újra az eszközt 
+    Hibakód: <ph name="ERROR_CODE" />.</translation>
 <translation id="3320630259304269485">Biztonságos Böngészés (védelem a veszélyes webhelyekkel szemben) és más biztonsági beállítások.</translation>
 <translation id="3323295311852517824">{NUM_FILES,plural, =0{Ezekben az adatokban bizalmas vagy veszélyes tartalom található. Távolítsa el ezt a tartalmat, majd próbálkozzon újra.}=1{Ebben a fájlban bizalmas vagy veszélyes tartalom található. Távolítsa el ezt a tartalmat, majd próbálkozzon újra.}other{Ezekben a fájlokban bizalmas vagy veszélyes tartalom található. Távolítsa el ezt a tartalmat, majd próbálkozzon újra.}}</translation>
 <translation id="3323521181261657960">Jutalom! Több ideig használhatod az eszközt</translation>
@@ -2693,6 +2736,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3617891479562106823">A hátterek nem állnak rendelkezésre. Próbálja újra később.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
 <translation id="3619962278978697442">Válasszon ki egyet minden egyes bejelentkezéskor</translation>
+<translation id="3621807901162200696">Hozzájárulás a ChromeOS funkcióinak és teljesítményének javításához</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{egy alkalmazást}other{# alkalmazást}}</translation>
 <translation id="362333465072914957">Várakozás arra, hogy a tanúsítványkibocsátó kibocsássa a tanúsítványt</translation>
 <translation id="3624567683873126087">Eszköz feloldása, és bejelentkezés Google-fiókba</translation>
@@ -3014,6 +3058,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="3915280005470252504">Hangalapú keresés</translation>
 <translation id="3916233823027929090">Biztonsági ellenőrzések sikeresen végrehajtva</translation>
 <translation id="3916445069167113093">Az ilyen fájlok kárt okozhatnak számítógépében. Ennek ellenére is szeretné megtartani a(z) <ph name="FILE_NAME" /> fájlt?</translation>
+<translation id="3917184139185490151">Számítógépe olyan biztonsági modult tartalmaz, amely számos kritikus biztonsági funkció megvalósítására szolgál ChromeOS rendszeren. További információt a Chromebook Súgóban talál: https://support.google.com/chromebook/?p=sm.</translation>
 <translation id="3918972485393593704">Részletek jelentése a Google-nak</translation>
 <translation id="3919145445993746351">Ha az összes számítógépén szeretné elérni bővítményeit, kapcsolja be a szinkronizálást.</translation>
 <translation id="3919229493046408863">Közeli eszközökre vonatkozó értesítések kikapcsolása</translation>
@@ -3442,6 +3487,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4354073718307267720">Kérdezzen rá, ha valamelyik webhely 3D-s térképet szeretne létrehozni az Ön környezetéről, valamint ha követni szeretné a kamera pozícióját</translation>
 <translation id="4354344420232759511">Az Ön által felkeresett webhelyek itt jelennek meg</translation>
 <translation id="435527878592612277">Válassza ki a fotóját</translation>
+<translation id="4358302248024731679">A Bluetooth-problémák hatékonyabb elemzése érdekében a Google-alkalmazottak kiegészítő Bluetooth-naplókat is csatolhatnak visszajelzéseikhez. Ha be van jelölve ez a beállítás, a jelentés tartalmazni fogja az aktuális munkamenet btsnoop és HCI naplóit, kitörölve belőlük a lehető legtöbb személyazonosításra alkalmas adatot. Ezekhez a naplókhoz kizárólag a ChromeOS termékcsalád vezetői férhetnek hozzá a Listnr szolgáltatásban. A naplók törlése 90 nap múlva megtörténik.</translation>
 <translation id="4358313196493694334">Kattintási hely stabilizálása</translation>
 <translation id="4359408040881008151">Telepítve az ezt nélkülözni nem tudó bővítmény(ek) miatt.</translation>
 <translation id="4359717112757026264">Városkép</translation>
@@ -3571,6 +3617,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4487489714832036847">A Chromebookok alkalmazásokat használnak hagyományos szoftverek helyett. Válogasson a produktivitást segítő, szórakoztató és egyéb alkalmazások között.</translation>
 <translation id="4488257340342212116">Használhatják a kamerát</translation>
 <translation id="4488502501195719518">Törli az összes adatot?</translation>
+<translation id="4490086832405043258">A ChromeOS-proxybeállítások használata ennél a profilnál.</translation>
 <translation id="449126573531210296">Szinkronizált jelszavak titkosítása a Google-fiókkal</translation>
 <translation id="449232563137139956">A webhelyek illusztráció biztosítása érdekében általában képeket (például online áruházakról vagy újságcikkekről készült fotókat) jelenítenek meg</translation>
 <translation id="4492698018379445570">Ellenőrizze, hogy mit helyezett a bevásárlókosarába, és ha kész, fizethet</translation>
@@ -3769,6 +3816,8 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4675828034887792601">Gyorsparancsok létrehozása webhelyeken történő kereséshez és a keresőmotor kezeléséhez</translation>
 <translation id="4676595058027112862">Telefonközpont, további információ</translation>
 <translation id="4677772697204437347">GPU memóriája</translation>
+<translation id="4677970983462111944">A Steam nem engedélyezett ezen az eszközön. Engedély kéréséhez forduljon az adminisztrátorhoz 
+    Hibakód: <ph name="ERROR_CODE" />.</translation>
 <translation id="467823995058589466">Ki van kapcsolva a kamera</translation>
 <translation id="4680105648806843642">A hang némítva van ezen az oldalon</translation>
 <translation id="4681453295291708042">Közeli megosztás kikapcsolása</translation>
@@ -4131,6 +4180,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5062930723426326933">A bejelentkezés nem sikerült. Kérjük, kapcsolódjon az internethez, majd próbálja újra.</translation>
 <translation id="5063480226653192405">Használat</translation>
 <translation id="5065775832226780415">Smart Lock</translation>
+<translation id="5066100345385738837">Biztonságos DNS kezelése a ChromeOS beállításai között</translation>
 <translation id="5067399438976153555">Mindig bekapcsolva</translation>
 <translation id="5067867186035333991">Kérdezzen rá, ha a(z) <ph name="HOST" /> hozzá szeretne férni a mikrofonhoz</translation>
 <translation id="5068918910148307423">Ne engedélyezze a nemrég bezárt webhelyek számára az adatküldés és -fogadás befejezését</translation>
@@ -4273,6 +4323,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="520621735928254154">Tanúsítványimportálási hiba</translation>
 <translation id="5206787458656075734">{COUNT,plural, =1{Sikerült a nyilvánosságra került jelszó módosítása. # további jelszava került nyilvánosságra. A Chrome azt javasolja, hogy azonnal ellenőrizze ezt a jelszót.}other{Sikerült a nyilvánosságra került jelszó módosítása. # további jelszava került nyilvánosságra. A Chrome azt javasolja, hogy azonnal ellenőrizze ezeket a jelszavakat.}}</translation>
 <translation id="5207949376430453814">Szövegbeszúrási pont kiemelése</translation>
+<translation id="520840839826327499">A(z) <ph name="SERVICE_NAME" /> ellenőrizni szeretné, hogy Ön megfelelő ChromeOS-eszközt használ-e.</translation>
 <translation id="5208548918290612795">A következőhöz tartozó hitelesítési token tárolása: <ph name="WEB_DRIVE" /></translation>
 <translation id="520902706163766447">Előugró buborék engedélyezése a Chrome legfelső kezelőfelületén, melynek használatával az aktuálisan megnyitott lapokon kereshet.</translation>
 <translation id="5209320130288484488">Nem találhatók eszközök</translation>
@@ -4395,6 +4446,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5329858601952122676">&amp;Törlés</translation>
 <translation id="5331069282670671859">Nem rendelkezik tanúsítványokkal ebben a kategóriában</translation>
 <translation id="5331425616433531170">A(z) „<ph name="CHROME_EXTENSION_NAME" />” szeretne párosítást végrehajtani</translation>
+<translation id="5331568967879689647">ChromeOS-rendszeralkalmazás</translation>
 <translation id="5331975486040154427">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
 <translation id="5333896723098573627">Az alkalmazások eltávolításához lépjen a Beállítások &gt; Alkalmazások &gt; Google Play Áruház &gt; Android-beállítások kezelése &gt; Alkalmazások vagy Alkalmazáskezelő menüpontba. Koppintson a törölni kívánt alkalmazásra (lehet, hogy jobbra vagy balra kell csúsztatnia az alkalmazásokat, hogy megtalálja), majd koppintson az Eltávolítás vagy Letiltás lehetőségre.</translation>
 <translation id="5334142896108694079">Szkript gyorsítótár</translation>
@@ -5312,6 +5364,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="624789221780392884">A frissítés készen áll</translation>
 <translation id="6248988683584659830">Keresés a beállításokban</translation>
 <translation id="6249200942125593849">Kisegítő lehetőségek kezelése</translation>
+<translation id="6250186368828697007">A részleteket elrejtjük a képernyőmegosztás során</translation>
 <translation id="6251870443722440887">GDI azonosítók</translation>
 <translation id="625369703868467034">Hálózat állapota</translation>
 <translation id="6254503684448816922">A kulcs veszélyeztetve</translation>
@@ -5332,6 +5385,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6271780480930459892">A legújabb verzióért forduljon a rendszergazdához.</translation>
 <translation id="6272643420381259437">Hiba (<ph name="ERROR" />) történt a beépülő modul letöltése során</translation>
 <translation id="6273677812470008672">Minőség</translation>
+<translation id="6274202259872570803">Képernyőátküldés</translation>
 <translation id="6276210637549544171">A(z) <ph name="PROXY_SERVER" /> proxy felhasználónevet és jelszót kér.</translation>
 <translation id="6277105963844135994">Hálózati időtúllépés</translation>
 <translation id="6277518330158259200">&amp;Képernyőkép készítése</translation>
@@ -5379,6 +5433,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6313950457058510656">Azonnali internetmegosztás kikapcsolása</translation>
 <translation id="6314819609899340042">Sikeresen engedélyezte a hibakeresési szolgáltatásokat ezen a(z) <ph name="IDS_SHORT_PRODUCT_NAME" /> eszközön.</translation>
 <translation id="6315493146179903667">Összes az előtérbe</translation>
+<translation id="6316432269411143858">Google ChromeOS – A Szerződési Feltételek tartalma</translation>
 <translation id="6317369057005134371">Várakozás az alkalmazás ablakára...</translation>
 <translation id="6318125393809743217">Készüljön policies.json fájl a házirend-konfigurációkhoz.</translation>
 <translation id="6318407754858604988">A letöltés megkezdődött</translation>
@@ -5424,6 +5479,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6363990818884053551">A kezdéshez igazolja személyazonosságát</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Családtagok és ismerősök hozzáadása</translation>
+<translation id="6367097275976877956">Szeretné aktiválni a ChromeVoxot, a ChromeOS beépített képernyőolvasóját? Ha igen, nyomja meg a szóköz billentyűt.</translation>
 <translation id="6367985768157257101">Fogadja a Közeli megosztás segítségével?</translation>
 <translation id="6368276408895187373">Engedélyezve – <ph name="VARIATION_NAME" /></translation>
 <translation id="636850387210749493">Vállalat rögzítése</translation>
@@ -5457,6 +5513,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6398715114293939307">A Google Play Áruház eltávolítása</translation>
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
 <translation id="6399774419735315745">Kém</translation>
+<translation id="6401597285454423070">Számítógépe tartalmaz egy platformmegbízhatósági modul (Trusted Platform Module, TPM) nevű biztonsági eszközt, amely számos kritikus biztonsági funkció megvalósítására szolgál ChromeOS-en. További információért keresse fel a Chromebook Súgót: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6404187344102273690">Játékélmény a Chromebookokon</translation>
 <translation id="6404511346730675251">Könyvjelző szerkesztése</translation>
 <translation id="6406303162637086258">Böngésző újraindításának szimulálása</translation>
@@ -5809,6 +5866,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6748980958975836188">Elolvastam és elfogadom a <ph name="BEGIN_LINK1" />Google Általános Szerződési Feltételeket<ph name="END_LINK1" />, valamint a<ph name="BEGIN_LINK2" />Chrome és a Chrome OS Kiegészítő Általános Szerződési Feltételeit<ph name="END_LINK2" />.</translation>
 <translation id="6750757184909117990">Mobilhálózat letiltása</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Inkognitó mód)</translation>
+<translation id="6756157672127672536">A Fájlok alkalmazás gyors hozzáférést kínál a Google Drive-on, külső tárolón vagy a ChromeOS-eszközön elmentett fájlokhoz.</translation>
 <translation id="6758056191028427665">Ossza meg velünk, mennyire van megelégedve munkánkkal.</translation>
 <translation id="6759193508432371551">Gyári beállítások visszaállítása</translation>
 <translation id="6761431452438552910">Győződjön meg arról, hogy a Bluetooth-eszköz párosítási módban és a közelben van. Csak olyan eszközökkel párosítson, amelyeket megbízhatónak tart.</translation>
@@ -5887,6 +5945,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6825184156888454064">Rendezés név szerint</translation>
 <translation id="6826872289184051766">Igazolás USB-n keresztül</translation>
 <translation id="6827121912381363404">Az összes bővítmény olvashatja és módosíthatja a következőt: <ph name="PERMITTED_SITE" /></translation>
+<translation id="6827517233063803343">Az Ön alkalmazásai és beállításai szinkronizálódnak minden olyan ChromeOS-eszközön, amelyen be van jelentkezve a Google-fiókjával. A böngésző szinkronizálási beállításait a <ph name="LINK_BEGIN" />Chrome-beállításokban<ph name="LINK_END" /> találja.</translation>
 <translation id="6828153365543658583">Bejelentkezés korlátozása a következő felhasználókra:</translation>
 <translation id="6828182567531805778">Az adatok szinkronizálásához adja meg az összetett jelszavát</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5967,6 +6026,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6902066522699286937">Meghallgatni kívánt hang</translation>
 <translation id="6902336033320348843">Nem támogatott szakasz: <ph name="ERROR_LINE" /></translation>
 <translation id="6902837902700739466">Eszköz csatlakoztatása domainhez</translation>
+<translation id="6903022061658753260">Adatait szinkronizálja a rendszer az összes olyan Chrome böngészőben, amelyeken bekapcsolta a szinkronizálást erre a fiókra vonatkozóan. A ChromeOS szinkronizálási lehetőségeiért lépjen a <ph name="LINK_BEGIN" />ChromeOS beállításaihoz<ph name="LINK_END" />.</translation>
 <translation id="6903590427234129279">Összes (<ph name="URL_COUNT" />) megnyitása</translation>
 <translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6904344821472985372">Fájlhozzáférés visszavonása</translation>
@@ -5979,6 +6039,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="691289340230098384">Feliratbeállítások</translation>
 <translation id="6914783257214138813">Jelszavai mindenki számára láthatók lesznek, aki hozzáfér az exportált fájlhoz.</translation>
 <translation id="6916590542764765824">Bővítmények kezelése</translation>
+<translation id="6918677045355889289">A ChromeOS frissítése szükséges</translation>
 <translation id="6919354101107095996">Próbáljon bejelentkezni a webhelyre. Ezt követően próbálja meg ismét letölteni.</translation>
 <translation id="6919868320029503575">Gyenge jelszavak</translation>
 <translation id="6919952941889172531">A Biztonságos Böngészés fokozott védelemmel funkciót is bekapcsolja ennél a Chrome-profilnál?</translation>
@@ -6013,6 +6074,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="6952242901357037157">A <ph name="BEGIN_LINK" />Google-fiókjából<ph name="END_LINK" /> is megjeleníthet itt jelszavakat</translation>
 <translation id="6955446738988643816">Pop-up vizsgálata</translation>
 <translation id="6955535239952325894">Ez a beállítás a felügyelt böngészőkben le van tiltva.</translation>
+<translation id="6955698182324067397">Ön engedélyezi a ChromeOS hibakeresési funkcióit, melyek be fogják állítani az sshd daemon szolgáltatást, és engedélyezni fogják az USB-meghajtókról való indítást.</translation>
 <translation id="6955893174999506273">Egy további kapcsoló hozzárendelése</translation>
 <translation id="6957044667612803194">Ez a biztonsági hardverkulcs nem támogatja a PIN-kódok használatát</translation>
 <translation id="6960507406838246615">Linux-frissítés szükséges</translation>
@@ -6580,6 +6642,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="7535730537657706072">Az inkognitó mód böngészési előzményeinek az eszközről való törléséhez zárja be az összes inkognitó lapot</translation>
 <translation id="7535791657097741517">Világos téma bekapcsolása</translation>
 <translation id="7537451260744431038">A webhelyek nem használhatnak cookie-kat a böngészési élmény javítására például úgy, hogy bejelentkezve tartják Önt, illetve megjegyzik a kosarában lévő termékeket.</translation>
+<translation id="7538932151125743389">A ChromeOS-eszköz és az összetevő sorozatszámának olvasása.</translation>
 <translation id="7540972813190816353">Hiba történt a frissítések keresése közben: <ph name="ERROR" /></translation>
 <translation id="7541076351905098232">A(z) <ph name="MANAGER" /> visszaállította az eszközön a korábbi verziót. Mentse a fontos fájlokat, majd indítsa újra az eszközt. Az eszközön tárolt minden adat törlődni fog.</translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> a következő alkalmazással: <ph name="APP_NAME" /></translation>
@@ -6779,6 +6842,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="7717845620320228976">Frissítések keresése</translation>
 <translation id="7719367874908701697">Oldal nagyítása/kicsinyítése</translation>
 <translation id="7719588063158526969">Az eszköznév túl hosszú</translation>
+<translation id="7720216670798402294">A ChromeOS-eszközadatok és egyéb eszközadatok olvasása.</translation>
 <translation id="7721179060400456005">Engedélyezi az ablakok több kijelzőre való kiterjesztését</translation>
 <translation id="7721237513035801311"><ph name="SWITCH" /> (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="7721258531237831532">Szervezete megköveteli a profil használatát</translation>
@@ -6828,6 +6892,7 @@ Nyomja meg valamelyik hozzárendelt kapcsolót vagy billentyűt a hozzárendelé
 <translation id="7766082757934713382">Segít a hálózati adatforgalom csökkentésében az automatikus alkalmazás- és rendszerfrissítések szüneteltetésével</translation>
 <translation id="7766807826975222231">Bemutató megtekintése</translation>
 <translation id="7766838926148951335">Engedélyek elfogadása</translation>
+<translation id="7767554953520855281">A részleteket elrejtjük a képernyőmegosztás során</translation>
 <translation id="7768507955883790804">A webhelyek a felkereséskor automatikusan ezt a beállítást követik</translation>
 <translation id="7768526219335215384">A(z) <ph name="ORIGIN" /> olvashatja majd a következő mappában lévő fájlokat: <ph name="FOLDERNAME" />.</translation>
 <translation id="7768770796815395237">Módosítás</translation>
@@ -7314,6 +7379,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8228783756378591900">Folyamatban van annak ellenőrzése, hogy ez a dokumentum megfelel-e szervezete biztonsági szabályainak…</translation>
 <translation id="8230134520748321204">Szeretné elmenteni a(z) <ph name="ORIGIN" /> jelszavát?</translation>
 <translation id="8230446983261649357">A webhelyek nem jeleníthetnek meg képeket</translation>
+<translation id="8233028084277069927">Megnyitás most</translation>
 <translation id="8234795456569844941">Kérjük, segítsen mérnökeinknek a hiba kijavításában. Mondja el nekünk, hogy mi történt közvetlenül a profilhiba-üzenet megjelenése előtt:</translation>
 <translation id="8235418492073272647">Oldal megosztva innen: <ph name="DEVICE_NAME" /></translation>
 <translation id="8236911020904880539">a kilépéshez</translation>
@@ -7487,6 +7553,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8412136526970428322">Engedélyezve: <ph name="PERMISSION" /> és további <ph name="COUNT" /></translation>
 <translation id="8413385045638830869">Kérdezzen rá (ajánlott)</translation>
+<translation id="8413956290606243087">Szeretné aktiválni a ChromeVoxot, a ChromeOS beépített képernyőolvasóját?</translation>
 <translation id="8414249071344507766">Emlékek elrejtve két napig</translation>
 <translation id="8414685983518053656">Megjegyzések</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (tok)</translation>
@@ -7735,6 +7802,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="867085395664725367">Ideiglenes szerverhiba történt.</translation>
 <translation id="8673026256276578048">Keresés az interneten...</translation>
 <translation id="8673383193459449849">Szerverhiba</translation>
+<translation id="8674903726754070732">Sajnos számítógépe nem megfelelő formátumú hardverazonosítóval van konfigurálva. Emiatt a ChromeOS nem tud frissülni a legújabb biztonsági javításokkal, és számítógépét <ph name="BEGIN_BOLD" />rosszindulatú támadások érhetik<ph name="END_BOLD" />.</translation>
 <translation id="8675704450909805533">A telepítő nem talált érvényes telepítési helyet a következő rendszernek: <ph name="DEVICE_OS" />.</translation>
 <translation id="8676152597179121671">{COUNT,plural, =1{Videó}other{# videó}}</translation>
 <translation id="8676313779986170923">Köszönjük visszajelzését.</translation>
@@ -7924,6 +7992,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="8855977033756560989">Ez a vállalati Chromebook-eszköz tartalmazza a Chrome Enterprise Upgrade licencet. A vállalati előnyök kihasználása érdekében regisztrálja az eszközt egy rendszergazdai Google-fiókkal.</translation>
 <translation id="8856028055086294840">Alkalmazások és oldalak visszaállítása</translation>
 <translation id="885701979325669005">Tárolás</translation>
+<translation id="885746075120788020">Mentett beállításai és tevékenységei minden ChromeOS-eszközön rendelkezésre állnak, amikor be van jelentkezve Google-fiókjával. A Beállítások között bármikor módosíthatja a szinkronizálni kívánt elemeket.</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8859402192569844210">Nem sikerült az Általános Szerződési Feltételek betöltése</translation>
 <translation id="8859662783913000679">Szülői fiók</translation>
@@ -8111,6 +8180,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="9037818663270399707">Az Ön kapcsolata nem privát az összes hálózati forgalomnál</translation>
 <translation id="9037965129289936994">Eredeti megjelenítése</translation>
 <translation id="9039014462651733343">{NUM_ATTEMPTS,plural, =1{1 kísérlete maradt.}other{# kísérlete maradt.}}</translation>
+<translation id="9040473193163777637">Szeretné aktiválni a ChromeVoxot, a ChromeOS beépített képernyőolvasóját? Ha igen, öt másodpercig tartsa lenyomva mindkét hangerőgombot.</translation>
 <translation id="9040661932550800571">Szeretné frissíteni a(z) <ph name="ORIGIN" /> jelszavát?</translation>
 <translation id="9041692268811217999">A rendszergazda letiltotta a számítógép helyi fájljaihoz való hozzáférést</translation>
 <translation id="904224458472510106">Ez a művelet nem vonható vissza</translation>
@@ -8287,6 +8357,7 @@ A(z) <ph name="DOMAIN" /> megköveteli, hogy ne távolítsa el az intelligens k�
 <translation id="9220525904950070496">Fiók eltávolítása</translation>
 <translation id="9220820413868316583">Emelje fel ujját, majd próbálja újra.</translation>
 <translation id="923467487918828349">Összes megjelenítése</translation>
+<translation id="924818813611903184">Nyelvek kezelése a ChromeOS beállításai között</translation>
 <translation id="929117907539171075">A telepített alkalmazásban található offline adatok is törlődnek</translation>
 <translation id="930268624053534560">Részletes időbélyegek</translation>
 <translation id="930893132043726269">Jelenleg aktív a roaming</translation>

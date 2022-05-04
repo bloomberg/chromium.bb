@@ -30,6 +30,7 @@
 <translation id="1146678959555564648">进入 VR</translation>
 <translation id="114825011539563458">在一处集中检查的最重要隐私和安全控件</translation>
 <translation id="1149401351239820326">过期月份</translation>
+<translation id="1150263420752757504"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意接受 <ph name="BEGIN_LINK1" />Google 服务条款<ph name="END_LINK1" />以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 操作系统附加服务条款<ph name="END_LINK2" />。</translation>
 <translation id="1154704303112745282">无法在离线状态下访问此网页：<ph name="VIOLATED_URL" /></translation>
 <translation id="1171770572613082465">点按“热门网站”按钮可查看热门网站</translation>
 <translation id="1173894706177603556">重命名</translation>
@@ -208,6 +209,7 @@
 <translation id="2126426811489709554">由 Chrome 提供支持</translation>
 <translation id="2132122640199389833">移除所有已关联的设备</translation>
 <translation id="213279576345780926">已关闭“<ph name="TAB_TITLE" />”</translation>
+<translation id="2134927169889348449">使用 Chrome 即表示您同意接受 <ph name="BEGIN_TOS_LINK" />Google 服务条款<ph name="END_TOS_LINK" />以及 <ph name="BEGIN_ATOS_LINK" />Google Chrome 和 Chrome 操作系统附加服务条款<ph name="END_ATOS_LINK" />。</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
 <translation id="2141396931810938595">根据您的使用情况</translation>
 <translation id="214888715418183969">选择您要与 Chrome 共享哪些数据。您共享的指标将有助于我们改进 Chrome 的功能、性能和稳定性。</translation>
@@ -392,6 +394,7 @@
 <translation id="3062802207422175757">Chrome 可提供您感兴趣的报道</translation>
 <translation id="3066573403916685335">下移</translation>
 <translation id="3070005020161560471">自动翻译</translation>
+<translation id="3072980200212375806"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意接受 <ph name="BEGIN_LINK1" />Google 服务条款<ph name="END_LINK1" />以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 操作系统附加服务条款<ph name="END_LINK2" />。您也必须遵守<ph name="BEGIN_LINK3" />隐私权政策<ph name="END_LINK3" />。</translation>
 <translation id="3091010850649238832">显示剪贴板内容</translation>
 <translation id="3098745985164956033">系统会将部分图片发送给 Google 以便为您改进说明</translation>
 <translation id="3114507951000454849">阅读今日新闻 <ph name="NEWS_ICON" /></translation>
@@ -583,6 +586,7 @@
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4290281343757112331">改为在晚些时候下载？</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />在 Android 设置中开启“屏幕锁定”功能<ph name="END_LINK" /></translation>
+<translation id="4293476595220860475">使用 Chrome 即表示您同意接受 <ph name="BEGIN_TOS_LINK" />Google 服务条款<ph name="END_TOS_LINK" />以及 <ph name="BEGIN_ATOS_LINK" />Google Chrome 和 Chrome 操作系统附加服务条款<ph name="END_ATOS_LINK" />。您也必须遵守<ph name="BEGIN_PRIVACY_LINK" />隐私权政策<ph name="END_PRIVACY_LINK" />。</translation>
 <translation id="4296252229500326964">打开新的无痕式标签页</translation>
 <translation id="4298388696830689168">已关联的网站</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -1028,7 +1032,7 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}other{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}}</translation>
 <translation id="6649642165559792194">预览图片<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">密码</translation>
-<translation id="6659594942844771486">Tab 键</translation>
+<translation id="6659594942844771486">标签页</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="6671495933530132209">复制图片</translation>
 <translation id="6674044799624355221">发送网页、下载内容、扩展程序活动和系统信息的少量样本，以帮助发现新威胁</translation>
@@ -1048,6 +1052,7 @@ Privacy Sandbox 试用版功能尚处于积极开发阶段，目前只能在部�
 <translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6770602306803890733">为您和网络上的所有人提供更好的安全保障</translation>
 <translation id="6783942555455976443">保存此页面以便稍后阅读并接收提醒</translation>
+<translation id="6785476624617658922">Chrome 和 Chrome 操作系统附加服务条款</translation>
 <translation id="6795633245022906657">快速打开一个新标签页。若要修改该快捷方式，请前往“设置”部分。</translation>
 <translation id="6802555630140434547">系统将会关闭此窗口</translation>
 <translation id="6811034713472274749">页面已可供查看</translation>
