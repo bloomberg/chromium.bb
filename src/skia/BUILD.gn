@@ -42,7 +42,10 @@ buildflag_header("buildflags") {
 config("skia_config") {
   defines = [
     "SK_UNTIL_CRBUG_1187654_IS_FIXED",
-    "SK_WIN_FONTMGR_NO_SIMULATIONS",
+
+    # blpwtk2: Disable this for now
+    #"SK_WIN_FONTMGR_NO_SIMULATIONS",
+
     "SK_EXPERIMENTAL_ADD_ATLAS_PADDING",
   ]
   include_dirs = [ "//third_party/skia" ]
