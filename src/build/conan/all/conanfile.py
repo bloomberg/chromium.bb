@@ -1,7 +1,9 @@
 import os
 import shutil
-from conans import ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+
+from conan import ConanFile
+from conan.tools.files import download
+from conan.errors import ConanInvalidConfiguration
 
 
 class BLPWTK2Conan(ConanFile):
@@ -22,7 +24,8 @@ class BLPWTK2Conan(ConanFile):
             raise ConanInvalidConfiguration("Only Windows supported")
 
     def source(self):
-        tools.download(
+        download(
+            self,
             f"{self.conan_data['sources']['url'][0]}{self.version}.7z",
             "archive.7z",
         )
