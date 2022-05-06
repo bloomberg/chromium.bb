@@ -83,7 +83,6 @@ public:
 protected:
     SkColor                fColor;
     SkPMColor              fPMColor;
-    SkColor                fLCDBackgroundColor;
 
 private:
     unsigned fSrcA, fSrcR, fSrcG, fSrcB;

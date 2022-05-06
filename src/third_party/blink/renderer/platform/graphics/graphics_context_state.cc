@@ -90,13 +90,6 @@ void GraphicsContextState::SetFillColor(const Color& color) {
   fill_flags_.setShader(nullptr);
 }
 
-void GraphicsContextState::SetBbLcdBackgroundColor(const Color& color)
-{
-  SkColor skColor = static_cast<SkColor>(color);
-  fill_flags_.setBbLcdBackgroundColor(skColor);
-  stroke_flags_.setBbLcdBackgroundColor(skColor);
-}
-
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
 void GraphicsContextState::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
   // Grab a new ref for stroke.

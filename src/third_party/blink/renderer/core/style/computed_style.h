@@ -278,7 +278,6 @@ class ComputedStyle : public ComputedStyleBase,
   // at use-time.)
   friend class FilterOperationResolver;
   // Access to SetInitialData() and GetCurrentColor().
-  friend class StyleBuilderConverter;
   friend class StyleResolver;
 
  protected:
@@ -2629,7 +2628,6 @@ class ComputedStyle : public ComputedStyleBase,
       return true;
     return HasBackgroundImage();
   }
-  void OnBackgroundColorChanged(const ComputedStyle& parentStyle);
 
   // Color utility functions.
   CORE_EXPORT Color

@@ -195,9 +195,6 @@ class PLATFORM_EXPORT GraphicsContext {
   Color FillColor() const { return ImmutableState()->FillColor(); }
   void SetFillColor(const Color& color) { MutableState()->SetFillColor(color); }
 
-  Color BbLcdBackgroundColor() const { return ImmutableState()->BbLcdBackgroundColor(); }
-  void SetBbLcdBackgroundColor(const Color& color) { MutableState()->SetBbLcdBackgroundColor(color); }
-
   void SetShouldAntialias(bool antialias) {
     MutableState()->SetShouldAntialias(antialias);
   }
