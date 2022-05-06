@@ -45,7 +45,7 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
 
   version, chromiumVersion, bbPatch = getVersionParts(contentShellVersion, version)
   chromiumVersionNumbers = chromiumVersion.split('.')
-  bbPatchNumber = bbPatch[2:]
+  bbPatchNumber = int(bbPatch[2:])
 
   # Make sure they are integers, otherwise we cannot embed them inside
   # FileVersion in the DLL rc files.
@@ -53,7 +53,6 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
   int(chromiumVersionNumbers[1])
   int(chromiumVersionNumbers[2])
   int(chromiumVersionNumbers[3])
-  int(bbPatchNumber)
 
   f.write('// generated file -- DO NOT EDIT\n')
   f.write('#ifndef INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
