@@ -48,8 +48,6 @@ class CC_PAINT_EXPORT PaintFlags {
     color_ = SkColorSetARGB(a, SkColorGetR(color_), SkColorGetG(color_),
                             SkColorGetB(color_));
   }
-  ALWAYS_INLINE SkColor getBbLcdBackgroundColor() const { return bb_lcd_background_color_; }
-  ALWAYS_INLINE void setBbLcdBackgroundColor(SkColor color) { bb_lcd_background_color_ = color; }
   ALWAYS_INLINE void setBlendMode(SkBlendMode mode) {
     blend_mode_ = static_cast<uint32_t>(mode);
   }
@@ -203,7 +201,6 @@ class CC_PAINT_EXPORT PaintFlags {
   // Match(ish) SkPaint defaults.  SkPaintDefaults is not public, so this
   // just uses these values and ignores any SkUserConfig overrides.
   SkColor color_ = SK_ColorBLACK;
-  SkColor bb_lcd_background_color_ = SK_ColorTRANSPARENT;
   float width_ = 0.f;
   float miter_limit_ = 4.f;
   uint32_t blend_mode_ = static_cast<uint32_t>(SkBlendMode::kSrcOver);

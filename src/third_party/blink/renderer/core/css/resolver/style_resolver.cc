@@ -1542,12 +1542,8 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
       is_inherited_cache_hit = true;
     }
     if (!IsForcedColorsModeEnabled() || is_inherited_cache_hit) {
-      StyleColor prevBgColor = state.Style()->BackgroundColor();
       state.Style()->CopyNonInheritedFromCached(
           *cached_matched_properties->computed_style);
-      if (state.Style()->BackgroundColor() != prevBgColor) {
-        state.Style()->OnBackgroundColorChanged(*state.ParentStyle());
-      }
       // If the child style is a cache hit, we'll never reach StyleBuilder::
       // ApplyProperty, hence we'll never set the flag on the parent.
       if (state.Style()->HasExplicitInheritance())

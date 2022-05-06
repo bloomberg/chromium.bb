@@ -287,7 +287,6 @@ class CC_PAINT_EXPORT PaintOp {
 
   bool HasNonAAPaint() const { return false; }
   bool HasDrawTextOps() const { return false; }
-  bool HasNonOpaqueBbLcdText() const { return false; }
   bool HasSaveLayerAlphaOps() const { return false; }
   // Returns true if effects are present that would break LCD text or be broken
   // by the flags for SaveLayerAlpha to preserving LCD text.
@@ -758,7 +757,6 @@ class CC_PAINT_EXPORT DrawRecordOp final : public PaintOp {
   int CountSlowPaths() const;
   bool HasNonAAPaint() const;
   bool HasDrawTextOps() const;
-  bool HasNonOpaqueBbLcdText() const;
   bool HasSaveLayerAlphaOps() const;
   bool HasEffectsPreventingLCDTextForSaveLayerAlpha() const;
   HAS_SERIALIZATION_FUNCTIONS();
@@ -869,9 +867,6 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
                               const PlaybackParams& params);
   bool IsValid() const { return flags.IsValid(); }
   bool HasDrawTextOps() const { return true; }
-  bool HasNonOpaqueBbLcdText() const {
-    return SK_AlphaOPAQUE != SkColorGetA(flags.getBbLcdBackgroundColor());
-  }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -1129,7 +1124,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   bool has_draw_ops() const { return has_draw_ops_; }
   bool has_draw_text_ops() const { return has_draw_text_ops_; }
-  bool has_non_opaque_bb_lcd_text() const { return has_non_opaque_bb_lcd_text_; }
   bool has_save_layer_alpha_ops() const { return has_save_layer_alpha_ops_; }
   bool has_effects_preventing_lcd_text_for_save_layer_alpha() const {
     return has_effects_preventing_lcd_text_for_save_layer_alpha_;
@@ -1205,7 +1199,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
     has_draw_ops_ |= op->IsDrawOp();
     has_draw_text_ops_ |= op->HasDrawTextOps();
-    has_non_opaque_bb_lcd_text_ |= op->HasNonOpaqueBbLcdText();
     has_save_layer_alpha_ops_ |= op->HasSaveLayerAlphaOps();
     has_effects_preventing_lcd_text_for_save_layer_alpha_ |=
         op->HasEffectsPreventingLCDTextForSaveLayerAlpha();
@@ -1449,7 +1442,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   bool has_discardable_images_ : 1;
   bool has_draw_ops_ : 1;
   bool has_draw_text_ops_ : 1;
-  bool has_non_opaque_bb_lcd_text_ : 1;
   bool has_save_layer_alpha_ops_ : 1;
   bool has_effects_preventing_lcd_text_for_save_layer_alpha_ : 1;
   bool are_ops_destroyed_ : 1;
