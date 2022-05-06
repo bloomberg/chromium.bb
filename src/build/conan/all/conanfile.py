@@ -55,7 +55,7 @@ class BLPWTK2Conan(ConanFile):
 
         ## BLPWTK2 ##
         label = "blpwtk2-component"
-        self.cpp_info.components[label].libs = [f"blpwtk2.{self.version}.dll.lib"]
+        self.cpp_info.components[label].libs = [f"blpwtk2.dll.lib"]
         self.cpp_info.components[label].requires = ["icudt_from_blpwtk2"]
         self.cpp_info.components[label].bindirs = [bindir]
         self.cpp_info.components[label].libdirs = [libdir]
@@ -70,16 +70,13 @@ class BLPWTK2Conan(ConanFile):
             "include/blpwtk2",
             "include/v8",
         ]
-        self.cpp_info.components[label].builddirs = [
-            os.path.join(self.package_folder, libdir, "cmake")
-        ]
 
         ## ICUDT_FROM_BLPWTK2 ##
         self.cpp_info.components["icudt_from_blpwtk2"].bindirs = [bindir]
         self.cpp_info.components["icudt_from_blpwtk2"].libdirs = [libdir]
 
         ## V8 ##
-        self.cpp_info.components["v8"].libs = [f"blpwtk2.{self.version}.dll.lib"]
+        self.cpp_info.components["v8"].libs = [f"blpwtk2.dll.lib"]
         self.cpp_info.components["v8"].bindirs = [bindir]
         self.cpp_info.components["v8"].libdirs = [libdir]
         self.cpp_info.components["v8"].defines = [
@@ -96,9 +93,3 @@ class BLPWTK2Conan(ConanFile):
             "blpwtk2-component",
             "icudt_from_blpwtk2",
         ]
-        self.cpp_info.components["v8"].builddirs = [
-            os.path.join(self.package_folder, libdir, "cmake")
-        ]
-
-        cmake_prefix = os.path.join(self.package_folder, libdir, "cmake")
-        self.env_info.CMAKE_PREFIX_PATH.append(cmake_prefix)
