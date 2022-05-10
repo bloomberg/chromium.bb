@@ -529,6 +529,22 @@ const CSSValue* BackgroundClip::CSSValueFromComputedStyleInternal(
   return list;
 }
 
+void BackgroundColor::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetBackgroundColor(ComputedStyleInitialValues::InitialBackgroundColor());
+  state.Style()->OnBackgroundColorChanged(*state.ParentStyle());
+}
+
+void BackgroundColor::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetBackgroundColor(state.ParentStyle()->BackgroundColor());
+  state.Style()->OnBackgroundColorChanged(*state.ParentStyle());
+}
+
+void BackgroundColor::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
+  state.Style()->SetBackgroundColor(
+      StyleBuilderConverter::ConvertStyleColor(state, value, false));
+  state.Style()->OnBackgroundColorChanged(*state.ParentStyle());
+}
+
 const CSSValue* BackgroundColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

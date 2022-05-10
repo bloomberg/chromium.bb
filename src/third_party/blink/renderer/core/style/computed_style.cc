@@ -925,6 +925,12 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
       return;
     }
   }
+  if (BbLcdBackgroundColor() != other.BbLcdBackgroundColor()) {
+    diff.SetNeedsPaintInvalidation();
+    if (BbLcdBackgroundColor().HasAlpha() != other.BbLcdBackgroundColor().HasAlpha()) {
+      diff.SetHasAlphaChanged();
+    }
+  }
   if (!BackgroundInternal().VisuallyEqual(other.BackgroundInternal())) {
     diff.SetNeedsPaintInvalidation();
     // Changes of background fill layers, such as images, may have
@@ -2325,6 +2331,18 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   }
 
   return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
+}
+
+void ComputedStyle::OnBackgroundColorChanged(const ComputedStyle& parentStyle) {
+  Color bgColor = BackgroundColor().Resolve(GetCurrentColor(), UsedColorScheme());
+  if (bgColor.HasAlpha()) {
+    Color parent = parentStyle.EffectiveBackgroundColorForAutoLcd();
+    bgColor = parent.Blend(bgColor);
+  }
+  SetEffectiveBackgroundColorForAutoLcd(bgColor);
+  if (LcdBackgroundColorSource() == ELcdBackgroundColorSource::kAuto) {
+    SetBbLcdBackgroundColor(bgColor);
+  }
 }
 
 Color ComputedStyle::VisitedDependentColor(

@@ -601,6 +601,23 @@
       include_paths: ["third_party/blink/renderer/platform/geometry/float_size.h"],
     },
     {
+      name: "EffectiveBackgroundColorForAutoLcd",
+      inherited: true,
+      field_template: "external",
+      type_name: "Color",
+      default_value: "Color()",
+      field_group: "*",
+      include_paths: ["third_party/blink/renderer/platform/graphics/color.h"],
+    },
+    {
+      name: "LcdBackgroundColorSource",
+      inherited: true,
+      field_template: "keyword",
+      default_value: "none",
+      keywords: ["none", "auto", "color"],
+      field_group: "*",
+    },
+    {
       name: "OutlineStyleIsAuto",
       field_template: "primitive",
       type_name: "bool",

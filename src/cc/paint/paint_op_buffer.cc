@@ -2592,6 +2592,10 @@ bool DrawRecordOp::HasDrawTextOps() const {
   return record->has_draw_text_ops();
 }
 
+bool DrawRecordOp::HasNonOpaqueBbLcdText() const {
+  return record->has_non_opaque_bb_lcd_text();
+}
+
 bool DrawRecordOp::HasSaveLayerAlphaOps() const {
   return record->has_save_layer_alpha_ops();
 }
@@ -2747,6 +2751,7 @@ PaintOpBuffer::PaintOpBuffer()
       has_discardable_images_(false),
       has_draw_ops_(false),
       has_draw_text_ops_(false),
+      has_non_opaque_bb_lcd_text_(false),
       has_save_layer_alpha_ops_(false),
       has_effects_preventing_lcd_text_for_save_layer_alpha_(false),
       are_ops_destroyed_(false) {}
@@ -2771,6 +2776,7 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   has_discardable_images_ = other.has_discardable_images_;
   has_draw_ops_ = other.has_draw_ops_;
   has_draw_text_ops_ = other.has_draw_text_ops_;
+  has_non_opaque_bb_lcd_text_ = other.has_non_opaque_bb_lcd_text_;
   has_save_layer_alpha_ops_ = other.has_save_layer_alpha_ops_;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ =
       other.has_effects_preventing_lcd_text_for_save_layer_alpha_;
@@ -2801,6 +2807,7 @@ void PaintOpBuffer::Reset() {
   has_discardable_images_ = false;
   has_draw_ops_ = false;
   has_draw_text_ops_ = false;
+  has_non_opaque_bb_lcd_text_ = false;
   has_save_layer_alpha_ops_ = false;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ = false;
   are_ops_destroyed_ = false;
