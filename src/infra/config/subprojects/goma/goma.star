@@ -51,7 +51,7 @@ def fyi_goma_rbe_canary_builder(
         *,
         name,
         goma_backend = goma.backend.RBE_PROD,
-        os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+        os = os.LINUX_DEFAULT,
         **kwargs):
     return builder(
         name = name,
@@ -173,6 +173,19 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = "Win Builder (dbg) Goma RBE Canary",
+    builder_spec = builder_config.copy_from(
+        "ci/Win Builder (dbg)",
+        lambda spec: structs.evolve(
+            spec,
+            chromium_config = structs.extend(
+                spec.chromium_config,
+                apply_configs = [
+                    "goma_canary",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
@@ -191,6 +204,19 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = "Win Builder (dbg) Goma RBE ATS Canary",
+    builder_spec = builder_config.copy_from(
+        "ci/Win Builder (dbg)",
+        lambda spec: structs.evolve(
+            spec,
+            chromium_config = structs.extend(
+                spec.chromium_config,
+                apply_configs = [
+                    "goma_canary",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
@@ -205,7 +231,7 @@ def fyi_goma_rbe_latest_client_builder(
         *,
         name,
         goma_backend = goma.backend.RBE_PROD,
-        os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+        os = os.LINUX_DEFAULT,
         **kwargs):
     return builder(
         name = name,
@@ -257,6 +283,19 @@ fyi_goma_rbe_latest_client_builder(
 
 fyi_goma_rbe_latest_client_builder(
     name = "Win Builder (dbg) Goma RBE Latest Client",
+    builder_spec = builder_config.copy_from(
+        "ci/Win Builder (dbg)",
+        lambda spec: structs.evolve(
+            spec,
+            chromium_config = structs.extend(
+                spec.chromium_config,
+                apply_configs = [
+                    "goma_latest_client",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     goma_enable_ats = False,
     os = os.WINDOWS_DEFAULT,
 )
@@ -269,6 +308,19 @@ fyi_goma_rbe_latest_client_builder(
 
 fyi_goma_rbe_latest_client_builder(
     name = "Win Builder (dbg) Goma RBE ATS Latest Client",
+    builder_spec = builder_config.copy_from(
+        "ci/Win Builder (dbg)",
+        lambda spec: structs.evolve(
+            spec,
+            chromium_config = structs.extend(
+                spec.chromium_config,
+                apply_configs = [
+                    "goma_latest_client",
+                ],
+            ),
+            build_gs_bucket = "chromium-fyi-archive",
+        ),
+    ),
     goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
@@ -331,7 +383,7 @@ def goma_builder(
         *,
         name,
         builderless = False,
-        os = os.LINUX_XENIAL_OR_BIONIC_SWITCH_TO_DEFAULT,
+        os = os.LINUX_DEFAULT,
         **kwargs):
     return builder(
         name = name,

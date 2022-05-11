@@ -268,3 +268,7 @@ D. Local Modifications
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-21865
 
+12. Patch i18n/formatted_string_builder to fix int32_t overflow bug
+    patches/formatted_string_builder.patch
+  - https://github.com/unicode-org/icu/pull/2070
+  - https://unicode-org.atlassian.net/browse/ICU-22005

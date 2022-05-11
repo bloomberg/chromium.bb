@@ -719,8 +719,11 @@ QuotaError QuotaDatabase::RazeAndReopen() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Try creating a database one last time if there isn't one.
   if (!db_) {
-    if (!db_file_path_.empty())
+    if (!db_file_path_.empty()) {
+      DCHECK(!legacy_db_file_path_.empty());
       sql::Database::Delete(db_file_path_);
+      sql::Database::Delete(legacy_db_file_path_);
+    }
     return EnsureOpened();
   }
 
@@ -818,9 +821,15 @@ QuotaError QuotaDatabase::EnsureOpened() {
       }));
 
   // Migrate an existing database from the old path.
-  if (!db_file_path_.empty()) {
-    if (!MoveLegacyDatabase())
+  if (!db_file_path_.empty() && !MoveLegacyDatabase()) {
+    if (!ResetStorage()) {
+      is_disabled_ = true;
+      db_.reset();
+      meta_table_.reset();
       return QuotaError::kDatabaseError;
+    }
+    // ResetStorage() has succeeded and database is already open.
+    return QuotaError::kNone;
   }
 
   if (!OpenDatabase() || !EnsureDatabaseVersion()) {
@@ -843,22 +852,27 @@ QuotaError QuotaDatabase::EnsureOpened() {
 bool QuotaDatabase::MoveLegacyDatabase() {
   // Migration was added on 04/2022 (https://crrev.com/c/3513545).
   // Cleanup after enough time has passed.
-  if (!base::PathExists(legacy_db_file_path_))
+  if (base::PathExists(db_file_path_) ||
+      !base::PathExists(legacy_db_file_path_)) {
     return true;
+  }
 
-  DCHECK(!base::PathExists(db_file_path_));
   if (!base::CreateDirectory(db_file_path_.DirName()) ||
-      !base::Move(legacy_db_file_path_, db_file_path_)) {
+      !base::CopyFile(legacy_db_file_path_, db_file_path_)) {
+    sql::Database::Delete(db_file_path_);
     return false;
   }
 
   base::FilePath legacy_journal_path =
       sql::Database::JournalPath(legacy_db_file_path_);
   if (base::PathExists(legacy_journal_path) &&
-      !base::Move(legacy_journal_path,
-                  sql::Database::JournalPath(db_file_path_))) {
+      !base::CopyFile(legacy_journal_path,
+                      sql::Database::JournalPath(db_file_path_))) {
+    sql::Database::Delete(db_file_path_);
     return false;
   }
+
+  sql::Database::Delete(legacy_db_file_path_);
   return true;
 }
 
@@ -995,6 +1009,12 @@ bool QuotaDatabase::ResetStorage() {
 
   sql::Database::Delete(legacy_db_file_path_);
   sql::Database::Delete(db_file_path_);
+
+  // Explicit file deletion to try and get consistent deletion across platforms.
+  base::DeleteFile(legacy_db_file_path_);
+  base::DeleteFile(db_file_path_);
+  base::DeleteFile(sql::Database::JournalPath(legacy_db_file_path_));
+  base::DeleteFile(sql::Database::JournalPath(db_file_path_));
 
   storage_directory_->Doom();
   storage_directory_->ClearDoomed();

@@ -116,10 +116,21 @@ bool IsEmptyPPID(dcsctp::PPID ppid) {
 DcSctpTransport::DcSctpTransport(rtc::Thread* network_thread,
                                  rtc::PacketTransportInternal* transport,
                                  Clock* clock)
+    : DcSctpTransport(network_thread,
+                      transport,
+                      clock,
+                      std::make_unique<dcsctp::DcSctpSocketFactory>()) {}
+
+DcSctpTransport::DcSctpTransport(
+    rtc::Thread* network_thread,
+    rtc::PacketTransportInternal* transport,
+    Clock* clock,
+    std::unique_ptr<dcsctp::DcSctpSocketFactory> socket_factory)
     : network_thread_(network_thread),
       transport_(transport),
       clock_(clock),
       random_(clock_->TimeInMicroseconds()),
+      socket_factory_(std::move(socket_factory)),
       task_queue_timeout_factory_(
           *network_thread,
           [this]() { return TimeMillis(); },
@@ -175,9 +186,8 @@ bool DcSctpTransport::Start(int local_sctp_port,
           std::make_unique<dcsctp::TextPcapPacketObserver>(debug_name_);
     }
 
-    dcsctp::DcSctpSocketFactory factory;
-    socket_ =
-        factory.Create(debug_name_, *this, std::move(packet_observer), options);
+    socket_ = socket_factory_->Create(debug_name_, *this,
+                                      std::move(packet_observer), options);
   } else {
     if (local_sctp_port != socket_->options().local_port ||
         remote_sctp_port != socket_->options().remote_port) {
@@ -208,11 +218,21 @@ bool DcSctpTransport::OpenStream(int sid) {
 bool DcSctpTransport::ResetStream(int sid) {
   RTC_LOG(LS_INFO) << debug_name_ << "->ResetStream(" << sid << ").";
   if (!socket_) {
-    RTC_LOG(LS_ERROR) << debug_name_ << "->OpenStream(sid=" << sid
+    RTC_LOG(LS_ERROR) << debug_name_ << "->ResetStream(sid=" << sid
                       << "): Transport is not started.";
     return false;
   }
+
   dcsctp::StreamID streams[1] = {dcsctp::StreamID(static_cast<uint16_t>(sid))};
+
+  StreamClosingState& closing_state = closing_states_[streams[0]];
+  if (closing_state.closure_initiated || closing_state.incoming_reset_done ||
+      closing_state.outgoing_reset_done) {
+    // The closing procedure was already initiated by the remote, don't do
+    // anything.
+    return false;
+  }
+  closing_state.closure_initiated = true;
   socket_->ResetStreams(streams);
   return true;
 }
@@ -472,7 +492,15 @@ void DcSctpTransport::OnStreamsResetPerformed(
     RTC_LOG(LS_INFO) << debug_name_
                      << "->OnStreamsResetPerformed(...): Outgoing stream reset"
                      << ", sid=" << stream_id.value();
-    SignalClosingProcedureComplete(stream_id.value());
+    StreamClosingState& closing_state = closing_states_[stream_id];
+    closing_state.outgoing_reset_done = true;
+
+    if (closing_state.incoming_reset_done) {
+      //  When the close was not initiated locally, we can signal the end of the
+      //  data channel close procedure when the remote ACKs the reset.
+      SignalClosingProcedureComplete(stream_id.value());
+      closing_states_.erase(stream_id);
+    }
   }
 }
 
@@ -482,8 +510,24 @@ void DcSctpTransport::OnIncomingStreamsReset(
     RTC_LOG(LS_INFO) << debug_name_
                      << "->OnIncomingStreamsReset(...): Incoming stream reset"
                      << ", sid=" << stream_id.value();
-    SignalClosingProcedureStartedRemotely(stream_id.value());
-    SignalClosingProcedureComplete(stream_id.value());
+    StreamClosingState& closing_state = closing_states_[stream_id];
+    closing_state.incoming_reset_done = true;
+
+    if (!closing_state.closure_initiated) {
+      // When receiving an incoming stream reset event for a non local close
+      // procedure, the transport needs to reset the stream in the other
+      // direction too.
+      dcsctp::StreamID streams[1] = {stream_id};
+      socket_->ResetStreams(streams);
+      SignalClosingProcedureStartedRemotely(stream_id.value());
+    }
+
+    if (closing_state.outgoing_reset_done) {
+      // The close procedure that was initiated locally is complete when we
+      // receive and incoming reset event.
+      SignalClosingProcedureComplete(stream_id.value());
+      closing_states_.erase(stream_id);
+    }
   }
 }
 

@@ -946,6 +946,75 @@ TEST_F(QuotaDatabaseTest, QuotaDatabasePathMigration) {
   }
 }
 
+// Test for crbug.com/1316581.
+TEST_F(QuotaDatabaseTest, QuotaDatabasePathBadMigration) {
+  const base::FilePath kLegacyFilePath =
+      ProfilePath().AppendASCII(kDatabaseName);
+  const StorageKey kStorageKey =
+      StorageKey::CreateFromStringForTesting("http://google/");
+  const std::string kBucketName = "google_bucket";
+  // Create database, add bucket and close by leaving scope.
+  {
+    auto db = CreateDatabase(/*is_incognito=*/false);
+    auto result = db->GetOrCreateBucket(kStorageKey, kBucketName);
+    ASSERT_TRUE(result.ok());
+  }
+  // Copy db file paths to legacy file path to mimic bad migration state.
+  base::CopyFile(DbPath(), kLegacyFilePath);
+
+  // Reopen database, check that db is migrated and is in a good state.
+  {
+    auto db = CreateDatabase(/*is_incognito=*/false);
+    auto result = db->GetBucket(kStorageKey, kBucketName, kTemp);
+    EXPECT_TRUE(result.ok());
+    EXPECT_TRUE(base::PathExists(DbPath()));
+  }
+}
+
+// Test for crbug.com/1322375.
+//
+// base::CreateDirectory behaves differently on Mac and allows directory
+// migration to succeed when we expect failure.
+#if !BUILDFLAG(IS_MAC)
+TEST_F(QuotaDatabaseTest, QuotaDatabaseDirectoryMigrationError) {
+  const base::FilePath kLegacyFilePath =
+      ProfilePath().AppendASCII(kDatabaseName);
+  const StorageKey kGoogleStorageKey =
+      StorageKey::CreateFromStringForTesting("http://google/");
+  const StorageKey kExampleStorageKey =
+      StorageKey::CreateFromStringForTesting("http://example/");
+  BucketId example_id;
+  // Create database, add bucket and close by leaving scope.
+  {
+    auto db = CreateDatabase(/*is_incognito=*/false);
+    // Create two buckets to check that ids are different after database reset.
+    auto result = db->GetOrCreateBucket(kGoogleStorageKey, kDefaultBucketName);
+    ASSERT_TRUE(result.ok());
+    result = db->GetOrCreateBucket(kExampleStorageKey, kDefaultBucketName);
+    ASSERT_TRUE(result.ok());
+    example_id = result->id;
+  }
+  {
+    // Delete database files to force a bad migration state.
+    base::DeleteFile(DbPath());
+    base::DeleteFile(sql::Database::JournalPath(DbPath()));
+
+    // Create a directory with the database file path to force directory
+    // migration to fail.
+    base::CreateDirectory(kLegacyFilePath);
+  }
+  {
+    // Open database to trigger migration. Migration failure forces a database
+    // reset.
+    auto db = CreateDatabase(/*is_incognito=*/false);
+    auto result = db->GetOrCreateBucket(kExampleStorageKey, kDefaultBucketName);
+    ASSERT_TRUE(result.ok());
+    // Validate database reset by checking that bucket id doesn't match.
+    EXPECT_NE(result->id, example_id);
+  }
+}
+#endif  // !BUILDFLAG(IS_MAC)
+
 TEST_F(QuotaDatabaseTest, GetOrCreateBucket_CorruptedDatabase) {
   QuotaDatabase db(ProfilePath());
   StorageKey storage_key =
