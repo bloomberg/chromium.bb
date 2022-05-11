@@ -1454,10 +1454,77 @@ void GpuDataManagerImplPrivate::AddLogMessage(int level,
   const int kLogMessageLimit = 1000;
 
   log_messages_.push_back(LogMessage(level, header, message));
-  if (log_messages_.size() > kLogMessageLimit)
+  if (log_messages_.size() > kLogMessageLimit) {
     log_messages_.erase(log_messages_.begin());
 
-  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnAddLogMessage, level, header, message);
+    // blpwtk2: Apply a rate limit to GPU logger messages. We are allowing
+    // 2 messages/second in steady stream with a burst limit of
+    // 100 messages/second.
+    if (log_message_token_size_) {
+      log_message_token_size_ = (log_message_token_size_ + 500) / 2;
+    }
+    else {
+      log_message_token_size_ = 500;
+    }
+    const int burst_limit = 50;
+
+    const base::TimeDelta token_size =
+        base::TimeDelta::FromMilliseconds(log_message_token_size_);
+    base::Time now = base::Time::Now();
+    base::Time min_time = now - (token_size * burst_limit);
+
+    if (log_message_token_marker_ < min_time) {
+      log_message_token_marker_ = min_time;
+    }
+
+    if (now - log_message_token_marker_ >= token_size) {
+      log_message_token_marker_ += token_size;
+
+      if (log_message_omitted_) {
+        std::string msg = std::to_string(log_message_omitted_) +
+                          " logger messages were omitted";
+
+        log_message_omitted_ = 0;
+
+        // We double the token size so we drop logger messages more
+        // aggressively. This value will converge back to 500 over a few
+        // iterations so we are not always very aggressive to drop logger
+        // messages.
+        log_message_token_size_ *= 2;
+
+        observer_list_->Notify(FROM_HERE,
+                               &GpuDataManagerObserver::OnAddLogMessage,
+                               logging::LOG_INFO,
+                               "",
+                               msg);
+      }
+    }
+    else {
+      if (!log_message_omitted_) {
+          int64_t suspension_time =
+              (log_message_token_marker_ + token_size - now).InMilliseconds();
+
+          std::string msg = "GPU logger suspended for " +
+                            std::to_string(suspension_time) +
+                            " ms due to flooding.";
+
+          observer_list_->Notify(FROM_HERE,
+                                 &GpuDataManagerObserver::OnAddLogMessage,
+                                 logging::LOG_INFO,
+                                 "",
+                                 msg);
+      }
+
+      ++log_message_omitted_;
+      return;
+    }
+  }
+
+  observer_list_->Notify(FROM_HERE,
+                         &GpuDataManagerObserver::OnAddLogMessage,
+                         level,
+                         header,
+                         message);
 }
 
 void GpuDataManagerImplPrivate::ProcessCrashed(
