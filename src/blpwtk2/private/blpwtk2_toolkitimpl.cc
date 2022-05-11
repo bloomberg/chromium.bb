@@ -31,6 +31,9 @@
 #include <blpwtk2_channelinfo.h>
 #include <blpwtk2_desktopstreamsregistry.h>
 #include <blpwtk2_inprocessrenderer.h>
+#if defined(BLPWTK2_FEATURE_URLLOADER)
+#include <blpwtk2_inprocessresourceloaderbridge.h>
+#endif
 #include <blpwtk2_mainmessagepump.h>
 #include <blpwtk2_processhostimpl.h>
 #include <blpwtk2_products.h>
@@ -897,6 +900,14 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 // patch section: performance monitor
 
+// This is to avoid
+// "error: [chromium-style] Complex class/struct needs an explicit out-of-line
+// constructor."
+// (See https://www.chromium.org/developers/coding-style/chromium-style-checker-errors/#constructordestructor-errors)
+ToolkitImpl::Metrics::Metrics()
+{
+}
+
 // Register the metrics we will report.
 // Metrics values will subsequently be requested via periodic calls to
 // getMetrics().
@@ -925,6 +936,14 @@ void ToolkitImpl::initializeMetrics(blpwtk2::ToolkitDelegate* delegate) {
             "blpwtk2.WTFPartitionsBufferKB",
             "Total size of buffer memory in the WTF::Partitions subsystem (KB)",
             period);
+#if defined(BLPWTK2_FEATURE_URLLOADER)
+    d_metrics.d_requestPeerReceiverCount = delegate->registerMetric(
+            "blpwtk2.RequestPeerReceiverCount",
+            "Number of RequestPeerReceiver objects", period);
+    d_metrics.d_inProcessResourceContextCount = delegate->registerMetric(
+            "blpwtk2.InProcessResourceContextCount",
+            "Number of InProcessResourceContext objects", period);
+#endif
   }
 }
 
@@ -981,6 +1000,18 @@ void ToolkitImpl::getMetrics(
         }
         continue;
       }
+#if defined(BLPWTK2_FEATURE_URLLOADER)
+      if (metrics[i] == d_metrics.d_requestPeerReceiverCount) {
+        values[i] = InProcessResourceLoaderBridge::getSubObjectCount(
+          InProcessResourceLoaderBridge::e_requestPeerReceiverCount);
+        continue;
+      }
+      if (metrics[i] == d_metrics.d_inProcessResourceContextCount) {
+        values[i] = InProcessResourceLoaderBridge::getSubObjectCount(
+          InProcessResourceLoaderBridge::e_inProcessResourceContextCount);
+        continue;
+      }
+#endif
     }
   }
 }

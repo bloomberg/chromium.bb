@@ -110,11 +110,18 @@ class ToolkitImpl : public Toolkit {
 
     // patch section: performance monitor
     struct Metrics {
+        Metrics();
+          // Declaring and implementing a constructor is to avoid
+          // "error: [chromium-style] Complex class/struct needs an explicit
+          // out-of-line constructor."
+
         int d_computedStyleCount                        = 0;
         int d_wtfPartitionsTotalSizeOfCommittedPagesKB  = 0;
         int d_wtfPartitionsFastMallocKB                 = 0;
         int d_wtfPartitionsArrayBufferKB                = 0;
         int d_wtfPartitionsBufferKB                     = 0;
+        int d_requestPeerReceiverCount                  = 0;
+        int d_inProcessResourceContextCount             = 0;
     };
 
     Metrics d_metrics;
