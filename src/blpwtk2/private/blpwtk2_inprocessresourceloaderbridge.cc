@@ -319,6 +319,8 @@ class InProcessResourceContext final
     : public base::RefCounted<InProcessResourceContext>,
       public ResourceContext {
 
+    InProcessResourceLoaderBridge *d_bridge;
+    int d_requestId;
     std::unique_ptr<InProcessURLRequest> d_urlRequest;
     GURL d_url;
     scoped_refptr<net::HttpResponseHeaders> d_responseHeaders;
@@ -341,7 +343,8 @@ class InProcessResourceContext final
     void ensureResponseHeadersSent(const char* buffer, int length);
 
  public:
-    InProcessResourceContext();
+    InProcessResourceContext(InProcessResourceLoaderBridge *bridge,
+                             int request_id);
 
     // accessors
     const GURL& url() const;
@@ -370,8 +373,12 @@ class InProcessResourceContext final
                     // class InProcessResourceContext
                     // ------------------------------
 
-InProcessResourceContext::InProcessResourceContext()
-    : d_userData(0),
+InProcessResourceContext::InProcessResourceContext(
+        InProcessResourceLoaderBridge *bridge,
+        int request_id)
+    : d_bridge(bridge),
+      d_requestId(request_id),
+      d_userData(0),
       d_totalTransferSize(0),
       d_started(false),
       d_waitingForCancelLoad(false),
@@ -556,6 +563,10 @@ void InProcessResourceContext::finish()
 
     // This is to balance the AddRef from startLoad().
     Release();
+
+    if (d_bridge) {
+        d_bridge->Finish(d_requestId);
+    }
 }
 
 void InProcessResourceContext::startLoad()
@@ -654,7 +665,7 @@ class NavigationBodyLoader : public blink::WebNavigationBodyLoader {
 
   public:
     NavigationBodyLoader(network::ResourceRequest request)
-        : d_context(base::MakeRefCounted<InProcessResourceContext>())
+        : d_context(base::MakeRefCounted<InProcessResourceContext>(nullptr, 0))
         , d_request(request)
     {
     }
@@ -728,7 +739,7 @@ void InProcessResourceLoaderBridge::Start(
     DCHECK(Statics::isInApplicationMainThread());
 
     scoped_refptr<InProcessResourceContext> context =
-        base::MakeRefCounted<InProcessResourceContext>();
+        base::MakeRefCounted<InProcessResourceContext>(this, request_id);
 
     context->start(std::make_unique<RequestPeerReceiver>(
                 peer, sender, request_id, runner), request);
@@ -749,5 +760,16 @@ void InProcessResourceLoaderBridge::Cancel(int request_id)
     }
 }
 
+void InProcessResourceLoaderBridge::Finish(int request_id)
+{
+    DCHECK(Statics::isInApplicationMainThread());
+
+    auto it = d_contexts.find(request_id);
+    DCHECK(it != d_contexts.end());
+
+    if (it != d_contexts.end()) {
+        d_contexts.erase(it);
+    }
+}
 
 }  // namespace blpwtk2
