@@ -61,6 +61,16 @@ class InProcessResourceLoaderBridge final : public blink::WebResourceRequestSend
 
   void Finish(int request_id);
 
+  enum SubObjectType {
+      e_requestPeerReceiverCount = 0,
+      e_inProcessResourceContextCount,
+      e_navigationBodyLoaderCount,
+  };
+
+  static int getSubObjectCount(SubObjectType type);
+    // Returns the count of sub objects of a particular type within
+    // InProcessResourceLoaderBridge.
+
  private:
   std::unordered_map<int,scoped_refptr<InProcessResourceContext>> d_contexts;
 };
