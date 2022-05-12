@@ -59,6 +59,8 @@ class InProcessResourceLoaderBridge final : public blink::WebResourceRequestSend
 
   void Cancel(int request_id) override;
 
+  void Finish(int request_id);
+
  private:
   std::unordered_map<int,scoped_refptr<InProcessResourceContext>> d_contexts;
 };
