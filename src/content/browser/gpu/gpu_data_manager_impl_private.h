@@ -260,6 +260,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Contains the 1000 most recent log messages.
   std::vector<LogMessage> log_messages_;
 
+  base::Time log_message_token_marker_;
+  int log_message_omitted_ = 0;
+  int64_t log_message_token_size_ = 0;
+
   // What the gpu process is being run for.
   gpu::GpuMode gpu_mode_ = gpu::GpuMode::UNKNOWN;
 
