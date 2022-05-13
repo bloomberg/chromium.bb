@@ -398,7 +398,8 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
 
   FloatClipRect clip;
   const auto* clip_node = &descendant_clip;
-  Vector<const ClipPaintPropertyNode*> intermediate_nodes;
+  const int kInlineNodes = 15;
+  Vector<const ClipPaintPropertyNode*, kInlineNodes> intermediate_nodes;
 
   GeometryMapperClipCache::ClipAndTransform clip_and_transform(
       &ancestor_clip, &ancestor_transform, clip_behavior);
