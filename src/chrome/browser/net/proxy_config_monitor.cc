@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/common/extensions/extensions_util.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
@@ -89,6 +94,9 @@ void ProxyConfigMonitor::AddToNetworkContextParams(
                                .InitWithNewPipeAndPassReceiver());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CEF)
+  if (!cef::IsAlloyRuntimeEnabled() || extensions::ExtensionsEnabled())
+#endif
   error_receiver_set_.Add(this, network_context_params->proxy_error_client
                                     .InitWithNewPipeAndPassReceiver());
 #endif
