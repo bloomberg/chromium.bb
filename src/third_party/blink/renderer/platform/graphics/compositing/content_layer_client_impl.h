@@ -19,7 +19,7 @@ namespace blink {
 
 class JSONArray;
 class JSONObject;
-class PaintChunkSubset;
+class PendingLayer;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
                                                public LayerAsJSONClient {
@@ -48,15 +48,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   cc::Layer& Layer() const { return *cc_picture_layer_.get(); }
   const PropertyTreeState& State() const { return layer_state_; }
 
-  bool Matches(const PaintChunk& paint_chunk) const {
-    return id_ && paint_chunk.Matches(*id_);
-  }
-
-  scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
-      const PaintChunkSubset&,
-      const gfx::Vector2dF& layer_offset,
-      const gfx::Size& layer_bounds,
-      const PropertyTreeState&);
+  void UpdateCcPictureLayer(const PendingLayer&);
 
   RasterInvalidator& GetRasterInvalidator() { return raster_invalidator_; }
 
@@ -66,7 +58,6 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   // Callback from raster_invalidator_.
   void InvalidateRect(const gfx::Rect&);
 
-  absl::optional<PaintChunk::Id> id_;
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
   RasterInvalidator raster_invalidator_;

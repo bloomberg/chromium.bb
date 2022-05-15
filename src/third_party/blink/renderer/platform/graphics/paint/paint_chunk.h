@@ -88,14 +88,18 @@ struct PLATFORM_EXPORT PaintChunk {
     return old.is_cacheable && Matches(old.id);
   }
 
-  bool Matches(const Id& other_id) const {
-    if (!is_cacheable || id != other_id)
+  bool CanMatchOldChunk() const {
+    if (!is_cacheable)
       return false;
     // A chunk whose client is just created should not match any cached chunk,
     // even if it's id equals the old chunk's id (which may happen if this
     // chunk's client is just created at the same address of the old chunk's
     // deleted client).
     return !client_is_just_created;
+  }
+
+  bool Matches(const Id& other_id) const {
+    return CanMatchOldChunk() && id == other_id;
   }
 
   bool EqualsForUnderInvalidationChecking(const PaintChunk& other) const;
@@ -110,6 +114,10 @@ struct PLATFORM_EXPORT PaintChunk {
     if (!layer_selection_data)
       layer_selection_data = std::make_unique<LayerSelectionData>();
     return *layer_selection_data;
+  }
+
+  bool DrawsContent() const {
+    return !effectively_invisible && !drawable_bounds.IsEmpty();
   }
 
   size_t MemoryUsageInBytes() const;
