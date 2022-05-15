@@ -26,7 +26,7 @@ bool GeometryMapperClipCache::IsValid() const {
 
 void GeometryMapperClipCache::InvalidateCacheIfNeeded() {
   if (cache_generation_ != g_clip_cache_generation) {
-    clip_cache_.clear();
+    clip_cache_.Shrink(0);
     cache_generation_ = g_clip_cache_generation;
   }
 }
