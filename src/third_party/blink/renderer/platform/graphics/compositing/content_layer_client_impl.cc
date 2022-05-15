@@ -14,6 +14,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/pending_layer.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
@@ -60,16 +61,9 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
 #endif
 }
 
-scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
-    const PaintChunkSubset& paint_chunks,
-    const gfx::Vector2dF& layer_offset,
-    const gfx::Size& layer_bounds,
-    const PropertyTreeState& layer_state) {
-  if (paint_chunks.begin()->is_cacheable)
-    id_.emplace(paint_chunks.begin()->id);
-  else
-    id_ = absl::nullopt;
-
+void ContentLayerClientImpl::UpdateCcPictureLayer(
+    const PendingLayer& pending_layer) {
+  const auto& paint_chunks = pending_layer.Chunks();
 #if EXPENSIVE_DCHECKS_ARE_ON()
   paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {
@@ -85,9 +79,12 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 
   // The raster invalidator will only handle invalidations within a cc::Layer so
   // we need this invalidation if the layer's properties have changed.
+  auto layer_state = pending_layer.GetPropertyTreeState();
   if (layer_state != layer_state_)
     cc_picture_layer_->SetSubtreePropertyChanged();
 
+  gfx::Size layer_bounds = pending_layer.LayerBounds();
+  gfx::Vector2dF layer_offset = pending_layer.LayerOffset();
   gfx::Size old_layer_bounds = raster_invalidator_.LayerBounds();
   DCHECK_EQ(old_layer_bounds, cc_picture_layer_->bounds());
   raster_invalidator_.Generate(raster_invalidation_function_, paint_chunks,
@@ -116,7 +113,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (cc_display_item_list_ && layer_bounds == old_layer_bounds &&
       !raster_under_invalidation_params) {
     DCHECK_EQ(cc_picture_layer_->bounds(), layer_bounds);
-    return cc_picture_layer_;
+    return;
   }
 
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
@@ -126,6 +123,11 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 
   cc_picture_layer_->SetBounds(layer_bounds);
   cc_picture_layer_->SetHitTestable(true);
+  // TODO(wangxianzhu): Use SetIsDrawable(pending_layer.DrawsContent()) when
+  // it's accurate. For now it only covers a subset of drawing content
+  // conditions (i.e. the following DCHECK).
+  DCHECK(!pending_layer.DrawsContent() ||
+         cc_display_item_list_->TotalOpCount());
   cc_picture_layer_->SetIsDrawable(
       (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
       // Backdrop effects and filters require the layer to be drawable even if
@@ -133,7 +135,14 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       layer_state.Effect().HasBackdropEffect() ||
       !layer_state.Effect().Filter().IsEmpty());
 
-  return cc_picture_layer_;
+  bool contents_opaque = pending_layer.RectKnownToBeOpaque().Contains(
+      gfx::RectF(gfx::PointAtOffsetFromOrigin(pending_layer.LayerOffset()),
+                 gfx::SizeF(pending_layer.LayerBounds())));
+  cc_picture_layer_->SetContentsOpaque(contents_opaque);
+  if (!contents_opaque) {
+    cc_picture_layer_->SetContentsOpaqueForText(
+        pending_layer.TextKnownToBeOnOpaqueBackground());
+  }
 }
 
 void ContentLayerClientImpl::InvalidateRect(const gfx::Rect& rect) {
