@@ -807,6 +807,11 @@ void ContextMenuController::UpdateTextFragmentHandler(
   selected_frame->GetTextFragmentHandler()->StartPreemptiveGenerationIfNeeded();
 }
 
+static void ExposeInt(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, int value)	
+{	
+  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value)).Check();	
+}
+
 static void ExposeBool(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, bool value)
 {
   obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value)).Check();
@@ -852,6 +857,8 @@ static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult,
   ExposeString(isolate, detail_obj, "misspelledWord", blink::WebString::FromUTF16(data.misspelled_word).Utf8());
   ExposeStringVector(isolate, detail_obj, "dictionarySuggestions", data.dictionary_suggestions);
   ExposeString(isolate, detail_obj, "selectedText", WTF::String(data.selected_text.c_str()).Utf8());
+  ExposeInt(isolate, detail_obj, "mousePositionX", data.mouse_position.x());
+  ExposeInt(isolate, detail_obj, "mousePositionY", data.mouse_position.y());
   ExposeBool(isolate, detail_obj, "fromContextMenuKey", bContextMenuKey);
 
   CustomEvent* event = CustomEvent::Create();
