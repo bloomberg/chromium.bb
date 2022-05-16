@@ -435,19 +435,18 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
                                       ? focus_manager->GetFocusedView()
                                       : focus_manager->GetStoredFocusView();
 
-      aura::Window* window_for_activation = nullptr;
-      // blpwtk2: If a delegate is installed, ask it for the window that
-      // should be activated.
-      if (GetWidget()->widget_delegate()) {
-        window_for_activation =
-            GetWidget()->widget_delegate()->GetDefaultActivationWindow();
-      }
-
       if (!view_for_activation || !view_for_activation->GetWidget()) {
         view_for_activation = GetWidget()->GetRootView();
+        
         // blpwtk2: Try to activate the window provided by the delegate
         // (if any).  Otherwise, fallback to the upstream behavior and activate
         // the window associated with the webview.
+        aura::Window* window_for_activation = nullptr;
+        if (GetWidget()->widget_delegate()) {
+          window_for_activation =
+              GetWidget()->widget_delegate()->GetDefaultActivationWindow();
+        }
+
         if (window_for_activation) {
           activation_client->ActivateWindow(window_for_activation);
         } else {
@@ -462,17 +461,9 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
         // into an infinite loop.
         // In practice, infinite loop does not happen because the window tree
         // host avoids re-entrance to Activate() when the OS's window is active.
-        // But this is still a risk when two DNWAs both try to activate itself.
-        
-        // blpwtk2: Try to activate the window provided by the delegate
-        // (if any).  Otherwise, fallback to the upstream behavior and activate
-        // the window associated with the webview.
-        if (window_for_activation) {
-          activation_client->ActivateWindow(window_for_activation);
-        } else {
-          activation_client->ActivateWindow(
-              view_for_activation->GetWidget()->GetNativeView());
-        }
+        // But this is still a risk when two DNWAs both try to activate itself.        
+        activation_client->ActivateWindow(
+            view_for_activation->GetWidget()->GetNativeView());
         // When desktop native widget has modal transient child, we don't
         // restore focused view here, as the modal transient child window will
         // get activated and focused. Thus, we are not left with multiple
