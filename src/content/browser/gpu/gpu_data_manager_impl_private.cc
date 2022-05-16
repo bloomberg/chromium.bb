@@ -1469,7 +1469,7 @@ void GpuDataManagerImplPrivate::AddLogMessage(int level,
     const int burst_limit = 50;
 
     const base::TimeDelta token_size =
-        base::TimeDelta::FromMilliseconds(log_message_token_size_);
+        base::Milliseconds(log_message_token_size_);
     base::Time now = base::Time::Now();
     base::Time min_time = now - (token_size * burst_limit);
 
