@@ -73,6 +73,7 @@ class RequestPeerReceiver : public ResourceReceiver {
     network::mojom::URLResponseHeadPtr head_;
     std::vector<char> received_data_;
     scoped_refptr<base::SingleThreadTaskRunner> runner_;
+    static std::atomic<int> s_count;
 
   public:
     RequestPeerReceiver(
@@ -84,6 +85,17 @@ class RequestPeerReceiver : public ResourceReceiver {
         , sender_(sender)
         , runner_(std::move(runner))
     {
+        ++s_count;
+    }
+
+    ~RequestPeerReceiver() override
+    {
+        --s_count;
+    }
+
+    static int getCount()
+    {
+        return s_count.load(std::memory_order_relaxed);
     }
 
     void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override
@@ -136,6 +148,8 @@ class RequestPeerReceiver : public ResourceReceiver {
         sender_->DeletePendingRequest(runner_);
     }
 };
+
+std::atomic<int> RequestPeerReceiver::s_count(0);
 
                     // ========================
                     // class BodyLoaderReceiver
@@ -333,6 +347,8 @@ class InProcessResourceContext final
     bool d_failed;
     bool d_finished;
 
+    static std::atomic<int> s_count;
+
     friend class base::RefCounted<InProcessResourceContext>;
     ~InProcessResourceContext() override;
     InProcessResourceContext(const InProcessResourceContext&) = delete;
@@ -345,6 +361,8 @@ class InProcessResourceContext final
  public:
     InProcessResourceContext(InProcessResourceLoaderBridge *bridge,
                              int request_id);
+
+    static int getCount();
 
     // accessors
     const GURL& url() const;
@@ -373,6 +391,8 @@ class InProcessResourceContext final
                     // class InProcessResourceContext
                     // ------------------------------
 
+std::atomic<int> InProcessResourceContext::s_count(0);
+
 InProcessResourceContext::InProcessResourceContext(
         InProcessResourceLoaderBridge *bridge,
         int request_id)
@@ -388,11 +408,18 @@ InProcessResourceContext::InProcessResourceContext(
 {
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(Statics::inProcessResourceLoader);
+    ++s_count;
     d_responseHeaders = base::MakeRefCounted<net::HttpResponseHeaders>(gHttpOK);
 }
 
 InProcessResourceContext::~InProcessResourceContext()
 {
+    --s_count;
+}
+
+int InProcessResourceContext::getCount()
+{
+    return s_count.load(std::memory_order_relaxed);
 }
 
 // accessors
@@ -668,11 +695,13 @@ class NavigationBodyLoader : public blink::WebNavigationBodyLoader {
         : d_context(base::MakeRefCounted<InProcessResourceContext>(nullptr, 0))
         , d_request(request)
     {
+        ++s_count;
     }
 
     ~NavigationBodyLoader() override
     {
         d_context->OnPeerInvalid();
+        --s_count;
     }
 
     void SetDefersLoading(blink::WebLoaderFreezeMode) override {}
@@ -688,7 +717,21 @@ class NavigationBodyLoader : public blink::WebNavigationBodyLoader {
     {
         CHECK(false && "Not implemented!");
     }
+
+    static int getCount()
+    {
+        return s_count.load(std::memory_order_relaxed);
+    }
+
+  private:
+    static std::atomic<int> s_count;
 };
+
+                    // --------------------------
+                    // class NavigationBodyLoader
+                    // --------------------------
+
+std::atomic<int> NavigationBodyLoader::s_count(0);
 
                     // -----------------------------------
                     // class InProcessResourceLoaderBridge
@@ -770,6 +813,29 @@ void InProcessResourceLoaderBridge::Finish(int request_id)
     if (it != d_contexts.end()) {
         d_contexts.erase(it);
     }
+}
+
+int InProcessResourceLoaderBridge::getSubObjectCount(
+                        InProcessResourceLoaderBridge::SubObjectType type)
+{
+    int value;
+
+    switch (type) {
+        case e_requestPeerReceiverCount:
+            value = RequestPeerReceiver::getCount();
+            break;
+        case e_inProcessResourceContextCount:
+          value = InProcessResourceContext::getCount();
+          break;
+        case e_navigationBodyLoaderCount:
+          value = NavigationBodyLoader::getCount();
+          break;
+        default:
+          // unrecognised metric
+          value = 0;
+          break;
+    }
+    return value;
 }
 
 }  // namespace blpwtk2
