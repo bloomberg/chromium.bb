@@ -80,6 +80,7 @@
 // feature 18
 #define BLPWTK2_FEATURE_WEB_CACHE_FLUSH
 // feature 19
+#define BLPWTK2_FEATURE_URLLOADER
 // feature 20
 // feature 21
 // feature 22
