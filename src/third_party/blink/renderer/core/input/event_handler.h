@@ -219,7 +219,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
       Element* override_target_element = nullptr);
   WebInputEventResult ShowNonLocatedContextMenu(
       Element* override_target_element = nullptr,
-      WebMenuSourceType = kMenuSourceContextMenuKey);
+      WebMenuSourceType = kMenuSourceNone);
 
   // Returns whether pointerId is active or not
   bool IsPointerEventActive(PointerId);
